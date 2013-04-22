@@ -19,7 +19,6 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
     private ToolStripButton btnStart;
     private ToolStripButton btnStop;
     private ToolStripButton btnRestart;
-//    private ToolStripButton btnConnect;
     private ToolStripButton btnLink;
     private DynamicForm configurationsForm;
     private ConfigurationsDataSource configurationDS;
@@ -92,16 +91,6 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
             }
         });
 
-//        btnConnect = addToolStripButton("connect.png", "Download JNLP-file to connect", new ClickHandler() {
-//            @Override
-//            public void onClick(ClickEvent event) {
-//                ListGridRecord selected = cbConfigurations.getSelectedRecord();
-//                if (selected != null) {
-//                    uiHandlers.downloadJnlp((ConfigurationRecord) selected);
-//                }
-//            }
-//        });
-
         addToolStripButton("configuration.png", "Setup configurations", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -152,7 +141,6 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
         btnRestart.setDisabled(record == null || !"started".equals(record.getStatus()));
         btnStop.setDisabled(record == null || !"started".equals(record.getStatus()));
         btnLink.setDisabled(record == null || !"started".equals(record.getStatus()));
-//        btnConnect.setDisabled(record == null);
     }
 
     public void setConfigurations(ConfigurationDTO[] configurations) {
@@ -161,7 +149,6 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
         }
 
         ConfigurationRecord selected = (ConfigurationRecord) cbConfigurations.getSelectedRecord();
-        int selectedId = selected == null ? -1 : selected.getId();
 
         //приходится каждый раз пересоздавать comboBox, иначе значения нормально не обновляются
         createConfigurationCombobox();
@@ -169,9 +156,19 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
         configurationDS = new ConfigurationsDataSource(configurations);
         cbConfigurations.setOptionDataSource(configurationDS);
 
-        if (selectedId != -1) {
-            cbConfigurations.setValue(selectedId);
-            updateConfigButtons(configurationDS.getRecord(selectedId));
+        if (selected != null) {
+            selected = configurationDS.getRecord(selected.getId());
         }
+
+        if (selected != null) {
+            cbConfigurations.setValue(selected.getId());
+        } else if (configurations.length > 0) {
+            selected = configurationDS.getRecord(configurations[0].id);
+            cbConfigurations.setValue(configurations[0].id);
+        } else {
+            cbConfigurations.clearValue();
+        }
+
+        updateConfigButtons(selected);
     }
 }
