@@ -27,15 +27,15 @@ import platform.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Scheduler extends LifecycleAdapter implements InitializingBean {
     private static final Logger logger = ServerLoggers.systemLogger;
+
+    public ScheduledExecutorService daemonTasksExecutor;
 
     private Context instanceContext;
 
@@ -74,7 +74,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         logger.info("Starting Scheduler.");
 
         try {
-            setupScheduledTasks();
+            setupScheduledTasks(dbManager.createSession());
             setupCurrentDateSynchronization();
         } catch (SQLException e) {
             throw new RuntimeException("Error starting Scheduler: ", e);
@@ -148,8 +148,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private void setupScheduledTasks() throws SQLException {
-        DataSession session = dbManager.createSession();
+    public void setupScheduledTasks(DataSession session) throws SQLException {
 
         KeyExpr scheduledTask1Expr = new KeyExpr("scheduledTask");
         ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTask1Expr);
@@ -161,9 +160,15 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
         scheduledTaskQuery.and(businessLogics.schedulerLM.activeScheduledTask.getExpr(scheduledTask1Expr).getWhere());
 
+        if(daemonTasksExecutor!=null)
+            daemonTasksExecutor.shutdown();
+
+        daemonTasksExecutor = Executors.newScheduledThreadPool(3, new ContextAwareDaemonThreadFactory(new SchedulerContext(), "-scheduler-daemon-"));
+
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> scheduledTaskResult = scheduledTaskQuery.execute(session.sql);
-        for (int i=0,size=scheduledTaskResult.size();i<size;i++) {
-            ImMap<Object, Object> key = scheduledTaskResult.getKey(i); ImMap<Object, Object> value = scheduledTaskResult.getValue(i);
+        for (int i = 0, size = scheduledTaskResult.size(); i < size; i++) {
+            ImMap<Object, Object> key = scheduledTaskResult.getKey(i);
+            ImMap<Object, Object> value = scheduledTaskResult.getValue(i);
             currentScheduledTaskObject = new DataObject(key.getValue(0), businessLogics.schedulerLM.scheduledTask);
             Boolean runAtStart = value.get("runAtStartScheduledTask") != null;
             Timestamp startDate = (Timestamp) value.get("startDateScheduledTask");
@@ -179,8 +184,6 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             propertyQuery.and(businessLogics.schedulerLM.inScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
             propertyQuery.and(businessLogics.schedulerLM.activeScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
             propertyQuery.and(scheduledTaskExpr.compare(currentScheduledTaskObject, Compare.EQUALS));
-
-            ScheduledExecutorService daemonTasksExecutor = Executors.newScheduledThreadPool(1, new ContextAwareDaemonThreadFactory(new SchedulerContext(), "-scheduler-daemon-"));
 
             TreeMap<Integer, LAP> propertySIDMap = new TreeMap<Integer, LAP>();
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = propertyQuery.execute(session.sql);
@@ -222,7 +225,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         currentLogSession = dbManager.createSession();
         currentScheduledTaskLogObject = currentLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
         try {
-            businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment)currentLogSession, currentScheduledTaskLogObject);
+            businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) currentLogSession, currentScheduledTaskLogObject);
             businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", currentLogSession, currentScheduledTaskLogObject);
             businessLogics.schedulerLM.dateStartScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
 
@@ -278,7 +281,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     DataObject scheduledClientTaskLogObject = currentLogSession.addObject(businessLogics.schedulerLM.scheduledClientTaskLog);
 
                     businessLogics.schedulerLM.scheduledTaskLogScheduledClientTaskLog
-                            .change(currentScheduledTaskLogObject, (ExecutionEnvironment)currentLogSession, scheduledClientTaskLogObject);
+                            .change(currentScheduledTaskLogObject, (ExecutionEnvironment) currentLogSession, scheduledClientTaskLogObject);
                     businessLogics.schedulerLM.messageScheduledClientTaskLog
                             .change(((MessageClientAction) action).message, currentLogSession, scheduledClientTaskLogObject);
                 } catch (SQLException e) {

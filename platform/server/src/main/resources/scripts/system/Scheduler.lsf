@@ -33,6 +33,17 @@ TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog);
 messageScheduledClientTaskLog 'Сообщение'= DATA STRING[200] (ScheduledClientTaskLog);
 
+runSetupScheduler 'Планировщик' = ACTION CUSTOM 'platform.server.SetupSchedulerActionProperty';
+
+WHEN [GROUP SUM 1 IF
+    (CHANGED (runAtStartScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (startDateScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (periodScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (activeScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (inScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (activeScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (orderScheduledTaskProperty(scheduledTask, property)))] ()
+        DO EXEC runSetupScheduler();
 
 FORM scheduledTask 'Планировщик'
 
