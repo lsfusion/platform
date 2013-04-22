@@ -28,6 +28,7 @@ public class GKeyStroke implements Serializable {
     public static final int KEY_INSERT = 45;
 
     public static final int KEY_C = 67;
+    public static final int KEY_R = 82;
     public static final int KEY_V = 86;
 
     public int keyCode;
@@ -158,7 +159,11 @@ public class GKeyStroke implements Serializable {
             int keyCode = event.getKeyCode();
             int charCode = event.getCharCode();
             return  !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() &&
-                    isChangeKey(keyCode, charCode);
+                    isChangeKey(keyCode, charCode) &&
+                    // и специально для FF:
+                    keyCode != KEY_DELETE &&
+                    keyCode != KEY_BACKSPACE &&
+                    keyCode != KEY_INSERT;
         }
         return false;
     }
@@ -191,13 +196,19 @@ public class GKeyStroke implements Serializable {
 
     public static boolean isCopyToClipboardEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) &&
-                ((event.getKeyCode() == GKeyStroke.KEY_C && event.getCtrlKey()) ||
-                (event.getKeyCode() == GKeyStroke.KEY_INSERT && event.getCtrlKey()));
+                ((event.getKeyCode() == KEY_C && event.getCtrlKey()) ||
+                (event.getKeyCode() == KEY_INSERT && event.getCtrlKey()));
     }
 
     public static boolean isPasteFromClipboardEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) &&
-                ((event.getKeyCode() == GKeyStroke.KEY_V && event.getCtrlKey()) ||
-                (event.getKeyCode() == GKeyStroke.KEY_INSERT && event.getShiftKey()));
+                ((event.getKeyCode() == KEY_V && event.getCtrlKey()) ||
+                (event.getKeyCode() == KEY_INSERT && event.getShiftKey()));
+    }
+
+    public static boolean shouldPreventDefaultBrowserAction(NativeEvent event) {
+        int keyCode = event.getKeyCode();
+        return keyCode == KEY_BACKSPACE ||
+                (keyCode == KEY_R && event.getCtrlKey());
     }
 }

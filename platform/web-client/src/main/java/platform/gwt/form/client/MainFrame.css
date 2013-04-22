@@ -410,3 +410,7 @@ textarea {
 .displayBlock {
     display: block;
 }
+
+.noOutline {
+    outline: none;
+}
