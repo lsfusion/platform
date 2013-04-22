@@ -1106,12 +1106,15 @@ FORM rangeManagement 'Управление ассортиментом'
     OBJECTS dt = DATETIME FIXED PANEL
     PROPERTIES(dt) objValue = OBJVALUE
 
+    OBJECTS o = Operation FIXED PANEL
+    PROPERTIES(o) SELECTOR name
+
     OBJECTS l = LegalEntity FIXED PANEL
     PROPERTIES(l) SELECTOR name
 
     OBJECTS s = Stock FIXED PANEL
     PROPERTIES(s) SELECTOR name
-    FILTERS legalEntityStock(s) == l
+    FILTERS isCompanyStock(s)
 
     OBJECTS pt = DataPriceListType FIXED PANEL
     PROPERTIES(pt) SELECTOR name
@@ -1125,7 +1128,8 @@ FORM rangeManagement 'Управление ассортиментом'
     ORDER BY fromDateUserPriceList, fromTimeUserPriceList
     FILTERS inPriceListDataPriceListType(p, pt),
             inPriceListStockOver(p, s),
-            companyUserPriceList(p) == l
+            companyUserPriceList(p) == l,
+            operationUserPriceList(p) == o
 
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sg)
@@ -1137,22 +1141,8 @@ FORM rangeManagement 'Управление ассортиментом'
     ORDER BY nameSku
     FILTERS isParentSkuGroupSku(sg, sk)
 
-    TREE skuTree2 sg2 = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName2 = name(sg2)
-    ORDER BY skuTreeName2
-
-    OBJECTS b = Batch
-    PROPERTIES(b) READONLY isPostedBatch, dateBatch, timeBatch, nameSkuBatch, nameStockBatch, descriptionBatch, nameBatch, costBatch
-    PROPERTIES(b, s, dt) READONLY balanceABatchStockDateTime
-    ORDER BY dateBatch, timeBatch
-    FILTERGROUP filters
-        FILTER 'Проведенные партии' 'F10' isPostedBatch(b) DEFAULT
-    FILTERS isParentSkuGroupBatch(sg2, b)
-
     PROPERTIES(pt, sk, s, dt) READONLY pricePriceListTypeSkuStockDateTime, nameCompanyLedgerPriceListTypeSkuStockDateTime, descriptionLedgerPriceListTypeSkuStockDateTime
-    PROPERTIES(pt, b, s, dt) READONLY pricePriceListTypeBatchStockDateTime, nameCompanyLedgerPriceListTypeBatchStockDateTime, descriptionLedgerPriceListTypeBatchStockDateTime
-    FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt),
-            pricePriceListTypeBatchStockDateTime(pt, b, s, dt)
+    FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt)
 ;
 
 DESIGN rangeManagement FROM DEFAULT{
@@ -1160,6 +1150,7 @@ DESIGN rangeManagement FROM DEFAULT{
         NEW topContainer{
             childConstraints = TO THE RIGHT;
             ADD dt.box;
+            ADD o.box;
             ADD pt.box;
             ADD l.box;
             ADD s.box;
@@ -1172,24 +1163,10 @@ DESIGN rangeManagement FROM DEFAULT{
                 }
                 NEW priceContainer{
                     caption = 'Текущие цены';
-                    childConstraints = TO THE BOTTOM;
-                    NEW currentPriceContainer{
-                        type = TABBED;
-                        NEW skuContainer{
-                            caption = 'Товары';
-                            childConstraints = TO THE RIGHT;
-                            type = SPLITH;
-                            ADD skuTree.tree.box;
-                            ADD sk.box{fillHorizontal = 2.0;}
-                        }
-                        NEW batchContainer{
-                            caption = 'Партии';
-                            childConstraints = TO THE RIGHT;
-                            type = SPLITH;
-                            ADD skuTree2.tree.box;
-                            ADD b.box{fillHorizontal = 2.0;}
-                        }
-                    }
+                    childConstraints = TO THE RIGHT;
+                    type = SPLITH;
+                    ADD skuTree.tree.box;
+                    ADD sk.box{fillHorizontal = 2.0;}
                 }
             }
         }
