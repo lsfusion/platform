@@ -247,9 +247,8 @@ expandComponentDetail 'Развернуть изделие' = ACTION (componentD
 
 backgroundComponentDetail 'Цвет' (componentDetail) = RGB(255,255,229) IF productComponentDetail(componentDetail);
 
-// ----------------------------------------------------------------------- //
+
 // ---------------- Подбор цен и замен для sku --------------------------- //
-// ----------------------------------------------------------------------- //
 
 TABLE skuOrder(Sku, Order);
 
@@ -278,6 +277,89 @@ multiplierSkuOrder 'Коэффициент замены' = DATA NUMERIC[8,3] (Sk
 substituteQuantitySkuOrder(sku, order) <- bruttoQuantitySkuOrder(sku,order) * multiplierSkuOrder(sku, order)
     WHEN CHANGED (bruttoQuantitySkuOrder(sku,order)) OR CHANGED(multiplierSkuOrder(sku, order));
 
+//--
+stockSubstitutesSku = DATA SESSION Stock ();
+nameStockSubstitutesSku 'Склад' = name(stockSubstitutesSku());
+
+multiplierSubstitutesSku 'Коэффициент' = DATA SESSION NUMERIC[8,3] (Sku);
+
+currentBalanceSkuSubstitutesSku 'Текущий остаток' (sku) =  currentBalanceSkuStock(sku, stockSubstitutesSku());
+
+SubstitutesPriceSkuOrder 'Цена' (sku,order)= prevPricePriceListTypeSkuStockDateTime(priceListTypeOrder(order), sku, stockSubstitutesSku(), dateTimeOrder(order));
+showPriceSubstitutesOrder (order)= TRUE IF stockSubstitutesSku() AND priceListTypeOrder(order);
+
+filterSubstituteFromToSku (fromSku, toSku) = TRUE AND NOT countSubstituteFromToSku(fromSku, toSku);
+
+FORM substitutesSku 'Sku'
+    PROPERTIES() nameStockSubstitutesSku
+    OBJECTS o = Order FIXED PANEL
+    OBJECTS s = Sku FIXED PANEL
+
+    TREE skuTree sg = SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuGroupName = name(sg)
+
+    OBJECTS sk = Sku
+    PROPERTIES(sk) READONLY nameSku, idBarcodeSku, shortNameUOMSku
+    PROPERTIES     READONLY SHOWIF stockSubstitutesSku() currentBalanceSkuSubstitutesSku(sk)
+    PROPERTIES     READONLY SHOWIF showPriceSubstitutesOrder(o) SubstitutesPriceSkuOrder(sk,o)
+    PROPERTIES(sk) multiplierSubstitutesSku
+    PROPERTIES() addSku TODRAW sk
+    PROPERTIES(sk) editSku, copySku
+    FILTERS isParentSkuGroupSku(sg, sk),
+            filterSubstituteFromToSku(s,sk)
+    ORDER BY nameSku
+
+    FILTERGROUP filters
+        FILTER 'Товары с остатком' 'F10' currentBalanceSkuSubstitutesSku(sk) AND stockSubstitutesSku() DEFAULT
+;
+
+DESIGN substitutesSku FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            ADD skuTree.tree.box {
+                title = 'Группы SKU';
+            }
+
+            ADD sk.box {
+                sk.grid {
+                    defaultComponent = TRUE;
+                    fillHorizontal = 4;
+                }
+            }
+        }
+        NEW stockContainer BEFORE topContainer {
+            title = 'Склад';
+            ADD PROPERTY (nameStockSubstitutesSku);
+        }
+        REMOVE o.box;
+        REMOVE s.box;
+        ADD functions.box;
+    }
+}
+
+chooseSubstituteSkuOrder 'Выбрать замену' =  ACTION (fromSku, order) {
+    SET stockSubstitutesSku() <- NULL;
+    SET multiplierSubstitutesSku(s) <- NULL WHERE s IS Sku;
+
+    SET stockSubstitutesSku() <- componentsStockOrder(order) WHERE componentsStockOrder(order);
+
+    FORM substitutesSku OBJECTS o= order, s=fromSku MODAL;
+    IF formResult() == FormResult.ok THEN {
+        FOR  multiplierSubstitutesSku(toSku) ADDOBJ sub = Substitute DO{
+            SET fromSkuSubstitute(sub) <- fromSku;
+            SET toSkuSubstitute(sub) <- toSku;
+            SET multiplierSubstitute(sub) <- multiplierSubstitutesSku(toSku);
+        }
+        SET substituteSkuOrder(fromSku, order) <- chosenObject('sk') WHERE multiplierSubstitutesSku(chosenObject('sk'));
+        SET multiplierSkuOrder(fromSku, order) <- multiplierSubstitutesSku(chosenObject('sk')) WHERE multiplierSubstitutesSku(chosenObject('sk'));
+    }
+}
+
 dataSubstitutePriceSkuOrder 'Цена замены' = DATA NUMERIC[14,2] (Sku, Order);
 
 dataSubstitutePriceSkuOrder(sku,order) <- prevPricePriceListTypeSkuStockDateTime(priceListTypeOrder(order),
@@ -289,6 +371,9 @@ dataSubstitutePriceSkuOrder(sku,order) <- prevPricePriceListTypeSkuStockDateTime
                                          CHANGED(substituteSkuOrder(sku, order)) OR
                                          CHANGED(dateTimeOrder(order) AND sku IS Sku);
 substitutePriceSkuOrder 'Цена замены' (sku, order) = dataSubstitutePriceSkuOrder(sku, order) AND substituteQuantitySkuOrder(sku, order) PERSISTENT;
+
+currentBalanceSubstituteOrder'Текущий остаток' (substitute, order) = currentBalanceSkuStock(toSkuSubstitute(substitute), componentsStockOrder(order));
+substitutesPriceSubstituteOrder 'Цена' (substitute, order)= prevPricePriceListTypeSkuStockDateTime(priceListTypeOrder(order), toSkuSubstitute(substitute), componentsStockOrder(order), dateTimeOrder(order));
 
 // Действие по заполнении замены через галочку
 isSubstituteSkuOrder 'Использовать замену' (substitute, sku, order) = substituteSkuOrder(sku, order) == toSkuSubstitute(substitute);
@@ -474,7 +559,7 @@ FORM order 'Производственный заказ'
     PROPERTIES(s) READONLY nameSku, idBarcodeSku, shortNameUOMSku
     PROPERTIES(s,o) READONLY bruttoQuantitySkuOrder
     PROPERTIES(s,o) bruttoPriceSkuOrder
-    PROPERTIES(s,o) BACKGROUND backgroundSubstitutesOrder(o) nameSubstituteSkuOrder, multiplierSkuOrder, substituteQuantitySkuOrder, substitutePriceSkuOrder
+    PROPERTIES(s,o) BACKGROUND backgroundSubstitutesOrder(o) nameSubstituteSkuOrder ON CHANGE chooseSubstituteSkuOrder(s,o), multiplierSkuOrder, substituteQuantitySkuOrder, substitutePriceSkuOrder
     PROPERTIES(s,o) priceSkuOrder, markupSkuOrder  ON CHANGE changeMarkupSkuOrder(s,o), premiumPriceSkuOrder, valueVATSkuOrder BACKGROUND backgroundVATOrder(o) SHOWIF includeVATOrder(o)
     FILTERS bruttoQuantitySkuOrder(s,o)
 
@@ -483,7 +568,7 @@ FORM order 'Производственный заказ'
     OBJECTS su = Substitute
     PROPERTIES(su) READONLY nameToSkuSubstitute, multiplierSubstitute
     PROPERTIES(su,s,o) isSubstituteSkuOrder ON CHANGE changeSubstituteSkuOrder(su,s,o)
-
+    PROPERTIES     READONLY currentBalanceSubstituteOrder(su,o), substitutesPriceSubstituteOrder(su,o)
     FILTERS fromSkuSubstitute(su) == s
 
     EVENTS

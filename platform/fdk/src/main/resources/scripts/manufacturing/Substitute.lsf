@@ -13,7 +13,10 @@ nameFromSkuSubstitute 'Товар с' (substitute)= nameSku(fromSkuSubstitute(su
 toSkuSubstitute = DATA Sku(Substitute);
 nameToSkuSubstitute 'Товар на' (substitute)= nameSku(toSkuSubstitute(substitute)) IN recognize;
 
-multiplierSubstitute 'Коэффициент' = DATA NUMERIC[8,3] (Substitute);
+uniqueSubstituteFromToSku = GROUP AGGR substitute BY fromSkuSubstitute(substitute), toSkuSubstitute(substitute) WHERE substitute IS Substitute;
+countSubstituteFromToSku = GROUP SUM 1 BY fromSkuSubstitute(substitute), toSkuSubstitute(substitute);
+
+multiplierSubstitute 'Коэффициент' = DATA NUMERIC[8,3] (Substitute) IN recognize;
 
 allBOMsSubstitute 'Во всех спецификациях'= DATA BOOLEAN (Substitute);
 allBOMsSubstitute(substitute) <- TRUE WHEN ASSIGNED(substitute IS Substitute);
