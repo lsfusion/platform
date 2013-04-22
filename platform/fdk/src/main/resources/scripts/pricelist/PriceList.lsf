@@ -535,24 +535,18 @@ fillDocumentPriceList 'Подбор документа' = ACTION (userPriceList)
 isActivePriceList(priceList) = (fromDateTimePriceList(priceList) < currentDateTime() AND toDateTimePriceList(priceList) > currentDateTime()) OR
                                (fromDateTimePriceList(priceList) < currentDateTime() AND priceList IS PriceList AND NOT toDateTimePriceList(priceList));
 backgroundPriceList 'Цвет' (priceList) =
-    CASE
-        WHEN currentDateTime() > toDateTimePriceList(priceList)
-            THEN RGB(255, 226, 226) AND priceList IS PriceList
-        WHEN fromDateTimePriceList(priceList) > currentDateTime()
-            THEN RGB(226, 255, 226) AND priceList IS PriceList
-        DEFAULT RGB(255, 255, 255) AND priceList IS PriceList
-    END;
+    IF currentDateTime() > toDateTimePriceList(priceList)
+        THEN RGB(255, 226, 226) AND priceList IS PriceList
+    ELSE
+        RGB(226, 255, 226) IF fromDateTimePriceList(priceList) > currentDateTime();
 
 isActivePriceListDetail(priceListDetail) = (fromDateTimePriceListDetail(priceListDetail) < currentDateTime() AND toDateTimePriceListDetail(priceListDetail) > currentDateTime()) OR
                                (fromDateTimePriceListDetail(priceListDetail) < currentDateTime() AND priceListDetail IS PriceListDetail AND NOT toDateTimePriceListDetail(priceListDetail));
 backgroundPriceListDetail 'Цвет' (priceListDetail) =
-    CASE
-        WHEN currentDateTime() > toDateTimePriceListDetail(priceListDetail)
-            THEN RGB(255, 226, 226) AND priceListDetail IS PriceListDetail
-        WHEN fromDateTimePriceListDetail(priceListDetail) > currentDateTime()
-            THEN RGB(226, 255, 226) AND priceListDetail IS PriceListDetail
-        DEFAULT RGB(255, 255, 255) AND priceListDetail IS PriceListDetail
-    END;
+    IF currentDateTime() > toDateTimePriceListDetail(priceListDetail)
+        THEN RGB(255, 226, 226) IF priceListDetail IS PriceListDetail
+    ELSE
+        RGB(226, 255, 226) IF fromDateTimePriceListDetail(priceListDetail) > currentDateTime();
 
 //вкладка подбор
 filterSupplierUserPriceList = DATA SESSION LegalEntity (UserPriceList);

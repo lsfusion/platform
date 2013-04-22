@@ -4,7 +4,7 @@
 #
 # Adapt the following lines to your configuration
 FUSION_HOME=/usr/local/fusion
-JAVA_HOME=/usr/java/jdk1.6.0_37/jre
+JAVA_HOME=/usr/java/latest/jre
 FUSION_IP=lsfusion.ru
 PID_FILE=/var/run/jsvc-fusion.pid
 
