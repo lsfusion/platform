@@ -1036,16 +1036,6 @@ FORM priceListTypes 'Виды цен'
     PROPERTIES(pt) editPriceListType, delete
     ORDER BY objectClassName
 
-    OBJECTS p = UserPriceList
-    PROPERTIES(p) READONLY isPostedUserPriceList FORCE GRID, numberObject, seriesObject, dateUserPriceList, timeUserPriceList,
-                           fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
-                           nameCurrencyUserPriceList, nameCompanyUserPriceList, priceListTypesPriceList, stocksPriceList,
-                           noteUserPriceList, objectClassName
-    PROPERTIES(p) EDITFORM, delete
-    ORDER BY fromDateUserPriceList, fromTimeUserPriceList
-    FILTERS inPriceListDataPriceListType(p, pt),
-            inPriceListStockOver(p, s)
-
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sg)
     ORDER BY skuTreeName
@@ -1081,7 +1071,100 @@ DESIGN priceListTypes FROM DEFAULT{
         ADD pt.box;
         NEW firstContainer{
             fillVertical = 2.0;
+            NEW topContainer{
+                childConstraints = TO THE RIGHT;
+                ADD s.box;
+                ADD dt.box{caption = 'Дата/время';}
+            }
+            NEW priceContainer{
+                caption = 'Текущие цены';
+                childConstraints = TO THE BOTTOM;
+                NEW currentPriceContainer{
+                    type = TABBED;
+                    NEW skuContainer{
+                        caption = 'Товары';
+                        childConstraints = TO THE RIGHT;
+                        type = SPLITH;
+                        ADD skuTree.tree.box;
+                        ADD sk.box{fillHorizontal = 2.0;}
+                    }
+                    NEW batchContainer{
+                        caption = 'Партии';
+                        childConstraints = TO THE RIGHT;
+                        type = SPLITH;
+                        ADD skuTree2.tree.box;
+                        ADD b.box{fillHorizontal = 2.0;}
+                    }
+                }
+            }
+        }
+    }
+    ADD functions.box;
+}
+
+FORM rangeManagement 'Управление ассортиментом'
+    OBJECTS dt = DATETIME FIXED PANEL
+    PROPERTIES(dt) objValue = OBJVALUE
+
+    OBJECTS l = LegalEntity FIXED PANEL
+    PROPERTIES(l) SELECTOR name
+
+    OBJECTS s = Stock FIXED PANEL
+    PROPERTIES(s) SELECTOR name
+    FILTERS legalEntityStock(s) == l
+
+    OBJECTS pt = DataPriceListType FIXED PANEL
+    PROPERTIES(pt) SELECTOR name
+
+    OBJECTS p = UserPriceList
+    PROPERTIES(p) READONLY isPostedUserPriceList FORCE GRID, numberObject, seriesObject, dateUserPriceList, timeUserPriceList,
+                           fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
+                           nameCurrencyUserPriceList, nameCompanyUserPriceList, priceListTypesPriceList, stocksPriceList,
+                           noteUserPriceList, objectClassName
+    PROPERTIES(p) EDITFORM, delete
+    ORDER BY fromDateUserPriceList, fromTimeUserPriceList
+    FILTERS inPriceListDataPriceListType(p, pt),
+            inPriceListStockOver(p, s),
+            companyUserPriceList(p) == l
+
+    TREE skuTree sg = SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = name(sg)
+    ORDER BY skuTreeName
+
+    OBJECTS sk = Sku
+    PROPERTIES(sk) READONLY nameSku, idBarcodeSku
+    PROPERTIES(sk, s, dt) READONLY balanceASkuStockDateTime
+    ORDER BY nameSku
+    FILTERS isParentSkuGroupSku(sg, sk)
+
+    TREE skuTree2 sg2 = SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName2 = name(sg2)
+    ORDER BY skuTreeName2
+
+    OBJECTS b = Batch
+    PROPERTIES(b) READONLY isPostedBatch, dateBatch, timeBatch, nameSkuBatch, nameStockBatch, descriptionBatch, nameBatch, costBatch
+    PROPERTIES(b, s, dt) READONLY balanceABatchStockDateTime
+    ORDER BY dateBatch, timeBatch
+    FILTERGROUP filters
+        FILTER 'Проведенные партии' 'F10' isPostedBatch(b) DEFAULT
+    FILTERS isParentSkuGroupBatch(sg2, b)
+
+    PROPERTIES(pt, sk, s, dt) READONLY pricePriceListTypeSkuStockDateTime, nameCompanyLedgerPriceListTypeSkuStockDateTime, descriptionLedgerPriceListTypeSkuStockDateTime
+    PROPERTIES(pt, b, s, dt) READONLY pricePriceListTypeBatchStockDateTime, nameCompanyLedgerPriceListTypeBatchStockDateTime, descriptionLedgerPriceListTypeBatchStockDateTime
+    FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt),
+            pricePriceListTypeBatchStockDateTime(pt, b, s, dt)
+;
+
+DESIGN rangeManagement FROM DEFAULT{
+    NEW mainContainer{
+        NEW topContainer{
+            childConstraints = TO THE RIGHT;
+            ADD dt.box;
+            ADD pt.box;
+            ADD l.box;
             ADD s.box;
+        }
+        NEW firstContainer{
             NEW tabContainer{
                 type = TABBED;
                 ADD p.box{
@@ -1090,7 +1173,6 @@ DESIGN priceListTypes FROM DEFAULT{
                 NEW priceContainer{
                     caption = 'Текущие цены';
                     childConstraints = TO THE BOTTOM;
-                    ADD dt.box;
                     NEW currentPriceContainer{
                         type = TABBED;
                         NEW skuContainer{
@@ -1156,6 +1238,7 @@ NAVIGATOR {
             ADD priceIntervals;
             ADD priceStockGroups;
             ADD operations;
+            ADD rangeManagement;
         }
     }
 }
