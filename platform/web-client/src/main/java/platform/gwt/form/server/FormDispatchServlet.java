@@ -44,6 +44,7 @@ public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogics
         registry.addHandler(new PasteExternalTableHandler(this));
         registry.addHandler(new ChangePageSizeHandler(this));
         registry.addHandler(new GetInitialFilterPropertyHandler(this));
+        registry.addHandler(new GetRemoteActionMessageHandler(this));
     }
 
     public FormSessionManager getFormSessionManager() {

@@ -24,7 +24,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         FileInputStream fis = new FileInputStream(file);
         MimetypesFileTypeMap mimeMap;
         try {
-            mimeMap = new MimetypesFileTypeMap(context.getRealPath("WEB-INF") + "mimetypes");
+            mimeMap = new MimetypesFileTypeMap(context.getRealPath("WEB-INF") + "/mimetypes");
         } catch (IOException e) {
             mimeMap = (MimetypesFileTypeMap) MimetypesFileTypeMap.getDefaultFileTypeMap();
         }

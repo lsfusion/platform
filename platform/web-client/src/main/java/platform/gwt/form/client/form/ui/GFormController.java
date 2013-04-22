@@ -30,6 +30,7 @@ import platform.gwt.form.client.dispatch.DeferredRunner;
 import platform.gwt.form.client.dispatch.FormDispatchAsync;
 import platform.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import platform.gwt.form.client.form.FormsController;
+import platform.gwt.form.client.form.ServerMessageProvider;
 import platform.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form.client.form.dispatch.GFormActionDispatcher;
 import platform.gwt.form.client.form.dispatch.GSimpleChangePropertyDispatcher;
@@ -59,7 +60,7 @@ import java.util.*;
 import static platform.gwt.base.shared.GwtSharedUtils.putToDoubleNativeMap;
 import static platform.gwt.base.shared.GwtSharedUtils.removeFromDoubleMap;
 
-public class GFormController extends ResizableSimplePanel {
+public class GFormController extends ResizableSimplePanel implements ServerMessageProvider {
 
     private final FormDispatchAsync dispatcher;
 
@@ -95,6 +96,8 @@ public class GFormController extends ResizableSimplePanel {
     private boolean initialResizeProcessed = false;
 
     private HotkeyManager hotkeyManager = new HotkeyManager();
+
+    private LoadingBlocker blocker = new LoadingBlocker(this);
 
     public GFormController(FormsController formsController, GForm gForm, final boolean isDialog) {
         actionDispatcher = new GFormActionDispatcher(this);
@@ -492,6 +495,20 @@ public class GFormController extends ResizableSimplePanel {
         });
     }
 
+    public void changePageSizeAfterUnlock(final GGroupObject groupObject, final int pageSize) {
+        Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
+            @Override
+            public boolean execute() {
+                if (blocker.isVisible()) {
+                    return true;
+                } else {
+                    changePageSizeLater(groupObject, pageSize);
+                    return false;
+                }
+            }
+        }, 1000);
+    }
+
     public void scrollToEnd(GGroupObject group, boolean toEnd) {
         syncDispatch(new ScrollToEnd(group.ID, toEnd), new ServerResponseCallback());
     }
@@ -512,11 +529,11 @@ public class GFormController extends ResizableSimplePanel {
     public <T extends Result> void syncDispatch(FormBoundAction<T> action, AsyncCallback<T> callback) {
         //todo: возможно понадобится сделать чтото более сложное как в
         //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
-        LoadingBlocker.getInstance().start();
+        blocker.start();
         dispatcher.execute(action, new WrapperAsyncCallbackEx<T>(callback) {
             @Override
             public void preProcess() {
-                LoadingBlocker.getInstance().stop();
+                blocker.stop();
             }
         });
     }
@@ -861,6 +878,11 @@ public class GFormController extends ResizableSimplePanel {
 
     public GSimpleChangePropertyDispatcher getSimpleDispatcher() {
         return simpleDispatcher;
+    }
+
+    @Override
+    public void getServerActionMessage(ErrorHandlingCallback<StringResult> callback) {
+        dispatcher.executePriorityAction(new GetRemoteActionMessage(), callback);
     }
 
     private static final class Change {

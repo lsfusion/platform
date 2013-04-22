@@ -96,4 +96,31 @@ public class FormDispatchAsync {
     public int getCurrentDispatchingRequestIndex() {
         return currentDispatchingAction != null ? currentDispatchingAction.getRequestIndex() : -1;
     }
+
+    public <A extends FormBoundAction<R>, R extends Result> void executePriorityAction(A action, AsyncCallback<R> callback) {
+        action.formSessionID = form.sessionID;
+        executeSpecial(action, callback);
+    }
+
+    private <A extends Action<R>, R extends Result> void executeSpecial(final A action, final AsyncCallback<R> callback) {
+        Log.debug("Executing action: " + action.toString());
+        final double startExecTime = Duration.currentTimeMillis();
+        gwtDispatch.execute(action, new AsyncCallbackEx<R>() {
+            @Override
+            public void preProcess() {
+                double execTime = Duration.currentTimeMillis() - startExecTime;
+                Log.debug("Executed action: " + action.toString() + " in " + (int) (execTime / 1000) + " ms.");
+            }
+
+            @Override
+            public void failure(Throwable caught) {
+                callback.onFailure(caught);
+            }
+
+            @Override
+            public void success(R result) {
+                callback.onSuccess(result);
+            }
+        });
+    }
 }

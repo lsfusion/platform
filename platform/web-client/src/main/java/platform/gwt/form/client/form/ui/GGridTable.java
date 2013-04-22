@@ -609,7 +609,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
         int newPageSize = tableHeight / getRowHeight() + 1;
         if (newPageSize != pageSize) {
-            form.changePageSizeLater(groupObject, newPageSize);
+            form.changePageSizeAfterUnlock(groupObject, newPageSize);
             pageSize = newPageSize;
         }
     }

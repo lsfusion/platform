@@ -103,6 +103,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         div.getStyle().setProperty("maxHeight", MAX_HEADER_HEIGHT, Style.Unit.PX);
         div.getStyle().setOverflow(Style.Overflow.HIDDEN);
         div.getStyle().setTextAlign(Style.TextAlign.CENTER);
+        div.getStyle().setWhiteSpace(Style.WhiteSpace.NOWRAP);
         div.setTitle(escapedCaption);
         if (sortDir != null) {
             ImageElement img = Document.get().createImageElement();
