@@ -147,32 +147,35 @@ FORM yearFromTo 'Год'
 
 DESIGN yearFromTo FROM DEFAULT{
     main {
-        preferredSize = (1024, 768);
-        PROPERTY (valY) { caption = 'Год на'; minimumCharWidth = 4; preferredCharWidth = 4; maximumCharWidth = 4; }
+        NEW year{
+            ADD PROPERTY (valY) { caption = 'Укажите на какой год скопировать значения (4 цифры)'; panelLabelAbove = TRUE; font = 'Tahoma bold 72'; minimumCharWidth = 4; preferredCharWidth = 4; maximumCharWidth = 4; }
+        }
+        ADD functions.box;
     }
 }
 
 
-//fillWastageTechnology 'Заполнить технологии на другой год' = ACTION (technology) {
-//
-//    FORM yearFromTo MODAL;
-//    IF formResult() == FormResult.ok THEN {
-//
-//        LOCAL newYear = INTEGER();
-//        SET newYear() <- chosenInteger('y');
-//
-//        FOR dataWastageTechnologyMaterialDate(technology, material, dateFrom) DO {
-//
-//            IF 1 == 2 THEN
-//                BREAK;
-//
-//            IF yearInDate(dateFrom) == (newYear() - 1) THEN {
-//                SET dataWastageTechnologyMaterialDate(technology, material, dateTo) <- dataWastageTechnologyMaterialDate(technology, material, dateFrom) WHERE dateTo == incrementYearDate(dateFrom);
-//            }
-//
-//        }
-//    }
-//} TOOLBAR;
+fillWastageTechnology 'Заполнить технологии на другой год' = ACTION (technology) {
+
+    FORM yearFromTo MODAL;
+    IF formResult() == FormResult.ok THEN {
+
+        LOCAL newYear = INTEGER();
+        SET newYear() <- chosenInteger('y');
+
+        FOR dataWastageTechnologyMaterialDate(technology, material, dateFrom) DO {
+
+            IF 1 == 2 THEN
+                BREAK;
+
+            IF yearInDate(dateFrom) == (newYear() - 1) THEN {
+                SET dataWastageTechnologyMaterialDate(technology, material, dateTo) <- dataWastageTechnologyMaterialDate(technology, material, dateFrom) WHERE dateTo == incrementYearDate(dateFrom);
+            }
+
+        }
+        EXEC apply();
+    }
+} TOOLBAR;
 
 FORM technologies 'Технологии'
 
@@ -180,7 +183,7 @@ FORM technologies 'Технологии'
     PROPERTIES(t)  READONLY name
 
     PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
-//    PROPERTIES (t) fillWastageTechnology
+    PROPERTIES (t) fillWastageTechnology
 
     OBJECTS m=Material
     PROPERTIES     READONLY nameMaterial(m), shortNameUOMMaterial(m), wastageTechnologyMaterial(t,m)
