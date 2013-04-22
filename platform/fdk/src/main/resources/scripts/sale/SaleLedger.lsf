@@ -31,7 +31,7 @@ inCustomerSku 'Кол-во продано' (legalEntity, sku)= GROUP SUM quantit
     BY customerSaleLedger(ledger), skuSaleLedger(ledger) PERSISTENT;
 prevInCustomerSku 'Были продажи (пред.)' (legalEntity, sku) = PREV(inCustomerSku(legalEntity, sku));
 
-sumSoldTypeExchangeSaleLedger 'Сумма продажи валюта' (typeExchange, saleLedger)= roundPriceCurrency((sumSaleLedger (saleLedger)/
+sumSoldTypeExchangeSaleLedger 'Сумма продажи валюта' (typeExchange, saleLedger)= roundPriceCurrency((sumSaleLedger (saleLedger)*
     rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stockSaleLedger(saleLedger)), dateSaleLedger(saleLedger))), currencyTypeExchange(typeExchange));
 
 
@@ -152,7 +152,7 @@ FORM saleLedger 'Продажи по позициям'
 
     OBJECTS s = SaleLedger
     PROPERTIES(s) READONLY dateSaleLedger, dateTimeSaleLedger, nameStockSaleLedger, nameCustomerSaleLedger, nameSkuSaleLedger, descriptionSaleLedger,
-                           quantitySaleLedger, costSumSkuLedger, markupSumSaleLedger, sumVATSaleLedger, sumSaleLedger, averagePriceSaleLedger
+                           quantitySaleLedger, costSumSaleLedger, markupSumSaleLedger, sumVATSaleLedger, sumSaleLedger, averagePriceSaleLedger
     PROPERTIES    READONLY sumSoldTypeExchangeSaleLedger (te, s)
     FILTERS isPostedSaleLedger(s)
     FILTERS dateSaleLedger(s) >= dFrom, dateSaleLedger(s) <= dTo

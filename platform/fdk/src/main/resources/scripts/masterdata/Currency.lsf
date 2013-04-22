@@ -80,8 +80,8 @@ DESIGN dialogTypeExchangeCurrency FROM DEFAULT {
             NEW row {
                 title = 'Валюты обмена';
                 childConstraints = TO THE RIGHT;
-                ADD PROPERTY(nameCurrencyTypeExchange(t)) { caption = 'Валюта (из)'; preferredCharWidth = 20;}
-                ADD PROPERTY(name(c)) { caption = 'Валюта (в)'; preferredCharWidth = 20;}
+                ADD PROPERTY(name(c)) { caption = 'Валюта (из)'; preferredCharWidth = 20;}
+                ADD PROPERTY(nameCurrencyTypeExchange(t)) { caption = 'Валюта (в)'; preferredCharWidth = 20;}
             }
         }
     }
