@@ -1,6 +1,7 @@
 package platform.client.form.tree;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
@@ -12,7 +13,6 @@ import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
 import platform.client.form.dispatch.EditPropertyDispatcher;
-import platform.client.form.dispatch.SimpleChangePropertyDispatcher;
 import platform.client.form.sort.MultiLineHeaderRenderer;
 import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.logics.ClientGroupObject;
@@ -32,15 +32,14 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 
+import static java.util.Collections.singletonList;
 import static platform.client.form.EditBindingMap.isEditableAwareEditEvent;
 
 public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher = new EditPropertyDispatcher(this);
-    private final SimpleChangePropertyDispatcher pasteDispatcher;
 
     private final EditBindingMap editBindingMap = new EditBindingMap();
 
@@ -77,7 +76,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         form = iform;
         treeGroup = itreeGroup;
         plainTreeMode = itreeGroup.plainTreeMode;
-        pasteDispatcher = form.getSimpleChangePropertyDispatcher();
 
         contextMenuHandler.install();
 
@@ -503,13 +501,15 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
         if (!isHierarchical(column) && !table.isEmpty() && !table.get(0).isEmpty()) {
-            ClientPropertyDraw property = getProperty(row, column);
-            ClientGroupObjectValue columnKey = getColumnKey(row, column);
+
+            final ClientPropertyDraw property = getProperty(row, column);
             if (property != null) {
                 try {
-                    Object parsedValue = property.parseString(form, columnKey, table.get(0).get(0), false);
-                    pasteDispatcher.changeProperty(parsedValue, property, columnKey, true);
-                } catch (ParseException ignored) {
+                    HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>> cells = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
+                    cells.put(property, singletonList(currentPath));
+                    form.pasteMulticellValue(cells, table.get(0).get(0));
+                } catch (IOException e) {
+                    Throwables.propagate(e);
                 }
             }
         }

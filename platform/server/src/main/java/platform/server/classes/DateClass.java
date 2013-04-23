@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.base.DateConverter;
+import platform.base.SystemUtils;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
@@ -14,7 +15,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.Format;
-import java.util.Calendar;
 
 public class DateClass extends DataClass<Date> {
 
@@ -96,7 +96,7 @@ public class DateClass extends DataClass<Date> {
 
     public static DateFormat getDateFormat() {
         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
-        dateFormat.setTimeZone(Calendar.getInstance().getTimeZone());  // todo [dale]: Нужно брать таймзону из бизнес-логики
+        dateFormat.setTimeZone(SystemUtils.getCurrentTimeZone());  // todo [dale]: Нужно брать таймзону из бизнес-логики
         return dateFormat;
     }
 

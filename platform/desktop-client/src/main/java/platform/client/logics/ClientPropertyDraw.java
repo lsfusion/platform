@@ -253,7 +253,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return sID;
     }
 
-    public Object parseString(ClientFormController form, ClientGroupObjectValue key, String s, boolean isDataChanging) throws ParseException {
+    public Object parseString(String s) throws ParseException {
         try {
             return baseType.parseString(s);
         } catch (Exception e) {

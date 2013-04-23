@@ -550,7 +550,7 @@ appliedMessage() = ACTION() {
     MESSAGE 'form apply message';
 }
 
-onChangeStoreName(document) = ACTION {
+onChangeDocumentName(document) = ACTION {
     REQUEST STRING[50] INPUT;
     SET storeName(document) <- requestedString();
 }
@@ -588,7 +588,7 @@ FORM documentArticle 'По документам (caption)' TITLE 'По доку�
 //                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS | SHORTCUT) <mappedAction>] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)] [EVENTID 'id']
 
     PROPERTIES(document) store, testPush, testPush2, copy, date,
-                         storeName ON CHANGE onChangeStoreName(document),
+                         storeName ON CHANGE onChangeDocumentName(document),
                          documentTypeString
     PROPERTIES name(article)
     PROPERTIES quantity(document, article)
@@ -884,6 +884,21 @@ DESIGN TestReadOnlyIf FROM DEFAULT {
     }
 }
 
+onChangeStoreName() = ACTION {
+    REQUEST INTEGER INPUT;
+
+    i() <- requestedInteger();
+    WHILE (i() > 0) DO {
+        i() <- i() - 1;
+        MESSAGE 'Tick';
+    }
+}
+
+FORM TestChangeWYS 'Тест CHANGEWYS'
+    OBJECTS s=Store
+    PROPERTIES(s) OBJVALUE, name ON CHANGE onChangeStoreName(), storeSizeCode
+;
+
 //////////////// INDEX STATEMENT //////////////////
 // Syntax:
 // INDEX propertyName1 [, ..., propertyNameN];
@@ -971,6 +986,7 @@ NAVIGATOR {
     ADD TestEvalActionForm;
     ADD TestTabs;
     ADD TestReadOnlyIf;
+    ADD TestChangeWYS;
 }
 
 //////////////// DESIGN STATEMENT /////////////////

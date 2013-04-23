@@ -12,7 +12,6 @@ import platform.base.col.interfaces.mutable.MOrderExclSet;
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
-import platform.interop.form.ServerResponse;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
 import platform.server.data.type.Type;
@@ -21,10 +20,7 @@ import platform.server.form.instance.Instantiable;
 import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.logics.property.ActionPropertyMapImplement;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
@@ -35,6 +31,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static platform.interop.form.ServerResponse.*;
 
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, ServerIdentitySerializable {
 
@@ -79,22 +77,27 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.toDraw = toDraw;
     }
 
-    public Type getChangeType(FormEntity form) {
-        Type type = null;
-        if(propertyObject instanceof CalcPropertyObjectEntity) {
-            ActionPropertyObjectEntity<?> changeAction = getEditAction(ServerResponse.CHANGE, form);
+    public DataClass getChangeType(FormEntity form) {
+        return getChangeType(CHANGE, form);
+    }
 
-            if(changeAction!=null)
+    public DataClass getChangeType(String actionSID, FormEntity form) {
+        Type type = null;
+        if (propertyObject instanceof CalcPropertyObjectEntity) {
+            ActionPropertyObjectEntity<?> changeAction = getEditAction(actionSID, form);
+
+            if (changeAction != null) {
                 type = changeAction.property.getSimpleRequestInputType();
+            }
         }
 
         assert type == null || type instanceof DataClass;
 
-        return type;
+        return (DataClass) type;
     }
 
     public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {
-        ActionPropertyObjectEntity<A> changeAction = (ActionPropertyObjectEntity<A>) getEditAction(ServerResponse.CHANGE, form);
+        ActionPropertyObjectEntity<A> changeAction = (ActionPropertyObjectEntity<A>) getEditAction(CHANGE, form);
         if(changeAction!=null)
             return changeAction.getAddRemove(form);
         return null;
@@ -103,14 +106,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ActionPropertyObjectEntity<?> getEditAction(String actionId, FormEntity entity) {
         // ?? тут или нет
         if (isReadOnly() &&
-                (actionId.equals(ServerResponse.CHANGE)
-                        || actionId.equals(ServerResponse.CHANGE_WYS)
-                        || actionId.equals(ServerResponse.EDIT_OBJECT)
-                        || actionId.equals(ServerResponse.GROUP_CHANGE))) {
+                (CHANGE.equals(actionId)
+                        || CHANGE_WYS.equals(actionId)
+                        || EDIT_OBJECT.equals(actionId)
+                        || GROUP_CHANGE.equals(actionId))) {
             return null;
         }
 
-        if(editActions!=null) {
+        if (editActions != null) {
             ActionPropertyObjectEntity editAction = editActions.get(actionId);
             if (editAction != null) {
                 return editAction;
@@ -118,11 +121,20 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         Property<P> property = propertyObject.property;
-        if (actionId.equals(ServerResponse.GROUP_CHANGE))
-            return getEditAction(ServerResponse.CHANGE, entity).getGroupChange();
+        if (GROUP_CHANGE.equals(actionId)) {
+            return getEditAction(CHANGE, entity).getGroupChange();
+        }
 
-        if (isSelector())
+        if (isSelector()) {
             return getSelectorAction(property, entity);
+        }
+
+        if (CHANGE_WYS.equals(actionId)) {
+            //если CHANGE_WYS не переопределён на уровне Property и CHANGE request'ает DataClass, то возвращаем CHANGE
+            if (!propertyObject.property.isChangeWYSOverriden() && getChangeType(entity) != null) {
+                return getEditAction(CHANGE, entity);
+            }
+        }
 
         ActionPropertyMapImplement<?, P> editActionImplement = propertyObject.property.getEditAction(actionId);
         return editActionImplement == null ? null : editActionImplement.mapObjects(propertyObject.mapping);

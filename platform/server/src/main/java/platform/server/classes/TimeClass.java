@@ -12,6 +12,7 @@ import java.sql.Time;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class TimeClass extends DataClass<Time> {
     public final static TimeClass instance = new TimeClass();
@@ -46,7 +47,7 @@ public class TimeClass extends DataClass<Time> {
 
     public Time parseString(String s) throws ParseException {
         try {
-            return (Time) getDefaultFormat().parseObject(s);
+            return new Time(((Date) getDefaultFormat().parseObject(s)).getTime());
         } catch (Exception e) {
             throw new ParseException("error parsing time", e);
         }

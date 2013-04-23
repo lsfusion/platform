@@ -70,7 +70,7 @@ public class DataPanelView extends JPanel implements PanelView {
                             ClientFormLayout focusLayout = SwingUtils.getClientFormlayout(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
                             ClientFormLayout curLayout = SwingUtils.getClientFormlayout(table);
                             if ((curLayout != null) && (curLayout.equals(focusLayout))) {
-                                forceChangeValue(event.getValue(), false);
+                                forceChangeValue(event.getValue());
                             }
                         }
                     });
@@ -90,9 +90,9 @@ public class DataPanelView extends JPanel implements PanelView {
         return o instanceof DataPanelView && ((DataPanelView) o).property.equals(property) && ((DataPanelView) o).columnKey.equals(columnKey);
     }
 
-    protected void forceChangeValue(Object value, boolean isChangeWYS) {
+    protected void forceChangeValue(Object value) {
         if (form.commitCurrentEditing()) {
-            simpleDispatcher.changeProperty(value, table.getProperty(), columnKey, isChangeWYS);
+            simpleDispatcher.changeProperty(value, table.getProperty(), columnKey);
         }
     }
 

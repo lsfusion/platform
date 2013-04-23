@@ -1,5 +1,6 @@
 package platform.client.form.grid;
 
+import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.client.Main;
@@ -700,19 +701,20 @@ public class GridTable extends ClientPropertyTable {
                     propertyList.add(propertyDraw);
                 }
 
-                List<List<Object>> pasteTable = new ArrayList<List<Object>>();
+                List<List<String>> pasteTable = new ArrayList<List<String>>();
                 for (List<String> row : table) {
-                    List<Object> pasteTableRow = new ArrayList<Object>();
+                    List<String> pasteTableRow = new ArrayList<String>();
                     int itemIndex = -1;
                     for (String item : row) {
                         itemIndex++;
                         if (itemIndex <= columnsToInsert - 1) {
                             ClientPropertyDraw property = propertyList.get(itemIndex);
-                            try {
-                                pasteTableRow.add(item == null ? null : property.parseString(getForm(), model.getColumnKey(itemIndex), item, true));
-                            } catch (ParseException e) {
-                                pasteTableRow.add(null);
-                            }
+//                            try {
+//                                pasteTableRow.add(item == null ? null : property.parseString(getForm(), model.getColumnKey(itemIndex), item, true));
+//                            } catch (ParseException e) {
+//                                pasteTableRow.add(null);
+//                            }
+                            pasteTableRow.add(item);
                         }
                     }
                     pasteTable.add(pasteTableRow);
@@ -723,7 +725,7 @@ public class GridTable extends ClientPropertyTable {
                 selectionController.resetSelection();
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Throwables.propagate(e);
         }
     }
 

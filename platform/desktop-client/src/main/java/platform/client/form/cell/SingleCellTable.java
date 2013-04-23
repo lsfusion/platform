@@ -1,5 +1,6 @@
 package platform.client.form.cell;
 
+import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
 import platform.client.Main;
 import platform.client.SwingUtils;
@@ -11,10 +12,13 @@ import platform.client.logics.ClientPropertyDraw;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.text.ParseException;
+import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 public abstract class SingleCellTable extends ClientPropertyTable {
 
@@ -85,12 +89,13 @@ public abstract class SingleCellTable extends ClientPropertyTable {
 
     public void pasteTable(List<List<String>> table) {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
+            final ClientPropertyDraw property = model.getProperty();
             try {
-                Object value = model.getProperty().parseString(getForm(), model.getColumnKey(), table.get(0).get(0), true);
-                if (value != null) {
-                    pasteValue(value);
-                }
-            } catch (ParseException ignored) {
+                HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>> cells = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
+                cells.put(property, singletonList(model.getColumnKey()));
+                getForm().pasteMulticellValue(cells, table.get(0).get(0));
+            } catch (IOException e) {
+                Throwables.propagate(e);
             }
         }
     }
@@ -105,8 +110,6 @@ public abstract class SingleCellTable extends ClientPropertyTable {
         rowHeight = height;
         super.setBounds(x, y, width, height);
     }
-
-    protected abstract void pasteValue(Object value);
 
     public abstract ClientFormController getForm();
 

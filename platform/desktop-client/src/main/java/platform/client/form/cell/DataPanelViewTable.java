@@ -22,10 +22,6 @@ public class DataPanelViewTable extends SingleCellTable {
         setProperty(property);
     }
 
-    protected void pasteValue(Object value) {
-        valueCellView.forceChangeValue(value, true);
-    }
-
     public boolean isPressed(int row, int column) {
         return false;
     }

@@ -7,14 +7,16 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.*;
-import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.FormEventType;
 import platform.interop.Scroll;
-import platform.interop.action.*;
+import platform.interop.action.ConfirmClientAction;
+import platform.interop.action.EditNotPerformedClientAction;
+import platform.interop.action.HideFormClientAction;
+import platform.interop.action.LogMessageClientAction;
 import platform.interop.form.ColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.GroupObjectUserPreferences;
@@ -67,6 +69,7 @@ import java.util.Map.Entry;
 import static platform.interop.ClassViewType.GRID;
 import static platform.interop.ClassViewType.HIDE;
 import static platform.interop.Order.*;
+import static platform.interop.form.ServerResponse.CHANGE_WYS;
 import static platform.server.form.instance.GroupObjectInstance.*;
 import static platform.server.logics.ServerResourceBundle.getString;
 
@@ -668,7 +671,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws SQLException {
+    public void pasteExternalTable(List<Integer> propertyIDs, List<List<String>> table) throws SQLException {
         List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
         for (Integer id : propertyIDs) {
             properties.add(getPropertyDraw(id));
@@ -684,11 +687,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         for (int i = 0; i < properties.size(); i++) {
             PropertyDrawInstance property = properties.get(i);
-            ValueClass valueClass = property.getValueClass();
 
-            ImOrderValueMap<ImMap<ObjectInstance, DataObject>, ObjectValue> mvPasteRows = executeList.mapItOrderValues();
+            ImOrderValueMap<ImMap<ObjectInstance, DataObject>, String> mvPasteRows = executeList.mapItOrderValues();
             for (int j = 0; j < executeList.size(); j++) {
-                mvPasteRows.mapValue(j, session.getObjectValue(valueClass, table.get(j).get(i)));
+                mvPasteRows.mapValue(j, table.get(j).get(i));
             }
 
             executePasteAction(property, mvPasteRows.immutableValueOrder());
@@ -709,27 +711,30 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return mResult.immutableOrder();
     }
 
-    public void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws SQLException {
+    public void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, String value) throws SQLException {
         for (Integer propertyId : cells.keySet()) { // бежим по ячейкам
             PropertyDrawInstance property = getPropertyDraw(propertyId);
-
-            ValueClass valueClass = property.getValueClass();
-            Object parseValue;
-            try {
-                parseValue = valueClass.getType().parseString((String) value);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
-            executePasteAction(property, readObjects(cells.get(propertyId)).toOrderMap(session.getObjectValue(valueClass, parseValue)));
+            executePasteAction(property, readObjects(cells.get(propertyId)).toOrderMap(value));
         }
     }
 
-    private void executePasteAction(PropertyDrawInstance property, ImOrderMap<ImMap<ObjectInstance, DataObject>, ObjectValue> pasteRows) throws SQLException {
+    private void executePasteAction(PropertyDrawInstance<?> property, ImOrderMap<ImMap<ObjectInstance, DataObject>, String> pasteRows) throws SQLException {
         if (!pasteRows.isEmpty()) {
-            assert property.toDraw.objects.equals(pasteRows.getKey(0).keys());
+            for (int i = 0, size = pasteRows.size(); i < size; i++) {
+                ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
+                String sValue = pasteRows.getValue(i);
+                ObjectValue value = null;
+                if (sValue != null) {
+                    try {
+                        DataClass changeType = property.entity.getChangeType(CHANGE_WYS, entity);
+                        if (changeType != null) {
+                            value = session.getObjectValue(changeType, changeType.parseString(sValue));
+                        }
+                    } catch (ParseException ignored) {
+                    }
+                }
 
-            for (int i=0,size=pasteRows.size();i<size;i++) {
-                executeEditAction(property, ServerResponse.CHANGE_WYS, pasteRows.getKey(i), pasteRows.getValue(i), null, true);
+                executeEditAction(property, CHANGE_WYS, key, value != null ? value : NullValue.instance, null, true);
             }
         }
     }

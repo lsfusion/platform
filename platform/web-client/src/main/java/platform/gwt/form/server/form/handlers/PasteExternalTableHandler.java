@@ -3,16 +3,12 @@ package platform.gwt.form.server.form.handlers;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.client.form.TableTransferHandler;
-import platform.client.logics.classes.*;
 import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.server.FormSessionObject;
 import platform.gwt.form.shared.actions.form.PasteExternalTable;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
-import platform.gwt.form.shared.view.GPropertyDraw;
-import platform.gwt.form.shared.view.classes.*;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,15 +32,14 @@ public class PasteExternalTableHandler extends ServerResponseActionHandler<Paste
             propertyIDs.add(action.properties.get(i).ID);
         }
 
-        List<List<Object>> dataTable = new ArrayList<List<Object>>();
+        List<List<String>> dataTable = new ArrayList<List<String>>();
         for (List<String> row : stringTable) {
-            List<Object> pasteTableRow = new ArrayList<Object>();
+            List<String> pasteTableRow = new ArrayList<String>();
             int itemIndex = -1;
             for (String item : row) {
                 itemIndex++;
                 if (itemIndex <= columnsToInsert - 1) {
-                    GPropertyDraw property = action.properties.get(itemIndex);
-                    pasteTableRow.add(parseString(property, item));
+                    pasteTableRow.add(item);
                 }
             }
             dataTable.add(pasteTableRow);
@@ -52,28 +47,5 @@ public class PasteExternalTableHandler extends ServerResponseActionHandler<Paste
 
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         return getServerResponseResult(form, form.remoteForm.pasteExternalTable(action.requestIndex, propertyIDs, dataTable));
-    }
-
-    private Object parseString(GPropertyDraw property, String s) {
-        if (s == null) {
-            return null;
-        }
-        try {
-            if (property.baseType instanceof GDateType) {
-                return ClientDateClass.instance.parseString(s);
-            } else if (property.baseType instanceof GDateTimeType) {
-                return ClientDateTimeClass.instance.parseString(s);
-            } else if (property.baseType instanceof GTimeType) {
-                return ClientTimeClass.instance.parseString(s);
-            } else if (property.baseType instanceof GDoubleType) {
-                return ClientDoubleClass.instance.parseString(s);
-            } else if (property.baseType instanceof GColorType) {
-                return ClientColorClass.instance.parseString(s);
-            } else {
-                return property.parseString(s);
-            }
-        } catch (ParseException e) {
-            return null;
-        }
     }
 }

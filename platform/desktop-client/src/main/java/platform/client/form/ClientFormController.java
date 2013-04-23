@@ -777,7 +777,7 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void pasteExternalTable(List<ClientPropertyDraw> propertyList, final List<List<Object>> table) throws IOException {
+    public void pasteExternalTable(List<ClientPropertyDraw> propertyList, final List<List<String>> table) throws IOException {
         final List<Integer> propertyIdList = new ArrayList<Integer>();
         for (ClientPropertyDraw propertyDraw : propertyList) {
             propertyIdList.add(propertyDraw.getID());
@@ -790,7 +790,7 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void pasteMulticellValue(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells, final Object value) throws IOException {
+    public void pasteMulticellValue(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells, final String value) throws IOException {
         final Map<Integer, List<Map<Integer, Object>>> reCells = new HashMap<Integer, List<Map<Integer, Object>>>();
         for (ClientPropertyDraw property : cells.keySet()) {
             List<Map<Integer, Object>> keys = new ArrayList<Map<Integer, Object>>();

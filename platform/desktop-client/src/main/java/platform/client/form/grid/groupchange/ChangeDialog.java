@@ -251,25 +251,6 @@ public class ChangeDialog extends JDialog {
                 super(new ClientGroupObjectValue());
             }
 
-            protected void pasteValue(Object value) {
-                selectedValue = value;
-
-                //todo: this is broken
-//                TableCellEditor editor = getCellEditor(0, 0);
-//                if (editor instanceof ClientAbstractCellEditor) {
-//                    PropertyEditor propertyEditor = ((ClientAbstractCellEditor) editor).propertyEditor;
-//                    if (propertyEditor instanceof ObjectPropertyEditor) {
-//                        try {
-//                            value = ((ObjectPropertyEditor) propertyEditor).getCellDisplayValue();
-//                        } catch (RemoteException re) {
-//                            throw new RuntimeException(ClientResourceBundle.getString("form.grid.group.groupchange.failed.to.obtain.displayed.value"), re);
-//                        }
-//                    }
-//                }
-
-                setValue(value);
-            }
-
             public boolean isPressed(int row, int column) {
                 return false;
             }

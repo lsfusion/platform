@@ -14,7 +14,6 @@ import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ClassViewType;
-import platform.interop.form.ServerResponse;
 import platform.server.Settings;
 import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
@@ -50,6 +49,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+
+import static platform.interop.form.ServerResponse.CHANGE_WYS;
+import static platform.interop.form.ServerResponse.GROUP_CHANGE;
 
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, ServerIdentitySerializable {
     public static final GetIndex<PropertyInterface> genInterface = new GetIndex<PropertyInterface>() {
@@ -333,14 +335,19 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return editAction;
         }
 
-        if (editActionSID.equals(ServerResponse.GROUP_CHANGE)) {
+        if (GROUP_CHANGE.equals(editActionSID)) {
             //будем определять на уровне PropertyDraw
             assert false;
-        } else if (editActionSID.equals(ServerResponse.CHANGE_WYS)) {
+        } else if (CHANGE_WYS.equals(editActionSID)) {
+            assert false;
 //            возвращаем дефолт
         }
 
         return getDefaultEditAction(editActionSID, filterProperty);
+    }
+
+    public boolean isChangeWYSOverriden() {
+        return getEditActions().containsKey(CHANGE_WYS);
     }
 
     public abstract ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty);

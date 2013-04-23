@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.Format;
+import java.text.SimpleDateFormat;
 
 public class DateTimeClass extends DataClass<Timestamp> {
 
@@ -100,14 +101,18 @@ public class DateTimeClass extends DataClass<Timestamp> {
 
     public Timestamp parseString(String s) throws ParseException {
         try {
-            return DateConverter.dateToStamp(DateClass.getDateFormat().parse(s));
+            return DateConverter.dateToStamp(getDateTimeFormat().parse(s));
         } catch (Exception e) {
             throw new ParseException("error parsing datetime", e);
         }
     }
 
+    public static DateFormat getDateTimeFormat() {
+        return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+    }
+
     public static String format(Date date) {
-        return DateClass.getDateFormat().format(date);
+        return getDateTimeFormat().format(date);
     }
 
     public String getSID() {

@@ -275,7 +275,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private ObjectInstance updateCurrentClass = null;
 
-    public ServerResponse pasteExternalTable(long requestIndex, final List<Integer> propertyIDs, final List<List<Object>> table) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, final List<Integer> propertyIDs, final List<List<String>> table) throws RemoteException {
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
@@ -284,7 +284,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public ServerResponse pasteMulticellValue(long requestIndex, final Map<Integer, List<Map<Integer, Object>>> cells, final Object value) throws RemoteException {
+    public ServerResponse pasteMulticellValue(long requestIndex, final Map<Integer, List<Map<Integer, Object>>> cells, final String value) throws RemoteException {
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {

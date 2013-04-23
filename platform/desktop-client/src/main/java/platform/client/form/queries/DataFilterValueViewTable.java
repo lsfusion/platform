@@ -51,7 +51,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     public void pasteTable(List<List<String>> table) {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
             try {
-                setValue(model.getProperty().parseString(logicsSupplier.getForm(), null, table.get(0).get(0), true));
+                setValue(model.getProperty().parseString(table.get(0).get(0)));
             } catch (ParseException ignored) {
             }
         }
