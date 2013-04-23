@@ -9,13 +9,10 @@ NAMESPACE Sale;
 @deriveDocumentCertificate(compliance, invoice, supplierStock, data);
 
 @defineDocumentCertificateObject(compliance, shipment, s, 'Сертификат соответствия');
-complianceShipment(s) += complianceInvoice(invoiceInvoiceShipment(s));
-dataComplianceShipmentDetail(detail) += dataComplianceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
-overFillInvoiceUserShipmentInvoice(s, i) += ACTION (s, i) {
-    SET complianceUserShipment(s) <- complianceInvoice(i);
-}
+complianceShipmentDetail(detail) += complianceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+
 overFillInvoiceUserShipmentDetailInvoiceDetail(s, i) += ACTION (s, i) {
-    SET dataComplianceUserShipmentDetail(s) <- dataComplianceInvoiceDetail(i);
+    SET dataComplianceUserShipmentDetail(s) <- complianceInvoiceDetail(i);
 }
 @defineDocumentCertificateConstraint(compliance, shipment, 'Сертификат соответствия');
 @deriveDocumentCertificate(compliance, shipment, supplierStock, data);

@@ -307,16 +307,16 @@ META defineInvoiceShipmentAction (form)
             EXEC overFillInvoiceUserShipmentInvoice(s, invoice);
 
             FOR invoiceInvoiceDetail(detail) == invoice  ADDOBJ d = UserShipmentDetail DO {
-                    SET userShipmentUserShipmentDetail(d) <- s;
-                    SET invoiceDetailUserShipmentDetail(d) <- detail;
-                    SET orderUserShipmentDetail(d) <- orderInvoiceDetail(detail);
+                SET userShipmentUserShipmentDetail(d) <- s;
+                SET invoiceDetailUserShipmentDetail(d) <- detail;
+                SET orderUserShipmentDetail(d) <- orderInvoiceDetail(detail);
 
-                    SET dataCustomerStockShipmentDetail(d) <- dataCustomerStockInvoiceDetail(detail);
-                    SET dataSupplierStockShipmentDetail(d) <- dataSupplierStockInvoiceDetail(detail);
+                SET dataCustomerStockShipmentDetail(d) <- dataCustomerStockInvoiceDetail(detail);
+                SET dataSupplierStockShipmentDetail(d) <- dataSupplierStockInvoiceDetail(detail);
 
-                    SET skuUserShipmentDetail(d) <- skuInvoiceDetail(detail);
-                    SET quantityUserShipmentDetail (d) <- toShipInvoiceDetail(detail);
-                    EXEC overFillInvoiceUserShipmentDetailInvoiceDetail(d, detail);
+                SET skuUserShipmentDetail(d) <- skuInvoiceDetail(detail);
+                SET quantityUserShipmentDetail (d) <- toShipInvoiceDetail(detail);
+                EXEC overFillInvoiceUserShipmentDetailInvoiceDetail(d, detail);
             }
 
             FORM userShipment OBJECTS s = s MANAGESESSION DOCKEDMODAL;
@@ -328,7 +328,7 @@ META defineInvoiceShipmentAction (form)
     ;
     EXTEND DESIGN form {
         actionContainer{
-            NEW invoiceContainer{
+            NEW shipmentContainer{
                 title = 'Поставка';
                 ADD PROPERTY(moveUserShipmentInvoice);
             }

@@ -124,7 +124,7 @@ moveUserOrderOrder 'Создать заказ (закупка)' =  ACTION (order
         SET Purchase.showPackUserOrder(o) <- showPackOrder(order);
         SET Purchase.closeDateUserOrder(o) <- closeDateOrder(order);
         SET Purchase.isDataClosedUserOrder(o) <- isDataClosedOrder(order);
-
+        SET Purchase.operationUserOrder(o) <- operationOrder(order);
 
         FOR orderOrderDetail(detail)==order ADDOBJ d = Purchase.UserOrderDetail DO {
 

@@ -228,8 +228,8 @@ Purchase.currencyInvoice (invoice) += currencyPurchaseInvoice(invoice);
 agreementPurchaseInvoice  (purchaseInvoice) = agreementInvoice(invoicePurchaseInvoice(purchaseInvoice));
 Purchase.agreementInvoice (invoice) += agreementPurchaseInvoice(invoice);
 
-priceListTypeIPurchaseInvoice  (purchaseInvoice) = priceListTypeInvoice(invoicePurchaseInvoice(purchaseInvoice));
-Purchase.priceListTypeInvoice (invoice) += priceListTypeIPurchaseInvoice(invoice);
+priceListTypePurchaseInvoice  (purchaseInvoice) = priceListTypeInvoice(invoicePurchaseInvoice(purchaseInvoice));
+Purchase.priceListTypeInvoice (invoice) += priceListTypePurchaseInvoice(invoice);
 
 @defineDocumentDescription(purchaseInvoice, PurchaseInvoiceDetail, seriesNumberPurchaseInvoice, 'Поставка на основе поставки ');
 Purchase.descriptionInvoice (invoice) += descriptionPurchaseInvoice(invoice);
@@ -268,4 +268,66 @@ invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(
 // -- Операция
 @defineOperationProperty(createPurchaseInvoice, 'Накладную (закупка)', createContainer);
 @deriveDocumentOperationProperty(UserInvoice, createPurchaseInvoice);
+
+//-- Действие
+
+overFillInvoiceUserInvoiceDetailInvoiceDetail = ABSTRACT ACTION (userDetail, detail);
+moveUserInvoiceInvoice 'Создать накладную (закупка)' =  ACTION (invoice) NEWSESSION{
+
+    FOR ADDOBJ i = Purchase.UserInvoice DO {
+
+        SET Purchase.agreementUserInvoice(i) <- agreementInvoice(invoice);
+        SET Purchase.priceListTypeUserInvoice(i) <- priceListTypeInvoice(invoice);
+        SET Purchase.supplierUserInvoice(i) <- supplierInvoice(invoice);
+        SET Purchase.customerUserInvoice(i) <- customerInvoice(invoice);
+        SET Purchase.supplierStockUserInvoice(i) <- supplierStockInvoice(invoice);
+        SET Purchase.customerStockUserInvoice(i) <- customerStockInvoice(invoice);
+        SET numberObject(i) <- numberInvoice(invoice) WHERE i IS Purchase.UserInvoice;
+        SET seriesObject(i) <- seriesInvoice(invoice) WHERE i IS Purchase.UserInvoice;
+        SET Purchase.isPostedUserInvoice(i) <- isPostedInvoice(invoice);
+        SET Purchase.noteUserInvoice(i) <- noteInvoice(invoice);
+        SET Purchase.currencyUserInvoice(i) <- currencyInvoice(invoice);
+        SET Purchase.contractSkuUserInvoice(i) <- contractSkuInvoice(invoice);
+        SET Purchase.isCommissionUserInvoice(i) <- isCommissionInvoice(invoice);
+        SET Purchase.showPackUserInvoice(i) <- showPackInvoice(invoice);
+        SET Purchase.operationUserInvoice(o) <- operationInvoice(invoice);
+
+        FOR invoiceInvoiceDetail(detail)==invoice ADDOBJ d = Purchase.UserInvoiceDetail DO {
+
+            SET Purchase.userInvoiceUserInvoiceDetail(d) <- i;
+
+            SET Purchase.priceListTypeUserInvoiceDetail(d) <- priceListTypeInvoiceDetail(detail);
+            SET Purchase.dataSupplierStockUserInvoiceDetail(d) <- dataSupplierStockInvoiceDetail(detail);
+            SET Purchase.dataCustomerStockUserInvoiceDetail(d) <- dataCustomerStockInvoiceDetail(detail);
+
+            SET Purchase.skuUserInvoiceDetail(d) <- skuInvoiceDetail(detail);
+            SET Purchase.quantityUserInvoiceDetail (d) <- quantityInvoiceDetail(detail);
+            SET Purchase.VATUserInvoiceDetail (d) <- VATInvoiceDetail(detail);
+            SET Purchase.valueVATUserInvoiceDetail (d) <- valueVATInvoiceDetail(detail);
+            SET Purchase.priceUserInvoiceDetail (d) <- priceInvoiceDetail(detail);
+            SET Purchase.invoicePriceUserInvoiceDetail (d) <- invoicePriceInvoiceDetail(detail);
+
+            SET Purchase.barcodePackUserInvoiceDetail (d) <- barcodePackInvoiceDetail(detail);
+            SET Purchase.amountPackUserInvoiceDetail (d) <- amountPackInvoiceDetail(detail);
+            SET Purchase.packQuantityUserInvoiceDetail (d) <- packQuantityInvoiceDetail(detail);
+
+            SET Purchase.batchUserInvoiceDetail(d) <- batchInvoiceDetail(detail);
+            EXEC overFillInvoiceUserInvoiceDetailInvoiceDetail(d,detail);
+        }
+
+    FORM Purchase.userInvoice OBJECTS i = i MANAGESESSION DOCKEDMODAL;
+    }
+} TOOLBAR;
+
+EXTEND FORM invoices
+    PROPERTIES(i) moveUserInvoiceInvoice
+;
+EXTEND DESIGN invoices {
+    actionContainer{
+        NEW invoiceContainer{
+            title = 'Накладная';
+            ADD PROPERTY(moveUserInvoiceInvoice);
+        }
+    }
+}
 

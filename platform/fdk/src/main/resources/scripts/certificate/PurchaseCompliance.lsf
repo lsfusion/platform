@@ -6,13 +6,10 @@ NAMESPACE Purchase;
 
 @defineDocumentCertificateObject(compliance, invoice, i, 'Сертификат соответствия');
 @defineDocumentCertificateObject(compliance, shipment, s, 'Сертификат соответствия');
-complianceShipment(s) += complianceInvoice(invoiceInvoiceShipment(s));
-dataComplianceShipmentDetail(detail) += dataComplianceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
-overFillInvoiceUserShipmentInvoice(s, i) += ACTION (s, i) {
-    SET complianceUserShipment(s) <- complianceInvoice(i);
-}
+complianceShipmentDetail(detail) += complianceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+
 overFillInvoiceUserShipmentDetailInvoiceDetail(s, i) += ACTION (s, i) {
-    SET dataComplianceUserShipmentDetail(s) <- dataComplianceInvoiceDetail(i);
+    SET dataComplianceUserShipmentDetail(s) <- complianceInvoiceDetail(i);
 }
 
 complianceBatch (batch) += complianceShipmentDetail(shipmentDetailShipmentBatch(batch));
