@@ -41,6 +41,7 @@ isSetNotNullProperty 'Не может быть null' = DATA BOOLEAN (Property);
 signatureProperty 'Сигнатура' = DATA STRING[100] (Property);
 returnProperty 'Возвращаемый класс' = DATA STRING[100] (Property);
 classProperty 'Класс свойства' = DATA STRING[100] (Property);
+complexityProperty 'Сложность свойства' = DATA LONG (Property);
 captionProperty 'Заголовок' = DATA STRING[250] (Property) IN base;
 propertySID 'Свойство' (sid) = GROUP AGGR property BY SIDProperty(property) WHERE property IS Property;
 
@@ -235,11 +236,11 @@ FORM forms 'Формы'
 
 FORM properties 'Свойства'
     OBJECTS p=Property
-    PROPERTIES(p) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    PROPERTIES(p) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     TREE treePropertiesObject tps=PropertyGroup, ps=Property PARENT parentPropertyGroup
     PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumb1, dumb1, dumb1, parentPropertyGroup, numberPropertyGroup, dumb1, dumb1, dumb1, dumb1
-    PROPERTIES(ps) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    PROPERTIES(ps) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     ORDER BY numberProperty
     ORDER BY numberPropertyGroup(tps)

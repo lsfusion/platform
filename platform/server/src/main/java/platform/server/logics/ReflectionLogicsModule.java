@@ -3,6 +3,7 @@ package platform.server.logics;
 import org.antlr.runtime.RecognitionException;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.LogicalClass;
+import platform.server.classes.LongClass;
 import platform.server.classes.StringClass;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
@@ -42,6 +43,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP signatureProperty;
     public LCP returnProperty;
     public LCP classProperty;
+    public LCP complexityProperty;
     public LCP captionProperty;
     public LCP propertySID;
 
@@ -166,6 +168,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         signatureProperty = getLCPByName("signatureProperty");
         returnProperty = getLCPByName("returnProperty");
         classProperty = getLCPByName("classProperty");
+        complexityProperty = getLCPByName("complexityProperty");
         captionProperty = getLCPByName("captionProperty");
         propertySID = getLCPByName("propertySID");
 

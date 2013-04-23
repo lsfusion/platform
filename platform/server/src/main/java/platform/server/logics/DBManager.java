@@ -455,6 +455,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         ImportField signaturePropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
         ImportField returnPropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
         ImportField classPropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
+        ImportField complexityPropertyField = new ImportField(LongClass.instance);
 
         ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertySID.getMapping(sidPropertyField));
 
@@ -464,8 +465,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 String commonClasses = "";
                 String returnClass = "";
                 String classProperty = "";
+                Long complexityProperty = null;
                 try {
                     classProperty = property.getClass().getSimpleName();
+                    if(property instanceof CalcProperty) {
+                        complexityProperty = ((CalcProperty)property).getExpr(property.getMapKeys(), Property.defaultModifier).getComplexity(false);
+                    }
                     returnClass = property.getValueClass().getSID();
                     for (Object cc : property.getInterfaceClasses().valueIt()) {
                         if (cc instanceof CustomClass)
@@ -481,7 +486,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     commonClasses = "";
                 }
                 dataProperty.add(asList((Object) property.getSID(), property.caption, property.loggable ? true : null,
-                                        property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null, property instanceof CalcProperty && ((CalcProperty) property).setNotNull ? true : null, commonClasses, returnClass, classProperty));
+                        property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
+                        property instanceof CalcProperty && ((CalcProperty) property).setNotNull ? true : null,
+                        commonClasses, returnClass, classProperty, complexityProperty));
             }
         }
 
@@ -494,11 +501,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         properties.add(new ImportProperty(signaturePropertyField, reflectionLM.signatureProperty.getMapping(keyProperty)));
         properties.add(new ImportProperty(returnPropertyField, reflectionLM.returnProperty.getMapping(keyProperty)));
         properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(complexityPropertyField, reflectionLM.complexityProperty.getMapping(keyProperty)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
         deletes.add(new ImportDelete(keyProperty, LM.is(reflectionLM.property).getMapping(keyProperty), false));
 
-        ImportTable table = new ImportTable(asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField, classPropertyField), dataProperty);
+        ImportTable table = new ImportTable(asList(sidPropertyField, captionPropertyField, loggablePropertyField,
+                storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField,
+                classPropertyField, complexityPropertyField), dataProperty);
 
         try {
             DataSession session = createSession();
