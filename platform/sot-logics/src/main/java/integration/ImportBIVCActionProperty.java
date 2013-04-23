@@ -13,9 +13,12 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.Date;
+import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -107,17 +110,17 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                     case 12:
                         String[] splittedLine = reader.readLine().split(":");
                         group3ID = splittedLine.length > 0 ? splittedLine[0] : null;
-                        group3Name = splittedLine.length > 1 ? splittedLine[1] : null;
+                        group3Name = splittedLine.length > 1 ? splittedLine[1] : group3ID;
                         break;
                     case 13:
                         splittedLine = reader.readLine().split(":");
                         group2ID = splittedLine.length > 0 ? splittedLine[0] : null;
-                        group2Name = splittedLine.length > 1 ? splittedLine[1] : null;
+                        group2Name = splittedLine.length > 1 ? splittedLine[1] : group2ID;
                         break;
                     case 14:
                         splittedLine = reader.readLine().split(":");
                         group1ID = splittedLine.length > 0 ? splittedLine[0] : null;
-                        group1Name = splittedLine.length > 1 ? splittedLine[1] : null;
+                        group1Name = splittedLine.length > 1 ? splittedLine[1] : group1ID;
                         break;
                     case 18:
                         String itemName = reader.readLine().trim();
@@ -220,7 +223,12 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         if ((itemName != null) && (!"".equals(itemName))) {
                             String groupID = (group1ID == null ? "" : (group1ID + "/")) + group2ID + "/" + group3ID + "/" + "ВСЕ";
                             String d = reader.readLine().trim();
-                            java.sql.Date date = "".equals(d) ? null : new java.sql.Date(Long.parseLong(d));
+                            Date date;
+                            try {
+                                date = "".equals(d) ? null : new Date(DateUtils.parseDate(d, new String[]{"MM/dd/yyyy"}).getTime());
+                            } catch (ParseException e) {
+                                date = null;
+                            }
                             itemsList.add(new Item(itemID, groupID, itemName, uomName, uomShortName, uomID, null, null,
                                     nameCountry, null, null, date, null, null, null, null, retailVAT, null, null, null, null,
                                     baseMarkup, retailMarkup, null, null));
@@ -304,7 +312,12 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                             price = manufacturingPrice * (100 - supplierMarkup) / 100;
                             wholesalePrice = (manufacturingPrice + chargePrice) * (100 + baseMarkup) / 100;
                             String d = reader.readLine().trim();
-                            java.sql.Date date = "".equals(d) ? null : new java.sql.Date(Long.parseLong(d));
+                            Date date;
+                            try {
+                                date = "".equals(d) ? null : new Date(DateUtils.parseDate(d, new String[]{"MM/dd/yyyy"}).getTime());
+                            } catch (ParseException e) {
+                                date = null;
+                            }
                             userInvoiceDetailsList.add(new UserInvoiceDetail(number, "AA", null, true, sid,
                                     date, itemID, false, quantity, supplierID, customerWarehouseID,
                                     supplierWarehouseID, price, chargePrice, manufacturingPrice, wholesalePrice,
