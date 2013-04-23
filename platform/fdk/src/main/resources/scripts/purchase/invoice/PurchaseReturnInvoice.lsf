@@ -23,7 +23,7 @@ NAMESPACE PurchaseReturn;
 @defineInvoiceStockDestination(customerStock, supplierStock);
 
 // вторая валюта
-@defineInvoiceHomeCurrency(invoice);
+@defineInvoiceHomeCurrency();
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 

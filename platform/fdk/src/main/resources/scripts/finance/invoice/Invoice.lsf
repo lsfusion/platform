@@ -566,49 +566,49 @@ META defineInvoiceStockDestination(fromStock, toStock)
 END
 
 // вторая валюта
-META defineInvoiceHomeCurrency(invoice)
-    isHomeCurrencyInvoice 'Конвертация' = DATA BOOLEAN(###invoice) IN documentPrmGroup;
+META defineInvoiceHomeCurrency(dumb)
+    isHomeCurrencyInvoice 'Конвертация' = DATA BOOLEAN(Invoice) IN documentPrmGroup;
 
-    homeCurrencyInvoice = ABSTRACT Currency(###invoice);
-    homeCurrencyUserInvoice = DATA Currency(User###invoice);
-    homeCurrencyInvoice(invoice) += homeCurrencyUserInvoice(invoice);
-    nameHomeCurrencyInvoice 'Валюта (пост.)' (invoice) = name(homeCurrencyInvoice(invoice));
+    homeCurrencyInvoice = ABSTRACT Currency(Invoice);
+    homeCurrencyUserInvoice = DATA Currency(UserInvoice);
+    homeCurrencyInvoice(i) += homeCurrencyUserInvoice(i);
+    nameHomeCurrencyInvoice 'Валюта (пост.)' (i) = name(homeCurrencyInvoice(i));
 
-    typeExchangeInvoice = ABSTRACT TypeExchange(###invoice);
-    typeExchangeUserInvoice = DATA TypeExchange(User###invoice);
-    typeExchangeInvoice(invoice) += typeExchangeUserInvoice(invoice);
-    nameTypeExchangeInvoice 'Тип обмена' (invoice) = name(typeExchangeInvoice(invoice));
+    typeExchangeInvoice = ABSTRACT TypeExchange(Invoice);
+    typeExchangeUserInvoice = DATA TypeExchange(UserInvoice);
+    typeExchangeInvoice(i) += typeExchangeUserInvoice(i);
+    nameTypeExchangeInvoice 'Тип обмена' (i) = name(typeExchangeInvoice(i));
 
-    dateRateExchangeInvoice 'Дата конвертации' = ABSTRACT DATE(###invoice);
+    dateRateExchangeInvoice 'Дата конвертации' = ABSTRACT DATE(Invoice);
+    dateRateExchangeUserInvoice 'Дата конвертации' = DATA DATE(UserInvoice);
+    dateRateExchangeInvoice(i) += dateRateExchangeUserInvoice(i);
 
-    dateRateExchangeUserInvoice 'Дата конвертации' = DATA DATE(User###invoice);
-    dateRateExchangeInvoice(invoice) += dateRateExchangeUserInvoice(invoice);
+    dateRateExchangeUserInvoice(i) <- dateInvoice(i) WHEN CHANGED (dateInvoice(i));
 
-    dateRateExchangeUserInvoice(user###invoice) <- dateInvoice(user###invoice) WHEN CHANGED (dateInvoice(user###invoice));
+    rateExchangeInvoice 'Курс' = ABSTRACT NUMERIC[14,3](Invoice);
+    rateExchangeUserInvoice 'Курс' = DATA NUMERIC[14,3](UserInvoice);
+    rateExchangeInvoice(i) += rateExchangeUserInvoice(i);
 
-    calcRateExchangeInvoice 'Курс' (invoice) = rateTypeExchangeCurrencyDate(typeExchangeInvoice(invoice), currencyInvoice(invoice), dateRateExchangeInvoice(invoice));
+    rateExchangeUserInvoice(i) <- rateTypeExchangeCurrencyDate(typeExchangeUserInvoice(i),
+                                                                     currencyUserInvoice(i),
+                                                                     dateRateExchangeUserInvoice(i))
+                                        WHEN CHANGED (dateRateExchangeUserInvoice(i)) OR
+                                             CHANGED (typeExchangeUserInvoice(i)) OR
+                                             CHANGED (currencyUserInvoice(i));
 
-    rateExchangeInvoice 'Курс' = ABSTRACT NUMERIC[14,3](###invoice);
-    rateExchangeUserInvoice 'Курс' = DATA NUMERIC[14,3](User###invoice);
-    rateExchangeInvoice(invoice) += rateExchangeUserInvoice(invoice);
+    homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](InvoiceDetail);
+    homePriceUserInvoiceDetail 'Цена (пост.)' = DATA NUMERIC[14,3](UserInvoiceDetail);
+    homePriceInvoiceDetail(d) += homePriceUserInvoiceDetail(d);
 
-    rateExchangeUserInvoice(invoice) <- calcRateExchangeInvoice(invoice) WHEN CHANGED (dateRateExchangeInvoice(invoice)) OR
-                                                                              CHANGED (typeExchangeInvoice(invoice)) OR
-                                                                              CHANGED (currencyInvoice(invoice));
+    homePriceUserInvoiceDetail(d) <- roundPriceCurrency(priceUserInvoiceDetail(d) *
+                                                        rateExchangeUserInvoice(userInvoiceUserInvoiceDetail(d)),
+                                                        homeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(d)))
+                                                   WHEN CHANGED (dateUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
+                                                        CHANGED (homeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
+                                                        CHANGED (typeExchangeUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
+                                                        CHANGED (priceUserInvoiceDetail(d));
 
-    roundCurrencyInvoice(number, invoice) = roundPriceCurrency(number, homeCurrencyInvoice(invoice));
-    ratePriceInvoiceDetail 'Цена (пост.)' (invoice##Detail) = roundCurrencyInvoice(priceInvoiceDetail(invoice##Detail)*rateExchangeInvoice(invoiceInvoiceDetail(invoice##Detail)), invoiceInvoiceDetail(invoice##Detail));
-
-    homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](###invoice##Detail);
-    homePriceUserInvoiceDetail 'Цена (пост.)' = DATA NUMERIC[14,3](User###invoice##Detail);
-    homePriceInvoiceDetail(invoiceDetail) += homePriceUserInvoiceDetail(invoiceDetail);
-
-    homePriceUserInvoiceDetail(invoice##Detail) <- ratePriceInvoiceDetail(invoice##Detail) WHEN CHANGED (dateInvoice(invoiceInvoiceDetail(invoice##Detail))) OR
-                                                                                                CHANGED (homeCurrencyUserInvoice(invoiceInvoiceDetail(invoice##Detail))) OR
-                                                                                                CHANGED (typeExchangeUserInvoice(invoiceInvoiceDetail(invoice##Detail))) OR
-                                                                                                CHANGED (priceInvoiceDetail(invoice##Detail));
-
-    sumHomeInvoiceDetail 'Сумма (пост.)' (invoice##Detail) = quantityInvoiceDetail(invoice##Detail) * homePriceInvoiceDetail(invoice##Detail);
+    sumHomeInvoiceDetail 'Сумма (пост.)' (d) = quantityInvoiceDetail(d) * homePriceInvoiceDetail(d);
 
     EXTEND FORM userInvoice
         PROPERTIES(i)                          isHomeCurrencyInvoice BEFORE nameAgreementUserInvoice

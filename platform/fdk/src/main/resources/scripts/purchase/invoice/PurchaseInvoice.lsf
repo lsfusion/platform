@@ -17,7 +17,7 @@ NAMESPACE Purchase;
 @defineInvoiceStockDestination(supplierStock, customerStock);
 
 // вторая валюта
-@defineInvoiceHomeCurrency(invoice);
+@defineInvoiceHomeCurrency();
 
 @deriveDocumentDetailVAT (userInvoice, , date,  sku, customerStock); // записываем ставку
 
