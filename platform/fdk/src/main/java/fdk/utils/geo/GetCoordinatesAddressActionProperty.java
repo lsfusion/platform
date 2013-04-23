@@ -5,6 +5,9 @@ import com.google.code.geocoder.GeocoderRequestBuilder;
 import com.google.code.geocoder.model.GeocodeResponse;
 import com.google.code.geocoder.model.GeocoderRequest;
 import com.google.code.geocoder.model.GeocoderResult;
+import org.json.JSONException;
+import org.json.JSONObject;
+import platform.server.classes.LogicalClass;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
@@ -15,42 +18,70 @@ import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Iterator;
 
 public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface POIInterface;
+    private final ClassPropertyInterface mapProviderInterface;
 
     public GetCoordinatesAddressActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{StringClass.get(255)});
+        super(LM, new ValueClass[]{StringClass.get(255), LM.findClassByCompoundName("MapProvider")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         POIInterface = i.next();
+        mapProviderInterface = i.next();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
             DataSession session = context.getSession();
             DataObject fullAddress = context.getKeyValue(POIInterface);
+            DataObject mapProvider = context.getKeyValue(mapProviderInterface);
 
+            Double longitude = null;
+            Double latitude = null;
             String address = (String) fullAddress.object;
             if (address != null) {
-                final Geocoder geocoder = new Geocoder();
-                GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress((String) fullAddress.object).setLanguage("ru").getGeocoderRequest();
-                GeocodeResponse geocoderResponse = geocoder.geocode(geocoderRequest);
 
-                if (geocoderResponse != null && geocoderResponse.getResults().size() != 0) {
-                    GeocoderResult result = geocoderResponse.getResults().get(0);
+                if (((String)getLCP("classSID").read(session, mapProvider)).contains("yandex")) {
 
-                    double longitude = result.getGeometry().getLocation().getLng().doubleValue();
-                    double latitude = result.getGeometry().getLocation().getLat().doubleValue();
+                    String url = "http://geocode-maps.yandex.ru/1.x/?geocode=" + address.trim().replace(" ", "+") + "&results=1&format=json";
 
-                    getLCP("readLatitude").change(latitude, session);
-                    getLCP("readLongitude").change(longitude, session);
+                    final JSONObject response = JsonReader.read(url);
+                    if (response != null) {
+                        JSONObject objectCollection = response.getJSONObject("response").getJSONObject("GeoObjectCollection");
+                        JSONObject featureMember = (JSONObject) objectCollection.getJSONArray("featureMember").get(0);
+                        JSONObject point = featureMember.getJSONObject("GeoObject").getJSONObject("Point");
+                        String position[] = point.getString("pos").split(" ");
+
+                        longitude = Double.parseDouble(position[0]);
+                        latitude = Double.parseDouble(position[1]);
+                    }
+                } else {
+
+                    final Geocoder geocoder = new Geocoder();
+                    GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress(address).setLanguage("ru").getGeocoderRequest();
+                    GeocodeResponse geocoderResponse = geocoder.geocode(geocoderRequest);
+
+                    if (geocoderResponse != null && geocoderResponse.getResults().size() != 0) {
+                        GeocoderResult result = geocoderResponse.getResults().get(0);
+
+                        longitude = result.getGeometry().getLocation().getLng().doubleValue();
+                        latitude = result.getGeometry().getLocation().getLat().doubleValue();
+                    }
                 }
+
+                getLCP("readLatitude").change(latitude, session);
+                getLCP("readLongitude").change(longitude, session);
             }
-        } catch (SQLException e) {
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (MalformedURLException ignored) {
+        } catch (IOException ignored) {
+        } catch (JSONException ignored) {
+        } catch (SQLException ignored) {
+        } catch (ScriptingErrorLog.SemanticErrorException ignored) {
         }
     }
 }

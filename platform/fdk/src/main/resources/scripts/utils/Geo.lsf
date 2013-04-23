@@ -7,6 +7,16 @@ TABLE POI(POI);
 
 autoSynchronizeCoordinates 'Синхронизировать координаты' = DATA BOOLEAN ();
 
+CLASS MapProvider 'Использовать карты' {
+    google 'Google',
+    yandex 'Yandex'
+} : Named;
+
+userMapProvider = DATA MapProvider ();
+mapProvider = MapProvider.yandex OR userMapProvider();
+
+nameUserMapProvider 'Использовать карты' () = name(userMapProvider());
+
 namePOI 'Название'= ABSTRACT STRING[200] (POI) PERSISTENT;
 
 countryPOI = ABSTRACT Country (POI) PERSISTENT;
@@ -21,7 +31,8 @@ longitudePOI 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);
 readLatitude 'Координата X' = DATA SESSION NUMERIC[10,5] ();
 readLongitude 'Координата Y' = DATA SESSION NUMERIC[10,5] ();
 
-getCoordinatesAddress = ACTION CUSTOM 'fdk.utils.geo.GetCoordinatesAddressActionProperty';
+getCoordinatesAddressMapProvider = ACTION CUSTOM 'fdk.utils.geo.GetCoordinatesAddressActionProperty';
+getCoordinatesAddress = getCoordinatesAddressMapProvider(address, mapProvider());
 
 changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
 
@@ -33,10 +44,11 @@ changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
 WHEN SESSION (SETCHANGED(countryPOI(POI)) OR SETCHANGED(addressPOI(POI))) AND autoSynchronizeCoordinates() DO EXEC changeCoordinatesPOI(POI);
 
 // Показать на карте одну точку
-showOnMap 'Показать на карте'= ACTION CUSTOM 'fdk.utils.geo.ShowOnMapActionProperty';
+showOnMapMapProvider 'Показать на карте'= ACTION CUSTOM 'fdk.utils.geo.ShowOnMapActionProperty';
+showOnMap = showOnMapMapProvider (latitude, longitude, mapProvider(), address);
 
 showOnMapPOI 'Показать на карте'= ACTION (POI) {
-    EXEC showOnMap (latitudePOI (POI), longitudePOI (POI));
+    EXEC showOnMap (latitudePOI (POI), longitudePOI (POI), addressPOI(POI));
 }
 
 // Показать на карте путь
@@ -50,12 +62,13 @@ startPathPOI 'Место старта'= DATA SESSION POI();
 calculatePath 'Рассчитать путь'= ACTION CUSTOM 'fdk.utils.geo.CalculatePathActionProperty';
 
 EXTEND FORM options
-PROPERTIES() autoSynchronizeCoordinates
+PROPERTIES() autoSynchronizeCoordinates, nameUserMapProvider
 ;
 
 EXTEND DESIGN options {
     commons {
         ADD PROPERTY(autoSynchronizeCoordinates);
+        ADD PROPERTY(nameUserMapProvider);
     }
 }
 
