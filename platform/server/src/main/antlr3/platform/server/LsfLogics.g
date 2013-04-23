@@ -2082,7 +2082,7 @@ eventStatement
 @after {
 	if (inPropParseState()) {
 		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $et.event);
-	}
+	} 
 }
 	:	'WHEN'
 		et=baseEvent
@@ -2092,7 +2092,7 @@ eventStatement
 		(	'ORDER' ('DESC' { descending = true; })?
 			orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); }
 		)?
-		';'
+		( {!self.semicolonNeeded()}?=>  | ';')
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2114,6 +2114,7 @@ globalEventStatement
 		('PREVSTART' prevStart=nonEmptyIdList)?
 		('SHOWDEP' property=ID)?
 		action=actionPropertyDefinitionBody[new ArrayList<String>(), false]
+		( {!self.semicolonNeeded()}?=>  | ';')
 	;
 
 baseEvent returns [Event event]
@@ -2165,7 +2166,7 @@ aspectStatement
 		| 	'AFTER' { before = false; }
 		)
 		mainProp=mappedProperty 'DO' action=actionPropertyDefinitionBody[$mainProp.mapping, false]
-		';'
+		( {!self.semicolonNeeded()}?=>  | ';')
 	;
 
 
