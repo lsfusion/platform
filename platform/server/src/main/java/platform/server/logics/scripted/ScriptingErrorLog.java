@@ -408,11 +408,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitNamespaceNameError(ScriptParser parser, String namespaceName) throws SemanticErrorException {
-        emitSimpleError(parser, String.format("namespace name '%s' contains underscore character", namespaceName));
+        emitSimpleError(parser, format("namespace name '%s' contains underscore character", namespaceName));
     }
 
     public void emitDuplicateClassParentError(ScriptParser parser, String className) throws SemanticErrorException {
-        emitSimpleError(parser, String.format("class '%s' is a parent already", className));
+        emitSimpleError(parser, format("class '%s' is a parent already", className));
     }
 
     public void emitEvalExpressionError(ScriptParser parser) throws SemanticErrorException {
@@ -420,11 +420,15 @@ public class ScriptingErrorLog {
     }
 
     public void emitChangeClassWhereError(ScriptParser parser, String paramName) throws SemanticErrorException {
-        emitSimpleError(parser, String.format("local param '%s' must be used in WHERE clause", paramName));
+        emitSimpleError(parser, format("local param '%s' must be used in WHERE clause", paramName));
     }
 
     public void emitAddObjToPropertyError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "TO clause should use only local parameters introduced in WHERE clause");
+    }
+
+    public void emitStrLiteralEscapeSequenceError(ScriptParser parser, char ch) throws SemanticErrorException {
+        emitSimpleError(parser, format("wrong escape sequence: '\\%c'", ch));
     }
 
     private void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {

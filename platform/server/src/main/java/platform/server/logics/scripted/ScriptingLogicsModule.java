@@ -174,12 +174,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         return module;
     }
 
-    public String transformStringLiteral(String captionStr) {
-        String caption = captionStr.replace("\\'", "'");
-        caption = caption.replace("\\n", "\n");
-        caption = caption.replace("\\r", "\r");
-        caption = caption.replace("\\t", "\t");
-        return caption.substring(1, caption.length()-1);
+    public String transformStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
+        StringBuilder b = new StringBuilder();
+        for (int i = 1; i+1 < s.length(); i++) {
+            if (s.charAt(i) == '\\') {
+                assert i+2 < s.length();
+                char nextCh = s.charAt(i+1);
+                switch (nextCh) {
+                    case '\\': b.append('\\'); break;
+                    case '\'': b.append('\''); break;
+                    case 'n': b.append('\n'); break;
+                    case 'r': b.append('\r'); break;
+                    case 't': b.append('\t'); break;
+                    default: errLog.emitStrLiteralEscapeSequenceError(parser, nextCh);
+                }
+                ++i;
+            } else {
+                b.append(s.charAt(i));
+            }
+        }
+        return b.toString();
     }
 
     private DataClass getPredefinedClass(String name) {
