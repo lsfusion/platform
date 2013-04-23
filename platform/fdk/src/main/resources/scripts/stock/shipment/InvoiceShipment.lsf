@@ -100,14 +100,15 @@ META defineInvoiceShipment(sign, stockProp)
             }
         }
     }
-
-    overFillInvoiceUserShipmentDetailInvoiceDetail = ABSTRACT ACTION (UserShipmentDetail, InvoiceDetail);
+    overFillInvoiceUserShipmentInvoice = ABSTRACT ACTION (userShipment, invoice);                          // документ
+    overFillInvoiceUserShipmentDetailInvoiceDetail = ABSTRACT ACTION (UserShipmentDetail, InvoiceDetail);  // детайл
 
     fillInvoiceUserShipment 'Заполнить на основе накладной' =  ACTION (userShipment) {
         FORM shipmentInvoices OBJECTS s = supplierUserShipment(userShipment), c = customerUserShipment(userShipment) MODAL;
         IF formResult() == FormResult.ok THEN {
             LOCAL saleInvoice = Invoice();
             SET saleInvoice() <- chosenObject('i');
+            EXEC overFillInvoiceUserShipmentInvoice(userShipment, saleInvoice());
 
             FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND
                 toShipInvoiceDetail(invoiceDetail) > 0
@@ -286,3 +287,52 @@ META defineInvoiceShipmentPack(dumb)
     amountPackShipmentDetail(shipmentDetail) +=  amountPackInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
     packQuantityShipmentDetail(shipmentDetail) +=  packQuantityInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
 END
+
+//-- Действие
+
+META defineInvoiceShipmentAction (form)
+    moveUserShipmentInvoice 'Создать поставку' =  ACTION (invoice) NEWSESSION{
+
+        FOR ADDOBJ s = UserShipment DO {
+
+            SET supplierUserShipment(s) <- supplierInvoice(invoice);
+            SET supplierStockUserShipment(s) <- supplierStockInvoice(invoice);
+            SET customerUserShipment(s) <- customerInvoice(invoice);
+            SET customerStockUserShipment(s) <- customerStockInvoice(invoice);
+            SET currencyUserShipment(s) <- currencyInvoice(invoice);
+            SET numberObject(s) <- numberInvoice(invoice) WHERE s IS UserShipment;
+            SET seriesObject(s) <- seriesInvoice(invoice) WHERE s IS UserShipment;
+            SET isPostedUserShipment(s) <- isPostedInvoice(invoice);
+            SET noteUserShipment(s) <- noteInvoice(invoice);
+            EXEC overFillInvoiceUserShipmentInvoice(s, invoice);
+
+            FOR invoiceInvoiceDetail(detail) == invoice  ADDOBJ d = UserShipmentDetail DO {
+                    SET userShipmentUserShipmentDetail(d) <- s;
+                    SET invoiceDetailUserShipmentDetail(d) <- detail;
+                    SET orderUserShipmentDetail(d) <- orderInvoiceDetail(detail);
+
+                    SET dataCustomerStockShipmentDetail(d) <- dataCustomerStockInvoiceDetail(detail);
+                    SET dataSupplierStockShipmentDetail(d) <- dataSupplierStockInvoiceDetail(detail);
+
+                    SET skuUserShipmentDetail(d) <- skuInvoiceDetail(detail);
+                    SET quantityUserShipmentDetail (d) <- toShipInvoiceDetail(detail);
+                    EXEC overFillInvoiceUserShipmentDetailInvoiceDetail(d, detail);
+            }
+
+            FORM userShipment OBJECTS s = s MANAGESESSION DOCKEDMODAL;
+        }
+    } TOOLBAR;
+
+    EXTEND FORM form
+        PROPERTIES(i) moveUserShipmentInvoice
+    ;
+    EXTEND DESIGN form {
+        actionContainer{
+            NEW invoiceContainer{
+                title = 'Поставка';
+                ADD PROPERTY(moveUserShipmentInvoice);
+            }
+        }
+    }
+END
+

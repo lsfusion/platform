@@ -13,6 +13,7 @@ NAMESPACE Purchase;
 
 @defineOrderShipment(' (закупка)', customerStock);
 @defineInvoiceShipment(' (закупка)', customerStock);
+@defineInvoiceShipmentAction(invoices);
 @defineInvoiceShipmentBatch();
 
 //----------------------------------------------- Операции -----------------------------------------------------//
@@ -24,6 +25,10 @@ NAMESPACE Purchase;
 
 @defineOperationProperty(createShipment, 'Поставка', createContainer);
 @deriveDocumentOperationProperty(UserInvoice, createShipment);
+
+overFillInvoiceUserShipmentInvoice(s, i) += ACTION (s, i) {
+    SET operationUserShipment(s) <- operationInvoice(i);
+}
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

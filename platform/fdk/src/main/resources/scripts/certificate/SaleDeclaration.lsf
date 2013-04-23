@@ -9,6 +9,13 @@ NAMESPACE Sale;
 @deriveDocumentCertificate(declaration, invoice, supplierStock, data);
 
 @defineDocumentCertificateObject(declaration, shipment, s, 'Таможенная декларация');
-declarationShipmentDetail(detail) += declarationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+declarationShipment(s) += declarationInvoice(invoiceInvoiceShipment(s));
+dataDeclarationShipmentDetail(detail) += dataDeclarationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+overFillInvoiceUserShipmentInvoice(s, i) += ACTION (s, i) {
+    SET declarationUserShipment(s) <- declarationInvoice(i);
+}
+overFillInvoiceUserShipmentDetailInvoiceDetail(s, i) += ACTION (s, i) {
+    SET dataDeclarationUserShipmentDetail(s) <- dataDeclarationInvoiceDetail(i);
+}
 @defineDocumentCertificateConstraint(declaration, shipment, 'Таможенная декларация');
 @deriveDocumentCertificate(declaration, shipment, supplierStock, data);

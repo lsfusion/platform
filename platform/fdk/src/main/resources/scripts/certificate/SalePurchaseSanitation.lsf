@@ -4,4 +4,5 @@ REQUIRE SaleSanitation, PurchaseSanitation, SalePurchaseInvoice;
 
 NAMESPACE Sale;
 
-Purchase.sanitationInvoiceDetail(detail) += sanitationInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));
+Purchase.sanitationInvoice(invoice) += sanitationInvoice(invoicePurchaseInvoice(invoice));
+Purchase.dataSanitationInvoiceDetail(detail) += dataSanitationInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));

@@ -14,6 +14,8 @@ NAMESPACE PurchaseReturn;
 
 @defineOrderShipment(' (закупка-возврат)', customerStock);
 @defineInvoiceShipment(' (закупка-возврат)', customerStock);
+@defineInvoiceShipmentAction(invoices);
+
 @defineInvoiceShipmentBatch();
 
 //----------------------------------------------- Операции -----------------------------------------------------//
@@ -24,6 +26,10 @@ NAMESPACE PurchaseReturn;
 @defineDocumentOperationRole(userShipment);
 
 @deriveDocumentOperationProperty(UserInvoice, createShipment);
+
+overFillInvoiceUserShipmentInvoice(s, i) += ACTION (s, i) {
+    SET operationUserShipment(s) <- operationInvoice(i);
+}
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

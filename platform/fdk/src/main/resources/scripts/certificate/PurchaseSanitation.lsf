@@ -7,6 +7,14 @@ NAMESPACE Purchase;
 @defineDocumentCertificateObject(sanitation, invoice, i, 'ГГР');
 
 @defineDocumentCertificateObject(sanitation, shipment, s, 'ГГР');
-sanitationShipmentDetail(detail) += sanitationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+
+sanitationShipment(s) += sanitationInvoice(invoiceInvoiceShipment(s));
+dataSanitationShipmentDetail(detail) += dataSanitationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+overFillInvoiceUserShipmentInvoice(s, i) += ACTION (s, i) {
+    SET sanitationUserShipment(s) <- sanitationInvoice(i);
+}
+overFillInvoiceUserShipmentDetailInvoiceDetail(s, i) += ACTION (s, i) {
+    SET dataSanitationUserShipmentDetail(s) <- dataSanitationInvoiceDetail(i);
+}
 
 sanitationBatch (batch) += sanitationShipmentDetail(shipmentDetailShipmentBatch(batch));

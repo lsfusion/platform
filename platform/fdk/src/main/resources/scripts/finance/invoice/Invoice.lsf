@@ -424,6 +424,14 @@ META defineInvoice(sign, stockProp)
                             childConstraints = TO THE BOTTOM;
                         }
                     }
+                    NEW actionContainer {
+                        title = 'Действия';
+                        childConstraints = TO THE BOTTOM;
+                        NEW copyContainer {
+                            title = 'Копирование';
+                            ADD PROPERTY(copyInvoice);
+                        }
+                    }
                 }
             }
         }

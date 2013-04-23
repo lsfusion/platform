@@ -7,7 +7,14 @@ NAMESPACE Purchase;
 @defineDocumentCertificateObject(declaration, invoice, i, 'Таможенная декларация');
 @defineDocumentCertificateObject(declaration, shipment, s, 'Таможенная декларация');
 
-declarationShipmentDetail(detail) += declarationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+declarationShipment(s) += declarationInvoice(invoiceInvoiceShipment(s));
+dataDeclarationShipmentDetail(detail) += dataDeclarationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+overFillInvoiceUserShipmentInvoice(s, i) += ACTION (s, i) {
+    SET declarationUserShipment(s) <- declarationInvoice(i);
+}
+overFillInvoiceUserShipmentDetailInvoiceDetail(s, i) += ACTION (s, i) {
+    SET dataDeclarationUserShipmentDetail(s) <- dataDeclarationInvoiceDetail(i);
+}
 
 declarationBatch (batch) += declarationShipmentDetail(shipmentDetailShipmentBatch(batch));
 

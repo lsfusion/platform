@@ -97,18 +97,23 @@ END
 
 META defineDocumentCertificateObjectInner(prop, propClass, document, object, caption)
 
-    prop###document##Detail = ABSTRACT propClass (###document##Detail);
-    description###prop###document##Detail caption (detail) = description###prop(prop###document##Detail(detail));
-
+    prop###document = ABSTRACT propClass (###document);
+    description###prop###document caption (document) = description###prop(prop###document(document));
     prop###user###document = DATA propClass (User###document);
     description###prop###user###document caption (document) = description###prop(prop###user###document(document));
+    prop###document(doc) += prop###user###document(doc);
+
+    data###prop###document##Detail = ABSTRACT propClass (###document##Detail);
+    prop###document##Detail (detail) =
+        UNION OVERRIDE prop###document(document###document##Detail(detail)), data###prop###document##Detail(detail);
+    description###prop###document##Detail caption (detail) = description###prop(prop###document##Detail(detail));
 
     data###prop###user###document##Detail = DATA propClass (User###document##Detail);
     prop###user###document##Detail (detail) =
         UNION OVERRIDE prop###user###document(user###document##User###document##Detail(detail)), data###prop###user###document##Detail(detail);
-    prop###document##Detail(detail) += prop###user###document##Detail(detail);
-
     description###prop###user###document##Detail caption (detail) = description###prop(prop###user###document##Detail(detail));
+
+    data###prop###document##Detail(detail) += data###prop###user###document##Detail(detail);
 
     EXTEND FORM user###document
         PROPERTIES(object) description###prop###user###document

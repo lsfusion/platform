@@ -4,4 +4,5 @@ REQUIRE SaleDeclaration, PurchaseDeclaration, SalePurchaseInvoice;
 
 NAMESPACE Sale;
 
-Purchase.declarationInvoiceDetail(detail) += declarationInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));
+Purchase.declarationInvoice(invoice) += declarationInvoice(invoicePurchaseInvoice(invoice));
+Purchase.dataDeclarationInvoiceDetail(detail) += dataDeclarationInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));

@@ -9,6 +9,13 @@ NAMESPACE Sale;
 @deriveDocumentCertificate(sanitation, invoice, supplierStock, data);
 
 @defineDocumentCertificateObject(sanitation, shipment, s, 'ГГР');
-sanitationShipmentDetail(detail) += sanitationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+sanitationShipment(s) += sanitationInvoice(invoiceInvoiceShipment(s));
+dataSanitationShipmentDetail(detail) += dataSanitationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+overFillInvoiceUserShipmentInvoice(s, i) += ACTION (s, i) {
+    SET sanitationUserShipment(s) <- sanitationInvoice(i);
+}
+overFillInvoiceUserShipmentDetailInvoiceDetail(s, i) += ACTION (s, i) {
+    SET dataSanitationUserShipmentDetail(s) <- dataSanitationInvoiceDetail(i);
+}
 @defineDocumentCertificateConstraint(sanitation, shipment, 'ГГР');
 @deriveDocumentCertificate(sanitation, shipment, supplierStock, data);

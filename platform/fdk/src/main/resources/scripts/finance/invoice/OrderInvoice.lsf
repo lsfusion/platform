@@ -183,6 +183,8 @@ META defineOrderInvoice(sign, stockProp)
         SET currencyUserInvoice(userInvoice) <- currencyOrder(order) WHERE currencyOrder(order);
         SET agreementUserInvoice(userInvoice) <- agreementOrder(order) WHERE agreementOrder(order);
         SET priceListTypeUserInvoice(userInvoice) <- priceListTypeOrder(order) WHERE priceListTypeOrder(order);
+//        SET contractSkuUserInvoice(userInvoice) <- contractSkuOrder(order) WHERE contractSkuOrder(order);
+//        SET isCommissionUserInvoice(userInvoice) <- isCommissionOrder(order) WHERE isCommissionOrder(order);
 
         SET operationUserInvoice(userInvoice) <- operationOrder(order) WHERE operationOrder(order);
 
@@ -208,10 +210,13 @@ META defineOrderInvoice(sign, stockProp)
         EXEC createDetailUserInvoiceOrder(userInvoice, order);
     }
 
+    userInvoiceOrder= DATA SESSION UserInvoice (Order);
     createUserInvoiceOrder 'Создать накладную' = ACTION (order) {
         IF order IS Order THEN {
+            SET  userInvoiceOrder(order) <- NULL;
             FOR ADDOBJ i = UserInvoice DO {
                 EXEC fillUserInvoiceOrder(i, order);
+                SET  userInvoiceOrder(order) <- i;
             }
         }
     }
@@ -401,4 +406,26 @@ META defineOrderInvoicePack (showPackage)
     packQuantityInvoiceDetail(invoiceDetail) +=  packQuantityOrderDetail(orderDetailOrderInvoiceDetail(invoiceDetail));
 
 END
+
+//-- Действие
+
+META defineOrderInvoiceAction (form)
+    moveUserInvoiceOrder 'Создать накладную' =  ACTION (order) NEWSESSION{
+        EXEC createUserInvoiceOrder(order);
+        FORM userInvoice OBJECTS i = userInvoiceOrder(order) MANAGESESSION DOCKEDMODAL;
+    } TOOLBAR;
+
+    EXTEND FORM form
+        PROPERTIES(o) moveUserInvoiceOrder
+    ;
+    EXTEND DESIGN form {
+        actionContainer{
+            NEW invoiceContainer{
+                title = 'Накладная';
+                ADD PROPERTY(moveUserInvoiceOrder);
+            }
+        }
+    }
+END
+
 

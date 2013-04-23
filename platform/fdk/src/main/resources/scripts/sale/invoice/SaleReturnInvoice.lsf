@@ -9,6 +9,7 @@ NAMESPACE SaleReturn;
 //----------------------------------------------- Накладная ---------------------------------------------------//
 @defineInvoice(' (продажа-возврат)', supplierStock);
 @defineOrderInvoice(' (продажа-возврат)', supplierStock);
+@defineOrderInvoiceAction (orders);
 @defineInvoiceBatch(supplierStock);
 
 @defineDocumentBatchPriceListType(userInvoice, supplierStock);

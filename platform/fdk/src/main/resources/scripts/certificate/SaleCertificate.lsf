@@ -13,3 +13,8 @@ NAMESPACE Sale;
 
 @defineDocumentCertificateTextPrefix(shipment, certificate, 'Дополнительные сертификаты');
 @deriveDocumentCertificate(certificateText, shipment, supplierStock, );
+
+certificateTextShipmentDetail(detail) += certificateTextInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+overFillInvoiceUserShipmentDetailInvoiceDetail(s, i) += ACTION (s, i) {
+    SET certificateTextUserShipmentDetail(s) <- certificateTextInvoiceDetail(i);
+}

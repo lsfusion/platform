@@ -81,7 +81,7 @@ Purchase.noteOrder(order) += noteOrderPurchaseOrder(order);
 currencyPurchaseOrder  (purchaseOrder) = currencyOrder(orderPurchaseOrder(purchaseOrder));
 Purchase.currencyOrder (order) += currencyPurchaseOrder(order);
 
-@defineDocumentDescription(purchaseOrder, PurchaseOrderDetail, seriesNumberPurchaseOrder, 'Поставка на основе поставки ');
+@defineDocumentDescription(purchaseOrder, PurchaseOrderDetail, seriesNumberPurchaseOrder, 'Заказ (закупка) на основе заказа (продажа)');
 Purchase.descriptionOrder (order) += descriptionPurchaseOrder(order);
 
 @defineDocumentAggregationDetailSku(order, purchaseOrder, sku);
@@ -102,4 +102,68 @@ Purchase.amountPackOrderDetail(orderDetail) +=  amountPackOrderDetail(orderDetai
 Purchase.packQuantityOrderDetail(orderDetail) +=  packQuantityOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
 
 Purchase.editOrder(order) += ACTION EXEC editOrder(orderPurchaseOrder(order));
+
+//-- Действие
+
+moveUserOrderOrder 'Создать заказ (закупка)' =  ACTION (order) NEWSESSION{
+    FOR ADDOBJ o = Purchase.UserOrder DO {
+
+        SET Purchase.shipmentDateUserOrder(o) <- shipmentDateOrder(order);
+        SET Purchase.shipmentTimeUserOrder(o) <- shipmentTimeOrder(order);
+        SET Purchase.agreementUserOrder(o) <- agreementOrder(order);
+        SET Purchase.priceListTypeUserOrder(o) <- priceListTypeOrder(order);
+        SET Purchase.supplierUserOrder(o) <- supplierOrder(order);
+        SET Purchase.customerUserOrder(o) <- customerOrder(order);
+        SET Purchase.supplierStockUserOrder(o) <- supplierStockOrder(order);
+        SET Purchase.customerStockUserOrder(o) <- customerStockOrder(order);
+        SET numberObject(o) <- numberOrder(order) WHERE o IS Purchase.UserOrder;
+        SET seriesObject(o) <- seriesOrder(order) WHERE o IS Purchase.UserOrder;
+        SET Purchase.isPostedUserOrder(o) <- isPostedOrder(order);
+        SET Purchase.noteUserOrder(o) <- noteOrder(order);
+        SET Purchase.currencyUserOrder(o) <- currencyOrder(order);
+        SET Purchase.showPackUserOrder(o) <- showPackOrder(order);
+        SET Purchase.closeDateUserOrder(o) <- closeDateOrder(order);
+        SET Purchase.isDataClosedUserOrder(o) <- isDataClosedOrder(order);
+
+
+        FOR orderOrderDetail(detail)==order ADDOBJ d = Purchase.UserOrderDetail DO {
+
+            SET Purchase.userOrderUserOrderDetail(d) <- o;
+            SET Purchase.shipmentDataDateUserOrderDetail(d) <- shipmentDataDateOrderDetail(detail);
+            SET Purchase.shipmentDataTimeUserOrderDetail(d) <- shipmentDataTimeOrderDetail(detail);
+            SET Purchase.priceListTypeUserOrderDetail(d) <- priceListTypeOrderDetail(detail);
+            SET Purchase.dataSupplierStockUserOrderDetail(d) <- dataSupplierStockOrderDetail(detail);
+            SET Purchase.dataCustomerStockUserOrderDetail(d) <- dataCustomerStockOrderDetail(detail);
+
+            SET Purchase.skuUserOrderDetail(d) <- skuOrderDetail(detail);
+            SET Purchase.quantityUserOrderDetail (d) <- quantityOrderDetail(detail);
+            SET Purchase.VATUserOrderDetail (d) <- VATOrderDetail(detail);
+            SET Purchase.valueVATUserOrderDetail (d) <- valueVATOrderDetail(detail);
+            SET Purchase.priceUserOrderDetail (d) <- priceOrderDetail(detail);
+            SET Purchase.invoicePriceUserOrderDetail (d) <- invoicePriceOrderDetail(detail);
+
+            SET Purchase.barcodePackUserOrderDetail (d) <- barcodePackOrderDetail(detail);
+            SET Purchase.amountPackUserOrderDetail (d) <- amountPackOrderDetail(detail);
+            SET Purchase.packQuantityUserOrderDetail (d) <- packQuantityOrderDetail(detail);
+            SET Purchase.closeDataDateUserOrderDetail (d) <- closeDataDateOrderDetail(detail);
+            SET Purchase.isDataClosedUserOrderDetail (d) <- isDataClosedOrderDetail(detail);
+
+        }
+
+    FORM Purchase.userOrder OBJECTS o = o MANAGESESSION DOCKEDMODAL;
+    }
+} TOOLBAR;
+
+EXTEND FORM orders
+    PROPERTIES(o) moveUserOrderOrder
+;
+EXTEND DESIGN orders {
+    actionContainer{
+        NEW orderContainer{
+            title = 'Заказ (закупка)';
+            ADD PROPERTY(moveUserOrderOrder);
+        }
+    }
+}
+
 

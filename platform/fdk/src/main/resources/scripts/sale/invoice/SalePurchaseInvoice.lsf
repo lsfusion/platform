@@ -268,3 +268,4 @@ invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(
 // -- Операция
 @defineOperationProperty(createPurchaseInvoice, 'Накладную (закупка)', createContainer);
 @deriveDocumentOperationProperty(UserInvoice, createPurchaseInvoice);
+
