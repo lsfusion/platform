@@ -5,10 +5,13 @@ import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.ContextMenuEvent;
+import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form.client.form.ui.GFormController;
+import platform.gwt.form.client.form.ui.GPropertyContextMenuPopup;
 import platform.gwt.form.shared.view.GEditBindingMap;
 import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -19,6 +22,7 @@ import platform.gwt.form.shared.view.grid.editor.DialogBasedGridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.PopupBasedGridCellEditor;
 
+import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 import static platform.gwt.base.shared.GwtSharedUtils.nullEquals;
 import static platform.gwt.form.client.HotkeyManager.Binding;
 
@@ -27,6 +31,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     private final GFormController form;
     private final GEditPropertyDispatcher editDispatcher;
     private final EditManager editManager = new ActionEditManager();
+    private final GPropertyContextMenuPopup contextMenuPopup = new GPropertyContextMenuPopup();
     private final GPropertyDraw property;
     private final GGroupObjectValue columnKey;
 
@@ -59,6 +64,18 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
                 click(null);
             }
         });
+        button.addDomHandler(new ContextMenuHandler() {
+            @Override
+            public void onContextMenu(ContextMenuEvent event) {
+                contextMenuPopup.show(property, event.getNativeEvent().getClientX(), event.getNativeEvent().getClientY(), new GPropertyContextMenuPopup.ItemSelectionListener() {
+                    @Override
+                    public void onMenuItemSelected(String actionSID) {
+                        onContextMenuItemSelected(actionSID);
+                    }
+                });
+                stopPropagation(event);
+            }
+        }, ContextMenuEvent.getType());
 
         button.getElement().setPropertyObject("groupObject", property.groupObject);
         if (property.editKey != null) {
@@ -70,6 +87,12 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             });
         }
         button.setFocusable(property.focusable);
+    }
+
+    private void onContextMenuItemSelected(String actionSID) {
+        if (!form.isEditing()) {
+            editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null);
+        }
     }
 
     private boolean click(EventTarget ifocusTargetAfterEdit) {

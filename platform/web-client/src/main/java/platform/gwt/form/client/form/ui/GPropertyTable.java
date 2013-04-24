@@ -26,20 +26,21 @@ import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 
 import static platform.gwt.base.client.GwtClientUtils.removeAllChildren;
 import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
+import static platform.gwt.cellview.client.cell.Cell.Context;
 import static platform.gwt.form.shared.view.GEditBindingMap.isEditableAwareEditEvent;
 
 public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManager, GEditPropertyHandler {
+
+    private final GPropertyContextMenuPopup contextMenuPopup = new GPropertyContextMenuPopup();
 
     protected final GFormController form;
     protected final GEditBindingMap editBindingMap;
     protected final GEditPropertyDispatcher editDispatcher;
 
-    private GGridPropertyTableMenuHandler contextMenuHandler = new GGridPropertyTableMenuHandler(this);
-
     protected GridCellEditor cellEditor = null;
     protected GridEditableCell editCell;
     protected EditEvent editEvent;
-    protected Cell.Context editContext;
+    protected Context editContext;
     protected Element editCellParent;
     protected GType editType;
 
@@ -64,22 +65,22 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         sinkEvents(Event.ONPASTE);
     }
 
-    public abstract boolean isEditable(Cell.Context context);
+    public abstract boolean isEditable(Context context);
 
     public abstract GPropertyDraw getSelectedProperty();
 
-    public abstract GPropertyDraw getProperty(Cell.Context editContext);
+    public abstract GPropertyDraw getProperty(Context editContext);
 
-    public abstract GGroupObjectValue getColumnKey(Cell.Context editContext);
+    public abstract GGroupObjectValue getColumnKey(Context editContext);
 
-    public abstract void setValueAt(Cell.Context context, Object value);
+    public abstract void setValueAt(Context context, Object value);
 
-    public abstract Object getValueAt(Cell.Context context);
+    public abstract Object getValueAt(Context context);
 
     public abstract void pasteData(String dataLine, boolean multi);
 
     @Override
-    protected <C> void fireEventToCellImpl(Event event, String eventType, Element cellParent, T rowValue, Cell.Context context, HasCell<T, C> column) {
+    protected <C> void fireEventToCellImpl(Event event, String eventType, Element cellParent, T rowValue, final Context context, HasCell<T, C> column) {
         Cell<C> cell = column.getCell();
         if (cell instanceof GridEditableCell) {
             if (cellEditor != null) {
@@ -87,7 +88,12 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
             } else {
                 if (BrowserEvents.CONTEXTMENU.equals(event.getType())) {
                     stopPropagation(event);
-                    contextMenuHandler.show(event.getClientX(), event.getClientY(), context);
+                    contextMenuPopup.show(getSelectedProperty(), event.getClientX(), event.getClientY(), new GPropertyContextMenuPopup.ItemSelectionListener() {
+                        @Override
+                        public void onMenuItemSelected(String actionSID) {
+                            onContextMenuEvent(context, actionSID);
+                        }
+                    });
                 } else if (GKeyStroke.isCopyToClipboardEvent(event)) {
                     if (selection.getRange() == null || selection.getRange().getText().isEmpty()) {
                         selection.setRange(new Range(getFocusCellElement()));
@@ -134,7 +140,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         }
     }
 
-    protected void onEditEvent(GridEditableCell editCell, EditEvent editEvent, Cell.Context editContext, Element editCellParent) {
+    protected void onEditEvent(GridEditableCell editCell, EditEvent editEvent, Context editContext, Element editCellParent) {
         if (form.isEditing()) return;
 
         GPropertyDraw property = getProperty(editContext);
@@ -164,6 +170,10 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         }
     }
 
+    protected void onContextMenuEvent(Context context, String actionSID) {
+        editCellAt(context.getIndex(), context.getColumn(), actionSID);
+    }
+
     protected String getEditAction(GPropertyDraw property, EditEvent event) {
         String actionSID = null;
         if (property.editBindingMap != null) {
@@ -180,7 +190,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     public void editCellAt(int row, int column, String actionSID) {
         GridEditableCell editCell = (GridEditableCell) getColumn(column).getCell();
         EditEvent editEvent = new InternalEditEvent(actionSID);
-        Cell.Context editContext = new Cell.Context(row, column, getRowValue(row));
+        Context editContext = new Context(row, column, getRowValue(row));
         Element editCellParent = getCellParent(row, column);
 
         onEditEvent(editCell, editEvent, editContext, editCellParent);
@@ -252,7 +262,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         clearEditState();
     }
 
-    private void rerenderCell(Cell.Context context, Element parent, Object newValue) {
+    private void rerenderCell(Context context, Element parent, Object newValue) {
         //важно сначала обнулить эдитор, иначе при его удаление возникает ONBLUR, который влечёт за собой cancelEditing
         this.cellEditor = null;
 

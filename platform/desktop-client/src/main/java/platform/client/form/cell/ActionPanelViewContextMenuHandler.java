@@ -3,7 +3,6 @@ package platform.client.form.cell;
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
-import platform.client.form.ClientPropertyContextMenuPopup;
 import platform.client.form.EditPropertyHandler;
 import platform.client.form.PropertyEditor;
 import platform.client.form.dispatch.EditPropertyDispatcher;
@@ -16,93 +15,64 @@ import platform.interop.form.ServerResponse;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 
-import static javax.swing.SwingUtilities.isRightMouseButton;
-
-public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
+public class ActionPanelViewContextMenuHandler extends JButton implements PanelView, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher = new EditPropertyDispatcher(this);
-    private final ClientPropertyContextMenuPopup menu = new ClientPropertyContextMenuPopup();
 
     private Color defaultBackground;
 
-    private final ClientPropertyDraw property;
+    private final ClientPropertyDraw key;
     private final ClientGroupObjectValue columnKey;
     private final ClientFormController form;
     public boolean toToolbar;
     private Object value;
     private boolean readOnly;
 
-    public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
-        super(iproperty.getEditCaption());
+    public ActionPanelViewContextMenuHandler(final ClientPropertyDraw ikey, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
+        super(ikey.getEditCaption());
 
         this.defaultBackground = getBackground();
-        this.property = iproperty;
+        this.key = ikey;
         this.columnKey = icolumnKey;
         this.form = iform;
 
-        setToolTip(property.getCaption());
+        setToolTip(key.getCaption());
 
-        if (property.isReadOnly()) {
+        if (key.isReadOnly()) {
             setEnabled(false);
         }
 
-        property.design.designComponent(this);
+        key.design.designComponent(this);
 
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (form.commitCurrentEditing()) {
-                    editDispatcher.executePropertyEditAction(property, columnKey, ServerResponse.CHANGE, null);
+                    editDispatcher.executePropertyEditAction(key, columnKey, ServerResponse.CHANGE, null);
                 }
             }
         });
         addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (isRightMouseButton(e) ) {
-                    showContextMenu(e.getPoint());
-                }
-            }
-        });
-
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
-                    Rectangle rect = getBounds();
-                    Point point = new Point(rect.x, rect.y + rect.height - 1);
-                    showContextMenu(point);
-                }
-            }
         });
 
         setDefaultSizes();
     }
 
-    private void showContextMenu(Point point) {
-        if (form.commitCurrentEditing()) {
-            menu.show(property, this, point, new ClientPropertyContextMenuPopup.ItemSelectionListener() {
-                @Override
-                public void onMenuItemSelected(String actionSID) {
-                    editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null);
-                }
-            });
-        }
-    }
-
     @Override
     public int hashCode() {
-        return property.getID() * 31 + columnKey.hashCode();
+        return key.getID() * 31 + columnKey.hashCode();
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof ActionPanelView && ((ActionPanelView) o).property.equals(property) && ((ActionPanelView) o).columnKey.equals(columnKey);
+        return o instanceof ActionPanelViewContextMenuHandler && ((ActionPanelViewContextMenuHandler) o).key.equals(key) && ((ActionPanelViewContextMenuHandler) o).columnKey.equals(columnKey);
     }
 
     @Override
     public String toString() {
-        return property.toString();
+        return key.toString();
     }
 
     public JComponent getComponent() {
@@ -130,7 +100,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setCaption(String caption) {
-        setText(property.getEditCaption(caption));
+        setText(key.getEditCaption(caption));
     }
 
     public void setBackgroundColor(Color background) {
@@ -147,19 +117,19 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setToolTip(String caption) {
-        String toolTip = !BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption;
-        toolTip += " (sID: " + property.getSID() + ")";
-        if (property.editKey != null) {
-            toolTip += "(" + SwingUtils.getKeyStrokeCaption(property.editKey) + ")";
+        String toolTip = !BaseUtils.isRedundantString(key.toolTip) ? key.toolTip : caption;
+        toolTip += " (sID: " + key.getSID() + ")";
+        if (key.editKey != null) {
+            toolTip += "(" + SwingUtils.getKeyStrokeCaption(key.editKey) + ")";
         }
         setToolTipText(toolTip);
     }
 
     private void setDefaultSizes() {
-        int height = toToolbar ? ToolbarGridButton.DEFAULT_SIZE.height : property.getPreferredHeight(this);
+        int height = toToolbar ? ToolbarGridButton.DEFAULT_SIZE.height : key.getPreferredHeight(this);
 
-        int minimumWidth = property.minimumSize != null ? property.getMinimumWidth(this) : 0;
-        int maximumWidth = property.maximumSize != null ? property.getMaximumWidth(this) : 32767;
+        int minimumWidth = key.minimumSize != null ? key.getMinimumWidth(this) : 0;
+        int maximumWidth = key.maximumSize != null ? key.getMaximumWidth(this) : 32767;
 
         setMinimumSize(new Dimension(minimumWidth, height));
         setMaximumSize(new Dimension(maximumWidth, height));
@@ -167,11 +137,11 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
     @Override
     public boolean requestValue(ClientType valueType, Object oldValue) {
-        PropertyEditor propertyEditor = valueType.getChangeEditorComponent(ActionPanelView.this, form, property, null);
+        PropertyEditor propertyEditor = valueType.getChangeEditorComponent(ActionPanelViewContextMenuHandler.this, form, key, null);
 
         assert propertyEditor != null;
 
-        propertyEditor.getComponent(SwingUtils.computeAbsoluteLocation(ActionPanelView.this), getBounds(), null);
+        propertyEditor.getComponent(SwingUtils.computeAbsoluteLocation(ActionPanelViewContextMenuHandler.this), getBounds(), null);
 
         //для всего, кроме диалогов ничего не записываем..
         //для диалогов - сначала спрашиваем, изменилось ли значение

@@ -906,9 +906,13 @@ onEditStoreSizeCode() = ACTION {
     }
 }
 
+onHelloWorld() = ACTION {
+    MESSAGE 'Hello world!';
+}
+
 FORM TestONActions 'Тест "ON actions"'
     OBJECTS s=Store
-    PROPERTIES(s) OBJVALUE, name ON CHANGE onChangeStoreName(), storeSizeCode ON EDIT onEditStoreSizeCode()
+    PROPERTIES(s) OBJVALUE, name ON CHANGE onChangeStoreName(), storeSizeCode ON EDIT onEditStoreSizeCode(), delete ON SHORTCUT 'Hello world!' onHelloWorld()
 ;
 
 //////////////// INDEX STATEMENT //////////////////
