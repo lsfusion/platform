@@ -6,6 +6,7 @@ import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.MSet;
+import platform.interop.Data;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
@@ -16,6 +17,9 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
 import platform.server.form.view.report.ReportDrawField;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
@@ -198,5 +202,24 @@ public class ConcatenateType extends AbstractType<byte[]> {
     @Override
     public int hashCode() {
         return Arrays.hashCode(types);
+    }
+
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeInt(types.length);
+        for (Type type : types) {
+            TypeSerializer.serializeType(outStream, type);
+        }
+    }
+
+    public static ConcatenateType deserialize(DataInputStream inStream, int version) throws IOException {
+
+        int typesCount = inStream.readInt();
+
+        Type[] types = new Type[typesCount];
+
+        for (int i = 0; i < typesCount; i++)
+            types[i] = TypeSerializer.deserializeType(inStream, version);
+
+        return new ConcatenateType(types);
     }
 }

@@ -18,11 +18,15 @@ public class TypeSerializer {
     }
 
     public static void serializeType(DataOutputStream outStream, Type type) throws IOException {
-        if(type instanceof DataClass) {
-            outStream.writeBoolean(false);
-            ((DataClass)type).serialize(outStream);
-        } else
-            outStream.writeBoolean(true);
+        if (type instanceof ObjectType)
+            outStream.writeByte(0);
+        else if (type instanceof DataClass) {
+            outStream.writeByte(1);
+            ((DataClass) type).serialize(outStream);
+        } else if (type instanceof ConcatenateType) {
+            outStream.writeByte(2);
+            ((ConcatenateType) type).serialize(outStream);
+        }
     }
 
     public static void serializeValueClass(DataOutputStream outStream, ValueClass cls) throws IOException {
@@ -35,10 +39,20 @@ public class TypeSerializer {
     }
 
     public static Type deserializeType(DataInputStream inStream, int version) throws IOException {
-        if(inStream.readBoolean())
-            return ObjectType.instance;
-        else
-            return DataClass.deserialize(inStream, version);
+        if (version < 6) {
+            if(inStream.readBoolean())
+                return ObjectType.instance;
+            else
+                return DataClass.deserialize(inStream, version);
+        } else {
+            switch (inStream.readByte()) {
+                case 0:
+                    return ObjectType.instance;
+                case 1:
+                    return DataClass.deserialize(inStream, version);
+                case 2:
+            }       return ConcatenateType.deserialize(inStream, version);
+        }
     }
 
     public static ValueClass deserializeValueClass(BusinessLogics context, DataInputStream inStream) throws IOException {
