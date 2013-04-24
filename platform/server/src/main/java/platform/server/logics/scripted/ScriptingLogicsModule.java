@@ -592,24 +592,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         onContextLAP.addToContextMenuFor(mainProperty, contextMenuCaption);
     }
 
-    public void setAsOnChangeFor(LP onChangeAction, String mainPropertySID) throws ScriptingErrorLog.SemanticErrorException {
+    public void setAsEditActionFor(LP onEditAction, String editActionSID, String mainPropertySID) throws ScriptingErrorLog.SemanticErrorException {
         assert mainPropertySID != null;
 
-        checkActionProperty(onChangeAction);
+        checkActionProperty(onEditAction);
 
         LP<?, ?> mainProperty = findLPByCompoundName(mainPropertySID);
-        LAP onChangeLAP = (LAP) onChangeAction;
-        onChangeLAP.setAsOnChangeFor(mainProperty);
-    }
-
-    public void setAsOnEditObjectFor(LP onEditObjectAction, String mainPropertySID) throws ScriptingErrorLog.SemanticErrorException {
-        assert mainPropertySID != null;
-
-        checkActionProperty(onEditObjectAction);
-
-        LP<?, ?> mainProperty = findLPByCompoundName(mainPropertySID);
-        LAP onEditObjectLAP = (LAP) onEditObjectAction;
-        onEditObjectLAP.setAsOnEditFor(mainProperty);
+        LAP onEditLAP = (LAP) onEditAction;
+        onEditLAP.setAsEditActionFor(editActionSID, mainProperty);
     }
 
     public void setDrawToToolbar(LP property) {

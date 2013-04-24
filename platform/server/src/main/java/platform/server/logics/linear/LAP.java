@@ -74,19 +74,11 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty, String contextMenuCaption) {
-        addAsEditActionFor(property.getSID(), mainProperty);
+        setAsEditActionFor(property.getSID(), mainProperty);
         mainProperty.property.setContextMenuAction(property.getSID(), contextMenuCaption);
     }
 
-    public <P extends PropertyInterface> void setAsOnChangeFor(LP<P, Property<P>> mainProperty) {
-        addAsEditActionFor(ServerResponse.CHANGE, mainProperty);
-    }
-
-    public <P extends PropertyInterface> void setAsOnEditFor(LP<P, Property<P>> mainProperty) {
-        addAsEditActionFor(ServerResponse.EDIT_OBJECT, mainProperty);
-    }
-
-    private <P extends PropertyInterface> void addAsEditActionFor(String actionSID, LP<P, Property<P>> mainProperty) {
+    public <P extends PropertyInterface> void setAsEditActionFor(String actionSID, LP<P, Property<P>> mainProperty) {
         assert listInterfaces.size() <= mainProperty.listInterfaces.size();
 
         //мэпим входы по порядку, у этого экшна входов может быть меньше

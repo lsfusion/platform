@@ -29,6 +29,7 @@
       <keyword name="AS" />
       <keyword name="ASC" />
       <keyword name="ASONCHANGE" />
+      <keyword name="ASONCHANGEWYS" />
       <keyword name="ASONEDIT" />
       <keyword name="ASSIGNED" />
       <keyword name="ATTACH" />

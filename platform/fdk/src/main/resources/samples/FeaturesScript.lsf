@@ -71,6 +71,7 @@ EXTEND CLASS Features.StoreSize
 //                                                                                                 [TOOLBAR]
 //                                                                                                 [SHORTCUT propertyName]
 //                                                                                                 [ASONCHANGE propertyName]
+//                                                                                                 [ASONCHANGEWYS propertyName]
 //                                                                                                 [ASONEDIT propertyName]
 //                                                                                                 [FIXEDCHARWIDTH <int value>]
 //                                                                                                 [MINCHARWIDTH <int value>]
@@ -79,7 +80,7 @@ EXTEND CLASS Features.StoreSize
 //                                                                                                 [IMAGE 'name'] [EDITKEY '<key code>' [SHOW | HIDE]] [AUTOSET] [CONFIRM]
 //                                                                                                 [REGEXP '<expression>' ['<regExp message>']] [LOGGABLE] [ECHO] [INDEXED]
 //                                                                                                 [AGGPROP] [NOT NULL [DELETE] [APPLY | SESSION] [FORMS form1, ..., formN]]
-//                                                                                                 [ON (CHANGE | CHANGEWYS) action]
+//                                                                                                 [ON (CHANGE | CHANGEWYS | EDIT) action]
 //                                                                                                 [EVENTID 'id'];
 
 // Если именованные параметры не указываются, то они выводятся из propertyExpression

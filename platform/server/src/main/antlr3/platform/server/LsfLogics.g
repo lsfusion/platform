@@ -1331,8 +1331,7 @@ propertyOptions[LP property, String propertyName, String caption, List<String> n
 		|	'PERSISTENT' { isPersistent = true; }
 		|	'TABLE' tbl = compoundID { table = $tbl.sid; }
 		|	shortcutSetting [property, caption != null ? caption : propertyName]
-		|	onChangeSetting [property]
-		|	onEditSetting [property]
+		|	asEditActionSetting [property]
 		|	toolbarSetting [property]
 		|	fixedCharWidthSetting [property]
 		|	minCharWidthSetting [property]
@@ -1348,7 +1347,7 @@ propertyOptions[LP property, String propertyName, String caption, List<String> n
 		|	indexSetting [propertyName]
 		|	aggPropSetting [property]
 		|	s=notNullSetting { notNullResolve = $s.toResolve; notNullEvent = $s.event; }
-		|	eventSetting [property, namedParams]
+		|	onEditEventSetting [property, namedParams]
 		|	eventIdSetting [property]
 		)*
 	;
@@ -1366,28 +1365,21 @@ shortcutSetting [LP property, String caption]
 	:	'SHORTCUT' name = compoundID { sid = $name.sid; }
 	;
 
-onChangeSetting [LP property]
+asEditActionSetting [LP property]
 @init {
-	String sid = null;
+	String mainPropertySID = null;
+	String editActionSID = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.setAsOnChangeFor($property, sid);
+		self.setAsEditActionFor($property, editActionSID, mainPropertySID);
 	}
 }
-	:	'ASONCHANGE' name = compoundID { sid = $name.sid; }
-	;
-
-onEditSetting [LP property]
-@init {
-	String sid = null;
-}
-@after {
-	if (inPropParseState()) {
-		self.setAsOnEditObjectFor($property, sid);
-	}
-}
-	:	'ASONEDIT' name = compoundID { sid = $name.sid; }
+	:	(   'ASONCHANGE' { editActionSID = ServerResponse.CHANGE; }
+	    |   'ASONCHANGEWYS' { editActionSID = ServerResponse.CHANGE_WYS; }
+        |   'ASONEDIT' { editActionSID = ServerResponse.EDIT_OBJECT; }
+        )
+        name = compoundID { mainPropertySID = $name.sid; }
 	;
 
 toolbarSetting [LP property]
@@ -1531,7 +1523,7 @@ notNullSetting returns [boolean toResolve = false, Event event]
 	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; })? et=baseEvent { $event = $et.event; }
 	;
 
-eventSetting [LP property, List<String> context]
+onEditEventSetting [LP property, List<String> context]
 @init {
 	String type = null;
 }
@@ -1540,7 +1532,11 @@ eventSetting [LP property, List<String> context]
 		self.setScriptedEditAction(property, type, $action.property);
 	}	
 }
-	:	'ON' ('CHANGE' { type = ServerResponse.CHANGE; } | 'CHANGEWYS' { type = ServerResponse.CHANGE_WYS; })
+	:	'ON'
+	    (   'CHANGE' { type = ServerResponse.CHANGE; }
+	    |   'CHANGEWYS' { type = ServerResponse.CHANGE_WYS; }
+	    |   'EDIT' { type = ServerResponse.EDIT_OBJECT; }
+	    )
 		action=actionPropertyDefinitionBody[context, false]
 	;
 
