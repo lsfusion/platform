@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.client.ui.ResizableFocusPanel;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
-import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
 import platform.gwt.form.shared.view.grid.EditEvent;
@@ -69,10 +68,6 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
 
     @Override
     public void onBrowserEvent(Event event) {
-        if (GKeyStroke.shouldPreventDefaultBrowserAction(event)) {
-            event.preventDefault();
-        }
-
         if (event.getKeyCode() == KeyCodes.KEY_ESCAPE) {
             GwtClientUtils.stopPropagation(event);
             controller.allRemovedPressed();

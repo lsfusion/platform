@@ -5,6 +5,7 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.base.BaseUtils;
 import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.server.FormSessionObject;
+import platform.gwt.form.server.convert.GwtToClientConverter;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
 import platform.gwt.form.shared.actions.form.SetUserFilters;
 import platform.gwt.form.shared.view.changes.dto.GPropertyFilterDTO;
@@ -35,9 +36,12 @@ public class SetUserFiltersHandler extends ServerResponseActionHandler<SetUserFi
             outStream.writeByte(filter.compareByte);
             outStream.writeByte(filter.filterValue.typeID);
 
+            GwtToClientConverter converter = GwtToClientConverter.getInstance();
+
             switch (filter.filterValue.typeID) {
                 case 0:
-                    BaseUtils.serializeObject(outStream, filter.filterValue.content);
+                    Object convertedValue = converter.convertOrCast(filter.filterValue.content);
+                    BaseUtils.serializeObject(outStream, convertedValue);
                     break;
                 case 1:
                     outStream.writeInt((Integer) filter.filterValue.content);

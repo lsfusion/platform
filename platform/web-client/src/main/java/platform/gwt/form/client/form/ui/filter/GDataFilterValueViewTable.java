@@ -103,8 +103,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     }
 
     public void focusOnValue() {
-        setKeyboardSelectedRow(0, true);
-        setKeyboardSelectedColumn(0, true);
+        setFocus(true);
     }
 
     @Override
@@ -165,7 +164,11 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
         @Override
         public void onBrowserEvent(Context context, Element parent, Object value, NativeEvent event) {
-            if ((BrowserEvents.DBLCLICK.equals(event.getType()) || GKeyStroke.isPossibleEditKeyEvent(event)) && cellEditor == null && event.getKeyCode() != KeyCodes.KEY_ESCAPE) {
+            if ((BrowserEvents.DBLCLICK.equals(event.getType()) || GKeyStroke.isPossibleEditKeyEvent(event) &&
+                    !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey()) &&
+                    cellEditor == null &&
+                    event.getKeyCode() != KeyCodes.KEY_ESCAPE &&
+                    event.getKeyCode() != KeyCodes.KEY_ENTER) {
                 startEditing(new NativeEditEvent(event), context, parent);
             }
             if (isInEditingState) {

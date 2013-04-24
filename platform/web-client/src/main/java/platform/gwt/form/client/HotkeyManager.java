@@ -41,11 +41,6 @@ public class HotkeyManager {
     private void handleKeyEvent(NativeEvent nativeEvent) {
         assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType());
 
-        // сразу предотвращаем нежелательные действия браузера по нажатию некоторых быстрых клавиш
-        if (GKeyStroke.shouldPreventDefaultBrowserAction(nativeEvent)) {
-            nativeEvent.preventDefault();
-        }
-
         EventTarget target = nativeEvent.getEventTarget();
         if (!Element.is(target)) {
             return;

@@ -21,7 +21,7 @@ public class GDateType extends GDataType {
     }
 
     @Override
-    public Date parseString(String s) throws ParseException {
+    public java.sql.Date parseString(String s) throws ParseException {
         DateTimeFormat format = GwtSharedUtils.getDefaultDateFormat();
         if (s.isEmpty()) {
             return null;

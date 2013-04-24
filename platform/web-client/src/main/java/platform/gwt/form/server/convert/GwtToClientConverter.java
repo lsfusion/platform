@@ -8,7 +8,6 @@ import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.GUserInputResult;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
-import platform.gwt.form.shared.view.changes.dto.GDateDTO;
 import platform.gwt.form.shared.view.changes.dto.GFilesDTO;
 import platform.interop.ClassViewType;
 import platform.interop.form.UserInputResult;
@@ -47,11 +46,11 @@ public class GwtToClientConverter extends ObjectConverter {
         return DateConverter.safeDateToSql(date);
     }
 
-    @Converter(from = GDateDTO.class)
-    public java.sql.Date convertDate(GDateDTO dateDTO) {
+    @Converter(from = java.sql.Date.class)
+    public java.sql.Date convertDate(java.sql.Date gDate) {
         BaseCalendar calendar = CalendarSystem.getGregorianCalendar();
         BaseCalendar.Date date = (BaseCalendar.Date) calendar.newCalendarDate(ServerUtils.timeZone.get());
-        date = date.setNormalizedDate(dateDTO.year + 1900, dateDTO.month + 1, dateDTO.day);
+        date = date.setNormalizedDate(gDate.getYear() + 1900, gDate.getMonth() + 1, gDate.getDate());
         return new java.sql.Date(calendar.getTime(date));
     }
 

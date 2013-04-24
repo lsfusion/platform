@@ -124,6 +124,9 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
     @Override
     protected void onBrowserEvent2(Event event) {
+        if (GKeyStroke.shouldPreventDefaultBrowserAction(event) && cellEditor == null) {
+            event.preventDefault();
+        }
         if (cellEditor == null && event.getTypeInt() == Event.ONPASTE) { // пока работает только для Chrome
             executePaste(event);
         } else {
