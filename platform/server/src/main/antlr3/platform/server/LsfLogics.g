@@ -2777,7 +2777,7 @@ multiCompoundID returns [String sid]
 
 colorLiteral returns [Color val]
 	:	c=COLOR_LITERAL { $val = Color.decode($c.text); }
-	|	'RGB' '(' r=uintLiteral ',' g=uintLiteral ',' b=uintLiteral ')' { $val = new Color($r.val, $g.val, $b.val); } 
+	|	'RGB' '(' r=uintLiteral ',' g=uintLiteral ',' b=uintLiteral ')' { $val = self.createScriptedColor($r.val, $g.val, $b.val); } 
 	;
 
 stringLiteral returns [String val]
@@ -2891,11 +2891,11 @@ udoubleLiteral returns [double val]
 	; 
 		
 uintLiteral returns [int val]
-	:	u=UINT_LITERAL { $val = Integer.parseInt($u.text); }
+	:	u=UINT_LITERAL { $val = self.createScriptedInteger($u.text); }
 	;		
 
 ulongLiteral returns [long val]
-	:	u=ULONG_LITERAL { $val = Long.parseLong($u.text.substring(0, $u.text.length() - 1)); }
+	:	u=ULONG_LITERAL { $val = self.createScriptedLong($u.text.substring(0, $u.text.length() - 1)); }
 	;
 	
 /////////////////////////////////////////////////////////////////////////////////

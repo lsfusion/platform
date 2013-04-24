@@ -431,6 +431,26 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("wrong escape sequence: '\\%c'", ch));
     }
 
+    public void emitColorComponentValueError(ScriptParser parser) throws SemanticErrorException {
+        emitOutOfRangeError(parser, "color component", 0, 255);
+    }
+
+    public void emitOutOfRangeError(ScriptParser parser, String valueType, int lbound, int rbound) throws SemanticErrorException {
+        emitSimpleError(parser, format("%s is out of range (%d-%d)", valueType, lbound, rbound));
+    }
+
+    public void emitIntegerValueError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "absolute value of INTEGER constant should be less than 2147483648 (2^31), use LONG or NUMERIC instead");
+    }
+
+    public void emitLongValueError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "absolute value of LONG constant should be less than 2^63, use NUMERIC instead");
+    }
+
+    public void emitDateDayError(ScriptParser parser, int y, int m, int d) throws SemanticErrorException {
+        emitSimpleError(parser, format("wrong date %04d-%02d-%02d", y, m, d));
+    }
+
     private void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

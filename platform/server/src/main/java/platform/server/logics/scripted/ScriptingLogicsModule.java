@@ -45,6 +45,7 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.Event;
 import platform.server.logics.property.actions.BaseEvent;
 import platform.server.logics.property.actions.SessionEnvEvent;
 import platform.server.logics.property.actions.flow.Inline;
@@ -58,12 +59,14 @@ import platform.server.session.DataSession;
 
 import javax.mail.Message;
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1442,17 +1445,82 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addCProp(NumericClass.get(value.length(), value.length() - value.indexOf('.') - 1), Double.parseDouble(value));
     }
 
-    public java.sql.Date dateLiteralToDate(String text) {
-        return new java.sql.Date(Integer.parseInt(text.substring(0, 4)) - 1900, Integer.parseInt(text.substring(5, 7)) - 1, Integer.parseInt(text.substring(8, 10)));
+    public Color createScriptedColor(int r, int g, int b) throws ScriptingErrorLog.SemanticErrorException {
+        if (r > 255 || g > 255 || b > 255) {
+            errLog.emitColorComponentValueError(parser);
+        }
+        return new Color(r, g, b);
     }
 
-    public Timestamp dateTimeLiteralToTimestamp(String text) {
-        return new Timestamp(Integer.parseInt(text.substring(0, 4)) - 1900, Integer.parseInt(text.substring(5, 7)) - 1, Integer.parseInt(text.substring(8, 10)),
-                Integer.parseInt(text.substring(11, 13)), Integer.parseInt(text.substring(14, 16)), 0, 0);
+    public int createScriptedInteger(String s) throws ScriptingErrorLog.SemanticErrorException {
+        int res = 0;
+        try {
+            res = Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            errLog.emitIntegerValueError(parser);
+        }
+        return res;
     }
 
-    public Time timeLiteralToTime(String text) {
-        return new Time(Integer.parseInt(text.substring(0, 2)), Integer.parseInt(text.substring(3, 5)), 0);
+    public long createScriptedLong(String s) throws ScriptingErrorLog.SemanticErrorException {
+        long res = 0;
+        try {
+            res = Long.parseLong(s);
+        } catch (NumberFormatException e) {
+            errLog.emitLongValueError(parser);
+        }
+        return res;
+    }
+
+
+    private void validateDate(int y, int m, int d) throws ScriptingErrorLog.SemanticErrorException {
+        checkRange("year component", y, 1900, 9999);
+        checkRange("month component", m, 1, 12);
+        checkRange("day component", d, 1, 31);
+
+        final List<Integer> longMonth = Arrays.asList(1, 3, 5, 7, 8, 10, 12);
+        if (d == 31 && !longMonth.contains(m) ||
+            d == 30 && m == 2 ||
+            d == 29 && m == 2 && (y % 4 != 0 || y % 100 == 0 && y % 400 != 0))
+        {
+            errLog.emitDateDayError(parser, y, m, d);
+        }
+
+    }
+
+    private void validateTime(int h, int m) throws ScriptingErrorLog.SemanticErrorException {
+        checkRange("hour component", h, 0, 23);
+        checkRange("minute component", m, 0, 59);
+    }
+
+    private void validateDateTime(int y, int m, int d, int h, int mn) throws ScriptingErrorLog.SemanticErrorException {
+        validateDate(y, m, d);
+        validateTime(h, mn);
+    }
+
+    public java.sql.Date dateLiteralToDate(String text) throws ScriptingErrorLog.SemanticErrorException {
+        int y = Integer.parseInt(text.substring(0, 4));
+        int m = Integer.parseInt(text.substring(5, 7));
+        int d = Integer.parseInt(text.substring(8, 10));
+        validateDate(y, m, d);
+        return new java.sql.Date(y - 1900, m - 1, d);
+    }
+
+    public Timestamp dateTimeLiteralToTimestamp(String text) throws ScriptingErrorLog.SemanticErrorException {
+        int y = Integer.parseInt(text.substring(0, 4));
+        int m = Integer.parseInt(text.substring(5, 7));
+        int d = Integer.parseInt(text.substring(8, 10));
+        int h = Integer.parseInt(text.substring(11, 13));
+        int mn = Integer.parseInt(text.substring(14, 16));
+        validateDateTime(y, m, d, h, mn);
+        return new Timestamp(y - 1900, m - 1, d, h, mn, 0, 0);
+    }
+
+    public Time timeLiteralToTime(String text) throws ScriptingErrorLog.SemanticErrorException {
+        int h = Integer.parseInt(text.substring(0, 2));
+        int m = Integer.parseInt(text.substring(3, 5));
+        validateTime(h, m);
+        return new Time(h, m, 0);
     }
 
     public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop) throws ScriptingErrorLog.SemanticErrorException {
@@ -2272,6 +2340,12 @@ public class ScriptingLogicsModule extends LogicsModule {
                     errLog.emitAddObjToPropertyError(parser);
                 }
             }
+        }
+    }
+
+    public void checkRange(String valueType, int value, int lbound, int rbound) throws ScriptingErrorLog.SemanticErrorException {
+        if (value < lbound || value > rbound) {
+            errLog.emitOutOfRangeError(parser, valueType, lbound, rbound);
         }
     }
 
