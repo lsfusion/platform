@@ -20,6 +20,7 @@ import platform.gwt.form.shared.view.changes.dto.ColorDTO;
 import static platform.gwt.form.client.HotkeyManager.Binding;
 
 public class DataPanelRenderer implements PanelRenderer {
+    protected GPropertyDraw property;
 
     protected final Label label;
     protected final GSinglePropertyTable valueTable;
@@ -32,7 +33,8 @@ public class DataPanelRenderer implements PanelRenderer {
 
     private String componentWidth = null;
 
-    public DataPanelRenderer(GFormController form, final GPropertyDraw property, GGroupObjectValue columnKey) {
+    public DataPanelRenderer(GFormController form, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
+        this.property = iproperty;
         label = new Label(caption = property.getEditCaption());
 
         if (property.headerFont != null) {
@@ -122,7 +124,7 @@ public class DataPanelRenderer implements PanelRenderer {
     public void setCaption(String caption) {
         if (!GwtSharedUtils.nullEquals(this.caption, caption)) {
             this.caption = caption;
-            label.setText(caption);
+            label.setText(property.getEditCaption(caption));
         }
     }
 

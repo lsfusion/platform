@@ -153,7 +153,7 @@ public class DataPanelView extends JPanel implements PanelView {
     }
 
     public void setCaption(String caption) {
-        label.setText(caption);
+        label.setText(property.getEditCaption(caption));
     }
 
     @Override
