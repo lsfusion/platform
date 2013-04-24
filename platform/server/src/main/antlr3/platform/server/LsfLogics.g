@@ -434,7 +434,11 @@ formTreeGroupObjectDeclaration returns [ScriptingGroupObject groupObject, List<S
 
 treeGroupParentDeclaration returns [List<String> properties = new ArrayList<String>()]
 	:	'PARENT'
-		(id = compoundID { $properties.add($id.sid); })+
+		(	id = compoundID { $properties.add($id.sid); }
+		|	'('
+				list=nonEmptyCompoundIdList { $properties.addAll($list.ids); }
+			')'
+		)		
 	;
 
 formCommonGroupObject returns [ScriptingGroupObject groupObject]
