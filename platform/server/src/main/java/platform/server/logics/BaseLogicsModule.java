@@ -246,13 +246,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initTables() {
-        tableFactory = new TableFactory();
-        for (int i = 0; i < TableFactory.MAX_INTERFACE; i++) { // заполним базовые таблицы
-            CustomClass[] baseClasses = new CustomClass[i];
-            for (int j = 0; j < i; j++)
-                baseClasses[j] = baseClass;
-            addTable("base_" + i, baseClasses);
-        }
+        tableFactory = new TableFactory(baseClass);
 
         addTable("objectObjectDate", baseClass, baseClass, DateClass.instance);
         addTable("named", baseClass.named);
