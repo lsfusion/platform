@@ -274,7 +274,7 @@ invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(
 overFillInvoiceUserInvoiceInvoice = ABSTRACT ACTION (userInvoice, invoice);
 overFillInvoiceUserInvoiceDetailInvoiceDetail = ABSTRACT ACTION (userDetail, detail);
 
-moveUserInvoiceInvoice 'Создать накладную (закупка)' =  ACTION (invoice) NEWSESSION{
+moveUserInvoiceInvoice 'Накладная (закупка)' =  ACTION (invoice) NEWSESSION{
 
     FOR ADDOBJ i = Purchase.UserInvoice DO {
 

@@ -13,7 +13,7 @@ NAMESPACE Purchase;
 
 @defineOrderShipment(' (закупка)', customerStock);
 @defineInvoiceShipment(' (закупка)', customerStock);
-@defineInvoiceShipmentAction(invoices);
+@defineInvoiceShipmentAction(' (закупка)');
 @defineInvoiceShipmentBatch();
 
 //----------------------------------------------- Операции -----------------------------------------------------//

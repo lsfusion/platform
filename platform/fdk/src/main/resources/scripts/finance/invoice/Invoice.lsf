@@ -430,7 +430,7 @@ META defineInvoice(sign, stockProp)
                         NEW createdContainer {
                             title = 'Создание на основе';
                             childConstraints = TO THE BOTTOM;
-                            ADD PROPERTY(copyInvoice);
+                            ADD PROPERTY(copyInvoice) { caption = 'Накладная'###sign;}
                         }
                     }
                 }

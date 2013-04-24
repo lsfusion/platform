@@ -105,7 +105,7 @@ Purchase.editOrder(order) += ACTION EXEC editOrder(orderPurchaseOrder(order));
 
 //-- Действие
 
-moveUserOrderOrder 'Создать заказ (закупка)' =  ACTION (order) NEWSESSION{
+moveUserOrderOrder 'Заказ (закупка)' =  ACTION (order) NEWSESSION{
     FOR ADDOBJ o = Purchase.UserOrder DO {
 
         SET Purchase.shipmentDateUserOrder(o) <- shipmentDateOrder(order);

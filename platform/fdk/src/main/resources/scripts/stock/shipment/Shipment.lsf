@@ -314,7 +314,7 @@ META defineShipment(sign, stockProp)
                     NEW createdContainer {
                         title = 'Создание на основе';
                         childConstraints = TO THE BOTTOM;
-                        ADD PROPERTY(copyShipment);
+                        ADD PROPERTY(copyShipment) { caption = 'Поставка'###sign;}
                     }
                 }
             }

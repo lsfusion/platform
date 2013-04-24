@@ -240,7 +240,7 @@ EXTEND FORM Purchase.shipments
 //overFillShipmentUserShipmentShipment = ABSTRACT ACTION (userShipment, shipment);
 //overFillShipmentUserShipmentDetailShipmentDetail = ABSTRACT ACTION (userDetail, detail);
 
-moveUserShipmentShipment 'Создать поставку (закупка)' =  ACTION (shipment) NEWSESSION{
+moveUserShipmentShipment 'Поставка (закупка)' =  ACTION (shipment) NEWSESSION{
 
     FOR ADDOBJ s = Purchase.UserShipment DO {
 

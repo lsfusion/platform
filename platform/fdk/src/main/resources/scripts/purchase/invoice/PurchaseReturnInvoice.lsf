@@ -10,7 +10,7 @@ NAMESPACE PurchaseReturn;
 
 @defineInvoice(' (закупка-возврат)', customerStock);
 @defineOrderInvoice(' (закупка-возврат)', customerStock);
-@defineOrderInvoiceAction (orders);
+@defineOrderInvoiceAction (' (закупка-возврат)');
 
 @defineInvoiceBatch(customerStock);
 @defineInvoiceReturn(Purchase, PurchaseReturn, customerStock);

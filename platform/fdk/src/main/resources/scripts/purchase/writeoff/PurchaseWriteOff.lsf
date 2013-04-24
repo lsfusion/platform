@@ -393,7 +393,7 @@ sumWriteOffDetail(writeOffDetail) += writeOffShipmentWriteOffDetail(writeOffDeta
 
 shipmentDetailWriteOffDetail(writeOffDetail) += shipmentDetailShipmentWriteOffDetail(writeOffDetail);
 
-moveUserWriteOffShipment 'Создать списание' =  ACTION (shipment) NEWSESSION{
+moveUserWriteOffShipment 'Списание' =  ACTION (shipment) NEWSESSION{
 
     FOR ADDOBJ w = UserWriteOff DO {
 

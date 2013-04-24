@@ -149,6 +149,8 @@ META defineInvoiceShipment(sign, stockProp)
     @defineDocumentInterfaceHeaderCreateShipment (invoice);
     @defineDocumentInterfaceHeaderSumPrefix (invoice, shipment, ' (учетная)');
 
+    @defineDocumentInterfaceHeaderTimePrefix(Invoice, shipment, ' поставки');
+
     overCopyInvoice(s, d) += ACTION (s, d) {
         SET createShipmentUserInvoice(d) <- createShipmentUserInvoice(s);
     }
@@ -166,7 +168,8 @@ META defineInvoiceShipment(sign, stockProp)
     backgroundShippedInvoice 'Цвет' (invoice) = RGB(255, 224, 255) IF invoice IS Invoice;
     EXTEND FORM userInvoice
         PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) createShipmentUserInvoice
-        PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) SHOWIF createShipmentUserInvoice(i) shipmentSumUserInvoiceDetailUserInvoice
+        PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) SHOWIF createShipmentUserInvoice(i) shipmentSumUserInvoiceDetailUserInvoice,
+                      shipmentDateUserInvoice, shipmentTimeUserInvoice
         PROPERTIES(d) BEFORE delete(d) SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
                       name###stockProp###userInvoiceDetail, shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
         PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
@@ -176,7 +179,10 @@ META defineInvoiceShipment(sign, stockProp)
         headerCreateDocuments {
             NEW headerCreateShipment {
                 title = 'Поставка';
+                childConstraints = TO THE RIGHTBOTTOM;
                 ADD PROPERTY(createShipmentUserInvoice);
+                ADD PROPERTY(shipmentDateUserInvoice);
+                ADD PROPERTY(shipmentTimeUserInvoice);
             }
         }
     }
@@ -204,8 +210,8 @@ META defineInvoiceShipment(sign, stockProp)
 
     @defineDocumentDetailIndex(invoiceShipment);
 
-    dateShipment(shipment) += dateInvoiceShipment(shipment);
-    timeShipment(shipment) += timeInvoiceShipment(shipment);
+    dateShipment(shipment) += shipmentDateInvoice(invoiceInvoiceShipment(shipment));
+    timeShipment(shipment) += shipmentTimeInvoice(invoiceInvoiceShipment(shipment));
 
     @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, supplierStock, 'Склад поставщика', , );
     supplierStockShipment(shipment) += supplierStockInvoiceShipment(shipment);
@@ -290,8 +296,8 @@ END
 
 //-- Действие
 
-META defineInvoiceShipmentAction (form)
-    moveUserShipmentInvoice 'Создать поставку' =  ACTION (invoice) NEWSESSION{
+META defineInvoiceShipmentAction (sign)
+    moveUserShipmentInvoice 'Поставка'###sign =  ACTION (invoice) NEWSESSION{
 
         FOR ADDOBJ s = UserShipment DO {
 
@@ -323,10 +329,10 @@ META defineInvoiceShipmentAction (form)
         }
     } TOOLBAR;
 
-    EXTEND FORM form
+    EXTEND FORM invoices
         PROPERTIES(i) moveUserShipmentInvoice
     ;
-    EXTEND DESIGN form {
+    EXTEND DESIGN invoices {
         createdContainer{
             ADD PROPERTY(moveUserShipmentInvoice);
         }

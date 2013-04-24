@@ -14,7 +14,7 @@ NAMESPACE PurchaseReturn;
 
 @defineOrderShipment(' (закупка-возврат)', customerStock);
 @defineInvoiceShipment(' (закупка-возврат)', customerStock);
-@defineInvoiceShipmentAction(invoices);
+@defineInvoiceShipmentAction(' (закупка-возврат)');
 
 @defineInvoiceShipmentBatch();
 

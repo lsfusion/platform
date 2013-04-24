@@ -30,7 +30,7 @@ NAMESPACE Sale;
 // ---------------------------------------------- Создание инвойса по заказу ---------------------------------- //
 
 @defineOrderInvoice(' (продажа)', supplierStock);
-@defineOrderInvoiceAction (orders);
+@defineOrderInvoiceAction (' (продажа)');
 
 // --------------------- НДС расчетный ----------------------- //
 

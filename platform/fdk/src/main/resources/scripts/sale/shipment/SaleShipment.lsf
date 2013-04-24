@@ -14,7 +14,7 @@ NAMESPACE Sale;
 
 @defineOrderShipment(' (продажа)', supplierStock);
 @defineInvoiceShipment(' (продажа)', supplierStock);
-@defineInvoiceShipmentAction(invoices);
+@defineInvoiceShipmentAction(' (продажа)');
 
 @defineInvoiceShipmentBatch();
 

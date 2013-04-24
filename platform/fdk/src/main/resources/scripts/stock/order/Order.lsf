@@ -474,7 +474,7 @@ META defineOrder(sign, legalEntityProp, stockProp)
                     NEW createdContainer {
                         title = 'Создание на основе';
                         childConstraints = TO THE BOTTOM;
-                        ADD PROPERTY(copyOrder);
+                        ADD PROPERTY(copyOrder) { caption = 'Заказ'###sign;}
                     }
                 }
             }
