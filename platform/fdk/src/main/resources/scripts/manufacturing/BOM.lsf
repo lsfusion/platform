@@ -16,7 +16,7 @@ TABLE material(Material);
 nameMaterial 'Наименование' (material) = ABSTRACT STRING[255] (Material) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80;
 
 UOMMaterial (material) = ABSTRACT UOM (Material) PERSISTENT;
-shortNameUOMMaterial 'Ед. изм.' (material) = shortName(UOMMaterial(material)) IN recognize;
+shortNameUOMMaterial 'Ед. изм.' (material) = shortName(UOMMaterial(material)) IN base;
 
 editMaterial 'Редактировать' = ABSTRACT ACTION (material) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 addMaterial 'Добавить' = ABSTRACT ACTION () IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
@@ -81,6 +81,7 @@ skuMaterial(material) += material AS Sku;
 CLASS Technology 'Технология' : Named;
 TABLE technology (Technology);
 
+TABLE technologyMaterialDate (Technology, Material, DATE);
 @defineHistorizable(wastageTechnologyMaterial, '% потерь', NUMERIC[8,3], technology, name, material, nameMaterial, base);
 
 

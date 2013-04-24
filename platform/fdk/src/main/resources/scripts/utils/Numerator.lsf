@@ -166,18 +166,18 @@ END
 
 META defineNumeratedObject(object1, object2)
 
-    number###object1###object2 'Номер' = DATA STRING[18] (###object1, ###object2) IN numberedGroup MINCHARWIDTH 7;
-    series###object1###object2 'Серия' = DATA STRING[2] (###object1, ###object2) IN numberedGroup FIXEDCHARWIDTH 3;
+    number###object1###object2 'Номер' = DATA STRING[18] (###object1, ###object2) MINCHARWIDTH 7;
+    series###object1###object2 'Серия' = DATA STRING[2] (###object1, ###object2) FIXEDCHARWIDTH 3;
     seriesNumber###object1###object2 'Серия/Номер' (object1, object2) = ustring2(series###object1###object2(object1, object2), number###object1###object2(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 
     numerator###object1###object2 = DATA Numerator (###object1, ###object2);
-    nameNumerator###object1###object2 'Нумератор' (object1, object2) = name(numerator###object1###object2(object1, object2)) IN numberedGroup MINCHARWIDTH 7 PREFCHARWIDTH 15;
+    nameNumerator###object1###object2 'Нумератор' (object1, object2) = name(numerator###object1###object2(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
     setValueSessionNumerated###object1###object2 'Сгенерировать номер' = ACTION (object1, object2) {
         SET number###object1###object2(object1, object2) <- curStringValueNumerator(numerator###object1###object2(object1, object2));
         SET series###object1###object2(object1, object2) <- seriesNumerator(numerator###object1###object2(object1, object2));
         EXEC incrementValueSessionNumerator(numerator###object1###object2(object1, object2));
-    } IN numberedGroup SHORTCUT number###object1###object2;
+    } SHORTCUT number###object1###object2;
 
     WHEN CHANGED(numerator###object1###object2(object1, object2)) AND
          NOT CHANGED(number###object1###object2(object1, object2)) AND

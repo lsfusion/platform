@@ -87,6 +87,7 @@ TABLE item(Item);
 
 TABLE itemDate (Item, DATE);
 TABLE itemCountry (Item, Country);
+TABLE itemCountryDate (Item, Country, DATE);
 
 // Связь с группой товаров
 itemGroupItem = DATA ItemGroup(Item) AUTOSET;

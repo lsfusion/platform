@@ -36,7 +36,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
         ImMap<I, ValueClass> interfaceClasses = property.getInterfaceClasses();
         int i = 0;
         for (I pi : property.interfaces) {
-            ObjectEntity paramObject  = addSingleGroupObject(interfaceClasses.get(pi), BL.LM.objectValue, BL.LM.recognizeGroup);
+            ObjectEntity paramObject  = addSingleGroupObject(interfaceClasses.get(pi), BL.LM.objectValue, BL.LM.recognizeGroup, true);
             paramObject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             interfaceObjects.add(pi, paramObject);

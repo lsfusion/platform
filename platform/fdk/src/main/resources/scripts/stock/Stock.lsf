@@ -234,7 +234,7 @@ skuGroupSku (sku) = ABSTRACT SkuGroup (Sku) PERSISTENT;
 groupTypeGroup(group) += SystemGroupType.skuGroupType IF group IS SkuGroup;
 groupGroupTypeSku(type, sku) += skuGroupSku(sku) WHEN CLASS(skuGroupSku(sku)) AND type == SystemGroupType.skuGroupType;
 
-nameSku 'Наименование' (sku) = ABSTRACT STRING[255] (Sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognize;
+nameSku 'Наименование' (sku) = ABSTRACT STRING[255] (Sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN base;
 
 TABLE skuLanguage(Sku, Language);
 nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT STRING[200] (Sku, Language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
@@ -242,10 +242,10 @@ nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT STRING[200
 nameSkuStock 'Наименование (иностр.)' (sku, stock) = IF languageStock(stock) THEN nameSkuLanguage(sku, languageStock(stock)) ELSE nameSku(sku);
 
 UOMSku (sku) = ABSTRACT UOM (Sku) PERSISTENT;
-shortNameUOMSku 'Ед. изм.' (sku) = shortName(UOMSku(sku)) IN recognize;
+shortNameUOMSku 'Ед. изм.' (sku) = shortName(UOMSku(sku)) IN base;
 
 countrySku = ABSTRACT Country (Sku) PERSISTENT;
-nameCountrySku 'Страна' (sku) = name(countrySku(sku)) IN recognize;
+nameCountrySku 'Страна' (sku) = name(countrySku(sku)) IN base;
 
 TABLE skuGroupSku(SkuGroup, Sku);
 isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku), skuGroup) PERSISTENT;
@@ -303,7 +303,7 @@ UOMBatch(batch)= UOMSku(skuBatch(batch));
 shortNameUOMBatch '' (batch)= shortNameUOMSku(skuBatch(batch));
 
 stockBatch (batch) = ABSTRACT Stock (Batch) PERSISTENT INDEXED ;
-nameStockBatch 'Склад' (batch) = name(stockBatch(batch)) IN recognize;
+nameStockBatch 'Склад' (batch) = name(stockBatch(batch));
 
 costBatch 'Себестоимость' (batch) = ABSTRACT NUMERIC[14,2] (Batch) PERSISTENT;
 prevCostBatch 'Себестоимость' (batch) = PREV(costBatch(batch));
@@ -985,9 +985,9 @@ END
 
 META defineDocumentAbstractDetailSkuCustomPrefixInner (detail, skuClass, skuClassUpper, prefix, caption)
     prefix###skuClass###detail = ABSTRACT skuClassUpper (###detail) PERSISTENT;
-    prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN recognize;
-    prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN recognize;
-    prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognize;
+    prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN base;
+    prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN base;
+    prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN base;
 END
 META defineDocumentInterfaceDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
     @defineDocumentAbstractDetailSkuCustomPrefix(detail, skuClass, prefix, caption);

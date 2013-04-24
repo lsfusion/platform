@@ -388,14 +388,18 @@ END
 
 
 // Index
-META defineDocumentDetailIndex (object, detailClass)
+META defineDocumentDetailIndex (object, detailClass, group)
     index##detailClass 'Номер строки' (d) =
         PARTITION SUM 1 BY object##detailClass(d)
-        ORDER d IN recognize MINCHARWIDTH 4 PREFCHARWIDTH 4;
+        ORDER d IN group MINCHARWIDTH 4 PREFCHARWIDTH 4;
+END
+
+META defineDocumentDetailIndex (object, detailClass)
+    @defineDocumentDetailIndex(object, detailClass, base);
 END
 META defineDocumentInterfaceDetailIndex (object, detailClass)
     @defineDocumentDetailIndex(object, detailClass);
-    @defineDocumentDetailIndex(user###object, User##detailClass);
+    @defineDocumentDetailIndex(user###object, User##detailClass, recognize);
 END
 
 META defineDocumentDetailIndex (object)
@@ -429,14 +433,20 @@ END
 // ------- Number ----- //
 
 META defineDocumentAbstractHeaderNumber(objectClass)
-    number##objectClass 'Номер' = ABSTRACT STRING[18] (objectClass) IN numberedGroup MINCHARWIDTH 7 PERSISTENT;
-    series##objectClass 'Серия' = ABSTRACT STRING[2] (objectClass) IN numberedGroup FIXEDCHARWIDTH 3 PERSISTENT;
+    number##objectClass 'Номер' = ABSTRACT STRING[18] (objectClass) IN base MINCHARWIDTH 7 PERSISTENT;
+    series##objectClass 'Серия' = ABSTRACT STRING[2] (objectClass) IN base FIXEDCHARWIDTH 3 PERSISTENT;
     seriesNumber##objectClass 'Серия/Номер' (o) = ustring2(series##objectClass(o), number##objectClass(o)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 END
 META defineDocumentInterfaceHeaderNumber(objectClass)
     @defineDocumentAbstractHeaderNumber(objectClass);
     number##objectClass(o) += numberObject(o) IF o IS User##objectClass;
     series##objectClass(o) += seriesObject(o) IF o IS User##objectClass;
+END
+
+META defineDocumentDetailNumber (object, detailClass, group)
+    number##detailClass 'Номер' (d) = numberObject(object##detailClass(d)) IN group;
+    series##detailClass 'Серия' (d) = seriesObject(object##detailClass(d)) IN group;
+    seriesNumber##detailClass 'Серия/номер' (d) = seriesNumberObject(object##detailClass(d));
 END
 
 META defineDocumentDetailNumber (object, detailClass)
@@ -456,7 +466,7 @@ END
 META defineDocumentInterfaceNumber(object, detailClass)
     @defineDocumentInterfaceHeaderNumber(###object);
     @defineDocumentDetailNumber(object, detailClass);
-    @defineDocumentDetailNumber(user###object, User##detailClass);
+    @defineDocumentDetailNumber(user###object, User##detailClass, recognize);
 END
 
 META defineDocumentAbstractNumber(object)
@@ -675,8 +685,8 @@ END
 
 // Number
 META defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, suffix)
-    number###aggrObject 'Номер документа' (o) = number###suffix(primObject###aggrObject(o));
-    series###aggrObject 'Серия документа' (o) = series###suffix(primObject###aggrObject(o));
+    number###aggrObject 'Номер документа' (o) = number###suffix(primObject###aggrObject(o)) IN recognize;
+    series###aggrObject 'Серия документа' (o) = series###suffix(primObject###aggrObject(o)) IN recognize;
     seriesNumber###aggrObject 'Серия/номер документ' (o) = seriesNumber###suffix(primObject###aggrObject(o));
 END
 

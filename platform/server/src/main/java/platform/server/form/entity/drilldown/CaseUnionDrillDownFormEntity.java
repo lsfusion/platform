@@ -79,7 +79,7 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
         valueContainer.add(design.get(implPropertyDraw));
-        for (int i = propProperties.size()-1; i>0; i--) {
+        for (int i = propProperties.size()-1; i >= 0; i--) {
             ContainerView propsContainer = design.createContainer(getString("logics.property.drilldown.form.where") + " " + (i + 1));
             propsContainer.constraints.fillHorizontal = 1;
             propsContainer.add(design.get(propProperties.get(i)));

@@ -254,7 +254,7 @@ META defineDocumentDetailBarcodeCustomPrefix (detail, skuProp, prefixB, prefixS)
     prefixB###barcodePack###detail = DATA Barcode (###detail);
     prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail));
     prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail));
-    prefixB###amountPack###detail 'Кол-во в упаковке' = DATA NUMERIC[14,3] (###detail) IN recognize;
+    prefixB###amountPack###detail 'Кол-во в упаковке' = DATA NUMERIC[14,3] (###detail);
 
     CONSTRAINT skuBarcode(prefixB###barcodePack###detail(detail)) != prefixS###skuProp###detail(detail) CHECKED BY prefixB###barcodePack###detail
         MESSAGE 'Выбран штрих-кода не соответствующий sku';
@@ -264,7 +264,7 @@ META defineDocumentAbstractDetailBarcodeCustomPrefix (detail, prefixB)
     prefixB###barcodePack###detail = ABSTRACT Barcode (###detail);
     prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail));
     prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail));
-    prefixB###amountPack###detail 'Кол-во в упаковке' = ABSTRACT NUMERIC[14,3] (###detail) IN recognize;
+    prefixB###amountPack###detail 'Кол-во в упаковке' = ABSTRACT NUMERIC[14,3] (###detail);
 END
 
 META defineDocumentInterfaceBarcodeCustomPrefix (detail, skuProp, prefixB, prefixS)
