@@ -327,10 +327,7 @@ EXTEND FORM invoices
 ;
 EXTEND DESIGN invoices {
     createdContainer{
-        NEW invoiceContainer{
-            title = 'Накладная';
-            ADD PROPERTY(moveUserInvoiceInvoice);
-        }
+        ADD PROPERTY(moveUserInvoiceInvoice);
     }
 }
 

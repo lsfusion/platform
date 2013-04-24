@@ -424,10 +424,7 @@ EXTEND FORM shipments
 ;
 EXTEND DESIGN shipments {
     createdContainer{
-        NEW writeOffContainer{
-            title = 'Списание';
-            ADD PROPERTY(moveUserWriteOffShipment);
-        }
+        ADD PROPERTY(moveUserWriteOffShipment);
     }
 }
 

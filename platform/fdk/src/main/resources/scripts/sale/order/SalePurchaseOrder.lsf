@@ -159,10 +159,7 @@ EXTEND FORM orders
 ;
 EXTEND DESIGN orders {
     createdContainer{
-        NEW orderContainer{
-            title = 'Заказ (закупка)';
-            ADD PROPERTY(moveUserOrderOrder);
-        }
+        ADD PROPERTY(moveUserOrderOrder);
     }
 }
 

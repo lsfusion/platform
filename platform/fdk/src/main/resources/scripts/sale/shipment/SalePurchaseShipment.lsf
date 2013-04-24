@@ -288,10 +288,7 @@ EXTEND FORM shipments
 ;
 EXTEND DESIGN shipments {
     createdContainer{
-        NEW shipmentContainer{
-            title = 'Поставка (закупка)';
-            ADD PROPERTY(moveUserShipmentShipment);
-        }
+        ADD PROPERTY(moveUserShipmentShipment);
     }
 }
 

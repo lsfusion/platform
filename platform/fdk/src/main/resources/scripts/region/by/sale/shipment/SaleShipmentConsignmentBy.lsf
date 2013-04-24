@@ -1,0 +1,66 @@
+MODULE SaleShipmentConsignmentBy;
+
+REQUIRE SaleShipment,
+        ConsignmentBy;
+
+NAMESPACE Sale;
+
+@defineConsignmentHeader (shipment);
+@implementConsignmentHeader (Shipment);
+
+supplierConsignment (consignment) += supplierShipment(consignment);
+supplierStockConsignment (consignment) += supplierStockShipment(consignment);
+customerConsignment (consignment) += customerShipment(consignment);
+customerStockConsignment (consignment) += customerStockShipment(consignment);
+currencyConsignment (consignment) += currencyShipment(consignment);
+
+EXTEND CLASS ShipmentDetail : ConsignmentDetail;
+
+consignmentConsignmentDetail (detail) += shipmentShipmentDetail (detail);
+skuConsignmentDetail (detail) += skuShipmentDetail (detail);
+quantityConsignmentDetail (detail) += quantityShipmentDetail (detail);
+
+packQuantityConsignmentDetail (detail) += quantityShipmentDetail (detail);
+@defineDocumentDetailGrossWeight (shipment, sku);
+grossWeightConsignmentDetail (detail) += grossWeightShipmentDetail (detail);
+
+priceConsignmentDetail (detail) += priceShipmentDetail(detail);
+sumConsignmentDetail (detail) += sumShipmentDetail(detail);
+sumInvoiceConsignmentDetail (detail) += sumShipmentDetail(detail);
+
+EXTEND FORM  shipments
+    PROPERTIES (s)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                     printConsignmentVerticalB, printConsignmentHorizontalB,
+                     printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
+                     printConsignmentSimpleVertical, printConsignmentSimpleAttach
+;
+
+EXTEND DESIGN shipments {
+    printContainer {
+        NEW consignmentRow1 {
+            childConstraints = TO THE RIGHT;
+
+            NEW contOne {
+                title = 'Накладная';
+                ADD PROPERTY(editConsignment);
+            }
+            NEW tn{
+                childConstraints = TO THE RIGHT;
+                title = 'ТН-2';
+                ADD PROPERTY(printConsignmentSimpleVertical);
+                ADD PROPERTY(printConsignmentSimpleHorizontal);
+                ADD PROPERTY(printConsignmentSimpleAttach);
+            }
+        }
+        NEW consignmentRow2 {
+            childConstraints = TO THE RIGHT;
+            title = 'ТТН-1';
+            ADD PROPERTY(printConsignmentVerticalA);
+            ADD PROPERTY(printConsignmentHorizontalA);
+            ADD PROPERTY(printConsignmentVerticalB);
+            ADD PROPERTY(printConsignmentHorizontalB);
+            ADD PROPERTY(printConsignmentAttach);
+        }
+    }
+}
+

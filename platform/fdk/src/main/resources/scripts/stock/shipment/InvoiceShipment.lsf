@@ -328,10 +328,7 @@ META defineInvoiceShipmentAction (form)
     ;
     EXTEND DESIGN form {
         createdContainer{
-            NEW shipmentContainer{
-                title = 'Поставка';
-                ADD PROPERTY(moveUserShipmentInvoice);
-            }
+            ADD PROPERTY(moveUserShipmentInvoice);
         }
     }
 END
