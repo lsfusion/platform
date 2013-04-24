@@ -582,24 +582,34 @@ public class ScriptingLogicsModule extends LogicsModule {
         addNamedParams(property.property.getSID(), namedParams);
     }
 
-    public void addToContextMenuFor(LP contextMenuProperty, String contextMenuCaption, String onlyPropertySID) throws ScriptingErrorLog.SemanticErrorException {
-        assert onlyPropertySID != null;
+    public void addToContextMenuFor(LP onContextAction, String contextMenuCaption, String mainPropertySID) throws ScriptingErrorLog.SemanticErrorException {
+        assert mainPropertySID != null;
 
-        checkActionProperty(contextMenuProperty);
+        checkActionProperty(onContextAction);
 
-        LP<?, ?> mainProperty = findLPByCompoundName(onlyPropertySID);
-        LAP actionContextMenuProperty = (LAP) contextMenuProperty;
-        actionContextMenuProperty.addToContextMenuFor(mainProperty, contextMenuCaption);
+        LP<?, ?> mainProperty = findLPByCompoundName(mainPropertySID);
+        LAP onContextLAP = (LAP) onContextAction;
+        onContextLAP.addToContextMenuFor(mainProperty, contextMenuCaption);
     }
 
-    public void setAsOnChangeFor(LP contextMenuProperty, String onlyPropertySID) throws ScriptingErrorLog.SemanticErrorException {
-        assert onlyPropertySID != null;
+    public void setAsOnChangeFor(LP onChangeAction, String mainPropertySID) throws ScriptingErrorLog.SemanticErrorException {
+        assert mainPropertySID != null;
 
-        checkActionProperty(contextMenuProperty);
+        checkActionProperty(onChangeAction);
 
-        LP<?, ?> mainProperty = findLPByCompoundName(onlyPropertySID);
-        LAP actionContextMenuProperty = (LAP) contextMenuProperty;
-        actionContextMenuProperty.setAsOnChangeFor(mainProperty);
+        LP<?, ?> mainProperty = findLPByCompoundName(mainPropertySID);
+        LAP onChangeLAP = (LAP) onChangeAction;
+        onChangeLAP.setAsOnChangeFor(mainProperty);
+    }
+
+    public void setAsOnEditObjectFor(LP onEditObjectAction, String mainPropertySID) throws ScriptingErrorLog.SemanticErrorException {
+        assert mainPropertySID != null;
+
+        checkActionProperty(onEditObjectAction);
+
+        LP<?, ?> mainProperty = findLPByCompoundName(mainPropertySID);
+        LAP onEditObjectLAP = (LAP) onEditObjectAction;
+        onEditObjectLAP.setAsOnEditFor(mainProperty);
     }
 
     public void setDrawToToolbar(LP property) {

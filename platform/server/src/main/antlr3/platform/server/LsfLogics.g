@@ -541,6 +541,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
+		|	'ON' 'EDIT' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.EDIT_OBJECT, $prop.action); }
 		|	'ON' 'CHANGE' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.CHANGE, $prop.action); }
 		|	'ON' 'CHANGEWYS' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.CHANGE_WYS, $prop.action); }
 		|	'ON' 'SHORTCUT' (c=stringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
@@ -1331,6 +1332,7 @@ propertyOptions[LP property, String propertyName, String caption, List<String> n
 		|	'TABLE' tbl = compoundID { table = $tbl.sid; }
 		|	shortcutSetting [property, caption != null ? caption : propertyName]
 		|	onChangeSetting [property]
+		|	onEditSetting [property]
 		|	toolbarSetting [property]
 		|	fixedCharWidthSetting [property]
 		|	minCharWidthSetting [property]
@@ -1374,6 +1376,18 @@ onChangeSetting [LP property]
 	}
 }
 	:	'ASONCHANGE' name = compoundID { sid = $name.sid; }
+	;
+
+onEditSetting [LP property]
+@init {
+	String sid = null;
+}
+@after {
+	if (inPropParseState()) {
+		self.setAsOnEditObjectFor($property, sid);
+	}
+}
+	:	'ASONEDIT' name = compoundID { sid = $name.sid; }
 	;
 
 toolbarSetting [LP property]

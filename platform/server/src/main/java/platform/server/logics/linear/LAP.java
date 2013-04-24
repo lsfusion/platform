@@ -82,6 +82,10 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         addAsEditActionFor(ServerResponse.CHANGE, mainProperty);
     }
 
+    public <P extends PropertyInterface> void setAsOnEditFor(LP<P, Property<P>> mainProperty) {
+        addAsEditActionFor(ServerResponse.EDIT_OBJECT, mainProperty);
+    }
+
     private <P extends PropertyInterface> void addAsEditActionFor(String actionSID, LP<P, Property<P>> mainProperty) {
         assert listInterfaces.size() <= mainProperty.listInterfaces.size();
 

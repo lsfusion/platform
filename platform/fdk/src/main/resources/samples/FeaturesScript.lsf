@@ -71,6 +71,7 @@ EXTEND CLASS Features.StoreSize
 //                                                                                                 [TOOLBAR]
 //                                                                                                 [SHORTCUT propertyName]
 //                                                                                                 [ASONCHANGE propertyName]
+//                                                                                                 [ASONEDIT propertyName]
 //                                                                                                 [FIXEDCHARWIDTH <int value>]
 //                                                                                                 [MINCHARWIDTH <int value>]
 //                                                                                                 [MAXCHARWIDTH <int value>]
@@ -585,7 +586,7 @@ FORM documentArticle 'По документам (caption)' TITLE 'По доку�
 // Special properties: SELECTION, OBJVALUE, ADDOBJ, ADDFORM, ADDSESSIONFORM, EDITFORM, EDITSESSIONFORM
 // Property option:    [READONLY] [EDITABLE] [SELECTOR] [HINTNOUPDATE] [HINTTABLE] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [BACKGROUND <mappedProperty>]
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
-//                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS | SHORTCUT) <mappedAction>] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)] [EVENTID 'id']
+//                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS | SHORTCUT | EDIT) <mappedAction>] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)] [EVENTID 'id']
 
     PROPERTIES(document) store, testPush, testPush2, copy, date,
                          storeName ON CHANGE onChangeDocumentName(document),
@@ -894,9 +895,19 @@ onChangeStoreName() = ACTION {
     }
 }
 
-FORM TestChangeWYS 'Тест CHANGEWYS'
+onEditStoreSizeCode() = ACTION {
+    REQUEST INTEGER INPUT;
+
+    i() <- requestedInteger() * 2;
+    WHILE (i() > 0) DO {
+        i() <- i() - 1;
+        MESSAGE 'Tick';
+    }
+}
+
+FORM TestONActions 'Тест "ON actions"'
     OBJECTS s=Store
-    PROPERTIES(s) OBJVALUE, name ON CHANGE onChangeStoreName(), storeSizeCode
+    PROPERTIES(s) OBJVALUE, name ON CHANGE onChangeStoreName(), storeSizeCode ON EDIT onEditStoreSizeCode()
 ;
 
 //////////////// INDEX STATEMENT //////////////////
@@ -986,7 +997,7 @@ NAVIGATOR {
     ADD TestEvalActionForm;
     ADD TestTabs;
     ADD TestReadOnlyIf;
-    ADD TestChangeWYS;
+    ADD TestONActions;
 }
 
 //////////////// DESIGN STATEMENT /////////////////
