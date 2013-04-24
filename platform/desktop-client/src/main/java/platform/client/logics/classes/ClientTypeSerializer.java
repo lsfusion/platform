@@ -14,19 +14,25 @@ public class ClientTypeSerializer {
     }
 
     public static ClientType deserializeClientType(DataInputStream inStream) throws IOException {
-        if (inStream.readBoolean()) {
-            return ClientObjectClass.type;
-        } else {
-            return (ClientType) (deserializeClientClass(inStream));
+        switch (inStream.readByte()) {
+            case 0:
+                return ClientObjectClass.type;
+            case 1:
+                return (ClientType) (deserializeClientClass(inStream));
+            case 2:
+                throw new UnsupportedOperationException("Concatenate Type is not supported yet");
         }
+        throw new RuntimeException("Deserialize error");
     }
 
     public static void serializeClientType(DataOutputStream outStream, ClientType type) throws IOException {
-        boolean objectClass = type instanceof ClientObjectType;
-        outStream.writeBoolean(objectClass);
-        if (!objectClass) {
+        if (type instanceof ClientObjectClass)
+            outStream.writeByte(0);
+        else if (type instanceof ClientDataClass) {
+            outStream.writeByte(1);
             ((ClientClass) type).serialize(outStream);
-        }
+        } else
+            throw new UnsupportedOperationException("Concatenate Type is not supported yet");
     }
 
     public static ClientObjectClass deserializeClientObjectClass(DataInputStream inStream) throws IOException {
@@ -39,7 +45,7 @@ public class ClientTypeSerializer {
 
     public static ClientClass deserializeClientClass(DataInputStream inStream, boolean nulls) throws IOException {
 
-        if (nulls && inStream.readBoolean()) return null;
+        if (nulls && inStream.readByte() == 0) return null;
 
         byte type = inStream.readByte();
 
