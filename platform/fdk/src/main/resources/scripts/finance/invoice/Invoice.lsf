@@ -594,8 +594,8 @@ META defineInvoiceHomeCurrency(dumb)
     rateExchangeInvoice(i) += rateExchangeUserInvoice(i);
 
     rateExchangeUserInvoice(i) <- rateTypeExchangeCurrencyDate(typeExchangeUserInvoice(i),
-                                                                     currencyUserInvoice(i),
-                                                                     dateRateExchangeUserInvoice(i))
+                                                               currencyUserInvoice(i),
+                                                               dateRateExchangeUserInvoice(i))
                                         WHEN CHANGED (dateRateExchangeUserInvoice(i)) OR
                                              CHANGED (typeExchangeUserInvoice(i)) OR
                                              CHANGED (currencyUserInvoice(i));
@@ -609,7 +609,7 @@ META defineInvoiceHomeCurrency(dumb)
                                                         homeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(d)))
                                                    WHEN CHANGED (dateUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
                                                         CHANGED (homeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
-                                                        CHANGED (typeExchangeUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
+                                                        CHANGED (rateExchangeUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
                                                         CHANGED (priceUserInvoiceDetail(d));
 
     sumHomeInvoiceDetail 'Сумма (пост.)' (d) = quantityInvoiceDetail(d) * homePriceInvoiceDetail(d);

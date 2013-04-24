@@ -225,7 +225,9 @@ FORM generalLedgers 'Проводки'
     OBJECTS g = GeneralLedger
     PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, dateGeneralLedger, nameLegalEntityGeneralLedger, nameGLDocumentGeneralLedger, descriptionGeneralLedger, idDebitGeneralLedger,
                    idCreditGeneralLedger, sumGeneralLedger
-    PROPERTIES(g)  editGLDocumentGeneralLedger
+
+    // todo : не работает поскольку для абстрактного свойства не задано ни одной реализации
+//    PROPERTIES(g)  editGLDocumentGeneralLedger
 
 
     PROPERTIES (g) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable,
