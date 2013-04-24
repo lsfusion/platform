@@ -419,7 +419,7 @@ META defineOrderInvoiceAction (form)
         PROPERTIES(o) moveUserInvoiceOrder
     ;
     EXTEND DESIGN form {
-        actionContainer{
+        createdContainer{
             NEW invoiceContainer{
                 title = 'Накладная';
                 ADD PROPERTY(moveUserInvoiceOrder);

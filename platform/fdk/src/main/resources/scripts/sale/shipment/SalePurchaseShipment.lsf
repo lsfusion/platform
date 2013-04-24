@@ -235,3 +235,63 @@ EXTEND FORM Purchase.shipments
     PROPERTIES(d) READONLY descriptionIndexShipmentDetailShipmentDetail SHOWIF relationPurchaseShipment(s)
 ;
 
+//-- Действие
+
+//overFillShipmentUserShipmentShipment = ABSTRACT ACTION (userShipment, shipment);
+//overFillShipmentUserShipmentDetailShipmentDetail = ABSTRACT ACTION (userDetail, detail);
+
+moveUserShipmentShipment 'Создать поставку (закупка)' =  ACTION (shipment) NEWSESSION{
+
+    FOR ADDOBJ s = Purchase.UserShipment DO {
+
+
+
+        SET Purchase.supplierUserShipment(s) <- supplierShipment(shipment);
+        SET Purchase.customerUserShipment(s) <- customerShipment(shipment);
+        SET Purchase.supplierStockUserShipment(s) <- supplierStockShipment(shipment);
+        SET Purchase.customerStockUserShipment(s) <- customerStockShipment(shipment);
+        SET numberObject(s) <- numberShipment(shipment) WHERE s IS Purchase.UserShipment;
+        SET seriesObject(s) <- seriesShipment(shipment) WHERE s IS Purchase.UserShipment;
+        SET Purchase.isPostedUserShipment(s) <- isPostedShipment(shipment);
+        SET Purchase.noteUserShipment(s) <- noteShipment(shipment);
+        SET Purchase.currencyUserShipment(s) <- currencyShipment(shipment);
+
+        SET Purchase.showPackUserShipment(s) <- showPackShipment(shipment);
+        SET Purchase.operationUserShipment(s) <- operationShipment(shipment);
+//        EXEC overFillShipmentUserShipmentShipment(s, shipment);
+
+        FOR shipmentShipmentDetail(detail)==shipment ADDOBJ d = Purchase.UserShipmentDetail DO {
+
+            SET Purchase.userShipmentUserShipmentDetail(d) <- s;
+
+            SET Purchase.dataSupplierStockUserShipmentDetail(d) <- dataSupplierStockShipmentDetail(detail);
+            SET Purchase.dataCustomerStockUserShipmentDetail(d) <- dataCustomerStockShipmentDetail(detail);
+
+            SET Purchase.skuUserShipmentDetail(d) <- skuShipmentDetail(detail);
+            SET Purchase.quantityUserShipmentDetail (d) <- quantityShipmentDetail(detail);
+            SET Purchase.priceUserShipmentDetail (d) <- priceShipmentDetail(detail);
+
+            SET Purchase.barcodePackUserShipmentDetail (d) <- barcodePackShipmentDetail(detail);
+            SET Purchase.amountPackUserShipmentDetail (d) <- amountPackShipmentDetail(detail);
+            SET Purchase.packQuantityUserShipmentDetail (d) <- packQuantityShipmentDetail(detail);
+
+            SET Purchase.batchUserShipmentDetail(d) <- batchShipmentDetail(detail);
+//            EXEC overFillShipmentUserShipmentDetailShipmentDetail(d,detail);
+        }
+
+    FORM Purchase.userShipment OBJECTS s = s MANAGESESSION DOCKEDMODAL;
+    }
+} TOOLBAR;
+
+EXTEND FORM shipments
+    PROPERTIES(s) moveUserShipmentShipment
+;
+EXTEND DESIGN shipments {
+    createdContainer{
+        NEW shipmentContainer{
+            title = 'Поставка (закупка)';
+            ADD PROPERTY(moveUserShipmentShipment);
+        }
+    }
+}
+

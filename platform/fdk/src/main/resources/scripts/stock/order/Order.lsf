@@ -470,10 +470,14 @@ META defineOrder(sign, legalEntityProp, stockProp)
                 }
                 NEW actionContainer {
                     title = 'Действия';
-                    childConstraints = TO THE BOTTOM;
-                    NEW copyContainer {
-                        title = 'Копирование';
-                        ADD PROPERTY(copyOrder);
+                    childConstraints = TO THE RIGHT;
+                    NEW createdContainer {
+                        title = 'Создание на основе';
+                        childConstraints = TO THE BOTTOM;
+                        NEW copyContainer {
+                            title = 'Копирование';
+                            ADD PROPERTY(copyOrder);
+                        }
                     }
                 }
             }

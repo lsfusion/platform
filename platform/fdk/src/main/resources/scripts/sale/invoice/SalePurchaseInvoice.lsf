@@ -271,7 +271,9 @@ invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(
 
 //-- Действие
 
+overFillInvoiceUserInvoiceInvoice = ABSTRACT ACTION (userInvoice, invoice);
 overFillInvoiceUserInvoiceDetailInvoiceDetail = ABSTRACT ACTION (userDetail, detail);
+
 moveUserInvoiceInvoice 'Создать накладную (закупка)' =  ACTION (invoice) NEWSESSION{
 
     FOR ADDOBJ i = Purchase.UserInvoice DO {
@@ -290,7 +292,8 @@ moveUserInvoiceInvoice 'Создать накладную (закупка)' =  A
         SET Purchase.contractSkuUserInvoice(i) <- contractSkuInvoice(invoice);
         SET Purchase.isCommissionUserInvoice(i) <- isCommissionInvoice(invoice);
         SET Purchase.showPackUserInvoice(i) <- showPackInvoice(invoice);
-        SET Purchase.operationUserInvoice(o) <- operationInvoice(invoice);
+        SET Purchase.operationUserInvoice(i) <- operationInvoice(invoice);
+        EXEC overFillInvoiceUserInvoiceInvoice(i, invoice);
 
         FOR invoiceInvoiceDetail(detail)==invoice ADDOBJ d = Purchase.UserInvoiceDetail DO {
 
@@ -323,7 +326,7 @@ EXTEND FORM invoices
     PROPERTIES(i) moveUserInvoiceInvoice
 ;
 EXTEND DESIGN invoices {
-    actionContainer{
+    createdContainer{
         NEW invoiceContainer{
             title = 'Накладная';
             ADD PROPERTY(moveUserInvoiceInvoice);

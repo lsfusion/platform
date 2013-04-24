@@ -1,0 +1,17 @@
+MODULE SalePurchaseInvoiceRRP;
+
+REQUIRE SaleInvoiceRRP, PurchaseInvoiceRRP, SalePurchaseInvoice;
+
+PRIORITY Sale;
+
+//----------------------------------------------------------------------------//
+
+Purchase.showRRPInvoice(invoice) += showRRPInvoice(invoicePurchaseInvoice(invoice));
+
+Purchase.RRPPriceListTypeInvoiceDetail(invoiceDetail) += RRPPriceListTypeInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.RRPPriceInvoiceDetail(invoiceDetail) += RRPPriceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+
+overFillInvoiceUserInvoiceInvoice (sd, id) += ACTION SET Purchase.showRRPUserInvoice (sd) <- showRRPInvoice(id);
+
+overFillInvoiceUserInvoiceDetailInvoiceDetail (sd, id) += ACTION SET Purchase.RRPPriceListTypeUserInvoiceDetail (sd) <- RRPPriceListTypeInvoiceDetail(id);
+overFillInvoiceUserInvoiceDetailInvoiceDetail (sd, id) += ACTION SET Purchase.RRPPriceUserInvoiceDetail (sd) <- RRPPriceInvoiceDetail(id);

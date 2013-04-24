@@ -158,7 +158,7 @@ EXTEND FORM orders
     PROPERTIES(o) moveUserOrderOrder
 ;
 EXTEND DESIGN orders {
-    actionContainer{
+    createdContainer{
         NEW orderContainer{
             title = 'Заказ (закупка)';
             ADD PROPERTY(moveUserOrderOrder);

@@ -308,6 +308,18 @@ META defineShipment(sign, stockProp)
                         childConstraints = TO THE BOTTOM;
                     }
                 }
+                NEW actionContainer {
+                    title = 'Действия';
+                    childConstraints = TO THE RIGHT;
+                    NEW createdContainer {
+                        title = 'Создание на основе';
+                        childConstraints = TO THE BOTTOM;
+                        NEW copyContainer {
+                            title = 'Копирование';
+                            ADD PROPERTY(copyShipment);
+                        }
+                    }
+                }
             }
         }
     }
