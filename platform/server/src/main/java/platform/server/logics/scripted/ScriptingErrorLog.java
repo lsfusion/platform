@@ -447,6 +447,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "absolute value of LONG constant should be less than 2^63, use NUMERIC instead");
     }
 
+    public void emitDoubleValueError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "double constant is out of range");
+    }
+
     public void emitDateDayError(ScriptParser parser, int y, int m, int d) throws SemanticErrorException {
         emitSimpleError(parser, format("wrong date %04d-%02d-%02d", y, m, d));
     }

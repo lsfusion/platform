@@ -109,7 +109,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<String, List<LogicsModule>>();
 
-    public enum ConstType { STATIC, INT, REAL, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
+    public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER, FIRST}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL}
@@ -1436,7 +1436,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         switch (type) {
             case INT: return addCProp(IntegerClass.instance, value);
             case LONG: return addCProp(LongClass.instance, value);
-            case REAL: return addNumericConst((String) value);
+            case NUMERIC: return addNumericConst((String) value);
+            case REAL: return addCProp(DoubleClass.instance, value);
             case STRING: return addCProp(StringClass.get(((String)value).length()), value);
             case LOGICAL: return addCProp(LogicalClass.instance, value);
             case DATE: return addCProp(DateClass.instance, value);
@@ -1480,6 +1481,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         return res;
     }
 
+    public double createScriptedDouble(String s) throws ScriptingErrorLog.SemanticErrorException {
+        double res = 0;
+        try {
+            res = Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            errLog.emitDoubleValueError(parser);
+        }
+        return res;
+    }
 
     private void validateDate(int y, int m, int d) throws ScriptingErrorLog.SemanticErrorException {
         checkRange("year component", y, 1900, 9999);

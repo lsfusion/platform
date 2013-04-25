@@ -2641,7 +2641,8 @@ metaCodeId returns [String sid]
 metaCodeLiteral
 	:	STRING_LITERAL 
 	| 	UINT_LITERAL
-	|	POSITIVE_DOUBLE_LITERAL
+	|	UNUMERIC_LITERAL
+	|	UDOUBLE_LITERAL
 	|	ULONG_LITERAL
 	|	LOGICAL_LITERAL
 	|	DATE_LITERAL
@@ -2758,7 +2759,8 @@ literal returns [LP property]
 }
 	: 	vint=uintLiteral	{ cls = ScriptingLogicsModule.ConstType.INT; value = $vint.val; }
 	|	vlong=ulongLiteral	{ cls = ScriptingLogicsModule.ConstType.LONG; value = $vlong.val; }
-	|	vreal=POSITIVE_DOUBLE_LITERAL	{ cls = ScriptingLogicsModule.ConstType.REAL; value = $vreal.text; }
+	|	vnum=UNUMERIC_LITERAL	{ cls = ScriptingLogicsModule.ConstType.NUMERIC; value = $vnum.text; }
+	|	vdouble=udoubleLiteral { cls = ScriptingLogicsModule.ConstType.REAL; value = $vdouble.val; }
 	|	vstr=stringLiteral	{ cls = ScriptingLogicsModule.ConstType.STRING; value = $vstr.val; }  
 	|	vbool=booleanLiteral	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; value = $vbool.val; }
 	|	vdate=dateLiteral	{ cls = ScriptingLogicsModule.ConstType.DATE; value = $vdate.val; }
@@ -2821,7 +2823,8 @@ doubleLiteral returns [double val]
 	boolean isMinus = false;
 }
 	:	(MINUS {isMinus=true;})?
-		ud=udoubleLiteral { $val = isMinus ? -$ud.val : $ud.val; }
+		ud=UNUMERIC_LITERAL { $val = self.createScriptedDouble($ud.text); }
+		{ if (isMinus) $val = -$val; }
 	;
 
 dateLiteral returns [java.sql.Date val]
@@ -2903,8 +2906,8 @@ emailAttachFormat returns [AttachmentFormat val]
 	;
 
 udoubleLiteral returns [double val]
-	:	d=POSITIVE_DOUBLE_LITERAL  { $val = Double.parseDouble($d.text); }
-	; 
+	:	d=UDOUBLE_LITERAL { $val = self.createScriptedDouble($d.text.substring(0, $d.text.length() - 1)); }
+	;	
 		
 uintLiteral returns [int val]
 	:	u=UINT_LITERAL { $val = self.createScriptedInteger($u.text); }
@@ -2923,6 +2926,7 @@ fragment SPACE		:	(' '|'\t');
 fragment STR_LITERAL_CHAR	: '\\\'' | ~('\r'|'\n'|'\'');	 // overcomplicated due to bug in ANTLR Works
 fragment DIGIT		:	'0'..'9';
 fragment DIGITS		:	('0'..'9')+;
+fragment EDIGITS	:	('0'..'9')*;
 fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
 fragment FIRST_ID_LETTER	: ('a'..'z'|'A'..'Z');
 fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
@@ -2937,7 +2941,8 @@ COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
 COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;
 ULONG_LITERAL	:	DIGITS('l'|'L');
-POSITIVE_DOUBLE_LITERAL	: 	DIGITS '.' DIGITS;	  
+UDOUBLE_LITERAL		:	DIGITS '.' EDIGITS('f'|'F');
+UNUMERIC_LITERAL	: 	DIGITS '.' EDIGITS;	  
 DATE_LITERAL	:	DIGIT DIGIT DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT; 
 DATETIME_LITERAL:	DIGIT DIGIT DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT ':' DIGIT DIGIT;	
 TIME_LITERAL	:	DIGIT DIGIT ':' DIGIT DIGIT;
