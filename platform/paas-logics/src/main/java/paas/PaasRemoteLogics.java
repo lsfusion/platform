@@ -506,7 +506,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            throw new RemoteMessageException("Ошибка при старте конфигурации: ", e);
+            throw new RemoteMessageException("Ошибка при старте конфигурации", e);
         }
     }
 
