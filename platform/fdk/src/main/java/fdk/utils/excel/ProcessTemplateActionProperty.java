@@ -1,16 +1,15 @@
-package fdk.utils.word;
+package fdk.utils.excel;
 
-import org.apache.poi.hwpf.HWPFDocument;
-import org.apache.poi.hwpf.usermodel.Range;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.util.IOUtils;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
+import platform.server.classes.ExcelClass;
 import platform.server.classes.ValueClass;
-import platform.server.classes.WordClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
@@ -39,9 +38,6 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        BufferedInputStream buffInputStream = null;
-        BufferedOutputStream buffOutputStream = null;
-
         try {
 
             DataObject templateObject = context.getKeyValue(templateInterface);
@@ -51,7 +47,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                 Object fileObject = LM.findLCPByCompoundName("fileTemplate").read(context, templateObject);
                 if (fileObject != null) {
 
-                    DataObject wordObject = new DataObject(fileObject, WordClass.get(false, false));
+                    DataObject excelObject = new DataObject(LM.findLCPByCompoundName("fileTemplate").read(context, templateObject), ExcelClass.get(false, false));
                     Map<String, String> templateEntriesMap = new HashMap<String, String>();
 
                     KeyExpr templateEntryExpr = new KeyExpr("TemplateEntry");
@@ -71,54 +67,52 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                         String valueTemplateEntry = (String) templateEntry.get("valueTemplateEntry");
 
                         if (keyTemplateEntry != null && valueTemplateEntry != null)
-                            templateEntriesMap.put(keyTemplateEntry.trim(), valueTemplateEntry.trim().replace('\n', '\r'));
+                            templateEntriesMap.put(keyTemplateEntry.trim(), valueTemplateEntry.trim());
                     }
 
-                    File templateFile = File.createTempFile("template", "doc");
+                    File templateFile = File.createTempFile("template", "xls");
                     FileOutputStream fileStream = new FileOutputStream(templateFile);
-                    fileStream.write((byte[]) wordObject.object);
+                    fileStream.write((byte[]) excelObject.object);
                     fileStream.close();
 
                     FileInputStream fileInputStream = new FileInputStream(templateFile.getAbsolutePath());
-                    buffInputStream = new BufferedInputStream(fileInputStream);
-                    HWPFDocument document = new HWPFDocument(new POIFSFileSystem(buffInputStream));
 
-                    Range range = document.getRange();
-
-                    for (Map.Entry<String, String> entry : templateEntriesMap.entrySet()) {
-                        range.replaceText(entry.getKey(), entry.getValue());
+                    Workbook wb = WorkbookFactory.create(fileInputStream);
+                    for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+                        Sheet sheet = wb.getSheetAt(i);
+                        for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
+                            Row row = sheet.getRow(j);
+                            if (row != null) {
+                                for (int k = row.getFirstCellNum(); k <= row.getLastCellNum(); k++) {
+                                    Cell cell = row.getCell(k);
+                                    if (cell != null) {
+                                        String cellContents = cell.getStringCellValue();
+                                        for (Map.Entry<String, String> entry : templateEntriesMap.entrySet()) {
+                                            cellContents = cellContents.replace(entry.getKey(), entry.getValue());
+                                        }
+                                        cell.setCellValue(cellContents);
+                                    }
+                                }
+                            }
+                        }
                     }
-
-                    File resultFile = File.createTempFile("result", "doc");
+                    File resultFile = File.createTempFile("result", "xls");
                     FileOutputStream fileOutputStream = new FileOutputStream(resultFile);
-                    buffOutputStream = new BufferedOutputStream(fileOutputStream);
-                    document.write(buffOutputStream);
-                    buffOutputStream.close();
+                    wb.write(fileOutputStream);
+                    fileOutputStream.close();
 
                     LM.findLCPByCompoundName("resultTemplate").change(IOUtils.toByteArray(new FileInputStream(resultFile)), context);
-
                 }
             }
+
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
-        } finally {
-            if (buffInputStream != null) {
-                try {
-                    buffInputStream.close();
-                } catch (IOException ignored) {
-                }
-            }
-            if (buffOutputStream != null) {
-                try {
-                    buffOutputStream.flush();
-                    buffOutputStream.close();
-                } catch (IOException ignored) {
-                }
-            }
+        } catch (InvalidFormatException e) {
+            throw new RuntimeException(e);
         }
     }
 }
