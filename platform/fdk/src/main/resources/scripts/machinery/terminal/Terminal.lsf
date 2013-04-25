@@ -13,15 +13,19 @@ stockGroupMachinery (groupMachinery) += stockGroupTerminal(groupMachinery);
 CLASS TerminalModel 'Модель ТСД' : Model;
 TABLE terminalModel (TerminalModel);
 
+nameTerminalModel 'Наименование' = DATA ISTRING[110](TerminalModel);
+
+nameModel(model) += nameTerminalModel(model) IF model IS TerminalModel;
+
 FORM terminalModel 'Модель ТСД'
     OBJECTS t=TerminalModel FIXED PANEL
-    PROPERTIES(t) name, noteModel, handlerModel, maxProductModel
+    PROPERTIES(t) nameTerminalModel, noteModel, handlerModel, maxProductModel
     EDIT TerminalModel OBJECT t
 ;
 
 FORM terminalModels 'Модели ТСД'
     OBJECTS m=TerminalModel
-    PROPERTIES(m) READONLY name, maxProductModel, handlerModel, noteModel, objectClassName
+    PROPERTIES(m) READONLY nameTerminalModel, maxProductModel, handlerModel, noteModel, objectClassName
     PROPERTIES(m) ADDFORM, EDITFORM, delete
 ;
 
@@ -57,7 +61,7 @@ nameGroupTerminalDocumentTypeGroupTerminal 'Группа типов докуме
 
 CLASS TerminalHandbookType 'Вид справочника ТСД' {
     terminalHandbookTypeLegalEntity 'Организация'
-} : Named;
+};
 
 TABLE terminalHandbookType(TerminalHandbookType);
 idTerminalHandbookType 'Код' = DATA STRING[10] (TerminalHandbookType) IN base;
@@ -65,7 +69,7 @@ terminalHandbookTypeID (terminalHandbookType) = GROUP AGGR terminalHandbookType 
 
 FORM handbooksTerminalDocumentType 'Виды справочников ТСД'
     OBJECTS h=TerminalHandbookType
-    PROPERTIES(h)  name, idTerminalHandbookType
+    PROPERTIES(h)  staticName, idTerminalHandbookType
     PROPERTIES(h)  ADDFORM, EDITFORM, delete
 ;
 
@@ -84,14 +88,14 @@ terminalDocumentTypeID (terminalDocumentType) = GROUP AGGR terminalDocumentType 
 
 terminalHandbookType1TerminalDocumentType = DATA TerminalHandbookType (TerminalDocumentType);
 idTerminalHandbookType1TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
-nameTerminalHandbookType1TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
+nameTerminalHandbookType1TerminalDocumentType 'Имя' (terminalDocumentType)  = staticName(terminalHandbookType1TerminalDocumentType(terminalDocumentType));
 
 nameInHandbook1TerminalDocumentType 'Наименование в справочнике 1' = DATA STRING[200] (TerminalDocumentType) IN base;
 nameInHandbook1TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType1TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType1TerminalDocumentType(terminalDocumentType));
 
 terminalHandbookType2TerminalDocumentType = DATA TerminalHandbookType (TerminalDocumentType);
 idTerminalHandbookType2TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
-nameTerminalHandbookType2TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
+nameTerminalHandbookType2TerminalDocumentType 'Имя' (terminalDocumentType)  = staticName(terminalHandbookType2TerminalDocumentType(terminalDocumentType));
 
 nameInHandbook2TerminalDocumentType 'Наименование в справочнике 2' = DATA STRING[200] (TerminalDocumentType) IN base;
 nameInHandbook2TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType2TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType2TerminalDocumentType(terminalDocumentType));
@@ -322,7 +326,7 @@ createMachineryPriceTransactionGroupMachinery (groupMachinery) += ACTION (groupM
 loadDefaultTerminalModel 'Добавить модель терминала' = ACTION (stringOne, stringTwo)  {
     ADDOBJ TerminalModel;
     FOR tm == addedObject() DO {
-         SET name(tm) <- stringOne AS STRING[110];
+         SET nameTerminalModel(tm) <- stringOne AS STRING[110];
          SET handlerModel(tm) <- stringTwo AS STRING[200];
     }
 }
@@ -394,7 +398,7 @@ loadDefaultGroupTerminal 'Сгенерировать группу термина
 
 EXTEND FORM defaultData
     OBJECTS         tm=TerminalModel FIXED PANEL
-    PROPERTIES(tm)  SELECTOR name
+    PROPERTIES(tm)  SELECTOR nameTerminalModel
 
     OBJECTS         gtdt=GroupTerminalDocumentType FIXED PANEL
     PROPERTIES(gtdt) SELECTOR nameGroupTerminalDocumentType
@@ -405,7 +409,7 @@ EXTEND FORM defaultData
 ;
 
 EXTEND DESIGN defaultData {
-    PROPERTY(name(tm)) {
+    PROPERTY(nameTerminalModel(tm)) {
         caption = 'Модель ТСД';
     }
     PROPERTY(nameGroupTerminalDocumentType(gtdt)) {
@@ -417,7 +421,7 @@ EXTEND DESIGN defaultData {
     machinery {
         NEW terminal {
             title = 'ТСД';
-            ADD PROPERTY(name(tm));
+            ADD PROPERTY(nameTerminalModel(tm));
             ADD PROPERTY(nameGroupTerminalDocumentType(gtdt));
             ADD PROPERTY(intValueTerminal);
             ADD PROPERTY(loadDefaultGroupTerminal);

@@ -9,10 +9,10 @@ TABLE account (Account);
 nameAccount 'Имя' = ABSTRACT STRING[30] (Account) PERSISTENT;
 
 currencyAccount = ABSTRACT Currency (Account);
-nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account));
+nameCurrencyAccount 'Валюта счета' = nameCurrency(currencyAccount(account));
 
 legalEntityAccount = ABSTRACT LegalEntity (Account);
-nameLegalEntityAccount 'Организация' (account) = name(legalEntityAccount(account));
+nameLegalEntityAccount 'Организация' (account) = nameLegalEntity(legalEntityAccount(account));
 
 editAccount 'Редактировать' (account) = ABSTRACT ACTION (account) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
@@ -32,13 +32,13 @@ TABLE paymentLedger(PaymentLedger);
 dateTimePaymentLedger 'Дата/время' = ABSTRACT DATETIME (PaymentLedger) PERSISTENT;
 
 legalEntityFromPaymentLedger = ABSTRACT LegalEntity (PaymentLedger) PERSISTENT;
-nameLegalEntityFromPaymentLedger 'Организация-плательщик' = name(legalEntityFromPaymentLedger(ledger));
+nameLegalEntityFromPaymentLedger 'Организация-плательщик' = nameLegalEntity(legalEntityFromPaymentLedger(ledger));
 
 accountFromPaymentLedger = ABSTRACT Account (PaymentLedger) PERSISTENT;
 nameAccountFromPaymentLedger 'Счет (с)' (ledger) = nameAccount(accountFromPaymentLedger(ledger));
 
 legalEntityToPaymentLedger = ABSTRACT LegalEntity (PaymentLedger) PERSISTENT;
-nameLegalEntityToPaymentLedger 'Организация-получатель' = name(legalEntityToPaymentLedger(ledger));
+nameLegalEntityToPaymentLedger 'Организация-получатель' = nameLegalEntity(legalEntityToPaymentLedger(ledger));
 
 accountToPaymentLedger = ABSTRACT Account (PaymentLedger) PERSISTENT;
 nameAccountToPaymentLedger 'Счет (на)' (ledger) = nameAccount(accountToPaymentLedger(ledger));

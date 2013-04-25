@@ -34,7 +34,7 @@
 	<field name="objFrom" class="java.util.Date"/>
 	<field name="objTo" class="java.util.Date"/>
 	<field name="ds" class="java.lang.Integer"/>
-	<field name="name" class="java.lang.String"/>
+	<field name="nameStock" class="java.lang.String"/>
 	<field name="sumAccountBDocumentLedgerDate" class="java.lang.Double"/>
 	<field name="sumItemAccountBDocumentLedgerDate" class="java.lang.Double"/>
 	<field name="sumContainerAccountBDocumentLedgerDate" class="java.lang.Double"/>

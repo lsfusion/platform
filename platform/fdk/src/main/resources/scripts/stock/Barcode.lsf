@@ -48,7 +48,7 @@ idBarcodeSkuSkuLedger 'Штрих-код' (skuLedger) = idBarcodeSku(skuSkuLedge
 
 dataUOMBarcode = DATA UOM (Barcode);
 UOMBarcode = UOMSku(skuBarcode(barcode)) OR dataUOMBarcode(barcode) PERSISTENT;
-shortNameUOMBarcode 'Единица измерения' (barcode) = shortName(UOMBarcode(barcode));
+shortNameUOMBarcode 'Единица измерения' (barcode) = shortNameUOM(UOMBarcode(barcode));
 
 // Атрибуты вытянутые от sku
 
@@ -57,7 +57,7 @@ skuGroupBarcode (barcode) = skuGroupSku(skuBarcode(barcode));
 isWeightBarcode(barcode) = isWeightSku(skuBarcode(barcode));
 
 countryBarcode (barcode) = countrySku(skuBarcode(barcode));
-nameCountryBarcode 'Страна' (barcode) = name(countryBarcode(barcode));
+nameCountryBarcode 'Страна' (barcode) = nameCountry(countryBarcode(barcode));
 
 expiryDateBarcodeStock 'Годен до (max.)' (barcode, stock) = expiryDateSkuStock(skuBarcode(barcode), stock);
 

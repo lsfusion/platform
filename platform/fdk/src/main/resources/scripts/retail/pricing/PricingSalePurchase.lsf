@@ -72,7 +72,7 @@ purchaseRoundConditionUserInvoiceDetail(userInvoiceDetail) =
 
 // Вид цены для акта расценки (закупка)
 purchaseRetailPriceListTypeOperation = DATA PriceListType (Operation);
-namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки(закупка)' (operation) = name(purchaseRetailPriceListTypeOperation(operation));
+namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки(закупка)' (operation) = namePriceListType(purchaseRetailPriceListTypeOperation(operation));
 
 EXTEND FORM operation
     PROPERTIES(o) namePurchaseRetailPriceListTypeOperation

@@ -18,7 +18,7 @@ changeClassWarehouse 'Сделать магазином' = ACTION (warehouse) NE
     LOCAL b = BOOLEAN();
     LOCAL r = BOOLEAN (Employee);
 
-    SET n() <- name(warehouse);
+    SET n() <- nameWarehouse(warehouse);
     SET a() <- addressWarehouse(warehouse);
     SET le() <- legalEntityWarehouse(warehouse);
     SET la() <- latitudeWarehouse(warehouse);
@@ -38,14 +38,14 @@ changeClassWarehouse 'Сделать магазином' = ACTION (warehouse) NE
     CHANGECLASS warehouse TO DepartmentStore;
 
     FOR ADDOBJ s = Store DO{
-        SET name(s) <- n();
+        SET nameStore(s) <- n();
         SET addressStore(s) <- a();
         SET legalEntityStore(s) <- le();
         SET latitudeStore(s) <- la();
         SET longitudeStore(s) <- lo();
         SET priceStockGroupStore(s) <- p();
 
-        SET name(warehouse) <- n();
+        SET nameDepartmentStore(warehouse) <- n();
         SET storeDepartmentStore(warehouse) <- s;
         SET quantityDaysCloseDepartmentStore(warehouse) <- i();
         SET writeOffCommitteeStock(warehouse) <- w();

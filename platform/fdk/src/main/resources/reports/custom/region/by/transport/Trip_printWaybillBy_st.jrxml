@@ -19,7 +19,7 @@
 		<pen lineWidth="0.0" lineColor="#FFFFFF"/>
 	</style>
 	<field name="st" class="java.lang.Integer"/>
-	<field name="name" class="java.lang.String"/>
+	<field name="nameStock" class="java.lang.String"/>
 	<field name="addressStock" class="java.lang.String"/>
 	<field name="nameLegalEntityStock" class="java.lang.String"/>
 	<field name="grossWeightTripToStock" class="java.lang.Double"/>

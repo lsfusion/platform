@@ -6,22 +6,24 @@ REQUIRE System, Store, Stock, Barcode;
 CLASS PrintOrientation 'Ориентация' {
     portrait 'Книжная',
     landscape 'Альбомная'
-} : Named;
+};
 
 // типы ценников
-CLASS LabelType 'Тип ценника' : Named;
+CLASS LabelType 'Тип ценника';
 TABLE labelType(LabelType);
+
+nameLabelType 'Наименование' = DATA ISTRING[50](LabelType);
 
 widthLabelType 'Ширина' = DATA INTEGER (LabelType);
 heightLabelType 'Высота' = DATA INTEGER (LabelType);
 
 orientationLabelType = DATA PrintOrientation (LabelType);
-nameOrientationLabelType 'Ориентация' (labelType) = name(orientationLabelType(labelType));
+nameOrientationLabelType 'Ориентация' (labelType) = staticName(orientationLabelType(labelType));
 
 fileTemplateLabelType 'Файл шаблона' = DATA STRING[200] (LabelType);
 
 priceListTypeLabelType = DATA PriceListType (LabelType);
-namePriceListTypeLabelType  'Вид цен' (labelType) = name(priceListTypeLabelType(labelType));
+namePriceListTypeLabelType 'Вид цен' (labelType) = namePriceListType(priceListTypeLabelType(labelType));
 
 TABLE labelTypeStoreType (LabelType, StoreType);
 TABLE labelTypeStore (LabelType, Store);
@@ -44,7 +46,7 @@ inLabelTypeDepartmentStore 'Включен' (labelType, departmentStore) =
                    inDataLabelTypeDepartmentStore(labelType, departmentStore) PERSISTENT;
 
 groupTypeLabelType = DATA GroupType (LabelType);
-nameGroupTypeLabelType 'Тип классификатора' (labelType) = name(groupTypeLabelType(labelType));
+nameGroupTypeLabelType 'Тип классификатора' (labelType) = nameGroupType(groupTypeLabelType(labelType));
 
 TABLE labelTypeGroup (LabelType, Group);
 dataInLabelTypeGroup 'Вкл.' = DATA BOOLEAN (LabelType, Group);
@@ -105,14 +107,14 @@ includeLabelTypeSku 'Из документа' (labelType, sku) =
 
 FORM labelType 'Тип ценника'
     OBJECTS l = LabelType FIXED PANEL
-    PROPERTIES(l) name, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType, namePriceListTypeLabelType, nameGroupTypeLabelType
+    PROPERTIES(l) nameLabelType, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType, namePriceListTypeLabelType, nameGroupTypeLabelType
 
     TREE treeStore a=STRING[3], st=StoreType, s=Store
-    PROPERTIES READONLY OBJVALUE(a), name(st), name(s)
+    PROPERTIES READONLY OBJVALUE(a), nameStockGroup(st), nameStore(s)
     FILTERS stringEqualsAll(a), inStoreTypeStore(st, s)
 
     OBJECTS d=DepartmentStore
-    PROPERTIES(d) READONLY depName = name
+    PROPERTIES(d) READONLY depName = nameDepartmentStore
     FILTERS (d IS DepartmentStore AND NOT s IS Store AND NOT st IS StoreType) OR
             (storeDepartmentStore(d)==s AND st IS StoreType) OR
             (storeTypeDepartmentStore(d)==st AND NOT s IS Store)
@@ -122,9 +124,9 @@ FORM labelType 'Тип ценника'
     ORDER BY depName
 
     TREE treeGroup g=Group PARENT parentGroup
-    PROPERTIES READONLY name(g)
+    PROPERTIES READONLY nameGroup(g)
     FILTERS groupTypeGroup(g) == groupTypeLabelType(l)
-    ORDER BY name(g)
+    ORDER BY nameGroup(g)
     PROPERTIES(l, g) inLabelTypeGroup, countLabelTypeGroup, includeLabelTypeGroup
 
     OBJECTS sk = Sku
@@ -171,7 +173,7 @@ DESIGN labelType FROM DEFAULT {
 
 FORM labelTypes 'Типы ценников'
     OBJECTS l = LabelType
-    PROPERTIES(l) READONLY name, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType, namePriceListTypeLabelType
+    PROPERTIES(l) READONLY nameLabelType, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType, namePriceListTypeLabelType
     PROPERTIES(l)          ADDFORM, EDITFORM, delete
 ;
 
@@ -205,12 +207,12 @@ timeLabelTransaction 'Время' = DATA TIME (LabelTransaction);
 timeLabelTransaction (transaction) <- currentTime() WHEN ASSIGNED(transaction IS LabelTransaction);
 
 departmentStoreLabelTransaction = DATA DepartmentStore (LabelTransaction);
-nameDepartmentStoreLabelTransaction 'Отдел магазина' (transaction) = name(departmentStoreLabelTransaction(transaction));
-nameStoreLabelTransaction 'Магазин' (transaction) = name(storeDepartmentStore(departmentStoreLabelTransaction(transaction)));
+nameDepartmentStoreLabelTransaction 'Отдел магазина' (transaction) = nameDepartmentStore(departmentStoreLabelTransaction(transaction));
+nameStoreLabelTransaction 'Магазин' (transaction) = nameStore(storeDepartmentStore(departmentStoreLabelTransaction(transaction)));
 nameLegalEntityLabelTransaction 'Компания' (transaction) = nameLegalEntityDepartmentStore(departmentStoreLabelTransaction(transaction));
 
 labelTypeLabelTransaction = DATA LabelType (LabelTransaction);
-nameLabelTypeLabelTransaction 'Тип ценника' (transaction) = name(labelTypeLabelTransaction(transaction));
+nameLabelTypeLabelTransaction 'Тип ценника' (transaction) = nameLabelType(labelTypeLabelTransaction(transaction));
 
 CONSTRAINT labelTypeLabelTransaction(transaction) AND NOT inLabelTypeDepartmentStore(labelTypeLabelTransaction(transaction), departmentStoreLabelTransaction(transaction))
            CHECKED BY labelTypeLabelTransaction MESSAGE 'Тип ценника запрещен для выбранного подразделения';
@@ -262,7 +264,7 @@ FORM customLabelTransaction 'Печать ценников'
 
 FORM labelTransactions 'Печать ценников'
     OBJECTS d = DepartmentStore FIXED PANEL
-    PROPERTIES name(d) SELECTOR
+    PROPERTIES nameDepartmentStore(d) SELECTOR
 
     OBJECTS l = LabelTransaction
     PROPERTIES(l) READONLY nameLabelTypeLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
@@ -425,7 +427,7 @@ END
 loadDefaultLabelType 'Добавить тип ценника' = ACTION(name, width, height, orientation, file) {
     ADDOBJ LabelType;
     FOR lt ==  addedObject() DO {
-        SET name(lt) <- name AS STRING[110];
+        SET nameLabelType(lt) <- name AS STRING[110];
         SET widthLabelType(lt) <-width AS INTEGER;
         SET heightLabelType(lt) <-height AS INTEGER;
         SET orientationLabelType(lt) <- orientation;

@@ -57,23 +57,23 @@ META defineOrderInvoice(sign, stockProp)
     inOrderCustomer (order, customer) = GROUP SUM 1 IF legalEntityStock(customerStockOrderDetail(orderDetail)) == customer BY orderOrderDetail(orderDetail), customer;
 
     supplierInvoiceOrder = DATA SESSION LegalEntity ();
-    nameSupplierInvoiceOrder 'Поставщик' = name(supplierInvoiceOrder());
+    nameSupplierInvoiceOrder 'Поставщик' = nameLegalEntity(supplierInvoiceOrder());
 
     supplierStockInvoiceOrder = DATA SESSION Stock ();
-    nameSupplierStockInvoiceOrder 'Склад поставщика' = name(supplierStockInvoiceOrder());
+    nameSupplierStockInvoiceOrder 'Склад поставщика' = nameStock(supplierStockInvoiceOrder());
 
     CONSTRAINT legalEntityStock(supplierStockInvoiceOrder())!= supplierInvoiceOrder() CHECKED BY supplierStockInvoiceOrder MESSAGE 'Выбран склад не текущего поставщика';
 
     customerInvoiceOrder = DATA SESSION LegalEntity ();
-    nameCustomerInvoiceOrder 'Покупатель' = name(customerInvoiceOrder());
+    nameCustomerInvoiceOrder 'Покупатель' = nameLegalEntity(customerInvoiceOrder());
 
     customerStockInvoiceOrder = DATA SESSION Stock ();
-    nameCustomerStockInvoiceOrder 'Склад покупателя' = name(customerStockInvoiceOrder());
+    nameCustomerStockInvoiceOrder 'Склад покупателя' = nameStock(customerStockInvoiceOrder());
 
     CONSTRAINT legalEntityStock(customerStockInvoiceOrder())!= customerInvoiceOrder() CHECKED BY customerStockInvoiceOrder MESSAGE 'Выбран склад не текущего покупателя';
 
     operationInvoiceOrder = DATA SESSION Operation ();
-    nameOperationInvoiceOrder 'Операция' = name(operationInvoiceOrder());
+    nameOperationInvoiceOrder 'Операция' = nameOperation(operationInvoiceOrder());
 
     FORM invoiceOrders 'Заказы'###sign
         PROPERTIES() nameSupplierInvoiceOrder, nameSupplierStockInvoiceOrder, nameCustomerInvoiceOrder, nameCustomerStockInvoiceOrder, nameOperationInvoiceOrder

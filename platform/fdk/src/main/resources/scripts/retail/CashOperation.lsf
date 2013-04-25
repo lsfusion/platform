@@ -15,7 +15,7 @@ numberCashDocument 'Номер' (cashDocument) = ABSTRACT STRING[200] (CashDocum
 
 departmentStoreCashDocument (cashDocument) = ABSTRACT DepartmentStore (CashDocument);
 nameDepartmentStoreCashDocument 'Подразделение' (cashDocument) =
-    name(departmentStoreCashDocument(cashDocument)) IN documentHeaderGroup;
+    nameDepartmentStore(departmentStoreCashDocument(cashDocument)) IN documentHeaderGroup;
 nameLegalEntityCashDocument 'Компания' (cashDocument) = nameLegalEntityDepartmentStore(departmentStoreCashDocument(cashDocument)) IN documentHeaderGroup;
 
 basisCashDocument 'Основание' = ABSTRACT STRING[100] (CashDocument) IN documentPrmGroup;
@@ -137,7 +137,7 @@ FORM addCollection 'Инкассация'
     PROPERTIES(t) time = OBJVALUE
 
     OBJECTS d = DepartmentStore FIXED PANEL
-    PROPERTIES(d) name SELECTOR, sumCashForCollection
+    PROPERTIES(d) nameDepartmentStore SELECTOR, sumCashForCollection
 ;
 
 DESIGN addCollection FROM DEFAULT {
@@ -350,7 +350,7 @@ FORM addIncomeCashOperation 'Внесение денег'
     PROPERTIES(t) time = OBJVALUE
 
     OBJECTS d = DepartmentStore FIXED PANEL
-    PROPERTIES(d) name SELECTOR
+    PROPERTIES(d) nameDepartmentStore SELECTOR
 
     OBJECTS c = CashRegister
     PROPERTIES(c) READONLY numberCashRegister
@@ -451,7 +451,7 @@ FORM addOutcomeCashOperation 'Изъятие денег'
     PROPERTIES(t) time = OBJVALUE
 
     OBJECTS d = DepartmentStore FIXED PANEL
-    PROPERTIES(d) name SELECTOR
+    PROPERTIES(d) nameDepartmentStore SELECTOR
 
     OBJECTS c = CashRegister
     PROPERTIES(c) READONLY numberCashRegister
@@ -597,7 +597,7 @@ FORM centralCashRegister 'Центральная касса'
     PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
 
     OBJECTS d = DepartmentStore FIXED PANEL
-    PROPERTIES(d) name SELECTOR
+    PROPERTIES(d) nameDepartmentStore SELECTOR
     PROPERTIES(d) READONLY curSumCashDepartmentStore
 
     OBJECTS i = IncomeCashOrder

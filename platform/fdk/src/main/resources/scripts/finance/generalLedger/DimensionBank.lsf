@@ -7,7 +7,7 @@ EXTEND CLASS Bank : Dimension;
 EXTEND CLASS DimensionType {
     bank 'Банк'
 }
-nameDimension (dimension) += name(dimension) IF dimension IS Bank;
+nameDimension (dimension) += nameBank(dimension) IF dimension IS Bank;
 dimensionTypeDimension (dimension) += DimensionType.bank WHEN dimension IS Bank;
 
 //-- Account

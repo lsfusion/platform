@@ -11,7 +11,7 @@ editGLDocument 'Редактировать регистр' = ABSTRACT ACTION (GL
 
 //-------------------------- Проводки -------------------------//
 
-CLASS ABSTRACT GeneralLedger 'Проводка': Named;
+CLASS ABSTRACT GeneralLedger 'Проводка';
 TABLE generalLedger(GeneralLedger);
 
 CLASS UserGeneralLedger 'Проводка (польз.)': GeneralLedger, Historizable;
@@ -32,9 +32,9 @@ GLDocumentGeneralLedger (generalLedger) += GLDocumentUserGeneralLedger (generalL
 editGLDocumentGeneralLedger 'Редактировать регистр' (generalLedger) = editGLDocument(GLDocumentGeneralLedger(generalLedger));
 
 legalEntityGeneralLedger = ABSTRACT LegalEntity (GeneralLedger) PERSISTENT;
-nameLegalEntityGeneralLedger 'Компания' (generalLedger) = name(legalEntityGeneralLedger(generalLedger));
+nameLegalEntityGeneralLedger 'Компания' (generalLedger) = nameLegalEntity(legalEntityGeneralLedger(generalLedger));
 legalEntityUserGeneralLedger = DATA LegalEntity (UserGeneralLedger);
-nameLegalEntityUserGeneralLedger 'Компания' (userGeneralLedger) = name(legalEntityUserGeneralLedger(userGeneralLedger));
+nameLegalEntityUserGeneralLedger 'Компания' (userGeneralLedger) = nameLegalEntity(legalEntityUserGeneralLedger(userGeneralLedger));
 legalEntityGeneralLedger (generalLedger) += legalEntityUserGeneralLedger (generalLedger);
 
 debitGeneralLedger = ABSTRACT GLAccount (GeneralLedger) PERSISTENT;

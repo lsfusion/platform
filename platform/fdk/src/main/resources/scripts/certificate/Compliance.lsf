@@ -40,7 +40,7 @@ descriptionCompliance 'Сертификат соответствия' (complianc
 @defineCertificateObjectBatch(compliance, 'Сертификат соответствия');
 
 legalEntityCompliance = DATA LegalEntity(Compliance);
-nameLegalEntityCompliance 'Владелец' (compliance) = name(legalEntityCompliance(compliance));
+nameLegalEntityCompliance 'Владелец' (compliance) = nameLegalEntity(legalEntityCompliance(compliance));
 
 @defineDocumentHeaderStock(compliance, stock, 'Склад');
 

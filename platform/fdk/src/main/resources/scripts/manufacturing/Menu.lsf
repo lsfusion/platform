@@ -10,8 +10,10 @@ REQUIRE Stock,
         
 //------------------------------Меню--------------------------------//        
 
-CLASS ABSTRACT Menu 'Меню' : Named;
-CLASS ABSTRACT MenuDetail 'Строка меню' : Named;
+CLASS ABSTRACT Menu 'Меню';
+CLASS ABSTRACT MenuDetail 'Строка меню';
+
+//nameMenu 'Наименование' = DATA ISTRING[50](Menu);
 
 CLASS UserMenu 'Меню (польз.)' : Menu, Historizable, NumeratedObject;
 CLASS UserMenuDetail 'Строка меню (польз.)' : MenuDetail;
@@ -46,10 +48,10 @@ compositionMenuDetail(detail)+= compositionUserMenuDetail(detail);
 compositionUserMenuDetail(detail) <-  compositionSku(skuUserMenuDetail(detail)) WHEN CHANGED(skuUserMenuDetail(detail));
 
 groupTypeMenu = ABSTRACT GroupType (Menu);
-nameGroupTypeMenu 'Тип классификатора' (menu) = name(groupTypeMenu(menu));
+nameGroupTypeMenu 'Тип классификатора' (menu) = nameGroupType(groupTypeMenu(menu));
 
 groupTypeUserMenu = DATA GroupType (UserMenu);
-nameGroupTypeUserMenu 'Тип классификатора' (userMenu) = name(groupTypeUserMenu(userMenu));
+nameGroupTypeUserMenu 'Тип классификатора' (userMenu) = nameGroupType(groupTypeUserMenu(userMenu));
 groupTypeMenu(menu) += groupTypeUserMenu(menu);
 
 productYieldMenuDetail 'Выход' = ABSTRACT STRING[100] (MenuDetail) MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -108,7 +110,7 @@ FORM userMenu 'Меню'
 
 
     TREE treeGroup g=Group PARENT parentGroup
-    PROPERTIES READONLY name(g)
+    PROPERTIES READONLY nameGroup(g)
     PROPERTIES(m,g) hasParentUserMenuGroup, positionNumberUserMenuGroup
     FILTERS groupTypeGroup(g) == groupTypeUserMenu(m),
             hasParentUserMenuGroup(m,g)

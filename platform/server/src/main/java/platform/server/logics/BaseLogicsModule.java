@@ -161,6 +161,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP objectClass;
     public LCP objectClassName;
     public LCP classSID;
+    public LCP staticName;
 
     public LCP defaultBackgroundColor;
     public LCP defaultOverrideBackgroundColor;
@@ -170,7 +171,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP dumb1;
 
     public SelectionPropertySet selection;
-    protected CompositeNamePropertySet compositeName;
     public ObjectValuePropertySet objectValue;
 
     public TableFactory tableFactory;
@@ -193,7 +193,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP getLP(String sID) {
         objectValue.getProperty(sID);
         selection.getProperty(sID);
-        compositeName.getProperty(sID);
 
         for (LP lp : lproperties) {
             if (lp.property.getSID().equals(sID)) {
@@ -218,15 +217,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         month = addConcreteClass("Month", getString("logics.month"),
                 new String[]{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"},
                 new String[]{getString("logics.month.january"), getString("logics.month.february"), getString("logics.month.march"), getString("logics.month.april"), getString("logics.month.may"), getString("logics.month.june"), getString("logics.month.july"), getString("logics.month.august"), getString("logics.month.september"), getString("logics.month.october"), getString("logics.month.november"), getString("logics.month.december")},
-                baseClass.named);
+                baseClass);
         DOW = addConcreteClass("DOW", getString("logics.week.day"),
                 new String[]{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"},
                 new String[]{getString("logics.days.sunday"), getString("logics.days.monday"), getString("logics.days.tuesday"), getString("logics.days.wednesday"), getString("logics.days.thursday"), getString("logics.days.friday"), getString("logics.days.saturday")},
-                baseClass.named);
+                baseClass);
         formResult = addConcreteClass("FormResult", "Результат вызова формы",
                 new String[]{"drop", "ok", "close"},
                 new String[]{"Сбросить", "Принять", "Закрыть"},
-                baseClass.named);
+                baseClass);
 
         // todo : раскидать по модулям
     }
@@ -272,9 +271,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         objectValue = new ObjectValuePropertySet();
         publicGroup.add(objectValue);
-
-        compositeName = new CompositeNamePropertySet();
-        privateGroup.add(compositeName);
 
         // логические св-ва
         and1 = addAFProp("and1", false);
@@ -413,10 +409,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         // todo : тут надо рефакторить как имена свойст, так и классов
         classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass);
-        objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
-        objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
+        staticName = addDProp(recognizeGroup, "staticName", "Статическое имя", InsensitiveStringClass.get(50), baseClass);
 
-        ((CalcProperty)name.property).aggProp = true;
+        objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
+        objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), staticName, objectClass, 1);
+
+        ((CalcProperty)staticName.property).aggProp = true;
 /*        name.setEventChange(addJProp(string2SP, addJProp(name.getOld(), objectClass, 1), 1,
                 addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
                 is(baseClass.named), 1);*/
@@ -432,7 +430,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initIndexes() {
-        addIndex(name);
+        addIndex(staticName);
     }
 
     public static int generateStaticNewID() {
@@ -576,72 +574,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         public LP getLP(ObjectEntity object) {
             return getLP(new ValueClass[]{object.baseClass});
-        }
-    }
-
-    public class CompositeNamePropertySet extends MapClassesPropertySet<Integer, JoinProperty> {
-        private static final String prefix = "CompositeNameProperty_";
-
-        protected Class<?> getPropertyClass() {
-            return JoinProperty.class;
-        }
-
-        @Override
-        protected boolean isInInterface(ImSet<ValueClassWrapper> classes) {
-            return classes.size() >= 1;
-        }
-
-        @Override
-        public Property getProperty(String sid) {
-            if (sid.startsWith(prefix)) {
-                int cnt = Integer.parseInt(sid.substring(prefix.length()));
-                if (!properties.containsKey(cnt)) {
-                    createProperty(cnt);
-                }
-                return properties.get(cnt);
-            }
-            return null;
-        }
-
-        @Override
-        protected ImOrderSet<?> getPropertyInterfaces(JoinProperty property, ValueClass[] valueClasses) {
-            return property.getOrderInterfaces();
-        }
-
-        @Override
-        protected Integer createKey(ValueClass[] classes) {
-            return classes.length;
-        }
-
-        @IdentityStrongLazy // для ID
-        private LCP getStringConcatanationProperty(int intNum) {
-            return new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), getString("logics.join"), intNum, ", "));
-        }
-
-        @Override
-        protected JoinProperty<ClassPropertyInterface> createProperty(ValueClass[] classes) {
-            return createProperty(classes.length);
-        }
-
-        private JoinProperty<ClassPropertyInterface> createProperty(int intNum) {
-            String sid = prefix + intNum;
-
-            Object joinParams[] = new Object[2 * intNum];
-            for (int i = 0; i < intNum; i++) {
-                joinParams[2 * i] = name;
-                joinParams[2 * i + 1] = i + 1;
-            }
-
-            LCP stringConcat = getStringConcatanationProperty(intNum);
-
-            ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(intNum);
-            JoinProperty<ClassPropertyInterface> joinProperty = new JoinProperty(sid, getString("logics.compound.name")+" (" + intNum + ")",
-                    listInterfaces, false, mapCalcImplement(stringConcat, readCalcImplements(listInterfaces, joinParams)));
-            LCP listJoinProperty = new LCP<JoinProperty.Interface>(joinProperty, listInterfaces);
-
-            registerProperty(listJoinProperty);
-            setParent(joinProperty);
-            return joinProperty;
         }
     }
 

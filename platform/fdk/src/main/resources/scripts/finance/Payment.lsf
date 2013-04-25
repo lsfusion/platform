@@ -16,7 +16,7 @@ timePayment(payment) <- currentTime() WHEN ASSIGNED(payment IS Payment);
 dateTimePayment 'Дата время' (payment) = dateTimeToDateTime(datePayment(payment), timePayment(payment));
 
 payerPayment(payment) = DATA LegalEntity (Payment);
-namePayerPayment 'Организация (покупатель)' (payment) = name(payerPayment(payment));
+namePayerPayment 'Организация (покупатель)' (payment) = nameLegalEntity(payerPayment(payment));
 accountFromPayment(payment) = DATA PaymentLedger.Account (Payment);
 accountFromPayment(payment) <- accountLegalEntity(payerPayment(payment))
     WHEN CHANGED(payerPayment(payment));
@@ -26,7 +26,7 @@ nameCurrencyAccountFromPayment 'Валюта счета' (payment) = PaymentLedg
 sumFromPayment 'Сумма' (payment) = DATA NUMERIC[16,2] (Payment) PREFCHARWIDTH 16;
 
 beneficiaryPayment(payment) = DATA LegalEntity (Payment);
-nameBeneficiaryPayment 'Организация (поставщик)' (payment) = name(beneficiaryPayment(payment));
+nameBeneficiaryPayment 'Организация (поставщик)' (payment) = nameLegalEntity(beneficiaryPayment(payment));
 accountToPayment(payment) = DATA PaymentLedger.Account (Payment);
 accountToPayment(payment) <- accountLegalEntity(beneficiaryPayment(payment))
     WHEN CHANGED(beneficiaryPayment(payment));
@@ -78,9 +78,9 @@ setSumToPayment = ACTION (payment){
 backgroundPaymentDate 'Цвет' (payment, date) = RGB(255,160,160) AND datePayment(payment) > (date AS DATE);
 
 partyA = DATA SESSION LegalEntity();
-namePartyA 'Организация (поставщик)' = name(partyA());
+namePartyA 'Организация (поставщик)' = nameLegalEntity(partyA());
 partyB = DATA SESSION LegalEntity();
-namePartyB 'Организация (покупатель)' = name(partyB());
+namePartyB 'Организация (покупатель)' = nameLegalEntity(partyB());
 
 FORM payment 'Платеж'
 

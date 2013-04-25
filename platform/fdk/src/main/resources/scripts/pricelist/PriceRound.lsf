@@ -4,12 +4,13 @@ REQUIRE System, Utils, DefaultData, Stock;
 
 
 //--  По группам
-CLASS RoundCondition 'Условие округления' : Named;
-
+CLASS RoundCondition 'Условие округления';
 TABLE roundCondition (RoundCondition);
 
+nameRoundCondition 'Наименование' = DATA ISTRING[50](RoundCondition);
+
 currencyRoundCondition = DATA Currency(RoundCondition);
-nameCurrencyRoundCondition 'Валюта' (roundCondition)= name(currencyRoundCondition(roundCondition));
+nameCurrencyRoundCondition 'Валюта' (roundCondition)= nameCurrency(currencyRoundCondition(roundCondition));
 
 denominatorPriceRoundCondition 'Делитель (округление цен)' =  DATA NUMERIC[14,2](RoundCondition);
 minPriceRoundCondition 'Нижний порог (округление цен)' =  DATA NUMERIC[14,2](RoundCondition);
@@ -49,8 +50,10 @@ roundPriceRoundCondition (price, roundCondition) = toNumeric14p2(IF (price AS NU
 
 // -------------------- Группы для округления --------------- //
 
-CLASS ABSTRACT RoundGroup 'Группа округлений' : Named;
+CLASS ABSTRACT RoundGroup 'Группа округлений';
 TABLE roundGroup(RoundGroup);
+
+nameRoundGroup 'Наименование' = ABSTRACT ISTRING[150](RoundGroup);
 
 TABLE roundConditionRoundGroup (RoundCondition, RoundGroup);
 inRoundConditionRoundGroup 'Вкл' = DATA BOOLEAN (RoundCondition, RoundGroup);
@@ -69,16 +72,16 @@ roundPriceCurrency(price, currency) = round(price, defaultRoundCurrency(currency
 FORM priceIntervals 'Округления цен'
 
     OBJECTS c=Currency FIXED PANEL
-    PROPERTIES (c)  SELECTOR name
+    PROPERTIES (c)  SELECTOR nameCurrency
 
     OBJECTS rc=RoundCondition
-    PROPERTIES(rc) name, denominatorPriceRoundCondition, minPriceRoundCondition, priceRoundRoundCondition, ADDOBJ, delete
+    PROPERTIES(rc) nameRoundCondition, denominatorPriceRoundCondition, minPriceRoundCondition, priceRoundRoundCondition, ADDOBJ, delete
     PROPERTIES(rc, c) isDefaultRoundConditionCurrency
     OBJECTS p=PriceInterval
     PROPERTIES(p) fromPriceInterval, toPriceInterval, modifierPriceInterval, ADDOBJ, delete
 
     OBJECTS rg=RoundGroup
-    PROPERTIES(rg) READONLY name
+    PROPERTIES(rg) READONLY nameRoundGroup
     PROPERTIES(rc, rg) inRoundConditionRoundGroup
 
     OBJECTS nu=NUMERIC[14,3] FIXED PANEL
@@ -101,7 +104,7 @@ DESIGN priceIntervals FROM DEFAULT {
             fillHorizontal = 2;
             childConstraints = TO THE BOTTOM;
             NEW row1 {
-                ADD PROPERTY (name(c)) {
+                ADD PROPERTY (nameCurrency(c)) {
                     preferredCharWidth = 30;
                     panelLabelAbove = TRUE;
                     font = 'Tahoma bold 24';
@@ -143,7 +146,7 @@ DESIGN priceIntervals FROM DEFAULT {
 FORM dialogPriceIntervals 'Округления цен'
 
     OBJECTS rc=RoundCondition
-    PROPERTIES(rc) READONLY name, denominatorPriceRoundCondition, minPriceRoundCondition, priceRoundRoundCondition, nameCurrencyRoundCondition
+    PROPERTIES(rc) READONLY nameRoundCondition, denominatorPriceRoundCondition, minPriceRoundCondition, priceRoundRoundCondition, nameCurrencyRoundCondition
     OBJECTS p=PriceInterval
     PROPERTIES(p) READONLY fromPriceInterval, toPriceInterval, modifierPriceInterval
 
@@ -166,7 +169,7 @@ loadDefaultPriceInterval  = ACTION (value, shortName, name) {
         SET currencyRoundCondition(p) <- currency();
         SET priceRoundRoundCondition(p)  <- value;
         SET defaultRoundConditionCurrency(c) <- p WHERE c == currency();
-        SET name(p) <- name;
+        SET nameRoundCondition(p) <- name;
     }
 }
 
@@ -180,7 +183,7 @@ loadDefaultPriceIntervals 'Загрузить стандартные округ�
         SET currencyRoundCondition(p) <- currency();
         SET minPriceRoundCondition(p) <- 25;
         SET priceRoundRoundCondition(p) <- -1;
-        SET name(p) <- 'До 50 рублей';
+        SET nameRoundCondition(p) <- 'До 50 рублей';
         denominatorPriceRoundCondition(p) <- 50;
         FOR ADDOBJ i1 = PriceInterval DO {
             roundConditionPriceInterval(i1) <- p;

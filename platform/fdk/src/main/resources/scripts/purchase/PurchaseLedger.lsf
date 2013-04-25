@@ -14,7 +14,7 @@ skuPurchaseLedger (ledger) = ABSTRACT Sku (PurchaseLedger) PERSISTENT INDEXED;
 nameSkuPurchaseLedger 'SKU' (ledger) = nameSku(skuPurchaseLedger(ledger));
 
 stockPurchaseLedger (ledger) = ABSTRACT Stock (PurchaseLedger) PERSISTENT INDEXED;
-nameStockPurchaseLedger 'Склад' (ledger) = name(stockPurchaseLedger(ledger));
+nameStockPurchaseLedger 'Склад' (ledger) = nameStock(stockPurchaseLedger(ledger));
 
 descriptionPurchaseLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (PurchaseLedger) PERSISTENT;
 
@@ -23,7 +23,7 @@ quantityPurchaseLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (Purchase
 sumPurchaseLedger 'Сумма покупки' (ledger) = ABSTRACT NUMERIC[16,2] (PurchaseLedger) PERSISTENT;
 
 supplierPurchaseLedger  (ledger) = ABSTRACT LegalEntity (PurchaseLedger) PERSISTENT;
-nameSupplierPurchaseLedger 'Поставщик' (ledger) = name(supplierPurchaseLedger (ledger));
+nameSupplierPurchaseLedger 'Поставщик' (ledger) = nameLegalEntity(supplierPurchaseLedger (ledger));
 
 quantityPurchaseSupplierSku 'Кол-во закуплено' = GROUP SUM quantityPurchaseLedger(ledger) IF isPostedPurchaseLedger(ledger)
     BY supplierPurchaseLedger(ledger), skuPurchaseLedger(ledger) PERSISTENT;
@@ -154,7 +154,7 @@ FORM purchaseLedger 'Поступления по позициям'
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
     OBJECTS te = TypeExchange FIXED PANEL
-    PROPERTIES nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+    PROPERTIES nameType = nameTypeExchange(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS s = PurchaseLedger
     PROPERTIES(s) READONLY datePurchaseLedger, dateTimePurchaseLedger, nameStockPurchaseLedger, nameSupplierPurchaseLedger, nameSkuPurchaseLedger, descriptionPurchaseLedger,
@@ -192,21 +192,21 @@ FORM purchaseSkuStock 'Поступления по SKU'
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
     OBJECTS te = TypeExchange FIXED PANEL
-    PROPERTIES nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+    PROPERTIES nameType = nameTypeExchange(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS w = INTEGER
     FILTERS quantitySkuPurchaseWeekDateFromTo(w, dFrom, dTo)
 
     TREE stockTree sg = StockGroup PARENT parentStockGroup, ts = Stock
-    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    PROPERTIES READONLY sgTreeName = nameStockGroup(sg), tsTreeName = nameStock(ts)
     FILTERS stockGroupStock(ts) == sg
 
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sk)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
     ORDER BY skuTreeName
 
     OBJECTS           sts=(st=Stock, s=Sku)
-    PROPERTIES        READONLY nameSku(s), stockName = name(st)
+    PROPERTIES        READONLY nameSku(s), stockName = nameStock(st)
 
     FILTERS           isParentSkuGroupSku(sk, s),
                       (st == ts AND sg IS StockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
@@ -292,7 +292,7 @@ EXTEND FORM currentBalanceSkuStock PROPERTIES(s, st) averagePurchaseSkuStock REA
 META defineSupplierDialogStockSku (form)
 
     form###supplier = DATA SESSION LegalEntity ();
-    form###nameSupplier 'Поставщик' () = name(form###supplier()) PREFCHARWIDTH 30;
+    form###nameSupplier 'Поставщик' () = nameLegalEntity(form###supplier()) PREFCHARWIDTH 30;
     form###suppliersFilter (sku) =  inSupplierSku(form###supplier(), sku) OR
                                     (sku IS Sku AND NOT form###supplier());
 

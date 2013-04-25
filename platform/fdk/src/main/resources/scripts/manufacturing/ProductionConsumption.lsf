@@ -6,7 +6,7 @@ NAMESPACE Production;
 // ---------------- Списание матириалов, производство ------------------- //
 
 CLASS ABSTRACT Consumption 'Списание сырья' : Document;
-CLASS ABSTRACT ConsumptionDetail 'Строка списания сырья' : Named, DocumentDetail;
+CLASS ABSTRACT ConsumptionDetail 'Строка списания сырья' : DocumentDetail;
 
 CLASS UserConsumption 'Списание сырья (польз.)': Consumption, Historizable, NumeratedObject;
 CLASS UserConsumptionDetail 'Строка списания сырья (польз.)' : ConsumptionDetail;

@@ -7,7 +7,7 @@ REQUIRE Order;
 META defineBlanketOrder(sign)
 
     CLASS BlanketOrder 'Множественный заказ'###sign : Historizable, NumeratedDocument;
-    CLASS BlanketOrderDetail 'Строка множественного заказа'###sign : Named;
+    CLASS BlanketOrderDetail 'Строка множественного заказа'###sign;
 
     CLASS BlanketOrderPosted 'Проведенный множественный заказ'###sign : BlanketOrder, PostedObject;
     CLASS BlanketOrderClosed 'Закрытый множественный заказ'###sign : BlanketOrderPosted;
@@ -37,7 +37,7 @@ META defineBlanketOrder(sign)
     TABLE blanketOrderStock(BlanketOrder, Stock);
 
     customerStockBlanketOrderDetail (blanketOrderDetail) = DATA Stock (BlanketOrderDetail);
-    nameCustomerStockBlanketOrderDetail 'Склад покупателя' (blanketOrderDetail) = name(customerStockBlanketOrderDetail(blanketOrderDetail));
+    nameCustomerStockBlanketOrderDetail 'Склад покупателя' (blanketOrderDetail) = nameStock(customerStockBlanketOrderDetail(blanketOrderDetail));
 
     @defineDocumentDetailSku(blanketOrder, sku);
     @defineDocumentDetailQuantity(blanketOrder);
@@ -58,7 +58,7 @@ META defineBlanketOrder(sign)
     @defineDocumentInterfaceHeaderAgreement (BlanketOrder, Stock, supplier, customer);
 
     priceListTypeBlanketOrderStock (blanketOrder, stock) = DATA PriceListType (BlanketOrder, Stock);
-    namePriceListTypeBlanketOrderStock 'Вид цены' (blanketOrder, stock) = name(priceListTypeBlanketOrderStock (blanketOrder, stock)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+    namePriceListTypeBlanketOrderStock 'Вид цены' (blanketOrder, stock) = namePriceListType(priceListTypeBlanketOrderStock (blanketOrder, stock)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
     backgroundPriceListTypeBlanketOrderStock (blanketOrder, stock) = RGB(200,200,200) IF agreementBlanketOrderStock (blanketOrder, stock);
 
     @defineDocumentDetailPrice(blanketOrder); // объявляем цену без НДС
@@ -111,7 +111,7 @@ META defineBlanketOrder(sign)
             MESSAGE 'Для строки множественного заказа выбран склад не включенный в заказ';
 
     customerStocksBlanketOrder 'Контрагенты' (blanketOrder) =
-        GROUP CONCAT name(stock) IF inBlanketOrderStock(blanketOrder, stock), ', '
+        GROUP CONCAT nameStock(stock) IF inBlanketOrderStock(blanketOrder, stock), ', '
         BY blanketOrder
         ORDER stock MINCHARWIDTH 20 MAXCHARWIDTH 60 PREFCHARWIDTH 40 PERSISTENT;
 
@@ -137,7 +137,7 @@ META defineBlanketOrder(sign)
                        shipmentDateBlanketOrderDetail, shipmentTimeBlanketOrderDetail, ADDOBJ, delete
 
         OBJECTS c = Stock
-        PROPERTIES     name(c) READONLY, inBlanketOrderStock(o,c)
+        PROPERTIES     nameStock(c) READONLY, inBlanketOrderStock(o,c)
         PROPERTIES(o,c) nameNumeratorBlanketOrderStock, numberBlanketOrderStock, seriesBlanketOrderStock,
                         nameAgreementBlanketOrderStock, namePriceListTypeBlanketOrderStock BACKGROUND backgroundPriceListTypeBlanketOrderStock(o, c)
         PROPERTIES(o,c) READONLY countBlanketOrderDetailBlanketOrderCustomerStock, quantityBlanketOrderDetailBlanketOrderCustomerStock, sumBlanketOrderDetailBlanketOrderCustomerStock

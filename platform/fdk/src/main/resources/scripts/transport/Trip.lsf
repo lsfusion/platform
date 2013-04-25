@@ -15,7 +15,7 @@ sidTruckTrip 'Машина (номер)'(trip) = sidTruck(truckTrip(trip));
 weightTruckTrip 'Грузоподъёмность (кг)'(trip) = weightTruck(truckTrip(trip));
 ownerTruckTrip 'Владелец'(trip) = ownerTruck(truckTrip(trip));
 truckModelTruckTrip (trip) = truckModelTruck(truckTrip(trip));
-nameTruckModelTruckTrip 'Марка' (trip) = name(truckModelTruckTrip(trip));
+nameTruckModelTruckTrip 'Марка' (trip) = nameTruckModel(truckModelTruckTrip(trip));
 trailerTruckTrip 'Прицеп' (trip) = trailerTruck(truckTrip(trip));
 
 driverTrip = DATA Driver(Trip);
@@ -193,7 +193,7 @@ FORM trip 'Рейс'
     FILTERS inTripShipment(t, s2), quantityShipmentDetailSkuShipment(sk, s2)>0
 
     OBJECTS st=Stock
-    PROPERTIES(st) READONLY name, addressStock, nameLegalEntityStock
+    PROPERTIES(st) READONLY nameStock, addressStock, nameLegalEntityStock
     PROPERTIES(t, st) grossWeightTripToStock
     PROPERTIES(st, t) numberStockTrip, isFirstStockTrip
     FILTERS quantityTripStock (t, st)>0
@@ -314,7 +314,7 @@ FORM trips 'Рейсы'
         FILTER 'Товары в заказах и поставках' 'F8' quantityOrderedTripSku(t, sk)>0 AND quantityShipmentedTripSku(t, sk)>0
 
     OBJECTS st=Stock
-    PROPERTIES(st) READONLY name, addressStock, nameLegalEntityStock
+    PROPERTIES(st) READONLY nameStock, addressStock, nameLegalEntityStock
     PROPERTIES(st, t) READONLY numberStockTrip
     FILTERS quantityTripStock(t, st)>0
 ;

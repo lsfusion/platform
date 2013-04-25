@@ -8,7 +8,7 @@ CLASS Tax 'Налоги'
 {
     taxVAT 'НДС',
     taxNP 'Налог с продаж'
-} : Named;
+};
 
 // ---------------------------------- Шкала налога --------------------------------------- //
 
@@ -17,10 +17,10 @@ TABLE range(Range);
 numberRange 'Шкала' = DATA INTEGER (Range) AGGPROP IN recognize;
 
 taxRange = DATA Tax (Range) NOT NULL;
-nameTaxRange 'Налог' (range) = name(taxRange(range)) IN recognize;
+nameTaxRange 'Налог' (range) = staticName(taxRange(range)) IN recognize;
 
 countryRange = DATA Country (Range) NOT NULL AUTOSET;
-nameCountryRange 'Страна' (range) = name(countryRange(range)) IN recognize;
+nameCountryRange 'Страна' (range) = nameCountry(countryRange(range)) IN recognize;
 
 countRangeTaxCountry 'Кол-во шкал' (tax, country) = GROUP SUM 1 IF range IS Range BY taxRange(range), countryRange(range);
 
@@ -36,9 +36,10 @@ CLASS RangeType 'Для каких подразделений действует
 {
     common 'Общий',
     units 'Для подразделений'
-} : Named;
+};
+
 rangeTypeRange = DATA RangeType (Range) NOT NULL;
-nameRangeTypeRange 'Тип шкалы' = name(rangeTypeRange(range)) IN base;
+nameRangeTypeRange 'Тип шкалы' = staticName(rangeTypeRange(range)) IN base;
 
 isUnitsTypeRange(range) = rangeTypeRange(range) == RangeType.units;
 
@@ -46,8 +47,10 @@ rangeTypeRange(range) <- RangeType.common WHEN ASSIGNED(range IS Range);     ///
 
 // ----------------------------- Разбиение шкалы для подразделений ------------------------------------- //
 
-CLASS ABSTRACT TaxUnitGroup 'Группа налогового субъекта' : Named;
+CLASS ABSTRACT TaxUnitGroup 'Группа налогового субъекта';
 TABLE taxUnitGroup(TaxUnitGroup);
+
+nameTaxUnitGroup 'Наименование' = ABSTRACT ISTRING[150](TaxUnitGroup);
 
 TABLE taxUnitGroupTaxUnitGroup(TaxUnitGroup, TaxUnitGroup);
 @defineHierarchyAbstract (taxUnitGroup, TaxUnitGroup);
@@ -104,10 +107,10 @@ currentVATUnitDate 'НДС, %' (taxUnit) = valueRateRangeDate(rangeTaxTaxUnit(Ta
 
 FORM tax 'Налог'
     OBJECTS           t = Tax FIXED PANEL
-    PROPERTIES(t)     name
+    PROPERTIES(t)     staticName
 
     OBJECTS c = Country FIXED PANEL
-    PROPERTIES(c) SELECTOR    name
+    PROPERTIES(c) SELECTOR    nameCountry
 
     OBJECTS           ra = Range
     PROPERTIES(ra)    numberRange, nameRangeTypeRange, delete
@@ -121,7 +124,7 @@ FORM tax 'Налог'
     FILTERS           rangeRate(rt) == ra
 
     TREE treeTaxUnit  a=STRING[3], ug = TaxUnitGroup PARENT parentTaxUnitGroup
-    PROPERTIES READONLY OBJVALUE(a), name(ug)
+    PROPERTIES READONLY OBJVALUE(a), nameTaxUnitGroup(ug)
     FILTERS           stringEqualsAll(a)
 
     OBJECTS           u=TaxUnit
@@ -168,11 +171,11 @@ DESIGN tax FROM DEFAULT {
 
 FORM taxes 'Налоги'
     OBJECTS           t=Tax
-    PROPERTIES(t)     READONLY name
+    PROPERTIES(t)     READONLY staticName
     PROPERTIES(t)     EDITFORM, delete
 
     OBJECTS           c=Country
-    PROPERTIES(c)     name
+    PROPERTIES(c)     nameCountry
     FILTERS           countRangeTaxCountry(t, c)
 
     OBJECTS ra=Range

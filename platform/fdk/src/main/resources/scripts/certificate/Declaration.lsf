@@ -23,22 +23,22 @@ descriptionDeclaration 'Таможенная декларация' (declaration)
 @defineCertificateObjectBatch(declaration, 'Таможенная декларация');
 
 customsZoneDeclaration = DATA CustomsZone(Declaration);
-nameCustomsZoneDeclaration 'Таможенная зона' (declaration) = name(customsZoneDeclaration(declaration));
+nameCustomsZoneDeclaration 'Таможенная зона' (declaration) = nameCustomsZone(customsZoneDeclaration(declaration));
 
 currencyCustomsZoneDeclaration (declaration) = currencyCustomsZone(customsZoneDeclaration(declaration));
-nameCurrencyCustomsZoneDeclaration 'Валюта платежей' (declaration) = name(currencyCustomsZoneDeclaration(declaration));
+nameCurrencyCustomsZoneDeclaration 'Валюта платежей' (declaration) = nameCurrency(currencyCustomsZoneDeclaration(declaration));
 
 legalEntityDeclaration = DATA LegalEntity(Declaration);
-nameLegalEntityDeclaration 'Импортёр' (declaration) = name(legalEntityDeclaration(declaration));
+nameLegalEntityDeclaration 'Импортёр' (declaration) = nameLegalEntity(legalEntityDeclaration(declaration));
 
 currencyDeclaration = DATA Currency(Declaration);
-nameCurrencyDeclaration 'Валюта накладных' (declaration) = name(currencyDeclaration(declaration));
+nameCurrencyDeclaration 'Валюта накладных' (declaration) = nameCurrency(currencyDeclaration(declaration));
 
 homeCurrencyDeclaration = DATA Currency(Declaration);
-nameHomeCurrencyDeclaration 'Валюта (расч.)' (declaration) = name(homeCurrencyDeclaration(declaration));
+nameHomeCurrencyDeclaration 'Валюта (расч.)' (declaration) = nameCurrency(homeCurrencyDeclaration(declaration));
 
 typeExchangeDeclaration = DATA TypeExchange(Declaration);
-nameTypeExchangeDeclaration 'Тип обмена' (declaration) = name(typeExchangeDeclaration(declaration));
+nameTypeExchangeDeclaration 'Тип обмена' (declaration) = nameTypeExchange(typeExchangeDeclaration(declaration));
 
 CONSTRAINT currencyTypeExchange(typeExchangeDeclaration(declaration)) != homeCurrencyDeclaration(declaration)
     CHECKED BY homeCurrencyDeclaration MESSAGE 'Тип обмена должен соответствовать расчётной валюте';

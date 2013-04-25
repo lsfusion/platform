@@ -4,8 +4,10 @@ REQUIRE System, Stock, Barcode, PriceList, DefaultData;
 
 //---------------------------- Сервера управления оборудования ----------------------------//
 
-CLASS EquipmentServer 'Сервер оборудования' : Named;
+CLASS EquipmentServer 'Сервер оборудования';
 TABLE equipmentServer (EquipmentServer);
+
+nameEquipmentServer 'Наименование' = DATA ISTRING[50](EquipmentServer);
 
 sidEquipmentServer 'Идентификатор' = DATA STRING[20] (EquipmentServer) IN base;
 sidToEquipmentServer(equipmentServer) = GROUP AGGR equipmentServer BY sidEquipmentServer (equipmentServer) WHERE equipmentServer IS EquipmentServer;
@@ -34,7 +36,7 @@ equipmentServerEquipmentServerLog 'Сервер оборудования (ID)' =
 
 FORM equipmentServers 'Серверы оборудования'
     OBJECTS es = EquipmentServer
-    PROPERTIES(es)  READONLY name, sidEquipmentServer, delayEquipmentServer
+    PROPERTIES(es)  READONLY nameEquipmentServer, sidEquipmentServer, delayEquipmentServer
     PROPERTIES(es)  ADDFORM, EDITFORM, delete
 
     OBJECTS e = EquipmentServerError
@@ -84,13 +86,13 @@ TABLE groupMachinery (GroupMachinery);
 nameGroupMachinery 'Наименование' = DATA STRING[200] (GroupMachinery) IN base MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 equipmentServerGroupMachinery = DATA EquipmentServer (GroupMachinery);
-nameEquipmentServerGroupMachinery 'Сервер оборудования' (groupMachinery) = name(equipmentServerGroupMachinery(groupMachinery));
+nameEquipmentServerGroupMachinery 'Сервер оборудования' (groupMachinery) = nameEquipmentServer(equipmentServerGroupMachinery(groupMachinery));
 sidEquipmentServerGroupMachinery 'ИД сервера оборудования' (groupMachinery) = sidEquipmentServer(equipmentServerGroupMachinery(groupMachinery));
 
 // -------------------------------- Склады --------------------------------------------- //
 
 stockGroupMachinery = ABSTRACT Stock (GroupMachinery) PERSISTENT;
-nameStockGroupMachinery 'Склад' (groupMachinery) = name(stockGroupMachinery(groupMachinery));
+nameStockGroupMachinery 'Склад' (groupMachinery) = nameStock(stockGroupMachinery(groupMachinery));
 
 // фильтрация по группам товаров
 
@@ -104,8 +106,8 @@ FORM filterSkuGroupMachinery 'Фильтрация по классификато
     PROPERTIES(gm) READONLY nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery
 
     TREE treeGroups g=SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY name(g)
-    ORDER BY name
+    PROPERTIES READONLY nameSkuGroup(g)
+    ORDER BY nameSkuGroup
 
     OBJECTS cg=SkuGroup
     PROPERTIES(cg) READONLY canonicalNameSkuGroup
@@ -128,14 +130,14 @@ DESIGN filterSkuGroupMachinery FROM DEFAULT {
 showFilterSkuGroupMachinery 'Выбрать группы' (groupMachinery) = ACTION FORM filterSkuGroupMachinery OBJECTS gm = groupMachinery MODAL;
 
 //---------------------------- Модели оборудования ----------------------------------------//
-CLASS ABSTRACT Model 'Модель' : Named;
+CLASS ABSTRACT Model 'Модель';
 TABLE model (Model);
 
-sidModel 'Код' = DATA STRING[20] (Model) IN base;
+nameModel 'Наименование' = ABSTRACT ISTRING[110](Model);
 
+sidModel 'Код' = DATA STRING[20] (Model) IN base;
 noteModel 'Примечание' = DATA STRING[200] (Model) IN base;
 handlerModel 'Обработчик' = DATA STRING[200] (Model) IN base;
-
 maxProductModel 'MAX допустимое колич. товаров' = DATA INTEGER (Model) IN base;
 
 //---------------------------- типы оборудования  ----------------------------------------//
@@ -147,7 +149,7 @@ nameGroupMachineryMachinery 'Группа' (machinery) = nameGroupMachinery(grou
 
 modelMachinery = ABSTRACT Model (Machinery) PERSISTENT;
 sidModelMachinery 'Код' (machinery) = sidModel(modelMachinery(machinery)) IN base;
-nameModelMachinery 'Модель' (machinery) = name(modelMachinery(machinery)) IN base;
+nameModelMachinery 'Модель' (machinery) = nameModel(modelMachinery(machinery)) IN base;
 handlerModelMachinery 'Обработчик' (machinery) = handlerModel(modelMachinery(machinery)) IN base;
 
 nppMachinery 'Порядковый номер' = DATA INTEGER (Machinery) IN base;
@@ -282,7 +284,7 @@ GROUP snapshotMachineryPriceGroup 'Перезагрузка прайса' : publ
 FORM groupMachineryInput 'Выбор оборудования для перезагрузки прайса'
 
     OBJECTS s = Stock FIXED PANEL
-    PROPERTIES(s) READONLY sname = name
+    PROPERTIES(s) READONLY sname = nameStock
 
     OBJECTS g = GroupMachinery
     PROPERTIES(g) READONLY nameGroupMachinery, nameStockGroupMachinery, nameEquipmentServerGroupMachinery
@@ -321,7 +323,7 @@ FORM machineryPriceTransaction 'Загрузка прайса в оборудо�
 
 FORM machineryPriceTransactions 'Загрузки прайса в оборудование'
     OBJECTS s = Stock FIXED PANEL
-    PROPERTIES name(s) SELECTOR
+    PROPERTIES nameStock(s) SELECTOR
     FILTERS isCompanyStock(s)
 
     OBJECTS t = MachineryPriceTransaction
@@ -416,7 +418,7 @@ GROUP incrementMachineryPriceGroup 'Инкрементная загрузка' :
 // ------------------------------- Определение цены, по которой загружать ------------------------------- //
 
 priceListTypeGroupMachinery = DATA PriceListType (GroupMachinery);
-namePriceListTypeGroupMachinery 'Вид цен для POS' (groupMachinery) = name(priceListTypeGroupMachinery(groupMachinery));
+namePriceListTypeGroupMachinery 'Вид цен для POS' (groupMachinery) = namePriceListType(priceListTypeGroupMachinery(groupMachinery));
 
 priceBarcodeGroupMachinery 'Цена' (barcode, groupMachinery) = pricePriceListTypeSkuStockDateTime(priceListTypeGroupMachinery(groupMachinery),
                                                                                                  skuBarcode(barcode),
@@ -583,13 +585,13 @@ END
 
 EXTEND FORM defaultData
     OBJECTS         es=EquipmentServer FIXED PANEL
-    PROPERTIES(es)  SELECTOR name
+    PROPERTIES(es)  SELECTOR nameEquipmentServer
 
     OBJECTS         pt=PriceListType FIXED PANEL
-    PROPERTIES(pt)  SELECTOR name
+    PROPERTIES(pt)  SELECTOR namePriceListType
 
     OBJECTS         s=Stock FIXED PANEL
-    PROPERTIES(s)   SELECTOR name
+    PROPERTIES(s)   SELECTOR nameStock
 ;
 
 EXTEND DESIGN defaultData {
@@ -598,13 +600,13 @@ EXTEND DESIGN defaultData {
             title = 'Оборудование';
             childConstraints = TO THE BOTTOM;
 
-            ADD PROPERTY(name(es)) {
+            ADD PROPERTY(nameEquipmentServer(es)) {
                 caption = 'Сервер оборудования';
             }
-            ADD PROPERTY(name(pt)) {
+            ADD PROPERTY(namePriceListType(pt)) {
                 caption = 'Вид цен';
             }
-            ADD PROPERTY(name(s)) {
+            ADD PROPERTY(nameStock(s)) {
                 caption = 'Склад';
             }
         }

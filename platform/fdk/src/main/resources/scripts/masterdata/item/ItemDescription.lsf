@@ -7,41 +7,53 @@ NAMESPACE Item;
 GROUP itemDescriptionGroup 'Описание' : public;
 
 // Вид
-CLASS Type 'Вид товара' : Named;
+CLASS Type 'Вид товара';
 TABLE type(Type);
 
-@defineObjectItemAttribute(type, name, 'Вид', itemDescriptionGroup);
-@defineObjectItemAttributeBatch (type, name, 'Вид');
+nameType 'Наименование' = DATA ISTRING[50](Type);
+
+@defineObjectItemAttribute(type, nameType, 'Вид', itemDescriptionGroup);
+@defineObjectItemAttributeBatch (type, nameType, 'Вид');
 
 // Сорт
-CLASS Sort 'Сорт товара' : Named;
+CLASS Sort 'Сорт товара';
 TABLE sort(Sort);
 
-@defineObjectItemAttribute(sort, name, 'Сорт', itemDescriptionGroup);
-@defineObjectItemAttributeBatch (sort, name, 'Сорт');
+nameSort 'Наименование' = DATA ISTRING[50](Sort);
+
+@defineObjectItemAttribute(sort, nameSort, 'Сорт', itemDescriptionGroup);
+@defineObjectItemAttributeBatch (sort, nameSort, 'Сорт');
 
 // Форма
-CLASS Form 'Форма товара' : Named;
+CLASS Form 'Форма товара';
 TABLE form(Form);
 
-@defineObjectItemAttribute(form, name, 'Форма', itemDescriptionGroup);
-@defineObjectItemAttributeBatch (form, name, 'Форма');
+nameForm 'Наименование' = DATA ISTRING[50](Form);
+
+@defineObjectItemAttribute(form, nameForm, 'Форма', itemDescriptionGroup);
+@defineObjectItemAttributeBatch (form, nameForm, 'Форма');
 
 // Особенность
-CLASS Feature 'Особенность товара' : DoubleNamed;
+CLASS Feature 'Особенность товара';
 TABLE feature(Feature);
 
-@defineObjectItemAttribute(feature, name, 'Особенность', itemDescriptionGroup);
-@defineObjectItemAttributeBatch (feature, name, 'Особенность');
-@implementObjectShortItemAttribute(feature, 'Особенность (сокр.)');
+nameFeature 'Наименование' = DATA ISTRING[50](Feature);
+shortNameFeature 'Краткое наименование' = DATA ISTRING[50](Feature);
+
+@defineObjectItemAttribute(feature, nameFeature, 'Особенность', itemDescriptionGroup);
+@defineObjectItemAttributeBatch (feature, nameFeature, 'Особенность');
+//@implementObjectShortItemAttribute(feature, 'Особенность (сокр.)');
 
 // Упаковка
-CLASS Pack 'Упаковка' : DoubleNamed;
+CLASS Pack 'Упаковка';
 TABLE pack(Pack);
 
-@defineObjectItemAttribute(pack, name, 'Упаковка', itemDescriptionGroup);
-@defineObjectItemAttributeBatch (pack, name, 'Упаковка');
-@implementObjectShortItemAttribute(pack, 'Упаковка (сокр.)');
+namePack 'Наименование' = DATA ISTRING[50](Pack);
+shortNamePack 'Наименование' = DATA ISTRING[10](Pack);
+
+@defineObjectItemAttribute(pack, namePack, 'Упаковка', itemDescriptionGroup);
+@defineObjectItemAttributeBatch (pack, namePack, 'Упаковка');
+//@implementObjectShortItemAttribute(pack, 'Упаковка (сокр.)');
 
 // Свойство
 @defineStringItemAttribute(property, STRING[100], 'Свойство', itemDescriptionGroup);

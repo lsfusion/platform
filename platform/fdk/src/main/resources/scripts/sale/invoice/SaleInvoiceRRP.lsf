@@ -18,10 +18,10 @@ RRPPriceListTypeUserInvoiceDetail(userInvoiceDetail) <- RRPPriceListTypeAgreemen
     WHEN CHANGED (agreementUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)));
 
 currencyRRPUserInvoiceDetail (userInvoiceDetail) = currencyPriceListType(RRPPriceListTypeUserInvoiceDetail(userInvoiceDetail));
-nameCurrencyRRPUserInvoiceDetail 'Валюта (RRP)' (userInvoiceDetail) = name(currencyRRPUserInvoiceDetail(userInvoiceDetail));
+nameCurrencyRRPUserInvoiceDetail 'Валюта (RRP)' (userInvoiceDetail) = nameCurrency(currencyRRPUserInvoiceDetail(userInvoiceDetail));
 
 currencyRRPInvoiceDetail (invoiceDetail) = currencyPriceListType(RRPPriceListTypeInvoiceDetail(invoiceDetail));
-nameCurrencyRRPInvoiceDetail 'Валюта (RRP)' (invoiceDetail) = name(currencyRRPInvoiceDetail(invoiceDetail));
+nameCurrencyRRPInvoiceDetail 'Валюта (RRP)' (invoiceDetail) = nameCurrency(currencyRRPInvoiceDetail(invoiceDetail));
 
 @defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, RRP, ' (RRP)');
 RRPPriceUserInvoiceDetail (detail)  <-  prevPricePriceListTypeSkuStockDateTime(RRPPriceListTypeUserInvoiceDetail(detail),

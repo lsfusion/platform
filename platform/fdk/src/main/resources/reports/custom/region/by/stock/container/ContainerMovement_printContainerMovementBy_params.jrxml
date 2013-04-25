@@ -32,7 +32,7 @@
 	<field name="objFrom" class="java.util.Date"/>
 	<field name="objTo" class="java.util.Date"/>
 	<field name="dep" class="java.lang.Integer"/>
-	<field name="name" class="java.lang.String"/>
+	<field name="nameDepartmentStore" class="java.lang.String"/>
 	<field name="nameStoreDepartmentStore" class="java.lang.String"/>
 	<field name="nameLegalEntityDepartmentStore" class="java.lang.String"/>
 	<field name="costSumContainerStockDateFrom" class="java.lang.Double"/>

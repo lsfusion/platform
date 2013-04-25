@@ -5,26 +5,28 @@ NAMESPACE Purchase;
 
 
 //---------------------------------- Норма отходов ------------------------------------//
-CLASS WriteOffRate 'Норма отходов' : Named;
+CLASS WriteOffRate 'Норма отходов';
 TABLE writeOffRate(WriteOffRate);
 
+nameWriteOffRate 'Наименование' = DATA ISTRING[100](WriteOffRate);
+
 percentWriteOffRate 'Норма,%' = DATA NUMERIC[10,3] (WriteOffRate);
-countryWriteOffRate  = DATA Country (WriteOffRate);
-nameCountryWriteOffRate 'Страна' (writeOffRate) = name(countryWriteOffRate(writeOffRate)) IN base;
+countryWriteOffRate = DATA Country (WriteOffRate);
+nameCountryWriteOffRate 'Страна' (writeOffRate) = nameCountry(countryWriteOffRate(writeOffRate)) IN base;
 
 FORM writeOffRate 'Норма отходов'
     OBJECTS r=WriteOffRate FIXED PANEL
-    PROPERTIES(r) name, percentWriteOffRate, nameCountryWriteOffRate
+    PROPERTIES(r) nameWriteOffRate, percentWriteOffRate, nameCountryWriteOffRate
     EDIT WriteOffRate OBJECT r
 ;
 
 writeOffRateCountrySku 'Норма отходов' = ABSTRACT WriteOffRate (Country, Sku);
-nameWriteOffRateCountrySku 'Норма отходов' = name(writeOffRateCountrySku(country, sku));
+nameWriteOffRateCountrySku 'Норма отходов' = nameWriteOffRate(writeOffRateCountrySku(country, sku));
 percentWriteOffRateCountrySku 'Норма отходов,%' = percentWriteOffRate(writeOffRateCountrySku(country, sku));
 
 FORM writeOffRateDialog 'Нормы отходов'
     OBJECTS r=WriteOffRate
-    PROPERTIES(r) READONLY name, percentWriteOffRate, nameCountryWriteOffRate
+    PROPERTIES(r) READONLY nameWriteOffRate, percentWriteOffRate, nameCountryWriteOffRate
     PROPERTIES(r) ADDSESSIONFORM, EDITSESSIONFORM, delete
     DIALOG WriteOffRate OBJECT r
 ;
@@ -48,15 +50,15 @@ FORM writeOffRateDialog 'Нормы отходов'
 reasonInvoice 'Причина списания (ИД)' = ABSTRACT Reason (Invoice);
 reasonUserInvoice 'Причина списания (ИД)' = DATA Reason (UserInvoice);
 reasonInvoice(invoice) += reasonUserInvoice(invoice);
-nameReasonInvoice 'Причина списания' (invoice) = name(reasonInvoice (invoice)) IN documentPrmGroup;
-nameReasonUserInvoice 'Причина списания' (userInvoice) = name(reasonUserInvoice (userInvoice)) IN documentPrmGroup;
+nameReasonInvoice 'Причина списания' (invoice) = nameReason(reasonInvoice (invoice)) IN documentPrmGroup;
+nameReasonUserInvoice 'Причина списания' (userInvoice) = nameReason(reasonUserInvoice (userInvoice)) IN documentPrmGroup;
 
 writeOffRateInvoiceDetail 'Норма отходов' (invoiceDetail) = ABSTRACT WriteOffRate (InvoiceDetail);
-nameWriteOffRateInvoiceDetail 'Норма отходов' (invoiceDetail) = name(writeOffRateInvoiceDetail(invoiceDetail));
+nameWriteOffRateInvoiceDetail 'Норма отходов' (invoiceDetail) = nameWriteOffRate(writeOffRateInvoiceDetail(invoiceDetail));
 percentWriteOffRateInvoiceDetail 'Норма отходов,%' (invoiceDetail)= ABSTRACT NUMERIC[10,3] (InvoiceDetail);
 
 writeOffRateUserInvoiceDetail 'Норма отходов' (userInvoiceDetail) = DATA WriteOffRate (UserInvoiceDetail);
-nameWriteOffRateUserInvoiceDetail 'Норма отходов' (userInvoiceDetail) = name(writeOffRateUserInvoiceDetail(userInvoiceDetail));
+nameWriteOffRateUserInvoiceDetail 'Норма отходов' (userInvoiceDetail) = nameWriteOffRate(writeOffRateUserInvoiceDetail(userInvoiceDetail));
 percentWriteOffRateUserInvoiceDetail 'Норма отходов,%' (invoiceDetail)= DATA NUMERIC[10,3] (UserInvoiceDetail);
 
 writeOffRateUserInvoiceDetail(detail) <- writeOffRateCountrySku(countryCustomerStockUserInvoiceDetail(detail), skuUserInvoiceDetail(detail)) WHEN
@@ -135,15 +137,15 @@ overCopyInvoice(s, d) += ACTION (s, d) {
 reasonShipment 'Причина списания (ИД)' = ABSTRACT Reason (Shipment);
 reasonUserShipment 'Причина списания (ИД)' = DATA Reason (UserShipment);
 reasonShipment(shipment) += reasonUserShipment(shipment);
-nameReasonShipment 'Причина списания' (shipment) = name(reasonShipment (shipment)) IN documentPrmGroup;
-nameReasonUserShipment 'Причина списания' (userShipment) = name(reasonUserShipment (userShipment)) IN documentPrmGroup;
+nameReasonShipment 'Причина списания' (shipment) = nameReason(reasonShipment (shipment)) IN documentPrmGroup;
+nameReasonUserShipment 'Причина списания' (userShipment) = nameReason(reasonUserShipment (userShipment)) IN documentPrmGroup;
 
 writeOffRateShipmentDetail 'Норма отходов' (shipmentDetail) = ABSTRACT WriteOffRate (ShipmentDetail);
-nameWriteOffRateShipmentDetail 'Норма отходов' (shipmentDetail) = name(writeOffRateShipmentDetail(shipmentDetail));
+nameWriteOffRateShipmentDetail 'Норма отходов' (shipmentDetail) = nameWriteOffRate(writeOffRateShipmentDetail(shipmentDetail));
 percentWriteOffRateShipmentDetail 'Норма отходов,%' (shipmentDetail)= ABSTRACT NUMERIC[10,3] (ShipmentDetail);
 
 writeOffRateUserShipmentDetail 'Норма отходов' (userShipmentDetail) = DATA WriteOffRate (UserShipmentDetail);
-nameWriteOffRateUserShipmentDetail 'Норма отходов' (userShipmentDetail) = name(writeOffRateUserShipmentDetail(userShipmentDetail));
+nameWriteOffRateUserShipmentDetail 'Норма отходов' (userShipmentDetail) = nameWriteOffRate(writeOffRateUserShipmentDetail(userShipmentDetail));
 percentWriteOffRateUserShipmentDetail 'Норма отходов,%' (shipmentDetail)= DATA NUMERIC[10,3] (UserShipmentDetail);
 
 writeOffRateUserShipmentDetail(detail) <- writeOffRateCountrySku(countryCustomerStockUserShipmentDetail(detail), skuUserShipmentDetail(detail)) WHEN
@@ -246,7 +248,7 @@ calcWriteOffSumShipmentDetail 'Сумма (списания)' (detail) = roundPr
 
 FORM writeOffShipments 'Поставки'
     OBJECTS st = Stock FIXED PANEL
-    PROPERTIES (st) READONLY name
+    PROPERTIES (st) READONLY nameStock
 
     OBJECTS s = Shipment
     PROPERTIES (s) READONLY isPostedShipment FORCE GRID, numberShipment, seriesShipment, dateShipment, timeShipment,
@@ -440,7 +442,7 @@ NAVIGATOR {
 loadDefaultWriteOffRate 'Добавить нормы отходов' = ACTION (idCountry, string, numeric)  {
     ADDOBJ WriteOffRate;
     FOR g == addedObject() DO {
-        SET name(g) <- string AS STRING[110];
+        SET nameWriteOffRate(g) <- string AS STRING[110];
         SET percentWriteOffRate(g) <-  numeric AS NUMERIC[10,3];
         SET countryWriteOffRate(g) <- countrySID(idCountry);
     }

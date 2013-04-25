@@ -11,7 +11,7 @@ CLASS GenType 'Тип генерации' {
     genDays 'Генерация через N дней',
     genNumber 'Генерация по числам',
     genDayMonth 'Генерация по дням недели и месяца'
-} : Named;
+};
 
 CLASS ABSTRACT ScheduleOrder 'График';
 TABLE scheduleOrder(ScheduleOrder);
@@ -23,7 +23,7 @@ startDateScheduleOrder 'Дата начала' = ABSTRACT DATE (ScheduleOrder) I
 endDateScheduleOrder 'Дата окончания' = ABSTRACT DATE (ScheduleOrder) IN base;
 
 typeScheduleOrder 'Тип генерации графика' = ABSTRACT GenType (ScheduleOrder);
-nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = name(typeScheduleOrder(scheduleOrder)) IN base;
+nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = staticName(typeScheduleOrder(scheduleOrder)) IN base;
 
 supplierScheduleOrder = ABSTRACT LegalEntity(ScheduleOrder);
 customerScheduleOrder = ABSTRACT LegalEntity(ScheduleOrder);
@@ -39,22 +39,22 @@ META defineScheduleOrder(sign, stockProp)
     //общие свойства
     typeScheduleOrder 'Тип генерации графика (ИД)' = DATA GenType (ScheduleOrder);
     ScheduleOrder.typeScheduleOrder(scheduleOrder) += typeScheduleOrder(scheduleOrder);
-    nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = name(typeScheduleOrder(scheduleOrder)) IN base;
+    nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = staticName(typeScheduleOrder(scheduleOrder)) IN base;
 
     supplierScheduleOrder 'Поставщик (ИД)' = DATA LegalEntity(ScheduleOrder);
-    nameSupplierScheduleOrder 'Поставщик' (scheduleOrder) = name(supplierScheduleOrder(scheduleOrder)) IN base;
+    nameSupplierScheduleOrder 'Поставщик' (scheduleOrder) = nameLegalEntity(supplierScheduleOrder(scheduleOrder)) IN base;
 
     customerScheduleOrder 'Покупатель (ИД)' = DATA LegalEntity(ScheduleOrder);
-    nameCustomerScheduleOrder 'Покупатель' (scheduleOrder) = name(customerScheduleOrder(scheduleOrder)) IN base;
+    nameCustomerScheduleOrder 'Покупатель' (scheduleOrder) = nameLegalEntity(customerScheduleOrder(scheduleOrder)) IN base;
 
     ScheduleOrder.supplierScheduleOrder(scheduleOrder) += supplierScheduleOrder(scheduleOrder);
     ScheduleOrder.customerScheduleOrder(scheduleOrder) += customerScheduleOrder(scheduleOrder);
 
     supplierStockScheduleOrder = DATA Stock(ScheduleOrder);
-    nameSupplierStockScheduleOrder 'Склад поставщика' (scheduleOrder) = name(supplierStockScheduleOrder(scheduleOrder));
+    nameSupplierStockScheduleOrder 'Склад поставщика' (scheduleOrder) = nameStock(supplierStockScheduleOrder(scheduleOrder));
 
     customerStockScheduleOrder = DATA Stock(ScheduleOrder);
-    nameCustomerStockScheduleOrder 'Склад покупателя' (scheduleOrder) = name(customerStockScheduleOrder(scheduleOrder));
+    nameCustomerStockScheduleOrder 'Склад покупателя' (scheduleOrder) = nameStock(customerStockScheduleOrder(scheduleOrder));
 
     CONSTRAINT supplierScheduleOrder(scheduleOrder) AND supplierStockScheduleOrder(scheduleOrder) AND NOT
     inLegalEntityStock(supplierScheduleOrder(scheduleOrder), supplierStockScheduleOrder(scheduleOrder))
@@ -85,7 +85,7 @@ META defineScheduleOrder(sign, stockProp)
     //свойства "По числам"
     stringNumberScheduleOrder 'Числа месяца поставок (указывать через запятую)' = DATA STRING[100] (ScheduleOrder);
     transferDayScheduleOrder 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA DOW (ScheduleOrder);
-    nameTransferDayScheduleOrder 'День на который переносить поставки с Субботы и Воскресенья' (scheduleOrder) = name(transferDayScheduleOrder(scheduleOrder));
+    nameTransferDayScheduleOrder 'День на который переносить поставки с Субботы и Воскресенья' (scheduleOrder) = staticName(transferDayScheduleOrder(scheduleOrder));
     CONSTRAINT transferDayScheduleOrder(scheduleOrder) != DOW.friday AND transferDayScheduleOrder(scheduleOrder) != DOW.monday CHECKED MESSAGE 'Выберите день с ПН по ПТ';
 
     //свойства "По дням недели и месяца"
@@ -112,16 +112,16 @@ META defineScheduleOrder(sign, stockProp)
                scheduleOrderDetail1 == scheduleOrderDetail2 MESSAGE 'Совпадение даты заказа и даты поставки';
 
     supplierScheduleOrderDetail(scheduleOrderDetail) = supplierScheduleOrder(scheduleOrderScheduleOrderDetail(scheduleOrderDetail));
-    nameSupplierScheduleOrderDetail 'Поставщик' (scheduleOrderDetail) = name(supplierScheduleOrderDetail(scheduleOrderDetail));
+    nameSupplierScheduleOrderDetail 'Поставщик' (scheduleOrderDetail) = nameLegalEntity(supplierScheduleOrderDetail(scheduleOrderDetail));
 
     customerScheduleOrderDetail(scheduleOrderDetail) = customerScheduleOrder(scheduleOrderScheduleOrderDetail(scheduleOrderDetail));
-    nameCustomerScheduleOrderDetail 'Покупатель' (scheduleOrderDetail) = name(customerScheduleOrderDetail(scheduleOrderDetail));
+    nameCustomerScheduleOrderDetail 'Покупатель' (scheduleOrderDetail) = nameLegalEntity(customerScheduleOrderDetail(scheduleOrderDetail));
 
     supplierStockScheduleOrderDetail(scheduleOrderDetail) = supplierStockScheduleOrder(scheduleOrderScheduleOrderDetail(scheduleOrderDetail));
-    nameSupplierStockScheduleOrderDetail 'Склад поставщика' (scheduleOrderDetail) = name(supplierStockScheduleOrderDetail(scheduleOrderDetail));
+    nameSupplierStockScheduleOrderDetail 'Склад поставщика' (scheduleOrderDetail) = nameStock(supplierStockScheduleOrderDetail(scheduleOrderDetail));
 
     customerStockScheduleOrderDetail(scheduleOrderDetail) = customerStockScheduleOrder(scheduleOrderScheduleOrderDetail(scheduleOrderDetail));
-    nameCustomerStockScheduleOrderDetail 'Склад покупателя' (scheduleOrderDetail) = name(customerStockScheduleOrderDetail(scheduleOrderDetail));
+    nameCustomerStockScheduleOrderDetail 'Склад покупателя' (scheduleOrderDetail) = nameStock(customerStockScheduleOrderDetail(scheduleOrderDetail));
 
     tmpDate = DATA SESSION DATE();
     tmpDateP = DATA SESSION DATE();
@@ -199,8 +199,8 @@ META defineScheduleOrder(sign, stockProp)
     } TOOLBAR;
 
 
-    monthInDateScheduleOrderDetail 'Месяц'(scheduleOrderDetail) = name(monthNumber(numberMonthInDate(dateSupplyScheduleOrderDetail(scheduleOrderDetail))));
-    DOWInDateScheduleOrderDetail 'День недели'(scheduleOrderDetail) = name(DOWNumber(numberDOWInDate(dateSupplyScheduleOrderDetail(scheduleOrderDetail))));
+    monthInDateScheduleOrderDetail 'Месяц'(scheduleOrderDetail) = staticName(monthNumber(numberMonthInDate(dateSupplyScheduleOrderDetail(scheduleOrderDetail))));
+    DOWInDateScheduleOrderDetail 'День недели'(scheduleOrderDetail) = staticName(DOWNumber(numberDOWInDate(dateSupplyScheduleOrderDetail(scheduleOrderDetail))));
 
     orderScheduleOrderDetail = STRUCT(dateSupplyScheduleOrderDetail(scheduleOrderDetail), scheduleOrderDetail) PERSISTENT;
 
@@ -250,11 +250,11 @@ META defineScheduleOrder(sign, stockProp)
                        stringNumberScheduleOrder SHOWIF toShowGenNumber(s), nameTransferDayScheduleOrder SHOWIF toShowGenNumber(s)
 
         OBJECTS m=Month FIXED GRID
-        PROPERTIES(m) name SHOWIF toShowGenDayMonth(s)
+        PROPERTIES(m) staticName SHOWIF toShowGenDayMonth(s)
         PROPERTIES(s, m) inMonthScheduleOrder SHOWIF toShowGenDayMonth(s)
 
         OBJECTS d=DOW FIXED GRID
-        PROPERTIES(d) name SHOWIF toShowGenDayMonth(s)
+        PROPERTIES(d) staticName SHOWIF toShowGenDayMonth(s)
         PROPERTIES(s, d) inDayScheduleOrder SHOWIF toShowGenDayMonth(s)
 
         OBJECTS sd=ScheduleOrderDetail
@@ -361,13 +361,13 @@ META defineScheduleOrder(sign, stockProp)
     ScheduleOrder.addScheduleOrderSupplierCustomer(supplier, customer) += addScheduleOrderSupplierCustomer(supplier, customer);
 
     supplier = DATA SESSION LegalEntity();
-    nameSupplier 'Поставщик' = name(supplier());
+    nameSupplier 'Поставщик' = nameLegalEntity(supplier());
     customer = DATA SESSION LegalEntity();
-    nameCustomer 'Покупатель' = name(customer());
+    nameCustomer 'Покупатель' = nameLegalEntity(customer());
     supplierStock = DATA SESSION Stock();
-    nameSupplierStock 'Склад поставщика' = name(supplierStock());
+    nameSupplierStock 'Склад поставщика' = nameStock(supplierStock());
     customerStock = DATA SESSION Stock();
-    nameCustomerStock 'Склад покупателя' = name(customerStock());
+    nameCustomerStock 'Склад покупателя' = nameStock(customerStock());
 
     CONSTRAINT supplier() AND supplierStock() AND NOT inLegalEntityStock(supplier(), supplierStock())
         CHECKED BY supplierStock MESSAGE 'Поставщик и склад поставщика для графика заказов не имеют связи';

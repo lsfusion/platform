@@ -14,8 +14,12 @@ EXTEND DESIGN options {
 }
 
 // ----------------------------------------- Группа посуды ----------------------------- //
-CLASS WareGroup 'Группа посуды' : Named, SkuGroup;
+CLASS WareGroup 'Группа посуды' : SkuGroup;
 TABLE wareGroup (WareGroup);
+
+nameWareGroup 'Наименование' = DATA ISTRING[100](WareGroup);
+
+nameSkuGroup(group) += nameWareGroup(group) IF group IS WareGroup;
 
 TABLE wareGroupWareGroup(WareGroup, WareGroup);
 @defineHierarchy(wareGroup);
@@ -23,15 +27,17 @@ TABLE wareGroupWareGroup(WareGroup, WareGroup);
 parentSkuGroup (wareGroup) += parentWareGroup(wareGroup);
 
 // ------------------------------------------ Посуда ----------------------------------------------- //
-CLASS Ware 'Посуда' : Named, Sku;
+CLASS Ware 'Посуда' : Sku;
 TABLE ware(Ware);
+
+nameWare 'Наименование' = DATA ISTRING[100](Ware);
 
 wareGroupWare = DATA WareGroup(Ware) AUTOSET;
 skuGroupSku(ware) += wareGroupWare(ware);
 
-nameSku(ware) += name(ware) IF ware IS Ware;
+nameSku(ware) += nameWare(ware) IF ware IS Ware;
 
-nameWareGroupWare 'Группа посуды' (ware) = name(wareGroupWare(ware));
+nameWareGroupWare 'Группа посуды' (ware) = nameWareGroup(wareGroupWare(ware));
 canonicalNameWareGroupWare 'Группа посуды' (ware) = canonicalNameWareGroup(wareGroupWare(ware)) IN base;
 
 TABLE wareGroupWare (WareGroup, Ware);
@@ -40,9 +46,9 @@ isParentWareGroupware (wareGroup, ware) = isParentWareGroupWareGroup(wareGroupWa
 
 TABLE wareDate(Ware, DATE);
 
-@defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, name, base);
+@defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, nameWare, base);
 
-@defineHistorizableCustom(rangeWare, 'НДС', Range, numberRange, ware, name, base);
+@defineHistorizableCustom(rangeWare, 'НДС', Range, numberRange, ware, nameWare, base);
 
 CONSTRAINT taxRange(dataRangeWareDate(ware, date)) != Tax.taxVAT CHECKED BY dataRangeWareDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
@@ -58,7 +64,7 @@ EXTEND FORM dialogRangeWare
 
 FORM ware 'Посуда'
     OBJECTS w=Ware FIXED PANEL
-    PROPERTIES(w) name, canonicalNameWareGroupWare, warePrice
+    PROPERTIES(w) nameWare, canonicalNameWareGroupWare, warePrice
     PROPERTIES(w) numberRangeRangeWare, valueCurrentRateRangeWare
 
     EDIT Ware OBJECT w
@@ -66,7 +72,7 @@ FORM ware 'Посуда'
 
 FORM wares 'Посуда'
     OBJECTS w=Ware
-    PROPERTIES(w) READONLY name, canonicalNameWareGroupWare, warePrice, numberRangeRangeWare, valueCurrentRateRangeWare
+    PROPERTIES(w) READONLY nameWare, canonicalNameWareGroupWare, warePrice, numberRangeRangeWare, valueCurrentRateRangeWare
     PROPERTIES(w)          ADDFORM, EDITFORM, delete
 
     DIALOG Ware OBJECT w

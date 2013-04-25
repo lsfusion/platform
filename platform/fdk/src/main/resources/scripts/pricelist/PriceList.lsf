@@ -6,8 +6,10 @@ NAMESPACE PriceList;
 
 // --------------------------- Виды цен ------------------------- //
 
-CLASS ABSTRACT PriceListType 'Вид цены' : Named;
+CLASS ABSTRACT PriceListType 'Вид цены';
 TABLE priceListType(PriceListType);
+
+namePriceListType 'Наименование' = ABSTRACT ISTRING[50](PriceListType);
 
 includeVATPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (PriceListType) PERSISTENT;
 
@@ -48,13 +50,16 @@ prevPricePVATPriceListTypeBatchStockDateTimeVAT 'Цена с НДС (пред.)'
 @defineDocumentAbstractHeaderCurrency(priceListType);
 
 roundConditionPriceListType 'Условие округления' = DATA RoundCondition (PriceListType);
-nameRoundConditionPriceListType 'Условие округления' (priceListType) = name(roundConditionPriceListType(priceListType));
+nameRoundConditionPriceListType 'Условие округления' (priceListType) = nameRoundCondition(roundConditionPriceListType(priceListType));
 
 CONSTRAINT currencyRoundCondition(roundConditionPriceListType(priceListType)) != currencyPriceListType(priceListType)
            CHECKED BY roundConditionPriceListType
            MESSAGE 'Валюта документа должна совпадать с валютой условия округления цены';
 
 CLASS ABSTRACT BasePriceListType 'Базовый вид цены' : PriceListType;
+
+nameBasePriceListType 'Наименование' = ABSTRACT ISTRING[50](BasePriceListType);
+namePriceListType(type) += nameBasePriceListType(type) IF type IS BasePriceListType;
 
 priceBasePriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (BasePriceListType, Sku, Stock, DATETIME);
 priceBasePriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (BasePriceListType, Batch, Stock, DATETIME);
@@ -68,6 +73,8 @@ pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceBaseP
 // --------------------------- Системные виды цен ------------------------- //
 CLASS SystemPriceListType 'Системный вид цены' : BasePriceListType;
 
+nameBasePriceListType(type) += staticName(type) IF type IS SystemPriceListType;
+
 priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (SystemPriceListType, Sku, Stock, DATETIME) EXCLUSIVE;
 priceSystemPriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (SystemPriceListType, Batch, Stock, DATETIME) EXCLUSIVE;
 
@@ -78,29 +85,34 @@ priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceSyste
 priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceSystemPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
 
 //----------------------------- Ценовые группы --------------------------//
-CLASS PriceStockGroup 'Ценовые группы' : Named;
+CLASS PriceStockGroup 'Ценовые группы';
 TABLE priceStockGroup(PriceStockGroup);
 
+namePriceStockGroup 'Наименование' = DATA ISTRING[50](PriceStockGroup);
+
 priceStockGroupStock = ABSTRACT PriceStockGroup (Stock);
-namePriceStockGroupStock 'Ценовая группа' (stock)= name(priceStockGroupStock(stock));
+namePriceStockGroupStock 'Ценовая группа' (stock) = namePriceStockGroup(priceStockGroupStock(stock));
 
 FORM priceStockGroups 'Ценовые группы'
 
     OBJECTS g = PriceStockGroup
-    PROPERTIES(g) READONLY objectClassName, name
+    PROPERTIES(g) READONLY objectClassName, namePriceStockGroup
     PROPERTIES(g) ADDFORM, EDITFORM, delete
 
     OBJECTS s = Stock
-    PROPERTIES(s) READONLY objectClassName, name
+    PROPERTIES(s) READONLY objectClassName, nameStock
 
     FILTERS priceStockGroupStock(s) == g
 
-    DIALOG PriceList OBJECT g
+    DIALOG PriceStockGroup OBJECT g
 ;
 
 // ------------------------------------- Виды цен, формируемые ledger'ами ----------- //
 
 CLASS ABSTRACT LedgerPriceListType 'Регистровый вид цены' : BasePriceListType;
+
+nameLedgerPriceListType 'Наименование' = ABSTRACT ISTRING[50](LedgerPriceListType);
+nameBasePriceListType(type) += nameLedgerPriceListType(type) IF type IS LedgerPriceListType;
 
 batchLedgerPriceListType 'Использовать для партий свои цены' = ABSTRACT BOOLEAN (PriceListType) EXCLUSIVE PERSISTENT;
 
@@ -157,11 +169,11 @@ priceLedgerPriceListTypeBatchStockDateTime 'Цена' (type, batch, stock, dateT
 companyLedgerPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) =
     companyPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
 nameCompanyLedgerPriceListTypeSkuStockDateTime 'Компания прайса' (type, sku, stock, dateTime) =
-    name(companyLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
+    nameLegalEntity(companyLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
 companyLedgerPriceListTypeBatchStockDateTime (type, batch, stock, dateTime) =
     companyPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, skuBatch(batch), stock, dateTime));
 nameCompanyLedgerPriceListTypeBatchStockDateTime 'Компания прайса' (type, batch, stock, dateTime) =
-    name(companyLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime));
+    nameLegalEntity(companyLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime));
 
 descriptionLedgerPriceListTypeSkuStockDateTime 'Описание' (type, sku, stock, dateTime) =
     descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
@@ -185,6 +197,8 @@ ledgerPriceListTypePriceListType(type) += type AS LedgerPriceListType;
 CLASS SystemLedgerPriceListType 'Системный вид цены (регистр)' {
     accountPriceListType 'Учетная'
 }: LedgerPriceListType;
+
+nameLedgerPriceListType (type) += staticName(type) IF type IS SystemLedgerPriceListType;
 
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.accountPriceListType;
 
@@ -229,6 +243,9 @@ END
 
 CLASS DataPriceListType 'Пользовательский вид цены' : LedgerPriceListType;
 batchLedgerPriceListType (priceListType) += priceListType IS DataPriceListType;
+
+nameDataPriceListType 'Наименование' = DATA ISTRING[50](DataPriceListType);
+nameLedgerPriceListType(type) += nameDataPriceListType(type) IF type IS DataPriceListType;
 
 includeVATDataPriceListType 'Цена с НДС' = DATA BOOLEAN (DataPriceListType);
 includeVATLedgerPriceListType (priceListType) += includeVATDataPriceListType(priceListType);
@@ -304,7 +321,7 @@ showPriceListPriceListType (priceList, priceListType) += showUserPriceListPriceL
 inShowPriceListPriceListType (priceList, priceListType) = inPriceListDataPriceListType (priceList, priceListType) AND
                                                           showPriceListPriceListType (priceList, priceListType);
 
-priceListTypesPriceList 'Цены' (priceList) = GROUP CONCAT name(priceListType) IF inPriceListDataPriceListType(priceList, priceListType) , ', '
+priceListTypesPriceList 'Цены' (priceList) = GROUP CONCAT namePriceListType(priceListType) IF inPriceListDataPriceListType(priceList, priceListType) , ', '
                                                BY priceList
                                                ORDER priceListType MINCHARWIDTH 10 PREFCHARWIDTH 20 PERSISTENT;
 
@@ -346,7 +363,7 @@ inPriceListStockOver 'Отм' (priceList, stock) =
                    nearestInPriceListStockGroup(priceList, stockGroupStock(stock)),
                    inPriceListStock(priceList, stock)) AND isCompanyStock(stock);
 
-stocksPriceList 'Склады' (priceList) = GROUP CONCAT name(stock) IF inPriceListStockOver(priceList, stock) , ', '
+stocksPriceList 'Склады' (priceList) = GROUP CONCAT nameStock(stock) IF inPriceListStockOver(priceList, stock) , ', '
                                        BY priceList
                                        ORDER stock MINCHARWIDTH 20 PREFCHARWIDTH 40 PERSISTENT;
 
@@ -362,15 +379,15 @@ markUpPricePriceListDetailDataPriceListTypeStock 'Изменение, %' (priceL
 
 extendNameCurrentDataPriceListType (userPriceList, dataPriceListType) =
     [FORMULA STRING[50]  ' CAST($1 AS TEXT) || \' (старая) \''](
-    name(dataPriceListType)) IF showPriceListPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
+    namePriceListType(dataPriceListType)) IF showPriceListPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
 extendNameMarkUpDataPriceListType (userPriceList, dataPriceListType) =
     [FORMULA STRING[50]  'CAST($1 AS TEXT) || \' (изменение, %) \''](
-    name(dataPriceListType)) IF inShowPriceListPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
+    namePriceListType(dataPriceListType)) IF inShowPriceListPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
 extendNameDataPriceListType (userPriceList, dataPriceListType) =
     [FORMULA STRING[50]  ' CAST($1 AS TEXT) || \' (новая) \''](
-    name(dataPriceListType)) IF inPriceListDataPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
+    namePriceListType(dataPriceListType)) IF inPriceListDataPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
 backgroundCurrentDataPriceListType 'Цвет' (dataPriceListType) = RGB(255,238,165) AND dataPriceListType IS DataPriceListType;
 backgroundMarkUpDataPriceListType 'Цвет' (dataPriceListType) = RGB(232,184,146) AND dataPriceListType IS DataPriceListType;
@@ -411,13 +428,13 @@ FORM chooseMarkUpSkuUserPriceList 'Наценка'
     OBJECTS p = UserPriceList FIXED PANEL
 
     OBJECTS t = PriceListType FIXED PANEL
-    PROPERTIES(t) SELECTOR name
+    PROPERTIES(t) SELECTOR namePriceListType
 
     OBJECTS n = NUMERIC[20,7] FIXED PANEL
     PROPERTIES(n) objValue = OBJVALUE
 
     OBJECTS t2 = DataPriceListType FIXED PANEL
-    PROPERTIES(t2) SELECTOR name
+    PROPERTIES(t2) SELECTOR nameDataPriceListType
     FILTERS inPriceListDataPriceListType(p, t2)
 ;
 
@@ -426,12 +443,12 @@ DESIGN chooseMarkUpSkuUserPriceList FROM DEFAULT {
     REMOVE p.box;
     NEW topContainer {
         childConstraints = TO THE BOTTOM;
-        ADD PROPERTY(name(t));
-        PROPERTY(name(t)){caption = 'Старая цена';}
+        ADD PROPERTY(namePriceListType(t));
+        PROPERTY(namePriceListType(t)){caption = 'Старая цена';}
         ADD PROPERTY(objValue);
         PROPERTY(objValue){caption = 'Изменение, %';}
-        ADD PROPERTY(name(t2));
-        PROPERTY(name(t2)){caption = 'Новая цена';}
+        ADD PROPERTY(nameDataPriceListType(t2));
+        PROPERTY(nameDataPriceListType(t2)){caption = 'Новая цена';}
     }
     ADD functions.box;
 }
@@ -460,7 +477,7 @@ META defineOperationPriceListType(dumb)
     EXTEND FORM operation
         OBJECTS pt = PriceListType
         PROPERTIES(pt, o) isPriceListType###operation
-        PROPERTIES(pt) READONLY name, nameCurrencyPriceListType, objectClassName
+        PROPERTIES(pt) READONLY namePriceListType, nameCurrencyPriceListType, objectClassName
         FILTERGROUP filters
             FILTER 'Показывать отмеченные' 'F9' isPriceListType###operation(pt, o)
     ;
@@ -497,7 +514,7 @@ showPriceListTypeOperation 'Показывать цены' = DATA BOOLEAN (Price
 EXTEND FORM operation
     OBJECTS pt = PriceListType
     PROPERTIES(pt, o) isPriceListTypeOperation TODRAW pt FORCE GRID, showPriceListTypeOperation
-    PROPERTIES(pt) READONLY name, nameCurrencyPriceListType, objectClassName
+    PROPERTIES(pt) READONLY namePriceListType, nameCurrencyPriceListType, objectClassName
     FILTERGROUP filters
         FILTER 'Показывать отмеченные' 'F9' isPriceListTypeOperation(pt, o)
 ;
@@ -550,7 +567,7 @@ backgroundPriceListDetail 'Цвет' (priceListDetail) =
 
 //вкладка подбор
 filterPriceListTypeUserPriceList = DATA SESSION PriceListType (UserPriceList);
-nameFilterPriceListTypeUserPriceList 'Вид цены' (userPriceList) = name(filterPriceListTypeUserPriceList(userPriceList));
+nameFilterPriceListTypeUserPriceList 'Вид цены' (userPriceList) = namePriceListType(filterPriceListTypeUserPriceList(userPriceList));
 currentPriceSkuPriceListStock 'Текущая цена' (sku, userPriceList, stock) =
     currentPriceSkuPriceListDataPriceListTypeStock(sku, userPriceList, filterPriceListTypeUserPriceList(userPriceList), stock);
 filterPriceListTypeUserPriceListSkuStock (userPriceList, sku, stock) =
@@ -559,7 +576,7 @@ filterPriceListTypeUserPriceListSkuStock (userPriceList, sku, stock) =
 
 FORM userPriceList 'Прайс'
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sk)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
     ORDER BY skuTreeName
 
     OBJECTS p = UserPriceList FIXED PANEL
@@ -569,7 +586,7 @@ FORM userPriceList 'Прайс'
                   nameCurrencyUserPriceList, nameCompanyUserPriceList, noteUserPriceList, includeVATLedgerPriceListType
 
     OBJECTS t = PriceListType
-    PROPERTIES(t) READONLY name
+    PROPERTIES(t) READONLY namePriceListType
     PROPERTIES(p, t) inPriceListDataPriceListType TODRAW t FORCE GRID, showPriceListPriceListType
     FILTERS (currencyUserPriceList(p) == currencyPriceListType(t)) OR (p IS UserPriceList AND t IS PriceListType AND NOT currencyPriceListType(t))
 
@@ -587,7 +604,7 @@ FORM userPriceList 'Прайс'
 
 
     TREE stockTree a=STRING[3], sg = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg)
     PROPERTIES(p) inPriceList TODRAW a FORCE GRID
     PROPERTIES(p, sg) inPriceListStockGroupOver
     ORDER BY sgTreeName
@@ -595,7 +612,7 @@ FORM userPriceList 'Прайс'
     FILTERS quantityStocksStockGroup(sg)
 
     OBJECTS ts = Stock
-    PROPERTIES READONLY  name(ts)
+    PROPERTIES READONLY  nameStock(ts)
     PROPERTIES(p, ts)    inPriceListStockOver
     PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t)
     PROPERTIES(d, t, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(p, t) BACKGROUND backgroundMarkUpDataPriceListType(t)
@@ -605,18 +622,18 @@ FORM userPriceList 'Прайс'
             FILTER 'Выбранные склады' 'F10' inPriceListStockOver(p, ts) DEFAULT
 
     OBJECTS tt = Stock FIXED PANEL
-    PROPERTIES SELECTOR stockName = name(tt) FORCE PANEL
+    PROPERTIES SELECTOR stockName = nameStock(tt) FORCE PANEL
     PROPERTIES(d, t, tt) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t) TODRAW d FORCE GRID
     PROPERTIES(d, t, tt) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(p, t) BACKGROUND backgroundMarkUpDataPriceListType(t) TODRAW d FORCE GRID
     PROPERTIES(p, tt)    changeMarkUpSkuUserPriceList TODRAW d FORCE PANEL TOOLBAR
     FILTERS isCompanyStock(tt)
 
     TREE skuTree2 sk2 = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName2 = name(sk2)
+    PROPERTIES READONLY skuTreeName2 = nameSkuGroup(sk2)
     ORDER BY skuTreeName2
 
     OBJECTS ts2 = Stock FIXED PANEL
-    PROPERTIES(ts2) SELECTOR name
+    PROPERTIES(ts2) SELECTOR nameStock
     FILTERS inPriceListStockOver(p, ts2),
             isCompanyStock(ts2)
     PROPERTIES(p) FORCE PANEL nameFilterPriceListTypeUserPriceList
@@ -795,10 +812,10 @@ FORM priceLists 'Прайсы'
                            shortNameUOMSkuUserPriceListDetail
 
     OBJECTS ts = Stock
-    PROPERTIES(ts) READONLY name
+    PROPERTIES(ts) READONLY nameStock
     PROPERTIES(p, ts) READONLY inPriceListStockOver
 
-    PROPERTIES(d, t) READONLY pricePriceListDetailDataPriceListType COLUMNS (t) HEADER name(t)
+    PROPERTIES(d, t) READONLY pricePriceListDetailDataPriceListType COLUMNS (t) HEADER nameDataPriceListType(t)
 
     FILTERGROUP filters
         FILTER 'Активные прайсы' 'F10' isActivePriceList(p) DEFAULT
@@ -885,8 +902,11 @@ inPriceListLedgerStock (ledger, stock) += inPriceListStockOver(priceListPriceLis
 
 CLASS CalcPriceListType 'Расчетный вид цены' : PriceListType;
 
+nameCalcPriceListType 'Наименование' = DATA ISTRING[50](CalcPriceListType);
+namePriceListType(type) += nameCalcPriceListType(type) IF type IS CalcPriceListType;
+
 basePriceListTypeCalcPriceListType(type) = DATA BasePriceListType (CalcPriceListType);
-nameBasePriceListTypeCalcPriceListType 'Базовый вид цены' (type) = name(basePriceListTypeCalcPriceListType(type));
+nameBasePriceListTypeCalcPriceListType 'Базовый вид цены' (type) = nameBasePriceListType(basePriceListTypeCalcPriceListType(type));
 
 ledgerPriceListTypePriceListType(type) += basePriceListTypeCalcPriceListType(type) AS LedgerPriceListType;
 
@@ -898,7 +918,7 @@ includeVATPriceListType(type) += includeVATCalcPriceListType(type);
 currencyPriceListType(calcPriceListType) += currencyCalcPriceListType(calcPriceListType);
 
 groupTypeCalcPriceListType = DATA GroupType (CalcPriceListType);
-nameGroupTypeCalcPriceListType 'Тип классификатора' (type) = name(groupTypeCalcPriceListType(type));
+nameGroupTypeCalcPriceListType 'Тип классификатора' (type) = nameGroupType(groupTypeCalcPriceListType(type));
 
 TABLE calcPriceListTypeGroup (CalcPriceListType, Group);
 markupCalcPriceListTypeGroup 'Надбавка, %' = DATA NUMERIC[8,2] (CalcPriceListType, Group);
@@ -945,14 +965,14 @@ editPriceListType 'Редактировать' = ABSTRACT ACTION (priceListType)
 
 FORM dataPriceListType 'Пользовательский вид цен'
     OBJECTS d = DataPriceListType FIXED PANEL
-    PROPERTIES(d) name, includeVATPriceListType, nameCurrencyDataPriceListType, nameRoundConditionPriceListType
+    PROPERTIES(d) nameDataPriceListType, includeVATPriceListType, nameCurrencyDataPriceListType, nameRoundConditionPriceListType
 
     EDIT DataPriceListType OBJECT d
 ;
 
 DESIGN dataPriceListType FROM DEFAULT {
     d.box{
-        ADD PROPERTY(name);
+        ADD PROPERTY(nameDataPriceListType);
         ADD PROPERTY(includeVATPriceListType);
         ADD PROPERTY(nameCurrencyDataPriceListType);
         ADD PROPERTY(nameRoundConditionPriceListType);
@@ -965,13 +985,13 @@ editPriceListType(priceListType) += editDataPriceListType(priceListType);
 
 FORM calcPriceListType 'Расчетный вид цен'
     OBJECTS c = CalcPriceListType FIXED PANEL
-    PROPERTIES(c) name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType,
+    PROPERTIES(c) nameCalcPriceListType, includeVATPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType,
                   nameRoundConditionPriceListType, nameGroupTypeCalcPriceListType
 
     TREE treeGroup g=Group PARENT parentGroup
-    PROPERTIES READONLY name(g)
+    PROPERTIES READONLY nameGroup(g)
     FILTERS groupTypeGroup(g) == groupTypeCalcPriceListType(c)
-    ORDER BY name(g)
+    ORDER BY nameGroup(g)
     PROPERTIES(c, g) markupCalcPriceListTypeGroup , nearestMarkupCalcPriceListTypeGroup
 
     OBJECTS s = Sku
@@ -1010,8 +1030,8 @@ editPriceListType(priceListType) += editCalcPriceListType(priceListType);
 
 FORM priceListType 'Вид цены'
     OBJECTS p = PriceListType
-    PROPERTIES(p) READONLY name, nameCurrencyPriceListType
-    PROPERTIES(p) READONLY includeVATPriceListType, nameRoundConditionPriceListType
+    PROPERTIES(p) READONLY namePriceListType, nameCurrencyPriceListType
+    PROPERTIES(p) includeVATPriceListType
 
     DIALOG PriceListType OBJECT p
 ;
@@ -1021,16 +1041,16 @@ FORM priceListTypes 'Виды цен'
     PROPERTIES(dt) objValue = OBJVALUE
 
     OBJECTS s = Stock FIXED PANEL
-    PROPERTIES(s) SELECTOR name
+    PROPERTIES(s) SELECTOR nameStock
 
     OBJECTS pt = PriceListType
-    PROPERTIES(pt) READONLY name, nameCurrencyPriceListType, nameRoundConditionPriceListType, objectClassName
+    PROPERTIES(pt) READONLY namePriceListType, nameCurrencyPriceListType, nameRoundConditionPriceListType, objectClassName
     PROPERTIES() TODRAW pt FORCE PANEL addDataPriceListType, addCalcPriceListType
     PROPERTIES(pt) editPriceListType, delete
     ORDER BY objectClassName
 
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sg)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sg)
     ORDER BY skuTreeName
 
     OBJECTS sk = Sku
@@ -1040,7 +1060,7 @@ FORM priceListTypes 'Виды цен'
     FILTERS isParentSkuGroupSku(sg, sk)
 
     TREE skuTree2 sg2 = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName2 = name(sg2)
+    PROPERTIES READONLY skuTreeName2 = nameSkuGroup(sg2)
     ORDER BY skuTreeName2
 
     OBJECTS b = Batch
@@ -1100,19 +1120,19 @@ DESIGN priceListTypes FROM DEFAULT{
 filterAllSku 'Использовать фильтры' = DATA SESSION BOOLEAN ();
 
 filterOperationRangeManagement = DATA SESSION Operation ();
-nameFilterOperationRangeManagement 'Операция' () = name(filterOperationRangeManagement());
+nameFilterOperationRangeManagement 'Операция' () = nameOperation(filterOperationRangeManagement());
 filterOperationRangeManagementUserPriceList (userPriceList) = (operationUserPriceList(userPriceList) == filterOperationRangeManagement() AND filterAllSku()) OR
                                                               (userPriceList IS UserPriceList AND NOT filterOperationRangeManagement() AND filterAllSku()) OR
                                                               (userPriceList IS UserPriceList AND NOT filterAllSku());
 
 filterDataPriceListTypeRangeManagement = DATA SESSION DataPriceListType ();
-nameFilterDataPriceListTypeRangeManagement 'Вид цен' () = name(filterDataPriceListTypeRangeManagement());
+nameFilterDataPriceListTypeRangeManagement 'Вид цен' () = nameDataPriceListType(filterDataPriceListTypeRangeManagement());
 filterDataPriceListTypeRangeManagementUserPriceList (userPriceList) = (inPriceListDataPriceListType(userPriceList, filterDataPriceListTypeRangeManagement()) AND filterAllSku()) OR
                                                                       (userPriceList IS UserPriceList AND NOT filterDataPriceListTypeRangeManagement() AND filterAllSku()) OR
                                                                       (userPriceList IS UserPriceList AND NOT filterAllSku());
 
 filterStockRangeManagement = DATA SESSION Stock ();
-nameFilterStockRangeManagement 'Склад' () = name(filterStockRangeManagement());
+nameFilterStockRangeManagement 'Склад' () = nameStock(filterStockRangeManagement());
 isCompanyStockRangeManagement(userPriceList) = userPriceList IS UserPriceList AND isCompanyStock(filterStockRangeManagement())  OR
                                                (userPriceList IS UserPriceList AND NOT filterStockRangeManagement());
 filterStockRangeManagementUserPriceList (userPriceList) = (inPriceListStockOver(userPriceList, filterStockRangeManagement()) AND filterAllSku()) OR
@@ -1120,7 +1140,7 @@ filterStockRangeManagementUserPriceList (userPriceList) = (inPriceListStockOver(
                                                           (userPriceList IS UserPriceList AND NOT filterAllSku());
 
 filterLegalEntityRangeManagement = DATA SESSION LegalEntity ();
-nameFilterLegalEntityRangeManagement 'Организация' () = name(filterLegalEntityRangeManagement());
+nameFilterLegalEntityRangeManagement 'Организация' () = nameLegalEntity(filterLegalEntityRangeManagement());
 filterLegalEntityRangeManagementUserPriceList (userPriceList) = (companyUserPriceList(userPriceList) == filterLegalEntityRangeManagement() AND filterAllSku()) OR
                                                                 (userPriceList IS UserPriceList AND NOT filterLegalEntityRangeManagement() AND filterAllSku()) OR
                                                                 (userPriceList IS UserPriceList AND NOT filterAllSku());
@@ -1136,7 +1156,7 @@ filterPriceSkuDateTimeRangeManagement (sku, dateTime) = (priceSkuDateTimeRangeMa
 
 companySkuDateTimeRangeManagement (sku, dateTime) =
     companyLedgerPriceListTypeSkuStockDateTime(filterDataPriceListTypeRangeManagement(), sku, filterStockRangeManagement(), dateTime);
-nameCompanySkuDateTimeRangeManagement 'Компания прайса' (sku, dateTime) = name(companySkuDateTimeRangeManagement (sku, dateTime));
+nameCompanySkuDateTimeRangeManagement 'Компания прайса' (sku, dateTime) = nameLegalEntity(companySkuDateTimeRangeManagement (sku, dateTime));
 filterCompanySkuDateTimeRangeManagement (sku, dateTime) = (companySkuDateTimeRangeManagement(sku, dateTime) == filterLegalEntityRangeManagement() AND filterAllSku()) OR
                                                           (sku IS Sku AND dateTime IS DATETIME AND NOT filterLegalEntityRangeManagement() AND filterAllSku()) OR
                                                           (sku IS Sku AND dateTime IS DATETIME AND NOT filterAllSku());
@@ -1190,7 +1210,7 @@ FORM rangeManagement 'Управление ассортиментом'
             filterOperationRangeManagementUserPriceList(p)
 
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sg)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sg)
     ORDER BY skuTreeName
 
     OBJECTS sk = Sku
@@ -1295,7 +1315,7 @@ END
 
 META defineDocumentHeaderPriceListTypeInner (object, type, typeClass, prefix, caption)
     prefix###type###object (object) = DATA typeClass (###object);
-    name###prefix###type###object 'Вид цен'###caption (object)= name(prefix###type###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+    name###prefix###type###object 'Вид цен'###caption (object)= namePriceListType(prefix###type###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
 END
 
 META defineDocumentAbstractHeaderPriceListType (object, type, prefix, caption)
@@ -1304,7 +1324,7 @@ END
 
 META defineDocumentAbstractHeaderPriceListTypeInner (object, type, typeClass, prefix, caption)
     prefix###type###object (object) = ABSTRACT typeClass (###object) PERSISTENT;
-    name###prefix###type###object 'Вид цен'###caption (object)= name(prefix###type###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+    name###prefix###type###object 'Вид цен'###caption (object)= namePriceListType(prefix###type###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
 END
 META defineDocumentInterfaceHeaderPriceListType (object, type, prefix, caption)
     @defineDocumentAbstractHeaderPriceListType(object, type, prefix, caption);
@@ -1325,7 +1345,7 @@ END
 //--
 META defineDocumentDetailPriceListTypePrefix (object, detail, type, prefix, caption)
     prefix###type###detail = prefix###type###object(object###detail (detail));
-    name###prefix###type###detail 'Вид цен'###caption (idetail) = name(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    name###prefix###type###detail 'Вид цен'###caption (idetail) = namePriceListType(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 //--
 
@@ -1335,7 +1355,7 @@ END
 
 META defineDocumentDetailPriceListTypeInner (object, detail, type, typeClass, prefix, caption)
     prefix###type###detail =  DATA typeClass (###detail);
-    name###prefix###type###detail 'Вид цен'###caption (idetail) = name(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    name###prefix###type###detail 'Вид цен'###caption (idetail) = namePriceListType(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 
 META defineDocumentAbstractDetailPriceListType (object, detail, type, prefix, caption)
@@ -1344,7 +1364,7 @@ END
 
 META defineDocumentAbstractDetailPriceListTypeInner (object, detail, type, typeClass, prefix, caption)
     prefix###type###detail =  ABSTRACT typeClass (###detail) PERSISTENT;
-    name###prefix###type###detail 'Вид цен'###caption (idetail) = name(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    name###prefix###type###detail 'Вид цен'###caption (idetail) = namePriceListType(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 
 META defineDocumentPriceListType (object, detail, type, prefix, caption)

@@ -47,6 +47,7 @@ EXTEND CLASS ItemGroup : Externalizable;
 EXTEND CLASS LegalEntity : Externalizable;
 EXTEND CLASS Position : Externalizable;
 EXTEND CLASS Store : Externalizable;
+EXTEND CLASS StoreType : Externalizable;
 EXTEND CLASS UOM : Externalizable;
 EXTEND CLASS UserContractSku : Externalizable;
 EXTEND CLASS UserInvoiceDetail : Externalizable;
@@ -60,7 +61,7 @@ numberSeriesToUserInvoice (number, series) = GROUP AGGR userInvoice BY numberObj
 
 userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP AGGR userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS UserPriceListDetail;
 
-storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP AGGR storeType BY name (storeType), sidExternalizable(storeType);
+storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP AGGR storeType BY nameStoreType(storeType), sidExternalizable(storeType) WHERE storeType IS StoreType; ////
 
 sidExternalizableBatch 'Внешний код' (batch) = ABSTRACT STRING[100] (Batch) PERSISTENT;
 

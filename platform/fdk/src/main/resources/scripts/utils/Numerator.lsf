@@ -4,8 +4,10 @@ REQUIRE System, MasterData, DefaultData;
 
 // ------------------------------------------- Нумераторы ----------------------------------------------- //
 
-CLASS Numerator 'Нумератор' : Named;
+CLASS Numerator 'Нумератор';
 TABLE numerator (Numerator);
+
+nameNumerator 'Наименование' = DATA ISTRING[100](Numerator);
 
 seriesNumerator 'Серия' = DATA STRING[2] (Numerator) IN recognize FIXEDCHARWIDTH 3;
 
@@ -39,14 +41,14 @@ incrementValueSessionNumerator 'Увеличить значение' = ACTION (n
 
 FORM numerator 'Нумератор'
     OBJECTS n = Numerator FIXED PANEL
-    PROPERTIES(n) name, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
+    PROPERTIES(n) nameNumerator, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
 
     EDIT Numerator OBJECT n
 ;
 
 FORM numerators 'Нумераторы'
     OBJECTS n = Numerator
-    PROPERTIES(n) READONLY name, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
+    PROPERTIES(n) READONLY nameNumerator, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
     PROPERTIES(n)          ADDFORM, EDITFORM, delete
 
     DIALOG Numerator OBJECT n
@@ -54,7 +56,7 @@ FORM numerators 'Нумераторы'
 
 FORM defaultNumerators 'Нумераторы'
     OBJECTS n = Numerator
-    PROPERTIES(n) READONLY name, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
+    PROPERTIES(n) READONLY nameNumerator, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
     PROPERTIES(n)          ADDFORM, EDITFORM, delete
 ;
 
@@ -95,7 +97,7 @@ seriesObject (object) <- initValueSeriesObject(object) WHEN initWhenNumberedObje
 CLASS ABSTRACT NumeratedObject 'Нумерируемый объект' : NumberedObject;
 
 numeratorObject 'Нумератор (ИД)' = DATA Numerator (NumeratedObject);
-nameNumeratorObject 'Нумератор' (numeratedObject) = name(numeratorObject(numeratedObject)) IN numberedGroup MINCHARWIDTH 7 PREFCHARWIDTH 15;
+nameNumeratorObject 'Нумератор' (numeratedObject) = nameNumerator(numeratorObject(numeratedObject)) IN numberedGroup MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
 initValueNumeratorObject = ABSTRACT Numerator (NumeratedObject);
 initWhenNumeratorObject = ABSTRACT BOOLEAN (NumeratedObject);
@@ -133,7 +135,7 @@ END
 META defineNumeratedObjectDefaultPrefix(class, caption, series, prefix)
 
     prefix###defaultNumerator###class = DATA Numerator ();
-    name###prefix##DefaultNumerator###class caption = name(prefix###defaultNumerator###class());
+    name###prefix##DefaultNumerator###class caption = nameNumerator(prefix###defaultNumerator###class());
 
     EXTEND FORM defaultNumerators
         PROPERTIES() name###prefix##DefaultNumerator###class
@@ -147,7 +149,7 @@ META defineNumeratedObjectDefaultPrefix(class, caption, series, prefix)
     loadDefaultNumerators() += ACTION () {
         ADDOBJ Numerator;
         FOR n == addedObject() DO {
-            SET name(n) <- caption;
+            SET nameNumerator(n) <- caption;
             SET seriesNumerator(n) <- series;
             SET minValueNumerator(n) <- 1L;
             SET maxValueNumerator(n) <- 99999L;
@@ -171,7 +173,7 @@ META defineNumeratedObject(object1, object2)
     seriesNumber###object1###object2 'Серия/Номер' (object1, object2) = ustring2(series###object1###object2(object1, object2), number###object1###object2(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 
     numerator###object1###object2 = DATA Numerator (###object1, ###object2);
-    nameNumerator###object1###object2 'Нумератор' (object1, object2) = name(numerator###object1###object2(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 15;
+    nameNumerator###object1###object2 'Нумератор' (object1, object2) = nameNumerator(numerator###object1###object2(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
     setValueSessionNumerated###object1###object2 'Сгенерировать номер' = ACTION (object1, object2) {
         SET number###object1###object2(object1, object2) <- curStringValueNumerator(numerator###object1###object2(object1, object2));
@@ -189,7 +191,7 @@ END
 META defineNumeratedObjectDefault (object1, object2, property, caption, series)
 
     defaultNumerator###object1###object2 = DATA Numerator ();
-    nameDefaultNumerator###object1###object2 caption = name(defaultNumerator###object1###object2());
+    nameDefaultNumerator###object1###object2 caption = nameNumerator(defaultNumerator###object1###object2());
 
     EXTEND FORM defaultNumerators
         PROPERTIES() nameDefaultNumerator###object1###object2
@@ -203,7 +205,7 @@ META defineNumeratedObjectDefault (object1, object2, property, caption, series)
     loadDefaultNumerators() += ACTION () {
         ADDOBJ Numerator;
         FOR n == addedObject() DO {
-            SET name(n) <- caption;
+            SET nameNumerator(n) <- caption;
             SET seriesNumerator(n) <- series;
             SET minValueNumerator(n) <- 1L;
             SET maxValueNumerator(n) <- 99999L;

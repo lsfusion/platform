@@ -15,21 +15,25 @@ weightCodeGroupScales 'Код для весовых товаров' = DATA STRIN
 // Модели
 CLASS ScalesModel 'Модель весов' : Model;
 
-scalesModelName (scalesModel) = GROUP AGGR scalesModel BY name (scalesModel) WHERE scalesModel IS ScalesModel;
+nameScalesModel 'Наименование' = DATA ISTRING[110](ScalesModel);
+
+scalesModelName (scalesModel) = GROUP AGGR scalesModel BY nameScalesModel (scalesModel) WHERE scalesModel IS ScalesModel;
+
+nameModel(model) += nameScalesModel(model) IF model IS ScalesModel;
 
 maxTextScalesModel 'MAX допустимое колич. дополнительных текстов' = DATA INTEGER (ScalesModel) IN base;
 compositionScalesModel 'Число знаков в доп.тексте (составе товара)' = DATA INTEGER (ScalesModel) IN base;
 
 FORM scalesModel 'Модель весов'
     OBJECTS s=ScalesModel FIXED PANEL
-    PROPERTIES(s) name, noteModel, handlerModel, maxProductModel, maxTextScalesModel,
+    PROPERTIES(s) nameScalesModel, noteModel, handlerModel, maxProductModel, maxTextScalesModel,
                   compositionScalesModel
     EDIT ScalesModel OBJECT s
 ;
 
 FORM scalesModels 'Модели весов'
     OBJECTS m=ScalesModel
-    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
+    PROPERTIES(m) READONLY objectClassName, nameScalesModel, maxProductModel, noteModel, handlerModel
     PROPERTIES(m) ADDFORM, EDITFORM, delete
 ;
 
@@ -129,8 +133,10 @@ DESIGN cellScales FROM DEFAULT {
 
 //---------------------------- Этикетки в весы ----------------------------------------//
 
-CLASS LabelFormat 'Формат этикетки' : Named;
+CLASS LabelFormat 'Формат этикетки';
 TABLE labelFormat (LabelFormat);
+
+nameLabelFormat 'Наименование' = DATA ISTRING[50](LabelFormat);
 
 idLabelFormat 'Код формата этикетки' = DATA INTEGER (LabelFormat) IN base;
 idToLabelFormat (labelFormat) = GROUP AGGR labelFormat BY idLabelFormat(labelFormat) WHERE labelFormat IS LabelFormat;
@@ -142,11 +148,11 @@ fileMessageLabelFormat = DATA CUSTOMFILE (LabelFormat);
 loadFileMessageLabelFormat 'Загрузить файл спец.сообщений' (labelFormat) = ACTION LOADFILE fileMessageLabelFormat(labelFormat) IN base;
 
 scalesModelLabelFormat 'Модель весов'= DATA ScalesModel (LabelFormat);
-nameScalesModelLabelFormat 'Модель весов' (labelFormat) = name(scalesModelLabelFormat(labelFormat));
+nameScalesModelLabelFormat 'Модель весов' (labelFormat) = nameScalesModel(scalesModelLabelFormat(labelFormat));
 
 FORM labelFormats 'Форматы этикеток весов'
     OBJECTS c=LabelFormat
-    PROPERTIES(c) idLabelFormat, name, nameScalesModelLabelFormat, loadFileLabelFormat, loadFileMessageLabelFormat
+    PROPERTIES(c) idLabelFormat, nameLabelFormat, nameScalesModelLabelFormat, loadFileLabelFormat, loadFileMessageLabelFormat
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
@@ -170,7 +176,7 @@ createMachineryPriceTransactionGroupMachinery (groupMachinery) += ACTION (groupM
 loadDefaultScalesModel 'Добавить модель весов' = ACTION (stringOne, stringTwo)  {
     ADDOBJ ScalesModel;
     FOR sm == addedObject() DO {
-         SET name(sm) <- stringOne AS STRING[110];
+         SET nameScalesModel(sm) <- stringOne AS STRING[110];
          SET handlerModel(sm) <- stringTwo AS STRING[200];
     }
 }
@@ -201,7 +207,7 @@ loadDefaultGroupScales 'Сгенерировать группу весов' = AC
                 SET numScales() <- numScales() + 1;
                 SET nppMachinery(s) <- numScales();
                 SET scalesModelScales(s) <- model AS ScalesModel;
-                SET descriptionMachinery(s) <- string5CM('Весы', toString255(numScales()), '(', name(stock), ')');
+                SET descriptionMachinery(s) <- string5CM('Весы', toString255(numScales()), '(', nameStock(stock), ')');
             }
         }
     }
@@ -209,7 +215,7 @@ loadDefaultGroupScales 'Сгенерировать группу весов' = AC
 
 EXTEND FORM defaultData
     OBJECTS         sm=ScalesModel FIXED PANEL
-    PROPERTIES(sm)  SELECTOR name
+    PROPERTIES(sm)  SELECTOR nameScalesModel
 
     OBJECTS         cScales=INTEGER FIXED PANEL
     PROPERTIES(cScales)   intValueScales = OBJVALUE
@@ -217,7 +223,7 @@ EXTEND FORM defaultData
 ;
 
 EXTEND DESIGN defaultData {
-    PROPERTY(name(sm)) {
+    PROPERTY(nameScalesModel(sm)) {
         caption = 'Модель весов';
     }
     PROPERTY(intValueScales) {
@@ -226,7 +232,7 @@ EXTEND DESIGN defaultData {
     machinery {
         NEW scales {
             title = 'Весы';
-            ADD PROPERTY(name(sm));
+            ADD PROPERTY(nameScalesModel(sm));
             ADD PROPERTY(intValueScales);
             ADD PROPERTY(loadDefaultGroupScales);
         }

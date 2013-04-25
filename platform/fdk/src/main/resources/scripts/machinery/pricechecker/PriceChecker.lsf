@@ -11,15 +11,19 @@ stockGroupMachinery (groupMachinery) += stockGroupPriceChecker(groupMachinery);
 // Модели
 CLASS PriceCheckerModel 'Модель прайс чекеров' : Model;
 
+namePriceCheckerModel 'Наименование' = DATA ISTRING[110](PriceCheckerModel);
+
+nameModel(model) += namePriceCheckerModel(model) IF model IS PriceCheckerModel;
+
 FORM priceCheckerModel 'Модель прайс чекера'
     OBJECTS ch=PriceCheckerModel FIXED PANEL
-    PROPERTIES(ch) name, noteModel, handlerModel, maxProductModel
+    PROPERTIES(ch) namePriceCheckerModel, noteModel, handlerModel, maxProductModel
     EDIT PriceCheckerModel OBJECT ch
 ;
 
 FORM priceCheckerModels 'Модели прайс чекеров'
     OBJECTS m=PriceCheckerModel
-    PROPERTIES(m) READONLY name, maxProductModel, handlerModel, noteModel, objectClassName
+    PROPERTIES(m) READONLY namePriceCheckerModel, maxProductModel, handlerModel, noteModel, objectClassName
     PROPERTIES(m) ADDFORM, EDITFORM, delete
 ;
 
@@ -90,7 +94,7 @@ createMachineryPriceTransactionGroupMachinery (groupMachinery) += ACTION (groupM
 loadDefaultPriceCheckerModel 'Добавить модель прайс-чекера' = ACTION (stringOne, stringTwo)  {
     ADDOBJ PriceCheckerModel;
     FOR pcm == addedObject() DO {
-         SET name(pcm) <- stringOne AS STRING[110];
+         SET namePriceCheckerModel(pcm) <- stringOne AS STRING[110];
          SET handlerModel(pcm) <- stringTwo AS STRING[200];
     }
 }
@@ -125,7 +129,7 @@ loadDefaultGroupPriceChecker 'Сгенерировать группу прайс
 
 EXTEND FORM defaultData
     OBJECTS         pm=PriceCheckerModel FIXED PANEL
-    PROPERTIES(pm)  SELECTOR name
+    PROPERTIES(pm)  SELECTOR namePriceCheckerModel
 
     OBJECTS         cPriceChecker=INTEGER FIXED PANEL
     PROPERTIES(cPriceChecker)   intValuePriceChecker = OBJVALUE
@@ -133,7 +137,7 @@ EXTEND FORM defaultData
 ;
 
 EXTEND DESIGN defaultData {
-    PROPERTY(name(pm)) {
+    PROPERTY(namePriceCheckerModel(pm)) {
         caption = 'Модель прайс-чекеров';
     }
     PROPERTY(intValuePriceChecker) {
@@ -142,7 +146,7 @@ EXTEND DESIGN defaultData {
     machinery {
         NEW priceChecker {
             title = 'Прайс-чекеры';
-            ADD PROPERTY(name(pm));
+            ADD PROPERTY(namePriceCheckerModel(pm));
             ADD PROPERTY(intValuePriceChecker);
             ADD PROPERTY(loadDefaultGroupPriceChecker);
         }

@@ -162,7 +162,7 @@ public class ImportReceiptsActionProperty extends ScriptingActionProperty {
                 ImportField sidTypePaymentField = new ImportField(LM.findLCPByCompoundName("sidPaymentType"));
                 ImportField sumPaymentField = new ImportField(LM.findLCPByCompoundName("POS.sumPayment"));
                 ImportField numberPaymentField = new ImportField(LM.findLCPByCompoundName("POS.numberPayment"));
-                ImportField paymentMeansPaymentField = new ImportField(LM.baseLM.name);
+                ImportField paymentMeansPaymentField = new ImportField(LM.baseLM.staticName);
                 ImportField seriesNumberDiscountCardField = new ImportField(LM.findLCPByCompoundName("seriesNumberObject"));
 
                 List<ImportProperty<?>> saleProperties = new ArrayList<ImportProperty<?>>();

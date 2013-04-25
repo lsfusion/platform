@@ -4,15 +4,12 @@ REQUIRE System, MasterData, Utils;
 
 // ------------------------------------------------ Язык ---------------------------------------------- //
 
-CLASS Dictionary 'Словарь' : Named;
+CLASS Dictionary 'Словарь';
 TABLE dictionary (Dictionary);
 
-insensitiveDictionary 'Нечувствительный к регистру' = DATA BOOLEAN (Dictionary);
+nameDictionary 'Наименование' = DATA ISTRING[50](Dictionary);
 
-languageFromDictionary = DATA Language (Dictionary);
-nameLanguageFromDictionary 'С языка'(dictionary) = name(languageFromDictionary(dictionary));
-languageToDictionary = DATA Language (Dictionary);
-nameLanguageToDictionary 'На язык'(dictionary) = name(languageToDictionary(dictionary));
+insensitiveDictionary 'Нечувствительный к регистру' = DATA BOOLEAN (Dictionary);
 
 CLASS DictionaryEntry 'Слова';
 TABLE dictionaryEntry (DictionaryEntry);
@@ -24,25 +21,27 @@ translationDictionaryEntry 'Перевод' = DATA STRING[50] (DictionaryEntry);
 
 dictionaryEntryDictionaryTerm = GROUP AGGR dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), termDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS DictionaryEntry;
 translationDictionaryEntryDictionaryTerm 'Перевод' (dictionary, term) = translationDictionaryEntry(dictionaryEntryDictionaryTerm(dictionary, term));
-nameDictionaryDictionaryEntry 'Словарь' (dictionaryEntry) = name (dictionaryDictionaryEntry(dictionaryEntry));
+nameDictionaryDictionaryEntry 'Словарь' (dictionaryEntry) = nameDictionary(dictionaryDictionaryEntry(dictionaryEntry));
 insensitiveDictionaryEntryDictionaryTerm = GROUP MAX dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), insensitiveTermDictionaryEntry(dictionaryEntry);
 insensitiveTranslationDictionaryEntryDictionaryTerm 'Нечувствительный к регистру перевод' = translationDictionaryEntry (dictionaryEntryDictionaryTerm(dictionary, term));
 
-CLASS Language 'Язык' : Named;
+CLASS Language 'Язык';
 TABLE language(Language);
+
+nameLanguage 'Наименование' = DATA ISTRING[50](Language);
 
 localeLanguage 'Locale' = DATA STRING[5] (Language);
 
 FORM language 'Язык'
     OBJECTS l = Language FIXED PANEL
-    PROPERTIES(l) name, localeLanguage
+    PROPERTIES(l) nameLanguage, localeLanguage
 
     EDIT Language OBJECT l
 ;
 
 FORM languages 'Языки'
     OBJECTS l = Language
-    PROPERTIES(l) READONLY name, localeLanguage
+    PROPERTIES(l) READONLY nameLanguage, localeLanguage
     PROPERTIES(l)          ADDFORM, EDITFORM, delete
 
     DIALOG Language OBJECT l
@@ -54,15 +53,20 @@ NAVIGATOR {
     }
 }
 
+languageFromDictionary = DATA Language (Dictionary);
+nameLanguageFromDictionary 'С языка'(dictionary) = nameLanguage(languageFromDictionary(dictionary));
+languageToDictionary = DATA Language (Dictionary);
+nameLanguageToDictionary 'На язык'(dictionary) = nameLanguage(languageToDictionary(dictionary));
+
 // ------------------------------------ Перевод через Google Translate -------------------------------- //
 
 translationOriginal 'Текст для перевода' = DATA SESSION TEXT ();
 translationResult 'Переведённый текст' = DATA SESSION TEXT ();      //STRING[50]
 
 languageFromTranslation = DATA Language ();
-nameLanguageFromTranslation 'С языка'() = name(languageFromTranslation());
+nameLanguageFromTranslation 'С языка'() = nameLanguage(languageFromTranslation());
 languageToTranslation = DATA Language ();
-nameLanguageToTranslation 'На язык'() = name(languageToTranslation());
+nameLanguageToTranslation 'На язык'() = nameLanguage(languageToTranslation());
 
 translate  = ACTION CUSTOM 'fdk.utils.i18n.TranslateActionProperty';
 
@@ -139,7 +143,7 @@ languageName 'Название (иностр.)' = DATA ISTRING[110] (MultiLangua
 
 FORM dictionary 'Словарь'
     OBJECTS d = Dictionary FIXED PANEL
-    PROPERTIES(d) name, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
+    PROPERTIES(d) nameDictionary, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
 
     OBJECTS e = DictionaryEntry
     PROPERTIES(e) termDictionaryEntry, translationDictionaryEntry, translateTermDictionaryEntry, ADDOBJ, delete
@@ -174,7 +178,7 @@ DESIGN dictionary FROM DEFAULT {
 
 FORM dictionaries 'Словари'
     OBJECTS d = Dictionary
-    PROPERTIES(d) READONLY name, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
+    PROPERTIES(d) READONLY nameDictionary, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
 
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 

@@ -14,6 +14,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public ConcreteCustomClass userRole;
     public ConcreteCustomClass policy;
     
+    protected LCP<?> namePolicy;
     protected LCP<?> policyName;
     public LCP descriptionPolicy;
     public LCP orderUserRolePolicy;
@@ -82,6 +83,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         inMainRoleCustomUser = getLCPByName("inMainRoleCustomUser");
 
         // ------------------------ Политика безопасности ------------------ //
+        namePolicy = getLCPByName("namePolicy");
         policyName = getLCPByName("policyName");
         descriptionPolicy = getLCPByName("descriptionPolicy");
         orderUserPolicy = getLCPByName("orderUserPolicy");

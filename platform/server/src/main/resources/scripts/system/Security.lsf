@@ -8,12 +8,18 @@ TABLE customUserRole (CustomUser, UserRole);
 TABLE userRoleProperty (UserRole, Property);
 TABLE userRoleNavigatorElement (UserRole, NavigatorElement);
 
+nameUserRole 'Наименование' = DATA ISTRING[100](UserRole);
+
+setNameUserRole 'Взять наименования ролей' () = ACTION {
+    SET nameUserRole(userRole) <- name(userRole) WHERE userRole IS UserRole;
+};
+
 sidUserRole 'Идентификатор' = DATA STRING[30] (UserRole);
 userRoleSID (sid) = GROUP AGGR userRole BY sidUserRole (userRole) WHERE userRole IS UserRole;
 mainRoleUser = DATA UserRole (User);
 mainRoleCustomUser (user) = mainRoleUser (user) IF user IS CustomUser;
 sidMainRoleCustomUser 'Идентификатор главной роли' (user) = sidUserRole (mainRoleCustomUser(user));
-nameMainRoleUser 'Главная роль' (user) = name (mainRoleUser(user));
+nameMainRoleUser 'Главная роль' (user) = nameUserRole (mainRoleUser(user));
 inUserRole 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
 
 inMainRoleCustomUser(customUser, userRole) = mainRoleCustomUser(customUser) == userRole OR inUserRole(customUser, userRole);
@@ -153,7 +159,17 @@ CLASS Policy 'Политика безопасности' : Named;
 TABLE policy (Policy);
 TABLE userRolePolicy (UserRole, Policy);
 
-policyName 'Политика' (name) = GROUP AGGR policy BY name(policy) WHERE policy IS Policy;
+namePolicy 'Наименование' = DATA ISTRING[100](Policy);
+
+setNamePolicy 'Взять наименования политик' () = ACTION {
+    SET namePolicy(policy) <- name(policy) WHERE policy IS Policy;
+};
+
+EXTEND FORM migrationData
+    PROPERTIES() setNameUserRole, setNamePolicy
+;
+
+policyName 'Политика' (name) = GROUP AGGR policy BY namePolicy(policy) WHERE policy IS Policy;
 descriptionPolicy 'Описание' = DATA STRING[100] (Policy);
 orderUserRolePolicy 'Порядок политики' = DATA INTEGER (UserRole, Policy);
 orderUserPolicy 'Порядок политики' (user, policy) = orderUserRolePolicy (mainRoleUser(user), policy);
@@ -162,7 +178,7 @@ EXTEND FORM customUser
     PROPERTIES(u) nameMainRoleUser BEFORE emailContact(u)
 
     OBJECTS ur=UserRole
-    PROPERTIES(ur) READONLY name, sidUserRole
+    PROPERTIES(ur) READONLY nameUserRole, sidUserRole
     PROPERTIES(u,ur) inUserRole
 ;
 
@@ -180,19 +196,19 @@ EXTEND FORM customUsers
 
 FORM userRole 'Роль'
     OBJECTS ur = UserRole FIXED PANEL
-    PROPERTIES(ur) name, sidUserRole
+    PROPERTIES(ur) nameUserRole, sidUserRole
     EDIT UserRole OBJECT ur
 ;
 
 FORM securityPolicy 'Политика безопасности'
 
     OBJECTS ur=UserRole
-    PROPERTIES(ur) READONLY name, sidUserRole
+    PROPERTIES(ur) READONLY nameUserRole, sidUserRole
     PROPERTIES(ur) permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole, permitChangeAllPropertyUserRole,
                    forbidChangeAllPropertyUserRole, defaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole
 
     OBJECTS p=Policy
-    PROPERTIES(p)  name, descriptionPolicy
+    PROPERTIES(p)  namePolicy, descriptionPolicy
 
     OBJECTS f=NavigatorElement
     PROPERTIES(f) READONLY captionNavigatorElement, sidNavigatorElement
@@ -307,7 +323,7 @@ EXTEND DESIGN securityPolicy {
 
 FORM userRoles 'Роли'
     OBJECTS ur=UserRole
-    PROPERTIES(ur) READONLY name, sidUserRole
+    PROPERTIES(ur) READONLY nameUserRole, sidUserRole
     PROPERTIES(ur) ADDFORM, EDITFORM, delete
     DIALOG UserRole OBJECT ur
 ;
@@ -315,7 +331,7 @@ FORM userRoles 'Роли'
 FORM propertyPolicy 'Политика безопасности для свойства'
     OBJECTS p=Property FIXED PANEL, ur=UserRole
     PROPERTIES(p) READONLY captionProperty, SIDProperty
-    PROPERTIES(ur) READONLY name, sidUserRole
+    PROPERTIES(ur) READONLY nameUserRole, sidUserRole
     PROPERTIES(ur, p) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
 ;
 

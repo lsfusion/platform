@@ -11,6 +11,11 @@ EXTEND FORM departmentStore PROPERTIES(d) costLedgerDepartmentStore;
 
 CLASS PricingCommittee 'Комиссия для акта расценки' : Committee;
 
+namePricingCommittee 'Наименование' = DATA ISTRING[150](PricingCommittee);
+
+nameCommittee(committee) += namePricingCommittee(committee) IF committee IS PricingCommittee;
+
+
 //@defineCommitteeEmployee(committee, chairman, 'Председатель');
 @defineCommitteeEmployeePrefix(pricingCommittee, formedMan, 'Цены сформировал');
 @defineCommitteeEmployeePrefix(pricingCommittee, checkedMan, 'Реестр проверил');
@@ -21,7 +26,7 @@ CLASS PricingCommittee 'Комиссия для акта расценки' : Com
 // ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
 
 pricingCommitteeDepartmentStore 'Комиссия для акта расценки (ИД)' = DATA PricingCommittee (DepartmentStore);
-namePricingCommitteeDepartmentStore 'Комиссия для акта расценки' (departmentStore) = name(pricingCommitteeDepartmentStore(departmentStore)) IN committeeGroup;
+namePricingCommitteeDepartmentStore 'Комиссия для акта расценки' (departmentStore) = namePricingCommittee(pricingCommitteeDepartmentStore(departmentStore)) IN committeeGroup;
 isDefaultPricingCommitteeDepartmentStore 'По умолчанию' (pricingCommittee, departmentStore) = pricingCommitteeDepartmentStore(departmentStore) == pricingCommittee;
 CONSTRAINT pricingCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(pricingCommitteeDepartmentStore(departmentStore), departmentStore)
     CHECKED BY pricingCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
@@ -32,15 +37,15 @@ EXTEND FORM departmentStore PROPERTIES namePricingCommitteeDepartmentStore(d);
 
 FORM pricingCommittee 'Комиссия для акта расценки'
     OBJECTS c=PricingCommittee FIXED PANEL
-    PROPERTIES(c)      name, nameFormedManPricingCommittee, nameCheckedManPricingCommittee,
+    PROPERTIES(c)      namePricingCommittee, nameFormedManPricingCommittee, nameCheckedManPricingCommittee,
                        nameLabeledManPricingCommittee, nameAccountantManPricingCommittee, nameHeadManPricingCommittee
 
     TREE treeStore a=STRING[3], t=ChainStores, st=StoreType, s=Store
-    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
+    PROPERTIES         READONLY OBJVALUE(a), nameChainStores(t), nameStoreType(st), nameStore(s)
     FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS dep=DepartmentStore
-    PROPERTIES(dep)    READONLY depName = name
+    PROPERTIES(dep)    READONLY depName = nameDepartmentStore
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isDefaultPricingCommitteeDepartmentStore
     FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
     ORDER BY depName
@@ -89,7 +94,7 @@ DESIGN pricingCommittee FROM DEFAULT {
 
 FORM pricingCommitteeDialog 'Комиссии для акта расценки'
     OBJECTS r=PricingCommittee
-    PROPERTIES(r)      READONLY name, nameEmployeeDivisionCommittee, nameFormedManPricingCommittee, nameCheckedManPricingCommittee, nameLabeledManPricingCommittee,
+    PROPERTIES(r)      READONLY namePricingCommittee, nameEmployeeDivisionCommittee, nameFormedManPricingCommittee, nameCheckedManPricingCommittee, nameLabeledManPricingCommittee,
                        nameAccountantManPricingCommittee, nameHeadManPricingCommittee
     PROPERTIES(r)      ADDFORM, EDITFORM
 
@@ -103,7 +108,7 @@ GROUP pricingCommitteeGroup 'Комиссия' : public;
 META defineDocumentHeaderPricingCommittee(object, stockClass, prefix)
     prefix###pricingCommittee###object (object) = DATA PricingCommittee(###object);
 
-    name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = name(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = namePricingCommittee(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     prefix###pricingCommittee###object (object) <- pricingCommitteeDepartmentStore(stockClass###object(object))
         WHEN CHANGED(stockClass###object(object));
 
@@ -120,7 +125,7 @@ END
 META defineDocumentHeaderAbstractPricingCommittee(object, stockClass, prefix)
     prefix###pricingCommittee###object (object) = ABSTRACT PricingCommittee(###object) PERSISTENT;
 
-    name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = name(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = namePricingCommittee(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     name###prefix###FormedMan###object 'Цены сформировал' (object) = nameFormedManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
     name###prefix###CheckedMan###object 'Реестр проверил' (object) = nameCheckedManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
@@ -813,9 +818,9 @@ META defineInvoicePricingRelation(sign, stockProp)
 
     FORM pricingInvoices 'Накладные'###sign
         OBJECTS s = LegalEntity FIXED PANEL
-        PROPERTIES (s) READONLY name
+        PROPERTIES (s) READONLY nameLegalEntity
         OBJECTS c = Stock FIXED PANEL
-        PROPERTIES (c) READONLY name
+        PROPERTIES (c) READONLY nameStock
 
         OBJECTS i = Invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,

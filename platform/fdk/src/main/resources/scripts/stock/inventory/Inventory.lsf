@@ -14,8 +14,12 @@ REQUIRE System,
 // -------------------------------- Комиссия для инвентаризации ----------------------------------//
 CLASS InventoryCommittee 'Комиссия для инвентаризации' : Committee;
 
+nameInventoryCommittee 'Наименование' = DATA ISTRING[150](InventoryCommittee);
+
+nameCommittee(committee) += nameInventoryCommittee(committee) IF committee IS InventoryCommittee;
+
 committeeInventory(inventory) = DATA InventoryCommittee (Inventory);
-nameCommitteeInventory 'Название комиссии' (inventory) = name(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameCommitteeInventory 'Название комиссии' (inventory) = nameInventoryCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameChairmanCommitteeInventory 'Председатель комиссии' (inventory) = nameChairmanCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 namePositionChairmanInventory 'Должность председателя' (inventory)  = namePositionChairmanCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameEmployeeInventory 'Члены комиссии' (inventory) = nameEmployeeCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -23,13 +27,13 @@ inInventoryEmployee 'Является членом комиссии' (inventory,
 
 FORM inventoryCommittee 'Комиссия для инвентаризации'
     OBJECTS c=InventoryCommittee FIXED PANEL
-    PROPERTIES(c)      name, nameChairmanCommittee
+    PROPERTIES(c)      nameInventoryCommittee, nameChairmanCommittee
 
     TREE stockTree sg = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
+    PROPERTIES READONLY sgTreeName = nameStockGroup(sg)
 
     OBJECTS ts=Stock
-    PROPERTIES    READONLY tsTreeName = name(ts)
+    PROPERTIES    READONLY tsTreeName = nameStock(ts)
     PROPERTIES(c, ts) inCommitteeEmployeeDivision FORCE GRID
 
     FILTERS isParentStockGroupStock(sg, ts)
@@ -37,7 +41,7 @@ FORM inventoryCommittee 'Комиссия для инвентаризации'
 
 
     OBJECTS e=Employee
-    PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
+    PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
     PROPERTIES(c, e)   inCommitteeEmployee
@@ -72,7 +76,7 @@ DESIGN inventoryCommittee FROM DEFAULT {
 
 FORM inventoryCommittees 'Комиссии для инвентаризации'
     OBJECTS w=InventoryCommittee
-    PROPERTIES(w)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
+    PROPERTIES(w)      READONLY nameInventoryCommittee, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
     PROPERTIES(w)      ADDFORM, EDITFORM
 
     DIALOG InventoryCommittee OBJECT w
@@ -84,7 +88,7 @@ CLASS TypeOfAddition 'Тип инвентаризации' {
     register 'Товары из описей',
     remains 'Товары по остаткам',
     many    'Множество товаров'
-} : Named;
+};
 
 CLASS Inventory 'Инвентаризация' : Historizable, NumeratedDocument;
 CLASS InventoryPosted 'Проведенная инвентаризация' : Inventory, PostedObject;
@@ -111,16 +115,16 @@ nameHeadManInventory  'Зав. складом' (inventory) = nameContact(headMan
 TABLE stockInventory (Stock, Inventory);
 includeStockInventory 'Вкл' = DATA BOOLEAN (Stock, Inventory);
 nameStockInventory 'Отделы документа' (inventory) =
-    GROUP CONCAT name(stock) IF includeStockInventory(stock, inventory), ', '
+    GROUP CONCAT nameStock(stock) IF includeStockInventory(stock, inventory), ', '
           BY inventory
           ORDER stock MINCHARWIDTH 50 PREFCHARWIDTH 150;
 
 // Тип инвентаризации
 typeOfAdditionInventory(inventory) = DATA TypeOfAddition (Inventory);
-nameTypeOfAdditionInventory 'Тип инвентаризации' (inventory) = name(typeOfAdditionInventory(inventory)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+nameTypeOfAdditionInventory 'Тип инвентаризации' (inventory) = staticName(typeOfAdditionInventory(inventory)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 userTypeOfAdditionStockInventory(stock, inventory) = DATA TypeOfAddition (Stock, Inventory);
-nameUserTypeOfAdditionStockInventory 'Тип инвентаризации' (stock, inventory) = name(userTypeOfAdditionStockInventory(stock, inventory));
+nameUserTypeOfAdditionStockInventory 'Тип инвентаризации' (stock, inventory) = staticName(userTypeOfAdditionStockInventory(stock, inventory));
 
 typeOfAdditionStockInventory(stock, inventory) = UNION OVERRIDE typeOfAdditionInventory(inventory) AND stock IS Stock,
                                                                 userTypeOfAdditionStockInventory(stock, inventory);
@@ -159,7 +163,7 @@ GROUP inventoryCommitteeGroup 'Комиссия' : public;
 
 userCommitteeListInventory(listInventory) = DATA InventoryCommittee (ListInventory);
 committeeListInventory(listInventory) = UNION OVERRIDE committeeInventory(inventoryListInventory(listInventory)), userCommitteeListInventory(listInventory);
-nameCommitteeListInventory 'Название комиссии' (listInventory) = name(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameCommitteeListInventory 'Название комиссии' (listInventory) = nameInventoryCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = nameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 namePositionChairmanListInventory 'Должность председателя' (listInventory)  = namePositionChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameEmployeeListInventory 'Члены комиссии' (listInventory) = nameEmployeeCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -289,7 +293,7 @@ nameCollationSheetListInventory 'Название сл. ведомости' (lis
 collationSheetPageInventoryDetail (pageInventoryDetail) = collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
 
 typeOfAdditionCollationSheet(collationSheet)= typeOfAdditionStockInventory(stockCollationSheet(collationSheet), inventoryCollationSheet(collationSheet));
-nameTypeOfAdditionCollationSheet 'Тип сличительной ведомости' (collationSheet) = name(typeOfAdditionCollationSheet(collationSheet)) IN base MINCHARWIDTH 20 PREFCHARWIDTH 20;
+nameTypeOfAdditionCollationSheet 'Тип сличительной ведомости' (collationSheet) = staticName(typeOfAdditionCollationSheet(collationSheet)) IN base MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 inInventoryStockListInventoryPageInventoryPageInventoryDetail (inventory, stock, listInventory, pageInventory, pageInventoryDetail) = UNION OVERRIDE
     pageInventoryPageInventoryDetail(pageInventoryDetail) == pageInventory AND listInventory AND stock AND inventory,
@@ -312,7 +316,7 @@ prevDateCollationSheet 'Дата предыдущей инвентаризаци
 
 // Комиссии
 committeeCollationSheet = committeeInventory(inventoryCollationSheet(collationSheet));
-nameCommitteeCollationSheet 'Название комиссии' (collationSheet) = name(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameCommitteeCollationSheet 'Название комиссии' (collationSheet) = nameInventoryCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameChairmanCommitteeCollationSheet 'Председатель комиссии' (collationSheet) = nameChairmanCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 namePositionChairmanCollationSheet 'Должность председателя' (collationSheet)  = namePositionChairmanCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameEmployeeCollationSheet 'Члены комиссии' (collationSheet) = nameEmployeeCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -750,10 +754,10 @@ FORM dialogStockInventory 'Выбор складов для инвентариз
     PROPERTIES (in) READONLY seriesObject, numberObject, nameInventory, dateInventory
 
     TREE stockTree sg = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
+    PROPERTIES READONLY sgTreeName = nameStockGroup(sg)
 
     OBJECTS ts=Stock
-    PROPERTIES (ts) READONLY tsTreeName = name
+    PROPERTIES (ts) READONLY tsTreeName = nameStock
     PROPERTIES (ts, in)      includeStockInventory, nameUserTypeOfAdditionStockInventory
     FILTERS isParentStockGroupStock(sg, ts)
     FILTERGROUP filters
@@ -790,8 +794,8 @@ FORM dialogSkuCollationSheet 'Выбор SKU для сличительной в�
     PROPERTIES (cs) READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameStockCollationSheet
 
     TREE treeGroup g=SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY name(g)
-    ORDER BY name
+    PROPERTIES READONLY nameSkuGroup(g)
+    ORDER BY nameSkuGroup
 
     OBJECTS i=Sku
     PROPERTIES(i) READONLY idBarcodeSku, nameSku, shortNameUOMSku
@@ -919,7 +923,7 @@ FORM inventory 'Инвентаризация'
                      nameCommitteeInventory, nameChairmanCommitteeInventory, nameEmployeeInventory
 
     TREE treeStock ds=Stock, li=ListInventory, pl=PageInventory
-    PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageInventory(pl)
+    PROPERTIES       READONLY nameStock(ds),  nameListInventory(li), namePageInventory(pl)
     FILTERS                   includeStockInventory(ds, in),
                               stockListInventory(li) == ds,
                               inventoryListInventory(li) == in,
@@ -967,8 +971,8 @@ FORM inventory 'Инвентаризация'
 
 
     TREE treeGroup g=SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY name(g)
-    ORDER BY name
+    PROPERTIES READONLY nameSkuGroup(g)
+    ORDER BY nameSkuGroup
 
     OBJECTS          i=Sku
     PROPERTIES(i) READONLY                      idBarcodeSku, iNameSku = nameSku

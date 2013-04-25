@@ -14,17 +14,21 @@ operatorNumberGroupCashRegisterCustomUser 'Номер в группе касс' 
 // Модели
 CLASS CashRegisterModel 'Модель касс' : Model;
 
+nameCashRegisterModel 'Наименование' = DATA ISTRING[110](CashRegisterModel);
+
+nameModel(model) += nameCashRegisterModel(model) IF model IS CashRegisterModel;
+
 dateToCashRegisterModel 'Дата, до которой модель внесена в реестр' = DATA DATE (CashRegisterModel) IN base;
 
 FORM cashRegisterModel 'Модель касс'
     OBJECTS c=CashRegisterModel FIXED PANEL
-    PROPERTIES(c) name, sidModel, noteModel, handlerModel, dateToCashRegisterModel
+    PROPERTIES(c) nameCashRegisterModel, sidModel, noteModel, handlerModel, dateToCashRegisterModel
     EDIT CashRegisterModel OBJECT c
 ;
 
 FORM cashRegistersModels 'Модели касс'
     OBJECTS c=CashRegisterModel
-    PROPERTIES(c) READONLY name, sidModel, handlerModel, noteModel, objectClassName
+    PROPERTIES(c) READONLY nameCashRegisterModel, sidModel, handlerModel, noteModel, objectClassName
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     DIALOG CashRegisterModel OBJECT c
 ;
@@ -56,7 +60,7 @@ userLegalEntityCashRegister (cashRegister) = DATA LegalEntity (CashRegister);
 legalEntityCashRegister (cashRegister) = UNION OVERRIDE legalEntityDepartmentStore(departmentStoreCashRegister(cashRegister)),
                                                     userLegalEntityCashRegister(cashRegister);
 
-nameLegalEntityCashRegister 'Владелец кассы' (cashRegister) = name(legalEntityCashRegister(cashRegister));
+nameLegalEntityCashRegister 'Владелец кассы' (cashRegister) = nameLegalEntity(legalEntityCashRegister(cashRegister));
 
 computerCashRegister = DATA Computer (CashRegister);
 hostnameComputerCashRegister 'Компьютер' (cashRegister) = hostnameComputer(computerCashRegister(cashRegister)) IN base;
@@ -147,7 +151,7 @@ createMachineryPriceTransactionGroupMachinery (groupMachinery) += ACTION (groupM
 loadDefaultCashRegisterModel 'Добавить модель касс' = ACTION (iname, isid, ihandler)  {
     ADDOBJ CashRegisterModel;
     FOR crm == addedObject() DO {
-         SET name(crm) <- iname;
+         SET nameCashRegisterModel(crm) <- iname;
          SET sidModel(crm) <- isid;
          SET handlerModel(crm) <- ihandler;
     }
@@ -181,7 +185,7 @@ loadDefaultGroupCashRegister 'Сгенерировать группу касс' 
                 SET numCashRegister() <- numCashRegister() + 1;
                 SET nppMachinery(c) <- numCashRegister();
                 SET cashRegisterModelCashRegister(c) <- model AS CashRegisterModel;
-                SET descriptionMachinery(c) <- string5CM('Касса', toString255(numCashRegister()), '(', name(stock), ')');
+                SET descriptionMachinery(c) <- string5CM('Касса', toString255(numCashRegister()), '(', nameStock(stock), ')');
             }
         }
     }
@@ -189,7 +193,7 @@ loadDefaultGroupCashRegister 'Сгенерировать группу касс' 
 
 EXTEND FORM defaultData
     OBJECTS         crm=CashRegisterModel FIXED PANEL
-    PROPERTIES(crm) SELECTOR name
+    PROPERTIES(crm) SELECTOR nameCashRegisterModel
 
     OBJECTS         cCashReg=INTEGER FIXED PANEL
     PROPERTIES(cCashReg)   intValueCashRegister = OBJVALUE
@@ -197,7 +201,7 @@ EXTEND FORM defaultData
 ;
 
 EXTEND DESIGN defaultData {
-    PROPERTY(name(crm)) {
+    PROPERTY(nameCashRegisterModel(crm)) {
         caption = 'Модель касс';
     }
     PROPERTY(intValueCashRegister) {
@@ -206,7 +210,7 @@ EXTEND DESIGN defaultData {
     machinery {
         NEW cashRegister {
             title = 'Кассы';
-            ADD PROPERTY(name(crm));
+            ADD PROPERTY(nameCashRegisterModel(crm));
             ADD PROPERTY(intValueCashRegister);
             ADD PROPERTY(loadDefaultGroupCashRegister);
         }

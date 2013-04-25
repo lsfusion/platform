@@ -6,10 +6,10 @@ GROUP email 'Настройки почтового сервера' : public;   /
 
 CLASS EncryptedConnectionTypeStatus 'Тип шифрованного подключения' {
     SSL 'SSL', TLS 'TLS'
-} : Named;
+};
 
 encryptedConnectionType 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus();
-nameEncryptedConnectionType 'Тип шифрованного подключения' = name(encryptedConnectionType()) PREFCHARWIDTH 3 IN email;
+nameEncryptedConnectionType 'Тип шифрованного подключения' = staticName(encryptedConnectionType()) PREFCHARWIDTH 3 IN email;
 
 CLASS Notification 'Уведомление';
 TABLE notification (Notification);
@@ -36,7 +36,7 @@ disableEmail 'Отключить отсылку почты' = DATA BOOLEAN() IN 
 FORM remindUserPass 'Напоминание пароля'
 
     OBJECTS u=CustomUser FIXED PANEL
-    PROPERTIES(u) READONLY loginCustomUser, passwordCustomUser, name
+    PROPERTIES(u) READONLY loginCustomUser, passwordCustomUser, nameContact
 ;
 
 emailUserPassUser 'Напоминание пароля' (user) = ACTION EMAIL

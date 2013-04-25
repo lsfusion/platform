@@ -15,7 +15,7 @@ skuOrderLedger (ledger) = ABSTRACT Sku (OrderLedger) PERSISTENT INDEXED;
 nameSkuOrderLedger 'SKU' (ledger) = nameSku(skuOrderLedger(ledger));
 
 stockOrderLedger (ledger) = ABSTRACT Stock (OrderLedger) PERSISTENT INDEXED;
-nameStockOrderLedger 'Склад' (ledger) = name(stockOrderLedger(ledger));
+nameStockOrderLedger 'Склад' (ledger) = nameStock(stockOrderLedger(ledger));
 
 descriptionOrderLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (OrderLedger) PERSISTENT;
 
@@ -26,7 +26,7 @@ isPurchaseOrderLedger 'Закупка' (ledger) = ABSTRACT BOOLEAN (OrderLedger)
 
 
 contactOrderLedger (ledger) = ABSTRACT LegalEntity (OrderLedger) PERSISTENT INDEXED;
-nameContactOrderLedger 'Контрагент' (ledger) = name(contactOrderLedger(ledger));
+nameContactOrderLedger 'Контрагент' (ledger) = nameLegalEntity(contactOrderLedger(ledger));
 
 inContactSku 'Связь' (legalEntity, sku)= GROUP SUM toShipQuantityOrderLedger(ledger) IF isPostedOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger)
     BY contactOrderLedger(ledger), skuOrderLedger(ledger) PERSISTENT;
@@ -100,7 +100,7 @@ FORM orderLedger 'Резерв по позициям'
     PROPERTIES  dVal=OBJVALUE(t)
 
     OBJECTS st = Stock FIXED PANEL
-    PROPERTIES  SELECTOR name(st)
+    PROPERTIES  SELECTOR nameStock(st)
 
     OBJECTS sk = Sku FIXED PANEL
     PROPERTIES  SELECTOR nameSku(sk)

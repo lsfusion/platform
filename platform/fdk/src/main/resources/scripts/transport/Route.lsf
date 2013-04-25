@@ -30,7 +30,7 @@ nameNode 'Наименование' = ABSTRACT STRING[110](Node);
 addressNode 'Адрес' = ABSTRACT STRING[110](Node);
 legalEntityNode = ABSTRACT LegalEntity(Node);
 
-nameLegalEntityNode 'Юр. лицо' (node) = name(legalEntityNode(node));
+nameLegalEntityNode 'Юр. лицо' (node) = nameLegalEntity(legalEntityNode(node));
 
 TABLE nodeRoute(Node, Route);
 inNodeRoute 'Вкючен' = DATA BOOLEAN(Node, Route);
@@ -39,7 +39,7 @@ numberNodeRoute 'Порядковый номер' = DATA INTEGER(Node, Route);
 EXTEND CLASS Stock : Node;
 //EXTEND CLASS supplier : node;
 
-nameNode(stock) += name(stock) IF stock IS Stock;
+nameNode(stock) += nameStock(stock) IF stock IS Stock;
 
 addressNode(stock) += addressStock(stock) IF stock IS Stock;
 

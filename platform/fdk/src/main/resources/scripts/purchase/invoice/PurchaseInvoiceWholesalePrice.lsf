@@ -14,7 +14,7 @@ NAMESPACE Purchase;
 // Вид цены (надбавка) для всего инвойса
 @defineDocumentInterfaceHeaderPriceListType (invoice, calcPriceListType, wholesale, ' (надбавка)');
 wholesaleCalcPriceListTypeOperation = DATA CalcPriceListType (Operation);
-nameWholesaleCalcPriceListTypeOperation 'Вид цен (надбавка) оптовая' (operation) = name(wholesaleCalcPriceListTypeOperation(operation));
+nameWholesaleCalcPriceListTypeOperation 'Вид цен (надбавка) оптовая' (operation) = nameCalcPriceListType(wholesaleCalcPriceListTypeOperation(operation));
 
 EXTEND FORM operation
     PROPERTIES(o) nameWholesaleCalcPriceListTypeOperation

@@ -10,7 +10,7 @@ FORM printWaybillBy PRINT
     PROPERTIES(t) dateTrip, seriesNumberObject, sidTruckTrip, nameDriverTrip, nameTruckModelTruckTrip, trailerTruckTrip, sidDriverTrip, typeDriverTrip
 
     OBJECTS st=Stock
-    PROPERTIES(st) name, addressStock, nameLegalEntityStock
+    PROPERTIES(st) nameStock, addressStock, nameLegalEntityStock
     PROPERTIES(t, st) addressStockPrevTripStock, grossWeightTripToStock
     PROPERTIES (st, t) numberStockTrip
     ORDER BY numberStockTrip(st, t)

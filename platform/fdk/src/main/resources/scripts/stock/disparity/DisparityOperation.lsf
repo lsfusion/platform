@@ -30,7 +30,7 @@ NAVIGATOR {
 //------------------------------------------ Опеределение операции для disparity ------------------------------------//
 
 operationDisparity = DATA Operation (Disparity) PERSISTENT;
-nameOperationDisparity 'Операция' = name(operationDisparity(disparity));
+nameOperationDisparity 'Операция' = nameOperation(operationDisparity(disparity));
 
 operationDisparityDetail 'Операция' (disparityDetail) = operationDisparity(disparityDisparityDetail(disparityDetail));
 

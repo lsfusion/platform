@@ -64,7 +64,7 @@ closeDateOrder 'Дата автоматического закрытия' = ABST
 @defineDocumentAbstractHeaderCurrency (order);
 
 operationOrder = ABSTRACT Operation.Operation (Order) PERSISTENT;
-nameOperationOrder 'Операция' (order) = name(operationOrder(order));
+nameOperationOrder 'Операция' (order) = Operation.nameOperation(operationOrder(order));  ////
 
 quantityFromOrderStock 'Кол-во со склада' (order, stock) = GROUP SUM quantityOrderDetail(orderDetail) BY orderOrderDetail(orderDetail),
                                                                                                          fromStockOrderDetail(orderDetail);
@@ -79,7 +79,7 @@ editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png
 META defineOrder(sign, legalEntityProp, stockProp)
 
     CLASS ABSTRACT Order 'Заказ'###sign : Order.Order;
-    CLASS ABSTRACT OrderDetail 'Строка заказа'###sign : Order.OrderDetail, Named;
+    CLASS ABSTRACT OrderDetail 'Строка заказа'###sign : Order.OrderDetail;
 
     CLASS UserOrder 'Заказ (польз.)'###sign : Order, Historizable, NumeratedObject;
     CLASS UserOrderDetail 'Строка заказа (польз.)'###sign : OrderDetail;

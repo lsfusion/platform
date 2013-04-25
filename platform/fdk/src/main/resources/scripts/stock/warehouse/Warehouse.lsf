@@ -10,6 +10,10 @@ REQUIRE System,
 CLASS WarehouseGroup 'Группа складов' : StockGroup;
 TABLE warehouseGroup (WarehouseGroup);
 
+nameWarehouseGroup 'Наименование' = DATA ISTRING[150](WarehouseGroup);
+
+nameStockGroup(group) += nameWarehouseGroup(group) IF group IS WarehouseGroup;
+
 TABLE warehouseGroupWarehouseGroup(WarehouseGroup, WarehouseGroup);
 @defineHierarchy(warehouseGroup);
 parentStockGroup (stockGroup) += parentWarehouseGroup (stockGroup);
@@ -18,14 +22,18 @@ parentStockGroup (stockGroup) += parentWarehouseGroup (stockGroup);
 
 CLASS Warehouse 'Склад' : Stock;
 
+nameWarehouse 'Наименование' = DATA ISTRING[150](Warehouse);
+
+nameStock(stock) += nameWarehouse(stock) IF stock IS Warehouse;
+
 warehouseGroupWarehouse (warehouse) = DATA WarehouseGroup (Warehouse) AUTOSET;
-nameWarehouseGroupWarehouse 'Группа складов' (warehouse) = name(warehouseGroupWarehouse(warehouse)) IN base;
+nameWarehouseGroupWarehouse 'Группа складов' (warehouse) = nameWarehouseGroup(warehouseGroupWarehouse(warehouse)) IN base;
 isParentWarehouseGroupWarehouse (warehouseGroup, warehouse) =
     isParentWarehouseGroupWarehouseGroup(warehouseGroupWarehouse(warehouse), warehouseGroup) PERSISTENT;
 stockGroupStock (stock) += warehouseGroupWarehouse (stock);
 
 legalEntityWarehouse (warehouse) = DATA LegalEntity (Warehouse) NOT NULL;
-nameLegalEntityWarehouse 'Организация' (warehouse) = name(legalEntityWarehouse(warehouse)) IN base;
+nameLegalEntityWarehouse 'Организация' (warehouse) = nameLegalEntity(legalEntityWarehouse(warehouse)) IN base;
 legalEntityStock (stock) += legalEntityWarehouse(stock);
 
 userLegalEntityWarehouse 'Отм.' = DATA BOOLEAN (LegalEntity, Warehouse);
@@ -51,8 +59,8 @@ quantityDaysCloseOrdersStock(stock) += quantityDaysCloseWarehouse(stock);
 FORM warehouseGroup 'Группа складов'
 
     OBJECTS           w=WarehouseGroup FIXED PANEL
-    PROPERTIES(w)     name, nameParentWarehouseGroup
-    ORDER BY          name
+    PROPERTIES(w)     nameWarehouseGroup, nameParentWarehouseGroup
+    ORDER BY          nameWarehouseGroup
 
     EDIT WarehouseGroup OBJECT w
 ;
@@ -60,9 +68,9 @@ FORM warehouseGroup 'Группа складов'
 FORM warehouse 'Склад'
 
     OBJECTS           w=Warehouse FIXED PANEL
-    PROPERTIES(w)     name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock,
+    PROPERTIES(w)     nameWarehouse, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock,
                       explicitBatchLedgerWarehouse, latitudeWarehouse, longitudeWarehouse, showOnMapPOI, quantityDaysCloseWarehouse
-    ORDER BY          name
+    ORDER BY          nameWarehouse
 
     OBJECTS           e = Employee
     PROPERTIES(e)     READONLY firstNameContact, lastNameContact
@@ -88,15 +96,15 @@ editSessionStock(stock) += editSessionWarehouse(stock);
 FORM warehouses 'Склады'
 
     TREE warehouseTree b=STRING[3], wg = WarehouseGroup PARENT parentWarehouseGroup
-    PROPERTIES READONLY OBJVALUE(b), wgTreeName = name(wg)
+    PROPERTIES READONLY OBJVALUE(b), wgTreeName = nameWarehouseGroup(wg)
     PROPERTIES(wg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
     ORDER BY wgTreeName
     FILTERS stringEqualsAll(b)
 
     OBJECTS w=Warehouse
-    PROPERTIES(w) READONLY name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, latitudePOI, longitudePOI
+    PROPERTIES(w) READONLY nameWarehouse, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, latitudePOI, longitudePOI
     PROPERTIES(w) ADDFORM, EDITFORM, delete
-    ORDER BY name
+    ORDER BY nameWarehouse
     FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS Warehouse AND wg IS WarehouseGroup AND NOT warehouseGroupWarehouse(w)) OR (w IS Warehouse AND NOT wg)
 ;
 @extendFormFilterStockAccess(Warehouse, w, warehouses);

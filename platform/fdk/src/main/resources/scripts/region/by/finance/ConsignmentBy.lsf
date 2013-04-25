@@ -11,9 +11,10 @@ REQUIRE System,
 
 NAMESPACE Consignment;
 
-CLASS WayOfLoading 'Способ ПРР' : Named;
+CLASS WayOfLoading 'Способ ПРР';
 TABLE wayOfLoading (WayOfLoading);
 
+nameWayOfLoading 'Наименование' = DATA ISTRING[50](WayOfLoading);
 
 GROUP sumConsignmentGroup 'Суммы' : base;
 
@@ -73,7 +74,7 @@ overWaybillConsignment 'Путевой лист' (consignment) = UNION OVERRIDE 
 
 // Склад погрузки
 supplierStockConsignment (consignment) = ABSTRACT Stock (Consignment);
-nameSupplierStockConsignment 'Склад погрузки' (consignment) = name(supplierStockConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameSupplierStockConsignment 'Склад погрузки' (consignment) = nameStock(supplierStockConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
 dataAddressSupplierStockConsignment 'Пункт погрузки' (consignment) = ABSTRACT STRING[50] (Consignment);
 addressSupplierStockConsignment 'Пункт погрузки' (consignment) = UNION OVERRIDE addressStock(supplierStockConsignment(consignment)),
@@ -81,7 +82,7 @@ addressSupplierStockConsignment 'Пункт погрузки' (consignment) = UN
 
 // Склад разгрузки
 customerStockConsignment (consignment) = ABSTRACT Stock (Consignment);
-nameCustomerStockConsignment 'Склад разгрузки' (consignment) = name(customerStockConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameCustomerStockConsignment 'Склад разгрузки' (consignment) = nameStock(customerStockConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
 dataAddressCustomerStockConsignment 'Пункт разгрузки' (consignment) = ABSTRACT STRING[50] (Consignment) IN carConsignmentGroup;
 addressCustomerStockConsignment 'Пункт разгрузки' (consignment) = UNION OVERRIDE addressStock(customerStockConsignment(consignment)),
@@ -116,7 +117,7 @@ loadingExecuterConsignment (consignment) = ABSTRACT Employee(Consignment);
 nameLoadingExecuterConsignment 'Исполнитель ПРР' (consignment) = nameContact(loadingExecuterConsignment(consignment)) IN loadingConsignmentGroup;
 
 wayOfLoadingConsignment (consignment) = ABSTRACT WayOfLoading(Consignment);
-nameWayOfLoadingConsignment 'Способ ПРР' (consignment) = name(wayOfLoadingConsignment(consignment)) IN loadingConsignmentGroup;
+nameWayOfLoadingConsignment 'Способ ПРР' (consignment) = nameWayOfLoading(wayOfLoadingConsignment(consignment)) IN loadingConsignmentGroup;
 
 codeLoadingConsignment 'Код ПРР' (consignment) = ABSTRACT STRING[3] (Consignment)IN loadingConsignmentGroup;
 
@@ -130,7 +131,7 @@ noteConsignment 'Примечание' (consignment) = ABSTRACT STRING[100] (Con
 
 namePayerConsignment 'Заказчик перевозки ' (consignment) =
     [FORMULA STRING[100] 'CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
-    (name(payerConsignment(consignment)), UNPLegalEntity(payerConsignment(consignment))) IN carConsignmentGroup;
+    (nameLegalEntity(payerConsignment(consignment)), UNPLegalEntity(payerConsignment(consignment))) IN carConsignmentGroup;
 
 skuConsignmentDetail (consignmentDetail) = ABSTRACT Sku (ConsignmentDetail);
 nameSkuConsignmentDetail 'Наименование товара' (consignmentDetail) = nameSku(skuConsignmentDetail(consignmentDetail));
@@ -189,7 +190,7 @@ wareSumConsignmentDetailConsignment 'Сумма посуды с НДС' (consign
 supplierSumConsignmentDetailConsignment 'Сумма поставщика без НДС' (consignment) = ABSTRACT NUMERIC[14,2] (Consignment);
 
 wareConsignmentDetail (consignmentDetail) = ABSTRACT Ware (ConsignmentDetail);
-nameWareConsignmentDetail 'Посуда' (consignmentDetail) = name(wareConsignmentDetail(consignmentDetail));
+nameWareConsignmentDetail 'Посуда' (consignmentDetail) = nameWare(wareConsignmentDetail(consignmentDetail));
 warePriceConsignmentDetail 'Цена посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (ConsignmentDetail);
 wareSumConsignmentDetail 'Сумма посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (ConsignmentDetail);
 valueWareRangeConsignmentDetail 'НДС посуды, %' (consignmentDetail) = ABSTRACT NUMERIC[6,2] (ConsignmentDetail);

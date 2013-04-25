@@ -19,13 +19,13 @@ META defineHierarchyAbstract (object, class)
 END
 
 META defineHierarchyCustom (object, class)
-    nameParent###object 'Родительский объект' = name(parent###object(object)) IN base;
+    nameParent###object 'Родительский объект' = name###object(parent###object(object)) IN base;
 
     level###object###object 'Уровень' (child, parent) = RECURSION 1l AND child IS class AND parent == child
                                                                   STEP 2l AND parent == parent###object($parent) PERSISTENT;
 
     object###object##Level (child, level) = GROUP MAX parent IF level == level###object###object(child, parent)
-                                                  BY child, level;
+                                                   BY child, level;
 
     isParent###object###object 'Является потомком' (child, parent) = TRUE AND level###object###object(child, parent);
 
@@ -38,6 +38,6 @@ META defineHierarchyCustom (object, class)
     isParentLeaf###object###object (child, parent) = isParent###object###object(child, parent) AND isLeaf###object(child);
 
     canonicalName###object 'Каноническое имя' (object) = toString255(
-                           [GROUP CONCAT name(parent), ' / ' BY child ORDER DESC level###object###object(child, parent)](object))
+                           [GROUP CONCAT name###object(parent), ' / ' BY child ORDER DESC level###object###object(child, parent)](object))
                            MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 END

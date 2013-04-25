@@ -7,26 +7,33 @@ NAMESPACE Item;
 GROUP itemArticleGroup 'Артикул' : public;
 
 // Артикул
-CLASS Article 'Артикул' : Named;
+CLASS Article 'Артикул';
 TABLE article(Article);
 
-@defineObjectItemAttribute(article, name, 'Артикул', itemArticleGroup);
-@defineObjectItemAttributeBatch (article, name, 'Артикул');
+nameArticle 'Наименование' = DATA ISTRING[100](Article);
+
+@defineObjectItemAttribute(article, nameArticle, 'Артикул', itemArticleGroup);
+@defineObjectItemAttributeBatch (article, nameArticle, 'Артикул');
 
 // Цвет
-CLASS Color 'Цвет товара' : Named;
+CLASS Color 'Цвет товара';
 TABLE color (Color);
 
-@defineObjectItemAttribute(color, name, 'Цвет', itemArticleGroup);
-@defineObjectItemAttributeBatch (color, name, 'Цвет');
+nameColor 'Наименование' = DATA ISTRING[50](Color);
+
+@defineObjectItemAttribute(color, nameColor, 'Цвет', itemArticleGroup);
+@defineObjectItemAttributeBatch (color, nameColor, 'Цвет');
 
 // Размер
-CLASS Size 'Размер товара' : DoubleNamed;
+CLASS Size 'Размер товара';
 TABLE size(Size);
 
-@defineObjectItemAttribute(size, name, 'Размер', itemArticleGroup);
-@defineObjectItemAttributeBatch (size, name, 'Размер');
-@implementObjectShortItemAttribute(size, 'Размер (сокр.)');
+nameSize 'Наименование' = DATA ISTRING[50](Size);
+shortNameSize 'Краткое наименование' = DATA ISTRING[10](Size);
+
+@defineObjectItemAttribute(size, nameSize, 'Размер', itemArticleGroup);
+@defineObjectItemAttributeBatch (size, nameSize, 'Размер');
+//@implementObjectShortItemAttribute(size, 'Размер (сокр.)');
 
 
 overCopyItem(s, d) += ACTION (s, d) {

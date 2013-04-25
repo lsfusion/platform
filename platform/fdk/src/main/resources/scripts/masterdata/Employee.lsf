@@ -3,27 +3,40 @@ MODULE Employee;
 REQUIRE System, Authentication, MasterData, Security, Email, Hierarchy, Utils;
 
 // ------------------------------------- Должности -------------------------------------- //
-CLASS Position 'Должность' : Named;
+CLASS Position 'Должность';
 TABLE position(Position);
+
+namePosition 'Наименование' = DATA ISTRING[100](Position);
 
 positionEmployee(employee) = DATA Position (Employee);
 
 FORM position 'Должность'
     OBJECTS of=Position FIXED PANEL
-    PROPERTIES(of) name
+    PROPERTIES(of) namePosition
     EDIT Position OBJECT of
+;
+
+FORM positions 'Должность'
+    OBJECTS of=Position
+    PROPERTIES(of) READONLY namePosition
+    PROPERTIES(of) ADDFORM, EDITFORM, delete
+    DIALOG Position OBJECT of
 ;
 
 // ------------------------------------- Доступ ------------------------------------------ //
 
-CLASS ABSTRACT EmployeeDivisionGroup 'Группа подразделений' : Named;
+CLASS ABSTRACT EmployeeDivisionGroup 'Группа подразделений';
 TABLE employeeDivisionGroup (EmployeeDivisionGroup);
+
+nameEmployeeDivisionGroup 'Наименование' = ABSTRACT ISTRING[150](EmployeeDivisionGroup);
 
 TABLE employeeDivisionGroupEmployeeDivisionGroup(EmployeeDivisionGroup, EmployeeDivisionGroup);
 @defineHierarchyAbstract(employeeDivisionGroup, EmployeeDivisionGroup);
 
-CLASS ABSTRACT EmployeeDivision 'Подразделение' : Named;
+CLASS ABSTRACT EmployeeDivision 'Подразделение';
 TABLE employeeDivision(EmployeeDivision);
+
+nameEmployeeDivision 'Наименование' = ABSTRACT ISTRING[150](EmployeeDivision);
 
 employeeDivisionGroupEmployeeDivision = ABSTRACT EmployeeDivisionGroup (EmployeeDivision) PERSISTENT;
 
@@ -35,7 +48,7 @@ isParentEmployeeDivisionGroupEmployeeDivision (employeeDivisionGroup, employeeDi
 CLASS Employee 'Сотрудник' : CustomUser;
 TABLE employee(Employee);
 
-namePositionEmployee 'Должность сотрудника' (employee) = name(positionEmployee(employee)) IN base MINCHARWIDTH 15 PREFCHARWIDTH 15;
+namePositionEmployee 'Должность сотрудника' (employee) = namePosition(positionEmployee(employee)) IN base MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 positionNameEmployee 'Должность ФИО' (employee) = [FORMULA STRING[40] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)']
                                                          (namePositionEmployee(employee), nameContact(employee));
@@ -78,12 +91,12 @@ FORM employee 'Сотрудник'
                        loginCustomUser, passwordCustomUser, emailContact, nameMainRoleUser, limitAccessEmployee
 
     TREE treeEmployeeDivision a=STRING[3], dg = EmployeeDivisionGroup PARENT parentEmployeeDivisionGroup
-    PROPERTIES READONLY  OBJVALUE(a), dgTreeName = name(dg)
+    PROPERTIES READONLY  OBJVALUE(a), dgTreeName = nameEmployeeDivisionGroup(dg)
     FILTERS stringEqualsAll(a)
     PROPERTIES(e, dg) accessEmployeeEmployeeDivisionGroup
 
     OBJECTS           d=EmployeeDivision
-    PROPERTIES(d)     READONLY name
+    PROPERTIES(d)     READONLY nameEmployeeDivision
     PROPERTIES(d, e)  inEmployeeDivisionEmployee
     PROPERTIES(e, d)  accessEmployeeEmployeeDivision
 
@@ -138,11 +151,11 @@ FORM employees 'Сотрудники'
     PROPERTIES(e) ADDFORM, EDITFORM, delete
 
     OBJECTS d=EmployeeDivision
-    PROPERTIES READONLY nameD=name(d)
+    PROPERTIES READONLY nameD=nameEmployeeDivision(d)
     FILTERS inEmployeeDivisionEmployee(d, e)
 
     OBJECTS dd=EmployeeDivision
-    PROPERTIES READONLY nameDD=name(dd)
+    PROPERTIES READONLY nameDD=nameEmployeeDivision(dd)
     FILTERS accessEmployeeEmployeeDivision(e,dd)
 
 ;
@@ -193,8 +206,10 @@ META defineCommitteeEmployeePrefix (committee, prefix, caption)
         CHECKED BY prefix###committee MESSAGE '\''##caption##'\' не входит в выбранные подразделения';
 END
 
-CLASS ABSTRACT Committee 'Комиссия' : Named;
+CLASS ABSTRACT Committee 'Комиссия';
 TABLE committee (Committee);
+
+nameCommittee 'Наименование' = ABSTRACT ISTRING[150](Committee);
 
 TABLE committeeEmployee (Committee, Employee);
 inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (Committee, Employee);
@@ -223,7 +238,7 @@ nameEmployeeCommittee 'Члены комиссии' (committee) =
      MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 nameEmployeeDivisionCommittee 'Подразделения' (committee) =
-     GROUP CONCAT name(employeeDivision) IF inCommitteeEmployeeDivision(committee, employeeDivision), ', '
+     GROUP CONCAT nameEmployeeDivision(employeeDivision) IF inCommitteeEmployeeDivision(committee, employeeDivision), ', '
      BY committee
      ORDER employeeDivision
      MINCHARWIDTH 50 PREFCHARWIDTH 50;

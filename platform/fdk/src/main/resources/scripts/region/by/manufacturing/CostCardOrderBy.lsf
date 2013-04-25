@@ -102,7 +102,7 @@ FORM intakeSheetOrderBy 'Заборный лист' PRINT
                   dateOrder, timeOrder, fromDateOrder, toDateOrder
 
     OBJECTS pd=ProductDetail
-    PROPERTIES(pd) indexProductDetail, idBarcodeSkuProductDetail, descriptionBOMProductDetail, nameSkuProductDetail,  shortNameUOMProductDetail,
+    PROPERTIES(pd) indexProductDetail, idBarcodeSkuProductDetail, descriptionBOMProductDetail, nameSkuProductDetail, shortNameUOMProductDetail,
                    componentsPriceProductDetail, productsPriceProductDetail
 
     FILTERS orderProductDetail(pd)==o
@@ -202,7 +202,7 @@ FORM actStudyOfCulinaryBOM 'Акт контрольной проработки' 
     PROPERTIES (dt) OBJVALUE
 
     OBJECTS b=BOM FIXED PANEL
-    PROPERTIES(b) name, descriptionBOM, noteBOM
+    PROPERTIES(b) nameBOM, descriptionBOM, noteBOM
     PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM,
                   nameActStudyOfCulinaryCommitteeBOM, nameCompanyBOM, nameEmployeeCommitteeBOM READONLY, actStudyOfCulinaryCommitteeBOM
     OBJECTS p = Product

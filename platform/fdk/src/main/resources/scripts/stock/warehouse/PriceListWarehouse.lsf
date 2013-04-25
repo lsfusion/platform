@@ -7,7 +7,7 @@ REQUIRE PriceList, Warehouse;
 //------------------------- Расширяем форму склада -------------------------//
 
 priceStockGroupWarehouse = DATA PriceStockGroup (Warehouse);
-namePriceStockGroupWarehouse 'Ценовая группа' (warehouse)= name(priceStockGroupWarehouse(warehouse));
+namePriceStockGroupWarehouse 'Ценовая группа' (warehouse)= namePriceStockGroup(priceStockGroupWarehouse(warehouse));
 
 priceStockGroupStock(stock) += priceStockGroupWarehouse(stock);
 

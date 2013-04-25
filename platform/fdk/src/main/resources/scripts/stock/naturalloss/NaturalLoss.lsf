@@ -6,27 +6,31 @@ GROUP rateGroup 'Нормы' : public;
 
 // ----------------------------------- Справочник норм естественной убыли -------------------------------------------- //
 
-CLASS NaturalLossGroup 'Группа естественной убыли': Named, Externalizable;
+CLASS NaturalLossGroup 'Группа естественной убыли': Externalizable;
 TABLE naturalLossGroup(NaturalLossGroup);
 
-CLASS SubNaturalLossGroup 'Группа естественной убыли': Named, Externalizable;
+nameNaturalLossGroup 'Наименование' = DATA ISTRING[110](NaturalLossGroup);
+
+CLASS SubNaturalLossGroup 'Группа естественной убыли': Externalizable;
 TABLE subNaturalLossGroup(SubNaturalLossGroup);
+
+nameSubNaturalLossGroup 'Наименование' = DATA ISTRING[110](SubNaturalLossGroup);
 
 CLASS SubNaturalLossGroupDetail 'Строка группы естественной убыли' : Externalizable;
 TABLE subNaturalLossGroupDetail(SubNaturalLossGroupDetail);
 
 parentNaturalLossGroup = DATA NaturalLossGroup (SubNaturalLossGroup);
-nameParentNaturalLossGroup 'Родительская группа' (subNaturalLossGroup) = name(parentNaturalLossGroup(subNaturalLossGroup));
+nameParentNaturalLossGroup 'Родительская группа' (subNaturalLossGroup) = nameNaturalLossGroup(parentNaturalLossGroup(subNaturalLossGroup));
 codeSubNaturalLossGroup 'Код нормы естественной убыли' = DATA STRING[3] (SubNaturalLossGroup);
 
-nameToNaturalLossGroup (name) = GROUP AGGR naturalLossGroup BY name(naturalLossGroup) WHERE naturalLossGroup IS NaturalLossGroup;
+nameToNaturalLossGroup (name) = GROUP AGGR naturalLossGroup BY nameNaturalLossGroup(naturalLossGroup) WHERE naturalLossGroup IS NaturalLossGroup;
 subNaturalLossGroupSubNaturalLossGroupDetail = DATA SubNaturalLossGroup (SubNaturalLossGroupDetail);
 dayFromNaturalLossGroupDetail 'День' = DATA INTEGER (SubNaturalLossGroupDetail);
 monthFromNaturalLossGroupDetail = DATA Month (SubNaturalLossGroupDetail);
-nameMonthFromNaturalLossGroupDetail 'Месяц' = name(monthFromNaturalLossGroupDetail(subNaturalLossGroupDetail));
+nameMonthFromNaturalLossGroupDetail 'Месяц' = staticName(monthFromNaturalLossGroupDetail(subNaturalLossGroupDetail));
 dayToNaturalLossGroupDetail 'День' = DATA INTEGER (SubNaturalLossGroupDetail);
 monthToNaturalLossGroupDetail = DATA Month (SubNaturalLossGroupDetail);
-nameMonthToNaturalLossGroupDetail 'Месяц' = name(monthToNaturalLossGroupDetail(subNaturalLossGroupDetail));
+nameMonthToNaturalLossGroupDetail 'Месяц' = staticName(monthToNaturalLossGroupDetail(subNaturalLossGroupDetail));
 percentNaturalLossGroupDetail '% естественной убыли' = DATA NUMERIC[10,5] (SubNaturalLossGroupDetail);
 
 dateToNumber(prm1, prm2) = prm2*32 + prm1;
@@ -58,7 +62,7 @@ inSubNaturalLossGroup (subNaturalLossGroup, subNaturalLossGroupDetail) =
  subNaturalLossGroupSubNaturalLossGroupDetail(subNaturalLossGroupDetail) ==  subNaturalLossGroup;
 
 subNaturalLossGroupCountrySku 'Группа естественной убыли товара(ИД)' = ABSTRACT SubNaturalLossGroup (Country, Sku);
-nameSubNaturalLossGroupCountrySku 'Группа естественной убыли товара' (country, sku) = name(subNaturalLossGroupCountrySku(country, sku)) IN rateGroup;
+nameSubNaturalLossGroupCountrySku 'Группа естественной убыли товара' (country, sku) = nameSubNaturalLossGroup(subNaturalLossGroupCountrySku(country, sku)) IN rateGroup;
 rateSubNaturalLossGroupCountrySku 'Норма естественной убыли, %' (country, sku) =
  concatSubNaturalLossGroupDetail(subNaturalLossGroupCountrySku(country, sku)) IN rateGroup;
 
@@ -97,10 +101,10 @@ CONSTRAINT intersectNaturalLoss(interval1, interval2) AND interval1 != interval2
         CHECKED BY dayToNaturalLossGroupDetail MESSAGE 'Задайте корректный день месяца';
 
 countryNaturalLossGroup = DATA Country (NaturalLossGroup) AUTOSET;
-nameCountryNaturalLossGroup 'Страна' (naturalLossGroup) = name(countryNaturalLossGroup(naturalLossGroup)) IN base;
+nameCountryNaturalLossGroup 'Страна' (naturalLossGroup) = nameCountry(countryNaturalLossGroup(naturalLossGroup)) IN base;
 
 countrySubNaturalLossGroup = DATA Country (SubNaturalLossGroup) AUTOSET;
-nameCountrySubNaturalLossGroup 'Страна' (subNaturalLossGroup) = name(countrySubNaturalLossGroup(subNaturalLossGroup)) IN base;
+nameCountrySubNaturalLossGroup 'Страна' (subNaturalLossGroup) = nameCountry(countrySubNaturalLossGroup(subNaturalLossGroup)) IN base;
 
 CONSTRAINT  countryNaturalLossGroup(parentNaturalLossGroup(subNaturalLossGroup)) !=  countrySubNaturalLossGroup(subNaturalLossGroup)
     CHECKED BY parentNaturalLossGroup MESSAGE 'Страна родительской группы должна совпадать со страной группы';
@@ -108,7 +112,7 @@ CONSTRAINT  countryNaturalLossGroup(parentNaturalLossGroup(subNaturalLossGroup))
 FORM subNaturalLossGroup 'Группа естественное убыли'
 
     OBJECTS s = SubNaturalLossGroup FIXED PANEL
-    PROPERTIES(s) name, nameParentNaturalLossGroup, nameCountrySubNaturalLossGroup
+    PROPERTIES(s) nameSubNaturalLossGroup, nameParentNaturalLossGroup, nameCountrySubNaturalLossGroup
 
     EDIT SubNaturalLossGroup OBJECT s
 ;
@@ -116,7 +120,7 @@ FORM subNaturalLossGroup 'Группа естественное убыли'
 FORM dialogSubNaturalLossGroup 'Группа естественное убыли'
 
     OBJECTS s = SubNaturalLossGroup
-    PROPERTIES(s) READONLY name, nameParentNaturalLossGroup, nameCountrySubNaturalLossGroup
+    PROPERTIES(s) READONLY nameSubNaturalLossGroup, nameParentNaturalLossGroup, nameCountrySubNaturalLossGroup
 
     DIALOG SubNaturalLossGroup OBJECT s
 ;
@@ -132,21 +136,21 @@ FORM subNaturalLossGroupDetail 'Строка группы естественно
 
 FORM naturalLossGroups 'Справочник норм естественной убыли'
     OBJECTS c=Country FIXED PANEL
-    PROPERTIES(c) SELECTOR name
+    PROPERTIES(c) SELECTOR nameCountry
 
     TREE treeNaturalLoss a=STRING[3], n=NaturalLossGroup
     PROPERTIES READONLY OBJVALUE(a)
-    PROPERTIES name(n), nameCountryNaturalLossGroup(n), ADDOBJ(n), delete(n) FORCE PANEL TOOLBAR
-    ORDER BY name(n)
+    PROPERTIES nameNaturalLossGroup(n), nameCountryNaturalLossGroup(n), ADDOBJ(n), delete(n) FORCE PANEL TOOLBAR
+    ORDER BY nameNaturalLossGroup(n)
 
     OBJECTS sg=SubNaturalLossGroup, d=SubNaturalLossGroupDetail
-    PROPERTIES(sg) name, nameCountrySubNaturalLossGroup, nameParentNaturalLossGroup,
+    PROPERTIES(sg) nameSubNaturalLossGroup, nameCountrySubNaturalLossGroup, nameParentNaturalLossGroup,
                    codeSubNaturalLossGroup, ADDFORM TODRAW sg, delete FORCE PANEL TOOLBAR
     PROPERTIES(d) dayFromNaturalLossGroupDetail, nameMonthFromNaturalLossGroupDetail,
                   dayToNaturalLossGroupDetail, nameMonthToNaturalLossGroupDetail,
                   percentNaturalLossGroupDetail, ADDOBJ, delete
     FILTERS stringEqualsAll(a), inParentSubNaturalLossGroup(n, sg),  inSubNaturalLossGroup(sg, d)
-    ORDER BY name(sg)
+    ORDER BY nameSubNaturalLossGroup(sg)
 
     FILTERS countryNaturalLossGroup(n) == c OR n IS NaturalLossGroup AND NOT c,
             countrySubNaturalLossGroup(sg) == c OR sg IS SubNaturalLossGroup AND NOT c
@@ -214,7 +218,7 @@ dateToNaturalLossDetail 'Дата по' (naturalLossDetail) = dateToNaturalLoss(
 
 subNaturalLossGroupNaturalLossDetail = DATA SubNaturalLossGroup (NaturalLossDetail);
 nameSubNaturalLossGroupNaturalLossDetail 'Группа естественной убыли' =
-    name(subNaturalLossGroupNaturalLossDetail(naturalLossDetail));
+    nameSubNaturalLossGroup(subNaturalLossGroupNaturalLossDetail(naturalLossDetail));
 codeNaturalLossDetail 'Код нормы естественной убыли' =
     codeSubNaturalLossGroup(subNaturalLossGroupNaturalLossDetail(naturalLossDetail));
 
@@ -432,7 +436,7 @@ NAVIGATOR {
 loadDefaultNaturalLossGroup 'Добавить нормы естественной убыли' = ACTION (idCountry, string)  {
     ADDOBJ NaturalLossGroup;
     FOR cg == addedObject() DO {
-         SET name(cg) <- string AS STRING[110];
+         SET nameNaturalLossGroup(cg) <- string AS STRING[110];
          SET countryNaturalLossGroup(cg) <- countrySID(idCountry);
     }
 }
@@ -441,7 +445,7 @@ loadDefaultSubNaturalLossGroup 'Добавить нормы естественн
     ADDOBJ SubNaturalLossGroup;
     FOR g == addedObject() DO {
         SET parentNaturalLossGroup(g) <- nameToNaturalLossGroup(string AS STRING[110]);
-        SET name(g) <-  stringOne AS STRING[110];
+        SET nameSubNaturalLossGroup(g) <-  stringOne AS STRING[110];
         SET countrySubNaturalLossGroup(g) <- countrySID(idCountry);
         SET codeSubNaturalLossGroup(g) <- stringTwo AS STRING[3];
 

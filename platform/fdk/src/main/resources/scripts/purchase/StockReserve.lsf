@@ -10,7 +10,7 @@ REQUIRE System,
         Barcode,
         Purchase;
 
-@defineHistorizable(stockReserveStockSku, 'Страховой запас (кол-во)', NUMERIC[14,3], stock, name, sku, nameSku, base);
+@defineHistorizable(stockReserveStockSku, 'Страховой запас (кол-во)', NUMERIC[14,3], stock, nameStock, sku, nameSku, base);
 stockReserveDaysStockSkuGroup 'Страховой запас (дн.)' = DATA NUMERIC[14,3] (Stock, SkuGroup);
 stockReserveDaysStockSku 'Страховой запас (дн.)' = DATA NUMERIC[14,3] (Stock, Sku);
 
@@ -38,13 +38,13 @@ FORM stockReserve 'Страховые запасы'
     OBJECTS dt = DATE FIXED PANEL
     PROPERTIES valDt = OBJVALUE(dt) BACKGROUND dateDiffersCurrent(dt)
     OBJECTS st = Stock FIXED PANEL
-    PROPERTIES SELECTOR nameSt = name(st)
+    PROPERTIES SELECTOR nameSt = nameStock(st)
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-    PROPERTIES skuTreeName = name(sk) READONLY, stockReserveDaysStockSkuGroupOver(st,sk)
+    PROPERTIES skuTreeName = nameSkuGroup(sk) READONLY, stockReserveDaysStockSkuGroupOver(st,sk)
     ORDER BY skuTreeName
 
     OBJECTS s = Sku

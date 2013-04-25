@@ -44,9 +44,9 @@ META defineInvoiceShipment(sign, stockProp)
 
     FORM shipmentInvoices 'Накладные'###sign
         OBJECTS s = LegalEntity FIXED PANEL
-        PROPERTIES (s) READONLY name
+        PROPERTIES (s) READONLY nameLegalEntity
         OBJECTS c = LegalEntity FIXED PANEL
-        PROPERTIES (c) READONLY name
+        PROPERTIES (c) READONLY nameLegalEntity
 
         OBJECTS i = Invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,

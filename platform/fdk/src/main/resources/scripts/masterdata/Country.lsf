@@ -2,11 +2,13 @@ MODULE Country;
 
 REQUIRE System, MasterData, Utils, DefaultData, I18n, Currency;
 
-CLASS Country 'Страна' : Named, MultiLanguageNamed;
+CLASS Country 'Страна' : MultiLanguageNamed;
 
 TABLE country(Country);
 TABLE countryDate(Country, DATE);
 TABLE countryCountry(Country, Country);
+
+nameCountry 'Наименование' = DATA ISTRING[50](Country);
 
 nameOriginCountry 'Наименование (ориг.)' (country) = DATA ISTRING[50] (Country) IN base; //logics.country.name.origin.country
 sidCountry 'Код страны' (country) = DATA STRING[3] (Country) IN base; // logics.country.key
@@ -17,18 +19,18 @@ sidOrigin2Country 'Код 2 знака (ориг.)' (country) = DATA STRING[2] (
 sidOrigin3Country 'Код 3 знака (ориг.)' (country) = DATA STRING[3] (Country) IN base MINCHARWIDTH 15; // logics.country.sid.origin.3.country
 
 currencyCountry 'Валюта' (country) = DATA Currency (Country); // logics.country.currency
-nameCurrencyCountry 'Валюта' (country) = name(currencyCountry(country)) IN base PREFCHARWIDTH 10;
+nameCurrencyCountry 'Валюта' (country) = nameCurrency(currencyCountry(country)) IN base PREFCHARWIDTH 10;
 
 generateDatesCountry 'Генерировать выходные' (country) = DATA BOOLEAN (Country); // logics.day.generate.days.off
 
 residentCountry 'Отечественный производитель' (country) = DATA BOOLEAN (Country) IN base MINCHARWIDTH 15; // logics.country.resident.country
 
-countryName(name) = GROUP AGGR country BY name(country) WHERE country IS Country;
+countryName(name) = GROUP AGGR country BY nameCountry(country) WHERE country IS Country;
 
 countrySIDOrigin2(sidOrigin2) = GROUP AGGR country BY sidOrigin2Country(country) WHERE country IS Country;
 
 defaultCountry 'Страна по умолчанию' () = DATA Country (); // logics.country.default.country
-nameDefaultCountry 'Страна по умолчанию' () = name(defaultCountry()) PREFCHARWIDTH 30; // logics.country.default.country
+nameDefaultCountry 'Страна по умолчанию' () = nameCountry(defaultCountry()) PREFCHARWIDTH 30; // logics.country.default.country
 
 jumpWorkdays = FORMULA DATE 'jumpWorkdays($1, $2, $3)'; //1 - country, 2 - date, 3 - days to jump
 
@@ -43,28 +45,27 @@ EXTEND DESIGN options {
 }
 
 languageCountry = DATA Language (Country);
-nameLanguageCountry 'Язык' (country) = name(languageCountry(country)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
+nameLanguageCountry 'Язык' (country) = nameLanguage(languageCountry(country)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
 
 FORM country 'Страна'
     OBJECTS c = Country FIXED PANEL
 
-    PROPERTIES(c) name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
+    PROPERTIES(c) nameCountry, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
                   residentCountry, nameCurrencyCountry, nameLanguageCountry
 
     OBJECTS l = Language
-    PROPERTIES name(l) READONLY, languageName(c, l)
+    PROPERTIES nameLanguage(l) READONLY, languageName(c, l)
 
     EDIT Country OBJECT c
 ;
 
 FORM countries 'Страны'
     OBJECTS c = Country
-
-    PROPERTIES(c) READONLY name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
+    PROPERTIES(c) READONLY nameCountry, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
                            residentCountry, nameCurrencyCountry, nameLanguageCountry
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
-    ORDER BY name
+    ORDER BY nameCountry
 
     DIALOG Country OBJECT c
 ;
@@ -116,7 +117,7 @@ NAVIGATOR {
 loadDefaultCountry 'Добавить страны' = ACTION (string, number, stringA, stringB, stringC, shortCurrency) {//, value) {
     ADDOBJ Country;
     FOR c == addedObject() DO {
-       SET name(c) <- string AS STRING[110];
+       SET nameCountry(c) <- string AS STRING[110];
        SET sidCountry(c) <- number AS STRING[3];
        SET nameOriginCountry(c) <- stringA AS STRING[50];
        SET sidOrigin2Country(c) <- stringB AS STRING[2];

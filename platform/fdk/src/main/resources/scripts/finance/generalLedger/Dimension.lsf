@@ -4,7 +4,7 @@ REQUIRE GeneralLedger;
 
 //------------------------- Субконто -------------------------------//
 
-CLASS ABSTRACT Dimension 'Субконто': Named;
+CLASS ABSTRACT Dimension 'Субконто';
 TABLE dimension(Dimension);
 nameDimension 'Название' = ABSTRACT STRING[255] (Dimension) MINCHARWIDTH 40 PREFCHARWIDTH 80;
 
@@ -14,16 +14,18 @@ FORM dimensions 'Субконто'
     DIALOG Dimension OBJECT d
 ;
 
-
-CLASS DimensionType 'Тип субконто': Named;
+CLASS DimensionType 'Тип субконто';
 TABLE dimensionType(DimensionType);
+
+nameDimensionType 'Наименование' = DATA ISTRING[100](DimensionType);
+
 idDimensionType 'Идентификатор' = DATA STRING[20] (DimensionType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
 dimensionTypeDimension = ABSTRACT DimensionType (Dimension) EXCLUSIVE PERSISTENT;
-nameDimensionTypeDimension 'Тип субконто' (dimension) = name(dimensionTypeDimension(dimension));
+nameDimensionTypeDimension 'Тип субконто' (dimension) = nameDimensionType(dimensionTypeDimension(dimension));
 
 TABLE GLAccountDimensionType(GLAccount, DimensionType);
 orderGLAccountDimensionType 'Порядковый номер' = DATA INTEGER (GLAccount,DimensionType);
-dimensionsTypeGLAccount 'Субконто' (GLAccount) = GROUP CONCAT toString255(name(dimensionType)) IF orderGLAccountDimensionType (GLAccount,dimensionType) , ', '
+dimensionsTypeGLAccount 'Субконто' (GLAccount) = GROUP CONCAT toString255(nameDimensionType(dimensionType)) IF orderGLAccountDimensionType (GLAccount,dimensionType) , ', '
                                                 BY GLAccount
                                                 ORDER orderGLAccountDimensionType (GLAccount,dimensionType) MINCHARWIDTH 40 PREFCHARWIDTH 80 PERSISTENT;
 
@@ -35,7 +37,7 @@ overCopyGLAccount(from, to) += ACTION (from, to) {
 
 prevGLAccountDimensionType (account, type) = PARTITION PREV type IF orderGLAccountDimensionType(account, type) BY account
                                                                   ORDER orderGLAccountDimensionType(account, type);
-namePrevGLAccountDimensionType 'Предок' (account, type) = name(prevGLAccountDimensionType(account, type));
+namePrevGLAccountDimensionType 'Предок' (account, type) = nameDimensionType(prevGLAccountDimensionType(account, type));
 
 TABLE generalLedgerDimensionType(GeneralLedger, DimensionType);
 debitGeneralLedgerDimensionType = ABSTRACT Dimension (GeneralLedger, DimensionType) EXCLUSIVE;
@@ -144,13 +146,13 @@ dimensionsCreditGeneralLedger 'Субконто (кредит)' (ledger) = GROUP
 
 FORM dimensionType 'Тип субконто'
     OBJECTS d = DimensionType FIXED PANEL
-    PROPERTIES(d) name, idDimensionType
+    PROPERTIES(d) nameDimensionType, idDimensionType
     EDIT DimensionType OBJECT d
 ;
 
 FORM dimensionTypes 'Тип субконто'
     OBJECTS d = DimensionType
-    PROPERTIES(d) READONLY name, idDimensionType
+    PROPERTIES(d) READONLY nameDimensionType, idDimensionType
     PROPERTIES(d) ADDFORM, EDITFORM, delete
     DIALOG DimensionType OBJECT d
 ;
@@ -158,7 +160,7 @@ FORM dimensionTypes 'Тип субконто'
 EXTEND FORM GLAccount
 
     OBJECTS d = DimensionType
-    PROPERTIES(d) READONLY name
+    PROPERTIES(d) READONLY nameDimensionType
     PROPERTIES orderGLAccountDimensionType(g,d), namePrevGLAccountDimensionType(g,d)
 ;
 EXTEND DESIGN GLAccount {
@@ -169,13 +171,13 @@ EXTEND FORM GLAccounts
     PROPERTIES(gl) READONLY dimensionsDebitGeneralLedger AFTER idDebitGeneralLedger(gl)
     PROPERTIES(gl) READONLY dimensionsCreditGeneralLedger AFTER idCreditGeneralLedger(gl)
     OBJECTS w = DimensionType FIXED PANEL
-    PROPERTIES(w) SELECTOR name
+    PROPERTIES(w) SELECTOR nameDimensionType
     FILTERS orderGLAccountDimensionType(g,w)
     OBJECTS ww = DimensionType FIXED PANEL
-    PROPERTIES(ww) SELECTOR name
+    PROPERTIES(ww) SELECTOR nameDimensionType
     FILTERS orderGLAccountDimensionType(g,ww)
     OBJECTS www = DimensionType FIXED PANEL
-    PROPERTIES(www) SELECTOR name
+    PROPERTIES(www) SELECTOR nameDimensionType
     FILTERS orderGLAccountDimensionType(g,www)
 
     OBJECTS d = Dimension
@@ -230,13 +232,13 @@ EXTEND FORM GLAccountDialog
 EXTEND FORM userGeneralLedger
 
     OBJECTS d = DimensionType
-    PROPERTIES READONLY name(d), orderDebitGeneralLedgerDimensionType(g,d)
+    PROPERTIES READONLY nameDimensionType(d), orderDebitGeneralLedgerDimensionType(g,d)
     PROPERTIES nameDebitUserGeneralLedgerDimensionType(g,d)
     FILTERS orderDebitGeneralLedgerDimensionType(g,d)
     ORDER BY orderDebitGeneralLedgerDimensionType
 
     OBJECTS c = DimensionType
-    PROPERTIES READONLY name(c), orderCreditGeneralLedgerDimensionType(g,c)
+    PROPERTIES READONLY nameDimensionType(c), orderCreditGeneralLedgerDimensionType(g,c)
     PROPERTIES nameCreditUserGeneralLedgerDimensionType(g,c)
     FILTERS orderCreditGeneralLedgerDimensionType(g,c)
     ORDER BY orderCreditGeneralLedgerDimensionType

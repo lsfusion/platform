@@ -8,13 +8,13 @@ contractPayment 'Контракт' (payment) = DATA Contract (Payment);
 numberContractPayment 'Номер' (payment) = numberContract(contractPayment(payment));
 
 currencyContractPayment(payment) = currencyContract(contractPayment(payment));
-nameCurrencyContractPayment 'Валюта' (payment) = name(currencyContractPayment(payment));
+nameCurrencyContractPayment 'Валюта' (payment) = nameCurrency(currencyContractPayment(payment));
 
 payerPayment(payment) <- partyBContract(contractPayment(payment)) WHEN ASSIGNED (contractPayment(payment));
 beneficiaryPayment(payment) <- partyAContract(contractPayment(payment)) WHEN ASSIGNED (contractPayment(payment));
 
 typeExchangeContractPayment (payment) = DATA TypeExchange (Payment);
-nameTypeExchangeContractPayment 'Тип обмена' (payment) = name(typeExchangeContractPayment(payment));
+nameTypeExchangeContractPayment 'Тип обмена' (payment) = nameTypeExchange(typeExchangeContractPayment(payment));
 rateExchangeContractPayment 'Курс' (payment) = DATA NUMERIC[15,8] (Payment) PREFCHARWIDTH 15;
 rateExchangeContractPayment (payment) <- UNION OVERRIDE 1.0 IF payment IS Payment AND currencyContractPayment(payment) == currencyAccountToPayment(payment) AND NOT typeExchangeContractPayment(payment),
                                          rateTypeExchangeCurrencyDate(typeExchangeContractPayment(payment), currencyContractPayment(payment), datePayment(payment)) AND currencyContractPayment(payment) != currencyAccountToPayment(payment)

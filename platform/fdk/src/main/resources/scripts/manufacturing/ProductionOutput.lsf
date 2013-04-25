@@ -6,7 +6,7 @@ NAMESPACE Production;
 // ---------------- Производство ------------------- //
 
 CLASS ABSTRACT Output 'Производство' : Document;
-CLASS ABSTRACT OutputDetail 'Строка производства' : Named, DocumentDetail;
+CLASS ABSTRACT OutputDetail 'Строка производства' : DocumentDetail;
 
 CLASS UserOutput 'Производство (польз.)': Output, Historizable, NumeratedObject;
 CLASS UserOutputDetail 'Строка производства (польз.)' : OutputDetail;

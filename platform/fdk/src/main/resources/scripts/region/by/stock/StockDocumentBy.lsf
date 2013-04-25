@@ -8,7 +8,7 @@ FORM printStockDocumentBy 'Товарный отчет' PRINT
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
             ds = Stock FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
-    PROPERTIES(ds) SELECTOR name, nameLegalEntityStock, nameMRPStock, namePositionMRPStock, nameAccountantStock,
+    PROPERTIES(ds) SELECTOR nameStock, nameLegalEntityStock, nameMRPStock, namePositionMRPStock, nameAccountantStock,
                             namePositionAccountantStock, nameAuditorStock, namePositionAuditorStock, UNPStock
 
     PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumItemAccountBDocumentLedgerDate(ds, dtFrom), sumContainerAccountBDocumentLedgerDate(ds, dtFrom),

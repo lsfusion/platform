@@ -10,17 +10,17 @@ autoSynchronizeCoordinates 'Синхронизировать координат�
 CLASS MapProvider 'Использовать карты' {
     google 'Google',
     yandex 'Yandex'
-} : Named;
+};
 
 userMapProvider = DATA MapProvider ();
 mapProvider = MapProvider.yandex OR userMapProvider();
 
-nameUserMapProvider 'Использовать карты' () = name(userMapProvider());
+nameUserMapProvider 'Использовать карты' () = staticName(userMapProvider());
 
 namePOI 'Название'= ABSTRACT STRING[200] (POI) PERSISTENT;
 
 countryPOI = ABSTRACT Country (POI) PERSISTENT;
-nameCountryPOI 'Страна' (poi) = name(countryPOI(poi));
+nameCountryPOI 'Страна' (poi) = nameCountry(countryPOI(poi));
 
 addressPOI 'Адрес' = ABSTRACT STRING[100] (POI) PERSISTENT;
 

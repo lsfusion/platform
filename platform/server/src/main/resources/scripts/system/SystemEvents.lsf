@@ -26,7 +26,7 @@ CLASS Connection 'Подключение';
 CLASS ConnectionStatus 'Статус подключения' {
     connectedConnection 'Подключён',
     disconnectedConnection 'Отключён'
-} : Named;
+};
 TABLE connection (Connection);
 TABLE connectionNavigatorElement (Connection, NavigatorElement);
 
@@ -39,7 +39,7 @@ userConnection 'Пользователь' = DATA CustomUser (Connection);
 userLoginConnection 'Логин пользователя' (connection) = loginCustomUser(userConnection(connection));
 
 connectionStatusConnection 'Статус подключения' =  DATA ConnectionStatus (Connection);
-nameConnectionStatusConnection 'Статус подключения' (connection) = name(connectionStatusConnection(connection));
+nameConnectionStatusConnection 'Статус подключения' (connection) = staticName(connectionStatusConnection(connection));
 
 connectTimeConnection 'Время подключения' = DATA DATETIME (Connection);
 disconnectTimeConnection 'Время отключения' = DATA DATETIME (Connection);

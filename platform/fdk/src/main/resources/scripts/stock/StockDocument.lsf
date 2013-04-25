@@ -14,7 +14,7 @@ dateStockDocumentLedger 'Дата' (ledger) = toDate(dateTimeStockDocumentLedger
 isPostedStockDocumentLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (StockDocumentLedger) PERSISTENT;
 
 stockStockDocumentLedger (ledger) = ABSTRACT Stock (StockDocumentLedger) PERSISTENT;
-nameStockStockDocumentLedger 'Отдел' (ledger) = name(stockStockDocumentLedger(ledger));
+nameStockStockDocumentLedger 'Отдел' (ledger) = nameStock(stockStockDocumentLedger(ledger));
 
 descriptionStockDocumentLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (StockDocumentLedger) PERSISTENT;
 
@@ -170,7 +170,7 @@ FORM sumStockDocumentLedger 'Товарный отчет'
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
             ds = Stock FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
-    PROPERTIES(ds) SELECTOR name, nameLegalEntityStock
+    PROPERTIES(ds) SELECTOR nameStock, nameLegalEntityStock
 
     PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumItemAccountBDocumentLedgerDate(ds, dtFrom), sumContainerAccountBDocumentLedgerDate(ds, dtFrom),
                sumItemAccountADocumentLedgerDate(ds, dtTo), sumContainerAccountADocumentLedgerDate(ds, dtTo), sumAccountADocumentLedgerDate(ds, dtTo)
@@ -226,7 +226,7 @@ DESIGN sumStockDocumentLedger FROM DEFAULT {
             }
             NEW departmentCase {
                 title = 'Отдел';
-                ADD PROPERTY (name(ds)) {
+                ADD PROPERTY (nameStock(ds)) {
                     caption = 'Название';
                 };
             }

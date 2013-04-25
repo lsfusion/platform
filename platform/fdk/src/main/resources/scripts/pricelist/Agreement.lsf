@@ -6,9 +6,10 @@ REQUIRE Currency,
         Numerator,
         PriceList;
 
-CLASS Agreement 'Соглашение' : Named, NumeratedObject;
-
+CLASS Agreement 'Соглашение' : NumeratedObject;
 TABLE agreement (Agreement);
+
+nameAgreement 'Наименование' = DATA ISTRING[50](Agreement);
 
 @defineNumeratedObjectDefault(Agreement, 'Нумератор для договоров', 'ТД');
 
@@ -18,7 +19,6 @@ TABLE agreement (Agreement);
 toDateAgreement 'Дата по' = DATA DATE(Agreement);
 toTimeAgreement 'Время по' = DATA TIME(Agreement);
 toDateTimeAgreement 'Дата/время по'(agreement) = dateTimeToDateTime(toDateAgreement(agreement), toTimeAgreement(agreement));
-
 
 @defineDocumentHeaderNote(Agreement);
 @defineDocumentHeaderCurrency(agreement);
@@ -50,7 +50,7 @@ inAgreementSupplier 'Отм' (agreement, supplier) =
     UNION OVERRIDE nearestInAgreementSupplierGroup(agreement, legalEntityGroupLegalEntity(supplier)),
                    dataInAgreementSupplier(agreement, supplier);
 
-supplierAgreement 'Поставщики' (agreement) = GROUP CONCAT name(supplier) IF inAgreementSupplier(agreement, supplier) , ', '
+supplierAgreement 'Поставщики' (agreement) = GROUP CONCAT nameLegalEntity(supplier) IF inAgreementSupplier(agreement, supplier) , ', '
                                                  BY agreement
                                                  ORDER supplier MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
@@ -81,7 +81,7 @@ inAgreementCustomer 'Отм' (agreement, customer) =
     UNION OVERRIDE nearestInAgreementCustomerGroup(agreement, legalEntityGroupLegalEntity(customer)),
                    dataInAgreementCustomer(agreement, customer) PERSISTENT;
 
-customerAgreement 'Покупатели' (agreement) = GROUP CONCAT name(customer) IF inAgreementCustomer(agreement, customer) , ', '
+customerAgreement 'Покупатели' (agreement) = GROUP CONCAT nameLegalEntity(customer) IF inAgreementCustomer(agreement, customer) , ', '
                                                  BY agreement
                                                  ORDER customer MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
@@ -102,7 +102,7 @@ calcDefaultAgreementSupplierCustomer(supplier, customer) =
 
 defaultAgreementSupplierCustomer(supplier, customer) = UNION OVERRIDE calcDefaultAgreementSupplierCustomer(supplier, customer),
                                                                       userDefaultAgreementSupplierCustomer(supplier, customer) PERSISTENT;
-nameDefaultAgreementSupplierCustomer 'Соглашение по умолчанию' (supplier, customer) = name(defaultAgreementSupplierCustomer(supplier, customer));
+nameDefaultAgreementSupplierCustomer 'Соглашение по умолчанию' (supplier, customer) = nameAgreement(defaultAgreementSupplierCustomer(supplier, customer));
 
 isDefaultAgreementSupplierCustomer 'Соглашение по умолчанию' (agreement, supplier, customer) = defaultAgreementSupplierCustomer(supplier, customer) == agreement;
 
@@ -110,13 +110,13 @@ isDefaultAgreementSupplierCustomer 'Соглашение по умолчанию
 
 // -- Вид цены (RRP)
 RRPPriceListTypeAgreement 'Вид цены (RRP)' (agreement) = DATA PriceListType (Agreement);
-nameRRPPriceListTypeAgreement 'Вид цены (RRP)' (agreement) = name(RRPPriceListTypeAgreement(agreement));
+nameRRPPriceListTypeAgreement 'Вид цены (RRP)' (agreement) = namePriceListType(RRPPriceListTypeAgreement(agreement));
 currencyRRPPriceListTypeAgreement (agreement) = currencyPriceListType(RRPPriceListTypeAgreement(agreement));
-nameCurrencyRRPPriceListTypeAgreement 'Валюта (RRP)' (agreement)= name(currencyPriceListType(RRPPriceListTypeAgreement(agreement))) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+nameCurrencyRRPPriceListTypeAgreement 'Валюта (RRP)' (agreement)= nameCurrency(currencyPriceListType(RRPPriceListTypeAgreement(agreement))) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 // -- Основной вид цены
 priceListTypeAgreement 'Вид цены' (agreement) = DATA PriceListType (Agreement) NOT NULL;
-namePriceListTypeAgreement 'Вид цены' (agreement) = name(priceListTypeAgreement(agreement));
+namePriceListTypeAgreement 'Вид цены' (agreement) = namePriceListType(priceListTypeAgreement(agreement));
 
 CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreement(agreement))
            CHECKED BY priceListTypeAgreement
@@ -124,11 +124,11 @@ CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAg
 
 // Уточнение по группам
 groupTypeAgreement = DATA GroupType (Agreement);
-nameGroupTypeAgreement 'Тип классификатора' (agreement) = name(groupTypeAgreement(agreement));
+nameGroupTypeAgreement 'Тип классификатора' (agreement) = nameGroupType(groupTypeAgreement(agreement));
 
 TABLE agreementGroup(Agreement, Group);
 dataPriceListTypeAgreementGroup (agreement, group) = DATA PriceListType (Agreement, Group);
-nameDataPriceListTypeAgreementGroup 'Вид цены (перегруженный)' (agreement, group) = name(dataPriceListTypeAgreementGroup(agreement, group));
+nameDataPriceListTypeAgreementGroup 'Вид цены (перегруженный)' (agreement, group) = namePriceListType(dataPriceListTypeAgreementGroup(agreement, group));
 
 CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(dataPriceListTypeAgreementGroup(agreement, group))
            CHECKED BY dataPriceListTypeAgreementGroup
@@ -145,12 +145,12 @@ priceListTypeAgreementGroup 'Вид цены' (agreement, group) =
     UNION OVERRIDE nearestPriceListTypeAgreementGroup(agreement, group),
                    dataPriceListTypeAgreementGroup(agreement, group) PERSISTENT;
 namePriceListTypeAgreementGroup 'Вид цены' (agreement, group) =
-    name(priceListTypeAgreementGroup (agreement, group));
+    namePriceListType(priceListTypeAgreementGroup (agreement, group));
 
 // Уточнение по sku
 TABLE agreementSku(Agreement, Sku);
 dataPriceListTypeAgreementSku (agreement, sku) = DATA PriceListType (Agreement, Sku);
-nameDataPriceListTypeAgreementSku 'Вид цены (перегруженный)' (agreement, sku) = name(dataPriceListTypeAgreementSku(agreement, sku));
+nameDataPriceListTypeAgreementSku 'Вид цены (перегруженный)' (agreement, sku) = namePriceListType(dataPriceListTypeAgreementSku(agreement, sku));
 
 CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(dataPriceListTypeAgreementSku(agreement, sku))
            CHECKED BY dataPriceListTypeAgreementSku
@@ -161,24 +161,24 @@ priceListTypeAgreementSku (agreement, sku) =
                    priceListTypeAgreementGroup(agreement, groupGroupTypeSku(groupTypeAgreement(agreement),sku)),
                    dataPriceListTypeAgreementSku(agreement, sku);
 
-namePriceListTypeAgreementSku 'Вид цены' = name(priceListTypeAgreementSku(agreement, sku));
+namePriceListTypeAgreementSku 'Вид цены' = namePriceListType(priceListTypeAgreementSku(agreement, sku));
 
 // ------------------------------------------- Формы ---------------------------------------------- //
 
 FORM agreement 'Соглашение'
 
     OBJECTS a = Agreement FIXED PANEL
-    PROPERTIES(a) name, nameNumeratorObject, numberObject, seriesObject, dateAgreement, timeAgreement,
+    PROPERTIES(a) nameAgreement, nameNumeratorObject, numberObject, seriesObject, dateAgreement, timeAgreement,
                   fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                   nameCurrencyAgreement, namePriceListTypeAgreement, nameGroupTypeAgreement, noteAgreement,
                   nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
 
     TREE supplierGroupTree f = LegalEntityGroup PARENT parentLegalEntityGroup
-    PROPERTIES READONLY fTreeName = name(f)
+    PROPERTIES READONLY fTreeName = nameLegalEntityGroup(f)
     PROPERTIES(a, f) inAgreementSupplierGroup
 
     OBJECTS cc = LegalEntity
-    PROPERTIES(cc) READONLY name
+    PROPERTIES(cc) READONLY nameLegalEntity
     PROPERTIES(a, cc) inAgreementSupplier
     FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(cc), f)
 
@@ -186,25 +186,25 @@ FORM agreement 'Соглашение'
         FILTER 'Только отмеченные' 'F9' inAgreementSupplier (a, cc)
 
     TREE customerGroupTree lg = LegalEntityGroup PARENT parentLegalEntityGroup
-    PROPERTIES READONLY lgTreeName = name(lg)
+    PROPERTIES READONLY lgTreeName = nameLegalEntityGroup(lg)
     PROPERTIES(a, lg) inAgreementCustomerGroup
 
     OBJECTS c = LegalEntity
-    PROPERTIES(c) READONLY name
+    PROPERTIES(c) READONLY nameLegalEntity
     PROPERTIES(a, c) inAgreementCustomer
     FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(c), lg)
 
     FILTERGROUP filters
         FILTER 'Только отмеченные' 'F10' inAgreementCustomer (a, c)
     TREE groupTree g=Group PARENT parentGroup
-    PROPERTIES READONLY name(g)
+    PROPERTIES READONLY nameGroup(g)
     FILTERS groupTypeGroup(g) == groupTypeAgreement(a)
-    ORDER BY name(g)
+    ORDER BY nameGroup(g)
     PROPERTIES(a, g) nameDataPriceListTypeAgreementGroup, namePriceListTypeAgreementGroup
 
     TREE skuGroupTree sg=SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY name(sg)
-    ORDER BY name(sg)
+    PROPERTIES READONLY nameSkuGroup(sg)
+    ORDER BY nameSkuGroup(sg)
 
     OBJECTS s = Sku
     PROPERTIES(s) READONLY nameSku
@@ -221,7 +221,7 @@ DESIGN agreement FROM DEFAULT {
         NEW headContainer {
             caption = 'Шапка документа';
             childConstraints = TO THE RIGHTBOTTOM;
-            ADD PROPERTY (name);
+            ADD PROPERTY (nameAgreement);
             ADD PROPERTY (nameNumeratorObject);
             ADD PROPERTY (numberObject);
             ADD PROPERTY (seriesObject);
@@ -294,7 +294,7 @@ DESIGN agreement FROM DEFAULT {
 FORM agreements 'Соглашения'
 
     OBJECTS a = Agreement
-    PROPERTIES(a) READONLY name, seriesNumberObject, dateTimeAgreement,
+    PROPERTIES(a) READONLY nameAgreement, seriesNumberObject, dateTimeAgreement,
                            fromDateTimeAgreement, toDateTimeAgreement,
                            nameCurrencyAgreement, namePriceListTypeAgreement, customerAgreement, supplierAgreement, noteAgreement,
                            nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
@@ -365,13 +365,13 @@ inAgreement 'Присоединить' = DATA SESSION BOOLEAN (Agreement);
 FORM agreementsCustomer 'Соглашения'
 
     OBJECTS s=LegalEntity FIXED PANEL
-    PROPERTIES(s) name
+    PROPERTIES(s) nameLegalEntity
 
     OBJECTS c=LegalEntity FIXED PANEL
-    PROPERTIES(c) name
+    PROPERTIES(c) nameLegalEntity
 
     OBJECTS ag=Agreement
-    PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
+    PROPERTIES(ag) READONLY nameAgreement, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement,
                             nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
@@ -429,7 +429,7 @@ EXTEND FORM legalEntity
     OBJECTS ags=Agreement
     PROPERTIES(ags, s, l) isDefaultAgreementSupplierCustomer
     PROPERTIES(ags, l) inAgreementCustomer
-    PROPERTIES(ags) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
+    PROPERTIES(ags) READONLY nameAgreement, numberObject, seriesObject, dateAgreement, timeAgreement,
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                              nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement,
                              nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
@@ -446,7 +446,7 @@ EXTEND FORM legalEntity
     OBJECTS agc=Agreement
     PROPERTIES(agc, c) READONLY inAgreementCustomer
     PROPERTIES(agc, l, c) isDefaultAgreementSupplierCustomer
-    PROPERTIES(agc) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
+    PROPERTIES(agc) READONLY nameAgreement, numberObject, seriesObject, dateAgreement, timeAgreement,
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                              nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement,
                              nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
@@ -478,11 +478,11 @@ EXTEND DESIGN legalEntity {
 
 META defineDocumentAbstractHeaderAgreement (object)
     agreement###object (object) = ABSTRACT Agreement (###object) PERSISTENT;
-    nameAgreement###object 'Соглашение' (object)= name(agreement###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+    nameAgreement###object 'Соглашение' (object)= nameAgreement(agreement###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
 END
 META defineDocumentHeaderAgreement (object)
     agreement###object (object) = DATA Agreement (###object);
-    nameAgreement###object 'Соглашение' (object)= name(agreement###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+    nameAgreement###object 'Соглашение' (object)= nameAgreement(agreement###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
 END
 META defineDocumentInterfaceHeaderAgreement (object)
     @defineDocumentAbstractHeaderAgreement(object);
@@ -530,7 +530,7 @@ END
 //--------------------------------------- Для двух объектов (object1 - документ)----------------------------------------------------------//
 META defineDocumentHeaderAgreement (object1, object2)
     agreement###object1###object2 (object1, object2) = DATA Agreement (###object1, ###object2);
-    nameAgreement###object1###object2 'Соглашение' (object1, object2)= name(agreement###object1###object2 (object1, object2)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+    nameAgreement###object1###object2 'Соглашение' (object1, object2)= nameAgreement(agreement###object1###object2 (object1, object2)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
     defaultPriceListType###object1###object2 (object1, object2) = priceListTypeAgreement(agreement###object1###object2 (object1, object2));
 END
 

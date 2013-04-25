@@ -3,7 +3,7 @@ MODULE WriteOffItem;
 REQUIRE PurchaseWriteOff, Item;
 
 writeOffRateCountryItem 'Норма отходов' = DATA WriteOffRate (Country, Item);
-nameWriteOffRateCountryItem 'Норма отходов' = name(writeOffRateCountryItem(country, item));
+nameWriteOffRateCountryItem 'Норма отходов' = nameWriteOffRate(writeOffRateCountryItem(country, item));
 percentWriteOffRateCountryItem 'Норма отходов,%' = percentWriteOffRate(writeOffRateCountryItem(country, item));
 
 CONSTRAINT countryWriteOffRate(writeOffRateCountryItem(country, item)) != country

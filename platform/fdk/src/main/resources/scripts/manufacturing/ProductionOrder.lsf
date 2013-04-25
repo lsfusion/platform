@@ -33,7 +33,7 @@ backgroundVATOrder 'Цвет' (order) = RGB(255, 255, 224) IF order IS Order;
 @deriveDocumentCurrency (order, componentsStock, currencyStock);
 
 // ---------------- Изделия ------------------- //
-CLASS ProductDetail 'Строка изделия' : Named;
+CLASS ProductDetail 'Строка изделия';
 TABLE productDetail (ProductDetail);
 
 @defineDocumentRelation (order, ProductDetail, );
@@ -59,7 +59,7 @@ productProductDetail = DATA Product (ProductDetail);
 nameProductProductDetail 'Изделие' (productDetail) = nameMaterial(productProductDetail(productDetail)) IN recognize;
 
 UOMProductDetail = DATA UOM (ProductDetail);
-shortNameUOMProductDetail 'Ед.изм.' (productDetail) = shortName(UOMProductDetail(productDetail)) IN recognize;
+shortNameUOMProductDetail 'Ед.изм.' (productDetail) = shortNameUOM(UOMProductDetail(productDetail)) IN recognize;
 UOMProductDetail(productDetail) <- UOMProduct(productProductDetail(productDetail)) WHEN CHANGED (productProductDetail(productDetail));
 
 CONSTRAINT skuProductDetail(productDetail) != skuProduct(productProductDetail(productDetail)) CHECKED BY productProductDetail
@@ -90,7 +90,7 @@ productsSumProductDetail(productDetail) <-
 @defineDocumentHeaderSumCustomPrefix (order, productDetail, products, ' (изделие)');
 
 // ------------- Компоненты ----------- //
-CLASS ComponentDetail 'Строка компонента' : Named;
+CLASS ComponentDetail 'Строка компонента';
 TABLE componentDetail (ComponentDetail);
 
 @defineDocumentRelation (order, ComponentDetail, );
@@ -116,7 +116,7 @@ componentComponentDetail = DATA Component (ComponentDetail);
 nameComponentComponentDetail 'Компонент' (componentDetail) = nameComponent(componentComponentDetail(componentDetail));
 
 UOMComponentDetail = DATA UOM (ComponentDetail);
-shortNameUOMComponentDetail 'Ед. изм.' (componentDetail) = shortName(UOMComponentDetail(componentDetail));
+shortNameUOMComponentDetail 'Ед. изм.' (componentDetail) = shortNameUOM(UOMComponentDetail(componentDetail));
 UOMComponentDetail(componentDetail) <- UOMComponent(componentComponentDetail(componentDetail)) WHEN CHANGED (componentComponentDetail(componentDetail));
 
 CONSTRAINT bruttoSkuComponentDetail(componentDetail) != skuMaterial(materialComponent(componentComponentDetail(componentDetail)))
@@ -279,7 +279,7 @@ substituteQuantitySkuOrder(sku, order) <- bruttoQuantitySkuOrder(sku,order) * mu
 
 //--
 stockSubstitutesSku = DATA SESSION Stock ();
-nameStockSubstitutesSku 'Склад' = name(stockSubstitutesSku());
+nameStockSubstitutesSku 'Склад' = nameStock(stockSubstitutesSku());
 
 multiplierSubstitutesSku 'Коэффициент' = DATA SESSION NUMERIC[8,3] (Sku);
 
@@ -296,7 +296,7 @@ FORM substitutesSku 'Sku'
     OBJECTS s = Sku FIXED PANEL
 
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuGroupName = name(sg)
+    PROPERTIES READONLY skuGroupName = nameSkuGroup(sg)
 
     OBJECTS sk = Sku
     PROPERTIES(sk) READONLY nameSku, idBarcodeSku, shortNameUOMSku

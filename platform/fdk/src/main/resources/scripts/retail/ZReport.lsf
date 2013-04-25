@@ -308,13 +308,15 @@ TABLE payment (Payment);
 CLASS PaymentMeans 'Форма оплаты'{
     paymentMeansCash 'Наличные',
     paymentMeansCard 'Карточка'
-} : Named;
-CLASS PaymentType 'Тип платежа' : Named;
+};
+
+CLASS PaymentType 'Тип платежа';
 TABLE paymentType (PaymentType);
 
+namePaymentType 'Наименование' = DATA ISTRING[110](PaymentType);
 
 paymentMeansPaymentType (paymentType) = DATA PaymentMeans (PaymentType);
-namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(paymentMeansPaymentType(paymentType)) IN base;
+namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = staticName(paymentMeansPaymentType(paymentType)) IN base;
 
 sidPaymentType 'Идентификатор' = DATA STRING[10] (PaymentType) IN base;
 sidToTypePayment (tp) = GROUP AGGR paymentType BY sidPaymentType(paymentType) WHERE paymentType IS PaymentType;
@@ -324,14 +326,14 @@ receiptPayment (payment) = DATA Receipt (Payment) NOT NULL DELETE;
 countPaymentReceipt 'Кол-во типов платежей' (receipt) = GROUP SUM 1 IF receiptPayment(payment) == receipt BY receipt;
 
 paymentTypePayment (payment) = DATA PaymentType(Payment);
-namePaymentTypePayment 'Тип платежа' (payment) = name(paymentTypePayment(payment));
+namePaymentTypePayment 'Тип платежа' (payment) = namePaymentType(paymentTypePayment(payment));
 sidPaymentTypePayment 'ID Типа платежа' (payment) = sidPaymentType(paymentTypePayment(payment));
 
 minCashPaymentType () = GROUP MIN paymentType IF paymentMeansPaymentType(paymentType) == PaymentMeans.paymentMeansCash;
 minCardPaymentType () = GROUP MIN paymentType IF paymentMeansPaymentType(paymentType) == PaymentMeans.paymentMeansCard;
 
 paymentMeansPayment (payment) = paymentMeansPaymentType(paymentTypePayment(payment));
-namePaymentMeansPayment 'Форма оплаты' (payment) = name(paymentMeansPayment(payment));
+namePaymentMeansPayment 'Форма оплаты' (payment) = staticName(paymentMeansPayment(payment));
 
 numberPayment 'Номер платежа' (payment) = DATA INTEGER (Payment);
 zReportReceiptPaymentToPayment (zReport, receipt, number, cashRegister) = GROUP AGGR payment BY numberZReport(zReportReceipt(receiptPayment(payment))), numberReceipt(receiptPayment(payment)), numberPayment(payment), numberCashRegister(cashRegisterZReport(zReportReceipt(receiptPayment(payment)))) WHERE payment IS Payment;
@@ -528,7 +530,7 @@ DESIGN zReports FROM DEFAULT{
 loadDefaultPaymentType 'Добавить тип оплаты' = ACTION(string, paymentMeans, sid) {
     ADDOBJ PaymentType;
     FOR p == addedObject() DO {
-        SET name(p) <- string AS STRING[110];
+        SET namePaymentType(p) <- string AS STRING[110];
         SET paymentMeansPaymentType(p) <- paymentMeans AS PaymentMeans;
         SET sidPaymentType(p) <- sid AS STRING[10];
     }

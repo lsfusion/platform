@@ -578,12 +578,12 @@ FORM POS
     PROPERTIES(bs) SHOWIF currentZReport() barcodeSale = OBJVALUE ON CHANGE changeBarcodeSaleReceipt(r) EVENTID 'SCANNER'
 
     OBJECTS pc = PromotionCondition FIXED GRID
-    PROPERTIES(pc) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
+    PROPERTIES(pc) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, namePromotionCondition, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
     PROPERTIES(d, pc) SHOWIF currentZReport()       quantityReceiptSaleDetailPromotionCondition, promotionSumReceiptSaleDetailPromotionCondition
     FILTERS quantityReceiptSaleDetailPromotionCondition(d, pc) AND NOT userSetPromotionCondition(pc)
 
     OBJECTS pcu = PromotionCondition FIXED GRID
-    PROPERTIES(pcu) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
+    PROPERTIES(pcu) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, namePromotionCondition, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
     PROPERTIES(d, pcu) SHOWIF currentZReport() quantityReceiptSaleDetailPromotionCondition, promotionSumReceiptSaleDetailPromotionCondition, setUserPromotionReceiptSaleDetailPromotionCondition
     FILTERS userSetPromotionCondition(pcu) AND inReceiptSaleDetailPromotionCondition(d, pcu)
 

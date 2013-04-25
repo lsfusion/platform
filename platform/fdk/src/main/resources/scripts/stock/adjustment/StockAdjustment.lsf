@@ -14,7 +14,7 @@ REQUIRE System,
 NAMESPACE Stock;
 
 CLASS ABSTRACT Adjustment 'Изменение остатков' : Document;
-CLASS ABSTRACT AdjustmentDetail 'Строка изменения остатков' : Named, DocumentDetail;
+CLASS ABSTRACT AdjustmentDetail 'Строка изменения остатков' : DocumentDetail;
 
 CLASS UserAdjustment 'Изменение остатков (польз.)' : Adjustment, Historizable, NumeratedObject;
 CLASS UserAdjustmentDetail 'Строка изменения остатков (польз.)' : AdjustmentDetail;
@@ -41,7 +41,7 @@ priceUserAdjustmentDetail (detail)  <- IF batchUserAdjustmentDetail(detail)
                 ELSE priceLedgerPriceListTypeSkuStockDateTime(SystemLedgerPriceListType.accountPriceListType, skuUserAdjustmentDetail(detail), stockUserAdjustmentDetail(detail), dateTimeUserAdjustmentDetail(detail))
                 WHEN CHANGED(skuUserAdjustmentDetail(detail)) OR CHANGED(batchUserAdjustmentDetail(detail)) OR CHANGED(stockUserAdjustmentDetail(detail)) OR CHANGED (dateTimeUserAdjustmentDetail(detail));
 
-skuUserAdjustmentDetail (detail)  <- skuBatch( batchUserAdjustmentDetail(detail)) AND batchUserAdjustmentDetail(detail)
+skuUserAdjustmentDetail (detail) <- skuBatch( batchUserAdjustmentDetail(detail)) AND batchUserAdjustmentDetail(detail)
                                WHEN CHANGED(batchUserAdjustmentDetail(detail));
 
 @defineDocumentInterfaceDetailDataSum(adjustment);

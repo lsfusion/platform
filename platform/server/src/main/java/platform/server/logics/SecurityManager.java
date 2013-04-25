@@ -139,7 +139,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         Integer policyID = readPolicy(policyName, session);
         if (policyID == null) {
             DataObject addObject = session.addObject(securityLM.policy);
-            LM.name.change(policyName, session, addObject);
+            securityLM.namePolicy.change(policyName, session, addObject);
             securityLM.descriptionPolicy.change(description, session, addObject);
             policyID = (Integer) addObject.object;
             session.apply(businessLogics);

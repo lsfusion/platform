@@ -18,21 +18,25 @@ PRIORITY Stock;
 //--------------------------------Комиссия для списания----------------------------------//
 CLASS WriteOffCommittee 'Комиссия для списания товаров' : Committee;
 
+nameWriteOffCommittee 'Наименование' = DATA ISTRING[150](WriteOffCommittee);
+
+nameCommittee(committee) += nameWriteOffCommittee(committee) IF committee IS WriteOffCommittee;
+
 writeOffCommitteeStock 'Комиссия для списания товаров (ИД)' = DATA WriteOffCommittee (Stock);
-nameWriteOffCommitteeStock 'Комиссия для списания товаров' (stock) = name(writeOffCommitteeStock(stock)) IN committeeGroup;
+nameWriteOffCommitteeStock 'Комиссия для списания товаров' (stock) = nameWriteOffCommittee(writeOffCommitteeStock(stock)) IN committeeGroup;
 isWriteOffCommitteeStock 'По умолчанию' (writeOffCommittee, stock) = writeOffCommitteeStock(stock) == writeOffCommittee;
 CONSTRAINT writeOffCommitteeStock(stock) AND NOT inCommitteeEmployeeDivision(writeOffCommitteeStock(stock), stock)
     CHECKED BY writeOffCommitteeStock MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
 
 FORM writeOffCommittee 'Комиссия для списания товаров'
     OBJECTS c=WriteOffCommittee FIXED PANEL
-    PROPERTIES(c)      name
+    PROPERTIES(c)      nameWriteOffCommittee
 
     TREE stockTree sg = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
+    PROPERTIES READONLY sgTreeName = nameStockGroup(sg)
 
     OBJECTS ts=Stock
-    PROPERTIES    READONLY tsTreeName = name(ts)
+    PROPERTIES    READONLY tsTreeName = nameStock(ts)
     PROPERTIES(c, ts) inCommitteeEmployeeDivision FORCE GRID, isWriteOffCommitteeStock
 
     FILTERS isParentStockGroupStock(sg, ts)
@@ -40,7 +44,7 @@ FORM writeOffCommittee 'Комиссия для списания товаров'
 
 
     OBJECTS e=Employee
-    PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
+    PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
     PROPERTIES(c, e)   inCommitteeEmployee
@@ -77,7 +81,7 @@ DESIGN writeOffCommittee FROM DEFAULT {
 
 FORM writeOffCommittees 'Комиссии для списания товаров'
     OBJECTS w=WriteOffCommittee
-    PROPERTIES(w)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee
+    PROPERTIES(w)      READONLY nameWriteOffCommittee, nameEmployeeDivisionCommittee, nameEmployeeCommittee
     PROPERTIES(w)      ADDFORM, EDITFORM
 
     DIALOG WriteOffCommittee OBJECT w
@@ -87,7 +91,7 @@ FORM writeOffCommittees 'Комиссии для списания товаров
 META defineDocumentHeaderWriteOffCommittee(object, stockProp)
 
     writeOffCommittee###object (object) = DATA WriteOffCommittee(###object);
-    nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = name(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = nameWriteOffCommittee(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     writeOffCommittee###object (object) <- writeOffCommitteeStock(stockProp###object(object))
         WHEN CHANGED(stockProp###object(object));
 
@@ -99,7 +103,7 @@ META defineDocumentHeaderWriteOffCommittee(object, stockProp)
 END
 META defineDocumentHeaderAbstractWriteOffCommittee(object)
     writeOffCommittee###object (object) = ABSTRACT WriteOffCommittee(###object);
-    nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = name(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = nameWriteOffCommittee(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     inWriteOffCommittee###object##Employee (object, employee) = inCommitteeEmployee(writeOffCommittee###object (object), employee);
     nameEmployeeWriteOffCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
@@ -112,12 +116,14 @@ META defineDocumentInterfaceHeaderWriteOffCommittee (object, stockProp)
 END
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
-CLASS Reason 'Причина списания' : Named;
+CLASS Reason 'Причина списания';
 TABLE reason (Reason);
+
+nameReason 'Наименование' = DATA ISTRING[50](Reason);
 
 FORM reason 'Причина списания'
     OBJECTS r=Reason  FIXED PANEL
-    PROPERTIES(r) name
+    PROPERTIES(r) nameReason
 ;
 
 CLASS WriteOff 'Списание' : Document;
@@ -175,8 +181,8 @@ skuUserWriteOffDetail (detail)  <- skuBatch( batchUserWriteOffDetail(detail)) AN
 reasonWriteOff 'Причина списания (ИД)' = ABSTRACT Reason (WriteOff);
 reasonUserWriteOff 'Причина списания (ИД)' = DATA Reason (UserWriteOff);
 reasonWriteOff(writeOff) += reasonUserWriteOff(writeOff);
-nameReasonWriteOff 'Причина списания' (writeOff) = name(reasonWriteOff (writeOff)) IN documentPrmGroup;
-nameReasonUserWriteOff 'Причина списания' (userWriteOff) = name(reasonUserWriteOff (userWriteOff)) IN documentPrmGroup;
+nameReasonWriteOff 'Причина списания' (writeOff) = nameReason(reasonWriteOff (writeOff)) IN documentPrmGroup;
+nameReasonUserWriteOff 'Причина списания' (userWriteOff) = nameReason(reasonUserWriteOff (userWriteOff)) IN documentPrmGroup;
 
 // Проводим по регистру
 @implementSkuLedgerOutFIFO(WriteOffDetail, sku, stock);

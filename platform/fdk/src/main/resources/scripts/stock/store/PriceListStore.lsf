@@ -5,7 +5,7 @@ REQUIRE PriceList, Store;
 //------------------------- Расширяем форму Магазина -------------------------//
 
 priceStockGroupStore = DATA PriceStockGroup (Store);
-namePriceStockGroupStore 'Ценовая группа' (store)= name(priceStockGroupStore(store));
+namePriceStockGroupStore 'Ценовая группа' (store)= namePriceStockGroup(priceStockGroupStore(store));
 
 priceStockGroupStock(stock) += priceStockGroupStore(storeDepartmentStore(stock));
 

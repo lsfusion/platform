@@ -13,11 +13,13 @@ PRIORITY Utils;
 
 //------------------------- План счетов -------------------------------//
 
-CLASS GLAccountType 'План счетов': Named;
+CLASS GLAccountType 'План счетов';
 TABLE GLAccountType(GLAccountType);
 
+nameGLAccountType 'Наименование' = DATA ISTRING[150](GLAccountType);
+
 currencyGLAccountType = DATA Currency (GLAccountType);
-nameCurrencyGLAccountType 'Валюта' (GLAccountType)= name(currencyGLAccountType(GLAccountType));
+nameCurrencyGLAccountType 'Валюта' (GLAccountType)= nameCurrency(currencyGLAccountType(GLAccountType));
 idGLAccountType 'Идентификатор' = DATA STRING[20] (GLAccountType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
 
 GLAccountTypeIdGLAccountType (string1) = GROUP AGGR GLAccountType
@@ -25,25 +27,25 @@ GLAccountTypeIdGLAccountType (string1) = GROUP AGGR GLAccountType
 
 FORM GLAccountType 'План счетов'
     OBJECTS g = GLAccountType FIXED PANEL
-    PROPERTIES(g) name, idGLAccountType, nameCurrencyGLAccountType
+    PROPERTIES(g) nameGLAccountType, idGLAccountType, nameCurrencyGLAccountType
     EDIT GLAccountType OBJECT g
 ;
 
 FORM GLAccountTypes 'Планы счетов'
     OBJECTS g = GLAccountType
-    PROPERTIES(g) READONLY name, idGLAccountType, nameCurrencyGLAccountType
+    PROPERTIES(g) READONLY nameGLAccountType, idGLAccountType, nameCurrencyGLAccountType
     PROPERTIES(g) ADDFORM, EDITFORM, delete
     DIALOG GLAccountType OBJECT g
 ;
 
 //-------------------------- Счета -------------------------//
 
-CLASS GLAccount 'Счет' : Named;
+CLASS GLAccount 'Счет';
 TABLE GLAccount(GLAccount);
 
 nameGLAccount 'Наименование' = DATA STRING[255] (GLAccount) MINCHARWIDTH 40 MAXCHARWIDTH 80 PREFCHARWIDTH 80;
 GLAccountTypeGLAccount = DATA GLAccountType (GLAccount) AUTOSET;
-nameGLAccountTypeGLAccount 'План счетов' (GLAccount)= name(GLAccountTypeGLAccount(GLAccount));
+nameGLAccountTypeGLAccount 'План счетов' (GLAccount)= nameGLAccountType(GLAccountTypeGLAccount(GLAccount));
 nameCurrencyGLAccount 'Валюта' (GLAccount) = nameCurrencyGLAccountType(GLAccountTypeGLAccount(GLAccount));
 
 idGLAccount 'Идентификатор' = DATA STRING[20] (GLAccount) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
@@ -74,13 +76,13 @@ FORM GLAccount 'Счет'
 
 FORM GLAccounts 'Счета'
     OBJECTS t = GLAccountType FIXED PANEL
-    PROPERTIES(t) SELECTOR name
+    PROPERTIES(t) SELECTOR nameGLAccountType
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
     OBJECTS l = LegalEntity FIXED PANEL
-    PROPERTIES(l) SELECTOR name
+    PROPERTIES(l) SELECTOR nameLegalEntity
 
     TREE treeGroups g=GLAccount PARENT parentGLAccount
     PROPERTIES(g) READONLY nameGLAccount, idGLAccount
@@ -118,7 +120,7 @@ DESIGN GLAccounts FROM DEFAULT {
 
 FORM GLAccountDialog 'Счета'
     OBJECTS t = GLAccountType FIXED PANEL
-    PROPERTIES(t) SELECTOR name
+    PROPERTIES(t) SELECTOR nameGLAccountType
 
     TREE treeGroups g=GLAccount PARENT parentGLAccount
     PROPERTIES(g) READONLY nameGLAccount, idGLAccount
@@ -168,7 +170,7 @@ NAVIGATOR {
 
 loadDefaultGLAccountType 'Добавить значение плана счетов' = ACTION (iname, isid, isidCurrency) {
     FOR ADDOBJ t = GLAccountType DO {
-        SET name(t) <- iname;
+        SET nameGLAccountType(t) <- iname;
         SET idGLAccountType (t) <- isid;
         SET currencyGLAccountType(t) <- currencyShortName(isidCurrency);
     }

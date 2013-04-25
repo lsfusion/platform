@@ -29,7 +29,7 @@ nameLoadingExecuterTrip 'Исполнитель ПРР' (trip) = nameContact(loa
 @setTripPropTrip(loadingExecuter);
 
 wayOfLoadingTrip = DATA WayOfLoading(Trip);
-nameWayOfLoadingTrip 'Способ ПРР' (trip) = name(wayOfLoadingTrip(trip));
+nameWayOfLoadingTrip 'Способ ПРР' (trip) = nameWayOfLoading(wayOfLoadingTrip(trip));
 @setTripPropTrip(wayOfLoading);
 
 codeLoadingTrip 'Код ПРР' = DATA STRING[3] (Trip);

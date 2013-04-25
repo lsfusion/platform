@@ -44,14 +44,14 @@ META defineOrderShipment(sign, stockProp)
     // Создание поставки на основе заказа //
     FORM shipmentOrders 'Заказы'###sign
         OBJECTS s = LegalEntity FIXED PANEL
-        PROPERTIES (s) READONLY name
+        PROPERTIES (s) READONLY nameLegalEntity
         OBJECTS ss = Stock FIXED PANEL
-        PROPERTIES (ss) READONLY name
+        PROPERTIES (ss) READONLY nameStock
 
         OBJECTS c = LegalEntity FIXED PANEL
-        PROPERTIES (c) READONLY name
+        PROPERTIES (c) READONLY nameLegalEntity
         OBJECTS cs = Stock FIXED PANEL
-        PROPERTIES (cs) READONLY name
+        PROPERTIES (cs) READONLY nameStock
 
         OBJECTS o = Order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, numberOrder, seriesOrder, dateOrder, timeOrder, nameSupplierOrder, nameSupplierStockOrder,

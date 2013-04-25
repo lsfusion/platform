@@ -6,10 +6,14 @@ REQUIRE Employee, Store, Pricing, StockDocument, PriceList;
 
 CLASS RepricingCommittee 'Комиссия переоценки' : Committee;
 
+nameRepricingCommittee 'Наименование' = DATA ISTRING[150](RepricingCommittee);
+
+nameCommittee(committee) += nameRepricingCommittee(committee) IF committee IS RepricingCommittee;
+
 // ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
 
 repricingCommitteeDepartmentStore = DATA RepricingCommittee (DepartmentStore);
-nameRepricingCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(repricingCommitteeDepartmentStore(departmentStore)) IN committeeGroup;
+nameRepricingCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = nameRepricingCommittee(repricingCommitteeDepartmentStore(departmentStore)) IN committeeGroup;
 isDefaultRepricingCommitteeDepartmentStore 'По умолчанию' (repricingCommittee, departmentStore) = repricingCommitteeDepartmentStore(departmentStore) == repricingCommittee;
 CONSTRAINT repricingCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(repricingCommitteeDepartmentStore(departmentStore), departmentStore)
     CHECKED BY repricingCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
@@ -20,20 +24,20 @@ EXTEND FORM departmentStore PROPERTIES nameRepricingCommitteeDepartmentStore(d);
 
 FORM repricingCommittee 'Комиссия переоценки'
     OBJECTS c=RepricingCommittee FIXED PANEL
-    PROPERTIES(c)      name, nameChairmanCommittee
+    PROPERTIES(c)      nameRepricingCommittee, nameChairmanCommittee
 
     TREE treeStore a=STRING[3], t=ChainStores, st=StoreType, s=Store
-    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
+    PROPERTIES         READONLY OBJVALUE(a), nameChainStores(t), nameStoreType(st), nameStore(s)
     FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS dep=DepartmentStore
-    PROPERTIES(dep)    READONLY depName = name
+    PROPERTIES(dep)    READONLY depName = nameDepartmentStore
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isDefaultRepricingCommitteeDepartmentStore
     FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
     ORDER BY depName
 
     OBJECTS e=Employee
-    PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
+    PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
     PROPERTIES(c, e)   inCommitteeEmployee
@@ -76,7 +80,7 @@ DESIGN repricingCommittee FROM DEFAULT {
 
 FORM repricingCommitteeDialog 'Комиссии переоценки'
     OBJECTS rc=RepricingCommittee
-    PROPERTIES(rc)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
+    PROPERTIES(rc)      READONLY nameRepricingCommittee, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
     PROPERTIES(rc)      ADDFORM, EDITFORM
 
     DIALOG RepricingCommittee OBJECT rc
@@ -89,7 +93,7 @@ META defineDocumentHeaderRepricingCommittee(object, stockProp)
     numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (###object) IN documentPrmGroup;
 
     repricingCommittee###object (object) = DATA RepricingCommittee(###object);
-    nameRepricingCommittee###object 'Комиссия переоценки' (object) = name(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    nameRepricingCommittee###object 'Комиссия переоценки' (object) = nameRepricingCommittee(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     repricingCommittee###object (object) <- repricingCommitteeDepartmentStore(stockProp###object(object))
         WHEN CHANGED(stockProp###object(object));
 
@@ -106,7 +110,7 @@ END
 META defineDocumentHeaderAbstractRepricingCommittee(object)
     numberDisposal###object '№ распоряжения на переоценку' (object) = ABSTRACT STRING[30] (###object) PERSISTENT IN documentPrmGroup;
     repricingCommittee###object (object) = ABSTRACT RepricingCommittee(###object) PERSISTENT;
-    nameRepricingCommittee###object 'Комиссия переоценки' (object) = name(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    nameRepricingCommittee###object 'Комиссия переоценки' (object) = nameRepricingCommittee(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
     nameEmployeeCommittee###object 'Сотрудники комиссии' (object) = namePositionEmployeeCommittee(repricingCommittee###object (object));
@@ -313,10 +317,10 @@ sumInSkuLedger (ledger) += diffRetailSumRepricingDetail(ledger);
 CLASS ChangePriceType 'Тип изменения цены' {
     markupChange 'Процент торговой надбавки',
     discountChange 'Процент к розничной цене'
-} : Named;
+};
 
 changePriceTypeUserRepricing = DATA ChangePriceType (UserRepricing);
-nameChangePriceTypeUserRepricing 'Тип изменения цены' (userRepricing) = name(changePriceTypeUserRepricing(userRepricing)) MINCHARWIDTH 20 PREFCHARWIDTH 20 MAXCHARWIDTH 20;
+nameChangePriceTypeUserRepricing 'Тип изменения цены' (userRepricing) = staticName(changePriceTypeUserRepricing(userRepricing)) MINCHARWIDTH 20 PREFCHARWIDTH 20 MAXCHARWIDTH 20;
 
 percentUserRepricing 'Процент' (userRepricing)= DATA NUMERIC[8,3](UserRepricing);
 
@@ -551,10 +555,10 @@ EXTEND FORM userRepricing
 
 FORM managementRepricing 'Управленческая переоценка'
     OBJECTS d = DepartmentStore FIXED PANEL
-    PROPERTIES (d) SELECTOR name
+    PROPERTIES (d) SELECTOR nameDepartmentStore
 
     OBJECTS p = PriceListType FIXED PANEL
-    PROPERTIES (p) SELECTOR name
+    PROPERTIES (p) SELECTOR namePriceListType
 
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE

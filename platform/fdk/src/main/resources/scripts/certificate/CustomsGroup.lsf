@@ -2,16 +2,20 @@ MODULE CustomsGroup;
 
 REQUIRE Certificate, Hierarchy, Utils, Historizable, Tax, Stock;
 
-CLASS CustomsZone 'Таможенная зона' : Named;
+CLASS CustomsZone 'Таможенная зона';
 TABLE customsZone(CustomsZone);
 
-customsZoneName (name) = GROUP AGGR customsZone BY name(customsZone) WHERE customsZone IS CustomsZone;
+nameCustomsZone 'Наименование' = DATA ISTRING[50](CustomsZone);
+
+customsZoneName (name) = GROUP AGGR customsZone BY nameCustomsZone(customsZone) WHERE customsZone IS CustomsZone;
 
 currencyCustomsZone = DATA Currency(CustomsZone);
-nameCurrencyCustomsZone 'Валюта' (customsZone) = name(currencyCustomsZone(customsZone)) IN base;
+nameCurrencyCustomsZone 'Валюта' (customsZone) = nameCurrency(currencyCustomsZone(customsZone)) IN base;
 
-CLASS CustomsGroup 'Позиция ТН ВЭД' : Named;
+CLASS CustomsGroup 'Позиция ТН ВЭД';
 TABLE customsGroup (CustomsGroup);
+
+nameCustomsGroup 'Наименование' = DATA ISTRING[200](CustomsGroup);
 
 hasCodeCustomsGroup 'Есть код' = DATA BOOLEAN (CustomsGroup) IN base;
 dateFromCustomsGroup 'Дата с' = DATA DATE (CustomsGroup) IN base;
@@ -25,10 +29,10 @@ TABLE customsGroupCustomsGroup (CustomsGroup, CustomsGroup);
 @defineHierarchy(customsGroup);
 
 customsZoneCustomsGroup = DATA CustomsZone(CustomsGroup) AUTOSET;
-nameCustomsZoneCustomsGroup 'Таможенная зона' (customsGroup) = name(customsZoneCustomsGroup(customsGroup)) IN base;
+nameCustomsZoneCustomsGroup 'Таможенная зона' (customsGroup) = nameCustomsZone(customsZoneCustomsGroup(customsGroup)) IN base;
 
 customsZoneCountry = DATA CustomsZone(Country);
-nameCustomsZoneCountry 'Таможенная зона' (country) = name(customsZoneCountry(country)) IN base;
+nameCustomsZoneCountry 'Таможенная зона' (country) = nameCustomsZone(customsZoneCountry(country)) IN base;
 
 isCompliancedDataCustomsGroup 'Необходимость сертификации' = DATA BOOLEAN (CustomsGroup) IN base;
 
@@ -64,19 +68,19 @@ EXTEND FORM countries
 
 FORM customsZone 'Таможенная зона'
     OBJECTS cz = CustomsZone FIXED PANEL
-    PROPERTIES(cz) name, nameCurrencyCustomsZone
+    PROPERTIES(cz) nameCustomsZone, nameCurrencyCustomsZone
     EDIT CustomsGroup OBJECT cz
 ;
 
 FORM customsZones 'Таможенная зона'
     OBJECTS cz = CustomsZone
-    PROPERTIES(cz) READONLY name, nameCurrencyCustomsZone
+    PROPERTIES(cz) READONLY nameCustomsZone, nameCurrencyCustomsZone
     PROPERTIES(cz) ADDFORM, EDITFORM, delete
 ;
 
 FORM customsGroup 'Позиция ТН ВЭД'
     OBJECTS cg = CustomsGroup FIXED PANEL
-    PROPERTIES(cg) numberCustomsGroup, codeCustomsGroup, name, nameParentCustomsGroup, nameCustomsZoneCustomsGroup,
+    PROPERTIES(cg) numberCustomsGroup, codeCustomsGroup, nameCustomsGroup, nameParentCustomsGroup, nameCustomsZoneCustomsGroup,
                    dateFromCustomsGroup, dateToCustomsGroup, isCompliancedCustomsGroup, registrationCustomsGroup,
                    valueCurrentRateSupplierVATCustomsGroup ON CHANGE dialogSupplierVATCustomsGroup(cg),
                    percentDutyCustomsGroup, weightDutyCustomsGroup
@@ -95,15 +99,15 @@ addCustomsGroup 'Добавить' = ACTION (customsGroup) NEWSESSION {
 
 FORM customsGroups 'Позиции ТН ВЭД'
     OBJECTS cz = CustomsZone FIXED PANEL
-    PROPERTIES(cz) SELECTOR name, nameCurrencyCustomsZone
+    PROPERTIES(cz) SELECTOR nameCustomsZone, nameCurrencyCustomsZone
 
     TREE treeGroups gcg=CustomsGroup PARENT parentCustomsGroup
-    PROPERTIES READONLY name(gcg), codeCustomsGroup(gcg), isCompliancedDataCustomsGroup(gcg)
+    PROPERTIES READONLY nameCustomsGroup(gcg), codeCustomsGroup(gcg), isCompliancedDataCustomsGroup(gcg)
     PROPERTIES(gcg) addCustomsGroup, EDITFORM
-    ORDER BY name
+    ORDER BY nameCustomsGroup
 
     OBJECTS cg = CustomsGroup
-    PROPERTIES(cg) READONLY numberCustomsGroup, codeCustomsGroup, name, canonicalNameCustomsGroup, nameParentCustomsGroup,
+    PROPERTIES(cg) READONLY numberCustomsGroup, codeCustomsGroup, nameCustomsGroup, canonicalNameCustomsGroup, nameParentCustomsGroup,
                    dateFromCustomsGroup, dateToCustomsGroup, isCompliancedCustomsGroup, registrationCustomsGroup,
                    valueCurrentRateSupplierVATCustomsGroup, percentDutyCustomsGroup, weightDutyCustomsGroup
     PROPERTIES(cg) ADDFORM, EDITFORM, delete

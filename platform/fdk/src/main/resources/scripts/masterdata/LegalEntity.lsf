@@ -4,44 +4,52 @@ REQUIRE System, MasterData, Historizable, Tax, Country, I18n, Employee;
 
 // ----------------------------------- Форма собственности ------------------------------------------ //
 
-CLASS Ownership 'Форма собственности' : Named;
+CLASS Ownership 'Форма собственности';
 TABLE ownership (Ownership);
+
+nameOwnership 'Наименование' = DATA ISTRING[100](Ownership);
 
 shortNameOwnership 'Cокращенное название' = DATA STRING[10] (Ownership) IN base FIXEDCHARWIDTH 6;
 shortNameToOwnership (string) = GROUP AGGR ownership BY shortNameOwnership (ownership) WHERE ownership IS Ownership;
 
 countryOwnership = DATA Country (Ownership);
-nameCountryOwnership 'Страна' (ownership) = name(countryOwnership(ownership)) MINCHARWIDTH 10 PREFCHARWIDTH 15 MAXCHARWIDTH 20;
+nameCountryOwnership 'Страна' (ownership) = nameCountry(countryOwnership(ownership)) MINCHARWIDTH 10 PREFCHARWIDTH 15 MAXCHARWIDTH 20;
 
 FORM ownership 'Форма собственности'
 
     OBJECTS o = Ownership FIXED PANEL
-    PROPERTIES(o) name, shortNameOwnership, nameCountryOwnership
+    PROPERTIES(o) nameOwnership, shortNameOwnership, nameCountryOwnership
 
     EDIT Ownership OBJECT o
 ;
 
 // ----------------------------------- Юридическое лицо --------------------------------- //
 
-CLASS LegalEntity 'Организация' : Named, TaxUnitGroup, EmployeeDivision;
+CLASS LegalEntity 'Организация' : TaxUnitGroup, EmployeeDivision;
 TABLE legalEntity (LegalEntity);
 TABLE legalEntityDate (LegalEntity, DATE);
 
+nameLegalEntity 'Наименование' = DATA ISTRING[150](LegalEntity);
+
+nameEmployeeDivision(division) += nameLegalEntity(division) IF division IS LegalEntity;
+
+nameTaxUnitGroup(group) += nameLegalEntity(group) IF group IS LegalEntity;
+
 countryLegalEntity = DATA Country(LegalEntity);
-nameCountryLegalEntity 'Страна' (legalEntity) = name(countryLegalEntity(legalEntity)) MINCHARWIDTH 10 PREFCHARWIDTH 15 MAXCHARWIDTH 20;
+nameCountryLegalEntity 'Страна' (legalEntity) = nameCountry(countryLegalEntity(legalEntity)) MINCHARWIDTH 10 PREFCHARWIDTH 15 MAXCHARWIDTH 20;
 
 currencyLegalEntity = DATA Currency(LegalEntity);
-nameCurrencyLegalEntity 'Базовая валюта' (legalEntity) = name(currencyLegalEntity(legalEntity)) MINCHARWIDTH 10 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
+nameCurrencyLegalEntity 'Базовая валюта' (legalEntity) = nameCurrency(currencyLegalEntity(legalEntity)) MINCHARWIDTH 10 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
 currencyLegalEntity(legalEntity) <- currencyCountry(countryLegalEntity(legalEntity)) WHEN CHANGED(countryLegalEntity(legalEntity));
 
 languageLegalEntity = DATA Language(LegalEntity);
-nameLanguageLegalEntity 'Язык' (legalEntity) = name(languageLegalEntity(legalEntity)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
+nameLanguageLegalEntity 'Язык' (legalEntity) = nameLanguage(languageLegalEntity(legalEntity)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
 languageLegalEntity(legalEntity) <- languageCountry(countryLegalEntity(legalEntity)) WHEN CHANGED(countryLegalEntity(legalEntity));
 
 GROUP lawGroup 'Реквизиты' : public;
 
 ownershipLegalEntity = DATA Ownership (LegalEntity);
-nameOwnershipLegalEntity 'Форма собственности' = name(ownershipLegalEntity(legalEntity)) IN lawGroup;
+nameOwnershipLegalEntity 'Форма собственности' = nameOwnership(ownershipLegalEntity(legalEntity)) IN lawGroup;
 shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN lawGroup;
 
 CONSTRAINT countryOwnership(ownershipLegalEntity(legalEntity)) != countryLegalEntity(legalEntity)
@@ -49,20 +57,20 @@ CONSTRAINT countryOwnership(ownershipLegalEntity(legalEntity)) != countryLegalEn
 
 fullNameLegalEntity 'Полное наименование' = DATA STRING[200] (LegalEntity) IN lawGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
-@defineHistorizable(addressLegalEntity, 'Юридический адрес', STRING[150], legalEntity, name, lawGroup);
-@defineHistorizable(postAddressLegalEntity, 'Почтовый адрес', STRING[150], legalEntity, name, lawGroup);
+@defineHistorizable(addressLegalEntity, 'Юридический адрес', STRING[150], legalEntity, nameLegalEntity, lawGroup);
+@defineHistorizable(postAddressLegalEntity, 'Почтовый адрес', STRING[150], legalEntity, nameLegalEntity, lawGroup);
 
 GROUP contactGroup 'Контактная информация' : public;
 
-@defineHistorizable(phoneLegalEntity, 'Телефон/факс', STRING[100], legalEntity, name, contactGroup);
+@defineHistorizable(phoneLegalEntity, 'Телефон/факс', STRING[100], legalEntity, nameLegalEntity, contactGroup);
 emailLegalEntity 'E-mail' = DATA STRING[100] (LegalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 siteLegalEntity 'Сайт' = DATA STRING[100] (LegalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 contactsLegalEntity 'Дополнительная информация' = DATA STRING[300] (LegalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 GROUP managementGroup 'Управление' : public;
 
-@defineHistorizable(managerLegalEntity, 'Руководитель', STRING[100], legalEntity, name, managementGroup);
-@defineHistorizable(accountantLegalEntity, 'Главный бухгалтер', STRING[100], legalEntity, name, managementGroup);
+@defineHistorizable(managerLegalEntity, 'Руководитель', STRING[100], legalEntity, nameLegalEntity, managementGroup);
+@defineHistorizable(accountantLegalEntity, 'Главный бухгалтер', STRING[100], legalEntity, nameLegalEntity, managementGroup);
 
 GROUP docGroup 'Для договора' : public;
 
@@ -70,11 +78,15 @@ GROUP orderGroup 'Для заказов' : public;
 
 // ----------------------------------- Группы юридический лиц ---------------------------- //
 
-CLASS LegalEntityGroup 'Группа организаций' : Named, EmployeeDivisionGroup;
+CLASS LegalEntityGroup 'Группа организаций' : EmployeeDivisionGroup;
 TABLE legalEntityGroup(LegalEntityGroup);
 
+nameLegalEntityGroup 'Наименование' = DATA ISTRING[100](LegalEntityGroup);
+
+nameEmployeeDivisionGroup(group) += nameLegalEntityGroup(group) IF group IS LegalEntityGroup;
+
 legalEntityGroupLegalEntity (legalEntity) = DATA LegalEntityGroup (LegalEntity) PERSISTENT AUTOSET;
-nameLegalEntityGroupLegalEntity 'Группа организаций' (legalEntity) = name(legalEntityGroupLegalEntity(legalEntity));
+nameLegalEntityGroupLegalEntity 'Группа организаций' (legalEntity) = nameLegalEntityGroup(legalEntityGroupLegalEntity(legalEntity));
 
 TABLE legalEntityGroupLegalEntityGroup(LegalEntityGroup, LegalEntityGroup);
 @defineHierarchy(legalEntityGroup);
@@ -85,7 +97,7 @@ employeeDivisionGroupEmployeeDivision (legalEntity) += legalEntityGroupLegalEnti
 FORM legalEntityGroup 'Группа организаций'
 
     OBJECTS l = LegalEntityGroup FIXED PANEL
-    PROPERTIES(l) name, nameParentLegalEntityGroup
+    PROPERTIES(l) nameLegalEntityGroup, nameParentLegalEntityGroup
 
     EDIT LegalEntityGroup OBJECT l
 ;
@@ -93,8 +105,8 @@ FORM legalEntityGroup 'Группа организаций'
 FORM legalEntityGroups 'Группы организаций'
 
     TREE legalEntityGroupTree lg = LegalEntityGroup PARENT parentLegalEntityGroup
-    PROPERTIES READONLY lgTreeName = name(lg)
-    ORDER BY name(lg)
+    PROPERTIES READONLY lgTreeName = nameLegalEntityGroup(lg)
+    ORDER BY nameLegalEntityGroup(lg)
 
     DIALOG LegalEntityGroup OBJECT lg
 ;
@@ -109,7 +121,7 @@ dateFromLicense 'Действует с ' = DATA DATE (License) IN licenseGroup;
 dateToLicense 'Действует по ' = DATA DATE (License) IN licenseGroup;
 
 countryLicense = DATA Country (License);
-nameCountryLicense 'Страна' = name(countryLicense(license));
+nameCountryLicense 'Страна' = nameCountry(countryLicense(license));
 
 legalEntityLicense 'ЮЛ (ИД)' = DATA LegalEntity (License);
 
@@ -152,7 +164,7 @@ defaultCustomerEmployee 'Покупатель по умолчанию' (employee
 
 FORM legalEntity 'Организация'
     OBJECTS l=LegalEntity FIXED PANEL
-    PROPERTIES(l) name, nameLegalEntityGroupLegalEntity, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
+    PROPERTIES(l) nameLegalEntity, nameLegalEntityGroupLegalEntity, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
                    nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
                    addressLegalEntity,
                    postAddressLegalEntity,
@@ -181,7 +193,7 @@ DESIGN legalEntity FROM DEFAULT {
 
                 NEW row11 {
                     childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(name(l));
+                    ADD PROPERTY(nameLegalEntity(l));
                     ADD PROPERTY(nameLegalEntityGroupLegalEntity(l));
                 }
                 NEW regionContainer {
@@ -216,11 +228,11 @@ DESIGN legalEntity FROM DEFAULT {
 FORM legalEntities 'Организации'
 
     TREE legalEntityGroupTree lg = LegalEntityGroup PARENT parentLegalEntityGroup
-    PROPERTIES READONLY lgTreeName = name(lg)
+    PROPERTIES READONLY lgTreeName = nameLegalEntityGroup(lg)
     PROPERTIES(lg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS l=LegalEntity
-    PROPERTIES(l) READONLYIF isReadonly() nameL = name, fullNameLegalEntity, shortNameOwnershipLegalEntity,
+    PROPERTIES(l) READONLYIF isReadonly() nameL = nameLegalEntity, fullNameLegalEntity, shortNameOwnershipLegalEntity,
                                           nameLegalEntityGroupLegalEntity
     PROPERTIES(l) READONLY                addressLegalEntity, phoneLegalEntity
     PROPERTIES(l) READONLYIF isReadonly() isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
@@ -261,11 +273,11 @@ NAVIGATOR {
 // -------------------------------------------- Макросы --------------------------------------------- //
 META defineDocumentHeaderLegalEntity (object, contact, contactCaption)
     contact###object (object) = DATA LegalEntity (###object);
-    name###contact###object contactCaption (object)= name(contact###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+    name###contact###object contactCaption (object)= nameLegalEntity(contact###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 END
 META defineDocumentAbstractHeaderLegalEntity (object, contact, contactCaption)
     contact###object (object) = ABSTRACT LegalEntity (###object) PERSISTENT;
-    name###contact###object contactCaption (object)= name(contact###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+    name###contact###object contactCaption (object)= nameLegalEntity(contact###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 END
 META defineDocumentInterfaceHeaderLegalEntity (object, contact, contactCaption)
     @defineDocumentAbstractHeaderLegalEntity(object, contact, contactCaption);
@@ -275,7 +287,7 @@ END
 
 META defineDocumentDetailLegalEntity (object, detail, contact, contactCaption)
     contact###detail (idetail) = contact###object(object###detail(idetail));
-    name###contact###detail contactCaption (idetail) = name(contact###detail(idetail));
+    name###contact###detail contactCaption (idetail) = nameLegalEntity(contact###detail(idetail));
 END
 
 META defineDocumentLegalEntity (object, detail, contact, contactCaption)
@@ -285,7 +297,7 @@ END
 META defineDocumentDetailDataLegalEntity (object, detail, contact, contactCaption)
     data###contact###detail (detail) = DATA LegalEntity (###detail);
     contact###detail (idetail) = UNION OVERRIDE contact###object(object###detail(idetail)), data###contact###detail(idetail) PERSISTENT;
-    name###contact###detail contactCaption (idetail) = name(contact###detail(idetail));
+    name###contact###detail contactCaption (idetail) = nameLegalEntity(contact###detail(idetail));
 END
 META defineDocumentDataLegalEntity (object, detail, contact, contactCaption)
     @defineDocumentHeaderLegalEntity(object, contact, contactCaption);
@@ -296,7 +308,7 @@ META defineDocumentDataLegalEntity (object, contact, contactCaption)
 END
 META defineDocumentDetailLegalEntity(detail, contact, contactCaption)
     contact###detail (detail) = DATA LegalEntity (###detail);
-    name###contact###detail contactCaption (detail) = name(contact###detail (detail));
+    name###contact###detail contactCaption (detail) = nameLegalEntity(contact###detail (detail));
 END
 
 META defineDocumentAbstractLegalEntity (object, detail, contact, contactCaption)

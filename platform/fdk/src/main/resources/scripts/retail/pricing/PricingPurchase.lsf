@@ -27,7 +27,7 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) =
 
 // Вид цены для расценки
 pricingPriceListTypeOperation = DATA PriceListType (Operation);
-namePricingPriceListTypeOperation 'Вид цен акт расценки' (operation) = name(pricingPriceListTypeOperation(operation));
+namePricingPriceListTypeOperation 'Вид цен акт расценки' (operation) = namePriceListType(pricingPriceListTypeOperation(operation));
 
 EXTEND FORM operation
     PROPERTIES(o) namePricingPriceListTypeOperation

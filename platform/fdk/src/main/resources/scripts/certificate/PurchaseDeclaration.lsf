@@ -33,7 +33,7 @@ nameCustomsSku(sku) += nameSku(sku);
 nameCustomsUserInvoiceDetail 'Наименование (декл.)' (userInvoiceDetail) = nameCustomsSku(skuUserInvoiceDetail(userInvoiceDetail));
 
 countrySkuUserInvoiceDetail (userInvoiceDetail) = countrySku(skuUserInvoiceDetail(userInvoiceDetail));
-nameCountrySkuUserInvoiceDetail 'Страна' (userInvoiceDetail) = name(countrySkuUserInvoiceDetail(userInvoiceDetail));
+nameCountrySkuUserInvoiceDetail 'Страна' (userInvoiceDetail) = nameCountry(countrySkuUserInvoiceDetail(userInvoiceDetail));
 
 UOMUserInvoiceDetail(userInvoiceDetail) = UOMSku(skuUserInvoiceDetail(userInvoiceDetail));
 
@@ -133,13 +133,13 @@ roundCurrencyDeclarationDetail '' (number, declarationDetail) = roundCurrencyDec
 nameCustomsDeclarationDetail 'Наименование' = DATA STRING[200](DeclarationDetail);
 
 UOMDeclarationDetail = DATA UOM(DeclarationDetail);
-shortNameUOMDeclarationDetail 'Ед. изм.' (declarationDetail) = shortName(UOMDeclarationDetail(declarationDetail));
+shortNameUOMDeclarationDetail 'Ед. изм.' (declarationDetail) = shortNameUOM(UOMDeclarationDetail(declarationDetail));
 
 customsGroupDeclarationDetail = DATA CustomsGroup(DeclarationDetail);
 codeCustomsGroupDeclarationDetail 'ТН ВЭД' (declarationDetail) = codeCustomsGroup(customsGroupDeclarationDetail(declarationDetail)) MINCHARWIDTH 10 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 
 countryDeclarationDetail = DATA Country(DeclarationDetail);
-nameCountryDeclarationDetail 'Страна' (declarationDetail) = name(countryDeclarationDetail(declarationDetail));
+nameCountryDeclarationDetail 'Страна' (declarationDetail) = nameCountry(countryDeclarationDetail(declarationDetail));
 sidCountryDeclarationDetail 'Код страны' (declarationDetail) = sidCountry(countryDeclarationDetail(declarationDetail));
 sidOrigin2CountryDeclarationDetail 'Код страны' (declarationDetail) = sidOrigin2Country(countryDeclarationDetail(declarationDetail));
 

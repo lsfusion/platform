@@ -7,19 +7,24 @@ NAMESPACE Item;
 GROUP itemFoodGroup 'Пищевые характеристики' : public;
 
 // Вкус
-CLASS Taste 'Вкус товара' : Named;
+CLASS Taste 'Вкус товара';
 TABLE taste(Taste);
 
-@defineObjectItemAttribute(taste, name, 'Вкус', itemFoodGroup);
-@defineObjectItemAttributeBatch (taste, name, 'Вкус');
+nameTaste 'Наименование' = DATA ISTRING[50](Taste);
+
+@defineObjectItemAttribute(taste, nameTaste, 'Вкус', itemFoodGroup);
+@defineObjectItemAttributeBatch (taste, nameTaste, 'Вкус');
 
 // Степень охлаждения
-CLASS CoolingDegree 'Степень охлаждения товара' : DoubleNamed;
+CLASS CoolingDegree 'Степень охлаждения товара';
 TABLE coolingDegree(CoolingDegree);
 
-@defineObjectItemAttribute(coolingDegree, name, 'Степень охлаждения', itemFoodGroup);
-@defineObjectItemAttributeBatch (coolingDegree, name, 'Степень охлаждения');
-@implementObjectShortItemAttribute(coolingDegree, 'Степень охлаждения (сокр.)');
+nameCoolingDegree 'Наименование' = DATA ISTRING[50](CoolingDegree);
+shortNameCoolingDegree 'Краткое наименование' = DATA ISTRING[10](CoolingDegree);
+
+@defineObjectItemAttribute(coolingDegree, nameCoolingDegree, 'Степень охлаждения', itemFoodGroup);
+@defineObjectItemAttributeBatch (coolingDegree, nameCoolingDegree, 'Степень охлаждения');
+//@implementObjectShortItemAttribute(coolingDegree, 'Степень охлаждения (сокр.)');
 
 // Жирность
 @defineDoubleItemAttribute(percentFat, NUMERIC[5,1], '% жирности', itemFoodGroup);

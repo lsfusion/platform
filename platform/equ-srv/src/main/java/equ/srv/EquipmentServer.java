@@ -437,7 +437,7 @@ public class EquipmentServer extends LifecycleAdapter implements EquipmentServer
             KeyExpr legalEntityKey = legalEntityKeys.singleValue();
             QueryBuilder<PropertyInterface, Object> legalEntityQuery = new QueryBuilder<PropertyInterface, Object>(legalEntityKeys);
 
-            legalEntityQuery.addProperty("name", equLM.baseLM.name.getExpr(legalEntityKey));
+            legalEntityQuery.addProperty("name", equLM.findLCPByCompoundName("nameLegalEntity").getExpr(legalEntityKey));
             legalEntityQuery.and(isLegalEntity.property.getExpr(legalEntityKeys).getWhere());
             ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> legalEntityResult = legalEntityQuery.execute(session.sql);
             for (int i=0,size=legalEntityResult.size();i<size;i++) {

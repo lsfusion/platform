@@ -6,8 +6,11 @@ NAMESPACE PriceList;
 
 CLASS WarePriceListType 'Цена cо стеклопосудой' : PriceListType;
 
+nameWarePriceListType 'Наименование' = DATA ISTRING[50](WarePriceListType);
+namePriceListType(type) += nameWarePriceListType(type) IF type IS WarePriceListType;
+
 basePriceListTypeWarePriceListType(type) = DATA BasePriceListType (WarePriceListType);
-nameBasePriceListTypeWarePriceListType 'Базовый вид цены' (type) = name(basePriceListTypeWarePriceListType(type));
+nameBasePriceListTypeWarePriceListType 'Базовый вид цены' (type) = nameBasePriceListType(basePriceListTypeWarePriceListType(type));
 
 ledgerPriceListTypePriceListType(type) += basePriceListTypeWarePriceListType(type) AS LedgerPriceListType;
 
@@ -29,14 +32,14 @@ pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceWareP
 
 FORM warePriceListType 'Цена cо стеклопосудой'
     OBJECTS w = WarePriceListType FIXED PANEL
-    PROPERTIES(w) name, includeVATPriceListType, nameCurrencyWarePriceListType, nameBasePriceListTypeWarePriceListType
+    PROPERTIES(w) nameWarePriceListType, includeVATPriceListType, nameCurrencyWarePriceListType, nameBasePriceListTypeWarePriceListType
 
     EDIT WarePriceListType OBJECT w
 ;
 
 DESIGN warePriceListType FROM DEFAULT {
     w.box{
-        ADD PROPERTY(name);
+        ADD PROPERTY(nameWarePriceListType);
         ADD PROPERTY(includeVATPriceListType);
         ADD PROPERTY(nameCurrencyWarePriceListType);
         ADD PROPERTY(nameBasePriceListTypeWarePriceListType);

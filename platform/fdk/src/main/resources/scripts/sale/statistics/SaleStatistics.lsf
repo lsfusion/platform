@@ -5,7 +5,9 @@ REQUIRE System, Utils, Historizable, Stock, LegalEntity, SaleLedger, Sale, Integ
 NAMESPACE Sale;
 
 // ----------------------------------- Статистический классификатор ------------------------------------------ //
-CLASS StatisticGroupType 'Тип классификатора статистических групп' : Named;
+CLASS StatisticGroupType 'Тип классификатора статистических групп';
+
+nameStatisticGroupType 'Наименование' = DATA ISTRING[100](StatisticGroupType);
 
 idStatisticGroupType 'Идентификатор' = DATA STRING[20] (StatisticGroupType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
 
@@ -14,26 +16,28 @@ typeIdStatisticGroupType (string1) = GROUP AGGR type
 
 FORM statisticGroupType 'Тип классификатора статистических групп'
     OBJECTS t = StatisticGroupType FIXED PANEL
-    PROPERTIES(t) name, idStatisticGroupType
+    PROPERTIES(t) nameStatisticGroupType, idStatisticGroupType
     EDIT StatisticGroupType OBJECT t
 ;
 
 FORM dialogStatisticGroupType 'Тип классификатора статистических групп'
     OBJECTS t = StatisticGroupType
-    PROPERTIES(t) READONLY name, idStatisticGroupType
+    PROPERTIES(t) READONLY nameStatisticGroupType, idStatisticGroupType
     DIALOG StatisticGroupType OBJECT t
 ;
 
 FORM statisticGroupTypes 'Типы классификаторов статистических групп'
     OBJECTS t = StatisticGroupType
-    PROPERTIES(t) READONLY name, idStatisticGroupType
+    PROPERTIES(t) READONLY nameStatisticGroupType, idStatisticGroupType
     PROPERTIES(t) ADDFORM, EDITFORM, delete
 ;
 
-CLASS StatisticGroup 'Статистическая группа' : Named, Externalizable;
+CLASS StatisticGroup 'Статистическая группа' : Externalizable;
 TABLE statisticGroup(StatisticGroup);
 
-CLASS GroupStatic 'Статистическая ед. изм.' {
+nameStatisticGroup 'Наименование' = DATA ISTRING[100](StatisticGroup);
+
+CLASS GroupStatic 'Ед. изм.' {
     statisticLiter 'Литр',
     statisticThing 'Штука',
     statisticPounds 'Килограмм',
@@ -43,17 +47,17 @@ CLASS GroupStatic 'Статистическая ед. изм.' {
     statisticConditionalPiece 'Усл. кус.',
     statisticSquareMeters 'Квадратный м',
     statisticCubicMeters 'Кубический м'
-} : Named;
+};
 
 
 factorGroupStaticUOM 'Коэффициент перевода' = DATA NUMERIC[14,3] (GroupStatic, UOM);
 
 FORM groupStatics 'Конвертация статистических ед. изм.'
     OBJECTS g=GroupStatic FIXED PANEL
-    PROPERTIES(g) SELECTOR name
+    PROPERTIES(g) SELECTOR staticName
 
     OBJECTS u=UOM
-    PROPERTIES   name(u) READONLY, shortName(u) READONLY, factorGroupStaticUOM(g,u)
+    PROPERTIES   nameUOM(u) READONLY, shortNameUOM(u) READONLY, factorGroupStaticUOM(g,u)
 
     FILTERGROUP batch
         FILTER 'Ед.изм. с коэфф.' 'F11' factorGroupStaticUOM(g,u)
@@ -63,16 +67,16 @@ TABLE statisticGroupStatisticGroup(StatisticGroup, StatisticGroup);
 @defineHierarchy(statisticGroup);
 
 groupTypeStatisticGroup = DATA StatisticGroupType (StatisticGroup) AUTOSET;
-nameGroupTypeStatisticGroup 'Тип классификатора' (group) = name(groupTypeStatisticGroup(group));
+nameGroupTypeStatisticGroup 'Тип классификатора' (group) = nameStatisticGroupType(groupTypeStatisticGroup(group));
 
 countryStatisticGroupType = DATA Country (StatisticGroupType);
-nameCountryStatisticGroupType 'Страна' (type)= name(countryStatisticGroupType(type)) IN base;
+nameCountryStatisticGroupType 'Страна' (type)= nameCountry(countryStatisticGroupType(type)) IN base;
 
 countryStatisticGroup = countryStatisticGroupType(groupTypeStatisticGroup(group));
-nameCountryStatisticGroup 'Страна' (statisticGroup)= name(countryStatisticGroup(statisticGroup)) IN base;
+nameCountryStatisticGroup 'Страна' (statisticGroup)= nameCountry(countryStatisticGroup(statisticGroup)) IN base;
 
 unitMeasureStatisticGroup 'Ед. изм. ИД' (statisticGroup) = DATA GroupStatic (StatisticGroup);
-nameUOMStatisticGroup 'Ед. изм.' (statisticGroup) = name(unitMeasureStatisticGroup(statisticGroup)) MINCHARWIDTH 15 MAXCHARWIDTH 15 PREFCHARWIDTH 15;
+nameUOMStatisticGroup 'Ед. изм.' (statisticGroup) = staticName(unitMeasureStatisticGroup(statisticGroup)) MINCHARWIDTH 15 MAXCHARWIDTH 15 PREFCHARWIDTH 15;
 
 sidStatisticGroup 'Код группы' (statisticGroup) = DATA STRING[12] (StatisticGroup)  MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
 canonicalNumberStatisticGroup 'Канонический код' (statisticGroup) = toString255(
@@ -80,7 +84,7 @@ canonicalNumberStatisticGroup 'Канонический код' (statisticGroup)
                            MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
 canonicalNumberNameStatisticGroup 'Канонический код-название' (statisticGroup) = [FORMULA STRING[100] '$1 || \' / \' || $2'](
-    canonicalNumberStatisticGroup(statisticGroup), name(statisticGroup));
+    canonicalNumberStatisticGroup(statisticGroup), nameStatisticGroup(statisticGroup));
 
 groupIdTypeIdGroup (string1, string2) = GROUP AGGR group
     BY idStatisticGroupType(groupTypeStatisticGroup(group)), sidStatisticGroup(group) WHERE group IS StatisticGroup;
@@ -91,7 +95,7 @@ conversionFactorStatisticGroup 'Коэффициент перевода' (statis
 
 FORM statisticGroup 'Статистическая группа'
     OBJECTS g=StatisticGroup FIXED PANEL
-    PROPERTIES(g)   nameGroupTypeStatisticGroup, nameStat=name, nameParentStatisticGroup, sidParentStatisticGroup,
+    PROPERTIES(g)   nameGroupTypeStatisticGroup, nameStat=nameStatisticGroup, nameParentStatisticGroup, sidParentStatisticGroup,
                     sidStatisticGroup, nameUOMStatisticGroup,conversionFactorStatisticGroup
 
     EDIT StatisticGroup OBJECT g
@@ -110,7 +114,7 @@ addStatisticGroupType 'Добавить' = ACTION (group, type) NEWSESSION {
 addStatisticGroup 'Добавить' (group)= addStatisticGroupType(group, groupTypeStatisticGroup(group)) TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
 statisticGroupTypeSku = ABSTRACT StatisticGroup (StatisticGroupType,Sku);
-nameStatisticGroupTypeSku 'Статистическая группа' = name(statisticGroupTypeSku(type, sku));
+nameStatisticGroupTypeSku 'Статистическая группа' = nameStatisticGroup(statisticGroupTypeSku(type, sku));
 
 TABLE statisticGroupStatisticGroupTypeSku(StatisticGroup, StatisticGroupType, Sku);
 isParentStatisticGroupSku (group, sku) = isParentStatisticGroupStatisticGroup(statisticGroupTypeSku(groupTypeStatisticGroup(group),sku), group) PERSISTENT;
@@ -123,14 +127,14 @@ residentStatisticGroupSku (group, sku) = residentCountryCountry(countryStatistic
 FORM statisticGroups 'Статистические группы'
 
     OBJECTS ss=Country FIXED PANEL
-    PROPERTIES(ss) SELECTOR name
+    PROPERTIES(ss) SELECTOR nameCountry
 
     OBJECTS c=StatisticGroupType FIXED PANEL
-    PROPERTIES(c) SELECTOR name
+    PROPERTIES(c) SELECTOR nameStatisticGroupType
     FILTERS countryStatisticGroupType(c) == ss
 
     TREE treeGroups g=StatisticGroup PARENT parentStatisticGroup
-    PROPERTIES READONLY name(g), sidStatisticGroup(g)
+    PROPERTIES READONLY nameStatisticGroup(g), sidStatisticGroup(g)
     PROPERTIES(g,c)       addStatisticGroupType
     PROPERTIES(g) EDITFORM
     ORDER BY sidStatisticGroup
@@ -145,7 +149,7 @@ FORM statisticGroups 'Статистические группы'
 
     OBJECTS s = Country
 
-    PROPERTIES(s) READONLY name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
+    PROPERTIES(s) READONLY nameCountry, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
                            nameCurrencyCountry, nameLanguageCountry
     PROPERTIES(ss,s) residentCountryCountry
     FILTERGROUP filter
@@ -187,10 +191,10 @@ DESIGN statisticGroups FROM DEFAULT {
 
 FORM statisticGroupDialog 'Статистические группы'
     OBJECTS c=StatisticGroupType FIXED PANEL
-    PROPERTIES(c) SELECTOR name
+    PROPERTIES(c) SELECTOR nameStatisticGroupType
 
     TREE treeGroups g=StatisticGroup PARENT parentStatisticGroup
-    PROPERTIES(g) READONLY name, nameUOMStatisticGroup, sidStatisticGroup, canonicalNumberStatisticGroup
+    PROPERTIES(g) READONLY nameStatisticGroup, nameUOMStatisticGroup, sidStatisticGroup, canonicalNumberStatisticGroup
     PROPERTIES(g) ADDFORM, EDITFORM, delete
     FILTERS groupTypeStatisticGroup(g) == c
     ORDER BY canonicalNumberStatisticGroup
@@ -377,21 +381,21 @@ FORM statisticalReport 'Статистика (продажи) склад/гру�
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
     OBJECTS c = StatisticGroupType FIXED PANEL
-    PROPERTIES SELECTOR name(c)
+    PROPERTIES SELECTOR nameStatisticGroupType(c)
 
     TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), name(ts)
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg), nameStock(ts)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a),
             stockGroupStock(ts) == sg
 
     TREE treeGroups g=StatisticGroup PARENT parentStatisticGroup
-    PROPERTIES READONLY gname = name(g),  sidStatisticGroup(g), nameUOMStatisticGroup(g)
+    PROPERTIES READONLY gname = nameStatisticGroup(g),  sidStatisticGroup(g), nameUOMStatisticGroup(g)
     ORDER BY gname
     FILTERS groupTypeStatisticGroup(g) ==c
 
     OBJECTS           sts=(st=Stock, s=Sku)
-    PROPERTIES        READONLY nameS=nameSku(s), name(st)
+    PROPERTIES        READONLY nameS=nameSku(s), nameStock(st)
     FILTERS           st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts
 
     ORDER BY          nameS
@@ -638,16 +642,16 @@ FORM torgSales 'Статистика (продажи) организация/р�
     PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
 
     OBJECTS c = StatisticGroupType FIXED PANEL
-    PROPERTIES SELECTOR name(c)
+    PROPERTIES SELECTOR nameStatisticGroupType(c)
 
     OBJECTS l=LegalEntity  FIXED PANEL
-    PROPERTIES(l) SELECTOR name
+    PROPERTIES(l) SELECTOR nameLegalEntity
 
     OBJECTS r=Region  FIXED PANEL
-    PROPERTIES(r) SELECTOR name
+    PROPERTIES(r) SELECTOR nameRegion
 
     TREE treeGroups g=StatisticGroup PARENT parentStatisticGroup
-    PROPERTIES READONLY gname = name(g), sidStatisticGroup(g), nameUOMStatisticGroup(g)
+    PROPERTIES READONLY gname = nameStatisticGroup(g), sidStatisticGroup(g), nameUOMStatisticGroup(g)
     ORDER BY sidStatisticGroup
 
     FILTERS groupTypeStatisticGroup(g) == c
@@ -689,7 +693,7 @@ DESIGN torgSales FROM DEFAULT {
 
 loadDefaultStatisticGroupType 'Добавить значение классификатора стат.групп' = ACTION (iname, isid, isidCountry) {
     FOR ADDOBJ t = StatisticGroupType DO {
-        SET name(t) <- iname;
+        SET nameStatisticGroupType(t) <- iname;
         SET idStatisticGroupType (t) <- isid;
         SET countryStatisticGroupType(t) <- countrySID(isidCountry);
     }
@@ -700,7 +704,7 @@ loadDefaultStatisticGroup 'Добавить значение статистич�
         SET groupTypeStatisticGroup(g) <- typeIdStatisticGroupType(sidType);
         SET parentStatisticGroup(g) <- groupIdTypeIdGroup(sidType, sidParent);
 
-        SET name(g) <- iname;
+        SET nameStatisticGroup(g) <- iname;
         SET sidStatisticGroup(g) <- isid;
         SET unitMeasureStatisticGroup(g) <- groupStatic AS GroupStatic;
         SET conversionFactorStatisticGroup(g) <- value;

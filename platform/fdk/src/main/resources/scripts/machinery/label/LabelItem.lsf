@@ -5,5 +5,5 @@ REQUIRE Label, Item;
 
 // ------------------------------ Добавляем атрибуты в ценники ----------------------------- //
 
-nameManufacturerItemBarcode = nameManufacturerItem(skuBarcode(barcode));
+nameManufacturerItemBarcode = nameManufacturerManufacturerItem(skuBarcode(barcode));
 @defineLabelTransactionAttribute(manufacturer, 'Производитель', STRING[255], nameManufacturerItem);

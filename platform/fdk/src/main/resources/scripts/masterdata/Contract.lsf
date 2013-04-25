@@ -21,10 +21,10 @@ activeContract 'Действуюший' (contract, date) =
 GROUP partyGroup 'Контрагенты' : recognize;
 
 partyAContract = ABSTRACT LegalEntity (Contract) PERSISTENT INDEXED;
-namePartyAContract 'Организация (поставщик)' (contract) = name(partyAContract(contract)) IN partyGroup;
+namePartyAContract 'Организация (поставщик)' (contract) = nameLegalEntity(partyAContract(contract)) IN partyGroup;
 
 partyBContract = ABSTRACT LegalEntity (Contract) PERSISTENT INDEXED;
-namePartyBContract 'Организация (покупатель)' (contract) = name(partyBContract(contract)) IN partyGroup;
+namePartyBContract 'Организация (покупатель)' (contract) = nameLegalEntity(partyBContract(contract)) IN partyGroup;
 
 countContractPartyAPartyB 'Кол-во договоров' (partyA, partyB) =
     GROUP SUM 1 IF partyAContract(contract) == partyA AND partyBContract(contract) == partyB BY partyA, partyB;
@@ -32,7 +32,7 @@ countContractPartyAPartyB 'Кол-во договоров' (partyA, partyB) =
 GROUP attributeGroup 'Атрибуты' : public;
 
 currencyContract = DATA Currency (Contract);
-nameCurrencyContract 'Валюта взаиморасчетов' (contract) = name(currencyContract(contract)) IN attributeGroup;
+nameCurrencyContract 'Валюта взаиморасчетов' (contract) = nameCurrency(currencyContract(contract)) IN attributeGroup;
 shortNameCurrencyContract 'Валюта взаиморасчетов' (contract) = shortNameCurrency(currencyContract(contract)) IN attributeGroup;
 symbolCurrencyContract 'Символ' (contract) = symbolCurrency(currencyContract(contract)) IN attributeGroup;
 

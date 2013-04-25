@@ -15,7 +15,6 @@ PRIORITY Stock;
 
 CLASS Client 'Покупатель (Ф.Л.)' : Contact;
 
-
 FORM client 'Покупатель (Ф.Л.)'
     OBJECTS c=Client FIXED PANEL
     PROPERTIES(c)      firstNameContact, lastNameContact, postAddressContact, phoneContact,
@@ -37,7 +36,9 @@ TABLE discountCard (DiscountCard);
 
 @defineNumeratedObjectDefault(DiscountCard, 'Нумератор для дисконтных карт', 'ДС');
 
-CLASS ABSTRACT DiscountSkuGroup 'Дисконтная группа товаров' : Named;
+CLASS ABSTRACT DiscountSkuGroup 'Дисконтная группа товаров';
+
+nameDiscountSkuGroup 'Наименование' = ABSTRACT ISTRING[150](DiscountSkuGroup);
 
 discountCardSeriesNumber (discountCard) = GROUP AGGR discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS DiscountCard;
 discountCardNumber (discountCard) = GROUP MAX discountCard BY numberObject(discountCard) IF discountCard IS DiscountCard;
@@ -60,7 +61,7 @@ initialSumDiscountCard 'Начальная сумма' (discountCard) = DATA NUM
 
 FORM generationDiscountCards 'Генерация дисконтных карт'
     OBJECTS n=Numerator  FIXED PANEL
-    PROPERTIES(n) SELECTOR name
+    PROPERTIES(n) SELECTOR nameNumerator
 
     OBJECTS quantityCards=INTEGER FIXED PANEL
     PROPERTIES(quantityCards) intValueQuantityCards = OBJVALUE;
@@ -150,18 +151,22 @@ FORM discountCards 'Дисконтные карты'
 
 //-------------------------- Группы акций ----------------------------------------//
 
-CLASS PromotionGroup 'Группа акций' : Named;
+CLASS PromotionGroup 'Группа акций';
 TABLE promotionGroup (PromotionGroup);
+
+namePromotionGroup 'Наименование' = DATA ISTRING[100](PromotionGroup);
 
 //--------------------------Акции----------------------------------------//
 
-CLASS Promotion 'Акция' : Historizable, NumeratedObject, Named;
+CLASS Promotion 'Акция' : Historizable, NumeratedObject;
 TABLE promotion (Promotion);
 
 @defineNumeratedObjectDefault(Promotion, 'Нумератор для акций', 'АК');
 
+namePromotion 'Наименование' = DATA ISTRING[100](Promotion);
+
 promotionGroupPromotion (promotion) = DATA PromotionGroup(Promotion) AUTOSET NOT NULL;
-namePromotionGroupPromotion 'Группа акций' (promotion) = name(promotionGroupPromotion(promotion)) IN base;
+namePromotionGroupPromotion 'Группа акций' (promotion) = namePromotionGroup(promotionGroupPromotion(promotion)) IN base;
 
 userOrderPromotion 'Порядок' (promotion) = DATA INTEGER (Promotion);
 orderPromotion 'Порядок' (promotion) = (1 IF promotion IS Promotion) OR userOrderPromotion(promotion) PERSISTENT;
@@ -169,10 +174,12 @@ orderPromotion 'Порядок' (promotion) = (1 IF promotion IS Promotion) OR u
 userSetPromotion 'Задается кассиром' (promotion) = DATA BOOLEAN (Promotion);
 // ----------------------------- Условия акций ------------------------ //
 
-CLASS PromotionCondition 'Условие акции' : Named;
+CLASS PromotionCondition 'Условие акции';
 TABLE promotionCondition (PromotionCondition);
 
 GROUP retailCRMGroup 'Реквизиты' : recognize;
+
+namePromotionCondition 'Наименование' = DATA ISTRING[200](PromotionCondition);
 
 dateFromPromotion 'ДАТА ОТ:' = DATA DATE (Promotion) IN retailCRMGroup NOT NULL;
 dateToPromotion 'ДАТА ДО:' = DATA DATE (Promotion) IN retailCRMGroup NOT NULL;
@@ -210,7 +217,7 @@ inPromotionStoreOver 'В акции' (promotion, store) =
                    inPromotionStoreType(promotion, storeTypeStore(store)),
                    inPromotionStore(promotion, store) AND isCompanyStore(store);
 
-storePromotion 'Магазины' (promotion) = GROUP CONCAT name(store) IF inPromotionStoreOver(promotion, store), ', '
+storePromotion 'Магазины' (promotion) = GROUP CONCAT nameStore(store) IF inPromotionStoreOver(promotion, store), ', '
                                               BY promotion
                                               ORDER store PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
@@ -236,7 +243,7 @@ maxCumulativeSumPromotion(promotion) => hasDiscountCardPromotion (promotion) RES
 allDiscountCardPromotion(promotion) => hasDiscountCardPromotion (promotion) RESOLVE FALSE;
 
 promotionPromotionCondition = DATA Promotion (PromotionCondition) NOT NULL DELETE;
-namePromotionPromotionCondition 'Акция' (promotionCondition) = name(promotionPromotionCondition(promotionCondition));
+namePromotionPromotionCondition 'Акция' (promotionCondition) = namePromotion(promotionPromotionCondition(promotionCondition));
 dateFromPromotionCondition 'Действует (от)' (promotionCondition) = dateFromPromotion(promotionPromotionCondition(promotionCondition));
 dateToPromotionCondition 'Действует (до)' (promotionCondition) = dateToPromotion(promotionPromotionCondition(promotionCondition));
 
@@ -283,32 +290,32 @@ inPromotionConditionSku 'В условии' (promotionCondition, sku) = UNION OV
 
 FORM promotion 'Акция'
     OBJECTS sh=Promotion   FIXED PANEL
-    PROPERTIES(sh)     name, namePromotionGroupPromotion, userSetPromotion,
+    PROPERTIES(sh)     namePromotion, namePromotionGroupPromotion, userSetPromotion,
                        nameNumeratorObject, numberObject, seriesObject,
                        dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
                        minSumBillPromotion, maxSumBillPromotion
     PROPERTIES(sh)                                     hasDiscountCardPromotion
     PROPERTIES(sh) SHOWIF hasDiscountCardPromotion(sh) minCumulativeSumPromotion, maxCumulativeSumPromotion, useCurrentReceiptPromotion, allDiscountCardPromotion
     OBJECTS d=DOW
-    PROPERTIES(d)     READONLY name
+    PROPERTIES(d)     READONLY staticName
     PROPERTIES(sh, d)  skipPromotionDOW
     FILTERGROUP filterDOW
         FILTER 'Только отмеченные' 'F11' skipPromotionDOW(sh, d)
 
     OBJECTS sg=PromotionCondition
-    PROPERTIES(sg)     name, minQuantityPromotionCondition, minSumPromotionCondition, quantityDiscountPromotionCondition, percentPromotionCondition,
+    PROPERTIES(sg)     namePromotionCondition, minQuantityPromotionCondition, minSumPromotionCondition, quantityDiscountPromotionCondition, percentPromotionCondition,
                        resultPricePromotionCondition, sumDiscountPromotionCondition, sumReceiptPromotionCondition, ADDOBJ, delete
 
     FILTERS            promotionPromotionCondition(sg)==sh
 
     TREE skuTree skg = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(skg)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(skg)
     ORDER BY skuTreeName
     PROPERTIES(sg, skg) inPromotionConditionSkuGroup
 
     OBJECTS dg=DiscountSkuGroup
     PROPERTIES(sg) allDiscountSkuGroupPromotionCondition TODRAW dg FORCE PANEL
-    PROPERTIES(dg) READONLY name
+    PROPERTIES(dg) READONLY nameDiscountSkuGroup
     PROPERTIES(sg, dg) inPromotionConditionDiscountSkuGroup
 
     FILTERGROUP filterDiscountSkuGroup
@@ -323,13 +330,13 @@ FORM promotion 'Акция'
         FILTER 'Только отмеченные' 'F10' inPromotionConditionSku(sg, sk)
 
     TREE treeStore a=STRING[3], t=ChainStores, st=StoreType
-    PROPERTIES READONLY OBJVALUE(a), name(t), name(st)
+    PROPERTIES READONLY OBJVALUE(a), nameChainStores(t), nameStoreType(st)
 
     FILTERS stringEqualsAll(a),
             inChainStoresStoreType (t, st)
 
     OBJECTS s=Store
-    PROPERTIES(s) READONLY name, addressStore, nameLegalEntityStore
+    PROPERTIES(s) READONLY nameStore, addressStore, nameLegalEntityStore
 
     FILTERS inChainStoresStoreTypeStore(t, st, s),
             isCompanyStore(s)
@@ -360,7 +367,7 @@ DESIGN promotion FROM DEFAULT {
             NEW row01 {
                 title = 'Название';
                 childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(name(sh)) {
+                ADD PROPERTY(namePromotion(sh)) {
                     preferredCharWidth = 30;
 
                 }
@@ -492,7 +499,7 @@ copyPromotion 'Копировать' = ACTION (promotion) NEWSESSION {
 
 FORM promotions 'Акции'
     OBJECTS sh=Promotion
-    PROPERTIES(sh)     READONLY name, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storePromotion,
+    PROPERTIES(sh)     READONLY namePromotion, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storePromotion,
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
@@ -504,11 +511,11 @@ FORM promotions 'Акции'
 
 FORM promotionGroup 'Группа акций'
     OBJECTS st=PromotionGroup FIXED PANEL
-    PROPERTIES(st)     name
+    PROPERTIES(st)     namePromotionGroup
 
     OBJECTS sh=Promotion
     PROPERTIES(sh)     userOrderPromotion
-    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
+    PROPERTIES(sh)     READONLY namePromotion, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
@@ -522,12 +529,12 @@ FORM promotionGroup 'Группа акций'
 
 FORM promotionGroups 'Группы акций'
     OBJECTS st=PromotionGroup
-    PROPERTIES(st)     READONLY name
+    PROPERTIES(st)     READONLY namePromotionGroup
     PROPERTIES(st)     ADDFORM, EDITFORM, delete
 
     OBJECTS sh=Promotion
     PROPERTIES(sh)     READONLY orderPromotion
-    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
+    PROPERTIES(sh)     READONLY namePromotion, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
@@ -541,7 +548,7 @@ FORM promotionGroups 'Группы акций'
 EXTEND FORM discountCard
     OBJECTS p=Promotion
     PROPERTIES(p, d) inPromotionDiscountCard
-    PROPERTIES(p) READONLY name, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storePromotion,
+    PROPERTIES(p) READONLY namePromotion, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storePromotion,
                            timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                            hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                            useCurrentReceiptPromotion, allDiscountCardPromotion

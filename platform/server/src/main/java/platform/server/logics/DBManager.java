@@ -1133,7 +1133,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException {
         DataSession session = createSession();
 
-        LM.baseClass.fillIDs(session, LM.name, LM.classSID, sIDChanges, objectSIDChanges);
+        LM.baseClass.fillIDs(session, LM.staticName, LM.classSID, sIDChanges, objectSIDChanges);
 
         session.apply(businessLogics);
 

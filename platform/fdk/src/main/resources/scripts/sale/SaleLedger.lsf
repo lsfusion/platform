@@ -14,7 +14,7 @@ skuSaleLedger (ledger) = ABSTRACT Sku (SaleLedger) PERSISTENT INDEXED;
 nameSkuSaleLedger 'SKU' (ledger) = nameSku(skuSaleLedger(ledger));
 
 stockSaleLedger (ledger) = ABSTRACT Stock (SaleLedger) PERSISTENT INDEXED;
-nameStockSaleLedger 'Склад' (ledger) = name(stockSaleLedger(ledger));
+nameStockSaleLedger 'Склад' (ledger) = nameStock(stockSaleLedger(ledger));
 
 descriptionSaleLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (SaleLedger) PERSISTENT;
 
@@ -25,7 +25,7 @@ sumSaleLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (Sal
 costSumSaleLedger 'Себестоимость продажи' (ledger) = ABSTRACT NUMERIC[16,2] (SaleLedger) PERSISTENT;
 
 customerSaleLedger (ledger) = ABSTRACT LegalEntity (SaleLedger) PERSISTENT INDEXED;
-nameCustomerSaleLedger 'Покупатель' (ledger) = name(customerSaleLedger(ledger));
+nameCustomerSaleLedger 'Покупатель' (ledger) = nameLegalEntity(customerSaleLedger(ledger));
 
 inCustomerSku 'Кол-во продано' (legalEntity, sku)= GROUP SUM quantitySaleLedger(ledger) IF isPostedSaleLedger(ledger)
     BY customerSaleLedger(ledger), skuSaleLedger(ledger) PERSISTENT;
@@ -148,7 +148,7 @@ FORM saleLedger 'Продажи по позициям'
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
     OBJECTS te = TypeExchange FIXED PANEL
-    PROPERTIES nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+    PROPERTIES nameType = nameTypeExchange(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS s = SaleLedger
     PROPERTIES(s) READONLY dateSaleLedger, dateTimeSaleLedger, nameStockSaleLedger, nameCustomerSaleLedger, nameSkuSaleLedger, descriptionSaleLedger,
@@ -185,21 +185,21 @@ FORM saleSkuStock 'Продажи по SKU'
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
     OBJECTS te = TypeExchange FIXED PANEL
-    PROPERTIES nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+    PROPERTIES nameType = nameTypeExchange(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS w = INTEGER
     FILTERS quantitySkuSoldWeekDateFromTo(w, dFrom, dTo)
 
     TREE stockTree sg = StockGroup PARENT parentStockGroup, ts = Stock
-    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    PROPERTIES READONLY sgTreeName = nameStockGroup(sg), tsTreeName = nameStock(ts)
     FILTERS stockGroupStock(ts) == sg
 
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sk)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
     ORDER BY skuTreeName
 
     OBJECTS           sts=(st=Stock, s=Sku)
-    PROPERTIES        READONLY nameSku(s), stockName = name(st)
+    PROPERTIES        READONLY nameSku(s), stockName = nameStock(st)
 
     FILTERS           isParentSkuGroupSku(sk, s),
                       (st == ts AND sg IS StockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
@@ -269,7 +269,7 @@ NAVIGATOR {
 META defineCustomerDialogStockSku (form)
 
     form###customer = DATA SESSION LegalEntity ();
-    form###nameCustomer 'Покупатель' () = name(form###customer()) PREFCHARWIDTH 30;
+    form###nameCustomer 'Покупатель' () = nameLegalEntity(form###customer()) PREFCHARWIDTH 30;
     form###customersFilter (sku) =  (TRUE AND inCustomerSku(form###customer(), sku)) OR (sku IS Sku AND NOT form###customer());
 
     EXTEND FORM form

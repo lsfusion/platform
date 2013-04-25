@@ -4,20 +4,23 @@ REQUIRE System, MasterData, Utils, Hierarchy, LegalEntity, I18n, Geo, Employee, 
 
 // ----------------------------------- Склады ------------------------------------------ //
 
-CLASS ABSTRACT StockGroup 'Группа складов' : Named;
+CLASS ABSTRACT StockGroup 'Группа складов';
 TABLE stockGroup (StockGroup);
+
+nameStockGroup 'Наименование' = ABSTRACT ISTRING[100](StockGroup);
 
 TABLE stockGroupStockGroup(StockGroup, StockGroup);
 @defineHierarchyAbstract(stockGroup, StockGroup);
 
-CLASS ABSTRACT Stock 'Склад' : Named;
+CLASS ABSTRACT Stock 'Склад';
 TABLE stock(Stock);
 
+nameStock 'Наименование' = ABSTRACT ISTRING[150](Stock);
 stockGroupStock (stock) = ABSTRACT StockGroup (Stock) PERSISTENT;
-nameStockGroupStock 'Группа' (stock) = name(stockGroupStock (stock));
+nameStockGroupStock 'Группа' (stock) = nameStockGroup(stockGroupStock (stock));
 
 legalEntityStock (stock) = ABSTRACT LegalEntity (Stock) PERSISTENT NOT NULL;
-nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
+nameLegalEntityStock 'Компания' (stock) = nameLegalEntity(legalEntityStock(stock));
 
 quantityDaysCloseOrdersStock 'Срок автоматического закрытия заказов' = ABSTRACT INTEGER(Stock) PERSISTENT;
 
@@ -37,10 +40,10 @@ languageStock (stock) = languageLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
 EXTEND CLASS Stock : POI;
 
-namePOI(poi) += name(poi) IF poi IS Stock;
+namePOI(poi) += nameStock(poi) IF poi IS Stock;
 
 countryStock (stock) = countryLegalEntity(legalEntityStock(stock)) PERSISTENT;
-nameCountryStock 'Страна' (stock) = name(countryStock(stock));
+nameCountryStock 'Страна' (stock) = nameCountry(countryStock(stock));
 countryPOI (poi) += countryStock(poi);
 
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (Stock) PERSISTENT;
@@ -61,51 +64,63 @@ GROUP bookkeepingGroup 'Учет и цены' : public;
 
 // -------------------------------------- Регион ------------------------------- //
 
-CLASS Region 'Регион' : Named;
+CLASS Region 'Регион';
 TABLE region (Region);
 
+nameRegion 'Наименование' = DATA ISTRING[100](Region);
+
 regionStock 'Регион' (stock) = ABSTRACT Region (Stock) PERSISTENT;
-nameRegionStock 'Регион' (stock)= name(regionStock(stock));
+nameRegionStock 'Регион' (stock)= nameRegion(regionStock(stock));
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 
-CLASS UOM 'Единица измерения' : DoubleNamed;
+CLASS UOM 'Единица измерения';
 TABLE UOM (UOM);
 
+nameUOM 'Наименование' = DATA ISTRING[50](UOM);
+shortNameUOM 'Краткое наименование' = DATA ISTRING[10](UOM);
+
 baseUOM = DATA UOM(UOM);
-shortNameBaseUOM 'Базовая ед.изм.' (UOM) = shortName(baseUOM(UOM)) IN base;
+shortNameBaseUOM 'Базовая ед.изм.' (UOM) = shortNameUOM(baseUOM(UOM)) IN base;
 genitiveNameUOM 'Ед. изм. (родительный)' = DATA STRING[20](UOM) IN base;
 factorUOM 'Коэффициент пересчета в баз.ед.' = DATA NUMERIC[14,3] (UOM) IN base;
 
 FORM UOM 'Единица измерения'
     OBJECTS u=UOM FIXED PANEL
-    PROPERTIES(u) name, shortName, shortNameBaseUOM, genitiveNameUOM, factorUOM
+    PROPERTIES(u) nameUOM, shortNameUOM, shortNameBaseUOM, genitiveNameUOM, factorUOM
     EDIT UOM OBJECT u
 ;
 
 FORM UOMs 'Единицы измерений'
     OBJECTS u=UOM
-    PROPERTIES(u) READONLY name, shortName, shortNameBaseUOM, genitiveNameUOM, factorUOM
+    PROPERTIES(u) READONLY nameUOM, shortNameUOM, shortNameBaseUOM, genitiveNameUOM, factorUOM
     PROPERTIES(u) ADDFORM, EDITFORM, delete
 ;
 
 // ----------------------------------- Абстрактная группа ------------------------------------------ //
 
-CLASS ABSTRACT Group 'Классификатор SKU' : Named;
+CLASS ABSTRACT Group 'Классификатор SKU';
 TABLE group(Group);
+
+nameGroup 'Наименование' = ABSTRACT ISTRING[150](Group);
 
 TABLE groupGroup(Group, Group);
 @defineHierarchyAbstract(group, Group);
 
-CLASS ABSTRACT GroupType 'Тип классификатора SKU' : Named;
+CLASS ABSTRACT GroupType 'Тип классификатора SKU';
 CLASS SystemGroupType 'Системный тип классификатор SKU' : GroupType;
 
+nameGroupType 'Наименование' = ABSTRACT ISTRING[50](GroupType);
+nameSystemGroupType 'Наименование' = DATA ISTRING[50](SystemGroupType);
+
+nameGroupType(type) += nameSystemGroupType(type) IF type IS SystemGroupType;
+
 groupTypeGroup = ABSTRACT GroupType (Group) PERSISTENT;
-nameGroupTypeGroup 'Тип классификатора SKU' (group) = name(groupTypeGroup(group));
+nameGroupTypeGroup 'Тип классификатора SKU' (group) = nameGroupType(groupTypeGroup(group));
 
 TABLE groupTypeSku(GroupType, Sku);
 groupGroupTypeSku = ABSTRACT Group (GroupType, Sku) EXCLUSIVE PERSISTENT;
-nameGroupGroupTypeSku 'Имя' (type, sku) = name(groupGroupTypeSku(type, sku));
+nameGroupGroupTypeSku 'Имя' (type, sku) = nameGroup(groupGroupTypeSku(type, sku));
 canonicalNameGroupGroupTypeSku 'Каноническое имя' (type, sku) = canonicalNameGroup(groupGroupTypeSku(type, sku));
 
 TABLE groupSku(Group, Sku);
@@ -116,6 +131,10 @@ isParentGroupSku(group, sku) = isParentGroupGroup(groupGroupTypeSku(groupTypeGro
 CLASS CustomGroup 'Дополнительный классификатор SKU' : Group;
 TABLE customGroup (CustomGroup);
 
+nameCustomGroup 'Наименование' = DATA ISTRING[150](CustomGroup);
+
+nameGroup(group) += nameCustomGroup(group) IF group IS CustomGroup;
+
 TABLE customGroupCustomGroup(CustomGroup, CustomGroup);
 @defineHierarchy(customGroup);
 
@@ -123,8 +142,12 @@ parentGroup (group) += parentCustomGroup(group);
 
 CLASS CustomGroupType 'Тип дополнительного классификатора SKU' : GroupType;
 
+nameCustomGroupType 'Наименование' = DATA ISTRING[50](CustomGroupType);
+
+nameGroupType(type) += nameCustomGroupType(type) IF type IS CustomGroupType;
+
 customGroupTypeCustomGroup = DATA CustomGroupType (CustomGroup) AUTOSET;
-nameCustomGroupTypeCustomGroup 'Тип классификатора' (customGroup) = name(customGroupTypeCustomGroup(customGroup));
+nameCustomGroupTypeCustomGroup 'Тип классификатора' (customGroup) = nameCustomGroupType(customGroupTypeCustomGroup(customGroup));
 
 CONSTRAINT customGroupTypeCustomGroup(parentCustomGroup(group)) != customGroupTypeCustomGroup(group)
            CHECKED BY parentCustomGroup MESSAGE 'Родительский объект классификатора SKU имеет неправильный тип';
@@ -140,10 +163,10 @@ inCustomGroup 'Отм.' = DATA SESSION BOOLEAN (CustomGroup);
 
 FORM moveCustomGroup 'Дополнительные группы'
     OBJECTS t = CustomGroupType FIXED PANEL
-    PROPERTIES(t) READONLY name
+    PROPERTIES(t) READONLY nameCustomGroupType
 
     TREE treeGroups g=CustomGroup PARENT parentCustomGroup
-    PROPERTIES(g) READONLY name, canonicalNameCustomGroup
+    PROPERTIES(g) READONLY nameCustomGroup, canonicalNameCustomGroup
     FILTERS customGroupTypeCustomGroup(g) == t
     ORDER BY canonicalNameCustomGroup
 ;
@@ -159,35 +182,35 @@ moveCustomGroup 'Перенести отмеченные группы' = ACTION 
 
 FORM customGroupType 'Тип дополнительного классификатора SKU'
     OBJECTS t = CustomGroupType FIXED PANEL
-    PROPERTIES(t) name
+    PROPERTIES(t) nameCustomGroupType
     EDIT CustomGroupType OBJECT t
 ;
 
 FORM dialogCustomGroupType 'Тип дополнительного классификатора SKU'
     OBJECTS t = CustomGroupType
-    PROPERTIES(t) READONLY name
+    PROPERTIES(t) READONLY nameCustomGroupType
     DIALOG CustomGroupType OBJECT t
 ;
 
 FORM customGroupTypes 'Типы дополнительного классификатора SKU'
     OBJECTS t = CustomGroupType
-    PROPERTIES(t) READONLY name
+    PROPERTIES(t) READONLY nameCustomGroupType
     PROPERTIES(t) ADDFORM, EDITFORM, delete
 ;
 
 FORM customGroup 'Дополнительная группа'
     OBJECTS g=CustomGroup FIXED PANEL
-    PROPERTIES(g) nameCustomGroupTypeCustomGroup, name, nameParentCustomGroup
+    PROPERTIES(g) nameCustomGroupTypeCustomGroup, nameCustomGroup, nameParentCustomGroup
     EDIT CustomGroup OBJECT g
 ;
 
 FORM customGroups 'Дополнительные группы'
     OBJECTS t = CustomGroupType FIXED PANEL
-    PROPERTIES(t) SELECTOR name
+    PROPERTIES(t) SELECTOR nameCustomGroupType
 
     TREE treeGroups g=CustomGroup PARENT parentCustomGroup
     PROPERTIES inCustomGroup(g), moveCustomGroup(t) TODRAW g FORCE PANEL TOOLBAR
-    PROPERTIES(g) READONLY name, canonicalNameCustomGroup
+    PROPERTIES(g) READONLY nameCustomGroup, canonicalNameCustomGroup
     PROPERTIES(g) ADDFORM, EDITFORM, delete
     FILTERS customGroupTypeCustomGroup(g) == t
     ORDER BY canonicalNameCustomGroup
@@ -200,6 +223,10 @@ FORM customGroups 'Дополнительные группы'
 CLASS ABSTRACT SkuGroup 'Группа SKU' : Group;
 TABLE skuGroup (SkuGroup);
 
+nameSkuGroup 'Наименование' = ABSTRACT ISTRING[150](SkuGroup);
+
+nameGroup(group) += nameSkuGroup(group) IF group IS SkuGroup;
+
 TABLE skuGroupSkuGroup(SkuGroup, SkuGroup);
 @defineHierarchyAbstract(skuGroup, SkuGroup);
 
@@ -210,7 +237,7 @@ parentGroup(skuGroup) += parentSkuGroup(skuGroup);
 TABLE skuGroupLanguage(SkuGroup, Language);
 nameSkuGroupLanguage 'Наименование (иностр.)' = ABSTRACT STRING[110] (SkuGroup, Language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
 
-nameSkuGroupStock 'Наименование (иностр.)' (skuGroup, stock) = IF languageStock(stock) THEN nameSkuGroupLanguage(skuGroup, languageStock(stock)) ELSE name(skuGroup);
+nameSkuGroupStock 'Наименование (иностр.)' (skuGroup, stock) = IF languageStock(stock) THEN nameSkuGroupLanguage(skuGroup, languageStock(stock)) ELSE nameSkuGroup(skuGroup);
 
 // ----------------------------------- Sku Type ------------------------------------------ //
 
@@ -218,7 +245,7 @@ CLASS SkuType {
     skuTypeItem 'Товар',
     skuTypeContainer 'Тара',
     skuTypeCharge 'Услуги'
-} : Named;
+};
 
 isStockSkuType 'Складируемые' (type) = type IS SkuType AND NOT type == SkuType.skuTypeCharge PERSISTENT;
 
@@ -242,10 +269,10 @@ nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT STRING[200
 nameSkuStock 'Наименование (иностр.)' (sku, stock) = IF languageStock(stock) THEN nameSkuLanguage(sku, languageStock(stock)) ELSE nameSku(sku);
 
 UOMSku (sku) = ABSTRACT UOM (Sku) PERSISTENT;
-shortNameUOMSku 'Ед. изм.' (sku) = shortName(UOMSku(sku)) IN base;
+shortNameUOMSku 'Ед. изм.' (sku) = shortNameUOM(UOMSku(sku)) IN base;
 
 countrySku = ABSTRACT Country (Sku) PERSISTENT;
-nameCountrySku 'Страна' (sku) = name(countrySku(sku)) IN base;
+nameCountrySku 'Страна' (sku) = nameCountry(countrySku(sku)) IN base;
 
 TABLE skuGroupSku(SkuGroup, Sku);
 isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku), skuGroup) PERSISTENT;
@@ -303,7 +330,7 @@ UOMBatch(batch)= UOMSku(skuBatch(batch));
 shortNameUOMBatch '' (batch)= shortNameUOMSku(skuBatch(batch));
 
 stockBatch (batch) = ABSTRACT Stock (Batch) PERSISTENT INDEXED ;
-nameStockBatch 'Склад' (batch) = name(stockBatch(batch));
+nameStockBatch 'Склад' (batch) = nameStock(stockBatch(batch));
 
 costBatch 'Себестоимость' (batch) = ABSTRACT NUMERIC[14,2] (Batch) PERSISTENT;
 prevCostBatch 'Себестоимость' (batch) = PREV(costBatch(batch));
@@ -351,7 +378,7 @@ skuSkuLedger (ledger) = UNION CLASS skuDataSkuLedger (ledger), skuBatch (ledger)
 nameSkuSkuLedger 'SKU' (ledger) = nameSku(skuSkuLedger(ledger));
 
 stockSkuLedger (ledger) = UNION CLASS stockDataSkuLedger (ledger), stockBatch (ledger) PERSISTENT INDEXED;
-nameStockSkuLedger 'Склад' (ledger) = name(stockSkuLedger(ledger));
+nameStockSkuLedger 'Склад' (ledger) = nameStock(stockSkuLedger(ledger));
 
 descriptionSkuLedger 'Описание' (ledger) = UNION CLASS descriptionDataSkuLedger (ledger), descriptionBatch (ledger) PERSISTENT;
 
@@ -689,8 +716,12 @@ costSumOutBalanceBatchStockDateFromTo 'Сумма расхода' (batch, stock,
 EXTEND CLASS StockGroup : EmployeeDivisionGroup;
 parentEmployeeDivisionGroup(stockGroup) += parentStockGroup(stockGroup);
 
+nameEmployeeDivisionGroup(group) += nameStockGroup(group) IF group IS StockGroup;
+
 EXTEND CLASS Stock : EmployeeDivision;
 employeeDivisionGroupEmployeeDivision (stock) += stockGroupStock(stock);
+
+nameEmployeeDivision(stock) += nameStock(stock) IF stock IS Stock;
 
 countAccessStockEmployeeLegalEntity (employee, legalEntity) = GROUP SUM 1 IF inLegalEntityStock(legalEntity, stock) AND accessEmployeeEmployeeDivision(employee, stock)
                                                                BY employee, legalEntity;
@@ -823,11 +854,11 @@ END
 
 META defineDocumentHeaderStockInner (object, stockClass, stockClassUpper, stockCaption, prefix)
     prefix###stockClass###object = DATA stockClassUpper(###object);
-    name###prefix###stockClass###object stockCaption (object) = name(prefix###stockClass###object(object)) IN documentHeaderGroup
+    name###prefix###stockClass###object stockCaption (object) = nameStock(prefix###stockClass###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
     prefix###legalEntityStock###object (object) = legalEntityStock(prefix###stockClass###object(object));
-    name###prefix###legalEntityStock###object 'Компания ('###stockCaption###')' (object) = name(prefix###legalEntityStock###object (object));
+    name###prefix###legalEntityStock###object 'Компания ('###stockCaption###')' (object) = nameLegalEntity(prefix###legalEntityStock###object (object));
     address###prefix###legalEntityStock###object 'Адрес компании ('###stockCaption###')' (object) = addressLegalEntity(prefix###legalEntityStock###object (object));
 
     address###prefix##Stock###object 'Адрес ('###stockCaption###')' (object) = addressStock(prefix###stockClass###object(object));
@@ -841,11 +872,11 @@ END
 
 META defineDocumentAbstractHeaderStockInner (object, stockClass, stockClassUpper, stockCaption, prefix)
     prefix###stockClass###object = ABSTRACT stockClassUpper(###object) PERSISTENT;
-    name###prefix###stockClass###object stockCaption (object) = name(prefix###stockClass###object(object)) IN documentHeaderGroup
+    name###prefix###stockClass###object stockCaption (object) = nameStock(prefix###stockClass###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
     prefix###legalEntityStock###object (object) = legalEntityStock(prefix###stockClass###object(object));
-    name###prefix###legalEntityStock###object 'Компания ('###stockCaption###')' (object) = name(prefix###legalEntityStock###object (object));
+    name###prefix###legalEntityStock###object 'Компания ('###stockCaption###')' (object) = nameLegalEntity(prefix###legalEntityStock###object (object));
     address###prefix###legalEntityStock###object 'Адрес компании ('###stockCaption###')' (object) = addressLegalEntity(prefix###legalEntityStock###object (object));
     address###prefix##Stock###object 'Адрес ('###stockCaption###')' (object) = addressStock(prefix###stockClass###object(object));
 
@@ -869,10 +900,10 @@ END
 
 META defineDocumentDetailStock (object, detail, stockProp, stockCaption)
     stockProp###detail (idetail) = stockProp###object(object###detail(idetail));
-    name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    name###stockProp###detail stockCaption (idetail) = nameStock(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
     legalEntity###stockProp###detail (idetail) = legalEntityStock(stockProp###detail(idetail));
-    name###legalEntity###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(legalEntity###stockProp###detail (idetail));
+    name###legalEntity###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = nameLegalEntity(legalEntity###stockProp###detail (idetail));
 END
 META defineDocumentDetailStock (object, stockProp, stockCaption)
     @defineDocumentDetailStock (object, object##Detail, stockProp, stockCaption);
@@ -885,10 +916,10 @@ END
 META defineDocumentDetailDataStockInner (object, detail, stockClass, stockClassUpper, stockProp, stockCaption)
     data###stockProp###detail = DATA stockClassUpper(###detail);
     stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
-    name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    name###stockProp###detail stockCaption (idetail) = nameStock(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
     legalEntity###stockProp###detail (idetail) = legalEntityStock(stockProp###detail(idetail));
-    name###legalEntity###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(legalEntity###stockProp###detail (idetail));
+    name###legalEntity###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = nameLegalEntity(legalEntity###stockProp###detail (idetail));
 END
 
 META defineDocumentAbstractDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
@@ -898,10 +929,10 @@ END
 META defineDocumentAbstractDetailDataStockInner (object, detail, stockClass, stockClassUpper, stockProp, stockCaption)
     data###stockProp###detail = ABSTRACT stockClassUpper(###detail) PERSISTENT;
     stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
-    name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    name###stockProp###detail stockCaption (idetail) = nameStock(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
     legalEntity###stockProp###detail (idetail) = legalEntityStock(stockProp###detail(idetail));
-    name###legalEntity###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(legalEntity###stockProp###detail (idetail));
+    name###legalEntity###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = nameLegalEntity(legalEntity###stockProp###detail (idetail));
 END
 META defineDocumentInterfaceDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
     @defineDocumentAbstractDetailDataStock(object, detail, stockClass, stockProp, stockCaption);
@@ -1030,7 +1061,7 @@ END
 // Склады
 META defineDocumentAggregationHeaderStockPrefix (primObject, aggrObject, stockProp, stockCaption, prefixP, prefixA)
     prefixA###stockProp###aggrObject (object) = prefixP###stockProp###primObject(primObject###aggrObject(object)) PERSISTENT;
-    name###prefixA###stockProp###aggrObject stockCaption (object) = name(prefixA###stockProp###aggrObject(object)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    name###prefixA###stockProp###aggrObject stockCaption (object) = nameEmployeeDivision(prefixA###stockProp###aggrObject(object)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
 END
 META defineDocumentAggregationHeaderStock (primObject, aggrObject, stockProp, stockCaption)
     @defineDocumentAggregationHeaderStockPrefix (primObject, aggrObject, stockProp, stockCaption, , );
@@ -1773,17 +1804,17 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
     EXTEND FORM form
 
         TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
-        PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+        PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg), tsTreeName = nameStock(ts)
         ORDER BY sgTreeName
         FILTERS stringEqualsAll(a),
                 stockGroupStock(ts) == sg
 
         TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-        PROPERTIES READONLY skuTreeName = name(sk)
+        PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
         ORDER BY skuTreeName
 
         OBJECTS           sts=(st=Stock, s=Sku)
-        PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = name(st)
+        PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = nameStock(st)
         PROPERTIES        addSku() TODRAW sts, editSku(s), copySku(s)
 
         FILTERS           isParentSkuGroupSku(sk, s),
@@ -1793,7 +1824,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
         FILTERGROUP stockFilters
             FILTER 'Собственные склады' 'F4' legalEntityStock(st) == legalEntityProp###object(concrete) DEFAULT
 
-        FILTERS           nameSku(s), name(st)
+        FILTERS           nameSku(s), nameStock(st)
         ORDER BY          nameSku, stockName
 
         PROPERTIES        quantitySku###object###stockProp(s, concrete, st) ON CHANGE changeQuantitySku###object###stock(s, concrete, st) BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st),
@@ -1917,7 +1948,7 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
     EXTEND FORM form
 
         TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-        PROPERTIES READONLY skuTreeName = name(sk)
+        PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
         ORDER BY skuTreeName
 
         OBJECTS s=Sku
@@ -2156,25 +2187,25 @@ END
 
 META extendFormDocumentSkuStockContractorCustom(object, form, concrete, fromLegalEntity, fromStock, toStock)
 
-    nameQuantity###toStock (stock)= [FORMULA STRING[50] 'CAST($1 AS TEXT) || \' \' || \'(кол-во)\''](name(stock)) MINCHARWIDTH 15 PREFCHARWIDTH 20;
-    namePrice###toStock (stock)= [FORMULA STRING[50] 'CAST($1 AS TEXT) || \' \' || \'(цена)\''](name(stock)) MINCHARWIDTH 15 PREFCHARWIDTH 20;
+    nameQuantity###toStock (stock)= [FORMULA STRING[50] 'CAST($1 AS TEXT) || \' \' || \'(кол-во)\''](nameStock(stock)) MINCHARWIDTH 15 PREFCHARWIDTH 20;
+    namePrice###toStock (stock)= [FORMULA STRING[50] 'CAST($1 AS TEXT) || \' \' || \'(цена)\''](nameStock(stock)) MINCHARWIDTH 15 PREFCHARWIDTH 20;
 
     EXTEND FORM form
 
         TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
-        PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+        PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg), tsTreeName = nameStock(ts)
         ORDER BY sgTreeName
         FILTERS stringEqualsAll(a),
                 stockGroupStock(ts) == sg
 
         TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-        PROPERTIES READONLY skuTreeName = name(sk)
+        PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
         ORDER BY skuTreeName
 
         OBJECTS cc = Stock FIXED GRID
 
         OBJECTS           sts=(st=Stock, s=Sku)
-        PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = name(st)
+        PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = nameStock(st)
         PROPERTIES        addSku() TODRAW sts, editSku(s), copySku(s)
         FILTERS           isParentSkuGroupSku(sk, s),
                           (st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts) AND NOT fromStock###object(concrete) OR
@@ -2183,7 +2214,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, fromLega
         FILTERGROUP stockFilters
             FILTER 'Собственные склады' 'F4' legalEntityStock(st) == fromLegalEntity###object(concrete) DEFAULT
 
-        FILTERS           nameSku(s), name(st)
+        FILTERS           nameSku(s), nameStock(st)
         ORDER BY          nameSku, stockName
 
         PROPERTIES quantitySku###object###fromStock(s, concrete, st) READONLY BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st)
@@ -2264,7 +2295,7 @@ META extendFormDocumentInSkuStock(object, form, concrete, contBox)
     EXTEND FORM form
 
         TREE treeGroup gg=Group PARENT parentGroup
-        PROPERTIES READONLY name(gg)
+        PROPERTIES READONLY nameGroup(gg)
         FILTERS groupTypeGroup(gg) == groupType###object(concrete)
 
         OBJECTS s=Sku
@@ -2307,7 +2338,7 @@ END
 
 META defineDocumentSkuStockSupplier (object, form, concrete, concrete2)
     filterSupplier###object = DATA SESSION LegalEntity (###object);
-    nameFilterSupplier###object 'Поставщик' (object) = name(filterSupplier###object(object));
+    nameFilterSupplier###object 'Поставщик' (object) = nameLegalEntity(filterSupplier###object(object));
     filterSupplier###object###sku (object, sku) = prevInSupplierSku(filterSupplier###object(object), sku) OR
                                                   (sku IS Sku AND NOT filterSupplier###object(object));
 
@@ -2341,12 +2372,12 @@ editSessionStock 'Редактировать' = ABSTRACT ACTION (stock) IMAGE 'e
 FORM stocks 'Склады'
 
     TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a)
 
     OBJECTS s = Stock
-    PROPERTIES(s) READONLY stockName = name, nameLegalEntityStock, nameCountryStock, addressStock
+    PROPERTIES(s) READONLY stockName = nameStock, nameLegalEntityStock, nameCountryStock, addressStock
     PROPERTIES(s)          editStock
     ORDER BY stockName
     FILTERS isParentStockGroupStock(sg, s) OR (s IS Stock AND NOT sg)
@@ -2381,7 +2412,7 @@ DESIGN stocks FROM DEFAULT {
 
 FORM skus 'Sku'
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuGroupName = name(sg)
+    PROPERTIES READONLY skuGroupName = nameSkuGroup(sg)
 
     OBJECTS s = Sku
     PROPERTIES(s) READONLY nameSku, shortNameUOMSku
@@ -2419,7 +2450,7 @@ DESIGN skus FROM DEFAULT {
 
 FORM filterSkus 'Sku'
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuGroupName = name(sg)
+    PROPERTIES READONLY skuGroupName = nameSkuGroup(sg)
 
     OBJECTS s = Sku
     PROPERTIES(s) READONLY nameSku, shortNameUOMSku
@@ -2562,17 +2593,17 @@ DESIGN costSkuBatchLedger FROM DEFAULT {
 FORM currentBalanceSkuStock 'Текущие остатки'
 
     TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg), tsTreeName = nameStock(ts)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a),
             stockGroupStock(ts) == sg
 
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sk)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
     ORDER BY skuTreeName
 
     OBJECTS           sts=(st=Stock, s=Sku)
-    PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
+    PROPERTIES        READONLY nameSku(s), stockName = nameStock(st)  //  idBarcodeSku
     FILTERS           isParentSkuGroupSku(sk, s),
                       st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts
 
@@ -2643,17 +2674,17 @@ FORM balanceSkuStock 'Остатки на дату'
     PROPERTIES(t) OBJVALUE
 
     TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg), tsTreeName = nameStock(ts)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a),
             stockGroupStock(ts) == sg
 
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sk)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
     ORDER BY skuTreeName
 
     OBJECTS           sts=(st=Stock, s=Sku)
-    PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
+    PROPERTIES        READONLY nameSku(s), stockName = nameStock(st)  //  idBarcodeSku
 
     FILTERS           isParentSkuGroupSku(sk, s),
                       st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts
@@ -2726,17 +2757,17 @@ DESIGN balanceSkuStock FROM DEFAULT {
 FORM currentBalanceBatchStock 'Текущие остатки по партиям'
 
     TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg), tsTreeName = nameStock(ts)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a),
             stockGroupStock(ts) == sg
 
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sk)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
     ORDER BY skuTreeName
 
     OBJECTS           stb=(st=Stock, bt=Batch)
-    PROPERTIES        READONLY nameSkuBatch(bt), stockName = name(st)
+    PROPERTIES        READONLY nameSkuBatch(bt), stockName = nameStock(st)
     PROPERTIES        currentBalanceBatchStock(bt, st)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
@@ -2803,17 +2834,17 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
     PROPERTIES(t) OBJVALUE
 
     TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg), tsTreeName = nameStock(ts)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a),
             stockGroupStock(ts) == sg
 
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sk)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
     ORDER BY skuTreeName
 
     OBJECTS           stb=(st=Stock, bt=Batch)
-    PROPERTIES        READONLY stockName = name(st), nameSkuBatch(bt)
+    PROPERTIES        READONLY stockName = nameStock(st), nameSkuBatch(bt)
     PROPERTIES        balanceBBatchStockDateTime(bt, st, t)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
@@ -2871,7 +2902,7 @@ DESIGN balanceBatchStock FROM DEFAULT {
 FORM batches 'Партии'
 
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sk)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
     ORDER BY skuTreeName
 
     OBJECTS           bt=Batch
@@ -2946,7 +2977,7 @@ META defineDialogSku (form)
 
     FORM form 'Подбор SKU'
         TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-        PROPERTIES READONLY skuTreeName = name(sk)
+        PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
         ORDER BY skuTreeName
 
         OBJECTS s=Sku                                 //form###nameSku 'Наименование' (sku) = IF form###stock() THEN nameSkuStock(sku, form###stock()) ELSE nameSku(sku);
@@ -3004,7 +3035,7 @@ META defineDialogStockSku (form)
 
     form###stock = DATA SESSION Stock ();
     form###all 'Весь остаток' = DATA SESSION BOOLEAN (Sku);
-    form###nameStock 'Склад' () = name(form###stock()) PREFCHARWIDTH 30;
+    form###nameStock 'Склад' () = nameStock(form###stock()) PREFCHARWIDTH 30;
 
     form###balance 'Остаток' (sku) = currentBalanceSkuStock(sku, form###stock());
     form###balanceFilter (sku) = (TRUE AND form###balance(sku)) OR (sku IS Sku AND NOT form###stock());
@@ -3076,14 +3107,14 @@ FORM chooseStocks 'Выбор складов'
     OBJECTS l = LegalEntity
 
     TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a)
 
     OBJECTS s=Stock
-    PROPERTIES(s) READONLY name, addressStock, nameLegalEntityStock
+    PROPERTIES(s) READONLY nameStock, addressStock, nameLegalEntityStock
     PROPERTIES userLegalEntityStock(l, s)
-    ORDER BY name
+    ORDER BY nameStock
     FILTERS isParentStockGroupStock(sg, s) OR (s IS Stock AND sg IS StockGroup AND NOT stockGroupStock(s)) OR (s IS Stock AND NOT sg)
 ;
 
@@ -3106,22 +3137,22 @@ chooseStocksLegalEntity 'Выбрать склады' = ACTION (legalEntity) {
 
 EXTEND FORM legalEntity
     TREE stockTree b=STRING[3], sg = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY OBJVALUE(b), sgTreeName = name(sg)
+    PROPERTIES READONLY OBJVALUE(b), sgTreeName = nameStockGroup(sg)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(b)
 
     OBJECTS st=Stock
-    PROPERTIES(st) READONLY name, nameLegalEntityStock, nameCountryStock, addressStock
+    PROPERTIES(st) READONLY nameStock, nameLegalEntityStock, nameCountryStock, addressStock
     PROPERTIES(st) FORCE PANEL TOOLBAR SHOWIF isDefaultLegalEntityStock(l,st) editSessionStock, delete
     PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL TOOLBAR
     FILTERS isParentStockGroupStock(sg, st) OR (st IS Stock AND NOT sg)
     FILTERS inLegalEntityStock(l, st)
 
     OBJECTS s=LegalEntity
-    PROPERTIES(s) READONLY name
+    PROPERTIES(s) READONLY nameLegalEntity
 
     OBJECTS c=LegalEntity
-    PROPERTIES(c) READONLY name
+    PROPERTIES(c) READONLY nameLegalEntity
 ;
 
 EXTEND DESIGN legalEntity{
@@ -3170,14 +3201,14 @@ seriesDocument 'Серия' = ABSTRACT STRING[10](Document);
 dateDocument 'Дата' = ABSTRACT DATE(Document);
 
 supplierDocument = ABSTRACT LegalEntity(Document);
-nameSupplierDocument 'Поставщик' (document) = name(supplierDocument(document));
+nameSupplierDocument 'Поставщик' (document) = nameLegalEntity(supplierDocument(document));
 supplierStockDocument = ABSTRACT Stock(Document);
-nameSupplierStockDocument 'Склад поставщика' (document) = name(supplierStockDocument(document));
+nameSupplierStockDocument 'Склад поставщика' (document) = nameStock(supplierStockDocument(document));
 
 customerDocument = ABSTRACT LegalEntity(Document);
-nameCustomerDocument 'Покупатель' (document) = name(customerDocument(document));
+nameCustomerDocument 'Покупатель' (document) = nameLegalEntity(customerDocument(document));
 customerStockDocument = ABSTRACT Stock(Document);
-nameCustomerStockDocument 'Склад покупателя'(document) = name(customerStockDocument(document));
+nameCustomerStockDocument 'Склад покупателя'(document) = nameStock(customerStockDocument(document));
 
 documentDocumentDetail = ABSTRACT Document(DocumentDetail);
 
@@ -3251,7 +3282,7 @@ END
 loadDefaultUOM 'Добавить ед.изм.' = ACTION (stringOne, stringTwo, numeric) {
     ADDOBJ UOM;
     FOR u == addedObject() DO {
-       SET name(u) <- stringOne AS STRING[110];
+       SET nameUOM(u) <- stringOne AS STRING[110];
        SET shortName(u) <- stringTwo AS STRING[5];
        SET baseUOM(u) <- u AS UOM;
        SET factorUOM(u) <- numeric AS NUMERIC[17,3];

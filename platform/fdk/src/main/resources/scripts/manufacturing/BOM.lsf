@@ -16,7 +16,7 @@ TABLE material(Material);
 nameMaterial 'Наименование' (material) = ABSTRACT STRING[255] (Material) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80;
 
 UOMMaterial (material) = ABSTRACT UOM (Material) PERSISTENT;
-shortNameUOMMaterial 'Ед. изм.' (material) = shortName(UOMMaterial(material)) IN base;
+shortNameUOMMaterial 'Ед. изм.' (material) = shortNameUOM(UOMMaterial(material)) IN base;
 
 editMaterial 'Редактировать' = ABSTRACT ACTION (material) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 addMaterial 'Добавить' = ABSTRACT ACTION () IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
@@ -29,7 +29,7 @@ isParentSkuGroupMaterial (skuGroup, material) = isParentSkuGroupSkuGroup(skuGrou
 FORM materials 'Материалы'
 
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuGroupName = name(sg)
+    PROPERTIES READONLY skuGroupName = nameSkuGroup(sg)
 
     OBJECTS m = Material
     PROPERTIES(m) READONLY nameMaterial, shortNameUOMMaterial, objectClassName
@@ -78,12 +78,13 @@ addMaterial () += addSku();
 skuMaterial(material) += material AS Sku;
 
 // -----------  Технологии -------------- //
-CLASS Technology 'Технология' : Named;
+CLASS Technology 'Технология';
 TABLE technology (Technology);
 
-TABLE technologyMaterialDate (Technology, Material, DATE);
-@defineHistorizable(wastageTechnologyMaterial, '% потерь', NUMERIC[8,3], technology, name, material, nameMaterial, base);
+nameTechnology 'Наименование' = DATA ISTRING[50](Technology);
 
+TABLE technologyMaterialDate (Technology, Material, DATE);
+@defineHistorizable(wastageTechnologyMaterial, '% потерь', NUMERIC[8,3], technology, nameTechnology, material, nameMaterial, base);
 
 FORM technology 'Технология'
 
@@ -91,10 +92,10 @@ FORM technology 'Технология'
     PROPERTIES valDt = OBJVALUE(dt) BACKGROUND dateDiffersCurrent(dt)
 
     OBJECTS t=Technology FIXED PANEL
-    PROPERTIES(t) name
+    PROPERTIES(t) nameTechnology
 
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuGroupName = name(sg)
+    PROPERTIES READONLY skuGroupName = nameSkuGroup(sg)
 
     OBJECTS m = Material
     PROPERTIES(m) nameMaterial, shortNameUOMMaterial
@@ -181,7 +182,7 @@ fillWastageTechnology 'Заполнить технологии на другой
 FORM technologies 'Технологии'
 
     OBJECTS t=Technology
-    PROPERTIES(t)  READONLY name
+    PROPERTIES(t)  READONLY nameTechnology
 
     PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
     PROPERTIES (t) fillWastageTechnology
@@ -191,7 +192,10 @@ FORM technologies 'Технологии'
     ORDER BY nameMaterial
 
     FILTERS        wastageTechnologyMaterial(t,m)
+
+    DIALOG Technology OBJECT t
 ;
+
 DESIGN technologies FROM DEFAULT{
     main {
         ADD t.box;
@@ -202,15 +206,17 @@ DESIGN technologies FROM DEFAULT{
 
 // ---------------------- BOM'ы ----------------------
 
-CLASS BOM 'Спецификация' : Named, NumeratedObject, Historizable;
+CLASS BOM 'Спецификация' : NumeratedObject, Historizable;
 TABLE BOM (BOM);
+
+nameBOM 'Наименование' = DATA ISTRING[100](BOM);
 
 @defineDocumentHeaderNote(BOM);
 @defineNumeratedObjectDefault(BOM, 'Нумератор для спецификаций', 'СП');
 
 descriptionBOM 'Название спецификации' (BOM) =
     [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' / \' || CAST($2 AS TEXT) || \' № \' || CAST($3 AS TEXT)'](
-    'Спецификация', name(BOM), seriesNumberObject(BOM)) IF BOM IS BOM MINCHARWIDTH 30 PREFCHARWIDTH 50;
+    'Спецификация', nameBOM(BOM), seriesNumberObject(BOM)) IF BOM IS BOM MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
 // ------------- Изделия ----------- //
 CLASS Product 'Изделие' : Externalizable, Material;
@@ -235,7 +241,7 @@ nameSkuProduct 'SKU' (product) = nameSku(skuProduct(product)) IN recognize;
 idBarcodeSkuProduct 'Штрих-код' (product)= idBarcodeSku(skuProduct(product));
 
 UOMProduct = DATA UOM (Product);
-shortNameUOMProduct 'Ед.изм.' (product) = shortName(UOMProduct(product)) IN recognize;
+shortNameUOMProduct 'Ед.изм.' (product) = shortNameUOM(UOMProduct(product)) IN recognize;
 UOMProduct(product) <- UOMSku(skuProduct(product)) WHEN CHANGED (skuProduct(product));
 
 
@@ -256,7 +262,7 @@ priceCoeffProduct (product) = pricePercentProduct(product) / 100 PERSISTENT;
 pricePercentBOM 'Удельный вес цен, %' = GROUP SUM pricePercentProduct(product) BY BOMProduct(product) PERSISTENT IN documentSumGroup;
 
 nameMaterial(material) += [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \' / \' ||  CAST($2 AS TEXT)'](
-                                      name(BOMProduct(material)),
+                                      nameBOM(BOMProduct(material)),
                                       nameSkuProduct(material));
 
 UOMMaterial(material) += UOMSku(skuProduct(material));
@@ -272,8 +278,10 @@ FORM products 'Изделия'
 
 
 // ------------- Компоненты ----------- //
-CLASS Component 'Компонент' : Named;
+CLASS Component 'Компонент';
 TABLE component (Component);
+
+//nameComponent 'Наименование' = DATA ISTRING[100](Component);
 
 @defineDocumentRelation (BOM, Component, ' (компонент)');
 descriptionComponent 'Название документа' (component)= descriptionBOM(BOMComponent(component));
@@ -290,11 +298,11 @@ componentsBOM 'Компоненты' (BOM) = GROUP CONCAT toString255(nameMateri
                                        ORDER indexComponent(component) MINCHARWIDTH 100 PERSISTENT;
 
 nameComponent 'Компонент' (component) = [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \' / \' ||  CAST($2 AS TEXT)'](
-                                      name(BOMComponent(component)),
+                                      nameBOM(BOMComponent(component)),
                                       nameMaterialComponent(component)) PERSISTENT;
 
 UOMComponent = DATA UOM (Component);
-shortNameUOMComponent 'Ед. изм.' (component) = shortName(UOMComponent(component));
+shortNameUOMComponent 'Ед. изм.' (component) = shortNameUOM(UOMComponent(component));
 UOMComponent(component) <- UOMMaterial(materialComponent(component)) WHEN CHANGED (materialComponent(component));
 
 // Кол-во нетто
@@ -303,7 +311,7 @@ UOMComponent(component) <- UOMMaterial(materialComponent(component)) WHEN CHANGE
 
 // Технология
 technologyComponent = DATA Technology (Component);
-nameTechnologyComponent 'Технология' (component) = name(technologyComponent(component));
+nameTechnologyComponent 'Технология' (component) = nameTechnology(technologyComponent(component));
 
 inTechnologyMaterial 'Связь' (technology, material) = GROUP SUM 1 IF dataWastageTechnologyMaterialDate(technology, material, date) BY technology, material;
 
@@ -371,7 +379,7 @@ FORM BOM 'Спецификация'
     OBJECTS b=BOM FIXED PANEL
 //    OBJECTS dt = DATE FIXED PANEL
 
-    PROPERTIES(b) name, nameNumeratorObject, numberObject, seriesObject, noteBOM, objectClassName
+    PROPERTIES(b) nameBOM, nameNumeratorObject, numberObject, seriesObject, noteBOM, objectClassName
     PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM//, bruttoQuantityComponentBOM
     OBJECTS p = Product
     PROPERTIES(p) indexProduct, idBarcodeSkuProduct,nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct
@@ -411,7 +419,7 @@ DESIGN BOM FROM DEFAULT{
                     title = 'Шапка';
                     childConstraints = TO THE RIGHTBOTTOM;
                     ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
-                    ADD PROPERTY(name) { preferredCharWidth = 20; }
+                    ADD PROPERTY(nameBOM) { preferredCharWidth = 20; }
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
@@ -459,7 +467,7 @@ FORM BOMs 'Спецификации'
 
     OBJECTS b=BOM
 
-    PROPERTIES(b) READONLY name, numberObject, seriesObject, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM, noteBOM, objectClassName
+    PROPERTIES(b) READONLY nameBOM, numberObject, seriesObject, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM, noteBOM, objectClassName
     PROPERTIES (b) ADDFORM, EDITFORM, copyBOM, delete FORCE PANEL TOOLBAR
     PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -517,15 +525,19 @@ DESIGN BOMs FROM DEFAULT {
 //-------------------------------- Комиссия для акта контрольной проработки ----------------------------------//
 CLASS ActStudyOfCulinaryCommittee 'Комиссия для акта контрольной проработки продукции' : Committee;
 
+nameActStudyOfCulinaryCommittee 'Наименование' = DATA ISTRING[150](ActStudyOfCulinaryCommittee);
+
+nameCommittee(committee) += nameActStudyOfCulinaryCommittee(committee) IF committee IS ActStudyOfCulinaryCommittee;
+
 FORM actStudyOfCulinaryCommittee 'Комиссия для акта контрольной проработки продукции'
     OBJECTS c=ActStudyOfCulinaryCommittee FIXED PANEL
-    PROPERTIES(c)      name
+    PROPERTIES(c)      nameActStudyOfCulinaryCommittee
 
     TREE stockTree sg = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
+    PROPERTIES READONLY sgTreeName = nameStockGroup(sg)
 
     OBJECTS ts=Stock
-    PROPERTIES    READONLY tsTreeName = name(ts)
+    PROPERTIES    READONLY tsTreeName = nameStock(ts)
     PROPERTIES(c, ts) inCommitteeEmployeeDivision FORCE GRID
 
     FILTERS isParentStockGroupStock(sg, ts)
@@ -533,7 +545,7 @@ FORM actStudyOfCulinaryCommittee 'Комиссия для акта контро�
 
 
     OBJECTS e=Employee
-    PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
+    PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
     PROPERTIES(c, e)   inCommitteeEmployee
@@ -567,7 +579,7 @@ DESIGN actStudyOfCulinaryCommittee FROM DEFAULT {
 
 FORM actStudyOfCulinaryCommittees 'Комиссии для акта контрольной проработки продукции'
     OBJECTS a=ActStudyOfCulinaryCommittee
-    PROPERTIES(a)      READONLY name, nameEmployeeCommittee
+    PROPERTIES(a)      READONLY nameActStudyOfCulinaryCommittee, nameEmployeeCommittee
     PROPERTIES(a)      ADDFORM, EDITFORM
 
     DIALOG ActStudyOfCulinaryCommittee OBJECT a
@@ -576,14 +588,14 @@ FORM actStudyOfCulinaryCommittees 'Комиссии для акта контро
 // ----------------- Акт контрольной проработки-------------------- //
 
 actStudyOfCulinaryCommitteeBOM (BOM) = DATA ActStudyOfCulinaryCommittee(BOM);
-nameActStudyOfCulinaryCommitteeBOM 'Комиссия для акта контрольной проработки продукции' (BOM) = name(actStudyOfCulinaryCommitteeBOM (BOM)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+nameActStudyOfCulinaryCommitteeBOM 'Комиссия для акта контрольной проработки продукции' (BOM) = nameActStudyOfCulinaryCommittee(actStudyOfCulinaryCommitteeBOM (BOM)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 nameEmployeeCommitteeBOM 'Члены комиссии' (BOM)= nameEmployeeCommittee(actStudyOfCulinaryCommitteeBOM(BOM));
 
 inCommitteeBOMEmployee (BOM, employee) = inCommitteeEmployee(actStudyOfCulinaryCommitteeBOM (BOM), employee);
 commonNameEmployeeCommitteeBOM 'Члены комиссии' (BOM) = namePositionEmployeeCommittee(actStudyOfCulinaryCommitteeBOM (BOM));
 
 companyBOM (BOM) = DATA LegalEntity(BOM);
-nameCompanyBOM 'Компания' (BOM) = name(companyBOM (BOM));
+nameCompanyBOM 'Компания' (BOM) = nameLegalEntity(companyBOM(BOM));
 
 CONSTRAINT  companyBOM(BOM) AND NOT isCompanyLegalEntity(companyBOM (BOM)) CHECKED BY companyBOM
     MESSAGE 'Для спецификации выбрано организация, которая не является компанией';
@@ -603,7 +615,7 @@ EXTEND DESIGN BOM {
             title = 'Акт контрольной проработки';
             NEW row1{
                 title = 'Акт';
-                childConstraints= TO THE RIGHTBOTTOM;
+                childConstraints = TO THE RIGHTBOTTOM;
                 ADD PROPERTY(nameCompanyBOM);
                 ADD PROPERTY(nameActStudyOfCulinaryCommitteeBOM);
             }

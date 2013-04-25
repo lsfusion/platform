@@ -5,7 +5,7 @@ REQUIRE SaleStatistics, Item;
 NAMESPACE Sale;
 
 statisticGroupTypeItem 'Статистическая группа' = DATA StatisticGroup (StatisticGroupType, Item);
-nameStatisticGroupTypeItem 'Статистическая группа' = name(statisticGroupTypeItem(type, item));
+nameStatisticGroupTypeItem 'Статистическая группа' = nameStatisticGroup(statisticGroupTypeItem(type, item));
 
 CONSTRAINT groupTypeStatisticGroup(parentStatisticGroup(group)) != groupTypeStatisticGroup(group)
            CHECKED BY parentStatisticGroup MESSAGE 'Родительский объект статистической группы имеет неправильный тип классификатора';
@@ -18,7 +18,7 @@ overCopyItem(s, d) += ACTION (s, d) {
 
 EXTEND FORM item
     OBJECTS sgt = StatisticGroupType
-    PROPERTIES(sgt) READONLY name, idStatisticGroupType
+    PROPERTIES(sgt) READONLY nameStatisticGroupType, idStatisticGroupType
     FILTERS countryStatisticGroupType(sgt) == c
 
     PROPERTIES(sgt,i) nameStatisticGroupTypeItem

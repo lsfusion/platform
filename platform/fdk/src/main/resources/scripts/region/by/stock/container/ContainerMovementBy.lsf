@@ -10,7 +10,7 @@ FORM printContainerMovementBy 'Отчет по таре' PRINT
     PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
 
     OBJECTS dep = DepartmentStore  FIXED PANEL
-    PROPERTIES(dep) SELECTOR name, nameStoreDepartmentStore, nameLegalEntityDepartmentStore
+    PROPERTIES(dep) SELECTOR nameDepartmentStore, nameStoreDepartmentStore, nameLegalEntityDepartmentStore
 
     OBJECTS bt=Batch
 

@@ -4,8 +4,12 @@ REQUIRE System, Stock, Hierarchy, Barcode, PriceList;
 
 // ------------------------------------ Классификатор товаров --------------------------- //
 
-CLASS ItemGroup 'Товарная группа' : Named, SkuGroup;
+CLASS ItemGroup 'Товарная группа' : SkuGroup;
 TABLE itemGroup (ItemGroup);
+
+nameItemGroup 'Наименование' = DATA ISTRING[100](ItemGroup);
+
+nameSkuGroup(group) += nameItemGroup(group) IF group IS ItemGroup;
 
 TABLE itemGroupItemGroup(ItemGroup, ItemGroup);
 @defineHierarchy(itemGroup);
@@ -30,25 +34,25 @@ moveItemGroup 'Перенести отмеченные группы в теку�
 
 FORM itemGroup 'Товарная группа'
     OBJECTS g=ItemGroup FIXED PANEL
-    PROPERTIES(g) name, nameParentItemGroup
+    PROPERTIES(g) nameItemGroup, nameParentItemGroup
     EDIT ItemGroup OBJECT g
 ;
 
 FORM itemGroups 'Товарные группы'
     TREE treeGroups g=ItemGroup PARENT parentItemGroup
     PROPERTIES inItemGroup(g), moveItemGroup(g) TODRAW g FORCE PANEL TOOLBAR
-    PROPERTIES READONLY name(g), canonicalNameItemGroup (g)
+    PROPERTIES READONLY nameItemGroup(g), canonicalNameItemGroup (g)
     PROPERTIES(g) ADDFORM, EDITFORM, delete
     ORDER BY canonicalNameItemGroup
 ;
 
 FORM dialogItemGroups 'Товарные группы'
     TREE treeGroups tg=ItemGroup PARENT parentItemGroup
-    PROPERTIES READONLY name(tg)
-    ORDER BY name
+    PROPERTIES READONLY nameItemGroup(tg)
+    ORDER BY nameItemGroup
 
     OBJECTS g=ItemGroup
-    PROPERTIES(g) name READONLY, canonicalNameItemGroup READONLY, delete
+    PROPERTIES(g) nameItemGroup READONLY, canonicalNameItemGroup READONLY, delete
     PROPERTIES(g) ADDFORM, EDITFORM
     ORDER BY canonicalNameItemGroup
 
@@ -94,7 +98,7 @@ itemGroupItem = DATA ItemGroup(Item) AUTOSET;
 skuGroupSku(item) += itemGroupItem(item);
 //roundSkuGroupSkuSku(item) += itemGroupItem(item);
 
-nameItemGroupItem 'Группа товара' (item) = name(itemGroupItem(item));
+nameItemGroupItem 'Группа товара' (item) = nameItemGroup(itemGroupItem(item));
 canonicalNameItemGroupItem 'Группа товара' (item) = canonicalNameItemGroup(itemGroupItem(item)) IN base;
 
 TABLE itemGroupItem (ItemGroup, Item);
@@ -106,7 +110,7 @@ TABLE customGroupTypeItem(CustomGroupType, Item);
 customGroupCustomGroupTypeItem = DATA CustomGroup (CustomGroupType, Item);
 customGroupCustomGroupTypeSku(type, item) += customGroupCustomGroupTypeItem(type, item);
 
-nameCustomGroupCustomGroupTypeItem 'Имя' (type, item) = name(customGroupCustomGroupTypeItem(type, item));
+nameCustomGroupCustomGroupTypeItem 'Имя' (type, item) = nameCustomGroup(customGroupCustomGroupTypeItem(type, item));
 canonicalNameCustomGroupCustomGroupTypeItem 'Каноническое имя' (type, item) = canonicalNameCustomGroup(customGroupCustomGroupTypeItem(type, item));
 
 CONSTRAINT customGroupTypeCustomGroup(customGroupCustomGroupTypeItem(type, item)) != type
@@ -139,19 +143,19 @@ FORM item 'Товар'
     FILTERS skuBarcode(b) == i
 
     OBJECTS cgt = CustomGroupType
-    PROPERTIES name(cgt) READONLY, canonicalNameCustomGroupCustomGroupTypeItem(cgt, i)
+    PROPERTIES nameCustomGroupType(cgt) READONLY, canonicalNameCustomGroupCustomGroupTypeItem(cgt, i)
 
     OBJECTS dtr = DATE FIXED PANEL
     PROPERTIES (dtr) OBJVALUE BACKGROUND dateDiffersCurrent(dtr)
 
     OBJECTS c = Country
-    PROPERTIES (c) READONLY name
+    PROPERTIES (c) READONLY nameCountry
 
     OBJECTS st2 = Stock FIXED PANEL
-    PROPERTIES(st2) SELECTOR name
+    PROPERTIES(st2) SELECTOR nameStock
 
     OBJECTS ct = CalcPriceListType
-    PROPERTIES(ct) READONLY name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameRoundConditionPriceListType,
+    PROPERTIES(ct) READONLY nameCalcPriceListType, includeVATPriceListType, nameCurrencyCalcPriceListType, nameRoundConditionPriceListType,
                             nameBasePriceListTypeCalcPriceListType
     PROPERTIES(ct, i, st2) READONLY currentBasePricePriceListTypeSkuStock
     PROPERTIES(ct, i) markupCalcPriceListTypeSku
@@ -244,12 +248,12 @@ addSku () += [ACTION ADDFORM Item]();
 FORM items 'Товары'
 
     OBJECTS gt=GroupType FIXED PANEL
-    PROPERTIES(gt) SELECTOR name
+    PROPERTIES(gt) SELECTOR nameGroupType
 
     TREE groupTree g=Group PARENT parentGroup
-    PROPERTIES READONLY name(g)
+    PROPERTIES READONLY nameGroup(g)
     FILTERS groupTypeGroup(g) == gt
-    ORDER BY name(g)
+    ORDER BY nameGroup(g)
 
     OBJECTS i=Item
     PROPERTIES(i) READONLY idBarcodeSku
@@ -327,9 +331,11 @@ NAVIGATOR {
 
 // ----------------------------------- Атрибуты товаров ------------------------------------------ //
 
-CLASS ABSTRACT ItemAttribute 'Атрибут товара' : Named;
+CLASS ABSTRACT ItemAttribute 'Атрибут товара';
 TABLE itemAttribute(ItemAttribute);
 TABLE itemItemAttribute(Item, ItemAttribute);
+
+nameItemAttribute 'Наименование' = ABSTRACT ISTRING[100](ItemAttribute);
 
 // Отображение
 META defineItemAttribute (attribute, caption, group)
@@ -359,9 +365,9 @@ END
 // Объявление
 valueItemAttribute = ABSTRACT STRING[255] (Item, ItemAttribute) PERSISTENT;
 
-META implementItemAttribute(attribute, caption, itemType, attributeClass)
+META implementItemAttribute(property, caption, itemType, attributeClass)
     EXTEND CLASS itemType##ItemAttribute { attributeClass caption }
-    value###itemType##ItemAttribute(item, attribute) += attribute##Item(item) WHEN attribute == itemType##ItemAttribute.##attributeClass;
+    value###itemType##ItemAttribute(i, a) += property(i) WHEN a == itemType##ItemAttribute.##attributeClass;
 END
 
 META defineItemAttribute(attribute, formProperty, caption, group, itemType, attributeClass)
@@ -372,7 +378,7 @@ META defineItemAttribute(attribute, formProperty, caption, group, itemType, attr
     EXTEND FORM item PROPERTIES(i) formProperty SHOWIF show###attribute##Item(i);
     EXTEND FORM items PROPERTIES(i) READONLYIF isReadonly() BEFORE delete formProperty SHOWIF show###attribute##ItemGroup(g);
 
-    @implementItemAttribute(attribute, caption, itemType, attributeClass);
+    @implementItemAttribute(formProperty, caption, itemType, attributeClass);
 END
 
 // Примитивный тип
@@ -384,7 +390,7 @@ END
 // Расширяем формы настройки
 EXTEND FORM options
     OBJECTS ia = ItemAttribute
-    PROPERTIES(ia) name
+    PROPERTIES(ia) nameItemAttribute
 ;
 
 EXTEND DESIGN options {
@@ -435,6 +441,10 @@ END
 // Строка
 CLASS StringItemAttribute 'Строковый атрибут' : ItemAttribute;
 
+nameStringItemAttribute 'Наименование' = DATA ISTRING[150](StringItemAttribute);
+
+nameItemAttribute(attribute) += nameStringItemAttribute(attribute) IF attribute IS StringItemAttribute;
+
 valueStringItemAttribute = ABSTRACT STRING[255] (Item, StringItemAttribute) EXCLUSIVE PERSISTENT;
 valueItemAttribute(item, attribute) += valueStringItemAttribute(item, attribute);
 
@@ -444,6 +454,10 @@ END
 
 // Целое число
 CLASS IntegerItemAttribute 'Целочисленный атрибут' : ItemAttribute;
+
+nameIntegerItemAttribute 'Наименование' = DATA ISTRING[150](IntegerItemAttribute);
+
+nameItemAttribute(attribute) += nameIntegerItemAttribute(attribute) IF attribute IS IntegerItemAttribute;
 
 valueIntegerItemAttribute = ABSTRACT INTEGER (Item, IntegerItemAttribute) EXCLUSIVE PERSISTENT;
 stringIntegerItemAttribute(item, attribute) = toString255(valueIntegerItemAttribute(item, attribute));
@@ -456,6 +470,13 @@ END
 // Дробное число
 CLASS DoubleItemAttribute 'Дробный атрибут' : ItemAttribute;
 
+nameDoubleItemAttribute 'Наименование' = DATA ISTRING[150](DoubleItemAttribute);
+
+nameItemAttribute(attribute) += nameDoubleItemAttribute(attribute) IF attribute IS DoubleItemAttribute;
+
+
+
+
 valueDoubleItemAttribute = ABSTRACT DOUBLE (Item, DoubleItemAttribute) EXCLUSIVE PERSISTENT;
 stringDoubleItemAttribute(item, attribute) = toString255(valueDoubleItemAttribute(item, attribute));
 valueItemAttribute(item, attribute) += stringDoubleItemAttribute(item, attribute);
@@ -465,46 +486,43 @@ META defineDoubleItemAttribute(attribute, type, caption, group)
 END
 
 // Объектный атрибут
-CLASS ObjectItemAttribute 'Объектный атрибут' : ItemAttribute;
+//CLASS ObjectItemAttribute 'Объектный атрибут' : ItemAttribute;
 
-valueObjectItemAttribute = ABSTRACT Named (Item, ObjectItemAttribute) EXCLUSIVE PERSISTENT;
-nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
-valueItemAttribute(item, attribute) += nameObjectItemAttribute(item, attribute);
-
-META implementObjectItemAttribute(attribute, caption)
-    @implementItemAttribute(attribute, caption, Object, item###attribute);
-END
+//valueObjectItemAttribute = ABSTRACT Named (Item, ObjectItemAttribute) EXCLUSIVE PERSISTENT;
+//nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
+//valueItemAttribute(item, attribute) += nameObjectItemAttribute(item, attribute);
 
 META defineObjectItemAttribute(attribute, identity, caption, group)
     @defineObjectItemAttributeInner(attribute, ###attribute, identity, caption, group);
+
 END
 
 META defineObjectItemAttributeInner(attribute, attributeClass, identity, caption, group)
     attribute##Item = DATA attributeClass (Item);
     identity###attribute##Item caption (item) = identity(attribute##Item(item)) IN group;
-    @defineItemAttribute(attribute, identity###attribute##Item, caption, group, Object, item###attribute);
+    @defineItemAttribute(attribute, identity###attribute##Item, caption, group, String, item###attribute);
 END
 
 // Краткое наименование атрибута
-CLASS ObjectShortItemAttribute 'Объектный краткий атрибут' : ItemAttribute;
+//CLASS ObjectShortItemAttribute 'Объектный краткий атрибут' : ItemAttribute;
+//
+//valueObjectShortItemAttribute = ABSTRACT DoubleNamed (Item, ObjectShortItemAttribute) EXCLUSIVE PERSISTENT;
+//shortNameObjectItemAttribute(item, attribute) = shortName(valueObjectShortItemAttribute(item, attribute));
+//valueItemAttribute(item, attribute) += shortNameObjectItemAttribute(item, attribute);
 
-valueObjectShortItemAttribute = ABSTRACT DoubleNamed (Item, ObjectShortItemAttribute) EXCLUSIVE PERSISTENT;
-shortNameObjectItemAttribute(item, attribute) = shortName(valueObjectShortItemAttribute(item, attribute));
-valueItemAttribute(item, attribute) += shortNameObjectItemAttribute(item, attribute);
+//META implementObjectShortItemAttribute(attribute, caption)
+//    EXTEND CLASS ObjectShortItemAttribute { shortItem###attribute caption }
+//    valueObjectShortItemAttribute(item, attribute) += attribute##Item(item) WHEN attribute == ObjectShortItemAttribute.shortItem###attribute;
+//END
 
-META implementObjectShortItemAttribute(attribute, caption)
-    EXTEND CLASS ObjectShortItemAttribute { shortItem###attribute caption }
-    valueObjectShortItemAttribute(item, attribute) += attribute##Item(item) WHEN attribute == ObjectShortItemAttribute.shortItem###attribute;
-END
-
-//    value###attribute##ItemShortAttribute(item, attribute) = attribute##Item(item) AND attribute == objectShortItemAttribute.shortItem###attribute;
+////    value###attribute##ItemShortAttribute(item, attribute) = attribute##Item(item) AND attribute == objectShortItemAttribute.shortItem###attribute;
 
 // ---------------------------- Конкретные свойства -------------------------------- //
 
 GROUP itemBaseGroup 'Базовые свойства' : base;
 
 // Группа
-@implementObjectItemAttribute(itemGroup, 'Группа товаров');
+@implementItemAttribute(nameItemGroupItem, 'Группа товаров', String, itemItemGroup);
 
 // ------ Базовые свойства товара ------ //
 
@@ -513,33 +531,38 @@ GROUP itemBaseGroup 'Базовые свойства' : base;
 @defineItemAttributeBatch (caption, 'Название');
 
 // Единица измерения
-@defineObjectItemAttribute(UOM, name, 'Единица измерения', itemBaseGroup);
-@defineObjectItemAttributeBatch (UOM, name, 'Единица измерения');
+@defineObjectItemAttribute(UOM, nameUOM, 'Единица измерения', itemBaseGroup);
+@defineObjectItemAttributeBatch (UOM, nameUOM, 'Единица измерения');
 
-shortNameUOMItem 'Единица измерения' (item) = shortName(UOMItem(item)) IN itemBaseGroup;
+shortNameUOMItem 'Единица измерения' (item) = shortNameUOM(UOMItem(item)) IN itemBaseGroup;
 UOMSku(item) += UOMItem(item);
 
-@implementObjectShortItemAttribute(UOM, 'Единица измерения (сокр.)');
+//@implementObjectShortItemAttribute(UOM, 'Единица измерения (сокр.)');
+@implementItemAttribute(shortNameUOMItem, 'Единица измерения (сокр.)', String, itemShortUOM);
 
 // Брэнд
-CLASS Brand 'Бренд' : Named;
+CLASS Brand 'Бренд';
 TABLE brand(Brand);
 
-@defineObjectItemAttribute(brand, name, 'Бренд', itemBaseGroup);
-@defineObjectItemAttributeBatch (brand, name, 'Бренд');
+nameBrand 'Наименование' = DATA ISTRING[50](Brand);
+
+@defineObjectItemAttribute(brand, nameBrand, 'Бренд', itemBaseGroup);
+@defineObjectItemAttributeBatch (brand, nameBrand, 'Бренд');
 
 // Страна
-@defineObjectItemAttribute(country, name, 'Страна', itemBaseGroup);
+@defineObjectItemAttribute(country, nameCountry, 'Страна', itemBaseGroup);
 residentItem 'Отечественное производство' (item) = residentCountry(countryItem(item)) IN itemBaseGroup;
 countrySku(sku) += countryItem(sku);
-@defineObjectItemAttributeBatch (country, name, 'Страна');
+@defineObjectItemAttributeBatch (country, nameCountry, 'Страна');
 
 // Производитель
-CLASS Manufacturer 'Производитель товара' : Named;
+CLASS Manufacturer 'Производитель товара';
 TABLE manufacturer(Manufacturer);
 
-@defineObjectItemAttribute(manufacturer, name, 'Производитель', itemBaseGroup);
-@defineObjectItemAttributeBatch (manufacturer, name, 'Производитель');
+nameManufacturer 'Наименование' = DATA ISTRING[50](Manufacturer);
+
+@defineObjectItemAttribute(manufacturer, nameManufacturer, 'Производитель', itemBaseGroup);
+@defineObjectItemAttributeBatch (manufacturer, nameManufacturer, 'Производитель');
 
 //  Состав
 @defineStringItemAttribute(composition, STRING[255], 'Состав', itemBaseGroup);
@@ -552,7 +575,7 @@ skuTypeSku (sku) += skuTypeItem(sku);
 
 skuTypeItem(item) <- SkuType.skuTypeItem WHEN ASSIGNED(item IS Item);
 
-nameSkuTypeItem 'Тип' (item) = name(skuTypeItem(item)) IN itemBaseGroup;
+nameSkuTypeItem 'Тип' (item) = staticName(skuTypeItem(item)) IN itemBaseGroup;
 EXTEND FORM item PROPERTIES(i) nameSkuTypeItem;
 
 // Весовой
@@ -644,7 +667,7 @@ META defineNumeratorItemGroup (prefix, caption)
 
     prefix##NumeratorItemGroup (itemGroup) =
         UNION OVERRIDE nearest###prefix##NumeratorItemGroup(itemGroup), data###prefix##NumeratorItemGroup(itemGroup) PERSISTENT;
-    name###prefix##NumeratorItemGroup caption (itemGroup) = name(prefix##NumeratorItemGroup(itemGroup)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 10;
+    name###prefix##NumeratorItemGroup caption (itemGroup) = nameNumerator(prefix##NumeratorItemGroup(itemGroup)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 10;
 
     background###prefix##NumeratotItemGroup (itemGroup) = IF data###prefix##NumeratorItemGroup(itemGroup) THEN
                                                                       RGB(190,190,190) IF itemGroup IS ItemGroup

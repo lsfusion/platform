@@ -9,7 +9,7 @@ averageZReportCountGenerateZReport 'Среднее число Z-отчётов' 
 averageReceiptCountGenerateZReport 'Среднее число чеков' = DATA INTEGER ();
 averageReceiptDetailCountGenerateZReport 'Среднее число строк в чеке' = DATA INTEGER ();
 priceListTypeGenerateZReport 'Вид цен' = DATA PriceListType ();
-namePriceListTypeGenerateZReport 'Вид цен' () = name(priceListTypeGenerateZReport());
+namePriceListTypeGenerateZReport 'Вид цен' () = namePriceListType(priceListTypeGenerateZReport());
 dateFromGenerateZReport 'Дата (с)' = DATA DATETIME ();
 dateToGenerateZReport 'Дата (по)' = DATA DATETIME ();
 

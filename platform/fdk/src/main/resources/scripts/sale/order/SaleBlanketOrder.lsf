@@ -13,7 +13,7 @@ numeratorBlanketOrderStock(order, stock) <- saleDefaultNumeratorUserOrder() WHEN
 //----------------------------------------------- Операции -----------------------------------------------------//
 
 operationBlanketOrder = DATA Operation (BlanketOrder);
-nameOperationBlanketOrder 'Операция' = name(operationBlanketOrder(blanketOrder));
+nameOperationBlanketOrder 'Операция' = nameOperation(operationBlanketOrder(blanketOrder));
 
 operationOrder(order) += operationBlanketOrder(blanketOrderBlanketOrderOrder(order));
 

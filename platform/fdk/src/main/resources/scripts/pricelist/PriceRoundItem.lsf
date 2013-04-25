@@ -4,3 +4,5 @@ REQUIRE PriceRound, Item;
 
 EXTEND CLASS ItemGroup : RoundGroup;
 roundGroupSku(sku) += itemGroupItem(sku);
+
+nameRoundGroup(group) += nameItemGroup(group) IF group IS ItemGroup;

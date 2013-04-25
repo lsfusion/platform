@@ -11,14 +11,14 @@ FORM menuPrint 'Меню' PRINT
                    nameGroupTypeMenu
 
     OBJECTS g1=Group
-    PROPERTIES READONLY nameG = name(g1)
+    PROPERTIES READONLY nameG = nameGroup(g1)
     PROPERTIES(m,g1) positionNumberMenuGroup
     FILTERS groupTypeGroup(g1) == groupTypeMenu(m),
             g1 IS Group AND NOT parentGroup(g1)
     ORDER BY positionNumberMenuGroup(m,g1)
 
     OBJECTS g2=Group
-    PROPERTIES READONLY nameGr = name(g2)
+    PROPERTIES READONLY nameGr = nameGroup(g2)
     PROPERTIES(m,g2) positionNumberMenuGroup
     FILTERS groupTypeGroup(g2) == groupTypeMenu(m),
             parentGroup(g2) == g1

@@ -6,6 +6,6 @@ EXTEND CLASS LegalEntity : Dimension;
 EXTEND CLASS DimensionType {
     organization 'Организация'
 }
-nameDimension (dimension) += name(dimension) IF dimension IS LegalEntity;
+nameDimension (dimension) += nameLegalEntity(dimension) IF dimension IS LegalEntity;
 dimensionTypeDimension (dimension) += DimensionType.organization WHEN dimension IS LegalEntity;
 
