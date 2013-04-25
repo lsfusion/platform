@@ -41,7 +41,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         super(RomanLM, "Импортировать инвойс", supplierClass, extensions);
     }
 
-    protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException, ParseException, SAXException, OpenXML4JException {
+    protected ImportInputTable createTable(ByteArrayInputStream inFile) throws IOException, ParseException, SAXException, OpenXML4JException, BiffException {
         return new ExcelInputTable(inFile);
     }
 

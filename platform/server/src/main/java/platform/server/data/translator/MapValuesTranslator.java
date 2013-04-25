@@ -126,6 +126,11 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
     }
 
     @Override
+    public <K extends Value, U> ImMap<K, U> translateValuesMapKeys(ImMap<K, U> map) {
+        return map.mapKeys(this.<K>TRANSVALUE());
+    }
+
+    @Override
     public <K extends Value, U> ImRevMap<K, U> translateValuesMapKeys(ImRevMap<K, U> map) {
         return map.mapRevKeys(this.<K>TRANSVALUE());
     }
