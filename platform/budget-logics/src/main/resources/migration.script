@@ -212,3 +212,7 @@ V0.6.3 {
     OBJECT remains -> Inventory_typeOfAddition.remains
     OBJECT many -> Inventory_typeOfAddition.many
 }
+
+V0.8.0 {
+    PROPERTY classSID -> staticID
+}

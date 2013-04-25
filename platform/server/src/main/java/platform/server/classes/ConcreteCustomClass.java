@@ -189,13 +189,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return names;
     }
 
-    public Map<DataObject, String> fillIDs(DataSession session, LCP name, LCP classSID, Map<String, ConcreteCustomClass> usedSIds, Set<Integer> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException {
+    public Map<DataObject, String> fillIDs(DataSession session, LCP name, LCP staticID, Map<String, ConcreteCustomClass> usedSIds, Set<Integer> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException {
         Map<DataObject, String> modifiedNames = new HashMap<DataObject, String>();
 
         // Получаем старые sid и name
         QueryBuilder<String, String> allClassesQuery = new QueryBuilder<String, String>(SetFact.singleton("key"));
         Expr key = allClassesQuery.getMapExprs().singleValue();
-        Expr sidExpr = classSID.getExpr(session.getModifier(), key);
+        Expr sidExpr = staticID.getExpr(session.getModifier(), key);
         allClassesQuery.and(sidExpr.getWhere());
         allClassesQuery.and(key.isClass(this));
         allClassesQuery.addProperty("sid", sidExpr);
@@ -235,7 +235,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             } else {
                 DataObject classObject = session.addObject(this);
                 name.change(info.caption, session, classObject);
-                classSID.change(newSID, session, classObject);
+                staticID.change(newSID, session, classObject);
                 info.id = (Integer) classObject.object;
             }
 

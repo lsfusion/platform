@@ -160,7 +160,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP objectClass;
     public LCP objectClassName;
-    public LCP classSID;
+    public LCP staticID;
     public LCP staticName;
 
     public LCP defaultBackgroundColor;
@@ -407,14 +407,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         name = addDProp(recognizeGroup, "name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
 
-        // todo : тут надо рефакторить как имена свойст, так и классов
-        classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass);
+        staticID = addDProp("staticID", getString("logics.statcode"), StringClass.get(250), baseClass);
         staticName = addDProp(recognizeGroup, "staticName", "Статическое имя", InsensitiveStringClass.get(50), baseClass);
+        ((CalcProperty)staticName.property).aggProp = true;
 
+        // todo : поменять возможно названия
         objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), staticName, objectClass, 1);
 
-        ((CalcProperty)staticName.property).aggProp = true;
 /*        name.setEventChange(addJProp(string2SP, addJProp(name.getOld(), objectClass, 1), 1,
                 addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
                 is(baseClass.named), 1);*/

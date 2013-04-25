@@ -7,8 +7,6 @@ TABLE currency(Currency);
 
 nameCurrency 'Наименование' = DATA ISTRING[50](Currency);
 
-
-
 symbolCurrency 'Символ' = DATA STRING[5] (Currency);
 shortNameCurrency 'Валюта сокр.' = DATA STRING[3] (Currency);
 documentNameCurrency 'Валюта в накладной сокр.' = DATA STRING[10] (Currency);

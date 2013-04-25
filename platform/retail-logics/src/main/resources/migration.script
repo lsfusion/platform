@@ -699,3 +699,7 @@ V0.6.5 {
     PROPERTY Security_dataPermitChangeUserRoleAbstractGroup -> Security_dataPermitChangeUserRolePropertyGroup
     PROPERTY Security_dataForbidChangeUserRoleAbstractGroup -> Security_dataForbidChangeUserRolePropertyGroup
 }
+
+V0.8.0 {
+    PROPERTY classSID -> staticID
+}

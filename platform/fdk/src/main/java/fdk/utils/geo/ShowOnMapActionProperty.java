@@ -41,7 +41,7 @@ public class ShowOnMapActionProperty extends ScriptingActionProperty {
             DataObject addressMap = context.getKeyValue(addressInterface);
 
             if (latitude.object != null && longitude.object != null) {
-                String url =  ((String)getLCP("classSID").read(context, mapProvider)).contains("yandex")  ?
+                String url =  ((String)getLCP("staticID").read(context, mapProvider)).contains("yandex")  ?
                         ("http://maps.yandex.ru/?"+ "text=" + addressMap.object.toString().trim().replace(" ","%20").replace(",", "%2C") + "&ll=" + longitude.object + "+%2C" + latitude.object + "&z=17") :
                         ("http://maps.google.com/?q=loc:" + latitude.object + "+" + longitude.object);
 

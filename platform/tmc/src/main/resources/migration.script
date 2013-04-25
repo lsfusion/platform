@@ -98,3 +98,7 @@ V0.6.2 {
     PROPERTY forbidEditProfileCustomUser -> Authentication_forbidEditProfileCustomUser
     PROPERTY Email_emailContact -> Contact_emailContact
 }
+
+V0.8.0 {
+    PROPERTY classSID -> staticID
+}

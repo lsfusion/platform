@@ -10,12 +10,12 @@ public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
 
     public void createModules() throws IOException {
         super.createModules();
-        budgetLM = addModule(new BudgetLogicsModule(LM, this));
-
         addModulesFromResource(
                 "scripts/utils/DefaultData.lsf",
                 "scripts/utils/Utils.lsf",
                 "scripts/masterdata/MasterData.lsf",
                 "scripts/masterdata/Currency.lsf");
+
+        budgetLM = addModule(new BudgetLogicsModule(LM, this));
     }
 }

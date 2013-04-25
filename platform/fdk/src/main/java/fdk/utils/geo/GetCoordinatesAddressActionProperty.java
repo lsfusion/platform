@@ -46,7 +46,7 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
             String address = (String) fullAddress.object;
             if (address != null) {
 
-                if (((String)getLCP("classSID").read(session, mapProvider)).contains("yandex")) {
+                if (((String)getLCP("staticID").read(session, mapProvider)).contains("yandex")) {
 
                     String url = "http://geocode-maps.yandex.ru/1.x/?geocode=" + address.trim().replace(" ", "+") + "&results=1&format=json";
 
