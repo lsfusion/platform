@@ -94,9 +94,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public ServerResponse pasteExternalTable(long requestIndex, List<Integer> propertyIDs, List<List<String>> table) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<String>> table) throws RemoteException {
         logRemoteMethodStartCall("pasteExternalTable");
-        ServerResponse result = target.pasteExternalTable(requestIndex, propertyIDs, table);
+        ServerResponse result = target.pasteExternalTable(requestIndex, propertyIDs, columnKeys, table);
         logRemoteMethodEndCall("pasteExternalTable", result);
         return result;
     }

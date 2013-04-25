@@ -580,9 +580,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
 
         final ArrayList<GPropertyDraw> propertiesAfterSelected = new ArrayList<GPropertyDraw>();
+        final List<GGroupObjectValue> columnKeys = new ArrayList<GGroupObjectValue>();
         for (int i = selectedColumn; i < getColumnCount(); i++) {
             GPropertyDraw propertyDraw = getProperty(i);
             propertiesAfterSelected.add(propertyDraw);
+            columnKeys.add(getColumnKey(i));
         }
 
         if (multi) {
@@ -590,12 +592,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 @Override
                 public void closed(DialogBoxHelper.OptionType chosenOption) {
                     if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                        form.pasteExternalTable(propertiesAfterSelected, dataLine);
+                        form.pasteExternalTable(propertiesAfterSelected, columnKeys, dataLine);
                     }
                 }
             });
         } else {
-            form.pasteExternalTable(propertiesAfterSelected, dataLine);
+            form.pasteExternalTable(propertiesAfterSelected, columnKeys, dataLine);
         }
     }
 

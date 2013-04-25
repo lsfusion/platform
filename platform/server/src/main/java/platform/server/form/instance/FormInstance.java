@@ -671,7 +671,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    public void pasteExternalTable(List<Integer> propertyIDs, List<List<String>> table) throws SQLException {
+    public void pasteExternalTable(List<Integer> propertyIDs, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<String>> table) throws SQLException {
         List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
         for (Integer id : propertyIDs) {
             properties.add(getPropertyDraw(id));
@@ -693,7 +693,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 mvPasteRows.mapValue(j, table.get(j).get(i));
             }
 
-            executePasteAction(property, mvPasteRows.immutableValueOrder());
+            executePasteAction(property, columnKeys.get(i), mvPasteRows.immutableValueOrder());
         }
     }
 
@@ -714,14 +714,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, String value) throws SQLException {
         for (Integer propertyId : cells.keySet()) { // бежим по ячейкам
             PropertyDrawInstance property = getPropertyDraw(propertyId);
-            executePasteAction(property, readObjects(cells.get(propertyId)).toOrderMap(value));
+            executePasteAction(property, null, readObjects(cells.get(propertyId)).toOrderMap(value));
         }
     }
 
-    private void executePasteAction(PropertyDrawInstance<?> property, ImOrderMap<ImMap<ObjectInstance, DataObject>, String> pasteRows) throws SQLException {
+    private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, String> pasteRows) throws SQLException {
         if (!pasteRows.isEmpty()) {
             for (int i = 0, size = pasteRows.size(); i < size; i++) {
                 ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
+                if (columnKey != null) {
+                    key = key.addExcl(columnKey);
+                }
+
                 String sValue = pasteRows.getValue(i);
                 ObjectValue value = null;
                 if (sValue != null) {

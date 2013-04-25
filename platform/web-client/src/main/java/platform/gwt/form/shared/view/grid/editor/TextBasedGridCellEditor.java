@@ -136,6 +136,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
             inputStyle.setFontSize(8, Style.Unit.PT);
         }
         cellParent.getStyle().setProperty("height", cellParent.getParentElement().getStyle().getHeight());
+        cellParent.getStyle().setPadding(0, Style.Unit.PX);
 
         if (textAlign != null) {
             inputStyle.setTextAlign(textAlign);

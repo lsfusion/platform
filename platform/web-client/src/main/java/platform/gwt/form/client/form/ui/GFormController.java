@@ -478,8 +478,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
 
-    public void pasteExternalTable(List<GPropertyDraw> properties, String dataLine) {
-        syncDispatch(new PasteExternalTable(properties, dataLine), new ServerResponseCallback());
+    public void pasteExternalTable(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, String dataLine) {
+        syncDispatch(new PasteExternalTable(properties, columnKeys, dataLine), new ServerResponseCallback());
     }
 
     public void changePageSize(GGroupObject groupObject, int pageSize) {

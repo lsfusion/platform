@@ -275,11 +275,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private ObjectInstance updateCurrentClass = null;
 
-    public ServerResponse pasteExternalTable(long requestIndex, final List<Integer> propertyIDs, final List<List<String>> table) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<String>> table) throws RemoteException {
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
-                form.pasteExternalTable(propertyIDs, table);
+                List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<ImMap<ObjectInstance, DataObject>>();
+                for (int i =0; i < propertyIDs.size(); i++) {
+                    PropertyDrawInstance<?> property = form.getPropertyDraw(propertyIDs.get(i));
+                    keys.add(deserializePropertyKeys(property, columnKeys.get(i)));
+                }
+                form.pasteExternalTable(propertyIDs, keys, table);
             }
         });
     }

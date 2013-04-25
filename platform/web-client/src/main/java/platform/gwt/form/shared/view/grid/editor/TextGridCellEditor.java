@@ -30,6 +30,8 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
         textareaStyle.setWidth(100, Style.Unit.PCT);
         textareaStyle.setHeight(100, Style.Unit.PCT);
         textareaStyle.setProperty("resize", "none");
+        textareaStyle.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
+        textareaStyle.setProperty("wordWrap", "break-word");
 
         if (property.font != null) {
             textareaStyle.setProperty("font", property.font.getFullFont());
@@ -37,6 +39,7 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
         textareaStyle.setFontSize(8, Style.Unit.PT);
 
         cellParent.getStyle().setProperty("height", cellParent.getParentElement().getStyle().getHeight());
+        cellParent.getStyle().setPadding(0, Style.Unit.PX);
 
         textArea.setValue(currentText);
     }

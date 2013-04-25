@@ -5,6 +5,7 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.client.form.TableTransferHandler;
 import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.server.FormSessionObject;
+import platform.gwt.form.server.convert.GwtToClientConverter;
 import platform.gwt.form.shared.actions.form.PasteExternalTable;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
 
@@ -13,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PasteExternalTableHandler extends ServerResponseActionHandler<PasteExternalTable> {
+    private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
+
     public PasteExternalTableHandler(FormDispatchServlet servlet) {
         super(servlet);
     }
@@ -28,8 +31,10 @@ public class PasteExternalTableHandler extends ServerResponseActionHandler<Paste
         int columnsToInsert = Math.min(tableColumns, action.properties.size());
 
         List<Integer> propertyIDs = new ArrayList<Integer>();
+        List<byte[]> columnKeys = new ArrayList<byte[]>();
         for (int i = 0; i < columnsToInsert; i++) {
             propertyIDs.add(action.properties.get(i).ID);
+            columnKeys.add((byte[]) gwtConverter.convertOrCast(action.columnKeys.get(i)));
         }
 
         List<List<String>> dataTable = new ArrayList<List<String>>();
@@ -46,6 +51,6 @@ public class PasteExternalTableHandler extends ServerResponseActionHandler<Paste
         }
 
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.pasteExternalTable(action.requestIndex, propertyIDs, dataTable));
+        return getServerResponseResult(form, form.remoteForm.pasteExternalTable(action.requestIndex, propertyIDs, columnKeys, dataTable));
     }
 }

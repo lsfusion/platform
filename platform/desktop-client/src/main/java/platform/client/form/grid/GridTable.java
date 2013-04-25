@@ -696,9 +696,11 @@ public class GridTable extends ClientPropertyTable {
                 int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
 
                 List<ClientPropertyDraw> propertyList = new ArrayList<ClientPropertyDraw>();
+                List<ClientGroupObjectValue> columnKeys = new ArrayList<ClientGroupObjectValue>();
                 for (int i = 0; i < columnsToInsert; i++) {
                     ClientPropertyDraw propertyDraw = model.getColumnProperty(selectedColumn + i);
                     propertyList.add(propertyDraw);
+                    columnKeys.add(model.getColumnKey(selectedColumn + i));
                 }
 
                 List<List<String>> pasteTable = new ArrayList<List<String>>();
@@ -719,7 +721,7 @@ public class GridTable extends ClientPropertyTable {
                     }
                     pasteTable.add(pasteTableRow);
                 }
-                form.pasteExternalTable(propertyList, pasteTable);
+                form.pasteExternalTable(propertyList, columnKeys, pasteTable);
             } else {
                 form.pasteMulticellValue(selectionController.getSelectedCells(), table.get(0).get(0));
                 selectionController.resetSelection();
