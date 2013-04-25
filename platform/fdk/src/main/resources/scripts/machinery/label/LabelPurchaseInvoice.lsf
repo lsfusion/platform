@@ -19,6 +19,6 @@ PROPERTIES(i) statusLabelPriceTransactionDocument ON SHORTCUT createSnapshotInvo
 ;
 EXTEND DESIGN invoices {
     machineryContainer{
-        ADD PROPERTY (createInvoiceMachineryPriceTransaction);
+        ADD PROPERTY (createInvoiceLabelTransaction);
     }
 }

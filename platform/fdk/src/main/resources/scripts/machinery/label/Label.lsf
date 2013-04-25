@@ -42,24 +42,6 @@ inDataLabelTypeDepartmentStore 'Включен' (labelType, departmentStore) = D
 inLabelTypeDepartmentStore 'Включен' (labelType, departmentStore) =
     UNION OVERRIDE inLabelTypeStore(labelType, storeDepartmentStore(departmentStore)),
                    inDataLabelTypeDepartmentStore(labelType, departmentStore) PERSISTENT;
-//-- Приоритет
-dataPriorityLabelType 'Приоритет' = DATA INTEGER (LabelType);
-priorityLabelType 'Приоритет' (labelType) =
-    UNION OVERRIDE (0 AND labelType IS LabelType),
-                   dataPriorityLabelType(labelType);
-
-dataPriorityLabelTypeStoreType 'Приоритет' (labelType, storeType) = DATA INTEGER (LabelType, StoreType);
-priorityLabelTypeStoreType 'Приоритет' (labelType, storeType) =
-    UNION OVERRIDE priorityLabelType(labelType) AND storeType IS StoreType,
-                   dataPriorityLabelTypeStoreType(labelType, storeType);
-dataPriorityLabelTypeStore 'Приоритет' (labelType, store) = DATA INTEGER (LabelType, Store);
-priorityLabelTypeStore 'Приоритет' (labelType, store) =
-    UNION OVERRIDE priorityLabelTypeStoreType(labelType, storeTypeStore(store)),
-                   dataPriorityLabelTypeStore(labelType, store);
-dataPriorityLabelTypeDepartmentStore 'Приоритет' (labelType, departmentStore) = DATA INTEGER (LabelType, DepartmentStore);
-priorityLabelTypeDepartmentStore 'Приоритет' (labelType, departmentStore) =
-    UNION OVERRIDE priorityLabelTypeStore(labelType, storeDepartmentStore(departmentStore)),
-                   dataPriorityLabelTypeDepartmentStore(labelType, departmentStore);
 
 groupTypeLabelType = DATA GroupType (LabelType);
 nameGroupTypeLabelType 'Тип классификатора' (labelType) = name(groupTypeLabelType(labelType));
@@ -82,37 +64,44 @@ inLabelTypeSku 'Вкл.' (labelType, sku) =
     UNION OVERRIDE inLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)),
                    dataInLabelTypeSku(labelType, sku);
 
-listLabelTypeDepartmentStoreSku (labelType, departmentStore) = STRUCT(priorityLabelTypeDepartmentStore(labelType, departmentStore), labelType) PERSISTENT;
-
-
-concatSkuDepartmentStore (sku, departmentStore)= GROUP MAX listLabelTypeDepartmentStoreSku (labelType, departmentStore) IF
-                                                           inLabelTypeSku(labelType, sku) AND
-                                                           inLabelTypeDepartmentStore(labelType, departmentStore)
-    BY sku, departmentStore;
-
-labelTypeSkuDepartmentStore (sku, departmentStore)= concatSkuDepartmentStore (sku, departmentStore)[2];
-nameLabelTypeSkuDepartmentStore 'Тип ценника по умолчанию' (sku, departmentStore)= name(labelTypeSkuDepartmentStore (sku, departmentStore));
-
 //-- Множитель
-dataCountLabelLabelTypeGroup 'Множитель' = DATA INTEGER (LabelType, Group);
-dataCountLabelLabelTypeSku 'Множитель' = DATA INTEGER (LabelType, Sku);
+dataCountLabelTypeGroup 'Множитель' = DATA INTEGER (LabelType, Group);
+dataCountLabelTypeSku 'Множитель' = DATA INTEGER (LabelType, Sku);
 
-levelParentCountLabelLabelTypeGroup (labelType, group) = GROUP MIN levelGroupGroup(group, parent) IF dataCountLabelLabelTypeGroup(labelType, parent)
+levelParentCountLabelLabelTypeGroup (labelType, group) = GROUP MIN levelGroupGroup(group, parent) IF dataCountLabelTypeGroup(labelType, parent)
                                                               BY labelType, group PERSISTENT;
 nearestParentCountLabelLabelTypeGroup (labelType, group) = groupGroupLevel(group, levelParentCountLabelLabelTypeGroup (labelType, group));
 nearestCountLabelLabelTypeGroup 'Множитель' (labelType, group) =
-    dataCountLabelLabelTypeGroup(labelType, nearestParentCountLabelLabelTypeGroup (labelType, group)) PERSISTENT;
+    dataCountLabelTypeGroup(labelType, nearestParentCountLabelLabelTypeGroup (labelType, group)) PERSISTENT;
 
-countLabelLabelTypeGroup 'Множитель' (labelType, group) =
+countLabelTypeGroup 'Множитель' (labelType, group) =
     UNION OVERRIDE 1 IF group IS Group AND labelType IS LabelType,
                    nearestCountLabelLabelTypeGroup(labelType, group),
-                   dataCountLabelLabelTypeGroup(labelType, group) PERSISTENT;
+                   dataCountLabelTypeGroup(labelType, group) PERSISTENT;
 
-countLabelLabelTypeSku 'Множитель' (labelType, sku) =
-    UNION OVERRIDE countLabelLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)),
-                   dataCountLabelLabelTypeSku(labelType, sku);
+countLabelTypeSku 'Множитель' (labelType, sku) =
+    UNION OVERRIDE countLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)),
+                   dataCountLabelTypeSku(labelType, sku);
 
-countLabelSkuDepartmentStore 'Множитель' (sku, departmentStore) = countLabelLabelTypeSku(labelTypeSkuDepartmentStore (sku, departmentStore), sku);
+//-- Количество для печати ценника брать множитель или из документа.
+includeLabelType 'Из документа'= DATA BOOLEAN (LabelType);
+dataIncludeLabelTypeGroup 'Из документа' = DATA BOOLEAN (LabelType, Group);
+dataIncludeLabelTypeSku 'Из документа' = DATA BOOLEAN (LabelType, Sku);
+
+levelParentIncludeLabelLabelTypeGroup (labelType, group) = GROUP MIN levelGroupGroup(group, parent) IF dataIncludeLabelTypeGroup(labelType, parent)
+                                                              BY labelType, group PERSISTENT;
+nearestParentIncludeLabelLabelTypeGroup (labelType, group) = groupGroupLevel(group, levelParentIncludeLabelLabelTypeGroup (labelType, group));
+nearestIncludeLabelLabelTypeGroup 'Из документа' (labelType, group) =
+    dataIncludeLabelTypeGroup(labelType, nearestParentIncludeLabelLabelTypeGroup (labelType, group)) PERSISTENT;
+
+includeLabelTypeGroup 'Из документа' (labelType, group) =
+    UNION OVERRIDE includeLabelType(labelType) AND  group IS Group,
+                   nearestIncludeLabelLabelTypeGroup(labelType, group),
+                   dataIncludeLabelTypeGroup(labelType, group) PERSISTENT;
+
+includeLabelTypeSku 'Из документа' (labelType, sku) =
+    UNION OVERRIDE includeLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)),
+                   dataIncludeLabelTypeSku(labelType, sku);
 
 FORM labelType 'Тип ценника'
     OBJECTS l = LabelType FIXED PANEL
@@ -127,10 +116,8 @@ FORM labelType 'Тип ценника'
     FILTERS (d IS DepartmentStore AND NOT s IS Store AND NOT st IS StoreType) OR
             (storeDepartmentStore(d)==s AND st IS StoreType) OR
             (storeTypeDepartmentStore(d)==st AND NOT s IS Store)
-    PROPERTIES(l) inLabelType TODRAW a FORCE GRID
+    PROPERTIES(l) TODRAW a FORCE GRID inLabelType, includeLabelType
     PROPERTIES inLabelTypeStoreType(l,st), inLabelTypeStore(l,s), inLabelTypeDepartmentStore(l,d)
-    PROPERTIES(l) priorityLabelType TODRAW a FORCE GRID
-    PROPERTIES priorityLabelTypeStoreType(l,st), priorityLabelTypeStore(l,s), priorityLabelTypeDepartmentStore(l,d)
 
     ORDER BY depName
 
@@ -138,12 +125,12 @@ FORM labelType 'Тип ценника'
     PROPERTIES READONLY name(g)
     FILTERS groupTypeGroup(g) == groupTypeLabelType(l)
     ORDER BY name(g)
-    PROPERTIES(l, g) inLabelTypeGroup, countLabelLabelTypeGroup
+    PROPERTIES(l, g) inLabelTypeGroup, countLabelTypeGroup, includeLabelTypeGroup
 
     OBJECTS sk = Sku
     PROPERTIES(sk) READONLY nameSku, idBarcodeSku
     FILTERS isParentGroupSku(g, sk) OR sk IS Sku AND NOT g
-    PROPERTIES(l, sk) inLabelTypeSku, countLabelLabelTypeSku
+    PROPERTIES(l, sk) inLabelTypeSku, countLabelTypeSku, includeLabelTypeSku
 
     EDIT LabelType OBJECT l
 ;
@@ -304,26 +291,41 @@ DESIGN labelTransactions FROM DEFAULT {
 
 // -------------------------------------------- Действия по печати ценников ------------------------------ //
 
-priceLabelBarcodeDepartmentStore (barcode, departmentStore) = pricePriceListTypeSkuStockDateTime(priceListTypeLabelType(labelTypeSkuDepartmentStore(skuBarcode(barcode),departmentStore)),
+inLabelTypeBarcodeDepartmentStore (labelType, barcode, departmentStore) = inLabelTypeSku(labelType, skuBarcode(barcode)) AND  inLabelTypeDepartmentStore(labelType, departmentStore);
+priceLabelTypeBarcodeDepartmentStore (labelType, barcode, departmentStore) = pricePriceListTypeSkuStockDateTime(priceListTypeLabelType(labelType),
                                                                                                  skuBarcode(barcode),
                                                                                                  departmentStore,
-                                                                                                 currentDateTime());
+                                                                                                 currentDateTime()) AND inLabelTypeBarcodeDepartmentStore (labelType, barcode, departmentStore);
+countLabelTypeBarcode (labelType, barcode) = countLabelTypeSku(labelType, skuBarcode(barcode));
+includeLabelTypeBarcode (labelType, barcode)= includeLabelTypeSku(labelType, skuBarcode(barcode));
 
-labelTypeBarcodeDepartmentStore (barcode, departmentStore) = labelTypeSkuDepartmentStore(skuBarcode(barcode), departmentStore);
-countLabelBarcodeDepartmentStore (barcode, departmentStore) = countLabelSkuDepartmentStore(skuBarcode(barcode), departmentStore);
-
-createLabelTransactionSku = DATA SESSION BOOLEAN (Sku);
+quantityLabelTransactionSku = DATA SESSION NUMERIC[14,3] (Sku);
 createLabelTransactionDocument = DATA SESSION PriceTransactionDocument();
 createLabelTransactionSnapshot = DATA SESSION BOOLEAN();
 
 createAttributeLabelTransaction = ABSTRACT ACTION (labelTransaction);
 
+
+    WHEN SESSION FORMS customLabelTransaction
+        CHANGED(labelTypeLabelTransaction(transaction))
+            DO {
+                SET priceLabelTransactionBarcode(transaction, barcode) <- priceLabelTypeBarcodeDepartmentStore(labelTypeLabelTransaction(transaction), barcode, departmentStoreLabelTransaction(transaction)) WHERE inLabelTransactionBarcode(transaction, barcode);
+            };
+
+    WHEN SESSION FORMS customLabelTransaction
+        CHANGED(labelTypeLabelTransaction(transaction))
+            DO {
+                SET quantityLabelTransactionBarcode(transaction, barcode) <- IF includeLabelTypeBarcode(labelTypeLabelTransaction(transaction), barcode)
+                                                                                 THEN toInteger(quantityLabelTransactionSku(skuBarcode(barcode)))
+                                                                                 ELSE countLabelTypeBarcode(labelTypeLabelTransaction(transaction), barcode)
+                                                                                     WHERE inLabelTransactionBarcode(transaction, barcode);
+            };
+
+
 createLabelTransactionFillParams 'Заполнить параметры' = ACTION (labelTransaction, departmentStore) {
     SET departmentStoreLabelTransaction(labelTransaction) <- departmentStore;
     SET priceTransactionDocumentLabelTransaction(labelTransaction) <- createLabelTransactionDocument();
-
     SET nameLabelTransactionBarcode(labelTransaction, barcode) <- nameSkuBarcode(barcode) WHERE inLabelTransactionBarcode(labelTransaction, barcode);
-    SET priceLabelTransactionBarcode(labelTransaction, barcode) <- priceLabelBarcodeDepartmentStore(barcode, departmentStore) WHERE inLabelTransactionBarcode(labelTransaction, barcode);
 
     EXEC createAttributeLabelTransaction(labelTransaction);
 }
@@ -331,16 +333,14 @@ createLabelTransactionFillParams 'Заполнить параметры' = ACTIO
 createLabelTransaction 'Распечатать ценники' = ACTION (departmentStore) {
 
     LOCAL inBarcode = BOOLEAN (Barcode);
-    SET inBarcode(barcode) <- createLabelTransactionSku(skuBarcode(barcode));
+    SET inBarcode(barcode) <- TRUE IF quantityLabelTransactionSku(skuBarcode(barcode));
 
     // разбивается на несколько выполнений, чтобы не тупил PostgreSQL со сложным запросом
     SET inBarcode(barcode) <- activeBarcode(barcode) WHERE inBarcode(barcode); // если штрих-код является активным
-    SET inBarcode(barcode) <- TRUE IF priceLabelBarcodeDepartmentStore(barcode, departmentStore) WHERE inBarcode(barcode); // если по штрих-коду есть цена
 
     IF createLabelTransactionSnapshot() THEN {
         FOR ADDOBJ t = LabelTransaction DO {
             SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode);
-            SET quantityLabelTransactionBarcode(t, barcode) <- 1 WHERE inLabelTransactionBarcode(t, barcode);
             EXEC createLabelTransactionFillParams(t, departmentStore);
             FORM customLabelTransaction OBJECTS l = t AS LabelTransaction MODAL;
             IF formResult() == FormResult.ok THEN {
@@ -349,11 +349,15 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
         }
     } ELSE {
         // бежим по всем типам ценников из управленческих параметров
-        FOR ([GROUP SUM 1 AND inBarcode(barcode) BY labelTypeBarcodeDepartmentStore(barcode, departmentStore), departmentStore](labelType, departmentStore)) DO {
+        FOR ([GROUP SUM 1 AND inBarcode(barcode) AND inLabelTypeBarcodeDepartmentStore(labelType, barcode, departmentStore) BY labelType, departmentStore](labelType, departmentStore)) DO {
             // для каждого создаем по операции печати ценников
             FOR ADDOBJ t = LabelTransaction DO {
-                SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) WHERE labelTypeBarcodeDepartmentStore(barcode, departmentStore) == labelType;
-                SET quantityLabelTransactionBarcode(t, barcode) <- countLabelBarcodeDepartmentStore(barcode, departmentStore) WHERE inLabelTransactionBarcode(t, barcode);
+                SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) WHERE inLabelTypeBarcodeDepartmentStore(labelType, barcode, departmentStore);
+                SET quantityLabelTransactionBarcode(t, barcode) <- IF includeLabelTypeBarcode(labelType, barcode)
+                                                                    THEN toInteger(quantityLabelTransactionSku(skuBarcode(barcode)))
+                                                                    ELSE countLabelTypeBarcode(labelType, barcode)
+                                                                        WHERE inLabelTransactionBarcode(t, barcode);
+                SET priceLabelTransactionBarcode(t, barcode) <- priceLabelTypeBarcodeDepartmentStore(labelType, barcode, departmentStore) WHERE inLabelTransactionBarcode(t, barcode);
                 SET labelTypeLabelTransaction(t) <- labelType;
                 EXEC createLabelTransactionFillParams(t, departmentStore);
                 // вызываем печатную форму для каждого из них
@@ -385,14 +389,14 @@ END
 // ------------------------- Подключение печати ценников в документ --------------------- //
 META defineDocumentLabelTransaction (document, skuProp, stockProp)
     create###document##LabelTransaction 'Печать ценников' = ACTION (document) NEWSESSION AUTOAPPLY {
-        SET createLabelTransactionSku(skuProp) <- TRUE IF quantity###document##Detail###skuProp###document(skuProp, document);
+        SET quantityLabelTransactionSku(skuProp) <- quantity###document##Detail###skuProp###document(skuProp, document);
         SET createLabelTransactionDocument() <- document;
         EXEC createLabelTransaction(stockProp###document(document));
         SET printedPriceTransactionDocument(document) <- TRUE;
     } TOOLBAR CONFIRM;
 
     createSnapshot###document##LabelTransaction 'Перепечатать ценники' = ACTION (document) NEWSESSION AUTOAPPLY {
-        SET createLabelTransactionSku(skuProp) <- TRUE IF quantity###document##Detail###skuProp###document(skuProp, document);
+        SET quantityLabelTransactionSku(skuProp) <- quantity###document##Detail###skuProp###document(skuProp, document);
         SET createLabelTransactionDocument() <- document AS Label.PriceTransactionDocument;
         SET createLabelTransactionSnapshot() <- TRUE;
         EXEC createLabelTransaction(stockProp###document(document));
