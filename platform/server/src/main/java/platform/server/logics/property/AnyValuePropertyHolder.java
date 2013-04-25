@@ -45,11 +45,11 @@ public class AnyValuePropertyHolder {
                 && dateProperty.property.getType() == DateClass.instance
                 && timeProperty.property.getType() == TimeClass.instance
                 && colorProperty.property.getType() == ColorClass.instance
-                && wordFileProperty.property.getType() == WordClass.instance
-                && imageFileProperty.property.getType() == ImageClass.instance
-                && pdfFileProperty.property.getType() == PDFClass.instance
-                && customFileProperty.property.getType() == DynamicFormatFileClass.instance
-                && excelFileProperty.property.getType() == ExcelClass.instance
+                && wordFileProperty.property.getType() == WordClass.get(false, false)
+                && imageFileProperty.property.getType() == ImageClass.get(false, false)
+                && pdfFileProperty.property.getType() == PDFClass.get(false, false)
+                && customFileProperty.property.getType() == DynamicFormatFileClass.get(false, false)
+                && excelFileProperty.property.getType() == ExcelClass.get(false, false)
                 ;
 
         this.objectProperty = objectProperty;

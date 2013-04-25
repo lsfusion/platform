@@ -39,7 +39,7 @@ public class SOliverImportInvoiceActionProperty extends ImportBoxInvoiceActionPr
 
     @Override
     protected DataClass getReadType() {
-        return CustomStaticFormatFileClass.getDefinedInstance(true, "Файл данных (*.edi, *.txt)", "edi txt *.*");
+        return CustomStaticFormatFileClass.get(true, false, "Файл данных (*.edi, *.txt)", "edi txt *.*");
     }
 }
 

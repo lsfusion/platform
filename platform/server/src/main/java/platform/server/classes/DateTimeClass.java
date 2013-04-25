@@ -25,9 +25,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
         DataClass.storeClass(instance);
     }
 
-    protected DateTimeClass() {
-        super(ServerResourceBundle.getString("classes.time"));
-    }
+    private DateTimeClass() { super(ServerResourceBundle.getString("classes.time")); }
 
     public String toString() {
         return ServerResourceBundle.getString("classes.date.with.time");

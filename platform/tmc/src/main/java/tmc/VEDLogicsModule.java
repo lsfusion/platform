@@ -4440,7 +4440,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected DataClass getReadType() {
-            return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
+            return CustomStaticFormatFileClass.get(false, false, "Файлы таблиц", "xls");
         }
 
         @Override
@@ -4501,7 +4501,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected DataClass getReadType() {
-            return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
+            return CustomStaticFormatFileClass.get(false, false, "Файлы таблиц", "xls");
         }
     }
 
@@ -4561,7 +4561,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected DataClass getReadType() {
-            return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
+            return CustomStaticFormatFileClass.get(false, false, "Файлы таблиц", "xls");
         }
     }
 
@@ -4634,7 +4634,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected DataClass getReadType() {
-            return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
+            return CustomStaticFormatFileClass.get(false, false, "Файлы таблиц", "xls");
         }
     }
 

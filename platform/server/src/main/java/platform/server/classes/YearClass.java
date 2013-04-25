@@ -15,7 +15,7 @@ public class YearClass extends IntegerClass {
         DataClass.storeClass(instance);
     }
 
-    protected YearClass() { caption = ServerResourceBundle.getString("classes.year"); }
+    private YearClass() { caption = ServerResourceBundle.getString("classes.year"); }
 
     @Override
     public Format getReportFormat() {

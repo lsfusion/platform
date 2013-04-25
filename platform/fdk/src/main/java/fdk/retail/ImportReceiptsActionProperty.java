@@ -52,7 +52,7 @@ public class ImportReceiptsActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         DataSession session = context.getSession();
         try {
-            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы XML", "xml");
+            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.get(false, false, "Файлы XML", "xml");
             DataObject zReportObject = context.getKeyValue(zReportInterface);
             ObjectValue objectValue = context.requestUserData(valueClass, null);
             if (objectValue != null) {

@@ -24,7 +24,7 @@ public class DateClass extends DataClass<Date> {
         DataClass.storeClass(instance);
     }
 
-    protected DateClass() { super(ServerResourceBundle.getString("classes.date")); }
+    private DateClass() { super(ServerResourceBundle.getString("classes.date")); }
 
     public String toString() {
         return ServerResourceBundle.getString("classes.date");

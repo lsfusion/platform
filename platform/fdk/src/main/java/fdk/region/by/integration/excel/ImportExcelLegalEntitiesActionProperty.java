@@ -2,7 +2,6 @@ package fdk.region.by.integration.excel;
 
 import fdk.integration.ImportActionProperty;
 import fdk.integration.ImportData;
-import fdk.integration.Item;
 import fdk.integration.LegalEntity;
 import jxl.Sheet;
 import jxl.Workbook;
@@ -15,7 +14,6 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ public class ImportExcelLegalEntitiesActionProperty extends ImportExcelActionPro
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
 
-            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(false, false, "Файлы таблиц", "xls");
+            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.get(false, false, "Файлы таблиц", "xls");
             ObjectValue objectValue = context.requestUserData(valueClass, null);
             if (objectValue != null) {
                 List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());

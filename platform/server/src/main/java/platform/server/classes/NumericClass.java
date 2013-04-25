@@ -68,21 +68,21 @@ public class NumericClass extends IntegralClass<Double> {
         statement.setDouble(num, (Double)value);
     }
 
-    private static Collection<NumericClass> numerics = new ArrayList<NumericClass>();
-
     public static NumericClass get(int length, int precision) {
         return get((byte)length, (byte)precision);
     }
 
-    public static NumericClass get(byte length, byte precision) {
+    private static Collection<NumericClass> instances = new ArrayList<NumericClass>();
 
-        for(NumericClass numeric : numerics)
-            if(numeric.length==length && numeric.precision==precision)
-                return numeric;
-        NumericClass numeric = new NumericClass(length,precision);
-        numerics.add(numeric);
-        DataClass.storeClass(numeric);
-        return numeric;
+    public static NumericClass get(byte length, byte precision) {
+        for(NumericClass instance : instances)
+            if(instance.length == length && instance.precision==precision)
+                return instance;
+
+        NumericClass instance = new NumericClass(length,precision);
+        instances.add(instance);
+        DataClass.storeClass(instance);
+        return instance;
     }
 
     @Override

@@ -24,7 +24,7 @@ public class ActionClass extends DataClass<Object> {
         DataClass.storeClass(instance);
     }
 
-    protected ActionClass() { super(ServerResourceBundle.getString("classes.action")); }
+    private ActionClass() { super(ServerResourceBundle.getString("classes.action")); }
 
     @Override
     public String toString() {

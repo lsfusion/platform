@@ -118,7 +118,7 @@ public class ConcatenateExpr extends VariableClassExpr {
         Type[] types = new Type[exprs.size()];
         for(int i=0;i<exprs.size();i++)
             types[i] = exprs.get(i).getType(keyType);
-        return new ConcatenateType(types);
+        return ConcatenateType.get(types);
     }
 
     public Stat getTypeStat(KeyStat keyStat) {

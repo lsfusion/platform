@@ -5,26 +5,30 @@ import platform.server.logics.ServerResourceBundle;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class WordClass extends StaticFormatFileClass {
-
-    public final static WordClass instance = new WordClass(false);
-    public final static WordClass multipleInstance = new WordClass(true);
 
     protected String getFileSID() {
         return "WordClass";
     }
 
-    static {
-        DataClass.storeClass(instance, multipleInstance);
+    private static Collection<WordClass> instances = new ArrayList<WordClass>();
+
+    public static WordClass get(boolean multiple, boolean storeName) {
+        for (WordClass instance : instances)
+            if (instance.multiple == multiple && instance.storeName == storeName)
+                return instance;
+
+        WordClass instance = new WordClass(multiple, storeName);
+        instances.add(instance);
+        DataClass.storeClass(instance);
+        return instance;
     }
 
-    protected WordClass(boolean multiple) {
-        super(multiple, false);
-    }
-
-    public WordClass(DataInputStream inStream, int version) throws IOException {
-        super(inStream,version);
+    private WordClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
     public String toString() {

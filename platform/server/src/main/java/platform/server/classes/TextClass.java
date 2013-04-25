@@ -17,7 +17,7 @@ public class TextClass extends DataClass<String> {
         DataClass.storeClass(instance);
     }
 
-    protected TextClass() { super(ServerResourceBundle.getString("classes.text")); }
+    private TextClass() { super(ServerResourceBundle.getString("classes.text")); }
 
         public String toString() {
         return ServerResourceBundle.getString("classes.text");

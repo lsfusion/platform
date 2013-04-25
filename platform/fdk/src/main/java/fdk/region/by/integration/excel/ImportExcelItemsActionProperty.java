@@ -3,18 +3,13 @@ package fdk.region.by.integration.excel;
 import fdk.integration.ImportActionProperty;
 import fdk.integration.ImportData;
 import fdk.integration.Item;
-import fdk.integration.ItemGroup;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
-import org.xBaseJ.xBaseJException;
-import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomStaticFormatFileClass;
-import platform.server.integration.*;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.ByteArrayInputStream;
@@ -23,7 +18,6 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ImportExcelItemsActionProperty extends ImportExcelActionProperty {
@@ -36,7 +30,7 @@ public class ImportExcelItemsActionProperty extends ImportExcelActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
 
-            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(false, false, "Файлы таблиц", "xls");
+            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.get(false, false, "Файлы таблиц", "xls");
             ObjectValue objectValue = context.requestUserData(valueClass, null);
             if (objectValue != null) {
                 List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());

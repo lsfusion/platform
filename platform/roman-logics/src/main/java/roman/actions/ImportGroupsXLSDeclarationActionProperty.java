@@ -43,7 +43,7 @@ public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionPro
 
         try {
 
-            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
+            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.get(false, false, "Файлы таблиц", "xls");
             ObjectValue objectValue = context.requestUserData(valueClass, null);
             List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());
 

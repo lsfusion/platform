@@ -2,6 +2,7 @@ package platform.server.data.type;
 
 import platform.server.classes.DataClass;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -15,7 +16,7 @@ public class ArrayClass<T> extends DataClass<T[]> {
     private final Type<T> type;
 
     private ArrayClass(Type<T> type) {
-        super("Массив " + type);
+        super(ServerResourceBundle.getString("classes.array")+" " + type);
         this.type = type;
     }
 

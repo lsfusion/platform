@@ -3,7 +3,6 @@ package fdk.region.by.integration.excel;
 import fdk.integration.Bank;
 import fdk.integration.ImportActionProperty;
 import fdk.integration.ImportData;
-import fdk.integration.LegalEntity;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
@@ -30,7 +29,7 @@ public class ImportExcelBanksActionProperty extends ImportExcelActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
 
-            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(false, false, "Файлы таблиц", "xls");
+            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.get(false, false, "Файлы таблиц", "xls");
             ObjectValue objectValue = context.requestUserData(valueClass, null);
             if (objectValue != null) {
                 List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());

@@ -32,7 +32,6 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.data.query.QueryBuilder;
-import platform.server.data.type.ObjectType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.navigator.NavigatorElement;
@@ -1768,15 +1767,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         withdrawnProject = addDProp(withdrawnGroup, "withdrawnProject", "Отозвана заявителем", LogicalClass.instance, project);
         dateWithdrawnProject = addDCProp(withdrawnGroup, "dateWithdrawnProject", "Дата отзыва заявителем", true, baseLM.currentDate, withdrawnProject, 1);
 
-        statementClaimer = addDProp("statementClaimer", "Заявление", DynamicFormatFileClass.instance, claimer);
+        statementClaimer = addDProp("statementClaimer", "Заявление", DynamicFormatFileClass.get(false, false), claimer);
         loadStatementClaimer = addLFAProp(documentGroup, "Загрузить заявление", statementClaimer);
         openStatementClaimer = addOFAProp(documentGroup, "Открыть заявление", statementClaimer);
 
-        constituentClaimer = addDProp("constituentClaimer", "Учредительные документы", DynamicFormatFileClass.instance, claimer);
+        constituentClaimer = addDProp("constituentClaimer", "Учредительные документы", DynamicFormatFileClass.get(false, false), claimer);
         loadConstituentClaimer = addLFAProp(documentGroup, "Загрузить учредительные документы", constituentClaimer);
         openConstituentClaimer = addOFAProp(documentGroup, "Открыть учредительные документы", constituentClaimer);
 
-        extractClaimer = addDProp("extractClaimer", "Выписка из реестра", DynamicFormatFileClass.instance, claimer);
+        extractClaimer = addDProp("extractClaimer", "Выписка из реестра", DynamicFormatFileClass.get(false, false), claimer);
         loadExtractClaimer = addLFAProp(documentGroup, "Загрузить выписку из реестра", extractClaimer);
         openExtractClaimer = addOFAProp(documentGroup, "Открыть Выписку из реестра", extractClaimer);
 
@@ -2422,11 +2421,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignTypeMileStone.setMinimumWidth(10);
         foreignTypeMileStone.setPreferredWidth(50);
 
-        fileStatementSpecialist = addDProp("fileStatementSpecialist", "Файл заявления", DynamicFormatFileClass.instance, specialist);
+        fileStatementSpecialist = addDProp("fileStatementSpecialist", "Файл заявления", DynamicFormatFileClass.get(false, false), specialist);
         loadFileStatementSpecialist = addLFAProp(teamGroup, "Загрузить файл заявления", fileStatementSpecialist);
         openFileStatementSpecialist = addOFAProp(teamGroup, "Открыть файл заявления", fileStatementSpecialist);
 
-        filePassportSpecialist = addDProp("filePassportSpecialist", "Файл документа, удостоверяющего личность", DynamicFormatFileClass.instance, specialist);
+        filePassportSpecialist = addDProp("filePassportSpecialist", "Файл документа, удостоверяющего личность", DynamicFormatFileClass.get(false, false), specialist);
         loadFilePassportSpecialist = addLFAProp(teamGroup, "Загрузить файл документа, удостоверяющего личность", filePassportSpecialist);
         openFilePassportSpecialist = addOFAProp(teamGroup, "Открыть файл документа, удостоверяющего личность", filePassportSpecialist);
 
@@ -2527,18 +2526,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignSubstantiationOtherClusterProject.setMinimumWidth(10);
         foreignSubstantiationOtherClusterProject.setPreferredWidth(50);
         hideForeignSubstantiationOtherClusterProject = addHideCaptionProp(privateGroup, "Укажите", isOtherClusterProject);
-        fileNativeSummaryProject = addDProp("fileNativeSummaryProject", "Файл резюме проекта", DynamicFormatFileClass.instance, project);
+        fileNativeSummaryProject = addDProp("fileNativeSummaryProject", "Файл резюме проекта", DynamicFormatFileClass.get(false, false), project);
         loadFileNativeSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта", fileNativeSummaryProject);
         openFileNativeSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта", fileNativeSummaryProject);
 
-        fileForeignSummaryProject = addDProp("fileForeignSummaryProject", "Файл резюме проекта (иностр.)", DynamicFormatFileClass.instance, project);
+        fileForeignSummaryProject = addDProp("fileForeignSummaryProject", "Файл резюме проекта (иностр.)", DynamicFormatFileClass.get(false, false), project);
         loadFileForeignSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта (иностр.)", fileForeignSummaryProject);
         openFileForeignSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта (иностр.)", fileForeignSummaryProject);
 
-        fileNativeApplicationFormProject = addDProp("fileNativeApplicationFormProject", "Анкета на русском", DynamicFormatFileClass.instance, project);
+        fileNativeApplicationFormProject = addDProp("fileNativeApplicationFormProject", "Анкета на русском", DynamicFormatFileClass.get(false, false), project);
         loadFileNativeApplicationFormProject = addLFAProp(applicationFormGroup, "Загрузить файл анкеты", fileNativeApplicationFormProject);
         openFileNativeApplicationFormProject = addOFAProp(applicationFormGroup, "Открыть файл анкеты", fileNativeApplicationFormProject);
-        fileForeignApplicationFormProject = addDProp("fileForeignApplicationFormProject", "Анкета на английском", DynamicFormatFileClass.instance, project);
+        fileForeignApplicationFormProject = addDProp("fileForeignApplicationFormProject", "Анкета на английском", DynamicFormatFileClass.get(false, false), project);
         loadFileForeignApplicationFormProject = addLFAProp(applicationFormGroup, "Загрузить файл анкеты (иностр.)", fileForeignApplicationFormProject);
         openFileForeignApplicationFormProject = addOFAProp(applicationFormGroup, "Открыть файл анкеты (иностр.)", fileForeignApplicationFormProject);
 
@@ -2625,24 +2624,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
         hideCommentEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", isOtherEquipmentProject);
 
         // документы
-        fileNativeRoadMapProject = addDProp("fileNativeRoadMapProject", "Файл дорожной карты", DynamicFormatFileClass.instance, project);
+        fileNativeRoadMapProject = addDProp("fileNativeRoadMapProject", "Файл дорожной карты", DynamicFormatFileClass.get(false, false), project);
         loadNativeFileRoadMapProject = addLFAProp(roadMapGroup, "Загрузить файл дорожной карты", fileNativeRoadMapProject);
         openNativeFileRoadMapProject = addOFAProp(roadMapGroup, "Открыть файл дорожной карты", fileNativeRoadMapProject);
 
-        fileForeignRoadMapProject = addDProp("fileForeignRoadMapProject", "Файл дорожной карты (иностр.)", DynamicFormatFileClass.instance, project);
+        fileForeignRoadMapProject = addDProp("fileForeignRoadMapProject", "Файл дорожной карты (иностр.)", DynamicFormatFileClass.get(false, false), project);
         loadForeignFileRoadMapProject = addLFAProp(roadMapGroup, "Загрузить файл дорожной карты (иностр.)", fileForeignRoadMapProject);
         openForeignFileRoadMapProject = addOFAProp(roadMapGroup, "Открыть файл дорожной карты (иностр.)", fileForeignRoadMapProject);
 
-        fileResolutionIPProject = addDProp("fileResolutionIPProject", "Заявление IP", DynamicFormatFileClass.instance, project);
+        fileResolutionIPProject = addDProp("fileResolutionIPProject", "Заявление IP", DynamicFormatFileClass.get(false, false), project);
         loadFileResolutionIPProject = addLFAProp(resolutionIPGroup, "Загрузить файл заявление IP", fileResolutionIPProject);
         openFileResolutionIPProject = addOFAProp(resolutionIPGroup, "Открыть файл заявление IP", fileResolutionIPProject);
 
-        fileNativeTechnicalDescriptionProject = addDProp("fileNativeTechnicalDescriptionProject", "Файл технического описания", DynamicFormatFileClass.instance, project);
+        fileNativeTechnicalDescriptionProject = addDProp("fileNativeTechnicalDescriptionProject", "Файл технического описания", DynamicFormatFileClass.get(false, false), project);
         loadFileNativeTechnicalDescriptionProject = addLFAProp(techDescrGroup, "Загрузить файл технического описания", fileNativeTechnicalDescriptionProject);
         openFileNativeTechnicalDescriptionProject = addOFAProp(techDescrGroup, "Открыть файл технического описания", fileNativeTechnicalDescriptionProject);
         isFileNativeTechnicalDescriptionProject = addJProp(techDescrGroup, "isFileNativeTechnicalDescriptionProject", "Файл", baseLM.and1, addCProp(LogicalClass.instance, true, project), 1, fileNativeTechnicalDescriptionProject, 1);
 
-        fileForeignTechnicalDescriptionProject = addDProp("fileForeignTechnicalDescriptionProject", "Файл технического описания (иностр.)", DynamicFormatFileClass.instance, project);
+        fileForeignTechnicalDescriptionProject = addDProp("fileForeignTechnicalDescriptionProject", "Файл технического описания (иностр.)", DynamicFormatFileClass.get(false, false), project);
         loadFileForeignTechnicalDescriptionProject = addLFAProp(techDescrGroup, "Загрузить файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
         openFileForeignTechnicalDescriptionProject = addOFAProp(techDescrGroup, "Открыть файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
         isFileForeignTechnicalDescriptionProject = addJProp(techDescrGroup, "isFileForeignTechnicalDescriptionProject", "Файл (ин.)", baseLM.and1, addCProp(LogicalClass.instance, true, project), 1, fileForeignTechnicalDescriptionProject, 1);
@@ -2688,7 +2687,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectActionToSID = addAGProp("projectActionToSID", "SID текущего статуса", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectAction), 1));
         projectMissionToSID = addAGProp("projectMissionToSID", "SID назначения", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectMission), 1));
         projectScheduleToSID = addAGProp("projectScheduleToSID", "SID регламента", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectSchedule), 1));
-        fileIntentionOwnerPatent = addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", DynamicFormatFileClass.instance, patent);
+        fileIntentionOwnerPatent = addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", DynamicFormatFileClass.get(false, false), patent);
         loadFileIntentionOwnerPatent = addLFAProp(baseGroup, "Загрузить файл документа о передаче права", fileIntentionOwnerPatent);
         openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);
 
@@ -2703,7 +2702,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         valuatorPatent = addDProp(baseGroup, "valuatorPatent", "Укажите оценщика и его контактную информацию", InsensitiveStringClass.get(2000), patent);
         valuatorPatent.setMinimumWidth(10);
         valuatorPatent.setPreferredWidth(50);
-        fileActValuationPatent = addDProp("fileActValuationPatent", "Файл акта оценки", DynamicFormatFileClass.instance, patent);
+        fileActValuationPatent = addDProp("fileActValuationPatent", "Файл акта оценки", DynamicFormatFileClass.get(false, false), patent);
         loadFileActValuationPatent = addLFAProp(baseGroup, "Загрузить файл акта оценки", fileActValuationPatent);
         openFileActValuationPatent = addOFAProp(baseGroup, "Открыть файл акта оценки", fileActValuationPatent);
         hideValuatorPatent = addHideCaptionProp(privateGroup, "Укажите", isValuated);
@@ -2726,11 +2725,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         titleAcademic.setMinimumWidth(10);
         titleAcademic.setPreferredWidth(50);
 
-        fileDocumentConfirmingAcademic = addDProp("fileDocumentConfirmingAcademic", "Файл трудового договора", DynamicFormatFileClass.instance, academic);
+        fileDocumentConfirmingAcademic = addDProp("fileDocumentConfirmingAcademic", "Файл трудового договора", DynamicFormatFileClass.get(false, false), academic);
         loadFileDocumentConfirmingAcademic = addLFAProp(baseGroup, "Загрузить файл трудового договора", fileDocumentConfirmingAcademic);
         openFileDocumentConfirmingAcademic = addOFAProp(baseGroup, "Открыть файл трудового договора", fileDocumentConfirmingAcademic);
 
-        fileDocumentEmploymentAcademic = addDProp("fileDocumentEmploymentAcademic", "Файл заявления специалиста", DynamicFormatFileClass.instance, academic);
+        fileDocumentEmploymentAcademic = addDProp("fileDocumentEmploymentAcademic", "Файл заявления специалиста", DynamicFormatFileClass.get(false, false), academic);
         loadFileDocumentEmploymentAcademic = addLFAProp(baseGroup, "Загрузить файл заявления", fileDocumentEmploymentAcademic);
         openFileDocumentEmploymentAcademic = addOFAProp(baseGroup, "Открыть файл заявления", fileDocumentEmploymentAcademic);
 
@@ -2750,27 +2749,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
         titleNonRussianSpecialist.setMinimumWidth(10);
         titleNonRussianSpecialist.setPreferredWidth(50);
 
-        fileForeignResumeNonRussianSpecialist = addDProp("fileForeignResumeNonRussianSpecialist", "File Curriculum Vitae", DynamicFormatFileClass.instance, nonRussianSpecialist);
+        fileForeignResumeNonRussianSpecialist = addDProp("fileForeignResumeNonRussianSpecialist", "File Curriculum Vitae", DynamicFormatFileClass.get(false, false), nonRussianSpecialist);
         loadFileForeignResumeNonRussianSpecialist = addLFAProp(baseGroup, "Load file Curriculum Vitae", fileForeignResumeNonRussianSpecialist);
         openFileForeignResumeNonRussianSpecialist = addOFAProp(baseGroup, "Open file Curriculum Vitae", fileForeignResumeNonRussianSpecialist);
 
-        fileNativeResumeNonRussianSpecialist = addDProp("fileNativeResumeNonRussianSpecialist", "Файл резюме специалиста", DynamicFormatFileClass.instance, nonRussianSpecialist);
+        fileNativeResumeNonRussianSpecialist = addDProp("fileNativeResumeNonRussianSpecialist", "Файл резюме специалиста", DynamicFormatFileClass.get(false, false), nonRussianSpecialist);
         loadFileNativeResumeNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл резюме", fileNativeResumeNonRussianSpecialist);
         openFileNativeResumeNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл резюме", fileNativeResumeNonRussianSpecialist);
 
-        filePassportNonRussianSpecialist = addDProp("filePassportNonRussianSpecialist", "Файл паспорта", DynamicFormatFileClass.instance, nonRussianSpecialist);
+        filePassportNonRussianSpecialist = addDProp("filePassportNonRussianSpecialist", "Файл паспорта", DynamicFormatFileClass.get(false, false), nonRussianSpecialist);
         loadFilePassportNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл паспорта", filePassportNonRussianSpecialist);
         openFilePassportNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл паспорта", filePassportNonRussianSpecialist);
 
-        fileStatementNonRussianSpecialist = addDProp("fileStatementNonRussianSpecialist", "Файл заявления", DynamicFormatFileClass.instance, nonRussianSpecialist);
+        fileStatementNonRussianSpecialist = addDProp("fileStatementNonRussianSpecialist", "Файл заявления", DynamicFormatFileClass.get(false, false), nonRussianSpecialist);
         loadFileStatementNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл заявления", fileStatementNonRussianSpecialist);
         openFileStatementNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл заявления", fileStatementNonRussianSpecialist);
 
-        fileMinutesOfMeetingExpertCollegiumProject = addDProp("fileMinutesOfMeetingExpertCollegiumProject", "Файл протокола заседания Экспертной коллегии", DynamicFormatFileClass.instance, project);
+        fileMinutesOfMeetingExpertCollegiumProject = addDProp("fileMinutesOfMeetingExpertCollegiumProject", "Файл протокола заседания Экспертной коллегии", DynamicFormatFileClass.get(false, false), project);
         loadFileMinutesOfMeetingExpertCollegiumProject = addLFAProp(minutesOfMettingGroup, "Загрузить файл протокола заседания Экспертной коллегии", fileMinutesOfMeetingExpertCollegiumProject);
         openFileMinutesOfMeetingExpertCollegiumProject = addOFAProp(minutesOfMettingGroup, "Открыть Файл протокола заседания Экспертной коллегии", fileMinutesOfMeetingExpertCollegiumProject);
 
-        fileWrittenConsentClaimerProject = addDProp("fileWrittenConsentClaimerProject", "Файл письменного согласия заявителя", DynamicFormatFileClass.instance, project);
+        fileWrittenConsentClaimerProject = addDProp("fileWrittenConsentClaimerProject", "Файл письменного согласия заявителя", DynamicFormatFileClass.get(false, false), project);
         loadFileWrittenConsentClaimerProject = addLFAProp(writtenConsentGroup, "Загрузить файл письменного согласия заявителя", fileWrittenConsentClaimerProject);
         openFileWrittenConsentClaimerProject = addOFAProp(writtenConsentGroup, "Открыть Файл письменного согласия заявителя", fileWrittenConsentClaimerProject);
 
@@ -2839,7 +2838,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         autoGenerateProject = addDProp(projectStatusGroup, "autoGenerateProject", "Авт. зас.", LogicalClass.instance, project);
         inactiveProject = addDProp(projectStatusGroup, "inactiveProject", "Не акт.", LogicalClass.instance, project);
 
-        fileDocument = addDProp(baseGroup, "fileDocument", "Файл", PDFClass.instance, document);
+        fileDocument = addDProp(baseGroup, "fileDocument", "Файл", PDFClass.get(false, false), document);
         loadFileDocument = addLFAProp(baseGroup, "Загрузить", fileDocument);
         openFileDocument = addOFAProp(baseGroup, "Открыть", fileDocument);
 
@@ -3555,7 +3554,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         oficialNameProjectStatus.setPreferredWidth(50);
         numberProjectStatus = addDProp(baseGroup, "numberProjectStatus", "Номер", StringClass.get(10), projectStatus);
 
-        fileDecisionVote = addDProp("fileDecisionVote", "Решение по проекту", PDFClass.instance, vote);
+        fileDecisionVote = addDProp("fileDecisionVote", "Решение по проекту", PDFClass.get(false, false), vote);
 
         attachProtocolDecisionVote = addIfAProp(actionGroup, "attachProtocolDecisionVote", "Сгенерировать протокол", closedSucceededVote, 1, addAProp(new AttachProtocolDecisionVoteActionProperty()), 1);
         loadFileDecisionVote = addIfAProp(actionGroup, "loadFileDecisionVote", "Загрузить решение", closedSucceededVote, 1, addLFAProp(fileDecisionVote), 1);
@@ -7986,7 +7985,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         public ImportIPsExpertVoteActionProperty() {
             super(genSID(), "Импортировать IP экспертов", new ValueClass[]{});
-            valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, "Файлы c данными", "*");
+            valueClass = CustomStaticFormatFileClass.get(true, false, "Файлы c данными", "*");
         }
 
         protected DataClass getReadType() {

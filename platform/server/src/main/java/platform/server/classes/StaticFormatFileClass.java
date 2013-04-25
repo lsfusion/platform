@@ -10,8 +10,4 @@ public abstract class StaticFormatFileClass extends FileClass {
     protected StaticFormatFileClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
     }
-
-    protected StaticFormatFileClass(DataInputStream inStream, int version) throws IOException {
-        super(inStream, version);
-    }
 }

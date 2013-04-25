@@ -5,26 +5,30 @@ import platform.server.logics.ServerResourceBundle;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class PDFClass extends StaticFormatFileClass {
-
-    public final static PDFClass instance = new PDFClass(false);
-    public final static PDFClass multipleInstance = new PDFClass(true);
 
     protected String getFileSID() {
         return "PDFClass";
     }
 
-    static {
-        DataClass.storeClass(instance, multipleInstance);
+    private static Collection<PDFClass> instances = new ArrayList<PDFClass>();
+
+    public static PDFClass get(boolean multiple, boolean storeName) {
+        for (PDFClass instance : instances)
+            if (instance.multiple == multiple && instance.storeName == storeName)
+                return instance;
+
+        PDFClass instance = new PDFClass(multiple, storeName);
+        instances.add(instance);
+        DataClass.storeClass(instance);
+        return instance;
     }
 
-    protected PDFClass(boolean multiple) {
-        super(multiple, false);
-    }
-
-    public PDFClass(DataInputStream inStream, int version) throws IOException {
-        super(inStream, version);
+    private PDFClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
     public String toString() {

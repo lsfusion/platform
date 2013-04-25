@@ -1,6 +1,5 @@
 package fdk.region.by.integration.excel;
 
-import fdk.integration.Bank;
 import fdk.integration.ImportActionProperty;
 import fdk.integration.ImportData;
 import jxl.read.biff.BiffException;
@@ -14,7 +13,6 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.List;
 import java.util.Map;
 
 public class ImportExcelAllActionProperty extends ScriptingActionProperty {
@@ -28,7 +26,7 @@ public class ImportExcelAllActionProperty extends ScriptingActionProperty {
 
         try {
 
-            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, true, "Файлы таблиц", "xls");
+            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.get(true, true, "Файлы таблиц", "xls");
             ObjectValue objectValue = context.requestUserData(valueClass, null);
             if (objectValue != null) {
                 Map<String, byte[]> fileList = valueClass.getNamedFiles(objectValue.getValue());

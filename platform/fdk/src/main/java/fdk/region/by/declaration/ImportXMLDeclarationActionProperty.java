@@ -43,7 +43,7 @@ public class ImportXMLDeclarationActionProperty extends ScriptingActionProperty 
 
         try {
 
-            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы XML", "xml");
+            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.get(false, false, "Файлы XML", "xml");
             ObjectValue objectValue = context.requestUserData(valueClass, null);
             if (objectValue != null) {
                 List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());

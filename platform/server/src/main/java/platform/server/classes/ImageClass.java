@@ -5,26 +5,30 @@ import platform.server.logics.ServerResourceBundle;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class ImageClass extends StaticFormatFileClass {
-
-    public final static ImageClass instance = new ImageClass(false);
-    public final static ImageClass multipleInstance = new ImageClass(true);
 
     protected String getFileSID() {
         return "ImageClass";
     }
 
-    static {
-        DataClass.storeClass(instance, multipleInstance);
+    private static Collection<ImageClass> instances = new ArrayList<ImageClass>();
+
+    public static ImageClass get(boolean multiple, boolean storeName) {
+        for (ImageClass instance : instances)
+            if (instance.multiple == multiple && instance.storeName == storeName)
+                return instance;
+
+        ImageClass instance = new ImageClass(multiple, storeName);
+        instances.add(instance);
+        DataClass.storeClass(instance);
+        return instance;
     }
 
-    protected ImageClass(boolean multiple) {
-        super(multiple, false);
-    }
-
-    public ImageClass(DataInputStream inStream, int version) throws IOException {
-        super(inStream, version);
+    private ImageClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
     public String toString() {

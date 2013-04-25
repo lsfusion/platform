@@ -29,7 +29,7 @@ public class ImportPriceListActionProperty extends ScriptingActionProperty {
 
         try {
             DataSession session = context.getSession();
-            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы данных", "dat");
+            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.get(false, false, "Файлы данных", "dat");
             ObjectValue objectValue = context.requestUserData(valueClass, null);
             if (objectValue != null) {
                 List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());

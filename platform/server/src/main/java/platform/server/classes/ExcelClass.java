@@ -5,26 +5,30 @@ import platform.server.logics.ServerResourceBundle;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class ExcelClass extends StaticFormatFileClass {
-
-    public final static ExcelClass instance = new ExcelClass(false);
-    public final static ExcelClass multipleInstance = new ExcelClass(true);
 
     protected String getFileSID() {
         return "ExcelClass";
     }
 
-    static {
-        DataClass.storeClass(instance, multipleInstance);
+    private static Collection<ExcelClass> instances = new ArrayList<ExcelClass>();
+
+    public static ExcelClass get(boolean multiple, boolean storeName) {
+        for (ExcelClass instance : instances)
+            if (instance.multiple == multiple && instance.storeName == storeName)
+                return instance;
+
+        ExcelClass instance = new ExcelClass(multiple, storeName);
+        instances.add(instance);
+        DataClass.storeClass(instance);
+        return instance;
     }
 
-    protected ExcelClass(boolean multiple) {
-        super(multiple, false);
-    }
-
-    public ExcelClass(DataInputStream inStream, int version) throws IOException {
-        super(inStream, version);
+    private ExcelClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
     public String toString() {

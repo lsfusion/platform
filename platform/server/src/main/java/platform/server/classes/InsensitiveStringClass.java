@@ -12,7 +12,7 @@ public class InsensitiveStringClass extends StringClass {
         return ServerResourceBundle.getString("classes.insensitive.string")+" " + length;
     }
 
-    public InsensitiveStringClass(int length) {
+    private InsensitiveStringClass(int length) {
         super(length);
     }
 

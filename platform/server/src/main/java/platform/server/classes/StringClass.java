@@ -23,7 +23,7 @@ public class StringClass extends DataClass<String> {
 
     public int length;
 
-    public StringClass(int length) {
+    protected StringClass(int length) {
         super(ServerResourceBundle.getString("classes.string"));
         this.length = length;
     }
@@ -89,16 +89,17 @@ public class StringClass extends DataClass<String> {
         statement.setString(num, (String)value);
     }
 
-    private static Collection<StringClass> strings = new ArrayList<StringClass>();
+    private static Collection<StringClass> instances = new ArrayList<StringClass>();
 
     public static StringClass get(int length) {
-        for(StringClass string : strings)
-            if(string.length==length)
-                return string;
-        StringClass string = new StringClass(length);
-        strings.add(string);
-        DataClass.storeClass(string);
-        return string;
+        for(StringClass instance : instances)
+            if(instance.length == length)
+                return instance;
+
+        StringClass instance = new StringClass(length);
+        instances.add(instance);
+        DataClass.storeClass(instance);
+        return instance;
     }
 
     public static StringClass[] getArray(int... lengths) {

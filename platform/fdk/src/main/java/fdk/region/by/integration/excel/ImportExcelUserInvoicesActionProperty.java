@@ -28,7 +28,7 @@ public class ImportExcelUserInvoicesActionProperty extends ImportExcelActionProp
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
 
-            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(false, false, "Файлы таблиц", "xls");
+            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.get(false, false, "Файлы таблиц", "xls");
             ObjectValue objectValue = context.requestUserData(valueClass, null);
             if (objectValue != null) {
                 List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());

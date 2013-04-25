@@ -20,7 +20,7 @@ public class LogicalClass extends DataClass<Boolean> {
         DataClass.storeClass(instance);
     }
 
-    protected LogicalClass() { super(ServerResourceBundle.getString("classes.logical"));}
+    private LogicalClass() { super(ServerResourceBundle.getString("classes.logical"));}
 
     public String toString() {
         return "Logical";

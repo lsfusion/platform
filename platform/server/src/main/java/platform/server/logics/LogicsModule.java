@@ -2116,11 +2116,11 @@ public abstract class LogicsModule {
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Date", captionPrefix + " Date", classes, DateClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Time", captionPrefix + " Time", classes, TimeClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Color", captionPrefix + " Color", classes, ColorClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "WordFile", captionPrefix + " Word file", classes, WordClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ImageFile", captionPrefix + " Image file", classes, ImageClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "PdfFile", captionPrefix + " Pdf file", classes, PDFClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "CustomFile", captionPrefix + " Custom file", classes, DynamicFormatFileClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ExcelFile", captionPrefix + " Excel file", classes, ExcelClass.instance)))
+                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "WordFile", captionPrefix + " Word file", classes, WordClass.get(false, false)))),
+                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ImageFile", captionPrefix + " Image file", classes, ImageClass.get(false, false)))),
+                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "PdfFile", captionPrefix + " Pdf file", classes, PDFClass.get(false, false)))),
+                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "CustomFile", captionPrefix + " Custom file", classes, DynamicFormatFileClass.get(false, false)))),
+                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ExcelFile", captionPrefix + " Excel file", classes, ExcelClass.get(false, false))))
         );
     }
 

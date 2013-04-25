@@ -248,7 +248,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public void initTables() {
         tableFactory = new TableFactory(baseClass);
 
-        addTable("objectObjectDate", baseClass, baseClass, DateClass.instance);
         addTable("named", baseClass.named);
         addTable("month", month);
         addTable("dow", DOW);

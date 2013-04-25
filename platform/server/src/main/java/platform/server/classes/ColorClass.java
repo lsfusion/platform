@@ -18,9 +18,7 @@ public class ColorClass extends DataClass {
         DataClass.storeClass(instance);
     }
 
-    public ColorClass() {
-        super(ServerResourceBundle.getString("classes.color"));
-    }
+    private ColorClass() { super(ServerResourceBundle.getString("classes.color")); }
 
     @Override
     public DataClass getCompatible(DataClass compClass) {

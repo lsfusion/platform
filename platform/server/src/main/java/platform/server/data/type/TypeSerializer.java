@@ -43,16 +43,77 @@ public class TypeSerializer {
             if(inStream.readBoolean())
                 return ObjectType.instance;
             else
-                return DataClass.deserialize(inStream, version);
+                return deserializeDataClass(inStream, version);
         } else {
             switch (inStream.readByte()) {
                 case 0:
                     return ObjectType.instance;
                 case 1:
-                    return DataClass.deserialize(inStream, version);
+                    return deserializeDataClass(inStream, version);
                 case 2:
-            }       return ConcatenateType.deserialize(inStream, version);
+            }       return deserializeConcatenateType(inStream, version);
         }
+    }
+
+    public static ConcatenateType deserializeConcatenateType(DataInputStream inStream, int version) throws IOException {
+        int typesCount = inStream.readInt();
+
+        Type[] types = new Type[typesCount];
+
+        for (int i = 0; i < typesCount; i++)
+            types[i] = TypeSerializer.deserializeType(inStream, version);
+
+        return ConcatenateType.get(types);
+    }
+
+    public static DataClass deserializeDataClass(DataInputStream inStream, int version) throws IOException {
+        byte type = inStream.readByte();
+
+        if (type == Data.INTEGER) return IntegerClass.instance;
+        if (type == Data.LONG) return LongClass.instance;
+        if (type == Data.DOUBLE) return DoubleClass.instance;
+        if (type == Data.NUMERIC) return NumericClass.get(inStream.readInt(), inStream.readInt());
+        if (type == Data.LOGICAL) return LogicalClass.instance;
+        if (type == Data.DATE) return DateClass.instance;
+        if (type == Data.STRING) return StringClass.get(inStream.readInt());
+        if (type == Data.INSENSITIVESTRING) return InsensitiveStringClass.get(inStream.readInt());
+        if (type == Data.TEXT) return TextClass.instance;
+        if (type == Data.YEAR) return YearClass.instance;
+        if (type == Data.DATETIME) return DateTimeClass.instance;
+        if (type == Data.TIME) return TimeClass.instance;
+        if (type == Data.COLOR) return ColorClass.instance;
+
+        if(version>=2) { // обратная совместимость
+            if (type == Data.IMAGE) return ImageClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false);
+            if (type == Data.WORD) return WordClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false);
+            if (type == Data.EXCEL) return ExcelClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false);
+            if (type == Data.CUSTOMSTATICFORMATFILE) {
+                String filterDescription = inStream.readUTF();
+                String[] filterExtensions;
+                int extCount = inStream.readInt();
+                if (extCount <= 0) {
+                    filterExtensions = new String[1];
+                    filterExtensions[0] = "*";
+                } else {
+                    filterExtensions = new String[extCount];
+
+                    for (int i = 0; i < extCount; ++i) {
+                        filterExtensions[i] = inStream.readUTF();
+                    }
+                }
+                return CustomStaticFormatFileClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false, filterDescription, filterExtensions);
+            }
+            if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false);
+            if (type == Data.PDF) return PDFClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false);
+        } else {
+            if (type == Data.IMAGE) return ImageClass.get(false, false);
+            if (type == Data.WORD) return WordClass.get(false, false);
+            if (type == Data.EXCEL) return ExcelClass.get(false, false);
+            if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(false, false);
+            if (type == Data.PDF) return PDFClass.get(false, false);
+        }
+
+        throw new IOException();
     }
 
     public static ValueClass deserializeValueClass(BusinessLogics context, DataInputStream inStream) throws IOException {
@@ -71,16 +132,16 @@ public class TypeSerializer {
         if (type == Data.OBJECT) return context.LM.baseClass.findClassID(inStream.readInt());
         if (type == Data.ACTION) return ActionClass.instance;
         if (type == Data.DATETIME) return DateTimeClass.instance;
-        if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.instance;
+        if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(false, false);
         if (type == Data.TIME) return TimeClass.instance;
         if (type == Data.COLOR) return ColorClass.instance;
 
-        if (type == Data.IMAGE) return ImageClass.instance;
-        if (type == Data.WORD) return WordClass.instance;
-        if (type == Data.EXCEL) return ExcelClass.instance;
-        if (type == Data.PDF) return PDFClass.instance;
+        if (type == Data.IMAGE) return ImageClass.get(false, false);
+        if (type == Data.WORD) return WordClass.get(false, false);
+        if (type == Data.EXCEL) return ExcelClass.get(false, false);
+        if (type == Data.PDF) return PDFClass.get(false, false);
         //todo:!!
-        if (type == Data.CUSTOMSTATICFORMATFILE) return CustomStaticFormatFileClass.getDefinedInstance(false, "", "");
+        if (type == Data.CUSTOMSTATICFORMATFILE) return CustomStaticFormatFileClass.get(false, false, "", "");
 
         throw new IOException();
     }

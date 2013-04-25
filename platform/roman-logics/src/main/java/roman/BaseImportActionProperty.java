@@ -41,7 +41,7 @@ public abstract class BaseImportActionProperty extends CustomReadValueActionProp
             }
             extString = extString + "*." + ext;
         }
-        valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, "Файлы c данными (" + extString + ")", extensions);
+        valueClass = CustomStaticFormatFileClass.get(true, false, "Файлы c данными (" + extString + ")", extensions);
     }
 
     @Override

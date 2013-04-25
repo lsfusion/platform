@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import org.springframework.aop.support.DynamicMethodMatcher;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImList;
@@ -141,41 +142,6 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getTypeID());
-    }
-
-    public static DataClass deserialize(DataInputStream inStream, int version) throws IOException {
-        byte type = inStream.readByte();
-
-        if (type == Data.INTEGER) return IntegerClass.instance;
-        if (type == Data.LONG) return LongClass.instance;
-        if (type == Data.DOUBLE) return DoubleClass.instance;
-        if (type == Data.NUMERIC) return NumericClass.get(inStream.readInt(), inStream.readInt());
-        if (type == Data.LOGICAL) return LogicalClass.instance;
-        if (type == Data.DATE) return DateClass.instance;
-        if (type == Data.STRING) return StringClass.get(inStream.readInt());
-        if (type == Data.INSENSITIVESTRING) return InsensitiveStringClass.get(inStream.readInt());
-        if (type == Data.TEXT) return TextClass.instance;
-        if (type == Data.YEAR) return YearClass.instance;
-        if (type == Data.DATETIME) return DateTimeClass.instance;
-        if (type == Data.TIME) return TimeClass.instance;
-        if (type == Data.COLOR) return ColorClass.instance;
-
-        if(version>=2) { // обратная совместимость
-            if (type == Data.IMAGE) return new ImageClass(inStream, version);
-            if (type == Data.WORD) return new WordClass(inStream, version);
-            if (type == Data.EXCEL) return new ExcelClass(inStream, version);
-            if (type == Data.CUSTOMSTATICFORMATFILE) return new CustomStaticFormatFileClass(inStream, version);
-            if (type == Data.DYNAMICFORMATFILE) return new DynamicFormatFileClass(inStream, version);
-            if (type == Data.PDF) return new PDFClass(inStream, version);
-        } else {
-            if (type == Data.IMAGE) return ImageClass.instance;
-            if (type == Data.WORD) return WordClass.instance;
-            if (type == Data.EXCEL) return ExcelClass.instance;
-            if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.instance;
-            if (type == Data.PDF) return PDFClass.instance;
-        }
-
-        throw new IOException();
     }
 
     public Expr getStaticExpr(Object value) {

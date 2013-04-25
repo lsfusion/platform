@@ -1,8 +1,5 @@
 package roman.actions;
 
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -11,7 +8,6 @@ import org.jdom.input.SAXBuilder;
 import platform.base.BaseUtils;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomStaticFormatFileClass;
-import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
@@ -25,14 +21,10 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class ImportGroupsXMLDeclarationActionProperty extends ScriptingActionProperty {
@@ -50,7 +42,7 @@ public class ImportGroupsXMLDeclarationActionProperty extends ScriptingActionPro
 
         try {
 
-            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы XML", "xml");
+            CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.get(false, false, "Файлы XML", "xml");
             ObjectValue objectValue = context.requestUserData(valueClass, null);
             if (objectValue != null) {
                 List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());

@@ -79,7 +79,7 @@ public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // Ð
         Type[] types = new Type[classes.length];
         for(int i=0;i<classes.length;i++)
             types[i] = classes[i].getType();
-        return new ConcatenateType(types);
+        return ConcatenateType.get(types);
     }
     public Stat getTypeStat() {
         Stat result = Stat.ONE;

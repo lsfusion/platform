@@ -26,14 +26,6 @@ public abstract class FileClass extends DataClass<byte[]> {
         this.storeName = storeName;
     }
 
-    protected FileClass(DataInputStream inStream, int version) throws IOException {
-        super(ServerResourceBundle.getString("classes.file"));
-
-        this.multiple = inStream.readBoolean();
-        if (version >= 4)
-            this.storeName = inStream.readBoolean();
-    }
-
     public Object getDefaultValue() {
         return new byte[0];
     }

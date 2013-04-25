@@ -5,26 +5,30 @@ import platform.server.logics.ServerResourceBundle;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class DynamicFormatFileClass extends FileClass {
-
-    public final static DynamicFormatFileClass instance = new DynamicFormatFileClass(false, false);
-    public final static DynamicFormatFileClass multipleInstance = new DynamicFormatFileClass(true, false);
 
     protected String getFileSID() {
         return "CustomClass"; // для обратной совместимости такое название
     }
 
-    static {
-        DataClass.storeClass(instance, multipleInstance);
+    private static Collection<DynamicFormatFileClass> instances = new ArrayList<DynamicFormatFileClass>();
+
+    public static DynamicFormatFileClass get(boolean multiple, boolean storeName) {
+        for (DynamicFormatFileClass instance : instances)
+            if (instance.multiple == multiple && instance.storeName == storeName)
+                return instance;
+
+        DynamicFormatFileClass instance = new DynamicFormatFileClass(multiple, storeName);
+        instances.add(instance);
+        DataClass.storeClass(instance);
+        return instance;
     }
 
-    protected DynamicFormatFileClass(boolean multiple, boolean storeName) {
+    private DynamicFormatFileClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
-    }
-
-    public DynamicFormatFileClass(DataInputStream inStream, int version) throws IOException {
-        super(inStream, version);
     }
 
     public String toString() {

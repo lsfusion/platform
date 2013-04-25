@@ -16,7 +16,7 @@ public class DoubleClass extends IntegralClass<Double> {
         DataClass.storeClass(instance);
     }
 
-    protected DoubleClass() { super(ServerResourceBundle.getString("classes.real")); }
+    private DoubleClass() { super(ServerResourceBundle.getString("classes.real")); }
 
     public String toString() {
         return ServerResourceBundle.getString("classes.floating");

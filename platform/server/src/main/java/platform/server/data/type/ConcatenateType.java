@@ -23,13 +23,27 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 
 public class ConcatenateType extends AbstractType<byte[]> {
 
     private Type[] types;
 
-    public ConcatenateType(Type[] types) {
+    private static Collection<ConcatenateType> instances = new ArrayList<ConcatenateType>();
+
+    public static ConcatenateType get(Type[] types) {
+        for (ConcatenateType instance : instances)
+            if (Arrays.equals(types, instance.types))
+                return instance;
+
+        ConcatenateType instance = new ConcatenateType(types);
+        instances.add(instance);
+        return instance;
+    }
+
+    private ConcatenateType(Type[] types) {
         this.types = types;
     }
 
@@ -103,7 +117,7 @@ public class ConcatenateType extends AbstractType<byte[]> {
                 return null;
             compatible[i] = compType;
         }
-        return new ConcatenateType(compatible);
+        return get(compatible);
     }
 
     private ConcreteClass createConcrete(ConcreteClass[] classes) {
@@ -194,32 +208,10 @@ public class ConcatenateType extends AbstractType<byte[]> {
         throw new RuntimeException("Parsing values from string is not supported");
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof ConcatenateType && Arrays.equals(types, ((ConcatenateType) o).types);
-    }
-
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(types);
-    }
-
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(types.length);
         for (Type type : types) {
             TypeSerializer.serializeType(outStream, type);
         }
-    }
-
-    public static ConcatenateType deserialize(DataInputStream inStream, int version) throws IOException {
-
-        int typesCount = inStream.readInt();
-
-        Type[] types = new Type[typesCount];
-
-        for (int i = 0; i < typesCount; i++)
-            types[i] = TypeSerializer.deserializeType(inStream, version);
-
-        return new ConcatenateType(types);
     }
 }

@@ -6,7 +6,6 @@ import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DataClass;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
-import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -49,7 +48,7 @@ public class TopazImportInvoiceActionProperty extends ImportBoxInvoiceActionProp
     }
 
     protected DataClass getReadType() {
-        return CustomStaticFormatFileClass.getDefinedInstance(true, "Файл Excel (*.xls)", "xls *.*");
+        return CustomStaticFormatFileClass.get(true, false, "Файл Excel (*.xls)", "xls *.*");
     }
 }
 

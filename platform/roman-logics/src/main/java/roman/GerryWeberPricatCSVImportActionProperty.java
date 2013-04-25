@@ -17,7 +17,7 @@ import java.util.*;
 public class GerryWeberPricatCSVImportActionProperty extends CustomReadValueActionProperty {
     private RomanLogicsModule LM;
 
-    private final CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, "Файлы данных (*.txt)", "txt");
+    private final CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.get(true, false, "Файлы данных (*.txt)", "txt");
 
     public GerryWeberPricatCSVImportActionProperty(String sID, RomanLogicsModule LM, ValueClass supplier) {
         super(sID, "Импортировать прайс (CSV)", new ValueClass[]{supplier});

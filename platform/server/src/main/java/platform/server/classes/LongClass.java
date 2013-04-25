@@ -19,7 +19,7 @@ public class LongClass extends IntegralClass<Long> {
         DataClass.storeClass(instance);
     }
 
-    protected LongClass() { super(ServerResourceBundle.getString("classes.long.integer")); }
+    private LongClass() { super(ServerResourceBundle.getString("classes.long.integer")); }
 
     public int getPreferredWidth() { return 65; }
 

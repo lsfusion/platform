@@ -73,7 +73,7 @@ public class ConcatenateValueClass implements ValueClass {
         Type[] types = new Type[valueClasses.length];
         for(int i=0;i<valueClasses.length;i++)
             types[i] = valueClasses[i].getType();
-        return new ConcatenateType(types);
+        return ConcatenateType.get(types);
     }
 
     @Override

@@ -17,7 +17,7 @@ public class ByteArrayClass extends DataClass<byte[]> {
         DataClass.storeClass(instance);
     }
 
-    protected ByteArrayClass() { super(ServerResourceBundle.getString("classes.byte.array")); }
+    private ByteArrayClass() { super(ServerResourceBundle.getString("classes.byte.array")); }
 
     public String toString() {
         return ServerResourceBundle.getString("classes.byte.array");

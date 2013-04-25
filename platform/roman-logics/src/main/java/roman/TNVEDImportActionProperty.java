@@ -31,7 +31,7 @@ public class TNVEDImportActionProperty extends CustomReadValueActionProperty {
     }
 
     private DataClass getFileClass() {
-        return CustomStaticFormatFileClass.getDefinedInstance(false, "Файл базы данных \"DBF\"", "dbf");
+        return CustomStaticFormatFileClass.get(false, false, "Файл базы данных \"DBF\"", "dbf");
     }
 
     protected DataClass getReadType() {

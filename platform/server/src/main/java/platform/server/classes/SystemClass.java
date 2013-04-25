@@ -16,7 +16,7 @@ public class SystemClass extends DataClass<Integer> {
         DataClass.storeClass(instance);
     }
 
-    protected SystemClass() { super(ServerResourceBundle.getString("classes.system")); }
+    private SystemClass() { super(ServerResourceBundle.getString("classes.system")); }
     
     public String toString() {
         return ServerResourceBundle.getString("classes.system");
