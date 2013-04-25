@@ -6,7 +6,10 @@ REQUIRE Stock,
         Document,
         PriceList,
         Manufacturing,
+        MenuOperation,
         Utils;
+
+NAMESPACE Menu;
         
 //------------------------------Меню--------------------------------//        
 
@@ -288,10 +291,20 @@ DESIGN menus FROM DEFAULT {
     }
 }
 
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineDocumentOperation(menu, m);
+@defineDocumentOperationPriceListType(userMenu, ' меню');
+@defineDocumentOperationRole(userMenu);
+@deriveDocumentOperationProperty(userMenu, groupType);
+
 NAVIGATOR {
     manufacturingDocuments 'Документы' {
         ADD menus;
-    };
+    }
+    manufacturingMasterData {
+        ADD operations;
+    }
 }
 
 
