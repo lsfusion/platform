@@ -339,7 +339,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             //будем определять на уровне PropertyDraw
             assert false;
         } else if (CHANGE_WYS.equals(editActionSID)) {
-            assert false;
 //            возвращаем дефолт
         }
 
