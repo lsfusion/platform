@@ -403,11 +403,17 @@ META defineDocumentLabelTransaction (document, skuProp, stockProp)
     backgroundPrintLabelTransaction###document 'Цвет' (document) = RGB(212,255,212) IF showPrintLabelTransaction###document(document);
 END
 
-META extendFormDocumentLabelTransaction(form, object, document, afterProp)
+META extendFormDocumentLabelTransaction(form, object, document, afterProp, propContainer)
     EXTEND FORM form
         PROPERTIES(object) statusLabelPriceTransactionDocument ON SHORTCUT createSnapshot###document##LabelTransaction(object) BACKGROUND backgroundPrintLabelTransaction###document(object) READONLY AFTER afterProp,
                            create###document##LabelTransaction FORCE PANEL SHOWIF showPrintLabelTransaction###document(object)
     ;
+
+    EXTEND DESIGN form {
+        propContainer{
+            ADD PROPERTY (create###document##LabelTransaction);
+        }
+    }
 END
 
 // ---------------------------------------------------------- Стандартные значения --------------------------------- //

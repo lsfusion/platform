@@ -8,4 +8,5 @@ NAMESPACE Purchase;
 
 @Machinery.implementPriceTransactionDocument(Invoice);
 @defineDocumentMachineryPriceTransaction(invoice, sku, customerStock);
-@extendFormDocumentMachineryPriceTransaction(invoices, i, invoice, isCommissionInvoice);
+@extendFormDocumentMachineryPriceTransaction(invoices, i, invoice, isCommissionInvoice, machineryContainer);
+

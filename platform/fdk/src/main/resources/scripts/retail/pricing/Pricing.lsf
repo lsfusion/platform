@@ -530,6 +530,18 @@ DESIGN pricings FROM DEFAULT {
                     ADD p.printGroup;
                 }
             }
+            NEW actionContainer {
+                title = 'Действия';
+                childConstraints = TO THE RIGHT;
+                NEW createdContainer {
+                    title = 'Создание на основе';
+                    childConstraints = TO THE BOTTOM;
+                }
+                NEW machineryContainer {
+                    title = 'Загрузка';
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
         }
     }
 }
@@ -574,7 +586,7 @@ inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) =
 
 @Machinery.implementPriceTransactionDocument(Pricing);
 @defineDocumentMachineryPriceTransaction(pricing, sku, departmentStore);
-@extendFormDocumentMachineryPriceTransaction(pricings, p, pricing, skipChangeLedgerPricing);
+@extendFormDocumentMachineryPriceTransaction(pricings, p, pricing, skipChangeLedgerPricing, machineryContainer);
 
 // ------------------------------------- Автоматическое создание расценки для документа -------------------- //
 

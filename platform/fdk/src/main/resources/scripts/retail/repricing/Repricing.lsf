@@ -678,6 +678,18 @@ DESIGN repricings FROM DEFAULT {
                     ADD p.printGroup;
                 }
             }
+            NEW actionContainer {
+                title = 'Действия';
+                childConstraints = TO THE RIGHT;
+                NEW createdContainer {
+                    title = 'Создание на основе';
+                    childConstraints = TO THE BOTTOM;
+                }
+                NEW machineryContainer {
+                    title = 'Загрузка';
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
         }
     }
 }
@@ -713,7 +725,7 @@ inPriceListLedgerStock (ledger, stock) += departmentStoreRepricingDetail(ledger)
 Machinery.skipPriceTransactionDocument(document) += skipChangeLedgerRepricing(document);
 
 @defineDocumentMachineryPriceTransaction(repricing, sku, departmentStore);
-@extendFormDocumentMachineryPriceTransaction(repricings, p, repricing, skipChangeLedgerRepricing);
+@extendFormDocumentMachineryPriceTransaction(repricings, p, repricing, skipChangeLedgerRepricing, machineryContainer);
 
 @implementStockDocumentLedgerInc(Repricing, departmentStore);
 sumIncStockDocumentLedger (ledger) += diffRetailSumRepricingDetailRepricing(ledger);

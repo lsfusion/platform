@@ -251,6 +251,10 @@ DESIGN userPriceChanges FROM DEFAULT {
     ADD u.historyGroup {
         childConstraints = TO THE BOTTOM;
     }
+    NEW machineryContainer {
+        title = 'Загрузка';
+        childConstraints = TO THE BOTTOM;
+    }
 
     ADD u.postedGroup {
         childConstraints = TO THE BOTTOM;
@@ -269,4 +273,4 @@ DESIGN userPriceChanges FROM DEFAULT {
 
 @Machinery.implementPriceTransactionDocument(UserPriceChange);
 @defineDocumentMachineryPriceTransaction(userPriceChange, sku, departmentStore);
-@extendFormDocumentMachineryPriceTransaction(userPriceChanges, u, userPriceChange, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument);
+@extendFormDocumentMachineryPriceTransaction(userPriceChanges, u, userPriceChange, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument, machineryContainer);

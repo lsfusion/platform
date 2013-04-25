@@ -17,3 +17,8 @@ EXTEND FORM invoices
 PROPERTIES(i) statusLabelPriceTransactionDocument ON SHORTCUT createSnapshotInvoiceLabelTransaction(i) BACKGROUND backgroundPrintLabelTransactionInvoice(i) READONLY AFTER isCommissionInvoice,
               createInvoiceLabelTransaction FORCE PANEL SHOWIF showToPrintLabelTransactionInvoice(i)
 ;
+EXTEND DESIGN invoices {
+    machineryContainer{
+        ADD PROPERTY (createInvoiceMachineryPriceTransaction);
+    }
+}

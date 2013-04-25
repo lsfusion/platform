@@ -567,11 +567,16 @@ META defineDocumentMachineryPriceTransaction (document, skuProp, stockProp)
                                                                                 RGB(212,255,212) IF showCreateMachineryPriceTransaction###document(document);
 END
 
-META extendFormDocumentMachineryPriceTransaction(form, object, document, afterProp)
+META extendFormDocumentMachineryPriceTransaction(form, object, document, afterProp, propContainer)
     EXTEND FORM form
         PROPERTIES(object) statusMachineryPriceTransactionDocument ON SHORTCUT createSnapshot###document##MachineryPriceTransaction(object) BACKGROUND backgroundCreateMachineryPriceTransaction###document(object) READONLY AFTER afterProp,
                            create###document###MachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransaction###document(object)
     ;
+    EXTEND DESIGN form {
+        propContainer{
+            ADD PROPERTY (create###document###MachineryPriceTransaction);
+        }
+    }
 END
 
 // ------------------------------------------------ Стандартные значения ------------------------------------ //

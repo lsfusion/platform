@@ -7,4 +7,4 @@ NAMESPACE Pricing;
 
 @Label.implementPriceTransactionDocument(Pricing);
 @defineDocumentLabelTransaction(pricing, sku, departmentStore);
-@extendFormDocumentLabelTransaction(pricings, p, pricing, skipChangeLedgerPricing);
+@extendFormDocumentLabelTransaction(pricings, p, pricing, skipChangeLedgerPricing, machineryContainer);
