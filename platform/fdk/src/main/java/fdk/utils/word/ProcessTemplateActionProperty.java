@@ -48,7 +48,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
             if (templateObject != null) {
 
-                DataObject wordObject = new DataObject(LM.findLCPByCompoundName("fileTemplate").read(context, templateObject), WordClass.instance);
+                DataObject wordObject = new DataObject(LM.findLCPByCompoundName("fileTemplate").read(context, templateObject), WordClass.get(false, false));
                 Map<String, String> templateEntriesMap = new HashMap<String, String>();
 
                 if (templateObject != null) {
