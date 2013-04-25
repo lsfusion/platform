@@ -89,13 +89,13 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
                             }
                         });
                         return;
-                    } else {
-                        changeValue = context.requestUserObject(new ExecutionContext.RequestDialog() {
-                            public DialogInstance createDialog() throws SQLException {
-                                return formInstance.createChangeEditorDialog(propertyValues, context.getGroupObjectInstance(), filterProperty);
-                            }
-                        });
                     }
+
+                    changeValue = context.requestUserObject(new ExecutionContext.RequestDialog() {
+                        public DialogInstance createDialog() throws SQLException {
+                            return formInstance.createChangeEditorDialog(propertyValues, context.getGroupObjectInstance(), filterProperty);
+                        }
+                    });
 
                     if(filterProperty!=null && changeValue!=null) {
                         Object updatedValue = filterProperty.read(

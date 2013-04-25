@@ -1977,6 +1977,22 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP(new MessageActionProperty(genSID(), caption, length)));
     }
 
+    protected LAP addAsyncUpdateAProp(Object... params) {
+        return addAsyncUpdateAProp("", params);
+    }
+
+    protected LAP addAsyncUpdateAProp(String caption, Object... params) {
+        return addAsyncUpdateAProp(null, caption, params);
+    }
+
+    protected LAP addAsyncUpdateAProp(AbstractGroup group, String caption, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+
+        assert readImplements.size() == 1;
+
+        return addProperty(group, new LAP(new AsyncUpdateEditValueAction(genSID(), caption, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>)readImplements.get(0))));
+    }
 
     protected LAP addConfirmAProp(String message, String caption) {
         return addConfirmAProp(null, message, caption);

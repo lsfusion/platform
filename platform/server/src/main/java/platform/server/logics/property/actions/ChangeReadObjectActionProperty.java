@@ -15,7 +15,7 @@ public class ChangeReadObjectActionProperty extends SystemActionProperty {
     private final CalcProperty filterProperty;
 
     public ChangeReadObjectActionProperty(CalcProperty filterProperty, ValueClass baseClass) {
-        super("CO_"+filterProperty, baseClass);
+        super("CO_" + filterProperty, baseClass);
         this.filterProperty = filterProperty;
     }
 
@@ -30,22 +30,24 @@ public class ChangeReadObjectActionProperty extends SystemActionProperty {
         final FormInstance<?> formInstance = context.getFormInstance();
         PropertyObjectInterfaceInstance singleObjectInstance = context.getSingleObjectInstance();
 
-        if(singleObjectInstance instanceof ObjectInstance) {
+        if (singleObjectInstance instanceof ObjectInstance) {
             ObjectInstance objectInstance = (ObjectInstance) singleObjectInstance;
-            if(objectInstance.groupTo.curClassView == ClassViewType.PANEL) { // в grid'е диалог не имеет смысла
+            if (objectInstance.groupTo.curClassView == ClassViewType.PANEL) { // в grid'е диалог не имеет смысла
                 final ObjectValue oldValue = objectInstance.getObjectValue();
-                ObjectValue changeValue = null;
-                if(objectInstance instanceof CustomObjectInstance) {
+                ObjectValue changeValue;
+                if (objectInstance instanceof CustomObjectInstance) {
                     final CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
                     changeValue = context.requestUserObject(new ExecutionContext.RequestDialog() {
                         public DialogInstance createDialog() throws SQLException {
                             return formInstance.createChangeObjectDialog(customObjectInstance.getBaseClass(), oldValue, customObjectInstance.groupTo, filterProperty);
                         }
                     });
-                } else
+                } else {
                     changeValue = context.requestUserData(((DataObjectInstance) objectInstance).getBaseClass(), oldValue.getValue());
-                if(changeValue!=null)
+                }
+                if (changeValue != null) {
                     formInstance.changeObject(objectInstance, changeValue);
+                }
             }
         }
     }

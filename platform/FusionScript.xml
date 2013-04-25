@@ -32,6 +32,7 @@
       <keyword name="ASONCHANGEWYS" />
       <keyword name="ASONEDIT" />
       <keyword name="ASSIGNED" />
+      <keyword name="ASYNCUPDATE" />
       <keyword name="ATTACH" />
       <keyword name="AUTOAPPLY" />
       <keyword name="AUTOSET" />

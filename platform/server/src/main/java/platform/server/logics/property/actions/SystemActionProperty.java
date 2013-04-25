@@ -8,7 +8,7 @@ public abstract class SystemActionProperty extends CustomActionProperty {
         super(sID, classes);
     }
 
-    protected SystemActionProperty(String sID, String caption, ValueClass[] classes) {
+    protected SystemActionProperty(String sID, String caption, ValueClass... classes) {
         super(sID, caption, classes);
     }
 }

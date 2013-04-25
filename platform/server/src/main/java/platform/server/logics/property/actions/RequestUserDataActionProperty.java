@@ -2,7 +2,6 @@ package platform.server.logics.property.actions;
 
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.DataClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
@@ -25,7 +24,7 @@ public class RequestUserDataActionProperty extends SystemActionProperty {
     }
 
     public RequestUserDataActionProperty(String sID, String caption, DataClass dataClass, LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty) {
-        super(sID, caption, new ValueClass[0]);
+        super(sID, caption);
 
         this.dataClass = dataClass;
 

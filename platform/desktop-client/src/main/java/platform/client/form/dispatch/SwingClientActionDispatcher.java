@@ -412,14 +412,16 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     @Override
     public void execute(EditNotPerformedClientAction action) {
+        throw new UnsupportedOperationException("EditNotPerformedClientAction not supported for this dispatcher");
     }
 
     public void execute(UpdateEditValueClientAction action) {
+        throw new UnsupportedOperationException("UpdateEditValueClientAction not supported for this dispatcher");
     }
 
     @Override
     public void execute(AsyncGetRemoteChangesClientAction action) {
-        assert false;
+        throw new UnsupportedOperationException("AsyncGetRemoteChangesClientAction not supported for this dispatcher");
     }
 
     public void execute(LogOutClientAction action) {

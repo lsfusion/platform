@@ -2,7 +2,6 @@ package platform.server.logics.property.actions;
 
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.BaseClass;
-import platform.server.classes.ValueClass;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -16,7 +15,7 @@ public class ChangeClassValueActionProperty extends SystemActionProperty {
     private ClassPropertyInterface classInterface;
 
     public ChangeClassValueActionProperty(String name, String caption, BaseClass baseClass) {
-        super(name, caption, new ValueClass[] {baseClass, baseClass.objectClass});
+        super(name, caption, baseClass, baseClass.objectClass);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         objectInterface = i.next();

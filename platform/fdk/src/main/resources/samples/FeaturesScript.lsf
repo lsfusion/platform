@@ -906,14 +906,39 @@ onEditStoreSizeCode() = ACTION {
     }
 }
 
+FORM SelectStoreSize
+    OBJECTS ss=StoreSize
+    PROPERTIES(ss) READONLY OBJVALUE, name
+;
+
+onChangeStoreSizeCode(store) = ACTION {
+    REQUEST OBJECT ss
+        FORM SelectStoreSize OBJECTS ss=storeSize(store) MODAL SHOWDROP;
+    IF (formResult() == FormResult.ok) THEN {
+        storeSize(store) <- requestedObject();
+    }
+    ASYNCUPDATE storeSizeCode(store);
+}
+
 onHelloWorld() = ACTION {
     MESSAGE 'Hello world!';
 }
 
-FORM TestONActions 'Тест "ON actions"'
+FORM TestOnActions 'Тест "ON actions"'
     OBJECTS s=Store
-    PROPERTIES(s) OBJVALUE, name ON CHANGE onChangeStoreName(), storeSizeCode ON EDIT onEditStoreSizeCode(), delete ON SHORTCUT 'Hello world!' onHelloWorld()
+    PROPERTIES(s) OBJVALUE, name ON CHANGE onChangeStoreName(), ssc1=storeSizeCode ON EDIT onEditStoreSizeCode(), delete ON SHORTCUT 'Hello world!' onHelloWorld()
+    PROPERTIES(s) onChangeStoreSizeCode, ssc2=storeSizeCode ON CHANGE onChangeStoreSizeCode(s)
 ;
+
+DESIGN TestOnActions FROM DEFAULT {
+    PROPERTY(ssc1) {
+        caption = 'onEditTest';
+    }
+
+    PROPERTY(ssc2) {
+        caption= 'onChangeTest';
+    }
+}
 
 //////////////// INDEX STATEMENT //////////////////
 // Syntax:
@@ -1002,7 +1027,7 @@ NAVIGATOR {
     ADD TestEvalActionForm;
     ADD TestTabs;
     ADD TestReadOnlyIf;
-    ADD TestONActions;
+    ADD TestOnActions;
 }
 
 //////////////// DESIGN STATEMENT /////////////////

@@ -1616,6 +1616,7 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 	|	editformPDB=editFormActionPropertyDefinitionBody { $property.property = $editformPDB.property; }
 	|	actPDB=customActionPropertyDefinitionBody { $property.property = $actPDB.property; }
 	|   msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
+	|   asyncPDB=asyncUpdateActionPropertyDefinitionBody[context, dynamic] { $property = $asyncPDB.property; }
 	|   confirmPDB=confirmActionPropertyDefinitionBody[context, dynamic] { $property = $confirmPDB.property; }
 	|   mailPDB=emailActionPropertyDefinitionBody[context, dynamic] { $property = $mailPDB.property; }
 	|	filePDB=fileActionPropertyDefinitionBody[context, dynamic] { $property = $filePDB.property; }
@@ -1779,7 +1780,16 @@ messageActionPropertyDefinitionBody[List<String> context, boolean dynamic] retur
 	:	'MESSAGE' pe=propertyExpression[context, dynamic] ('LENGTH' len=uintLiteral { length = $len.val; } )?
 	;
 
-fileActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property] 
+asyncUpdateActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedAsyncUpdateProp($pe.property);
+	}
+}
+	:	'ASYNCUPDATE' pe=propertyExpression[context, dynamic]
+	;
+
+fileActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	boolean loadFile = false;
 }

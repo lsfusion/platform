@@ -112,7 +112,6 @@ public class ScriptingFormEntity {
                 LM.getErrLog().emitDifferentObjsNPropsQuantity(LM.getParser());
             }
             if (properties != null) {
-                assert groupObject.objects.size() == properties.size();
                 GroupObjectEntity groupObj = groups.get(groupObjects.indexOf(groupObject));
 
                 List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<CalcPropertyObjectEntity>();

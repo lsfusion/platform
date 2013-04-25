@@ -72,6 +72,7 @@ import java.util.regex.Pattern;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static platform.base.BaseUtils.*;
 import static platform.server.logics.PropertyUtils.*;
 
@@ -1032,14 +1033,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getScriptEditFormAction((CustomClass) cls, session);
     }
 
-    public LPWithParams addScriptedConfirmProp(int length, LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedConfirmProp(" + length + ", " + msgProp + ");");
-        return addScriptedJoinAProp(addConfirmAProp("lsFusion", length), asList(msgProp));
+    public LPWithParams addScriptedConfirmProp(int length, LPWithParams confirmProp) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedConfirmProp(" + length + ", " + confirmProp + ");");
+        return addScriptedJoinAProp(addConfirmAProp("lsFusion", length), asList(confirmProp));
     }
 
     public LPWithParams addScriptedMessageProp(int length, LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedMessageProp(" + length + ", " + msgProp + ");");
         return addScriptedJoinAProp(addMAProp("lsFusion", length), asList(msgProp));
+    }
+
+    public LPWithParams addScriptedAsyncUpdateProp(LPWithParams asyncProp) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAsyncUpdateProp(" + asyncProp + ");");
+        List<Object> resultParams = getParamsPlainList(singletonList(asyncProp));
+        LAP asyncLAP = addAsyncUpdateAProp(resultParams.toArray());
+        return new LPWithParams(asyncLAP, asyncProp.usedParams);
     }
 
     public LPWithParams addScriptedEvalActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
@@ -1179,7 +1187,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending, Inline inline) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedForAProp(" + oldContext + ", " + condition + ", " + orders + ", " + action + ", " + elseAction + ", " + recursive + ", " + descending + ");");
 
-        boolean ordersNotNull = (condition != null ? doesExtendContext(Collections.singletonList(condition), orders) : !orders.isEmpty());
+        boolean ordersNotNull = (condition != null ? doesExtendContext(singletonList(condition), orders) : !orders.isEmpty());
 
         List<LPWithParams> creationParams = new ArrayList<LPWithParams>();
         if (condition != null) {
