@@ -236,6 +236,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("%s '%s' was already defined", type, name));
     }
 
+    public void emitAlreadyDefinedInModuleError(ScriptParser parser, String type, String name, String moduleName) throws SemanticErrorException {
+        emitSimpleError(parser, format("%s '%s' was already defined in module '%s'", type, name, moduleName));
+    }
+
     public void emitNamedParamsError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "number of named parameters should be equal to actual number of parameters");
     }

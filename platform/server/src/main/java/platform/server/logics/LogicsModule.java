@@ -2670,4 +2670,62 @@ public abstract class LogicsModule {
         this.requiredModules = requiredModules;
     }
 
+    public interface ModuleFinder<T> {
+        public T resolveInModule(LogicsModule module, String simpleName);
+    }
+
+    public static class LPNameModuleFinder implements ModuleFinder<LP<?, ?>> {
+        @Override
+        public LP<?, ?> resolveInModule(LogicsModule module, String simpleName) {
+            return module.getLPByName(simpleName);
+        }
+    }
+
+    public static class GroupNameModuleFinder implements ModuleFinder<AbstractGroup> {
+        @Override
+        public AbstractGroup resolveInModule(LogicsModule module, String simpleName) {
+            return module.getGroupByName(simpleName);
+        }
+    }
+
+    public static class NavigatorElementNameModuleFinder implements ModuleFinder<NavigatorElement> {
+        @Override
+        public NavigatorElement resolveInModule(LogicsModule module, String simpleName) {
+            return module.getNavigatorElementByName(simpleName);
+        }
+    }
+
+    public static class WindowNameModuleFinder implements ModuleFinder<AbstractWindow> {
+        @Override
+        public AbstractWindow resolveInModule(LogicsModule module, String simpleName) {
+            return module.getWindowByName(simpleName);
+        }
+    }
+
+    public static class MetaCodeNameModuleFinder implements ModuleFinder<MetaCodeFragment> {
+        private int paramCnt;
+
+        public MetaCodeNameModuleFinder(int paramCnt) {
+            this.paramCnt = paramCnt;
+        }
+
+        @Override
+        public MetaCodeFragment resolveInModule(LogicsModule module, String simpleName) {
+            return module.getMetaCodeFragmentByName(simpleName, paramCnt);
+        }
+    }
+
+    public static class TableNameModuleFinder implements ModuleFinder<ImplementTable> {
+        @Override
+        public ImplementTable resolveInModule(LogicsModule module, String simpleName) {
+            return module.getTableByName(simpleName);
+        }
+    }
+
+    public static class ClassNameModuleFinder implements ModuleFinder<ValueClass> {
+        @Override
+        public ValueClass resolveInModule(LogicsModule module, String simpleName) {
+            return module.getClassByName(simpleName);
+        }
+    }
 }

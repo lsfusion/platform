@@ -63,6 +63,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     protected final static Logger debuglogger = Logger.getLogger(BusinessLogics.class);
 
     private List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
+    private Map<String, List<LogicsModule>> namespaceToModules = new HashMap<String, List<LogicsModule>>();
 
     private final Map<String, LogicsModule> nameToModule = new HashMap<String, LogicsModule>();
 
@@ -378,6 +379,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             logger.info("Initializing modules.");
             List<LogicsModule> orderedModules = orderModules();
+
+            for (LogicsModule module : orderedModules) {
+                String namespace = module.getNamespace();
+                if (!namespaceToModules.containsKey(namespace)) {
+                    namespaceToModules.put(namespace, new ArrayList<LogicsModule>());
+                }
+                namespaceToModules.get(namespace).add(module);
+            }
+
             for (LogicsModule module : orderedModules) {
                 module.initModule();
             }
@@ -1028,6 +1038,44 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     return (FormEntity) entry;
         }
         return null;
+    }
+
+    // Набор методов для поиска модуля, в котором находится элемент системы
+    private LogicsModule getModuleContainingObject(String namespaceName, String name, LogicsModule.ModuleFinder finder) {
+        for (LogicsModule module : namespaceToModules.get(namespaceName)) {
+            if (finder.resolveInModule(module, name) != null) {
+                return module;
+            }
+        }
+        return null;
+    }
+
+    public LogicsModule getModuleContainingLP(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, new LogicsModule.LPNameModuleFinder());
+    }
+
+    public LogicsModule getModuleContainingGroup(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, new LogicsModule.GroupNameModuleFinder());
+    }
+
+    public LogicsModule getModuleContainingClass(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, new LogicsModule.ClassNameModuleFinder());
+    }
+
+    public LogicsModule getModuleContainingTable(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, new LogicsModule.TableNameModuleFinder());
+    }
+
+    public LogicsModule getModuleContainingWindow(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, new LogicsModule.WindowNameModuleFinder());
+    }
+
+    public LogicsModule getModuleContainingNavigatorElement(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, new LogicsModule.NavigatorElementNameModuleFinder());
+    }
+
+    public LogicsModule getModuleContainingMetaCode(String namespaceName, String name, int paramCnt) {
+        return getModuleContainingObject(namespaceName, name, new LogicsModule.MetaCodeNameModuleFinder(paramCnt));
     }
 
     protected DBManager getDbManager() {

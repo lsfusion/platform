@@ -86,13 +86,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private final static Logger scriptLogger = ServerLoggers.scriptLogger;
 
-    private final CompoundNameResolver<LP<?, ?>> lpResolver = new LPNameResolver();
-    private final CompoundNameResolver<AbstractGroup> groupResolver = new AbstractGroupNameResolver();
-    private final CompoundNameResolver<NavigatorElement> navigatorResolver = new NavigatorElementNameResolver();
-    private final CompoundNameResolver<AbstractWindow> windowResolver = new WindowNameResolver();
-    private final MetaCodeFragmentNameResolver metaCodeFragmentResolver = new MetaCodeFragmentNameResolver();
-    private final CompoundNameResolver<ImplementTable> tableResolver = new TableNameResolver();
-    private final CompoundNameResolver<ValueClass> classResolver = new ClassNameResolver();
+    private final CompoundNameResolver<LP<?, ?>> lpResolver = new CompoundNameResolver<LP<?, ?>>(new LPNameModuleFinder());
+    private final CompoundNameResolver<AbstractGroup> groupResolver = new CompoundNameResolver<AbstractGroup>(new GroupNameModuleFinder());
+    private final CompoundNameResolver<NavigatorElement> navigatorResolver = new CompoundNameResolver<NavigatorElement>(new NavigatorElementNameModuleFinder());
+    private final CompoundNameResolver<AbstractWindow> windowResolver = new CompoundNameResolver<AbstractWindow>(new WindowNameModuleFinder());
+    private final CompoundNameResolver<ImplementTable> tableResolver = new CompoundNameResolver<ImplementTable>(new TableNameModuleFinder());
+    private final CompoundNameResolver<ValueClass> classResolver = new CompoundNameResolver<ValueClass>(new ClassNameModuleFinder());
 
     private final BusinessLogics<?> BL;
 
@@ -368,8 +367,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public MetaCodeFragment findMetaCodeFragmentByCompoundName(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
-        metaCodeFragmentResolver.setParamCnt(paramCnt); // todo [dale]: криво, надо по-хорошему как-то обобщить resolver
-        MetaCodeFragment code = metaCodeFragmentResolver.resolve(name);
+        CompoundNameResolver<MetaCodeFragment> resolver = new CompoundNameResolver<MetaCodeFragment>(new MetaCodeNameModuleFinder(paramCnt));
+        MetaCodeFragment code = resolver.resolve(name);
         checkMetaCodeFragment(code, name);
         return code;
     }
@@ -2048,45 +2047,51 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkDuplicateClass(String className) throws ScriptingErrorLog.SemanticErrorException {
-        if (classResolver.findInNamespace(getNamespace(), className) != null) {
-            errLog.emitAlreadyDefinedError(parser, "class", className);
+        LogicsModule module = BL.getModuleContainingClass(getNamespace(), className);
+        if (module != null) {
+            errLog.emitAlreadyDefinedInModuleError(parser, "class", className, module.getName());
         }
     }
 
     private void checkDuplicateGroup(String groupName) throws ScriptingErrorLog.SemanticErrorException {
-        if (groupResolver.findInNamespace(getNamespace(), groupName) != null) {
-            errLog.emitAlreadyDefinedError(parser, "group", groupName);
+        LogicsModule module = BL.getModuleContainingGroup(getNamespace(), groupName);
+        if (module != null) {
+            errLog.emitAlreadyDefinedInModuleError(parser, "group", groupName, module.getName());
         }
     }
 
     private void checkDuplicateProperty(String propName) throws ScriptingErrorLog.SemanticErrorException {
-        if (lpResolver.findInNamespace(getNamespace(), propName) != null) {
-            errLog.emitAlreadyDefinedError(parser, "property", propName);
+        LogicsModule module = BL.getModuleContainingLP(getNamespace(), propName);
+        if (module != null) {
+            errLog.emitAlreadyDefinedInModuleError(parser, "property", propName, module.getName());
         }
     }
 
-    private void checkDuplicateWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (windowResolver.findInNamespace(getNamespace(), name) != null) {
-            errLog.emitAlreadyDefinedError(parser, "window", name);
+    private void checkDuplicateWindow(String windowName) throws ScriptingErrorLog.SemanticErrorException {
+        LogicsModule module = BL.getModuleContainingWindow(getNamespace(), windowName);
+        if (module != null) {
+            errLog.emitAlreadyDefinedInModuleError(parser, "window", windowName, module.getName());
         }
     }
 
     private void checkDuplicateNavigatorElement(String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (navigatorResolver.findInNamespace(getNamespace(), name) != null) {
-            errLog.emitAlreadyDefinedError(parser, "form or navigator", name);
+        LogicsModule module = BL.getModuleContainingNavigatorElement(getNamespace(), name);
+        if (module != null) {
+            errLog.emitAlreadyDefinedInModuleError(parser, "form or navigator", name, module.getName());
         }
     }
 
     private void checkDuplicateMetaCodeFragment(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
-        metaCodeFragmentResolver.setParamCnt(paramCnt);
-        if (metaCodeFragmentResolver.findInNamespace(getNamespace(), name) != null) {
-            errLog.emitAlreadyDefinedError(parser, "meta code", name);
+        LogicsModule module = BL.getModuleContainingMetaCode(getNamespace(), name, paramCnt);
+        if (module != null) {
+            errLog.emitAlreadyDefinedInModuleError(parser, "meta code", name, module.getName());
         }
     }
 
     private void checkDuplicateTable(String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (tableResolver.findInNamespace(getNamespace(), name) != null) {
-            errLog.emitAlreadyDefinedError(parser, "table", name);
+        LogicsModule module = BL.getModuleContainingTable(getNamespace(), name);
+        if (module != null) {
+            errLog.emitAlreadyDefinedInModuleError(parser, "table", name, module.getName());
         }
     }
 
@@ -2309,8 +2314,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkLocalDataPropertyName(String name) throws ScriptingErrorLog.SemanticErrorException {
         if (currentLocalProperties.containsKey(name)) {
             errLog.emitAlreadyDefinedError(parser, "local property", name);
-        } else if (lpResolver.resolve(name) != null) {
-            errLog.emitAlreadyDefinedError(parser, "property", name);
+        } else {
+            checkDuplicateProperty(name);
         }
     }
 
@@ -2502,11 +2507,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getNamespace();
     }
 
-    public abstract class CompoundNameResolver<T> {
+    public class CompoundNameResolver<T> {
+        private ModuleFinder<T> finder;
+
+        public CompoundNameResolver(ModuleFinder<T> finder) {
+            this.finder = finder;
+        }
+
         public T findInNamespace(String namespaceName, String name) {
             T result = null;
             for (LogicsModule module : namespaceToModules.get(namespaceName)) {
-                if ((result = resolveInModule(module, name)) != null) {
+                if ((result = finder.resolveInModule(module, name)) != null) {
                     return result;
                 }
             }
@@ -2518,7 +2529,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             for (String namespaceName : namespaces) {
                 for (LogicsModule module : namespaceToModules.get(namespaceName)) {
-                    if (resolveInModule(module, name) != null) {
+                    if (finder.resolveInModule(module, name) != null) {
                         outModules.add(module);
                         return outModules;
                     }
@@ -2529,7 +2540,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             for (Map.Entry<String, List<LogicsModule>> e : namespaceToModules.entrySet()) {
                 if (!checkedNamespaces.contains(e.getKey())) {
                     for (LogicsModule module : e.getValue()) {
-                        if (resolveInModule(module, name) != null) {
+                        if (finder.resolveInModule(module, name) != null) {
                             outModules.add(module);
                             break;
                         }
@@ -2547,7 +2558,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 checkNamespace(namespaceName);
                 result = findInNamespace(namespaceName, name.substring(dotPosition + 1));
             } else {
-                result = resolveInModule(ScriptingLogicsModule.this, name);
+                result = finder.resolveInModule(ScriptingLogicsModule.this, name);
                 if (result == null) {
                     List<String> namespaces = new ArrayList<String>();
                     namespaces.add(getNamespace());
@@ -2556,68 +2567,11 @@ public class ScriptingLogicsModule extends LogicsModule {
                     if (containingModules.size() > 1) {
                         errLog.emitAmbiguousNameError(parser, containingModules, name);
                     } else if (containingModules.size() == 1) {
-                        result = resolveInModule(containingModules.get(0), name);
+                        result = finder.resolveInModule(containingModules.get(0), name);
                     }
                 }
             }
             return result;
-        }
-
-        public abstract T resolveInModule(LogicsModule module, String simpleName);
-    }
-
-    private class LPNameResolver extends CompoundNameResolver<LP<?, ?>> {
-        @Override
-        public LP<?, ?> resolveInModule(LogicsModule module, String simpleName) {
-            return module.getLPByName(simpleName);
-        }
-    }
-
-    private class AbstractGroupNameResolver extends CompoundNameResolver<AbstractGroup> {
-        @Override
-        public AbstractGroup resolveInModule(LogicsModule module, String simpleName) {
-            return module.getGroupByName(simpleName);
-        }
-    }
-
-    private class NavigatorElementNameResolver extends CompoundNameResolver<NavigatorElement> {
-        @Override
-        public NavigatorElement resolveInModule(LogicsModule module, String simpleName) {
-            return module.getNavigatorElementByName(simpleName);
-        }
-    }
-
-    private class WindowNameResolver extends CompoundNameResolver<AbstractWindow> {
-        @Override
-        public AbstractWindow resolveInModule(LogicsModule module, String simpleName) {
-            return module.getWindowByName(simpleName);
-        }
-    }
-
-    private class MetaCodeFragmentNameResolver extends CompoundNameResolver<MetaCodeFragment> {
-        private int paramCnt;
-
-        public void setParamCnt(int paramCnt) {
-            this.paramCnt = paramCnt;
-        }
-
-        @Override
-        public MetaCodeFragment resolveInModule(LogicsModule module, String simpleName) {
-            return module.getMetaCodeFragmentByName(simpleName, paramCnt);
-        }
-    }
-
-    private class TableNameResolver extends CompoundNameResolver<ImplementTable> {
-        @Override
-        public ImplementTable resolveInModule(LogicsModule module, String simpleName) {
-            return module.getTableByName(simpleName);
-        }
-    }
-
-    private class ClassNameResolver extends CompoundNameResolver<ValueClass> {
-        @Override
-        public ValueClass resolveInModule(LogicsModule module, String simpleName) {
-            return module.getClassByName(simpleName);
         }
     }
 }

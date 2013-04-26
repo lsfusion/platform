@@ -27,6 +27,10 @@ GROUP sampleGroup : System.base; // явная квалификация имен
 // }]
 // [: baseClass1 [, baseClass2, ..., baseClassN]];
 
+CLASS ABSTRACT Named;
+
+name(obj) = DATA STRING[100] (Named);
+
 CLASS ABSTRACT NamedClass : Named;
 CLASS EmptyClass;
 CLASS Article 'Товар' : NamedClass;
