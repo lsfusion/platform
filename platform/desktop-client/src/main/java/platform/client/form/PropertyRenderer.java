@@ -1,5 +1,7 @@
 package platform.client.form;
 
+import platform.client.ClientResourceBundle;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
@@ -12,6 +14,8 @@ public interface PropertyRenderer {
     Color FOCUSED_CELL_BACKGROUND = new Color(232, 232, 255);
     Border SELECTED_ROW_BORDER = BorderFactory.createMatteBorder(1, 0, 1, 0, SELECTED_ROW_BORDER_COLOR);
     Border FOCUSED_CELL_BORDER = BorderFactory.createMatteBorder(1, 1, 1, 1, FOCUSED_CELL_BORDER_COLOR);
+
+    String EMPTY_STRING = ClientResourceBundle.getString("form.renderer.not.defined");
 
     JComponent getComponent();
 

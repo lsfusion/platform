@@ -413,3 +413,7 @@ textarea {
 .noOutline {
     outline: none;
 }
+
+.nullValueString {
+    color: #A7A7A7;
+}

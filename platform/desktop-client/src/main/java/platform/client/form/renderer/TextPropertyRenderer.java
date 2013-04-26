@@ -51,10 +51,14 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRenderer 
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (value != null)
+        if (value != null) {
             setText(value.toString());
-        else
-            setText("");
+            setForeground(UIManager.getColor("TextField.foreground"));
+        }
+        else {
+            setText(EMPTY_STRING);
+            setForeground(UIManager.getColor("TextField.inactiveForeground"));
+        }
         setSelected(isSelected, hasFocus);
     }
 

@@ -7,6 +7,8 @@ import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GPropertyDraw;
 
 public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
+    protected final String EMPTY_VALUE = "Не определено";
+
     protected final Style.TextAlign textAlign;
     protected GPropertyDraw property;
 
@@ -54,14 +56,24 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         String text = value == null ? null : renderToString((T) value);
 
         if (text == null || text.trim().isEmpty()) {
-            div.setInnerText(EscapeUtils.UNICODE_NBSP);
             div.setTitle("");
+            setInnerText(div, null);
         } else {
             String stringValue = EscapeUtils.unicodeEscape(text.trim());
-            div.setInnerText(stringValue);
+            setInnerText(div, stringValue);
             div.setTitle(property.echoSymbols ? "" : stringValue);
         }
     }
+
+    protected void setInnerText(DivElement div, String innerText) {
+        if (innerText == null) {
+            div.setInnerText(EMPTY_VALUE);
+            div.addClassName("nullValueString");
+        } else {
+            div.setInnerText(innerText);
+            div.removeClassName("nullValueString");
+        }
+    };
 
     protected abstract String renderToString(T value);
 }
