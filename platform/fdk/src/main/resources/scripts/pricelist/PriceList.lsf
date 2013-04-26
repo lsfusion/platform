@@ -1118,18 +1118,14 @@ DESIGN priceListTypes FROM DEFAULT{
 
 //Фильтры
 
-filterAllSku 'Использовать фильтры' = DATA SESSION BOOLEAN ();
-
 filterLegalEntityRangeManagement = DATA SESSION LegalEntity ();
 nameFilterLegalEntityRangeManagement 'Организация' () = nameLegalEntity(filterLegalEntityRangeManagement());
-filterLegalEntityRangeManagementUserPriceList (userPriceList) = (companyUserPriceList(userPriceList) == filterLegalEntityRangeManagement() AND filterAllSku()) OR
-                                                                (userPriceList IS UserPriceList AND NOT filterLegalEntityRangeManagement() AND filterAllSku()) OR
-                                                                (userPriceList IS UserPriceList AND NOT filterAllSku());
+filterLegalEntityRangeManagementUserPriceList (userPriceList) = (companyUserPriceList(userPriceList) == filterLegalEntityRangeManagement()) OR
+                                                                (userPriceList IS UserPriceList AND NOT filterLegalEntityRangeManagement());
 
 filterCompanySkuDateTimeRangeManagement (priceListType, sku, stock, dateTime) =
-    (companyLedgerPriceListTypeSkuStockDateTime(priceListType, sku, stock, dateTime) == filterLegalEntityRangeManagement() AND filterAllSku()) OR
-    (priceListType IS PriceListType AND sku IS Sku  AND stock IS Stock AND dateTime IS DATETIME AND NOT filterLegalEntityRangeManagement() AND filterAllSku()) OR
-    (priceListType IS PriceListType AND sku IS Sku  AND stock IS Stock AND dateTime IS DATETIME AND NOT filterAllSku());
+    (companyLedgerPriceListTypeSkuStockDateTime(priceListType, sku, stock, dateTime) == filterLegalEntityRangeManagement()) OR
+    (priceListType IS PriceListType AND sku IS Sku  AND stock IS Stock AND dateTime IS DATETIME AND NOT filterLegalEntityRangeManagement());
 
 //Создание прайса через форму ассортимента
 
@@ -1140,6 +1136,7 @@ createPriceRangeManagement 'Создать прайс' = ACTION (dataPriceListTy
         SET fromDateUserPriceList(u) <- currentDate();
         SET fromTimeUserPriceList(u) <- currentTime();
         SET companyUserPriceList(u) <- filterLegalEntityRangeManagement();
+        SET currencyUserPriceList(u) <- currencyLegalEntity(filterLegalEntityRangeManagement());
         SET inPriceListDataPriceListType(u, dataPriceListType) <- TRUE;
         SET showPriceListPriceListType(u, dataPriceListType) <- TRUE;
         FOR inRangeManagement(sku) ADDOBJ d = UserPriceListDetail DO {
@@ -1161,9 +1158,9 @@ FORM rangeManagement 'Управление ассортиментом'
     PROPERTIES(dt) objValue = OBJVALUE
 
     OBJECTS pt = DataPriceListType FIXED PANEL
-    PROPERTIES(pt) SELECTOR namePriceListType SHOWIF filterAllSku()
+    PROPERTIES(pt) SELECTOR namePriceListType
 
-    PROPERTIES() filterAllSku, nameFilterLegalEntityRangeManagement SHOWIF filterAllSku()
+    PROPERTIES() nameFilterLegalEntityRangeManagement
 
     OBJECTS p = UserPriceList
     PROPERTIES(p) READONLY isPostedUserPriceList FORCE GRID, numberObject, seriesObject, dateUserPriceList, timeUserPriceList,
@@ -1195,8 +1192,8 @@ FORM rangeManagement 'Управление ассортиментом'
             inStockGroupStock(st, s),
             isCompanyStock(s)
 
-    PROPERTIES(pt, sk, s, dt) READONLY SHOWIF filterAllSku() pricePriceListTypeSkuStockDateTime, nameCompanyLedgerPriceListTypeSkuStockDateTime,
-                                                             descriptionLedgerPriceListTypeSkuStockDateTime
+    PROPERTIES(pt, sk, s, dt) READONLY pricePriceListTypeSkuStockDateTime, nameCompanyLedgerPriceListTypeSkuStockDateTime,
+                                       descriptionLedgerPriceListTypeSkuStockDateTime
 
     FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt),
             filterCompanySkuDateTimeRangeManagement(pt, sk, s, dt)
@@ -1210,7 +1207,6 @@ DESIGN rangeManagement FROM DEFAULT{
             NEW filtersContainer{
                 caption = 'Фильтры';
                 childConstraints = TO THE RIGHT;
-                ADD PROPERTY(filterAllSku);
                 ADD PROPERTY(namePriceListType(pt)){caption ='Вид цены';}
                 ADD PROPERTY(nameFilterLegalEntityRangeManagement);
             }
