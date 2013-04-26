@@ -13,6 +13,7 @@ NAMESPACE Purchase;
 
 @defineOperationRole();
 @extendFormFilterRole(o, dialogOperations);
+//@extendFormFilterRole(o, operations);     //-- пока не нужен
 
 EXTEND DESIGN operation {
     tabContainer{

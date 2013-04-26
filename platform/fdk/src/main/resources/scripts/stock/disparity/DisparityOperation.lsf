@@ -5,6 +5,7 @@ REQUIRE Operation, Disparity;
 @defineOperation('(изменение сортности)');
 @defineOperationRole();
 @extendFormFilterRole(o, dialogOperations);
+//@extendFormFilterRole(o, operations);     //-- пока не нужен
 
 createRepricingOperation 'Создать акт переоценки' = DATA BOOLEAN (Operation);
 

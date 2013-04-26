@@ -10,6 +10,7 @@ NAMESPACE Menu;
 
 @defineOperationRole();
 @extendFormFilterRole(o, dialogOperations);
+//@extendFormFilterRole(o, operations);     //-- пока не нужен
 
 groupTypeOperation = DATA GroupType (Operation);
 nameGroupTypeOperation 'Тип классификатора' (operation) = nameGroupType(groupTypeOperation(operation));

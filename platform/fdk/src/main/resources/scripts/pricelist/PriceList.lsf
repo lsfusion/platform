@@ -505,6 +505,7 @@ END
 @defineOperation('(прайс)');
 @defineOperationRole();
 @extendFormFilterRole(o, dialogOperations);
+//@extendFormFilterRole(o, operations);     //-- пока не нужен
 
 TABLE priceListTypeOperation(PriceListType, Operation);
 
