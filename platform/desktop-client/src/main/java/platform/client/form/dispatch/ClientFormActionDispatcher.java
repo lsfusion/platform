@@ -76,6 +76,12 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         getFormController().updateCurrentClass(action.currentClassId);
     }
 
+    public void execute(EditNotPerformedClientAction action) {
+    }
+
+    public void execute(UpdateEditValueClientAction action) {
+    }
+
     @Override
     public void execute(AsyncGetRemoteChangesClientAction action) {
         try {

@@ -339,8 +339,7 @@ editActionTest(obj) = ACTION EDITFORM Store;
 
 // Message action
 // statement syntax:
-// MESSAGE propertyExpr [ LENGTH n ]
-// Default length = 2000
+// MESSAGE propertyExpr
 
 // Change class action
 // statement syntax:
@@ -384,7 +383,7 @@ FORM testChangeClass
 
 // Confirm action
 // statement syntax:
-// CONFIRM propertyExpression [LENGTH intValue]
+// CONFIRM propertyExpression
 
 // Request action
 // statement syntax:
@@ -630,7 +629,7 @@ showDocumentArticleModalForm 'Показать модальную "По доку
     FORM documentArticle MODAL CHECK;
 
     IF (formResult() == FormResult.ok) THEN {
-        MESSAGE 'You pressed "ok"' LENGTH 50;
+        MESSAGE 'You pressed "ok"';
         MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), name(store(chosenObject('document'))));
 
         FOR (k == chosenObject('article')) DO {
@@ -652,7 +651,7 @@ testAction 'Показать "По документам" 3 раза' = ACTION() 
     WHILE (i() < 3) DO {
         FORM documentArticle MODAL CHECK;
         IF (formResult() == FormResult.ok) THEN {
-            MESSAGE 'You pressed "ok"' LENGTH 50;
+            MESSAGE 'You pressed "ok"';
         } ELSE IF (formResult() == FormResult.close) THEN {
             MESSAGE 'You pressed "close"';
         };
@@ -700,7 +699,7 @@ sexcel 'Excel' (store) = DATA EXCELFILE (Store) IN base;
 scolor 'Color' (store) = DATA COLOR (Store) IN base;
 
 testRequestInput 'Тестирование REQUEST input' = ACTION(s) {
-    CONFIRM 'Быть или не быть?' LENGTH 100;
+    CONFIRM 'Быть или не быть?';
 
     IF (confirmed()) THEN {
         REQUEST COLOR {

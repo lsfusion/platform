@@ -1033,14 +1033,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getScriptEditFormAction((CustomClass) cls, session);
     }
 
-    public LPWithParams addScriptedConfirmProp(int length, LPWithParams confirmProp) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedConfirmProp(" + length + ", " + confirmProp + ");");
-        return addScriptedJoinAProp(addConfirmAProp("lsFusion", length), asList(confirmProp));
+    public LPWithParams addScriptedConfirmProp(LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedConfirmProp(" + msgProp + ");");
+        List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
+        LAP asyncLAP = addConfirmAProp("lsFusion", resultParams.toArray());
+        return new LPWithParams(asyncLAP, msgProp.usedParams);
     }
 
-    public LPWithParams addScriptedMessageProp(int length, LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedMessageProp(" + length + ", " + msgProp + ");");
-        return addScriptedJoinAProp(addMAProp("lsFusion", length), asList(msgProp));
+    public LPWithParams addScriptedMessageProp(LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedMessageProp(" + msgProp + ");");
+        List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
+        LAP asyncLAP = addMAProp("lsFusion", resultParams.toArray());
+        return new LPWithParams(asyncLAP, msgProp.usedParams);
     }
 
     public LPWithParams addScriptedAsyncUpdateProp(LPWithParams asyncProp) throws ScriptingErrorLog.SemanticErrorException {

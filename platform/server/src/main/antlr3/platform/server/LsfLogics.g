@@ -1757,27 +1757,21 @@ emailActionFormObjects[List<String> context, boolean dynamic] returns [OrderedMa
 	;
 
 confirmActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
-@init {
-	int length = 2000;
-}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedConfirmProp(length, $pe.property);
+		$property = self.addScriptedConfirmProp($pe.property);
 	}
 }
-	:	'CONFIRM' pe=propertyExpression[context, dynamic] ('LENGTH' len=uintLiteral { length = $len.val; } )? 
+	:	'CONFIRM' pe=propertyExpression[context, dynamic]
 	;
 		
 messageActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
-@init {
-	int length = 2000;
-}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedMessageProp(length, $pe.property);
+		$property = self.addScriptedMessageProp($pe.property);
 	}
 }
-	:	'MESSAGE' pe=propertyExpression[context, dynamic] ('LENGTH' len=uintLiteral { length = $len.val; } )?
+	:	'MESSAGE' pe=propertyExpression[context, dynamic]
 	;
 
 asyncUpdateActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]

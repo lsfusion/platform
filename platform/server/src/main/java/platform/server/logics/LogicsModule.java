@@ -1957,24 +1957,48 @@ public abstract class LogicsModule {
         return addProperty(null, new LAP(new SeekActionProperty(baseLM.baseClass, lp == null ? null : (CalcProperty) lp.property)));
     }
 
-    protected LAP addMAProp(String message, String caption) {
-        return addMAProp(null, message, caption);
+    protected LAP addMAProp(String message, String title) {
+        return addMAProp(null, message, title);
     }
 
-    protected LAP addMAProp(AbstractGroup group, String message, String caption) {
-        int length = message.length();
-        return addJoinAProp(
-                addMAProp(caption, length),
-                addCProp(StringClass.get(length), message)
-        );
+    protected LAP addMAProp(AbstractGroup group, String message, String title) {
+        return addMAProp(group, "", title, addCProp(StringClass.get(message.length()), message));
     }
 
-    protected LAP addMAProp(String caption, int length) {
-        return addMAProp(null, caption, length);
+    protected LAP addMAProp(String title, Object... params) {
+        return addMAProp(null, "", title, params);
     }
 
-    protected LAP addMAProp(AbstractGroup group, String caption, int length) {
-        return addProperty(group, new LAP(new MessageActionProperty(genSID(), caption, length)));
+    protected LAP addMAProp(AbstractGroup group, String caption, String title, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+
+        assert readImplements.size() == 1;
+
+        return addProperty(group, new LAP(
+                new MessageActionProperty(genSID(), caption, title, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>)readImplements.get(0))));
+    }
+
+    protected LAP addConfirmAProp(String message, String title) {
+        return addConfirmAProp(null, message, title);
+    }
+
+    protected LAP addConfirmAProp(AbstractGroup group, String message, String title) {
+        return addConfirmAProp(group, "", title, addCProp(StringClass.get(message.length()), message));
+    }
+
+    protected LAP addConfirmAProp(String title, Object... params) {
+        return addConfirmAProp(null, "", title, params);
+    }
+
+    protected LAP addConfirmAProp(AbstractGroup group, String caption, String title, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+
+        assert readImplements.size() == 1;
+
+        return addProperty(group, new LAP(
+                new ConfirmActionProperty(genSID(), caption, title, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>)readImplements.get(0), getConfirmedProperty())));
     }
 
     protected LAP addAsyncUpdateAProp(Object... params) {
@@ -1992,26 +2016,6 @@ public abstract class LogicsModule {
         assert readImplements.size() == 1;
 
         return addProperty(group, new LAP(new AsyncUpdateEditValueAction(genSID(), caption, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>)readImplements.get(0))));
-    }
-
-    protected LAP addConfirmAProp(String message, String caption) {
-        return addConfirmAProp(null, message, caption);
-    }
-
-    protected LAP addConfirmAProp(AbstractGroup group, String message, String caption) {
-        int length = message.length();
-        return addJoinAProp(
-                addConfirmAProp(caption, length),
-                addCProp(StringClass.get(length), message)
-        );
-    }
-
-    protected LAP addConfirmAProp(String caption, int length) {
-        return addConfirmAProp(null, caption, length);
-    }
-
-    protected LAP addConfirmAProp(AbstractGroup group, String caption, int length) {
-        return addProperty(group, new LAP(new ConfirmActionProperty(genSID(), caption, length, getConfirmedProperty())));
     }
 
     protected LAP addLFAProp(LCP lp) {
