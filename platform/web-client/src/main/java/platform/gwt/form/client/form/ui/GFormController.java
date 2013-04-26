@@ -482,19 +482,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new PasteExternalTable(properties, columnKeys, dataLine), new ServerResponseCallback());
     }
 
-    public void changePageSize(GGroupObject groupObject, int pageSize) {
-        dispatcher.execute(new ChangePageSize(groupObject.ID, pageSize), new ServerResponseCallback());
-    }
-
-    public void changePageSizeLater(final GGroupObject groupObject, final int pageSize) {
-        DeferredRunner.get().scheduleChangePageSize(groupObject, new DeferredRunner.AbstractCommand() {
-            @Override
-            public void execute() {
-                changePageSize(groupObject, pageSize);
-            }
-        });
-    }
-
     public void changePageSizeAfterUnlock(final GGroupObject groupObject, final int pageSize) {
         Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
             @Override
@@ -507,6 +494,19 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 }
             }
         }, 1000);
+    }
+
+    private void changePageSizeLater(final GGroupObject groupObject, final int pageSize) {
+        DeferredRunner.get().scheduleChangePageSize(groupObject, new DeferredRunner.AbstractCommand() {
+            @Override
+            public void execute() {
+                changePageSize(groupObject, pageSize);
+            }
+        });
+    }
+
+    private void changePageSize(GGroupObject groupObject, int pageSize) {
+        dispatcher.execute(new ChangePageSize(groupObject.ID, pageSize), new ServerResponseCallback());
     }
 
     public void scrollToEnd(GGroupObject group, boolean toEnd) {
@@ -804,6 +804,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void hideForm() {
         setFiltersVisible(false);
         dispatcher.execute(new FormHidden(), new ErrorHandlingCallback<VoidResult>());
+        dispatcher.close();
     }
 
     public void blockingConfirm(String caption, String message, final DialogBoxHelper.CloseCallback callback) {

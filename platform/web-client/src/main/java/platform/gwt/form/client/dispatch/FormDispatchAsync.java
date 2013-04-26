@@ -25,9 +25,17 @@ public class FormDispatchAsync {
     private final LinkedList<QueuedAction> q = new LinkedList<QueuedAction>();
     private QueuedAction currentDispatchingAction;
 
+    //отдельный флаг закрытой формы нужен, чтобы не посылать случайных запросов в закрытую форму (в частности changePageSize)
+    private boolean formClosed = false;
+
     public FormDispatchAsync(GFormController formController) {
         this.formController = formController;
         this.form = formController.getForm();
+    }
+
+    public <A extends FormRequestIndexCountingAction<R>, R extends Result> int execute(A action, AsyncCallback<R> callback) {
+        execute((FormBoundAction) action, callback);
+        return action.requestIndex;
     }
 
     public <A extends FormBoundAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback) {
@@ -39,28 +47,15 @@ public class FormDispatchAsync {
         queueAction(action, callback);
     }
 
-    public <A extends FormRequestIndexCountingAction<R>, R extends Result> int execute(A action, AsyncCallback<R> callback) {
-        execute((FormBoundAction) action, callback);
-        return action.requestIndex;
-    }
-
     private <A extends Action<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback) {
-        Log.debug("Executing action: " + action.toString());
+        Log.debug("Queueing action: " + action.toString());
 
         final QueuedAction queuedAction = new QueuedAction(action, callback);
         q.add(queuedAction);
 
         formController.onAsyncStarted();
 
-        final double startExecTime = Duration.currentTimeMillis();
-        gwtDispatch.execute(action, new AsyncCallbackEx<R>() {
-            @Override
-            public void preProcess() {
-                double execTime = Duration.currentTimeMillis() - startExecTime;
-
-                Log.debug("Executed action: " + action.toString() + " in " + (int)(execTime / 1000) + " ms.");
-            }
-
+        executeInternal(action, new AsyncCallbackEx<R>() {
             @Override
             public void failure(Throwable caught) {
                 queuedAction.failed(caught);
@@ -97,30 +92,36 @@ public class FormDispatchAsync {
         return currentDispatchingAction != null ? currentDispatchingAction.getRequestIndex() : -1;
     }
 
-    public <A extends FormBoundAction<R>, R extends Result> void executePriorityAction(A action, AsyncCallback<R> callback) {
+    public <A extends FormBoundAction<R>, R extends Result> void executePriorityAction(final A action, final AsyncCallback<R> callback) {
         action.formSessionID = form.sessionID;
-        executeSpecial(action, callback);
+        Log.debug("Executing priority action: " + action.toString());
+        executeInternal(action, callback);
     }
 
-    private <A extends Action<R>, R extends Result> void executeSpecial(final A action, final AsyncCallback<R> callback) {
-        Log.debug("Executing action: " + action.toString());
-        final double startExecTime = Duration.currentTimeMillis();
-        gwtDispatch.execute(action, new AsyncCallbackEx<R>() {
-            @Override
-            public void preProcess() {
-                double execTime = Duration.currentTimeMillis() - startExecTime;
-                Log.debug("Executed action: " + action.toString() + " in " + (int) (execTime / 1000) + " ms.");
-            }
+    private <A extends Action<R>, R extends Result> void executeInternal(final A action, final AsyncCallback<R> callback) {
+        if (!formClosed) {
+            final double startExecTime = Duration.currentTimeMillis();
+            gwtDispatch.execute(action, new AsyncCallbackEx<R>() {
+                @Override
+                public void preProcess() {
+                    double execTime = Duration.currentTimeMillis() - startExecTime;
+                    Log.debug("Executed action: " + action.toString() + " in " + (int) (execTime / 1000) + " ms.");
+                }
 
-            @Override
-            public void failure(Throwable caught) {
-                callback.onFailure(caught);
-            }
+                @Override
+                public void failure(Throwable caught) {
+                    callback.onFailure(caught);
+                }
 
-            @Override
-            public void success(R result) {
-                callback.onSuccess(result);
-            }
-        });
+                @Override
+                public void success(R result) {
+                    callback.onSuccess(result);
+                }
+            });
+        }
+    }
+
+    public void close() {
+        formClosed = true;
     }
 }

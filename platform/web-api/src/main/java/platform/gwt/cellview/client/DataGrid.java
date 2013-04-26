@@ -2454,7 +2454,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         protected boolean nextRow(boolean down) {
             double currentTime = Duration.currentTimeMillis();
             //ignore key stroke, if we need to scroll too often
-            if (currentTime - display.lastScrollTime < IGNORE_SCROLL_TIMEOUT) {
+            if (display.partialRendering && currentTime - display.lastScrollTime < IGNORE_SCROLL_TIMEOUT) {
                 return true;
             }
 

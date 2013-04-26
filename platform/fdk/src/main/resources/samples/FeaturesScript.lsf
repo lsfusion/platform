@@ -671,6 +671,15 @@ showTestModalForm 'Показать док-модальную форму' = ACTI
     name(k) <- [FORMULA STRING[30] '$1 || CAST($2 as char(20))']('Товар ', chosenInteger('i')) WHERE k == chosenObject('article') IF (formResult() == FormResult.ok);
 };
 
+setDefaultNames 'Задать имена по умолчанию' () = ACTION {
+    FOR s IS Store DO {
+        name(s) <- ([FORMULA STRING[30] '\'Склад \' || CAST($1 as char(20))'](s) IF s IS Store);
+    }
+    FOR a IS Article DO {
+        name(a) <- ([FORMULA STRING[30] '\'Товар \' || CAST($1 as char(20))'](a) IF a IS Article);
+    }
+}
+
 remindPasswordEmail 'Выслать пароль на этот email' (u, to) = ACTION EMAIL
 //    FROM 'luxsoft@adsl.by'
     SUBJECT [FORMULA STRING[60] '\'Напоминание пароля для \' || $1'](emailContact(u))
@@ -720,7 +729,7 @@ savef(s) = ACTION LOADFILE simage(s);
 FORM storeArticle 'По складам'
     OBJECTS s=Store '-Склад-', a=Article
     PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
-    PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm() TOOLBAR, testRequestInput(s) TOOLBAR
+    PROPERTIES TODRAW s FORCE PANEL setDefaultNames(), copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm() TOOLBAR, testRequestInput(s) TOOLBAR
     PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
     PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, ssi=Features.simage, spdf, scustom, sexcel, testAbstractAction, editActionTest, loadf, savef
     PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
