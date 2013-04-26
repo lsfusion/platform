@@ -12,10 +12,15 @@ shortNameCurrency 'Валюта сокр.' = DATA STRING[3] (Currency);
 documentNameCurrency 'Валюта в накладной сокр.' = DATA STRING[10] (Currency);
 currencyShortName (string) = GROUP AGGR currency BY shortNameCurrency(currency) WHERE currency IS Currency;
 
-GROUP nbrbGroup 'Курсы нацбанка' : public;
+GROUP nbrbGroup 'Курсы НБРБ' : public;
 
 importNBRBExchangeRateDateFrom 'Дата с' = DATA DATE () IN nbrbGroup;
 importNBRBExchangeRateDateTo 'Дата по' = DATA DATE () IN nbrbGroup;
+
+GROUP cbrfGroup 'Курсы ЦБРФ' : public;
+
+importCBRFExchangeRateDateFrom 'Дата с' = DATA DATE () IN cbrfGroup;
+importCBRFExchangeRateDateTo 'Дата по' = DATA DATE () IN cbrfGroup;
 
 // Формы
 
@@ -102,6 +107,7 @@ FORM typeExchangeCurrencyDate 'Тип обмена / Курсы валют'
     PROPERTIES(t) ADDFORM, EDITFORM, delete
 
     PROPERTIES() importNBRBExchangeRateDateFrom, importNBRBExchangeRateDateTo
+    PROPERTIES() importCBRFExchangeRateDateFrom, importCBRFExchangeRateDateTo
 
     OBJECTS c = Currency
     PROPERTIES(c) READONLY nameCurrency
@@ -124,13 +130,23 @@ FORM typeExchangeCurrencyDate 'Тип обмена / Курсы валют'
 DESIGN typeExchangeCurrencyDate FROM DEFAULT{
     main {
         childConstraints = TO THE BOTTOM;
-        ADD t.box;
-        ADD NOGROUP.nbrbGroup;
-        NEW topContainer{
-            childConstraints = TO THE RIGHT;
-            ADD c.box;
-            ADD d.box;
-
+        NEW split {
+            type = SPLITV;
+            ADD t.box;
+            NEW topContainer{
+                type = TABBED;
+                NEW currentExchangeRates {
+                    title = 'Текущие курсы';
+                    childConstraints = TO THE RIGHT;
+                    ADD c.box;
+                    ADD d.box;
+                }
+                NEW importExchangeRates {
+                    title = 'Импорт курсов';
+                    ADD NOGROUP.nbrbGroup;
+                    ADD NOGROUP.cbrfGroup;
+                }
+            }
         }
         ADD functions.box;
     }
@@ -211,6 +227,8 @@ loadDefaultCurrency 'Добавить валюты' = ACTION (ishortName, iname,
     }
 }
 
+overLoadDefaultCurrencies = ABSTRACT ACTION ();
+
 loadDefaultCurrencies 'Загрузить стандартные валюты' = ACTION () {
     EXEC loadDefaultCurrency('AUD', 'Австралийский доллар', ' ');
     EXEC loadDefaultCurrency('BGN', 'Болгарский лев', ' ');
@@ -240,6 +258,8 @@ loadDefaultCurrencies 'Загрузить стандартные валюты' =
     EXEC loadDefaultCurrency('JPY', 'Иена', ' ');
     EXEC loadDefaultCurrency('IRR', 'Иранский риал', ' ');
     EXEC loadDefaultCurrency('BLR', 'Белорусский рубль', ' ');
+
+    EXEC overLoadDefaultCurrencies();
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultCurrencies);

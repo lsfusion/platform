@@ -1,11 +1,11 @@
-package fdk.region.by.masterdata;
-
+package fdk.region.ru.masterdata;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DateClass;
 import platform.server.classes.ValueClass;
@@ -29,10 +29,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class ImportNBRBExchangeRateActionProperty extends ScriptingActionProperty {
+public class ImportCBRFExchangeRateActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface currencyInterface;
 
-    public ImportNBRBExchangeRateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+    public ImportCBRFExchangeRateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, new ValueClass[]{LM.findClassByCompoundName("Currency")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
@@ -46,12 +46,12 @@ public class ImportNBRBExchangeRateActionProperty extends ScriptingActionPropert
 
             DataObject currencyObject = context.getKeyValue(currencyInterface);
 
-            String shortNameCurrency = (String) LM.findLCPByCompoundName("shortNameCurrency").read(context, currencyObject);
-            Date nbrbDateFrom = (Date) LM.findLCPByCompoundName("importNBRBExchangeRateDateFrom").read(context);
-            Date nbrbDateTo = (Date) LM.findLCPByCompoundName("importNBRBExchangeRateDateTo").read(context);
+            String extraSIDCurrency = (String) LM.findLCPByCompoundName("extraSIDCurrency").read(context, currencyObject);
+            Date cbrfDateFrom = (Date) LM.findLCPByCompoundName("importCBRFExchangeRateDateFrom").read(context);
+            Date cbrfDateTo = (Date) LM.findLCPByCompoundName("importCBRFExchangeRateDateTo").read(context);
 
-            if (nbrbDateFrom != null && nbrbDateTo != null && shortNameCurrency != null)
-                importExchanges(nbrbDateFrom, nbrbDateTo, shortNameCurrency, context);
+            if (cbrfDateFrom != null && cbrfDateTo != null && extraSIDCurrency != null)
+                importExchanges(cbrfDateFrom, cbrfDateTo, extraSIDCurrency, context);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -65,14 +65,14 @@ public class ImportNBRBExchangeRateActionProperty extends ScriptingActionPropert
 
     }
 
-    private void importExchanges(Date dateFrom, Date dateTo, String shortNameCurrency, ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, IOException, JDOMException, SQLException, ParseException {
+    private void importExchanges(Date dateFrom, Date dateTo, String extraSIDCurrency, ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, IOException, JDOMException, SQLException, ParseException {
 
 
-        List<Exchange> exchangesList = importExchangesFromXML(dateFrom, dateTo, shortNameCurrency);
+        List<Exchange> exchangesList = importExchangesFromXML(dateFrom, dateTo, extraSIDCurrency, context);
 
         if (exchangesList != null) {
 
-            ImportField typeExchangeBYRField = new ImportField(LM.findLCPByCompoundName("name"));
+            ImportField typeExchangeRUField = new ImportField(LM.findLCPByCompoundName("name"));
             ImportField typeExchangeForeignField = new ImportField(LM.findLCPByCompoundName("name"));
             ImportField currencyField = new ImportField(LM.findLCPByCompoundName("shortNameCurrency"));
             ImportField homeCurrencyField = new ImportField(LM.findLCPByCompoundName("shortNameCurrency"));
@@ -80,8 +80,8 @@ public class ImportNBRBExchangeRateActionProperty extends ScriptingActionPropert
             ImportField foreignRateField = new ImportField(LM.findLCPByCompoundName("rateExchange"));
             ImportField dateField = new ImportField(DateClass.instance);
 
-            ImportKey<?> typeExchangeBYRKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("TypeExchange"),
-                    LM.findLCPByCompoundName("typeExchangeName").getMapping(typeExchangeBYRField));
+            ImportKey<?> typeExchangeRUKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("TypeExchange"),
+                    LM.findLCPByCompoundName("typeExchangeName").getMapping(typeExchangeRUField));
 
             ImportKey<?> typeExchangeForeignKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("TypeExchange"),
                     LM.findLCPByCompoundName("typeExchangeName").getMapping(typeExchangeForeignField));
@@ -94,10 +94,10 @@ public class ImportNBRBExchangeRateActionProperty extends ScriptingActionPropert
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-            props.add(new ImportProperty(typeExchangeBYRField, LM.findLCPByCompoundName("name").getMapping(typeExchangeBYRKey)));
-            props.add(new ImportProperty(homeCurrencyField, LM.findLCPByCompoundName("currencyTypeExchange").getMapping(typeExchangeBYRKey),
+            props.add(new ImportProperty(typeExchangeRUField, LM.findLCPByCompoundName("name").getMapping(typeExchangeRUKey)));
+            props.add(new ImportProperty(homeCurrencyField, LM.findLCPByCompoundName("currencyTypeExchange").getMapping(typeExchangeRUKey),
                     LM.object(LM.findClassByCompoundName("Currency")).getMapping(homeCurrencyKey)));
-            props.add(new ImportProperty(rateField, LM.findLCPByCompoundName("rateExchange").getMapping(typeExchangeBYRKey, currencyKey, dateField)));
+            props.add(new ImportProperty(rateField, LM.findLCPByCompoundName("rateExchange").getMapping(typeExchangeRUKey, currencyKey, dateField)));
 
             props.add(new ImportProperty(typeExchangeForeignField, LM.findLCPByCompoundName("name").getMapping(typeExchangeForeignKey)));
             props.add(new ImportProperty(currencyField, LM.findLCPByCompoundName("currencyTypeExchange").getMapping(typeExchangeForeignKey),
@@ -106,49 +106,52 @@ public class ImportNBRBExchangeRateActionProperty extends ScriptingActionPropert
 
             List<List<Object>> data = new ArrayList<List<Object>>();
             for (Exchange e : exchangesList) {
-                data.add(Arrays.asList((Object) "НБРБ (BYR)", "НБРБ (" + e.currencyID + ")", e.currencyID, e.homeCurrencyID, e.exchangeRate, 1/e.exchangeRate, e.date));
+                data.add(Arrays.asList((Object) "ЦБРФ (RUB)", "ЦБРФ (" + e.currencyID + ")", e.currencyID, e.homeCurrencyID, e.exchangeRate, 1/e.exchangeRate, e.date));
             }
-            ImportTable table = new ImportTable(Arrays.asList(typeExchangeBYRField, typeExchangeForeignField, currencyField,
+            ImportTable table = new ImportTable(Arrays.asList(typeExchangeRUField, typeExchangeForeignField, currencyField,
                     homeCurrencyField, rateField, foreignRateField, dateField), data);
 
             DataSession session = context.getSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(typeExchangeBYRKey,
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(typeExchangeRUKey,
                     typeExchangeForeignKey, currencyKey, homeCurrencyKey), props);
             service.synchronize(true, false);
-            //session.apply(LM.getBL());
-            //session.close();
         }
     }
 
-    private List<Exchange> importExchangesFromXML(Date dateFrom, Date dateTo, String shortNameCurrency) throws IOException, JDOMException, ParseException {
+    private List<Exchange> importExchangesFromXML(Date dateFrom, Date dateTo, String extraSIDCurrency, ExecutionContext context) throws IOException, JDOMException, ParseException, ScriptingErrorLog.SemanticErrorException, SQLException {
         SAXBuilder builder = new SAXBuilder();
 
         List<Exchange> exchangesList = new ArrayList<Exchange>();
 
-        Document document = builder.build(new URL("http://www.nbrb.by/Services/XmlExRatesRef.aspx").openStream());
+        Document document = builder.build(new URL("http://www.cbr.ru/scripts/XML_val.asp?d=0").openStream());
         Element rootNode = document.getRootElement();
-        List list = rootNode.getChildren("Currency");
+        List list = rootNode.getChildren("Item");
 
         for (int i = 0; i < list.size(); i++) {
 
             Element node = (Element) list.get(i);
 
-            String charCode = node.getChildText("CharCode");
-            String id = node.getAttributeValue("Id");
+            String id = node.getAttributeValue("ID");
 
-            if (shortNameCurrency.equals(charCode)) {
-                Document exchangeDocument = builder.build(new URL("http://www.nbrb.by/Services/XmlExRatesDyn.aspx?curId=" + id
-                        + "&fromDate=" + new SimpleDateFormat("MM/dd/yyyy").format(dateFrom)
-                        + "&toDate=" + new SimpleDateFormat("MM/dd/yyyy").format(dateTo)).openStream());
+            if (extraSIDCurrency.equals(id)) {
+                Document exchangeDocument = builder.build(new URL("http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1="
+                        + new SimpleDateFormat("dd/MM/yyyy").format(dateFrom)
+                        + "&date_req2=" + new SimpleDateFormat("dd/MM/yyyy").format(dateTo)
+                        + "&VAL_NM_RQ=" + id).openStream());
                 Element exchangeRootNode = exchangeDocument.getRootElement();
                 List exchangeList = exchangeRootNode.getChildren("Record");
+
+                String shortNameCurrency = (String) LM.findLCPByCompoundName("shortNameCurrency").read(context, new DataObject(LM.findLCPByCompoundName("currencyExtraSID").read(context, new DataObject(extraSIDCurrency)), (ConcreteClass) LM.findClassByCompoundName("Currency")));
 
                 for (int j = 0; j < exchangeList.size(); j++) {
 
                     Element exchangeNode = (Element) exchangeList.get(j);
 
-                    exchangesList.add(new Exchange(charCode, "BLR", new Date(DateUtils.parseDate(exchangeNode.getAttributeValue("Date"), new String[]{"MM/dd/yyyy"}).getTime()),
-                            Double.valueOf(exchangeNode.getChildText("Rate"))));
+                    Double value = Double.valueOf(exchangeNode.getChildText("Value").replace(",", ".")) / Double.valueOf(exchangeNode.getChildText("Nominal"));
+
+                    exchangesList.add(new Exchange(shortNameCurrency, "RUB",
+                            new Date(DateUtils.parseDate(exchangeNode.getAttributeValue("Date"), new String[]{"dd.MM.yyyy"}).getTime()),
+                            value));
                 }
                 if (exchangesList.size() > 0)
                     return exchangesList;

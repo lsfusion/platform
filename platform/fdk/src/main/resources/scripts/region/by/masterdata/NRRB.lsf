@@ -18,8 +18,3 @@ importNBRBExchangeRate 'Импортировать курсы НБРБ' = ACTION
 EXTEND FORM typeExchangeCurrencyDate
     PROPERTIES() importNBRBExchangeRate
 ;
-EXTEND DESIGN typeExchangeCurrencyDate {
-    main {
-        ADD NOGROUP.nbrbGroup BEFORE topContainer;
-    }
-}
