@@ -16,13 +16,16 @@ public class PaasLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass database;
     public ConcreteCustomClass status;
 
+    public LCP projectName;
     public LCP projectDescription;
     public LCP projectOwnerLogin;
     public LCP projectOwner;
 
+    public LCP moduleName;
     public LCP moduleInProject;
     public LCP moduleSource;
 
+    public LCP configurationName;
     public LCP configurationProject;
     public LCP configurationDatabase;
     public LCP configurationDatabaseName;
@@ -31,6 +34,7 @@ public class PaasLogicsModule extends ScriptingLogicsModule {
     public LCP configurationStatus;
     public LAP configurationStop;
 
+    public LCP databaseName;
     public LCP databaseConfiguration;
 
     public PaasLogicsModule(PaasBusinessLogics paas) throws IOException {
@@ -53,13 +57,16 @@ public class PaasLogicsModule extends ScriptingLogicsModule {
     public void initProperties() throws RecognitionException {
         super.initProperties();
 
+        projectName = getLCPByName("projectName");
         projectDescription = getLCPByName("projectDescription");
         projectOwner = getLCPByName("projectOwner");
         projectOwnerLogin = getLCPByName("projectOwnerLogin");
 
+        moduleName = getLCPByName("moduleName");
         moduleInProject = getLCPByName("moduleInProject");
         moduleSource = getLCPByName("moduleSource");
 
+        configurationName = getLCPByName("configurationName");
         configurationProject = getLCPByName("configurationProject");
         configurationDatabase = getLCPByName("configurationDatabase");
         configurationDatabaseName = getLCPByName("configurationDatabaseName");
@@ -67,6 +74,7 @@ public class PaasLogicsModule extends ScriptingLogicsModule {
         configurationExportName = getLCPByName("configurationExportName");
         configurationStatus = getLCPByName("configurationStatus");
 
+        databaseName = getLCPByName("databaseName");
         databaseConfiguration = getLCPByName("databaseConfiguration");
 
         configurationStop = getLAPByName("configurationStop");

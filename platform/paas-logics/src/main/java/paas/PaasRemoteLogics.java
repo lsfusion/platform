@@ -50,7 +50,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(paasLM.projectOwnerLogin.getExpr(projExpr).compare(new DataObject(userLogin), Compare.EQUALS));
 
-                q.addProperty("name", baseLM.name.getExpr(projExpr));
+                q.addProperty("name", paasLM.projectName.getExpr(projExpr));
                 q.addProperty("description", paasLM.projectDescription.getExpr(projExpr));
 
                 ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session.sql);
@@ -85,7 +85,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
 
                 DataObject projObj = session.addObject(paasLM.project);
 
-                baseLM.name.change(newProject.name, session, projObj);
+                paasLM.projectName.change(newProject.name, session, projObj);
                 paasLM.projectDescription.change(newProject.description, session, projObj);
                 paasLM.projectOwner.change(userId, session, projObj);
 
@@ -111,7 +111,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
 
                 DataObject projObj = new DataObject(project.id, paasLM.project);
 
-                baseLM.name.change(project.name, session, projObj);
+                paasLM.projectName.change(project.name, session, projObj);
                 paasLM.projectDescription.change(project.description, session, projObj);
 
                 session.apply(businessLogics);
@@ -161,7 +161,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(paasLM.moduleInProject.getExpr(projExpr, moduleExpr).getWhere());
 
-                q.addProperty("name", baseLM.name.getExpr(moduleExpr));
+                q.addProperty("name", paasLM.moduleName.getExpr(moduleExpr));
 
                 return getModuleDTOs(q.execute(session.sql));
             } finally {
@@ -189,7 +189,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 q.and(moduleExpr.isClass(paasLM.module));
                 q.and(paasLM.moduleInProject.getExpr(projExpr, moduleExpr).getWhere().not());
 
-                q.addProperty("name", baseLM.name.getExpr(moduleExpr));
+                q.addProperty("name", paasLM.moduleName.getExpr(moduleExpr));
 
                 return getModuleDTOs(q.execute(session.sql));
             } finally {
@@ -229,7 +229,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(paasLM.configurationProject.getExpr(confExpr).compare(new DataObject(projectId, paasLM.project), Compare.EQUALS));
 
-                q.addProperty("name", baseLM.name.getExpr(confExpr));
+                q.addProperty("name", paasLM.configurationName.getExpr(confExpr));
                 q.addProperty("port", paasLM.configurationPort.getExpr(confExpr));
                 q.addProperty("exportName", paasLM.configurationExportName.getExpr(confExpr));
                 q.addProperty("status", paasLM.configurationStatus.getExpr(confExpr));
@@ -354,7 +354,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
 
                 DataObject moduleObj = session.addObject(paasLM.module);
 
-                baseLM.name.change(newModule.name, session, moduleObj);
+                paasLM.moduleName.change(newModule.name, session, moduleObj);
 
                 addModuleToProject(session, new DataObject(projectId, paasLM.project), moduleObj);
 
@@ -408,9 +408,9 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
 
                 DataObject dbObj = session.addObject(paasLM.database);
                 String dbName = "generated_config_" + configObj.object;
-                baseLM.name.change(dbName, session, dbObj);
+                paasLM.databaseName.change(dbName, session, dbObj);
 
-                baseLM.name.change("Configuration " + configObj.object, session, configObj);
+                paasLM.configurationName.change("Configuration " + configObj.object, session, configObj);
                 paasLM.configurationStatus.change(paasLM.status.getObjectID("stopped"), session, configObj);
                 paasLM.configurationProject.change(projectId, session, configObj);
                 paasLM.configurationDatabase.change(dbObj.object, session, configObj);
@@ -522,7 +522,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
         paasLM.configurationPort.change(configuration.port, session, confObj);
         // пока не даём менять укникальное сгенерированное имя для экспорта
 //        paasLM.configurationExportName.change(configuration.exportName, session, confObj);
-        baseLM.name.change(configuration.name, session, confObj);
+        paasLM.configurationName.change(configuration.name, session, confObj);
     }
 
     private String waitForStarted(int configurationId) throws RemoteException {
@@ -610,7 +610,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
 
                 String exportName = (String) paasLM.configurationExportName.read(session, confObj);
 
-                String name = (String) baseLM.name.read(session, confObj);
+                String name = (String) paasLM.configurationName.read(session, confObj);
 
                 ConfigurationDTO configuration = new ConfigurationDTO();
                 configuration.name = name;

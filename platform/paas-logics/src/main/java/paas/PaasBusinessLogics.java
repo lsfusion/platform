@@ -63,7 +63,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> {
                         paasLM.databaseConfiguration.getExpr(session.getModifier(), dbExpr).getWhere().not()
                 );
 
-                q.addProperty("name", LM.name.getExpr(session.getModifier(), dbExpr));
+                q.addProperty("name", paasLM.databaseName.getExpr(session.getModifier(), dbExpr));
 
                 ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session.sql);
                 for (ImMap<String, Object> entry : values.valueIt()) {
