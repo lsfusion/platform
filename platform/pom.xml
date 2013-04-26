@@ -21,7 +21,6 @@
         <module>skolkovo-gwt</module>
         <module>budget-logics</module>
         <module>roman-logics</module>
-        <module>sample-logics</module>
         <module>equ-api</module>
         <module>equ-clt</module>
         <module>equ-srv</module>
