@@ -160,8 +160,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP objectClass;
     public LCP objectClassName;
-    public LCP staticID;
     public LCP staticName;
+    public LCP staticCaption;
 
     public LCP defaultBackgroundColor;
     public LCP defaultOverrideBackgroundColor;
@@ -407,13 +407,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         name = addDProp(recognizeGroup, "name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
 
-        staticID = addDProp("staticID", getString("logics.statcode"), StringClass.get(250), baseClass);
-        staticName = addDProp(recognizeGroup, "staticName", "Статическое имя", InsensitiveStringClass.get(50), baseClass);
-        ((CalcProperty)staticName.property).aggProp = true;
+        staticName = addDProp("staticName", getString("logics.statcode"), StringClass.get(250), baseClass);
+        staticCaption = addDProp(recognizeGroup, "staticCaption", "Статическое имя", InsensitiveStringClass.get(50), baseClass);
+        ((CalcProperty)staticCaption.property).aggProp = true;
 
         // todo : поменять возможно названия
         objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
-        objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), staticName, objectClass, 1);
+        objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), staticCaption, objectClass, 1);
 
 /*        name.setEventChange(addJProp(string2SP, addJProp(name.getOld(), objectClass, 1), 1,
                 addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
@@ -430,7 +430,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initIndexes() {
-        addIndex(staticName);
+        addIndex(staticCaption);
     }
 
     public static int generateStaticNewID() {

@@ -18,7 +18,7 @@ widthLabelType 'Ширина' = DATA INTEGER (LabelType);
 heightLabelType 'Высота' = DATA INTEGER (LabelType);
 
 orientationLabelType = DATA PrintOrientation (LabelType);
-nameOrientationLabelType 'Ориентация' (labelType) = staticName(orientationLabelType(labelType));
+nameOrientationLabelType 'Ориентация' (labelType) = staticCaption(orientationLabelType(labelType));
 
 fileTemplateLabelType 'Файл шаблона' = DATA STRING[200] (LabelType);
 

@@ -32,7 +32,7 @@ configurationDatabaseName 'Имя базы данных' (configuration) = datab
 configurationPort 'Порт для запуска' = DATA INTEGER (Configuration);
 configurationExportName 'Имя для экспорта через RMI' = DATA STRING[40] (Configuration);
 configurationStatus 'Статус' = DATA Status (Configuration);
-configurationStatusName 'Статус' (configuration) = staticName(configurationStatus(configuration));
+configurationStatusName 'Статус' (configuration) = staticCaption(configurationStatus(configuration));
 
 databaseConfiguration 'Конфигурация' (database) = GROUP AGGR configuration BY configurationDatabase(configuration);
 

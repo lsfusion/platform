@@ -216,3 +216,7 @@ V0.6.3 {
 V0.8.0 {
     PROPERTY classSID -> staticID
 }
+
+V0.8.1 {
+    PROPERTY staticID -> staticName
+}

@@ -333,11 +333,11 @@ public abstract class LogicsModule {
         return addConcreteClass(name, caption, BaseUtils.toList(sids), BaseUtils.toList(names), parents);
     }
 
-    protected static void printStaticObjectsChanges(String path, String staticID, List<String> sids) {
+    protected static void printStaticObjectsChanges(String path, String staticName, List<String> sids) {
         try {
             PrintWriter w = new PrintWriter(new FileWriter(path, true));
             for (String sid : sids) {
-                w.print("OBJECT " + sid + " -> " + staticID + "." + sid + "\n");
+                w.print("OBJECT " + sid + " -> " + staticName + "." + sid + "\n");
             }
             w.close();
         } catch (Exception e) {

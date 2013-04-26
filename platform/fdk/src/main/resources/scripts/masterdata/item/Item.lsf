@@ -575,7 +575,7 @@ skuTypeSku (sku) += skuTypeItem(sku);
 
 skuTypeItem(item) <- SkuType.skuTypeItem WHEN ASSIGNED(item IS Item);
 
-nameSkuTypeItem 'Тип' (item) = staticName(skuTypeItem(item)) IN itemBaseGroup;
+nameSkuTypeItem 'Тип' (item) = staticCaption(skuTypeItem(item)) IN itemBaseGroup;
 EXTEND FORM item PROPERTIES(i) nameSkuTypeItem;
 
 // Весовой

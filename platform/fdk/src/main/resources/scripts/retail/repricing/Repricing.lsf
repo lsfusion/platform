@@ -320,7 +320,7 @@ CLASS ChangePriceType 'Тип изменения цены' {
 };
 
 changePriceTypeUserRepricing = DATA ChangePriceType (UserRepricing);
-nameChangePriceTypeUserRepricing 'Тип изменения цены' (userRepricing) = staticName(changePriceTypeUserRepricing(userRepricing)) MINCHARWIDTH 20 PREFCHARWIDTH 20 MAXCHARWIDTH 20;
+nameChangePriceTypeUserRepricing 'Тип изменения цены' (userRepricing) = staticCaption(changePriceTypeUserRepricing(userRepricing)) MINCHARWIDTH 20 PREFCHARWIDTH 20 MAXCHARWIDTH 20;
 
 percentUserRepricing 'Процент' (userRepricing)= DATA NUMERIC[8,3](UserRepricing);
 

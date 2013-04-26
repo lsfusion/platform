@@ -67,9 +67,9 @@ showPropertyDraw 'Показ свойства' = DATA PropertyDrawShowStatus (Pr
 showPropertyDrawCustomUser 'Показ свойства для пользователя' = DATA PropertyDrawShowStatus (PropertyDraw, CustomUser);
 showOverridePropertyDrawCustomUser 'Показ свойства' (propertyDraw, customUser) = (showPropertyDraw (propertyDraw) AND customUser IS CustomUser ) OR showPropertyDrawCustomUser (propertyDraw, customUser);
 
-nameShowPropertyDraw 'Показ свойства' (propertyDraw) = staticName(showPropertyDraw (propertyDraw)) PREFCHARWIDTH 50;
-nameShowPropertyDrawCustomUser 'Показ свойства для пользователя' (propertyDraw, customUser) = staticName(showPropertyDrawCustomUser(propertyDraw, customUser)) PREFCHARWIDTH 50;
-nameShowOverridePropertyDrawCustomUser (propertyDraw, customUser) = staticName(showOverridePropertyDrawCustomUser (propertyDraw, customUser));
+nameShowPropertyDraw 'Показ свойства' (propertyDraw) = staticCaption(showPropertyDraw (propertyDraw)) PREFCHARWIDTH 50;
+nameShowPropertyDrawCustomUser 'Показ свойства для пользователя' (propertyDraw, customUser) = staticCaption(showPropertyDrawCustomUser(propertyDraw, customUser)) PREFCHARWIDTH 50;
+nameShowOverridePropertyDrawCustomUser (propertyDraw, customUser) = staticCaption(showOverridePropertyDrawCustomUser (propertyDraw, customUser));
 
 columnWidthPropertyDrawCustomUser 'Ширина для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
 columnWidthPropertyDraw 'Ширина' = DATA INTEGER (PropertyDraw);

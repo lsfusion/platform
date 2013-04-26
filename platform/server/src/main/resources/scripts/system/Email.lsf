@@ -9,7 +9,7 @@ CLASS EncryptedConnectionTypeStatus 'Тип шифрованного подкл�
 };
 
 encryptedConnectionType 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus();
-nameEncryptedConnectionType 'Тип шифрованного подключения' = staticName(encryptedConnectionType()) PREFCHARWIDTH 3 IN email;
+nameEncryptedConnectionType 'Тип шифрованного подключения' = staticCaption(encryptedConnectionType()) PREFCHARWIDTH 3 IN email;
 
 CLASS Notification 'Уведомление';
 TABLE notification (Notification);

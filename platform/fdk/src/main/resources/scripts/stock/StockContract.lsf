@@ -40,7 +40,7 @@ CLASS PaymentCondition 'Условия оплаты';
 TABLE paymentCondition(PaymentCondition);
 
 typePaymentCondition = DATA AgreementPaymentType (PaymentCondition);
-nameTypePaymentCondition 'Тип оплаты' (paymentCondition) = staticName(typePaymentCondition(paymentCondition));
+nameTypePaymentCondition 'Тип оплаты' (paymentCondition) = staticCaption(typePaymentCondition(paymentCondition));
 
 isPrepaymentTypePaymentCondition(paymentCondition) = typePaymentCondition(paymentCondition) == AgreementPaymentType.prepayment;
 
@@ -50,7 +50,7 @@ typePaymentAgreement 'Тип оплаты' (agreement) = typePaymentCondition(pa
 //для договора
 
 typeContractSku = DATA ContractSkuType (ContractSku);
-nameTypeContractSku 'Тип договора' (contract) = staticName(typeContractSku(contract));
+nameTypeContractSku 'Тип договора' (contract) = staticCaption(typeContractSku(contract));
 isSaleTypeContract(contract) = typeContractSku(contract) == ContractSkuType.sale;
 
 CLASS PaymentPeriod 'Период рассрочки';

@@ -17,7 +17,7 @@ TABLE range(Range);
 numberRange 'Шкала' = DATA INTEGER (Range) AGGPROP IN recognize;
 
 taxRange = DATA Tax (Range) NOT NULL;
-nameTaxRange 'Налог' (range) = staticName(taxRange(range)) IN recognize;
+nameTaxRange 'Налог' (range) = staticCaption(taxRange(range)) IN recognize;
 
 countryRange = DATA Country (Range) NOT NULL AUTOSET;
 nameCountryRange 'Страна' (range) = nameCountry(countryRange(range)) IN recognize;
@@ -39,7 +39,7 @@ CLASS RangeType 'Для каких подразделений действует
 };
 
 rangeTypeRange = DATA RangeType (Range) NOT NULL;
-nameRangeTypeRange 'Тип шкалы' = staticName(rangeTypeRange(range)) IN base;
+nameRangeTypeRange 'Тип шкалы' = staticCaption(rangeTypeRange(range)) IN base;
 
 isUnitsTypeRange(range) = rangeTypeRange(range) == RangeType.units;
 
@@ -107,7 +107,7 @@ currentVATUnitDate 'НДС, %' (taxUnit) = valueRateRangeDate(rangeTaxTaxUnit(Ta
 
 FORM tax 'Налог'
     OBJECTS           t = Tax FIXED PANEL
-    PROPERTIES(t)     staticName
+    PROPERTIES(t)     staticCaption
 
     OBJECTS c = Country FIXED PANEL
     PROPERTIES(c) SELECTOR    nameCountry
@@ -171,7 +171,7 @@ DESIGN tax FROM DEFAULT {
 
 FORM taxes 'Налоги'
     OBJECTS           t=Tax
-    PROPERTIES(t)     READONLY staticName
+    PROPERTIES(t)     READONLY staticCaption
     PROPERTIES(t)     EDITFORM, delete
 
     OBJECTS           c=Country

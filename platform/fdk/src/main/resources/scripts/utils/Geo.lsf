@@ -15,7 +15,7 @@ CLASS MapProvider 'Использовать карты' {
 userMapProvider = DATA MapProvider ();
 mapProvider = MapProvider.yandex OR userMapProvider();
 
-nameUserMapProvider 'Использовать карты' () = staticName(userMapProvider());
+nameUserMapProvider 'Использовать карты' () = staticCaption(userMapProvider());
 
 namePOI 'Название'= ABSTRACT STRING[200] (POI) PERSISTENT;
 

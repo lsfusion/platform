@@ -297,7 +297,7 @@ FORM promotion 'Акция'
     PROPERTIES(sh)                                     hasDiscountCardPromotion
     PROPERTIES(sh) SHOWIF hasDiscountCardPromotion(sh) minCumulativeSumPromotion, maxCumulativeSumPromotion, useCurrentReceiptPromotion, allDiscountCardPromotion
     OBJECTS d=DOW
-    PROPERTIES(d)     READONLY staticName
+    PROPERTIES(d)     READONLY staticCaption
     PROPERTIES(sh, d)  skipPromotionDOW
     FILTERGROUP filterDOW
         FILTER 'Только отмеченные' 'F11' skipPromotionDOW(sh, d)

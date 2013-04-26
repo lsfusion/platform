@@ -73,7 +73,7 @@ pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceBaseP
 // --------------------------- Системные виды цен ------------------------- //
 CLASS SystemPriceListType 'Системный вид цены' : BasePriceListType;
 
-nameBasePriceListType(type) += staticName(type) IF type IS SystemPriceListType;
+nameBasePriceListType(type) += staticCaption(type) IF type IS SystemPriceListType;
 
 priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (SystemPriceListType, Sku, Stock, DATETIME) EXCLUSIVE;
 priceSystemPriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (SystemPriceListType, Batch, Stock, DATETIME) EXCLUSIVE;
@@ -198,7 +198,7 @@ CLASS SystemLedgerPriceListType 'Системный вид цены (регис�
     accountPriceListType 'Учетная'
 }: LedgerPriceListType;
 
-nameLedgerPriceListType (type) += staticName(type) IF type IS SystemLedgerPriceListType;
+nameLedgerPriceListType (type) += staticCaption(type) IF type IS SystemLedgerPriceListType;
 
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.accountPriceListType;
 

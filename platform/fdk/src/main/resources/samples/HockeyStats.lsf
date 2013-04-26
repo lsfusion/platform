@@ -37,7 +37,7 @@ CLASS GameResult 'Р/И' {
 
 userResultGame = DATA GameResult (Game);
 gameResult (game) = UNION OVERRIDE GameResult.win IF ((hostGoals(game) (-) guestGoals(game)) > 1 OR (guestGoals(game) (-) hostGoals(game)) > 1), userResultGame(game);
-gameResultName 'Р/И' (game) = staticName(gameResult(game));
+gameResultName 'Р/И' (game) = staticCaption(gameResult(game));
 
 CONSTRAINT ((hostGoals(game) (-) guestGoals(game)) > 1 OR (hostGoals(game) (-) guestGoals(game)) < -1) AND userResultGame(game) MESSAGE 'Результат игры определен автоматически';
 

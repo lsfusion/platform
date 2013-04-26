@@ -27,10 +27,10 @@ nameToNaturalLossGroup (name) = GROUP AGGR naturalLossGroup BY nameNaturalLossGr
 subNaturalLossGroupSubNaturalLossGroupDetail = DATA SubNaturalLossGroup (SubNaturalLossGroupDetail);
 dayFromNaturalLossGroupDetail 'День' = DATA INTEGER (SubNaturalLossGroupDetail);
 monthFromNaturalLossGroupDetail = DATA Month (SubNaturalLossGroupDetail);
-nameMonthFromNaturalLossGroupDetail 'Месяц' = staticName(monthFromNaturalLossGroupDetail(subNaturalLossGroupDetail));
+nameMonthFromNaturalLossGroupDetail 'Месяц' = staticCaption(monthFromNaturalLossGroupDetail(subNaturalLossGroupDetail));
 dayToNaturalLossGroupDetail 'День' = DATA INTEGER (SubNaturalLossGroupDetail);
 monthToNaturalLossGroupDetail = DATA Month (SubNaturalLossGroupDetail);
-nameMonthToNaturalLossGroupDetail 'Месяц' = staticName(monthToNaturalLossGroupDetail(subNaturalLossGroupDetail));
+nameMonthToNaturalLossGroupDetail 'Месяц' = staticCaption(monthToNaturalLossGroupDetail(subNaturalLossGroupDetail));
 percentNaturalLossGroupDetail '% естественной убыли' = DATA NUMERIC[10,5] (SubNaturalLossGroupDetail);
 
 dateToNumber(prm1, prm2) = prm2*32 + prm1;

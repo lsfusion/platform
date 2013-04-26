@@ -203,8 +203,8 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         foreignProblemProjectField = new ImportField(LM.foreignProblemProject);
         nativeInnovativeProjectField = new ImportField(LM.nativeInnovativeProject);
         foreignInnovativeProjectField = new ImportField(LM.foreignInnovativeProject);
-        projectTypeProjectField = new ImportField(LM.baseLM.staticID);
-        projectActionProjectField = new ImportField(LM.baseLM.staticID);
+        projectTypeProjectField = new ImportField(LM.baseLM.staticName);
+        projectActionProjectField = new ImportField(LM.baseLM.staticName);
         nativeSubstantiationProjectTypeField = new ImportField(LM.nativeSubstantiationProjectType);
         foreignSubstantiationProjectTypeField = new ImportField(LM.foreignSubstantiationProjectType);
         isOtherClusterProjectField = new ImportField(LM.isOtherClusterProject);
@@ -282,7 +282,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         datePatentField = new ImportField(LM.priorityDatePatent);
         isOwnedPatentField = new ImportField(LM.isOwned);
         ownerPatentField = new ImportField(LM.ownerPatent);
-        ownerTypePatentField = new ImportField(LM.baseLM.staticID);
+        ownerTypePatentField = new ImportField(LM.baseLM.staticName);
         isValuatedPatentField = new ImportField(LM.isValuated);
         valuatorPatentField = new ImportField(LM.valuatorPatent);
         fileIntentionOwnerPatentField = new ImportField(LM.fileIntentionOwnerPatent);
@@ -573,9 +573,9 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         fileWrittenConsentClaimerProjectField = new ImportField(LM.fileWrittenConsentClaimerProject);
 
         updateDateProjectField = new ImportField(LM.updateDateProject);
-        projectMissionProjectField = new ImportField(LM.baseLM.staticID);
-        projectScheduleProjectField = new ImportField(LM.baseLM.staticID);
-        projectActionProjectField = new ImportField(LM.baseLM.staticID);
+        projectMissionProjectField = new ImportField(LM.baseLM.staticName);
+        projectScheduleProjectField = new ImportField(LM.baseLM.staticName);
+        projectActionProjectField = new ImportField(LM.baseLM.staticName);
 
         isOtherClusterProjectField = new ImportField(LM.isOtherClusterProject);
         nativeSubstantiationOtherClusterProjectField = new ImportField(LM.nativeSubstantiationOtherClusterProject);

@@ -69,7 +69,7 @@ terminalHandbookTypeID (terminalHandbookType) = GROUP AGGR terminalHandbookType 
 
 FORM handbooksTerminalDocumentType 'Виды справочников ТСД'
     OBJECTS h=TerminalHandbookType
-    PROPERTIES(h)  staticName, idTerminalHandbookType
+    PROPERTIES(h)  staticCaption, idTerminalHandbookType
     PROPERTIES(h)  ADDFORM, EDITFORM, delete
 ;
 
@@ -88,14 +88,14 @@ terminalDocumentTypeID (terminalDocumentType) = GROUP AGGR terminalDocumentType 
 
 terminalHandbookType1TerminalDocumentType = DATA TerminalHandbookType (TerminalDocumentType);
 idTerminalHandbookType1TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
-nameTerminalHandbookType1TerminalDocumentType 'Имя' (terminalDocumentType)  = staticName(terminalHandbookType1TerminalDocumentType(terminalDocumentType));
+nameTerminalHandbookType1TerminalDocumentType 'Имя' (terminalDocumentType)  = staticCaption(terminalHandbookType1TerminalDocumentType(terminalDocumentType));
 
 nameInHandbook1TerminalDocumentType 'Наименование в справочнике 1' = DATA STRING[200] (TerminalDocumentType) IN base;
 nameInHandbook1TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType1TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType1TerminalDocumentType(terminalDocumentType));
 
 terminalHandbookType2TerminalDocumentType = DATA TerminalHandbookType (TerminalDocumentType);
 idTerminalHandbookType2TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
-nameTerminalHandbookType2TerminalDocumentType 'Имя' (terminalDocumentType)  = staticName(terminalHandbookType2TerminalDocumentType(terminalDocumentType));
+nameTerminalHandbookType2TerminalDocumentType 'Имя' (terminalDocumentType)  = staticCaption(terminalHandbookType2TerminalDocumentType(terminalDocumentType));
 
 nameInHandbook2TerminalDocumentType 'Наименование в справочнике 2' = DATA STRING[200] (TerminalDocumentType) IN base;
 nameInHandbook2TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType2TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType2TerminalDocumentType(terminalDocumentType));

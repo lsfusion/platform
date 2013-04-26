@@ -23,7 +23,7 @@ startDateScheduleOrder 'Дата начала' = ABSTRACT DATE (ScheduleOrder) I
 endDateScheduleOrder 'Дата окончания' = ABSTRACT DATE (ScheduleOrder) IN base;
 
 typeScheduleOrder 'Тип генерации графика' = ABSTRACT GenType (ScheduleOrder);
-nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = staticName(typeScheduleOrder(scheduleOrder)) IN base;
+nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = staticCaption(typeScheduleOrder(scheduleOrder)) IN base;
 
 supplierScheduleOrder = ABSTRACT LegalEntity(ScheduleOrder);
 customerScheduleOrder = ABSTRACT LegalEntity(ScheduleOrder);
@@ -39,7 +39,7 @@ META defineScheduleOrder(sign, stockProp)
     //общие свойства
     typeScheduleOrder 'Тип генерации графика (ИД)' = DATA GenType (ScheduleOrder);
     ScheduleOrder.typeScheduleOrder(scheduleOrder) += typeScheduleOrder(scheduleOrder);
-    nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = staticName(typeScheduleOrder(scheduleOrder)) IN base;
+    nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = staticCaption(typeScheduleOrder(scheduleOrder)) IN base;
 
     supplierScheduleOrder 'Поставщик (ИД)' = DATA LegalEntity(ScheduleOrder);
     nameSupplierScheduleOrder 'Поставщик' (scheduleOrder) = nameLegalEntity(supplierScheduleOrder(scheduleOrder)) IN base;
@@ -85,7 +85,7 @@ META defineScheduleOrder(sign, stockProp)
     //свойства "По числам"
     stringNumberScheduleOrder 'Числа месяца поставок (указывать через запятую)' = DATA STRING[100] (ScheduleOrder);
     transferDayScheduleOrder 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA DOW (ScheduleOrder);
-    nameTransferDayScheduleOrder 'День на который переносить поставки с Субботы и Воскресенья' (scheduleOrder) = staticName(transferDayScheduleOrder(scheduleOrder));
+    nameTransferDayScheduleOrder 'День на который переносить поставки с Субботы и Воскресенья' (scheduleOrder) = staticCaption(transferDayScheduleOrder(scheduleOrder));
     CONSTRAINT transferDayScheduleOrder(scheduleOrder) != DOW.friday AND transferDayScheduleOrder(scheduleOrder) != DOW.monday CHECKED MESSAGE 'Выберите день с ПН по ПТ';
 
     //свойства "По дням недели и месяца"
@@ -199,8 +199,8 @@ META defineScheduleOrder(sign, stockProp)
     } TOOLBAR;
 
 
-    monthInDateScheduleOrderDetail 'Месяц'(scheduleOrderDetail) = staticName(monthNumber(numberMonthInDate(dateSupplyScheduleOrderDetail(scheduleOrderDetail))));
-    DOWInDateScheduleOrderDetail 'День недели'(scheduleOrderDetail) = staticName(DOWNumber(numberDOWInDate(dateSupplyScheduleOrderDetail(scheduleOrderDetail))));
+    monthInDateScheduleOrderDetail 'Месяц'(scheduleOrderDetail) = staticCaption(monthNumber(numberMonthInDate(dateSupplyScheduleOrderDetail(scheduleOrderDetail))));
+    DOWInDateScheduleOrderDetail 'День недели'(scheduleOrderDetail) = staticCaption(DOWNumber(numberDOWInDate(dateSupplyScheduleOrderDetail(scheduleOrderDetail))));
 
     orderScheduleOrderDetail = STRUCT(dateSupplyScheduleOrderDetail(scheduleOrderDetail), scheduleOrderDetail) PERSISTENT;
 
@@ -250,11 +250,11 @@ META defineScheduleOrder(sign, stockProp)
                        stringNumberScheduleOrder SHOWIF toShowGenNumber(s), nameTransferDayScheduleOrder SHOWIF toShowGenNumber(s)
 
         OBJECTS m=Month FIXED GRID
-        PROPERTIES(m) staticName SHOWIF toShowGenDayMonth(s)
+        PROPERTIES(m) staticCaption SHOWIF toShowGenDayMonth(s)
         PROPERTIES(s, m) inMonthScheduleOrder SHOWIF toShowGenDayMonth(s)
 
         OBJECTS d=DOW FIXED GRID
-        PROPERTIES(d) staticName SHOWIF toShowGenDayMonth(s)
+        PROPERTIES(d) staticCaption SHOWIF toShowGenDayMonth(s)
         PROPERTIES(s, d) inDayScheduleOrder SHOWIF toShowGenDayMonth(s)
 
         OBJECTS sd=ScheduleOrderDetail

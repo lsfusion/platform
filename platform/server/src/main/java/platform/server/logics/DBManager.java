@@ -1133,7 +1133,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException {
         DataSession session = createSession();
 
-        LM.baseClass.fillIDs(session, LM.staticName, LM.staticID, sIDChanges, objectSIDChanges);
+        LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
 
         session.apply(businessLogics);
 
@@ -1583,7 +1583,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
                     QueryBuilder<String, String> allClassesQuery = new QueryBuilder<String, String>(SetFact.singleton("key"));
                     Expr key = allClassesQuery.getMapExprs().singleValue();
-                    Expr sidExpr = LM.staticID.getExpr(Property.defaultModifier, key);
+                    Expr sidExpr = LM.staticName.getExpr(Property.defaultModifier, key);
                     allClassesQuery.and(sidExpr.getWhere()); // вот тут придется напрямую из таблицы читать id'ки для классов, потому как isClass использовать очевидно нельзя
                     allClassesQuery.and(objectTable.join(MapFact.singleton(objectKey, key)).getExpr(classField).compare(new ValueExpr(Integer.MAX_VALUE - 5, LM.baseClass.objectClass), Compare.EQUALS));
                     allClassesQuery.addProperty("sid", sidExpr);

@@ -90,7 +90,7 @@ public class BaseClass extends AbstractCustomClass {
         objectClass = ConcreteCustomClass.createObjectClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClasses, nameClasses, named);
     }
 
-    public void fillIDs(DataSession session, LCP staticName, LCP staticID, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException {
+    public void fillIDs(DataSession session, LCP staticCaption, LCP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException {
         Map<String, ConcreteCustomClass> usedSIds = new HashMap<String, ConcreteCustomClass>();
         Set<Integer> usedIds = new HashSet<Integer>();
 
@@ -102,14 +102,14 @@ public class BaseClass extends AbstractCustomClass {
         if(objectClass.readData(objectClass.ID, session.sql) == null) {
             DataObject classObject = new DataObject(objectClass.ID, unknown);
             session.changeClass(classObject, objectClass);
-            staticName.change(objectClass.caption, session, classObject);
-            staticID.change(objectClass.sID, session, classObject);
+            staticCaption.change(objectClass.caption, session, classObject);
+            staticName.change(objectClass.sID, session, classObject);
         }
         usedSIds.put(objectClass.sID, objectClass);
         usedIds.add(objectClass.ID);
 
         Map<DataObject, String> modifiedSIDs = new HashMap<DataObject, String>();
-        Map<DataObject, String> modifiedNames = objectClass.fillIDs(session, staticName, staticID, usedSIds, usedIds, sidChanges, modifiedSIDs);
+        Map<DataObject, String> modifiedNames = objectClass.fillIDs(session, staticCaption, staticName, usedSIds, usedIds, sidChanges, modifiedSIDs);
 
         Set<CustomClass> allClasses = getChilds().toJavaSet();
         allClasses.remove(objectClass);
@@ -126,7 +126,7 @@ public class BaseClass extends AbstractCustomClass {
 
         for (CustomClass customClass : allClasses) // заполним все остальные StaticClass
             if (customClass instanceof ConcreteCustomClass)
-                modifiedNames.putAll(((ConcreteCustomClass) customClass).fillIDs(session, staticName, staticID, usedSIds, usedIds, objectSIDChanges, modifiedSIDs));
+                modifiedNames.putAll(((ConcreteCustomClass) customClass).fillIDs(session, staticCaption, staticName, usedSIds, usedIds, objectSIDChanges, modifiedSIDs));
 
         for (CustomClass customClass : allClasses)
             if (customClass instanceof AbstractCustomClass) {
@@ -137,13 +137,13 @@ public class BaseClass extends AbstractCustomClass {
 
         for (Map.Entry<DataObject, String> modifiedSID : modifiedSIDs.entrySet()) {
             systemLogger.info("changing sid of class with id " + modifiedSID.getKey() + " to " + modifiedSID.getValue());
-            staticID.change(modifiedSID.getValue(), session, modifiedSID.getKey());
+            staticName.change(modifiedSID.getValue(), session, modifiedSID.getKey());
         }
 
         // применение переименования классов вынесено сюда, поскольку objectClass.fillIDs() вызывается раньше проставления ID'шников - не срабатывает execute()
         for (Map.Entry<DataObject, String> modifiedName : modifiedNames.entrySet()) {
             systemLogger.info("renaming class with id " + modifiedName.getKey() + " to " + modifiedName.getValue());
-            staticName.change(modifiedName.getValue(), session, modifiedName.getKey());
+            staticCaption.change(modifiedName.getValue(), session, modifiedName.getKey());
         }
     }
 

@@ -54,7 +54,7 @@ factorGroupStaticUOM 'Коэффициент перевода' = DATA NUMERIC[14
 
 FORM groupStatics 'Конвертация статистических ед. изм.'
     OBJECTS g=GroupStatic FIXED PANEL
-    PROPERTIES(g) SELECTOR staticName
+    PROPERTIES(g) SELECTOR staticCaption
 
     OBJECTS u=UOM
     PROPERTIES   nameUOM(u) READONLY, shortNameUOM(u) READONLY, factorGroupStaticUOM(g,u)
@@ -76,7 +76,7 @@ countryStatisticGroup = countryStatisticGroupType(groupTypeStatisticGroup(group)
 nameCountryStatisticGroup 'Страна' (statisticGroup)= nameCountry(countryStatisticGroup(statisticGroup)) IN base;
 
 unitMeasureStatisticGroup 'Ед. изм. ИД' (statisticGroup) = DATA GroupStatic (StatisticGroup);
-nameUOMStatisticGroup 'Ед. изм.' (statisticGroup) = staticName(unitMeasureStatisticGroup(statisticGroup)) MINCHARWIDTH 15 MAXCHARWIDTH 15 PREFCHARWIDTH 15;
+nameUOMStatisticGroup 'Ед. изм.' (statisticGroup) = staticCaption(unitMeasureStatisticGroup(statisticGroup)) MINCHARWIDTH 15 MAXCHARWIDTH 15 PREFCHARWIDTH 15;
 
 sidStatisticGroup 'Код группы' (statisticGroup) = DATA STRING[12] (StatisticGroup)  MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
 canonicalNumberStatisticGroup 'Канонический код' (statisticGroup) = toString255(

@@ -316,7 +316,7 @@ TABLE paymentType (PaymentType);
 namePaymentType 'Наименование' = DATA ISTRING[110](PaymentType);
 
 paymentMeansPaymentType (paymentType) = DATA PaymentMeans (PaymentType);
-namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = staticName(paymentMeansPaymentType(paymentType)) IN base;
+namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = staticCaption(paymentMeansPaymentType(paymentType)) IN base;
 
 sidPaymentType 'Идентификатор' = DATA STRING[10] (PaymentType) IN base;
 sidToTypePayment (tp) = GROUP AGGR paymentType BY sidPaymentType(paymentType) WHERE paymentType IS PaymentType;
@@ -333,7 +333,7 @@ minCashPaymentType () = GROUP MIN paymentType IF paymentMeansPaymentType(payment
 minCardPaymentType () = GROUP MIN paymentType IF paymentMeansPaymentType(paymentType) == PaymentMeans.paymentMeansCard;
 
 paymentMeansPayment (payment) = paymentMeansPaymentType(paymentTypePayment(payment));
-namePaymentMeansPayment 'Форма оплаты' (payment) = staticName(paymentMeansPayment(payment));
+namePaymentMeansPayment 'Форма оплаты' (payment) = staticCaption(paymentMeansPayment(payment));
 
 numberPayment 'Номер платежа' (payment) = DATA INTEGER (Payment);
 zReportReceiptPaymentToPayment (zReport, receipt, number, cashRegister) = GROUP AGGR payment BY numberZReport(zReportReceipt(receiptPayment(payment))), numberReceipt(receiptPayment(payment)), numberPayment(payment), numberCashRegister(cashRegisterZReport(zReportReceipt(receiptPayment(payment)))) WHERE payment IS Payment;

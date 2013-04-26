@@ -2682,11 +2682,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeOwnerTypePatent = addJProp(baseGroup, "nameNativeOwnerTypePatent", "Кем является правообладатель", baseLM.name, ownerTypePatent, 1);
         nameForeignOwnerTypePatent = addJProp(baseGroup, "nameForeignOwnerTypePatent", "Кем является правообладатель (иностр.)", nameForeignOwnerType, ownerTypePatent, 1);
 
-        ownerTypeToSID = addAGProp("ownerTypeToSID", "SID типа правообладателя", addJProp(baseLM.and1, baseLM.staticID, 1, is(ownerType), 1));
-        projectTypeToSID = addAGProp("projectTypeToSID", "SID типа проекта", addJProp(baseLM.and1, baseLM.staticID, 1, is(projectType), 1));
-        projectActionToSID = addAGProp("projectActionToSID", "SID текущего статуса", addJProp(baseLM.and1, baseLM.staticID, 1, is(projectAction), 1));
-        projectMissionToSID = addAGProp("projectMissionToSID", "SID назначения", addJProp(baseLM.and1, baseLM.staticID, 1, is(projectMission), 1));
-        projectScheduleToSID = addAGProp("projectScheduleToSID", "SID регламента", addJProp(baseLM.and1, baseLM.staticID, 1, is(projectSchedule), 1));
+        ownerTypeToSID = addAGProp("ownerTypeToSID", "SID типа правообладателя", addJProp(baseLM.and1, baseLM.staticName, 1, is(ownerType), 1));
+        projectTypeToSID = addAGProp("projectTypeToSID", "SID типа проекта", addJProp(baseLM.and1, baseLM.staticName, 1, is(projectType), 1));
+        projectActionToSID = addAGProp("projectActionToSID", "SID текущего статуса", addJProp(baseLM.and1, baseLM.staticName, 1, is(projectAction), 1));
+        projectMissionToSID = addAGProp("projectMissionToSID", "SID назначения", addJProp(baseLM.and1, baseLM.staticName, 1, is(projectMission), 1));
+        projectScheduleToSID = addAGProp("projectScheduleToSID", "SID регламента", addJProp(baseLM.and1, baseLM.staticName, 1, is(projectSchedule), 1));
         fileIntentionOwnerPatent = addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", DynamicFormatFileClass.get(false, false), patent);
         loadFileIntentionOwnerPatent = addLFAProp(baseGroup, "Загрузить файл документа о передаче права", fileIntentionOwnerPatent);
         openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);
@@ -3325,7 +3325,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         clusterProjectFormalControl = addJProp("clusterProjectFormalControl", "Кластер (ИД)", finalClusterProject, projectFormalControl, 1);
         nameNativeClusterProjectFormalControl = addJProp("nameNativeClusterProjectFormalControl", "Кластер", nameNative, clusterProjectFormalControl, 1);
         resultFormalControl = addDProp("resultFormalControl", "Решение формальной экспертизы", formalControlResult, formalControl);
-        sidResultFormalControl = addJProp("sidResultFormalControl", "Решение формальной экспертизы (ИД)", baseLM.staticID, resultFormalControl, 1);
+        sidResultFormalControl = addJProp("sidResultFormalControl", "Решение формальной экспертизы (ИД)", baseLM.staticName, resultFormalControl, 1);
 
                                      //кнопки
         nameResultFormalControl = addJProp("nameResultFormalControl", "Решение формальной экспертизы", baseLM.name, resultFormalControl, 1);
@@ -3365,7 +3365,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameResultLegalCheck = addJProp("nameResultLegalCheck", "Решение юридической проверки", baseLM.name, resultLegalCheck, 1);
 
         dateProjectLegalCheck = addJProp("dateProjectLegalCheck", "Дата проекта", dateProject, projectLegalCheck, 1);
-        sidResultLegalCheck = addJProp("sidResultLegalCheck", "Решение юридической проверки (ИД)", baseLM.staticID, resultLegalCheck, 1);
+        sidResultLegalCheck = addJProp("sidResultLegalCheck", "Решение юридической проверки (ИД)", baseLM.staticName, resultLegalCheck, 1);
         clusterProjectLegalCheck = addJProp("clusterProjectLegalCheck", "Кластер (ИД)", finalClusterProject, projectLegalCheck, 1);
         nameNativeClusterProjectLegalCheck = addJProp("nameNativeClusterProjectLegalCheck", "Кластер", nameNative, clusterProjectLegalCheck, 1);
 
@@ -3493,7 +3493,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         resultForesightCheckProject = addDProp("resultForesightCheckProject", "Решение проверки на форсайты (ИД)", foresightCheckResult, project);
         nameResultForesightCheckProject = addJProp("nameResultForesightCheckProject", "Решение проверки на форсайты", baseLM.name, resultForesightCheckProject, 1);
-        sidResultForesightCheckProject = addJProp("sidResultForesightCheckProject", "Результат проверки", baseLM.staticID, resultForesightCheckProject, 1);
+        sidResultForesightCheckProject = addJProp("sidResultForesightCheckProject", "Результат проверки", baseLM.staticName, resultForesightCheckProject, 1);
         dateResultForesightCheckProject = addDCProp("dateResultForesightCheckProject", "Дата проверки на форсайты", true, baseLM.currentDate, resultForesightCheckProject, 1);
         userResultForesightCheckProject = addDCProp("userResultForesightCheckProject", "Пользователь проверки на форсайты (ИД)", true, authenticationLM.currentUser, resultForesightCheckProject, 1);
         nameUserResultForesightCheckProject = addJProp("nameUserResultForesightCheckProject", "Пользователь проверки на форсайты", baseLM.name, userResultForesightCheckProject, 1);
@@ -4137,10 +4137,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isPreliminaryAndStatusProjectLegalCheck = addJProp(true, "isPreliminaryAndStatusProjectLegalCheck", "На предв. экспертизу и статус", isPreliminaryAndStatusProject, projectLegalCheck, 1);
 
         statusProjectFormalControl = addJProp("statusProjectFormalControl", "Статус (ИД)", statusProject, projectFormalControl, 1);
-        sidStatusProjectFormalControl = addJProp("sidStatusProjectFormalControl", "Статус", baseLM.staticID, statusProjectFormalControl, 1);
+        sidStatusProjectFormalControl = addJProp("sidStatusProjectFormalControl", "Статус", baseLM.staticName, statusProjectFormalControl, 1);
 
         statusProjectLegalCheck = addJProp("statusProjectLegalCheck", "Статус (ИД)", statusProject, projectLegalCheck, 1);
-        sidStatusProjectLegalCheck = addJProp("sidStatusProjectLegalCheck", "Статус", baseLM.staticID, statusProjectLegalCheck, 1);
+        sidStatusProjectLegalCheck = addJProp("sidStatusProjectLegalCheck", "Статус", baseLM.staticName, statusProjectLegalCheck, 1);
 
         // заявки
 

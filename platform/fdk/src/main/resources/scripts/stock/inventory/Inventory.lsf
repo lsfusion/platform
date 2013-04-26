@@ -121,10 +121,10 @@ nameStockInventory 'Отделы документа' (inventory) =
 
 // Тип инвентаризации
 typeOfAdditionInventory(inventory) = DATA TypeOfAddition (Inventory);
-nameTypeOfAdditionInventory 'Тип инвентаризации' (inventory) = staticName(typeOfAdditionInventory(inventory)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+nameTypeOfAdditionInventory 'Тип инвентаризации' (inventory) = staticCaption(typeOfAdditionInventory(inventory)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 userTypeOfAdditionStockInventory(stock, inventory) = DATA TypeOfAddition (Stock, Inventory);
-nameUserTypeOfAdditionStockInventory 'Тип инвентаризации' (stock, inventory) = staticName(userTypeOfAdditionStockInventory(stock, inventory));
+nameUserTypeOfAdditionStockInventory 'Тип инвентаризации' (stock, inventory) = staticCaption(userTypeOfAdditionStockInventory(stock, inventory));
 
 typeOfAdditionStockInventory(stock, inventory) = UNION OVERRIDE typeOfAdditionInventory(inventory) AND stock IS Stock,
                                                                 userTypeOfAdditionStockInventory(stock, inventory);
@@ -293,7 +293,7 @@ nameCollationSheetListInventory 'Название сл. ведомости' (lis
 collationSheetPageInventoryDetail (pageInventoryDetail) = collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
 
 typeOfAdditionCollationSheet(collationSheet)= typeOfAdditionStockInventory(stockCollationSheet(collationSheet), inventoryCollationSheet(collationSheet));
-nameTypeOfAdditionCollationSheet 'Тип сличительной ведомости' (collationSheet) = staticName(typeOfAdditionCollationSheet(collationSheet)) IN base MINCHARWIDTH 20 PREFCHARWIDTH 20;
+nameTypeOfAdditionCollationSheet 'Тип сличительной ведомости' (collationSheet) = staticCaption(typeOfAdditionCollationSheet(collationSheet)) IN base MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 inInventoryStockListInventoryPageInventoryPageInventoryDetail (inventory, stock, listInventory, pageInventory, pageInventoryDetail) = UNION OVERRIDE
     pageInventoryPageInventoryDetail(pageInventoryDetail) == pageInventory AND listInventory AND stock AND inventory,
