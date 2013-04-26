@@ -12,6 +12,21 @@ TABLE taste(Taste);
 
 nameTaste 'Наименование' = DATA ISTRING[50](Taste);
 
+FORM taste 'Вкус товара'
+    OBJECTS t=Taste FIXED PANEL
+    PROPERTIES(t) nameTaste
+    EDIT Taste OBJECT t
+;
+
+FORM tastes 'Вкусы товара'
+    OBJECTS t=Taste
+    PROPERTIES(t) nameTaste READONLY, delete
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameTaste
+    DIALOG Taste OBJECT t
+;
+DESIGN tastes FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
 @defineObjectItemAttribute(taste, nameTaste, 'Вкус', itemFoodGroup);
 @defineObjectItemAttributeBatch (taste, nameTaste, 'Вкус');
 
@@ -21,6 +36,21 @@ TABLE coolingDegree(CoolingDegree);
 
 nameCoolingDegree 'Наименование' = DATA ISTRING[50](CoolingDegree);
 shortNameCoolingDegree 'Краткое наименование' = DATA ISTRING[10](CoolingDegree);
+
+FORM coolingDegree 'Степень охлаждения товара'
+    OBJECTS t=CoolingDegree FIXED PANEL
+    PROPERTIES(t) nameCoolingDegree, shortNameCoolingDegree
+    EDIT CoolingDegree OBJECT t
+;
+
+FORM coolingDegrees 'Степени охлаждения товара'
+    OBJECTS t=CoolingDegree
+    PROPERTIES(t) nameCoolingDegree READONLY, shortNameCoolingDegree READONLY, delete
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameCoolingDegree
+    DIALOG CoolingDegree OBJECT t
+;
+DESIGN coolingDegrees FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
 @defineObjectItemAttribute(coolingDegree, nameCoolingDegree, 'Степень охлаждения', itemFoodGroup);
 @defineObjectItemAttributeBatch (coolingDegree, nameCoolingDegree, 'Степень охлаждения');

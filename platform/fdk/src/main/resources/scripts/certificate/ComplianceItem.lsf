@@ -13,3 +13,7 @@ EXTEND FORM item
     PROPERTIES(c, i) isCompliancedCountryItem
 ;
 
+overCopyItem(s, d) += ACTION (s, d) {
+    SET isCompliancedCountryItem(c,d) <- isCompliancedCountryItem(c,s) WHERE isCompliancedCountryItem(c,s);
+}
+

@@ -7,3 +7,4 @@ NAMESPACE Purchase;
 // Упаковка
 
 @definePackSku ('закупки', Purchase);
+

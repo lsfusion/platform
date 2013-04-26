@@ -150,10 +150,19 @@ loadFileMessageLabelFormat 'Загрузить файл спец.сообщен�
 scalesModelLabelFormat 'Модель весов'= DATA ScalesModel (LabelFormat);
 nameScalesModelLabelFormat 'Модель весов' (labelFormat) = nameScalesModel(scalesModelLabelFormat(labelFormat));
 
-FORM labelFormats 'Форматы этикеток весов'
+FORM labelFormat 'Формат этикеток весов'
     OBJECTS c=LabelFormat
     PROPERTIES(c) idLabelFormat, nameLabelFormat, nameScalesModelLabelFormat, loadFileLabelFormat, loadFileMessageLabelFormat
+
+    EDIT LabelFormat OBJECT c
+;
+
+FORM labelFormats 'Форматы этикеток весов'
+    OBJECTS c=LabelFormat
+    PROPERTIES(c) READONLY idLabelFormat, nameLabelFormat, nameScalesModelLabelFormat
     PROPERTIES(c) ADDFORM, EDITFORM, delete
+
+    DIALOG LabelFormat OBJECT c
 ;
 
 // ----------------------------------------- Загрузка в ВУ -------------------------------------- //

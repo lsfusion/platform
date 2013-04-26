@@ -8,3 +8,7 @@ NAMESPACE Item;
 @defineObjectItemAttributeBatch (ware, nameWare, 'Посуда');
 
 inWareItem 'Товар в посуде' (item) = item IS Item AND wareItem(item);
+
+overCopyItem(s, d) += ACTION (s, d) {
+    SET wareItem(d) <- wareItem(s);
+}

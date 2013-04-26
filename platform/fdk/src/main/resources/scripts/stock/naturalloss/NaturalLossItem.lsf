@@ -6,7 +6,7 @@ subNaturalLossGroupCountryItem = DATA SubNaturalLossGroup (Country, Item);
 nameSubNaturalLossGroupCountryItem 'Группа естественной убыли' = nameSubNaturalLossGroup(subNaturalLossGroupCountryItem(country, item));
 
 CONSTRAINT countrySubNaturalLossGroup(subNaturalLossGroupCountryItem(country, item)) != country
-    CHECKED BY nameSubNaturalLossGroupCountryItem MESSAGE 'Страна группы естественной убыли не совпадает со страной';
+    CHECKED BY subNaturalLossGroupCountryItem MESSAGE 'Страна группы естественной убыли не совпадает со страной';
 
 subNaturalLossGroupCountrySku (country, sku) += subNaturalLossGroupCountryItem (country, sku);
 

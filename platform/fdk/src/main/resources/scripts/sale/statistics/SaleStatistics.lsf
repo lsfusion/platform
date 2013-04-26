@@ -8,6 +8,9 @@ NAMESPACE Sale;
 CLASS StatisticGroupType 'Тип классификатора статистических групп';
 TABLE statisticGroupType (StatisticGroupType);
 
+countryStatisticGroupType = DATA Country (StatisticGroupType);
+nameCountryStatisticGroupType 'Страна' (type)= nameCountry(countryStatisticGroupType(type)) IN base;
+
 nameStatisticGroupType 'Наименование' = DATA ISTRING[100](StatisticGroupType);
 
 idStatisticGroupType 'Идентификатор' = DATA STRING[20] (StatisticGroupType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
@@ -17,19 +20,19 @@ typeIdStatisticGroupType (string1) = GROUP AGGR type
 
 FORM statisticGroupType 'Тип классификатора статистических групп'
     OBJECTS t = StatisticGroupType FIXED PANEL
-    PROPERTIES(t) nameStatisticGroupType, idStatisticGroupType
+    PROPERTIES(t) nameStatisticGroupType, idStatisticGroupType, nameCountryStatisticGroupType
     EDIT StatisticGroupType OBJECT t
 ;
 
 FORM dialogStatisticGroupType 'Тип классификатора статистических групп'
     OBJECTS t = StatisticGroupType
-    PROPERTIES(t) READONLY nameStatisticGroupType, idStatisticGroupType
+    PROPERTIES(t) READONLY nameStatisticGroupType, idStatisticGroupType, nameCountryStatisticGroupType
     DIALOG StatisticGroupType OBJECT t
 ;
 
 FORM statisticGroupTypes 'Типы классификаторов статистических групп'
     OBJECTS t = StatisticGroupType
-    PROPERTIES(t) READONLY nameStatisticGroupType, idStatisticGroupType
+    PROPERTIES(t) READONLY nameStatisticGroupType, idStatisticGroupType, nameCountryStatisticGroupType
     PROPERTIES(t) ADDFORM, EDITFORM, delete
 ;
 
@@ -69,9 +72,6 @@ TABLE statisticGroupStatisticGroup(StatisticGroup, StatisticGroup);
 
 groupTypeStatisticGroup = DATA StatisticGroupType (StatisticGroup) AUTOSET;
 nameGroupTypeStatisticGroup 'Тип классификатора' (group) = nameStatisticGroupType(groupTypeStatisticGroup(group));
-
-countryStatisticGroupType = DATA Country (StatisticGroupType);
-nameCountryStatisticGroupType 'Страна' (type)= nameCountry(countryStatisticGroupType(type)) IN base;
 
 countryStatisticGroup = countryStatisticGroupType(groupTypeStatisticGroup(group));
 nameCountryStatisticGroup 'Страна' (statisticGroup)= nameCountry(countryStatisticGroup(statisticGroup)) IN base;
@@ -137,7 +137,7 @@ FORM statisticGroups 'Статистические группы'
     TREE treeGroups g=StatisticGroup PARENT parentStatisticGroup
     PROPERTIES READONLY nameStatisticGroup(g), sidStatisticGroup(g)
     PROPERTIES(g,c)       addStatisticGroupType
-    PROPERTIES(g) EDITFORM
+    PROPERTIES(g) EDITFORM, ADDFORM
     ORDER BY sidStatisticGroup
 
     OBJECTS cg=StatisticGroup

@@ -14,3 +14,7 @@ EXTEND FORM item
     PROPERTIES(c, i) codeCustomsGroupCountryItem
 ;
 
+overCopyItem(s, d) += ACTION (s, d) {
+    SET customsGroupCountryItem(c,d) <- customsGroupCountryItem(c,s) WHERE customsGroupCountryItem(c,s);
+}
+

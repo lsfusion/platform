@@ -12,6 +12,21 @@ TABLE type(Type);
 
 nameType 'Наименование' = DATA ISTRING[50](Type);
 
+FORM type 'Вид товара'
+    OBJECTS t=Type FIXED PANEL
+    PROPERTIES(t) nameType
+    EDIT Type OBJECT t
+;
+
+FORM types 'Виды товара'
+    OBJECTS t=Type
+    PROPERTIES(t) nameType READONLY, delete
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameType
+    DIALOG Type OBJECT t
+;
+DESIGN types FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
 @defineObjectItemAttribute(type, nameType, 'Вид', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (type, nameType, 'Вид');
 
@@ -21,6 +36,21 @@ TABLE sort(Sort);
 
 nameSort 'Наименование' = DATA ISTRING[50](Sort);
 
+FORM sort 'Сорт товара'
+    OBJECTS t=Sort FIXED PANEL
+    PROPERTIES(t) nameSort
+    EDIT Sort OBJECT t
+;
+
+FORM sorts 'Сорта товара'
+    OBJECTS t=Sort
+    PROPERTIES(t) nameSort READONLY, delete
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameSort
+    DIALOG Sort OBJECT t
+;
+DESIGN sorts FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
 @defineObjectItemAttribute(sort, nameSort, 'Сорт', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (sort, nameSort, 'Сорт');
 
@@ -29,6 +59,21 @@ CLASS Form 'Форма товара';
 TABLE form(Form);
 
 nameForm 'Наименование' = DATA ISTRING[50](Form);
+
+FORM form 'Форма товара'
+    OBJECTS t=Form FIXED PANEL
+    PROPERTIES(t) nameForm
+    EDIT Form OBJECT t
+;
+
+FORM forms 'Формы товара'
+    OBJECTS t=Form
+    PROPERTIES(t) nameForm READONLY, delete
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameForm
+    DIALOG Form OBJECT t
+;
+DESIGN forms FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
 @defineObjectItemAttribute(form, nameForm, 'Форма', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (form, nameForm, 'Форма');
@@ -40,6 +85,21 @@ TABLE feature(Feature);
 nameFeature 'Наименование' = DATA ISTRING[50](Feature);
 shortNameFeature 'Краткое наименование' = DATA ISTRING[50](Feature);
 
+FORM feature 'Особенность товара'
+    OBJECTS t=Feature FIXED PANEL
+    PROPERTIES(t) nameFeature, shortNameFeature
+    EDIT Feature OBJECT t
+;
+
+FORM features 'Особенности товара'
+    OBJECTS t=Feature
+    PROPERTIES(t) nameFeature READONLY, shortNameFeature READONLY, delete
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameFeature
+    DIALOG Feature OBJECT t
+;
+DESIGN features FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
 @defineObjectItemAttribute(feature, nameFeature, 'Особенность', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (feature, nameFeature, 'Особенность');
 //@implementObjectShortItemAttribute(feature, 'Особенность (сокр.)');
@@ -50,6 +110,21 @@ TABLE pack(Pack);
 
 namePack 'Наименование' = DATA ISTRING[50](Pack);
 shortNamePack 'Наименование' = DATA ISTRING[10](Pack);
+
+FORM pack 'Особенность товара'
+    OBJECTS t=Pack FIXED PANEL
+    PROPERTIES(t) namePack, shortNamePack
+    EDIT Pack OBJECT t
+;
+
+FORM packs 'Особенности товара'
+    OBJECTS t=Pack
+    PROPERTIES(t) namePack READONLY, shortNamePack READONLY, delete
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY namePack
+    DIALOG Pack OBJECT t
+;
+DESIGN packs FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
 @defineObjectItemAttribute(pack, namePack, 'Упаковка', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (pack, namePack, 'Упаковка');

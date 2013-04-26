@@ -523,6 +523,66 @@ substituteQuantityComponentDetail (detail) <- substituteQuantitySkuOrder(bruttoS
 substitutePriceComponentDetail (detail) <- substitutePriceSkuOrder(bruttoSkuComponentDetail(detail), orderComponentDetail(detail))
     WHEN CHANGED(substitutePriceSkuOrder(bruttoSkuComponentDetail(detail), orderComponentDetail(detail)));
 
+FORM substitutesComponent 'Sku'
+    PROPERTIES() nameStockSubstitutesSku
+
+    OBJECTS o = Order FIXED PANEL
+
+    TREE skuTree sg = SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuGroupName = nameSkuGroup(sg)
+
+    OBJECTS sk = Sku
+    PROPERTIES(sk) READONLY nameSku, idBarcodeSku, shortNameUOMSku
+    PROPERTIES     READONLY SHOWIF stockSubstitutesSku() currentBalanceSkuSubstitutesSku(sk)
+    PROPERTIES     READONLY SHOWIF showPriceSubstitutesOrder(o) SubstitutesPriceSkuOrder(sk,o)
+    PROPERTIES() addSku TODRAW sk
+    PROPERTIES(sk) editSku, copySku
+    FILTERS isParentSkuGroupSku(sg, sk)
+    ORDER BY nameSku
+
+    FILTERGROUP filters
+        FILTER 'Товары с остатком' 'F10' currentBalanceSkuSubstitutesSku(sk) AND stockSubstitutesSku() DEFAULT
+;
+
+DESIGN substitutesComponent FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            ADD skuTree.tree.box {
+                title = 'Группы SKU';
+            }
+
+            ADD sk.box {
+                sk.grid {
+                    defaultComponent = TRUE;
+                    fillHorizontal = 4;
+                }
+            }
+        }
+        NEW stockContainer BEFORE topContainer {
+            title = 'Склад';
+            ADD PROPERTY (nameStockSubstitutesSku);
+        }
+        REMOVE o.box;
+        ADD functions.box;
+    }
+}
+
+chooseSubstituteComponentDetail 'Выбрать замену' =  ACTION (detail){
+    SET stockSubstitutesSku() <- NULL;
+    SET stockSubstitutesSku() <- componentsStockOrder(orderComponentDetail(detail)) WHERE componentsStockOrder(orderComponentDetail(detail));
+
+    FORM substitutesComponent OBJECTS o= orderComponentDetail(detail) MODAL;
+    IF formResult() == FormResult.ok THEN {
+        SET substituteSkuComponentDetail(detail) <- chosenObject('sk');
+    }
+}
+
+
 // ------------- Формы ----------- //
 
 FORM order 'Производственный заказ'
@@ -545,7 +605,7 @@ FORM order 'Производственный заказ'
     OBJECTS cd = ComponentDetail
     PROPERTIES(cd) BACKGROUND backgroundComponentDetail(cd) indexComponentDetail, bruttoNameSkuComponentDetail, nameMaterialComponentDetail, nameComponentComponentDetail,
                    shortNameUOMComponentDetail, bruttoQuantityComponentDetail, bruttoPriceComponentDetail
-    PROPERTIES(cd) BACKGROUND backgroundSubstitutesOrder(o) substituteNameSkuComponentDetail, substituteQuantityComponentDetail, substitutePriceComponentDetail
+    PROPERTIES(cd) BACKGROUND backgroundSubstitutesOrder(o) substituteNameSkuComponentDetail ON CHANGE chooseSubstituteComponentDetail(cd), substituteQuantityComponentDetail, substitutePriceComponentDetail
     PROPERTIES(cd) sumComponentDetail
 
     PROPERTIES(o) TODRAW cd createComponentsOrder, createRecComponentsOrder
@@ -709,6 +769,9 @@ copyOrder 'Копировать' = ACTION (order) NEWSESSION {
 
 WHEN SESSION FORMS order CHANGED(componentsCalcPriceListTypeOrder(order))
     DO EXEC recordMarkupOrder(order);
+
+WHEN SESSION FORMS order CHANGED(priceSkuOrder(sku, order))
+    DO EXEC changeValueMarkupSkuOrder(sku, order);
 
 WHEN SESSION FORMS order CHANGED(calcPriceListTypeProductDetail(detail)) OR
                          CHANGED(skuProductDetail(detail))

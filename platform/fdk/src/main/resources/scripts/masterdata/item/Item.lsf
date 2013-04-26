@@ -561,6 +561,21 @@ TABLE manufacturer(Manufacturer);
 
 nameManufacturer 'Наименование' = DATA ISTRING[50](Manufacturer);
 
+FORM manufacturer 'Производитель товара'
+    OBJECTS m=Manufacturer FIXED PANEL
+    PROPERTIES(m) nameManufacturer
+    EDIT Manufacturer OBJECT m
+;
+
+FORM manufacturers 'Производители товара'
+    OBJECTS m=Manufacturer
+    PROPERTIES(m) nameManufacturer READONLY, delete
+    PROPERTIES(m) ADDFORM, EDITFORM
+    ORDER BY nameManufacturer
+    DIALOG Manufacturer OBJECT m
+;
+DESIGN manufacturers FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
 @defineObjectItemAttribute(manufacturer, nameManufacturer, 'Производитель', itemBaseGroup);
 @defineObjectItemAttributeBatch (manufacturer, nameManufacturer, 'Производитель');
 
@@ -688,12 +703,15 @@ barcodeNumeratorSku(item) += IF isWeightItem(item) THEN weightNumeratorItem(item
 
 // ---------------------------------------- Копирование товара ----------------------- //
 overCopyItem = ABSTRACT ACTION (s, d);
+overCopyItemBarcode = ABSTRACT ACTION (b, barcode, i);
 
 copyDataItem = ACTION (item, i) {
     SET itemGroupItem(i) <- itemGroupItem(item);
     SET captionItem(i) <- captionItem(item);
     SET UOMItem(i) <- UOMItem(item);
     SET brandItem(i) <- brandItem(item);
+    SET manufacturerItem(i) <- manufacturerItem(item);
+    SET compositionItem(i) <- compositionItem(item);
     SET netWeightItem(i) <- netWeightItem(item);
     SET grossWeightItem(i) <- grossWeightItem(item);
     SET countryItem(i) <- countryItem(item);
@@ -710,6 +728,7 @@ copyDataItem = ACTION (item, i) {
             SET dataAmountBarcode(b) <- dataAmountBarcode(barcode);
             SET dataTitleScalesBarcode(b) <- dataTitleScalesBarcode(barcode);
             SET dataTitleCashRegisterBarcode(b) <- dataTitleCashRegisterBarcode(barcode);
+            EXEC overCopyItemBarcode(b, barcode, i);
         }
     }
 

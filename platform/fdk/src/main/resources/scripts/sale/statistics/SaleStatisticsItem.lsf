@@ -13,7 +13,7 @@ CONSTRAINT groupTypeStatisticGroup(parentStatisticGroup(group)) != groupTypeStat
 statisticGroupTypeSku (type, sku) += statisticGroupTypeItem (type, sku);
 
 overCopyItem(s, d) += ACTION (s, d) {
-    SET statisticGroupTypeItem(type, d) <- statisticGroupTypeItem(type, s) IF type IS StatisticGroupType AND s IS Item AND d IS Item;
+    SET statisticGroupTypeItem(type, d) <- statisticGroupTypeItem(type, s) WHERE statisticGroupTypeItem(type, s);
 }
 
 EXTEND FORM item
