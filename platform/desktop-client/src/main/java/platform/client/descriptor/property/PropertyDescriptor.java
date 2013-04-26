@@ -15,7 +15,6 @@ public abstract class PropertyDescriptor extends AbstractNodeDescriptor implemen
     public String caption;
     private String sID;
     public String toolTip;
-    public String code;
     public boolean isField;
 
     public Collection<PropertyInterfaceDescriptor> interfaces;
@@ -29,7 +28,6 @@ public abstract class PropertyDescriptor extends AbstractNodeDescriptor implemen
         caption = inStream.readUTF();
         if (inStream.readBoolean())
             toolTip = inStream.readUTF();
-        code = inStream.readUTF();
         isField = inStream.readBoolean();
 
         interfaces = pool.deserializeList(inStream);

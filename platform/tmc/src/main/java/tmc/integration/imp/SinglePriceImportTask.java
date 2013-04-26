@@ -125,12 +125,12 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                 }
             }
 
-            ImRevMap<PropertyInterface, KeyExpr> mapNameKeys = (ImRevMap<PropertyInterface, KeyExpr>) BL.VEDLM.baseLM.name.property.getMapKeys();
+            ImRevMap<PropertyInterface, KeyExpr> mapNameKeys = (ImRevMap<PropertyInterface, KeyExpr>) BL.VEDLM.name.property.getMapKeys();
             ImRevMap<PropertyInterface, KeyExpr> mapBarKeys = MapFact.singletonRev(BL.VEDLM.barcode.property.interfaces.single(),
                                                                                mapNameKeys.singleValue());
             Join<PropertyField> priceImpJoin = table.join(BL.VEDLM.barcode.property.getExpr(mapBarKeys, session.getModifier()));
 
-            DataChanges nameChanges = BL.VEDLM.baseLM.name.property.getDataChanges(
+            DataChanges nameChanges = BL.VEDLM.name.property.getDataChanges(
                     new PropertyChange(mapNameKeys, priceImpJoin.getExpr(nameField), priceImpJoin.getWhere()),
                     session.getModifier());
 

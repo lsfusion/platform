@@ -109,6 +109,7 @@ TABLE groupGroup(Group, Group);
 
 CLASS ABSTRACT GroupType 'Тип классификатора SKU';
 CLASS SystemGroupType 'Системный тип классификатор SKU' : GroupType;
+TABLE systemGroupType(SystemGroupType);
 
 nameGroupType 'Наименование' = ABSTRACT ISTRING[50](GroupType);
 nameSystemGroupType 'Наименование' = DATA ISTRING[50](SystemGroupType);
@@ -141,6 +142,7 @@ TABLE customGroupCustomGroup(CustomGroup, CustomGroup);
 parentGroup (group) += parentCustomGroup(group);
 
 CLASS CustomGroupType 'Тип дополнительного классификатора SKU' : GroupType;
+TABLE customGroupType (CustomGroupType);
 
 nameCustomGroupType 'Наименование' = DATA ISTRING[50](CustomGroupType);
 

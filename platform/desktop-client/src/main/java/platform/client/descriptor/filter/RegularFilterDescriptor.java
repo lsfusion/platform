@@ -73,8 +73,4 @@ public class RegularFilterDescriptor extends ContextIdentityObject implements Cl
         return client.toString();
     }
 
-    public String getCodeConstructor() {
-        return "new RegularFilterEntity(genID(), " + filter.getCodeConstructor() + ", \"" + client.caption
-                + "\", KeyStroke.getKeyStroke(\"" + client.key + "\"))";
-    }
 }

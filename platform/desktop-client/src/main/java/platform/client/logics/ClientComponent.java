@@ -214,31 +214,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     public abstract String getCaption();
 
-    public String getCodeConstructor() {
-        return "CreateContainer()";
-    }
-
-    public abstract String getCodeClass();
-
-    public String getVariableName(FormDescriptor form) {
-        String className = getCodeClass();
-        if (sID == null || (sID.charAt(sID.length() - 1) > '9')) {
-            return className.substring(0, 1).toLowerCase() + className.substring(1, className.length()) + getSID();
-        }
-        String temp = "";
-        int i = sID.length() - 1;
-
-        while (sID.charAt(i) >= '0' && sID.charAt(i) <= '9') {
-            temp = sID.charAt(i--) + temp;
-        }
-
-        int groupId = Integer.parseInt(temp);
-        String name = form.getGroupObject(groupId).getClassNames();
-        name = name.substring(0, 1).toUpperCase() + name.substring(1);
-
-        return sID.substring(0, i + 1) + name;
-    }
-
     public DoNotIntersectSimplexConstraint getChildConstraints() {
         return constraints.getChildConstraints();
     }

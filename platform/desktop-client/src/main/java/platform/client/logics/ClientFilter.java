@@ -65,20 +65,6 @@ public class ClientFilter extends ClientComponent {
         return new FilterEditor(this);
     }
 
-    public String getCodeClass() {
-        return "Filter";
-    }
-
-    @Override
-    public String getCodeConstructor() {
-        return "design.createFilter()";
-    }
-
-    @Override
-    public String getVariableName(FormDescriptor form) {
-        return getSID() + "Filter";
-    }
-
     @Override
     public boolean shouldBeDeclared() {
         return true;

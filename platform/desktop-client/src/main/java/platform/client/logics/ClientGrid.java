@@ -95,24 +95,6 @@ public class ClientGrid extends ClientComponent {
         return minRowCount;
     }
 
-    public String getCodeClass() {
-        return "GridView";
-    }
-
-    @Override
-    public String getCodeConstructor() {
-        return "design.createGrid()";
-    }
-
-    @Override
-    public String getVariableName(FormDescriptor form) {
-        StringBuilder result = new StringBuilder("");
-        for (ClientObject obj : groupObject.objects) {
-            result.append(obj.baseClass.getSID());
-        }
-        return result + "GridView";
-    }
-
     @Override
     public boolean shouldBeDeclared() {
         return true;

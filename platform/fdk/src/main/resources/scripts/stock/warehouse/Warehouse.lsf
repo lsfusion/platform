@@ -21,6 +21,7 @@ parentStockGroup (stockGroup) += parentWarehouseGroup (stockGroup);
 // ----------------------------------------- Склады ------------------------------ //
 
 CLASS Warehouse 'Склад' : Stock;
+TABLE warehouse(Warehouse);
 
 nameWarehouse 'Наименование' = DATA ISTRING[150](Warehouse);
 

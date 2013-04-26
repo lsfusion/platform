@@ -64,20 +64,6 @@ public class ClientClassChooser extends ClientComponent {
         return new ComponentEditor(this);
     }
 
-    public String getCodeClass() {
-        return "ClassChooserView";
-    }
-
-    @Override
-    public String getCodeConstructor() {
-        return "design.createClassChooser()";
-    }
-
-    @Override
-    public String getVariableName(FormDescriptor form) {
-        return object.baseClass.getSID() + "ClassChooser";
-    }
-
     @Override
     public SimplexConstraints<ClientComponent> getDefaultConstraints() {
         return SimplexConstraints.getClassChooserDefaultConstraints(super.getDefaultConstraints());

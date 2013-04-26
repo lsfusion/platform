@@ -26,11 +26,6 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
         finalizeInit();
     }
 
-    @Override
-    public String getCode() {
-        return "objectValue.getLP(baseClass.named)";
-    }
-
     private CalcPropertyMapImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
         return IsClassProperty.getProperty(interfaces);
     }

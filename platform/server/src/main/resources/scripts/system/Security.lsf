@@ -2,17 +2,13 @@ MODULE Security;
 
 REQUIRE System, Reflection, Email;
 
-CLASS UserRole 'Роль' : Named;
+CLASS UserRole 'Роль';
 TABLE userRole (UserRole);
 TABLE customUserRole (CustomUser, UserRole);
 TABLE userRoleProperty (UserRole, Property);
 TABLE userRoleNavigatorElement (UserRole, NavigatorElement);
 
 nameUserRole 'Наименование' = DATA ISTRING[100](UserRole);
-
-setNameUserRole 'Взять наименования ролей' () = ACTION {
-    SET nameUserRole(userRole) <- name(userRole) WHERE userRole IS UserRole;
-};
 
 sidUserRole 'Идентификатор' = DATA STRING[30] (UserRole);
 userRoleSID (sid) = GROUP AGGR userRole BY sidUserRole (userRole) WHERE userRole IS UserRole;
@@ -155,19 +151,11 @@ permitUserNavigatorElement 'Разрешить форму' = permitUserRoleNavig
 forbidUserRoleNavigatorElement 'Запретить форму' = DATA BOOLEAN (UserRole, NavigatorElement);
 forbidUserNavigatorElement 'Запретить форму' = forbidUserRoleNavigatorElement(mainRoleUser(user), navigatorElement);
 
-CLASS Policy 'Политика безопасности' : Named;
+CLASS Policy 'Политика безопасности';
 TABLE policy (Policy);
 TABLE userRolePolicy (UserRole, Policy);
 
 namePolicy 'Наименование' = DATA ISTRING[100](Policy);
-
-setNamePolicy 'Взять наименования политик' () = ACTION {
-    SET namePolicy(policy) <- name(policy) WHERE policy IS Policy;
-};
-
-EXTEND FORM migrationData
-    PROPERTIES() setNameUserRole, setNamePolicy
-;
 
 policyName 'Политика' (name) = GROUP AGGR policy BY namePolicy(policy) WHERE policy IS Policy;
 descriptionPolicy 'Описание' = DATA STRING[100] (Policy);

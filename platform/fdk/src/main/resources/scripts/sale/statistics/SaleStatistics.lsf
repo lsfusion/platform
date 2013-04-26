@@ -6,6 +6,7 @@ NAMESPACE Sale;
 
 // ----------------------------------- Статистический классификатор ------------------------------------------ //
 CLASS StatisticGroupType 'Тип классификатора статистических групп';
+TABLE statisticGroupType (StatisticGroupType);
 
 nameStatisticGroupType 'Наименование' = DATA ISTRING[100](StatisticGroupType);
 

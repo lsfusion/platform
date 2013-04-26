@@ -215,14 +215,4 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         }
     }
 
-    public String getCodeClass() {
-        return "ContainerView";
-    }
-
-    @Override
-    public String getCodeConstructor() {
-        return "design.createContainer(" +
-                (title == null ? null : ("\"" + title + "\""))
-                + ", \"" + description + "\", " + (sID == null ? sID : ("\"" + sID + "\"")) + ")";
-    }
 }

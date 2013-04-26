@@ -126,10 +126,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return caption + " (" + sID + ")";
     }
 
-    public String getCode() {
-        return getSID();
-    }
-
     public boolean isField() {
         return false;
     }
@@ -453,7 +449,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         outStream.writeBoolean(toolTip != null);
         if (toolTip != null)
             outStream.writeUTF(toolTip);
-        outStream.writeUTF(getCode());
         outStream.writeBoolean(isField());
 
         pool.serializeCollection(outStream, getOrderInterfaces().toJavaList());

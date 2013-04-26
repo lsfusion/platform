@@ -35,13 +35,4 @@ public class NotNullFilterDescriptor extends PropertyFilterDescriptor {
         return new NotNullFilterNode((GroupObjectDescriptor) group, this);
     }
 
-    public String getCodeConstructor() {
-        String code = "new NotNullFilterEntity(";
-        code += "addPropertyObject(" + property.property.code;
-        for (PropertyInterfaceDescriptor pid : property.mapping.keySet()) {
-            code += ", " + property.mapping.get(pid).getInstanceCode();
-        }
-        code += "))";
-        return code;
-    }
 }

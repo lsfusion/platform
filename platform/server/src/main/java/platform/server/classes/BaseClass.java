@@ -42,14 +42,12 @@ public class BaseClass extends AbstractCustomClass {
     private static final Logger systemLogger = ServerLoggers.systemLogger;
 
     public final UnknownClass unknown;
-    public final AbstractCustomClass named;
 
     public ConcreteCustomClass objectClass;
 
     public BaseClass(String sID, String caption) {
         super(sID, caption);
         unknown = new UnknownClass(this);
-        named = new AbstractCustomClass("Named", ServerResourceBundle.getString("classes.named.object"), this);
     }
 
     @Override
@@ -87,7 +85,7 @@ public class BaseClass extends AbstractCustomClass {
                 sidClasses.add(customClass.getSID());
                 nameClasses.add(customClass.caption);
             }
-        objectClass = ConcreteCustomClass.createObjectClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClasses, nameClasses, named);
+        objectClass = ConcreteCustomClass.createObjectClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClasses, nameClasses, this);
     }
 
     public void fillIDs(DataSession session, LCP staticCaption, LCP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException {
@@ -96,7 +94,6 @@ public class BaseClass extends AbstractCustomClass {
 
         // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как учавствуют в addObject
         ID = 0;
-        named.ID = 1;
 
         objectClass.ID = Integer.MAX_VALUE - 5; // в явную обрабатываем objectClass
         if(objectClass.readData(objectClass.ID, session.sql) == null) {

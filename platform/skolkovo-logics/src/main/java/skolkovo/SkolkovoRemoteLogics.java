@@ -80,7 +80,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
                 VoteObjects vo = new VoteObjects(session, voteId);
 
                 VoteInfo voteInfo = new VoteInfo();
-                voteInfo.expertName = (String) baseLM.name.read(session, vo.expertObj);
+                voteInfo.expertName = (String) SkolkovoLM.name.read(session, vo.expertObj);
 
                 boolean isForeign = locale != null
                                     ? "en".equals(locale)
@@ -229,7 +229,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
 
                 ProfileInfo profileInfo = new ProfileInfo();
 
-                profileInfo.expertName = (String) baseLM.name.read(session, expertObj);
+                profileInfo.expertName = (String) SkolkovoLM.name.read(session, expertObj);
                 profileInfo.expertEmail = (String) businessLogics.contactLM.emailContact.read(session, expertObj);
 
                 boolean isForeign;

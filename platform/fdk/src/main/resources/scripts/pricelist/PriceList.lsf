@@ -901,6 +901,7 @@ inPriceListLedgerStock (ledger, stock) += inPriceListStockOver(priceListPriceLis
 // --------------------------- Расчетные виды цен ------------------------- //
 
 CLASS CalcPriceListType 'Расчетный вид цены' : PriceListType;
+TABLE calcPriceListType (CalcPriceListType);
 
 nameCalcPriceListType 'Наименование' = DATA ISTRING[50](CalcPriceListType);
 namePriceListType(type) += nameCalcPriceListType(type) IF type IS CalcPriceListType;

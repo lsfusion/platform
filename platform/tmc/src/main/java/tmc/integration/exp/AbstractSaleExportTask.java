@@ -133,7 +133,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         ObjectInstance art = formInstance.instanceFactory.getInstance(BL.VEDLM.commitSaleBrowseForm.objArt);
 
         map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.barcode));
-        map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.name));
+        map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.name));
         map.put(cenField, formInstance.getPropertyDraw(BL.VEDLM.priceAllOrderSaleArticle));
         map.put(kolField, formInstance.getPropertyDraw(BL.VEDLM.articleQuantity));
         map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.date));
@@ -165,7 +165,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         ObjectInstance obligation = formInstance.instanceFactory.getInstance(BL.VEDLM.saleCheckCertBrowseForm.objObligation);
 
         map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.barcode));
-        map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.name));
+        map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.name));
         map.put(cenField, formInstance.getPropertyDraw(BL.VEDLM.obligationSum));
         map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.date));
         map.put(summField, formInstance.getPropertyDraw(BL.VEDLM.obligationSum));
@@ -196,7 +196,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         incStore.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) incStore.propertyObject, Compare.EQUALS, session.getDataObject(BL.LM.baseClass, store)));
 
         map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.barcode));
-        map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.name));
+        map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.name));
         map.put(cenField, formInstance.getPropertyDraw(BL.VEDLM.priceAllOrderSaleArticle));
         map.put(kolField, formInstance.getPropertyDraw(BL.VEDLM.returnInnerQuantity));
         map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.date, doc.groupTo));

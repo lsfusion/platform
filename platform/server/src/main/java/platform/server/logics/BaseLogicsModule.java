@@ -125,8 +125,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP minus;
 
-    public LCP<?> name;
-
     public LAP formPrint;
     public LAP formEdit;
     public LAP formXls;
@@ -247,7 +245,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public void initTables() {
         tableFactory = new TableFactory(baseClass);
 
-        addTable("named", baseClass.named);
         addTable("month", month);
         addTable("dow", DOW);
     }
@@ -405,8 +402,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
         currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
 
-        name = addDProp(recognizeGroup, "name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
-
         staticName = addDProp("staticName", getString("logics.statcode"), StringClass.get(250), baseClass);
         staticCaption = addDProp(recognizeGroup, "staticCaption", "Статическое имя", InsensitiveStringClass.get(50), baseClass);
         ((CalcProperty)staticCaption.property).aggProp = true;
@@ -417,7 +412,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
 /*        name.setEventChange(addJProp(string2SP, addJProp(name.getOld(), objectClass, 1), 1,
                 addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
-                is(baseClass.named), 1);*/
+                is(named), 1);*/
 
         // Настройка форм
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);

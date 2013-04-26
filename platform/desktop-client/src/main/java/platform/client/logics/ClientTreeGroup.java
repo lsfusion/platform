@@ -89,15 +89,6 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         return result + "[sid:" + getSID() + "]";
     }
 
-    public String getCodeClass() {
-        return "TreeGroupiew";
-    }
-
-    @Override
-    public String getCodeConstructor() {
-        return "design.createTreeGroup(" + getID() + ")";
-    }
-
     public int calculatePreferredSize() {
         int size = 0;
         for (ClientGroupObject groupObject : groups) {

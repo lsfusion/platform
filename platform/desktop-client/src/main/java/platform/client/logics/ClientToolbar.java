@@ -153,20 +153,6 @@ public class ClientToolbar extends ClientComponent {
         return new ToolbarEditor(this);
     }
 
-    public String getCodeClass() {
-        return "ToolbarView";
-    }
-
-    @Override
-    public String getCodeConstructor() {
-        return "design.createToolbar()";
-    }
-
-    @Override
-    public String getVariableName(FormDescriptor form) {
-        return getSID() + "Toolbar";
-    }
-
     @Override
     public boolean shouldBeDeclared() {
         return true;

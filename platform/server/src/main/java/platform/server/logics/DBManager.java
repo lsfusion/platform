@@ -7,6 +7,7 @@ import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.base.SystemUtils;
 import platform.base.col.MapFact;
@@ -1190,13 +1191,21 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         Map<String, String> tableChanges = getChangesAfter(data.dbVersion, tableSIDChanges);
         Map<String, String> classChanges = getChangesAfter(data.dbVersion, classSIDChanges);
 
-        for (DBStoredProperty oldProperty : data.storedProperties) {
-            if (propertyChanges.containsKey(oldProperty.sID)) {
-                String newSID = propertyChanges.get(oldProperty.sID);
+        for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
+            DBStoredProperty oldProperty = null;
+            for (DBStoredProperty property : data.storedProperties)
+                if (entry.getKey().equals(property.sID)) {
+                    oldProperty = property;
+                    break;
+                }
+            if (oldProperty != null) {
+                String newSID = entry.getValue();
                 sql.renameColumn(oldProperty.tableName, oldProperty.sID, newSID);
                 oldProperty.sID = newSID;
             }
+        }
 
+        for (DBStoredProperty oldProperty : data.storedProperties) {
             if (tableChanges.containsKey(oldProperty.tableName)) {
                 oldProperty.tableName = tableChanges.get(oldProperty.tableName);
             }
@@ -1265,12 +1274,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     private Map<String, String> getChangesAfter(DBVersion versionAfter, TreeMap<DBVersion, List<SIDChange>> allChanges) {
-        Map<String, String> resultChanges = new HashMap<String, String>();
+        Map<String, String> resultChanges = new OrderedMap<String, String>();
 
         for (Map.Entry<DBVersion, List<SIDChange>> changesEntry : allChanges.entrySet()) {
             if (changesEntry.getKey().compare(versionAfter) > 0) {
                 List<SIDChange> versionChanges = changesEntry.getValue();
-                Map<String, String> versionChangesMap = new HashMap<String, String>();
+                Map<String, String> versionChangesMap = new OrderedMap<String, String>();
 
                 for (SIDChange change : versionChanges) {
                     if (versionChangesMap.containsKey(change.oldSID)) {

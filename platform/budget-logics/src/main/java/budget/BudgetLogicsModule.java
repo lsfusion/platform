@@ -56,9 +56,13 @@ public class BudgetLogicsModule extends LogicsModule {
     public void initModule() {
     }
 
+    AbstractCustomClass named;
+
     @Override
     public void initClasses() {
         initBaseClassAliases();
+
+        named = addAbstractClass("Named", "Объект с именем", baseClass);
 
         transaction = addAbstractClass("transaction", "Транзакция", baseClass);
         operation = addAbstractClass("operation", "Операции", transaction);
@@ -75,19 +79,19 @@ public class BudgetLogicsModule extends LogicsModule {
         inOperation = addConcreteClass("inOperation", "Опер. приход", inAbsOperation, departmentAbs);
         outOperation = addConcreteClass("outOperation", "Опер. расход", outAbsOperation, departmentAbs, payerAbs);
         misOperation = addConcreteClass("misOperation", "Опер. расход ком.", outAbsOperation, departmentAbs, payerAbs);
-        payer = addAbstractClass("payer", "Плательщик", baseClass.named);
+        payer = addAbstractClass("payer", "Плательщик", named);
 
         transfer = addConcreteClass("transfer", "Перемещение", operation);
 
-        absMonth = addConcreteClass("absMonth", "Месяц", baseClass.named);
-        section = addConcreteClass("section", "Статья ком.", baseClass.named);
+        absMonth = addConcreteClass("absMonth", "Месяц", named);
+        section = addConcreteClass("section", "Статья ком.", named);
         person = addConcreteClass("person", "Сотрудник", payer);
-        extraSection = addAbstractClass("extraSection", "Статья затрат", baseClass.named);
+        extraSection = addAbstractClass("extraSection", "Статья затрат", named);
         mission = addConcreteClass("mission", "Командировка", baseClass);
 
-        department = addConcreteClass("department", "Отдел", baseClass.named);
-        sectionOut = addConcreteClass("sectionOut", "Статья расх.", baseClass.named);
-        city = addConcreteClass("city", "Город", baseClass.named);
+        department = addConcreteClass("department", "Отдел", named);
+        sectionOut = addConcreteClass("sectionOut", "Статья расх.", named);
+        city = addConcreteClass("city", "Город", named);
         extraPersonSection = addConcreteClass("extraPersonSection", "Статья затрат перс.", extraSection);
         extraAdmSection = addConcreteClass("extraAdmSection", "Статья затрат админ.", extraSection);
         contractor = addConcreteClass("contractor", "Контрагент", payer);
@@ -100,7 +104,7 @@ public class BudgetLogicsModule extends LogicsModule {
 
         incomeProfit = addConcreteClass("incomeProfit","Доход отдела",operation);
 
-        investor = addAbstractClass("investor", "Инвестор", baseClass.named);
+        investor = addAbstractClass("investor", "Инвестор", named);
 
         employeeInvestor = addConcreteClass("employeeInvestor", "Инвестор (сотрудник)", person, investor);
         nonEmployeeInvestor = addConcreteClass("nonEmployeeInvestor", "Внешний инвестор", investor);
@@ -116,6 +120,7 @@ public class BudgetLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
+        addTable("named", named);
         addTable("transaction", transaction);
         addTable("salary", person, absMonth, YearClass.instance);
         addTable("currency", person, absMonth, YearClass.instance);
@@ -178,15 +183,19 @@ public class BudgetLogicsModule extends LogicsModule {
     
     LCP inactiveAbsOutPerson;
 
+    LCP name;
+
     @Override
     public void initProperties() {
+
+        name = addDProp(recognizeGroup, "name", "Имя", InsensitiveStringClass.get(110), named);
 
         concat2 = addCCProp(2);
         greater22 = addJProp(baseLM.greater2, concat2, 1, 2, concat2, 3, 4);
         less22 = addJProp(baseLM.less2, concat2, 1, 2, concat2, 3, 4);
 
         operationDepartment = addDProp(idGroup, "operDepartment", "Отдел (ИД)", department, departmentAbs);
-        nameOperationDepartment = addJProp(baseGroup, "nameOperationDepartment", "Отдел", baseLM.name, operationDepartment, 1);
+        nameOperationDepartment = addJProp(baseGroup, "nameOperationDepartment", "Отдел", name, operationDepartment, 1);
         operationPayer = addDProp("operPayer", "Плательщик", payer, payerAbs);
         personDepartment = addDProp("personDepartment", "Отдел", department, person);
 
@@ -201,14 +210,14 @@ public class BudgetLogicsModule extends LogicsModule {
 
         LCP personStartWorkYear = addDProp(baseGroup, "personStartWorkYear", "Год начала раб.", YearClass.instance, person);
         LCP personStartWorkMonth = addDProp("personStartWorkMonth", "Месяц начала раб.", absMonth, person);
-        addJProp(baseGroup, "Месяц начала раб.", baseLM.name, personStartWorkMonth, 1);
+        addJProp(baseGroup, "Месяц начала раб.", name, personStartWorkMonth, 1);
         LCP personStartWorkDay = addDProp(baseGroup, "personStartWorkDay", "День начала раб.", IntegerClass.instance, person);
         LCP personEndWorkYear = addDProp(baseGroup, "personEndWorkYear", "Год окончания раб.", YearClass.instance, person);
         LCP personEndWorkMonth = addDProp("personEndWorkMonth", "Месяц окончания раб.", absMonth, person);
-        addJProp(baseGroup, "Месяц окончания раб.", baseLM.name, personEndWorkMonth, 1);
+        addJProp(baseGroup, "Месяц окончания раб.", name, personEndWorkMonth, 1);
         LCP personEndWorkDay = addDProp(baseGroup, "personEndWorkDay", "День окончания раб.", IntegerClass.instance, person);
 
-        addJProp(payerGroup, "Плательщик", baseLM.name, operationPayer, 1);
+        addJProp(payerGroup, "Плательщик", name, operationPayer, 1);
         LCP multiplyDouble2 = addMFProp(2);
         LCP divDouble = addSFProp("((prm1+0.0)/(prm2))", DoubleClass.instance, 2);
         LCP calcCoef = addSFProp("((prm1+0.0)/((prm2)*8))", DoubleClass.instance, 2);
@@ -234,7 +243,7 @@ public class BudgetLogicsModule extends LogicsModule {
                 addJProp(dateBy, personStartWorkDay, 1, addJProp(monthNum, personStartWorkMonth, 1), 1, personStartWorkYear, 1), 1);
 
         vacationPerson = addDProp("vacationPerson", "Сотрудник", person, vacation);
-        LCP vacationPersonName = addJProp(baseGroup, "vacationPersonName", "Имя сотрудника", baseLM.name, vacationPerson, 1);
+        LCP vacationPersonName = addJProp(baseGroup, "vacationPersonName", "Имя сотрудника", name, vacationPerson, 1);
         LCP vacationStartDate = addDProp(baseGroup, "vacationStartDate", "Начало отпуска", DateClass.instance, vacation);
         LCP vacationEndDate = addDProp(baseGroup, "vacationEndDate", "Окончание отпуска", DateClass.instance, vacation);
         LCP vacationDaysQuantity = addJProp(baseGroup, "vacationDaysQuantity", "Длина отпуска, дней", daysBetweenDates, vacationEndDate, 1, vacationStartDate, 1);
@@ -299,7 +308,7 @@ public class BudgetLogicsModule extends LogicsModule {
         outCur = addDProp("outCurrency", "Валюта расх.", getCurrencyClass(), outAbsOperation);
 
         LCP inCurName = addJProp(baseGroup, "Валюта прих.", getCurrencyName(), inCur, 1);
-        addJProp(baseGroup, "Город", baseLM.name, missionCity, 1);
+        addJProp(baseGroup, "Город", name, missionCity, 1);
 
         inSum = addDProp(baseGroup, "inSum", "Сумма прихода", DoubleClass.instance, inAbsOperation);
         outSum = addDProp(baseGroup, "outSum", "Сумма расхода", DoubleClass.instance, outAbsOperation);
@@ -308,10 +317,10 @@ public class BudgetLogicsModule extends LogicsModule {
 
 
         LCP misSection = addDProp("section", "Статья ком.", section, misOperation);
-        LCP misSectionName = addJProp(baseGroup, "Статья ком.", baseLM.name, misSection, 1);
+        LCP misSectionName = addJProp(baseGroup, "Статья ком.", name, misSection, 1);
 
         LCP outSection = addDProp("outSection", "Статья расх.", sectionOut, outOperation);
-        LCP outSectionName = addJProp(baseGroup, "Статья расх.", baseLM.name, outSection, 1);
+        LCP outSectionName = addJProp(baseGroup, "Статья расх.", name, outSection, 1);
 
         LCP decVal = addJProp("Расход", baseLM.and1, outSum, 1, is(outAbsOperation), 1);
 
@@ -323,9 +332,9 @@ public class BudgetLogicsModule extends LogicsModule {
         LCP currencyTransfer = addDProp("currencyTransfer", "Валюта перем.", getCurrencyClass(), transfer);
         LCP nameCurrencyTransfer = addJProp(baseGroup, "nameCurrencyTransfer", "Валюта перемещения", getCurrencyName(), currencyTransfer, 1);
         LCP depFrom = addDProp("depFrom", "Отдел отправитель", department, transfer);
-        LCP depFromName = addJProp(baseGroup, "depFromName", "Отдел отправитель", baseLM.name, depFrom, 1);
+        LCP depFromName = addJProp(baseGroup, "depFromName", "Отдел отправитель", name, depFrom, 1);
         LCP depTo = addDProp("depTo", "Отдель получатель", department, transfer);
-        LCP depToName = addJProp(baseGroup, "depToName", "Отдел получатель", baseLM.name, depTo, 1);
+        LCP depToName = addJProp(baseGroup, "depToName", "Отдел получатель", name, depTo, 1);
         LCP valueTransfer = addDProp(baseGroup, "valueTransfer", "Сумма перемещения", DoubleClass.instance, transfer);
         LCP incSumTransfer = addSGProp("incSumTransfer", "Перемещение в отдел", valueTransfer, currencyTransfer, 1, depTo, 1);
         LCP outSumTransfer = addSGProp("outSumTransfer", "Перемещение от отдела", valueTransfer, currencyTransfer, 1, depFrom, 1);
@@ -333,7 +342,7 @@ public class BudgetLogicsModule extends LogicsModule {
         LCP currencyIncomeProfit = addDProp("currencyIncomeProfit", "Валюта выр.", getCurrencyClass(), incomeProfit);
         LCP nameCurrencyIncomeProfit = addJProp(baseGroup, "nameCurrencyIncomeProfit", "Валюта выручки", getCurrencyName(), currencyIncomeProfit, 1);
         LCP depProfit = addDProp("depProfit", "Отдел", department, incomeProfit);
-        LCP nameDepProfit = addJProp(baseGroup, "nameDepProfit", "Отдел." ,baseLM.name, depProfit, 1);
+        LCP nameDepProfit = addJProp(baseGroup, "nameDepProfit", "Отдел." ,name, depProfit, 1);
         LCP valueProfit = addDProp(baseGroup, "valueProfit","Доход", DoubleClass.instance, incomeProfit);
         LCP sumProfit =addSGProp("sumProfit", "Сумма дохода", valueProfit, currencyIncomeProfit, 1, depProfit, 1);
 
@@ -494,7 +503,7 @@ public class BudgetLogicsModule extends LogicsModule {
         LCP departmentMisOperInBC = addSGProp(baseCurGroup, "Всего по опер. расходу ком. в БВ", misOperValInBC, opDep, 1, transactionMonth, 1, transactionYear, 1);
 
         investorInvestment = addDProp(idGroup, "investorInvestment", "Инвестор (ИД)", investor, investment);
-        nameInvestorInvestment = addJProp(baseGroup, "nameInvestorInvestment", "Инвестор", baseLM.name, investorInvestment, 1);
+        nameInvestorInvestment = addJProp(baseGroup, "nameInvestorInvestment", "Инвестор", name, investorInvestment, 1);
 
         sumInvestmentCash = addJProp("sumInvestmentCash", "Сумма", baseLM.and1, inSum, 1, is(investmentCash), 1);
         sumInvestmentNotCash = addJProp("sumInvestmentNotCash", "Сумма", baseLM.and1, inSum, 1, is(investmentNotCash), 1);

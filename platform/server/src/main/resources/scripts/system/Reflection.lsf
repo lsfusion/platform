@@ -50,7 +50,7 @@ CLASS PropertyDrawShowStatus 'Показ свойства'
 {
     Show 'Показать',
     Hide 'Спрятать'
-} : Named;
+};
 TABLE formPropertyDraw (Form, PropertyDraw);
 TABLE propertyDraw (PropertyDraw);
 TABLE propertyDrawCustomUser (PropertyDraw, CustomUser);

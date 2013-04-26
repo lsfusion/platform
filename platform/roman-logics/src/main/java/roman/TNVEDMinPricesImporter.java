@@ -21,7 +21,7 @@ public class TNVEDMinPricesImporter extends TNVEDImporter {
     private ImportField subcategoryNameField = new ImportField(LM.nameSubCategory);
     private ImportField relationField = new ImportField(LM.relationCustomCategory10SubCategory);
     private ImportField countryIdField = new ImportField(LM.getSidOrigin2Country());
-    private ImportField countryNameField = new ImportField(LM.baseLM.name);
+    private ImportField countryNameField = new ImportField(LM.name);
     private ImportField minPriceField = new ImportField(LM.minPriceCustomCategory10SubCategory);
 
     public TNVEDMinPricesImporter(FormInstance executeForm, ObjectValue value, RomanLogicsModule LM) {
@@ -47,7 +47,7 @@ public class TNVEDMinPricesImporter extends TNVEDImporter {
 
         propertiesCountry.add(new ImportProperty(subcategoryNameField, LM.nameSubCategory.getMapping(subcategoryKey)));
         propertiesCountry.add(new ImportProperty(countryIdField, LM.getSidOrigin2Country().getMapping(countryKey)));
-        propertiesCountry.add(new ImportProperty(countryNameField, LM.baseLM.name.getMapping(countryKey)));
+        propertiesCountry.add(new ImportProperty(countryNameField, LM.name.getMapping(countryKey)));
         propertiesCountry.add(new ImportProperty(relationField, LM.relationCustomCategory10SubCategory.getMapping(category10Key, subcategoryKey)));
         propertiesCountry.add(new ImportProperty(minPriceField, LM.minPriceCustomCategory10SubCategoryCountry.getMapping(category10Key, subcategoryKey, countryKey)));
         ImportKey<?>[] keysArrayCountry = {category10Key, subcategoryKey, countryKey};

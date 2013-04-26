@@ -627,5 +627,6 @@ V0.8.0 {
 }
 
 V0.8.1 {
+    PROPERTY staticName -> staticCaption
     PROPERTY staticID -> staticName
 }

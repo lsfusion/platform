@@ -108,18 +108,18 @@ public class DeclarationExportActionProperty extends UserActionProperty {
             ObjectInstance countryObj = formInstance.instanceFactory.getInstance(RomanLM.invoiceFromFormEntity.objCountry);
             ObjectInstance categoryObj = formInstance.instanceFactory.getInstance(RomanLM.invoiceFromFormEntity.objCategory);
 
-            map.put(G15Decl, formInstance.getPropertyDraw(baseLM.name, countryObj.groupTo));
+            map.put(G15Decl, formInstance.getPropertyDraw(RomanLM.name, countryObj.groupTo));
             map.put(G33Decl, formInstance.getPropertyDraw(RomanLM.sidCustomCategory10));
             map.put(G33Dobl, formInstance.getPropertyDraw(RomanLM.sidCustomCategory10));
             map.put(G542Decl, formInstance.getPropertyDraw(RomanLM.date, freightObj.groupTo));
             map.put(G542Dobl, formInstance.getPropertyDraw(RomanLM.date, freightObj.groupTo));
-            map.put(G082Decl, formInstance.getPropertyDraw(baseLM.name, importerObj.groupTo));
-            map.put(G142Decl, formInstance.getPropertyDraw(baseLM.name, importerObj.groupTo));
-            map.put(G092Decl, formInstance.getPropertyDraw(baseLM.name, importerObj.groupTo));
+            map.put(G082Decl, formInstance.getPropertyDraw(RomanLM.name, importerObj.groupTo));
+            map.put(G142Decl, formInstance.getPropertyDraw(RomanLM.name, importerObj.groupTo));
+            map.put(G092Decl, formInstance.getPropertyDraw(RomanLM.name, importerObj.groupTo));
             map.put(G083Decl, formInstance.getPropertyDraw(RomanLM.addressSubject));
             map.put(G143Decl, formInstance.getPropertyDraw(RomanLM.addressSubject));
             map.put(G093Decl, formInstance.getPropertyDraw(RomanLM.addressSubject));
-            map.put(G142Dobl, formInstance.getPropertyDraw(baseLM.name, importerObj.groupTo));
+            map.put(G142Dobl, formInstance.getPropertyDraw(RomanLM.name, importerObj.groupTo));
             map.put(G143Dobl, formInstance.getPropertyDraw(RomanLM.addressSubject));
             map.put(G312Decl, formInstance.getPropertyDraw(RomanLM.sidArticle));
             map.put(G312Dobl, formInstance.getPropertyDraw(RomanLM.sidArticle));

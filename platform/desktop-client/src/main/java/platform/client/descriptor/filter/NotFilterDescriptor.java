@@ -52,7 +52,4 @@ public class NotFilterDescriptor extends FilterDescriptor {
         return filter;
     }
 
-    public String getCodeConstructor() {
-        return "new NotFilterEntity(" + filter.getCodeConstructor() + ")";
-    }
 }

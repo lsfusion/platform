@@ -145,7 +145,7 @@ public class InvoiceExportDbfActionProperty extends UserActionProperty {
             //map.put(dateConIn, formInstance.getPropertyDraw(BL.RomanLM.dateContractInProxyImporterStockSku));
             map.put(priceIn, formInstance.getPropertyDraw(RomanLM.priceInImporterFreightSku));
             map.put(sumIn, formInstance.getPropertyDraw(RomanLM.sumInImporterStockSku));
-            map.put(imp, formInstance.getPropertyDraw(baseLM.name, objImporter.groupTo));
+            map.put(imp, formInstance.getPropertyDraw(RomanLM.name, objImporter.groupTo));
             map.put(contract, formInstance.getPropertyDraw(RomanLM.sidContractImporterFreight));
             map.put(dateCon, formInstance.getPropertyDraw(RomanLM.dateContractImporterFreight));
 

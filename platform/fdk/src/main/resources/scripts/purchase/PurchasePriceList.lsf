@@ -3,7 +3,7 @@ MODULE PurchasePriceList;
 REQUIRE PurchaseLedger, PriceList;
 
 filterSupplierUserPriceList = DATA SESSION LegalEntity (UserPriceList);
-nameFilterSupplierUserPriceList 'Поставщик' (userPriceList) = name(filterSupplierUserPriceList(userPriceList));
+nameFilterSupplierUserPriceList 'Поставщик' (userPriceList) = nameLegalEntity(filterSupplierUserPriceList(userPriceList));
 filterSupplierUserPriceListSku (userPriceList, sku) = prevInSupplierSku(filterSupplierUserPriceList(userPriceList), sku) OR
                                               (sku IS Sku AND NOT filterSupplierUserPriceList(userPriceList));
 

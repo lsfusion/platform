@@ -76,10 +76,6 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
          return valueClass instanceof UnknownClass ? "delete" : "CHANGE_CLASS" + (valueClass!=null?" "+((CustomClass)valueClass).getSID():"");
      }
 
-     public String getCode() {
-         return getSID(valueClass);
-     }
-
     public ImSet<ActionProperty> getDependActions() {
         return SetFact.EMPTY();
     }

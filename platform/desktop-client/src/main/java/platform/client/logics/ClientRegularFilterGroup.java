@@ -60,16 +60,4 @@ public class ClientRegularFilterGroup extends ClientComponent {
         return filters.toString() + "[sid:" + getSID() + "]";
     }
 
-    public String getCodeClass() {
-        return "RegularFilterGroupView";
-    }
-
-    @Override
-    public String getCodeConstructor() {
-        return "design.createRegularFilterGroup(" + getID() + ")";
-    }
-
-    public String getCodeConstructor(String descriptorName) {
-        return "design.createRegularFilterGroup(" + descriptorName + ")";
-    }
 }

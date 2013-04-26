@@ -29,21 +29,6 @@ public class SelectionProperty extends SessionDataProperty {
     }
 
     @Override
-    public String getCode() {
-        StringBuilder result = new StringBuilder("selection.getLP(new ValueClass[]{");
-        boolean first = true;
-        for (ValueClass cls : classes) {
-            if (first) {
-                result.append(cls.getSID());
-            } else {
-                result.append(" ,").append(cls.getSID());
-            }
-        }
-        result.append("})");
-        return result.toString();
-    }
-
-    @Override
     public boolean isField() {
         return true;
     }

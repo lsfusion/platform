@@ -450,46 +450,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return descriptor;
     }
 
-    public String getCodeClass() {
-        return "PropertyDrawView";
-    }
-
-    @Override
-    public String getCodeConstructor() {
-        StringBuilder result = new StringBuilder("design.createPropertyDraw(");
-
-        if (descriptor.getPropertyObject().property.isField) {
-            result.append("prop").append(descriptor.getSID());
-        } else {
-            if (getCaption() != null) {
-                result.append("\"").append(getCaption()).append("\", ");
-            }
-            String grObject = groupObject == null ? "" : "grObj" + groupObject.getSID() + ", ";
-
-            result.append(grObject).append(descriptor.getPropertyObject().property.code);
-
-            Set<PropertyObjectInterfaceDescriptor> values = new HashSet<PropertyObjectInterfaceDescriptor>(descriptor.getPropertyObject().mapping.values());
-
-            for (PropertyObjectInterfaceDescriptor objectDescriptorInt : values) {
-                if (objectDescriptorInt instanceof ObjectDescriptor) {
-                    ObjectDescriptor object = (ObjectDescriptor) objectDescriptorInt;
-                    result.append(", ").append(object.getVariableName());
-                }
-            }
-        }
-        result.append(")");
-        return result.toString();
-    }
-
-    public String getCodeEditKey(String name) {
-        return "design.setEditKey(" + name + ", KeyStroke.getKeyStroke(\"" + editKey + "\"));\n";
-    }
-
-    @Override
-    public String getVariableName(FormDescriptor form) {
-        return "propertyView" + getID();
-    }
-
     public static final String toolTipFormat =
             "<html><b>%1$s</b><br>" +
                     "%7$s" +

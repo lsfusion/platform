@@ -27,7 +27,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
     @Override
     protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         ImportField colorCodeField = new ImportField(RomanLM.sidColorSupplier);
-        ImportField colorNameField = new ImportField(RomanLM.baseLM.name);
+        ImportField colorNameField = new ImportField(RomanLM.name);
 
         DataObject supplier = context.getKeyValue(supplierInterface);
 
@@ -36,7 +36,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
         ImportKey<?> colorKey = new ImportKey(RomanLM.colorSupplier, RomanLM.colorSIDSupplier.getMapping(colorCodeField, supplier));
         properties.add(new ImportProperty(colorCodeField, RomanLM.sidColorSupplier.getMapping(colorKey)));
         properties.add(new ImportProperty(supplier, RomanLM.supplierColorSupplier.getMapping(colorKey)));
-        properties.add(new ImportProperty(colorNameField, RomanLM.baseLM.name.getMapping(colorKey)));
+        properties.add(new ImportProperty(colorNameField, RomanLM.name.getMapping(colorKey)));
 
         try {
             ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);

@@ -57,24 +57,6 @@ public class ClientShowType extends ClientComponent {
         return new ComponentEditor(this);
     }
 
-    public String getCodeClass() {
-        return "ShowTypeView";
-    }
-
-    @Override
-    public String getCodeConstructor() {
-        return "design.createShowType()";
-    }
-
-    @Override
-    public String getVariableName(FormDescriptor form) {
-        StringBuilder result = new StringBuilder("");
-        for (ClientObject obj : groupObject.objects) {
-            result.append(obj.baseClass.getSID());
-        }
-        return result + "ShowType";
-    }
-
     @Override
     public boolean shouldBeDeclared() {
         return true;

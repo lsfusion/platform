@@ -85,11 +85,6 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     }
 
     @Override
-    public String getCode() {
-        return "getAddObjectAction(" + valueClass.getSID() + ")";
-    }
-
-    @Override
     public CustomClass getSimpleAdd() {
         if(where==null && !needDialog())
             return valueClass;

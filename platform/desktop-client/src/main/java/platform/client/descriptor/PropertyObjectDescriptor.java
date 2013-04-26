@@ -94,13 +94,4 @@ public abstract class PropertyObjectDescriptor extends PropertyDescriptorImpleme
     public int hashCode() {
         return property.hashCode() * 31 + mapping.hashCode();
     }
-
-    public String getInstanceCode() {
-        String code = "addPropertyObject(" + property.code;
-        for (PropertyInterfaceDescriptor pid : mapping.keySet()) {
-            code += ", " + mapping.get(pid).getInstanceCode();
-        }
-        code += ")";
-        return code;
-    }
 }

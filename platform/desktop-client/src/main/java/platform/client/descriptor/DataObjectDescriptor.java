@@ -45,8 +45,4 @@ public class DataObjectDescriptor extends ContextObject implements PropertyObjec
     public String toString() {
         return object.toString() + " - " + typeClass.toString();
     }
-
-    public String getInstanceCode() {
-        return "new DataObject(" + object + ", " + typeClass + ")";
-    }
 }

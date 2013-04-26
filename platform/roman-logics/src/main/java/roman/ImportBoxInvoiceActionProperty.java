@@ -55,7 +55,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         itemSupplierArticleColorSizeField = new ImportField(RomanLM.barcode);  //если нет баркода
         colorCodeField = new ImportField(RomanLM.sidColorSupplier);
         sidField = new ImportField(RomanLM.sidArticle);
-        colorNameField = new ImportField(RomanLM.baseLM.name);
+        colorNameField = new ImportField(RomanLM.name);
         sizeField = new ImportField(RomanLM.sidSizeSupplier);
         brandCodeField = new ImportField(RomanLM.sidBrandSupplier);
         brandNameField = new ImportField(RomanLM.nameBrandSupplierArticle);
@@ -67,7 +67,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         subCategoryNameField = new ImportField(RomanLM.nameSubCategorySupplierArticle);
         genderField = new ImportField(RomanLM.sidGenderSupplier);
         compositionField = new ImportField(RomanLM.mainCompositionOriginArticle);
-        countryField = new ImportField(RomanLM.baseLM.name);
+        countryField = new ImportField(RomanLM.name);
         customCodeField = new ImportField(RomanLM.sidCustomCategoryOrigin);
         customCode6Field = new ImportField(RomanLM.sidCustomCategory6);
         unitPriceField = new ImportField(RomanLM.priceDataDocumentItem);
@@ -144,7 +144,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(sidField, RomanLM.articleCompositeItem.getMapping(itemKey), RomanLM.object(RomanLM.articleComposite).getMapping(articleKey)));
 
         ImportKey<?> countryKey = new ImportKey(RomanLM.countrySupplier, RomanLM.countryNameSupplier.getMapping(countryField, supplier));
-        properties.add(new ImportProperty(countryField, RomanLM.baseLM.name.getMapping(countryKey)));
+        properties.add(new ImportProperty(countryField, RomanLM.name.getMapping(countryKey)));
         properties.add(new ImportProperty(supplier, RomanLM.supplierCountrySupplier.getMapping(countryKey)));
         properties.add(new ImportProperty(countryField, RomanLM.countrySupplierOfOriginArticle.getMapping(articleKey), RomanLM.object(RomanLM.countrySupplier).getMapping(countryKey)));
 
@@ -160,7 +160,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         ImportKey<?> colorKey = new ImportKey(RomanLM.colorSupplier, RomanLM.colorSIDSupplier.getMapping(colorCodeField, supplier));
         properties.add(new ImportProperty(colorCodeField, RomanLM.sidColorSupplier.getMapping(colorKey)));
         properties.add(new ImportProperty(supplier, RomanLM.supplierColorSupplier.getMapping(colorKey)));
-        properties.add(new ImportProperty(colorNameField, RomanLM.baseLM.name.getMapping(colorKey)));
+        properties.add(new ImportProperty(colorNameField, RomanLM.name.getMapping(colorKey)));
         properties.add(new ImportProperty(colorCodeField, RomanLM.colorSupplierItem.getMapping(itemKey), RomanLM.object(RomanLM.colorSupplier).getMapping(colorKey)));
 
         ImportKey<?> sizeKey = new ImportKey(RomanLM.sizeSupplier, RomanLM.sizeSIDSupplier.getMapping(sizeField, supplier));
@@ -171,25 +171,25 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         ImportKey<?> brandKey = new ImportKey(RomanLM.brandSupplier, RomanLM.brandSIDSupplier.getMapping(brandCodeField, supplier));
         properties.add(new ImportProperty(brandCodeField, RomanLM.sidBrandSupplier.getMapping(brandKey)));
         properties.add(new ImportProperty(supplier, RomanLM.supplierBrandSupplier.getMapping(brandKey)));
-        properties.add(new ImportProperty(brandNameField, RomanLM.baseLM.name.getMapping(brandKey)));
+        properties.add(new ImportProperty(brandNameField, RomanLM.name.getMapping(brandKey)));
         properties.add(new ImportProperty(brandCodeField, RomanLM.brandSupplierArticle.getMapping(articleKey), RomanLM.object(RomanLM.brandSupplier).getMapping(brandKey)));
 
         ImportKey<?> themeKey = new ImportKey(RomanLM.themeSupplier, RomanLM.themeSIDSupplier.getMapping(themeCodeField, supplier));
         properties.add(new ImportProperty(themeCodeField, RomanLM.sidThemeSupplier.getMapping(themeKey)));
         properties.add(new ImportProperty(supplier, RomanLM.supplierThemeSupplier.getMapping(themeKey)));
-        properties.add(new ImportProperty(themeNameField, RomanLM.baseLM.name.getMapping(themeKey)));
+        properties.add(new ImportProperty(themeNameField, RomanLM.name.getMapping(themeKey)));
         properties.add(new ImportProperty(themeCodeField, RomanLM.themeSupplierArticle.getMapping(articleKey), RomanLM.object(RomanLM.themeSupplier).getMapping(themeKey)));
 
         ImportKey<?> collectionKey = new ImportKey(RomanLM.collectionSupplier, RomanLM.collectionSIDSupplier.getMapping(collectionCodeField, supplier));
         properties.add(new ImportProperty(collectionCodeField, RomanLM.sidCollectionSupplier.getMapping(collectionKey)));
         properties.add(new ImportProperty(supplier, RomanLM.supplierCollectionSupplier.getMapping(collectionKey)));
-        properties.add(new ImportProperty(collectionNameField, RomanLM.baseLM.name.getMapping(collectionKey)));
+        properties.add(new ImportProperty(collectionNameField, RomanLM.name.getMapping(collectionKey)));
         properties.add(new ImportProperty(collectionCodeField, RomanLM.collectionSupplierArticle.getMapping(articleKey), RomanLM.object(RomanLM.collectionSupplier).getMapping(collectionKey)));
 
         ImportKey<?> subCategoryKey = new ImportKey(RomanLM.subCategorySupplier, RomanLM.subCategorySIDSupplier.getMapping(subCategoryCodeField, supplier));
         properties.add(new ImportProperty(subCategoryCodeField, RomanLM.sidSubCategorySupplier.getMapping(subCategoryKey)));
         properties.add(new ImportProperty(supplier, RomanLM.supplierSubCategorySupplier.getMapping(subCategoryKey)));
-        properties.add(new ImportProperty(subCategoryNameField, RomanLM.baseLM.name.getMapping(subCategoryKey)));
+        properties.add(new ImportProperty(subCategoryNameField, RomanLM.name.getMapping(subCategoryKey)));
         properties.add(new ImportProperty(subCategoryCodeField, RomanLM.subCategorySupplierArticle.getMapping(articleKey), RomanLM.object(RomanLM.subCategorySupplier).getMapping(subCategoryKey)));
 
         ImportKey<?> genderKey = new ImportKey(RomanLM.genderSupplier, RomanLM.genderSIDSupplier.getMapping(genderField, supplier));

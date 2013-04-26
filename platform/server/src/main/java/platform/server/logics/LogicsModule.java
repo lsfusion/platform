@@ -309,7 +309,6 @@ public abstract class LogicsModule {
     protected BaseClass addBaseClass(String sID, String caption) {
         BaseClass baseClass = new BaseClass(sID, caption);
         storeCustomClass(baseClass);
-        storeCustomClass(baseClass.named);
         return baseClass;
     }
 

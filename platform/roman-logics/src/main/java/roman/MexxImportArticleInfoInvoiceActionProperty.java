@@ -27,7 +27,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
     @Override
     protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         ImportField sidField = new ImportField(RomanLM.sidArticle);
-        ImportField countryField = new ImportField(RomanLM.baseLM.name);
+        ImportField countryField = new ImportField(RomanLM.name);
         ImportField compositionField = new ImportField(RomanLM.mainCompositionOriginArticle);
         ImportField originalNameField = new ImportField(RomanLM.originalNameArticle);
         //ImportField seasonField = new ImportField(LM.sidSeasonSupplier);
@@ -41,7 +41,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
         properties.add(new ImportProperty(sidField, RomanLM.sidArticle.getMapping(articleKey)));
 
         ImportKey<?> countryKey = new ImportKey(RomanLM.countrySupplier, RomanLM.countryNameSupplier.getMapping(countryField, supplier));
-        properties.add(new ImportProperty(countryField, RomanLM.baseLM.name.getMapping(countryKey)));
+        properties.add(new ImportProperty(countryField, RomanLM.name.getMapping(countryKey)));
         properties.add(new ImportProperty(supplier, RomanLM.supplierCountrySupplier.getMapping(countryKey)));
         properties.add(new ImportProperty(countryField, RomanLM.countrySupplierOfOriginArticle.getMapping(articleKey), RomanLM.object(RomanLM.countrySupplier).getMapping(countryKey)));
 
