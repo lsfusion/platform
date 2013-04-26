@@ -584,12 +584,14 @@ public class GridTable extends ClientPropertyTable {
         this.tabVertical = tabVertical;
     }
 
-    public List<ClientPropertyDraw> getVisibleProperties() {
+    public List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> getVisibleProperties() {
         //возвращает все свойства, за исключеним тех, что формируют группы в колонки без единого значения
-        List<ClientPropertyDraw> props = new ArrayList<ClientPropertyDraw>(properties);
+        List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> props = new ArrayList<Pair<ClientPropertyDraw, ClientGroupObjectValue>>();
         for (ClientPropertyDraw property : properties) {
-            if (getModel().getPropertyIndex(property, null) == -1) {
-                props.remove(property);
+            for (ClientGroupObjectValue columnKey : columnKeys.get(property)) {
+                if (model.getPropertyIndex(property, columnKey) != -1) {
+                    props.add(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, columnKey));
+                }
             }
         }
         return props;
@@ -819,7 +821,7 @@ public class GridTable extends ClientPropertyTable {
 
     public boolean removeProperty(ClientPropertyDraw property) {
         if (properties.contains(property)) {
-            selectionController.removeProperty(property);
+            selectionController.removeProperty(property, columnKeys.get(property));
             properties.remove(property);
             readOnlyValues.remove(property);
             values.remove(property);
@@ -929,8 +931,12 @@ public class GridTable extends ClientPropertyTable {
         return model.getColumnKey(col);
     }
 
+    public Pair<ClientPropertyDraw, ClientGroupObjectValue> getColumnProperty(int column) {
+        return new Pair<ClientPropertyDraw, ClientGroupObjectValue>(getProperty(column), getColumnKey(0, column));
+    }
+
     public boolean isSelected(int row, int column) {
-        return selectionController.isCellSelected(getProperty(row, column), rowKeys.get(row));
+        return selectionController.isCellSelected(getColumnProperty(column), rowKeys.get(row));
     }
 
     public Color getBackgroundColor(int row, int column) {

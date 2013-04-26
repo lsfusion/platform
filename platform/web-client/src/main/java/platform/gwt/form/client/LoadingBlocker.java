@@ -137,7 +137,9 @@ public class LoadingBlocker {
                 int popupWidth = getOffsetWidth();
                 messagePanel.setWidth(panelWidth + "px");
                 messagePanel.getElement().getStyle().setLeft(- panelWidth / 2 + popupWidth / 2, Style.Unit.PX);
+
                 messagePanel.getElement().getStyle().setProperty("maxHeight", latestWindowHeight / 2 - 100, Style.Unit.PX);
+                messagePanel.getElement().getStyle().setBottom( - latestWindowHeight / 2 + 50, Style.Unit.PX);
             }
             messagePanel.setVisible(showMessage);
         }

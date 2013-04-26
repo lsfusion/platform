@@ -360,7 +360,6 @@ textarea {
 /* ------------ Loading blocker  ------------ */
 .messageCanvas {
     position: absolute;
-    top: 80px;
     background-color: rgba(226, 226, 226, 0.74);
     padding: 8px;
     overflow: hidden;

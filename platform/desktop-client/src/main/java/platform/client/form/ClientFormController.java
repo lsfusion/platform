@@ -794,18 +794,29 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void pasteMulticellValue(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells, final String value) throws IOException {
+    public void pasteMulticellValue(Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>> cells, final String value) throws IOException {
         final Map<Integer, List<Map<Integer, Object>>> reCells = new HashMap<Integer, List<Map<Integer, Object>>>();
-        for (ClientPropertyDraw property : cells.keySet()) {
+        for (Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn : cells.keySet()) {
+            Map<Integer, Object> columnKey = new HashMap<Integer, Object>();
+            for (ClientObject object : propertyColumn.second.keySet()) {
+                columnKey.put(object.getID(), propertyColumn.second.get(object));
+            }
+
             List<Map<Integer, Object>> keys = new ArrayList<Map<Integer, Object>>();
-            for (ClientGroupObjectValue groupObjectValue : cells.get(property)) {
+            for (ClientGroupObjectValue groupObjectValue : cells.get(propertyColumn)) {
                 Map<Integer, Object> key = new HashMap<Integer, Object>();
                 for (ClientObject object : groupObjectValue.keySet()) {
                     key.put(object.getID(), groupObjectValue.get(object));
                 }
+                key.putAll(columnKey);
                 keys.add(key);
             }
-            reCells.put(property.getID(), keys);
+
+            if (reCells.containsKey(propertyColumn.first.getID())) {
+                reCells.get(propertyColumn.first.getID()).addAll(keys);
+            } else {
+                reCells.put(propertyColumn.first.getID(), keys);
+            }
         }
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest() {
             @Override

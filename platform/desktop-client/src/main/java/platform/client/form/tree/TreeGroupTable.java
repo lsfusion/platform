@@ -7,6 +7,7 @@ import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.TreeTableNode;
+import platform.base.Pair;
 import platform.client.ClientResourceBundle;
 import platform.client.form.*;
 import platform.client.form.cell.CellTableInterface;
@@ -505,8 +506,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             final ClientPropertyDraw property = getProperty(row, column);
             if (property != null) {
                 try {
-                    HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>> cells = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
-                    cells.put(property, singletonList(currentPath));
+                    HashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>> cells = new HashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>>();
+                    cells.put(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, ClientGroupObjectValue.EMPTY), singletonList(currentPath));
                     form.pasteMulticellValue(cells, table.get(0).get(0));
                 } catch (IOException e) {
                     Throwables.propagate(e);

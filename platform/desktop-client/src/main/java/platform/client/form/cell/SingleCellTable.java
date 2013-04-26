@@ -2,6 +2,7 @@ package platform.client.form.cell;
 
 import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
@@ -91,8 +92,8 @@ public abstract class SingleCellTable extends ClientPropertyTable {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
             final ClientPropertyDraw property = model.getProperty();
             try {
-                HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>> cells = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
-                cells.put(property, singletonList(model.getColumnKey()));
+                HashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>> cells = new HashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>>();
+                cells.put(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, ClientGroupObjectValue.EMPTY), singletonList(model.getColumnKey()));
                 getForm().pasteMulticellValue(cells, table.get(0).get(0));
             } catch (IOException e) {
                 Throwables.propagate(e);
