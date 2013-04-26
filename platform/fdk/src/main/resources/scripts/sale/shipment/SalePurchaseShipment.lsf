@@ -15,8 +15,13 @@ createPurchaseShipment(shipment) += createPurchaseUserShipment(shipment);
 createPurchaseShipmentDetail 'Создать поставку (закупка)' (shipmentDetail) = createPurchaseShipment(shipmentShipmentDetail(shipmentDetail))PERSISTENT;
 createPurchaseUserShipmentDetail 'Создать поставку (закупка)' (userShipmentDetail) = createPurchaseUserShipment(userShipmentUserShipmentDetail(userShipmentDetail));
 backgroundPurchaseShipment 'Цвет' (shipment) = RGB(255, 224, 255) IF shipment IS Shipment;
+
+@defineDocumentInterfaceHeaderTimePrefix(Shipment, purchaseShipment, ' поставки (закупка)');
+
 EXTEND FORM userShipment
     PROPERTIES(s) BACKGROUND backgroundPurchaseShipment(s) createPurchaseUserShipment
+    PROPERTIES(s) BACKGROUND backgroundPurchaseShipment(s) SHOWIF createPurchaseUserShipment(s) purchaseShipmentDateUserShipment,
+                  purchaseShipmentTimeUserShipment
 ;
 EXTEND DESIGN userShipment {
     headerCreateDocuments{
@@ -24,12 +29,16 @@ EXTEND DESIGN userShipment {
             title = 'Поставка';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createPurchaseUserShipment);
+            ADD PROPERTY(purchaseShipmentDateUserShipment);
+            ADD PROPERTY(purchaseShipmentTimeUserShipment);
         }
     }
 }
 
 EXTEND FORM shipments
     PROPERTIES(s) READONLY BACKGROUND backgroundPurchaseShipment(s) createPurchaseShipment
+    PROPERTIES(s) BACKGROUND backgroundPurchaseShipment(s) SHOWIF createPurchaseShipment(s) purchaseShipmentDateShipment,
+                  purchaseShipmentTimeShipment
 ;
 //--  Связь поставки с поставкой
 
@@ -73,8 +82,8 @@ Purchase.shipmentShipmentDetail(detail) += purchaseShipmentPurchaseShipmentDetai
 
 @defineDocumentDetailIndex(purchaseShipment);
 
-Purchase.dateShipment(shipment) += datePurchaseShipment(shipment);
-Purchase.timeShipment(shipment) += timePurchaseShipment(shipment);
+Purchase.dateShipment(shipment) += purchaseShipmentDateShipment(shipmentPurchaseShipment(shipment));
+Purchase.timeShipment(shipment) += purchaseShipmentTimeShipment(shipmentPurchaseShipment(shipment));
 
 @defineDocumentAggregationStockPrefix(shipment, purchaseShipment, supplierStock, 'Склад поставщика', , );
 Purchase.supplierStockShipment(shipment) += supplierStockPurchaseShipment(shipment);

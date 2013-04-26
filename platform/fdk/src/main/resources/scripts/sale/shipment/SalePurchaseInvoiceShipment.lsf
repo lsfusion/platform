@@ -17,11 +17,13 @@ GROUP shipmentGroup 'Информация о поставке' : base;
 
 backgroundPurchaseShipmentInvoice 'Цвет' (invoice) = RGB(238, 250, 200) IF invoice IS Invoice;
 //--
-createShipmentInvoice(invoice) += createPurchaseShipmentInvoice(invoicePurchaseInvoice(invoice));
+Purchase.createShipmentInvoice(invoice) += createPurchaseShipmentInvoice(invoicePurchaseInvoice(invoice));
 
 @defineDocumentInterfaceDetailPricePrefix(invoice, purchaseShipment, ' учетная (закупка)');
 @defineDocumentInterfaceDetailQuantityPrefix (invoice, purchaseShipment, ' поставлено (закупка)');
 purchaseShipmentQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail) WHEN CHANGED(quantityUserInvoiceDetail(detail));
+
+@defineDocumentInterfaceHeaderTimePrefix(Invoice, purchaseShipment, ' поставки (закупка)');
 
 @defineDocumentInterfaceDetailDataSumPrefix (invoice, purchaseShipment, ' учетная (закупка)');
 @deriveDocumentDetailSumPrefix(userInvoice, purchaseShipment, currency, purchaseShipmentQuantity);
@@ -29,13 +31,17 @@ purchaseShipmentQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(d
 @defineDocumentInterfaceHeaderCreateShipment (invoice);
 @defineDocumentInterfaceHeaderSumPrefix (invoice, purchaseShipment, ' учетная (закупка)');
 
+Purchase.shipmentDateInvoice(invoice) += purchaseShipmentDateInvoice(invoicePurchaseInvoice(invoice));
+Purchase.shipmentTimeInvoice(invoice) += purchaseShipmentTimeInvoice(invoicePurchaseInvoice(invoice));
+
 Purchase.shipmentQuantityInvoiceDetail(detail) += purchaseShipmentQuantityInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));
 Purchase.shipmentPriceInvoiceDetail(detail) += purchaseShipmentPriceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));
 Purchase.shipmentSumInvoiceDetail (detail) += purchaseShipmentSumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));
 
 EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundPurchaseShipmentInvoice(i) SHOWIF createPurchaseInvoiceUserInvoice(i) createPurchaseShipmentUserInvoice
-    PROPERTIES(i) BACKGROUND backgroundPurchaseShipmentInvoice(i) SHOWIF createPurchaseShipmentInvoice(i) purchaseShipmentSumUserInvoiceDetailUserInvoice
+    PROPERTIES(i) BACKGROUND backgroundPurchaseShipmentInvoice(i) SHOWIF createPurchaseShipmentUserInvoice(i) purchaseShipmentSumUserInvoiceDetailUserInvoice,
+                  purchaseShipmentDateUserInvoice, purchaseShipmentTimeUserInvoice
     PROPERTIES(d) BEFORE delete(d) SHOWIF createPurchaseShipmentInvoice(i) BACKGROUND backgroundPurchaseShipmentInvoice(i)
                   nameCustomerStockUserInvoiceDetail, purchaseShipmentPriceUserInvoiceDetail, purchaseShipmentSumUserInvoiceDetail
     PROPERTIES(d) purchaseShipmentQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF createPurchaseShipmentInvoice(i) BACKGROUND backgroundPurchaseShipmentInvoice(i)
@@ -44,7 +50,10 @@ EXTEND DESIGN userInvoice {
     headerCreateDocuments{
         NEW headerCreatePurchaseShipment {
             title = 'Поставка (закупка)';
+            childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createPurchaseShipmentUserInvoice);
+            ADD PROPERTY(purchaseShipmentDateUserInvoice);
+            ADD PROPERTY(purchaseShipmentTimeUserInvoice);
         }
     }
 }

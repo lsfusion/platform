@@ -12,7 +12,7 @@ NAMESPACE Menu;
 @extendFormFilterRole(o, dialogOperations);
 
 groupTypeOperation = DATA GroupType (Operation);
-nameGroupTypeOperation 'Тип классификатора' (operation) = name(groupTypeOperation(operation));
+nameGroupTypeOperation 'Тип классификатора' (operation) = nameGroupType(groupTypeOperation(operation));
 
 EXTEND FORM operation
     PROPERTIES(o) nameGroupTypeOperation
