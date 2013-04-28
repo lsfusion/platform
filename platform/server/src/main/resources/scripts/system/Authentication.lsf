@@ -18,8 +18,8 @@ TABLE loginSID (STRING[30], STRING[30]);
 
 loginCustomUser 'Логин' = DATA STRING[30] (CustomUser);
 customUserLogin 'Обычный пользователь' (login) = GROUP AGGR customUser BY loginCustomUser(customUser) WHERE customUser IS CustomUser;
-passwordCustomUser 'Пароль' = DATA STRING[30] (CustomUser);
-sha256PasswordCustomUser 'Хэш пароля' = DATA STRING[100] (CustomUser);
+passwordCustomUser 'Пароль' = DATA STRING[30] (CustomUser) ECHO;
+sha256PasswordCustomUser 'Хэш пароля' = DATA STRING[100] (CustomUser) ECHO;
 calculatedHash 'Значение хэш' = DATA SESSION STRING[100] ();
 forbidChangePasswordCustomUser 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
 forbidEditProfileCustomUser 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);

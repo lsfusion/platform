@@ -5,6 +5,7 @@ REQUIRE System, Authentication;
 CLASS PropertyGroup 'Родит. группа';
 TABLE propertyGroup (PropertyGroup);
 
+TABLE propertyGroupPropertyGroup (PropertyGroup, PropertyGroup);
 parentPropertyGroup 'Родит. группа' = DATA PropertyGroup (PropertyGroup);
 levelPropertyGroupPropertyGroup 'Уровень' (child, parent) = RECURSION 1l AND child IS PropertyGroup AND parent == child
                                                                       STEP 2l AND parent == parentPropertyGroup($parent) PERSISTENT;

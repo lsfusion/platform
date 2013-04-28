@@ -15,11 +15,11 @@ TABLE stockGroupStockGroup(StockGroup, StockGroup);
 CLASS ABSTRACT Stock 'Склад';
 TABLE stock(Stock);
 
-nameStock 'Наименование' = ABSTRACT ISTRING[150](Stock);
-stockGroupStock (stock) = ABSTRACT StockGroup (Stock) PERSISTENT;
+nameStock 'Наименование' = ABSTRACT ISTRING[150](Stock) PERSISTENT INDEXED;
+stockGroupStock (stock) = ABSTRACT StockGroup (Stock) PERSISTENT INDEXED;
 nameStockGroupStock 'Группа' (stock) = nameStockGroup(stockGroupStock (stock));
 
-legalEntityStock (stock) = ABSTRACT LegalEntity (Stock) PERSISTENT NOT NULL;
+legalEntityStock (stock) = ABSTRACT LegalEntity (Stock) PERSISTENT NOT NULL INDEXED;
 nameLegalEntityStock 'Компания' (stock) = nameLegalEntity(legalEntityStock(stock));
 
 quantityDaysCloseOrdersStock 'Срок автоматического закрытия заказов' = ABSTRACT INTEGER(Stock) PERSISTENT;
@@ -102,7 +102,7 @@ FORM UOMs 'Единицы измерений'
 CLASS ABSTRACT Group 'Классификатор SKU';
 TABLE group(Group);
 
-nameGroup 'Наименование' = ABSTRACT ISTRING[150](Group);
+nameGroup 'Наименование' = ABSTRACT ISTRING[150](Group) PERSISTENT INDEXED;
 
 TABLE groupGroup(Group, Group);
 @defineHierarchyAbstract(group, Group);
@@ -116,11 +116,11 @@ nameSystemGroupType 'Наименование' = DATA ISTRING[50](SystemGroupTyp
 
 nameGroupType(type) += nameSystemGroupType(type) IF type IS SystemGroupType;
 
-groupTypeGroup = ABSTRACT GroupType (Group) PERSISTENT;
+groupTypeGroup = ABSTRACT GroupType (Group) PERSISTENT INDEXED;
 nameGroupTypeGroup 'Тип классификатора SKU' (group) = nameGroupType(groupTypeGroup(group));
 
 TABLE groupTypeSku(GroupType, Sku);
-groupGroupTypeSku = ABSTRACT Group (GroupType, Sku) EXCLUSIVE PERSISTENT;
+groupGroupTypeSku = ABSTRACT Group (GroupType, Sku) EXCLUSIVE PERSISTENT INDEXED;
 nameGroupGroupTypeSku 'Имя' (type, sku) = nameGroup(groupGroupTypeSku(type, sku));
 canonicalNameGroupGroupTypeSku 'Каноническое имя' (type, sku) = canonicalNameGroup(groupGroupTypeSku(type, sku));
 
@@ -132,7 +132,7 @@ isParentGroupSku(group, sku) = isParentGroupGroup(groupGroupTypeSku(groupTypeGro
 CLASS CustomGroup 'Дополнительный классификатор SKU' : Group;
 TABLE customGroup (CustomGroup);
 
-nameCustomGroup 'Наименование' = DATA ISTRING[150](CustomGroup);
+nameCustomGroup 'Наименование' = DATA ISTRING[150](CustomGroup) PERSISTENT INDEXED;
 
 nameGroup(group) += nameCustomGroup(group) IF group IS CustomGroup;
 
@@ -157,7 +157,7 @@ CONSTRAINT customGroupTypeCustomGroup(parentCustomGroup(group)) != customGroupTy
 groupTypeGroup (group) += customGroupTypeCustomGroup(group);
 
 TABLE customGroupTypeSku(CustomGroupType, Sku);
-customGroupCustomGroupTypeSku = ABSTRACT CustomGroup (CustomGroupType, Sku) PERSISTENT;
+customGroupCustomGroupTypeSku = ABSTRACT CustomGroup (CustomGroupType, Sku) PERSISTENT INDEXED;
 
 groupGroupTypeSku(type, sku) += customGroupCustomGroupTypeSku(type, sku);
 
@@ -225,7 +225,7 @@ FORM customGroups 'Дополнительные группы'
 CLASS ABSTRACT SkuGroup 'Группа SKU' : Group;
 TABLE skuGroup (SkuGroup);
 
-nameSkuGroup 'Наименование' = ABSTRACT ISTRING[150](SkuGroup);
+nameSkuGroup 'Наименование' = ABSTRACT ISTRING[150](SkuGroup) PERSISTENT INDEXED;
 
 nameGroup(group) += nameSkuGroup(group) IF group IS SkuGroup;
 
@@ -247,8 +247,9 @@ CLASS SkuType {
     skuTypeItem 'Товар',
     skuTypeContainer 'Тара',
     skuTypeCharge 'Услуги'
-};
+}
 
+TABLE skuType (SkuType);
 isStockSkuType 'Складируемые' (type) = type IS SkuType AND NOT type == SkuType.skuTypeCharge PERSISTENT;
 
 // ----------------------------------- Sku ------------------------------------------ //
@@ -258,7 +259,7 @@ TABLE sku(Sku);
 TABLE legalEntitySku(LegalEntity, Sku);
 TABLE countrySku(Country, Sku);
 
-skuGroupSku (sku) = ABSTRACT SkuGroup (Sku) PERSISTENT;
+skuGroupSku (sku) = ABSTRACT SkuGroup (Sku) PERSISTENT INDEXED;
 
 groupTypeGroup(group) += SystemGroupType.skuGroupType IF group IS SkuGroup;
 groupGroupTypeSku(type, sku) += skuGroupSku(sku) WHEN CLASS(skuGroupSku(sku)) AND type == SystemGroupType.skuGroupType;
@@ -284,7 +285,7 @@ grossWeightSku 'Вес брутто' = ABSTRACT NUMERIC[9,3] (Sku) PERSISTENT;
 volumeSku 'Объем' = ABSTRACT NUMERIC[9,3] (Sku) PERSISTENT;
 compositionSku 'Состав' = ABSTRACT STRING[255] (Sku) PERSISTENT;
 
-skuTypeSku = ABSTRACT SkuType (Sku) PERSISTENT;
+skuTypeSku = ABSTRACT SkuType (Sku) PERSISTENT INDEXED;
 
 isStockSku 'Складируемый' (sku) = isStockSkuType(skuTypeSku(sku)) PERSISTENT;
 
@@ -3285,7 +3286,7 @@ loadDefaultUOM 'Добавить ед.изм.' = ACTION (stringOne, stringTwo, n
     ADDOBJ UOM;
     FOR u == addedObject() DO {
        SET nameUOM(u) <- stringOne AS STRING[110];
-       SET shortName(u) <- stringTwo AS STRING[5];
+       SET shortNameUOM(u) <- stringTwo AS STRING[5];
        SET baseUOM(u) <- u AS UOM;
        SET factorUOM(u) <- numeric AS NUMERIC[17,3];
     }

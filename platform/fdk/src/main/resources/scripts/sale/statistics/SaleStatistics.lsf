@@ -53,7 +53,7 @@ CLASS GroupStatic 'Ед. изм.' {
     statisticCubicMeters 'Кубический м'
 };
 
-
+TABLE groupStaticUOM (GroupStatic, UOM);
 factorGroupStaticUOM 'Коэффициент перевода' = DATA NUMERIC[14,3] (GroupStatic, UOM);
 
 FORM groupStatics 'Конвертация статистических ед. изм.'
@@ -114,13 +114,14 @@ addStatisticGroupType 'Добавить' = ACTION (group, type) NEWSESSION {
 
 addStatisticGroup 'Добавить' (group)= addStatisticGroupType(group, groupTypeStatisticGroup(group)) TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
-statisticGroupTypeSku = ABSTRACT StatisticGroup (StatisticGroupType,Sku);
+TABLE statisticGroupTypeSku (StatisticGroupType, Sku);
+statisticGroupTypeSku = ABSTRACT StatisticGroup (StatisticGroupType, Sku) PERSISTENT;
 nameStatisticGroupTypeSku 'Статистическая группа' = nameStatisticGroup(statisticGroupTypeSku(type, sku));
 
-TABLE statisticGroupStatisticGroupTypeSku(StatisticGroup, StatisticGroupType, Sku);
+TABLE statisticGroupSku(StatisticGroup, Sku);
 isParentStatisticGroupSku (group, sku) = isParentStatisticGroupStatisticGroup(statisticGroupTypeSku(groupTypeStatisticGroup(group),sku), group) PERSISTENT;
 isParentLeafStatisticGroupSku (group, sku) = isParentLeafStatisticGroupStatisticGroup(statisticGroupTypeSku(groupTypeStatisticGroup(group),sku), group) PERSISTENT;
-parentStatisticTypeSku (type, sku) = parentStatisticGroup(statisticGroupTypeSku(type,sku)) PERSISTENT;
+parentStatisticGroupTypeSku (type, sku) = parentStatisticGroup(statisticGroupTypeSku(type,sku)) PERSISTENT;
 
 residentCountryCountry 'Отечественный производитель' =  DATA BOOLEAN (Country, Country);
 residentStatisticGroupSku (group, sku) = residentCountryCountry(countryStatisticGroupType(groupTypeStatisticGroup(group)), countrySku(sku));
@@ -403,7 +404,7 @@ FORM statisticalReport 'Статистика (продажи) склад/гру�
     FILTERGROUP filters
         FILTER 'Все листья' 'F10' isParentLeafStatisticGroupSku(g, s) DEFAULT
         FILTER 'Всех потомков' 'F9' isParentStatisticGroupSku(g, s)
-        FILTER 'Только непосредственных потомков' 'F8' parentStatisticTypeSku(c,s) == g
+        FILTER 'Только непосредственных потомков' 'F8' parentStatisticGroupTypeSku(c,s) == g
 
     PROPERTIES        balanceBSkuStockDate(s, st, dFrom),
                       quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo),

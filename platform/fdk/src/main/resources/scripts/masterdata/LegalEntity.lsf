@@ -29,7 +29,7 @@ CLASS LegalEntity 'Организация' : TaxUnitGroup, EmployeeDivision;
 TABLE legalEntity (LegalEntity);
 TABLE legalEntityDate (LegalEntity, DATE);
 
-nameLegalEntity 'Наименование' = DATA ISTRING[150](LegalEntity);
+nameLegalEntity 'Наименование' = DATA ISTRING[150](LegalEntity) INDEXED;
 
 nameEmployeeDivision(division) += nameLegalEntity(division) IF division IS LegalEntity;
 
@@ -85,7 +85,7 @@ nameLegalEntityGroup 'Наименование' = DATA ISTRING[100](LegalEntityG
 
 nameEmployeeDivisionGroup(group) += nameLegalEntityGroup(group) IF group IS LegalEntityGroup;
 
-legalEntityGroupLegalEntity (legalEntity) = DATA LegalEntityGroup (LegalEntity) PERSISTENT AUTOSET;
+legalEntityGroupLegalEntity (legalEntity) = DATA LegalEntityGroup (LegalEntity) PERSISTENT INDEXED AUTOSET;
 nameLegalEntityGroupLegalEntity 'Группа организаций' (legalEntity) = nameLegalEntityGroup(legalEntityGroupLegalEntity(legalEntity));
 
 TABLE legalEntityGroupLegalEntityGroup(LegalEntityGroup, LegalEntityGroup);

@@ -294,35 +294,6 @@ DESIGN items FROM DEFAULT {
 
 @extendFormEditable(items);
 
-//FORM items 'Товары'
-//    TREE treeGroup g=itemGroup PARENT parentItemGroup
-//    PROPERTIES READONLY name(g)
-//    ORDER BY name
-//
-//    OBJECTS i=Item
-//    PROPERTIES(i) READONLY idBarcodeSku
-//    PROPERTIES(i) ADDFORM, EDITFORM, delete
-//    PROPERTIES seekBarcode() TODRAW i FORCE PANEL TOOLBAR ON CHANGE seekSkuBarcode()
-//
-//    DIALOG item OBJECT i
-//;
-//
-//DESIGN items FROM DEFAULT {
-//    NEW rootContainer {
-//            type = SPLITH;
-//            childConstraints = TO THE RIGHT;
-//            ADD treeGroup.tree.box;
-//            ADD i.box {
-//                defaultComponent = TRUE;
-//                fillHorizontal = 4;
-//                PROPERTY(seekBarcode){
-//                    editKey = 'F4';
-//                }
-//            }
-//    }
-//    ADD functions.box;
-//}
-
 NAVIGATOR {
     skuNavigator {
         ADD items BEFORE itemGroups;
@@ -441,7 +412,7 @@ END
 // Строка
 CLASS StringItemAttribute 'Строковый атрибут' : ItemAttribute;
 
-nameStringItemAttribute 'Наименование' = DATA ISTRING[150](StringItemAttribute);
+nameStringItemAttribute 'Наименование' = DATA ISTRING[100](StringItemAttribute);
 
 nameItemAttribute(attribute) += nameStringItemAttribute(attribute) IF attribute IS StringItemAttribute;
 
@@ -455,7 +426,7 @@ END
 // Целое число
 CLASS IntegerItemAttribute 'Целочисленный атрибут' : ItemAttribute;
 
-nameIntegerItemAttribute 'Наименование' = DATA ISTRING[150](IntegerItemAttribute);
+nameIntegerItemAttribute 'Наименование' = DATA ISTRING[100](IntegerItemAttribute);
 
 nameItemAttribute(attribute) += nameIntegerItemAttribute(attribute) IF attribute IS IntegerItemAttribute;
 
@@ -470,12 +441,9 @@ END
 // Дробное число
 CLASS DoubleItemAttribute 'Дробный атрибут' : ItemAttribute;
 
-nameDoubleItemAttribute 'Наименование' = DATA ISTRING[150](DoubleItemAttribute);
+nameDoubleItemAttribute 'Наименование' = DATA ISTRING[100](DoubleItemAttribute);
 
 nameItemAttribute(attribute) += nameDoubleItemAttribute(attribute) IF attribute IS DoubleItemAttribute;
-
-
-
 
 valueDoubleItemAttribute = ABSTRACT DOUBLE (Item, DoubleItemAttribute) EXCLUSIVE PERSISTENT;
 stringDoubleItemAttribute(item, attribute) = toString255(valueDoubleItemAttribute(item, attribute));
@@ -485,16 +453,8 @@ META defineDoubleItemAttribute(attribute, type, caption, group)
     @definePrimitiveItemAttribute(attribute, type, caption, group, Double);
 END
 
-// Объектный атрибут
-//CLASS ObjectItemAttribute 'Объектный атрибут' : ItemAttribute;
-
-//valueObjectItemAttribute = ABSTRACT Named (Item, ObjectItemAttribute) EXCLUSIVE PERSISTENT;
-//nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
-//valueItemAttribute(item, attribute) += nameObjectItemAttribute(item, attribute);
-
 META defineObjectItemAttribute(attribute, identity, caption, group)
     @defineObjectItemAttributeInner(attribute, ###attribute, identity, caption, group);
-
 END
 
 META defineObjectItemAttributeInner(attribute, attributeClass, identity, caption, group)
@@ -502,20 +462,6 @@ META defineObjectItemAttributeInner(attribute, attributeClass, identity, caption
     identity###attribute##Item caption (item) = identity(attribute##Item(item)) IN group;
     @defineItemAttribute(attribute, identity###attribute##Item, caption, group, String, item###attribute);
 END
-
-// Краткое наименование атрибута
-//CLASS ObjectShortItemAttribute 'Объектный краткий атрибут' : ItemAttribute;
-//
-//valueObjectShortItemAttribute = ABSTRACT DoubleNamed (Item, ObjectShortItemAttribute) EXCLUSIVE PERSISTENT;
-//shortNameObjectItemAttribute(item, attribute) = shortName(valueObjectShortItemAttribute(item, attribute));
-//valueItemAttribute(item, attribute) += shortNameObjectItemAttribute(item, attribute);
-
-//META implementObjectShortItemAttribute(attribute, caption)
-//    EXTEND CLASS ObjectShortItemAttribute { shortItem###attribute caption }
-//    valueObjectShortItemAttribute(item, attribute) += attribute##Item(item) WHEN attribute == ObjectShortItemAttribute.shortItem###attribute;
-//END
-
-////    value###attribute##ItemShortAttribute(item, attribute) = attribute##Item(item) AND attribute == objectShortItemAttribute.shortItem###attribute;
 
 // ---------------------------- Конкретные свойства -------------------------------- //
 

@@ -23,17 +23,17 @@ parentStockGroup (stockGroup) += parentWarehouseGroup (stockGroup);
 CLASS Warehouse 'Склад' : Stock;
 TABLE warehouse(Warehouse);
 
-nameWarehouse 'Наименование' = DATA ISTRING[150](Warehouse);
+nameWarehouse 'Наименование' = DATA ISTRING[150](Warehouse) INDEXED;
 
 nameStock(stock) += nameWarehouse(stock) IF stock IS Warehouse;
 
-warehouseGroupWarehouse (warehouse) = DATA WarehouseGroup (Warehouse) AUTOSET;
+warehouseGroupWarehouse (warehouse) = DATA WarehouseGroup (Warehouse) INDEXED AUTOSET;
 nameWarehouseGroupWarehouse 'Группа складов' (warehouse) = nameWarehouseGroup(warehouseGroupWarehouse(warehouse)) IN base;
 isParentWarehouseGroupWarehouse (warehouseGroup, warehouse) =
     isParentWarehouseGroupWarehouseGroup(warehouseGroupWarehouse(warehouse), warehouseGroup) PERSISTENT;
 stockGroupStock (stock) += warehouseGroupWarehouse (stock);
 
-legalEntityWarehouse (warehouse) = DATA LegalEntity (Warehouse) NOT NULL;
+legalEntityWarehouse (warehouse) = DATA LegalEntity (Warehouse) INDEXED NOT NULL;
 nameLegalEntityWarehouse 'Организация' (warehouse) = nameLegalEntity(legalEntityWarehouse(warehouse)) IN base;
 legalEntityStock (stock) += legalEntityWarehouse(stock);
 

@@ -6,6 +6,8 @@ CLASS UserRole 'Роль';
 TABLE userRole (UserRole);
 TABLE customUserRole (CustomUser, UserRole);
 TABLE userRoleProperty (UserRole, Property);
+TABLE userRolePropertyGroup (UserRole, PropertyGroup);
+TABLE userProperty (User, Property);
 TABLE userRoleNavigatorElement (UserRole, NavigatorElement);
 
 nameUserRole 'Наименование' = DATA ISTRING[100](UserRole);
@@ -78,7 +80,6 @@ forbidChangePropertyGroup 'Запретить изменение группы с
 dataForbidChangeProperty 'Запретить изменение свойства' = DATA BOOLEAN (Property);
 forbidChangeProperty 'Запретить изменение свойства' (property) = levelForbidChangePropertyGroup (parentProperty(property)) OR dataForbidChangeProperty (property) PERSISTENT;
 
-TABLE userRolePropertyGroup (UserRole, PropertyGroup);
 dataPermitViewUserRolePropertyGroup 'Разрешить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
 levelPermitViewParentUserRolePropertyGroup (userRole, propertyGroup) =

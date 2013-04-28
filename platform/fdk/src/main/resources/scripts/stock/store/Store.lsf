@@ -46,11 +46,11 @@ FORM chainStores 'Торговая сеть'
 CLASS Store 'Магазин' : StockGroup, TaxUnit, POI;
 TABLE store (Store);
 
-nameStore 'Наименование' = DATA ISTRING[100](Store);
+nameStore 'Наименование' = DATA ISTRING[100](Store) INDEXED;
 
 nameStockGroup(group) += nameStore(group) IF group IS Store;
 
-legalEntityStore = DATA LegalEntity (Store) NOT NULL;
+legalEntityStore = DATA LegalEntity (Store) INDEXED NOT NULL;
 nameLegalEntityStore 'Компания' (store) = nameLegalEntity(legalEntityStore(store)) IN base;
 
 bankAccountStore = DATA Bank.Account (Store);
@@ -77,7 +77,7 @@ longitudeStore 'Координата Y' = DATA NUMERIC[10,5](Store);
 latitudePOI (store) += latitudeStore(store);
 longitudePOI (store) += longitudeStore(store);
 
-storeTypeStore = DATA StoreType (Store) AUTOSET;
+storeTypeStore = DATA StoreType (Store) INDEXED AUTOSET;
 nameStoreTypeStore 'Формат' (store) = nameStoreType(storeTypeStore(store)) IN base;
 
 inStoreTypeStore (storeType, store) = storeTypeStore (store) == storeType;
@@ -103,20 +103,20 @@ CLASS DepartmentStore 'Отдел магазина' : Stock;
 TABLE departmentStore (DepartmentStore);
 TABLE departmentStoreDate (DepartmentStore, DATE);
 
-nameDepartmentStore 'Наименование' = DATA ISTRING[150](DepartmentStore);
+nameDepartmentStore 'Наименование' = DATA ISTRING[150](DepartmentStore) INDEXED;
 
 nameStock(stock) += nameDepartmentStore(stock) IF stock IS DepartmentStore;
 
-storeDepartmentStore = DATA Store (DepartmentStore) AUTOSET;
+storeDepartmentStore = DATA Store (DepartmentStore) INDEXED AUTOSET;
 nameStoreDepartmentStore 'Магазин' (departmentStore) = nameStore(storeDepartmentStore(departmentStore)) IN base;
 stockGroupStock (departmentStore) += storeDepartmentStore(departmentStore);
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 
-storeTypeDepartmentStore(departmentStore) = storeTypeStore(storeDepartmentStore(departmentStore)) PERSISTENT;
-chainStoresDepartmentStore(departmentStore) = chainStoresStoreType(storeTypeDepartmentStore(departmentStore)) PERSISTENT;
+storeTypeDepartmentStore(departmentStore) = storeTypeStore(storeDepartmentStore(departmentStore)) PERSISTENT INDEXED;
+chainStoresDepartmentStore(departmentStore) = chainStoresStoreType(storeTypeDepartmentStore(departmentStore)) PERSISTENT INDEXED;
 
-legalEntityDepartmentStore (departmentStore) = legalEntityStore(storeDepartmentStore(departmentStore)) PERSISTENT;
+legalEntityDepartmentStore (departmentStore) = legalEntityStore(storeDepartmentStore(departmentStore)) PERSISTENT INDEXED;
 legalEntityStock (stock) += legalEntityDepartmentStore(stock);
 
 quantityDaysCloseDepartmentStore 'Срок автоматического закрытия заказов' = DATA INTEGER(DepartmentStore);

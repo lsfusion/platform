@@ -153,6 +153,8 @@ END
 META defineOperationRole(dumb)
 
     includeOperation 'Для всех ролей' = DATA BOOLEAN (Operation);
+
+    TABLE userRoleOperation (UserRole, Operation);
     includeDataUserRoleOperation 'Отм.' = DATA BOOLEAN (UserRole, Operation);
 
     includeUserRoleOperation 'Отм' (role, operation) =
