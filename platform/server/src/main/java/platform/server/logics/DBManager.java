@@ -27,6 +27,7 @@ import platform.server.ServerLoggers;
 import platform.server.SystemProperties;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
+import platform.server.context.ThreadLocalContext;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -1592,7 +1593,17 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
                     QueryBuilder<String, String> allClassesQuery = new QueryBuilder<String, String>(SetFact.singleton("key"));
                     Expr key = allClassesQuery.getMapExprs().singleValue();
-                    Expr sidExpr = LM.staticName.getExpr(Property.defaultModifier, key);
+
+                    BaseLogicsModule LM = ThreadLocalContext.getBusinessLogics().LM;
+
+                    ImplementTable table = new ImplementTable("sidClass", LM.baseClass);
+
+                    StoredDataProperty dataProperty = new StoredDataProperty("classSID", "classSID", new ValueClass[] {LM.baseClass}, StringClass.get(250));
+                    LCP classSID = new LCP<ClassPropertyInterface> (dataProperty);
+                    dataProperty.markStored(LM.tableFactory, table);
+
+                    Expr sidExpr = classSID.getExpr(Property.defaultModifier, key);
+
                     allClassesQuery.and(sidExpr.getWhere()); // вот тут придется напрямую из таблицы читать id'ки для классов, потому как isClass использовать очевидно нельзя
                     allClassesQuery.and(objectTable.join(MapFact.singleton(objectKey, key)).getExpr(classField).compare(new ValueExpr(Integer.MAX_VALUE - 5, LM.baseClass.objectClass), Compare.EQUALS));
                     allClassesQuery.addProperty("sid", sidExpr);
