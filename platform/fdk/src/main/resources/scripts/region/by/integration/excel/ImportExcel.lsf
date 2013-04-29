@@ -55,7 +55,7 @@ EXTEND FORM integrationData
 ;
 EXTEND DESIGN integrationData {
     pane {
-        NEW excel {
+        NEW importExcel {
             childConstraints = TO THE BOTTOM;
             title = 'Импорт из Excel';
             ADD NOGROUP.excelAllGroup {
