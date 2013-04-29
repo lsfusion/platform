@@ -16,11 +16,18 @@ countryOwnership = DATA Country (Ownership);
 nameCountryOwnership 'Страна' (ownership) = nameCountry(countryOwnership(ownership)) MINCHARWIDTH 10 PREFCHARWIDTH 15 MAXCHARWIDTH 20;
 
 FORM ownership 'Форма собственности'
-
     OBJECTS o = Ownership FIXED PANEL
     PROPERTIES(o) nameOwnership, shortNameOwnership, nameCountryOwnership
 
     EDIT Ownership OBJECT o
+;
+
+FORM ownerships 'Формы собственности'
+    OBJECTS o = Ownership
+    PROPERTIES(o) READONLY nameOwnership, shortNameOwnership, nameCountryOwnership
+    PROPERTIES(o)          ADDFORM, EDITFORM, delete
+
+    DIALOG Ownership OBJECT o
 ;
 
 // ----------------------------------- Юридическое лицо --------------------------------- //

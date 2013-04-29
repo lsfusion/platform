@@ -30,6 +30,8 @@ FORM banks 'Банки'
     OBJECTS b=Bank
     PROPERTIES(b) READONLY nameBank, addressBank, MFOBank, departmentBank, CBUBank, nameCountryBank, infoBank
     PROPERTIES(b) ADDFORM, EDITFORM, delete
+
+    DIALOG Bank OBJECT b
 ;
 
 NAVIGATOR {
