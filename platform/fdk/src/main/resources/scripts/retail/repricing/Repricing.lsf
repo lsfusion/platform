@@ -560,6 +560,9 @@ FORM managementRepricing 'Управленческая переоценка'
     OBJECTS p = PriceListType FIXED PANEL
     PROPERTIES (p) SELECTOR namePriceListType
 
+    OBJECTS c = CalcPriceListType FIXED PANEL
+    PROPERTIES (c) SELECTOR nameCalcPriceListType
+
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
@@ -570,8 +573,9 @@ DESIGN managementRepricing FROM DEFAULT {
 
         NEW topContainer {
             childConstraints = TO THE RIGHT;
-            ADD d.box { title = 'Выберите отдел магазина';  font = 'Tahoma bold 72'; }
-            ADD p.box { title = 'Выберите вид цен';  font = 'Tahoma bold 72'; }
+            ADD d.box { title = 'Выберите отдел магазина';}
+            ADD p.box { title = 'Выберите вид цен (управленческий)';}
+            ADD c.box { title = 'Выберите вид цен (надбавка)';}
             ADD t.box;
         }
         ADD functions.box;
@@ -580,27 +584,35 @@ DESIGN managementRepricing FROM DEFAULT {
 
 overManagementRepricing = ABSTRACT ACTION (a,b,c,d);
 
+prevPricePriceListCalcListSkuStockDateTime (priceList, calcList, sku, department, time) =
+    IF prevPricePriceListTypeSkuStockDateTime(priceList, sku, department, time) AND calcList IS CalcPriceListType
+        THEN prevPricePriceListTypeSkuStockDateTime(priceList, sku, department, time) AND priceList IS PriceListType
+        ELSE prevPricePriceListTypeSkuStockDateTime(calcList, sku, department, time) AND calcList IS CalcPriceListType;
+
 createManagementRepricing 'Создать управленческую переоценку' = ACTION () NEWSESSION {
 
     FORM managementRepricing  MODAL;
     IF formResult() == FormResult.ok THEN {
         LOCAL department = DepartmentStore();
         LOCAL priceList = PriceListType();
+        LOCAL calcList = CalcPriceListType();
         LOCAL time =  DATETIME();
+
         SET department() <- chosenObject('d');
         SET priceList() <- chosenObject('p');
+        SET calcList() <- chosenObject('c');
         SET time() <- chosenDateTime('t');
 
         FOR ADDOBJ r = UserRepricing DO {
             SET departmentStoreUserRepricing(r) <-  department();
 
             FOR currentBalanceSkuStock(sku, department()) AND
-                pricePriceListTypeSkuStockDateTime(priceList(), sku, department(), time()) != pricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.retailPricingPriceListType, sku, department(), time())
+                prevPricePriceListCalcListSkuStockDateTime(priceList(), calcList(), sku, department(), time()) != prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.retailPricingPriceListType, sku, department(), time())
                 ADDOBJ rd = UserRepricingDetail DO {
                 SET userRepricingUserRepricingDetail(rd) <- r;
                 SET skuUserRepricingDetail(rd) <- sku;
                 SET quantityUserRepricingDetail(rd) <- currentBalanceSkuStock(sku, department());
-                SET retailPriceUserRepricingDetail(rd) <- pricePriceListTypeSkuStockDateTime(priceList(), sku, department(), time());
+                SET retailPriceUserRepricingDetail(rd) <- prevPricePriceListCalcListSkuStockDateTime(priceList(), calcList(), sku, department(), time());
                 SET curRetailPriceUserRepricingDetail(rd) <- pricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.retailPricingPriceListType, sku, department(), time());
                 SET priceUserRepricingDetail(rd) <- prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.supplierPricingPriceListType, sku, department(), time());
                 EXEC overManagementRepricing(rd, sku, department(), time());

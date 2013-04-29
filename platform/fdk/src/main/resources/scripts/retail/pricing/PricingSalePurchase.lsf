@@ -17,9 +17,38 @@ purchasePricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(de
     WHEN CHANGED(quantityUserInvoiceDetail(detail)) OR CHANGED(extraPurchasePricingQuantityUserInvoiceDetail(detail));
 
 // Виды цен
-@defineDocumentInterfacePriceListType (invoice, priceListType, purchaseRetail, ' розничный (закупка)');
-purchaseRetailPriceListTypeUserInvoiceDetail(detail) <- purchaseRetailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail))
-                                                WHEN CHANGED(purchaseRetailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail)));
+
+@defineDocumentInterfaceHeaderPriceListType (invoice, calcPriceListType, calcPurchaseRetail, ' (надбавка)');
+@defineDocumentDetailPriceListTypePrefix (invoice, invoiceDetail, calcPriceListType, calcPurchaseRetail, ' (надбавка)');
+@defineDocumentDetailPriceListTypePrefix (userInvoice, userInvoiceDetail, calcPriceListType, calcPurchaseRetail, ' (надбавка)');
+@defineDocumentInterfaceHeaderPriceListType (invoice, priceListType, calcPurchaseRetail, ' (управленческий)');
+@defineDocumentDetailPriceListTypePrefix (invoice, invoiceDetail, priceListType, calcPurchaseRetail, ' (управленческий)');
+@defineDocumentDetailPriceListTypePrefix (userInvoice, userInvoiceDetail, priceListType, calcPurchaseRetail, ' (управленческий)');
+
+@defineDocumentInterfaceDetailPriceListType (invoice, priceListType, purchaseRetail, ' (розничная)');
+
+CONSTRAINT currencyUserInvoice(invoice) != currencyPriceListType(calcPurchaseRetailCalcPriceListTypeUserInvoice(invoice))
+           CHECKED BY calcPurchaseRetailCalcPriceListTypeUserInvoice
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+CONSTRAINT currencyUserInvoice(invoice) != currencyPriceListType(calcPurchaseRetailPriceListTypeUserInvoice(invoice))
+           CHECKED BY calcPurchaseRetailPriceListTypeUserInvoice
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+
+CONSTRAINT currencyUserInvoiceDetail(detail) != currencyPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(detail))
+           CHECKED BY purchaseRetailPriceListTypeUserInvoiceDetail
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+
+purchaseRetailPriceListTypeUserInvoiceDetail(detail) <- IF prevPricePriceListTypeSkuStockDateTime(calcPurchaseRetailPriceListTypeUserInvoiceDetail(detail),
+                                                                                          skuUserInvoiceDetail(detail),
+                                                                                          customerStockUserInvoiceDetail(detail),
+                                                                                          dateTimeUserInvoiceDetail(detail))
+                                                    THEN calcPurchaseRetailPriceListTypeUserInvoiceDetail(detail)
+                                                    ELSE calcPurchaseRetailCalcPriceListTypeUserInvoiceDetail(detail)
+
+                                                WHEN CHANGED(calcPurchaseRetailPriceListTypeUserInvoiceDetail(detail)) OR
+                                                     CHANGED(skuUserInvoiceDetail(detail)) OR
+                                                     CHANGED(customerStockUserInvoiceDetail(detail)) OR
+                                                     CHANGED(dateTimeUserInvoiceDetail(detail));
 
 // Базовая цена
 overPurchasePricingPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
@@ -72,21 +101,27 @@ purchaseRoundConditionUserInvoiceDetail(userInvoiceDetail) =
 
 // Вид цены для акта расценки (закупка)
 purchaseRetailPriceListTypeOperation = DATA PriceListType (Operation);
-namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки(закупка)' (operation) = namePriceListType(purchaseRetailPriceListTypeOperation(operation));
+namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки управленческий (закупка) ' (operation) = namePriceListType(purchaseRetailPriceListTypeOperation(operation));
+
+purchaseRetailCalcPriceListTypeOperation = DATA CalcPriceListType (Operation);
+namePurchaseRetailCalcPriceListTypeOperation 'Вид цен акт расценки надбавка (закупка)' (operation) = namePriceListType(purchaseRetailCalcPriceListTypeOperation(operation));
 
 EXTEND FORM operation
-    PROPERTIES(o) namePurchaseRetailPriceListTypeOperation
+    PROPERTIES(o) namePurchaseRetailPriceListTypeOperation, namePurchaseRetailCalcPriceListTypeOperation
 ;
 
 EXTEND DESIGN operation{
     createContainer {
         ADD PROPERTY(namePurchaseRetailPriceListTypeOperation);
+        ADD PROPERTY(namePurchaseRetailCalcPriceListTypeOperation);
     }
 }
 
-purchaseRetailPriceListTypeUserInvoice (invoice) <- purchaseRetailPriceListTypeOperation(operationUserInvoice(invoice))
+calcPurchaseRetailPriceListTypeUserInvoice (invoice) <- purchaseRetailPriceListTypeOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));
 
+calcPurchaseRetailCalcPriceListTypeUserInvoice (invoice) <- purchaseRetailCalcPriceListTypeOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
 
 showCreatePurchasePricingInvoice (invoice) = customerStockInvoice(invoice) IS DepartmentStore AND createPurchaseInvoiceInvoice(invoice) AND NOT costLedgerDepartmentStore(customerStockInvoice(invoice));
 showPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND NOT createPurchasePricingInvoice(invoice);
@@ -99,7 +134,7 @@ printSalePurchasePricingInvoice 'Акт расценки (закупка)' (invo
 EXTEND FORM userInvoice
     PROPERTIES(i) SHOWIF showCreatePurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i) createPurchasePricingUserInvoice
     PROPERTIES(i) SHOWIF createPurchasePricingUserInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i) namePurchasePricingCommitteeUserInvoice,
-                  namePurchaseRetailPriceListTypeInvoice, purchaseRetailSumUserInvoiceDetailUserInvoice
+                  nameCalcPurchaseRetailPriceListTypeInvoice, nameCalcPurchaseRetailCalcPriceListTypeInvoice, purchaseRetailSumUserInvoiceDetailUserInvoice
 
     PROPERTIES(d) BEFORE delete(d) SHOWIF createPurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
                   namePurchaseRetailPriceListTypeUserInvoiceDetail,
@@ -117,7 +152,8 @@ EXTEND DESIGN userInvoice {
             title = 'Расценка на закупке';
             ADD PROPERTY(createPurchasePricingUserInvoice);
             ADD PROPERTY(namePurchasePricingCommitteeUserInvoice);
-            ADD PROPERTY(namePurchaseRetailPriceListTypeInvoice);
+            ADD PROPERTY(nameCalcPurchaseRetailPriceListTypeInvoice);
+            ADD PROPERTY(nameCalcPurchaseRetailCalcPriceListTypeInvoice);
         }
     }
 }

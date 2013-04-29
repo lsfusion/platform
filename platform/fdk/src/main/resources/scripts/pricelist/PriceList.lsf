@@ -961,6 +961,14 @@ pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcP
 
 backgroundMarkup 'Цвет' (calcPriceListType, group) = RGB(255,160,160) AND markupCalcPriceListTypeGroup(calcPriceListType, group);
 
+FORM calcPriceListTypes 'Расчетный вид цены'
+    OBJECTS p = CalcPriceListType
+    PROPERTIES(p) READONLY nameCalcPriceListType, nameCurrencyCalcPriceListType, nameRoundConditionPriceListType
+    PROPERTIES(p) READONLY includeVATCalcPriceListType
+
+    DIALOG CalcPriceListType OBJECT p
+;
+
 // --------------------------- Формы ------------------------- //
 
 editPriceListType 'Редактировать' = ABSTRACT ACTION (priceListType) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
@@ -1032,8 +1040,8 @@ editPriceListType(priceListType) += editCalcPriceListType(priceListType);
 
 FORM priceListType 'Вид цены'
     OBJECTS p = PriceListType
-    PROPERTIES(p) READONLY namePriceListType, nameCurrencyPriceListType
-    PROPERTIES(p) includeVATPriceListType
+    PROPERTIES(p) READONLY namePriceListType, nameCurrencyPriceListType, nameRoundConditionPriceListType
+    PROPERTIES(p) READONLY includeVATPriceListType, objectClassName
 
     DIALOG PriceListType OBJECT p
 ;

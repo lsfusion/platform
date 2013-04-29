@@ -284,9 +284,42 @@ CLASS UserPricingPosted 'Проведенный акт расценки (пол�
 @defineDocumentInterfaceCurrency(pricing);
 @deriveDocumentCurrency(userPricing, departmentStore);
 
+// Sku
+@defineDocumentInterfaceDetailSku(pricing, sku);
+
 // Виды цен
-@defineDocumentInterfacePriceListType (pricing, priceListType, retail, );
-retailPriceListTypeUserPricingDetail(detail) <- retailPriceListTypeUserPricing(userPricingUserPricingDetail(detail)) WHEN CHANGED (retailPriceListTypeUserPricing(userPricingUserPricingDetail(detail)));
+
+@defineDocumentInterfaceHeaderPriceListType (pricing, calcPriceListType, calcRetail, ' (надбавка)');
+@defineDocumentDetailPriceListTypePrefix (pricing, pricingDetail, calcPriceListType, calcRetail, ' (надбавка)');
+@defineDocumentDetailPriceListTypePrefix (userPricing, userPricingDetail, calcPriceListType, calcRetail, ' (надбавка)');
+@defineDocumentInterfaceHeaderPriceListType (pricing, priceListType, calcRetail, ' (управленческий)');
+@defineDocumentDetailPriceListTypePrefix (pricing, pricingDetail, priceListType, calcRetail, ' (управленческий)');
+@defineDocumentDetailPriceListTypePrefix (userPricing, userPricingDetail, priceListType, calcRetail, ' (управленческий)');
+
+@defineDocumentInterfaceDetailPriceListType (pricing, priceListType, retail, );
+
+CONSTRAINT currencyUserPricing(pricing) != currencyPriceListType(calcRetailCalcPriceListTypeUserPricing(pricing))
+           CHECKED BY calcRetailCalcPriceListTypeUserPricing
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+CONSTRAINT currencyUserPricing(pricing) != currencyPriceListType(calcRetailPriceListTypeUserPricing(pricing))
+           CHECKED BY calcRetailPriceListTypeUserPricing
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+
+CONSTRAINT currencyUserPricingDetail(detail) != currencyPriceListType(retailPriceListTypeUserPricingDetail(detail))
+           CHECKED BY retailPriceListTypeUserPricingDetail
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+
+retailPriceListTypeUserPricingDetail(detail) <- IF prevPricePriceListTypeSkuStockDateTime(calcRetailPriceListTypeUserPricingDetail(detail),
+                                                                                          skuUserPricingDetail(detail),
+                                                                                          departmentStoreUserPricingDetail(detail),
+                                                                                          dateTimeUserPricingDetail(detail))
+                                                    THEN calcRetailPriceListTypeUserPricingDetail(detail)
+                                                    ELSE calcRetailCalcPriceListTypeUserPricingDetail(detail)
+
+                                                WHEN CHANGED(calcRetailPriceListTypeUserPricingDetail(detail)) OR
+                                                     CHANGED(skuUserPricingDetail(detail)) OR
+                                                     CHANGED(departmentStoreUserPricingDetail(detail)) OR
+                                                     CHANGED(dateTimeUserPricingDetail(detail));
 
 // Округление
 roundConditionUserPricingDetail(userPricingDetail) =
@@ -301,9 +334,6 @@ CONSTRAINT supplierUserPricing(userPricing) AND NOT isSellerLegalEntity(supplier
 
 // Комиссия
 @defineDocumentInterfaceHeaderPricingCommittee (pricing, departmentStore);
-
-// Sku
-@defineDocumentInterfaceDetailSku(pricing, sku);
 
 // Кол-во
 @defineDocumentInterfaceDetailQuantity(pricing);
@@ -406,7 +436,7 @@ backgroundRetailPricing 'Цвет' (pricing) = RGB(224, 255, 255) IF pricing IS 
 FORM userPricing 'Акт расценки'
     OBJECTS p = UserPricing FIXED PANEL
     PROPERTIES (p) objectClassName, nameDepartmentStoreUserPricing, nameNumeratorObject, numberObject, seriesObject, dateUserPricing, timeUserPricing,
-                   nameSupplierUserPricing, nameCurrencyUserPricing, noteUserPricing, nameRetailPriceListTypeUserPricing,
+                   nameSupplierUserPricing, nameCurrencyUserPricing, noteUserPricing, nameCalcRetailPriceListTypeUserPricing, nameCalcRetailCalcPriceListTypeUserPricing,
                    countUserPricingDetailUserPricing, quantityUserPricingDetailUserPricing, sumUserPricingDetailUserPricing,
                    retailSumUserPricingDetailUserPricing BACKGROUND backgroundRetailPricing(p), namePricingCommitteeUserPricing BACKGROUND backgroundRetailPricing(p), skipChangeLedgerUserPricing
     PROPERTIES (p) SHOWIF pricingCommitteeUserPricing(p)  nameFormedManUserPricing, nameCheckedManUserPricing, nameLabeledManUserPricing,
@@ -479,7 +509,7 @@ editUserPricing 'Редактировать' (userPricing) = ACTION EDITFORM Use
 FORM pricings 'Акты расценки' TITLE 'Акты расценки'
     OBJECTS p = Pricing
     PROPERTIES (p) READONLY isPostedPricing FORCE GRID, isReturnPricing, numberPricing, seriesPricing, datePricing, timePricing,
-                            nameDepartmentStorePricing, nameSupplierPricing, nameCurrencyPricing, nameRetailPriceListTypePricing,
+                            nameDepartmentStorePricing, nameSupplierPricing, nameCurrencyPricing, nameCalcRetailPriceListTypePricing, nameCalcRetailCalcPriceListTypePricing,
                             countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
                             retailSumPricingDetailPricing BACKGROUND backgroundRetailPricing(p), skipChangeLedgerPricing,
                             notePricing, objectClassName

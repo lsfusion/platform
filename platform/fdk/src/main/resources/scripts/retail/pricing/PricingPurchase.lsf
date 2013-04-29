@@ -7,10 +7,37 @@ NAMESPACE Purchase;
 //----------------------------------------------- Акт расценки ---------------------------------------------------//
 
 // Объявляем вид цены, автоматически проставляем
-@defineDocumentInterfacePriceListType (invoice, priceListType, retail, ' (розничный)');
+@defineDocumentInterfaceHeaderPriceListType (invoice, calcPriceListType, calcRetail, ' (надбавка)');
+@defineDocumentDetailPriceListTypePrefix (invoice, invoiceDetail, calcPriceListType, calcRetail, ' (надбавка)');
+@defineDocumentDetailPriceListTypePrefix (userInvoice, userInvoiceDetail, calcPriceListType, calcRetail, ' (надбавка)');
+@defineDocumentInterfaceHeaderPriceListType (invoice, priceListType, calcRetail, ' (управленческий)');
+@defineDocumentDetailPriceListTypePrefix (invoice, invoiceDetail, priceListType, calcRetail, ' (управленческий)');
+@defineDocumentDetailPriceListTypePrefix (userInvoice, userInvoiceDetail, priceListType, calcRetail, ' (управленческий)');
 
-retailPriceListTypeUserInvoiceDetail(detail) <- retailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail))
-                                                WHEN CHANGED(retailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail)));
+@defineDocumentInterfaceDetailPriceListType (invoice, priceListType, retail, ' (розничная)');
+
+CONSTRAINT currencyUserInvoice(invoice) != currencyPriceListType(calcRetailCalcPriceListTypeUserInvoice(invoice))
+           CHECKED BY calcRetailCalcPriceListTypeUserInvoice
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+CONSTRAINT currencyUserInvoice(invoice) != currencyPriceListType(calcRetailPriceListTypeUserInvoice(invoice))
+           CHECKED BY calcRetailPriceListTypeUserInvoice
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+
+CONSTRAINT currencyUserInvoiceDetail(detail) != currencyPriceListType(retailPriceListTypeUserInvoiceDetail(detail))
+           CHECKED BY retailPriceListTypeUserInvoiceDetail
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+
+retailPriceListTypeUserInvoiceDetail(detail) <- IF prevPricePriceListTypeSkuStockDateTime(calcRetailPriceListTypeUserInvoiceDetail(detail),
+                                                                                          skuUserInvoiceDetail(detail),
+                                                                                          customerStockUserInvoiceDetail(detail),
+                                                                                          dateTimeUserInvoiceDetail(detail))
+                                                    THEN calcRetailPriceListTypeUserInvoiceDetail(detail)
+                                                    ELSE calcRetailCalcPriceListTypeUserInvoiceDetail(detail)
+
+                                                WHEN CHANGED(calcRetailPriceListTypeUserInvoiceDetail(detail)) OR
+                                                     CHANGED(skuUserInvoiceDetail(detail)) OR
+                                                     CHANGED(customerStockUserInvoiceDetail(detail)) OR
+                                                     CHANGED(dateTimeUserInvoiceDetail(detail));
 
 // Округление розничной цен (если указан расчетный вид цены, то от него, иначе от склада)
 roundConditionUserInvoiceDetail(userInvoiceDetail) =
@@ -20,6 +47,7 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) =
 
 @defineInvoicePricingAggregation(invoice, Invoice, ' (закупка)', 'Акт расценки на основе инвойса', 'Проведенный акт расценки на основе инвойса', customerStock, );
 @defineInvoicePricingRelation(' (закупка)', customerStock);
+retailPriceListTypePricingDetail(pricingDetail) += retailPriceListTypeInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
 
 // -- Операция
 @defineOperationProperty(createPricing, 'Акт расценки', createContainer);
@@ -27,31 +55,38 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) =
 
 // Вид цены для расценки
 pricingPriceListTypeOperation = DATA PriceListType (Operation);
-namePricingPriceListTypeOperation 'Вид цен акт расценки' (operation) = namePriceListType(pricingPriceListTypeOperation(operation));
+namePricingPriceListTypeOperation 'Вид цен акт расценки (управленческий)' (operation) = namePriceListType(pricingPriceListTypeOperation(operation));
+
+pricingCalcPriceListTypeOperation = DATA CalcPriceListType (Operation);
+namePricingCalcPriceListTypeOperation 'Вид цен акт расценки (надбавка)' (operation) = namePriceListType(pricingCalcPriceListTypeOperation(operation));
 
 EXTEND FORM operation
-    PROPERTIES(o) namePricingPriceListTypeOperation
+    PROPERTIES(o) namePricingPriceListTypeOperation, namePricingCalcPriceListTypeOperation
 ;
 
 EXTEND DESIGN operation {
     createContainer {
         ADD PROPERTY(namePricingPriceListTypeOperation);
+        ADD PROPERTY(namePricingCalcPriceListTypeOperation);
     }
 }
 
 // Записываем тип цены по умолчанию из операции
-retailPriceListTypeUserInvoice (invoice) <- pricingPriceListTypeOperation(operationUserInvoice(invoice))
+calcRetailPriceListTypeUserInvoice (invoice) <- pricingPriceListTypeOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));
-
+calcRetailCalcPriceListTypeUserInvoice (invoice) <- pricingCalcPriceListTypeOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
 
 // Добавляем вид цены на форму
 EXTEND FORM userInvoice
-    PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameRetailPriceListTypeUserInvoice
+    PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameCalcRetailPriceListTypeUserInvoice,
+                  nameCalcRetailCalcPriceListTypeUserInvoice
     PROPERTIES(d) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupUserInvoiceDetail
 ;
 EXTEND DESIGN userInvoice {
     headerCreatePricing {
-        ADD PROPERTY(nameRetailPriceListTypeUserInvoice);
+        ADD PROPERTY(nameCalcRetailPriceListTypeUserInvoice);
+        ADD PROPERTY(nameCalcRetailCalcPriceListTypeUserInvoice);
     }
 }
 
@@ -77,6 +112,7 @@ retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN CHANGED
 overCopyInvoice(s, d) += ACTION (s, d) {
     SET createPricingUserInvoice(d) <- createPricingUserInvoice(s);
     SET pricingCommitteeUserInvoice(d) <- pricingCommitteeUserInvoice(s);
-    SET retailPriceListTypeUserInvoice(d) <- retailPriceListTypeUserInvoice(s);
+    SET calcRetailPriceListTypeUserInvoice(d) <- calcRetailPriceListTypeUserInvoice(s);
+    SET calcRetailCalcPriceListTypeUserInvoice(d) <- calcRetailCalcPriceListTypeUserInvoice(s);
 }
 
