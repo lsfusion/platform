@@ -2,7 +2,7 @@ package platform.gwt.form.server.convert;
 
 import com.google.common.base.Throwables;
 import platform.base.DateConverter;
-import platform.gwt.base.server.ServerUtils;
+import platform.gwt.base.server.spring.BusinessLogicsProvider;
 import platform.gwt.form.server.FileUtils;
 import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.GUserInputResult;
@@ -47,9 +47,9 @@ public class GwtToClientConverter extends ObjectConverter {
     }
 
     @Converter(from = java.sql.Date.class)
-    public java.sql.Date convertDate(java.sql.Date gDate) {
+    public java.sql.Date convertDate(java.sql.Date gDate, BusinessLogicsProvider blProvider) {
         BaseCalendar calendar = CalendarSystem.getGregorianCalendar();
-        BaseCalendar.Date date = (BaseCalendar.Date) calendar.newCalendarDate(ServerUtils.timeZone.get());
+        BaseCalendar.Date date = (BaseCalendar.Date) calendar.newCalendarDate(blProvider.getTimeZone());
         date = date.setNormalizedDate(gDate.getYear() + 1900, gDate.getMonth() + 1, gDate.getDate());
         return new java.sql.Date(calendar.getTime(date));
     }

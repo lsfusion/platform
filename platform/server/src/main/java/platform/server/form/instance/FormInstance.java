@@ -38,7 +38,6 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.QueryBuilder;
-import platform.server.data.type.ParseException;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.NotFilterEntity;
@@ -61,11 +60,13 @@ import platform.server.logics.property.derived.OnChangeProperty;
 import platform.server.session.*;
 
 import javax.swing.*;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static platform.base.BaseUtils.deserializeObject;
 import static platform.interop.ClassViewType.GRID;
 import static platform.interop.ClassViewType.HIDE;
 import static platform.interop.Order.*;
@@ -671,26 +672,23 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    public void pasteExternalTable(List<Integer> propertyIDs, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<String>> table) throws SQLException {
-        List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
-        for (Integer id : propertyIDs) {
-            properties.add(getPropertyDraw(id));
-        }
+    public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values) throws SQLException, IOException {
         GroupObjectInstance groupObject = properties.get(0).toDraw;
-        ImOrderSet<ImMap<ObjectInstance, DataObject>> executeList = groupObject.seekObjects(session.sql, getQueryEnv(), getModifier(), BL.LM.baseClass, table.size()).keyOrderSet();
+        ImOrderSet<ImMap<ObjectInstance, DataObject>> executeList = groupObject.seekObjects(session.sql, getQueryEnv(), getModifier(), BL.LM.baseClass, values.size()).keyOrderSet();
 
         //создание объектов
         int availableQuantity = executeList.size();
-        if (availableQuantity < table.size()) {
-            executeList = executeList.addOrderExcl(groupObject.createObjects(session, this, table.size() - availableQuantity));
+        if (availableQuantity < values.size()) {
+            executeList = executeList.addOrderExcl(groupObject.createObjects(session, this, values.size() - availableQuantity));
         }
 
         for (int i = 0; i < properties.size(); i++) {
             PropertyDrawInstance property = properties.get(i);
 
-            ImOrderValueMap<ImMap<ObjectInstance, DataObject>, String> mvPasteRows = executeList.mapItOrderValues();
+            ImOrderValueMap<ImMap<ObjectInstance, DataObject>, Object> mvPasteRows = executeList.mapItOrderValues();
             for (int j = 0; j < executeList.size(); j++) {
-                mvPasteRows.mapValue(j, table.get(j).get(i));
+                Object value = deserializeObject(values.get(j).get(i));
+                mvPasteRows.mapValue(j, value);
             }
 
             executePasteAction(property, columnKeys.get(i), mvPasteRows.immutableValueOrder());
@@ -711,14 +709,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return mResult.immutableOrder();
     }
 
-    public void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, String value) throws SQLException {
+    public void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Map<Integer, byte[]> values) throws SQLException, IOException {
         for (Integer propertyId : cells.keySet()) { // бежим по ячейкам
             PropertyDrawInstance property = getPropertyDraw(propertyId);
+            Object value = deserializeObject(values.get(propertyId));
             executePasteAction(property, null, readObjects(cells.get(propertyId)).toOrderMap(value));
         }
     }
 
-    private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, String> pasteRows) throws SQLException {
+    private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object> pasteRows) throws SQLException {
         if (!pasteRows.isEmpty()) {
             for (int i = 0, size = pasteRows.size(); i < size; i++) {
                 ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
@@ -726,19 +725,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     key = key.addExcl(columnKey);
                 }
 
-                String sValue = pasteRows.getValue(i);
-                ObjectValue value = null;
-                if (sValue != null) {
-                    try {
-                        DataClass changeType = property.entity.getChangeType(CHANGE_WYS, entity);
-                        if (changeType != null) {
-                            value = session.getObjectValue(changeType, changeType.parseString(sValue));
-                        }
-                    } catch (ParseException ignored) {
+                Object oValue = pasteRows.getValue(i);
+                ObjectValue value = NullValue.instance;
+                if (oValue != null) {
+                    DataClass changeType = property.entity.getRequestInputType(CHANGE_WYS, entity);
+                    if (changeType != null) {
+                        value = session.getObjectValue(changeType, oValue);
                     }
                 }
-
-                executeEditAction(property, CHANGE_WYS, key, value != null ? value : NullValue.instance, null, true);
+                executeEditAction(property, CHANGE_WYS, key, value, null, true);
             }
         }
     }

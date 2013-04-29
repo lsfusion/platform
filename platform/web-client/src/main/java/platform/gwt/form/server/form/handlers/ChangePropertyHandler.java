@@ -23,7 +23,7 @@ public class ChangePropertyHandler extends ServerResponseActionHandler<ChangePro
     @Override
     public ServerResponseResult executeEx(ChangeProperty action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        Object value = gwtConverter.convertOrCast(action.value);
+        Object value = gwtConverter.convertOrCast(action.value, servlet.getBLProvider());
         byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
         return getServerResponseResult(
                 form,

@@ -8,7 +8,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
 import paas.api.remote.PaasRemoteInterface;
-import platform.gwt.base.server.ServerUtils;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
 import platform.gwt.base.server.spring.InvalidateListener;
 import platform.gwt.base.server.spring.SingleBusinessLogicsProvider;
@@ -16,6 +15,7 @@ import platform.interop.RemoteLogicsInterface;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -58,14 +58,6 @@ public class ConfigurationBLProviderImpl implements ConfigurationBLProvider, Ini
     public void initCurrentProvider(int configurationId) throws IOException {
         try {
             BusinessLogicsProvider blProvider = configurationBLProviders.get(configurationId);
-
-            try {
-                //todo: cache timeZone
-                ServerUtils.timeZone.set(blProvider.getLogics().getTimeZone());
-            } catch (RemoteException e) {
-                blProvider.invalidate();
-                throw e;
-            }
             threadLocalProviders.set(blProvider);
         } catch (ExecutionException e) {
             Throwables.propagateIfInstanceOf(e.getCause(), IOException.class);
@@ -97,6 +89,11 @@ public class ConfigurationBLProviderImpl implements ConfigurationBLProvider, Ini
     @Override
     public RemoteLogicsInterface getLogics() {
         return getCurrentProvider().getLogics();
+    }
+
+    @Override
+    public TimeZone getTimeZone() {
+        return getCurrentProvider().getTimeZone();
     }
 
     @Override

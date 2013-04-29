@@ -36,6 +36,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 
@@ -777,7 +778,27 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<ClientGroupObjectValue> columnKeys, final List<List<String>> table) throws IOException {
+    public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<ClientGroupObjectValue> columnKeys, final List<List<String>> table, int maxColumns) throws IOException {
+        final List<List<byte[]>> values = new ArrayList<List<byte[]>>();
+        for (List<String> sRow : table) {
+            List<byte[]> valueRow = new ArrayList<byte[]>();
+
+            int rowLength = Math.min(sRow.size(), maxColumns);
+            for (int i = 0; i < rowLength; i++) {
+                ClientPropertyDraw property = propertyList.get(i);
+                String sCell = sRow.get(i);
+                Object oCell = null;
+                if (sCell != null) {
+                    try {
+                        oCell = property.parseChangeValue(sCell);
+                    } catch (ParseException ignore) {
+                    }
+                }
+                valueRow.add(serializeObject(oCell));
+            }
+            values.add(valueRow);
+        }
+
         final List<Integer> propertyIdList = new ArrayList<Integer>();
         for (ClientPropertyDraw propertyDraw : propertyList) {
             propertyIdList.add(propertyDraw.getID());
@@ -789,39 +810,47 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest() {
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {
-                return remoteForm.pasteExternalTable(requestIndex, propertyIdList, serializedColumnKeys, table);
+                return remoteForm.pasteExternalTable(requestIndex, propertyIdList, serializedColumnKeys, values);
             }
         });
     }
 
-    public void pasteMulticellValue(Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>> cells, final String value) throws IOException {
-        final Map<Integer, List<Map<Integer, Object>>> reCells = new HashMap<Integer, List<Map<Integer, Object>>>();
-        for (Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn : cells.keySet()) {
-            Map<Integer, Object> columnKey = new HashMap<Integer, Object>();
-            for (ClientObject object : propertyColumn.second.keySet()) {
-                columnKey.put(object.getID(), propertyColumn.second.get(object));
-            }
-
-            List<Map<Integer, Object>> keys = new ArrayList<Map<Integer, Object>>();
-            for (ClientGroupObjectValue groupObjectValue : cells.get(propertyColumn)) {
-                Map<Integer, Object> key = new HashMap<Integer, Object>();
-                for (ClientObject object : groupObjectValue.keySet()) {
-                    key.put(object.getID(), groupObjectValue.get(object));
-                }
-                key.putAll(columnKey);
-                keys.add(key);
-            }
-
-            if (reCells.containsKey(propertyColumn.first.getID())) {
-                reCells.get(propertyColumn.first.getID()).addAll(keys);
-            } else {
-                reCells.put(propertyColumn.first.getID(), keys);
-            }
+    public void pasteMulticellValue(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> keys, final String sValue) throws IOException {
+        if (keys.isEmpty()) {
+            return;
         }
+
+        final Map<Integer, List<Map<Integer, Object>>> mKeys = new HashMap<Integer, List<Map<Integer, Object>>>();
+        final Map<Integer, byte[]> mValues = new HashMap<Integer, byte[]>();
+
+        for (Map.Entry<ClientPropertyDraw, List<ClientGroupObjectValue>> keysEntry : keys.entrySet()) {
+            ClientPropertyDraw property = keysEntry.getKey();
+            List<ClientGroupObjectValue> propKeys = keysEntry.getValue();
+
+            List<Map<Integer, Object>> propMKeys = new ArrayList<Map<Integer, Object>>();
+            for (ClientGroupObjectValue key : propKeys) {
+                Map<Integer, Object> mKey = new HashMap<Integer, Object>();
+                for (Map.Entry<ClientObject, Object> keyPart : key.entrySet()) {
+                    mKey.put(keyPart.getKey().getID(), keyPart.getValue());
+                }
+
+                propMKeys.add(mKey);
+            }
+
+            Object parsedValue = null;
+            try {
+                parsedValue = property.parseChangeValue(sValue);
+            } catch (ParseException ignore) {
+            }
+
+            mKeys.put(property.getID(), propMKeys);
+            mValues.put(property.getID(), serializeObject(parsedValue));
+        }
+
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest() {
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {
-                return remoteForm.pasteMulticellValue(requestIndex, reCells, value);
+                return remoteForm.pasteMulticellValue(requestIndex, mKeys, mValues);
             }
         });
     }

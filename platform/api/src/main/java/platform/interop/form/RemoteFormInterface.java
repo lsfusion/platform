@@ -41,9 +41,9 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     ServerResponse changeGroupObject(long requestIndex, int groupID, byte changeType) throws RemoteException; // скроллинг
 
-    ServerResponse pasteExternalTable(long requestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<String>> table) throws RemoteException; // paste подряд
+    ServerResponse pasteExternalTable(long requestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values) throws RemoteException; // paste подряд
 
-    ServerResponse pasteMulticellValue(long requestIndex, Map<Integer, List<Map<Integer, Object>>> cells, String value) throws RemoteException; // paste выборочно
+    ServerResponse pasteMulticellValue(long requestIndex, Map<Integer, List<Map<Integer, Object>>> keys, Map<Integer, byte[]> values) throws RemoteException; // paste выборочно
 
     ServerResponse changeClassView(long requestIndex, int groupID, ClassViewType classView) throws RemoteException;
 

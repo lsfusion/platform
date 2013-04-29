@@ -1,6 +1,7 @@
 package platform.gwt.base.server.spring;
 
 import org.apache.log4j.Logger;
+import platform.base.Provider;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.RemoteLogicsLoaderInterface;
 
@@ -9,6 +10,10 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.TimeZone;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static platform.base.BaseUtils.isRedundantString;
 
@@ -17,8 +22,12 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
 
     private final List<InvalidateListener> invlidateListeners = Collections.synchronizedList(new ArrayList<InvalidateListener>());
 
+    private final ReadWriteLock logicsLock = new ReentrantReadWriteLock();
+    private final Lock readLogicsLock = logicsLock.readLock();
+    private final Lock writeLogicsLock = logicsLock.writeLock();
+
     private volatile T logics;
-    private final Object logicsLock = new Object();
+    private volatile TimeZone timeZone;
 
     private String registryHost;
     private int registryPort;
@@ -61,23 +70,55 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
     }
 
     public T getLogics() {
-        //double-check locking
-        if (logics == null) {
-            synchronized (logicsLock) {
-                if (logics == null) {
-                    logics = (T) createRemoteLogics();
-                }
+        return synchronizedGet(new Provider<T>() {
+            @Override
+            public T get() {
+                return logics;
             }
-        }
-        return logics;
+        });
     }
 
-    private RemoteLogicsInterface createRemoteLogics() {
+    @Override
+    public TimeZone getTimeZone() {
+        return synchronizedGet(new Provider<TimeZone>() {
+            @Override
+            public TimeZone get() {
+                return timeZone;
+            }
+        });
+    }
+
+    private <T> T synchronizedGet(Provider<T> getter) {
+        readLogicsLock.lock();
+
+        //double-check locking
+        if (logics == null) {
+            readLogicsLock.unlock();
+
+            writeLogicsLock.lock();
+            try {
+                if (logics == null) {
+                    createRemoteLogics();
+                }
+                return getter.get();
+            } finally {
+                writeLogicsLock.unlock();
+            }
+        }
+        try {
+            return getter.get();
+        } finally {
+            readLogicsLock.unlock();
+        }
+    }
+
+    private void createRemoteLogics() {
         try {
             Registry registry = LocateRegistry.getRegistry(registryHost, registryPort);
             RemoteLogicsLoaderInterface loader = (RemoteLogicsLoaderInterface) registry.lookup(exportName + "/RemoteLogicsLoader");
 
-            return loader.getLogics();
+            logics = (T) loader.getLogics();
+            timeZone = logics.getTimeZone();
         } catch (Exception e) {
             logger.error("Ошибка при получении объекта логики: ", e);
             throw new RuntimeException("Произошла ошибка при подлючении к серверу приложения.", e);
@@ -85,12 +126,16 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
     }
 
     public void invalidate() {
-        synchronized (logicsLock) {
+        writeLogicsLock.lock();
+        try {
             logics = null;
+            timeZone = null;
 
             for (InvalidateListener invalidateListener : invlidateListeners) {
                 invalidateListener.onInvalidate();
             }
+        } finally {
+            writeLogicsLock.unlock();
         }
     }
 

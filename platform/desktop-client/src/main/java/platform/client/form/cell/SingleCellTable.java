@@ -2,7 +2,6 @@ package platform.client.form.cell;
 
 import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
-import platform.base.Pair;
 import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
@@ -14,12 +13,11 @@ import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 
 public abstract class SingleCellTable extends ClientPropertyTable {
 
@@ -90,10 +88,8 @@ public abstract class SingleCellTable extends ClientPropertyTable {
 
     public void pasteTable(List<List<String>> table) {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
-            final ClientPropertyDraw property = model.getProperty();
             try {
-                HashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>> cells = new HashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>>();
-                cells.put(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, ClientGroupObjectValue.EMPTY), singletonList(model.getColumnKey()));
+                Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells = singletonMap(model.getProperty(), singletonList(model.getColumnKey()));
                 getForm().pasteMulticellValue(cells, table.get(0).get(0));
             } catch (IOException e) {
                 Throwables.propagate(e);

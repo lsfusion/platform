@@ -22,7 +22,6 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ReportGenerationData;
 import platform.interop.form.ServerResponse;
 import platform.server.ServerLoggers;
-import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.context.ContextAwareDaemonThreadFactory;
 import platform.server.form.instance.*;
@@ -275,25 +274,27 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private ObjectInstance updateCurrentClass = null;
 
-    public ServerResponse pasteExternalTable(long requestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<String>> table) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values) throws RemoteException {
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
+                List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
                 List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<ImMap<ObjectInstance, DataObject>>();
                 for (int i =0; i < propertyIDs.size(); i++) {
                     PropertyDrawInstance<?> property = form.getPropertyDraw(propertyIDs.get(i));
+                    properties.add(property);
                     keys.add(deserializePropertyKeys(property, columnKeys.get(i)));
                 }
-                form.pasteExternalTable(propertyIDs, keys, table);
+                form.pasteExternalTable(properties, keys, values);
             }
         });
     }
 
-    public ServerResponse pasteMulticellValue(long requestIndex, final Map<Integer, List<Map<Integer, Object>>> cells, final String value) throws RemoteException {
+    public ServerResponse pasteMulticellValue(long requestIndex, final Map<Integer, List<Map<Integer, Object>>> keys, final Map<Integer, byte[]> values) throws RemoteException {
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
-                form.pasteMulticellValue(cells, value);
+                form.pasteMulticellValue(keys, values);
             }
         });
     }
@@ -487,7 +488,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
                 ObjectValue pushChangeObject = null;
                 if (pushChange != null) {
-                    pushChangeObject = DataObject.getValue(deserializeObject(pushChange), (ConcreteClass) propertyDraw.getEntity().getChangeType(form.entity));
+                    pushChangeObject = DataObject.getValue(deserializeObject(pushChange), propertyDraw.getEntity().getRequestInputType(form.entity));
                 }
 
                 DataObject pushAddObject = null;

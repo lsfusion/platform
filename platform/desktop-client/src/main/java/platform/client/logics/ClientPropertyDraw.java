@@ -4,10 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.context.ApplicationContext;
 import platform.client.SwingUtils;
-import platform.client.descriptor.FormDescriptor;
-import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
-import platform.client.descriptor.PropertyObjectInterfaceDescriptor;
 import platform.client.form.*;
 import platform.client.form.cell.PanelView;
 import platform.client.logics.classes.ClientClass;
@@ -28,8 +25,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static platform.base.BaseUtils.*;
 import static platform.client.ClientResourceBundle.getString;
@@ -48,6 +47,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     // асинхронные интерфейсы
     public ClientType changeType;
+    public ClientType changeWYSType;
     public Pair<ClientObject, Boolean> addRemove;
     public boolean askConfirm;
     public String askConfirmMessage;
@@ -253,12 +253,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return sID;
     }
 
-    public Object parseString(String s) throws ParseException {
-        try {
-            return baseType.parseString(s);
-        } catch (Exception e) {
-            throw new ParseException(getString("logics.failed.to.retrieve.data.propertychangetype"), 0);
+    public Object parseChangeValue(String s) throws ParseException {
+        if (changeWYSType == null) {
+            throw new ParseException("parsing isn't supported for that property", 0);
         }
+        return changeWYSType.parseString(s);
+    }
+
+    public Object parseBaseValue(String s) throws ParseException {
+        return baseType.parseString(s);
     }
 
     public String formatString(Object obj) throws ParseException {
@@ -343,6 +346,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
         if (inStream.readBoolean()) {
             changeType = ClientTypeSerializer.deserializeClientType(inStream);
+        }
+        if (inStream.readBoolean()) {
+            changeWYSType = ClientTypeSerializer.deserializeClientType(inStream);
         }
 
         if(inStream.readBoolean()) {

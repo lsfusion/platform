@@ -21,7 +21,7 @@ public class ContinueNavigatorActionHandler extends ServerResponseActionHandler<
     public ServerResponseResult executeEx(ContinueNavigatorAction action, ExecutionContext context) throws DispatchException, IOException {
         Object actionResults[] = new Object[action.actionResults.length];
         for (int i = 0; i < actionResults.length; ++i) {
-            actionResults[i] = gwtConverter.convertOrCast(action.actionResults[i]);
+            actionResults[i] = gwtConverter.convertOrCast(action.actionResults[i], servlet.getBLProvider());
         }
 
         return getServerResponseResult(servlet.getNavigator().continueNavigatorAction(actionResults));

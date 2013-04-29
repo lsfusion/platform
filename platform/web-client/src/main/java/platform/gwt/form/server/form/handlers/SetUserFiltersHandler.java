@@ -40,7 +40,7 @@ public class SetUserFiltersHandler extends ServerResponseActionHandler<SetUserFi
 
             switch (filter.filterValue.typeID) {
                 case 0:
-                    Object convertedValue = converter.convertOrCast(filter.filterValue.content);
+                    Object convertedValue = converter.convertOrCast(filter.filterValue.content, servlet.getBLProvider());
                     BaseUtils.serializeObject(outStream, convertedValue);
                     break;
                 case 1:

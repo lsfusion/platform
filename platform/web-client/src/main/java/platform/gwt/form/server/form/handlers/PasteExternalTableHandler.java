@@ -3,15 +3,21 @@ package platform.gwt.form.server.form.handlers;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.client.form.TableTransferHandler;
+import platform.client.logics.classes.*;
 import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.server.FormSessionObject;
 import platform.gwt.form.server.convert.GwtToClientConverter;
 import platform.gwt.form.shared.actions.form.PasteExternalTable;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
+import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.classes.*;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static platform.base.BaseUtils.serializeObject;
 
 public class PasteExternalTableHandler extends ServerResponseActionHandler<PasteExternalTable> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
@@ -37,20 +43,45 @@ public class PasteExternalTableHandler extends ServerResponseActionHandler<Paste
             columnKeys.add((byte[]) gwtConverter.convertOrCast(action.columnKeys.get(i)));
         }
 
-        List<List<String>> dataTable = new ArrayList<List<String>>();
-        for (List<String> row : stringTable) {
-            List<String> pasteTableRow = new ArrayList<String>();
-            int itemIndex = -1;
-            for (String item : row) {
-                itemIndex++;
-                if (itemIndex <= columnsToInsert - 1) {
-                    pasteTableRow.add(item);
-                }
+        List<List<byte[]>> values = new ArrayList<List<byte[]>>();
+        for (List<String> sRow : stringTable) {
+            List<byte[]> valueRow = new ArrayList<byte[]>();
+
+            int rowLength = Math.min(sRow.size(), columnsToInsert);
+            for (int i = 0; i < rowLength; i++) {
+                GPropertyDraw property = action.properties.get(i);
+
+                Object oCell = parseString(property, sRow.get(i));
+
+                valueRow.add(serializeObject(oCell));
             }
-            dataTable.add(pasteTableRow);
+            values.add(valueRow);
         }
 
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.pasteExternalTable(action.requestIndex, propertyIDs, columnKeys, dataTable));
+        return getServerResponseResult(form, form.remoteForm.pasteExternalTable(action.requestIndex, propertyIDs, columnKeys, values));
+    }
+
+    private Object parseString(GPropertyDraw property, String s) {
+        if (s == null) {
+            return null;
+        }
+        try {
+            if (property.baseType instanceof GDateType) {
+                return ClientDateClass.instance.parseString(s);
+            } else if (property.baseType instanceof GDateTimeType) {
+                return ClientDateTimeClass.instance.parseString(s);
+            } else if (property.baseType instanceof GTimeType) {
+                return ClientTimeClass.instance.parseString(s);
+            } else if (property.baseType instanceof GDoubleType) {
+                return ClientDoubleClass.instance.parseString(s);
+            } else if (property.baseType instanceof GColorType) {
+                return ClientColorClass.instance.parseString(s);
+            } else {
+                return property.parseString(s);
+            }
+        } catch (ParseException e) {
+            return null;
+        }
     }
 }

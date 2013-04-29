@@ -30,6 +30,7 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
+import static platform.interop.form.ServerResponse.CHANGE_WYS;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 public class PropertyDrawView extends ComponentView {
@@ -94,9 +95,13 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public Type getChangeType(FormEntity form) {
-        return entity.getChangeType(form);
+        return entity.getRequestInputType(form);
     }
     
+    public Type getChangeWYSType(FormEntity form) {
+        return entity.getRequestInputType(CHANGE_WYS, form);
+    }
+
     public Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {
         return entity.getAddRemove(form);        
     }
@@ -211,6 +216,12 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(changeType != null);
         if (changeType != null) {
             TypeSerializer.serializeType(outStream, changeType);
+        }
+
+        Type changeWYSType = getChangeWYSType(pool.context.view.entity);
+        outStream.writeBoolean(changeWYSType != null);
+        if (changeWYSType != null) {
+            TypeSerializer.serializeType(outStream, changeWYSType);
         }
 
         Pair<ObjectEntity, Boolean> addRemove = getAddRemove(pool.context.view.entity);

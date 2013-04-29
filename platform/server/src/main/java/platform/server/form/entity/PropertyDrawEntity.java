@@ -77,11 +77,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.toDraw = toDraw;
     }
 
-    public DataClass getChangeType(FormEntity form) {
-        return getChangeType(CHANGE, form);
+    public DataClass getRequestInputType(FormEntity form) {
+        return getRequestInputType(CHANGE, form);
     }
 
-    public DataClass getChangeType(String actionSID, FormEntity form) {
+    public DataClass getRequestInputType(String actionSID, FormEntity form) {
         Type type = null;
         if (propertyObject instanceof CalcPropertyObjectEntity) {
             ActionPropertyObjectEntity<?> changeAction = getEditAction(actionSID, form);
@@ -131,7 +131,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         if (CHANGE_WYS.equals(actionId)) {
             //если CHANGE_WYS не переопределён на уровне Property и CHANGE request'ает DataClass, то возвращаем CHANGE
-            if (!propertyObject.property.isChangeWYSOverriden() && getChangeType(entity) != null) {
+            if (!propertyObject.property.isChangeWYSOverriden() && getRequestInputType(entity) != null) {
                 return getEditAction(CHANGE, entity);
             }
         }

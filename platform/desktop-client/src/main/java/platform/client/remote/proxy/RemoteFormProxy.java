@@ -94,16 +94,16 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public ServerResponse pasteExternalTable(long requestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<String>> table) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values) throws RemoteException {
         logRemoteMethodStartCall("pasteExternalTable");
-        ServerResponse result = target.pasteExternalTable(requestIndex, propertyIDs, columnKeys, table);
+        ServerResponse result = target.pasteExternalTable(requestIndex, propertyIDs, columnKeys, values);
         logRemoteMethodEndCall("pasteExternalTable", result);
         return result;
     }
 
-    public ServerResponse pasteMulticellValue(long requestIndex, Map<Integer, List<Map<Integer, Object>>> cells, String value) throws RemoteException {
+    public ServerResponse pasteMulticellValue(long requestIndex, Map<Integer, List<Map<Integer, Object>>> keys, Map<Integer, byte[]> values) throws RemoteException {
         logRemoteMethodStartCall("pasteMulticellValue");
-        ServerResponse result = target.pasteMulticellValue(requestIndex, cells, value);
+        ServerResponse result = target.pasteMulticellValue(requestIndex, keys, values);
         logRemoteMethodEndCall("pasteMulticellValue", result);
         return result;
     }

@@ -171,6 +171,10 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
         return blProvider.getLogics();
     }
 
+    public BusinessLogicsProvider<T> getBLProvider() {
+        return blProvider;
+    }
+
     public RemoteNavigatorInterface getNavigator() throws RemoteException {
         return navigatorProvider.getNavigator();
     }

@@ -705,27 +705,27 @@ public class GridTable extends ClientPropertyTable {
                     columnKeys.add(model.getColumnKey(selectedColumn + i));
                 }
 
-                List<List<String>> pasteTable = new ArrayList<List<String>>();
-                for (List<String> row : table) {
-                    List<String> pasteTableRow = new ArrayList<String>();
-                    int itemIndex = -1;
-                    for (String item : row) {
-                        itemIndex++;
-                        if (itemIndex <= columnsToInsert - 1) {
-                            ClientPropertyDraw property = propertyList.get(itemIndex);
-//                            try {
-//                                pasteTableRow.add(item == null ? null : property.parseString(getForm(), model.getColumnKey(itemIndex), item, true));
-//                            } catch (ParseException e) {
-//                                pasteTableRow.add(null);
-//                            }
-                            pasteTableRow.add(item);
+                form.pasteExternalTable(propertyList, columnKeys, table, columnsToInsert);
+            } else {
+                Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
+                for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>> e : selectionController.getSelectedCells().entrySet()) {
+                    ClientPropertyDraw property = e.getKey().first;
+                    ClientGroupObjectValue columnKey = e.getKey().second;
+
+                    List<ClientGroupObjectValue> cellKeys;
+                    if (columnKey.isEmpty()) {
+                        cellKeys = e.getValue();
+                    } else {
+                        cellKeys = new ArrayList<ClientGroupObjectValue>();
+                        for (ClientGroupObjectValue rowKey : e.getValue()) {
+                            ClientGroupObjectValue fullKey = rowKey.isEmpty() ? columnKey : new ClientGroupObjectValue(rowKey, columnKey);
+                            cellKeys.add(fullKey);
                         }
                     }
-                    pasteTable.add(pasteTableRow);
+                    cells.put(property, cellKeys);
                 }
-                form.pasteExternalTable(propertyList, columnKeys, pasteTable);
-            } else {
-                form.pasteMulticellValue(selectionController.getSelectedCells(), table.get(0).get(0));
+
+                form.pasteMulticellValue(cells, table.get(0).get(0));
                 selectionController.resetSelection();
             }
         } catch (IOException e) {
