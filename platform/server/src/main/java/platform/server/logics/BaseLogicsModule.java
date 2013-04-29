@@ -403,7 +403,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
 
         staticName = addDProp("staticName", getString("logics.statcode"), StringClass.get(250), baseClass);
-        staticCaption = addDProp(recognizeGroup, "staticCaption", "Статическое имя", InsensitiveStringClass.get(50), baseClass);
+        staticCaption = addDProp(recognizeGroup, "staticCaption", "Статическое имя", InsensitiveStringClass.get(100), baseClass);
         ((CalcProperty)staticCaption.property).aggProp = true;
 
         // todo : поменять возможно названия
