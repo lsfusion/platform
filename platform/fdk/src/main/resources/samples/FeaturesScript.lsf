@@ -675,12 +675,21 @@ showTestModalForm 'Показать док-модальную форму' = ACTI
 
 setDefaultNames 'Задать имена по умолчанию' () = ACTION {
     FOR s IS Store DO {
-        name(s) <- ([FORMULA STRING[30] '\'Склад \' || CAST($1 as char(20))'](s) IF s IS Store);
+        name(s) <- [FORMULA STRING[30] '\'Склад \' || CAST($1 as char(20))'](s);
     }
     FOR a IS Article DO {
-        name(a) <- ([FORMULA STRING[30] '\'Товар \' || CAST($1 as char(20))'](a) IF a IS Article);
+        name(a) <- [FORMULA STRING[30] '\'Товар \' || CAST($1 as char(20))'](a);
     }
-}
+    FOR s IS Store DO {
+        staticCaption(s) <- [FORMULA STRING[30] '\'Склад \' || CAST($1 as char(20))'](s);
+    }
+    FOR a IS Article DO {
+        staticCaption(a) <- [FORMULA STRING[30] '\'Товар \' || CAST($1 as char(20))'](a);
+    }
+};
+
+name(s) <- [FORMULA STRING[30] '\'Склад \' || CAST($1 as char(20))'](s) WHEN ASSIGNED(s IS Store);
+staticCaption(s) <- [FORMULA STRING[30] '\'Склад \' || CAST($1 as char(20))'](s) WHEN ASSIGNED(s IS Store);
 
 remindPasswordEmail 'Выслать пароль на этот email' (u, to) = ACTION EMAIL
 //    FROM 'luxsoft@adsl.by'

@@ -129,12 +129,6 @@ public class GridDataRecord {
         key = newKey;
         setRowBackground(newRowBackground);
         setRowForeground(newRowForeground);
-
-        if (values != null) {
-            values.clear();
-        }
-        backgrounds = null;
-        foregrounds = null;
     }
 
     @Override

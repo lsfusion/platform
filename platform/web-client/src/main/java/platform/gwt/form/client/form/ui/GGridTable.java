@@ -530,7 +530,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             }
             rowKeys.remove(rowKey);
         }
-        dataUpdated = true;
+        setKeys(rowKeys);
 
         update();
     }
