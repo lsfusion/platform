@@ -268,10 +268,10 @@ FORM stockDisparity 'Склады'
     OBJECTS o = DisparityBatch FIXED PANEL
 
     TREE stockTree  sg = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
+    PROPERTIES READONLY sgTreeName = nameStockGroup(sg)
 
     OBJECTS ts = Stock
-    PROPERTIES READONLY tsTreeName = name(ts), diffBalanceStock(ts)
+    PROPERTIES READONLY tsTreeName = nameStock(ts), diffBalanceStock(ts)
     FILTERS isParentStockGroupStock(sg, ts)
     FILTERGROUP filters2
         FILTER 'Только с возможностью пересорта' 'F10' diffBalanceStock(ts) > 0 DEFAULT

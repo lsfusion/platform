@@ -29,7 +29,7 @@ CLASS InvoiceWHOutDetail 'Строка реализации товара по б
 @defineDocumentStock(invoiceWHOut, warehouse, 'Склад-отправитель');
 
 customerInvoiceWHOut = DATA Customer (InvoiceWHOut);
-nameCustomerInvoiceWHOut 'Покупатель' (invoice) = name(customerInvoiceWHOut(invoice));
+nameCustomerInvoiceWHOut 'Покупатель' (invoice) = nameLegalEntity(customerInvoiceWHOut(invoice));
 
 @defineDocumentPosted(invoiceWHOut);
 

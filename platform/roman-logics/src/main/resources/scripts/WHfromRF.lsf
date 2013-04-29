@@ -83,7 +83,7 @@ shortNameCurrencyWHfromRF 'Валюта фрахта' (WHfromRF) = shortNameCurr
 @defineDocumentDetailSkuArticle(WHfromRF);
 
 companyDataWHfromRF 'Импортёр (ИД)' = DATA Company(WHfromRF);
-nameCompanyDataWHfromRF 'Импортёр' = name(companyDataWHfromRF(WHfromRF)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+nameCompanyDataWHfromRF 'Импортёр' = nameLegalEntity(companyDataWHfromRF(WHfromRF)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
 overCompanyWHfromRF 'Импортёр (ИД)' (WHfromRF) = UNION OVERRIDE legalEntityStockWHfromRF(WHfromRF) IF legalEntityStockWHfromRF(WHfromRF) IS Company,
                                                                 companyDataWHfromRF(WHfromRF);
@@ -94,7 +94,7 @@ currencyWHfromRF (WHfromRF)= currencyStock(stockWHfromRF(WHfromRF));
 
 rateExchangeDataWHfromRF 'Курс' = DATA NUMERIC[14,3] (WHfromRF) IN exchangeGroup;
 typeExchangeWHfromRF 'Тип обмена (ИД)' = DATA TypeExchange(WHfromRF);
-nameTypeExchangeWHfromRF 'Тип обмена' (WHfromRF) = name(typeExchangeWHfromRF(WHfromRF)) IN exchangeGroup;
+nameTypeExchangeWHfromRF 'Тип обмена' (WHfromRF) = nameTypeExchange(typeExchangeWHfromRF(WHfromRF)) IN exchangeGroup;
 @defineNearestRateExchangeObject(WHfromRF, , , dateWHfromRF, exchangeGroup);
 
 rateExchangeDataWHfromRF(WHfromRF) <- rateExchangeWHfromRF(WHfromRF)

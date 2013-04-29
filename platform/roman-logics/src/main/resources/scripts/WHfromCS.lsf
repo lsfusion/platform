@@ -506,7 +506,7 @@ quantityArticleColorWHfromCSRDetail (WHfromCSRDetail) =
 
 backgroundArticleColorWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityArticleColorWHfromCSRDetail(WHfromCSRDetail) == 1;
 
-nameCompanyWHfromCSR 'компания'(WHfromCSR) = name(legalEntityStock(stockWHfromCSR(WHfromCSR)));
+nameCompanyWHfromCSR 'компания'(WHfromCSR) = nameLegalEntity(legalEntityStock(stockWHfromCSR(WHfromCSR)));
 
 FORM WHfromCSR 'Приемка на оптовый склад'
 

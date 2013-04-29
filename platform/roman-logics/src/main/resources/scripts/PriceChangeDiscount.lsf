@@ -88,7 +88,7 @@ valueRetailVATPriceChangeZReportDetail (priceChangeZReportDetail) = valueRateRan
 warePriceChangeZReportDetail (priceChangeZReportDetail) = wareBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
-nameWarePriceChangeZReportDetail 'Посуда' (priceChangeZReportDetail) = name(warePriceChangeZReportDetail (priceChangeZReportDetail));
+nameWarePriceChangeZReportDetail 'Посуда' (priceChangeZReportDetail) = nameWare(warePriceChangeZReportDetail (priceChangeZReportDetail));
 
 warePricePriceChangeZReportDetail (priceChangeZReportDetail) = warePriceBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));

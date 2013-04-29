@@ -160,7 +160,7 @@ CLASS ABSTRACT InnerDocument 'Внутренний документ' : Historiza
 dateInnerDocument 'Дата' (innerDocument) = ABSTRACT DATE (InnerDocument);
 
 stockInnerDocument 'Склад-отправитель (ИД)' (innerDocument) = ABSTRACT Stock (InnerDocument);
-nameStockInnerDocument 'Склад-отправитель' (innerDocument) = name(stockInnerDocument(innerDocument)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+nameStockInnerDocument 'Склад-отправитель' (innerDocument) = nameStock(stockInnerDocument(innerDocument)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
 //destinationStockInnerDocument 'Склад-получатель (ИД)' (innerDocument) = ABSTRACT Stock (InnerDocument);
 //nameDestinationStockInnerDocument 'Склад-получатель' (innerDocument) = name(destinationStockInnerDocument(innerDocument));

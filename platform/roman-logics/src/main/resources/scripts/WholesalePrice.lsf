@@ -96,7 +96,7 @@ FORM wholesalePriceDocument 'Оптовый прайс'
     PROPERTIES(w) nameNumeratorObject, numberObject, seriesObject, dateWholesalePriceDocument, timeWholesalePriceDocument, nameCurrencyWholesalePriceDocument
 
     TREE treeSupplierBrand v=STRING[3], s=Supplier, b=BrandSupplier
-    PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
+    PROPERTIES READONLY OBJVALUE(v), nameLegalEntity(s), name(b)
 
     TREE treeCategory vv=STRING[3], c=Category
     PROPERTIES READONLY OBJVALUE(vv), name(c)

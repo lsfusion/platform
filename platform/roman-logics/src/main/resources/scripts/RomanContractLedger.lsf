@@ -47,7 +47,7 @@ isPostedCommercialInvoice(commercialInvoice) = commercialInvoice IS CommercialIn
 
 dateCommercialInvoice 'Дата' = DATA DATE (CommercialInvoice);
 currencyCommercialInvoice = DATA Currency (CommercialInvoice);
-nameCurrencyCommercialInvoice 'Валюта'(commercialInvoice) = name(currencyCommercialInvoice(commercialInvoice));
+nameCurrencyCommercialInvoice 'Валюта'(commercialInvoice) = nameCurrency(currencyCommercialInvoice(commercialInvoice));
 sumCommercialInvoice 'Сумма инвойса' = DATA NUMERIC[16,2] (CommercialInvoice);
 
 contractCommercialInvoice 'Договор коммерческого инвойса' = DATA ContractSku (CommercialInvoice);

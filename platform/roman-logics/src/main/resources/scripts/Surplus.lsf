@@ -30,7 +30,7 @@ CLASS SurplusOutDetail 'Строка реализации излишков' : Co
 @defineDocumentStock(surplusOut, stock, 'Склад-получатель', destination);
 
 customerSurplusOut = DATA Customer (SurplusOut);
-nameCustomerSurplusOut 'Покупатель' (surplus) = name(customerSurplusOut(surplus));
+nameCustomerSurplusOut 'Покупатель' (surplus) = nameLegalEntity(customerSurplusOut(surplus));
 
 @defineDocumentPosted(surplusOut);
 

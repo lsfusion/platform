@@ -187,7 +187,7 @@ FORM transferTable 'Трансфер'
 
 
     TREE stockTree sg = StockGroup PARENT parentStockGroup, ts = Stock
-    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    PROPERTIES READONLY sgTreeName = nameStockGroup(sg), tsTreeName = nameStock(ts)
     FILTERS stockGroupStock(ts) == sg
 
     PROPERTIES inTransferTableStock(t,ts)
@@ -196,15 +196,15 @@ FORM transferTable 'Трансфер'
     OBJECTS st=Stock
 
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sk)
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
     ORDER BY skuTreeName
 
     OBJECTS s=Sku
     PROPERTIES READONLY FORCE GRID inputName = nameSku(s), sidArticleSku(s), idBarcodeSku(s), shortNameUOMSku(s)
 
-    PROPERTIES stringQuantitySkuStockTransferTable(s,st,t) COLUMNS (st) HEADER name (st) ON CHANGE changeQuantitySkuStockTransferTable(s,st,t) BACKGROUND backgroundSkuStockTransferTable(s,st,t)
+    PROPERTIES stringQuantitySkuStockTransferTable(s,st,t) COLUMNS (st) HEADER nameStock (st) ON CHANGE changeQuantitySkuStockTransferTable(s,st,t) BACKGROUND backgroundSkuStockTransferTable(s,st,t)
     PROPERTIES READONLY currentBalanceSku(s), quantitySkuTransferTable(s,t) BACKGROUND backgroundSkuTransferTable(s,t)
-    PROPERTIES READONLY stringTotalQuantitySkuStockTransferTable(s,st,t) COLUMNS (st) HEADER name (st) BACKGROUND backgroundOrdersSkuStockTransferTable(s,st,t)
+    PROPERTIES READONLY stringTotalQuantitySkuStockTransferTable(s,st,t) COLUMNS (st) HEADER nameStock (st) BACKGROUND backgroundOrdersSkuStockTransferTable(s,st,t)
     FILTERS    isParentSkuGroupSku(sk, s),
                inTransferTableStock(t,st)
 

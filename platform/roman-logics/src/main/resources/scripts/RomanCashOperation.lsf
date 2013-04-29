@@ -18,7 +18,7 @@ numberCashRegisterAccountCollection 'Касса инкассации' (accountCo
     numberCashRegister(cashRegisterAccountCollection(accountCollection)) IN documentPrmGroup;
 
 departmentStoreAccountCollection (accountCollection) = departmentStoreZReport(zReportAccountCollection(accountCollection));
-nameDepartmentStoreAccountCollection 'Отдел' (accountCollection) = name(departmentStoreAccountCollection (accountCollection));
+nameDepartmentStoreAccountCollection 'Отдел' (accountCollection) = nameDepartmentStore(departmentStoreAccountCollection (accountCollection));
 
 sumCashAccountCollection 'Сумма изъятия' = DATA NUMERIC[16,2] (AccountCollection) IN documentSumGroup;
 

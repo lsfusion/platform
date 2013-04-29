@@ -6,6 +6,10 @@ REQUIRE System, Document, StockDocument, Stock, Store, StorePrice, Ware;
 
 CLASS PriceChangeCommittee 'Комиссия переоценки' : Committee;
 
+namePriceChangeCommittee 'Наименование' = DATA ISTRING[50](PriceChangeCommittee);
+
+nameCommittee(committee) += namePriceChangeCommittee(committee) IF committee IS PriceChangeCommittee;
+
 // ----------------------------------- Акт переоценки ------------------------------------------ //
 
 CLASS ABSTRACT PriceChangeDocument 'Акт переоценки';
@@ -23,7 +27,7 @@ numberPriceChangeDocument 'Номер документа' (priceChangeDocument) 
 seriesPriceChangeDocument 'Серия документа' (priceChangeDocument) = ABSTRACT STRING[2] (PriceChangeDocument) PERSISTENT;
 
 departmentStorePriceChangeDocument (priceChangeDocument) = ABSTRACT DepartmentStore (PriceChangeDocument) PERSISTENT;
-nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = name(departmentStorePriceChangeDocument(priceChangeDocument));
+nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = nameDepartmentStore(departmentStorePriceChangeDocument(priceChangeDocument));
 
 descriptionPriceChangeDocument 'Название документа' (priceChangeDocument) = ABSTRACT STRING[200] (PriceChangeDocument) PERSISTENT;
 
@@ -42,7 +46,7 @@ quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) =
 curWarePriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT Ware (PriceChangeDocumentDetail) PERSISTENT;
 warePriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT Ware (PriceChangeDocumentDetail) PERSISTENT;
 
-nameWarePriceChangeDocumentDetail 'Посуда' (priceChangeDocumentDetail) = name(warePriceChangeDocumentDetail(priceChangeDocumentDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 30;
+nameWarePriceChangeDocumentDetail 'Посуда' (priceChangeDocumentDetail) = nameWare(warePriceChangeDocumentDetail(priceChangeDocumentDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 30;
 
 @defineDocumentDetailWareRange(priceChangeDocument);
 @defineDocumentDetailWareRangePrefix(priceChangeDocument, cur, ' (тек.)');
@@ -136,7 +140,7 @@ sumContainerIncStockDocumentLedger (ledger) += diffRetailSumContainerPriceChange
 
 isPriceChangeCommitteePriceChangeDocument(priceChangeDocument) = priceChangeDocument IS PriceChangeDocument AND priceChangeCommitteePriceChangeDocument(priceChangeDocument);
 
-namePriceChangeCommitteePriceChangeDocument 'Комиссия переоценки' (priceChangeDocument) = name(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
+namePriceChangeCommitteePriceChangeDocument 'Комиссия переоценки' (priceChangeDocument) = namePriceChangeCommittee(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
 nameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = namePositionEmployeeCommittee(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
 inPriceChangeDocumentEmployee (priceChangeDocument, employee) = inCommitteeEmployee(priceChangeCommitteePriceChangeDocument(priceChangeDocument), employee);
 nameChairmanPriceChangeDocument 'Председатель комиссии' (priceChangeDocument) = nameChairmanCommittee(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
@@ -224,7 +228,7 @@ DESIGN priceChangeDocuments FROM DEFAULT{
 // ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
 
 priceChangeCommitteeDepartmentStore = DATA PriceChangeCommittee (DepartmentStore);
-namePriceChangeCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(priceChangeCommitteeDepartmentStore(departmentStore));
+namePriceChangeCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = namePriceChangeCommittee(priceChangeCommitteeDepartmentStore(departmentStore));
 isPriceChangeCommitteeDepartmentStore 'По умолчанию' (priceChangeCommittee, departmentStore) = priceChangeCommitteeDepartmentStore(departmentStore) == priceChangeCommittee;
 CONSTRAINT priceChangeCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(priceChangeCommitteeDepartmentStore(departmentStore), departmentStore)
     CHECKED BY priceChangeCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
@@ -235,21 +239,21 @@ EXTEND FORM departmentStore PROPERTIES namePriceChangeCommitteeDepartmentStore(d
 
 FORM priceChangeCommittee 'Комиссия переоценки'
     OBJECTS c=PriceChangeCommittee FIXED PANEL
-    PROPERTIES(c)      name, nameChairmanCommittee
+    PROPERTIES(c)      namePriceChangeCommittee, nameChairmanCommittee
 
     TREE treeStore a=STRING[3], t=ChainStores, st=StoreType, s=Store
-    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
+    PROPERTIES         READONLY OBJVALUE(a), nameChainStores(t), nameStoreType(st), nameStore(s)
     FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS dep=DepartmentStore
-    PROPERTIES(dep)    READONLY depName = name
+    PROPERTIES(dep)    READONLY depName = nameDepartmentStore
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isPriceChangeCommitteeDepartmentStore
     FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
     ORDER BY depName
 
 
     OBJECTS e=Employee
-    PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
+    PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
     PROPERTIES(c, e)   inCommitteeEmployee
@@ -288,7 +292,7 @@ DESIGN priceChangeCommittee FROM DEFAULT {
 
 FORM priceChangeCommitteeDialog 'Комиссии переоценки'
     OBJECTS rc=PriceChangeCommittee
-    PROPERTIES(rc)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
+    PROPERTIES(rc)      READONLY namePriceChangeCommittee, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
     PROPERTIES(rc)      ADDFORM, EDITFORM
 
     DIALOG PriceChangeCommittee OBJECT rc
@@ -304,7 +308,7 @@ META defineDocumentHeaderPriceChangeInner (object, class)
     numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (class) IN documentPrmGroup;
 
     priceChangeCommittee###object = DATA PriceChangeCommittee (class);
-    namePriceChangeCommittee###object 'Комиссия переоценки' (object) = name(priceChangeCommittee###object(object)) IN documentPrmGroup;
+    namePriceChangeCommittee###object 'Комиссия переоценки' (object) = namePriceChangeCommittee(priceChangeCommittee###object(object)) IN documentPrmGroup;
     priceChangeCommittee###object(object) <- priceChangeCommitteeDepartmentStore(departmentStore###object(object))
         WHEN object IS class;
 END

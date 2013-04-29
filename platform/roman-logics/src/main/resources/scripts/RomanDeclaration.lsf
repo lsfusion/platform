@@ -59,17 +59,17 @@ freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EX
 dateFreightInnerInvoice 'Дата прихода' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN base PERSISTENT;
 
 languageInnerInvoice 'Язык инвойса (ИД)' (innerInvoice) = languageFreight(freightInnerInvoice(innerInvoice)) PERSISTENT;
-nameLanguageInnerInvoice 'Язык инвойса' (innerInvoice) = name(languageInnerInvoice(innerInvoice));
+nameLanguageInnerInvoice 'Язык инвойса' (innerInvoice) = nameLanguage(languageInnerInvoice(innerInvoice));
 
 currencyFormedInvoice 'Валюта инвойса (ИД)' (formedInvoice) = currencyFreight(freightInnerInvoice(formedInvoice)) AND formedInvoice IS FormedInvoice PERSISTENT;
 currencyInnerInvoice 'Валюта инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE currencyDocument(innerInvoice) AND innerInvoice IS DirectInvoice, currencyFormedInvoice(innerInvoice) PERSISTENT;
-nameCurrencyInnerInvoice 'Валюта инвойса' (innerInvoice) = name(currencyInnerInvoice(innerInvoice)) IN base;
+nameCurrencyInnerInvoice 'Валюта инвойса' (innerInvoice) = nameCurrency(currencyInnerInvoice(innerInvoice)) IN base;
 
 freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoice) = freightInnerInvoice(innerInvoice) IS FreightArrived PERSISTENT;
 
 importerInnerInvoice 'Импортер инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE importerFormedInvoice(innerInvoice),
                                                                               importerDirectInvoice(innerInvoice) PERSISTENT;
-nameImporterInnerInvoice 'Импортер инвойса' (innerInvoice) = name(importerInnerInvoice(innerInvoice)) IN base;
+nameImporterInnerInvoice 'Импортер инвойса' (innerInvoice) = nameLegalEntity(importerInnerInvoice(innerInvoice)) IN base;
 
 sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreight(importerFormedInvoice(formedInvoice),
                                                                       freightFormedInvoice(formedInvoice)) IN base;
@@ -178,15 +178,15 @@ allowImportExportXMLDeclarationBY(declaration) = allowImportExportXMLLegalEntity
 exportDeclaration 'Выгрузить декларацию (РБ)' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN docGroup;
 
 importerDeclaration 'Импортер (ИД)' = DATA Importer (Declaration);
-nameImporterDeclaration 'Импортёр' = name(importerDeclaration(declaration)) IN docGroup;
+nameImporterDeclaration 'Импортёр' = nameLegalEntity(importerDeclaration(declaration)) IN docGroup;
 
 languageDeclaration 'Язык декларации (ИД)' (declaration) = languageLegalEntity(importerDeclaration(declaration));
-nameLanguageDeclaration 'Язык декларации' (declaration) = name(languageDeclaration(declaration)) IN docGroup;
+nameLanguageDeclaration 'Язык декларации' (declaration) = nameLanguage(languageDeclaration(declaration)) IN docGroup;
 
 customsZoneDeclaration (declaration) = customsZoneCountry(countryLegalEntity(importerDeclaration(declaration)));
 
 currencyDeclaration 'Валюта декларации (ИД)' = DATA Currency(Declaration);
-nameCurrencyDeclaration 'Валюта декларации' = name(currencyDeclaration(declaration)) IN exchangeGroup;
+nameCurrencyDeclaration 'Валюта декларации' = nameCurrency(currencyDeclaration(declaration)) IN exchangeGroup;
 
 dateCorrectionDeclaration 'Дата оплаты КТС' = DATA DATE (Declaration) IN base;
 
@@ -340,7 +340,7 @@ userNumberDeclarationDetail 'Пользовательский номер' (decla
 countryDeclarationDetail 'Страна товара (ИД)' (declarationDetail) = countryOfOriginFreightSku(freightDeclarationDetail(declarationDetail),
                                                                                               skuDeclarationDetail(declarationDetail));
 
-nameCountryDeclarationDetail 'Страна товара' (declarationDetail) = name(countryDeclarationDetail(declarationDetail)) MINCHARWIDTH 15;
+nameCountryDeclarationDetail 'Страна товара' (declarationDetail) = nameCountry(countryDeclarationDetail(declarationDetail)) MINCHARWIDTH 15;
 
 nameCountryLanguageDeclarationDetail 'Страна товара (иностр.)' (declarationDetail) = languageName(countryDeclarationDetail(declarationDetail), languageDeclaration(declarationDeclarationDetail(declarationDetail))) MINCHARWIDTH 15;
 
@@ -464,8 +464,8 @@ typeExchangeCustomDeclaration 'Тип обмена (ИД)' = DATA TypeExchange(D
 typeExchangeManagerialDeclaration 'Тип обмена (ИД)' = DATA TypeExchange(Declaration);
 typeExchangeDutyDeclaration 'Тип обмена (ИД)' = typeExchangeSTX() IF declaration IS Declaration;
 
-nameTypeExchangeCustomDeclaration 'Тип обмена (БУ)' (declaration) = name(typeExchangeCustomDeclaration(declaration)) IN exchangeGroup;
-nameTypeExchangeManagerialDeclaration 'Тип обмена (УУ)' (declaration) = name(typeExchangeManagerialDeclaration(declaration)) IN exchangeGroup;
+nameTypeExchangeCustomDeclaration 'Тип обмена (БУ)' (declaration) = nameTypeExchange(typeExchangeCustomDeclaration(declaration)) IN exchangeGroup;
+nameTypeExchangeManagerialDeclaration 'Тип обмена (УУ)' (declaration) = nameTypeExchange(typeExchangeManagerialDeclaration(declaration)) IN exchangeGroup;
 
 roundCurrencyDeclaration '' (number, declaration) = roundPriceCurrency(number, currencyDeclaration(declaration));
 roundCurrencyDeclarationDetail(number, declarationDetail) = roundCurrencyDeclaration(number, declarationDeclarationDetail(declarationDetail));
@@ -565,7 +565,7 @@ roundTypeExchangeGroupDeclaration '' (number, groupDeclaration) = roundTypeExcha
 sidArticleGroupDeclaration 'Артикул' (groupDeclaration) = sidArticle(articleGroupDeclaration(groupDeclaration)) IN base;
 coefficientArticleGroupDeclaration 'Кол-во в комплекте' (groupDeclaration) = coefficientArticle(articleGroupDeclaration(groupDeclaration));
 sidCustomCategory10GroupDeclaration 'ТН ВЭД' (groupDeclaration) = sidCustomCategory10(customCategory10GroupDeclaration(groupDeclaration)) IN base;
-nameCountryGroupDeclaration 'Страна' (groupDeclaration) = name(countryGroupDeclaration(groupDeclaration)) IN base MINCHARWIDTH 10;
+nameCountryGroupDeclaration 'Страна' (groupDeclaration) = nameCountry(countryGroupDeclaration(groupDeclaration)) IN base MINCHARWIDTH 10;
 sidCountryGroupDeclaration 'Цифровой код страны' (groupDeclaration) = sidCountry(countryGroupDeclaration(groupDeclaration)) IN base;
 sidOrigin2CountryGroupDeclaration 'Буквенный код страны' (groupDeclaration) = sidOrigin2Country(countryGroupDeclaration(groupDeclaration)) IN base MINCHARWIDTH 3;
 
@@ -620,17 +620,17 @@ unitOfMeasureGroupDeclaration 'Ед. изм.(ИД)' = UNION OVERRIDE unitOfMeasu
                                                               unitOfMeasureDataGroupDeclaration(groupDeclaration);
 
 sidUnitOfMeasureGroupDeclaration 'Ед. изм.(код)' (groupDeclaration) = sidUnitOfMeasure(unitOfMeasureGroupDeclaration(groupDeclaration));
-nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(unitOfMeasureGroupDeclaration(groupDeclaration)) MINCHARWIDTH 5;
+nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = nameUOM(unitOfMeasureGroupDeclaration(groupDeclaration)) MINCHARWIDTH 5;
 genitiveNameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = genitiveNameUOM(unitOfMeasureGroupDeclaration(groupDeclaration));
 
 specUnitOfMeasureGroupDeclaration 'Ед. изм.(код)' (groupDeclaration) = specUnitOfMeasureCustomCategory10(customCategory10GroupDeclaration(groupDeclaration));
 sidSpecUnitOfMeasureGroupDeclaration (groupDeclaration) = sidUnitOfMeasure(specUnitOfMeasureGroupDeclaration(groupDeclaration));
-nameSpecUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(specUnitOfMeasureGroupDeclaration(groupDeclaration));
+nameSpecUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = nameUOM(specUnitOfMeasureGroupDeclaration(groupDeclaration));
 genitiveNameSpecUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = genitiveNameUOM(specUnitOfMeasureGroupDeclaration(groupDeclaration));
 
 additionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = additionalUnitOfMeasureCustomCategory10(customCategory10GroupDeclaration(groupDeclaration));
 sidAdditionalUnitOfMeasureGroupDeclaration (groupDeclaration) = sidUnitOfMeasure(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
-nameAdditionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
+nameAdditionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = nameUOM(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
 genitiveNameAdditionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = genitiveNameUOM(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
 
 stringGroupDeclaration 'Наименование' (groupDeclaration) = ustring5CM(string2(nameInvoiceGroupDeclaration(groupDeclaration), ''),
@@ -1069,7 +1069,7 @@ showFormDeclarationInvoices 'Присоединить инвойсы' = ACTION (
 //-------------------------------------------- Печатная форма украинской декларации -----------------------------------//
 
 supplierDeclarationDetail(declarationDetail) = supplierArticle(articleDeclarationDetail(declarationDetail));
-nameSupplierDeclarationDetail 'Поставщик' (declarationDetail) = name(supplierDeclarationDetail(declarationDetail));
+nameSupplierDeclarationDetail 'Поставщик' (declarationDetail) = nameLegalEntity(supplierDeclarationDetail(declarationDetail));
 typeFabricDeclarationDetail(declarationDetail) = typeFabricArticle(articleDeclarationDetail(declarationDetail));
 nameTypeFabricDeclarationDetail 'Тип одежды' (declarationDetail) = name(typeFabricDeclarationDetail(declarationDetail));
 nameTypeFabricLanguageDeclarationDetail 'Тип одежды(иностр.)' (declarationDetail) =

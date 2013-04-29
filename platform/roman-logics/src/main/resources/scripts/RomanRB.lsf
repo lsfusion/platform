@@ -53,7 +53,7 @@ EXTEND FORM stores
     PROPERTIES(s) READONLY sidDestination FORCE GRID
 
     OBJECTS su=Supplier
-    PROPERTIES(su)    READONLY name
+    PROPERTIES(su)    READONLY nameLegalEntity
     PROPERTIES(s, su) READONLY sidDestinationSupplier, relationStoreSupplier
     FILTERGROUP filtersDocument
         FILTER 'Связь маг./пост.' 'F11' relationStoreSupplier(s, su) DEFAULT
@@ -78,7 +78,7 @@ EXTEND FORM store
     PROPERTIES(s) sidDestination
 
     OBJECTS su=Supplier
-    PROPERTIES(su)    READONLY name
+    PROPERTIES(su)    READONLY nameLegalEntity
     PROPERTIES(s, su) sidDestinationSupplier, relationStoreSupplier
     FILTERGROUP filtersDocument
         FILTER 'Связь маг./пост.' 'F11' relationStoreSupplier(s, su) DEFAULT

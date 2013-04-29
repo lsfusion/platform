@@ -30,11 +30,13 @@ TABLE customer (Customer);
 
 // ---------------------------------------- Группы покупателей -------------------------------- //
 
-CLASS CustomerGroup 'Группа покупателей' : Named, LegalEntityGroup;
+CLASS CustomerGroup 'Группа покупателей' : LegalEntityGroup;
 TABLE customerGroup (CustomerGroup);
 
+nameCustomerGroup 'Наименование' = DATA ISTRING[100](CustomerGroup);
+
 customerGroupCustomer (customer) = DATA CustomerGroup (Customer) AUTOSET NOT NULL;
-nameCustomerGroupCustomer 'Группа покупателей' (customer) = name(customerGroupCustomer(customer));
+nameCustomerGroupCustomer 'Группа покупателей' (customer) = nameCustomerGroup(customerGroupCustomer(customer));
 
 TABLE customerGroupCustomerGroup(CustomerGroup, CustomerGroup);
 @defineHierarchy(customerGroup);
@@ -46,15 +48,15 @@ inCustomerGroupCustomer (customerGroup, customer) =
 
 FORM customerGroup 'Группа покупателей'
     OBJECTS s = CustomerGroup FIXED PANEL
-    PROPERTIES(s) name, nameParentLegalEntityGroup
+    PROPERTIES(s) nameCustomerGroup, nameParentLegalEntityGroup
 
     EDIT CustomerGroup OBJECT s
 ;
 
 FORM customerGroups 'Группы покупателей'
     TREE customerGroupTree sg = CustomerGroup PARENT parentCustomerGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
-    ORDER BY name(sg)
+    PROPERTIES READONLY sgTreeName = nameCustomerGroup(sg)
+    ORDER BY nameCustomerGroup(sg)
 
     DIALOG CustomerGroup OBJECT sg
 ;
@@ -90,7 +92,7 @@ FORM customerGroups 'Группы покупателей'
 
 FORM customer 'Покупатель'
     OBJECTS cu=Customer FIXED PANEL
-    PROPERTIES(cu) name, nameCustomerGroupCustomer, nameOwnershipLegalEntity,
+    PROPERTIES(cu) nameLegalEntity, nameCustomerGroupCustomer, nameOwnershipLegalEntity,
                    shortNameOwnershipLegalEntity, fullNameLegalEntity,
                    addressLegalEntity ON CHANGE dialogAddressLegalEntity(cu),
                    postAddressLegalEntity ON CHANGE dialogPostAddressLegalEntity(cu),
@@ -104,7 +106,7 @@ FORM customer 'Покупатель'
     FILTERS Bank.legalEntityAccount(a) == cu
 
     OBJECTS co=LegalEntity
-    PROPERTIES(co) READONLY name
+    PROPERTIES(co) READONLY nameLegalEntity
     FILTERGROUP filters
         FILTER 'Есть договор' 'F10' countContractPartyAPartyB(co, cu) DEFAULT
 
@@ -117,12 +119,12 @@ FORM customer 'Покупатель'
 //            customerContractSkuCustomer(c) == cu
 
     OBJECTS co2=LegalEntity
-    PROPERTIES(co2) READONLY name
+    PROPERTIES(co2) READONLY nameLegalEntity
 
     OBJECTS ag=Agreement
     PROPERTIES(ag, cu, co2) isDefaultAgreementSupplierCustomer
     PROPERTIES(ag, cu) inAgreementCustomer
-    PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
+    PROPERTIES(ag) READONLY nameAgreement, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
     PROPERTIES createAgreementSupplierCustomer(co2, cu) TODRAW ag FORCE PANEL TOOLBAR, addAgreementsSupplierCustomer(co2, cu) TODRAW ag FORCE PANEL TOOLBAR
@@ -140,7 +142,7 @@ DESIGN customer FROM DEFAULT {
 
             NEW column1 {
                 childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(name(cu));
+                ADD PROPERTY(nameLegalEntity(cu));
                 ADD PROPERTY(nameCustomerGroupCustomer);
                 ADD cu.lawGroup;
             }
@@ -178,11 +180,11 @@ DESIGN customer FROM DEFAULT {
 
 FORM customers 'Покупатели'
     TREE customerGroupTree cg = CustomerGroup PARENT parentCustomerGroup
-    PROPERTIES READONLY cgTreeName = name(cg)
+    PROPERTIES READONLY cgTreeName = nameCustomerGroup(cg)
     PROPERTIES(cg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS cu=Customer
-    PROPERTIES(cu) READONLY name, fullNameLegalEntity, nameCustomerGroupCustomer, shortNameOwnershipLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(cu) READONLY nameLegalEntity, fullNameLegalEntity, nameCustomerGroupCustomer, shortNameOwnershipLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(cu) ADDFORM, EDITFORM, delete
 
     FILTERS inCustomerGroupCustomer(cg, cu)
@@ -207,11 +209,11 @@ DESIGN customers FROM DEFAULT{
 // --------------------------------------------------- Макросы по добавлению покупателя в документы ------------------------------------ //
 META defineDocumentHeaderCustomer (object)
     customer###object (object) = DATA LegalEntity (object);
-    nameCustomer###object 'Покупатель' (object)= name(customer###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    nameCustomer###object 'Покупатель' (object)= nameLegalEntity(customer###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentAbstractHeaderCustomer (object)
     customer###object (object) = ABSTRACT LegalEntity (object) PERSISTENT;
-    nameCustomer###object 'Покупатель' (object)= name(customer###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    nameCustomer###object 'Покупатель' (object)= nameLegalEntity(customer###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentInterfaceHeaderCustomer (object)
     @defineDocumentAbstractHeaderCustomer(object);
@@ -231,7 +233,7 @@ END
 META defineDocumentDetailDataCustomer (object, detail)
     dataCustomer###detail (detail) = DATA Customer (detail);
     customer###detail (idetail) = UNION OVERRIDE customer###object(object###detail(idetail)), dataCustomer###detail(idetail) PERSISTENT;
-    nameCustomer###detail 'Покупатель' (idetail) = name(customer###detail(idetail));
+    nameCustomer###detail 'Покупатель' (idetail) = nameLegalEntity(customer###detail(idetail));
 END
 META defineDocumentDataCustomer (object, detail)
     @defineDocumentHeaderCustomer(object);
@@ -242,7 +244,7 @@ META defineDocumentDataCustomer (object)
 END
 META defineDocumentDetailCustomer(detail)
     customer###detail (detail) = DATA Customer (detail);
-    nameCustomer###detail 'Покупатель' (detail) = name(customer###detail (detail));
+    nameCustomer###detail 'Покупатель' (detail) = nameLegalEntity(customer###detail (detail));
 END
 
 META defineDocumentAbstractCustomer (object, detail)

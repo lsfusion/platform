@@ -110,6 +110,8 @@ EXTEND DESIGN migrationData {
 // ---------------------------------- Формы изменения атрибутов ------------------------------------- //
 TABLE category (Category);
 
+nameCategory 'Наименование' = DATA ISTRING[150](Category);
+
 TABLE categoryCategory(Category, Category);
 @defineHierarchy(category);
 
@@ -118,7 +120,7 @@ FORM category 'Товарная группа'
     PROPERTIES(g) nameParentCategory, name, nameOrigin, nameTypeInvoiceCategory, warrantyCategory, nameUnitOfMeasureCategory, necessaryStampCategory
 
     OBJECTS l = Language
-    PROPERTIES name(l) READONLY, languageName(g, l)
+    PROPERTIES nameLanguage(l) READONLY, languageName(g, l)
 
     EDIT Category OBJECT g
 ;
@@ -207,7 +209,7 @@ FORM gender 'Пол'
     PROPERTIES(g) sidGender
 
     OBJECTS l= Language
-    PROPERTIES(l) READONLY name
+    PROPERTIES(l) READONLY nameLanguage
     PROPERTIES(g, l) languageName
 
     EDIT Gender OBJECT g;
@@ -235,7 +237,7 @@ FORM typeFabric 'Тип одежды'
     PROPERTIES(t) name
 
     OBJECTS l= Language
-    PROPERTIES(l) READONLY name
+    PROPERTIES(l) READONLY nameLanguage
     PROPERTIES(t, l) languageName
 
     EDIT TypeFabric OBJECT t;
@@ -276,7 +278,7 @@ FORM dialogSeasonYear 'Сезон'
 
 FORM unitOfMeasures 'Единицы измерений'
     OBJECTS u = UnitOfMeasure
-    PROPERTIES(u) READONLY name, shortName, nameOrigin
+    PROPERTIES(u) READONLY nameUOM, shortNameUOM, nameOrigin
     DIALOG UnitOfMeasure OBJECT u
 ;
 
@@ -320,7 +322,7 @@ priceManagerialDateTime(article, dateTime) = priceManagerialBatch(batchPriceMana
 
 TABLE customStore (CustomStore);
 warehouseGroupCustomStore = DATA WarehouseGroup(CustomStore);
-nameWarehouseGroupCustomStore 'Группа складов' (customStore) = name(warehouseGroupCustomStore(customStore));
+nameWarehouseGroupCustomStore 'Группа складов' (customStore) = nameWarehouseGroup(warehouseGroupCustomStore(customStore));
 
 stockGroupStock (stock) += warehouseGroupCustomStore(stock);
 
@@ -438,7 +440,7 @@ FORM skuDialog 'SKU'
 
 //----------------------------- для печати маркировок ----------------------------------------------------------------//
 
-nameImporterSku 'Наименование' (importer, sku) = name(importer) AND importer IS LegalEntity AND sku IS Sku;
+nameImporterSku 'Наименование' (importer, sku) = nameLegalEntity(importer) AND importer IS LegalEntity AND sku IS Sku;
 addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) AND importer IS LegalEntity AND sku IS Sku;
 
 localeLanguageCompany (company) = localeLanguage(languageLegalEntity(company));
@@ -550,7 +552,7 @@ EXTEND DESIGN options {
 EXTEND FORM migrationData
 
     OBJECTS l = Language FIXED PANEL
-    PROPERTIES(l) SELECTOR name
+    PROPERTIES(l) SELECTOR nameLanguage
 
     OBJECTS m = MultiLanguageNamed
     PROPERTIES(m) objectClassName TODRAW m FORCE GRID

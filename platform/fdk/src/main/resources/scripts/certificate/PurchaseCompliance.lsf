@@ -151,7 +151,7 @@ invoicesComplianceDetail 'Накладные' (complianceDetail) =
 quantitySkuComplianceDetail 'Кол-во' (sku, complianceDetail) = GROUP SUM quantityUserInvoiceDetail(userInvoiceDetail)
                                                                       BY skuUserInvoiceDetail(userInvoiceDetail), complianceDetailInvoiceDetail(userInvoiceDetail);
 
-CONSTRAINT complianceDetail IS ComplianceDetail AND NOT quantitySkuComplianceDetail(skuComplianceDetail(complianceDetail), complianceDetail) CHECKED BY skuComplianceDetail MESSAGE 'Не тот товар'; //
+CONSTRAINT skuComplianceDetail(complianceDetail) AND NOT quantitySkuComplianceDetail(skuComplianceDetail(complianceDetail), complianceDetail) CHECKED BY skuComplianceDetail MESSAGE 'Несоответствующий товар для экспертизы'; //
 
 // экспертиза
 priceCertificatedComplianceDetail 'Цена для экспертизы' (complianceDetail) = GROUP MIN homePriceInvoiceDetail(userInvoiceDetail) BY complianceDetailInvoiceDetail(userInvoiceDetail);

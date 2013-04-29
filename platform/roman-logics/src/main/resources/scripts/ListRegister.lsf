@@ -6,6 +6,10 @@ REQUIRE System, LegalEntity, Stock, Barcode, Employee, Utils, Store, Ware;
 
 CLASS RegisterCommittee 'Комиссия для реестра цен' : Committee;
 
+nameRegisterCommittee 'Наименование' = DATA ISTRING[50](RegisterCommittee);
+
+nameCommittee(committee) += nameRegisterCommittee(committee) IF committee IS RegisterCommittee;
+
 @defineCommitteeEmployee(registerCommittee, formedMan, 'Цены сформировал');
 @defineCommitteeEmployee(registerCommittee, checkedMan, 'Реестр проверил');
 @defineCommitteeEmployee(registerCommittee, labeledMan, 'Товар промаркировал');
@@ -15,7 +19,7 @@ CLASS RegisterCommittee 'Комиссия для реестра цен' : Commit
 // ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
 
 registerCommitteeDepartmentStore 'Комиссия для реестра (ИД)' = DATA RegisterCommittee (DepartmentStore);
-nameRegisterCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = name(registerCommitteeDepartmentStore(departmentStore));
+nameRegisterCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = nameRegisterCommittee(registerCommitteeDepartmentStore(departmentStore));
 isRegisterCommitteeDepartmentStore 'По умолчанию' (registerCommittee, departmentStore) = registerCommitteeDepartmentStore(departmentStore) == registerCommittee;
 CONSTRAINT registerCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(registerCommitteeDepartmentStore(departmentStore), departmentStore)
     CHECKED BY registerCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
@@ -26,15 +30,15 @@ EXTEND FORM departmentStore PROPERTIES nameRegisterCommitteeDepartmentStore(d);
 
 FORM registerCommittee 'Комиссия для реестра цен'
     OBJECTS c=RegisterCommittee FIXED PANEL
-    PROPERTIES(c)      name, nameFormedManCommittee, nameCheckedManCommittee,
+    PROPERTIES(c)      nameRegisterCommittee, nameFormedManCommittee, nameCheckedManCommittee,
                        nameLabeledManCommittee, nameAccountantManCommittee, nameHeadManCommittee
 
     TREE treeStore a=STRING[3], t=ChainStores, st=StoreType, s=Store
-    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
+    PROPERTIES         READONLY OBJVALUE(a), nameChainStores(t), nameStoreType(st), nameStore(s)
     FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS dep=DepartmentStore
-    PROPERTIES(dep)    READONLY depName = name
+    PROPERTIES(dep)    READONLY depName = nameDepartmentStore
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isRegisterCommitteeDepartmentStore
     FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
     ORDER BY depName
@@ -79,7 +83,7 @@ DESIGN registerCommittee FROM DEFAULT {
 
 FORM registerCommitteeDialog 'Комиссии для реестра цен'
     OBJECTS r=RegisterCommittee
-    PROPERTIES(r)      READONLY name, nameEmployeeDivisionCommittee, nameFormedManCommittee, nameCheckedManCommittee, nameLabeledManCommittee,
+    PROPERTIES(r)      READONLY nameRegisterCommittee, nameEmployeeDivisionCommittee, nameFormedManCommittee, nameCheckedManCommittee, nameLabeledManCommittee,
                        nameAccountantManCommittee, nameHeadManCommittee
     PROPERTIES(r)      ADDFORM, EDITFORM
 
@@ -98,7 +102,7 @@ seriesListRegister 'Серия' (inputListRegister) = ABSTRACT STRING[2] (InputL
 dateListRegister 'Дата' (inputListRegister) = ABSTRACT DATE (InputListRegister);
 
 departmentStoreListRegister (inputListRegister) = ABSTRACT DepartmentStore (InputListRegister);
-nameDepartmentStoreListRegister 'Отдел документа' (inputListRegister) = name(departmentStoreListRegister(inputListRegister));
+nameDepartmentStoreListRegister 'Отдел документа' (inputListRegister) = nameDepartmentStore(departmentStoreListRegister(inputListRegister));
 
 consigneeListRegister 'Грузополучатель' (inputListRegister) =
     [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
@@ -130,7 +134,7 @@ notPassToBookkeepingListRegister 'Не передавать в бухгалте�
 passToBookkeepingListRegister 'Передавать в бухгалтерию' (inputListRegister) = inputListRegister IS InputListRegister AND NOT notPassToBookkeepingListRegister(inputListRegister);
 
 registerCommitteeListRegister  (inputListRegister) = ABSTRACT RegisterCommittee (InputListRegister);
-nameRegisterCommitteeListRegister 'Комиссия для реестра цен' (inputListRegister) = name(registerCommitteeListRegister(inputListRegister));
+nameRegisterCommitteeListRegister 'Комиссия для реестра цен' (inputListRegister) = nameRegisterCommittee(registerCommitteeListRegister(inputListRegister));
 nameFormedManListRegister 'Цены сформировал' (inputListRegister) = nameFormedManCommittee(registerCommitteeListRegister(inputListRegister));
 nameCheckedManListRegister 'Реестр проверил' (inputListRegister) = nameCheckedManCommittee(registerCommitteeListRegister(inputListRegister));
 nameLabeledManListRegister 'Товар промаркировал' (inputListRegister) = nameLabeledManCommittee(registerCommitteeListRegister(inputListRegister));
@@ -301,7 +305,7 @@ END
 META defineDocumentHeaderListRegisterInner(object, class)
     registerCommittee###object (object) = DATA RegisterCommittee(class);
 
-    nameRegisterCommittee###object 'Комиссия для реестра цен' (object) = name(registerCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    nameRegisterCommittee###object 'Комиссия для реестра цен' (object) = nameRegisterCommittee(registerCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     registerCommittee###object (object) <- registerCommitteeDepartmentStore(departmentStore###object(object))
         WHEN ASSIGNED(object IS class);
 

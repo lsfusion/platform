@@ -18,6 +18,9 @@ PRIORITY Stock;
 CLASS GroupDefectStock 'Группа складов брака' : StockGroup, EmployeeDivisionGroup;
 TABLE groupDefectStock (GroupDefectStock);
 
+nameGroupDefectStock 'Наименование' = DATA ISTRING[50](GroupDefectStock);
+nameStockGroup(group) += nameGroupDefectStock(group) IF group IS GroupDefectStock;
+
 TABLE groupDefectStockGroupDefectStock(GroupDefectStock, GroupDefectStock);
 @defineHierarchy(groupDefectStock);
 
@@ -29,11 +32,11 @@ CLASS DefectStock 'Склад брака' : Stock, EmployeeDivision;
 TABLE defectStock (DefectStock);
 
 groupDefectStockDefectStock (defectStock) = DATA GroupDefectStock (DefectStock);
-nameGroupDefectStockDefectStock 'Группа складов' (defectStock) = name(groupDefectStockDefectStock(defectStock)) IN base;
+nameGroupDefectStockDefectStock 'Группа складов' (defectStock) = nameStockGroup(groupDefectStockDefectStock(defectStock)) IN base;
 stockGroupStock (stock) += groupDefectStockDefectStock (stock);
 
 companyDefectStock (defectStock) = DATA Company (DefectStock);
-nameCompanyDefectStock 'Компания' (defectStock) = name(companyDefectStock(defectStock)) IN base;
+nameCompanyDefectStock 'Компания' (defectStock) = nameLegalEntity(companyDefectStock(defectStock)) IN base;
 legalEntityStock (stock) += companyDefectStock(stock);
 
 addressDefectStock 'Адрес' (defectStock) = DATA STRING[100] (DefectStock);
@@ -42,18 +45,18 @@ addressStock(stock) += addressDefectStock(stock);
 // -------------------------------------------------- Формы ----------------------------------------- //
 FORM defectStock 'Склад брака'
     OBJECTS           d=DefectStock FIXED PANEL
-    PROPERTIES(d)     name, nameGroupDefectStockDefectStock, addressDefectStock, nameCompanyDefectStock, nameWriteOffCommitteeStock
+    PROPERTIES(d)     nameStock, nameGroupDefectStockDefectStock, addressDefectStock, nameCompanyDefectStock, nameWriteOffCommitteeStock
 
-    ORDER BY          name
+    ORDER BY          nameStock
     EDIT DefectStock OBJECT d
 ;
 
 FORM defectStocks 'Склады брака'
     OBJECTS           d=DefectStock
-    PROPERTIES(d)     READONLY name, addressDefectStock, nameCompanyDefectStock
+    PROPERTIES(d)     READONLY nameStock, addressDefectStock, nameCompanyDefectStock
     PROPERTIES(d)     ADDFORM, EDITFORM, delete
 
-    ORDER BY          name
+    ORDER BY          nameStock
 ;
 
 // -------------------------------------- Внешние склады ------------------------------- //

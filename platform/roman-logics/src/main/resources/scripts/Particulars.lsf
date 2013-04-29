@@ -153,10 +153,10 @@ quantitySoldBrandGroupSizeSubCategoryDateFromTo 'Продано за интер�
 FORM salesArticle 'Продажи по группам'
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE, te=TypeExchange) FIXED PANEL
-    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = nameTypeExchange(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS s=Supplier FIXED PANEL
-    PROPERTIES     SELECTOR nameSup = name(s)
+    PROPERTIES     SELECTOR nameSup = nameLegalEntity(s)
     PROPERTIES     READONLY balanceBSupplierDate(s,dFrom), quantityReceivedSupplierDateFromTo(s,dFrom,dTo), quantitySoldSupplierDateFromTo(s,dFrom,dTo),
                    balanceASupplierDate(s,dTo), percentBalanceReceivedSupplierDateFromTo(s,dFrom,dTo),
                    sumSoldSupplierDateFromTo(s,dFrom,dTo), sumSoldTypeExchangeSupplierDateFromTo(te,s,dFrom,dTo)
@@ -251,7 +251,7 @@ DESIGN salesArticle FROM DEFAULT {
 FORM salesArticleTheme 'Продажи по темам'
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE, te=TypeExchange) FIXED PANEL
-    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = nameTypeExchange(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS s=Supplier FIXED PANEL
     PROPERTIES     SELECTOR nameSup = name(s)
@@ -343,7 +343,7 @@ FORM salesSizeSupplierItem 'Продажи по размерам'
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
     OBJECTS s=Supplier FIXED PANEL
-    PROPERTIES     SELECTOR nameSup = name(s)
+    PROPERTIES     SELECTOR nameSup = nameLegalEntity(s)
     PROPERTIES     READONLY quantitySkuSoldSupplierDateFromTo(s,dFrom,dTo)
 
     OBJECTS g=SizeGroupSupplier FIXED PANEL

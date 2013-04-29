@@ -111,7 +111,7 @@ END
 
 // ------------------------------------------------- Внутренние партии ----------------------------------------- //
 ownerBatchA = ABSTRACT LegalEntity(BatchA) PERSISTENT;
-nameOwnerBatchA 'Собственник' (batch) = name(ownerBatchA(batch)) IN base;
+nameOwnerBatchA 'Собственник' (batch) = nameLegalEntity(ownerBatchA(batch)) IN base;
 
 commissionContractSkuBatchA = ABSTRACT ContractSku (BatchA) PERSISTENT INDEXED;
 numberCommissionContractSkuBatchA 'Номер договора комиссии' (batch) = numberContract(commissionContractSkuBatchA(batch)) IN base;

@@ -1669,7 +1669,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         unitOfMeasure = addConcreteClass("UnitOfMeasure", "Единица измерения", secondNameClass, named, (CustomClass) BL.Stock.getClassByName("UOM"));
 
-        brandSupplier = addConcreteClass("BrandSupplier", "Бренд поставщика", (CustomClass) BL.RetailCRM.getClassByName("DiscountSkuGroup"), (CustomClass) BL.PriceRound.getClassByName("RoundGroup"));  //named,
+        brandSupplier = addConcreteClass("BrandSupplier", "Бренд поставщика", (CustomClass) BL.RetailCRM.getClassByName("DiscountSkuGroup"), (CustomClass) BL.PriceRound.getClassByName("RoundGroup"), named);  //named,
 
         themeSupplier = addConcreteClass("ThemeSupplier", "Тема поставщика", named);
 
@@ -1871,25 +1871,25 @@ public class RomanLogicsModule extends LogicsModule {
 
         // rate
         typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена валют для STX (ИД)", getTypeExchangeClass());
-        nameTypeExchangeSTX = addJProp(baseGroup, "nameTypeExchangeSTX", "Тип обмена валют для STX", name, typeExchangeSTX);
+        nameTypeExchangeSTX = addJProp(baseGroup, "nameTypeExchangeSTX", "Тип обмена валют для STX", BL.Currency.getLCPByName("nameTypeExchange"), typeExchangeSTX);
         typeExchangeCustom = addDProp(idGroup, "typeExchangeCustom", "Тип обмена валют для мин.цен (ИД)", getTypeExchangeClass());
-        nameTypeExchangeCustom = addJProp(baseGroup, "nameTypeExchangeCustom", "Тип обмена валют для мин.цен", name, typeExchangeCustom);
+        nameTypeExchangeCustom = addJProp(baseGroup, "nameTypeExchangeCustom", "Тип обмена валют для мин.цен", BL.Currency.getLCPByName("nameTypeExchange"), typeExchangeCustom);
         typeExchangePayCustom = addDProp(idGroup, "typeExchangePayCustom", "Тип обмена валют для платежей (ИД)", getTypeExchangeClass());
-        nameTypeExchangePayCustom = addJProp(baseGroup, "nameTypeExchangePayCustom", "Тип обмена валют для платежей (БУ)", name, typeExchangePayCustom);
+        nameTypeExchangePayCustom = addJProp(baseGroup, "nameTypeExchangePayCustom", "Тип обмена валют для платежей (БУ)", BL.Currency.getLCPByName("nameTypeExchange"), typeExchangePayCustom);
         typeExchangePayManagerial = addDProp(idGroup, "typeExchangePayManagerial", "Тип обмена валют для платежей (ИД)", getTypeExchangeClass());
-        nameTypeExchangePayManagerial = addJProp(baseGroup, "nameTypeExchangePayManagerial", "Тип обмена валют для платежей (УУ)", name, typeExchangePayManagerial);
+        nameTypeExchangePayManagerial = addJProp(baseGroup, "nameTypeExchangePayManagerial", "Тип обмена валют для платежей (УУ)", BL.Currency.getLCPByName("nameTypeExchange"), typeExchangePayManagerial);
 
         typeExchangePayCustomCustomsZone = addDProp(idGroup, "typeExchangePayCustomCustomsZone", "Тип обмена для платежей (ИД)", getTypeExchangeClass(), customsZone);
-        nameTypeExchangePayCustomCustomsZone = addJProp(baseGroup, "nameTypeExchangePayCustomCustomsZone", "Тип обмена для платежей (БУ)", name, typeExchangePayCustomCustomsZone, 1);
+        nameTypeExchangePayCustomCustomsZone = addJProp(baseGroup, "nameTypeExchangePayCustomCustomsZone", "Тип обмена для платежей (БУ)", BL.Currency.getLCPByName("nameTypeExchange"), typeExchangePayCustomCustomsZone, 1);
 
         typeExchangePayManagerialCustomsZone = addDProp(idGroup, "typeExchangePayManagerialCustomsZone", "Тип обмена для платежей (ИД)", getTypeExchangeClass(), customsZone);
-        nameTypeExchangePayManagerialCustomsZone = addJProp(baseGroup, "nameTypeExchangePayManagerialCustomsZone", "Тип обмена для платежей (УУ)", name, typeExchangePayManagerialCustomsZone, 1);
+        nameTypeExchangePayManagerialCustomsZone = addJProp(baseGroup, "nameTypeExchangePayManagerialCustomsZone", "Тип обмена для платежей (УУ)", BL.Currency.getLCPByName("nameTypeExchange"), typeExchangePayManagerialCustomsZone, 1);
 
         currencyPayFreights = addDProp(idGroup, "currencyPayFreights", "Валюта транспорта (ИД)", getCurrencyClass());
-        nameCurrencyPayFreights = addJProp(baseGroup, "nameCurrencyPayFreights", "Валюта платежей за транспорт (РФ)", name, currencyPayFreights);
+        nameCurrencyPayFreights = addJProp(baseGroup, "nameCurrencyPayFreights", "Валюта платежей за транспорт (РФ)", BL.Currency.getLCPByName("nameCurrency"), currencyPayFreights);
 
         currencyCustom = addDProp(idGroup, "currencyCustom", "Валюта мин.цен (ИД)", getCurrencyClass());
-        nameCurrencyCustom = addJProp(baseGroup, "nameCurrencyCustom", "Валюта мин.цен", name, currencyCustom);
+        nameCurrencyCustom = addJProp(baseGroup, "nameCurrencyCustom", "Валюта мин.цен", BL.Currency.getLCPByName("nameCurrency"), currencyCustom);
         currencyPayCustom = addDProp(idGroup, "currencyPayCustom", "Валюта для платежей (ИД)", getCurrencyClass());
         //nameCurrencyPayCustom = addJProp(baseGroup, "nameCurrencyPayCustom", "Валюта для платежей", name, currencyPayCustom);
 //        typeExchangeRetail = addDProp(idGroup, "typeExchangeRetail", "Тип обмена для розницы", baseLM.typeExchange);
@@ -1910,11 +1910,10 @@ public class RomanLogicsModule extends LogicsModule {
         sidOrigin2ToCountry = addAGProp("sidOrigin2ToCountry", "Страна", getSidOrigin2Country());
 
         dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", BL.I18n.getClassByName("Dictionary"));
-        nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", name, dictionaryComposition);
+        nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", BL.I18n.getLCPByName("nameDictionary"), dictionaryComposition);
 
         dictionaryName = addDProp(idGroup, "dictionaryName", "Словарь для названий (ИД)", BL.I18n.getClassByName("Dictionary"));
-        nameDictionaryName = addJProp(baseGroup, "nameDictionaryName", "Словарь для названий", name, dictionaryName);
-
+        nameDictionaryName = addJProp(baseGroup, "nameDictionaryName", "Словарь для названий", BL.I18n.getLCPByName("nameDictionary"), dictionaryName);
 
         sidImporterFreightTypeInvoice = addDProp(baseGroup, "sidImporterFreightTypeInvoice", "Номер инвойса", StringClass.get(50), importer, freight, typeInvoice);
         sidImporterFreight = addMGProp(baseGroup, "sidImporterFreight", "Номер инвойса", sidImporterFreightTypeInvoice, 1, 2);
@@ -1981,7 +1980,7 @@ public class RomanLogicsModule extends LogicsModule {
         //nameBuyerContract = addJProp(baseGroup, "nameBuyerContract", "Покупатель", name, buyerContract, 1);
 
         currencyContract = addDProp(idGroup, "currencyContract", "Валюта (ИД)", getCurrencyClass(), contract);
-        nameCurrencyContract = addJProp(baseGroup, "nameCurrencyContract", "Валюта", name, currencyContract, 1);
+        nameCurrencyContract = addJProp(baseGroup, "nameCurrencyContract", "Валюта", BL.Currency.getLCPByName("nameCurrency"), currencyContract, 1);
 
         // Subject
         addressOriginSubject = addDProp(baseGroup, "addressOriginSubject", "Address", StringClass.get(200), subject);
@@ -2149,7 +2148,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         // Supplier
         currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", getCurrencyClass(), supplier);
-        nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", name, currencySupplier, 1);
+        nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", BL.Currency.getLCPByName("nameCurrency"), currencySupplier, 1);
 
         sidColorSupplier = addDProp(baseGroup, "sidColorSupplier", "Код", StringClass.get(50), colorSupplier);
         sidColorSupplier.setMinimumCharWidth(5);
@@ -2228,7 +2227,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameSupplierCountrySupplier = addJProp(baseGroup, "nameSupplierCountrySupplier", "Поставщик", name, supplierCountrySupplier, 1);
 
         countryCountrySupplier = addDProp(idGroup, "countryCountrySupplier", "Страна (ИД)", country, countrySupplier);
-        nameCountryCountrySupplier = addJProp(baseGroup, "nameCountryCountrySupplier", "Страна", name, countryCountrySupplier, 1);
+        nameCountryCountrySupplier = addJProp(baseGroup, "nameCountryCountrySupplier", "Страна", BL.Country.getLCPByName("nameCountry"), countryCountrySupplier, 1);
 
         countryNameSupplier = addAGProp(idGroup, "countryNameSupplier", "Страна поставщика", name, supplierCountrySupplier);
 
@@ -2244,7 +2243,7 @@ public class RomanLogicsModule extends LogicsModule {
         addConstraint(addJProp("Бренд по умолчанию для поставщика должен соответствовать брендам поставщика", baseLM.diff2, 1, addJProp(supplierBrandSupplier, brandSupplierSupplier, 1), 1), true);
 
         countryBrandSupplier = addDProp(idGroup, "countryBrandSupplier", "Страна бренда (ИД)", country, brandSupplier);
-        nameCountryBrandSupplier = addJProp(baseGroup, "nameCountryBrandSupplier", "Страна бренда", name, countryBrandSupplier, 1);
+        nameCountryBrandSupplier = addJProp(baseGroup, "nameCountryBrandSupplier", "Страна бренда", BL.Country.getLCPByName("nameCountry"), countryBrandSupplier, 1);
 
         customsSIDBrandSupplier = addDProp(baseGroup, "customsSIDBrandSupplier", "Таможенный код", StringClass.get(50), brandSupplier);
         customsSIDSupplier = addJProp(baseGroup, "customsSIDSupplier", "Поставщик (ИД)", customsSIDBrandSupplier, brandSupplierSupplier, 1);
@@ -2259,19 +2258,19 @@ public class RomanLogicsModule extends LogicsModule {
         addConstraint(addJProp("Для инвойса без коробов поставщик должен быть без коробов", baseLM.andNot1, is(simpleInvoice), 1, addJProp(typeSupplier, supplierDocument, 1), 1), true);
 
         currencyDocument = addDCProp(idGroup, "currencyDocument", "Валюта (ИД)", currencySupplier, supplierPriceDocument, 1);
-        nameCurrencyDocument = addJProp(baseGroup, "nameCurrencyDocument", "Валюта", name, currencyDocument, 1);
+        nameCurrencyDocument = addJProp(baseGroup, "nameCurrencyDocument", "Валюта", BL.Currency.getLCPByName("nameCurrency"), currencyDocument, 1);
         nameCurrencyDocument.property.preferredCharWidth = 50;
         nameCurrencyDocument.property.minimumCharWidth = 10;
 
         currencyRRPDocument = addDProp(idGroup, "currencyRRPDocument", "Валюта RRP (ИД)", getCurrencyClass(), priceDocument);
-        nameCurrencyRRPDocument = addJProp("nameCurrencyRRPDocument", "Валюта RRP", name, currencyRRPDocument, 1);
+        nameCurrencyRRPDocument = addJProp("nameCurrencyRRPDocument", "Валюта RRP", BL.Currency.getLCPByName("nameCurrency"), currencyRRPDocument, 1);
         nameCurrencyRRPDocument.property.preferredCharWidth = 50;
         nameCurrencyRRPDocument.property.minimumCharWidth = 10;
 
         addConstraint(addJProp("Для инвойса должна быть задана валюта", baseLM.andNot1, is(invoice), 1, currencyDocument, 1), false);
 
         destinationDestinationDocument = addDProp(idGroup, "destinationDestinationDocument", "Пункт назначения (ИД)", destination, destinationDocument);
-        nameDestinationDestinationDocument = addJProp(baseGroup, "nameDestinationDestinationDocument", "Пункт назначения (наим.)", name, destinationDestinationDocument, 1);
+        nameDestinationDestinationDocument = addJProp(baseGroup, "nameDestinationDestinationDocument", "Пункт назначения (наим.)", BL.Store.getLCPByName("nameStore"), destinationDestinationDocument, 1);
         nameDestinationDestinationDocument.property.preferredCharWidth = 50;
         nameDestinationDestinationDocument.property.minimumCharWidth = 30;
         sidDestinationDestinationDocument = addJProp(baseGroup, "sidDestinationDestinationDocument", "Пункт назначения", sidDestination, destinationDestinationDocument, 1);
@@ -2301,7 +2300,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameCompanyInvoice.property.preferredCharWidth = 50;
 
         languageInvoice = addJProp("languageInvoice", "Язык инвойса (ИД)", BL.Store.getLCPByName("languageStore"), destinationDestinationDocument, 1);
-        nameLanguageInvoice = addJProp("nameLanguageInvoice", "Язык инвойса", name, languageInvoice, 1);
+        nameLanguageInvoice = addJProp("nameLanguageInvoice", "Язык инвойса", BL.I18n.getLCPByName("nameLanguage"), languageInvoice, 1);
 
         //contractInvoice = addDProp(idGroup, "contractInvoice", "Договор (ИД)", contract, invoice);
         //sidContractInvoice = addJProp(baseGroup, "sidContractInvoice", "Договор", sidContract, contractInvoice, 1);
@@ -2683,7 +2682,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         countryOfOriginArticleColor = addDProp(idGroup, "countryOfOriginArticleColor", "Страна происхождения (ИД)", country, article, colorSupplier);
         countryOfOriginArticleColorSku = addJProp(idGroup, true, "countryOfOriginArticleColorSku", "Страна происхождения (ИД)", countryOfOriginArticleColor, articleSku, 1, colorSupplierItem, 1);
-        nameCountryArticleColor = addJProp(baseGroup, "nameCountryArticleColor", "Страна происхождения", name, countryOfOriginArticleColor, 1, 2);
+        nameCountryArticleColor = addJProp(baseGroup, "nameCountryArticleColor", "Страна происхождения", BL.Country.getLCPByName("nameCountry"), countryOfOriginArticleColor, 1, 2);
         nameCountryArticleColor.property.preferredCharWidth = 50;
         nameCountryArticleColor.property.minimumCharWidth = 15;
 
@@ -2691,7 +2690,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         countryOfOriginSku = addSUProp(idGroup, "countryOfOriginSku", true, "Страна происхождения (ИД)", Union.OVERRIDE, countryOfOriginArticleSku, countryOfOriginArticleColorSku);
         nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", nameOriginCountry, countryOfOriginSku, 1);
-        nameCountrySku = addJProp(intraAttributeGroup, "nameCountrySku", "Страна происхождения", name, countryOfOriginSku, 1);
+        nameCountrySku = addJProp(intraAttributeGroup, "nameCountrySku", "Страна происхождения", BL.Country.getLCPByName("nameCountry"), countryOfOriginSku, 1);
         nameCountrySku.property.preferredCharWidth = 50;
         nameCountrySku.property.minimumCharWidth = 15;
 
@@ -2701,7 +2700,7 @@ public class RomanLogicsModule extends LogicsModule {
                 supplierArticle, 1, addJProp(supplierCountrySupplier, countrySupplierOfOriginArticle, 1), 1), true);
 
         countryBrandSupplierSku = addJProp(idGroup, "countryBrandSupplierSku", "Страна поставки (ИД)", countryBrandSupplier, brandSupplierArticleSku, 1);
-        nameCountryBrandSupplierSku = addJProp(baseGroup, "nameCountryBrandSupplierSku", "Страна поставки", name, countryBrandSupplierSku, 1);
+        nameCountryBrandSupplierSku = addJProp(baseGroup, "nameCountryBrandSupplierSku", "Страна поставки", BL.Country.getLCPByName("nameCountry"), countryBrandSupplierSku, 1);
 
         nameCountryBrandSupplierSkuLanguage = addJProp("nameCountryBrandSupplierSkuLanguage", "Страна поставки", BL.I18n.getLCPByName("languageName"), countryBrandSupplierSku, 1, 2);
 
@@ -3106,7 +3105,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameDestinationSupplierBox = addJProp(baseGroup, "nameDestinationSupplierBox", "Пункт назначения", name, destinationSupplierBox, 1);
 
         destinationFreightUnit = addCUProp(idGroup, "destinationFreightUnit", "Пункт назначения (ИД)", destinationSupplierBox, destinationFreightBox);
-        nameDestinationFreightUnit = addJProp(baseGroup, "nameDestinationFreightUnit", "Пункт назначения", name, destinationFreightUnit, 1);
+        nameDestinationFreightUnit = addJProp(baseGroup, "nameDestinationFreightUnit", "Пункт назначения", BL.Store.getLCPByName("nameStore"), destinationFreightUnit, 1);
 
         // поставка на склад
         inOrderShipment = addDProp(baseGroup, "inOrderShipment", "Вкл", LogicalClass.instance, order, shipment);
@@ -3519,7 +3518,7 @@ public class RomanLogicsModule extends LogicsModule {
         volumeDataFreight = addDProp(baseGroup, "volumeDataFreight", "Объем груза", NumericClass.get(14, 3), freight);
 
         currencyFreight = addDProp(idGroup, "currencyFreight", "Валюта (ИД)", getCurrencyClass(), freight);
-        nameCurrencyFreight = addJProp(baseGroup, "nameCurrencyFreight", "Валюта", name, currencyFreight, 1);
+        nameCurrencyFreight = addJProp(baseGroup, "nameCurrencyFreight", "Валюта", BL.Currency.getLCPByName("nameCurrency"), currencyFreight, 1);
         nameCurrencyFreight.setFixedCharWidth(10);
         symbolCurrencyFreight = addJProp(baseGroup, "symbolCurrencyFreight", "Валюта", BL.getModule("Currency").getLCPByName("symbolCurrency"), currencyFreight, 1);
 
@@ -3556,13 +3555,13 @@ public class RomanLogicsModule extends LogicsModule {
         dateArrivalFreight = addDProp(baseGroup, "dateArrivalFreight", "Дата поступления на склад", DateClass.instance, freight);
 
         countryFreight = addDProp("countryFreight", "Страна назначения (ИД)", country, freight);
-        nameCountryFreight = addJProp("nameCountryFreight", "Страна назначения", name, countryFreight, 1);
+        nameCountryFreight = addJProp("nameCountryFreight", "Страна назначения", BL.Country.getLCPByName("nameCountry"), countryFreight, 1);
 
         languageFreight = addJProp("languageFreight", "Язык фрахта (ИД)", BL.Country.getLCPByName("languageCountry"), countryFreight, 1);
-        nameLanguageFreight = addJProp("nameLanguageFreight", "Язык фрахта", name, languageFreight, 1);
+        nameLanguageFreight = addJProp("nameLanguageFreight", "Язык фрахта", BL.I18n.getLCPByName("nameLanguage"), languageFreight, 1);
 
         currencyCountryFreight = addJProp("currencyCountryFreight", "Валюта страны назначения (ИД)", BL.getModule("Country").getLCPByName("currencyCountry"), countryFreight, 1);
-        nameCurrencyCountryFreight = addJProp("nameCurrencyCountryFreight", "Валюта страны назначения", name, languageFreight, 1);
+        nameCurrencyCountryFreight = addJProp("nameCurrencyCountryFreight", "Валюта страны назначения", BL.Currency.getLCPByName("nameCurrency"), languageFreight, 1);
 
         customsZoneFreight = addJProp("customsZoneFreight", "", customsZoneCountry, countryFreight, 1);
 
@@ -3772,7 +3771,7 @@ public class RomanLogicsModule extends LogicsModule {
         addConstraint(addJProp("Для SKU должна быть задана страна", and(true, false), is(freightChanged), 1, countryOfOriginFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
         sidCountryOfOriginFreightSku = addJProp(baseGroup, "sidCountryOfOriginFreightSku", "Код страны", BL.getModule("Country").getLCPByName("sidCountry"), countryOfOriginFreightSku, 1, 2);
-        nameCountryOfOriginFreightSku = addJProp(baseGroup, "nameCountryOfOriginFreightSku", "Страна", name, countryOfOriginFreightSku, 1, 2);
+        nameCountryOfOriginFreightSku = addJProp(baseGroup, "nameCountryOfOriginFreightSku", "Страна", BL.Country.getLCPByName("nameCountry"), countryOfOriginFreightSku, 1, 2);
         nameCountryOfOriginFreightSku.property.preferredCharWidth = 50;
         nameCountryOfOriginFreightSku.property.minimumCharWidth = 15;
 
@@ -3891,14 +3890,14 @@ public class RomanLogicsModule extends LogicsModule {
         currencyRRPProxyImporterFreightSku = addMGProp(idGroup, "currencyRRPProxyImporterFreightSku", true, "Валюта RRP (ИД)", currencyRRPInShipmentStockSku, importerShipmentFreightBox, 1, 2, freightFreightUnit, 2, 3);
         currencyRRPDirectImporterFreightSku = addMGProp(idGroup, "currencyRRPDirectImporterFreightSku", true, "Валюта RRP (ИД)", currencyRRPDocumentSku, importerDirectInvoice, 1, freightDirectInvoice, 1, 2);
         currencyRRPInImporterFreightSku = addSUProp(idGroup, "currencyRRPInImporterFreightSku", "Валюта RRP (ИД)", Union.OVERRIDE, currencyRRPDirectImporterFreightSku, currencyRRPProxyImporterFreightSku, currencyRRPImporterFreightSku);
-        nameCurrencyRRPImporterFreightSku = addJProp("nameCurrencyRRPImporterFreightSku", "Валюта RRP", name, currencyRRPInImporterFreightSku, 1, 2, 3);
+        nameCurrencyRRPImporterFreightSku = addJProp("nameCurrencyRRPImporterFreightSku", "Валюта RRP", BL.Currency.getLCPByName("nameCurrency"), currencyRRPInImporterFreightSku, 1, 2, 3);
 
         RRPFreightSku = addMGProp(baseGroup, "RRPFreightSku", true, "Цена рекомендованная", RRPInImporterFreightSku, 2, 3);
         RRPFreightArticle = addMGProp(baseGroup, "RRPFreightArticle", true, "Цена рекомендованная", RRPInImporterFreightSku, 2, articleSku, 3);
         RRPImporterFreightArticle = addMGProp("RRPImporterFreightArticle", "Цена рекомендованная", RRPInImporterFreightSku, 1, 2, articleSku, 3);
 
         currencyRRPImporterFreightArticle = addMGProp(idGroup, "currencyRRPImporterFreightArticle", "Валюта RRP (ИД)", currencyRRPInImporterFreightSku, 1, 2, articleSku, 3);
-        nameCurrencyRRPImporterFreightArticle = addJProp(baseGroup, "nameCurrencyRRPImporterFreightArticle", "Валюта RRP", name, currencyRRPImporterFreightArticle, 1, 2, 3);
+        nameCurrencyRRPImporterFreightArticle = addJProp(baseGroup, "nameCurrencyRRPImporterFreightArticle", "Валюта RRP", BL.Currency.getLCPByName("nameCurrency"), currencyRRPImporterFreightArticle, 1, 2, 3);
         //currencyRRPFreightArticle = addMGProp(baseGroup, "currencyRRPFreightArticle", true, "Валюта RRP (ИД)", currencyRRPImporterFreightSku, 2, articleSku, 3);
 
         currencyRRPFreightSku = addMGProp(baseGroup, "currencyRRPFreightSku", true, "Валюта RRP (ИД)", currencyRRPImporterFreightSku, 2, 3);

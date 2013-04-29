@@ -936,7 +936,7 @@ notDraftOrderPicking 'Непринятые' (orderPicking) = orderPicking IS Ord
 
 FORM innerOrderRecs 'Приемка по внутр. заказам'
     OBJECTS st = Stock FIXED PANEL
-    PROPERTIES (st) SELECTOR name
+    PROPERTIES (st) SELECTOR nameStock
     OBJECTS p = OrderPicking
 
     PROPERTIES (p) READONLY isPostedOrderPicking FORCE GRID, descriptionInnerOrderOrderPicking, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,

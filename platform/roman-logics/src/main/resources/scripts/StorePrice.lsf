@@ -39,7 +39,7 @@ END
 
 META defineDocumentDetailWarePrefix (object, prefix, caption)
     prefix###ware###object##Detail = DATA Ware(###object##Detail);
-    prefix###nameWare###object##Detail 'Посуда'###caption (detail) = name(prefix###ware###object##Detail(detail)) IN priceDetailGroup;
+    prefix###nameWare###object##Detail 'Посуда'###caption (detail) = nameWare(prefix###ware###object##Detail(detail)) IN priceDetailGroup;
 
     prefix###warePrice###object##Detail 'Цена посуды с НДС'###caption = DATA NUMERIC[14,2] (###object##Detail) IN priceDetailGroup;
 
@@ -348,7 +348,7 @@ META defineSkuDepartmentStoreLedger(property, caption, type)
     @defineHistorizableLedger(property, caption, type, sku, departmentStore);
 
     nameSku###property##Ledger 'SKU' (ledger) = nameSku(sku###property##Ledger(ledger));
-    nameDepartmentStore###property##Ledger 'Отдел магазина' (ledger) = name(departmentStore###property##Ledger(ledger));
+    nameDepartmentStore###property##Ledger 'Отдел магазина' (ledger) = nameDepartmentStore(departmentStore###property##Ledger(ledger));
 END
 
 META defineSkuDepartmentStoreLedgerPrice(property, caption, type)
@@ -389,7 +389,7 @@ TABLE warePriceLedger (WarePriceLedger);
 
 @defineSkuDepartmentStoreLedger(warePrice, 'Цена посуды', NUMERIC[14,2]);
 wareWarePriceLedger(ledger) = ABSTRACT Ware (WarePriceLedger) PERSISTENT;
-nameWareWarePriceLedger 'Посуда' (ledger) = name(wareWarePriceLedger(ledger));
+nameWareWarePriceLedger 'Посуда' (ledger) = nameWare(wareWarePriceLedger(ledger));
 currentWareLedger 'Посуда' (sku, departmentStore) = wareWarePriceLedger(currentLedgerWarePriceSkuDepartmentStore(sku, departmentStore));
 wareBSkuDepartmentStoreDateTime (sku, departmentStore, dateTime) = wareWarePriceLedger(ledgerBWarePriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime));
 

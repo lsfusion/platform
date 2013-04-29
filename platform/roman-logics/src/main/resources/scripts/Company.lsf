@@ -11,7 +11,7 @@ TABLE company (Company);
 
 FORM company 'Компания'
     OBJECTS co=Company FIXED PANEL
-    PROPERTIES(co) name, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
+    PROPERTIES(co) nameLegalEntity, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
                    nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
                    addressLegalEntity ON CHANGE dialogAddressLegalEntity(co),
                    postAddressLegalEntity ON CHANGE dialogPostAddressLegalEntity(co),
@@ -38,7 +38,7 @@ DESIGN company FROM DEFAULT {
 
                 NEW row11 {
                     childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(name(co));
+                    ADD PROPERTY(nameLegalEntity(co));
                     ADD PROPERTY(nameCountryLegalEntity);
                     ADD PROPERTY(nameCurrencyLegalEntity);
                     ADD PROPERTY(nameLanguageLegalEntity);
@@ -64,7 +64,7 @@ DESIGN company FROM DEFAULT {
 FORM companies 'Компании'
 
     OBJECTS co=Company
-    PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity,
+    PROPERTIES(co) READONLY nameLegalEntity, fullNameLegalEntity, shortNameOwnershipLegalEntity,
                             numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(co) ADDFORM, EDITFORM, delete
 ;
