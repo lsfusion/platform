@@ -33,7 +33,7 @@ META defineOperation(postfix)
             NEW topContainer{
                 type = SPLITV;
                 NEW headContainer{
-                    childConstraints = TO THE RIGHT;
+                    childConstraints = TO THE RIGHTBOTTOM;
                     NEW propertyContainer{
                         childConstraints = TO THE BOTTOM;
                         caption = 'Параметры';
@@ -92,7 +92,7 @@ END
 
 // -------------------------------------- Организации ---------------------------------- //
 
-META defineOperationLegalEntity(prop, object, filter, tabcaption)
+META defineOperationLegalEntity(prop, object, tabcaption)
 
     // Отметка для групп
     is###prop###group###operation 'Отм.' = DATA BOOLEAN (LegalEntityGroup, Operation);
@@ -123,8 +123,9 @@ META defineOperationLegalEntity(prop, object, filter, tabcaption)
         PROPERTIES(object) READONLY nameLegalEntity, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
                                addressLegalEntity, phoneLegalEntity,
                                isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
-        FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(object), object##g),
-                filter(object)
+        FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(object), object##g) OR
+                object IS LegalEntity AND NOT object##g IS LegalEntityGroup OR
+                (object IS LegalEntity AND object##g IS LegalEntityGroup AND NOT legalEntityGroupLegalEntity(object))
         FILTERGROUP filters2
                 FILTER 'Показывать отмеченные' 'F10' is###prop###operation(object, o)
     ;
@@ -148,6 +149,30 @@ META defineDocumentOperationLegalEntity(object, prop, caption)
                AND NOT is###prop###operation##Over(prop###object(object), operation###object(object))
         CHECKED BY prop###object
         MESSAGE caption##' должен совпадать с отмеченными в операции';
+END
+
+//Валюта
+
+META defineOperationCurrency(prop, object, tabcaption)
+is###prop###operation 'Отм.' = DATA BOOLEAN (Currency, Operation);
+
+EXTEND FORM operation
+    OBJECTS object = Currency
+    PROPERTIES(object, o) is###prop###operation
+    PROPERTIES(object) READONLY name###prop
+    FILTERGROUP filters3
+        FILTER 'Показывать отмеченные' 'F11' is###prop###operation(object, o)
+;
+
+EXTEND DESIGN operation{
+    tabContainer {
+        NEW prop###Container{
+            caption = tabcaption;
+            ADD object.box;
+        }
+    }
+}
+
 END
 
 META defineOperationRole(dumb)

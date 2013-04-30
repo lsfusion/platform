@@ -512,17 +512,52 @@ TABLE priceListTypeOperation(PriceListType, Operation);
 isPriceListTypeOperation 'Изменять цены' = DATA BOOLEAN (DataPriceListType, Operation);
 showPriceListTypeOperation 'Показывать цены' = DATA BOOLEAN (PriceListType, Operation);
 
+@defineOperationLegalEntity(legalEntity, l, 'Организации');
+
+userDefaultLegalEntityOperation = DATA LegalEntity (Operation);
+calcDefaultLegalEntityOperation(operation) =
+    GROUP MAX legalEntity IF isLegalEntityOperation(legalEntity, operation)
+    BY operation PERSISTENT;
+defaultLegalEntityOperation(operation) = UNION OVERRIDE calcDefaultLegalEntityOperation(operation),
+                                                        userDefaultLegalEntityOperation(operation) PERSISTENT;
+nameDefaultLegalEntityOperation 'Организация по умолчанию' (operation) = nameLegalEntity(defaultLegalEntityOperation(operation));
+isDefaultLegalEntityOperation 'Организация по умолчанию' (legalEntity, operation) =
+    defaultLegalEntityOperation(operation) == legalEntity;
+
+@defineOperationCurrency(currency, c, 'Валюта');
+userDefaultCurrencyOperation = DATA Currency (Operation);
+//userDefaultCurrencyOperation(operation) => isCurrencyOperation(userDefaultCurrencyOperation(operation), operation) RESOLVE FALSE;
+calcDefaultCurrencyOperation(operation) =
+    GROUP MAX currency IF isCurrencyOperation(currency, operation)
+    BY operation PERSISTENT;
+defaultCurrencyOperation(operation) = UNION OVERRIDE calcDefaultCurrencyOperation(operation),
+                                                     userDefaultCurrencyOperation(operation) PERSISTENT;
+nameDefaultCurrencyOperation 'Валюта по умолчанию' (operation) = nameCurrency(defaultCurrencyOperation(operation));
+isDefaultCurrencyOperation 'Валюта по умолчанию' (currency, operation) =
+    defaultCurrencyOperation(operation) == currency;
+
 EXTEND FORM operation
     OBJECTS pt = PriceListType
     PROPERTIES(pt, o) isPriceListTypeOperation TODRAW pt FORCE GRID, showPriceListTypeOperation
     PROPERTIES(pt) READONLY namePriceListType, nameCurrencyPriceListType, objectClassName
     FILTERGROUP filters
         FILTER 'Показывать отмеченные' 'F9' isPriceListTypeOperation(pt, o)
+    PROPERTIES(l, o) isDefaultLegalEntityOperation AFTER isLegalEntityOperationOver
+    PROPERTIES(c, o) isDefaultCurrencyOperation AFTER isCurrencyOperation
+    PROPERTIES(o) nameDefaultLegalEntityOperation, nameDefaultCurrencyOperation
 ;
 
 EXTEND DESIGN operation {
+    headContainer{
+        NEW defaultContainer{
+            childConstraints = TO THE RIGHT;
+            caption = 'Параметры по умолчанию';
+            ADD PROPERTY(nameDefaultLegalEntityOperation);
+            ADD PROPERTY(nameDefaultCurrencyOperation);
+        }
+    }
     tabContainer {
-        ADD pt.box;
+        ADD pt.box BEFORE legalEntityContainer;
     }
 }
 
@@ -879,6 +914,12 @@ inUserPriceListDataPriceListType(priceList, dataPriceListType) <- isPriceListTyp
     WHEN CHANGED(operationUserPriceList(priceList));
 
 showUserPriceListPriceListType(priceList, priceListType) <- showPriceListTypeOperation(priceListType, operationUserPriceList(priceList))
+    WHEN CHANGED(operationUserPriceList(priceList));
+
+companyUserPriceList(priceList) <- defaultLegalEntityOperation(operationUserPriceList(priceList))
+    WHEN CHANGED(operationUserPriceList(priceList));
+
+currencyUserPriceList(priceList) <- defaultCurrencyOperation(operationUserPriceList(priceList))
     WHEN CHANGED(operationUserPriceList(priceList));
 
 // ------- Проведение по priceListLedger ----- //

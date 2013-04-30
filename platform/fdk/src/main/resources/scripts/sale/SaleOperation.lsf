@@ -8,12 +8,17 @@ NAMESPACE Sale;
 
 @defineOperationPriceListType();
 
-@defineOperationLegalEntity(supplier, s, isCompanyLegalEntity, 'Поставщики');
-@defineOperationLegalEntity(customer, c, isBuyerLegalEntity, 'Покупатели');
+@defineOperationLegalEntity(supplier, s, 'Поставщики');
+@defineOperationLegalEntity(customer, c, 'Покупатели');
 
 @defineOperationRole();
 @extendFormFilterRole(o, dialogOperations);
 //@extendFormFilterRole(o, operations);     //-- пока не нужен
+
+EXTEND FORM operation
+    FILTERS isCompanyLegalEntity(s),
+            isBuyerLegalEntity(c)
+;
 
 EXTEND DESIGN operation{
     tabContainer {
