@@ -11,7 +11,7 @@ TABLE agreement (Agreement);
 
 nameAgreement 'Наименование' = DATA ISTRING[50](Agreement);
 
-@defineNumeratedObjectDefault(Agreement, 'Нумератор для договоров', 'ТД');
+@defineNumeratedObjectDefault(Agreement, 'Нумератор для соглашений', 'ТД');
 
 @defineDocumentHeaderTime(Agreement);
 @defineDocumentHeaderTimePrefix(Agreement, from, ' с');

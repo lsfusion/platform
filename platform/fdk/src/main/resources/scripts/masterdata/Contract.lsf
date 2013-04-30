@@ -1,6 +1,6 @@
 MODULE Contract;
 
-REQUIRE System, Historizable, LegalEntity;
+REQUIRE System, Historizable, LegalEntity, Numerator, Document;
 
 // ---------------------------------------- Договора ------------------------------------ //
 
@@ -10,13 +10,20 @@ TABLE contractDate (Contract, DATE);
 
 GROUP contractGroup 'Реквизиты' : recognize;
 
-numberContract 'Номер договора' = DATA STRING[30] (Contract) IN contractGroup;
+@defineDocumentAbstractHeaderNumber(Contract);
+
+wordContract 'Текст договора'  = ABSTRACT WORDFILE (Contract);
+openWordContract 'Просмотреть текст договора' (contract) = ACTION OPENFILE wordContract(contract);
+
+//numberContract 'Номер договора' = DATA STRING[30] (Contract) IN contractGroup;
 dateFromContract 'Дата начала договора' = DATA DATE (Contract) IN contractGroup;
 dateToContract 'Дата окончания договора' = DATA DATE (Contract) IN contractGroup;
 activeContract 'Действуюший' (contract, date) =
-//    (dateFromContract(contract) < (date AS DATE)) AND (dateToContract(contract) > (date AS DATE));
     (dateFromContract(contract) <= (date AS DATE)) AND NOT (dateToContract(contract) < (date AS DATE));
 
+descriptionContract 'Описание' (contract) = ustring3SP(string2SP('№ ', seriesNumberContract(contract)),
+                                                 string2SP('от ', dateFromContract(contract)),
+                                                 string2SP('по ', dateToContract(contract)));
 
 GROUP partyGroup 'Контрагенты' : recognize;
 
@@ -42,7 +49,7 @@ editContract 'Редактировать' (contract) = ABSTRACT ACTION (contract
 
 FORM contracts 'Договоры'
     OBJECTS c = Contract
-    PROPERTIES(c) READONLY namePartyAContract, namePartyBContract, numberContract, dateFromContract,
+    PROPERTIES(c) READONLY namePartyAContract, namePartyBContract, seriesNumberContract, dateFromContract,
                            dateToContract, nameCurrencyContract, noteContract
     PROPERTIES(c) editContract, delete
 

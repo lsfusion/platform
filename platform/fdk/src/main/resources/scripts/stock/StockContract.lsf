@@ -23,7 +23,22 @@ CLASS AgreementPaymentType 'Порядок оплаты' {
     requirement 'Платежное требование'
 };
 
-CLASS UserContractSku 'Договор на поставку (польз.)' : ContractSku;
+wordContractSku 'Текст договора'  = ABSTRACT WORDFILE (ContractSku);
+openWordContractSku 'Просмотреть текст договора' (contractSku) = ACTION OPENFILE wordContractSku(contractSku);
+wordContract(contract) += wordContractSku(contract);
+
+CLASS UserContractSku 'Договор на поставку (польз.)' : ContractSku, NumeratedObject;
+
+@defineDocumentInterfaceHeaderNumber(ContractSku);
+
+numberContract (contract) += numberContractSku(contract);
+seriesContract (contract) += seriesContractSku(contract);
+
+@defineNumeratedObjectDefault(UserContractSku, 'Нумератор для договоров', 'ДП');
+
+wordUserContractSku 'Текст договора' (UserContractSku) = DATA WORDFILE (UserContractSku);
+openWordUserContractSku 'Просмотреть текст договора' (userContractSku) = ACTION OPENFILE wordUserContractSku(userContractSku);
+wordContractSku(contract) += wordUserContractSku(contract);
 
 supplierContractSku = DATA LegalEntity (ContractSku);
 nameSupplierContractSku 'Поставщик' (contract) = nameLegalEntity(supplierContractSku(contract)) IN recognize MINCHARWIDTH 20 PREFCHARWIDTH 40;
@@ -125,13 +140,25 @@ FORM paymentConditions 'Условия оплаты'
 FORM userContractSku 'Договор на поставку товаров'
     OBJECTS c = UserContractSku FIXED PANEL
     PROPERTIES(c) nameSupplierContractSku, nameCustomerContractSku, nameTypeContractSku,
-                  numberContract, dateFromContract, dateToContract,
-                  nameCurrencyContract, noteContract
+                  nameNumeratorObject, numberObject, seriesObject, dateFromContract, dateToContract,
+                  nameCurrencyContract, noteContract, wordUserContractSku, openWordUserContractSku
 
     EDIT UserContractSku OBJECT c
 ;
 
 DESIGN userContractSku FROM DEFAULT{
+    NEW row {
+        childConstraints = TO THE RIGHT;
+        ADD c.numberedGroup {
+            childConstraints = TO THE RIGHTBOTTOM;
+        }
+        NEW text {
+            title = 'Содержание';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(wordUserContractSku);
+            ADD PROPERTY(openWordUserContractSku);
+        }
+    }
     NEW topContainer{
         childConstraints = TO THE RIGHT;
         NEW prmContainer{
@@ -171,6 +198,16 @@ EXTEND FORM contracts
     PROPERTIES() addUserContractSku TODRAW c FORCE PANEL
 ;
 
+FORM contractSkus 'Договоры на поставку'
+    OBJECTS c = ContractSku
+    PROPERTIES(c) READONLY nameSupplierContractSku, nameCustomerContractSku, nameTypeContractSku,
+                  seriesNumberObject, dateFromContract, dateToContract,
+                  nameCurrencyContract, noteContract
+    PROPERTIES  addUserContractSku() TODRAW c FORCE PANEL, editContract(c)
+
+    DIALOG ContractSku OBJECT c
+;
+
 NAVIGATOR {
     stockMasterData {
         ADD contracts;
@@ -192,7 +229,7 @@ EXTEND DESIGN agreement{
 EXTEND FORM legalEntity
 
     OBJECTS css = UserContractSku
-    PROPERTIES(css) READONLY numberContract, nameTypeContractSku, dateFromContract,
+    PROPERTIES(css) READONLY seriesNumberObject, nameTypeContractSku, dateFromContract,
                     dateToContract, nameCurrencyContract, noteContract
     PROPERTIES addUserContractSkuSupplierCustomer(s, l) TODRAW css FORCE PANEL TOOLBAR
     PROPERTIES(css)  EDITSESSIONFORM, delete SHOWIF isUserContractSku(css)
@@ -203,7 +240,7 @@ EXTEND FORM legalEntity
         FILTER 'Есть договор' 'F10' countContractPartyAPartyB(s, l)
 
     OBJECTS csc = UserContractSku
-    PROPERTIES(csc) READONLY numberContract, nameTypeContractSku, dateFromContract,
+    PROPERTIES(csc) READONLY seriesNumberObject, nameTypeContractSku, dateFromContract,
                     dateToContract, nameCurrencyContract, noteContract
     PROPERTIES addUserContractSkuSupplierCustomer(l, c) TODRAW csc FORCE PANEL TOOLBAR
     PROPERTIES(csc) EDITSESSIONFORM, delete SHOWIF isUserContractSku(csc)
