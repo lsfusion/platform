@@ -821,7 +821,20 @@ propertyDeclaration returns [String name, String caption, List<String> paramName
 
 
 propertyExpression[List<String> context, boolean dynamic] returns [LPWithParams property]
-	:	pe=orPE[context, dynamic] { $property = $pe.property; }
+	:	pe=overridePE[context, dynamic] { $property = $pe.property; }
+	;
+
+overridePE[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedOverrideProp(props);
+	}
+}
+	:	firstExpr=orPE[context, dynamic] { props.add($firstExpr.property); }
+		('OVERRIDE' nextExpr=orPE[context, dynamic] { props.add($nextExpr.property); })*
 	;
 
 orPE[List<String> context, boolean dynamic] returns [LPWithParams property]

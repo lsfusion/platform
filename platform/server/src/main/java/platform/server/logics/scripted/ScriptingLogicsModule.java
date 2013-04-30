@@ -742,6 +742,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(getRelationProp(op), asList(leftProp, rightProp));
     }
 
+    public LPWithParams addScriptedOverrideProp(List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+        LPWithParams res = properties.get(0);
+        if (properties.size() > 1) {
+            res = addScriptedUProp(Union.OVERRIDE, properties, "OVERRIDE");
+        }
+        return res;
+    }
+
     public LPWithParams addScriptedOrProp(List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
         LPWithParams res = properties.get(0);
         if (properties.size() > 1) {
