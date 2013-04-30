@@ -216,7 +216,7 @@ META defineInvoice(sign, stockProp)
         PROPERTIES (i) objectClassName, nameSupplierUserInvoice, nameSupplierStockUserInvoice, nameCustomerUserInvoice, nameCustomerStockUserInvoice,
                        nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
                        nameCurrencyUserInvoice, nameAgreementUserInvoice, namePriceListTypeUserInvoice SHOWIF noAgreementUserInvoice(i), noteUserInvoice,
-                       numberContractSkuUserInvoice, isCommissionUserInvoice
+                       seriesNumberContractSkuUserInvoice, isCommissionUserInvoice
         PROPERTIES (i) countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
                        VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
 
@@ -287,7 +287,7 @@ META defineInvoice(sign, stockProp)
                         NEW headerContract {
                             title = 'Договор';
                             childConstraints = TO THE RIGHTBOTTOM;
-                            ADD PROPERTY(numberContractSkuUserInvoice);
+                            ADD PROPERTY(seriesNumberContractSkuUserInvoice);
                             ADD PROPERTY(isCommissionUserInvoice);
                         }
                     }
@@ -371,7 +371,7 @@ META defineInvoice(sign, stockProp)
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                                 nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice,
                                 nameCurrencyInvoice, nameAgreementInvoice,
-                                numberContractSkuInvoice, isCommissionInvoice,
+                                seriesNumberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice,
                                 noteInvoice, objectClassName

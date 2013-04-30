@@ -285,7 +285,7 @@ META defineOrderInvoice(sign, stockProp)
     backgroundInvoiceOrder 'Цвет' (order) = RGB(175, 255, 175) IF order IS Order;
     EXTEND FORM userOrder
         PROPERTIES(o) BACKGROUND backgroundInvoiceOrder(o) createInvoiceUserOrder
-        PROPERTIES(o) BACKGROUND backgroundInvoiceOrder(o) SHOWIF createInvoiceUserOrder(o) numberContractSkuUserOrder, isCommissionUserOrder
+        PROPERTIES(o) BACKGROUND backgroundInvoiceOrder(o) SHOWIF createInvoiceUserOrder(o) seriesNumberContractSkuUserOrder, isCommissionUserOrder
 
         PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityUserOrderDetail SHOWIF showInvoiceOrder(o) BACKGROUND backgroundInvoiceOrder(o)
         PROPERTIES(d) invoiceQuantityUserOrderDetail AFTER quantityUserOrderDetail SHOWIF createInvoiceUserOrder(o) BACKGROUND backgroundInvoiceOrder(o)
@@ -296,7 +296,7 @@ META defineOrderInvoice(sign, stockProp)
                 childConstraints = TO THE RIGHTBOTTOM;
                 title = 'Накладная';
                 ADD PROPERTY(createInvoiceUserOrder);
-                ADD PROPERTY(numberContractSkuUserOrder);
+                ADD PROPERTY(seriesNumberContractSkuUserOrder);
                 ADD PROPERTY(isCommissionUserOrder);
             }
         }
@@ -304,7 +304,7 @@ META defineOrderInvoice(sign, stockProp)
 
     EXTEND FORM orders
         PROPERTIES(o) READONLY BACKGROUND backgroundInvoiceOrder(o) createInvoiceOrder
-        PROPERTIES(o) READONLY AFTER nameAgreementOrder(o) BACKGROUND backgroundInvoiceOrder(o) isCommissionOrder, numberContractSkuOrder
+        PROPERTIES(o) READONLY AFTER nameAgreementOrder(o) BACKGROUND backgroundInvoiceOrder(o) isCommissionOrder, seriesNumberContractSkuOrder
 
         PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityOrderDetail SHOWIF showInvoiceOrder(o) BACKGROUND backgroundInvoiceOrder(o)
         PROPERTIES(d) invoiceQuantityOrderDetail AFTER quantityOrderDetail SHOWIF createInvoiceOrder(o) BACKGROUND backgroundInvoiceOrder(o)

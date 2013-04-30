@@ -855,7 +855,7 @@ META defineInvoicePricingRelation(sign, stockProp)
         OBJECTS i = Invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                                 nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice, nameCurrencyInvoice,
-                                numberContractSkuInvoice, isCommissionInvoice,
+                                seriesNumberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice,
                                 noteInvoice, objectClassName

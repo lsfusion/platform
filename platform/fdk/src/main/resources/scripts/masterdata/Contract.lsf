@@ -21,9 +21,9 @@ dateToContract 'Дата окончания договора' = DATA DATE (Contr
 activeContract 'Действуюший' (contract, date) =
     (dateFromContract(contract) <= (date AS DATE)) AND NOT (dateToContract(contract) < (date AS DATE));
 
-descriptionContract 'Описание' (contract) = ustring3SP(string2SP('№ ', seriesNumberContract(contract)),
-                                                 string2SP('от ', dateFromContract(contract)),
-                                                 string2SP('по ', dateToContract(contract)));
+//descriptionContract 'Описание' (contract) = ustring3SP(string2SP('№ ', seriesNumberContract(contract)),
+//                                                 string2SP('от ', dateFromContract(contract)),
+//                                                 string2SP('по ', dateToContract(contract)));
 
 GROUP partyGroup 'Контрагенты' : recognize;
 
@@ -77,7 +77,7 @@ META defineContractDefault (contract, contractClass, partyAClass, partyBClass, p
     contract###prefixA###prefixB (pA, pB) = [GROUP MAX contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate()
                                                          BY prefixA###contract(contract), prefixB###contract(contract)](pA, pB) OR
                                                   data###contract###prefixA###prefixB(pA, pB);
-    number###contract###prefixA###prefixB 'Основной договор' (pA, pB) = numberContract(contract###prefixA###prefixB(pA, pB));
+    seriesNumber###contract###prefixA###prefixB 'Основной договор' (pA, pB) = seriesNumberContract(contract###prefixA###prefixB(pA, pB));
 
     single###contract###prefixA###prefixB (pA, pB) = contract###prefixA###prefixB(pA, pB) IF countContractPartyAPartyB(pA, pB);
 
@@ -94,7 +94,7 @@ END
 
 META defineDocumentContract (objectClass, contractType, contractTypeClass, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage)
     contractType##objectClass = DATA contractTypeClass (objectClass);
-    number###contractType##objectClass 'Номер договора' (o) = numberContract(contractType##objectClass(o)) IN documentPrmGroup;
+    seriesNumber###contractType##objectClass 'Номер договора' (o) = seriesNumberContract(contractType##objectClass(o)) IN documentPrmGroup;
 
     isCommission###objectClass 'Продажа на комиссию' = DATA BOOLEAN (objectClass) IN documentPrmGroup;
     isCommission###objectClass(o) <- typeContractSku(contractType###objectClass(o)) == ContractSkuType.commission
@@ -117,7 +117,7 @@ END
 
 META defineDocumentAbstractContract (objectClass, contractType, contractTypeClass)
     contractType##objectClass = ABSTRACT contractTypeClass (objectClass) PERSISTENT;
-    number###contractType##objectClass 'Номер договора' (o) = numberContract(contractType##objectClass(o)) IN documentPrmGroup;
+    seriesNumber###contractType##objectClass 'Номер договора' (o) = seriesNumberContract(contractType##objectClass(o)) IN documentPrmGroup;
 
     isCommission##objectClass 'Продажа на комиссию' = ABSTRACT BOOLEAN (objectClass) PERSISTENT IN documentPrmGroup;
 END

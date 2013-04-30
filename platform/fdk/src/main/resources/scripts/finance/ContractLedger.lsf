@@ -215,7 +215,7 @@ timePaymentRequest(paymentRequest) <- currentTime() WHEN ASSIGNED(paymentRequest
 dateTimePaymentRequest 'Дата время' (paymentRequest) = dateTimeToDateTime(datePaymentRequest(paymentRequest), timePaymentRequest(paymentRequest));
 
 contractPaymentRequest 'Контракт' (paymentRequest) = DATA Contract (PaymentRequest) AUTOSET;
-numberContractPaymentRequest 'Номер контракта' (paymentRequest) = numberContract(contractPaymentRequest(paymentRequest));
+seriesNumberContractPaymentRequest 'Номер контракта' (paymentRequest) = seriesNumberContract(contractPaymentRequest(paymentRequest));
 
 notePaymentRequest 'Примечание' (paymentRequest) = DATA STRING[200] (PaymentRequest);
 
@@ -239,7 +239,7 @@ FORM paymentRequest 'Платежное требование'
 
     OBJECTS p = PaymentRequest FIXED PANEL
     PROPERTIES(p) objectClassName, nameNumeratorObject, numberObject, seriesObject, datePaymentRequest, timePaymentRequest,
-                  numberContractPaymentRequest, notePaymentRequest
+                  seriesNumberContractPaymentRequest, notePaymentRequest
     PROPERTIES(p) READONLY namePayerPaymentRequest, nameLenderPaymentRequest
     PROPERTIES(p) sumPaymentRequest
 
@@ -269,7 +269,7 @@ DESIGN paymentRequest FROM DEFAULT{
         NEW paramContainer {
 
             caption = 'Параметры документа';
-            ADD PROPERTY(numberContractPaymentRequest);
+            ADD PROPERTY(seriesNumberContractPaymentRequest);
             ADD PROPERTY(nameLenderPaymentRequest);
             ADD PROPERTY(notePaymentRequest);
         }
@@ -311,7 +311,7 @@ META defineCreditMemoPrefix(prefix, caption, captionPost)
     dateTimeCreditMemo###prefix 'Дата время' (creditMemo###prefix) = dateTimeToDateTime(dateCreditMemo###prefix(creditMemo###prefix), timeCreditMemo###prefix(creditMemo###prefix));
 
     contractCreditMemo###prefix 'Контракт' (creditMemo###prefix) = DATA Contract (CreditMemo###prefix) AUTOSET;
-    numberContractCreditMemo###prefix 'Номер контракта' (creditMemo###prefix) = numberContract(contractCreditMemo###prefix(creditMemo###prefix));
+    seriesNumberContractCreditMemo###prefix 'Номер контракта' (creditMemo###prefix) = seriesNumberContract(contractCreditMemo###prefix(creditMemo###prefix));
 
     noteCreditMemo###prefix 'Примечание' (creditMemo###prefix) = DATA STRING[200] (CreditMemo###prefix);
 
@@ -349,7 +349,7 @@ prePostCreditMemo(creditMemo) += prePostCreditMemoOut(creditMemo);
 @defineCreditMemoUnion(time, 'Время');
 dateTimeCreditMemo 'Дата/время' (creditMemo) = dateTimeToDateTime(dateCreditMemo(creditMemo), timeCreditMemo(creditMemo));
 @defineCreditMemoUnion(contract, 'Контракт');
-numberContractCreditMemo 'Номер контракта' (creditMemo) = numberContract(contractCreditMemo(creditMemo));
+seriesNumberContractCreditMemo 'Номер контракта' (creditMemo) = seriesNumberContract(contractCreditMemo(creditMemo));
 @defineCreditMemoUnion(partyB, );
 namePartyBCreditMemo 'Организация (покупатель)' (creditMemo) = nameLegalEntity(partyBCreditMemo(creditMemo));
 @defineCreditMemoUnion(partyA, );
@@ -380,7 +380,7 @@ FORM creditMemo 'Кредитная нота'
 
     OBJECTS c = CreditMemo FIXED PANEL, i = InContractLedger
     PROPERTIES(c) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateCreditMemo, timeCreditMemo,
-                  numberContractCreditMemo, noteCreditMemo
+                  seriesNumberContractCreditMemo, noteCreditMemo
     PROPERTIES(c) READONLY namePartyBCreditMemo, namePartyACreditMemo
     PROPERTIES(c) sumCreditMemo,
                   costedInContractLedgerOutContractLedger SHOWIF isOutContractLedger(c),
@@ -418,7 +418,7 @@ DESIGN creditMemo FROM DEFAULT{
         NEW paramContainer {
 
             caption = 'Параметры документа';
-            ADD PROPERTY(numberContractCreditMemo);
+            ADD PROPERTY(seriesNumberContractCreditMemo);
             ADD PROPERTY(namePartyACreditMemo);
             ADD PROPERTY(noteCreditMemo);
         }
@@ -550,13 +550,13 @@ FORM contractLedger 'Управление задолженностями'
     PROPERTIES() namePartyA, namePartyB
 
     OBJECTS c = Contract
-    PROPERTIES(c) READONLY numberContract, namePartyAContract, namePartyBContract, nameCurrencyContract
+    PROPERTIES(c) READONLY seriesNumberContract, namePartyAContract, namePartyBContract, nameCurrencyContract
     PROPERTIES(c, d) READONLY balanceAContractDate BACKGROUND backgroundSumContract(c),
                               balanceAAContractDate BACKGROUND backgroundSumContractA(c),
                               debtSumContractDate BACKGROUND backgroundBonusSumContract(c),
                               bonusSumContractDate BACKGROUND backgroundBonusSumContract(c),
                               bonusDebtSumContractDate BACKGROUND backgroundBonusSumContract(c)
-    ORDER BY numberContract
+    ORDER BY seriesNumberContract
 
     OBJECTS cl = ContractLedger
     PROPERTIES(cl) READONLY dateContractLedger BACKGROUND backgroundContractLedgerDate(cl, d),

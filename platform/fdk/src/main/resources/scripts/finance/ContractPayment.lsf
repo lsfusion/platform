@@ -5,7 +5,7 @@ REQUIRE ContractLedger, Payment;
 EXTEND CLASS Payment : ContractLedger, ContractALedger, OutContractLedger;
 
 contractPayment 'Контракт' (payment) = DATA Contract (Payment);
-numberContractPayment 'Номер' (payment) = numberContract(contractPayment(payment));
+seriesNumberContractPayment 'Номер' (payment) = seriesNumberContract(contractPayment(payment));
 
 currencyContractPayment(payment) = currencyContract(contractPayment(payment));
 nameCurrencyContractPayment 'Валюта' (payment) = nameCurrency(currencyContractPayment(payment));
@@ -79,7 +79,7 @@ showTypeExchangeContractPayment(payment) = currencyContractPayment(payment) != c
 
 EXTEND FORM payment
     OBJECTS i = InContractLedger
-    PROPERTIES(p) numberContractPayment,
+    PROPERTIES(p) seriesNumberContractPayment,
                   costedInContractLedgerOutContractLedger,
                   writeOutContractLedgerFIFO TODRAW i FORCE PANEL TOOLBAR,
                   writeOutContractLedgerLIFO TODRAW i FORCE PANEL TOOLBAR,
@@ -101,7 +101,7 @@ EXTEND DESIGN payment{
             NEW thirdColumn{
                 childConstraints = TO THE BOTTOM;
                 caption = 'Контракт';
-                ADD PROPERTY(numberContractPayment);
+                ADD PROPERTY(seriesNumberContractPayment);
                 ADD PROPERTY(nameCurrencyContractPayment);
                 ADD PROPERTY(sumContractPayment);
                 ADD PROPERTY(costedInContractLedgerOutContractLedger);
@@ -116,7 +116,7 @@ EXTEND DESIGN payment{
 }
 
 EXTEND FORM payments
-    PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY numberContractPayment AFTER timePayment,
+    PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY seriesNumberContractPayment AFTER timePayment,
                                                                   nameCurrencyContractPayment BEFORE delete,
                                                                   sumContractPayment BEFORE delete
 
