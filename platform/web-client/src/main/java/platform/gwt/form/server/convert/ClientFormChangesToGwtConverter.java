@@ -3,17 +3,22 @@ package platform.gwt.form.server.convert;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientFileClass;
 import platform.client.logics.classes.ClientImageClass;
+import platform.gwt.base.server.spring.BusinessLogicsProvider;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.server.FileUtils;
 import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
+import platform.gwt.form.shared.view.changes.dto.GDateDTO;
 import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form.shared.view.changes.dto.GPropertyReaderDTO;
 import platform.interop.ClassViewType;
+import sun.util.calendar.BaseCalendar;
+import sun.util.calendar.CalendarSystem;
 
 import java.awt.*;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +38,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ClientFormChanges.class)
-    public GFormChangesDTO convertFormChanges(ClientFormChanges changes) {
+    public GFormChangesDTO convertFormChanges(ClientFormChanges changes, BusinessLogicsProvider blProvider) {
         GFormChangesDTO dto = new GFormChangesDTO();
 
         dto.classViewsGroupIds = new int[changes.classViews.size()];
@@ -48,7 +53,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         dto.objects = new GGroupObjectValue[changes.objects.size()];
         i = 0;
         for (Map.Entry<ClientGroupObject, ClientGroupObjectValue> e : changes.objects.entrySet()) {
-            GGroupObjectValue groupObjectValue = convertOrCast(e.getValue());
+            GGroupObjectValue groupObjectValue = convertOrCast(e.getValue(), blProvider);
             dto.objectsGroupIds[i] = e.getKey().ID;
             dto.objects[i++] = groupObjectValue;
         }
@@ -60,7 +65,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
 
             for (ClientGroupObjectValue keyValue : entry.getValue()) {
-                GGroupObjectValue groupObjectValue = convertOrCast(keyValue);
+                GGroupObjectValue groupObjectValue = convertOrCast(keyValue, blProvider);
                 keys.add(groupObjectValue);
             }
 
@@ -75,7 +80,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
 
             for (ClientGroupObjectValue keyValue : entry.getValue()) {
-                GGroupObjectValue groupObjectValue = convertOrCast(keyValue);
+                GGroupObjectValue groupObjectValue = convertOrCast(keyValue, blProvider);
                 keys.add(groupObjectValue);
             }
 
@@ -90,9 +95,9 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             HashMap<GGroupObjectValue, Object> propValues = new HashMap<GGroupObjectValue, Object>();
             ClientPropertyReader reader = entry.getKey();
             for (Map.Entry<ClientGroupObjectValue, Object> clientValues : entry.getValue().entrySet()) {
-                GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
+                GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey(), blProvider);
 
-                Object propValue = convertOrCast(clientValues.getValue());
+                Object propValue = convertOrCast(clientValues.getValue(), blProvider);
                 if (reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientFileClass) {
                     propValues.put(
                             groupObjectValue,
@@ -147,5 +152,13 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             groupObjectValue.put(keyPart.getKey().ID, keyPart.getValue());
         }
         return groupObjectValue.toGroupObjectValue();
+    }
+
+    @Converter(from = Date.class)
+    public GDateDTO convertDate(Date gDate, BusinessLogicsProvider blProvider) {
+        BaseCalendar calendar = CalendarSystem.getGregorianCalendar();
+        BaseCalendar.Date date = (BaseCalendar.Date) calendar.getCalendarDate(gDate.getTime(), blProvider.getTimeZone());
+        calendar.getCalendarDate(gDate.getTime());
+        return new GDateDTO(date.getDayOfMonth(), date.getMonth() - 1, date.getYear() - 1900);
     }
 }

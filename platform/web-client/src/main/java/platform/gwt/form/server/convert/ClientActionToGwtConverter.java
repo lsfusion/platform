@@ -104,10 +104,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ProcessFormChangesClientAction.class)
-    public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form) throws IOException {
+    public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form, FormDispatchServlet servlet) throws IOException {
         ClientFormChanges changes = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(action.formChanges)), form.clientForm);
 
-        GFormChangesDTO changesDTO = ClientFormChangesToGwtConverter.getInstance().convertOrCast(changes);
+        GFormChangesDTO changesDTO = ClientFormChangesToGwtConverter.getInstance().convertOrCast(changes, servlet.getBLProvider());
 
         return new GProcessFormChangesAction(changesDTO);
     }

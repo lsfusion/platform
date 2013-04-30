@@ -6,6 +6,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.changes.dto.GDateDTO;
 
 import java.util.Date;
 
@@ -23,7 +24,12 @@ public class DateGridCellRenderer extends TextBasedGridCellRenderer<Object> {
 
     @Override
     protected String renderToString(Object value) {
-        return format.format((Date) value);
+        if (value instanceof GDateDTO) {
+            GDateDTO dateDTO = (GDateDTO) value;
+            return format.format(new Date(dateDTO.year, dateDTO.month, dateDTO.day));
+        } else {
+            return format.format((Date) value);
+        }
     }
 
     @Override

@@ -693,7 +693,7 @@ formHintsList
 formEventsList
 @init {
 	List<ActionPropertyObjectEntity> actions = new ArrayList<ActionPropertyObjectEntity>();
-	List<FormEventType> types = new ArrayList<FormEventType>();
+	List<Object> types = new ArrayList<Object>();
 }
 @after {
 	if (inPropParseState()) {
@@ -706,7 +706,7 @@ formEventsList
 	;
 
 
-formEventDeclaration returns [ActionPropertyObjectEntity action, FormEventType type]
+formEventDeclaration returns [ActionPropertyObjectEntity action, Object type]
 	:	'ON' 
 		(	'OK' 	 { $type = FormEventType.OK; }
 		|	'APPLY'	 { $type = FormEventType.APPLY; }	
@@ -714,6 +714,7 @@ formEventDeclaration returns [ActionPropertyObjectEntity action, FormEventType t
 		|	'INIT'	 { $type = FormEventType.INIT; }
 		|	'CANCEL' { $type = FormEventType.CANCEL; }
 		|	'DROP'	 { $type = FormEventType.DROP; }
+		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
 		)
 		faprop=formActionPropertyObject { $action = $faprop.action; }
 	;

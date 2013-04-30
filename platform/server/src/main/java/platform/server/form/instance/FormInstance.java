@@ -494,6 +494,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
+    public void  changeGroupObject(GroupObjectInstance group, ImMap<ObjectInstance, DataObject> values) throws SQLException {
+        ImMap<ObjectInstance, DataObject> oldValues = group.getGroupObjectValue();
+        for (ObjectInstance objectInstance : oldValues.keyIt()) {
+            if (!BaseUtils.nullEquals(oldValues.get(objectInstance), values.get(objectInstance))) {
+                fireObjectChanged(objectInstance);
+            }
+        }
+    }
+
     public void expandGroupObject(GroupObjectInstance group, ImMap<ObjectInstance, DataObject> value) throws SQLException {
         if(group.expandTable==null)
             group.expandTable = group.createKeyTable();

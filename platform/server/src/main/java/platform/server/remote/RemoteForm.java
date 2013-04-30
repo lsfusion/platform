@@ -208,6 +208,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     return;
                 }
 
+                form.changeGroupObject(groupObject, valueToSet);
+
                 groupObject.change(form.session, valueToSet);
 
                 updateCurrentClass = groupObject.objects.iterator().next();

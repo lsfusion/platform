@@ -16,6 +16,7 @@ import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.changes.dto.GDateDTO;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.NativeEditEvent;
@@ -88,6 +89,10 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
                 selectAll = false;
             }
         }
+        if (oldValue != null) {
+            GDateDTO oldDate = (GDateDTO) oldValue;
+            oldValue = new Date(oldDate.year, oldDate.month, oldDate.day);
+        }
 
         if (oldValue != null) {
             datePicker.setValue((Date) oldValue);
@@ -111,7 +116,7 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
         return value == null ? "" : format.format((Date) value);
     }
 
-    private java.sql.Date parseString(String value) {
+    private GDateDTO parseString(String value) {
         if (value.isEmpty()) {
             return null;
         } else {
@@ -121,7 +126,7 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
             } else {
                 resultDate = format.parse(value);
             }
-            return new java.sql.Date(resultDate.getTime());
+            return new GDateDTO(resultDate.getDate(), resultDate.getMonth(), resultDate.getYear());
         }
     }
 }

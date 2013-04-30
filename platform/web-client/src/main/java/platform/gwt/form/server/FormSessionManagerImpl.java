@@ -41,8 +41,9 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
         gForm.sessionID = nextFormSessionID();
 
         ProcessFormChangesClientAction clientAction = (ProcessFormChangesClientAction) remoteForm.getRemoteChanges(-1).actions[0];
-        gForm.initialFormChanges = ClientFormChangesToGwtConverter.getInstance().convertFormChanges(
-                new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(clientAction.formChanges)), clientForm)
+        gForm.initialFormChanges = ClientFormChangesToGwtConverter.getInstance().convertOrCast(
+                new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(clientAction.formChanges)), clientForm),
+                blProvider
         );
         currentForms.put(gForm.sessionID, new FormSessionObject(clientForm, remoteForm));
 
