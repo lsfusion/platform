@@ -116,10 +116,12 @@ createExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += ACTION (userIn
             SET packQuantityUserInvoiceDetail (d) <- toInvoicedOrderDetail(orderDetail)/amountPackOrderDetail(orderDetail);
             SET VATUserInvoiceDetail (d) <- VATOrderDetail(orderDetail);
             SET valueVATUserInvoiceDetail (d) <- valueVATOrderDetail(orderDetail);
+            // todo: should be DATA property
             SET priceListTypeInvoiceDetail (d) <- priceListTypeOrderDetail(orderDetail);
             SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
             SET invoicePriceUserInvoiceDetail (d) <- invoicePriceOrderDetail(orderDetail);
             SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
+            // todo: should be DATA property
             SET supplierStockUserInvoiceDetail (d) <- supplierStockOrderDetail(orderDetail);
         }
 }

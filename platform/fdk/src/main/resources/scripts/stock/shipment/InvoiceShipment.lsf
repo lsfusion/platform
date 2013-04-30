@@ -308,6 +308,7 @@ META defineInvoiceShipmentAction (sign)
             SET currencyUserShipment(s) <- currencyInvoice(invoice);
             SET numberObject(s) <- numberInvoice(invoice) WHERE s IS UserShipment;
             SET seriesObject(s) <- seriesInvoice(invoice) WHERE s IS UserShipment;
+            // todo: should be DATA property
             SET isPostedUserShipment(s) <- isPostedInvoice(invoice);
             SET noteUserShipment(s) <- noteInvoice(invoice);
             EXEC overFillInvoiceUserShipmentInvoice(s, invoice);
@@ -317,7 +318,9 @@ META defineInvoiceShipmentAction (sign)
                 SET invoiceDetailUserShipmentDetail(d) <- detail;
                 SET orderUserShipmentDetail(d) <- orderInvoiceDetail(detail);
 
+                // todo: should be DATA property
                 SET dataCustomerStockShipmentDetail(d) <- dataCustomerStockInvoiceDetail(detail);
+                // todo: should be DATA property
                 SET dataSupplierStockShipmentDetail(d) <- dataSupplierStockInvoiceDetail(detail);
 
                 SET skuUserShipmentDetail(d) <- skuInvoiceDetail(detail);

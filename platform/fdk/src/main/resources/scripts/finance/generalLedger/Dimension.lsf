@@ -60,9 +60,11 @@ CONSTRAINT creditUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType)
 
 overCopyGeneralLedger(from, to) += ACTION (from, to) {
     FOR debitGeneralLedgerDimensionType(from,dimensionType) DO {
+        // todo: should be DATA property
         SET debitGeneralLedgerDimensionType(to,dimensionType) <- debitGeneralLedgerDimensionType(from,dimensionType) WHERE debitGeneralLedgerDimensionType(from,dimensionType) AND dimensionType IS DimensionType;
     }
     FOR creditGeneralLedgerDimensionType(from,dimensionType) DO {
+        // todo: should be DATA property
         SET creditGeneralLedgerDimensionType(to,dimensionType) <- creditGeneralLedgerDimensionType(from,dimensionType) WHERE creditGeneralLedgerDimensionType(from,dimensionType) AND dimensionType IS DimensionType;
     }
 }

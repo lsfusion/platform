@@ -402,6 +402,7 @@ META defineOrder(sign, legalEntityProp, stockProp)
                 FOR ADDOBJ d=UserOrderDetail DO {
                     SET userOrderUserOrderDetail(d) <- o;
                     SET skuUserOrderDetail(d) <- skuOrderDetail(orderDetail);
+                    // todo: should be DATA property
                     SET quantityOrderDetail(d) <- quantityOrderDetail(orderDetail);
                     SET data###stockProp###userOrderDetail(d) <- data###stockProp###orderDetail(orderDetail);
                 }

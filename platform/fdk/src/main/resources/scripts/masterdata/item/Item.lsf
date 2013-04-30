@@ -711,11 +711,14 @@ createItemBarcodeDate = ACTION (barcode, date) NEWSESSION {
     } ELSE {
         FOR ADDOBJ bc = Barcode DO {
             SET idBarcode(bc) <- (barcode AS STRING[14]);
+            // todo: should be DATA property
             SET dateBarcode(bc) <- (date AS DATE);
 
             FOR ADDOBJ s = Item DO {
                 SET skuBarcode(bc) <- s AS Item;
+                // todo: should be DATA property
                 SET activeBarcode(bc) <- TRUE;
+                // todo: should be DATA property
                 SET primaryBarcode(bc) <- TRUE;
                 FORM item OBJECTS i = s, b = bc MANAGESESSION DOCKEDMODAL;
             }

@@ -580,6 +580,7 @@ fillDocumentPriceList 'Подбор документа' = ACTION (userPriceList)
         SET chosenDocument() <- chosenObject('d');
         FOR documentDocumentDetail(documentDetail) == chosenDocument() ADDOBJ i = UserPriceListDetail DO {
             SET userPriceListUserPriceListDetail(i) <- userPriceList;
+            // todo: should be DATA property
             SET skuPriceListDetail(i) <- skuDocumentDetail(documentDetail);
         }
     }
@@ -790,11 +791,13 @@ copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
         SET inUserPriceListStock(u, stock) <- inUserPriceListStock(priceList, stock);
         SET inUserPriceListStockGroup(u, stockGroup) <- inUserPriceListStockGroup(priceList, stockGroup);
         SET inUserPriceList(u) <- inUserPriceList(priceList);
+        // todo: should be DATA property
         SET inPriceListDataPriceListType(u, priceListType) <- inPriceListDataPriceListType(priceList, priceListType);
         FOR userPriceListUserPriceListDetail(detail) == priceList DO {
             FOR ADDOBJ d = UserPriceListDetail DO {
                 SET userPriceListUserPriceListDetail(d) <- u;
                 SET skuUserPriceListDetail(d) <- skuUserPriceListDetail(detail);
+                // todo: should be DATA property
                 SET pricePriceListDetailDataPriceListType(d, priceListType) <- pricePriceListDetailDataPriceListType(detail, priceListType);
             }
         }
@@ -810,11 +813,13 @@ renewPriceList 'Обновить' = ACTION (priceList) {
         SET inUserPriceListStock(u, stock) <- inUserPriceListStock(priceList, stock);
         SET inUserPriceListStockGroup(u, stockGroup) <- inUserPriceListStockGroup(priceList, stockGroup);
         SET inUserPriceList(u) <- inUserPriceList(priceList);
+        // todo: should be DATA property
         SET inPriceListDataPriceListType(u, priceListType) <- inPriceListDataPriceListType(priceList, priceListType);
         FOR userPriceListUserPriceListDetail(detail) == priceList DO {
             FOR ADDOBJ d = UserPriceListDetail DO {
                 SET userPriceListUserPriceListDetail(d) <- u;
                 SET skuUserPriceListDetail(d) <- skuUserPriceListDetail(detail);
+                // todo: should be DATA property
                 SET pricePriceListDetailDataPriceListType(d, priceListType) <- pricePriceListDetailDataPriceListType(detail, priceListType);
             }
         }
@@ -1187,7 +1192,9 @@ createPriceRangeManagement 'Создать прайс' = ACTION (dataPriceListTy
         SET fromTimeUserPriceList(u) <- currentTime();
         SET companyUserPriceList(u) <- filterLegalEntityRangeManagement();
         SET currencyUserPriceList(u) <- currencyLegalEntity(filterLegalEntityRangeManagement());
+        // todo: should be DATA property
         SET inPriceListDataPriceListType(u, dataPriceListType) <- TRUE;
+        // todo: should be DATA property
         SET showPriceListPriceListType(u, dataPriceListType) <- TRUE;
         FOR inRangeManagement(sku) ADDOBJ d = UserPriceListDetail DO {
             SET skuUserPriceListDetail(d) <- sku AS Sku;

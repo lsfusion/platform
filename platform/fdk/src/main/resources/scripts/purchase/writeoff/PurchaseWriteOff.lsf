@@ -404,6 +404,7 @@ moveUserWriteOffShipment 'Списание' =  ACTION (shipment) NEWSESSION{
         SET currencyUserWriteOff(w) <- currencyShipment(shipment);
         SET numberObject(w) <- numberShipment(shipment) WHERE w IS UserWriteOff;
         SET seriesObject(w) <- seriesShipment(shipment) WHERE w IS UserWriteOff;
+        // todo: should be DATA property
         SET isPostedUserWriteOff(w) <- isPostedShipment(shipment);
         SET noteUserWriteOff(w) <- noteShipment(shipment);
 

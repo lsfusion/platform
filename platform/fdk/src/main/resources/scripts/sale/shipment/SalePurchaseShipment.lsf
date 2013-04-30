@@ -261,6 +261,7 @@ moveUserShipmentShipment 'Поставка (закупка)' =  ACTION (shipment
         SET Purchase.customerStockUserShipment(s) <- customerStockShipment(shipment);
         SET numberObject(s) <- numberShipment(shipment) WHERE s IS Purchase.UserShipment;
         SET seriesObject(s) <- seriesShipment(shipment) WHERE s IS Purchase.UserShipment;
+        // todo: should be DATA property
         SET Purchase.isPostedUserShipment(s) <- isPostedShipment(shipment);
         SET Purchase.noteUserShipment(s) <- noteShipment(shipment);
         SET Purchase.currencyUserShipment(s) <- currencyShipment(shipment);

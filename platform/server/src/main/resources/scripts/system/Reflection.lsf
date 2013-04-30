@@ -258,8 +258,6 @@ EXTEND DESIGN properties {
             NEW treeContainer {
                 title = 'Дерево';
                 ADD treePropertiesObject.tree.box;
-                ADD p.box;
-
             }
 
             NEW tableContainer {

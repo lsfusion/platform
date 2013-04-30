@@ -1074,6 +1074,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedSetPropertyAProp(List<String> context, String toPropertyName, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedSetPropertyAProp(" + context + ", " + toPropertyName + ", " + fromProperty + ", " + whereProperty + ");");
         LP toPropertyLP = findLPByCompoundName(toPropertyName);
+
+        if (!(toPropertyLP.property instanceof DataProperty)) {
+            errLog.emitOnlyDataPropertyIsAllowed(parser, toPropertyName);
+        }
+
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
 
         List<Integer> resultInterfaces = getResultInterfaces(context.size(), toProperty, fromProperty, whereProperty);
@@ -1710,6 +1715,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedWriteWhen(String mainPropName, List<String> namedParams, LPWithParams valueProp, LPWithParams whenProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedWriteWhen(" + mainPropName + ", " + namedParams + ", " + valueProp + ", " + whenProp + ");");
         LP mainProp = findLPByCompoundName(mainPropName);
+        if (!(mainProp.property instanceof DataProperty)) {
+            errLog.emitOnlyDataPropertyIsAllowed(parser, mainPropName);
+        }
         checkParamCount(mainProp, namedParams.size());
         checkDistinctParameters(namedParams);
         checkCalculationProperty(mainProp);

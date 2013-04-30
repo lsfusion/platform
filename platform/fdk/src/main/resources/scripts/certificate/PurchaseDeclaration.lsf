@@ -361,7 +361,9 @@ sumRegistrationCostDeclaration 'Таможенный сбор (факт)' (decla
 
 setPriceInvoiceDetailes 'Рассчитать расходы (за ед.)' = ACTION (declaration) {
    FOR declarationInvoiceDetail(invoiceDetail) == declaration DO {
+      // todo: should be DATA property
       SET priceDutyInvoiceDetail(invoiceDetail) <- calcPriceDutyInvoiceDetail(invoiceDetail);
+      // todo: should be DATA property
       SET priceRegistrationInvoiceDetail(invoiceDetail) <- calcPriceRegistrationInvoiceDetail(invoiceDetail);
    };
 } TOOLBAR;

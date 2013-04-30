@@ -431,6 +431,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "TO clause should use only local parameters introduced in WHERE clause");
     }
 
+    public void emitOnlyDataPropertyIsAllowed(ScriptParser parser, String propertyName) throws SemanticErrorException {
+//        emitSimpleError(parser, format("Only DATA property is allowed here: %s", propertyName));
+    }
+
     public void emitStrLiteralEscapeSequenceError(ScriptParser parser, char ch) throws SemanticErrorException {
         emitSimpleError(parser, format("wrong escape sequence: '\\%c'", ch));
     }

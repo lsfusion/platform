@@ -118,6 +118,7 @@ moveUserOrderOrder 'Заказ (закупка)' =  ACTION (order) NEWSESSION{
         SET Purchase.customerStockUserOrder(o) <- customerStockOrder(order);
         SET numberObject(o) <- numberOrder(order) WHERE o IS Purchase.UserOrder;
         SET seriesObject(o) <- seriesOrder(order) WHERE o IS Purchase.UserOrder;
+        // todo: should be DATA property
         SET Purchase.isPostedUserOrder(o) <- isPostedOrder(order);
         SET Purchase.noteUserOrder(o) <- noteOrder(order);
         SET Purchase.currencyUserOrder(o) <- currencyOrder(order);
