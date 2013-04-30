@@ -24,6 +24,7 @@ CLASS AgreementPaymentType 'Порядок оплаты' {
 };
 
 wordContractSku 'Текст договора'  = ABSTRACT WORDFILE (ContractSku);
+saveWordContractSku 'Загрузить текст договора' (contractSku) = ACTION LOADFILE wordContractSku(contractSku);
 openWordContractSku 'Просмотреть текст договора' (contractSku) = ACTION OPENFILE wordContractSku(contractSku);
 wordContract(contract) += wordContractSku(contract);
 
@@ -37,6 +38,7 @@ seriesContract (contract) += seriesContractSku(contract);
 @defineNumeratedObjectDefault(UserContractSku, 'Нумератор для договоров', 'ДП');
 
 wordUserContractSku 'Текст договора' (UserContractSku) = DATA WORDFILE (UserContractSku);
+saveWordUserContractSku 'Загрузить текст договора' (userContractSku) = ACTION LOADFILE wordUserContractSku(userContractSku);
 openWordUserContractSku 'Просмотреть текст договора' (userContractSku) = ACTION OPENFILE wordUserContractSku(userContractSku);
 wordContractSku(contract) += wordUserContractSku(contract);
 
@@ -141,7 +143,7 @@ FORM userContractSku 'Договор на поставку товаров'
     OBJECTS c = UserContractSku FIXED PANEL
     PROPERTIES(c) nameSupplierContractSku, nameCustomerContractSku, nameTypeContractSku,
                   nameNumeratorObject, numberObject, seriesObject, dateFromContract, dateToContract,
-                  nameCurrencyContract, noteContract, wordUserContractSku, openWordUserContractSku
+                  nameCurrencyContract, noteContract, saveWordUserContractSku, openWordUserContractSku
 
     EDIT UserContractSku OBJECT c
 ;
@@ -155,7 +157,7 @@ DESIGN userContractSku FROM DEFAULT{
         NEW text {
             title = 'Содержание';
             childConstraints = TO THE RIGHTBOTTOM;
-            ADD PROPERTY(wordUserContractSku);
+            ADD PROPERTY(saveWordUserContractSku);
             ADD PROPERTY(openWordUserContractSku);
         }
     }

@@ -13,7 +13,9 @@ GROUP contractGroup 'Реквизиты' : recognize;
 @defineDocumentAbstractHeaderNumber(Contract);
 
 wordContract 'Текст договора'  = ABSTRACT WORDFILE (Contract);
+saveWordContract 'Загрузить текст договора' (contract) = ACTION LOADFILE wordContract(contract);
 openWordContract 'Просмотреть текст договора' (contract) = ACTION OPENFILE wordContract(contract);
+
 
 //numberContract 'Номер договора' = DATA STRING[30] (Contract) IN contractGroup;
 dateFromContract 'Дата начала договора' = DATA DATE (Contract) IN contractGroup;
