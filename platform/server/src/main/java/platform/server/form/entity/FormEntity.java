@@ -148,6 +148,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         okActionPropertyDraw = addPropertyDraw(baseLM.formOk);
         closeActionPropertyDraw = addPropertyDraw(baseLM.formClose);
         dropActionPropertyDraw = addPropertyDraw(baseLM.formDrop);
+
+        addActionsOnEvent(FormEventType.QUERYOK, true, (ActionPropertyObjectEntity)okActionPropertyDraw.propertyObject);
+        addActionsOnEvent(FormEventType.QUERYCLOSE, true, (ActionPropertyObjectEntity)closeActionPropertyDraw.propertyObject);
     }
 
     public void addFixedFilter(FilterEntity filter) {

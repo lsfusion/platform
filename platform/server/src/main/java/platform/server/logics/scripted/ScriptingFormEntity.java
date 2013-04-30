@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.interop.ClassViewType;
+import platform.interop.FormEventType;
 import platform.interop.ModalityType;
 import platform.server.classes.ColorClass;
 import platform.server.classes.CustomClass;
@@ -445,10 +446,12 @@ public class ScriptingFormEntity {
     public void addScriptedFormEvents(List<ActionPropertyObjectEntity> actions, List<Object> types) throws ScriptingErrorLog.SemanticErrorException {
         assert actions.size() == types.size();
         for (int i = 0; i < actions.size(); i++) {
-            if (types.get(i) instanceof String) {
-                form.addActionsOnEvent(getObjectEntity((String) types.get(i)), actions.get(i));
+            Object eventType = types.get(i);
+            if (eventType instanceof String) {
+                form.addActionsOnEvent(getObjectEntity((String) eventType), actions.get(i));
             } else {
-                form.addActionsOnEvent(types.get(i), actions.get(i));
+                ActionPropertyObjectEntity action = actions.get(i);
+                form.addActionsOnEvent(eventType, eventType == FormEventType.QUERYOK || eventType == FormEventType.QUERYCLOSE, action);
             }
         }
     }

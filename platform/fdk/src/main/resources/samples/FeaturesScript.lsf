@@ -553,6 +553,11 @@ appliedMessage() = ACTION() {
     MESSAGE 'form apply message';
 }
 
+okMessage() = ACTION() {
+    MESSAGE 'Now closing...';
+    formClose();
+}
+
 onChangeDocumentName(document) = ACTION {
     REQUEST STRING[50] INPUT;
     SET storeName(document) <- requestedString();
@@ -605,12 +610,13 @@ FORM documentArticle 'По документам (caption)' TITLE 'По доку�
 
 // Events list syntax:
 // EVENTS
-// ON (INIT | APPLY | OK | CANCEL | CLOSE | DROP) action1,
+// ON (INIT | APPLY | OK | CANCEL | CLOSE | DROP | QUERYOK | QUERYCLOSE) action1,
 // ...
-// ON (INIT | APPLY | OK | CANCEL | CLOSE | DROP) actionN
+// ON (INIT | APPLY | OK | CANCEL | CLOSE | DROP | QUERYOK | QUERYCLOSE) actionN
     EVENTS
         ON CANCEL cancledMessage(),
-        ON APPLY appliedMessage()
+        ON APPLY appliedMessage(),
+        ON QUERYOK okMessage()
 ;
 
 // Hints list syntax:
@@ -738,7 +744,7 @@ loadf(s) = ACTION OPENFILE simage(s);
 savef(s) = ACTION LOADFILE simage(s);
 
 FORM storeArticle 'По складам'
-    OBJECTS s=Store '-Склад-', a=Article
+    OBJECTS s=Store, a=Article
     PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
     PROPERTIES TODRAW s FORCE PANEL setDefaultNames(), copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm() TOOLBAR, testRequestInput(s) TOOLBAR
     PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2

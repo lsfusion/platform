@@ -1487,6 +1487,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         fireEvent(FormEventType.DROP);
     }
 
+    public void fireQueryOk() throws SQLException {
+        fireEvent(FormEventType.QUERYOK);
+    }
+
+    public void fireQueryClose() throws SQLException {
+        fireEvent(FormEventType.QUERYCLOSE);
+    }
+
     private void fireEvent(Object eventObject) throws SQLException {
         List<ActionPropertyObjectEntity<?>> actionsOnEvent = entity.getActionsOnEvent(eventObject);
         if (actionsOnEvent != null) {
@@ -1542,6 +1550,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public boolean isInTransaction() {
         return false;
+    }
+
+    public void onQueryClose() throws SQLException {
+        fireQueryClose();
+    }
+
+    public void onQueryOk() throws SQLException {
+        fireQueryOk();
     }
 
     public void formApply() throws SQLException {

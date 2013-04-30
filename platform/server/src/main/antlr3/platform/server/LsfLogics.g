@@ -714,6 +714,8 @@ formEventDeclaration returns [ActionPropertyObjectEntity action, Object type]
 		|	'INIT'	 { $type = FormEventType.INIT; }
 		|	'CANCEL' { $type = FormEventType.CANCEL; }
 		|	'DROP'	 { $type = FormEventType.DROP; }
+		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
+		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
 		)
 		faprop=formActionPropertyObject { $action = $faprop.action; }

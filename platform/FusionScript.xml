@@ -195,6 +195,8 @@
       <keyword name="PROPERTIES" />
       <keyword name="PROPERTY" />
       <keyword name="PROPORTION" />
+      <keyword name="QUERYCLOSE" />
+      <keyword name="QUERYOK" />
       <keyword name="READONLY" />
       <keyword name="READONLYIF" />
       <keyword name="RECURSION" />
