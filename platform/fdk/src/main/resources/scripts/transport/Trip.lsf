@@ -31,7 +31,7 @@ filterTripOrder(trip, order) = tripOrder(order)==trip OR (trip IS Trip AND order
 
 quantityFromTripStock (trip, stock) = GROUP SUM 1 IF quantityFromOrderStock(order, stock) BY tripOrder(order), stock;
 quantityToTripStock (trip, stock) = GROUP SUM 1 IF quantityToOrderStock(order, stock) BY tripOrder(order), stock;
-quantityTripStock(trip, stock) = UNION SUM quantityFromTripStock(trip, stock), quantityToTripStock(trip, stock);
+quantityTripStock(trip, stock) = quantityFromTripStock(trip, stock) (+) quantityToTripStock(trip, stock);
 
 TABLE tripStock(Trip, Stock);
 numberStockTrip 'Порядковый номер' = DATA INTEGER(Stock, Trip);
@@ -84,7 +84,7 @@ selectTripOrder 'Отмечен' = DATA SESSION BOOLEAN(Trip, Order);
 
 quantityAllFromTripStock (trip, stock) = GROUP SUM 1 IF selectTripOrder(trip, order) BY trip, fromStockOrder(order);
 quantityAllToTripStock (trip, stock) = GROUP SUM 1 IF selectTripOrder(trip, order) BY trip, toStockOrder(order);
-quantityAllTripStock(trip, stock) = UNION SUM quantityAllFromTripStock(trip, stock), quantityAllToTripStock(trip, stock);
+quantityAllTripStock(trip, stock) = quantityAllFromTripStock(trip, stock) (+) quantityAllToTripStock(trip, stock);
 
 showPointOrders 'Показать отмеченные заказы' (trip) = ACTION (trip) {
     SET numberPathPOI(stock) <- 1 IF quantityAllTripStock(trip, stock);

@@ -803,8 +803,8 @@ dutyReverseDeclarationDetail 'Пошлина' (declarationDetail) = GROUP SUM du
 
 dutyReverseDeclaration 'Сумма пошлин' (declaration) = GROUP SUM dutyReverseDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT MINCHARWIDTH 15;
 
-sumDutyReverseDeclarationDetail 'Стоимость с пошлиной' (declarationDetail) = UNION SUM supplierSumDeclarationDetail(declarationDetail),
-                                                                                       dutyReverseDeclarationDetail(declarationDetail);
+sumDutyReverseDeclarationDetail 'Стоимость с пошлиной' (declarationDetail) =
+    supplierSumDeclarationDetail(declarationDetail) (+) dutyReverseDeclarationDetail(declarationDetail);
 
 // НДС
 VATRangeDataGroupDeclaration 'Шкала НДС (ИД)' = DATA Range(GroupDeclaration);
@@ -993,15 +993,17 @@ VATFinDeclarationDetail 'НДС' = roundTypeExchangeDeclarationDetail(VATReverse
 dutyRateDeclarationDetail 'Пошлина (в валюте)' (declarationDetail) = roundCurrencyDeclarationDetail(dutyFinDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail), declarationDetail);
 VATRateDeclarationDetail 'НДС (в валюте)' (declarationDetail) = roundCurrencyDeclarationDetail(VATFinDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail), declarationDetail);
 
-priceCustomDeclarationDetail 'Себестоимость (БУ)' (declarationDetail) = UNION SUM priceReverseDeclarationDetail(declarationDetail),
-                                                                                  dutyFinDeclarationDetail(declarationDetail),
-                                                                                  registrationDeclarationDetail(declarationDetail) PERSISTENT;
+priceCustomDeclarationDetail 'Себестоимость (БУ)' (declarationDetail) =
+    priceReverseDeclarationDetail(declarationDetail) (+)
+    dutyFinDeclarationDetail(declarationDetail) (+)
+    registrationDeclarationDetail(declarationDetail) PERSISTENT;
 
-priceManagerialCustomDeclarationDetail 'Себестоимость (УУ)' (declarationDetail) = UNION SUM priceManagerialDeclarationDetail(declarationDetail),
-                                                                                            dutyRateDeclarationDetail(declarationDetail),
-                                                                                            registrationRateDeclarationDetail(declarationDetail),
-                                                                                            expenseDeclarationDetail(declarationDetail),
-                                                                                            sumConsultationRateDeclarationDetail(declarationDetail) PERSISTENT;
+priceManagerialCustomDeclarationDetail 'Себестоимость (УУ)' (declarationDetail) =
+    priceManagerialDeclarationDetail(declarationDetail) (+)
+    dutyRateDeclarationDetail(declarationDetail) (+)
+    registrationRateDeclarationDetail(declarationDetail) (+)
+    expenseDeclarationDetail(declarationDetail) (+)
+    sumConsultationRateDeclarationDetail(declarationDetail) PERSISTENT;
 
 priceCustomBatch (batch) += priceCustomDeclarationDetail(batch);
 priceManagerialBatch (batch) += priceManagerialCustomDeclarationDetail(batch);

@@ -140,7 +140,7 @@ nameToCountry(name) = GROUP AGGR country BY name(country);
 // Union property
 // Expression syntax:
 // UNION (SUM | MAX | OVERRIDE | XOR | EXCLUSIVE) propertyExpression1, ..., propertyExpressionN
-testUnion(store, article) = UNION SUM incomeQuantity(store, article), outcomeQuantity(store, article);
+testUnion(store, article) = incomeQuantity(store, article) (+) outcomeQuantity(store, article);
 
 // OR property
 // Expression syntax:

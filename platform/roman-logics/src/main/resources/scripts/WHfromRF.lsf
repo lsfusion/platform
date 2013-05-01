@@ -51,7 +51,9 @@ sumRateDeliveryFreight 'Затраты на доставку (конверт.)' 
 
 sumDeliveryFreightSku 'Затраты на доставку' (freight, sku) = (sumRateDeliveryFreight(freight) * sumGrossWeightFreightSku(freight, sku))/grossWeightFreight(freight);
 
-priceRFFreightSku 'Себестоимость' (freight, sku) = UNION SUM priceInFullFreightSku(freight, sku), sumRateRegistrationFreightSku(freight, sku), sumDeliveryFreightSku(freight, sku) IF routeFreight(freight) == Route.rf;
+priceRFFreightSku 'Себестоимость' (freight, sku) = (priceInFullFreightSku(freight, sku) (+)
+                                                    sumRateRegistrationFreightSku(freight, sku) (+)
+                                                    sumDeliveryFreightSku(freight, sku)) IF routeFreight(freight) == Route.rf;
 
 EXTEND FORM freightInvoiceForm
     PROPERTIES tariffVolumeFreight(freight), percentCostFreight(freight), rateExchangeDataPayFreight(freight)
