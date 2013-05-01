@@ -39,16 +39,14 @@ nearestInAgreementSupplierGroup (agreement, legalEntityGroup) =
     dataInAgreementSupplierGroup(agreement, nearestParentLegalEntitySupplierGroup(agreement, legalEntityGroup)) PERSISTENT;
 
 inAgreementSupplierGroup 'Отм' (agreement, legalEntityGroup) =
-    UNION OVERRIDE nearestInAgreementSupplierGroup(agreement, legalEntityGroup),
-                   dataInAgreementSupplierGroup(agreement, legalEntityGroup);
+    nearestInAgreementSupplierGroup(agreement, legalEntityGroup) OVERRIDE dataInAgreementSupplierGroup(agreement, legalEntityGroup);
 
 // Поставщики
 TABLE agreementLegalEntity(Agreement, LegalEntity);
 dataInAgreementSupplier 'Отм.' (agreement, legalEntity) = DATA BOOLEAN (Agreement, LegalEntity);
 
 inAgreementSupplier 'Отм' (agreement, supplier) =
-    UNION OVERRIDE nearestInAgreementSupplierGroup(agreement, legalEntityGroupLegalEntity(supplier)),
-                   dataInAgreementSupplier(agreement, supplier);
+    nearestInAgreementSupplierGroup(agreement, legalEntityGroupLegalEntity(supplier)) OVERRIDE dataInAgreementSupplier(agreement, supplier);
 
 supplierAgreement 'Поставщики' (agreement) = GROUP CONCAT nameLegalEntity(supplier) IF inAgreementSupplier(agreement, supplier) , ', '
                                                  BY agreement
@@ -71,15 +69,13 @@ nearestInAgreementCustomerGroup (agreement, legalEntityGroup) =
     dataInAgreementCustomerGroup(agreement, nearestParentLegalEntityCustomerGroup(agreement, legalEntityGroup));
 
 inAgreementCustomerGroup 'Отм' (agreement, legalEntityGroup) =
-    UNION OVERRIDE nearestInAgreementCustomerGroup(agreement, legalEntityGroup),
-                   dataInAgreementCustomerGroup(agreement, legalEntityGroup);
+    nearestInAgreementCustomerGroup(agreement, legalEntityGroup) OVERRIDE dataInAgreementCustomerGroup(agreement, legalEntityGroup);
 
 // Покупатели
 dataInAgreementCustomer 'Отм.' (agreement, legalEntity) = DATA BOOLEAN (Agreement, LegalEntity);
 
 inAgreementCustomer 'Отм' (agreement, customer) =
-    UNION OVERRIDE nearestInAgreementCustomerGroup(agreement, legalEntityGroupLegalEntity(customer)),
-                   dataInAgreementCustomer(agreement, customer) PERSISTENT;
+    nearestInAgreementCustomerGroup(agreement, legalEntityGroupLegalEntity(customer)) OVERRIDE dataInAgreementCustomer(agreement, customer) PERSISTENT;
 
 customerAgreement 'Покупатели' (agreement) = GROUP CONCAT nameLegalEntity(customer) IF inAgreementCustomer(agreement, customer) , ', '
                                                  BY agreement
@@ -100,8 +96,8 @@ calcDefaultAgreementSupplierCustomer(supplier, customer) =
     GROUP MAX agreement IF inAgreementCustomer(agreement, customer) AND inAgreementSupplier(agreement, supplier)
     BY supplier, customer PERSISTENT;
 
-defaultAgreementSupplierCustomer(supplier, customer) = UNION OVERRIDE calcDefaultAgreementSupplierCustomer(supplier, customer),
-                                                                      userDefaultAgreementSupplierCustomer(supplier, customer) PERSISTENT;
+defaultAgreementSupplierCustomer(supplier, customer) = calcDefaultAgreementSupplierCustomer(supplier, customer) OVERRIDE
+                                                       userDefaultAgreementSupplierCustomer(supplier, customer) PERSISTENT;
 nameDefaultAgreementSupplierCustomer 'Соглашение по умолчанию' (supplier, customer) = nameAgreement(defaultAgreementSupplierCustomer(supplier, customer));
 
 isDefaultAgreementSupplierCustomer 'Соглашение по умолчанию' (agreement, supplier, customer) = defaultAgreementSupplierCustomer(supplier, customer) == agreement;
@@ -142,8 +138,8 @@ nearestPriceListTypeAgreementGroup (agreement, group) =
    dataPriceListTypeAgreementGroup(agreement, nearestParentGroup(agreement, group)) PERSISTENT;
 
 priceListTypeAgreementGroup 'Вид цены' (agreement, group) =
-    UNION OVERRIDE nearestPriceListTypeAgreementGroup(agreement, group),
-                   dataPriceListTypeAgreementGroup(agreement, group) PERSISTENT;
+    nearestPriceListTypeAgreementGroup(agreement, group) OVERRIDE
+    dataPriceListTypeAgreementGroup(agreement, group) PERSISTENT;
 namePriceListTypeAgreementGroup 'Вид цены' (agreement, group) =
     namePriceListType(priceListTypeAgreementGroup (agreement, group));
 
@@ -157,9 +153,9 @@ CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(dataPriceListTy
            MESSAGE 'Валюта соглашения должна совпадать с валютой вида цены';
 
 priceListTypeAgreementSku (agreement, sku) =
-    UNION OVERRIDE priceListTypeAgreement(agreement) AND sku IS Sku,
-                   priceListTypeAgreementGroup(agreement, groupGroupTypeSku(groupTypeAgreement(agreement),sku)),
-                   dataPriceListTypeAgreementSku(agreement, sku);
+    priceListTypeAgreement(agreement) AND sku IS Sku OVERRIDE
+    priceListTypeAgreementGroup(agreement, groupGroupTypeSku(groupTypeAgreement(agreement),sku)) OVERRIDE
+    dataPriceListTypeAgreementSku(agreement, sku);
 
 namePriceListTypeAgreementSku 'Вид цены' = namePriceListType(priceListTypeAgreementSku(agreement, sku));
 

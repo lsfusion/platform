@@ -604,14 +604,14 @@ EXTEND FORM items
 // Кассы
 @defineItemAttributeName(cashRegister, ' (кассы)', public);
 dataTitleCashRegisterBarcode 'Наименование для касс' = DATA STRING[100] (Barcode);
-titleCashRegisterBarcode 'Наименование для касс' = UNION OVERRIDE nameCashRegisterAttributeItem(skuBarcode(barcode)), dataTitleCashRegisterBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
+titleCashRegisterBarcode 'Наименование для касс' = nameCashRegisterAttributeItem(skuBarcode(barcode)) OVERRIDE dataTitleCashRegisterBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 loadDefaultItemAttributes() += ACTION {
     SET numberInNameCashRegisterItemAttribute(a) <- 1 WHERE a == StringItemAttribute.itemCaption;
 }
 // Весы
 @defineItemAttributeName(scales, ' (весы)', public);
 dataTitleScalesBarcode 'Наименование для весов' = DATA STRING[100] (Barcode);
-titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE nameScalesAttributeItem(skuBarcode(barcode)), dataTitleScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
+titleScalesBarcode 'Наименование для весов' = nameScalesAttributeItem(skuBarcode(barcode)) OVERRIDE dataTitleScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 loadDefaultItemAttributes() += ACTION {
     SET numberInNameScalesItemAttribute(a) <- 1 WHERE a == StringItemAttribute.itemCaption;
 }
@@ -627,7 +627,7 @@ META defineNumeratorItemGroup (prefix, caption)
     nearest###prefix##NumeratorItemGroup (itemGroup) = data###prefix##NumeratorItemGroup(nearestParent###prefix##NumeratorItemGroup(itemGroup)) PERSISTENT;
 
     prefix##NumeratorItemGroup (itemGroup) =
-        UNION OVERRIDE nearest###prefix##NumeratorItemGroup(itemGroup), data###prefix##NumeratorItemGroup(itemGroup) PERSISTENT;
+        nearest###prefix##NumeratorItemGroup(itemGroup) OVERRIDE data###prefix##NumeratorItemGroup(itemGroup) PERSISTENT;
     name###prefix##NumeratorItemGroup caption (itemGroup) = nameNumerator(prefix##NumeratorItemGroup(itemGroup)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 10;
 
     background###prefix##NumeratotItemGroup (itemGroup) = IF data###prefix##NumeratorItemGroup(itemGroup) THEN

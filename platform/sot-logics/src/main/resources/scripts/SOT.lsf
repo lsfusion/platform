@@ -36,7 +36,7 @@ sotSIDUserInvoiceDetail 'SOT SID' = DATA STRING[100] (Purchase.UserInvoiceDetail
 sotSIDBatch 'SOT SID' (batch) = ABSTRACT STRING[100] (Batch) PERSISTENT;
 sotSIDBatch (batch) += sotSIDUserInvoiceDetail(invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS ShipmentBatch;
 
-sotSIDOverrideUserInvoiceDetail (userInvoiceDetail) = sotSIDItem (Sale.skuInvoiceDetail(userInvoiceDetail)) OR sotSIDBatch (Sale.batchInvoiceDetail(userInvoiceDetail));
+sotSIDOverrideUserInvoiceDetail (userInvoiceDetail) = sotSIDItem (Sale.skuInvoiceDetail(userInvoiceDetail)) OVERRIDE sotSIDBatch (Sale.batchInvoiceDetail(userInvoiceDetail));
 
 sotUOMItem(i) <- sotUOMWeightUOM(netWeightItem(i), UOMItem(i)) WHEN CHANGED(netWeightItem(i)) OR CHANGED(UOMItem(i));
 

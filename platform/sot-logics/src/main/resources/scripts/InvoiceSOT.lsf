@@ -5,16 +5,16 @@ REQUIRE System, Integration, PurchaseInvoice, Certificate, PurchaseCompliance, P
 
 NAMESPACE PurchaseInvoice;
 
-certificateTextNotNullBatch(batch) = toText('') IF batch IS Batch OR certificateTextBatch(batch);
+certificateTextNotNullBatch(batch) = toText('') IF batch IS Batch OVERRIDE certificateTextBatch(batch);
 
 necessaryBatchPriceCertificateText = GROUP MAX batch BY skuBatch(batch), costBatch (batch), certificateTextNotNullBatch(batch);
 prevNecessaryBatchPriceCertificateText = PREV(necessaryBatchPriceCertificateText(sku, cost, certificate));
-//necessaryBatchUserInvoiceDetail = necessaryBatch (priceUserInvoiceDetail(userInvoiceDetail), toText('    ') IF userInvoiceDetail IS UserInvoiceDetail OR certificateTextUserInvoiceDetail(userInvoiceDetail));
+//necessaryBatchUserInvoiceDetail = necessaryBatch (priceUserInvoiceDetail(userInvoiceDetail), toText('    ') IF userInvoiceDetail IS UserInvoiceDetail OVERRIDE certificateTextUserInvoiceDetail(userInvoiceDetail));
 //descriptionNecessaryBatchUserInvoiceDetail = descriptionBatch(necessaryBatchUserInvoiceDetail(userInvoiceDetail));
 
 usePurchaseBatchAutoSet 'Автоматически определять партии на приходе' = DATA BOOLEAN ();
 
-prevNecessaryBatchUserInvoiceDetail (detail) = prevNecessaryBatchPriceCertificateText (skuUserInvoiceDetail(detail), shipmentPriceUserInvoiceDetail(detail), toText('') IF detail IS UserInvoiceDetail OR certificateTextUserInvoiceDetail(detail));
+prevNecessaryBatchUserInvoiceDetail (detail) = prevNecessaryBatchPriceCertificateText (skuUserInvoiceDetail(detail), shipmentPriceUserInvoiceDetail(detail), toText('') IF detail IS UserInvoiceDetail OVERRIDE certificateTextUserInvoiceDetail(detail));
 ON SESSION FORMS userInvoice {
     IF usePurchaseBatchAutoSet() THEN 
         FOR CHANGED(skuUserInvoiceDetail(detail)) OR
@@ -22,7 +22,7 @@ ON SESSION FORMS userInvoice {
             CHANGED(certificateTextUserInvoiceDetail(detail)) INLINE DO
                 SET batchUserInvoiceDetail (detail) <-
                     prevNecessaryBatchUserInvoiceDetail(detail) AND detail != prevNecessaryBatchUserInvoiceDetail(detail);
-                   // necessaryBatchPriceCertificateText (skuUserInvoiceDetail(detail), shipmentPriceUserInvoiceDetail(detail), toText('') IF detail IS UserInvoiceDetail OR certificateTextUserInvoiceDetail(detail));
+                   // necessaryBatchPriceCertificateText (skuUserInvoiceDetail(detail), shipmentPriceUserInvoiceDetail(detail), toText('') IF detail IS UserInvoiceDetail OVERRIDE certificateTextUserInvoiceDetail(detail));
 };
 
 EXTEND FORM dialogBatch

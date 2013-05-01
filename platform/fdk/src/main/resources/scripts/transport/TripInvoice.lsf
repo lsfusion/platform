@@ -27,7 +27,7 @@ createConsignmentTrip 'Создать накладные по заказам' (t
 
 EXTEND FORM trip
 
-    PROPERTIES (t) grossWeightInvoicedTrip BEFORE grossWeightShipmentedTrip(t)
+    PROPERTIES (t) grossWeightInvoicedTrip BEFORE grossWeightShippedTrip(t)
 
     OBJECTS i=Invoice
     PROPERTIES (t, i) inTripInvoice
@@ -55,9 +55,9 @@ EXTEND FORM trip
     FILTERS inTripInvoice(t, i2), quantityInvoiceDetailSkuInvoice(sk, i2)>0
 
     FILTERGROUP filterSku2
-        FILTER 'Товары в заказах или накладных' 'F7' quantityOrderedTripSku(t, sk)>0 OR quantityInvoicedTripSku(t, sk)>0 DEFAULT
-        FILTER 'Товары в накладных' 'F6' quantityInvoicedTripSku(t, sk)>0
-        FILTER 'Товары в заказах и накладных' 'F5' quantityOrderedTripSku(t, sk)>0 AND quantityInvoicedTripSku(t, sk)>0
+        FILTER 'Товары в заказах или накладных' 'F7' quantityOrderedTripSku(t, sk) > 0 OR quantityInvoicedTripSku(t, sk) > 0 DEFAULT
+        FILTER 'Товары в накладных' 'F6' quantityInvoicedTripSku(t, sk) > 0
+        FILTER 'Товары в заказах и накладных' 'F5' quantityOrderedTripSku(t, sk) > 0 AND quantityInvoicedTripSku(t, sk) > 0
 ;
 
 EXTEND DESIGN trip {

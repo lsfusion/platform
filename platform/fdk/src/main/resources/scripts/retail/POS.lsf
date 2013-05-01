@@ -415,7 +415,7 @@ closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
 posSumDiscountCard 'Сумма продаж' (discountCard) = GROUP SUM sumReceiptDetailReceipt (receipt) BY discountCardReceipt(receipt) PERSISTENT;
 cumulativeSumDiscountCard 'Накопленная сумма' (discountCard) = initialSumDiscountCard(discountCard) (+) posSumDiscountCard(discountCard) PERSISTENT;
 
-prevCumulativeSumReceipt (receipt) = (0 AND receipt IS Receipt) OR [PREV(cumulativeSumDiscountCard(discountCard))](discountCardReceipt(receipt));
+prevCumulativeSumReceipt (receipt) = (0 AND receipt IS Receipt) OVERRIDE [PREV(cumulativeSumDiscountCard(discountCard))](discountCardReceipt(receipt));
 cumulativeSumReceiptPromotion (receipt, promotion) = IF useCurrentReceiptPromotion(promotion) THEN cumulativeSumDiscountCard(discountCardReceipt(receipt))
                                                                                               ELSE prevCumulativeSumReceipt (receipt);
 

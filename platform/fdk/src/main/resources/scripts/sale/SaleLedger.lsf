@@ -270,7 +270,7 @@ META defineCustomerDialogStockSku (form)
 
     form###customer = DATA SESSION LegalEntity ();
     form###nameCustomer 'Покупатель' () = nameLegalEntity(form###customer()) PREFCHARWIDTH 30;
-    form###customersFilter (sku) =  (TRUE AND inCustomerSku(form###customer(), sku)) OR (sku IS Sku AND NOT form###customer());
+    form###customersFilter (sku) =  (TRUE IF inCustomerSku(form###customer(), sku)) OR (sku IS Sku AND NOT form###customer());
 
     EXTEND FORM form
         PROPERTIES() form###nameCustomer

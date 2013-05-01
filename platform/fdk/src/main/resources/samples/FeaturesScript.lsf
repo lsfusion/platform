@@ -145,7 +145,6 @@ testUnion(store, article) = UNION SUM incomeQuantity(store, article), outcomeQua
 // OR property
 // Expression syntax:
 // propertyExpression1 OR propertyExpression2
-// identical to UNION OVERRIDE
 
 // Recursive property
 // Expression syntax:
@@ -786,7 +785,7 @@ FORM TestDataPropForm 'Тест дат'
 
 colorizeMatchingStoreSize (s, ss) = scolor(s) IF storeSize(s) == ss;
 storeSizeString (s, ss) = DATA STRING[10] (Store, StoreSize);
-storeSizeHeader (s, ss) = UNION OVERRIDE name(ss) IF s IS Store AND ss IS StoreSize AND ss!=StoreSize.small, storeSizeString(s, ss);
+storeSizeHeader (s, ss) = name(ss) IF s IS Store AND ss IS StoreSize AND ss!=StoreSize.small OVERRIDE storeSizeString(s, ss);
 
 FORM TestColumnGroupObjects 'Тест групп в колонках'
     OBJECTS ss=StoreSize, s=Store

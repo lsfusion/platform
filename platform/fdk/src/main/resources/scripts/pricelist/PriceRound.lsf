@@ -63,7 +63,7 @@ roundConditionUniqueCurrencyRoundGroup(currency, roundGroup) = GROUP AGGR roundC
                                                                      WHERE inRoundConditionRoundGroup(roundCondition, roundGroup) PERSISTENT;
 
 TABLE currencyRoundGroup(Currency, RoundGroup);
-roundConditionCurrencyRoundGroup (currency, roundGroup) = (defaultRoundConditionCurrency(currency) AND roundGroup IS RoundGroup) OR roundConditionUniqueCurrencyRoundGroup(currency, roundGroup);
+roundConditionCurrencyRoundGroup (currency, roundGroup) = (defaultRoundConditionCurrency(currency) AND roundGroup IS RoundGroup) OVERRIDE roundConditionUniqueCurrencyRoundGroup(currency, roundGroup);
 
 roundPriceCurrencyRoundGroup(price, currency, roundGroup) = roundPriceRoundCondition(price, roundConditionCurrencyRoundGroup(currency, roundGroup));
 

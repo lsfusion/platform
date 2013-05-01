@@ -104,14 +104,12 @@ META defineOperationLegalEntity(prop, object, tabcaption)
         is###prop##Group###operation(nearestParent###prop##Group###legalEntityGroup(operation, legalEntityGroup), operation) PERSISTENT;
 
     is###prop##Group###operation##Over 'Отм' (legalEntityGroup, operation) =
-        UNION OVERRIDE nearest###is###prop##Group###operation(legalEntityGroup, operation),
-                       is###prop##Group###operation(legalEntityGroup, operation);
+        nearest###is###prop##Group###operation(legalEntityGroup, operation) OVERRIDE is###prop##Group###operation(legalEntityGroup, operation);
 
     // Отметка для организаций
     is###prop###operation 'Отм.' = DATA BOOLEAN (LegalEntity, Operation);
     is###prop###operation##Over 'Отм' (legalEntity, operation) =
-        (UNION OVERRIDE nearest###is###prop##Group###operation(legalEntityGroup###legalEntity(legalEntity), operation),
-                        is###prop###operation(legalEntity, operation));
+        nearest###is###prop##Group###operation(legalEntityGroup###legalEntity(legalEntity), operation) OVERRIDE is###prop###operation(legalEntity, operation);
 
     EXTEND FORM operation
         TREE prop###groupTree object##g = LegalEntityGroup PARENT parentLegalEntityGroup
@@ -183,8 +181,7 @@ META defineOperationRole(dumb)
     includeDataUserRoleOperation 'Отм.' = DATA BOOLEAN (UserRole, Operation);
 
     includeUserRoleOperation 'Отм' (role, operation) =
-        UNION OVERRIDE includeOperation(operation) AND role IS UserRole,
-                       includeDataUserRoleOperation(role, operation);
+        includeOperation(operation) AND role IS UserRole OVERRIDE includeDataUserRoleOperation(role, operation);
 
     includeUserOperation (user, operation) = includeOperation(operation) AND user IS User OR includeUserRoleOperation(mainRoleUser(user), operation);
 

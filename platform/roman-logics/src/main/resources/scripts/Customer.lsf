@@ -44,7 +44,7 @@ TABLE customerGroupCustomerGroup(CustomerGroup, CustomerGroup);
 //legalEntityGroupLegalEntity(customer) += customerGroupCustomer(customer);
 
 inCustomerGroupCustomer (customerGroup, customer) =
-    UNION OVERRIDE customer IS Customer AND NOT customerGroup IS CustomerGroup, isParentCustomerGroupCustomerGroup(customerGroupCustomer(customer), customerGroup);
+    customer IS Customer AND NOT customerGroup IS CustomerGroup OVERRIDE isParentCustomerGroupCustomerGroup(customerGroupCustomer(customer), customerGroup);
 
 FORM customerGroup 'Группа покупателей'
     OBJECTS s = CustomerGroup FIXED PANEL
@@ -232,7 +232,7 @@ META defineDocumentCustomer (object, detail)
 END
 META defineDocumentDetailDataCustomer (object, detail)
     dataCustomer###detail (detail) = DATA Customer (detail);
-    customer###detail (idetail) = UNION OVERRIDE customer###object(object###detail(idetail)), dataCustomer###detail(idetail) PERSISTENT;
+    customer###detail (idetail) = customer###object(object###detail(idetail)) OVERRIDE dataCustomer###detail(idetail) PERSISTENT;
     nameCustomer###detail 'Покупатель' (idetail) = nameLegalEntity(customer###detail(idetail));
 END
 META defineDocumentDataCustomer (object, detail)

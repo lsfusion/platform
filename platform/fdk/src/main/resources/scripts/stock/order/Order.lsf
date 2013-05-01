@@ -128,8 +128,8 @@ META defineOrder(sign, legalEntityProp, stockProp)
     closeDataDateUserOrderDetail 'Дата автоматического закрытия' = DATA DATE (UserOrderDetail) IN documentPrmGroup;
     closeDataDateOrderDetail(detail) += closeDataDateUserOrderDetail(detail);
 
-    closeDateOrderDetail 'Дата автоматического закрытия' (detail) = UNION OVERRIDE closeDateOrder(orderOrderDetail(detail)), closeDataDateOrderDetail(detail) PERSISTENT;
-    closeDateUserOrderDetail 'Дата автоматического закрытия' (detail) = UNION OVERRIDE closeDateUserOrder(userOrderUserOrderDetail(detail)), closeDataDateUserOrderDetail(detail) PERSISTENT;
+    closeDateOrderDetail 'Дата автоматического закрытия' (detail) = closeDateOrder(orderOrderDetail(detail)) OVERRIDE closeDataDateOrderDetail(detail) PERSISTENT;
+    closeDateUserOrderDetail 'Дата автоматического закрытия' (detail) = closeDateUserOrder(userOrderUserOrderDetail(detail)) OVERRIDE closeDataDateUserOrderDetail(detail) PERSISTENT;
 
     closeDataDateUserOrderDetail(detail) <- sumDate(shipmentDateUserOrderDetail(detail), quantityDaysCloseOrdersStock(stockProp###userOrderDetail(detail)))
         WHEN CHANGED(shipmentDateUserOrderDetail(detail)) OR CHANGED(stockProp###userOrderDetail(detail));
@@ -143,16 +143,16 @@ META defineOrder(sign, legalEntityProp, stockProp)
     isDataClosedOrderDetail(order) += isDataClosedUserOrderDetail(order);
 
     defaultClosedOrderDetail(detail) = closeDateOrderDetail(detail) < currentDate() ;
-    isClosedOrderDetail 'Закрыт' (detail) = UNION OVERRIDE defaultClosedOrderDetail(detail),
-                                                           isDataClosedOrder(orderOrderDetail(detail)),
-                                                           isDataClosedOrderDetail(detail);
+    isClosedOrderDetail 'Закрыт' (detail) = defaultClosedOrderDetail(detail) OVERRIDE
+                                            isDataClosedOrder(orderOrderDetail(detail)) OVERRIDE
+                                            isDataClosedOrderDetail(detail);
     countClosedOrderDetailOrder (order) = GROUP SUM 1 IF isClosedOrderDetail(detail) AND isPostedOrderDetail(detail) BY orderOrderDetail(detail);
     isClosedOrder 'Закрыт' (order) =  countClosedOrderDetailOrder(order) == countOrderDetailOrder(order);
 
     defaultClosedUserOrderDetail(detail) = closeDateUserOrderDetail(detail) < currentDate();
-    isClosedUserOrderDetail 'Закрыт' (detail) = UNION OVERRIDE defaultClosedUserOrderDetail(detail),
-                                                               isDataClosedUserOrder(userOrderUserOrderDetail(detail)),
-                                                               isDataClosedUserOrderDetail(detail);
+    isClosedUserOrderDetail 'Закрыт' (detail) = defaultClosedUserOrderDetail(detail) OVERRIDE
+                                                isDataClosedUserOrder(userOrderUserOrderDetail(detail)) OVERRIDE
+                                                isDataClosedUserOrderDetail(detail);
     countClosedUserOrderDetailUserOrder (userOrder) = GROUP SUM 1 IF isClosedUserOrderDetail(detail) AND isPostedUserOrderDetail(detail) BY userOrderUserOrderDetail(detail);
     isClosedUserOrder 'Закрыт' (userOrder) =  countClosedUserOrderDetailUserOrder(userOrder) == countUserOrderDetailUserOrder(userOrder);
 

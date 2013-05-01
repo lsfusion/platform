@@ -85,8 +85,8 @@ shortNameCurrencyWHfromRF 'Валюта фрахта' (WHfromRF) = shortNameCurr
 companyDataWHfromRF 'Импортёр (ИД)' = DATA Company(WHfromRF);
 nameCompanyDataWHfromRF 'Импортёр' = nameLegalEntity(companyDataWHfromRF(WHfromRF)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
-overCompanyWHfromRF 'Импортёр (ИД)' (WHfromRF) = UNION OVERRIDE legalEntityStockWHfromRF(WHfromRF) IF legalEntityStockWHfromRF(WHfromRF) IS Company,
-                                                                companyDataWHfromRF(WHfromRF);
+overCompanyWHfromRF 'Импортёр (ИД)' (WHfromRF) = legalEntityStockWHfromRF(WHfromRF) IF legalEntityStockWHfromRF(WHfromRF) IS Company OVERRIDE
+                                                 companyDataWHfromRF(WHfromRF);
 
 costWHfromRFDetail 'Себестоимость' (WHfromRFDetail) = priceRFFreightSku(freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)), skuWHfromRFDetail(WHfromRFDetail));
 
@@ -297,10 +297,10 @@ quantitySkuWHfromRF 'Кол-во товара в документе' (WHfromRF) 
     quantitySkuWHfromRFFreightUnit(WHfromRF, currentFreightUnit(WHfromRF));
 
 quantityRemainedPositionSkuWHfromRF 'Кол-во оставшихся позиций в коробе' (WHfromRF) =
-    UNION OVERRIDE 0 AND WHfromRF, quantityPositionsSkuInFreightUnitWHfromRF(WHfromRF) (-) quantityPositionsSkuWHfromRF(WHfromRF);
+    0 AND WHfromRF OVERRIDE quantityPositionsSkuInFreightUnitWHfromRF(WHfromRF) (-) quantityPositionsSkuWHfromRF(WHfromRF);
 
 quantityRemainedSkuWHfromRF 'Кол-во оставшегося товара в коробе' (WHfromRF) =
-    UNION OVERRIDE 0 AND WHfromRF, quantitySkuInFreightUnitWHfromRF(WHfromRF) (-) quantitySkuWHfromRF(WHfromRF);
+    0 AND WHfromRF OVERRIDE quantitySkuInFreightUnitWHfromRF(WHfromRF) (-) quantitySkuWHfromRF(WHfromRF);
 
 quantitySkuInWHfromRF 'Кол-во товара' (WHfromRF, sku) = GROUP SUM quantityWHfromRFDetail(WHfromRFDetail)
     BY WHfromRFWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail);

@@ -201,17 +201,17 @@ END
 
 META defineDocumentDetailDataTimePrefix (object, detailClass, prefix, caption)
     prefix###dataDate##detailClass =  DATA DATE (detailClass);
-    prefix###date##detailClass 'Дата'##caption (d) = UNION OVERRIDE prefix###date###object(object##detailClass(d)), prefix###dataDate##detailClass(d) PERSISTENT;
+    prefix###date##detailClass 'Дата'##caption (d) = prefix###date###object(object##detailClass(d)) OVERRIDE prefix###dataDate##detailClass(d) PERSISTENT;
     prefix###dataTime##detailClass =  DATA TIME (detailClass);
-    prefix###time##detailClass 'Время'##caption (d) = UNION OVERRIDE prefix###time###object(object##detailClass(d)), prefix###dataTime##detailClass(d) PERSISTENT;
+    prefix###time##detailClass 'Время'##caption (d) = prefix###time###object(object##detailClass(d)) OVERRIDE prefix###dataTime##detailClass(d) PERSISTENT;
     prefix###dateTime##detailClass 'Дата/время'##caption (d) = dateTimeToDateTime(prefix###date##detailClass(d), prefix###time##detailClass(d)) PERSISTENT;
 END
 
 META defineDocumentAbstractDetailDataTimePrefix (object, detailClass, prefix, caption)
     prefix###dataDate##detailClass =  ABSTRACT DATE (detailClass);
-    prefix###date##detailClass 'Дата'##caption (d) = UNION OVERRIDE prefix###date###object(object##detailClass(d)), prefix###dataDate##detailClass(d) PERSISTENT;
+    prefix###date##detailClass 'Дата'##caption (d) = prefix###date###object(object##detailClass(d)) OVERRIDE prefix###dataDate##detailClass(d) PERSISTENT;
     prefix###dataTime##detailClass =  ABSTRACT TIME (detailClass);
-    prefix###time##detailClass 'Время'##caption (d) = UNION OVERRIDE prefix###time###object(object##detailClass(d)), prefix###dataTime##detailClass(d) PERSISTENT;
+    prefix###time##detailClass 'Время'##caption (d) = prefix###time###object(object##detailClass(d)) OVERRIDE prefix###dataTime##detailClass(d) PERSISTENT;
     prefix###dateTime##detailClass 'Дата/время'##caption (d) = dateTimeToDateTime(prefix###date##detailClass(d), prefix###time##detailClass(d)) PERSISTENT;
 END
 

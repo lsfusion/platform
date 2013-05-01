@@ -16,7 +16,8 @@ beneficiaryPayment(payment) <- partyAContract(contractPayment(payment)) WHEN ASS
 typeExchangeContractPayment (payment) = DATA TypeExchange (Payment);
 nameTypeExchangeContractPayment 'Тип обмена' (payment) = nameTypeExchange(typeExchangeContractPayment(payment));
 rateExchangeContractPayment 'Курс' (payment) = DATA NUMERIC[15,8] (Payment) PREFCHARWIDTH 15;
-rateExchangeContractPayment (payment) <- UNION OVERRIDE 1.0 IF payment IS Payment AND currencyContractPayment(payment) == currencyAccountToPayment(payment) AND NOT typeExchangeContractPayment(payment),
+rateExchangeContractPayment (payment) <- 1.0 IF payment IS Payment AND currencyContractPayment(payment) == currencyAccountToPayment(payment) AND NOT typeExchangeContractPayment(payment)
+                                         OVERRIDE
                                          rateTypeExchangeCurrencyDate(typeExchangeContractPayment(payment), currencyContractPayment(payment), datePayment(payment)) AND currencyContractPayment(payment) != currencyAccountToPayment(payment)
     WHEN CHANGED(currencyContractPayment(payment)) OR
          CHANGED(typeExchangeContractPayment(payment)) OR
@@ -59,11 +60,11 @@ setRateExchangeContractPayment = ACTION (payment){
 
 //----------------------------------------------- Цвета --------------------------------------------------------------//
 
-backgroundSumContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,238,165) AND dateContractLedger(contractLedger) <= (date AS DATE) OR
+backgroundSumContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,238,165) AND dateContractLedger(contractLedger) <= (date AS DATE) OVERRIDE
                                                                 RGB(255,160,160) AND dateContractLedger(contractLedger) > (date AS DATE);
 backgroundContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,160,160) AND dateContractLedger(contractLedger) > (date AS DATE);
 backgroundSumContract 'Цвет' (contract) = RGB(255,238,165) AND contract IS Contract;
-backgroundSumContractALedgerDate 'Цвет' (contractALedger, date) = RGB(232,184,146) AND dateContractALedger(contractALedger) <= (date AS DATE) OR
+backgroundSumContractALedgerDate 'Цвет' (contractALedger, date) = RGB(232,184,146) AND dateContractALedger(contractALedger) <= (date AS DATE) OVERRIDE
                                                               RGB(255,160,160) AND dateContractALedger(contractALedger) > (date AS DATE);
 backgroundContractALedgerDate 'Цвет' (contractALedger, date) = RGB(255,160,160) AND dateContractALedger(contractALedger) > (date AS DATE);
 backgroundSumContractA 'Цвет' (contract) = RGB(232,184,146) AND contract IS Contract;

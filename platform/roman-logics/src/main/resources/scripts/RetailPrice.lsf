@@ -132,8 +132,8 @@ EXTEND DESIGN options {
         ADD PROPERTY(maxDateTime);
     }
 }
-dateTimeToPriceSetDocument 'Дата/время окончания' (priceSetDocument) = UNION OVERRIDE maxDateTime() IF priceSetDocument IS PriceSetDocument,
-                                                                                            dateTimeToDataPriceSetDocument(priceSetDocument) IN base PERSISTENT;
+dateTimeToPriceSetDocument 'Дата/время окончания' (priceSetDocument) = maxDateTime() IF priceSetDocument IS PriceSetDocument OVERRIDE
+                                                                       dateTimeToDataPriceSetDocument(priceSetDocument) IN base PERSISTENT;
 
 CONSTRAINT dateTimeToPriceSetDocument(document) < dateTimePriceSetDocument(document) MESSAGE 'Дата/время окончания действия документа меньше даты/времени его начала';
 
@@ -156,8 +156,8 @@ basePriceSetDocumentFreightImporter (freight, importer) = GROUP AGGR basePriceSe
     WHERE basePriceSetDocument IS BasePriceSetDocument;
 
 userReasonPriceSetDocument 'Основание прайса' = DATA STRING[100] (PriceSetDocument);
-reasonPriceSetDocument 'Основание прайса' (priceSetDocument) = UNION OVERRIDE seriesNumberObject(freightBasePriceSetDocument (priceSetDocument)),
-                                                                              userReasonPriceSetDocument(priceSetDocument) IN recognize;
+reasonPriceSetDocument 'Основание прайса' (priceSetDocument) = seriesNumberObject(freightBasePriceSetDocument (priceSetDocument)) OVERRIDE
+                                                               userReasonPriceSetDocument(priceSetDocument) IN recognize;
 
 // Валюта
 
@@ -179,9 +179,9 @@ userDateTimePriceSetDocumentArticle(document, article) => inPriceSetDocumentArti
 userDateTimeToPriceSetDocumentArticle 'Дата/время (конец)' = DATA DATETIME(PriceSetDocument, Article);
 userDateTimeToPriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 
-dateTimePriceSetDocumentArticle 'Дата/время (начало)' (priceSetDocument, article) = (dateTimePriceSetDocument(priceSetDocument) AND inPriceSetDocumentArticle(priceSetDocument, article)) OR
+dateTimePriceSetDocumentArticle 'Дата/время (начало)' (priceSetDocument, article) = (dateTimePriceSetDocument(priceSetDocument) IF inPriceSetDocumentArticle(priceSetDocument, article)) OVERRIDE
                                                                                     userDateTimePriceSetDocumentArticle(priceSetDocument, article) PERSISTENT;
-dateTimeToPriceSetDocumentArticle 'Дата/время (конец)' (priceSetDocument, article) = (dateTimeToPriceSetDocument(priceSetDocument) AND inPriceSetDocumentArticle(priceSetDocument, article)) OR
+dateTimeToPriceSetDocumentArticle 'Дата/время (конец)' (priceSetDocument, article) = (dateTimeToPriceSetDocument(priceSetDocument) IF inPriceSetDocumentArticle(priceSetDocument, article)) OVERRIDE
                                                                                     userDateTimeToPriceSetDocumentArticle(priceSetDocument, article) PERSISTENT;
 
 // Базовые цены
@@ -268,9 +268,9 @@ userDateTimePriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document
 userDateTimeToPriceSetDocumentSku 'Дата/время (конец)' = DATA DATETIME(PriceSetDocument, Sku);
 userDateTimeToPriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, sku) RESOLVE FALSE;
 
-dateTimePriceSetDocumentSku 'Дата/время (начало)' (priceSetDocument, sku) = (dateTimePriceSetDocument(priceSetDocument) AND inPriceSetDocumentSku(priceSetDocument, sku)) OR
+dateTimePriceSetDocumentSku 'Дата/время (начало)' (priceSetDocument, sku) = (dateTimePriceSetDocument(priceSetDocument) IF inPriceSetDocumentSku(priceSetDocument, sku)) OVERRIDE
                                                                             userDateTimePriceSetDocumentSku(priceSetDocument, sku) PERSISTENT;
-dateTimeToPriceSetDocumentSku 'Дата/время (конец)' (priceSetDocument, sku) = (dateTimeToPriceSetDocument(priceSetDocument) AND inPriceSetDocumentSku(priceSetDocument, sku)) OR
+dateTimeToPriceSetDocumentSku 'Дата/время (конец)' (priceSetDocument, sku) = (dateTimeToPriceSetDocument(priceSetDocument) IF inPriceSetDocumentSku(priceSetDocument, sku)) OVERRIDE
                                                                              userDateTimeToPriceSetDocumentSku(priceSetDocument, sku) PERSISTENT;
 
 // Базовые цены
@@ -347,43 +347,43 @@ priceDiscountPriceSetDocumentSku 'Цена со скидкой' = DATA NUMERIC[1
 priceDiscountPriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, sku) RESOLVE FALSE;
 
 // -------------------------------- Сводная по артикулам / товарам --------------------------------- //
-overInPriceSetDocumentSku 'Товар в документе' (priceSetDocument, sku) = inPriceSetDocumentArticle(priceSetDocument, articleSku(sku)) OR
+overInPriceSetDocumentSku 'Товар в документе' (priceSetDocument, sku) = inPriceSetDocumentArticle(priceSetDocument, articleSku(sku)) OVERRIDE
                                                                         inPriceSetDocumentSku(priceSetDocument, sku) PERSISTENT;
 
-overDateTimePriceSetDocumentSku 'Дата/время (начало)' (priceSetDocument, sku) = dateTimePriceSetDocumentArticle(priceSetDocument, articleSku(sku)) OR
+overDateTimePriceSetDocumentSku 'Дата/время (начало)' (priceSetDocument, sku) = dateTimePriceSetDocumentArticle(priceSetDocument, articleSku(sku)) OVERRIDE
                                                                                 dateTimePriceSetDocumentSku(priceSetDocument, sku) PERSISTENT;
-overDateTimeToPriceSetDocumentSku 'Дата/время (конец)' (priceSetDocument, sku) = dateTimeToPriceSetDocumentArticle(priceSetDocument, articleSku(sku)) OR
+overDateTimeToPriceSetDocumentSku 'Дата/время (конец)' (priceSetDocument, sku) = dateTimeToPriceSetDocumentArticle(priceSetDocument, articleSku(sku)) OVERRIDE
                                                                                  dateTimeToPriceSetDocumentSku(priceSetDocument, sku) PERSISTENT;
 
 // Базовые прайс
-overPriceInBasePriceSetDocumentSku 'Цена поставщика' (basePriceSetDocument, sku) = priceInBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OR
+overPriceInBasePriceSetDocumentSku 'Цена поставщика' (basePriceSetDocument, sku) = priceInBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OVERRIDE
                                                                                    priceInBasePriceSetDocumentSku(basePriceSetDocument, sku) PERSISTENT;
 
-overRRPBasePriceSetDocumentSku 'Рекомендуемая цена' (basePriceSetDocument, sku) = RRPBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OR
+overRRPBasePriceSetDocumentSku 'Рекомендуемая цена' (basePriceSetDocument, sku) = RRPBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OVERRIDE
                                                                                   RRPBasePriceSetDocumentSku(basePriceSetDocument, sku) PERSISTENT;
 
-overCurrencyBasePriceSetDocumentSku (basePriceSetDocument, sku) = currencyBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OR
+overCurrencyBasePriceSetDocumentSku (basePriceSetDocument, sku) = currencyBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OVERRIDE
                                                                   currencyBasePriceSetDocumentSku(basePriceSetDocument, sku) PERSISTENT;
 
-overCurrencyRRPBasePriceSetDocumentSku (basePriceSetDocument, sku) = currencyRRPBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OR
+overCurrencyRRPBasePriceSetDocumentSku (basePriceSetDocument, sku) = currencyRRPBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OVERRIDE
                                                                      currencyRRPBasePriceSetDocumentSku(basePriceSetDocument, sku) PERSISTENT;
 
-overTypeExchangeBasePriceSetDocumentSku (basePriceSetDocument, sku) = typeExchangeBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OR
+overTypeExchangeBasePriceSetDocumentSku (basePriceSetDocument, sku) = typeExchangeBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OVERRIDE
                                                                       typeExchangeBasePriceSetDocumentSku(basePriceSetDocument, sku) PERSISTENT;
 
-overMarkupBasePriceSetDocumentSku (basePriceSetDocument, sku) = markupBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OR
+overMarkupBasePriceSetDocumentSku (basePriceSetDocument, sku) = markupBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OVERRIDE
                                                                 markupBasePriceSetDocumentSku(basePriceSetDocument, sku) PERSISTENT;
 
-overMethodBasePriceSetDocumentSku (basePriceSetDocument, sku) = methodBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OR
+overMethodBasePriceSetDocumentSku (basePriceSetDocument, sku) = methodBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OVERRIDE
                                                                 methodBasePriceSetDocumentSku(basePriceSetDocument, sku) PERSISTENT;
 
-overPriceBasePriceSetDocumentSku 'Базовая цена' (basePriceSetDocument, sku) = priceBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OR
+overPriceBasePriceSetDocumentSku 'Базовая цена' (basePriceSetDocument, sku) = priceBasePriceSetDocumentArticle(basePriceSetDocument, articleSku(sku)) OVERRIDE
                                                                               priceBasePriceSetDocumentSku(basePriceSetDocument, sku) PERSISTENT;
 
 // Уценки
-overPercentDiscountPriceSetDocumentSku 'Процент уценки' (discountPriceSetDocument, sku) = percentDiscountPriceSetDocumentArticle(discountPriceSetDocument, articleSku(sku)) OR
+overPercentDiscountPriceSetDocumentSku 'Процент уценки' (discountPriceSetDocument, sku) = percentDiscountPriceSetDocumentArticle(discountPriceSetDocument, articleSku(sku)) OVERRIDE
                                                                                           percentDiscountPriceSetDocumentSku(discountPriceSetDocument, sku);
-overPriceDiscountPriceSetDocumentSku 'Цена со скидкой' (discountPriceSetDocument, sku) = priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, articleSku(sku)) OR
+overPriceDiscountPriceSetDocumentSku 'Цена со скидкой' (discountPriceSetDocument, sku) = priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, articleSku(sku)) OVERRIDE
                                                                                          priceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku) PERSISTENT;
 
 //--------------------------------------------- Агрегации ----------------------------------------------- //
@@ -705,14 +705,14 @@ canonicalBrandPriceSetDocument 'Бренды' (priceSetDocument) = toString255(
 // ------------------------------------------------- Значения для использования в операциях -------------------------------- //
 
 // Артикул
-priceBPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = priceBBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) OR priceBDiscountPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime);
+priceBPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = priceBBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) OVERRIDE priceBDiscountPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime);
 
-priceAPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = priceABasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) OR priceADiscountPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime);
+priceAPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = priceABasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) OVERRIDE priceADiscountPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime);
 
 // Sku
-priceBPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = priceBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) OR priceBDiscountPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime);
+priceBPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = priceBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) OVERRIDE priceBDiscountPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime);
 
-priceAPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = priceABasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) OR priceADiscountPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime);
+priceAPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = priceABasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) OVERRIDE priceADiscountPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime);
 
 // Цена на кассе
 EXTEND CLASS SystemPriceListType { userPriceListType 'Продажная' }

@@ -5,13 +5,13 @@ NAMESPACE Production;
 
 // ----------------  Калькуляционная карта ------------------- //
 
-calcMultiplierSkuOrder(sku, order)= (1.000 IF sku IS Sku AND order IS Order) OR  multiplierSkuOrder(sku, order);
+calcMultiplierSkuOrder(sku, order)= (1.000 IF sku IS Sku AND order IS Order) OVERRIDE multiplierSkuOrder(sku, order);
 
 quantityBOMSkuOrder (BOM, sku, order) = [GROUP SUM recBruttoNodeQuantityBOMSkuDate (BOM, sku, dateOrder(order)) * calcMultiplierSkuOrder(sku, order)
     BY BOM, sku, order](BOM, sku, order) AND bruttoQuantitySkuOrder(sku, order);
 quantityProductDetailSku 'Норма' (productDetail, sku) = quantityBOMSkuOrder(BOMProduct(productProductDetail(productDetail)), sku, orderProductDetail(productDetail));
 
-totalPriceSkuOrder 'Цена компонента' (sku, order) = bruttoPriceSkuOrder(sku,order) OR substitutePriceSkuOrder(sku,order);
+totalPriceSkuOrder 'Цена компонента' (sku, order) = bruttoPriceSkuOrder(sku,order) OVERRIDE substitutePriceSkuOrder(sku,order);
 totalPremiumPriceSkuOrder 'Цена компонента с надбавкой'(sku, order) = totalPriceSkuOrder(sku,order)*multiplierCalcSkuOrder(sku, order);
 
 quantityInBOMProductDetail 'Кол-во изделий в спец.'(productDetail)= quantityProduct(productProductDetail(productDetail));

@@ -338,10 +338,10 @@ quantitySkuWHfromCSR 'Кол-во товара в документе' (WHfromCSR
     quantitySkuWHfromCSRFreightUnit(WHfromCSR, currentFreightUnit(WHfromCSR));
 
 quantityRemainedPositionSkuWHfromCSR 'Кол-во оставшихся позиций в коробе' (WHfromCSR) =
-    UNION OVERRIDE 0 AND WHfromCSR, quantityPositionsSkuInFreightUnitWHfromCSR(WHfromCSR) (-) quantityPositionsSkuWHfromCSR(WHfromCSR);
+    0 AND WHfromCSR OVERRIDE quantityPositionsSkuInFreightUnitWHfromCSR(WHfromCSR) (-) quantityPositionsSkuWHfromCSR(WHfromCSR);
 
 quantityRemainedSkuWHfromCSR 'Кол-во оставшегося товара в коробе' (WHfromCSR) =
-    UNION OVERRIDE 0 AND WHfromCSR, quantitySkuInFreightUnitWHfromCSR(WHfromCSR) (-) quantitySkuWHfromCSR(WHfromCSR);
+    0 AND WHfromCSR OVERRIDE quantitySkuInFreightUnitWHfromCSR(WHfromCSR) (-) quantitySkuWHfromCSR(WHfromCSR);
 
 quantitySkuInWHfromCSR 'Кол-во товара' (WHfromCSR, sku) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
     BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail);

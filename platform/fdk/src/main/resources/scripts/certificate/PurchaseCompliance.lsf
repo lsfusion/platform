@@ -128,7 +128,7 @@ numberDefaultComplianceDetail 'Номер' (complianceDetail) =
         ORDER complianceDetail;
 
 userNumberComplianceDetail 'Пользовательский номер' (complianceDetail) = DATA INTEGER (ComplianceDetail);
-numberComplianceDetail 'Номер' (complianceDetail) = UNION OVERRIDE numberDefaultComplianceDetail(complianceDetail), userNumberComplianceDetail(complianceDetail);
+numberComplianceDetail 'Номер' (complianceDetail) = numberDefaultComplianceDetail(complianceDetail) OVERRIDE userNumberComplianceDetail(complianceDetail);
 
 dateTimeComplianceDetail (complianceDetail) = dateTimeCompliance(complianceComplianceDetail(complianceDetail));
 stockComplianceDetail (complianceDetail) = stockCompliance(complianceComplianceDetail(complianceDetail));

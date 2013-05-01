@@ -62,11 +62,11 @@ inTripShipment 'Включен' (trip, shipment) = tripShipment(shipment)==trip;
 
 filterTripShipment(trip, shipment) = tripShipment(shipment)==trip OR (trip IS Trip AND shipment IS Shipment AND NOT tripShipment(shipment));
 
-grossWeightShipmentedTrip 'Суммарный вес поставок' (trip) = GROUP SUM grossWeightShipmentDetailShipment(shipment) BY tripShipment(shipment);
+grossWeightShippedTrip 'Суммарный вес поставок' (trip) = GROUP SUM grossWeightShipmentDetailShipment(shipment) BY tripShipment(shipment);
 
 quantityShipmentDetailTripShipment (trip, shipment) = GROUP SUM quantityShipmentDetailOrderShipment (order, shipment) BY tripOrder(order), shipment;
 
-quantityShipmentedTripSku 'Кол-во в поставках' (trip, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY tripShipment(shipmentShipmentDetail(shipmentDetail)), skuShipmentDetail(shipmentDetail);
+quantityShippedTripSku 'Кол-во в поставках' (trip, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY tripShipment(shipmentShipmentDetail(shipmentDetail)), skuShipmentDetail(shipmentDetail);
 
 createShipmentsTrip 'Включить поставки' (trip) = ACTION (trip) {
     SET tripShipment(shipment) <- NULL WHERE tripShipment(shipment) == trip;
@@ -75,7 +75,7 @@ createShipmentsTrip 'Включить поставки' (trip) = ACTION (trip) {
 
 // отображение на карте
 showPointsTrip 'Показать путь на карте' (trip) = ACTION (trip) {
-    SET numberPathPOI(stock) <- 1 IF quantityTripStock(trip, stock)>0 OR numberStockTrip(stock, trip);
+    SET numberPathPOI(stock) <- 1 IF quantityTripStock(trip, stock) > 0 OVERRIDE numberStockTrip(stock, trip);
     EXEC showOnMapPath();
 
 } TOOLBAR;
@@ -123,7 +123,7 @@ FORM trip 'Рейс'
 
     OBJECTS t=Trip FIXED PANEL
     PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameTruckModelTruckTrip, trailerTruckTrip, weightTruckTrip
-    PROPERTIES (t) READONLY grossWeightOrderedTrip, grossWeightShipmentedTrip
+    PROPERTIES (t) READONLY grossWeightOrderedTrip, grossWeightShippedTrip
 
     OBJECTS o=Order
     PROPERTIES(t, o) selectTripOrder, inTripOrder
@@ -172,13 +172,13 @@ FORM trip 'Рейс'
 
     OBJECTS sk=Sku
     PROPERTIES(sk) READONLY idBarcodeSku, nameSku, shortNameUOMSku
-    PROPERTIES(t, sk) READONLY quantityOrderedTripSku, quantityShipmentedTripSku
+    PROPERTIES(t, sk) READONLY quantityOrderedTripSku, quantityShippedTripSku
 
     FILTERGROUP filterSku
-        FILTER 'Товары в заказах или поставках' 'F11' quantityOrderedTripSku(t, sk)>0 OR quantityShipmentedTripSku(t, sk)>0 DEFAULT
-        FILTER 'Товары в заказах' 'F9' quantityOrderedTripSku(t, sk)>0
-        FILTER 'Товары в поставках' 'F10' quantityShipmentedTripSku(t, sk)>0
-        FILTER 'Товары в заказах и поставках' 'F8' quantityOrderedTripSku(t, sk)>0 AND quantityShipmentedTripSku(t, sk)>0
+        FILTER 'Товары в заказах или поставках' 'F11' quantityOrderedTripSku(t, sk) > 0 OR quantityShippedTripSku(t, sk) > 0 DEFAULT
+        FILTER 'Товары в заказах' 'F9' quantityOrderedTripSku(t, sk) > 0
+        FILTER 'Товары в поставках' 'F10' quantityShippedTripSku(t, sk) > 0
+        FILTER 'Товары в заказах и поставках' 'F8' quantityOrderedTripSku(t, sk) > 0 AND quantityShippedTripSku(t, sk) > 0
 
     OBJECTS o2=Order
     PROPERTIES(o2) READONLY numberOrder, seriesOrder, dateOrder, nameFromStockOrder, nameToStockOrder
@@ -236,7 +236,7 @@ DESIGN trip FROM DEFAULT{
                         caption = 'Итоги';
                         childConstraints = TO THE BOTTOM;
                         ADD PROPERTY(grossWeightOrderedTrip);
-                        ADD PROPERTY(grossWeightShipmentedTrip);
+                        ADD PROPERTY(grossWeightShippedTrip);
                     }
                 }
 
@@ -292,7 +292,7 @@ DESIGN trip FROM DEFAULT{
 
 FORM trips 'Рейсы'
     OBJECTS t=Trip
-    PROPERTIES(t) READONLY numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameTruckModelTruckTrip, trailerTruckTrip, weightTruckTrip, grossWeightOrderedTrip, grossWeightShipmentedTrip
+    PROPERTIES(t) READONLY numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameTruckModelTruckTrip, trailerTruckTrip, weightTruckTrip, grossWeightOrderedTrip, grossWeightShippedTrip
     PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS o=Order
@@ -305,13 +305,13 @@ FORM trips 'Рейсы'
 
     OBJECTS sk=Sku
     PROPERTIES(sk) READONLY idBarcodeSku, nameSku, shortNameUOMSku
-    PROPERTIES(t, sk) READONLY quantityOrderedTripSku, quantityShipmentedTripSku
+    PROPERTIES(t, sk) READONLY quantityOrderedTripSku, quantityShippedTripSku
 
     FILTERGROUP filterSku
-        FILTER 'Товары в заказах или поставках' 'F11' quantityOrderedTripSku(t, sk)>0 OR quantityShipmentedTripSku(t, sk)>0 DEFAULT
+        FILTER 'Товары в заказах или поставках' 'F11' quantityOrderedTripSku(t, sk)>0 OR quantityShippedTripSku(t, sk)>0 DEFAULT
         FILTER 'Товары в заказах' 'F9' quantityOrderedTripSku(t, sk)>0
-        FILTER 'Товары в поставках' 'F10' quantityShipmentedTripSku(t, sk)>0
-        FILTER 'Товары в заказах и поставках' 'F8' quantityOrderedTripSku(t, sk)>0 AND quantityShipmentedTripSku(t, sk)>0
+        FILTER 'Товары в поставках' 'F10' quantityShippedTripSku(t, sk)>0
+        FILTER 'Товары в заказах и поставках' 'F8' quantityOrderedTripSku(t, sk)>0 AND quantityShippedTripSku(t, sk)>0
 
     OBJECTS st=Stock
     PROPERTIES(st) READONLY nameStock, addressStock, nameLegalEntityStock

@@ -40,24 +40,25 @@ inSubCategorySupplierCategorySupplier (categorySupplier, subCategorySupplier) = 
 inArticleSubCategorySupplier (subCategorySupplier, article) = subCategorySupplierArticle(article) == subCategorySupplier;
 inArticleCategorySupplier (categorySupplier, article) = categorySupplierArticle(article) == categorySupplier;
 
-inArticleCategory (category, article) = UNION OVERRIDE categoryArticle(article) == category,
-                                                       article == article AND NOT category;
+inArticleCategory (category, article) = categoryArticle(article) == category OR
+                                        article == article AND NOT category;
 
-inSkuCategory (category, sku) = UNION OVERRIDE categoryArticleSku(sku) == category, sku == sku AND NOT category;
+inSkuCategory (category, sku) = categoryArticleSku(sku) == category OR
+                                sku == sku AND NOT category;
 
 //stringEqualsAll(string) = string == 'Все';
 
-inSupplierBrandArticle(supplier, brand, article) = UNION OVERRIDE brandSupplierArticle(article) == brand AND supplier IS Supplier,
-                                                                  supplierArticle(article) == supplier AND NOT brand,
-                                                                  article == article AND NOT supplier AND NOT brand;
+inSupplierBrandArticle(supplier, brand, article) = brandSupplierArticle(article) == brand AND supplier IS Supplier OR
+                                                   supplierArticle(article) == supplier AND NOT brand OR
+                                                   article == article AND NOT supplier AND NOT brand;
 
-inSupplierBrandSku(supplier, brand, sku) = UNION OVERRIDE brandSupplierArticleSku(sku) == brand AND supplier IS Supplier,
-                                                          supplierArticleSku(sku) == supplier AND NOT brand,
-                                                          sku == sku AND NOT supplier AND NOT brand;
+inSupplierBrandSku(supplier, brand, sku) = brandSupplierArticleSku(sku) == brand AND supplier IS Supplier OR
+                                           supplierArticleSku(sku) == supplier AND NOT brand OR
+                                           sku == sku AND NOT supplier AND NOT brand;
 
-inCategorySupplierSubCategorySupplierArticle(categorySupplier, subCategorySupplier, article) = UNION OVERRIDE subCategorySupplierArticle(article) == subCategorySupplier AND categorySupplier IS CategorySupplier,
-                                                                                                              categorySupplierArticle(article) == categorySupplier AND NOT subCategorySupplier,
-                                                                                                              article == article AND NOT categorySupplier AND NOT subCategorySupplier;
+inCategorySupplierSubCategorySupplierArticle(categorySupplier, subCategorySupplier, article) = subCategorySupplierArticle(article) == subCategorySupplier AND categorySupplier IS CategorySupplier OR
+                                                                                               categorySupplierArticle(article) == categorySupplier AND NOT subCategorySupplier OR
+                                                                                               article == article AND NOT categorySupplier AND NOT subCategorySupplier;
 
 inSeasonSeasonYear (season, seasonYear) = seasonSeasonYear(seasonYear)==season;
 

@@ -71,14 +71,14 @@ nearestInEmployeeEmployeeDivisionGroup (employee, employeeDivisionGroup) =
 
 
 accessEmployeeEmployeeDivisionGroup 'Доступ разрешен' (employee, employeeDivisionGroup) =
-    UNION OVERRIDE employee IS Employee AND employeeDivisionGroup IS EmployeeDivisionGroup AND NOT limitAccessEmployee(employee),
-                   nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroup),
-                   dataAccessEmployeeDivisionGroupEmployee(employeeDivisionGroup, employee); // PERSISTENT;
+    employee IS Employee AND employeeDivisionGroup IS EmployeeDivisionGroup AND NOT limitAccessEmployee(employee) OVERRIDE
+    nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroup) OVERRIDE
+    dataAccessEmployeeDivisionGroupEmployee(employeeDivisionGroup, employee); // PERSISTENT;
 
 accessEmployeeEmployeeDivision 'Доступ разрешен' (employee, employeeDivision) =
-    UNION OVERRIDE employee IS Employee AND employeeDivision IS EmployeeDivision AND NOT limitAccessEmployee(employee),
-                   nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroupEmployeeDivision(employeeDivision)),
-                   dataAccessEmployeeDivisionEmployee(employeeDivision, employee); // PERSISTENT;
+    employee IS Employee AND employeeDivision IS EmployeeDivision AND NOT limitAccessEmployee(employee) OVERRIDE
+    nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroupEmployeeDivision(employeeDivision)) OVERRIDE
+    dataAccessEmployeeDivisionEmployee(employeeDivision, employee); // PERSISTENT;
 
 countAccessEmployeeEmployeeDivisionGroup 'Кол-во доступных подразделений' (employee, employeeDivisionGroup) =
     GROUP SUM 1 IF accessEmployeeEmployeeDivision(employee, employeeDivision)

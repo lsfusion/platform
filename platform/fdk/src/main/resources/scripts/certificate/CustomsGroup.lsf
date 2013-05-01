@@ -41,7 +41,7 @@ levelParentCustomsGroup (customsGroup) = GROUP MIN levelCustomsGroupCustomsGroup
 
 isCompliancedParentCustomsGroup (customsGroup) = TRUE IF levelParentCustomsGroup(customsGroup);
 
-isCompliancedCustomsGroup 'Необходимость сертификации' (customsGroup) = UNION OVERRIDE isCompliancedParentCustomsGroup(customsGroup), isCompliancedDataCustomsGroup(customsGroup);
+isCompliancedCustomsGroup 'Необходимость сертификации' (customsGroup) = isCompliancedParentCustomsGroup(customsGroup) OVERRIDE isCompliancedDataCustomsGroup(customsGroup);
 
 TABLE customsGroupData(CustomsGroup, DATE);
 

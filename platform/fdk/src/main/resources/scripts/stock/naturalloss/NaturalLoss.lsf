@@ -69,8 +69,8 @@ rateSubNaturalLossGroupCountrySku 'Норма естественной убыл�
 inParentNaturalLossGroup(naturalLossGroup, subNaturalLossGroup) =
  parentNaturalLossGroup(subNaturalLossGroup ) == naturalLossGroup;
 
-inParentSubNaturalLossGroup (naturalLossGroup, subNaturalLossGroup) = UNION OVERRIDE
- parentNaturalLossGroup(subNaturalLossGroup) == naturalLossGroup,
+inParentSubNaturalLossGroup (naturalLossGroup, subNaturalLossGroup) =
+ parentNaturalLossGroup(subNaturalLossGroup) == naturalLossGroup OVERRIDE
  subNaturalLossGroup IS SubNaturalLossGroup AND NOT naturalLossGroup;
 
 numberFromSubNaturalLossGroupDetail (subNaturalLossGroupDetail) =

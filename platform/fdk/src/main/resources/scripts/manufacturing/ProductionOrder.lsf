@@ -142,14 +142,14 @@ CONSTRAINT bruttoSkuComponentDetail(componentDetail) != skuProduct(productCompon
 
 // Параметры компонент с учетом замен
 
-skuComponentDetail (componentDetail) = bruttoSkuComponentDetail(componentDetail) OR substituteSkuComponentDetail(componentDetail) PERSISTENT;
+skuComponentDetail (componentDetail) = bruttoSkuComponentDetail(componentDetail) OVERRIDE substituteSkuComponentDetail(componentDetail) PERSISTENT;
 nameSkuComponentDetail 'SKU' (componentDetail) = nameSku(skuComponentDetail(componentDetail));
 idBarcodeSkuComponentDetail 'Штрих-код' (componentDetail) = idBarcodeSku(skuComponentDetail(componentDetail));
 shortNameUOMSkuComponentDetail 'Ед.изм.' (componentDetail) = shortNameUOMSku(skuComponentDetail(componentDetail));
 
-quantityComponentDetail 'Кол-во' (componentDetail) = bruttoQuantityComponentDetail(componentDetail) OR substituteQuantityComponentDetail(componentDetail) PERSISTENT;
+quantityComponentDetail 'Кол-во' (componentDetail) = bruttoQuantityComponentDetail(componentDetail) OVERRIDE substituteQuantityComponentDetail(componentDetail) PERSISTENT;
 
-priceComponentDetail 'Цена' (componentDetail) = bruttoPriceComponentDetail(componentDetail) OR substitutePriceComponentDetail(componentDetail) PERSISTENT;
+priceComponentDetail 'Цена' (componentDetail) = bruttoPriceComponentDetail(componentDetail) OVERRIDE substitutePriceComponentDetail(componentDetail) PERSISTENT;
 
 // Сумма
 @defineDocumentDetailDataSum (component);
@@ -402,13 +402,13 @@ deleteComponentsOrder 'Очистить' =  ACTION (order) {
 } TOOLBAR;
 
 // Sku с учетом замены
-skuSkuOrder (sku, order) = (sku AS Sku AND order IS Order) OR substituteSkuOrder(sku,order) PERSISTENT;
+skuSkuOrder (sku, order) = (sku AS Sku AND order IS Order) OVERRIDE substituteSkuOrder(sku,order) PERSISTENT;
 
 nameSkuSkuOrder 'Итоговый sku' (sku,order)= nameSku(skuSkuOrder (sku,order));
 idBarcodeSkuSkuOrder 'Штрих-код' (sku,order) = idBarcodeSku(skuSkuOrder (sku, order));
 shortNameUOMSkuSkuOrder 'Ед.изм.' (sku,order) = shortNameUOMSku(skuSkuOrder (sku, order));
 
-priceSkuOrder 'Цена с учетом коэфф. замены' (sku, order) = bruttoPriceSkuOrder(sku,order) OR (substitutePriceSkuOrder(sku,order) * multiplierSkuOrder(sku,order)) PERSISTENT;
+priceSkuOrder 'Цена с учетом коэфф. замены' (sku, order) = bruttoPriceSkuOrder(sku,order) OVERRIDE (substitutePriceSkuOrder(sku,order) * multiplierSkuOrder(sku,order)) PERSISTENT;
 
 // Надбавки на компоненты
 markupSkuOrder 'Надбавка, %' = DATA NUMERIC[8,2] (Sku, Order);

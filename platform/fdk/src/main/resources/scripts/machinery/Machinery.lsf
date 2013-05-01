@@ -214,8 +214,8 @@ descriptionPriceTransactionDocumentMachineryPriceTransaction 'Основание
     descriptionPriceTransactionDocument(priceTransactionDocumentMachineryPriceTransaction(transaction));
 
 // todo : persistent почему-то не работает
-descriptionMachineryPriceTransaction 'Основание' (document) = UNION OVERRIDE descriptionPriceTransactionDocumentMachineryPriceTransaction(document),
-                                                                             commentMachineryPriceTransaction(document);
+descriptionMachineryPriceTransaction 'Основание' (document) =
+    descriptionPriceTransactionDocumentMachineryPriceTransaction(document) OVERRIDE commentMachineryPriceTransaction(document);
 
 countProcessPriceTransactionDocument 'Кол-во ожидающих транзакций' (document) = GROUP SUM 1 IF processMachineryPriceTransaction(transaction)
                                                                                  BY priceTransactionDocumentMachineryPriceTransaction(transaction) PERSISTENT;

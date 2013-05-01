@@ -354,14 +354,14 @@ nearestInPriceListStockGroup (priceList, stockGroup) =
     inPriceListStockGroup(priceList, nearestParentStockGroup(priceList, stockGroup)) PERSISTENT;
 
 inPriceListStockGroupOver 'Отм' (priceList, stockGroup) =
-    UNION OVERRIDE inPriceList(priceList) AND stockGroup IS StockGroup,
-                   nearestInPriceListStockGroup(priceList, stockGroup),
-                   inPriceListStockGroup(priceList, stockGroup);
+    inPriceList(priceList) AND stockGroup IS StockGroup OVERRIDE
+    nearestInPriceListStockGroup(priceList, stockGroup) OVERRIDE
+    inPriceListStockGroup(priceList, stockGroup);
 
 inPriceListStockOver 'Отм' (priceList, stock) =
-    (UNION OVERRIDE inPriceList(priceList) AND stock IS Stock,
-                   nearestInPriceListStockGroup(priceList, stockGroupStock(stock)),
-                   inPriceListStock(priceList, stock)) AND isCompanyStock(stock);
+    (inPriceList(priceList) AND stock IS Stock OVERRIDE
+     nearestInPriceListStockGroup(priceList, stockGroupStock(stock)) OVERRIDE
+     inPriceListStock(priceList, stock)) AND isCompanyStock(stock);
 
 stocksPriceList 'Склады' (priceList) = GROUP CONCAT nameStock(stock) IF inPriceListStockOver(priceList, stock) , ', '
                                        BY priceList
@@ -393,7 +393,7 @@ backgroundCurrentDataPriceListType 'Цвет' (dataPriceListType) = RGB(255,238,
 backgroundMarkUpDataPriceListType 'Цвет' (dataPriceListType) = RGB(232,184,146) AND dataPriceListType IS DataPriceListType;
 backgroundDataPriceListType 'Цвет' (dataPriceListType) = RGB(213,249,185) AND dataPriceListType IS  DataPriceListType;
 
-inStockGroupStock (stockGroup, stock) = UNION OVERRIDE stock IS Stock AND NOT stockGroup IS StockGroup, isParentStockGroupStock(stockGroup, stock);
+inStockGroupStock (stockGroup, stock) = stock IS Stock AND NOT stockGroup IS StockGroup OVERRIDE isParentStockGroupStock(stockGroup, stock);
 
 detailSkuUserPriceList(sku, price) = GROUP SUM 1 IF sku == skuUserPriceListDetail(detail) AND price == userPriceListUserPriceListDetail(detail)
                                            BY skuUserPriceListDetail(detail), userPriceListUserPriceListDetail(detail);
@@ -518,8 +518,8 @@ userDefaultLegalEntityOperation = DATA LegalEntity (Operation);
 calcDefaultLegalEntityOperation(operation) =
     GROUP MAX legalEntity IF isLegalEntityOperation(legalEntity, operation)
     BY operation PERSISTENT;
-defaultLegalEntityOperation(operation) = UNION OVERRIDE calcDefaultLegalEntityOperation(operation),
-                                                        userDefaultLegalEntityOperation(operation) PERSISTENT;
+defaultLegalEntityOperation(operation) = calcDefaultLegalEntityOperation(operation) OVERRIDE
+                                         userDefaultLegalEntityOperation(operation) PERSISTENT;
 nameDefaultLegalEntityOperation 'Организация по умолчанию' (operation) = nameLegalEntity(defaultLegalEntityOperation(operation));
 isDefaultLegalEntityOperation 'Организация по умолчанию' (legalEntity, operation) =
     defaultLegalEntityOperation(operation) == legalEntity;
@@ -530,8 +530,8 @@ userDefaultCurrencyOperation = DATA Currency (Operation);
 calcDefaultCurrencyOperation(operation) =
     GROUP MAX currency IF isCurrencyOperation(currency, operation)
     BY operation PERSISTENT;
-defaultCurrencyOperation(operation) = UNION OVERRIDE calcDefaultCurrencyOperation(operation),
-                                                     userDefaultCurrencyOperation(operation) PERSISTENT;
+defaultCurrencyOperation(operation) = calcDefaultCurrencyOperation(operation) OVERRIDE
+                                      userDefaultCurrencyOperation(operation) PERSISTENT;
 nameDefaultCurrencyOperation 'Валюта по умолчанию' (operation) = nameCurrency(defaultCurrencyOperation(operation));
 isDefaultCurrencyOperation 'Валюта по умолчанию' (currency, operation) =
     defaultCurrencyOperation(operation) == currency;
@@ -608,7 +608,7 @@ nameFilterPriceListTypeUserPriceList 'Вид цены' (userPriceList) = namePri
 currentPriceSkuPriceListStock 'Текущая цена' (sku, userPriceList, stock) =
     currentPriceSkuPriceListDataPriceListTypeStock(sku, userPriceList, filterPriceListTypeUserPriceList(userPriceList), stock);
 filterPriceListTypeUserPriceListSkuStock (userPriceList, sku, stock) =
-    currentPriceSkuPriceListStock (sku, userPriceList, stock) OR
+    (TRUE IF currentPriceSkuPriceListStock (sku, userPriceList, stock)) OR
     (sku IS Sku AND stock IS Stock AND NOT filterPriceListTypeUserPriceList(userPriceList));
 
 FORM userPriceList 'Прайс'
@@ -989,11 +989,11 @@ nearestMarkupCalcPriceListTypeGroup 'Расчетная надбавка, %' (ca
     markupCalcPriceListTypeGroup(calcPriceListType, nearestParentGroup(calcPriceListType, group)) PERSISTENT;
 
 markupCalcPriceListTypeGroupOver 'Надбавка, %' (type, group) =
-    UNION OVERRIDE nearestMarkupCalcPriceListTypeGroup(type, group), markupCalcPriceListTypeGroup(type, group) PERSISTENT;
+    nearestMarkupCalcPriceListTypeGroup(type, group) OVERRIDE markupCalcPriceListTypeGroup(type, group) PERSISTENT;
 
 markupCalcPriceListTypeSku 'Надбавка, %' (type, sku) =
-    UNION OVERRIDE markupCalcPriceListTypeGroupOver(type, groupGroupTypeSku(groupTypeCalcPriceListType(type), sku)),
-                   dataMarkupCalcPriceListTypeSku(type, sku);
+    markupCalcPriceListTypeGroupOver(type, groupGroupTypeSku(groupTypeCalcPriceListType(type), sku)) OVERRIDE
+    dataMarkupCalcPriceListTypeSku(type, sku);
 
 multiplierCalcPriceListTypeSku (type, sku) = (100 + markupCalcPriceListTypeSku(type, sku)) / 100 PERSISTENT;
 

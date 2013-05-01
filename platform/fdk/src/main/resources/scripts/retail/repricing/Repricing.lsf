@@ -170,8 +170,8 @@ overCurRepricingPriceRepricingDetail = ABSTRACT NUMERIC[14,2] (RepricingDetail) 
 overCurRepricingPriceUserRepricingDetail = ABSTRACT NUMERIC[14,2] (UserRepricingDetail) PERSISTENT;
 overCurRepricingPriceRepricingDetail (detail) += overCurRepricingPriceUserRepricingDetail(detail);
 
-curRepricingPriceUserRepricingDetail (detail) = curPriceUserRepricingDetail(detail) OR overCurRepricingPriceUserRepricingDetail(detail) PERSISTENT;
-curRepricingPriceRepricingDetail (detail) = curPriceRepricingDetail(detail) OR overCurRepricingPriceRepricingDetail(detail) PERSISTENT;
+curRepricingPriceUserRepricingDetail (detail) = curPriceUserRepricingDetail(detail) OVERRIDE overCurRepricingPriceUserRepricingDetail(detail) PERSISTENT;
+curRepricingPriceRepricingDetail (detail) = curPriceRepricingDetail(detail) OVERRIDE overCurRepricingPriceRepricingDetail(detail) PERSISTENT;
 
 // Надбавка
 @defineDocumentInterfaceDetailMarkupPrefix (repricing, cur, ' до');
@@ -211,8 +211,8 @@ overRepricingPriceRepricingDetail = ABSTRACT NUMERIC[14,2] (RepricingDetail) PER
 overRepricingPriceUserRepricingDetail = ABSTRACT NUMERIC[14,2] (UserRepricingDetail) PERSISTENT;
 overRepricingPriceRepricingDetail (detail) += overRepricingPriceUserRepricingDetail(detail);
 
-repricingPriceUserRepricingDetail (detail) = priceUserRepricingDetail(detail) OR overRepricingPriceUserRepricingDetail(detail) PERSISTENT;
-repricingPriceRepricingDetail (detail) = priceRepricingDetail(detail) OR overRepricingPriceRepricingDetail(detail) PERSISTENT;
+repricingPriceUserRepricingDetail (detail) = priceUserRepricingDetail(detail) OVERRIDE overRepricingPriceUserRepricingDetail(detail) PERSISTENT;
+repricingPriceRepricingDetail (detail) = priceRepricingDetail(detail) OVERRIDE overRepricingPriceRepricingDetail(detail) PERSISTENT;
 
 // Надбавка
 @defineDocumentInterfaceDetailMarkupPrefix (repricing, , ' после');
@@ -767,8 +767,8 @@ META defineRepricingAggregation(sign, stockProp)
     overCurRepricingPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
     overCurRepricingPriceInvoiceDetail (detail) += overCurRepricingPriceUserInvoiceDetail(detail);
 
-    curRepricingPriceUserInvoiceDetail (detail) = curPriceUserInvoiceDetail(detail) OR overCurRepricingPriceUserInvoiceDetail(detail) PERSISTENT;
-    curRepricingPriceInvoiceDetail (detail) = curPriceInvoiceDetail(detail) OR overCurRepricingPriceInvoiceDetail(detail) PERSISTENT;
+    curRepricingPriceUserInvoiceDetail (detail) = curPriceUserInvoiceDetail(detail) OVERRIDE overCurRepricingPriceUserInvoiceDetail(detail) PERSISTENT;
+    curRepricingPriceInvoiceDetail (detail) = curPriceInvoiceDetail(detail) OVERRIDE overCurRepricingPriceInvoiceDetail(detail) PERSISTENT;
 
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, cur, ' до');
 
@@ -798,8 +798,8 @@ META defineRepricingAggregation(sign, stockProp)
     overRepricingPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
     overRepricingPriceInvoiceDetail (detail) += overRepricingPriceUserInvoiceDetail(detail);
 
-    repricingPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OR overRepricingPriceUserInvoiceDetail(detail) PERSISTENT;
-    repricingPriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OR overRepricingPriceInvoiceDetail(detail) PERSISTENT;
+    repricingPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OVERRIDE overRepricingPriceUserInvoiceDetail(detail) PERSISTENT;
+    repricingPriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OVERRIDE overRepricingPriceInvoiceDetail(detail) PERSISTENT;
 
     // ---- Суммы по строкам ---- //
 

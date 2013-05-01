@@ -13,7 +13,7 @@ CLASS MapProvider 'Использовать карты' {
 };
 
 userMapProvider = DATA MapProvider ();
-mapProvider = MapProvider.yandex OR userMapProvider();
+mapProvider = MapProvider.yandex OVERRIDE userMapProvider();
 
 nameUserMapProvider 'Использовать карты' () = staticCaption(userMapProvider());
 

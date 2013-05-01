@@ -68,7 +68,7 @@ EXTEND FORM invoices
 
 // ------------------------------- Расчет учетной цены для поставки ------------------------ //
 overPurchaseShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) EXCLUSIVE PERSISTENT;
-calcPurchaseShipmentPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OR overPurchaseShipmentPriceUserInvoiceDetail(detail) PERSISTENT;
+calcPurchaseShipmentPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OVERRIDE overPurchaseShipmentPriceUserInvoiceDetail(detail) PERSISTENT;
 
 extraPurchaseShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;    // на всякий случай
 

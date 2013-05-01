@@ -169,7 +169,7 @@ promotionGroupPromotion (promotion) = DATA PromotionGroup(Promotion) AUTOSET NOT
 namePromotionGroupPromotion 'Группа акций' (promotion) = namePromotionGroup(promotionGroupPromotion(promotion)) IN base;
 
 userOrderPromotion 'Порядок' (promotion) = DATA INTEGER (Promotion);
-orderPromotion 'Порядок' (promotion) = (1 IF promotion IS Promotion) OR userOrderPromotion(promotion) PERSISTENT;
+orderPromotion 'Порядок' (promotion) = (1 IF promotion IS Promotion) OVERRIDE userOrderPromotion(promotion) PERSISTENT;
 
 userSetPromotion 'Задается кассиром' (promotion) = DATA BOOLEAN (Promotion);
 // ----------------------------- Условия акций ------------------------ //
@@ -203,19 +203,19 @@ TABLE promotionStore(Promotion, Store);
 inPromotionStore 'В акции' = DATA BOOLEAN (Promotion, Store);
 
 inPromotionChainStoresOver 'В акции' (promotion, chainStores) =
-    UNION OVERRIDE inPromotion(promotion) AND chainStores IS ChainStores,
-                   inPromotionChainStores(promotion, chainStores);
+    inPromotion(promotion) AND chainStores IS ChainStores OVERRIDE
+    inPromotionChainStores(promotion, chainStores);
 
 inPromotionStoreTypeOver 'В акции' (promotion, storeType) =
-    UNION OVERRIDE inPromotion(promotion) AND storeType IS StoreType,
-                   inPromotionChainStores(promotion, chainStoresStoreType(storeType)),
-                   inPromotionStoreType(promotion, storeType);
+    inPromotion(promotion) AND storeType IS StoreType OVERRIDE
+    inPromotionChainStores(promotion, chainStoresStoreType(storeType)) OVERRIDE
+    inPromotionStoreType(promotion, storeType);
 
 inPromotionStoreOver 'В акции' (promotion, store) =
-    UNION OVERRIDE inPromotion(promotion) AND store IS Store,
-                   inPromotionChainStores(promotion, chainStoresStore(store)),
-                   inPromotionStoreType(promotion, storeTypeStore(store)),
-                   inPromotionStore(promotion, store) AND isCompanyStore(store);
+    (inPromotion(promotion) AND store IS Store OVERRIDE
+     inPromotionChainStores(promotion, chainStoresStore(store)) OVERRIDE
+     inPromotionStoreType(promotion, storeTypeStore(store)) OVERRIDE
+     inPromotionStore(promotion, store)) AND isCompanyStore(store);
 
 storePromotion 'Магазины' (promotion) = GROUP CONCAT nameStore(store) IF inPromotionStoreOver(promotion, store), ', '
                                               BY promotion
@@ -230,8 +230,8 @@ allDiscountCardPromotion 'Любая дисконтная карта' = DATA BOO
 TABLE promotionDiscountCard (Promotion, DiscountCard);
 inDataPromotionDiscountCard 'В акции' = DATA BOOLEAN (Promotion, DiscountCard);
 
-inPromotionDiscountCard 'В акции' (promotion, discountCard) = UNION OVERRIDE allDiscountCardPromotion(promotion) AND discountCard IS DiscountCard,
-                                                                             inDataPromotionDiscountCard(promotion, discountCard);
+inPromotionDiscountCard 'В акции' (promotion, discountCard) = allDiscountCardPromotion(promotion) AND discountCard IS DiscountCard OVERRIDE
+                                                              inDataPromotionDiscountCard(promotion, discountCard);
 
 minCumulativeSumPromotion 'Накоп. сумма (от)' (promotion) = DATA NUMERIC[14,2] (Promotion);
 maxCumulativeSumPromotion 'Накоп. сумма (до)' (promotion) = DATA NUMERIC[14,2] (Promotion);
@@ -267,8 +267,8 @@ userSetPromotionCondition 'Задается кассиром' (promotionConditio
 TABLE promotionConditionDiscountSkuGroup (PromotionCondition, DiscountSkuGroup);
 allDiscountSkuGroupPromotionCondition 'Все дисконтные группы товаров' = DATA BOOLEAN (PromotionCondition);
 inDataPromotionConditionDiscountSkuGroup 'В условии' = DATA BOOLEAN (PromotionCondition, DiscountSkuGroup);
-inPromotionConditionDiscountSkuGroup 'В условии' = UNION OVERRIDE allDiscountSkuGroupPromotionCondition(promotionCondition) AND discountSkuGroup IS DiscountSkuGroup,
-                                                                  inDataPromotionConditionDiscountSkuGroup(promotionCondition, discountSkuGroup) PERSISTENT;
+inPromotionConditionDiscountSkuGroup 'В условии' = allDiscountSkuGroupPromotionCondition(promotionCondition) AND discountSkuGroup IS DiscountSkuGroup OVERRIDE
+                                                   inDataPromotionConditionDiscountSkuGroup(promotionCondition, discountSkuGroup) PERSISTENT;
 countPromotionConditionSku 'Кол-во дисконтных групп' = GROUP SUM 1 IF inPromotionConditionDiscountSkuGroup(promotionCondition, discountSkuGroup)
                                                                   AND inDiscountSkuGroupSku(discountSkuGroup, sku) BY promotionCondition, sku;
 
@@ -284,9 +284,10 @@ inPromotionConditionSkuGroup 'В условии' = (TRUE IF inParentPromotionCon
 TABLE promotionConditionSku (PromotionCondition, Sku);
 inDataPromotionConditionSku 'В условии' = DATA BOOLEAN (PromotionCondition, Sku);
 
-inPromotionConditionSku 'В условии' (promotionCondition, sku) = UNION OVERRIDE ((TRUE IF countPromotionConditionSku(promotionCondition, sku)) OR (allDiscountSkuGroupPromotionCondition(promotionCondition) AND sku IS Sku))
-                                                                                    AND inParentPromotionConditionSkuGroup(promotionCondition, skuGroupSku(sku)),
-                                                                               inDataPromotionConditionSku(promotionCondition, sku);
+inPromotionConditionSku 'В условии' (promotionCondition, sku) = ((TRUE IF countPromotionConditionSku(promotionCondition, sku)) OR (allDiscountSkuGroupPromotionCondition(promotionCondition) AND sku IS Sku)) AND
+                                                                          inParentPromotionConditionSkuGroup(promotionCondition, skuGroupSku(sku))
+                                                                OVERRIDE
+                                                                  inDataPromotionConditionSku(promotionCondition, sku);
 
 FORM promotion 'Акция'
     OBJECTS sh=Promotion   FIXED PANEL

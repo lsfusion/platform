@@ -21,12 +21,12 @@ nearestStockReserveDaysStockSkuGroup (stock, skuGroup) =
     stockReserveDaysStockSkuGroup(stock, nearestParentStockSkuGroup(stock, skuGroup));
 
 stockReserveDaysStockSkuGroupOver 'Страховой запас (дн.)' (stock, skuGroup) =
-    UNION OVERRIDE nearestStockReserveDaysStockSkuGroup (stock, skuGroup),
-                   stockReserveDaysStockSkuGroup(stock, skuGroup);
+    nearestStockReserveDaysStockSkuGroup (stock, skuGroup) OVERRIDE
+    stockReserveDaysStockSkuGroup(stock, skuGroup);
 
 stockReserveDaysStockSkuOver 'Страховой запас (дн.)' (stock, sku) =
-    UNION OVERRIDE nearestStockReserveDaysStockSkuGroup(stock, skuGroupSku(sku)),
-                   stockReserveDaysStockSku(stock, sku);
+    nearestStockReserveDaysStockSkuGroup(stock, skuGroupSku(sku)) OVERRIDE
+    stockReserveDaysStockSku(stock, sku);
 
 fillStockReserveDateDateFromTo 'Проставить кол-во исходя из продаж в день и запаса(дн.) ' = ACTION (stock, date, dFrom, dTo) {
     FOR stockReserveDaysStockSkuOver(stock, sku) AND averageSoldInDaySkuStockDateFromTo(sku,stock,dFrom,dTo) DO {

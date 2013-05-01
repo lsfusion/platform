@@ -76,21 +76,21 @@ sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreigh
 
 sidDirectInvoice = sidDocument(innerInvoice) AND innerInvoice IS DirectInvoice;
 
-sidInnerInvoice 'Номер инвойса' (innerInvoice) = UNION OVERRIDE sidDirectInvoice(innerInvoice), sidFormedInvoice(innerInvoice) IN base PERSISTENT;
+sidInnerInvoice 'Номер инвойса' (innerInvoice) = sidDirectInvoice(innerInvoice) OVERRIDE sidFormedInvoice(innerInvoice) IN base PERSISTENT;
 
 dateFormedInvoice 'Дата инвойса' (formedInvoice) = dateImporterFreight(importerInnerInvoice(formedInvoice),
                                                                        freightInnerInvoice(formedInvoice)) IN base;
 
 dateDirectInvoice = date(innerInvoice) AND innerInvoice IS DirectInvoice;
 
-dateInnerInvoice 'Дата инвойса' (innerInvoice) = UNION OVERRIDE dateDirectInvoice(innerInvoice), dateFormedInvoice(innerInvoice) IN base PERSISTENT;
+dateInnerInvoice 'Дата инвойса' (innerInvoice) = dateDirectInvoice(innerInvoice) OVERRIDE dateFormedInvoice(innerInvoice) IN base PERSISTENT;
 
 contractFormedInvoice 'Договор инвойса (ИД)' (formedInvoice) = contractImporterFreight(importerFormedInvoice(formedInvoice),
                                                                                        freightFormedInvoice(formedInvoice));
 
 contractDirectInvoice 'Договор инвойса (ИД)' (directInvoice) = contractDirectInvoice(directInvoice) IF directInvoice IS DirectInvoice;
 
-contractInnerInvoice 'Договор инвойса (ИД)' (innerInvoice) = UNION OVERRIDE contractDirectInvoice(innerInvoice), contractFormedInvoice(innerInvoice) IN base PERSISTENT;
+contractInnerInvoice 'Договор инвойса (ИД)' (innerInvoice) = contractDirectInvoice(innerInvoice) OVERRIDE contractFormedInvoice(innerInvoice) IN base PERSISTENT;
 numberContractInnerInvoice 'Договор' (innerInvoice) = numberContract(contractInnerInvoice(innerInvoice));
 
 quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice),
@@ -255,8 +255,8 @@ directInvoiceFreightUnit(freightUnit) = UNION EXCLUSIVE freightUnit IF freightUn
 
 formedInvoiceFreightUnit(declaration, freightUnit) = formedInvoiceImporterFreight(importerDeclaration(declaration), freightFreightUnit(freightUnit));
 
-innerInvoiceFreightUnit(declaration, freightUnit) = UNION OVERRIDE formedInvoiceFreightUnit(declaration, freightUnit),
-                                                                    directInvoiceFreightUnit(freightUnit) AND declaration IS Declaration;
+innerInvoiceFreightUnit(declaration, freightUnit) = formedInvoiceFreightUnit(declaration, freightUnit) OVERRIDE
+                                                    directInvoiceFreightUnit(freightUnit) AND declaration IS Declaration;
 
 quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
                                                                          BY declarationInnerInvoice(innerInvoice), sku IN base PERSISTENT;
@@ -306,14 +306,14 @@ translateNameDeclarationDetail 'Наименование' (declarationDetail) = 
 translateNameDeclarationDetailLanguage 'Наименование' (declarationDetail) = translateNameSkuLanguage(skuDeclarationDetail(declarationDetail),
                                                                                             languageDeclarationDetail(declarationDetail));
 
-nameInvoiceDeclarationDetail 'Наименование' (declarationDetail) = UNION OVERRIDE translateNameDeclarationDetail(declarationDetail),
-                                                                                 nameCategoryDeclarationDetail(declarationDetail);
+nameInvoiceDeclarationDetail 'Наименование' (declarationDetail) = translateNameDeclarationDetail(declarationDetail) OVERRIDE
+                                                                  nameCategoryDeclarationDetail(declarationDetail);
 
 nameCategoryDeclarationDetailLanguage 'Наименование' (declarationDetail) = languageName(categoryDeclarationDetail(declarationDetail),
                                                                                         languageDeclarationDetail(declarationDetail));
 
-nameInvoiceDeclarationDetailLanguage 'Наименование'(declarationDetail) = UNION OVERRIDE translateNameDeclarationDetailLanguage(declarationDetail),
-                                                                                        nameCategoryDeclarationDetailLanguage(declarationDetail);
+nameInvoiceDeclarationDetailLanguage 'Наименование'(declarationDetail) = translateNameDeclarationDetailLanguage(declarationDetail) OVERRIDE
+                                                                         nameCategoryDeclarationDetailLanguage(declarationDetail);
 
 
 netWeightDeclarationDetail 'Вес нетто товара' (declarationDetail) = netWeightFreightSku(freightDeclarationDetail(declarationDetail),
@@ -349,8 +349,8 @@ customCategory10InvoicedDeclarationDetail 'ТН ВЭД товара (ИД)' (dec
 
 customCategory10DataDeclarationDetail 'ТН ВЭД товара (ИД)' = DATA CustomCategory10(DeclarationDetail);
 
-customCategory10DeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = UNION OVERRIDE customCategory10InvoicedDeclarationDetail(declarationDetail),
-                                                                                            customCategory10DataDeclarationDetail(declarationDetail) PERSISTENT;
+customCategory10DeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = customCategory10InvoicedDeclarationDetail(declarationDetail) OVERRIDE
+                                                                             customCategory10DataDeclarationDetail(declarationDetail) PERSISTENT;
 
 customsZoneDeclarationDetail(declarationDetail) = customsZoneDeclaration(declarationDeclarationDetail(declarationDetail));
 nameCustomsZoneDeclarationDetail 'Зона' (declarationDetail) = name(customsZoneDeclarationDetail(declarationDetail));
@@ -367,8 +367,8 @@ customCategoryOriginInvoicedDeclarationDetail 'ТН ВЭД товара (ИД)' 
 
 customCategoryOriginDataDeclarationDetail 'ТН ВЭД товара (ИД)' = DATA CustomCategoryOrigin(DeclarationDetail);
 
-customCategoryOriginDeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = UNION OVERRIDE customCategoryOriginInvoicedDeclarationDetail(declarationDetail),
-                                                                                                customCategoryOriginDataDeclarationDetail(declarationDetail) PERSISTENT;
+customCategoryOriginDeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = customCategoryOriginInvoicedDeclarationDetail(declarationDetail) OVERRIDE
+                                                                                 customCategoryOriginDataDeclarationDetail(declarationDetail) PERSISTENT;
 
 sidCustomCategoryOriginDeclarationDetail 'ТН ВЭД товара (иностр.)' (declarationDetail) = sidCustomCategoryOrigin(customCategoryOriginDeclarationDetail(declarationDetail));
 
@@ -400,8 +400,8 @@ FORM certificates 'Сертификаты'
 certificatedCategoryDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) IN base;
 certificatedDataDeclarationDetail 'Необходимость сертификации' = DATA BOOLEAN(DeclarationDetail);
 
-//certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = UNION OVERRIDE certificatedCategoryDeclarationDetail(declarationDetail),
-//                                                                                                certificatedDataDeclarationDetail(declarationDetail);
+//certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedCategoryDeclarationDetail(declarationDetail) OVERRIDE
+//                                                                                 certificatedDataDeclarationDetail(declarationDetail);
 
 //certificatedDeclarationSku 'Необходимость сертификации' (declaration, innerInvoice, sku) = certificatedDeclarationDetail(declarationDetailDeclarationInnerInvoiceSku(declaration, innerInvoice, sku));
 certificatedDeclarationSku 'Необходимость сертификации' = DATA BOOLEAN(Declaration, Sku);
@@ -438,8 +438,8 @@ certificateDeclarationDetail 'Сертификат партии (ИД)' = DATA C
 temporalCertificateDeclarationDetail 'Временный сертификат партии (ИД)' = DATA TemporalCertificate(DeclarationDetail);
 permanentCertificateDeclarationDetail 'Постоянный сертификат партии (ИД)' = DATA PermanentCertificate(DeclarationDetail);
 
-certificatePreparedDeclarationDetail 'Сертификат партии (ИД)' (declarationDetail) = UNION OVERRIDE temporalCertificateDeclarationDetail(declarationDetail),
-                                                                                                   permanentCertificateDeclarationDetail(declarationDetail) PERSISTENT;
+certificatePreparedDeclarationDetail 'Сертификат партии (ИД)' (declarationDetail) = temporalCertificateDeclarationDetail(declarationDetail) OVERRIDE
+                                                                                    permanentCertificateDeclarationDetail(declarationDetail) PERSISTENT;
 
 sidTemporalCertificateDeclarationDetail 'Временный сертификат партии' (declarationDetail) = sidCertificate(temporalCertificateDeclarationDetail(declarationDetail)) IN base;
 sidPermanentCertificateDeclarationDetail 'Постоянный сертификат партии' (declarationDetail) = sidCertificate(permanentCertificateDeclarationDetail(declarationDetail)) IN base;
@@ -576,7 +576,7 @@ numberGroupDeclaration 'Номер' (groupDeclaration) =
         ORDER groupDeclaration;
 
 userNumberGroupDeclaration 'Пользовательский номер' (groupDeclaration) = DATA INTEGER (GroupDeclaration);
-overNumberGroupDeclaration 'Номер' (groupDeclaration) = UNION OVERRIDE numberGroupDeclaration(groupDeclaration), userNumberGroupDeclaration(groupDeclaration);
+overNumberGroupDeclaration 'Номер' (groupDeclaration) = numberGroupDeclaration(groupDeclaration) OVERRIDE userNumberGroupDeclaration(groupDeclaration);
 
 uniqueGroupDeclaration = GROUP AGGR groupDeclaration BY overNumberGroupDeclaration (groupDeclaration),
                                                           declarationGroupDeclaration (groupDeclaration)
@@ -600,24 +600,24 @@ nameBrandGroupDeclaration 'Бренд' (groupDeclaration) = nameBrandSupplierArt
 nameCategoryGroupDeclaration 'Ном. группа' (groupDeclaration) = nameCategoryArticle(articleGroupDeclaration(groupDeclaration));
 translateNameGroupDeclaration 'Наименование' (groupDeclaration) = translateNameArticle(articleGroupDeclaration(groupDeclaration));
 
-nameInvoiceGroupDeclaration 'Наименование' (groupDeclaration) = UNION OVERRIDE translateNameGroupDeclaration(groupDeclaration),
-                                                                               nameCategoryGroupDeclaration(groupDeclaration);
+nameInvoiceGroupDeclaration 'Наименование' (groupDeclaration) = translateNameGroupDeclaration(groupDeclaration) OVERRIDE
+                                                                nameCategoryGroupDeclaration(groupDeclaration);
 
 genderArticleGroupDeclaration 'Пол (ИД)' (groupDeclaration) = genderArticle(articleGroupDeclaration(groupDeclaration));
 genderDataGroupDeclaration 'Пол (ИД)' = DATA Gender(GroupDeclaration);
-genderGroupDeclaration'Пол (ИД)' (groupDeclaration) = UNION OVERRIDE genderArticleGroupDeclaration(groupDeclaration), genderDataGroupDeclaration(groupDeclaration);
+genderGroupDeclaration'Пол (ИД)' (groupDeclaration) = genderArticleGroupDeclaration(groupDeclaration) OVERRIDE genderDataGroupDeclaration(groupDeclaration);
 sidGenderGroupDeclaration 'Пол' (groupDeclaration) = sidGender(genderGroupDeclaration(groupDeclaration)) MINCHARWIDTH 3;
 
 typeFabricArticleGroupDeclaration 'Тип одежды (ИД)' (groupDeclaration) = typeFabricArticle(articleGroupDeclaration(groupDeclaration));
 typeFabricDataGroupDeclaration 'Тип одежды (ИД)' = DATA TypeFabric(GroupDeclaration);
-typeFabricGroupDeclaration 'Тип одежды (ИД)' (groupDeclaration) = UNION OVERRIDE typeFabricArticleGroupDeclaration(groupDeclaration),
-                                                                                 typeFabricDataGroupDeclaration(groupDeclaration);
+typeFabricGroupDeclaration 'Тип одежды (ИД)' (groupDeclaration) = typeFabricArticleGroupDeclaration(groupDeclaration) OVERRIDE
+                                                                  typeFabricDataGroupDeclaration(groupDeclaration);
 nameTypeFabricGroupDeclaration 'Тип одежды' (groupDeclaration) = name(typeFabricGroupDeclaration(groupDeclaration)) MINCHARWIDTH 10;
 
 unitOfMeasureArticleGroupDeclaration 'Ед. изм.(ИД)' (groupDeclaration) = unitOfMeasureArticle(articleGroupDeclaration(groupDeclaration));
 unitOfMeasureDataGroupDeclaration 'Ед. изм.(ИД)' = DATA UnitOfMeasure(GroupDeclaration);
-unitOfMeasureGroupDeclaration 'Ед. изм.(ИД)' = UNION OVERRIDE unitOfMeasureArticleGroupDeclaration(groupDeclaration),
-                                                              unitOfMeasureDataGroupDeclaration(groupDeclaration);
+unitOfMeasureGroupDeclaration 'Ед. изм.(ИД)' = unitOfMeasureArticleGroupDeclaration(groupDeclaration) OVERRIDE
+                                               unitOfMeasureDataGroupDeclaration(groupDeclaration);
 
 sidUnitOfMeasureGroupDeclaration 'Ед. изм.(код)' (groupDeclaration) = sidUnitOfMeasure(unitOfMeasureGroupDeclaration(groupDeclaration));
 nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = nameUOM(unitOfMeasureGroupDeclaration(groupDeclaration)) MINCHARWIDTH 5;
@@ -642,7 +642,7 @@ stringGroupDeclaration 'Наименование' (groupDeclaration) = ustring5C
 
 
 nameDataGroupDeclaration 'Наименование' = DATA STRING[200] (GroupDeclaration);
-nameGroupDeclaration 'Наименование' (groupDeclaration) = UNION OVERRIDE stringGroupDeclaration(groupDeclaration), nameDataGroupDeclaration(groupDeclaration);
+nameGroupDeclaration 'Наименование' (groupDeclaration) = stringGroupDeclaration(groupDeclaration) OVERRIDE nameDataGroupDeclaration(groupDeclaration);
 
 inDeclarationDeclarationDetail (declaration, declarationDetail) = declarationDeclarationDetail(declarationDetail)==declaration;
 
@@ -655,8 +655,8 @@ primaryGroupDeclarationDeclarationDetail 'Главная строка для п�
 
 percentDataGroupDeclarationDeclarationDetail '%' = DATA NUMERIC[14,2] (GroupDeclaration, DeclarationDetail);
 percentGroupDeclarationDeclarationDetail '%' (groupDeclaration, declarationDetail) =
-                         (UNION OVERRIDE 100.0 IF (groupDeclaration IS GroupDeclaration AND declarationDetail IS DeclarationDetail),
-                                         percentDataGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)) IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+                         (100.0 IF (groupDeclaration IS GroupDeclaration AND declarationDetail IS DeclarationDetail) OVERRIDE
+                          percentDataGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)) IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
 
 groupDeclarationDeclarationDetail 'Группа строки декларации (ИД)'(declarationDetail) = uniqueGroupDeclaration(
                                                                                        userNumberDeclarationDetail(declarationDetail),
@@ -788,8 +788,8 @@ correctionSumReverseGroupDeclarationDetail 'Часть корр. стоимос�
 
 correctionSumReverseDeclarationDetail 'Корр. стоимость' (declarationDetail) = GROUP SUM correctionSumReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
 
-supplierSumDeclarationDetail 'Стоимость' (declarationDetail) = UNION OVERRIDE sumReverseDeclarationDetail(declarationDetail),
-                                                                              correctionSumReverseDeclarationDetail(declarationDetail);
+supplierSumDeclarationDetail 'Стоимость' (declarationDetail) = sumReverseDeclarationDetail(declarationDetail) OVERRIDE
+                                                               correctionSumReverseDeclarationDetail(declarationDetail);
 
 dutyReverseGroupDeclarationDetail 'Часть пошлины' (groupDeclaration, declarationDetail) = PARTITION UNGROUP dutyDataGroupDeclaration
                                                                                                     PROPORTION STRICT ROUND(0) coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail) IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
@@ -840,7 +840,7 @@ VATRangeDataDeclarationDetail (declarationDetail) = dataSupplierVATCustomCategor
 
 VATRangeReverseDeclarationDetail 'Шкала НДС (ИД)' (declarationDetail) = VATRangeDataGroupDeclaration(primaryGroupDeclarationDeclarationDetail(declarationDetail));
 
-VATRangeDeclarationDetail = UNION OVERRIDE VATRangeDataDeclarationDetail(declarationDetail), VATRangeReverseDeclarationDetail(declarationDetail);
+VATRangeDeclarationDetail = VATRangeDataDeclarationDetail(declarationDetail) OVERRIDE VATRangeReverseDeclarationDetail(declarationDetail);
 
 numberVATRangeReverseDeclarationDetail 'Шкала НДС' (declarationDetail) = numberRange(VATRangeDeclarationDetail(declarationDetail));
 valueVATRangeReverseDeclarationDetail 'НДС (%)' (declarationDetail) = valueRateRangeDate(VATRangeDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
@@ -918,7 +918,7 @@ rateSumRegistrationDeclaration 'Сумма таможенного сбора' (d
                                                                                 coeffRateDeclaration(declaration), declaration) IN sumGroup PERSISTENT MINCHARWIDTH 12;
 
 sumRegistrationDataDeclaration 'Таможенный сбор' = DATA NUMERIC[14,2](Declaration);
-sumRegistrationUnionDeclaration 'Таможенный сбор' = UNION OVERRIDE rateSumRegistrationDeclaration(declaration), sumRegistrationDataDeclaration(declaration) IN sumGroup;
+sumRegistrationUnionDeclaration 'Таможенный сбор' = rateSumRegistrationDeclaration(declaration) OVERRIDE sumRegistrationDataDeclaration(declaration) IN sumGroup;
 sumRegistrationDataDeclaration(declaration) <- rateSumRegistrationDeclaration(declaration) WHEN ASSIGNED (declaration IS PreparedDeclaration);
 
 totalCustomSum 'Сумма платежей' (declaration) = UNION SUM dutyReverseDeclaration(declaration), VATReverseDeclaration(declaration), sumRegistrationDataDeclaration(declaration) IN sumGroup MINCHARWIDTH 17;
@@ -935,8 +935,8 @@ registrationSumDeclarationDetail 'Таможенный сбор' (declarationDet
 
 registrationSumDataDeclarationDetail 'Таможенный сбор' = DATA NUMERIC[14,2](DeclarationDetail);
 
-registrationSumUnionDeclarationDetail 'Таможенный сбор' = UNION OVERRIDE registrationSumDeclarationDetail(declarationDetail),
-                                                                         registrationSumDataDeclarationDetail(declarationDetail);
+registrationSumUnionDeclarationDetail 'Таможенный сбор' = registrationSumDeclarationDetail(declarationDetail) OVERRIDE
+                                                          registrationSumDataDeclarationDetail(declarationDetail);
 
 registrationDeclarationDetail 'Таможенный сбор (ед.)' (declarationDetail) =  roundTypeExchangeDeclarationDetail(registrationSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail), declarationDetail) PERSISTENT;
 

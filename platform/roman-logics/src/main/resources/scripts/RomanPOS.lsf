@@ -10,8 +10,8 @@ userSkipAReceiptDetail (receiptDetail) = DATA BOOLEAN (ReceiptDetail);
 
 diffCompanyReceipt (receipt) = legalEntityCashRegister (cashRegisterZReport(zReportReceipt(receipt))) != legalEntityDepartmentStore (departmentStoreReceipt (receipt));
 
-skipAReceiptSaleDetail 'Не бухг.' (receiptDetail) = UNION OVERRIDE diffCompanyReceipt (receiptReceiptDetail (receiptDetail)),
-                                                            userSkipAReceiptDetail (receiptDetail) PERSISTENT;
+skipAReceiptSaleDetail 'Не бухг.' (receiptDetail) = diffCompanyReceipt (receiptReceiptDetail (receiptDetail)) OVERRIDE
+                                                    userSkipAReceiptDetail (receiptDetail) PERSISTENT;
 
 EXTEND FORM zReport PROPERTIES (d) skipAReceiptSaleDetail;
 EXTEND FORM zReports PROPERTIES (d) READONLY FORCE GRID skipAReceiptSaleDetail;

@@ -77,9 +77,11 @@ META defineContractDefault (contract, contractClass, partyAClass, partyBClass, p
         MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
 
     contract###prefixA###prefixB (pA, pB) = [GROUP MAX contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate()
-                                                         BY prefixA###contract(contract), prefixB###contract(contract)](pA, pB) OR
+                                                         BY prefixA###contract(contract), prefixB###contract(contract)](pA, pB) OVERRIDE
                                                   data###contract###prefixA###prefixB(pA, pB);
-    seriesNumber###contract###prefixA###prefixB 'Основной договор' (pA, pB) = seriesNumberContract(contract###prefixA###prefixB(pA, pB));
+
+    number###contract###prefixA###prefixB 'Основной договор (номер)' (pA, pB) = numberContract(contract###prefixA###prefixB(pA, pB));
+    seriesNumber###contract###prefixA###prefixB 'Основной договор (серия/номер)' (pA, pB) = seriesNumberContract(contract###prefixA###prefixB(pA, pB));
 
     single###contract###prefixA###prefixB (pA, pB) = contract###prefixA###prefixB(pA, pB) IF countContractPartyAPartyB(pA, pB);
 
@@ -96,7 +98,8 @@ END
 
 META defineDocumentContract (objectClass, contractType, contractTypeClass, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage)
     contractType##objectClass = DATA contractTypeClass (objectClass);
-    seriesNumber###contractType##objectClass 'Номер договора' (o) = seriesNumberContract(contractType##objectClass(o)) IN documentPrmGroup;
+    number###contractType##objectClass 'Договор (номер)' (o) = numberContract(contractType##objectClass(o)) IN documentPrmGroup;
+    seriesNumber###contractType##objectClass 'Договор (серия/номер)' (o) = seriesNumberContract(contractType##objectClass(o)) IN documentPrmGroup;
 
     isCommission###objectClass 'Продажа на комиссию' = DATA BOOLEAN (objectClass) IN documentPrmGroup;
     isCommission###objectClass(o) <- typeContractSku(contractType###objectClass(o)) == ContractSkuType.commission

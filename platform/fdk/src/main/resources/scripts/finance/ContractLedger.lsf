@@ -460,11 +460,11 @@ bonusDebtSumContractDate 'Сумма долга с учетом бонуса' (c
 
 //----------------------------------------------- Цвета --------------------------------------------------------------//
 
-backgroundSumContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,238,165) AND dateContractLedger(contractLedger) <= (date AS DATE) OR
+backgroundSumContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,238,165) AND dateContractLedger(contractLedger) <= (date AS DATE) OVERRIDE
                                                                 RGB(255,160,160) AND dateContractLedger(contractLedger) > (date AS DATE);
 backgroundContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,160,160) AND dateContractLedger(contractLedger) > (date AS DATE);
 backgroundSumContract 'Цвет' (contract) = RGB(255,238,165) AND contract IS Contract;
-backgroundSumContractALedgerDate 'Цвет' (contractALedger, date) = RGB(232,184,146) AND dateContractALedger(contractALedger) <= (date AS DATE) OR
+backgroundSumContractALedgerDate 'Цвет' (contractALedger, date) = RGB(232,184,146) AND dateContractALedger(contractALedger) <= (date AS DATE) OVERRIDE
                                                               RGB(255,160,160) AND dateContractALedger(contractALedger) > (date AS DATE);
 backgroundContractALedgerDate 'Цвет' (contractALedger, date) = RGB(255,160,160) AND dateContractALedger(contractALedger) > (date AS DATE);
 backgroundSumContractA 'Цвет' (contract) = RGB(232,184,146) AND contract IS Contract;

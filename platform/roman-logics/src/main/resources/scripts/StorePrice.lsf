@@ -15,7 +15,7 @@ END
 META defineDocumentDetailInvoicePrice (object, stockProp)
     supplierMarkup###object##Detail 'Оптовая надбавка/торговая скидка, %' (detail) = DATA NUMERIC[6,2] (object##Detail) IN priceDetailGroup;
     overSupplierMarkup###object##Detail 'Оптовая надбавка/торговая скидка, %' (detail) =
-            UNION OVERRIDE 0 IF detail IS object##Detail, supplierMarkup###object##Detail(detail);
+            0 IF detail IS object##Detail OVERRIDE supplierMarkup###object##Detail(detail);
 
     supplierVAT###object##Detail(detail) = DATA Range (object##Detail);
     numberSupplierVAT###object##Detail 'НДС поставщика, номер' (detail) = numberRange(supplierVAT###object##Detail(detail)) IN priceDetailGroup;

@@ -57,8 +57,8 @@ baudRateCashRegister 'Скорость кассы' = DATA INTEGER (CashRegister)
 countryCashRegister 'Страна кассы' (cashRegister) = countryStock(stockGroupMachinery(groupCashRegisterCashRegister(cashRegister)));
 
 userLegalEntityCashRegister (cashRegister) = DATA LegalEntity (CashRegister);
-legalEntityCashRegister (cashRegister) = UNION OVERRIDE legalEntityDepartmentStore(departmentStoreCashRegister(cashRegister)),
-                                                    userLegalEntityCashRegister(cashRegister);
+legalEntityCashRegister (cashRegister) =
+    legalEntityDepartmentStore(departmentStoreCashRegister(cashRegister)) OVERRIDE userLegalEntityCashRegister(cashRegister);
 
 nameLegalEntityCashRegister 'Владелец кассы' (cashRegister) = nameLegalEntity(legalEntityCashRegister(cashRegister));
 

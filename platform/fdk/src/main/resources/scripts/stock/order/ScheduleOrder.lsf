@@ -76,7 +76,7 @@ META defineScheduleOrder(sign, stockProp)
 
     //свойства "Каждые N недель"
     periodScheduleOrder 'Кол-во недель между поставками' = DATA INTEGER (ScheduleOrder);
-    overPeriodScheduleOrder 'Кол-во недель между поставками' (scheduleOrder) = UNION OVERRIDE 1 IF scheduleOrder IS ScheduleOrder, periodScheduleOrder(scheduleOrder);
+    overPeriodScheduleOrder 'Кол-во недель между поставками' (scheduleOrder) = 1 IF scheduleOrder IS ScheduleOrder OVERRIDE periodScheduleOrder(scheduleOrder);
 
     //свойства "Каждые N дней"
     dayAfterScheduleOrder 'Через сколько дней после последней поставки делать заказ' = DATA INTEGER (ScheduleOrder);
@@ -156,7 +156,7 @@ META defineScheduleOrder(sign, stockProp)
                         SET tmpDateS() <- tmpDate();
                         SET scheduleOrderScheduleOrderDetail(o) <- scheduleOrder;
                         // если попали на субботу или воскресенье
-                        IF UNION OVERRIDE numberDOWInDate(tmpDateS()) == 0, numberDOWInDate(tmpDateS()) == 6 THEN {
+                        IF numberDOWInDate(tmpDateS()) == 0 OR numberDOWInDate(tmpDateS()) == 6 THEN {
                             IF numberDOW(transferDayScheduleOrder(scheduleOrder)) == 1 THEN {
                             // если нужно переносить на понедельник, то добавляем
                                 WHILE numberDOWInDate(tmpDateS()) != 1 DO SET tmpDateS() <- sumDate(tmpDateS(), 1);
