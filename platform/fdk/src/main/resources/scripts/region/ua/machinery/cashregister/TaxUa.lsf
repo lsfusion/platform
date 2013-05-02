@@ -1,0 +1,8 @@
+MODULE TaxUa;
+
+REQUIRE Tax;
+
+loadDefaultVATs () += ACTION () {
+    EXEC loadDefaultVAT('804', 1, 0);
+    EXEC loadDefaultVAT('804', 2, 20);
+};

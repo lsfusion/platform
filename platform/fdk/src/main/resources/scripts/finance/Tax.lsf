@@ -450,16 +450,6 @@ loadDefaultVAT 'Добавить значение НДС' = ACTION (idCountry, n
     };
 };
 
-loadDefaultVATs 'Загрузить стандартные НДС' = ACTION () {
-    EXEC loadDefaultVAT('112', 1, 0);
-    EXEC loadDefaultVAT('112', 2, 9.09);
-    EXEC loadDefaultVAT('112', 3, 16.67);
-    EXEC loadDefaultVAT('112', 4, 10);
-    EXEC loadDefaultVAT('112', 5, 20);
-    EXEC loadDefaultVAT('112', 6, 24);
-
-    EXEC loadDefaultVAT('804', 1, 0);
-    EXEC loadDefaultVAT('804', 2, 20);
-} IN loadDefaultGroup;
+loadDefaultVATs 'Загрузить стандартные НДС' = ABSTRACT ACTION () IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultVATs);

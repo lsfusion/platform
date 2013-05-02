@@ -47,7 +47,7 @@ createStockContractTemplate 'Заполнить по шаблону' = ACTION (c
             EXEC openWordUserContractSku(contract);
         }
     }
-}
+} IMAGE 'editReport.png';
 
 EXTEND FORM userContractSku
 

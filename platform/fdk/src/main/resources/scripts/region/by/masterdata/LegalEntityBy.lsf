@@ -33,5 +33,31 @@ EXTEND FORM legalEntities
     PROPERTIES(l) READONLY UNPLegalEntity BEFORE shortNameOwnershipLegalEntity(l)
 ;
 
+// ----------------------------------- Стандартные данные ----------------------------------- //
+
+loadDefaultOwnerships () += ACTION ()  {
+
+    EXEC loadDefaultOwnership ('Закрытое акционерное общество', 'ЗАО', '112');
+    EXEC loadDefaultOwnership ('Совместное закрытое акционерное общество', 'СЗАО', '112');
+    EXEC loadDefaultOwnership ('Индивидуальный предприниматель', 'ИП', '112');
+    EXEC loadDefaultOwnership ('Открытое акционерное общество', 'ОАО', '112');
+    EXEC loadDefaultOwnership ('Открытое акционерное общество торговое', 'ОАОТ', '112');
+    EXEC loadDefaultOwnership ('Общество с дополнительной ответственностью', 'ОДО', '112');
+    EXEC loadDefaultOwnership ('Общество с ограниченной ответственностью', 'ООО', '112');
+    EXEC loadDefaultOwnership ('Республиканское дочернее унитарное предприятие', 'РДУП', '112');
+    EXEC loadDefaultOwnership ('Республиканское унитарное предприятие', 'РУП', '112');
+    EXEC loadDefaultOwnership ('Коммунальное унитарное предприятие', 'КУП', '112');
+    EXEC loadDefaultOwnership ('Совместное общество с ограниченной ответственностью', 'СООО', '112');
+    EXEC loadDefaultOwnership ('Совместное предприятие', 'СП', '112');
+    EXEC loadDefaultOwnership ('Сельскохозяйственный производственный кооператив', 'СПК', '112');
+    EXEC loadDefaultOwnership ('Торговое частное унитарное предприятие', 'ТЧУП', '112');
+    EXEC loadDefaultOwnership ('Унитарное предприятие', 'УП', '112');
+    EXEC loadDefaultOwnership ('Частное торговое унитарное предприятие', 'ЧТУП', '112');
+    EXEC loadDefaultOwnership ('Частное унитарное предприятие', 'ЧУП', '112');
+    EXEC loadDefaultOwnership ('Частное унитарное торговое предприятие', 'ЧУТП', '112');
+};
+
+
+
 
 

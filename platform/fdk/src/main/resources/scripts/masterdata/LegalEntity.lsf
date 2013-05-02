@@ -341,3 +341,18 @@ END
 META defineDocumentPhone(object, contact, caption)
     phone###contact###object 'Телефон'###caption (object) = phoneLegalEntity(contact###object(object)) IN documentPrmGroup;
 END
+
+
+// ----------------------------------- Стандартные данные ----------------------------------- //
+
+loadDefaultOwnership 'Добавить Формы собственности' = ACTION (iname, isname, sidCountry) {
+    FOR ADDOBJ t = Ownership DO {
+        SET nameOwnership(t) <- iname;
+        SET shortNameOwnership(t) <- isname;
+        SET countryOwnership(t) <- countrySID(sidCountry);
+    }
+}
+
+loadDefaultOwnerships 'Загрузить стандарные формы собственности' () = ABSTRACT ACTION () IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultOwnerships);
