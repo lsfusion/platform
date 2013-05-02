@@ -321,8 +321,29 @@ FORM propertyPolicy 'Политика безопасности для свойс
     OBJECTS p=Property FIXED PANEL, ur=UserRole
     PROPERTIES(p) READONLY captionProperty, SIDProperty
     PROPERTIES(ur) READONLY nameUserRole, sidUserRole
+    PROPERTIES(p) permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty
     PROPERTIES(ur, p) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
 ;
+
+EXTEND DESIGN propertyPolicy {
+    main {
+        NEW container BEFORE functions.box {
+            NEW propertyContainer {
+                caption = 'Свойства';
+                ADD PROPERTY(captionProperty);
+                ADD PROPERTY(SIDProperty);
+            }
+            NEW permissionContainer {
+                caption = 'Запреты';
+                ADD PROPERTY(permitViewProperty);
+                ADD PROPERTY(forbidViewProperty);
+                ADD PROPERTY(permitChangeProperty);
+                ADD PROPERTY(forbidChangeProperty);
+            }
+            ADD ur.box;
+        }
+    }
+}
 
 NAVIGATOR {
     security {
