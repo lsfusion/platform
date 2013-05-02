@@ -4,7 +4,7 @@ REQUIRE Operation, PriceList;
 
 NAMESPACE Menu;
 
-@defineOperation('(меню)');
+@defineOperation(' (меню)');
 
 @defineOperationPriceListType();
 

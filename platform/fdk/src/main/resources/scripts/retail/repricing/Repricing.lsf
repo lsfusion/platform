@@ -1,6 +1,8 @@
 MODULE Repricing;
 
-REQUIRE Employee, Store, Pricing, StockDocument, PriceList;
+REQUIRE Employee, Store, Pricing, StockDocument, PriceList, RepricingOperation;
+
+NAMESPACE Repricing;
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 
@@ -551,17 +553,27 @@ EXTEND FORM userRepricing
 //    PROPERTIES allSkuUserRepricing(s,p) ON CHANGE overChangeAllSkuUserRepricing(s,p) AFTER currentBalanceSkuUserRepricing(s,p)
 //;
 
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineDocumentOperation(repricing, p, noteUser);
+//@defineDocumentOperationPriceListType(userRepricing, ' переоценки');
+@defineDocumentOperationRole(userRepricing);
+
 //------------------------ Управленческая переоценка ----------------------------//
 
 FORM managementRepricing 'Управленческая переоценка'
     OBJECTS d = DepartmentStore FIXED PANEL
     PROPERTIES (d) SELECTOR nameDepartmentStore
 
-    OBJECTS p = PriceListType FIXED PANEL
-    PROPERTIES (p) SELECTOR namePriceListType
+//    OBJECTS p = PriceListType FIXED PANEL
+//    PROPERTIES (p) SELECTOR namePriceListType
+//
+//    OBJECTS c = CalcPriceListType FIXED PANEL
+//    PROPERTIES (c) SELECTOR nameCalcPriceListType
 
-    OBJECTS c = CalcPriceListType FIXED PANEL
-    PROPERTIES (c) SELECTOR nameCalcPriceListType
+    OBJECTS o = Operation FIXED PANEL
+    PROPERTIES (o) SELECTOR nameOperation
+    FILTERS includeUserOperation(currentUser(), o)
 
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
@@ -574,8 +586,7 @@ DESIGN managementRepricing FROM DEFAULT {
         NEW topContainer {
             childConstraints = TO THE RIGHT;
             ADD d.box { title = 'Выберите отдел магазина';}
-            ADD p.box { title = 'Выберите вид цен (управленческий)';}
-            ADD c.box { title = 'Выберите вид цен (надбавка)';}
+            ADD o.box { title = 'Выберите операцию'; }
             ADD t.box;
         }
         ADD functions.box;
@@ -589,6 +600,8 @@ prevPricePriceListCalcListSkuStockDateTime (priceList, calcList, sku, department
         THEN prevPricePriceListTypeSkuStockDateTime(priceList, sku, department, time) IF priceList IS PriceListType
         ELSE prevPricePriceListTypeSkuStockDateTime(calcList, sku, department, time) IF calcList IS CalcPriceListType;
 
+
+
 createManagementRepricing 'Создать управленческую переоценку' = ACTION () NEWSESSION {
 
     FORM managementRepricing  MODAL;
@@ -597,14 +610,17 @@ createManagementRepricing 'Создать управленческую пере�
         LOCAL priceList = PriceListType();
         LOCAL calcList = CalcPriceListType();
         LOCAL time =  DATETIME();
+        LOCAL oper = Operation();
 
         SET department() <- chosenObject('d');
-        SET priceList() <- chosenObject('p');
-        SET calcList() <- chosenObject('c');
+        SET priceList() <- priceListTypeOperation(chosenObject('o'));
+        SET calcList() <- calcPriceListTypeOperation(chosenObject('o'));
         SET time() <- chosenDateTime('t');
+        SET oper() <- chosenObject('o');
 
         FOR ADDOBJ r = UserRepricing DO {
             SET departmentStoreUserRepricing(r) <-  department();
+            SET operationUserRepricing(r) <- oper();
 
             FOR currentBalanceSkuStock(sku, department()) AND
                 prevPricePriceListCalcListSkuStockDateTime(priceList(), calcList(), sku, department(), time()) != prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.retailPricingPriceListType, sku, department(), time())
@@ -714,6 +730,7 @@ NAVIGATOR {
     pricingNavigator {
         ADD repricings;
         ADD repricingCommitteeDialog;
+        ADD operations;
     }
 }
 
@@ -1010,3 +1027,4 @@ META defineRepricingAggregation(sign, stockProp)
     retailSumRepricingDetail(repricingDetail) += afterRetailSumInvoiceRepricingDetail(repricingDetail);
 
 END
+

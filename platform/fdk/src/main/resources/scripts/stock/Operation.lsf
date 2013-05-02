@@ -67,7 +67,7 @@ END
 
 // -------------------------------------- Макросы по объявлению операций в документах ---------------------------------- //
 
-META defineDocumentOperation(object, char)
+META defineDocumentOperation(object, char, befProp)
 
     operation###object = ABSTRACT Operation (###object) PERSISTENT;
     name###operation###object 'Операция' = nameOperation(operation###object(object));
@@ -84,12 +84,15 @@ META defineDocumentOperation(object, char)
 
     EXTEND DESIGN user###object{
         char.documentPrmGroup{
-            ADD PROPERTY(name###operationUser###object) BEFORE PROPERTY(nameCurrencyUser###object);
+            ADD PROPERTY(name###operationUser###object) BEFORE PROPERTY(befProp###object);
         }
     }
 
 END
 
+META defineDocumentOperation(object, char)
+    @defineDocumentOperation(object, char, nameCurrencyUser);
+END
 // -------------------------------------- Организации ---------------------------------- //
 
 META defineOperationLegalEntity(prop, object, tabcaption)
