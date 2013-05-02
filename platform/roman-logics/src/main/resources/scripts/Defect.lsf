@@ -61,14 +61,22 @@ FORM defectStocks 'Склады брака'
 
 // -------------------------------------- Внешние склады ------------------------------- //
 
-CLASS ABSTRACT ExternalStock 'Внешний склад' : Named;
+CLASS ABSTRACT ExternalStock 'Внешний склад';
 TABLE externalStock(ExternalStock);
+
+nameExternalStock 'Наименование' = ABSTRACT ISTRING[150](ExternalStock);
 
 CLASS RepairShop 'Ремонтная мастерская' : ExternalStock;
 TABLE repairShop(RepairShop);
 
+nameRepairShop 'Наименование' = DATA ISTRING[150](RepairShop);
+nameExternalStock(stock) += nameRepairShop(stock) IF stock IS RepairShop;
+
 CLASS CleaningStock 'Химчистка' : ExternalStock;
 TABLE cleaningStock(CleaningStock);
+
+nameCleaningStock 'Наименование' = DATA ISTRING[150](CleaningStock);
+nameExternalStock(stock) += nameCleaningStock(stock) IF stock IS CleaningStock;
 
 addressExternalStock 'Адрес' = DATA STRING[100] (ExternalStock) IN lawGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
 phoneExternalStock 'Телефон' = DATA STRING[100] (ExternalStock) IN lawGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
@@ -91,7 +99,7 @@ CLASS RepairDetail 'Строка передачи в ремонт' : Consignment
 @defineDocumentStock(repair, stock, 'Склад-отправитель');
 
 repairShopRepair = DATA RepairShop (Repair);
-nameRepairShopRepair 'Ремонтная мастерская' (repair) = name(repairShopRepair(repair));
+nameRepairShopRepair 'Ремонтная мастерская' (repair) = nameRepairShop(repairShopRepair(repair));
 repairShopRepairDetail (detail) = repairShopRepair(repairRepairDetail(detail));
 
 @defineDocumentPosted(repair);
@@ -314,7 +322,7 @@ CLASS ReturnRepairDetail 'Строка возврата из ремонта';
 @defineDocumentStock(returnRepair, stock, 'Склад-получатель');
 
 repairShopReturnRepair = DATA RepairShop (ReturnRepair);
-nameRepairShopReturnRepair 'Ремонтная мастерская' (returnRepair) = name(repairShopReturnRepair(returnRepair));
+nameRepairShopReturnRepair 'Ремонтная мастерская' (returnRepair) = nameRepairShop(repairShopReturnRepair(returnRepair));
 repairShopReturnRepairDetail (detail) = repairShopReturnRepair(returnRepairReturnRepairDetail(detail));
 
 @defineDocumentPosted(returnRepair);
@@ -451,7 +459,7 @@ currentBalanceRepairShop 'Текущий остаток' (repairShop) =  GROUP S
 FORM repairShop 'Ремонтная мастерская'
 
     OBJECTS s=RepairShop FIXED PANEL
-    PROPERTIES(s)  name, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock, contactNameExternalStock, infoExternalStock
+    PROPERTIES(s)  nameRepairShop, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock, contactNameExternalStock, infoExternalStock
     EDIT RepairShop OBJECT s
 ;
 DESIGN repairShop FROM DEFAULT {
@@ -470,7 +478,7 @@ DESIGN repairShop FROM DEFAULT {
 FORM repairShops 'Ремонтные мастерские'
 
     OBJECTS s=RepairShop
-    PROPERTIES(s)  READONLY name, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock,
+    PROPERTIES(s)  READONLY nameRepairShop, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock,
                    contactNameExternalStock, infoExternalStock, currentBalanceRepairShop, quantityOverdueRepairShop
     PROPERTIES(s)  ADDFORM, EDITFORM, delete
 
@@ -544,7 +552,7 @@ CLASS DryCleaningDetail 'Строка передачи в химчистку' : 
 @defineDocumentStock(dryCleaning, stock, 'Склад-отправитель');
 
 cleaningStockDryCleaning = DATA CleaningStock (DryCleaning);
-nameCleaningStockDryCleaning 'Химчистка' (dryCleaning) = name(cleaningStockDryCleaning(dryCleaning));
+nameCleaningStockDryCleaning 'Химчистка' (dryCleaning) = nameCleaningStock(cleaningStockDryCleaning(dryCleaning));
 cleaningStockDryCleaningDetail (detail) = cleaningStockDryCleaning(dryCleaningDryCleaningDetail(detail));
 
 @defineDocumentPosted(dryCleaning);
@@ -601,7 +609,7 @@ CLASS ReturnDryCleaningDetail 'Строка возврата из химчист
 @defineDocumentStock(returnDryCleaning, stock, 'Склад-получатель');
 
 cleaningStockReturnDryCleaning = DATA CleaningStock (ReturnDryCleaning);
-nameCleaningStockReturnDryCleaning 'Химчистка' (returnDryCleaning) = name(cleaningStockReturnDryCleaning(returnDryCleaning));
+nameCleaningStockReturnDryCleaning 'Химчистка' (returnDryCleaning) = nameCleaningStock(cleaningStockReturnDryCleaning(returnDryCleaning));
 cleaningStockReturnDryCleaningDetail (detail) = cleaningStockReturnDryCleaning(returnDryCleaningReturnDryCleaningDetail(detail));
 
 @defineDocumentPosted(returnDryCleaning);
@@ -736,7 +744,7 @@ currentBalanceCleaningStock 'Текущий остаток' (cleaningStock) =  G
 FORM cleaningStock 'Химчистка'
 
     OBJECTS s=CleaningStock FIXED PANEL
-    PROPERTIES(s)  name, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock, contactNameExternalStock, infoExternalStock
+    PROPERTIES(s)  nameCleaningStock, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock, contactNameExternalStock, infoExternalStock
     EDIT CleaningStock OBJECT s
 ;
 DESIGN cleaningStock FROM DEFAULT {
@@ -755,7 +763,7 @@ DESIGN cleaningStock FROM DEFAULT {
 FORM cleaningStocks 'Химчистки'
 
     OBJECTS s=CleaningStock
-    PROPERTIES(s)  READONLY name, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock,
+    PROPERTIES(s)  READONLY nameCleaningStock, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock,
                    contactNameExternalStock, infoExternalStock, currentBalanceCleaningStock, quantityOverdueCleaningStock
     PROPERTIES(s)  ADDFORM, EDITFORM, delete
 

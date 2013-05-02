@@ -54,9 +54,9 @@ contractCommercialInvoice 'Договор коммерческого инвой�
 numberContractCommercialInvoice 'Номер договора коммерческого инвойса' = numberContract(contractCommercialInvoice(commercialInvoice));
 
 supplierCommercialInvoice (commercialInvoice) = partyAContract(contractCommercialInvoice(commercialInvoice));
-nameSupplierCommercialInvoice 'Поставщик' (commercialInvoice) = name(supplierCommercialInvoice(commercialInvoice));
+nameSupplierCommercialInvoice 'Поставщик' (commercialInvoice) = nameLegalEntity(supplierCommercialInvoice(commercialInvoice));
 companyCommercialInvoice (commercialInvoice) = partyBContract(contractCommercialInvoice(commercialInvoice));
-nameCompanyCommercialInvoice 'Поставщик' (commercialInvoice) = name(companyCommercialInvoice(commercialInvoice));
+nameCompanyCommercialInvoice 'Покупатель' (commercialInvoice) = nameLegalEntity(companyCommercialInvoice(commercialInvoice));
 
 @defineNumeratedObjectDefault(CommercialInvoice, 'Нумератор для коммерческих инвойсов', 'КИ');
 

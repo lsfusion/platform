@@ -23,6 +23,8 @@ NAMESPACE MasterData;
 
 //--------------------------------- Дисконтные группы -------------------------------------------//
 
+nameSkuGroup(group) += name(group) IF group IS Category;
+
 inDiscountSkuGroupSku (discountSkuGroup, sku) += brandSupplierArticleSku(sku) == discountSkuGroup;
 roundGroupSku(sku) += brandSupplierArticleSku(sku);
 roundPriceCurrencyArticle 'Округление для артикула' (price, currency, article) = roundPriceCurrencyRoundGroup(price, currency, brandSupplierArticle(article));

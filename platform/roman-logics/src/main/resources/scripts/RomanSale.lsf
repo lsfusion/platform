@@ -59,7 +59,7 @@ supplierPriceSaleOutDetail (saleOutDetail) <- priceWholesaleArticleCurrencyDateT
     WHEN CHANGED(skuSaleOutDetail(saleOutDetail)) OR CHANGED(dateTimeSaleOutDetail(saleOutDetail)) OR CHANGED(currencySaleOutDetail(saleOutDetail));
 
 EXTEND FORM saleOut
-    PROPERTIES(t) numberContractSkuSaleOut, isCommissionSaleOut
+    PROPERTIES(t) seriesNumberContractSkuSaleOut, isCommissionSaleOut
     PROPERTIES(d) supplierPriceSaleOutDetail
 ;
 

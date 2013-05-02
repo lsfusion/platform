@@ -4,14 +4,13 @@ REQUIRE Country,
         Currency,
         I18n,
         Employee,
-        CustomsGroup,
         Bank,
         LegalEntity,
         Stock,
         Store,
         Warehouse,
-        Dimension,
-        GLAccountType,
+        //Dimension,
+        //GLAccountType,
         Agreement,
         Label,
         Machinery,
@@ -19,28 +18,33 @@ REQUIRE Country,
         PriceChecker,
         Scales,
         Terminal,
-        BOM,
-        ItemArticle,
-        ItemFood,
-        ItemDescription,
-        PurchaseWriteOff,
+        //BOM,
+        //ItemArticle,
+        //ItemFood,
+        //ItemDescription,
+        //PurchaseWriteOff,
         ConsignmentBy,
         Ware,
         RetailCRM,
         ZReport,
-        NaturalLoss,
-        SaleStatistics,
+        //NaturalLoss,
+        //SaleStatistics,
         Transport,
         PriceRound,
         Inventory,
         WriteOff,
+        Defect,
         PriceList,
-        WarePriceList,
-        Pricing,
-        Repricing,
-        PurchaseOperation,
-        SaleOperation,
-        DisparityOperation;
+        RomanLogicsModule,
+        RomanUtils,
+        Supplier,
+        Customer;
+        //WarePriceList,
+        //Pricing,
+        //Repricing,
+        //PurchaseOperation,
+        //SaleOperation,
+        //DisparityOperation;
 
 EXTEND CLASS DoubleNamed : Named;
 
@@ -62,24 +66,12 @@ setNameLanguage 'Взять наименования языков' () = ACTION {
     SET nameLanguage(language) <- name(language) WHERE language IS Language;
 };
 
-//EXTEND CLASS CustomsZone : Named;
-//
-//setNameCustomsZone 'Взять наименования таможенных зон' () = ACTION {
-//    SET nameCustomsZone(customsZone) <- name(customsZone) WHERE customsZone IS CustomsZone;
-//};
-//
-//EXTEND CLASS CustomsGroup : Named;
-//
-//setNameCustomsGroup 'Взять наименования позиций ТН ВЭД' () = ACTION {
-//    SET nameCustomsGroup(customsGroup) <- name(customsGroup) WHERE customsGroup IS CustomsGroup;
-//};
-//
-//EXTEND CLASS Bank : Named;
-//
-//setNameBank 'Взять наименования банков' () = ACTION {
-//    SET nameBank(bank) <- name(bank) WHERE bank IS Bank;
-//};
-//
+EXTEND CLASS Bank : Named;
+
+setNameBank 'Взять наименования банков' () = ACTION {
+    SET nameBank(bank) <- name(bank) WHERE bank IS Bank;
+};
+
 //EXTEND CLASS DimensionType : Named;
 //
 //setNameDimensionType 'Взять наименования типов субконто' () = ACTION {
@@ -124,9 +116,9 @@ setNameLegalEntityGroup 'Взять наименования групп орга
 
 EXTEND CLASS StockGroup : Named;
 
-setNameGroupDefectStock 'Взять наименования групп складов брака' () = ACTION {
-    SET nameGroupDefectStock(groupDefectStock) <- name(gGroupDefectStock) WHERE groupDefectStock IS GroupDefectStock;
-};
+//setNameGroupDefectStock 'Взять наименования групп складов брака' () = ACTION {
+//    SET nameGroupDefectStock(groupDefectStock) <- name(groupDefectStock) WHERE groupDefectStock IS GroupDefectStock;
+//};
 
 setNameChainStores 'Взять наименования торговых сетей' () = ACTION {
     SET nameChainStores(chainStores) <- name(chainStores) WHERE chainStores IS ChainStores;
@@ -137,20 +129,20 @@ setNameStoreType 'Взять наименования форматов мага�
 };
 
 setNameStore 'Взять наименования магазинов' () = ACTION {
-    SET nameStore(store) <- name(store) WHERE store IS Store;
+    SET nameStore(store) <- name(store) WHERE store IS Store.Store;
 };
 
 setNameWarehouseGroup 'Взять наименования групп складов' () = ACTION {
     SET nameWarehouseGroup(warehouseGroup) <- name(warehouseGroup) WHERE warehouseGroup IS WarehouseGroup;
 };
 
-EXTEND CLASS Stock : Named;
+EXTEND CLASS Stock.Stock : Named;
 
 setNameDepartmentStore 'Взять наименования отделов' () = ACTION {
     SET nameDepartmentStore(departmentStore) <- name(departmentStore) WHERE departmentStore IS DepartmentStore;
 };
 
-setNameWarehouse 'Взять наименования отделов' () = ACTION {
+setNameWarehouse 'Взять наименования складов' () = ACTION {
     SET nameWarehouse(warehouse) <- name(warehouse) WHERE warehouse IS Warehouse;
 };
 
@@ -180,29 +172,29 @@ setNameAgreement 'Взять наименования соглашений' () =
 //};
 
 //--------------------------------------- оборудование --------------------------------------------------------------//
-//EXTEND CLASS EquipmentServer : Named;
-//
-//setNameEquipmentServer 'Взять наименования серверов' () = ACTION {
-//    SET nameEquipmentServer(equipmentServer) <- name(equipmentServer) WHERE equipmentServer IS EquipmentServer;
-//};
-//
-//EXTEND CLASS Model : Named;
-//
-//setNameCashRegisterModel 'Взять наименования касс' () = ACTION {
-//    SET nameCashRegisterModel(model) <- name(model) WHERE model IS CashRegisterModel;
-//};
-//
-//setNamePriceCheckerModel 'Взять наименования прайс чекеров' () = ACTION {
-//    SET namePriceCheckerModel(model) <- name(model) WHERE model IS PriceCheckerModel;
-//};
-//
-//setNameScalesModel 'Взять наименования весов' () = ACTION {
-//    SET nameScalesModel(model) <- name(model) WHERE model IS ScalesModel;
-//};
-//
-//setNameTerminalModel 'Взять наименования ТСД' () = ACTION {
-//    SET nameTerminalModel(model) <- name(model) WHERE model IS TerminalModel;
-//};
+EXTEND CLASS EquipmentServer : Named;
+
+setNameEquipmentServer 'Взять наименования серверов' () = ACTION {
+    SET nameEquipmentServer(equipmentServer) <- name(equipmentServer) WHERE equipmentServer IS EquipmentServer;
+};
+
+EXTEND CLASS Model : Named;
+
+setNameCashRegisterModel 'Взять наименования касс' () = ACTION {
+    SET nameCashRegisterModel(model) <- name(model) WHERE model IS CashRegisterModel;
+};
+
+setNamePriceCheckerModel 'Взять наименования прайс чекеров' () = ACTION {
+    SET namePriceCheckerModel(model) <- name(model) WHERE model IS PriceCheckerModel;
+};
+
+setNameScalesModel 'Взять наименования весов' () = ACTION {
+    SET nameScalesModel(model) <- name(model) WHERE model IS ScalesModel;
+};
+
+setNameTerminalModel 'Взять наименования ТСД' () = ACTION {
+    SET nameTerminalModel(model) <- name(model) WHERE model IS TerminalModel;
+};
 //--------------------------------------------------------------------------------------------------------------------//
 
 //EXTEND CLASS LabelFormat : Named;
@@ -211,17 +203,6 @@ setNameAgreement 'Взять наименования соглашений' () =
 //    SET nameLabelFormat(labelFormat) <- name(labelFormat) WHERE labelFormat IS LabelFormat;
 //};
 //
-//EXTEND CLASS Technology : Named;
-//
-//setNameTechnology 'Взять наименования технологий' () = ACTION {
-//    SET nameTechnology(technology) <- name(technology) WHERE technology IS Technology;
-//};
-//
-//EXTEND CLASS BOM : Named;
-//
-//setNameBOM 'Взять наименования спецификаций' () = ACTION {
-//    SET nameBOM(bom) <- name(bom) WHERE bom IS BOM;
-//};
 
 EXTEND CLASS Country : Named;
 
@@ -241,11 +222,11 @@ setNameTypeExchange 'Взять наименования типов обмена
     SET nameTypeExchange(typeExchange) <- name(typeExchange) WHERE typeExchange IS TypeExchange;
 };
 
-//EXTEND CLASS Position : Named;
-//
-//setNamePosition 'Взять наименования должностей' () = ACTION {
-//    SET namePosition(position) <- name(position) WHERE position IS Position;
-//};
+EXTEND CLASS Position : Named;
+
+setNamePosition 'Взять наименования должностей' () = ACTION {
+    SET namePosition(position) <- name(position) WHERE position IS Position;
+};
 
 EXTEND CLASS Committee : Named;
 
@@ -257,14 +238,13 @@ setNamePriceChangeCommittee 'Взять наименования комисси�
     SET namePriceChangeCommittee(priceChangeCommittee) <- name(priceChangeCommittee) WHERE priceChangeCommittee IS PriceChangeCommittee;
 };
 
-
-setNamePricingCommittee 'Взять наименования комиссий расценок' () = ACTION {
-    SET namePricingCommittee(pricingCommittee) <- name(pricingCommittee) WHERE pricingCommittee IS PricingCommittee;
-};
-
-setNameRepricingCommittee 'Взять наименования комиссий переоценок' () = ACTION {
-    SET nameRepricingCommittee(repricingCommittee) <- name(repricingCommittee) WHERE repricingCommittee IS RepricingCommittee;
-};
+//setNamePricingCommittee 'Взять наименования комиссий расценок' () = ACTION {
+//    SET namePricingCommittee(pricingCommittee) <- name(pricingCommittee) WHERE pricingCommittee IS PricingCommittee;
+//};
+//
+//setNameRepricingCommittee 'Взять наименования комиссий переоценок' () = ACTION {
+//    SET nameRepricingCommittee(repricingCommittee) <- name(repricingCommittee) WHERE repricingCommittee IS RepricingCommittee;
+//};
 
 setNameInventoryCommittee 'Взять наименования комиссий инвентаризаций' () = ACTION {
     SET nameInventoryCommittee(inventoryCommittee) <- name(inventoryCommittee) WHERE inventoryCommittee IS InventoryCommittee;
@@ -274,107 +254,10 @@ setNameWriteOffCommittee 'Взять наименования комиссий �
     SET nameWriteOffCommittee(writeOffCommittee) <- name(writeOffCommittee) WHERE writeOffCommittee IS WriteOffCommittee;
 };
 
-setNameActStudyOfCulinaryCommittee 'Взять наименования комиссий АКПП' () = ACTION {
-    SET nameActStudyOfCulinaryCommittee(actStudyOfCulinaryCommittee) <- name(actStudyOfCulinaryCommittee) WHERE actStudyOfCulinaryCommittee IS ActStudyOfCulinaryCommittee;
-};
-
-
-//-------------------------------------------- для товаров ----------------------------------------------------------//
-//EXTEND CLASS ItemAttribute : Named;
-//
-//setNameStringItemAttribute 'Взять наименования строковых атрибутов' () = ACTION {
-//    SET nameStringItemAttribute(stringItemAttribute) <- name(stringItemAttribute) WHERE stringItemAttribute IS StringItemAttribute;
-//};
-//
-//setNameIntegerItemAttribute 'Взять наименования целочисленных атрибутов' () = ACTION {
-//    SET nameIntegerItemAttribute(integerItemAttribute) <- name(integerItemAttribute) WHERE integerItemAttribute IS IntegerItemAttribute;
-//};
-//
-//setNameDoubleItemAttribute 'Взять наименования дробных атрибутов' () = ACTION {
-//    SET nameDoubleItemAttribute(doubleItemAttribute) <- name(doubleItemAttribute) WHERE doubleItemAttribute IS DoubleItemAttribute;
-//};
-//
-//EXTEND CLASS ItemGroup : Named;
-//
-//setNameItemGroup 'Взять наименования групп товаров' () = ACTION {
-//    SET nameItemGroup(itemGroup) <- name(itemGroup) WHERE itemGroup IS ItemGroup;
+//setNameActStudyOfCulinaryCommittee 'Взять наименования комиссий АКПП' () = ACTION {
+//    SET nameActStudyOfCulinaryCommittee(actStudyOfCulinaryCommittee) <- name(actStudyOfCulinaryCommittee) WHERE actStudyOfCulinaryCommittee IS ActStudyOfCulinaryCommittee;
 //};
 
-EXTEND CLASS Brand : Named;
-
-setNameBrand 'Взять наименования брендов' () = ACTION {
-    SET nameBrand(brand) <- name(brand) WHERE brand IS Brand;
-};
-
-EXTEND CLASS Manufacturer : Named;
-
-setNameManufacturer 'Взять наименования производителей' () = ACTION {
-    SET nameManufacturer(manufacturer) <- name(manufacturer) WHERE manufacturer IS Manufacturer;
-};
-
-EXTEND CLASS Article : Named;
-
-setNameArticle 'Взять наименования артикулов' () = ACTION {
-    SET nameArticle(article) <- name(article) WHERE article IS Article;
-};
-
-EXTEND CLASS Color : Named;
-
-setNameColor 'Взять наименования цветов' () = ACTION {
-    SET nameColor(color) <- name(color) WHERE color IS Color;
-};
-
-EXTEND CLASS Size : DoubleNamed;
-
-setNameSize 'Взять наименования размеров' () = ACTION {
-    SET nameSize(size) <- name(size) WHERE size IS Size;
-    SET shortNameSize(size) <- shortName(size) WHERE size IS Size;
-};
-
-//EXTEND CLASS Type : Named;
-//
-//setNameType 'Взять наименования видов' () = ACTION {
-//    SET nameType(type) <- name(type) WHERE type IS Type;
-//};
-//
-//EXTEND CLASS Sort : Named;
-//
-//setNameSort 'Взять наименования сортов' () = ACTION {
-//    SET nameSort(sort) <- name(sort) WHERE sort IS Sort;
-//};
-//
-//EXTEND CLASS Item.Form : Named;
-//
-//setNameForm 'Взять наименования форм' () = ACTION {
-//    SET nameForm(form) <- name(form) WHERE form IS Item.Form;
-//};
-//
-//EXTEND CLASS Feature : DoubleNamed;
-//
-//setNameFeature 'Взять наименования особенностей' () = ACTION {
-//    SET nameFeature(feature) <- name(feature) WHERE feature IS Feature;
-//    SET shortNameFeature(feature) <- shortName(feature) WHERE feature IS Feature;
-//};
-//
-//EXTEND CLASS Pack : DoubleNamed;
-//
-//setNamePack 'Взять наименования упаковок' () = ACTION {
-//    SET namePack(pack) <- name(pack) WHERE pack IS Pack;
-//    SET shortNamePack(pack) <- shortName(pack) WHERE pack IS Pack;
-//};
-//
-//EXTEND CLASS Taste : Named;
-//
-//setNameTaste 'Взять наименования вкусов' () = ACTION {
-//    SET nameTaste(taste) <- name(taste) WHERE taste IS Taste;
-//};
-//
-//EXTEND CLASS CoolingDegree : DoubleNamed;
-//
-//setNameCoolingDegree 'Взять наименования степеней охлаждения' () = ACTION {
-//    SET nameCoolingDegree(coolingDegree) <- name(coolingDegree) WHERE coolingDegree IS CoolingDegree;
-//    SET shortNameCoolingDegree(coolingDegree) <- shortName(coolingDegree) WHERE coolingDegree IS CoolingDegree;
-//};
 //-------------------------------------------------------------------------------------------------------------------//
 
 EXTEND CLASS PriceStockGroup : Named;
@@ -476,9 +359,9 @@ setNameReason 'Взять наименования причин списания
 //--------------------------------------------------------
 EXTEND CLASS PriceListType : Named;
 
-setNameSystemPriceListType 'Взять наименования системных видов цен' () = ACTION {
-    SET nameSystemPriceListType(systemPriceListType) <- name(systemPriceListType) WHERE systemPriceListType IS SystemPriceListType;
-};
+//setNameSystemPriceListType 'Взять наименования системных видов цен' () = ACTION {
+//    SET nameSystemPriceListType(systemPriceListType) <- name(systemPriceListType) WHERE systemPriceListType IS SystemPriceListType;
+//};
 
 setNameDataPriceListType 'Взять наименования пользовательских видов цен' () = ACTION {
     SET nameDataPriceListType(dataPriceListType) <- name(dataPriceListType) WHERE dataPriceListType IS DataPriceListType;
@@ -488,64 +371,62 @@ setNameCalcPriceListType 'Взять наименования расчётных
     SET nameCalcPriceListType(calcPriceListType) <- name(calcPriceListType) WHERE calcPriceListType IS CalcPriceListType;
 };
 
-setNameWarePriceListType 'Взять наименования видов цен с посудой' () = ACTION {
-    SET nameWarePriceListType(warePriceListType) <- name(warePriceListType) WHERE warePriceListType IS WarePriceListType;
-};
+//setNameWarePriceListType 'Взять наименования видов цен с посудой' () = ACTION {
+//    SET nameWarePriceListType(warePriceListType) <- name(warePriceListType) WHERE warePriceListType IS WarePriceListType;
+//};
 
 //---------------------------------------------------------
-EXTEND CLASS Group : Named;
+//EXTEND CLASS Group : Named;
+//
+//setNameCustomGroup 'Взять наименования типов классификаторов SKU' () = ACTION {
+//    SET nameCustomGroup(customGroup) <- name(customGroup) WHERE customGroup IS CustomGroup;
+//};
+//
+//EXTEND CLASS GroupType : Named;
+//
+//setNameCustomGroupType 'Взять наименования типов доп. классификаторов' () = ACTION {
+//    SET nameCustomGroupType(customGroupType) <- name(customGroupType) WHERE customGroupType IS CustomGroupType;
+//};
+//
+//setNameSystemGroupType 'Взять наименования системных типов классификаторов' () = ACTION {
+//    SET nameSystemGroupType(systemGroupType) <- name(systemGroupType) WHERE systemGroupType IS SystemGroupType;
+//};
 
-setNameCustomGroup 'Взять наименования типов классификаторов SKU' () = ACTION {
-    SET nameCustomGroup(customGroup) <- name(customGroup) WHERE customGroup IS CustomGroup;
+EXTEND CLASS Operation.Operation : Named;
+
+setNamePriceListOperation 'Взять наименования операций (прайс)'  () = ACTION {
+    SET PriceList.nameOperation(operation) <- name(operation) WHERE operation IS PriceList.Operation;
 };
 
-EXTEND CLASS GroupType : Named;
+EXTEND CLASS ExternalStock : Named;
 
-setNameCustomGroupType 'Взять наименования типов доп. классификаторов' () = ACTION {
-    SET nameCustomGroupType(customGroupType) <- name(customGroupType) WHERE customGroupType IS CustomGroupType;
+setNameRepairShop 'Взять наименования мастерских' () = ACTION {
+    SET nameRepairShop(repairShop) <- name(repairShop) WHERE repairShop IS RepairShop;
 };
 
-setNameSystemGroupType 'Взять наименования системных типов классификаторов' () = ACTION {
-    SET nameSystemGroupType(systemGroupType) <- name(systemGroupType) WHERE systemGroupType IS SystemGroupType;
+setNameCleaningStock 'Взять наименования химчистток' () = ACTION {
+    SET nameCleaningStock(cleaningStock) <- name(cleaningStock) WHERE cleaningStock IS CleaningStock;
 };
-
-//EXTEND CLASS Operation.Operation : Named;
-//
-//setNamePurchaseOperation 'Взять наименования операций (закупка)'  () = ACTION {
-//    SET Purchase.nameOperation(operation) <- name(operation) WHERE operation IS Purchase.Operation;
-//};
-//
-//setNameSaleOperation 'Взять наименования операций (продажа)'  () = ACTION {
-//    SET Sale.nameOperation(operation) <- name(operation) WHERE operation IS Sale.Operation;
-//};
-//
-//setNamePriceListOperation 'Взять наименования операций (прайс)'  () = ACTION {
-//    SET PriceList.nameOperation(operation) <- name(operation) WHERE operation IS PriceList.Operation;
-//};
-//
-//setNameDisparityOperation 'Взять наименования операций (изм. сорта)'  () = ACTION {
-//    SET DisparityOperation.nameOperation(operation) <- name(operation) WHERE operation IS DisparityOperation.Operation;
-//};
-
 
 EXTEND FORM migrationData
     PROPERTIES() setNameNumerator, setNameDictionary, setNameLanguage, setNameLegalEntity, setNameLegalEntityGroup, setNameUOM, setNameAgreement,
                  //setNameLabelType,
-                 //setNameEquipmentServer, setNameCashRegisterModel, setNamePriceCheckerModel, setNameScalesModel, setNameTerminalModel,
-                 //setNameLabelFormat, setNameTechnology, setNameBOM,
-                 //setNamePricingCommittee, setNameRepricingCommittee, setNameInventoryCommittee, setNameWriteOffCommittee, setNameActStudyOfCulinaryCommittee,
+                 setNameEquipmentServer, setNameCashRegisterModel, setNamePriceCheckerModel, setNameScalesModel, setNameTerminalModel,
+                 //setNameLabelFormat, //setNamePricingCommittee, setNameRepricingCommittee, setNameActStudyOfCulinaryCommittee,
                  setNameCountry, setNameCurrency, setNameTypeExchange,
-                 //setNamePosition,
-                 setNameStringItemAttribute, setNameIntegerItemAttribute, setNameDoubleItemAttribute, setNameItemGroup, setNameBrand,
-                 //setNameManufacturer, setNameArticle, setNameColor, setNameSize, setNameType,
-                 //setNameSort, setNameForm, setNameFeature, setNamePack, setNameTaste, setNameCoolingDegree, setNamePriceStockGroup,
+                 setNameRegisterCommittee, setNamePriceChangeCommittee, setNameInventoryCommittee, setNameWriteOffCommittee,
+                 setNamePosition, setNamePriceStockGroup,
                  //setNameWriteOffRate, setNameWayOfLoading, setNameWareGroup, setNameWare,
-                 //setNamePromotionGroup, setNamePromotion, setNamePromotionCondition, setNamePaymentType, setNameNaturalLossGroup,
-                 //setNameSubNaturalLossGroup, setNameStatisticGroupType, setNameStatisticGroup, setNameTruckModel, setNameRoundCondition, setNameReason,
-                 //setNameSystemPriceListType, setNameDataPriceListType, setNameCalcPriceListType, setNameWarePriceListType,
-                 setNameChainStores, setNameStoreType, setNameStore, setNameWarehouseGroup, setNameWarehouse, setNameDepartmentStore
-                 //setNameCustomGroup, setNameCustomGroupType, setNameSystemGroupType,
-                 //setNamePurchaseOperation, setNameSaleOperation, setNamePriceListOperation, setNameDisparityOperation
+                 setNamePromotionGroup, setNamePromotion, setNamePromotionCondition,
+                 //setNamePaymentType, setNameNaturalLossGroup, setNameSubNaturalLossGroup, setNameStatisticGroupType, setNameStatisticGroup,
+                 setNameTruckModel, setNameRoundCondition, setNameReason,
+                 //setNameSystemPriceListType, // setNameWarePriceListType,
+                 setNameDataPriceListType, setNameCalcPriceListType,
+                 setNameChainStores, setNameStoreType, setNameStore, setNameWarehouseGroup, setNameWarehouse, setNameDepartmentStore,
+                 setNameRepairShop, setNameCleaningStock,
+                 setNamePriceListOperation
+                 //setNameCustomGroup, setNameCustomGroupType, setNameSystemGroupType
+                 //setNamePurchaseOperation, setNameSaleOperation,  setNameDisparityOperation
 ;
 
 EXTEND DESIGN migrationData {

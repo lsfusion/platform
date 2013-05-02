@@ -37,7 +37,7 @@ CONSTRAINT legalEntityStockReturnOut(returnOut) == destinationLegalEntityStockRe
                         'Сторона B договора возврата товаров не соответствуют компании склада-получателя');
 
 EXTEND FORM returnOut
-    PROPERTIES(t) numberContractSkuReturnOut, isCommissionReturnOut
+    PROPERTIES(t) seriesNumberContractSkuReturnOut, isCommissionReturnOut
 ;
 
 EXTEND FORM returnOuts

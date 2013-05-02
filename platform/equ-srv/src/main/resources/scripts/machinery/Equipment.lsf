@@ -1,6 +1,6 @@
 MODULE Equipment;
 
-REQUIRE Terminal, CashRegister, Scales, PriceChecker, Item, POS;
+REQUIRE Terminal, CashRegister, Scales, PriceChecker, POS;
 
 //---------------------------------------------- Генерация Z-отчета -------------------------------------------------//
 

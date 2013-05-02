@@ -145,11 +145,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "scripts/retail/ZReport.lsf",
             "scripts/finance/PaymentLedger.lsf",
             "scripts/finance/Bank.lsf",
-            "scripts/masterdata/item/Item.lsf",
+            //"scripts/masterdata/item/Item.lsf",
             "scripts/machinery/scales/Scales.lsf",
             "scripts/machinery/pricechecker/PriceChecker.lsf",
             "scripts/machinery/Equipment.lsf",
             "scripts/masterdata/MasterData.lsf",
+            "scripts/RomanUtils.lsf",
+            "scripts/RomanMigrationName.lsf",
             "scripts/stock/store/PriceRoundStore.lsf"
         );
 

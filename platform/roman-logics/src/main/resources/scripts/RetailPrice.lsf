@@ -104,7 +104,7 @@ CLASS MethodPrice 'Метод расчёта'
     coefficient 'С надбавкой',
     RRP 'Рекомендуемая',
     previous 'Предыдущая'
-} : Named;
+};
 
 
 CLASS ABSTRACT PriceSetDocument 'Документ изменения цен' : NumeratedObject;
