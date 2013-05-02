@@ -729,7 +729,7 @@ public class ImportActionProperty {
                 props.add(new ImportProperty(isCompanyLegalEntityField, LM.findLCPByCompoundName("isCompanyLegalEntity").getMapping(legalEntityKey)));
                 props.add(new ImportProperty(isCustomerLegalEntityField, LM.findLCPByCompoundName("isCustomerLegalEntity").getMapping(legalEntityKey)));
 
-                props.add(new ImportProperty(nameOwnershipField, LM.findLCPByCompoundName("shortNameOwnership").getMapping(ownershipKey)));
+                props.add(new ImportProperty(nameOwnershipField, LM.findLCPByCompoundName("nameOwnership").getMapping(ownershipKey)));
                 props.add(new ImportProperty(shortNameOwnershipField, LM.findLCPByCompoundName("shortNameOwnership").getMapping(ownershipKey)));
                 props.add(new ImportProperty(shortNameOwnershipField, LM.findLCPByCompoundName("ownershipLegalEntity").getMapping(legalEntityKey),
                         LM.object(LM.findClassByCompoundName("Ownership")).getMapping(ownershipKey)));

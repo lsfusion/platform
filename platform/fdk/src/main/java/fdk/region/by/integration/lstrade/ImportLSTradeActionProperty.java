@@ -43,6 +43,9 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             Integer numberOfItems = (Integer) getLCP("importNumberItems").read(context);
+            String prefixStore = (String) getLCP("prefixStore").read(context);
+            prefixStore = prefixStore == null ? "МГ" : prefixStore.trim();
+
             Object pathObject = getLCP("importLSTDirectory").read(context);
             String path = pathObject == null ? "" : ((String) pathObject).trim();
             if (!path.isEmpty()) {
@@ -64,7 +67,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                         importBanksFromDBF(path + "//_sprbank.dbf") : null);
 
                 importData.setLegalEntitiesList((getLCP("importLegalEntities").read(context) != null) ?
-                        importLegalEntitiesFromDBF(path + "//_sprana.dbf", importInactive, false) : null);
+                        importLegalEntitiesFromDBF(path + "//_sprana.dbf", prefixStore, importInactive, false) : null);
 
                 importData.setWarehousesList((getLCP("importWarehouses").read(context) != null) ?
                         importWarehousesFromDBF(path + "//_sprana.dbf", importInactive) : null);
@@ -73,7 +76,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                         importContractsFromDBF(path + "//_sprcont.dbf") : null);
 
                 importData.setStoresList((getLCP("importStores").read(context) != null) ?
-                        importLegalEntitiesFromDBF(path + "//_sprana.dbf", importInactive, true) : null);
+                        importLegalEntitiesFromDBF(path + "//_sprana.dbf", prefixStore, importInactive, true) : null);
 
                 importData.setDepartmentStoresList((getLCP("importDepartmentStores").read(context) != null) ?
                         importDepartmentStoresFromDBF(path + "//_sprana.dbf", importInactive, path + "//_storestr.dbf") : null);
@@ -85,10 +88,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                         importWaresFromDBF(path + "//_sprgrm.dbf") : null);
 
                 importData.setItemsList((getLCP("importItems").read(context) != null) ?
-                        importItemsFromDBF(path + "//_sprgrm.dbf", path + "//_postvar.dbf", path + "//_grmcen.dbf", numberOfItems, importInactive) : null);
-
-                //importData.setPricesList((getLCP("importPrices").read(context) != null) ?
-                //        importPricesFromDBF(path + "//_grmcen.dbf") : null);
+                        importItemsFromDBF(path + "//_sprgrm.dbf", path + "//_postvar.dbf", numberOfItems, importInactive) : null);
 
                 importData.setAssortmentsList((getLCP("importAssortment").read(context) != null) ?
                         importAssortmentFromDBF(path + "//_strvar.dbf") : null);
@@ -126,31 +126,58 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
         data = new ArrayList<ItemGroup>();
         itemGroups = new ArrayList<String>();
 
+        String groupTop = "ВСЕ";
+        if (!parents)
+            addIfNotContains(new ItemGroup(groupTop, groupTop, null));
+        else
+            addIfNotContains(new ItemGroup(groupTop, null, null));
+
         for (int i = 0; i < recordCount; i++) {
 
             importFile.read();
+
             String k_grtov = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
             String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
             String group1 = new String(importFile.getField("GROUP1").getBytes(), "Cp1251").trim();
             String group2 = new String(importFile.getField("GROUP2").getBytes(), "Cp1251").trim();
             String group3 = new String(importFile.getField("GROUP3").getBytes(), "Cp1251").trim();
-            String group4 = "ВСЕ";
 
-            if ((!"".equals(group1)) && (!"".equals(group2)) && (!"".equals(group3))) {
+            if (!group2.isEmpty() && (!group3.isEmpty())) {
+
                 if (!parents) {
                     //sid - name - parentSID(null)
-                    addIfNotContains(new ItemGroup(group4, group4, null));
-                    addIfNotContains(new ItemGroup((group3.substring(0, 3) + "/" + group4), group3, null));
-                    addIfNotContains(new ItemGroup((group2 + "/" + group3.substring(0, 3) + "/" + group4), group2, null));
-                    addIfNotContains(new ItemGroup((group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + group4), group1, null));
+                    addIfNotContains(new ItemGroup((group3.substring(0, 3) + "/" + groupTop), group3, null));
+                    addIfNotContains(new ItemGroup((group2 + "/" + group3.substring(0, 3) + "/" + groupTop), group2, null));
+                    addIfNotContains(new ItemGroup((group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + groupTop), group1, null));
                     addIfNotContains(new ItemGroup(k_grtov, pol_naim, null));
                 } else {
                     //sid - name(null) - parentSID
-                    addIfNotContains(new ItemGroup(group4, null, null));
-                    addIfNotContains(new ItemGroup((group3.substring(0, 3) + "/" + group4), null, group4));
-                    addIfNotContains(new ItemGroup((group2 + "/" + group3.substring(0, 3) + "/" + group4), null, group3.substring(0, 3) + "/" + group4));
-                    addIfNotContains(new ItemGroup((group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + group4), null, group2 + "/" + group3.substring(0, 3) + "/" + group4));
-                    addIfNotContains(new ItemGroup(k_grtov, null, group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + group4));
+                    addIfNotContains(new ItemGroup((group3.substring(0, 3) + "/" + groupTop), null, groupTop));
+                    addIfNotContains(new ItemGroup((group2 + "/" + group3.substring(0, 3) + "/" + groupTop), null, group3.substring(0, 3) + "/" + groupTop));
+                    addIfNotContains(new ItemGroup((group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + groupTop), null, group2 + "/" + group3.substring(0, 3) + "/" + groupTop));
+                    addIfNotContains(new ItemGroup(k_grtov, null, group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + groupTop));
+                }
+
+            } else {
+                if (k_grtov.endsWith("."))
+                    k_grtov = k_grtov.substring(0, k_grtov.length() - 1);
+
+                int dotCount = 0;
+                for (char c : k_grtov.toCharArray())
+                    if (c == '.')
+                        dotCount++;
+
+                if (!parents) {
+                    //sid - name - parentSID(null)
+                    addIfNotContains(new ItemGroup(k_grtov, pol_naim, null));
+                    if (dotCount == 1)
+                        addIfNotContains(new ItemGroup(group1, group1, null));
+
+                } else {
+                    //sid - name(null) - parentSID
+                    addIfNotContains(new ItemGroup(k_grtov, null, group1));
+                    if (dotCount == 1)
+                        addIfNotContains(new ItemGroup(group1, null, groupTop));
                 }
             }
         }
@@ -172,7 +199,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             Boolean isWare = "T".equals(new String(importFile.getField("LGRMSEC").getBytes(), "Cp1251").trim());
             String wareID = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
-            Double price = new Double(new String(importFile.getField("N_PRCEN").getBytes(), "Cp1251").trim());
+            Double price = new Double(new String(importFile.getField("CENUOSEC").getBytes(), "Cp1251").trim());
 
             if (!"".equals(wareID) && isWare)
                 data.add(new Ware(wareID, pol_naim, price));
@@ -180,7 +207,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    private List<Item> importItemsFromDBF(String itemsPath, String quantityPath, String warePath, Integer numberOfItems, Boolean importInactive) throws IOException, xBaseJException, ParseException {
+    private List<Item> importItemsFromDBF(String itemsPath, String quantityPath, Integer numberOfItems, Boolean importInactive) throws IOException, xBaseJException, ParseException {
 
         if (!(new File(itemsPath).exists()))
             throw new RuntimeException("Запрашиваемый файл " + itemsPath + " не найден");
@@ -188,30 +215,10 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
         if (!(new File(quantityPath).exists()))
             throw new RuntimeException("Запрашиваемый файл " + quantityPath + " не найден");
 
-        if (!(new File(warePath).exists()))
-            throw new RuntimeException("Запрашиваемый файл " + warePath + " не найден");
-
         Set<String> barcodes = new HashSet<String>();
-        DBF wareImportFile = new DBF(warePath);
-        int totalRecordCount = wareImportFile.getRecordCount();
-
-        Map<String, Double[]> wares = new HashMap<String, Double[]>();
-
-        for (int i = 0; i < totalRecordCount; i++) {
-            wareImportFile.read();
-
-            String itemID = new String(wareImportFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
-            Double priceWare = new Double(new String(wareImportFile.getField("CENUOSEC").getBytes(), "Cp1251").trim());
-            Double ndsWare = new Double(new String(wareImportFile.getField("NDSSEC").getBytes(), "Cp1251").trim());
-
-            if (!wares.containsKey(itemID) && (priceWare != 0 || ndsWare != 0)) {
-                wares.put(itemID, new Double[]{priceWare, ndsWare});
-            }
-        }
-
 
         DBF quantityImportFile = new DBF(quantityPath);
-        totalRecordCount = quantityImportFile.getRecordCount();
+        int totalRecordCount = quantityImportFile.getRecordCount();
 
         Map<String, Double> quantities = new HashMap<String, Double>();
 
@@ -253,6 +260,8 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             String itemID = new String(itemsImportFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             String pol_naim = new String(itemsImportFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
             String k_grtov = new String(itemsImportFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
+            if (k_grtov.endsWith("."))
+                k_grtov = k_grtov.substring(0, k_grtov.length() - 1);
             String UOM = new String(itemsImportFile.getField("K_IZM").getBytes(), "Cp1251").trim();
             String brand = new String(itemsImportFile.getField("BRAND").getBytes(), "Cp1251").trim();
             String country = new String(itemsImportFile.getField("MANFR").getBytes(), "Cp1251").trim();
@@ -261,9 +270,9 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             String dateString = new String(itemsImportFile.getField("P_TIME").getBytes(), "Cp1251").trim();
             Date date = "".equals(dateString) ? null : new java.sql.Date(DateUtils.parseDate(dateString, new String[]{"yyyyMMdd"}).getTime());
             Boolean isWeightItem = "T".equals(new String(itemsImportFile.getField("LWEIGHT").getBytes(), "Cp1251").substring(0, 1));
-            String composition = null;
-            if (itemsImportFile.getField("FORMULA").getBytes() != null) {
-                composition = new String(itemsImportFile.getField("FORMULA").getBytes(), "Cp1251").replace("\n", "").replace("\r", "");
+            String composition = "";
+            if (itemsImportFile.getField(/*"FORMULA"*/"ENERGVALUE").getBytes() != null) {
+                composition = new String(itemsImportFile.getField(/*"FORMULA"*/"ENERGVALUE").getBytes(), "Cp1251").replace("\n", "").replace("\r", "");
             }
             Double retailVAT = new Double(new String(itemsImportFile.getField("NDSR").getBytes(), "Cp1251").trim());
             Double quantityPackItem = quantities.containsKey(itemID) ? quantities.get(itemID) : null;
@@ -273,31 +282,14 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                 wareID = null;
             String rateWasteID = "RW_" + new String(itemsImportFile.getField("K_VGRTOV").getBytes(), "Cp1251").trim();
 
+            Double priceWare = new Double(new String(itemsImportFile.getField("CENUOSEC").getBytes(), "Cp1251").trim());
+            Double ndsWare = new Double(getFieldValue(itemsImportFile, "NDSSEC", "Cp1251", "20"));
+
             if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare)
                 data.add(new Item(itemID, k_grtov, pol_naim, UOM, UOM, "U_" + UOM, brand, "B_" + brand, country, barcode, barcode,
-                        date, isWeightItem ? isWeightItem : null, null, null,
-                        "".equals(composition) ? null : composition, allowedVAT.contains(retailVAT) ? retailVAT : null, wareID,
-                        wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null,
+                        date, isWeightItem ? isWeightItem : null, null, null, composition.isEmpty() ? null : composition,
+                        allowedVAT.contains(retailVAT) ? retailVAT : null, wareID, priceWare, ndsWare,
                         "RW_".equals(rateWasteID) ? null : rateWasteID, null, null, itemID, quantityPackItem));
-        }
-        return data;
-    }
-
-    private List<Price> importPricesFromDBF(String path) throws IOException, xBaseJException, ParseException {
-
-        DBF importFile = new DBF(path);
-        int totalRecordCount = importFile.getRecordCount();
-
-        List<Price> data = new ArrayList<Price>();
-
-        for (int i = 0; i < totalRecordCount; i++) {
-            importFile.read();
-            String item = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
-            String departmentStore = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
-            Date date = new java.sql.Date(DateUtils.parseDate(new String(importFile.getField("D_CEN").getBytes(), "Cp1251").trim(), new String[]{"yyyyMMdd"}).getTime());
-            Double price = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
-            Double markup = new Double(new String(importFile.getField("N_TN").getBytes(), "Cp1251").trim());
-            data.add(new Price(item, departmentStore, date, price, markup));
         }
         return data;
     }
@@ -440,7 +432,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             {"СП", "Совместное предприятие"}};
 
 
-    private List<LegalEntity> importLegalEntitiesFromDBF(String path, Boolean importInactive, Boolean isStore) throws
+    private List<LegalEntity> importLegalEntitiesFromDBF(String path, String prefixStore, Boolean importInactive, Boolean isStore) throws
             IOException, xBaseJException {
 
         if (!(new File(path).exists()))
@@ -454,18 +446,18 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
         for (int i = 0; i < recordCount; i++) {
 
             importFile.read();
-            String k_ana = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
-            Boolean inactiveItem = "T".equals(new String(importFile.getField("LINACTIVE").getBytes(), "Cp1251"));
+            String k_ana = getFieldValue(importFile, "K_ANA", "Cp1251", null);
+            Boolean inactiveItem = "T".equals(getFieldValue(importFile, "LINACTIVE", "Cp1251", "T"));
             if (!inactiveItem || importInactive) {
-                String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
-                String address = new String(importFile.getField("ADDRESS").getBytes(), "Cp1251").trim();
-                String unp = new String(importFile.getField("UNN").getBytes(), "Cp1251").trim();
-                String okpo = new String(importFile.getField("OKPO").getBytes(), "Cp1251").trim();
-                String phone = new String(importFile.getField("TEL").getBytes(), "Cp1251").trim();
-                String email = new String(importFile.getField("EMAIL").getBytes(), "Cp1251").trim();
-                String account = new String(importFile.getField("ACCOUNT").getBytes(), "Cp1251").trim();
-                String companyStore = new String(importFile.getField("K_JUR").getBytes(), "Cp1251").trim();
-                String k_bank = new String(importFile.getField("K_BANK").getBytes(), "Cp1251").trim();
+                String name = getFieldValue(importFile, "POL_NAIM", "Cp1251", null);
+                String address = getFieldValue(importFile, "ADDRESS", "Cp1251", null);
+                String unp = getFieldValue(importFile, "UNN", "Cp1251", null);
+                String okpo = getFieldValue(importFile, "OKPO", "Cp1251", null);
+                String phone = getFieldValue(importFile, "TEL", "Cp1251", null);
+                String email = getFieldValue(importFile, "EMAIL", "Cp1251", null);
+                String account = getFieldValue(importFile, "ACCOUNT", "Cp1251", null);
+                String companyStore = getFieldValue(importFile, "K_JUR", "Cp1251", null);
+                String k_bank = getFieldValue(importFile, "K_BANK", "Cp1251", null);
                 String[] ownership = getAndTrimOwnershipFromName(name);
                 String nameCountry = "БЕЛАРУСЬ";
                 String type = k_ana.substring(0, 2);
@@ -473,12 +465,12 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                 Boolean isSupplier = "ПС".equals(type);
                 Boolean isCustomer = "ПК".equals(type);
                 if (isStore) {
-                    if ("МГ".equals(type))
+                    if (prefixStore.equals(type))
                         data.add(new Store(k_ana, ownership[2], address, companyStore, "Магазин", companyStore + "ТС"));
                 } else if (isCompany || isSupplier || isCustomer)
                     data.add(new LegalEntity(k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1],
                             ownership[0], account, isCompany ? (k_ana + "ТС") : null, isCompany ? ownership[2] : null,
-                            "BANK_" + k_bank, nameCountry, isSupplier ? true : null, isCompany ? true : null,
+                            k_bank, nameCountry, isSupplier ? true : null, isCompany ? true : null,
                             isCustomer ? true : null));
             }
         }
@@ -544,7 +536,8 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                 String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
                 String store = storeDepartmentStoreMap.get(k_ana);
                 String[] ownership = getAndTrimOwnershipFromName(name);
-                data.add(new DepartmentStore(k_ana, ownership[2], store));
+                if (store != null)
+                    data.add(new DepartmentStore(k_ana, ownership[2], store));
             }
         }
         return data;
@@ -569,7 +562,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             String department = new String(importFile.getField("DEPART").getBytes(), "Cp1251").trim();
             String mfo = new String(importFile.getField("K_MFO").getBytes(), "Cp1251").trim();
             String cbu = new String(importFile.getField("CBU").getBytes(), "Cp1251").trim();
-            data.add(new Bank(("BANK_" + k_bank), name, address, department, mfo, cbu));
+            data.add(new Bank(k_bank, name, address, department, mfo, cbu));
         }
         return data;
     }
@@ -636,6 +629,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     }
 
     private String[] getAndTrimOwnershipFromName(String name) {
+        name = name == null ? "" : name;
         String ownershipName = "";
         String ownershipShortName = "";
         for (String[] ownership : ownershipsList) {
@@ -646,6 +640,14 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             }
         }
         return new String[]{ownershipShortName, ownershipName, name};
+    }
+
+    private String getFieldValue(DBF importFile, String fieldName, String charset, String defaultValue) throws UnsupportedEncodingException {
+        try {
+            return new String(importFile.getField(fieldName).getBytes(), charset).trim();
+        } catch (xBaseJException e) {
+            return defaultValue;
+        }
     }
 
 }
