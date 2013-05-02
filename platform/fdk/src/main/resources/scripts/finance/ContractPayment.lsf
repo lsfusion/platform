@@ -129,11 +129,8 @@ payContractDate 'Оплатить по договору' = ACTION (contract, dat
 
     ADDOBJ Payment;
     FOR pm == addedObject() DO {
-    // todo: should be DATA property
-        SET dateTimePayment(pm) <- toDateTime(date AS DATE);
+        SET datePayment(pm) <- date AS DATE;
         SET contractPayment(pm) <- contract AS Contract;
-        // todo: should be DATA property
-        SET currencyContractPayment(pm) <- currencyContract(contract);
         SET sumContractPayment(pm) <- debtSumContractDate(contract, date);
         SET sumFromPayment(pm) <- debtSumContractDate(contract, date) IF currencyContractPayment(pm) == currencyAccountFromPayment(pm);
         SET costOutContractLedgerInContractLedger(pm, inContractLedger) <- debtInContractLedgerDate(inContractLedger, date)
@@ -152,11 +149,8 @@ payPaymentConditionInContractLedgerDate 'Оплатить c учетом бон�
 
     ADDOBJ Payment;
     FOR pm == addedObject() DO {
-        // todo: should be DATA property
-        SET dateTimePayment(pm) <- toDateTime(date AS DATE);
+        SET datePayment(pm) <- date AS DATE;
         SET contractPayment(pm) <- contractInContractLedger(inContractLedger);
-        // todo: should be DATA property
-        SET currencyContractPayment(pm) <- currencyContract(contractInContractLedger(inContractLedger));
         SET sumContractPayment(pm) <- bonusDebtSumInContractLedgerDate(inContractLedger, date);
         SET sumFromPayment(pm) <- bonusDebtSumInContractLedgerDate(inContractLedger, date) IF currencyContractPayment(pm) == currencyAccountFromPayment(pm);
         SET costOutContractLedgerInContractLedger(pm, inContractLedger) <- bonusDebtSumInContractLedgerDate(inContractLedger, date);
@@ -164,8 +158,7 @@ payPaymentConditionInContractLedgerDate 'Оплатить c учетом бон�
         IF formResult() == FormResult.ok THEN {
             ADDOBJ CreditMemoOut;
             FOR cm == addedObject() DO {
-                // todo: should be DATA property
-                SET dateTimeCreditMemoOut(cm) <- toDateTime(date AS DATE);
+                SET dateCreditMemoOut(cm) <- date AS DATE;
                 SET contractCreditMemoOut(cm) <- contractInContractLedger(inContractLedger);
                 SET sumCreditMemoOut(cm) <- bonusSumInContractLedger(inContractLedger, date);
                 SET costOutContractLedgerInContractLedger(cm, inContractLedger) <- bonusSumInContractLedger(inContractLedger, date);
@@ -182,11 +175,8 @@ payPaymentConditionContractDate 'Оплатить c учетом бонусов 
 
     ADDOBJ Payment;
     FOR pm == addedObject() DO {
-        // todo: should be DATA property
-        SET dateTimePayment(pm) <- toDateTime(date AS DATE);
+        SET datePayment(pm) <- date AS DATE;
         SET contractPayment(pm) <- contract AS Contract;
-        // todo: should be DATA property
-        SET currencyContractPayment(pm) <- currencyContract(contract);
         SET sumContractPayment(pm) <- bonusDebtSumContractDate(contract, date);
         SET sumFromPayment(pm) <- bonusDebtSumContractDate(contract, date) IF currencyContractPayment(pm) == currencyAccountFromPayment(pm);
         SET costOutContractLedgerInContractLedger(pm, inContractLedger) <- bonusDebtSumInContractLedgerDate(inContractLedger, date)
@@ -195,8 +185,7 @@ payPaymentConditionContractDate 'Оплатить c учетом бонусов 
         IF formResult() == FormResult.ok THEN {
             ADDOBJ CreditMemoOut;
             FOR cm == addedObject() DO {
-                // todo: should be DATA property
-                SET dateTimeCreditMemoOut(cm) <- toDateTime(date AS DATE);
+                SET dateCreditMemoOut(cm) <- date AS DATE;
                 SET contractCreditMemoOut(cm) <- contract AS Contract;
                 SET sumCreditMemoOut(cm) <- bonusSumContractDate(contract, date);
                 SET costOutContractLedgerInContractLedger(cm, inContractLedger) <- bonusSumInContractLedger(inContractLedger, date)

@@ -1927,8 +1927,7 @@ META defineDocumentSkuInner(object, detail, detailClass, skuProp, stockProp)
                 ADDOBJ detailClass;
                 FOR d == addedObject() DO {
                     SET object###detail(d) <- object;
-                    // todo: should be DATA property
-                    SET stockProp###detail (d) <- stockProp###object(object);
+                    SET stockProp###detail(d) <- stockProp###object(object);
                     SET skuProp###detail(d) <- sku;
                     SET quantity###detail (d) <- requestedNumeric();
                     EXEC overChangeQuantityValueSku###object##Detail(d);
@@ -2066,7 +2065,6 @@ META defineDocumentBatchInner(object, detail, detailClass, batchProp, skuProp, s
                 ADDOBJ detailClass;
                 FOR d == addedObject() DO {
                     SET object###detail(d) <- object;
-                    // todo: should be DATA property
                     SET stockProp###detail (d) <- stockProp###object(object);
                     SET skuProp###detail(d) <- skuBatch(batch);
                     SET batchProp###detail(d) <- batch;
@@ -3263,12 +3261,9 @@ META implementDocument(object)
             SET chosenDocument() <- chosenObject('d');
             FOR documentDocumentDetail(documentDetail) == chosenDocument() ADDOBJ i = User###object##Detail DO {
                 SET user###object##User###object##Detail(i) <- user###object;
-                // todo: should be DATA property
-                SET sku###object##Detail(i) <- skuDocumentDetail(documentDetail);
-                // todo: should be DATA property
-                SET quantity###object##Detail(i) <- quantityDocumentDetail(documentDetail);
-                // todo: should be DATA property
-                SET price###object##Detail(i) <- priceDocumentDetail(documentDetail);
+                SET skuUser###object##Detail(i) <- skuDocumentDetail(documentDetail);
+                SET quantityUser###object##Detail(i) <- quantityDocumentDetail(documentDetail);
+                SET priceUser###object##Detail(i) <- priceDocumentDetail(documentDetail);
             }
         }
     } TOOLBAR;

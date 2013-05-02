@@ -225,19 +225,14 @@ META defineScheduleOrder(sign, stockProp)
     createOrder 'Создать заказ' = ACTION (scheduleOrderDetail) NEWSESSION {
         FOR ADDOBJ o = UserOrder DO {
             SET scheduleOrderDetailUserOrder(o) <- scheduleOrderDetail;
-            // todo: should be DATA property
-            SET dateOrder(o) <- dateOrderScheduleOrderDetail(scheduleOrderDetail);
+            SET dateUserOrder(o) <- dateOrderScheduleOrderDetail(scheduleOrderDetail);
             SET shipmentDateUserOrder(o) <- dateSupplyScheduleOrderDetail(scheduleOrderDetail);
             SET shipmentTimeUserOrder(o) <- currentTime();
             SET nextShipmentDateUserOrder(o) <- dateSupplyNextScheduleOrderDetail(scheduleOrderDetail);
-            // todo: should be DATA property
-            SET supplierOrder(o) <- supplierScheduleOrderDetail(scheduleOrderDetail);
-            // todo: should be DATA property
-            SET customerOrder(o) <- customerScheduleOrderDetail(scheduleOrderDetail);
-            // todo: should be DATA property
-            SET supplierStockOrder(o) <- supplierStockScheduleOrderDetail(scheduleOrderDetail);
-            // todo: should be DATA property
-            SET customerStockOrder(o) <- customerStockScheduleOrderDetail(scheduleOrderDetail);
+            SET supplierUserOrder(o) <- supplierScheduleOrderDetail(scheduleOrderDetail);
+            SET customerUserOrder(o) <- customerScheduleOrderDetail(scheduleOrderDetail);
+            SET supplierStockUserOrder(o) <- supplierStockScheduleOrderDetail(scheduleOrderDetail);
+            SET customerStockUserOrder(o) <- customerStockScheduleOrderDetail(scheduleOrderDetail);
 
             EXEC overCreateOrder(o);
 

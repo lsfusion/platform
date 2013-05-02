@@ -1075,8 +1075,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedSetPropertyAProp(" + context + ", " + toPropertyName + ", " + fromProperty + ", " + whereProperty + ");");
         LP toPropertyLP = findLPByCompoundName(toPropertyName);
 
-        if (!(toPropertyLP.property instanceof DataProperty)) {
-            errLog.emitOnlyDataPropertyIsAllowed(parser, toPropertyName);
+        if (!(toPropertyLP.property instanceof DataProperty || toPropertyLP.property instanceof CaseUnionProperty)) {
+            errLog.emitOnlyDataCasePropertyIsAllowed(parser, toPropertyName);
         }
 
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);

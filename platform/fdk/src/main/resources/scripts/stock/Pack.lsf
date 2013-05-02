@@ -36,14 +36,12 @@ META definePackSku (caption, NS)
             IF TRUE IF NOT packBarcodeSku(sku) THEN {
                 FOR ADDOBJ b = Barcode DO {
                    SET skuBarcode(b) <- sku;
-                   // todo: should be DATA property
-                   SET amountBarcode (b) <- requestedNumeric();
+                   SET dataAmountBarcode (b) <- requestedNumeric();
     
                    SET packBarcodeSku(sku) <- b;
                 }
             } ELSE {
-                // todo: should be DATA property
-                SET amountBarcode (bb) <- requestedNumeric() WHERE bb == packBarcodeSku(sku);
+                SET dataAmountBarcode (bb) <- requestedNumeric() WHERE bb == packBarcodeSku(sku);
             }
     
         } ELSE {
@@ -194,8 +192,7 @@ META defineDocumentPackSku(object, detail, skuProp, stockProp)
             IF requestedNumeric() THEN
                 FOR ADDOBJ d = ###detail DO {
                 SET object###detail(d) <- object;
-                // todo: should be DATA property
-                SET stockProp###detail (d) <- stockProp###object(object);
+                SET data###stockProp###detail (d) <- stockProp###object(object);
                 SET skuProp###detail(d) <- sku;
                 SET packQuantity###detail (d) <- requestedNumeric();
                 SET quantity###detail(detail) <- packQuantity###detail(detail) * amountPack###detail(detail);

@@ -398,8 +398,6 @@ closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
             SET dateOutcomeCashOperation(o) <- dateZReport(currentZReport());
             SET timeOutcomeCashOperation(o) <- timeZReport(currentZReport());
             SET departmentStoreOutcomeCashOperation(o) <- departmentStoreZReport(currentZReport());
-            // todo: should be DATA property
-            SET basisOutcomeCashOperation(o) <- basisZReport(currentZReport());
             SET cashRegisterOutcomeCashOperation(o) <- cashRegisterZReport(currentZReport());
             SET sumCashOutcomeCashOperation(o) <- curSumCashCashOperation(cashRegisterZReport(currentZReport()));
         }

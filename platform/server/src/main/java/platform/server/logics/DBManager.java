@@ -158,8 +158,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             setupPropertyNotifications();
 
             if (!SystemProperties.isDebug) {
+                systemLogger.info("Synchronizing forms");
                 synchronizeForms();
+                systemLogger.info("Synchronizing groups of properties");
                 synchronizeGroupProperties();
+                systemLogger.info("Synchronizing properties");
                 synchronizeProperties();
             }
 
@@ -649,15 +652,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         KeyExpr key = keys.singleValue();
         QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
         query.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), key));
-        query.addProperty("userLoggableProperty", reflectionLM.userLoggableProperty.getExpr(session.getModifier(), key));
-        query.and(isProperty.getExpr(key).getWhere());
+        query.and(reflectionLM.userLoggableProperty.getExpr(session.getModifier(), key).getWhere());
         ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
-            Object userLoggable = values.get("userLoggableProperty");
-            if (userLoggable != null) {
-                LM.makeUserLoggable(systemEventsLM, businessLogics.getLCP(values.get("SIDProperty").toString().trim()));
-            }
+            LM.makeUserLoggable(systemEventsLM, businessLogics.getLCP(values.get("SIDProperty").toString().trim()));
         }
     }
 
@@ -669,17 +668,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         KeyExpr key = keys.singleValue();
         QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
         query.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), key));
-        query.addProperty("isSetNotNullProperty", reflectionLM.isSetNotNullProperty.getExpr(session.getModifier(), key));
-        query.and(isProperty.getExpr(key).getWhere());
+        query.and(reflectionLM.isSetNotNullProperty.getExpr(session.getModifier(), key).getWhere());
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
-            Object isSetNotNull = values.get("isSetNotNullProperty");
-            if (isSetNotNull != null) {
-                LCP<?> prop = businessLogics.getLCP(values.get("SIDProperty").toString().trim());
-                prop.property.setNotNull = true;
-                LM.setNotNull(prop);
-            }
+            LCP<?> prop = businessLogics.getLCP(values.get("SIDProperty").toString().trim());
+            prop.property.setNotNull = true;
+            LM.setNotNull(prop);
         }
     }
 

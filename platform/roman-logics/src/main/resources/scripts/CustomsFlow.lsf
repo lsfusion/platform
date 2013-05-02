@@ -37,9 +37,6 @@ declarationCStoWHDetail (CStoWHDetail) = declarationDeclarationDetail(declaratio
 
 @defineDocumentDetailQuantity(CStoWH);
 
-@defineAddDetailDialogSkuStock(CStoWH, sku, customStore, dialogSku);
-@defineAddDetailDialogBarcode(CStoWH, sku);
-
 @defineDocumentHeaderQuantity(CStoWH);
 @defineDocumentHeaderSkuQuantity(CStoWH, sku);
 

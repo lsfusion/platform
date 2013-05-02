@@ -8,7 +8,6 @@ waybillConsignment(invoice) += seriesNumberObject(tripInvoice(invoice));
 
 META setTripPropTrip(prop)
     setTrip###prop##Trip = ACTION (invoice) {
-        // todo: should be DATA property
         SET prop##Invoice(invoice) <- prop##Trip(tripInvoice(invoice));
     }
     WHEN CHANGED(prop##Trip(tripInvoice(invoice))) DO EXEC setTrip###prop##Trip(invoice);

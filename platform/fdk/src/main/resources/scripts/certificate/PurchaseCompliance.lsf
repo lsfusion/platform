@@ -255,9 +255,8 @@ certificateCostPriceUserInvoiceDetail(invoiceDetail) += priceComplianceUserInvoi
 
 setPriceComplianceInvoiceDetailes 'Рассчитать расходы (за ед.)' = ACTION (compliance) {
    FOR complianceInvoiceDetail(invoiceDetail) == compliance DO {
-      // todo: should be DATA property
       SET priceComplianceInvoiceDetail(invoiceDetail) <- calcPriceComplianceInvoiceDetail(invoiceDetail) (+) calcPriceComplianceDetailInvoiceDetail(invoiceDetail);
-   };
+   }
 } TOOLBAR;
 
 EXTEND FORM compliance

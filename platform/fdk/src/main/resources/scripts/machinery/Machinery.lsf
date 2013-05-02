@@ -397,7 +397,6 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
         SET groupMachinery() <- chosenObject('g');
         EXEC createMachineryPriceTransactionGroupMachinery(groupMachinery());
         FOR t == addedObject() DO {
-            // todo: should be DATA property
             SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery();
             SET commentMachineryPriceTransaction(t) <- 'Перезагрузка прайса целиком';
             SET snapshotMachineryPriceTransaction(t) <- TRUE;
@@ -462,7 +461,6 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
         IF countBarcode() THEN {
             EXEC createMachineryPriceTransactionGroupMachinery(groupMachinery);
             FOR t == addedObject() DO {
-                // todo: should be DATA property
                 SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery AS GroupMachinery;
                 SET priceTransactionDocumentMachineryPriceTransaction(t) <- createMachineryPriceTransactionDocument();
                 SET commentMachineryPriceTransaction(t) <- createMachineryPriceTransactionComment();

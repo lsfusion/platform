@@ -284,10 +284,8 @@ moveUserInvoiceInvoice 'Накладная (закупка)' =  ACTION (invoice)
         SET Purchase.customerUserInvoice(i) <- customerInvoice(invoice);
         SET Purchase.supplierStockUserInvoice(i) <- supplierStockInvoice(invoice);
         SET Purchase.customerStockUserInvoice(i) <- customerStockInvoice(invoice);
-        SET numberObject(i) <- numberInvoice(invoice) WHERE i IS Purchase.UserInvoice;
-        SET seriesObject(i) <- seriesInvoice(invoice) WHERE i IS Purchase.UserInvoice;
-        // todo: should be DATA property
-        SET Purchase.isPostedUserInvoice(i) <- isPostedInvoice(invoice);
+        SET numberObject(i) <- numberInvoice(invoice);
+        SET seriesObject(i) <- seriesInvoice(invoice);
         SET Purchase.noteUserInvoice(i) <- noteInvoice(invoice);
         SET Purchase.currencyUserInvoice(i) <- currencyInvoice(invoice);
         SET Purchase.contractSkuUserInvoice(i) <- contractSkuInvoice(invoice);

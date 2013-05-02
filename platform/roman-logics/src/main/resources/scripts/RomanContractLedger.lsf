@@ -100,10 +100,6 @@ createCommercialInvoice 'Создать коммерческий инвойс' =
         SET contractCommercialInvoice(c) <- contractInvoice(invoice);
         SET currencyCommercialInvoice(c) <- currencyDocument(invoice);
         SET sumCommercialInvoice(c) <- sumDocument(invoice);
-        SET supplierCommercialInvoice(c) <- supplierDocument(invoice);
-        IF invoice IS DirectInvoice THEN{
-            SET companyCommercialInvoice(c) <- importerDirectInvoice(invoice);
-        } ELSE SET companyCommercialInvoice(c) <- exporterInvoice(invoice);
     }
 
     EXEC apply();
