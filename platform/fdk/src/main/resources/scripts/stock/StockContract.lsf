@@ -23,9 +23,9 @@ CLASS AgreementPaymentType 'Порядок оплаты' {
     requirement 'Платежное требование'
 };
 
-wordContractSku 'Текст договора'  = ABSTRACT WORDFILE (ContractSku);
-saveWordContractSku 'Загрузить текст договора' (contractSku) = ACTION LOADFILE wordContractSku(contractSku);
-openWordContractSku 'Просмотреть текст договора' (contractSku) = ACTION OPENFILE wordContractSku(contractSku);
+wordContractSku 'Файл договора'  = ABSTRACT WORDFILE (ContractSku);
+saveWordContractSku 'Загрузить файл договора' (contractSku) = ACTION LOADFILE wordContractSku(contractSku);
+openWordContractSku 'Просмотреть файл договора' (contractSku) = ACTION OPENFILE wordContractSku(contractSku);
 wordContract(contract) += wordContractSku(contract);
 
 CLASS UserContractSku 'Договор на поставку (польз.)' : ContractSku, NumeratedObject;
@@ -37,9 +37,9 @@ seriesContract (contract) += seriesContractSku(contract);
 
 @defineNumeratedObjectDefault(UserContractSku, 'Нумератор для договоров', 'ДП');
 
-wordUserContractSku 'Текст договора' (UserContractSku) = DATA WORDFILE (UserContractSku);
-saveWordUserContractSku 'Загрузить текст договора' (userContractSku) = ACTION LOADFILE wordUserContractSku(userContractSku);
-openWordUserContractSku 'Просмотреть текст договора' (userContractSku) = ACTION OPENFILE wordUserContractSku(userContractSku);
+wordUserContractSku 'Файл договора' (UserContractSku) = DATA WORDFILE (UserContractSku);
+saveWordUserContractSku 'Загрузить файл договора' (userContractSku) = ACTION LOADFILE wordUserContractSku(userContractSku);
+openWordUserContractSku 'Просмотреть файл договора' (userContractSku) = ACTION OPENFILE wordUserContractSku(userContractSku);
 wordContractSku(contract) += wordUserContractSku(contract);
 
 supplierContractSku = DATA LegalEntity (ContractSku);

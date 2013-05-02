@@ -49,6 +49,7 @@ FORM template 'Шаблон Word'
 
 DESIGN template FROM DEFAULT{
     main{
+        preferredSize = (1024, 768);
         childConstraints = TO THE BOTTOM;
         ADD t.box {
             childConstraints = TO THE RIGHT;
@@ -77,8 +78,22 @@ FORM templates 'Шаблоны Word'
     OBJECTS te = TemplateEntry
     PROPERTIES (te) READONLY keyTemplateEntry, valueTemplateEntry
     FILTERS templateTemplateEntry (te) == t
+;
+
+FORM dialogTemplates 'Шаблоны Word'
+
+    OBJECTS t = Template
+    PROPERTIES (t) READONLY nameTemplate, idTemplate
+    PROPERTIES (t) ADDFORM, EDITFORM, delete
+
     DIALOG Template OBJECT t
 ;
+DESIGN dialogTemplates FROM DEFAULT{
+    main {
+        preferredSize = (1024, 768);
+    }
+}
+
 
 NAVIGATOR {
     masterData {

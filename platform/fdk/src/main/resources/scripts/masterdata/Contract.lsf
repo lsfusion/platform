@@ -12,9 +12,9 @@ GROUP contractGroup 'Реквизиты' : recognize;
 
 @defineDocumentAbstractHeaderNumber(Contract);
 
-wordContract 'Текст договора'  = ABSTRACT WORDFILE (Contract);
-saveWordContract 'Загрузить текст договора' (contract) = ACTION LOADFILE wordContract(contract);
-openWordContract 'Просмотреть текст договора' (contract) = ACTION OPENFILE wordContract(contract);
+wordContract 'Файл договора'  = ABSTRACT WORDFILE (Contract);
+saveWordContract 'Загрузить файл договора' (contract) = ACTION LOADFILE wordContract(contract);
+openWordContract 'Просмотреть файл договора' (contract) = ACTION OPENFILE wordContract(contract);
 
 
 //numberContract 'Номер договора' = DATA STRING[30] (Contract) IN contractGroup;

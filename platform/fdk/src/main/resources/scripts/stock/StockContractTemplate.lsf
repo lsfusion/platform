@@ -4,10 +4,10 @@ REQUIRE StockContract, Word, LegalEntityBy, Bank;
 
 overCreateStockContractTemplate = ABSTRACT ACTION (s, d);
 
-createStockContractTemplate 'Заполнить договор на основании шаблона' = ACTION (contract) {
+createStockContractTemplate 'Заполнить по шаблону' = ACTION (contract) {
     SET valueTemplateEntry(detail) <- NULL;
 
-    FORM templates MODAL;
+    FORM dialogTemplates MODAL;
     IF formResult() == FormResult.ok THEN {
         LOCAL template = Template();
         SET template() <- chosenObject('t');
@@ -41,6 +41,11 @@ createStockContractTemplate 'Заполнить договор на основа
             EXEC overCreateStockContractTemplate(detail, contract);
         }
         FORM template OBJECTS t = template() MODAL;
+        IF formResult() == FormResult.ok THEN {
+            EXEC processTemplate(template());
+            SET wordUserContractSku(contract) <- resultTemplate();
+            EXEC openWordUserContractSku(contract);
+        }
     }
 }
 
@@ -49,11 +54,8 @@ EXTEND FORM userContractSku
     PROPERTIES (c) createStockContractTemplate
 ;
 EXTEND DESIGN userContractSku {
-    row {
-        NEW actionContainer BEFORE text {
-            title = 'Действие';
-            ADD PROPERTY(createStockContractTemplate);
-        }
+    text {
+        ADD PROPERTY(createStockContractTemplate);
     }
 }
 
