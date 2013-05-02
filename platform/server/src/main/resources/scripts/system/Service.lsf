@@ -17,7 +17,7 @@ toggleExplainMode 'Выводить в лог EXPLAIN запросов' = ACTION
 restartServerAction 'Остановить сервер' = ACTION CUSTOM 'platform.server.logics.service.RestartActionProperty';
 runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'platform.server.logics.service.GarbageCollectorActionProperty';
 cancelRestartServerAction 'Отменить остановку сервера' = ACTION CUSTOM 'platform.server.logics.service.CancelRestartActionProperty';
-isNotServerRestarting () = TRUE AND NOT isServerRestarting();
+isNotServerRestarting () = TRUE IF NOT isServerRestarting();
 
 FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, restartServerAction SHOWIF isNotServerRestarting(),

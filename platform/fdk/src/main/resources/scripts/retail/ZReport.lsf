@@ -104,7 +104,7 @@ receiptReceiptDetail (receiptDetail) = UNION CLASS receiptReceiptReturnDetail(re
 zReportReceiptDetail (receiptDetail) = zReportReceipt(receiptReceiptDetail(receiptDetail));
 sidCashRegisterModelReceiptDetail 'Код модели' (receiptDetail) = sidCashRegisterModelReceipt(receiptReceiptDetail(receiptDetail));
 
-typeReceiptDetail 'Тип' (receiptDetail) = UNION CLASS 'Продажа' AND receiptDetail IS ReceiptSaleDetail, 'Возврат' AND receiptDetail IS ReceiptReturnDetail FIXEDCHARWIDTH 8;
+typeReceiptDetail 'Тип' (receiptDetail) = UNION CLASS 'Продажа' IF receiptDetail IS ReceiptSaleDetail, 'Возврат' IF receiptDetail IS ReceiptReturnDetail FIXEDCHARWIDTH 8;
 
 @defineDocumentDetailIndex(receipt, ReceiptDetail);
 
@@ -298,7 +298,7 @@ sumInSkuLedger (ledger) += sumReceiptReturnDetail(ledger);
 quantitySaleLedger (ledger) += quantityReceiptSaleDetail(ledger);
 VATSaleLedger (ledger) += VATReceiptSaleDetail(ledger);
 sumSaleLedger (ledger) += sumReceiptSaleDetail(ledger);
-costSumSaleLedger (ledger) += costSumSkuLedger(ledger) AND ledger IS ReceiptSaleDetail;
+costSumSaleLedger (ledger) += costSumSkuLedger(ledger) IF ledger IS ReceiptSaleDetail;
 
 // ----------------- Оплаты по чеку ------------------------------
 
@@ -342,12 +342,12 @@ sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (Payment);
 
 sumPaymentReceipt (receipt) = GROUP SUM sumPayment(payment) BY receiptPayment(payment);
 
-sumInCashPaymentReceipt (receipt) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment) == PaymentMeans.paymentMeansCash  BY receiptPayment(payment);
+sumInCashPaymentReceipt (receipt) = GROUP SUM sumPayment(payment) IF paymentMeansPayment(payment) == PaymentMeans.paymentMeansCash  BY receiptPayment(payment);
 
 changePaymentReceipt 'Сдача' (receipt) = sumPaymentReceipt(receipt) - sumReceiptDetailReceipt(receipt);
 
 sumCashPaymentReceipt (receipt) = sumInCashPaymentReceipt(receipt) - changePaymentReceipt(receipt);
-sumNotCashPaymentReceipt (receipt) = GROUP SUM sumPayment(payment) AND NOT paymentMeansPayment(payment) == PaymentMeans.paymentMeansCash BY receiptPayment(payment);
+sumNotCashPaymentReceipt (receipt) = GROUP SUM sumPayment(payment) IF NOT paymentMeansPayment(payment) == PaymentMeans.paymentMeansCash BY receiptPayment(payment);
 
 CONSTRAINT receipt IS Receipt AND NOT sumPaymentReceipt(receipt) MESSAGE 'По чеку не указаны платежи';
 CONSTRAINT sumReceiptDetailReceipt(receipt) > sumPaymentReceipt(receipt) MESSAGE 'Сумма платежей по чеку меньше суммы чека';
@@ -365,12 +365,12 @@ discountSumReceiptDetailZReport 'Сумма скидок Z-отчета' (zRepor
 discountSumReceiptZReport 'Сумма скидок по чекам Z-отчета' (zReport) = GROUP SUM discountSumReceipt(receipt) BY zReportReceipt(receipt) PERSISTENT IN documentSumGroup;
 discountSumZReport 'Сумма скидок Z-отчета' (zReport) = discountSumReceiptDetailZReport(zReport) (+) discountSumReceiptZReport(zReport);
 
-sumCardDepartmentStoreDateFromTo 'Продано с использованием банк. карточек' (departmentStore, dateFrom, dateTo) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment)==PaymentMeans.paymentMeansCard
+sumCardDepartmentStoreDateFromTo 'Продано с использованием банк. карточек' (departmentStore, dateFrom, dateTo) = GROUP SUM sumPayment(payment) IF paymentMeansPayment(payment)==PaymentMeans.paymentMeansCard
     AND dateReceipt(receiptPayment(payment)) >= (dateFrom AS DATE) AND dateReceipt(receiptPayment(payment)) <= (dateTo AS DATE) AND isPostedReceipt(receiptPayment(payment))
         BY departmentStoreReceipt(receiptPayment(payment)), dateFrom, dateTo;
 
 sumSaleDepartmentStoreDateFromTo 'Продано по кассе' (departmentStore, dateFrom, dateTo) = GROUP SUM sumReceiptDetailReceipt(receipt)
-    AND dateReceipt(receipt) >= (dateFrom AS DATE) AND dateReceipt(receipt) <= (dateTo AS DATE) AND isPostedReceipt(receipt)
+    IF dateReceipt(receipt) >= (dateFrom AS DATE) AND dateReceipt(receipt) <= (dateTo AS DATE) AND isPostedReceipt(receipt)
         BY departmentStoreReceipt(receipt), dateFrom, dateTo;
 
 // Aggregation zReport

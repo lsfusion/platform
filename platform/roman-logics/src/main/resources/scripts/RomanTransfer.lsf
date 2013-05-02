@@ -48,7 +48,7 @@ dateToTransferTable(transferTable) <- currentDate() WHEN ASSIGNED(transferTable 
 
 
 quantitySoldSkuStockTransferTable 'Продано за интервал (кол-во)' (sku, stock, transferTable) = GROUP SUM
-        quantitySoldSkuStockDate(sku, stock, date) AND date >= dateFromTransferTable(transferTable) AND date <= dateToTransferTable(transferTable)
+        quantitySoldSkuStockDate(sku, stock, date) IF date >= dateFromTransferTable(transferTable) AND date <= dateToTransferTable(transferTable)
         BY sku, stock, transferTable;
 
 quantitySkuStockTransferTable (sku, stock, transferTable) = DATA NUMERIC[14,3] (Sku, Stock, TransferTable);
@@ -79,7 +79,7 @@ currentBalanceSkuTransferTable 'Остаток' (sku, transferTable) = GROUP SUM
     BY sku, transferTable;
 
 quantitySoldSkuTransferTable 'Продано за интервал (кол-во)' (sku, transferTable) = GROUP SUM
-        quantitySoldSkuStockDate(sku, stock, date) AND date >= dateFromTransferTable(transferTable) AND date <= dateToTransferTable(transferTable) AND inTransferTableStock(transferTable, stock)
+        quantitySoldSkuStockDate(sku, stock, date) IF date >= dateFromTransferTable(transferTable) AND date <= dateToTransferTable(transferTable) AND inTransferTableStock(transferTable, stock)
         BY sku, transferTable;
 
 
@@ -131,7 +131,7 @@ createInnerOrderTransferTable 'Создать внутренние заказы'
 
         LOCAL quantityTransfer = NUMERIC[14,3] (Sku);
         SET quantityTransfer(sku) <- min( -left(sku, stockFrom()) IF left(sku, stockFrom()) < 0, left(sku, stockTo()) IF left(sku, stockTo()) > 0);
-        IF TRUE AND NOT [GROUP SUM 1 IF quantityTransfer(sku)]() THEN BREAK;
+        IF TRUE IF NOT [GROUP SUM 1 IF quantityTransfer(sku)]() THEN BREAK;
 
         FOR ADDOBJ o = InnerOrder DO {
             SET transferTableInnerOrder(o) <- transferTable;

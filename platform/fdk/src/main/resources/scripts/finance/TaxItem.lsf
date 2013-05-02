@@ -20,7 +20,7 @@ valueCurrentRateVATItemCountry 'НДС, %' (item, country) = valueCurrentRateRan
 
 overCopyItem(s, d) += ACTION (s, d) {
     FOR dataVATItemCountryDate(s, country, date) DO {
-        SET dataVATItemCountryDate(d, country, date) <- dataVATItemCountryDate(s, country, date) IF country IS Country AND s IS Item AND d IS Item;
+        SET dataVATItemCountryDate(d, country, date) <- dataVATItemCountryDate(s, country, date);
     }
 }
 

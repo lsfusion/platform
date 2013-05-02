@@ -125,7 +125,7 @@ diffRetailSumPriceChangeDocumentDetailPriceChangeDocument 'Сумма перео
 // ---------------------------------------- Имплементация товарного отчета --------------------------- //
 
 diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки, товар' (priceChangeDocument) =
-    GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) AND NOT isContainerSku(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
+    GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) IF NOT isContainerSku(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
         BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки, тара' (priceChangeDocument) =
     GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) IF isContainerSku(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
@@ -412,5 +412,5 @@ descriptionPriceChangeDocumentDetail (priceChangeDocumentDetail)= descriptionPri
 
 @implementSkuLedgerInLIFO(PriceChangeDocumentDetail, sku, departmentStore);
 quantityInLIFOSkuLedger (ledger) += 0.0 IF ledger IS PriceChangeDocumentDetail;
-limitInLIFOSkuLedgerBatch (ledger, batch) +=  0.0 IF ledger IS PriceChangeDocumentDetail AND  batch IS Batch;
+limitInLIFOSkuLedgerBatch (ledger, batch) +=  0.0 IF ledger IS PriceChangeDocumentDetail AND batch IS Batch;
 sumInSkuLedger(ledger) += diffRetailSumPriceChangeDocumentDetail(ledger);

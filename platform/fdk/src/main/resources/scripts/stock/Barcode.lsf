@@ -191,7 +191,7 @@ seekSkuBarcode = ACTION (){
     SET seekBarcode() <- NULL;
     SET seekBarcode() <- requestedString();
     EXEC seek(skuBarcodeIdDate(seekBarcode(), currentDate()));
-    IF TRUE AND NOT skuBarcodeIdDate(seekBarcode(), currentDate()) THEN
+    IF TRUE IF NOT skuBarcodeIdDate(seekBarcode(), currentDate()) THEN
         MESSAGE 'Шрих-код не найден';
     SET seekBarcode() <- NULL;
 }
@@ -210,7 +210,7 @@ EXTEND FORM skus
 
 EXTEND FORM filterSkus
     PROPERTIES(s) READONLY idBarcodeSku AFTER nameSku
-    FILTERS TRUE AND NOT idBarcodeSku(s)
+    FILTERS TRUE IF NOT idBarcodeSku(s)
 ;
 
 EXTEND FORM currentBalanceSkuStock

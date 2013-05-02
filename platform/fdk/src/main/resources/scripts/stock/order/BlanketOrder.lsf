@@ -82,7 +82,7 @@ META defineBlanketOrder(sign)
         IF agreementBlanketOrderStock(blanketOrder, stock) THEN
             priceListTypeAgreementSku(agreementBlanketOrderStock(blanketOrder, stock), sku)
         ELSE
-            priceListTypeBlanketOrderStock(blanketOrder, stock) AND sku IS Sku;
+            priceListTypeBlanketOrderStock(blanketOrder, stock) IF sku IS Sku;
     // записываем вид цены из соглашения
      priceListTypeBlanketOrderDetail (detail) <- IF agreementBlanketOrderStock (blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))
         THEN priceListTypeAgreementSku(agreementBlanketOrderStock(blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail)), skuBlanketOrderDetail(detail))
@@ -301,10 +301,10 @@ META defineOrderBlanketOrder(sign)
 
     @defineDocumentTables(blanketOrderOrder);
 
-    needToOrderBlanketOrderDetailStock (blanketOrderDetail, stock)= quantityBlanketOrderDetail(blanketOrderDetail)
+    needToOrderBlanketOrderDetailStock (blanketOrderDetail, stock) = quantityBlanketOrderDetail(blanketOrderDetail)
         AND isPostedBlanketOrderDetail(blanketOrderDetail) AND customerStockBlanketOrderDetail(blanketOrderDetail) == stock;
 
-    needToOrderBlanketOrderStock (blanketOrder, stock)= quantityBlanketOrderDetailBlanketOrderCustomerStock(blanketOrder, stock)
+    needToOrderBlanketOrderStock (blanketOrder, stock) = quantityBlanketOrderDetailBlanketOrderCustomerStock(blanketOrder, stock)
         AND isPostedBlanketOrder(blanketOrder);
 
 //-- object

@@ -33,8 +33,7 @@ META definePackSku (caption, NS)
     
     changeValuePackSku = ACTION (sku) {
         IF requestedNumeric() THEN {
-            IF TRUE AND NOT  packBarcodeSku(sku) THEN {
-    
+            IF TRUE IF NOT packBarcodeSku(sku) THEN {
                 FOR ADDOBJ b = Barcode DO {
                    SET skuBarcode(b) <- sku;
                    // todo: should be DATA property

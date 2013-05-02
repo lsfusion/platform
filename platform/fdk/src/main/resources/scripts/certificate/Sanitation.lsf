@@ -19,8 +19,8 @@ toDateTimeSanitation 'Дата/время по'(sanitation) = dateTimeToDateTime
 toDateCertificate(certificate) += toDateSanitation(certificate);
 toTimeCertificate(certificate) += toTimeSanitation(certificate);
 
-seriesCertificate(sanitation) += seriesObject(sanitation) AND sanitation IS Sanitation;
-numberCertificate(sanitation) += numberObject(sanitation) AND sanitation IS Sanitation;
+seriesCertificate(sanitation) += seriesObject(sanitation) IF sanitation IS Sanitation;
+numberCertificate(sanitation) += numberObject(sanitation) IF sanitation IS Sanitation;
 
 descriptionSanitation 'ГГР' (sanitation) = ustring3SP(string2SP('№ ', seriesNumberObject(sanitation)),
                                                  string2SP('от ', fromDateSanitation(sanitation)),

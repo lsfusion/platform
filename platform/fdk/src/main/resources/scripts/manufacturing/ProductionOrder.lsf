@@ -266,7 +266,7 @@ dataBruttoPriceSkuOrder (sku, order) <- prevPricePriceListTypeSkuStockDateTime(p
                                              CHANGED(componentsStockOrder(order)) OR
                                              CHANGED(dateTimeOrder(order));
 
-bruttoPriceSkuOrder 'Цена' (sku, order) = dataBruttoPriceSkuOrder(sku, order) AND bruttoQuantitySkuOrder(sku, order) PERSISTENT;
+bruttoPriceSkuOrder 'Цена' (sku, order) = dataBruttoPriceSkuOrder(sku, order) IF bruttoQuantitySkuOrder(sku, order) PERSISTENT;
 
 // --- Замена --- //
 substituteSkuOrder = DATA Sku (Sku, Order);
@@ -286,7 +286,7 @@ multiplierSubstitutesSku 'Коэффициент' = DATA SESSION NUMERIC[8,3] (S
 currentBalanceSkuSubstitutesSku 'Текущий остаток' (sku) =  currentBalanceSkuStock(sku, stockSubstitutesSku());
 
 SubstitutesPriceSkuOrder 'Цена' (sku,order)= prevPricePriceListTypeSkuStockDateTime(priceListTypeOrder(order), sku, stockSubstitutesSku(), dateTimeOrder(order));
-showPriceSubstitutesOrder (order)= TRUE IF stockSubstitutesSku() AND priceListTypeOrder(order);
+showPriceSubstitutesOrder (order) = TRUE IF stockSubstitutesSku() AND priceListTypeOrder(order);
 
 filterSubstituteFromToSku (fromSku, toSku) = TRUE AND NOT countSubstituteFromToSku(fromSku, toSku);
 
@@ -366,11 +366,11 @@ dataSubstitutePriceSkuOrder(sku,order) <- prevPricePriceListTypeSkuStockDateTime
                                                                                  substituteSkuOrder(sku, order),
                                                                                  componentsStockOrder(order),
                                                                                  dateTimeOrder(order))
-                                    WHEN CHANGED(priceListTypeOrder(order) AND sku IS Sku) OR
-                                         CHANGED(componentsStockOrder(order) AND sku IS Sku) OR
+                                    WHEN CHANGED(priceListTypeOrder(order) IF sku IS Sku) OR
+                                         CHANGED(componentsStockOrder(order) IF sku IS Sku) OR
                                          CHANGED(substituteSkuOrder(sku, order)) OR
-                                         CHANGED(dateTimeOrder(order) AND sku IS Sku);
-substitutePriceSkuOrder 'Цена замены' (sku, order) = dataSubstitutePriceSkuOrder(sku, order) AND substituteQuantitySkuOrder(sku, order) PERSISTENT;
+                                         CHANGED(dateTimeOrder(order) IF sku IS Sku);
+substitutePriceSkuOrder 'Цена замены' (sku, order) = dataSubstitutePriceSkuOrder(sku, order) IF substituteQuantitySkuOrder(sku, order) PERSISTENT;
 
 currentBalanceSubstituteOrder'Текущий остаток' (substitute, order) = currentBalanceSkuStock(toSkuSubstitute(substitute), componentsStockOrder(order));
 substitutesPriceSubstituteOrder 'Цена' (substitute, order)= prevPricePriceListTypeSkuStockDateTime(priceListTypeOrder(order), toSkuSubstitute(substitute), componentsStockOrder(order), dateTimeOrder(order));
@@ -402,7 +402,7 @@ deleteComponentsOrder 'Очистить' =  ACTION (order) {
 } TOOLBAR;
 
 // Sku с учетом замены
-skuSkuOrder (sku, order) = (sku AS Sku AND order IS Order) OVERRIDE substituteSkuOrder(sku,order) PERSISTENT;
+skuSkuOrder (sku, order) = (sku AS Sku IF order IS Order) OVERRIDE substituteSkuOrder(sku,order) PERSISTENT;
 
 nameSkuSkuOrder 'Итоговый sku' (sku,order)= nameSku(skuSkuOrder (sku,order));
 idBarcodeSkuSkuOrder 'Штрих-код' (sku,order) = idBarcodeSku(skuSkuOrder (sku, order));
@@ -432,7 +432,7 @@ changeMarkupSkuOrder (sku, order) = ACTION (sku, order) {
 
 // Изменение надбавок при изменении вида цен
 recordMarkupOrder(order) = ACTION (order) {
-    FOR componentsCalcPriceListTypeOrder(order) AND bruttoQuantitySkuOrder(sku, order) DO {
+    FOR componentsCalcPriceListTypeOrder(order) IF bruttoQuantitySkuOrder(sku, order) DO {
         SET markupSkuOrder(sku, order) <- markupCalcPriceListTypeSku(componentsCalcPriceListTypeOrder(order), sku);
         EXEC changeValueMarkupSkuOrder(sku, order);
     }
@@ -485,11 +485,11 @@ recordMarkupProductDetail(detail) = ACTION (detail) {
 valueVATSkuOrder 'НДС, %' = DATA NUMERIC[10,5] (Sku, Order);
 
 valueVATSkuOrder(sku, order) <- valueRateRangeDate(
-    VATSkuCountryDate (skuSkuOrder (sku,order), componentsCountryOrder(order), dateOrder(order)), dateOrder(order)) AND includeVATOrder(order)
+    VATSkuCountryDate (skuSkuOrder (sku,order), componentsCountryOrder(order), dateOrder(order)), dateOrder(order)) IF includeVATOrder(order)
         WHEN CHANGED(skuSkuOrder (sku,order)) OR
-             CHANGED(componentsCountryOrder(order) AND sku IS Sku) OR
-             CHANGED(dateOrder(order) AND sku IS Sku) OR
-             CHANGED(includeVATOrder(order) AND sku IS Sku);
+             CHANGED(componentsCountryOrder(order) IF sku IS Sku) OR
+             CHANGED(dateOrder(order) IF sku IS Sku) OR
+             CHANGED(includeVATOrder(order) IF sku IS Sku);
 
 calcPriceVATProductDetail 'Цена НДС' (productDetail)=
     [GROUP SUM recPricePercentProductSkuOrder(product, sku, order) * premiumPriceSkuOrder(sku, order) * (valueVATSkuOrder(sku, order)/(100+valueVATSkuOrder(sku, order)))/(100 *quantityProduct(product))

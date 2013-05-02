@@ -60,7 +60,7 @@ sumCStoWHDetailCStoWH 'Общая стоимость' (CStoWH) =
 
 @implementSkuLedgerOutFIFO(CStoWHDetail, sku, customStore);
 quantityOutFIFOSkuLedger(outUserSkuLedger) += quantityCStoWHDetail (outUserSkuLedger);
-limitOutFIFOSkuLedgerBatch(outUserSkuLedger, batch) += quantityCStoWHDetail(outUserSkuLedger) AND batch == declarationDetailCStoWHDetail (outUserSkuLedger);
+limitOutFIFOSkuLedgerBatch(outUserSkuLedger, batch) += quantityCStoWHDetail(outUserSkuLedger) IF batch == declarationDetailCStoWHDetail (outUserSkuLedger);
 sumOutSkuLedger(outUserSkuLedger) += sumCStoWHDetail(outUserSkuLedger);
 
 quantityCStoWHBatch (CStoWH, batch) =
@@ -129,7 +129,7 @@ quantityInputDeclaration 'Кол-во подобрано' (declaration) =  GROUP
 isInputDeclarationDetail 'Вкл' = DATA SESSION BOOLEAN (DeclarationDetail);
 
 toFillQuantityInputAllDeclarationDetails 'Проставить количество' (declaration) = ACTION (declaration) {
-    FOR currentBalanceDeclarationFreightUnit(declaration, freightUnit) AND currentBalanceFreightUnitDeclarationDetail(freightUnit, declarationDetail) DO {
+    FOR currentBalanceDeclarationFreightUnit(declaration, freightUnit) IF currentBalanceFreightUnitDeclarationDetail(freightUnit, declarationDetail) DO {
             SET quantityInputFreightUnitDeclarationDetail (freightUnit, declarationDetail) <- currentBalanceFreightUnitDeclarationDetail (freightUnit, declarationDetail);
     }
 }

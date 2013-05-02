@@ -138,9 +138,9 @@ sumConsignmentDetail (consignmentDetail) += IF isCommissionReturnOutDetail(consi
     ELSE supplierSumReturnOutDetailS(consignmentDetail);
 
 vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(saleInBatchDetailReturnOutDetail(consignmentDetail))
-   AND NOT isCommissionReturnOutDetail(consignmentDetail);
+   IF NOT isCommissionReturnOutDetail(consignmentDetail);
 
-sumVATConsignmentDetail (consignmentDetail) +=  sumVATReturnOutDetailS(consignmentDetail) AND NOT isCommissionReturnOutDetail(consignmentDetail);
+sumVATConsignmentDetail (consignmentDetail) +=  sumVATReturnOutDetailS(consignmentDetail) IF NOT isCommissionReturnOutDetail(consignmentDetail);
 
 sumInvoiceConsignmentDetail (consignmentDetail) += IF isCommissionReturnOutDetail(consignmentDetail) THEN supplierSumReturnOutDetailC(consignmentDetail)
     ELSE supplierSumReturnOutDetailS(consignmentDetail) (+) sumVATReturnOutDetailS(consignmentDetail);
@@ -200,7 +200,7 @@ useRetailPriceReturnInDetail(detail) = [stockReturnInDetail(detail) IS Departmen
 
 @implementSkuLedgerInLIFO(ReturnInDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityReturnInDetail(ledger);
-limitInLIFOSkuLedgerBatch (ledger, batch) += quantityReturnInDetail(ledger) AND batch == batchReturnInDetail(ledger);
+limitInLIFOSkuLedgerBatch (ledger, batch) += quantityReturnInDetail(ledger) IF batch == batchReturnInDetail(ledger);
 sumInSkuLedger(ledger) += accountSumReturnInDetail(ledger);
 skipSkuLedger (ledger) += skipSkuLedgerReturnInDetail(ledger);
 

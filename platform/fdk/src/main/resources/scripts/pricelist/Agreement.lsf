@@ -153,7 +153,7 @@ CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(dataPriceListTy
            MESSAGE 'Валюта соглашения должна совпадать с валютой вида цены';
 
 priceListTypeAgreementSku (agreement, sku) =
-    priceListTypeAgreement(agreement) AND sku IS Sku OVERRIDE
+    priceListTypeAgreement(agreement) IF sku IS Sku OVERRIDE
     priceListTypeAgreementGroup(agreement, groupGroupTypeSku(groupTypeAgreement(agreement),sku)) OVERRIDE
     dataPriceListTypeAgreementSku(agreement, sku);
 
@@ -344,7 +344,7 @@ copySessionAgreement 'Копировать' = ACTION (agreement) {
 
         FORM agreement OBJECTS a = a DOCKEDMODAL;
 
-        IF TRUE AND NOT formResult() == FormResult.ok THEN {
+        IF TRUE IF NOT formResult() == FormResult.ok THEN {
             EXEC delete(a);
         }
     };
@@ -414,7 +414,7 @@ createAgreementSupplierCustomer 'Добавить' = ACTION (supplier, customer)
         SET dataInAgreementCustomer(ag, customer) <- TRUE;
         SET dataInAgreementSupplier(ag, supplier) <- TRUE;
         FORM agreement OBJECTS a = ag DOCKEDMODAL;
-        IF TRUE AND NOT formResult() == FormResult.ok THEN {
+        IF TRUE IF NOT formResult() == FormResult.ok THEN {
             EXEC delete(ag);
         }
     }

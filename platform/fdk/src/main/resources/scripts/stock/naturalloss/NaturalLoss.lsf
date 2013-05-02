@@ -252,7 +252,7 @@ quantityNaturalLossDetail (naturalLossDetail) <- percentNaturalLossDetail(natura
          CHANGED(quantityLossNaturalLossDetail(naturalLossDetail));
 
 quantitySoldSkuDepartmentNaturalLoss 'Продано' (sku, stock, dateFrom, dateTo, subNaturalLossGroupDetail) =
-    GROUP SUM quantitySaleLedger(ledger) AND dateSaleLedger(ledger) >= (dateFrom AS DATE) AND dateSaleLedger(ledger) <= (dateTo AS DATE)
+    GROUP SUM quantitySaleLedger(ledger) IF dateSaleLedger(ledger) >= (dateFrom AS DATE) AND dateSaleLedger(ledger) <= (dateTo AS DATE)
               AND inIntervalNaturalLoss(dateSaleLedger(ledger), subNaturalLossGroupDetail)
               AND subNaturalLossGroupCountrySku(countryStock(stockSaleLedger(ledger)), skuSaleLedger(ledger)) == subNaturalLossGroupSubNaturalLossGroupDetail(subNaturalLossGroupDetail)
               BY skuSaleLedger(ledger), stockSaleLedger(ledger), dateFrom, dateTo, subNaturalLossGroupDetail;

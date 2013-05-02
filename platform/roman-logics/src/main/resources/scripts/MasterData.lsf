@@ -88,7 +88,7 @@ syncBarcodeSku 'Синхронизировать штрих-код' (sku) = ACTI
 
     LOCAL syncBarcode = Barcode();
     SET syncBarcode() <- [GROUP MAX barcode BY skuBarcode(barcode)](sku AS RomanLogicsModule.Sku); //dataBarcodeIdDate(barcode(sku), 2001_01_01);
-    IF TRUE AND NOT syncBarcode() IS Barcode THEN {
+    IF TRUE IF NOT syncBarcode() IS Barcode THEN {
         ADDOBJ Barcode;
         SET syncBarcode() <- addedObject();
         SET skuBarcode(barcode) <- sku AS RomanLogicsModule.Sku WHERE barcode == syncBarcode();
@@ -305,7 +305,7 @@ priceCustomBatch 'Себестоимость (БУ)' (batch) = ABSTRACT NUMERIC[
 priceManagerialBatch 'Себестоимость (УУ)' (batch) = ABSTRACT NUMERIC[14,2] (Batch) PERSISTENT;
 
 
-concatPriceCustomBatchArticleDateTime (article, dateTime) = GROUP MAX orderBatch(batch) AND priceCustomBatch(batch) AND
+concatPriceCustomBatchArticleDateTime (article, dateTime) = GROUP MAX orderBatch(batch) IF priceCustomBatch(batch) AND
                                                                 dateTimeBatch(batch) < (dateTime AS DATETIME)
                                                                 BY articleSku(skuBatch(batch)), dateTime;
 
@@ -313,7 +313,7 @@ batchPriceCustomArticleDateTime (article, dateTime) = concatPriceCustomBatchArti
 priceCustomDateTime(article, dateTime) = priceCustomBatch(batchPriceCustomArticleDateTime(article, dateTime));
 
 
-concatPriceManagerialBatchArticleDateTime (article, dateTime) = GROUP MAX orderBatch(batch) AND priceManagerialBatch(batch) AND
+concatPriceManagerialBatchArticleDateTime (article, dateTime) = GROUP MAX orderBatch(batch) IF priceManagerialBatch(batch) AND
                                                                 dateTimeBatch(batch) < (dateTime AS DATETIME)
                                                                 BY articleSku(skuBatch(batch)), dateTime;
 
@@ -443,8 +443,8 @@ FORM skuDialog 'SKU'
 
 //----------------------------- для печати маркировок ----------------------------------------------------------------//
 
-nameImporterSku 'Наименование' (importer, sku) = nameLegalEntity(importer) AND importer IS LegalEntity AND sku IS Sku;
-addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) AND importer IS LegalEntity AND sku IS Sku;
+nameImporterSku 'Наименование' (importer, sku) = nameLegalEntity(importer) IF importer IS LegalEntity AND sku IS Sku;
+addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) IF importer IS LegalEntity AND sku IS Sku;
 
 localeLanguageCompany (company) = localeLanguage(languageLegalEntity(company));
 mainCompositionSkuCompany 'Состав (иностр.)' (sku, company) = mainCompositionSkuLanguage(sku, languageLegalEntity(company)) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;

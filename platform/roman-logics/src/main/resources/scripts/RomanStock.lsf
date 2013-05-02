@@ -93,8 +93,8 @@ balanceAArticleDate 'Остаток на конец дня' (article, date) = GR
 CLASS ABSTRACT BatchA 'Бухгалтерская партия' : Batch;
 CLASS ABSTRACT BatchB 'Управленческая партия' : Batch;
 
-typeBatch 'Тип партии' (batch) = IF batch IS BatchA THEN 'А' AND batch IS BatchA
-                                                    ELSE 'Б' AND batch IS BatchB FIXEDCHARWIDTH 2;
+typeBatch 'Тип партии' (batch) = IF batch IS BatchA THEN 'А' IF batch IS BatchA
+                                                    ELSE 'Б' IF batch IS BatchB FIXEDCHARWIDTH 2;
 
 orderABatch (batch) = IF batch IS BatchA THEN 0 IF batch IS BatchA ELSE 1 IF batch IS BatchB PERSISTENT;
 orderBBatch (batch) = IF batch IS BatchB THEN 0 IF batch IS BatchB ELSE 1 IF batch IS BatchA PERSISTENT;

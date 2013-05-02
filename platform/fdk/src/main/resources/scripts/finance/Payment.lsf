@@ -75,7 +75,7 @@ setSumToPayment = ACTION (payment){
 
 //-------------------------------------------- Форма платежей -------------------------------------------------------//
 
-backgroundPaymentDate 'Цвет' (payment, date) = RGB(255,160,160) AND datePayment(payment) > (date AS DATE);
+backgroundPaymentDate 'Цвет' (payment, date) = RGB(255,160,160) IF datePayment(payment) > (date AS DATE);
 
 partyA = DATA SESSION LegalEntity();
 namePartyA 'Организация (поставщик)' = nameLegalEntity(partyA());

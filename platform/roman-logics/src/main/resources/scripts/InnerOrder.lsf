@@ -386,7 +386,7 @@ quantityAOrderPickingDetailSkuOrderPicking (sku, orderPicking) = GROUP SUM
     BY skuBatch(batch), orderPicking;
 
 quantityOrderPickingDetailSkuContractSkuOrderPicking(sku, contractSku, orderPicking) = GROUP SUM
-    quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) AND NOT commissionContractSkuBatchA(batch)
+    quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF NOT commissionContractSkuBatchA(batch)
     BY skuBatch(batch), contractSkuSaleInBatchDetail(batch), orderPicking;
 
 quantityOrderPickingDetailSkuContractCompanyOrderPicking(contractSku, orderPicking) = GROUP SUM
@@ -804,7 +804,7 @@ CLASS InnerOrderDiffSDetail 'Строка расхождений акта при
 
 diffSkuInnerOrderRec(sku, innerOrderRec) = (quantityInnerOrderRecDetailSkuInnerOrderRec(sku, innerOrderRec) (-)
                                         quantityOrderPickingDetailSkuOrderPicking(sku, orderPickingInnerOrderRec(innerOrderRec)))
-                                        AND isPostedInnerOrderRec(innerOrderRec);
+                                        IF isPostedInnerOrderRec(innerOrderRec);
 
 hasDiffSkuInnerOrderRec(sku, innerOrderRec) = diffSkuInnerOrderRec(sku, innerOrderRec) != 0;
 
@@ -932,7 +932,7 @@ FORM orderPickings 'Подборки товара'
 
 ;
 
-notDraftOrderPicking 'Непринятые' (orderPicking) = orderPicking IS OrderPicking  AND NOT innerOrderRecOrderPicking (orderPicking) IS InnerOrderRecPosted;
+notDraftOrderPicking 'Непринятые' (orderPicking) = orderPicking IS OrderPicking AND NOT innerOrderRecOrderPicking (orderPicking) IS InnerOrderRecPosted;
 
 FORM innerOrderRecs 'Приемка по внутр. заказам'
     OBJECTS st = Stock FIXED PANEL

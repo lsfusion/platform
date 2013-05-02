@@ -72,12 +72,12 @@ editGeneralLedger 'Редактировать' = ABSTRACT ACTION (generalLedger)
 
 META  defineGLAccountSum (caption, concrete, prefix)
     // без учета текущей даты
-    prefix###sumB###concrete###GLAccountCompanyDate 'Сумма на начало дня '###caption (GLAccount, company, date) = (sum###concrete###GLAccountCompany(GLAccount, company) AND date AS DATE)
-                                                                      (-) [GROUP SUM sum###concrete###GLAccountCompanyDate(GLAccount, company, dateIn) AND dateIn >= (date AS DATE)
+    prefix###sumB###concrete###GLAccountCompanyDate 'Сумма на начало дня '###caption (GLAccount, company, date) = (sum###concrete###GLAccountCompany(GLAccount, company) IF date AS DATE)
+                                                                      (-) [GROUP SUM sum###concrete###GLAccountCompanyDate(GLAccount, company, dateIn) IF dateIn >= (date AS DATE)
                                                                                  BY GLAccount, company, date](GLAccount, company, date);
     // с учетом текущей даты
-    prefix###sumA###concrete###GLAccountCompanyDate 'Сумма на конец дня '###caption (GLAccount, company, date) = (sum###concrete###GLAccountCompany(GLAccount, company) AND date AS DATE)
-                                                                     (-) [GROUP SUM sum###concrete###GLAccountCompanyDate(GLAccount, company, dateIn) AND dateIn > (date AS DATE)
+    prefix###sumA###concrete###GLAccountCompanyDate 'Сумма на конец дня '###caption (GLAccount, company, date) = (sum###concrete###GLAccountCompany(GLAccount, company) IF date AS DATE)
+                                                                     (-) [GROUP SUM sum###concrete###GLAccountCompanyDate(GLAccount, company, dateIn) IF dateIn > (date AS DATE)
                                                                                 BY GLAccount, company, date](GLAccount, company, date);
 END
 META defineGLAccountBalance (caption, prefix)
@@ -85,23 +85,23 @@ META defineGLAccountBalance (caption, prefix)
     prefix###balanceBGLAccountCompanyDate 'Сальдо на конец дня '###caption (GLAccount, company, date) =  prefix###sumBDebitGLAccountCompanyDate(GLAccount, company, date) (-) prefix###sumBCreditGLAccountCompanyDate(GLAccount, company, date);
 END
 
-sumCreditGLAccountCompany 'Сумма (кредит)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
-sumDebitGLAccountCompany 'Сумма (дебит)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
+sumCreditGLAccountCompany 'Сумма (кредит)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) IF isPostedGeneralLedger(ledger) BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
+sumDebitGLAccountCompany 'Сумма (дебит)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) IF isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
 balanceGLAccountCompany 'Сальдо' (GLAccount, company)= sumDebitGLAccountCompany(GLAccount, company) (-) sumCreditGLAccountCompany(GLAccount, company);
 
 TABLE GLAccountLegalEntityDate(GLAccount, LegalEntity, DATE);
-sumCreditGLAccountCompanyDate 'Сумма (кредит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger)
+sumCreditGLAccountCompanyDate 'Сумма (кредит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) IF isPostedGeneralLedger(ledger)
     BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger) PERSISTENT;
-sumDebitGLAccountCompanyDate 'Сумма (дебит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger)
+sumDebitGLAccountCompanyDate 'Сумма (дебит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) IF isPostedGeneralLedger(ledger)
     BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger) PERSISTENT;
 balanceGLAccountCompanyDate 'Сальдо' (GLAccount, company, date) =
     sumDebitGLAccountCompanyDate(GLAccount, company, date) (-) sumCreditGLAccountCompanyDate(GLAccount, company, date);
 
 sumCreditGLAccountCompanyDateFromTo 'Сумма (кредит)' (GLAccount, company, dateFrom, dateTo) = GROUP SUM
-        sumCreditGLAccountCompanyDate(GLAccount, company, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        sumCreditGLAccountCompanyDate(GLAccount, company, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY GLAccount, company, dateFrom, dateTo;
 sumDebitGLAccountCompanyDateFromTo 'Сумма (дебит)' (GLAccount, company, dateFrom, dateTo) = GROUP SUM
-        sumDebitGLAccountCompanyDate(GLAccount, company, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        sumDebitGLAccountCompanyDate(GLAccount, company, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY GLAccount, company, dateFrom, dateTo;
 balanceGLAccountCompanyDateFromTo 'Сальдо' (GLAccount, company, dateFrom, dateTo) =
     sumDebitGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo) (-) sumCreditGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo);
@@ -269,8 +269,8 @@ META defineGeneralLedgerAggregationInner (object, prop, propClass, companyProp, 
     isPostedGeneralLedger(generalLedger) += isPosted###object(object###prop###generalLedger(generalLedger));
     descriptionGeneralLedger(generalLedger) += description(object###prop###generalLedger(generalLedger));
     dateGeneralLedger(generalLedger) += dateProp###object(object###prop###generalLedger(generalLedger));
-    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) AND generalLedger IS propClass###generalLedger;
-    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) AND generalLedger IS propClass###generalLedger;
+    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) IF generalLedger IS propClass###generalLedger;
+    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) IF generalLedger IS propClass###generalLedger;
     sumGeneralLedger(generalLedger) += property(object###prop###generalLedger(generalLedger));
 
 END
@@ -291,8 +291,8 @@ META defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, propCl
     isPostedGeneralLedger(generalLedger) += isPosted###prim1Object(prim1Object###prop###generalLedger(generalLedger));
     descriptionGeneralLedger(generalLedger) += description(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));
     dateGeneralLedger(generalLedger) += dateProp###prim1Object(prim1Object###prop###generalLedger(generalLedger));
-    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) AND generalLedger IS propClass###generalLedger;
-    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) AND generalLedger IS propClass###generalLedger;
+    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) IF generalLedger IS propClass###generalLedger;
+    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) IF generalLedger IS propClass###generalLedger;
     sumGeneralLedger(generalLedger) += property(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));
 END
 

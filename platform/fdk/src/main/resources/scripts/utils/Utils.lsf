@@ -210,7 +210,7 @@ END
 
 isEditable 'Включить корректировку на форме' = DATA SESSION BOOLEAN();
 
-isReadonly = TRUE AND NOT isEditable();
+isReadonly = TRUE IF NOT isEditable();
 
 META extendFormEditable (form)
     EXTEND FORM form

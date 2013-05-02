@@ -27,19 +27,19 @@ META defineContractLedgerPrefix (caption, prefix)
     sumContract###prefix##Ledger 'Сумма' (contract###prefix##Ledger) = ABSTRACT NUMERIC[16,2] (Contract###prefix##Ledger) PERSISTENT;
 
     currentBalance###prefix##Contract 'Текущая сумма задолженности по договору' (contract)=
-        GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger) AND isPostedContract###prefix##Ledger(contract###prefix##Ledger)
+        GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger) IF isPostedContract###prefix##Ledger(contract###prefix##Ledger)
               BY contractContract###prefix##Ledger(contract###prefix##Ledger) PERSISTENT;
 
     balanceB###prefix##ContractDate 'Сумма задолженности по договору на дату (до)' (contract, date) =
-        (currentBalance###prefix##Contract(contract) AND date AS DATE) (-)
-        [GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger) AND isPostedContract###prefix##Ledger(contract###prefix##Ledger)
-                  IF dateContract###prefix##Ledger(contract###prefix##Ledger) >= (date AS DATE)
+        (currentBalance###prefix##Contract(contract) IF date AS DATE) (-)
+        [GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger) IF isPostedContract###prefix##Ledger(contract###prefix##Ledger)
+                  AND dateContract###prefix##Ledger(contract###prefix##Ledger) >= (date AS DATE)
               BY contractContract###prefix##Ledger(contract###prefix##Ledger), date](contract, date);
 
     balanceA###prefix##ContractDate 'Сумма задолженности по договору на дату (после)' (contract, date) =
-        (currentBalance###prefix##Contract(contract) AND date AS DATE) (-)
-        [GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger) AND isPostedContract###prefix##Ledger(contract###prefix##Ledger)
-                  IF dateContract###prefix##Ledger(contract###prefix##Ledger) > (date AS DATE)
+        (currentBalance###prefix##Contract(contract) IF date AS DATE) (-)
+        [GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger) IF isPostedContract###prefix##Ledger(contract###prefix##Ledger)
+                  AND dateContract###prefix##Ledger(contract###prefix##Ledger) > (date AS DATE)
               BY contractContract###prefix##Ledger(contract###prefix##Ledger), date](contract, date);
 
 END
@@ -112,20 +112,20 @@ paymentConditionInContractLedger 'Условия оплаты'  = ABSTRACT Payme
 TABLE outContractLedgerInContractLedger (OutContractLedger, InContractLedger);
 costOutContractLedgerInContractLedger 'Оплачено из документа' (outContractLedger, inContractLedger) = DATA NUMERIC[16,2] (OutContractLedger, InContractLedger) PERSISTENT;
 costedOutContractLedgerInContractLedger 'Оплачено по документу' (inContractLedger) =
-    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) AND
+    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) IF
     isPostedInContractLedger(inContractLedger) AND isPostedOutContractLedger(outContractLedger)
     BY inContractLedger PERSISTENT;
 costedOutContractLedgerInContractLedgerDate 'Оплачено по документу на дату' (inContractLedger, date) =
-    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) AND
+    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) IF
               isPostedInContractLedger(inContractLedger) AND isPostedOutContractLedger(outContractLedger) AND
               dateOutContractLedger(outContractLedger) <= (date AS DATE)
     BY inContractLedger, date;
 costedInContractLedgerOutContractLedger 'Расписано из документа' (outContractLedger) =
-    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) AND
+    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) IF
     isPostedInContractLedger(inContractLedger) //AND isPostedOutContractLedger(outContractLedger)
     BY outContractLedger PERSISTENT;
 costedInContractLedgerOutContractLedgerDate 'Расписано из документа на дату' (outContractLedger, date) =
-    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) AND
+    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) IF
               isPostedInContractLedger(inContractLedger) AND //isPostedOutContractLedger(outContractLedger) AND
               dateInContractLedger(inContractLedger) <= (date AS DATE)
     BY outContractLedger, date;
@@ -141,7 +141,7 @@ appliedInContractLedgerBonusPeriod(inContractLedger, bonusPeriod) =
     AND paymentConditionInContractLedger(inContractLedger) == paymentConditionBonusPeriod(bonusPeriod);
 
 daysBonusPeriodInContractLedger(inContractLedger, date) =
-    GROUP MIN countDaysBonusPeriod(bonusPeriod) AND
+    GROUP MIN countDaysBonusPeriod(bonusPeriod) IF
               paymentConditionInContractLedger(inContractLedger) == paymentConditionBonusPeriod(bonusPeriod) AND
               sumDate(dateInContractLedger(inContractLedger), countDaysBonusPeriod(bonusPeriod)) >= (date AS DATE)
               //appliedInContractLedgerBonusPeriod(inContractLedger, bonusPeriod)
@@ -164,7 +164,7 @@ orderInContractLedger(inContractLedger) = STRUCT(dateTimeInContractLedger(inCont
 
 sumInFIFOOutContractLedgerInContractLedger (outContractLedger, inContractLedger) =
     PARTITION UNGROUP sumOutContractLedger
-              LIMIT debtInContractLedger(inContractLedger) AND (outContractLedger IS OutContractLedger) AND
+              LIMIT debtInContractLedger(inContractLedger) IF
                     contractOutContractLedger(outContractLedger) == contractInContractLedger(inContractLedger) AND
                     isPostedInContractLedger(inContractLedger)
               BY outContractLedger
@@ -172,7 +172,7 @@ sumInFIFOOutContractLedgerInContractLedger (outContractLedger, inContractLedger)
 
 sumInLIFOOutContractLedgerInContractLedger (outContractLedger, inContractLedger) =
     PARTITION UNGROUP sumOutContractLedger
-              LIMIT debtInContractLedger(inContractLedger) AND (outContractLedger IS OutContractLedger) AND
+              LIMIT debtInContractLedger(inContractLedger) IF
                     contractOutContractLedger(outContractLedger) == contractInContractLedger(inContractLedger) AND
                     isPostedInContractLedger(inContractLedger)
               BY outContractLedger
@@ -447,11 +447,11 @@ DESIGN creditMemo FROM DEFAULT{
 
 //------------------------------------------- Платеж по договору -----------------------------------------------------//
 
-debtSumContractDate 'Долг по договору на дату' (contract, date) = GROUP SUM debtInContractLedgerDate(inContractLedger, date) AND
+debtSumContractDate 'Долг по договору на дату' (contract, date) = GROUP SUM debtInContractLedgerDate(inContractLedger, date) IF
                                                                             dateInContractLedger(inContractLedger) <= (date AS DATE)
                                                                   BY contractInContractLedger(inContractLedger), date;
 
-bonusSumContractDate 'Сумма бонуса на дату' (contract, date) = GROUP SUM bonusSumInContractLedger(inContractLedger, date) AND
+bonusSumContractDate 'Сумма бонуса на дату' (contract, date) = GROUP SUM bonusSumInContractLedger(inContractLedger, date) IF
                                                                          dateInContractLedger(inContractLedger) <= (date AS DATE)
                                                                BY contractInContractLedger(inContractLedger), date;
 
@@ -460,19 +460,19 @@ bonusDebtSumContractDate 'Сумма долга с учетом бонуса' (c
 
 //----------------------------------------------- Цвета --------------------------------------------------------------//
 
-backgroundSumContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,238,165) AND dateContractLedger(contractLedger) <= (date AS DATE) OVERRIDE
-                                                                RGB(255,160,160) AND dateContractLedger(contractLedger) > (date AS DATE);
-backgroundContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,160,160) AND dateContractLedger(contractLedger) > (date AS DATE);
-backgroundSumContract 'Цвет' (contract) = RGB(255,238,165) AND contract IS Contract;
-backgroundSumContractALedgerDate 'Цвет' (contractALedger, date) = RGB(232,184,146) AND dateContractALedger(contractALedger) <= (date AS DATE) OVERRIDE
-                                                              RGB(255,160,160) AND dateContractALedger(contractALedger) > (date AS DATE);
-backgroundContractALedgerDate 'Цвет' (contractALedger, date) = RGB(255,160,160) AND dateContractALedger(contractALedger) > (date AS DATE);
-backgroundSumContractA 'Цвет' (contract) = RGB(232,184,146) AND contract IS Contract;
-backgroundBonusSumInContractLedger 'Цвет' (inContractLedger) = RGB(213,249,185) AND inContractLedger IS InContractLedger;
-backgroundBonusSumContract 'Цвет' (contract) = RGB(213,249,185) AND contract IS Contract;
-backgroundPaymentRequestDate 'Цвет' (paymentRequest, date) = RGB(255,160,160) AND datePaymentRequest(paymentRequest) > (date AS DATE);
-backgroundOutContractLedgerDate 'Цвет' (outContractLedger, date) = RGB(255,160,160) AND dateOutContractLedger(outContractLedger) > (date AS DATE);
-backgroundInContractLedgerDate 'Цвет' (inContractLedger, date) = RGB(255,160,160) AND dateInContractLedger(inContractLedger) > (date AS DATE);
+backgroundSumContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,238,165) IF dateContractLedger(contractLedger) <= (date AS DATE) OVERRIDE
+                                                                RGB(255,160,160) IF dateContractLedger(contractLedger) > (date AS DATE);
+backgroundContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,160,160) IF dateContractLedger(contractLedger) > (date AS DATE);
+backgroundSumContract 'Цвет' (contract) = RGB(255,238,165) IF contract IS Contract;
+backgroundSumContractALedgerDate 'Цвет' (contractALedger, date) = RGB(232,184,146) IF dateContractALedger(contractALedger) <= (date AS DATE) OVERRIDE
+                                                              RGB(255,160,160) IF dateContractALedger(contractALedger) > (date AS DATE);
+backgroundContractALedgerDate 'Цвет' (contractALedger, date) = RGB(255,160,160) IF dateContractALedger(contractALedger) > (date AS DATE);
+backgroundSumContractA 'Цвет' (contract) = RGB(232,184,146) IF contract IS Contract;
+backgroundBonusSumInContractLedger 'Цвет' (inContractLedger) = RGB(213,249,185) IF inContractLedger IS InContractLedger;
+backgroundBonusSumContract 'Цвет' (contract) = RGB(213,249,185) IF contract IS Contract;
+backgroundPaymentRequestDate 'Цвет' (paymentRequest, date) = RGB(255,160,160) IF datePaymentRequest(paymentRequest) > (date AS DATE);
+backgroundOutContractLedgerDate 'Цвет' (outContractLedger, date) = RGB(255,160,160) IF dateOutContractLedger(outContractLedger) > (date AS DATE);
+backgroundInContractLedgerDate 'Цвет' (inContractLedger, date) = RGB(255,160,160) IF dateInContractLedger(inContractLedger) > (date AS DATE);
 
 //-------------------------------------------- Разнесение по документам -----------------------------------------------//
 

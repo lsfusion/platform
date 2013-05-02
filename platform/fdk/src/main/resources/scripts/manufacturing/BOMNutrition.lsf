@@ -68,7 +68,7 @@ componentsProduct 'Компоненты' (product)= componentsBOM(BOMProduct(pro
 compositionProduct(product) <- componentsProduct(product) WHEN CHANGED(componentsProduct(product));
 
 changeCompositionProduct 'Записать в товар' = ACTION (product) {
-    FOR skuProduct(product) == item AND item AS Item DO {
+    FOR skuProduct(product) == item DO {
         SET compositionItem(item) <- compositionProduct(product);
     }
 } SHORTCUT compositionProduct;

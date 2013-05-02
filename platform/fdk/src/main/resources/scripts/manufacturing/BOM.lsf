@@ -323,7 +323,7 @@ wastageComponent '% потерь'= DATA NUMERIC[8,3] (Component);
 changeWastageComponent = ACTION (component) {
     REQUEST NUMERIC[8,3] INPUT;
 
-    IF requestedNumeric() AND NOT technologyComponent(component) THEN {
+    IF requestedNumeric() IF NOT technologyComponent(component) THEN {
         SET wastageComponent(component) <- requestedNumeric();
     } ELSE {
         SET wastageComponent(component) <- NULL;
@@ -332,7 +332,7 @@ changeWastageComponent = ACTION (component) {
 backgroundWastageComponent 'Цвет' (component) = RGB(229,229,229) IF technologyComponent(component);
 
 wastageComponentDate '% потерь' (component, date) = IF technologyComponent(component) THEN wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), date)
-                                                    ELSE wastageComponent(component) AND date IS DATE;
+                                                    ELSE wastageComponent(component) IF date IS DATE;
 
 curWastageComponent '% потерь' (component) =  wastageComponentDate(component, currentDate());
 
@@ -349,7 +349,7 @@ bruttoQuantityComponent(component) <- nettoQuantityComponent(component)/(1 - (wa
 changeBruttoQuantityComponent = ACTION (component) {
     REQUEST NUMERIC[14,3] INPUT;
 
-    IF requestedNumeric() AND NOT technologyComponent(component) THEN {
+    IF requestedNumeric() IF NOT technologyComponent(component) THEN {
         SET bruttoQuantityComponent(component) <- requestedNumeric();
     } ELSE {
         SET bruttoQuantityComponent(component) <- NULL;
@@ -358,7 +358,7 @@ changeBruttoQuantityComponent = ACTION (component) {
 backgroundBruttoQuantityComponent 'Цвет' (component) = RGB(229,229,229) IF technologyComponent(component);
 
 bruttoQuantityComponentDate(component, date) = IF technologyComponent(component) THEN (nettoQuantityComponent(component)/(1 - (wastageTechnologyMaterialDate(technologyComponent(component), materialComponent(component), date)/100)))
-                                                                                 ELSE bruttoQuantityComponent(component) AND date IS DATE;
+                                                                                 ELSE bruttoQuantityComponent(component) IF date IS DATE;
 
 curBruttoQuantityComponent 'Кол-во (брутто)' (component) =  bruttoQuantityComponentDate(component, currentDate());
 
@@ -629,11 +629,11 @@ EXTEND DESIGN BOM {
 
 // кол-во требуемых материалов материалов
 bruttoQuantityBOMMaterialDate (BOM, material, date) = GROUP SUM bruttoQuantityComponentDate(component, date) BY BOMComponent(component), materialComponent(component), date;
-bruttoQuantityBOMSkuDate(BOM, sku, date) = bruttoQuantityBOMMaterialDate(BOM, sku, date) AND sku IS Sku;
+bruttoQuantityBOMSkuDate(BOM, sku, date) = bruttoQuantityBOMMaterialDate(BOM, sku, date) IF sku IS Sku;
 
 bruttoQuantityBOMBOMDate (parent, child, date) = GROUP MAX bruttoQuantityBOMMaterialDate(BOM, material, date) / quantityProduct(material) BY BOM, BOMProduct(material), date;
 
-recBruttoQuantityBOMBOMDateResult (parent, child, date, q) = RECURSION 1.00000000000 AND q == 1.00000000000 AND child == (parent AS BOM) AND date IS DATE STEP 1.00000000000 AND q == $q * bruttoQuantityBOMBOMDate($child, child, date) CYCLES YES;
+recBruttoQuantityBOMBOMDateResult (parent, child, date, q) = RECURSION 1.00000000000 IF q == 1.00000000000 AND child == (parent AS BOM) AND date IS DATE STEP 1.00000000000 AND q == $q * bruttoQuantityBOMBOMDate($child, child, date) CYCLES YES;
 recBruttoQuantityBOMBOMDate (parent, child, date) = GROUP SUM recBruttoQuantityBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
 //recBruttoQuantityBOMBOMDate (parent, child, date) = 1.0 IF (parent AS BOM) == (child AS BOM) AND date IS DATE;
 
@@ -644,7 +644,7 @@ recBruttoNodeQuantityBOMSkuDate (BOM, sku, date) = GROUP SUM recBruttoQuantityBO
 // Расчет цены
 priceCoeffBOMBOMDate(parent, child, date) = GROUP SUM bruttoQuantityBOMMaterialDate(BOM, material, date) * priceCoeffProduct(material) / quantityProduct(material) BY BOM, BOMProduct(material), date;
 
-recPriceCoeffBOMBOMDateResult (parent, child, date, q) = RECURSION 1.00000000000 AND q == 1.00000000000 AND child == (parent AS BOM) AND date IS DATE STEP 1.00000000000 AND q == $q * priceCoeffBOMBOMDate($child, child, date) CYCLES YES;
+recPriceCoeffBOMBOMDateResult (parent, child, date, q) = RECURSION 1.00000000000 IF q == 1.00000000000 AND child == (parent AS BOM) AND date IS DATE STEP 1.00000000000 AND q == $q * priceCoeffBOMBOMDate($child, child, date) CYCLES YES;
 recPriceCoeffBOMBOMDate (parent, child, date) = GROUP SUM recPriceCoeffBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
 //recPriceCoeffBOMBOMDate (parent, child, date) = 1.0 IF (parent AS BOM) == (child AS BOM) AND date IS DATE;
 
@@ -655,11 +655,11 @@ recPricePercentProductSkuDate (product, sku, date) = recPriceCoeffBOMSkuDate (BO
 // ----- Рекурсивный расчет потребностей нетто ---------- //
 
 nettoQuantityBOMMaterial (BOM, material) = GROUP SUM nettoQuantityComponent(component) BY BOMComponent(component), materialComponent(component);
-nettoQuantityBOMSku(BOM, sku) = nettoQuantityBOMMaterial(BOM, sku) AND sku IS Sku;
+nettoQuantityBOMSku(BOM, sku) = nettoQuantityBOMMaterial(BOM, sku) IF sku IS Sku;
 
 nettoQuantityBOMBOM (parent, child) = GROUP MAX nettoQuantityBOMMaterial(BOM, material) / quantityProduct(material) BY BOM, BOMProduct(material);
 
-recNettoQuantityBOMBOMResult (parent, child, q) = RECURSION 1.00000000000 AND q == 1.00000000000 AND child == (parent AS BOM)  STEP 1.00000000000 AND q == $q * nettoQuantityBOMBOM($child, child) CYCLES YES;
+recNettoQuantityBOMBOMResult (parent, child, q) = RECURSION 1.00000000000 IF q == 1.00000000000 AND child == (parent AS BOM)  STEP 1.00000000000 AND q == $q * nettoQuantityBOMBOM($child, child) CYCLES YES;
 recNettoQuantityBOMBOM (parent, child) = GROUP SUM recNettoQuantityBOMBOMResult(parent, child, q) * q BY parent, child;
 
 recNettoQuantityBOMSku (BOM, sku) = GROUP SUM recNettoQuantityBOMBOM(BOM, childBOM) * nettoQuantityBOMSku(childBOM, sku) BY BOM, sku; //](BOM, sku);

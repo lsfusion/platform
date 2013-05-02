@@ -241,7 +241,7 @@ EXTEND FORM shipments
 
 calcWriteOffRateShipmentDetail  (detail) = writeOffRateCountrySku(countryCustomerStockShipmentDetail(detail), skuShipmentDetail(detail));
 calcWriteOffQuantityShipmentDetail 'Кол-во (списания)' (detail) = round3(quantityShipmentDetail(detail)*percentWriteOffRate(calcWriteOffRateShipmentDetail(detail))/100);
-calcWriteOffPriceShipmentDetail 'Цена (списания)' (detail) = priceShipmentDetail(detail) AND calcWriteOffQuantityShipmentDetail(detail);
+calcWriteOffPriceShipmentDetail 'Цена (списания)' (detail) = priceShipmentDetail(detail) IF calcWriteOffQuantityShipmentDetail(detail);
 calcWriteOffSumShipmentDetail 'Сумма (списания)' (detail) = roundPriceCurrency(calcWriteOffQuantityShipmentDetail(detail)*calcWriteOffPriceShipmentDetail(detail),currencyShipmentDetail(detail));
 
 // Создание поставки на основе инвойса //

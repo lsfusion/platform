@@ -85,5 +85,5 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceD
 //             CHANGED(dateUserInvoiceDetail(detail)) OR
 //             CHANGED(RRPPriceUserInvoiceDetail (detail));
 //
-//showRRPExchangePriceInvoice(invoice) = [GROUP SUM 1 AND NOT currencyInvoiceDetail(invoiceDetail) == currencyRRPInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail)](
+//showRRPExchangePriceInvoice(invoice) = [GROUP SUM 1 IF NOT currencyInvoiceDetail(invoiceDetail) == currencyRRPInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail)](
 //    invoice) AND showRRPInvoice(invoice);

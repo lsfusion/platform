@@ -212,8 +212,8 @@ onlyIncomeQuantity(store, article) = ioQuantity(store, article)[1];
 testAbstract(named) = ABSTRACT INTEGER (Named);
 // overriding abstract property syntax:
 // propertyName(namedParam1, ..., namedParamN) += expression;
-testAbstract(named) += 5 AND named IS Article;
-testAbstract(named) += 6 AND named IS Store;
+testAbstract(named) += 5 IF named IS Article;
+testAbstract(named) += 6 IF named IS Store;
 
 // Abstract action property
 // Expression syntax:

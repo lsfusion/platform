@@ -85,7 +85,7 @@ useRetailPriceSaleOutDetail(detail) = [stockSaleOutDetail(detail) IS DepartmentS
 @implementSkuLedgerOutFIFO(SaleOutDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantitySaleOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceABatchStock(batch, stockSaleOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch)
-                                             AND batch IS BatchA;
+                                             IF batch IS BatchA;
 sumOutSkuLedger(ledger) += accountSumSaleOutDetail(ledger);
 skipSkuLedger (ledger) += skipSkuLedgerSaleOutDetail(ledger);
 
@@ -129,10 +129,10 @@ sumConsignmentDetail (consignmentDetail) += IF isCommissionSaleOutBatchDetail(co
     ELSE supplierSumSaleOutBatchDetailS(consignmentDetail);
 
 vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(batchSaleOutBatchDetail(consignmentDetail))
-    AND NOT isCommissionSaleOutBatchDetail(consignmentDetail);
+    IF NOT isCommissionSaleOutBatchDetail(consignmentDetail);
 
 sumVATConsignmentDetail (consignmentDetail) +=  sumVATSaleOutBatchDetailS(consignmentDetail)
-    AND NOT isCommissionSaleOutBatchDetail(consignmentDetail);
+    IF NOT isCommissionSaleOutBatchDetail(consignmentDetail);
 
 sumInvoiceConsignmentDetail (consignmentDetail) += IF isCommissionSaleOutBatchDetail(consignmentDetail) THEN supplierSumSaleOutBatchDetailC(consignmentDetail)
     ELSE supplierSumSaleOutBatchDetailS(consignmentDetail) (+) sumVATSaleOutBatchDetailS(consignmentDetail);
@@ -212,7 +212,7 @@ rangeVATSaleInBatchDetail (detail) <- [PREV(rangeVATBatchA(batch))](batchSaleInB
 accountPriceSaleInBatchDetail (detail) = IF isCommissionSaleInBatchDetail(detail) THEN retailPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail))
                                                                                   ELSE supplierPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 
-costSaleInBatch (saleIn, batch) = quantitySaleInBatchDetail(batch) AND saleIn == saleInSaleInBatchDetail(batch) PERSISTENT;
+costSaleInBatch (saleIn, batch) = quantitySaleInBatchDetail(batch) IF saleIn == saleInSaleInBatchDetail(batch) PERSISTENT;
 
 EXTEND FORM saleIns
     PROPERTIES(t) READONLY isCommissionSaleIn BEFORE countSaleInDetailSaleIn, skipSkuLedgerSaleIn
@@ -247,7 +247,7 @@ EXTEND CLASS SaleInBatchDetail : BatchA;
 @implementBatchCustom(saleInBatchDetail, sku, stock, cost);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);
 ownerBatchA (batch) += IF isCommissionSaleInBatchDetail(batch) THEN legalEntityStock(destinationStockSaleInBatchDetail(batch)) ELSE legalEntityStock(stockSaleInBatchDetail(batch));
-commissionContractSkuBatchA (batch) += contractSkuSaleInBatchDetail(batch) AND isCommissionSaleInBatchDetail(batch);
+commissionContractSkuBatchA (batch) += contractSkuSaleInBatchDetail(batch) IF isCommissionSaleInBatchDetail(batch);
 importerPriceBatchA(batch) += importerPriceSaleInBatchDetail(batch);
 supplierPriceBatchA(batch) += supplierPriceSaleInBatchDetail(batch);
 rangeVATBatchA(batch) += rangeVATSaleInBatchDetail(batch);
@@ -307,9 +307,9 @@ skipASkuLedger (ledger) += ledger IS SaleDiffSDetail;
 CLASS TransferPriceActSale 'Акт расценки (поставка)' : TransferPriceAct;
 CLASS TransferPriceActSaleDetail 'Строка акта расценки': TransferPriceActDetail;
 
-prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS Batch;
-prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) AND batch IS Batch;
-prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS Batch;
+prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) IF batch IS Batch;
+prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) IF batch IS Batch;
+prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) IF batch IS Batch;
 
 @defineDocumentTransferPriceAct (sale, 'Акт расценки (продажа)', 'Строка акта расценки (продажа)', sku, stock, prevImporterPriceBatch, prevSupplierPriceBatch, prevRangeVATBatch);
 @defineDocumentTransferPriceActExtra (sale, prevRangeVATBatch);

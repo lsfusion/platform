@@ -28,10 +28,10 @@ TABLE supplierStock(Supplier, Stock);
 emailOrderSupplierStock 'e-mail для передачи заказа' = DATA STRING[100] (Supplier, Stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 contactSupplierStock 'Контактная информация' = DATA STRING[500] (Supplier, Stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
-defaultControlSupplierStock (supplier, stock) = YesNo.no AND supplier IS Supplier AND stock IS Stock;
+defaultControlSupplierStock (supplier, stock) = YesNo.no IF supplier IS Supplier AND stock IS Stock;
 @defineHistorizableYesNo(controlSupplierStock, defaultControlSupplierStock, 'Контролировать ассортимент поставщика', supplier, nameLegalEntity, stock, nameStock, orderGroup);
 
-defaultSureSupplierStock (supplier, stock) = YesNo.no AND supplier IS Supplier AND stock IS Stock;
+defaultSureSupplierStock (supplier, stock) = YesNo.no IF supplier IS Supplier AND stock IS Stock;
 @defineHistorizableYesNo(sureSupplierStock, defaultSureSupplierStock, 'Обязателен заказ поставщику', supplier, nameLegalEntity, stock, nameStock, orderGroup);
 
 // ---------------------------------------- Группы поставщиков -------------------------------- //
@@ -364,7 +364,7 @@ countSupplierSku 'Кол-во партий' (supplier, sku) = GROUP SUM 1 BY sup
 META defineDialogSkuSupplier (form)
     form###supplier = DATA SESSION Supplier ();
     form###nameSupplier 'Поставщик' () = nameLegalEntity(form###supplier()) PREFCHARWIDTH 30;
-    form###supplierFilter = (TRUE AND countSupplierSku(form###supplier(), sku)) OR (sku IS Sku AND NOT form###supplier());
+    form###supplierFilter = (TRUE IF countSupplierSku(form###supplier(), sku)) OR (sku IS Sku AND NOT form###supplier());
 
     EXTEND FORM form
         PROPERTIES form###nameSupplier()

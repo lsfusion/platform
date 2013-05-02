@@ -179,8 +179,8 @@ DESIGN invoiceWHOuts FROM DEFAULT {
 @implementSkuLedgerOutFIFO(InvoiceWHOutDetail, sku, warehouse);
 quantityOutFIFOSkuLedger (ledger) += quantityInvoiceWHOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchAInvoiceWHOutDetail(ledger) THEN
-                                                quantityInvoiceWHOutDetail (ledger) AND batchAInvoiceWHOutDetail(ledger) == batch
-                                                ELSE currentBalanceABatchStock(batch, warehouseInvoiceWHOutDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
+                                                quantityInvoiceWHOutDetail (ledger) IF batchAInvoiceWHOutDetail(ledger) == batch
+                                                ELSE currentBalanceABatchStock(batch, warehouseInvoiceWHOutDetail(ledger)); //IF NOT commissionContractSkuBatchA(batch);
 changedDataSkuLedger(ledger) += CHANGED(batchAInvoiceWHOutDetail(ledger));
 sumOutSkuLedger(ledger) += supplierSumInvoiceWHOutDetail(ledger);
 

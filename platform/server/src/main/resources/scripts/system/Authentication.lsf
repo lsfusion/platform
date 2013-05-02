@@ -107,7 +107,7 @@ reloginLoginUser = ACTION () {
         LOCAL user = CustomUser();
         SET user() <- customUserLogin(chosenString('login'));
         IF user() THEN {
-            IF TRUE AND NOT sha256PasswordCustomUser(user()) THEN {
+            IF TRUE IF NOT sha256PasswordCustomUser(user()) THEN {
                 IF passwordCustomUser(user())==chosenString('password') THEN {
                     EXEC reloginUser(user());
                     MESSAGE 'Пользователь изменён';
@@ -153,7 +153,7 @@ EXTEND DESIGN reloginPasswordUser {
 reloginPasswordUser = ACTION (customUser) {
     FORM reloginPasswordUser MODAL;
     IF formResult() == FormResult.ok THEN {
-        IF TRUE AND NOT sha256PasswordCustomUser(customUser) THEN {
+        IF TRUE IF NOT sha256PasswordCustomUser(customUser) THEN {
             IF passwordCustomUser(customUser)==chosenString('password') THEN {
                 EXEC reloginUser(customUser);
                 MESSAGE 'Пользователь изменён';
@@ -215,7 +215,7 @@ EXTEND DESIGN changePasswordUser {
 changePasswordUser = ACTION (customUser) {
     FORM changePasswordUser MODAL;
     IF formResult() == FormResult.ok THEN {
-        IF TRUE AND NOT sha256PasswordCustomUser(customUser) THEN {
+        IF TRUE IF NOT sha256PasswordCustomUser(customUser) THEN {
             IF  chosenString('old') != passwordCustomUser(customUser) THEN {
                 MESSAGE 'Неверный старый пароль';
                 BREAK;

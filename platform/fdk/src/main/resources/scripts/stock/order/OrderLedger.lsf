@@ -39,23 +39,23 @@ currentReserveSaleSkuStock 'Резерв продажа (всего)' (sku, stoc
     BY skuOrderLedger(ledger), stockOrderLedger(ledger) PERSISTENT;
 
 // без учета текущей даты/времени
-reserveBSaleSkuStockDate 'Резерв продажи на начало дня' (sku, stock, date) = (currentReserveSaleSkuStock(sku, stock) AND  date AS DATE) (-)
-    [GROUP SUM toShipQuantityOrderLedger(ledger) AND isPostedOrderLedger(ledger) AND NOT isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateOrderLedger(ledger) >= (date AS DATE)
+reserveBSaleSkuStockDate 'Резерв продажи на начало дня' (sku, stock, date) = (currentReserveSaleSkuStock(sku, stock) IF date AS DATE) (-)
+    [GROUP SUM toShipQuantityOrderLedger(ledger) IF isPostedOrderLedger(ledger) AND NOT isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateOrderLedger(ledger) >= (date AS DATE)
         BY skuOrderLedger(ledger), stockOrderLedger(ledger), date](sku, stock, date);
 
 // с учетом текущей даты/времени
-reserveASaleSkuStockDate 'Резерв продажи на конец дня' (sku, stock, date) = (currentReserveSaleSkuStock(sku, stock) AND date AS DATE) (-)
-    [GROUP SUM toShipQuantityOrderLedger(ledger) AND isPostedOrderLedger(ledger) AND NOT isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateOrderLedger(ledger) > (date AS DATE)
+reserveASaleSkuStockDate 'Резерв продажи на конец дня' (sku, stock, date) = (currentReserveSaleSkuStock(sku, stock) IF date AS DATE) (-)
+    [GROUP SUM toShipQuantityOrderLedger(ledger) IF isPostedOrderLedger(ledger) AND NOT isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateOrderLedger(ledger) > (date AS DATE)
         BY skuOrderLedger(ledger), stockOrderLedger(ledger), date](sku, stock, date);
 
 // без учета текущей даты/времени
-reserveBSaleSkuStockDateTime 'Резерв продажи (до)' (sku, stock, dateTime) = (currentReserveSaleSkuStock(sku, stock) AND dateTime AS DATETIME) (-)
-    [GROUP SUM toShipQuantityOrderLedger(ledger) AND isPostedOrderLedger(ledger) AND NOT isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateTimeOrderLedger(ledger) >= (dateTime AS DATETIME)
+reserveBSaleSkuStockDateTime 'Резерв продажи (до)' (sku, stock, dateTime) = (currentReserveSaleSkuStock(sku, stock) IF dateTime AS DATETIME) (-)
+    [GROUP SUM toShipQuantityOrderLedger(ledger) IF isPostedOrderLedger(ledger) AND NOT isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateTimeOrderLedger(ledger) >= (dateTime AS DATETIME)
         BY skuOrderLedger(ledger), stockOrderLedger(ledger), dateTime](sku, stock, dateTime);
 
 // с учетом текущей даты/времени
-reserveASaleSkuStockDateTime 'Резерв продажи (после)' (sku, stock, dateTime) = (currentReserveSaleSkuStock(sku, stock) AND dateTime AS DATETIME) (-)
-    [GROUP SUM toShipQuantityOrderLedger(ledger) AND isPostedOrderLedger(ledger) AND NOT isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateTimeOrderLedger(ledger) > (dateTime AS DATETIME)
+reserveASaleSkuStockDateTime 'Резерв продажи (после)' (sku, stock, dateTime) = (currentReserveSaleSkuStock(sku, stock) IF dateTime AS DATETIME) (-)
+    [GROUP SUM toShipQuantityOrderLedger(ledger) IF isPostedOrderLedger(ledger) AND NOT isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateTimeOrderLedger(ledger) > (dateTime AS DATETIME)
         BY skuOrderLedger(ledger), stockOrderLedger(ledger), dateTime](sku, stock, dateTime);
 
 
@@ -65,23 +65,23 @@ currentReservePurchaseSkuStock 'Резерв закупка (всего)'(sku, s
     BY skuOrderLedger(ledger), stockOrderLedger(ledger) PERSISTENT;
 
 // без учета текущей даты/времени
-reserveBPurchaseSkuStockDate 'Резерв закупки на начало дня' (sku, stock, date) = (currentReservePurchaseSkuStock(sku, stock) AND  date AS DATE) (-)
-    [GROUP SUM toShipQuantityOrderLedger(ledger) AND isPostedOrderLedger(ledger) AND isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateOrderLedger(ledger) >= (date AS DATE)
+reserveBPurchaseSkuStockDate 'Резерв закупки на начало дня' (sku, stock, date) = (currentReservePurchaseSkuStock(sku, stock) IF date AS DATE) (-)
+    [GROUP SUM toShipQuantityOrderLedger(ledger) IF isPostedOrderLedger(ledger) AND isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateOrderLedger(ledger) >= (date AS DATE)
         BY skuOrderLedger(ledger), stockOrderLedger(ledger), date](sku, stock, date);
 
 // с учетом текущей даты/времени
-reserveAPurchaseSkuStockDate 'Резерв закупки на конец дня' (sku, stock, date) = (currentReservePurchaseSkuStock(sku, stock) AND date AS DATE) (-)
-    [GROUP SUM toShipQuantityOrderLedger(ledger) AND isPostedOrderLedger(ledger) AND isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateOrderLedger(ledger) > (date AS DATE)
+reserveAPurchaseSkuStockDate 'Резерв закупки на конец дня' (sku, stock, date) = (currentReservePurchaseSkuStock(sku, stock) IF date AS DATE) (-)
+    [GROUP SUM toShipQuantityOrderLedger(ledger) IF isPostedOrderLedger(ledger) AND isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateOrderLedger(ledger) > (date AS DATE)
         BY skuOrderLedger(ledger), stockOrderLedger(ledger), date](sku, stock, date);
 
 // без учета текущей даты/времени
-reserveBPurchaseSkuStockDateTime 'Резерв закупки (до)' (sku, stock, dateTime) = (currentReservePurchaseSkuStock(sku, stock) AND dateTime AS DATETIME) (-)
-    [GROUP SUM toShipQuantityOrderLedger(ledger) AND isPostedOrderLedger(ledger) AND isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateTimeOrderLedger(ledger) >= (dateTime AS DATETIME)
+reserveBPurchaseSkuStockDateTime 'Резерв закупки (до)' (sku, stock, dateTime) = (currentReservePurchaseSkuStock(sku, stock) IF dateTime AS DATETIME) (-)
+    [GROUP SUM toShipQuantityOrderLedger(ledger) IF isPostedOrderLedger(ledger) AND isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateTimeOrderLedger(ledger) >= (dateTime AS DATETIME)
         BY skuOrderLedger(ledger), stockOrderLedger(ledger), dateTime](sku, stock, dateTime);
 
 // с учетом текущей даты/времени
-reserveAPurchaseSkuStockDateTime 'Резерв закупки (после)' (sku, stock, dateTime) = (currentReservePurchaseSkuStock(sku, stock) AND dateTime AS DATETIME) (-)
-    [GROUP SUM toShipQuantityOrderLedger(ledger) AND isPostedOrderLedger(ledger) AND isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateTimeOrderLedger(ledger) > (dateTime AS DATETIME)
+reserveAPurchaseSkuStockDateTime 'Резерв закупки (после)' (sku, stock, dateTime) = (currentReservePurchaseSkuStock(sku, stock) IF dateTime AS DATETIME) (-)
+    [GROUP SUM toShipQuantityOrderLedger(ledger) IF isPostedOrderLedger(ledger) AND isPurchaseOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger) AND dateTimeOrderLedger(ledger) > (dateTime AS DATETIME)
         BY skuOrderLedger(ledger), stockOrderLedger(ledger), dateTime](sku, stock, dateTime);
 
 //-------------------------------Общий----------------------------------//
@@ -217,7 +217,7 @@ EXTEND DESIGN currentBalanceSkuStock {
 
 //---------------------Расширение закладки подбара формы заказа резервами ---------------//
 
-availableQuantitySkuStockDateTime 'Доступное количество' (sku, stock, dateTime) = (currentBalanceSkuStock(sku, stock) AND dateTime AS DATETIME) (+) reserveBSkuStockDateTime(sku, stock, dateTime);
+availableQuantitySkuStockDateTime 'Доступное количество' (sku, stock, dateTime) = (currentBalanceSkuStock(sku, stock) IF dateTime AS DATETIME) (+) reserveBSkuStockDateTime(sku, stock, dateTime);
 
 META extendFormDocumentOrderLedgerStock(object, form, concrete)
 

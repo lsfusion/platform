@@ -120,7 +120,7 @@ createInnerOrderSurplusOut 'Создать внутренний заказ' = [A
         EXEC apply();
     }
 
-}] (surplusOut )AND NOT innerOrderSurplusOut (surplusOut) IN documentPrmGroup CONFIRM;
+}] (surplusOut) IF NOT innerOrderSurplusOut (surplusOut) IN documentPrmGroup CONFIRM;
 
 editOrderPicking 'Редактировать' (orderPicking) = ACTION (orderPicking) {
     IF orderPicking IS OrderPicking  THEN {
@@ -218,7 +218,7 @@ DESIGN surplusOut FROM DEFAULT {
 }
 
 
-inInnerDocumentOrderPickingSurplusOut (innerDocument, orderPicking, surplusOut) =  orderPickingInnerDocument(innerDocument) == orderPicking AND surplusOut IS SurplusOut OR
+inInnerDocumentOrderPickingSurplusOut (innerDocument, orderPicking, surplusOut) = orderPickingInnerDocument(innerDocument) == orderPicking AND surplusOut IS SurplusOut OR
    invoiceWHOutSurplusOut(surplusOut) == innerDocument AND orderPicking IS OrderPicking;
 
 

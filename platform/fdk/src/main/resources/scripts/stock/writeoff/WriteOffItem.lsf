@@ -12,7 +12,7 @@ CONSTRAINT countryWriteOffRate(writeOffRateCountryItem(country, item)) != countr
 writeOffRateCountrySku (country, sku) += writeOffRateCountryItem (country, sku);
 
 overCopyItem(s, d) += ACTION (s, d) {
-    SET writeOffRateCountryItem(country, d) <- writeOffRateCountryItem(country, s) IF country IS Country AND s IS Item AND d IS Item;
+    SET writeOffRateCountryItem(country, d) <- writeOffRateCountryItem(country, s);
 }
 
 EXTEND FORM item

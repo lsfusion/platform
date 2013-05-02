@@ -30,7 +30,7 @@ META defineOrderShipment(sign, stockProp)
     shippedShipmentDetailOrderSku 'Кол-во (поставлено)' (order, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
                                                       BY orderShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail);
     shippedOrderDetail 'Кол-во (поставлено)' (orderDetail) = PARTITION UNGROUP shippedShipmentDetailOrderSku
-                                                              LIMIT STRICT quantityOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail)
+                                                              LIMIT STRICT quantityOrderDetail (orderDetail) IF isPostedOrderDetail(orderDetail)
                                                               BY orderOrderDetail(orderDetail), skuOrderDetail(orderDetail)
                                                               ORDER orderDetail PERSISTENT;
 
@@ -121,8 +121,8 @@ META defineOrderShipment(sign, stockProp)
     }
 
     inOrderDetailUserShipment (orderDetail, userShipment) = IF differentStocksInDetailsStock(customerStockOrderDetail(orderDetail))
-        THEN TRUE AND orderDetail IS OrderDetail AND userShipment IS UserShipment
-        ELSE TRUE AND supplierStockOrderDetail(orderDetail)==supplierStockUserShipment(userShipment);
+        THEN orderDetail IS OrderDetail AND userShipment IS UserShipment
+        ELSE supplierStockOrderDetail(orderDetail) == supplierStockUserShipment(userShipment);
 
     overFillOrderUserShipmentDetailOrderDetail = ABSTRACT ACTION (UserShipmentDetail, OrderDetail);
 

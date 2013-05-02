@@ -160,7 +160,7 @@ priceUserWriteOffDetail (detail)  <- IF batchUserWriteOffDetail(detail)
                 ELSE priceLedgerPriceListTypeSkuStockDateTime(SystemLedgerPriceListType.accountPriceListType, skuUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
                 WHEN CHANGED(skuUserWriteOffDetail(detail)) OR CHANGED(batchUserWriteOffDetail(detail)) OR CHANGED(stockUserWriteOffDetail(detail)) OR CHANGED (dateTimeUserWriteOffDetail(detail));
 
-skuUserWriteOffDetail (detail)  <- skuBatch( batchUserWriteOffDetail(detail)) AND batchUserWriteOffDetail(detail)
+skuUserWriteOffDetail (detail)  <- skuBatch(batchUserWriteOffDetail(detail)) IF batchUserWriteOffDetail(detail)
                                WHEN CHANGED(batchUserWriteOffDetail(detail));
 
 @defineDocumentInterfaceHeaderQuantity(writeOff);

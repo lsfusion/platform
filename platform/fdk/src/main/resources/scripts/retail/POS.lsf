@@ -17,7 +17,7 @@ POSPriceSkuReceiptDateTime 'Цена в кассе' (sku, receipt, dateTime) =
     IF usePriceListGroupCashRegister(groupCashRegisterReceipt(receipt)) THEN
         pricePriceListTypeSkuStockDateTime(POSPriceListTypeReceipt(receipt), sku, departmentStoreReceipt(receipt), dateTime)
     ELSE
-        transactionPriceBarcodeGroupMachinery(barcodeSku(sku), groupCashRegisterReceipt(receipt)) AND dateTime IS DATETIME;
+        transactionPriceBarcodeGroupMachinery(barcodeSku(sku), groupCashRegisterReceipt(receipt)) IF dateTime IS DATETIME;
 currentPOSPriceSkuReceipt 'Текущая цена' (sku, receipt) = POSPriceSkuReceiptDateTime(sku, receipt, currentDateTime());
 
 zReportCashRegister = DATA ZReport (CashRegister);
@@ -30,7 +30,7 @@ currentZReport() = zReportCashRegister(currentCashRegister());
 numberCurrentZReport 'Номер текущего Z-отчета' () = numberZReport(currentZReport()) IN receiptZReportGroup;
 sumCashCurrentZReport() = sumCashZReport(currentZReport());
 
-closedCurrentZReport() = TRUE AND NOT currentZReport();
+closedCurrentZReport() = TRUE IF NOT currentZReport();
 
 currentSumCashCurrentCashRegister 'Сумма наличных в кассе' () =
     curSumIncomeCashOperation(currentCashRegister()) (-) curSumOutcomeCashOperation(currentCashRegister()) (+) sumCashCurrentZReport();
@@ -349,7 +349,7 @@ DESIGN inputDiscountCardNumberReceipt FROM DEFAULT{
 inputDiscountCardNumberReceipt 'Ввести номер' = ACTION (receipt) {
     FORM inputDiscountCardNumberReceipt MODAL;
     IF formResult() == FormResult.ok THEN {
-        IF TRUE AND NOT chosenString('s') == '' THEN {
+        IF TRUE IF NOT chosenString('s') == '' THEN {
             IF discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n'))) THEN {
                 IF dateToDiscountCard(discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n'))))<dateReceipt(receipt) THEN
                     MESSAGE 'Закончился срок действия карты'
@@ -415,7 +415,7 @@ closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
 posSumDiscountCard 'Сумма продаж' (discountCard) = GROUP SUM sumReceiptDetailReceipt (receipt) BY discountCardReceipt(receipt) PERSISTENT;
 cumulativeSumDiscountCard 'Накопленная сумма' (discountCard) = initialSumDiscountCard(discountCard) (+) posSumDiscountCard(discountCard) PERSISTENT;
 
-prevCumulativeSumReceipt (receipt) = (0 AND receipt IS Receipt) OVERRIDE [PREV(cumulativeSumDiscountCard(discountCard))](discountCardReceipt(receipt));
+prevCumulativeSumReceipt (receipt) = (0 IF receipt IS Receipt) OVERRIDE [PREV(cumulativeSumDiscountCard(discountCard))](discountCardReceipt(receipt));
 cumulativeSumReceiptPromotion (receipt, promotion) = IF useCurrentReceiptPromotion(promotion) THEN cumulativeSumDiscountCard(discountCardReceipt(receipt))
                                                                                               ELSE prevCumulativeSumReceipt (receipt);
 
@@ -451,7 +451,7 @@ maxSalePriceReceiptSku (receipt, sku) = GROUP MAX priceReceiptSaleDetail(detail)
 
 isAppliedPromotionReceiptSaleDetailPromotionCondition 'Акция применяется' (receiptSaleDetail, promotionCondition) =
     IF userSetPromotionCondition(promotionCondition) THEN setUserPromotionReceiptSaleDetailPromotionCondition(receiptSaleDetail, promotionCondition)
-      ELSE TRUE AND receiptSaleDetail IS ReceiptSaleDetail AND promotionCondition IS PromotionCondition;
+      ELSE receiptSaleDetail IS ReceiptSaleDetail AND promotionCondition IS PromotionCondition;
 
 calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) {
 
@@ -476,13 +476,13 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
             LOCAL quantityPromotionCondition = NUMERIC[14,3] (PromotionCondition);
             SET quantityPromotionCondition(promotionCondition) <- [GROUP SUM leftSku (sku)
                                                                              IF inPromotionConditionSku(promotionCondition, sku)
-                                                                             BY promotionCondition](promotionCondition) AND
+                                                                             BY promotionCondition](promotionCondition) IF
                                                                                 promotionPromotionCondition(promotionCondition) == promotion;
 
             LOCAL sumPromotionCondition = NUMERIC[14,3] (PromotionCondition);
             SET sumPromotionCondition(promotionCondition) <- [GROUP SUM leftSku (sku) * maxSalePriceSku(sku)
                                                                     IF inPromotionConditionSku(promotionCondition, sku)
-                                                                    BY promotionCondition](promotionCondition) AND
+                                                                    BY promotionCondition](promotionCondition) IF
                                                                        promotionPromotionCondition(promotionCondition) == promotion;
 
             LOCAL countPromotionCondition = INTEGER (PromotionCondition);
@@ -725,8 +725,8 @@ NAVIGATOR {
 fiscalZReport 'Закрыть Z-отчёт' = ABSTRACT ACTION() CONFIRM;
 fiscalZReport() += closeCurrentZReport() IF NOT sidModelCurrentCashRegister();
 
-currentZReportDepartmentStore() = currentZReport() AND departmentStoreCurrentCashRegister();
-closedCurrentZReportDepartmentStore() = closedCurrentZReport() AND departmentStoreCurrentCashRegister();
+currentZReportDepartmentStore() = currentZReport() IF departmentStoreCurrentCashRegister();
+closedCurrentZReportDepartmentStore() = closedCurrentZReport() IF departmentStoreCurrentCashRegister();
 
 EXTEND FORM operationCashRegister
     PROPERTIES READONLY currentSumCashCurrentCashRegister() TODRAW interval FORCE PANEL
@@ -753,7 +753,7 @@ EXTEND DESIGN operationCashRegister{
 
 // Update data
 fiscalUpdateData 'Загрузить информацию' = ABSTRACT ACTION();
-fiscalUpdateDataShowIf = departmentStoreCurrentCashRegister() AND closedCurrentZReportDepartmentStore();
+fiscalUpdateDataShowIf = departmentStoreCurrentCashRegister() IF closedCurrentZReportDepartmentStore();
 
 EXTEND FORM operationCashRegister
     PROPERTIES() SHOWIF fiscalUpdateDataShowIf() fiscalUpdateData

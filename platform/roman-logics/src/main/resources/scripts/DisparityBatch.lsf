@@ -251,14 +251,14 @@ createMixDisparityBatch 'Сделать подборку строк пересо
 
 @implementSkuLedgerOutFIFO(DisparityOutBatchDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityOutBatchDetail(ledger);
-limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchDetail(ledger) AND batchDisparityOutBatchDetail(ledger) == batch;
+limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchDetail(ledger) IF batchDisparityOutBatchDetail(ledger) == batch;
 changedDataSkuLedger(ledger) += CHANGED(batchDisparityOutBatchDetail(ledger));
 sumOutSkuLedger(ledger) += 0.0 IF ledger IS DisparityOutBatchDetail;
 skipASkuLedger (ledger) += ledger IS DisparityOutBatchDetail;
 
 @implementSkuLedgerInLIFO(DisparityInBatchDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityDisparityInBatchDetail(ledger);
-limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchDetail(ledger) AND batchDisparityInBatchDetail(ledger) == batch;
+limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchDetail(ledger) IF batchDisparityInBatchDetail(ledger) == batch;
 changedDataSkuLedger(ledger) += CHANGED(batchDisparityInBatchDetail(ledger));
 sumInSkuLedger(ledger) += 0.0 IF ledger IS DisparityInBatchDetail;
 skipASkuLedger (ledger) += ledger IS DisparityInBatchDetail;
@@ -605,12 +605,12 @@ createMixDisparityBatchA 'Сделать подборку строк перес�
 
 @implementSkuLedgerOutFIFO(DisparityOutBatchADetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityOutBatchADetail(ledger);
-limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchADetail(ledger) AND batchDisparityOutBatchADetail(ledger) == batch;
+limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchADetail(ledger) IF batchDisparityOutBatchADetail(ledger) == batch;
 sumOutSkuLedger(ledger) += sumDisparityOutBatchADetail(ledger);
 
 @implementSkuLedgerInLIFO(DisparityInBatchADetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityDisparityInBatchADetail(ledger);
-limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchADetail(ledger) AND batchDisparityInBatchADetail(ledger) == batch;
+limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchADetail(ledger) IF batchDisparityInBatchADetail(ledger) == batch;
 sumInSkuLedger(ledger) += sumDisparityInBatchADetail(ledger);
 
 EXTEND FORM disparityBatchA

@@ -28,8 +28,8 @@ balanceBBrandSupplierThemeSupplierDate 'Остаток на начало' (brand
     BY brandSupplierArticle(article), themeSupplierArticle(article), dateFrom;
 
 
-quantityReceivedArticleDateFromTo 'Поступило за интервал' (article, dateFrom, dateTo) = (balanceAArticleDate(article, dateTo) AND dateFrom AS DATE) (-)
-    (balanceBArticleDate(article, dateFrom) AND dateTo AS DATE) (+) quantitySoldArticleDateFromTo(article, dateFrom, dateTo);
+quantityReceivedArticleDateFromTo 'Поступило за интервал' (article, dateFrom, dateTo) = (balanceAArticleDate(article, dateTo) IF dateFrom AS DATE) (-)
+    (balanceBArticleDate(article, dateFrom) IF dateTo AS DATE) (+) quantitySoldArticleDateFromTo(article, dateFrom, dateTo);
 
 quantityReceivedSupplierDateFromTo 'Поступило' (supplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
     BY supplierArticle(article), dateFrom, dateTo;
@@ -199,7 +199,7 @@ FORM salesArticle 'Продажи по группам'
         FILTER 'Артикул подгруппы' 'F7' subCategorySupplierArticle(aa) == sc
 
     FILTERGROUP filtersSoldArticle
-        FILTER 'Артикул с движением' 'F11' (balanceAArticleDate(aa, dTo) AND dFrom AS DATE) OVERRIDE quantitySoldArticleDateFromTo(aa, dFrom, dTo) DEFAULT
+        FILTER 'Артикул с движением' 'F11' (balanceAArticleDate(aa, dTo) IF dFrom AS DATE) OVERRIDE quantitySoldArticleDateFromTo(aa, dFrom, dTo) DEFAULT
         FILTER 'Артикул с продажей' 'F6' quantitySoldArticleDateFromTo(aa, dFrom, dTo)
         FILTER 'Артикул с поступлением' 'F5' quantityReceivedArticleDateFromTo(aa, dFrom, dTo)
 ;
@@ -289,7 +289,7 @@ FORM salesArticleTheme 'Продажи по темам'
         FILTER 'Артикул темы' 'F8' themeSupplierArticle(aa) == t DEFAULT
 
     FILTERGROUP filtersSoldArticle
-        FILTER 'Артикул с движением' 'F11' (balanceAArticleDate(aa, dTo) AND dFrom AS DATE) OVERRIDE quantitySoldArticleDateFromTo(aa, dFrom, dTo) DEFAULT
+        FILTER 'Артикул с движением' 'F11' (balanceAArticleDate(aa, dTo) IF dFrom AS DATE) OVERRIDE quantitySoldArticleDateFromTo(aa, dFrom, dTo) DEFAULT
         FILTER 'Артикул с продажей' 'F6' quantitySoldArticleDateFromTo(aa, dFrom, dTo)
         FILTER 'Артикул с поступлением' 'F5' quantityReceivedArticleDateFromTo(aa, dFrom, dTo)
 ;

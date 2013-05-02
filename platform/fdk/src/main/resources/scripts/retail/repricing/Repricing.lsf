@@ -586,8 +586,8 @@ overManagementRepricing = ABSTRACT ACTION (a,b,c,d);
 
 prevPricePriceListCalcListSkuStockDateTime (priceList, calcList, sku, department, time) =
     IF prevPricePriceListTypeSkuStockDateTime(priceList, sku, department, time) AND calcList IS CalcPriceListType
-        THEN prevPricePriceListTypeSkuStockDateTime(priceList, sku, department, time) AND priceList IS PriceListType
-        ELSE prevPricePriceListTypeSkuStockDateTime(calcList, sku, department, time) AND calcList IS CalcPriceListType;
+        THEN prevPricePriceListTypeSkuStockDateTime(priceList, sku, department, time) IF priceList IS PriceListType
+        ELSE prevPricePriceListTypeSkuStockDateTime(calcList, sku, department, time) IF calcList IS CalcPriceListType;
 
 createManagementRepricing 'Создать управленческую переоценку' = ACTION () NEWSESSION {
 

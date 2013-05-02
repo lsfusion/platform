@@ -147,7 +147,7 @@ META defineDocumentTransferOutBatchInner(object, class, skuProp)
 
     TABLE object##OutBatchDetail(class##OutBatchDetail);
 
-    cost###object##OutDetailBatch (ledger, batch) = costDataSkuLedgerBatch(ledger, batch) AND ledger IS class##OutDetail;
+    cost###object##OutDetailBatch (ledger, batch) = costDataSkuLedgerBatch(ledger, batch) IF ledger IS class##OutDetail;
     @defineAggregation(object##OutDetail, batch, object##OutBatchDetail, cost###object##OutDetailBatch);
 
     object##Out###object##OutBatchDetail (detail) = object##Out###object##OutDetail(object##OutDetail###object##OutBatchDetail(detail));
@@ -429,7 +429,7 @@ META defineDocumentTransferDiff(object, caption, skuProp, stockProp)
     // Излишки / Недостачи
     diffSku###object##Rec(sku, object##Rec) = (quantity###object##RecDetailSku###object##Rec(sku, object##Rec) (-)
                                             quantity###object##InDetailSku###object##In(sku, object##In###object##Rec(object##Rec)))
-                                            AND isPosted###object##Rec(object##Rec);
+                                            IF isPosted###object##Rec(object##Rec);
 
     hasDiffSku###object##Rec(sku, object##Rec) = diffSku###object##Rec(sku, object##Rec) != 0;
 

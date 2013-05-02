@@ -16,8 +16,8 @@ costSumContainerStockDateTo 'Остаток на конец по складу' (
     IF isContainerBatch(batch) BY stock, dateTo;
 
 overMovementContainerBatchStockDateFromTo (batch, stock, dateFrom, dateTo) =
-    balanceBBatchStockDate(batch, stock, dateFrom) AND dateTo AS DATE OVERRIDE
-    balanceABatchStockDate(batch, stock, dateTo) AND dateFrom AS DATE OVERRIDE
+    balanceBBatchStockDate(batch, stock, dateFrom) IF dateTo AS DATE OVERRIDE
+    balanceABatchStockDate(batch, stock, dateTo) IF dateFrom AS DATE OVERRIDE
     costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo) OVERRIDE
     costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
 

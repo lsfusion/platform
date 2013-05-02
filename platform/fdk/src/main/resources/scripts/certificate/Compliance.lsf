@@ -23,8 +23,8 @@ toDateTimeCompliance 'Дата/время по'(compliance) = dateTimeToDateTime
 toDateCertificate(certificate) += toDateCompliance(certificate);
 toTimeCertificate(certificate) += toTimeCompliance(certificate);
 
-seriesCertificate(compliance) += seriesObject(compliance) AND compliance IS Compliance;
-numberCertificate(compliance) += numberObject(compliance) AND compliance IS Compliance;
+seriesCertificate(compliance) += seriesObject(compliance) IF compliance IS Compliance;
+numberCertificate(compliance) += numberObject(compliance) IF compliance IS Compliance;
 numberToCompliance (number) = GROUP AGGR compliance BY numberCertificate(compliance) WHERE compliance IS Compliance;
 
 textCompliance 'Текст сертификата' = DATA TEXT (Compliance);
@@ -44,7 +44,7 @@ nameLegalEntityCompliance 'Владелец' (compliance) = nameLegalEntity(lega
 
 @defineDocumentHeaderStock(compliance, stock, 'Склад');
 
-CONSTRAINT legalEntityCompliance(compliance) AND stockCompliance(compliance) AND NOT
+CONSTRAINT legalEntityCompliance(compliance) IF stockCompliance(compliance) AND NOT
            inLegalEntityStock(legalEntityCompliance(compliance), stockCompliance (compliance))
     CHECKED BY stockCompliance MESSAGE 'Владелец и склад для сертификата не имеют связи';
 

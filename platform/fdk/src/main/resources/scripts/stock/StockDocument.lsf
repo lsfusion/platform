@@ -21,7 +21,7 @@ descriptionStockDocumentLedger 'Название документа' (ledger) = 
 GROUP ledgerGroup 'Суммы (всего)' : public;
 sumIncStockDocumentLedger 'Сумма прихода' (ledger) = ABSTRACT NUMERIC[16,2] (IncStockDocumentLedger) PERSISTENT IN ledgerGroup;
 sumOutStockDocumentLedger 'Сумма расхода' (ledger) = ABSTRACT NUMERIC[16,2] (OutStockDocumentLedger) PERSISTENT IN ledgerGroup;
-sumStockDocumentLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumIncStockDocumentLedger(ledger), -sumOutStockDocumentLedger(ledger) PERSISTENT;
+sumStockDocumentLedger 'Сумма' (ledger) = UNION CLASS sumIncStockDocumentLedger(ledger), -sumOutStockDocumentLedger(ledger) PERSISTENT;
 
 GROUP ledgerItemGroup 'Суммы по товару' : public;
 sumItemIncStockDocumentLedger 'Сумма прихода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (IncStockDocumentLedger) PERSISTENT IN ledgerItemGroup;
@@ -36,108 +36,108 @@ sumContainerStockDocumentLedger 'Сумма, тара' (ledger) = UNION CLASS su
 // -------------------------------------- Агрегированные суммы за интервал --------------------------------------------- //
 
 countIncStockDocumentStockDateInterval 'Количество приходных док-ов' (stock, dtFrom, dtTo)=
-    GROUP SUM 1 IF incStockDocumentLedger AS IncStockDocumentLedger AND isPostedStockDocumentLedger(incStockDocumentLedger)
+    GROUP SUM 1 IF incStockDocumentLedger IS IncStockDocumentLedger AND isPostedStockDocumentLedger(incStockDocumentLedger)
         AND dateStockDocumentLedger(incStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(incStockDocumentLedger) <= (dtTo AS DATE)
             BY stockStockDocumentLedger(incStockDocumentLedger), dtFrom, dtTo IN ledgerGroup;
 
 countOutStockDocumentStockDateInterval 'Количество расходных док-ов' (stock, dtFrom, dtTo)=
-    GROUP SUM 1 IF outStockDocumentLedger AS OutStockDocumentLedger AND isPostedStockDocumentLedger(outStockDocumentLedger)
+    GROUP SUM 1 IF outStockDocumentLedger IS OutStockDocumentLedger AND isPostedStockDocumentLedger(outStockDocumentLedger)
         AND dateStockDocumentLedger(outStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(outStockDocumentLedger) <= (dtTo AS DATE)
             BY stockStockDocumentLedger(outStockDocumentLedger), dtFrom, dtTo IN ledgerGroup;
 
 
 sumItemIncStockDocumentStockDateInterval 'Сумма прихода, товар' (stock, dtFrom, dtTo)=
-    GROUP SUM sumItemIncStockDocumentLedger(incStockDocumentLedger)  AND isPostedStockDocumentLedger(incStockDocumentLedger)
+    GROUP SUM sumItemIncStockDocumentLedger(incStockDocumentLedger) IF isPostedStockDocumentLedger(incStockDocumentLedger)
         AND dateStockDocumentLedger(incStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(incStockDocumentLedger) <= (dtTo AS DATE)
             BY stockStockDocumentLedger(incStockDocumentLedger), dtFrom, dtTo IN ledgerItemGroup;
 
 sumItemOutStockDocumentStoreDateInterval 'Сумма расхода, товар' (stock, dtFrom, dtTo)=
-    GROUP SUM sumItemOutStockDocumentLedger(outStockDocumentLedger) AND isPostedStockDocumentLedger(outStockDocumentLedger)
+    GROUP SUM sumItemOutStockDocumentLedger(outStockDocumentLedger) IF isPostedStockDocumentLedger(outStockDocumentLedger)
         AND dateStockDocumentLedger(outStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(outStockDocumentLedger) <= (dtTo AS DATE)
             BY stockStockDocumentLedger(outStockDocumentLedger), dtFrom, dtTo IN ledgerItemGroup;
 
 
 sumContainerIncStockDocumentStockDateInterval 'Сумма прихода, тара' (stock, dtFrom, dtTo)=
-    GROUP SUM sumContainerIncStockDocumentLedger(incStockDocumentLedger) AND isPostedStockDocumentLedger(incStockDocumentLedger)
+    GROUP SUM sumContainerIncStockDocumentLedger(incStockDocumentLedger) IF isPostedStockDocumentLedger(incStockDocumentLedger)
         AND dateStockDocumentLedger(incStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(incStockDocumentLedger) <= (dtTo AS DATE)
             BY stockStockDocumentLedger(incStockDocumentLedger), dtFrom, dtTo IN ledgerContainerGroup;
 
 sumContainerOutStockDocumentStockDateInterval 'Сумма расхода, тара' (stock, dtFrom, dtTo)=
-    GROUP SUM sumContainerOutStockDocumentLedger(outStockDocumentLedger) AND isPostedStockDocumentLedger(outStockDocumentLedger)
+    GROUP SUM sumContainerOutStockDocumentLedger(outStockDocumentLedger) IF isPostedStockDocumentLedger(outStockDocumentLedger)
         AND dateStockDocumentLedger(outStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(outStockDocumentLedger) <= (dtTo AS DATE)
             BY stockStockDocumentLedger(outStockDocumentLedger), dtFrom, dtTo IN ledgerContainerGroup;
 
 // -------------------------------------- Остатки по суммам --------------------------------------------- //
 
-currentSumStockDocumentLedger 'Текущий остаток по документам' (stock) = GROUP SUM sumStockDocumentLedger (ledger) AND isPostedStockDocumentLedger(ledger)
+currentSumStockDocumentLedger 'Текущий остаток по документам' (stock) = GROUP SUM sumStockDocumentLedger (ledger) IF isPostedStockDocumentLedger(ledger)
                                                                                            BY stockStockDocumentLedger(ledger) PERSISTENT;
 
-sumAccountBDocumentLedgerDateTime 'Остаток на начало' (stock, dateTime) = (currentSumStockDocumentLedger(stock) AND dateTime IS DATETIME) (-)
-                                                                          [GROUP SUM sumStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+sumAccountBDocumentLedgerDateTime 'Остаток на начало' (stock, dateTime) = (currentSumStockDocumentLedger(stock) IF dateTime IS DATETIME) (-)
+                                                                          [GROUP SUM sumStockDocumentLedger (ledger) IF dateTimeStockDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
                                                                                  BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumAccountADocumentLedgerDateTime 'Остаток на конец' (stock, dateTime) = (currentSumStockDocumentLedger(stock) AND dateTime IS DATETIME) (-)
-                                                                         [GROUP SUM sumStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+sumAccountADocumentLedgerDateTime 'Остаток на конец' (stock, dateTime) = (currentSumStockDocumentLedger(stock) IF dateTime IS DATETIME) (-)
+                                                                         [GROUP SUM sumStockDocumentLedger (ledger) IF dateTimeStockDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
                                                                                 BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumAccountBDocumentLedgerDate 'Остаток на начало' (stock, date) = (currentSumStockDocumentLedger(stock) AND date IS DATE) (-)
-                                                                  [GROUP SUM sumStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) >= (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+sumAccountBDocumentLedgerDate 'Остаток на начало' (stock, date) = (currentSumStockDocumentLedger(stock) IF date IS DATE) (-)
+                                                                  [GROUP SUM sumStockDocumentLedger (ledger) IF dateStockDocumentLedger(ledger) >= (date AS DATE) AND isPostedStockDocumentLedger(ledger)
                                                                          BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerGroup;
 
-sumAccountADocumentLedgerDate 'Остаток на конец' (stock, date) = (currentSumStockDocumentLedger(stock) AND date IS DATE) (-)
-                                                                 [GROUP SUM sumStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) > (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+sumAccountADocumentLedgerDate 'Остаток на конец' (stock, date) = (currentSumStockDocumentLedger(stock) IF date IS DATE) (-)
+                                                                 [GROUP SUM sumStockDocumentLedger (ledger) IF dateStockDocumentLedger(ledger) > (date AS DATE) AND isPostedStockDocumentLedger(ledger)
                                                                         BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerGroup;
 
 // -------------------------------------- Остатки по суммам (товар) --------------------------------------------- //
 
-currentSumItemStockDocumentLedger 'Текущий остаток по документам, товар' (stock) = GROUP SUM sumItemStockDocumentLedger (ledger) AND isPostedStockDocumentLedger(ledger)
+currentSumItemStockDocumentLedger 'Текущий остаток по документам, товар' (stock) = GROUP SUM sumItemStockDocumentLedger (ledger) IF isPostedStockDocumentLedger(ledger)
                                                                                            BY stockStockDocumentLedger(ledger) PERSISTENT;
 
-sumItemAccountBDocumentLedgerDateTime 'Остаток на начало, товар' (stock, dateTime) = (currentSumItemStockDocumentLedger(stock) AND dateTime IS DATETIME) (-)
-                                                                                     [GROUP SUM sumItemStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+sumItemAccountBDocumentLedgerDateTime 'Остаток на начало, товар' (stock, dateTime) = (currentSumItemStockDocumentLedger(stock) IF dateTime IS DATETIME) (-)
+                                                                                     [GROUP SUM sumItemStockDocumentLedger (ledger) IF dateTimeStockDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
                                                                                             BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumItemAccountADocumentLedgerDateTime 'Остаток на конец, товар' (stock, dateTime) = (currentSumItemStockDocumentLedger(stock) AND dateTime IS DATETIME) (-)
-                                                                                    [GROUP SUM sumItemStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+sumItemAccountADocumentLedgerDateTime 'Остаток на конец, товар' (stock, dateTime) = (currentSumItemStockDocumentLedger(stock) IF dateTime IS DATETIME) (-)
+                                                                                    [GROUP SUM sumItemStockDocumentLedger (ledger) IF dateTimeStockDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
                                                                                            BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumItemAccountBDocumentLedgerDate 'Остаток на начало, товар' (stock, date) = (currentSumItemStockDocumentLedger(stock) AND date IS DATE) (-)
-                                                                             [GROUP SUM sumItemStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) >= (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+sumItemAccountBDocumentLedgerDate 'Остаток на начало, товар' (stock, date) = (currentSumItemStockDocumentLedger(stock) IF date IS DATE) (-)
+                                                                             [GROUP SUM sumItemStockDocumentLedger (ledger) IF dateStockDocumentLedger(ledger) >= (date AS DATE) AND isPostedStockDocumentLedger(ledger)
                                                                                     BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerItemGroup;
 
-sumItemAccountADocumentLedgerDate 'Остаток на конец, товар' (stock, date) = (currentSumItemStockDocumentLedger(stock) AND date IS DATE) (-)
-                                                                            [GROUP SUM sumItemStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) > (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+sumItemAccountADocumentLedgerDate 'Остаток на конец, товар' (stock, date) = (currentSumItemStockDocumentLedger(stock) IF date IS DATE) (-)
+                                                                            [GROUP SUM sumItemStockDocumentLedger (ledger) IF dateStockDocumentLedger(ledger) > (date AS DATE) AND isPostedStockDocumentLedger(ledger)
                                                                                    BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerItemGroup;
 
 // -------------------------------------- Остатки по суммам (тара) --------------------------------------------- //
 
-currentSumContainerStockDocumentLedger 'Текущий остаток по документам, тара' (stock) = GROUP SUM sumContainerStockDocumentLedger (ledger) AND isPostedStockDocumentLedger(ledger)
+currentSumContainerStockDocumentLedger 'Текущий остаток по документам, тара' (stock) = GROUP SUM sumContainerStockDocumentLedger (ledger) IF isPostedStockDocumentLedger(ledger)
                                                                                            BY stockStockDocumentLedger(ledger) PERSISTENT;
-sumContainerAccountBDocumentLedgerDateTime 'Остаток на начало, тара' (stock, dateTime) = (currentSumContainerStockDocumentLedger(stock) AND dateTime IS DATETIME) (-)
-                                                                                         [GROUP SUM sumContainerStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+sumContainerAccountBDocumentLedgerDateTime 'Остаток на начало, тара' (stock, dateTime) = (currentSumContainerStockDocumentLedger(stock) IF dateTime IS DATETIME) (-)
+                                                                                         [GROUP SUM sumContainerStockDocumentLedger (ledger) IF dateTimeStockDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
                                                                                                 BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumContainerAccountADocumentLedgerDateTime 'Остаток на конец, тара' (stock, dateTime) = (currentSumContainerStockDocumentLedger(stock) AND dateTime IS DATETIME) (-)
-                                                                                        [GROUP SUM sumContainerStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+sumContainerAccountADocumentLedgerDateTime 'Остаток на конец, тара' (stock, dateTime) = (currentSumContainerStockDocumentLedger(stock) IF dateTime IS DATETIME) (-)
+                                                                                        [GROUP SUM sumContainerStockDocumentLedger (ledger) IF dateTimeStockDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
                                                                                                BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumContainerAccountBDocumentLedgerDate 'Остаток на начало, тара' (stock, date) = (currentSumContainerStockDocumentLedger(stock) AND date IS DATE) (-)
-                                                                                 [GROUP SUM sumContainerStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) >= (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+sumContainerAccountBDocumentLedgerDate 'Остаток на начало, тара' (stock, date) = (currentSumContainerStockDocumentLedger(stock) IF date IS DATE) (-)
+                                                                                 [GROUP SUM sumContainerStockDocumentLedger (ledger) IF dateStockDocumentLedger(ledger) >= (date AS DATE) AND isPostedStockDocumentLedger(ledger)
                                                                                         BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerContainerGroup;
 
-sumContainerAccountADocumentLedgerDate 'Остаток на конец, тара' (stock, date) = (currentSumContainerStockDocumentLedger(stock) AND date IS DATE) (-)
-                                                                                [GROUP SUM sumContainerStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) > (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+sumContainerAccountADocumentLedgerDate 'Остаток на конец, тара' (stock, date) = (currentSumContainerStockDocumentLedger(stock) IF date IS DATE) (-)
+                                                                                [GROUP SUM sumContainerStockDocumentLedger (ledger) IF dateStockDocumentLedger(ledger) > (date AS DATE) AND isPostedStockDocumentLedger(ledger)
                                                                                        BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerContainerGroup;
 
 // -------------------------------------- Подитоги --------------------------------------------- //
 
 subtotalItemIncStockDocumentStockDateInterval 'Итого с остатком, товар' (stock, dtFrom, dtTo) =
-    (sumItemAccountBDocumentLedgerDate(stock, dtFrom) AND dtTo AS DATE) (+)
-    sumItemIncStockDocumentStockDateInterval(stock, dtFrom, dtTo) IN ledgerItemGroup;
+    (sumItemAccountBDocumentLedgerDate(stock, dtFrom) IF dtTo AS DATE) (+)
+     sumItemIncStockDocumentStockDateInterval(stock, dtFrom, dtTo) IN ledgerItemGroup;
 
 subtotalContainerIncStockDocumentStockDateInterval 'Итого с остатком, тара' (stock, dtFrom, dtTo) =
-    (sumContainerAccountBDocumentLedgerDate(stock, dtFrom) AND dtTo AS DATE) (+)
-    sumContainerIncStockDocumentStockDateInterval(stock, dtFrom, dtTo) IN ledgerContainerGroup;
+    (sumContainerAccountBDocumentLedgerDate(stock, dtFrom) IF dtTo AS DATE) (+)
+     sumContainerIncStockDocumentStockDateInterval(stock, dtFrom, dtTo) IN ledgerContainerGroup;
 
 
 // ------------------------------------------- Ответственные лица --------------------------------------------- //

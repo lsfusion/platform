@@ -39,7 +39,7 @@ compositionBarcode 'Состав товара' = compositionScalesItem(skuBarcod
 @defineMachineryPriceTransactionAttribute(composition, 'Состав товара', TEXT);
 
 synchronizeCompositionMachineryPriceTransactionGroupScales = ACTION (transaction, groupMachinery) {
-    FOR compositionMachineryPriceTransactionBarcode(transaction, barcode) AND groupMachinery IS GroupScales
+    FOR compositionMachineryPriceTransactionBarcode(transaction, barcode) IF groupMachinery IS GroupScales
         AND NOT cellScalesGroupScalesComposition(groupMachinery, compositionMachineryPriceTransactionBarcode(transaction, barcode))
         ADDOBJ c = CellScales DO {
             SET groupScalesCellScales(c) <- groupMachinery;

@@ -8,7 +8,7 @@ NAMESPACE Production;
 calcMultiplierSkuOrder(sku, order)= (1.000 IF sku IS Sku AND order IS Order) OVERRIDE multiplierSkuOrder(sku, order);
 
 quantityBOMSkuOrder (BOM, sku, order) = [GROUP SUM recBruttoNodeQuantityBOMSkuDate (BOM, sku, dateOrder(order)) * calcMultiplierSkuOrder(sku, order)
-    BY BOM, sku, order](BOM, sku, order) AND bruttoQuantitySkuOrder(sku, order);
+    BY BOM, sku, order](BOM, sku, order) IF bruttoQuantitySkuOrder(sku, order);
 quantityProductDetailSku 'Норма' (productDetail, sku) = quantityBOMSkuOrder(BOMProduct(productProductDetail(productDetail)), sku, orderProductDetail(productDetail));
 
 totalPriceSkuOrder 'Цена компонента' (sku, order) = bruttoPriceSkuOrder(sku,order) OVERRIDE substitutePriceSkuOrder(sku,order);
@@ -18,7 +18,7 @@ quantityInBOMProductDetail 'Кол-во изделий в спец.'(productDeta
 productsSumInBOMProductDetail 'Сумма изделий в спец.' = roundPriceCurrency((quantityInBOMProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail));
 
 //--
-quantityProductSkuOrder (product, sku, order) = [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))* calcMultiplierSkuOrder(sku, order)/100 BY product, sku, order](product, sku, order) AND bruttoQuantitySkuOrder(sku, order);
+quantityProductSkuOrder (product, sku, order) = [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))* calcMultiplierSkuOrder(sku, order)/100 BY product, sku, order](product, sku, order) IF bruttoQuantitySkuOrder(sku, order);
 
 quantityProductProductDetailSku 'Норма с учетом коэфф.цены'(productDetail, sku) = quantityProductSkuOrder(
     productProductDetail(productDetail), sku, orderProductDetail(productDetail)); // св-во необходимо, т.к. в BOM-ах есть уд.вес цены => мы его включаем в норму. Пока так, в будущем возможно надо будет включать в надбавку.
@@ -50,7 +50,7 @@ retailVATPriceProductDetail 'Цена НДС (ед.)' (productDetail)= retailVAT
 //--  Нетто
 
 nettoQuantityBOMSkuOrder (BOM, sku, order) = [GROUP SUM recNettoNodeQuantityBOMSku (BOM, sku) * calcMultiplierSkuOrder(sku, order)
-    BY BOM, sku, order](BOM, sku, order) AND bruttoQuantitySkuOrder(sku, order);
+    BY BOM, sku, order](BOM, sku, order) IF bruttoQuantitySkuOrder(sku, order);
 
 nettoQuantityProductDetailSku 'Нетто' (productDetail, sku) = nettoQuantityBOMSkuOrder(BOMProduct(productProductDetail(productDetail)), sku, orderProductDetail(productDetail));
 fatsProductDetailSku 'Жиры'(productDetail, sku) = nettoQuantityProductDetailSku (productDetail, sku)*netWeightItem(sku)*10*fatsItem(sku);

@@ -23,8 +23,8 @@ quantityWholesalePriceSetDocumentDeclaration (declaration) = GROUP SUM 1 IF decl
 isWholesalePriceSetDocumentDeclaration (declaration) = declaration IS Declaration IF NOT quantityWholesalePriceSetDocumentDeclaration(declaration);
 
 isPriceSetDeclaration 'Статус' (declaration) = IF isWholesalePriceSetDocumentDeclaration(declaration)
-                                     THEN 'Не расцененная' AND declaration IS Declaration
-                                     ELSE 'Расцененная' AND declaration IS Declaration MINCHARWIDTH 14;
+                                     THEN 'Не расцененная' IF declaration IS Declaration
+                                     ELSE 'Расцененная' IF declaration IS Declaration MINCHARWIDTH 14;
 
 backgroundWholesalePriceSetDocument 'Цвет' (declaration) = RGB(212,255,212) IF isWholesalePriceSetDocumentDeclaration(declaration);
 
@@ -47,7 +47,7 @@ priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) <-
 
 orderWholesalePriceDocument = STRUCT(dateTimeWholesalePriceDocument(wholesalePriceDocument), wholesalePriceDocument) PERSISTENT;
 
-//concatWholesalePriceDocumentArticleDateTime (article, dateTime) = GROUP MAX orderWholesalePriceDocument(wholesalePriceDocument) AND
+//concatWholesalePriceDocumentArticleDateTime (article, dateTime) = GROUP MAX orderWholesalePriceDocument(wholesalePriceDocument) IF
 //                                                                   priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) AND
 //                                                                   dateTimeWholesalePriceDocument(wholesalePriceDocument) < (dateTime AS DATETIME)
 //                                                                BY article, dateTime;
@@ -56,7 +56,7 @@ orderWholesalePriceDocument = STRUCT(dateTimeWholesalePriceDocument(wholesalePri
 //
 //priceWholesaleArticleDateTime(article, dateTime) = priceWholesalePriceDocumentArticle(documentWholesalePriceArticleDateTime(article, dateTime), article);
 
-concatWholesalePriceDocumentArticleCurrencyDateTime (article, currency, dateTime) = GROUP MAX orderWholesalePriceDocument(wholesalePriceDocument) AND
+concatWholesalePriceDocumentArticleCurrencyDateTime (article, currency, dateTime) = GROUP MAX orderWholesalePriceDocument(wholesalePriceDocument) IF
                                                                    priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) AND
                                                                    dateTimeWholesalePriceDocument(wholesalePriceDocument) < (dateTime AS DATETIME)
                                                                    BY article, currencyWholesalePriceDocument(wholesalePriceDocument), dateTime;

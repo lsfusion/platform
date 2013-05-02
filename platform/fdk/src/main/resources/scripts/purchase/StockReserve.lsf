@@ -30,7 +30,7 @@ stockReserveDaysStockSkuOver 'Страховой запас (дн.)' (stock, sku
 
 fillStockReserveDateDateFromTo 'Проставить кол-во исходя из продаж в день и запаса(дн.) ' = ACTION (stock, date, dFrom, dTo) {
     FOR stockReserveDaysStockSkuOver(stock, sku) AND averageSoldInDaySkuStockDateFromTo(sku,stock,dFrom,dTo) DO {
-    SET dataStockReserveStockSkuDate(stock, sku, date) <- averageSoldInDaySkuStockDateFromTo(sku,stock,dFrom,dTo)*stockReserveDaysStockSkuOver(stock,sku) WHERE  date AS DATE;
+        SET dataStockReserveStockSkuDate(stock, sku, date) <- averageSoldInDaySkuStockDateFromTo(sku,stock,dFrom,dTo)*stockReserveDaysStockSkuOver(stock,sku) WHERE  date AS DATE;
     }
 } TOOLBAR CONFIRM;
 

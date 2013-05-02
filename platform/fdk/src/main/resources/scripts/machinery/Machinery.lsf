@@ -220,7 +220,7 @@ descriptionMachineryPriceTransaction 'Основание' (document) =
 countProcessPriceTransactionDocument 'Кол-во ожидающих транзакций' (document) = GROUP SUM 1 IF processMachineryPriceTransaction(transaction)
                                                                                  BY priceTransactionDocumentMachineryPriceTransaction(transaction) PERSISTENT;
 
-succeededPriceTransactionDocument 'Загружен в оборудование' (document) = sentPriceTransactionDocument (document) AND NOT countProcessPriceTransactionDocument(document);
+succeededPriceTransactionDocument 'Загружен в оборудование' (document) = sentPriceTransactionDocument (document) IF NOT countProcessPriceTransactionDocument(document);
 
 statusMachineryPriceTransactionDocument 'Статус загрузки в оборудование' (document) =
                                                         CASE
@@ -238,7 +238,7 @@ nameMachineryPriceTransactionBarcode 'Наименование' = DATA STRING[25
 priceMachineryPriceTransactionBarcode 'Цена' = DATA NUMERIC[14,2] (MachineryPriceTransaction, Barcode);
 
 orderMachineryPriceTransactionBarcode(transaction, barcode) = orderMachineryPriceTransaction(transaction)
-                                                              AND inMachineryPriceTransactionBarcode(transaction, barcode)
+                                                              IF inMachineryPriceTransactionBarcode(transaction, barcode)
                                                               AND NOT canceledMachineryPriceTransaction(transaction) PERSISTENT INDEXED;
 
 // Текущие загруженные штрих-коды
@@ -452,10 +452,10 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
 
         SET inBarcode(barcode) <- inGroupMachinerySku(groupMachinery, skuBarcode(barcode)) WHERE inBarcode(barcode); // если на эту группу оборудования должна закачиваться
 
-        SET inBarcode(barcode) <- TRUE AND priceBarcodeGroupMachinery(barcode, groupMachinery) WHERE inBarcode(barcode); // если есть цена
+        SET inBarcode(barcode) <- TRUE IF priceBarcodeGroupMachinery(barcode, groupMachinery) WHERE inBarcode(barcode); // если есть цена
 
-        IF TRUE AND NOT createMachineryPriceTransactionSnapshot() THEN
-            SET inBarcode(barcode) <- TRUE AND NOT (priceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery)) WHERE inBarcode(barcode);
+        IF TRUE IF NOT createMachineryPriceTransactionSnapshot() THEN
+            SET inBarcode(barcode) <- TRUE IF NOT (priceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery)) WHERE inBarcode(barcode);
 
         LOCAL countBarcode = INTEGER();
         SET countBarcode() <- [GROUP SUM 1 IF inBarcode(barcode)]();

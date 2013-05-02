@@ -126,7 +126,7 @@ nameTypeOfAdditionInventory 'Тип инвентаризации' (inventory) = 
 userTypeOfAdditionStockInventory(stock, inventory) = DATA TypeOfAddition (Stock, Inventory);
 nameUserTypeOfAdditionStockInventory 'Тип инвентаризации' (stock, inventory) = staticCaption(userTypeOfAdditionStockInventory(stock, inventory));
 
-typeOfAdditionStockInventory(stock, inventory) = typeOfAdditionInventory(inventory) AND stock IS Stock OVERRIDE
+typeOfAdditionStockInventory(stock, inventory) = typeOfAdditionInventory(inventory) IF stock IS Stock OVERRIDE
                                                  userTypeOfAdditionStockInventory(stock, inventory);
 
 CONSTRAINT includeStockInventory(stock, inventory) AND NOT typeOfAdditionStockInventory(stock, inventory) MESSAGE 'Ошибка: Не задан тип сличительной ведомости для выбранного отдела';
@@ -637,8 +637,8 @@ inventoryInventorySkuDetail(inventorySkuDetail) = inventoryCollationSheet(collat
 @defineDocumentDetailPosted(inventory, InventorySkuDetail);
 
 @defineDocumentDetailStock(collationSheet, inventorySkuDetail, stock, 'Склад');
-stockInInventorySkuDetail(detail) = stockInventorySkuDetail(detail) AND detail IS InInventorySkuDetail;
-stockOutInventorySkuDetail(detail) = stockInventorySkuDetail(detail) AND detail IS OutInventorySkuDetail;
+stockInInventorySkuDetail(detail) = stockInventorySkuDetail(detail) IF detail IS InInventorySkuDetail;
+stockOutInventorySkuDetail(detail) = stockInventorySkuDetail(detail) IF detail IS OutInventorySkuDetail;
 
 quantityOutInventorySkuDetail (inventorySkuDetail) = quantityShortageCollationSheetSku(collationSheetOutInventorySkuDetail(inventorySkuDetail), skuOutInventorySkuDetail(inventorySkuDetail));
 quantityInInventorySkuDetail (inventorySkuDetail) = -quantityShortageCollationSheetSku(collationSheetInInventorySkuDetail(inventorySkuDetail), skuInInventorySkuDetail(inventorySkuDetail));
@@ -702,8 +702,8 @@ inventoryInventoryBatchDetail(inventoryBatchDetail) = inventoryCollationSheet(co
 @defineDocumentDetailPosted(inventory, InventoryBatchDetail);
 
 @defineDocumentDetailStock(collationSheet, inventoryBatchDetail, stock, 'Склад');
-stockInInventoryBatchDetail(detail) = stockInventoryBatchDetail(detail) AND detail IS InInventoryBatchDetail;
-stockOutInventoryBatchDetail(detail) = stockInventoryBatchDetail(detail) AND detail IS OutInventoryBatchDetail;
+stockInInventoryBatchDetail(detail) = stockInventoryBatchDetail(detail) IF detail IS InInventoryBatchDetail;
+stockOutInventoryBatchDetail(detail) = stockInventoryBatchDetail(detail) IF detail IS OutInventoryBatchDetail;
 
 quantityOutInventoryBatchDetail (inventoryBatchDetail) = quantityShortageCollationSheetBatch(collationSheetOutInventoryBatchDetail(inventoryBatchDetail), batchOutInventoryBatchDetail(inventoryBatchDetail));
 quantityInInventoryBatchDetail (inventoryBatchDetail) = -quantityShortageCollationSheetBatch(collationSheetInInventoryBatchDetail(inventoryBatchDetail), batchInInventoryBatchDetail(inventoryBatchDetail));
@@ -739,12 +739,12 @@ changedDataSkuLedger(ledger) += CHANGED(batchInventoryBatchDetail(ledger));
 
 EXTEND CLASS OutInventoryBatchDetail : OutFIFOSkuLedger;
 quantityOutFIFOSkuLedger (ledger) += quantityOutInventoryBatchDetail(ledger);
-limitOutFIFOSkuLedgerBatch(ledger, batch) += quantityOutInventoryBatchDetail(ledger) AND batchInventoryBatchDetail(ledger) == batch;
+limitOutFIFOSkuLedgerBatch(ledger, batch) += quantityOutInventoryBatchDetail(ledger) IF batchInventoryBatchDetail(ledger) == batch;
 sumOutSkuLedger (ledger) += sumOutInventoryBatchDetail(ledger);
 
 EXTEND CLASS InInventoryBatchDetail : InLIFOSkuLedger;
 quantityInLIFOSkuLedger (ledger) += quantityInInventoryBatchDetail(ledger);
-limitInLIFOSkuLedgerBatch (ledger, batch) += quantityInInventoryBatchDetail(ledger) AND batchInventoryBatchDetail(ledger) == batch;
+limitInLIFOSkuLedgerBatch (ledger, batch) += quantityInInventoryBatchDetail(ledger) IF batchInventoryBatchDetail(ledger) == batch;
 sumInSkuLedger (ledger) += sumInInventoryBatchDetail(ledger);
 
 //------------------------------------ Выбор складов для инвентаризации------------------------------------------//
@@ -814,7 +814,7 @@ DESIGN dialogSkuCollationSheet FROM DEFAULT {
 }
 
 dialogSkuCollationSheet 'Добавить товар' (collationSheet) =
-    [ACTION FORM dialogSkuCollationSheet OBJECTS cs = collationSheet MODAL](collationSheet) AND collationSheet IS ManyCollationSheet;
+    [ACTION FORM dialogSkuCollationSheet OBJECTS cs = collationSheet MODAL](collationSheet) IF collationSheet IS ManyCollationSheet;
 
 //------------------------------------ Формы редактирования описей ------------------------------------------//
 

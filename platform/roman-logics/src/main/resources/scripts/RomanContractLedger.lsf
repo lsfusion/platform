@@ -64,13 +64,13 @@ invoiceCommercialInvoice 'Инвойс-основание' = DATA Invoice (Comme
 descriptionInvoiceCommercialInvoice 'Основание' (commercialInvoice) =
     [FORMULA STRING[200] '\'Инвойс \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     sidDocument(invoiceCommercialInvoice(commercialInvoice)), date(invoiceCommercialInvoice(commercialInvoice)),
-    name(supplierDocument(invoiceCommercialInvoice(commercialInvoice)))) AND commercialInvoice IS CommercialInvoice;
+    name(supplierDocument(invoiceCommercialInvoice(commercialInvoice)))) IF commercialInvoice IS CommercialInvoice;
 
 commercialInvoiceInvoice 'Инвойс-основание' = DATA CommercialInvoice (Invoice);
 descriptionCommercialInvoiceInvoice 'Коммерческий инвойс' (invoice) =
     [FORMULA STRING[200] '\'Коммерческий инвойс \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberObject(commercialInvoiceInvoice(invoice)), dateCommercialInvoice(commercialInvoiceInvoice(invoice)),
-    nameSupplierCommercialInvoice(commercialInvoiceInvoice(invoice))) AND invoice IS Invoice;
+    nameSupplierCommercialInvoice(commercialInvoiceInvoice(invoice))) IF invoice IS Invoice;
 
 dateCommercialInvoice (commercialInvoice) <- date(invoiceCommercialInvoice(commercialInvoice))
     WHEN CHANGED(date(invoiceCommercialInvoice(commercialInvoice))) OR
@@ -95,7 +95,7 @@ createCommercialInvoice 'Создать коммерческий инвойс' =
         SET invoiceCommercialInvoice(c) <- invoice AS Invoice;
         SET commercialInvoiceInvoice(invoice) <- c AS CommercialInvoice;
         SET numberObject(c) <- sidDocument(invoice);
-        SET seriesObject(c) <- 'КИ' AND invoice IS Invoice;
+        SET seriesObject(c) <- 'КИ' IF invoice IS Invoice;
         SET dateCommercialInvoice(c) <- date(invoice);
         SET contractCommercialInvoice(c) <- contractInvoice(invoice);
         SET currencyCommercialInvoice(c) <- currencyDocument(invoice);
@@ -108,7 +108,7 @@ createCommercialInvoice 'Создать коммерческий инвойс' =
 
     EXEC apply();
 
-}](invoice) AND NOT commercialInvoiceInvoice(invoice) CONFIRM;
+}](invoice) IF NOT commercialInvoiceInvoice(invoice) CONFIRM;
 
 FORM commercialInvoice 'Коммерческий инвойс'
 

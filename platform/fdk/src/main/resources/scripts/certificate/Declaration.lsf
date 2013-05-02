@@ -14,8 +14,8 @@ CLASS DeclarationPosted 'Проведенная таможенная декла�
 dateCertificate(declaration) += dateDeclaration(declaration);
 timeCertificate(declaration) += timeDeclaration(declaration);
 
-seriesCertificate(declaration) += seriesObject(declaration) AND declaration IS Declaration;
-numberCertificate(declaration) += numberObject(declaration) AND declaration IS Declaration;
+seriesCertificate(declaration) += seriesObject(declaration) IF declaration IS Declaration;
+numberCertificate(declaration) += numberObject(declaration) IF declaration IS Declaration;
 
 descriptionDeclaration 'Таможенная декларация' (declaration) = ustring2SP(string2SP('№ ', seriesNumberObject(declaration)),
                                                  string2SP('от ', dateDeclaration(declaration)));

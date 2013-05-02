@@ -106,7 +106,7 @@ quantityOutputBOMOrder 'Кол-во спецификаций (произведе
     BY BOMProduct(product), order](BOM, order);
 
 recBruttoQuantityOutputOrderSku 'Кол-во для произ-го' (order, sku) = [GROUP SUM quantityOutputBOMOrder(BOM, order) * recBruttoNodeQuantityBOMSkuDate(BOM, sku, dateOrder(order)) BY order, sku](
-    order, sku) AND bruttoQuantitySkuOrder(sku, order);
+    order, sku) IF bruttoQuantitySkuOrder(sku, order);
 
 createOutputComponentOrder 'Заполнить кол-во компонентов для произведенных изделий' = ACTION (order)  {
     FOR recBruttoQuantityOutputOrderSku(order, bruttoSkuComponentDetail(componentDetail)) == q DO {

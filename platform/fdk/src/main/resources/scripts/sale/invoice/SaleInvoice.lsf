@@ -98,7 +98,7 @@ overChangeQuantityValueBatchUserInvoiceDetail(detail) += ACTION (detail) {
 useExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += userInvoice IS Sale.UserInvoice AND order IS Sale.Order;
 
 toInvoiceBatchOrderDetail (batch, orderDetail) = PARTITION UNGROUP toInvoicedOrderDetail
-                                                           LIMIT STRICT currentBalanceBatchStock(batch, supplierStockOrderDetail(orderDetail)) AND skuBatch(batch) == skuOrderDetail(orderDetail)
+                                                           LIMIT STRICT currentBalanceBatchStock(batch, supplierStockOrderDetail(orderDetail)) IF skuBatch(batch) == skuOrderDetail(orderDetail)
                                                            BY orderDetail
                                                            ORDER orderBatch(batch);
 

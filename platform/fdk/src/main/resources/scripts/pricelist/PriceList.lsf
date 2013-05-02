@@ -24,12 +24,12 @@ prevPriceMVATPriceListTypeSkuStockDateTimeVAT 'Цена без НДС (пред.
         THEN
             prevPricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) * 100 /(100 + VAT)
         ELSE
-            prevPricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) AND VAT IS NUMERIC[10,5];
+            prevPricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) IF VAT IS NUMERIC[10,5];
 
 prevPricePVATPriceListTypeSkuStockDateTimeVAT 'Цена с НДС (пред.)' (type, sku, stock, dateTime, VAT) =
     IF includeVATPriceListType(type)
         THEN
-            prevPricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) AND VAT IS NUMERIC[10,5]
+            prevPricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) IF VAT IS NUMERIC[10,5]
         ELSE
             prevPricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) * (100 + VAT)/100;
 
@@ -38,12 +38,12 @@ prevPriceMVATPriceListTypeBatchStockDateTimeVAT 'Цена без НДС (пре�
         THEN
             prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) * 100 /(100 + VAT)
         ELSE
-            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) AND VAT IS NUMERIC[10,5];
+            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) IF VAT IS NUMERIC[10,5];
 
 prevPricePVATPriceListTypeBatchStockDateTimeVAT 'Цена с НДС (пред.)' (type, batch, stock, dateTime, VAT) =
     IF includeVATPriceListType(type)
         THEN
-            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) AND VAT IS NUMERIC[10,5]
+            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) IF VAT IS NUMERIC[10,5]
         ELSE
             prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) * (100 + VAT)/100;
 
@@ -140,7 +140,7 @@ pricePriceListLedgerLedgerPriceListType = ABSTRACT NUMERIC[14,2] (PriceListLedge
 TABLE priceListLedgerStock(PriceListLedger, Stock);
 inPriceListLedgerStock (ledger, stock) = ABSTRACT BOOLEAN (PriceListLedger, Stock);
 
-orderPriceListLedger(ledger) = STRUCT(fromDateTimePriceListLedger(ledger), ledger) AND activePriceListLedger(ledger) PERSISTENT;
+orderPriceListLedger(ledger) = STRUCT(fromDateTimePriceListLedger(ledger), ledger) IF activePriceListLedger(ledger) PERSISTENT;
 
 TABLE priceListLedgerLedgerPriceListTypeStock (PriceListLedger, LedgerPriceListType, Stock);
 orderPriceListLedgerLedgerPriceListTypeStock(ledger, type, stock) =
@@ -389,9 +389,9 @@ extendNameDataPriceListType (userPriceList, dataPriceListType) =
     [FORMULA STRING[50]  ' CAST($1 AS TEXT) || \' (новая) \''](
     namePriceListType(dataPriceListType)) IF inPriceListDataPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
-backgroundCurrentDataPriceListType 'Цвет' (dataPriceListType) = RGB(255,238,165) AND dataPriceListType IS DataPriceListType;
-backgroundMarkUpDataPriceListType 'Цвет' (dataPriceListType) = RGB(232,184,146) AND dataPriceListType IS DataPriceListType;
-backgroundDataPriceListType 'Цвет' (dataPriceListType) = RGB(213,249,185) AND dataPriceListType IS  DataPriceListType;
+backgroundCurrentDataPriceListType 'Цвет' (dataPriceListType) = RGB(255,238,165) IF dataPriceListType IS DataPriceListType;
+backgroundMarkUpDataPriceListType 'Цвет' (dataPriceListType) = RGB(232,184,146) IF dataPriceListType IS DataPriceListType;
+backgroundDataPriceListType 'Цвет' (dataPriceListType) = RGB(213,249,185) IF dataPriceListType IS DataPriceListType;
 
 inStockGroupStock (stockGroup, stock) = stock IS Stock AND NOT stockGroup IS StockGroup OVERRIDE isParentStockGroupStock(stockGroup, stock);
 
@@ -402,7 +402,7 @@ inSkuUserPriceList 'Отм.' (sku, price) = TRUE IF detailSkuUserPriceList(sku, 
 
 changeInSkuUserPriceList = ACTION (sku, price) {
     REQUEST BOOLEAN INPUT;
-    IF TRUE AND NOT requestedLogical() THEN {
+    IF TRUE IF NOT requestedLogical() THEN {
         IF detailSkuUserPriceList(sku, price) THEN {
             FOR sku == skuUserPriceListDetail(detail) AND price == userPriceListUserPriceListDetail(detail) DO {
                 EXEC delete(detail);
@@ -459,7 +459,7 @@ changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPri
 
     FORM chooseMarkUpSkuUserPriceList OBJECTS p = userPriceList MODAL;
     IF formResult() == FormResult.ok THEN {
-        IF TRUE AND NOT sumSelectedPriceList(userPriceList) THEN MESSAGE 'Выберите хотя бы одну позицию' ELSE
+        IF TRUE IF NOT sumSelectedPriceList(userPriceList) THEN MESSAGE 'Выберите хотя бы одну позицию' ELSE
         SET priceUserPriceListDetailDataPriceListType(detail, t) <-
                 //currentPricePriceListDetailDataPriceListTypeStock(detail, chosenObject('t'), stock) * (chosenNumeric('n') + 100.0) / 100.0
                 roundPriceRoundCondition((currentPricePriceListDetailDataPriceListTypeStock(detail, chosenObject('t'), stock) * (chosenNumeric('n') + 100.0) / 100.0), roundConditionPriceListType(chosenObject('t2')))
@@ -587,15 +587,15 @@ fillDocumentPriceList 'Подбор документа' = ACTION (userPriceList)
 } TOOLBAR;
 
 isActivePriceList(priceList) = (fromDateTimePriceList(priceList) < currentDateTime() AND toDateTimePriceList(priceList) > currentDateTime()) OR
-                               (fromDateTimePriceList(priceList) < currentDateTime() AND priceList IS PriceList AND NOT toDateTimePriceList(priceList));
+                               (fromDateTimePriceList(priceList) < currentDateTime() AND NOT toDateTimePriceList(priceList));
 backgroundPriceList 'Цвет' (priceList) =
     IF currentDateTime() > toDateTimePriceList(priceList)
-        THEN RGB(255, 226, 226) AND priceList IS PriceList
+        THEN RGB(255, 226, 226) IF priceList IS PriceList
     ELSE
         RGB(226, 255, 226) IF fromDateTimePriceList(priceList) > currentDateTime();
 
 isActivePriceListDetail(priceListDetail) = (fromDateTimePriceListDetail(priceListDetail) < currentDateTime() AND toDateTimePriceListDetail(priceListDetail) > currentDateTime()) OR
-                               (fromDateTimePriceListDetail(priceListDetail) < currentDateTime() AND priceListDetail IS PriceListDetail AND NOT toDateTimePriceListDetail(priceListDetail));
+                               (fromDateTimePriceListDetail(priceListDetail) < currentDateTime() AND NOT toDateTimePriceListDetail(priceListDetail));
 backgroundPriceListDetail 'Цвет' (priceListDetail) =
     IF currentDateTime() > toDateTimePriceListDetail(priceListDetail)
         THEN RGB(255, 226, 226) IF priceListDetail IS PriceListDetail
@@ -1005,7 +1005,7 @@ priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
 pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceCalcPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
 
-backgroundMarkup 'Цвет' (calcPriceListType, group) = RGB(255,160,160) AND markupCalcPriceListTypeGroup(calcPriceListType, group);
+backgroundMarkup 'Цвет' (calcPriceListType, group) = RGB(255,160,160) IF markupCalcPriceListTypeGroup(calcPriceListType, group);
 
 FORM calcPriceListTypes 'Расчетный вид цены'
     OBJECTS p = CalcPriceListType
@@ -1201,7 +1201,7 @@ createPriceRangeManagement 'Создать прайс' = ACTION (dataPriceListTy
             SET userPriceListUserPriceListDetail(d) <- u AS UserPriceList;
         }
         FORM userPriceList OBJECTS p = u DOCKEDMODAL;
-        IF TRUE AND NOT formResult() == FormResult.ok THEN {
+        IF TRUE IF NOT formResult() == FormResult.ok THEN {
             FOR userPriceListUserPriceListDetail(detail) == u DO {
                 EXEC delete(detail);
             }
@@ -1300,7 +1300,7 @@ addUserPriceListLegalEntity 'Добавить' = ACTION (legalEntity) {
     FOR ADDOBJ u = UserPriceList DO {
         SET companyUserPriceList(u) <- legalEntity;
         FORM userPriceList OBJECTS p = u DOCKEDMODAL;
-        IF TRUE AND NOT formResult() == FormResult.ok THEN {
+        IF TRUE IF NOT formResult() == FormResult.ok THEN {
             EXEC delete(u);
         }
     }

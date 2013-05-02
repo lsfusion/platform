@@ -85,9 +85,9 @@ EXTEND FORM transferOuts
 @implementSkuLedgerOutFIFO(TransferOutDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityTransferOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF commissionContractSkuTransferOutDetail(ledger)
-                                                THEN currentBalanceABatchStock(batch, stockTransferOutDetail(ledger)) AND commissionContractSkuBatchA(batch) == commissionContractSkuTransferOutDetail(ledger)
-                                                ELSE currentBalanceABatchStock(batch, stockTransferOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch)
-                                             AND batch IS BatchA;
+                                                THEN currentBalanceABatchStock(batch, stockTransferOutDetail(ledger)) IF commissionContractSkuBatchA(batch) == commissionContractSkuTransferOutDetail(ledger)
+                                                ELSE currentBalanceABatchStock(batch, stockTransferOutDetail(ledger)) IF NOT commissionContractSkuBatchA(batch)
+                                             IF batch IS BatchA;
 sumOutSkuLedger(ledger) += accountSumTransferOutDetail(ledger);
 skipSkuLedger (ledger) += skipSkuLedgerTransferOutDetail(ledger);
 
@@ -236,9 +236,9 @@ skipASkuLedger (ledger) += ledger IS TransferDiffSDetail;
 CLASS TransferPriceActTransfer 'Акт расценки (внутр.)' : InputTransferPriceAct;
 CLASS TransferPriceActTransferDetail 'Строка акта расценки': InputTransferPriceActDetail;
 
-prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS Batch;
-prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) AND batch IS Batch;
-prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS Batch;
+prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) IF batch IS Batch;
+prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) IF batch IS Batch;
+prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) IF batch IS Batch;
 
 @defineDocumentTransferPriceAct (transfer, 'Акт расценки (перемещение)', 'Строка акта расценки (перемещение)', sku, stock, prevImporterPriceBatch, prevSupplierPriceBatch, prevRangeVATBatch);
 

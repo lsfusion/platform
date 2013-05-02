@@ -61,8 +61,8 @@ dateFreightInnerInvoice 'Дата прихода' (innerInvoice) = dateArrivalFr
 languageInnerInvoice 'Язык инвойса (ИД)' (innerInvoice) = languageFreight(freightInnerInvoice(innerInvoice)) PERSISTENT;
 nameLanguageInnerInvoice 'Язык инвойса' (innerInvoice) = nameLanguage(languageInnerInvoice(innerInvoice));
 
-currencyFormedInvoice 'Валюта инвойса (ИД)' (formedInvoice) = currencyFreight(freightInnerInvoice(formedInvoice)) AND formedInvoice IS FormedInvoice PERSISTENT;
-currencyInnerInvoice 'Валюта инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE currencyDocument(innerInvoice) AND innerInvoice IS DirectInvoice, currencyFormedInvoice(innerInvoice) PERSISTENT;
+currencyFormedInvoice 'Валюта инвойса (ИД)' (formedInvoice) = currencyFreight(freightInnerInvoice(formedInvoice)) IF formedInvoice IS FormedInvoice PERSISTENT;
+currencyInnerInvoice 'Валюта инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE currencyDocument(innerInvoice) IF innerInvoice IS DirectInvoice, currencyFormedInvoice(innerInvoice) PERSISTENT;
 nameCurrencyInnerInvoice 'Валюта инвойса' (innerInvoice) = nameCurrency(currencyInnerInvoice(innerInvoice)) IN base;
 
 freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoice) = freightInnerInvoice(innerInvoice) IS FreightArrived PERSISTENT;
@@ -74,14 +74,14 @@ nameImporterInnerInvoice 'Импортер инвойса' (innerInvoice) = name
 sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreight(importerFormedInvoice(formedInvoice),
                                                                       freightFormedInvoice(formedInvoice)) IN base;
 
-sidDirectInvoice = sidDocument(innerInvoice) AND innerInvoice IS DirectInvoice;
+sidDirectInvoice = sidDocument(innerInvoice) IF innerInvoice IS DirectInvoice;
 
 sidInnerInvoice 'Номер инвойса' (innerInvoice) = sidDirectInvoice(innerInvoice) OVERRIDE sidFormedInvoice(innerInvoice) IN base PERSISTENT;
 
 dateFormedInvoice 'Дата инвойса' (formedInvoice) = dateImporterFreight(importerInnerInvoice(formedInvoice),
                                                                        freightInnerInvoice(formedInvoice)) IN base;
 
-dateDirectInvoice = date(innerInvoice) AND innerInvoice IS DirectInvoice;
+dateDirectInvoice = date(innerInvoice) IF innerInvoice IS DirectInvoice;
 
 dateInnerInvoice 'Дата инвойса' (innerInvoice) = dateDirectInvoice(innerInvoice) OVERRIDE dateFormedInvoice(innerInvoice) IN base PERSISTENT;
 
@@ -97,7 +97,7 @@ quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = 
                                                                                                    freightFormedInvoice(formedInvoice),
                                                                                                    sku) PERSISTENT;
 
-quantityDirectInvoiceSku = quantityDocumentSku(innerInvoice, sku) AND innerInvoice IS DirectInvoice;
+quantityDirectInvoiceSku = quantityDocumentSku(innerInvoice, sku) IF innerInvoice IS DirectInvoice;
 
 quantityInnerInvoiceSku 'Кол-во в инвойсе' (innerInvoice, sku) = UNION EXCLUSIVE quantityDirectInvoiceSku(innerInvoice, sku),
                                                                                  quantityFormedInvoiceSku(innerInvoice, sku) PERSISTENT;
@@ -128,13 +128,13 @@ expensesDirectInvoiceSku 'Расходы' (directInvoice, sku) = priceFreightIns
 priceDirectInvoiceSku 'Цена в инвойсе' (directInvoice, sku) = priceDocumentSku(directInvoice, sku) (+) expensesDirectInvoiceSku(directInvoice, sku);
 
 priceInnerInvoiceSku 'Цена в инвойсе' (innerInvoice, sku) = UNION EXCLUSIVE priceFormedInvoiceSku(innerInvoice, sku),
-                                                                            priceDirectInvoiceSku(innerInvoice, sku) AND innerInvoice IS DirectInvoice PERSISTENT;
+                                                                            priceDirectInvoiceSku(innerInvoice, sku) IF innerInvoice IS DirectInvoice PERSISTENT;
 
 priceContractInnerInvoiceSku 'Цена контракта' (innerInvoice, sku) = UNION EXCLUSIVE priceContractFormedInvoiceSku(innerInvoice, sku),
-                                                                                    priceDocumentSku(innerInvoice, sku) AND innerInvoice IS DirectInvoice PERSISTENT;
+                                                                                    priceDocumentSku(innerInvoice, sku) IF innerInvoice IS DirectInvoice PERSISTENT;
 
 priceManagerialInnerInvoiceSku 'Цена (УУ)' (innerInvoice, sku) = UNION EXCLUSIVE priceManagerialFormedInvoiceSku(innerInvoice, sku),
-                                                                                 priceDirectInvoiceSku(innerInvoice, sku) AND innerInvoice IS DirectInvoice PERSISTENT;
+                                                                                 priceDirectInvoiceSku(innerInvoice, sku) IF innerInvoice IS DirectInvoice PERSISTENT;
 
 //--------------------------------- Декларации ----------------------------------------------------------------------//
 CLASS Declaration 'Таможенная декларация';
@@ -256,7 +256,7 @@ directInvoiceFreightUnit(freightUnit) = UNION EXCLUSIVE freightUnit IF freightUn
 formedInvoiceFreightUnit(declaration, freightUnit) = formedInvoiceImporterFreight(importerDeclaration(declaration), freightFreightUnit(freightUnit));
 
 innerInvoiceFreightUnit(declaration, freightUnit) = formedInvoiceFreightUnit(declaration, freightUnit) OVERRIDE
-                                                    directInvoiceFreightUnit(freightUnit) AND declaration IS Declaration;
+                                                    directInvoiceFreightUnit(freightUnit) IF declaration IS Declaration;
 
 quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
                                                                          BY declarationInnerInvoice(innerInvoice), sku IN base PERSISTENT;
@@ -446,7 +446,7 @@ sidPermanentCertificateDeclarationDetail 'Постоянный сертифик�
 
 sidCertificateDeclarationDetail 'Сертификат партии' (declarationDetail) = sidCertificate(certificateDeclarationDetail(declarationDetail)) IN base;
 
-isCertificatePreparedDeclarationDetail 'Отсутствие сертификата' (declarationDetail) = certificatedDeclarationDetail(declarationDetail) AND
+isCertificatePreparedDeclarationDetail 'Отсутствие сертификата' (declarationDetail) = certificatedDeclarationDetail(declarationDetail) IF
                                                                                       NOT certificatePreparedDeclarationDetail(declarationDetail);
 
 quantityNoCertificateDeclaration 'Кол-во без сертификатов' (declaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
@@ -686,7 +686,7 @@ quantityImporterFreightUnitSku 'Кол-во' (importer, freightUnit, sku) = UNIO
 
 inFreightUnitDeclarationDetail 'Кол-во' (freightUnit, declarationDetail) = quantityImporterFreightUnitSku(importerDeclarationDetail(declarationDetail),
                                                                                                           freightUnit AS FreightUnit,
-                                                                                                          skuDeclarationDetail(declarationDetail)) AND
+                                                                                                          skuDeclarationDetail(declarationDetail)) IF
                                                                                              innerInvoiceDeclarationDetail(declarationDetail) == innerInvoiceFreightUnit(declarationDeclarationDetail(declarationDetail), freightUnit);
                                                                                              //quantityFreightDeclarationSku(freightFreightUnit(freightUnit),
                                                                                              //                              declarationDeclarationDetail(declarationDetail),

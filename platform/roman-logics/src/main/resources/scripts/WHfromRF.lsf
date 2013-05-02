@@ -115,7 +115,7 @@ quantityWHfromRFDetailsSkuFreightUnit 'Количество принятое (в
     BY skuWHfromRFDetail(WHfromRFDetail), freightUnitWHfromRFDetail(WHfromRFDetail), WHfromRFWHfromRFDetail(WHfromRFDetail);
 
 isNotShippedSkuFreightUnitWHfromRF (sku, freightUnit, WHfromRF) = quantitySkuFreightUnitFreight (sku, freightUnit, freightWHfromRF(WHfromRF))
-    AND NOT quantityWHfromRFDetailsSkuFreightUnit(sku, freightUnit, WHfromRF);
+    IF NOT quantityWHfromRFDetailsSkuFreightUnit(sku, freightUnit, WHfromRF);
 
 //приемка по коробам
 currentFreightUnit 'Тек. короб (ИД)' (WHfromRF) = DATA SESSION FreightUnit (WHfromRF);
@@ -299,10 +299,10 @@ quantitySkuWHfromRF 'Кол-во товара в документе' (WHfromRF) 
     quantitySkuWHfromRFFreightUnit(WHfromRF, currentFreightUnit(WHfromRF));
 
 quantityRemainedPositionSkuWHfromRF 'Кол-во оставшихся позиций в коробе' (WHfromRF) =
-    0 AND WHfromRF OVERRIDE quantityPositionsSkuInFreightUnitWHfromRF(WHfromRF) (-) quantityPositionsSkuWHfromRF(WHfromRF);
+    0 IF WHfromRF OVERRIDE quantityPositionsSkuInFreightUnitWHfromRF(WHfromRF) (-) quantityPositionsSkuWHfromRF(WHfromRF);
 
 quantityRemainedSkuWHfromRF 'Кол-во оставшегося товара в коробе' (WHfromRF) =
-    0 AND WHfromRF OVERRIDE quantitySkuInFreightUnitWHfromRF(WHfromRF) (-) quantitySkuWHfromRF(WHfromRF);
+    0 IF WHfromRF OVERRIDE quantitySkuInFreightUnitWHfromRF(WHfromRF) (-) quantitySkuWHfromRF(WHfromRF);
 
 quantitySkuInWHfromRF 'Кол-во товара' (WHfromRF, sku) = GROUP SUM quantityWHfromRFDetail(WHfromRFDetail)
     BY WHfromRFWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail);
@@ -326,7 +326,7 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
 
 selectWHfromRFDetail 'Отметить для маркировки' = DATA BOOLEAN (WHfromRFDetail);
 selectWHfromRF (WHfromRF) = GROUP SUM 1 IF selectWHfromRFDetail(WHfromRFDetail) BY WHfromRFWHfromRFDetail(WHfromRFDetail);
-selectQuantitySkuInWHfromRF (WHfromRF, sku) = GROUP SUM quantityWHfromRFDetail(WHfromRFDetail) AND selectWHfromRFDetail(WHfromRFDetail)
+selectQuantitySkuInWHfromRF (WHfromRF, sku) = GROUP SUM quantityWHfromRFDetail(WHfromRFDetail) IF selectWHfromRFDetail(WHfromRFDetail)
     BY WHfromRFWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail);
 
 printMarksSkuWHfromRF 'Печать маркировок товаров' (WHfromRF) = ACTION (WHfromRF) {

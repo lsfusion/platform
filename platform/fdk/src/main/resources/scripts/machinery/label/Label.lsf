@@ -73,7 +73,7 @@ nearestCountLabelLabelTypeGroup 'Множитель' (labelType, group) =
     dataCountLabelTypeGroup(labelType, nearestParentCountLabelLabelTypeGroup (labelType, group)) PERSISTENT;
 
 countLabelTypeGroup 'Множитель' (labelType, group) =
-    1 IF group IS Group AND labelType IS LabelType OVERRIDE
+    1 IF group IS Group IF labelType IS LabelType OVERRIDE
     nearestCountLabelLabelTypeGroup(labelType, group) OVERRIDE
     dataCountLabelTypeGroup(labelType, group) PERSISTENT;
 
@@ -92,7 +92,7 @@ nearestIncludeLabelLabelTypeGroup 'Из документа' (labelType, group) =
     dataIncludeLabelTypeGroup(labelType, nearestParentIncludeLabelLabelTypeGroup (labelType, group)) PERSISTENT;
 
 includeLabelTypeGroup 'Из документа' (labelType, group) =
-    includeLabelType(labelType) AND  group IS Group OVERRIDE
+    includeLabelType(labelType) AND group IS Group OVERRIDE
     nearestIncludeLabelLabelTypeGroup(labelType, group) OVERRIDE
     dataIncludeLabelTypeGroup(labelType, group) PERSISTENT;
 
@@ -222,7 +222,7 @@ statusLabelPriceTransactionDocument 'Статус печати ценника' (
                                                         CASE
                                                             WHEN skipPriceTransactionDocument(document) THEN 'Загрузка не требуется' IF document IS PriceTransactionDocument
                                                             WHEN printedPriceTransactionDocument(document) THEN 'Распечатан' IF document IS PriceTransactionDocument
-                                                            DEFAULT 'Не распечатан' AND document IS PriceTransactionDocument
+                                                            DEFAULT 'Не распечатан' IF document IS PriceTransactionDocument
                                                         END;
 
 TABLE labelTransactionBarcode(LabelTransaction, Barcode);
@@ -288,11 +288,11 @@ DESIGN labelTransactions FROM DEFAULT {
 
 // -------------------------------------------- Действия по печати ценников ------------------------------ //
 
-inLabelTypeBarcodeDepartmentStore (labelType, barcode, departmentStore) = inLabelTypeSku(labelType, skuBarcode(barcode)) AND  inLabelTypeDepartmentStore(labelType, departmentStore);
+inLabelTypeBarcodeDepartmentStore (labelType, barcode, departmentStore) = inLabelTypeSku(labelType, skuBarcode(barcode)) AND inLabelTypeDepartmentStore(labelType, departmentStore);
 priceLabelTypeBarcodeDepartmentStore (labelType, barcode, departmentStore) = pricePriceListTypeSkuStockDateTime(priceListTypeLabelType(labelType),
                                                                                                  skuBarcode(barcode),
                                                                                                  departmentStore,
-                                                                                                 currentDateTime()) AND inLabelTypeBarcodeDepartmentStore (labelType, barcode, departmentStore);
+                                                                                                 currentDateTime()) IF inLabelTypeBarcodeDepartmentStore (labelType, barcode, departmentStore);
 countLabelTypeBarcode (labelType, barcode) = countLabelTypeSku(labelType, skuBarcode(barcode));
 includeLabelTypeBarcode (labelType, barcode)= includeLabelTypeSku(labelType, skuBarcode(barcode));
 
@@ -346,7 +346,7 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
         }
     } ELSE {
         // бежим по всем типам ценников из управленческих параметров
-        FOR ([GROUP SUM 1 AND inBarcode(barcode) AND inLabelTypeBarcodeDepartmentStore(labelType, barcode, departmentStore) BY labelType, departmentStore](labelType, departmentStore)) DO {
+        FOR ([GROUP SUM 1 IF inBarcode(barcode) AND inLabelTypeBarcodeDepartmentStore(labelType, barcode, departmentStore) BY labelType, departmentStore](labelType, departmentStore)) DO {
             // для каждого создаем по операции печати ценников
             FOR ADDOBJ t = LabelTransaction DO {
                 SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) WHERE inLabelTypeBarcodeDepartmentStore(labelType, barcode, departmentStore);

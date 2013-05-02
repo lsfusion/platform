@@ -13,10 +13,10 @@ quantitySoldArticleStockDate (article, stock, date) = GROUP SUM quantitySoldSkuS
 sumSoldArticleStockDate (article, stock, date) = GROUP SUM sumSoldSkuStockDate(sku, stock, date) BY articleSku(sku), stock, date PERSISTENT;
 
 quantitySoldArticleStockWeekDateFromTo 'Продано за неделю (кол-во)' (article, stock, week, dateFrom, dateTo) = GROUP SUM
-        quantitySoldArticleStockDate(article, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        quantitySoldArticleStockDate(article, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY article, stock, weekInDate(date), dateFrom, dateTo;
 sumSoldArticleStockWeekDateFromTo 'Продано за неделю (сумма)' (article, stock, week, dateFrom, dateTo) = GROUP SUM
-        sumSoldArticleStockDate(article, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        sumSoldArticleStockDate(article, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY article, stock, weekInDate(date), dateFrom, dateTo;
 
 quantitySoldArticleWeekDateFromTo 'Продано за неделю (кол-во)' (article, week, dateFrom, dateTo) = GROUP SUM
@@ -30,10 +30,10 @@ sumSoldWeekDateFromTo 'Продано за неделю (сумма)' (week, dat
         sumSoldArticleStockWeekDateFromTo(article, stock, week, dateFrom, dateTo) BY  week, dateFrom, dateTo;
 
 quantitySoldArticleStockDateFromTo 'Продано за интервал (кол-во)' (article, stock, dateFrom, dateTo) = GROUP SUM
-        quantitySoldArticleStockDate (article, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        quantitySoldArticleStockDate (article, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY article, stock, dateFrom, dateTo;
 sumSoldArticleStockDateFromTo 'Продано за интервал (сумма)' (article, stock, dateFrom, dateTo) = GROUP SUM
-        sumSoldArticleStockDate (article, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        sumSoldArticleStockDate (article, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY article, stock, dateFrom, dateTo;
 
 quantitySoldArticleDateFromTo 'Продано за интервал (кол-во)' (article, dateFrom, dateTo) = GROUP SUM
@@ -46,7 +46,7 @@ sumSoldArticleDateFromTo 'Продано за интервал (сумма)' (ar
 sumSoldTypeExchangeArticleStockDate (typeExchange, article, stock, date)= roundPriceCurrency((sumSoldArticleStockDate (article, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
 
 sumSoldTypeExchangeArticleStockDateFromTo 'Продано за интервал (сумма-валюта)' (typeExchange, article, stock, dateFrom, dateTo) = GROUP SUM
-        sumSoldTypeExchangeArticleStockDate (typeExchange, article, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        sumSoldTypeExchangeArticleStockDate (typeExchange, article, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY typeExchange, article, stock, dateFrom, dateTo;
 
 sumSoldTypeExchangeArticleDateFromTo 'Продано за интервал (сумма-валюта)' (typeExchange, article, dateFrom, dateTo) = GROUP SUM

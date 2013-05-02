@@ -57,11 +57,11 @@ sumPurchaseSkuStockSupplierDate (sku, stock, supplier, date) = GROUP SUM sumPurc
     BY skuPurchaseLedger(ledger), stockPurchaseLedger(ledger), supplierPurchaseLedger(ledger), datePurchaseLedger(ledger);   // PERSISTENT
 
 quantityPurchaseSkuStockWeekDateFromTo 'Закуплено за неделю (кол-во)' (sku, stock, week, dateFrom, dateTo) = GROUP SUM
-        quantityPurchaseSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        quantityPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY sku, stock, weekInDate(date), dateFrom, dateTo;
 
 sumPurchaseSkuStockWeekDateFromTo 'Закуплено за неделю (сумма)' (sku, stock, week, dateFrom, dateTo) = GROUP SUM
-        sumPurchaseSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        sumPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY sku, stock, weekInDate(date), dateFrom, dateTo;
 
 averagePricePurchaseSkuStockWeekDateFromTo 'Средняя цена за неделю' (sku, stock, week, dateFrom, dateTo)=  round2(sumPurchaseSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) /
@@ -77,24 +77,24 @@ sumPurchaseWeekDateFromTo 'Закуплено за неделю (сумма)' (w
         sumPurchaseSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) BY  week, dateFrom, dateTo;
 
 quantityPurchaseSkuStockDateFromTo 'Закуплено за интервал (кол-во)' (sku, stock, dateFrom, dateTo) = GROUP SUM
-        quantityPurchaseSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        quantityPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY sku, stock, dateFrom, dateTo;
 
 sumPurchaseSkuStockDateFromTo 'Закуплено за интервал (сумма)' (sku, stock, dateFrom, dateTo) = GROUP SUM
-        sumPurchaseSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        sumPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY sku, stock, dateFrom, dateTo;
 
 quantityPurchaseSkuDateFromTo 'Закуплено за интервал (кол-во)' (sku, dateFrom, dateTo) = GROUP SUM
-        quantityPurchaseSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        quantityPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY sku, dateFrom, dateTo;
 
 sumPurchaseSkuDateFromTo 'Закуплено за интервал (сумма)' (sku, dateFrom, dateTo) = GROUP SUM
-        sumPurchaseSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        sumPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY sku, dateFrom, dateTo;
 //-- Поставщик
 
 quantityPurchaseSkuStockSupplierDateFromTo 'Закуплено за интервал у поставщика (кол-во)' (sku, stock, supplier, dateFrom, dateTo) = GROUP SUM
-        quantityPurchaseSkuStockSupplierDate(sku, stock, supplier, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        quantityPurchaseSkuStockSupplierDate(sku, stock, supplier, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY sku, stock, supplier, dateFrom, dateTo;
 
 
@@ -103,7 +103,7 @@ quantityPurchaseSkuStockSupplierDateFromTo 'Закуплено за интерв
 sumPurchaseTypeExchangeSkuStockDate (typeExchange, sku, stock, date)= roundPriceCurrency((sumPurchaseSkuStockDate (sku, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
 
 sumPurchaseTypeExchangeSkuStockDateFromTo 'Закуплено за интервал (сумма-валюта)' (typeExchange, sku, stock, dateFrom, dateTo) = GROUP SUM
-        sumPurchaseTypeExchangeSkuStockDate (typeExchange, sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        sumPurchaseTypeExchangeSkuStockDate (typeExchange, sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY typeExchange, sku, stock, dateFrom, dateTo;
 
 sumPurchaseTypeExchangeSkuDateFromTo 'Закуплено за интервал (сумма-валюта)' (typeExchange, sku, dateFrom, dateTo) = GROUP SUM

@@ -23,9 +23,11 @@ wareSku (sku) = ABSTRACT Ware (Sku);
 wareSku (sku) += wareItem(sku);
 
 priceWarePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
-    priceBasePriceListTypeSkuStockDateTime(basePriceListTypeWarePriceListType(type), sku, stock, dateTime) (+) (warePriceDate(wareSku(sku), toDate(dateTime)) AND dateTime IS DATETIME AND type IS WarePriceListType AND stock IS Stock);
+    priceBasePriceListTypeSkuStockDateTime(basePriceListTypeWarePriceListType(type), sku, stock, dateTime) (+)
+    (warePriceDate(wareSku(sku), toDate(dateTime)) IF dateTime IS DATETIME AND type IS WarePriceListType AND stock IS Stock);
 priceWarePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
-    priceBasePriceListTypeBatchStockDateTime(basePriceListTypeWarePriceListType(type), batch, stock, dateTime) (+) (warePriceDate(wareSku(skuBatch(batch)), toDate(dateTime)) AND dateTime IS DATETIME AND type IS WarePriceListType AND stock IS Stock);
+    priceBasePriceListTypeBatchStockDateTime(basePriceListTypeWarePriceListType(type), batch, stock, dateTime) (+)
+    (warePriceDate(wareSku(skuBatch(batch)), toDate(dateTime)) IF dateTime IS DATETIME AND type IS WarePriceListType AND stock IS Stock);
 
 pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceWarePriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceWarePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);

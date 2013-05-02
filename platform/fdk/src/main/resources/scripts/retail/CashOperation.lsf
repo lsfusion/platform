@@ -38,31 +38,31 @@ isNotPrintedOutcomeCashOrder 'Не распечатан' (outcomeCashOrder) =
     outcomeCashOrder AS OutcomeCashOrder  AND NOT isPrintedOutcomeCashOrder(outcomeCashOrder);
 
 curSumIncomeCashOrder 'Текущая сумма ПКО' (departmentStore) =
-    GROUP SUM sumCashIncomeCashOrder(incomeCashOrder) AND isPostedCashDocument(incomeCashOrder)
+    GROUP SUM sumCashIncomeCashOrder(incomeCashOrder) IF isPostedCashDocument(incomeCashOrder)
     BY departmentStoreCashDocument(incomeCashOrder);
 
 sumAIncomeCashOrderDateTime 'Сумма ПКО после даты/время' (departmentStore, date) =
-    GROUP SUM sumCashIncomeCashOrder(incomeCashOrder) AND isPostedCashDocument(incomeCashOrder) AND
+    GROUP SUM sumCashIncomeCashOrder(incomeCashOrder) IF isPostedCashDocument(incomeCashOrder) AND
               dateTimeCashDocument(incomeCashOrder) > (date AS DATETIME)
     BY departmentStoreCashDocument(incomeCashOrder), date;
 
 sumIncomeCashOrderDateTime 'Сумма ПКО на дату/время' (departmentStore, date) =
-    (curSumIncomeCashOrder(departmentStore) AND (date AS DATETIME)) (-)
+    (curSumIncomeCashOrder(departmentStore) IF (date AS DATETIME)) (-)
     sumAIncomeCashOrderDateTime(departmentStore, date);
 
 sumCashOutcomeCashOrder 'Сумма' = ABSTRACT NUMERIC[16,2] (OutcomeCashOrder) IN documentSumGroup;
 
 curSumOutcomeCashOrder 'Текущая сумма РКО' (departmentStore) =
-    GROUP SUM sumCashOutcomeCashOrder(outcomeCashOrder) AND isPostedCashDocument(outcomeCashOrder)
+    GROUP SUM sumCashOutcomeCashOrder(outcomeCashOrder) IF isPostedCashDocument(outcomeCashOrder)
     BY departmentStoreCashDocument(outcomeCashOrder);
 
 sumAOutcomeCashOrderDateTime 'Сумма РКО после даты/время' (departmentStore, date) =
-    GROUP SUM sumCashOutcomeCashOrder(outcomeCashOrder) AND isPostedCashDocument(outcomeCashOrder) AND
+    GROUP SUM sumCashOutcomeCashOrder(outcomeCashOrder) IF isPostedCashDocument(outcomeCashOrder) AND
               dateTimeCashDocument(outcomeCashOrder) > (date AS DATETIME)
     BY departmentStoreCashDocument(outcomeCashOrder), date;
 
 sumOutcomeCashOrderDateTime 'Сумма РКО на дату/время' (departmentStore, date) =
-    (curSumOutcomeCashOrder(departmentStore) AND (date AS DATETIME)) (-)
+    (curSumOutcomeCashOrder(departmentStore) IF (date AS DATETIME)) (-)
     sumAOutcomeCashOrderDateTime(departmentStore, date);
 
 curSumCashDepartmentStore 'Текущая сумма наличных в центральной кассе' (departmentStore) =
@@ -76,13 +76,13 @@ dateTimePaymentLedger(cashDocument) += dateTimeCashDocument(cashDocument);
 isPostedPaymentLedger(cashDocument) += isPostedCashDocument(cashDocument);
 descriptionPaymentLedger(cashDocument) += basisCashDocument(cashDocument);
 
-accountToPaymentLedger(incomeCashOrder) += cashAccountDepartmentStore(departmentStoreCashDocument(incomeCashOrder)) AND incomeCashOrder IS IncomeCashOrder;
-legalEntityToPaymentLedger(incomeCashOrder) += legalEntityDepartmentStore(departmentStoreCashDocument(incomeCashOrder)) AND incomeCashOrder IS IncomeCashOrder;
-sumToPaymentLedger(incomeCashOrder) += sumCashIncomeCashOrder(incomeCashOrder) AND incomeCashOrder IS IncomeCashOrder;
+accountToPaymentLedger(incomeCashOrder) += cashAccountDepartmentStore(departmentStoreCashDocument(incomeCashOrder)) IF incomeCashOrder IS IncomeCashOrder;
+legalEntityToPaymentLedger(incomeCashOrder) += legalEntityDepartmentStore(departmentStoreCashDocument(incomeCashOrder)) IF incomeCashOrder IS IncomeCashOrder;
+sumToPaymentLedger(incomeCashOrder) += sumCashIncomeCashOrder(incomeCashOrder);
 
-accountFromPaymentLedger(outcomeCashOrder) += cashAccountDepartmentStore(departmentStoreCashDocument(outcomeCashOrder)) AND outcomeCashOrder IS OutcomeCashOrder;
-legalEntityFromPaymentLedger(outcomeCashOrder) += legalEntityDepartmentStore(departmentStoreCashDocument(outcomeCashOrder)) AND outcomeCashOrder IS OutcomeCashOrder;
-sumFromPaymentLedger(outcomeCashOrder) += sumCashOutcomeCashOrder(outcomeCashOrder) AND outcomeCashOrder IS OutcomeCashOrder;
+accountFromPaymentLedger(outcomeCashOrder) += cashAccountDepartmentStore(departmentStoreCashDocument(outcomeCashOrder)) IF outcomeCashOrder IS OutcomeCashOrder;
+legalEntityFromPaymentLedger(outcomeCashOrder) += legalEntityDepartmentStore(departmentStoreCashDocument(outcomeCashOrder)) IF outcomeCashOrder IS OutcomeCashOrder;
+sumFromPaymentLedger(outcomeCashOrder) += sumCashOutcomeCashOrder(outcomeCashOrder);
 
 //---------------------------- Операции с фискальным регистратором ---------------------------------------//
 
@@ -115,15 +115,15 @@ basisCollection 'Основание' (collection) =
 
 dateCashDocument(collection) += dateCollection(collection);
 timeCashDocument(collection) += timeCollection(collection);
-numberCashDocument(collection) += seriesNumberObject(collection) AND collection IS Collection;
+numberCashDocument(collection) += seriesNumberObject(collection) IF collection IS Collection;
 departmentStoreCashDocument(collection) += departmentStoreCollection(collection);
 sumCashOutcomeCashOrder(collection) += sumCashCollection(collection);
 basisCashDocument(collection) += basisCollection(collection);
-isPostedCashDocument(collection) += TRUE AND collection IS Collection;
+isPostedCashDocument(collection) += TRUE IF collection IS Collection;
 
-accountToPaymentLedger(collection) += bankAccountCollection(collection) AND collection IS Collection;
-legalEntityToPaymentLedger(collection) += legalEntityDepartmentStore(departmentStoreCollection(collection)) AND collection IS Collection;
-sumToPaymentLedger(collection) += sumCashCollection(collection) AND collection IS Collection;
+accountToPaymentLedger(collection) += bankAccountCollection(collection);
+legalEntityToPaymentLedger(collection) += legalEntityDepartmentStore(departmentStoreCollection(collection));
+sumToPaymentLedger(collection) += sumCashCollection(collection);
 
 sumCashForCollection 'Сумма инкассации' = DATA SESSION NUMERIC[16,2] (DepartmentStore);
 sessionDepartmentStore 'Отдел' = DATA SESSION DepartmentStore ();
@@ -229,7 +229,7 @@ sidCashRegisterModelCashOperation 'Код модели' (cashOperation) = sidMod
 numberCashRegisterCashOperation 'Касса' (cashOperation) = numberCashRegister(cashRegisterCashOperation(cashOperation)) IN documentPrmGroup;
 
 fiscalServiceCashOperation 'Движение денег в фискальном регистраторе' (cashOperation) = ABSTRACT ACTION(cashOperation) CONFIRM;
-fiscalServiceCashRegisterCashOperation 'Движение денег в фискальном регистраторе' (cashOperation) = fiscalServiceCashOperation(cashOperation) AND cashRegisterCashOperation(cashOperation) == currentCashRegister();
+fiscalServiceCashRegisterCashOperation 'Движение денег в фискальном регистраторе' (cashOperation) = fiscalServiceCashOperation(cashOperation) IF cashRegisterCashOperation(cashOperation) == currentCashRegister();
 
 sumCashOperation 'Сумма' (cashOperation) = ABSTRACT NUMERIC[16,2] (CashOperation);
 
@@ -260,25 +260,25 @@ curSumIncomeCashOperation 'Текущая сумма внесенных дене
     BY cashRegisterCashOperation(incomeCashOperation);
 
 sumAIncomeCashOperationDateTime 'Сумма внесенных денег после даты/время' (cashRegister, date) =
-    GROUP SUM sumCashIncomeCashOperation(incomeCashOperation) AND
+    GROUP SUM sumCashIncomeCashOperation(incomeCashOperation) IF
               dateTimeCashOperation(incomeCashOperation) > (date AS DATETIME)
     BY cashRegisterCashOperation(incomeCashOperation), date;
 
 sumIncomeCashOperationDateTime 'Сумма внесенных денег на дату/время' (cashRegister, date) =
-    (curSumIncomeCashOperation(cashRegister) AND (date AS DATETIME)) (-)
+    (curSumIncomeCashOperation(cashRegister) IF (date AS DATETIME)) (-)
     sumAIncomeCashOperationDateTime(cashRegister, date);
 
 dateCashDocument(incomeCashOperation) += dateIncomeCashOperation(incomeCashOperation);
 timeCashDocument(incomeCashOperation) += timeIncomeCashOperation(incomeCashOperation);
-numberCashDocument(incomeCashOperation) += seriesNumberObject(incomeCashOperation) AND incomeCashOperation IS IncomeCashOperation;
+numberCashDocument(incomeCashOperation) += seriesNumberObject(incomeCashOperation) IF incomeCashOperation IS IncomeCashOperation;
 departmentStoreCashDocument(incomeCashOperation) += departmentStoreIncomeCashOperation(incomeCashOperation);
 basisCashDocument(incomeCashOperation) += basisIncomeCashOperation(incomeCashOperation);
 cashRegisterCashDocument(incomeCashOperation) += cashRegisterIncomeCashOperation(incomeCashOperation);
 sumCashOutcomeCashOrder(incomeCashOperation) += sumCashIncomeCashOperation(incomeCashOperation);
-isPostedCashDocument(incomeCashOperation) += TRUE AND incomeCashOperation IS IncomeCashOperation;
+isPostedCashDocument(incomeCashOperation) += TRUE IF incomeCashOperation IS IncomeCashOperation;
 dateCashOperation(incomeCashOperation) += dateIncomeCashOperation(incomeCashOperation);
 timeCashOperation(incomeCashOperation) += timeIncomeCashOperation(incomeCashOperation);
-numberCashOperation(incomeCashOperation) += seriesNumberObject(incomeCashOperation) AND incomeCashOperation IS IncomeCashOperation;
+numberCashOperation(incomeCashOperation) += seriesNumberObject(incomeCashOperation) IF incomeCashOperation IS IncomeCashOperation;
 basisCashOperation(incomeCashOperation) += basisIncomeCashOperation(incomeCashOperation);
 sumCashOperation(incomeCashOperation) += sumCashIncomeCashOperation(incomeCashOperation);
 cashRegisterCashOperation(incomeCashOperation) += cashRegisterIncomeCashOperation(incomeCashOperation);
@@ -308,12 +308,12 @@ curSumOutcomeCashOperation 'Текущая сумма изъятых денег'
     BY cashRegisterCashOperation(outcomeCashOperation);
 
 sumAOutcomeCashOperationDateTime 'Сумма изъятых денег после даты/время' (cashRegister, date) =
-    GROUP SUM sumCashOutcomeCashOperation(outcomeCashOperation) AND
+    GROUP SUM sumCashOutcomeCashOperation(outcomeCashOperation) IF
               dateTimeCashOperation(outcomeCashOperation) > (date AS DATETIME)
     BY cashRegisterCashOperation(outcomeCashOperation), date;
 
 sumOutcomeCashOperationDateTime 'Сумма изъятых денег на дату/время' (cashRegister, date) =
-    (curSumOutcomeCashOperation(cashRegister) AND (date AS DATETIME)) (-)
+    (curSumOutcomeCashOperation(cashRegister) IF (date AS DATETIME)) (-)
     sumAOutcomeCashOperationDateTime(cashRegister, date);
 
 curSumCashCashOperation 'Текущая сумма наличных в кассе(без Z-отчета)' (cashRegister) =
@@ -324,15 +324,15 @@ sumCashCashOperationDateTime 'Сумма наличных в кассе на д�
 
 dateCashDocument(outcomeCashOperation) += dateOutcomeCashOperation(outcomeCashOperation);
 timeCashDocument(outcomeCashOperation) += timeOutcomeCashOperation(outcomeCashOperation);
-numberCashDocument(outcomeCashOperation) += seriesNumberObject(outcomeCashOperation) AND outcomeCashOperation IS OutcomeCashOperation;
+numberCashDocument(outcomeCashOperation) += seriesNumberObject(outcomeCashOperation) IF outcomeCashOperation IS OutcomeCashOperation;
 departmentStoreCashDocument(outcomeCashOperation) += departmentStoreOutcomeCashOperation(outcomeCashOperation);
 basisCashDocument(outcomeCashOperation) += basisOutcomeCashOperation(outcomeCashOperation);
 cashRegisterCashDocument(outcomeCashOperation) += cashRegisterOutcomeCashOperation(outcomeCashOperation);
 sumCashIncomeCashOrder(outcomeCashOperation) += sumCashOutcomeCashOperation(outcomeCashOperation);
-isPostedCashDocument(outcomeCashOperation) += TRUE AND outcomeCashOperation IS OutcomeCashOperation;
+isPostedCashDocument(outcomeCashOperation) += TRUE IF outcomeCashOperation IS OutcomeCashOperation;
 dateCashOperation(outcomeCashOperation) += dateOutcomeCashOperation(outcomeCashOperation);
 timeCashOperation(outcomeCashOperation) += timeOutcomeCashOperation(outcomeCashOperation);
-numberCashOperation(outcomeCashOperation) += seriesNumberObject(outcomeCashOperation) AND outcomeCashOperation IS OutcomeCashOperation;
+numberCashOperation(outcomeCashOperation) += seriesNumberObject(outcomeCashOperation) IF outcomeCashOperation IS OutcomeCashOperation;
 basisCashOperation(outcomeCashOperation) += basisOutcomeCashOperation(outcomeCashOperation);
 sumCashOperation(outcomeCashOperation) += -sumCashOutcomeCashOperation(outcomeCashOperation);
 cashRegisterCashOperation(outcomeCashOperation) += cashRegisterOutcomeCashOperation(outcomeCashOperation);

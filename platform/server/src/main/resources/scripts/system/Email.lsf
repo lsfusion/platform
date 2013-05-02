@@ -40,7 +40,7 @@ FORM remindUserPass 'Напоминание пароля'
 ;
 
 emailUserPassUser 'Напоминание пароля' (user) = ACTION EMAIL
-                               SUBJECT 'Напоминание пароля' AND user IS CustomUser
+                               SUBJECT 'Напоминание пароля' IF user IS CustomUser
                                TO emailContact(user)
                                INLINE remindUserPass OBJECTS u = user;
 

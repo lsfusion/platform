@@ -204,7 +204,7 @@ META defineScheduleOrder(sign, stockProp)
 
     orderScheduleOrderDetail = STRUCT(dateSupplyScheduleOrderDetail(scheduleOrderDetail), scheduleOrderDetail) PERSISTENT;
 
-    concatNextScheduleOrderDetail(scheduleOrderDetail, scheduleOrder) = GROUP MIN orderScheduleOrderDetail(scheduleOrderDetail1) AND
+    concatNextScheduleOrderDetail(scheduleOrderDetail, scheduleOrder) = GROUP MIN orderScheduleOrderDetail(scheduleOrderDetail1) IF
                                                                                   dateSupplyScheduleOrderDetail(scheduleOrderDetail1) > dateSupplyScheduleOrderDetail(scheduleOrderDetail)
                                                                                BY scheduleOrderDetail, scheduleOrderScheduleOrderDetail(scheduleOrderDetail1);
 
@@ -357,7 +357,7 @@ META defineScheduleOrder(sign, stockProp)
             SET customerScheduleOrder(s) <- customer;
 
             FORM scheduleOrder OBJECTS s = s MANAGESESSION DOCKEDMODAL;
-            IF TRUE AND NOT formResult() == FormResult.ok THEN {
+            IF TRUE IF NOT formResult() == FormResult.ok THEN {
                 EXEC delete(s);
             }
         }

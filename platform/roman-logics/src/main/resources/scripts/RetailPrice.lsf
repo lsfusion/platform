@@ -42,10 +42,10 @@ inArticleCoefficientBrandRetail(coefficientBrandRetail, article) = (brandSupplie
                                                                    (categorySupplierArticle(article) == categorySupplierCoefficientBrandRetail(coefficientBrandRetail) OR (article IS Article AND coefficientBrandRetail IS CoefficientBrandRetail AND NOT categorySupplierCoefficientBrandRetail(coefficientBrandRetail))) AND
                                                                    (seasonYearArticle(article) == seasonYearCoefficientBrandRetail(coefficientBrandRetail) OR (article IS Article AND coefficientBrandRetail IS CoefficientBrandRetail AND NOT seasonYearCoefficientBrandRetail(coefficientBrandRetail)));
 
-dateCoefficientBrandRetailArticle(coefficientBrandRetail, article) = dateCoefficientBrandRetail(coefficientBrandRetail) AND inArticleCoefficientBrandRetail(coefficientBrandRetail, article);
+dateCoefficientBrandRetailArticle(coefficientBrandRetail, article) = dateCoefficientBrandRetail(coefficientBrandRetail) IF inArticleCoefficientBrandRetail(coefficientBrandRetail, article);
 orderCoefficientBrandRetailArticle(coefficientBrandRetail, article) = STRUCT(dateCoefficientBrandRetailArticle(coefficientBrandRetail, article), coefficientBrandRetail) IF inArticleCoefficientBrandRetail(coefficientBrandRetail, article);
 
-concatCoefficientBrandRetailArticleDate (article, date) = GROUP MAX orderCoefficientBrandRetailArticle(coefficientBrandRetail, article) AND
+concatCoefficientBrandRetailArticleDate (article, date) = GROUP MAX orderCoefficientBrandRetailArticle(coefficientBrandRetail, article) IF
                                                                     dateCoefficientBrandRetailArticle(coefficientBrandRetail, article) < (date AS DATE)
                                                                  BY article, date;
 
@@ -144,8 +144,8 @@ isDraftPriceSetDocument 'Не проведен' (priceSetDocument) = priceSetDoc
 prePostPriceSetDocument 'Провести' (priceSetDocument) = ACTION SET isPostedPriceSetDocument(priceSetDocument) <- TRUE;
 
 statusPriceSetDocument 'Статус' (priceSetDocument) = IF isPostedPriceSetDocument(priceSetDocument)
-                                                      THEN ('Проведен' AND priceSetDocument IS PriceSetDocument)
-                                                      ELSE ('Не проведен' AND priceSetDocument IS PriceSetDocument) MINCHARWIDTH 11;
+                                                      THEN ('Проведен' IF priceSetDocument IS PriceSetDocument)
+                                                      ELSE ('Не проведен' IF priceSetDocument IS PriceSetDocument) MINCHARWIDTH 11;
 
 // Основание
 freightBasePriceSetDocument = DATA Freight(BasePriceSetDocument);
@@ -393,7 +393,7 @@ META definePriceSetDocumentAggregations(document, caption)
     // ---------------------------------------- Артикулы ---------------------------------------- //
     order###document##Article = STRUCT(dateTimePriceSetDocumentArticle(document, article), document) IF inPriceSetDocumentArticle(document, article) PERSISTENT;
 
-    concatB###document##ArticleCurrencyDateTime (article, currency, dateTime) = GROUP MAX order###document##Article(document, article) AND
+    concatB###document##ArticleCurrencyDateTime (article, currency, dateTime) = GROUP MAX order###document##Article(document, article) IF
                                                                                           price###document##Article(document, article) AND
                                                                                           dateTimePriceSetDocumentArticle(document, article) < (dateTime AS DATETIME) AND
                                                                                           dateTimeToPriceSetDocumentArticle(document, article) > (dateTime AS DATETIME) AND
@@ -401,7 +401,7 @@ META definePriceSetDocumentAggregations(document, caption)
                                                                                        BY article, currencyPriceSetDocument(document), dateTime;
     document##BArticleCurrencyDateTime (article, currency, dateTime) = concatB###document##ArticleCurrencyDateTime(article, currency, dateTime)[2];
 
-    concatA###document##ArticleCurrencyDateTime (article, currency, dateTime) = GROUP MAX order###document##Article(document, article) AND
+    concatA###document##ArticleCurrencyDateTime (article, currency, dateTime) = GROUP MAX order###document##Article(document, article) IF
                                                                                           price###document##Article(document, article) AND
                                                                                           dateTimePriceSetDocumentArticle(document, article) <= (dateTime AS DATETIME) AND
                                                                                           dateTimeToPriceSetDocumentArticle(document, article) > (dateTime AS DATETIME) AND
@@ -427,7 +427,7 @@ META definePriceSetDocumentAggregations(document, caption)
     // ---------------------------------------- Sku ---------------------------------------- //
     order###document##Sku = STRUCT(overDateTimePriceSetDocumentSku(document, sku), document) IF overInPriceSetDocumentSku(document, sku) PERSISTENT;
 
-    concatB###document##SkuCurrencyDateTime (sku, currency, dateTime) = GROUP MAX order###document##Sku(document, sku) AND
+    concatB###document##SkuCurrencyDateTime (sku, currency, dateTime) = GROUP MAX order###document##Sku(document, sku) IF
                                                                                   overPrice###document##Sku (document, sku) AND
                                                                                   overDateTimePriceSetDocumentSku(document, sku) < (dateTime AS DATETIME) AND
                                                                                   overDateTimeToPriceSetDocumentSku(document, sku) > (dateTime AS DATETIME) AND
@@ -436,7 +436,7 @@ META definePriceSetDocumentAggregations(document, caption)
 
     document##BSkuCurrencyDateTime (sku, currency, dateTime) = concatB###document##SkuCurrencyDateTime(sku, currency, dateTime)[2];
 
-    concatA###document##SkuCurrencyDateTime (sku, currency, dateTime) = GROUP MAX order###document##Sku(document, sku) AND
+    concatA###document##SkuCurrencyDateTime (sku, currency, dateTime) = GROUP MAX order###document##Sku(document, sku) IF
                                                                                   overPrice###document##Sku (document, sku) AND
                                                                                   overDateTimePriceSetDocumentSku(document, sku) <= (dateTime AS DATETIME) AND
                                                                                   overDateTimeToPriceSetDocumentSku(document, sku) > (dateTime AS DATETIME) AND
@@ -465,7 +465,7 @@ END
 @definePriceSetDocumentAggregations(basePriceSetDocument, 'Базовая цена');
 @definePriceSetDocumentAggregations(discountPriceSetDocument, 'Цена со скидкой');
 
-concatBBasePriceSetDocumentArticleCurrencyRRPDateTime (article, currency, dateTime) = GROUP MAX orderBasePriceSetDocumentArticle(basePriceSetDocument, article) AND
+concatBBasePriceSetDocumentArticleCurrencyRRPDateTime (article, currency, dateTime) = GROUP MAX orderBasePriceSetDocumentArticle(basePriceSetDocument, article) IF
                                                                                                 RRPBasePriceSetDocumentArticle(basePriceSetDocument, article) AND
                                                                                                 dateTimePriceSetDocumentArticle(basePriceSetDocument, article) < (dateTime AS DATETIME) AND
                                                                                                 dateTimeToPriceSetDocumentArticle(basePriceSetDocument, article) > (dateTime AS DATETIME) AND
@@ -474,7 +474,7 @@ concatBBasePriceSetDocumentArticleCurrencyRRPDateTime (article, currency, dateTi
 
 basePriceSetDocumentBArticleCurrencyRRPDateTime (article, currency, dateTime) = concatBBasePriceSetDocumentArticleCurrencyRRPDateTime(article, currency, dateTime)[2];
 
-concatBBasePriceSetDocumentSkuCurrencyRRPDateTime (sku, currency, dateTime) = GROUP MAX orderBasePriceSetDocumentSku(basePriceSetDocument, sku) AND
+concatBBasePriceSetDocumentSkuCurrencyRRPDateTime (sku, currency, dateTime) = GROUP MAX orderBasePriceSetDocumentSku(basePriceSetDocument, sku) IF
                                                                                         overRRPBasePriceSetDocumentSku(basePriceSetDocument, sku) AND
                                                                                         overDateTimePriceSetDocumentSku(basePriceSetDocument, sku) < (dateTime AS DATETIME) AND
                                                                                         overDateTimeToPriceSetDocumentSku(basePriceSetDocument, sku) > (dateTime AS DATETIME) AND
@@ -1004,7 +1004,7 @@ createUserPriceChangeStockPriceSetDocument 'Создать документ пе
         EXEC apply();
     }
 
-}] (stock, priceSetDocument) AND NOT userPriceChangeStockPriceSetDocument(stock, priceSetDocument) AND isPostedPriceSetDocument(priceSetDocument) AND stock IS DepartmentStore CONFIRM;
+}] (stock, priceSetDocument) IF NOT userPriceChangeStockPriceSetDocument(stock, priceSetDocument) AND isPostedPriceSetDocument(priceSetDocument) AND stock IS DepartmentStore CONFIRM;
 
 // ------------------------------------------- Печать маркировки article -------------------------------------- //
 
@@ -1035,7 +1035,7 @@ printPricePriceSetDocumentArticle 'Печать цен для маркировк
     SET shouldBePrintArticle(a) <- NULL;
     SET shouldBePrintArticle(a) <- TRUE IF (a == (article AS Article));
     FORM priceArticlePriceSetDocumentPrint OBJECTS s = stock, p = priceSetDocument MODAL;
-}](stock, priceSetDocument, article) AND isPostedPriceSetDocument(priceSetDocument);
+}](stock, priceSetDocument, article) IF isPostedPriceSetDocument(priceSetDocument);
 
 printAllPricePriceSetDocumentArticle 'Печать цен для маркировки' = ACTION (stock, priceSetDocument) {
     SET shouldBePrintArticle(article) <- NULL;
@@ -1069,7 +1069,7 @@ printPricePriceSetDocumentSku 'Печать цен для маркировки' 
     SET shouldBePrintSku(sk) <- NULL;
     SET shouldBePrintSku(sk) <- TRUE IF (sk == (sku AS Sku));
     FORM priceSkuPriceSetDocumentPrint OBJECTS s = stock, p = priceSetDocument MODAL;
-}](stock, priceSetDocument, sku) AND isPostedPriceSetDocument(priceSetDocument);
+}](stock, priceSetDocument, sku) IF isPostedPriceSetDocument(priceSetDocument);
 
 printAllPricePriceSetDocumentSku 'Печать цен для маркировки' = ACTION (stock, priceSetDocument) {
     SET shouldBePrintSku(sku) <- NULL;
@@ -1176,23 +1176,23 @@ DESIGN priceSetDocuments FROM DEFAULT {
 quantityPriceSetDocumentFreight (freight) = GROUP SUM 1 IF freightBasePriceSetDocument(basePriceSetDocument) BY freightBasePriceSetDocument(basePriceSetDocument);
 
 isPriceSetFreightImporter 'Статус' (freight, importer) = IF basePriceSetDocumentFreightImporter (freight, importer)
-                                     THEN 'Расценен' AND freight IS Freight AND importer IS Importer
-                                     ELSE 'Не расценен' AND freight IS Freight AND importer IS Importer MINCHARWIDTH 11;
+                                     THEN 'Расценен' IF freight IS Freight AND importer IS Importer
+                                     ELSE 'Не расценен' IF freight IS Freight AND importer IS Importer MINCHARWIDTH 11;
 
 quantityImportersFreight (freight) = GROUP SUM 1 IF quantityImporterFreight (importer, freight) BY freight IF importer IS Importer;
 
 quantityNeededPriceSetDocumentFreight (freight) = GROUP SUM 1 IF quantityImporterFreight (importer, freight)
     AND NOT basePriceSetDocumentFreightImporter(freight, importer) BY freight IF importer IS Importer;
 
-needPriceSetDocumentFreight (freight) = TRUE AND NOT
+needPriceSetDocumentFreight (freight) = TRUE IF NOT
     (quantityImportersFreight (freight) (-) quantityNeededPriceSetDocumentFreight(freight)) == quantityImportersFreight (freight);
 
 isPriceSetFreight 'Статус' (freight) = IF needPriceSetDocumentFreight (freight)
-                                        THEN 'Не расценен' AND freight IS Freight
+                                        THEN 'Не расценен' IF freight IS Freight
                                         ELSE
                                             IF  quantityNeededPriceSetDocumentFreight (freight)
-                                            THEN 'Расценен частично' AND freight IS Freight
-                                            ELSE 'Расценен' AND freight IS Freight MINCHARWIDTH 11;
+                                            THEN 'Расценен частично' IF freight IS Freight
+                                            ELSE 'Расценен' IF freight IS Freight MINCHARWIDTH 11;
 
 backgroundPriceSetDocumentFreightImporter 'Цвет' (freight, importer) = RGB(212,255,212)
     IF freight IS Freight AND importer IS Importer AND NOT basePriceSetDocumentFreightImporter(freight, importer);

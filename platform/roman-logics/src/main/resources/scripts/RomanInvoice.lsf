@@ -34,13 +34,13 @@ changeAdditionalCompositionSkuLanguageInvoice = ACTION (sku, invoice) {
 
 // ----------- Групповое изменение составов ----------------- //
 
-countInvoiceMainComposition 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS Invoice
+countInvoiceMainComposition 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) IF document IS Invoice
                                              BY document, mainCompositionSku(sku);
 
-countInvoiceAdditionalComposition 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS Invoice
+countInvoiceAdditionalComposition 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) IF document IS Invoice
                                              BY document, additionalCompositionSku(sku);
 
-countInvoiceMainCompositionLanguage 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS Invoice
+countInvoiceMainCompositionLanguage 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) IF document IS Invoice
                                                      BY document, mainCompositionSkuLanguage(sku, languageInvoice(document));
 
 countInvoiceAdditionalCompositionLanguage 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS Invoice

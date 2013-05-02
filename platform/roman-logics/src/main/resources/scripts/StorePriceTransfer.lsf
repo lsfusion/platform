@@ -20,7 +20,7 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
     isStoreDestinationStock###object##Out 'Перемещение на магазин' (object##Out) = destinationStock###object##Out(object##Out) IS DepartmentStore;
 
     needTransferPriceActDetail###object##OutDetailBatch (object##OutDetail, batch) = costSkuLedgerBatch(object##OutDetail, batch)
-        AND destinationStock###object##Out(object##Out###object##OutDetail(object##OutDetail)) IS DepartmentStore
+        IF destinationStock###object##Out(object##Out###object##OutDetail(object##OutDetail)) IS DepartmentStore
         AND batch IS BatchA;
 
     @defineDocumentTables (transferPriceAct###object);

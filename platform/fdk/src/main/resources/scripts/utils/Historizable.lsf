@@ -21,7 +21,7 @@ computerCreatedHistorizable (object) <- currentComputer() WHEN ASSIGNED(object I
 META defineHistorizable(property, caption, type, object, objectIdentity, group)
     data###property##Date caption = DATA type (###object, DATE) IN group;
 
-    date###property##Date (object, date) = GROUP MAX dateIn AND data###property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
+    date###property##Date (object, date) = GROUP MAX dateIn IF data###property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
 
     property##Date caption (object, date) = data###property##Date(object, date###property##Date(object, date)) IN group;
     over###property##Date caption = property##Date(object, date) OVERRIDE data###property##Date(object, date) IN group;
@@ -56,7 +56,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, object, obj
     data###property##Date caption = DATA type (###object, DATE);
     data###typeIdentity###property##Date caption (object, date) = typeIdentity(data###property##Date(object, date)) IN group;
 
-    date###property##Date (object, date) = GROUP MAX dateIn AND data###property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
+    date###property##Date (object, date) = GROUP MAX dateIn IF data###property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
 
     property##Date caption (object, date) = data###property##Date(object, date###property##Date(object, date)) IN group;
 
@@ -89,7 +89,7 @@ END
 META defineHistorizable(property, caption, type, object1, object1Identity, object2, object2Identity, group)
     data###property##Date caption = DATA type (###object1, ###object2, DATE) IN group;
 
-    date###property##Date (object1, object2, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
+    date###property##Date (object1, object2, date) = GROUP MAX dateIn IF data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
 
     property##Date caption (object1, object2, date) = data###property##Date(object1, object2, date###property##Date(object1, object2, date));
     over###property##Date caption = property##Date(object1, object2, date) OVERRIDE data###property##Date(object1, object2, date);
@@ -126,7 +126,7 @@ META defineHistorizableHeader(property, caption, type, typeIdentity, typeName, o
     data###property##Date caption = DATA type (###object1, ###object2, DATE);
     data###typeName###property##Date caption (object1, object2, date) = typeIdentity(data###property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
-    date###property##Date (object1, object2, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
+    date###property##Date (object1, object2, date) = GROUP MAX dateIn IF data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
 END
 
 META defineHistorizableFooter(property, caption, typeIdentity, typeName, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
@@ -176,7 +176,7 @@ END
 
 META defineHistorizableCustomDefault(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
     @defineHistorizableHeader(property, caption, type, typeIdentity, typeIdentity, object1, object2, fixedCharWidth, group);
-    property##Date caption (object1, object2, date) = (defaultProperty(object1, object2) AND date IS DATE) OVERRIDE data###property##Date(object1, object2, date###property##Date(object1, object2, date));
+    property##Date caption (object1, object2, date) = (defaultProperty(object1, object2) IF date IS DATE) OVERRIDE data###property##Date(object1, object2, date###property##Date(object1, object2, date));
     @defineHistorizableFooter(property, caption, typeIdentity, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group);
 END
 
@@ -184,7 +184,7 @@ END
 META defineHistorizable(property, caption, type, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
     data###property##Date caption = DATA type (###object1, ###object2, ###object3, DATE) IN group;
 
-    date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
+    date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn IF data###property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
 
     property##Date caption (object1, object2, object3, date) = data###property##Date(object1, object2, object3, date###property##Date(object1, object2, object3, date));
     over###property##Date caption = property##Date(object1, object2, object3, date) OVERRIDE data###property##Date(object1, object2, object3, date);
@@ -223,9 +223,9 @@ META defineHistorizableCustomDefault(property, defaultProperty, caption, type, t
     data###property##Date caption = DATA type (###object1, ###object2, ###object3, DATE);
     data###typeIdentity###property##Date caption (object1, object2, object3, date) = typeIdentity(data###property##Date(object1, object2, object3, date)) IN group;
 
-    date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
+    date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn IF data###property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
 
-    property##Date caption (object1, object2, object3, date) = defaultProperty(object1, object2, object3) AND date IS DATE OVERRIDE
+    property##Date caption (object1, object2, object3, date) = defaultProperty(object1, object2, object3) IF date IS DATE OVERRIDE
                                                                data###property##Date(object1, object2, object3, date###property##Date(object1, object2, object3, date));
     over###property##Date caption = property##Date(object1, object2, object3, date) OVERRIDE data###property##Date(object1, object2, object3, date);
     over###typeIdentity###property##Date caption (object1, object2, object3, date) = typeIdentity(over###property##Date(object1, object2, object3, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
@@ -281,16 +281,16 @@ META defineHistorizableLedger(property, caption, type, key0, key0Class, key1, ke
 
     property###property##Ledger caption (ledger) = ABSTRACT type (###property##Ledger) PERSISTENT;
 
-    orderT###property##Ledger = STRUCT(dateTime###property##Ledger(ledger), ledger) AND active###property##Ledger(ledger) PERSISTENT INDEXED;
+    orderT###property##Ledger = STRUCT(dateTime###property##Ledger(ledger), ledger) IF active###property##Ledger(ledger) PERSISTENT INDEXED;
 
     concatLedgerB###property###key0###key1##DateTime (key0, key1, dateTime) =
-        GROUP MAX orderT###property##Ledger(ledger) AND dateTime###property##Ledger(ledger) < (dateTime AS DATETIME)
+        GROUP MAX orderT###property##Ledger(ledger) IF dateTime###property##Ledger(ledger) < (dateTime AS DATETIME)
               BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), dateTime;
 
     ledgerB###property###key0###key1##DateTime (key0, key1, dateTime) = concatLedgerB###property###key0###key1##DateTime(key0, key1, dateTime)[2];
 
     concatLedgerA###property###key0###key1##DateTime (key0, key1, dateTime) =
-        GROUP MAX orderT###property##Ledger(ledger) AND dateTime###property##Ledger(ledger) <= (dateTime AS DATETIME)
+        GROUP MAX orderT###property##Ledger(ledger) IF dateTime###property##Ledger(ledger) <= (dateTime AS DATETIME)
               BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), dateTime;
 
     ledgerA###property###key0###key1##DateTime (key0, key1, dateTime) = concatLedgerA###property###key0###key1##DateTime(key0, key1, dateTime)[2];
@@ -301,13 +301,13 @@ META defineHistorizableLedger(property, caption, type, key0, key0Class, key1, ke
     property##A###key0###key1##DateTime caption##' (после)' (key0, key1, dateTime) = property###property##Ledger(ledgerA###property###key0###key1##DateTime(key0, key1, dateTime));
 
     concatLedgerB###property###key0###key1##Date (key0, key1, date) =
-        GROUP MAX orderT###property##Ledger(ledger) AND date###property##Ledger(ledger) < (date AS DATE)
+        GROUP MAX orderT###property##Ledger(ledger) IF date###property##Ledger(ledger) < (date AS DATE)
               BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), date;
 
     ledgerB###property###key0###key1##Date (key0, key1, date) = concatLedgerB###property###key0###key1##Date(key0, key1, date)[2];
 
     concatLedgerA###property###key0###key1##Date (key0, key1, date) =
-        GROUP MAX orderT###property##Ledger(ledger) AND date###property##Ledger(ledger) <= (date AS DATE)
+        GROUP MAX orderT###property##Ledger(ledger) IF date###property##Ledger(ledger) <= (date AS DATE)
               BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), date;
 
     ledgerA###property###key0###key1##Date (key0, key1, date) = concatLedgerA###property###key0###key1##Date(key0, key1, date)[2];
