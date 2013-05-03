@@ -1,6 +1,6 @@
 MODULE StoreWarehouse;
 
-REQUIRE Store, Warehouse, PriceListWarehouse, PriceListStore, WriteOff;
+REQUIRE Store, Warehouse, PriceListWarehouse, PriceListStore, WriteOff, PriceListStock;
 
 changeClassWarehouse 'Сделать магазином' = ACTION (warehouse) NEWSESSION {
 

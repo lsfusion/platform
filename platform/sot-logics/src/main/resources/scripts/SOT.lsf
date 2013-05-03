@@ -13,6 +13,7 @@ REQUIRE System,
         Warehouse,
         PriceListWarehouse,
         PriceListStore,
+        PriceListStock,
         MasterData;
 
 CLASS SotUOM 'Единица измерений SOT' : Externalizable;

@@ -1,0 +1,33 @@
+MODULE PriceListStock;
+
+REQUIRE PriceList, Stock;
+
+NAMESPACE PriceList;
+
+CLASS PriceStockGroup 'Ценовые группы';
+TABLE priceStockGroup(PriceStockGroup);
+
+namePriceStockGroup 'Наименование' = DATA ISTRING[50](PriceStockGroup);
+
+priceStockGroupStock = ABSTRACT PriceStockGroup (Stock);
+namePriceStockGroupStock 'Ценовая группа' (stock) = namePriceStockGroup(priceStockGroupStock(stock));
+
+FORM priceStockGroups 'Ценовые группы'
+
+    OBJECTS g = PriceStockGroup
+    PROPERTIES(g) READONLY objectClassName, namePriceStockGroup
+    PROPERTIES(g) ADDFORM, EDITFORM, delete
+
+    OBJECTS s = Stock
+    PROPERTIES(s) READONLY objectClassName, nameStock
+
+    FILTERS priceStockGroupStock(s) == g
+
+    DIALOG PriceStockGroup OBJECT g
+;
+
+NAVIGATOR {
+    priceListMasterData {
+        ADD priceStockGroups;
+    }
+}

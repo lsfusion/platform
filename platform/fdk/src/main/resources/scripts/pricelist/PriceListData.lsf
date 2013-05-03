@@ -164,6 +164,24 @@ stocksPriceList 'Склады' (priceList) = GROUP CONCAT nameStock(stock) IF in
                                        BY priceList
                                        ORDER stock MINCHARWIDTH 20 PREFCHARWIDTH 40 PERSISTENT;
 
+// ------- Проведение по priceListLedger ----- //
+
+EXTEND CLASS PriceListDetail : PriceListLedger;
+
+fromDateTimePriceListLedger (ledger) += fromDateTimePriceListDetail(ledger);
+toDateTimePriceListLedger (ledger) += toDateTimePriceListDetail(ledger);
+
+isPostedPriceListLedger(ledger) += isPostedPriceListDetail(ledger);
+
+skuPriceListLedger (ledger) += skuPriceListDetail(ledger);
+
+companyPriceListLedger (ledger) += companyPriceList(priceListPriceListDetail(ledger));
+
+descriptionPriceListLedger (ledger) += descriptionPriceList(priceListPriceListDetail(ledger));
+
+pricePriceListLedgerLedgerPriceListType (ledger, type) += pricePriceListDetailDataPriceListType(ledger, type);
+inPriceListLedgerStock (ledger, stock) += inPriceListStockOver(priceListPriceListDetail(ledger), stock);
+
 // -------------- Текущая действующая цена --------------- //
 
 currentPricePriceListDetailDataPriceListTypeStock 'Действующая цена' (priceListDetail, dataPriceListType, stock) =
@@ -172,33 +190,34 @@ currentPricePriceListDetailDataPriceListTypeStock 'Действующая цен
 currentPriceSkuPriceListDataPriceListTypeStock 'Действующая цена' (sku, priceList, dataPriceListType, stock) =
     prevPricePriceListTypeSkuStockDateTime(dataPriceListType, sku, stock, subtractDateTimeSeconds(fromDateTimePriceList(priceList), 1));
 
-markUpPricePriceListDetailDataPriceListTypeStock 'Изменение, %' (priceListDetail, dataPriceListType, stock) =
+changePricePriceListDetailDataPriceListTypeStock 'Изменение, %' (priceListDetail, dataPriceListType, stock) =
     pricePriceListDetailDataPriceListType(priceListDetail, dataPriceListType) * 100.0 /
     currentPricePriceListDetailDataPriceListTypeStock (priceListDetail, dataPriceListType, stock) - 100.0;
 
-extendNameCurrentDataPriceListType (userPriceList, dataPriceListType) =
+// Заголовки колонок
+headerNameCurrentDataPriceListType (userPriceList, dataPriceListType) =
     [FORMULA STRING[50]  ' CAST($1 AS TEXT) || \' (старая) \''](
     namePriceListType(dataPriceListType)) IF showPriceListPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
-extendNameMarkUpDataPriceListType (userPriceList, dataPriceListType) =
+headerNameChangeDataPriceListType (userPriceList, dataPriceListType) =
     [FORMULA STRING[50]  'CAST($1 AS TEXT) || \' (изменение, %) \''](
     namePriceListType(dataPriceListType)) IF inUserPriceListDataPriceListType (userPriceList, dataPriceListType) AND
                                              showUserPriceListPriceListType (userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
-extendNameDataPriceListType (userPriceList, dataPriceListType) =
+headerNameDataPriceListType (userPriceList, dataPriceListType) =
     [FORMULA STRING[50]  ' CAST($1 AS TEXT) || \' (новая) \''](
     namePriceListType(dataPriceListType)) IF inPriceListDataPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
+// Цвета колонок
 backgroundCurrentDataPriceListType 'Цвет' (dataPriceListType) = RGB(255,238,165) IF dataPriceListType IS DataPriceListType;
-backgroundMarkUpDataPriceListType 'Цвет' (dataPriceListType) = RGB(232,184,146) IF dataPriceListType IS DataPriceListType;
+backgroundChangeDataPriceListType 'Цвет' (dataPriceListType) = RGB(232,184,146) IF dataPriceListType IS DataPriceListType;
 backgroundDataPriceListType 'Цвет' (dataPriceListType) = RGB(213,249,185) IF dataPriceListType IS DataPriceListType;
 
-inStockGroupStock (stockGroup, stock) = stock IS Stock AND NOT stockGroup IS StockGroup OVERRIDE isParentStockGroupStock(stockGroup, stock);
-
+// Подбор товаров
 detailSkuUserPriceList(sku, price) = GROUP SUM 1 IF sku == skuUserPriceListDetail(detail) AND price == userPriceListUserPriceListDetail(detail)
                                            BY skuUserPriceListDetail(detail), userPriceListUserPriceListDetail(detail);
 
-inSkuUserPriceList 'Отм.' (sku, price) = TRUE IF detailSkuUserPriceList(sku, price);
+inSkuUserPriceList 'Вкл.' (sku, price) = TRUE IF detailSkuUserPriceList(sku, price);
 
 changeInSkuUserPriceList = ACTION (sku, price) {
     REQUEST BOOLEAN INPUT;
@@ -217,6 +236,8 @@ changeInSkuUserPriceList = ACTION (sku, price) {
         }
     }
 }
+
+// --------------- Действия по заполнению спецификации ------------ //
 
 isSelectedPriceListDetail 'Отм' = DATA SESSION BOOLEAN (PriceListDetail);
 sumSelectedPriceList (priceList) =
@@ -253,10 +274,7 @@ DESIGN chooseMarkUpSkuUserPriceList FROM DEFAULT {
     ADD functions.box;
 }
 
-sessionDataPriceListType 'Вид цены' = DATA SESSION DataPriceListType();
-
-changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPriceList, stock){
-
+changeMarkUpSkuUserPriceList 'Рассчитать цену' = ACTION (userPriceList, stock) {
     FORM chooseMarkUpSkuUserPriceList OBJECTS p = userPriceList MODAL;
     IF formResult() == FormResult.ok THEN {
         IF TRUE IF NOT sumSelectedPriceList(userPriceList) THEN MESSAGE 'Выберите хотя бы одну позицию' ELSE
@@ -267,9 +285,7 @@ changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPri
     }
 }
 
-// ----------------------------------------- Операции --------------------------------------- //
-
-//Подбор документов
+// ------------- Подбор документов ----------------- //
 
 numberDocument(priceList) += numberPriceList(priceList);
 seriesDocument(priceList) += seriesPriceList(priceList);
@@ -293,25 +309,32 @@ fillDocumentPriceList 'Подбор документа' = ACTION (userPriceList)
     }
 } TOOLBAR;
 
+// ---------------------- Активность --------------------------- //
+
 isActivePriceList(priceList) = (fromDateTimePriceList(priceList) < currentDateTime() AND toDateTimePriceList(priceList) > currentDateTime()) OR
                                (fromDateTimePriceList(priceList) < currentDateTime() AND NOT toDateTimePriceList(priceList));
+isActivePriceListDetail(priceListDetail) = (fromDateTimePriceListDetail(priceListDetail) < currentDateTime() AND toDateTimePriceListDetail(priceListDetail) > currentDateTime()) OR
+                               (fromDateTimePriceListDetail(priceListDetail) < currentDateTime() AND NOT toDateTimePriceListDetail(priceListDetail));
+
+// Цвета
 backgroundPriceList 'Цвет' (priceList) =
     IF currentDateTime() > toDateTimePriceList(priceList)
         THEN RGB(255, 226, 226) IF priceList IS PriceList
     ELSE
         RGB(226, 255, 226) IF fromDateTimePriceList(priceList) > currentDateTime();
 
-isActivePriceListDetail(priceListDetail) = (fromDateTimePriceListDetail(priceListDetail) < currentDateTime() AND toDateTimePriceListDetail(priceListDetail) > currentDateTime()) OR
-                               (fromDateTimePriceListDetail(priceListDetail) < currentDateTime() AND NOT toDateTimePriceListDetail(priceListDetail));
 backgroundPriceListDetail 'Цвет' (priceListDetail) =
     IF currentDateTime() > toDateTimePriceListDetail(priceListDetail)
         THEN RGB(255, 226, 226) IF priceListDetail IS PriceListDetail
     ELSE
         RGB(226, 255, 226) IF fromDateTimePriceListDetail(priceListDetail) > currentDateTime();
 
-//вкладка подбор
+// --------------- Фильтры для подбора товаров ------------------ //
+
+// Вид цены
 filterPriceListTypeUserPriceList = DATA SESSION PriceListType (UserPriceList);
 nameFilterPriceListTypeUserPriceList 'Вид цены' (userPriceList) = namePriceListType(filterPriceListTypeUserPriceList(userPriceList));
+
 currentPriceSkuPriceListStock 'Текущая цена' (sku, userPriceList, stock) =
     currentPriceSkuPriceListDataPriceListTypeStock(sku, userPriceList, filterPriceListTypeUserPriceList(userPriceList), stock);
 filterPriceListTypeUserPriceListSkuStock (userPriceList, sku, stock) =
@@ -339,7 +362,7 @@ FORM userPriceList 'Прайс'
                   isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                   shortNameUOMSkuUserPriceListDetail, fromDateUserPriceListDetail, fromTimeUserPriceListDetail,
                   toDateUserPriceListDetail, toTimeUserPriceListDetail, ADDOBJ, delete
-    PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER extendNameDataPriceListType(p, t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID
+    PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER headerNameDataPriceListType(p, t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID
     PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR fillDocumentPriceList, addDetailInputBarcodeUserPriceListDetailUserPriceList
     FILTERS userPriceListUserPriceListDetail(d) == p,
             isParentSkuGroupSku(sk, skuPriceListDetail(d)) OR (sk IS SkuGroup AND d IS PriceListDetail AND NOT skuPriceListDetail(d))
@@ -358,18 +381,19 @@ FORM userPriceList 'Прайс'
     OBJECTS ts = Stock
     PROPERTIES READONLY  nameStock(ts)
     PROPERTIES(p, ts)    inPriceListStockOver
-    PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t)
-    PROPERTIES(d, t, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(p, t) BACKGROUND backgroundMarkUpDataPriceListType(t)
-    FILTERS inStockGroupStock(sg, ts),
+    PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER headerNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t)
+    PROPERTIES(d, t, ts) changePricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER headerNameChangeDataPriceListType(p, t) BACKGROUND backgroundChangeDataPriceListType(t)
+    FILTERS ts IS Stock AND NOT sg IS StockGroup OR isParentStockGroupStock(sg, ts),
             isCompanyStock(ts)
     FILTERGROUP filters2
             FILTER 'Выбранные склады' 'F10' inPriceListStockOver(p, ts) DEFAULT
 
     OBJECTS tt = Stock FIXED PANEL
     PROPERTIES SELECTOR stockName = nameStock(tt) FORCE PANEL
-    PROPERTIES(d, t, tt) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t) TODRAW d FORCE GRID
-    PROPERTIES(d, t, tt) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(p, t) BACKGROUND backgroundMarkUpDataPriceListType(t) TODRAW d FORCE GRID
+    PROPERTIES(d, t, tt) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER headerNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t) TODRAW d FORCE GRID
+    PROPERTIES(d, t, tt) changePricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER headerNameChangeDataPriceListType(p, t) BACKGROUND backgroundChangeDataPriceListType(t) TODRAW d FORCE GRID
     PROPERTIES(p, tt)    changeMarkUpSkuUserPriceList TODRAW d FORCE PANEL TOOLBAR
+
     FILTERS isCompanyStock(tt)
 
     TREE skuTree2 sk2 = SkuGroup PARENT parentSkuGroup
@@ -491,6 +515,8 @@ editUserPriceList 'Редактировать' = ACTION EDITFORM UserPriceList;
 editPriceList 'Редактировать' = ABSTRACT ACTION (PriceList) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 editPriceList (p) += editUserPriceList(p);
 
+// ------------------ Копирование прайс-листов ------------------- //
+
 copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
 
     FOR ADDOBJ u = UserPriceList DO {
@@ -510,7 +536,7 @@ copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
     }
 }
 
-renewPriceList 'Обновить' = ACTION (priceList) {
+updatePriceList 'Обновить' = ACTION (priceList) {
 
     FOR ADDOBJ u = UserPriceList DO {
         SET currencyUserPriceList(u) <- currencyUserPriceList(priceList);
@@ -603,8 +629,7 @@ NAVIGATOR {
 
 // Заполнение на основании
 
-addUnderPriceListUserPriceList 'Заполнить на основании' = ACTION (userPriceList){
-
+addUnderPriceListUserPriceList 'Заполнить на основании' = ACTION (userPriceList) {
     FORM priceLists MODAL;
     IF formResult() == FormResult.ok THEN {
         FOR priceListPriceListDetail(detail) == chosenObject('p') DO {
@@ -620,24 +645,6 @@ addUnderPriceListUserPriceList 'Заполнить на основании' = AC
 EXTEND FORM userPriceList
     PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR addUnderPriceListUserPriceList
 ;
-
-// ------- Проведение по priceListLedger ----- //
-
-EXTEND CLASS PriceListDetail : PriceListLedger;
-
-fromDateTimePriceListLedger (ledger) += fromDateTimePriceListDetail(ledger);
-toDateTimePriceListLedger (ledger) += toDateTimePriceListDetail(ledger);
-
-isPostedPriceListLedger(ledger) += isPostedPriceListDetail(ledger);
-
-skuPriceListLedger (ledger) += skuPriceListDetail(ledger);
-
-companyPriceListLedger (ledger) += companyPriceList(priceListPriceListDetail(ledger));
-
-descriptionPriceListLedger (ledger) += descriptionPriceList(priceListPriceListDetail(ledger));
-
-pricePriceListLedgerLedgerPriceListType (ledger, type) += pricePriceListDetailDataPriceListType(ledger, type);
-inPriceListLedgerStock (ledger, stock) += inPriceListStockOver(priceListPriceListDetail(ledger), stock);
 
 // ------------------------- Расширяем форму LegalEntity ----------------------- //
 
@@ -659,13 +666,12 @@ EXTEND FORM legalEntity
                            fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
                            nameCurrencyUserPriceList, priceListTypesPriceList,
                            stocksPriceList, noteUserPriceList, objectClassName
-    PROPERTIES addUserPriceListLegalEntity(l) TODRAW p FORCE PANEL, renewPriceList(p) TODRAW p FORCE PANEL TOOLBAR
+    PROPERTIES addUserPriceListLegalEntity(l) TODRAW p FORCE PANEL, updatePriceList(p) TODRAW p FORCE PANEL TOOLBAR
     PROPERTIES(p) EDITSESSIONFORM, delete FORCE PANEL TOOLBAR
     FILTERS companyUserPriceList(p) == l
 ;
 
 EXTEND DESIGN legalEntity{
-
     extendContainer {
         ADD p.box{caption = 'Прайсы';}
     }

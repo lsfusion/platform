@@ -1,6 +1,6 @@
 MODULE PurchaseInvoice;
 
-REQUIRE Utils, PurchaseOrder, OrderInvoice, PurchaseOperation, CustomsGroup;
+REQUIRE Utils, PurchaseOrder, OrderInvoice, PurchaseOperation, CustomsGroup, PriceListStock;
 
 NAMESPACE Purchase;
 

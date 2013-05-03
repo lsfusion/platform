@@ -84,29 +84,6 @@ includeVATBasePriceListType(type) += includeVATSystemPriceListType(type);
 priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceSystemPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceSystemPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
 
-//----------------------------- Ценовые группы --------------------------//
-CLASS PriceStockGroup 'Ценовые группы';
-TABLE priceStockGroup(PriceStockGroup);
-
-namePriceStockGroup 'Наименование' = DATA ISTRING[50](PriceStockGroup);
-
-priceStockGroupStock = ABSTRACT PriceStockGroup (Stock);
-namePriceStockGroupStock 'Ценовая группа' (stock) = namePriceStockGroup(priceStockGroupStock(stock));
-
-FORM priceStockGroups 'Ценовые группы'
-
-    OBJECTS g = PriceStockGroup
-    PROPERTIES(g) READONLY objectClassName, namePriceStockGroup
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
-
-    OBJECTS s = Stock
-    PROPERTIES(s) READONLY objectClassName, nameStock
-
-    FILTERS priceStockGroupStock(s) == g
-
-    DIALOG PriceStockGroup OBJECT g
-;
-
 // ------------------------------------- Виды цен, формируемые ledger'ами ----------- //
 
 CLASS ABSTRACT LedgerPriceListType 'Регистровый вид цены' : BasePriceListType;
@@ -336,7 +313,6 @@ NAVIGATOR {
         NEW priceListMasterData 'Справочники' {
             ADD priceListTypes;
             ADD priceIntervals;
-            ADD priceStockGroups;
         }
     }
 }

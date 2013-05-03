@@ -1,8 +1,6 @@
 MODULE PriceListWarehouse;
 
-REQUIRE PriceList, Warehouse;
-
-
+REQUIRE PriceList, Warehouse, PriceListStock;
 
 //------------------------- Расширяем форму склада -------------------------//
 

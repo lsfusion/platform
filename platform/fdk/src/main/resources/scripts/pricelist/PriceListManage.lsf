@@ -55,7 +55,7 @@ FORM rangeManagement 'Управление ассортиментом'
                            fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
                            nameCurrencyUserPriceList, nameCompanyUserPriceList, priceListTypesPriceList, stocksPriceList,
                            noteUserPriceList, objectClassName
-    PROPERTIES(p) EDITFORM, delete, renewPriceList FORCE PANEL TOOLBAR
+    PROPERTIES(p) EDITFORM, delete, updatePriceList FORCE PANEL TOOLBAR
     ORDER BY fromDateUserPriceList, fromTimeUserPriceList
     FILTERS filterLegalEntityRangeManagementUserPriceList(p),
             inPriceListDataPriceListType(p, pt)
@@ -77,7 +77,7 @@ FORM rangeManagement 'Управление ассортиментом'
     PROPERTIES createPriceRangeManagement(pt) TODRAW sk FORCE PANEL
     ORDER BY nameStock
     FILTERS isParentSkuGroupSku(sg, sk),
-            inStockGroupStock(st, s),
+            s IS Stock AND NOT st IS StockGroup OR isParentStockGroupStock(st, s),
             isCompanyStock(s)
 
     PROPERTIES(pt, sk, s, dt) READONLY pricePriceListTypeSkuStockDateTime, nameCompanyLedgerPriceListTypeSkuStockDateTime,
