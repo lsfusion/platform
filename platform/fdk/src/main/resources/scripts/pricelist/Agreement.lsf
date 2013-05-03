@@ -15,10 +15,12 @@ nameAgreement 'Наименование' = DATA ISTRING[50](Agreement);
 
 @defineDocumentHeaderTime(Agreement);
 @defineDocumentHeaderTimePrefix(Agreement, from, ' с');
+@deriveDocumentHeaderTimePrefix(Agreement, from);
 
-toDateAgreement 'Дата по' = DATA DATE(Agreement);
-toTimeAgreement 'Время по' = DATA TIME(Agreement);
-toDateTimeAgreement 'Дата/время по'(agreement) = dateTimeToDateTime(toDateAgreement(agreement), toTimeAgreement(agreement));
+@defineDocumentHeaderTimePrefix(Agreement, to, ' по');
+//toDateAgreement 'Дата по' = DATA DATE(Agreement);
+//toTimeAgreement 'Время по' = DATA TIME(Agreement);
+//toDateTimeAgreement 'Дата/время по'(agreement) = dateTimeToDateTime(toDateAgreement(agreement), toTimeAgreement(agreement));
 
 @defineDocumentHeaderNote(Agreement);
 @defineDocumentHeaderCurrency(agreement);

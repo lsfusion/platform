@@ -33,7 +33,7 @@ NAMESPACE Purchase;
 @defineDocumentOperationRole(userInvoice);
 
 @defineOperationProperty(isHomeCurrency, 'Конвертация', showContainer);
-@deriveDocumentOperationProperty(Invoice, isHomeCurrency);
+@deriveDocumentOperationProperty(UserInvoice, isHomeCurrency);
 
 // -------------------------------------------- Инвойс на основе заказа -------------------------------------- //
 
@@ -58,7 +58,7 @@ priceInvoiceDetailOver (detail) = IF isHomeCurrencyInvoice(invoiceInvoiceDetail(
                                      homePriceInvoiceDetail(detail)
                                 ELSE priceInvoiceDetail(detail);
 
-priceUserInvoiceDetailOver (detail) = IF isHomeCurrencyInvoice(userInvoiceUserInvoiceDetail(detail)) THEN
+priceUserInvoiceDetailOver (detail) = IF isHomeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(detail)) THEN
                                          homePriceUserInvoiceDetail(detail)
                                     ELSE priceUserInvoiceDetail(detail);
 

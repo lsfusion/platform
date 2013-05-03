@@ -10,6 +10,7 @@ CLASS CompliancePosted 'Проведенный сертификат' : Complianc
 @defineNumeratedObjectDefault(Compliance, 'Нумератор для сертификатов', 'СС');
 
 @defineDocumentHeaderTimePrefix(Compliance, ,' документа');
+@deriveDocumentHeaderTimePrefix(Compliance, );
 dateCertificate(certificate) += dateCompliance(certificate);
 timeCertificate(certificate) += timeCompliance(certificate);
 
@@ -17,9 +18,10 @@ timeCertificate(certificate) += timeCompliance(certificate);
 fromDateCertificate(certificate) += fromDateCompliance(certificate);
 fromTimeCertificate(certificate) += fromTimeCompliance(certificate);
 
-toDateCompliance 'Дата по' = DATA DATE(Compliance);
-toTimeCompliance 'Время по' = DATA TIME(Compliance);
-toDateTimeCompliance 'Дата/время по'(compliance) = dateTimeToDateTime(toDateCompliance(compliance), toTimeCompliance(compliance));
+@defineDocumentHeaderTimePrefix(Compliance, to, ' по');
+//toDateCompliance 'Дата по' = DATA DATE(Compliance);
+//toTimeCompliance 'Время по' = DATA TIME(Compliance);
+//toDateTimeCompliance 'Дата/время по'(compliance) = dateTimeToDateTime(toDateCompliance(compliance), toTimeCompliance(compliance));
 toDateCertificate(certificate) += toDateCompliance(certificate);
 toTimeCertificate(certificate) += toTimeCompliance(certificate);
 

@@ -6,6 +6,7 @@ CLASS Sanitation 'ГГР' : Certificate, NumberedObject;
 TABLE sanitation(Sanitation);
 
 @defineDocumentHeaderTimePrefix(Sanitation, ,' документа');
+@deriveDocumentHeaderTimePrefix(Sanitation, );
 dateCertificate(sanitation) += dateSanitation(sanitation);
 timeCertificate(sanitation) += timeSanitation(sanitation);
 
@@ -13,9 +14,10 @@ timeCertificate(sanitation) += timeSanitation(sanitation);
 fromDateCertificate(certificate) += fromDateSanitation(certificate);
 fromTimeCertificate(certificate) += fromTimeSanitation(certificate);
 
-toDateSanitation 'Дата по' = DATA DATE(Sanitation);
-toTimeSanitation 'Время по' = DATA TIME(Sanitation);
-toDateTimeSanitation 'Дата/время по'(sanitation) = dateTimeToDateTime(toDateSanitation(sanitation), toTimeSanitation(sanitation));
+@defineDocumentHeaderTimePrefix(Sanitation, to, ' по');
+//toDateSanitation 'Дата по' = DATA DATE(Sanitation);
+//toTimeSanitation 'Время по' = DATA TIME(Sanitation);
+//toDateTimeSanitation 'Дата/время по'(sanitation) = dateTimeToDateTime(toDateSanitation(sanitation), toTimeSanitation(sanitation));
 toDateCertificate(certificate) += toDateSanitation(certificate);
 toTimeCertificate(certificate) += toTimeSanitation(certificate);
 

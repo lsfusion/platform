@@ -11,6 +11,7 @@ CLASS DeclarationPosted 'Проведенная таможенная декла�
 @defineNumeratedObjectDefault(Declaration, 'Нумератор для деклараций', 'ДД');
 
 @defineDocumentHeaderTimePrefix(Declaration, ,' документа');
+@deriveDocumentHeaderTimePrefix(Declaration, );
 dateCertificate(declaration) += dateDeclaration(declaration);
 timeCertificate(declaration) += timeDeclaration(declaration);
 

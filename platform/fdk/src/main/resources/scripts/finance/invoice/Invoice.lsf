@@ -575,7 +575,9 @@ META defineInvoiceHomeCurrency(dumb)
 
     backgroundHomeCurrencyInvoice 'Цвет' (invoice) = RGB(255, 224, 128) IF invoice IS Invoice;
 
-    isHomeCurrencyInvoice 'Конвертация' = DATA BOOLEAN(Invoice) IN documentPrmGroup;
+    isHomeCurrencyInvoice 'Конвертация' = ABSTRACT BOOLEAN(Invoice) IN documentPrmGroup;
+    isHomeCurrencyUserInvoice 'Конвертация' = DATA BOOLEAN(UserInvoice) IN documentPrmGroup;
+    isHomeCurrencyInvoice(i) += isHomeCurrencyUserInvoice(i);
 
     homeCurrencyInvoice = ABSTRACT Currency(Invoice);
     homeCurrencyUserInvoice = DATA Currency(UserInvoice);
@@ -622,17 +624,17 @@ META defineInvoiceHomeCurrency(dumb)
     sumHomeInvoiceDetail 'Сумма (пост.)' (d) = quantityInvoiceDetail(d) * homePriceInvoiceDetail(d);
 
     EXTEND FORM userInvoice
-        PROPERTIES(i) BACKGROUND backgroundHomeCurrencyInvoice(i) isHomeCurrencyInvoice BEFORE nameAgreementUserInvoice
-        PROPERTIES(i) BACKGROUND backgroundHomeCurrencyInvoice(i) SHOWIF isHomeCurrencyInvoice(i) nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
-        PROPERTIES(d) BACKGROUND backgroundHomeCurrencyInvoice(i) sumHomeInvoiceDetail AFTER sumUserInvoiceDetail SHOWIF isHomeCurrencyInvoice(i)
-        PROPERTIES(d) BACKGROUND backgroundHomeCurrencyInvoice(i) homePriceUserInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrencyInvoice(i)
+        PROPERTIES(i) BACKGROUND backgroundHomeCurrencyInvoice(i) isHomeCurrencyUserInvoice BEFORE nameAgreementUserInvoice
+        PROPERTIES(i) BACKGROUND backgroundHomeCurrencyInvoice(i) SHOWIF isHomeCurrencyUserInvoice(i) nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
+        PROPERTIES(d) BACKGROUND backgroundHomeCurrencyInvoice(i) sumHomeInvoiceDetail AFTER sumUserInvoiceDetail SHOWIF isHomeCurrencyUserInvoice(i)
+        PROPERTIES(d) BACKGROUND backgroundHomeCurrencyInvoice(i) homePriceUserInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrencyUserInvoice(i)
     ;
 
     EXTEND DESIGN userInvoice {
         headerExtraParams {
             NEW headerHomeCurrency {
                 title = 'Конвертация';
-                ADD PROPERTY(isHomeCurrencyInvoice);
+                ADD PROPERTY(isHomeCurrencyUserInvoice);
                 ADD PROPERTY(nameHomeCurrencyInvoice);
                 ADD PROPERTY(nameTypeExchangeInvoice);
                 ADD PROPERTY(dateRateExchangeInvoice);
@@ -643,9 +645,9 @@ META defineInvoiceHomeCurrency(dumb)
 
     EXTEND FORM invoices
         PROPERTIES(i) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) isHomeCurrencyInvoice
-        PROPERTIES(i) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) SHOWIF isHomeCurrencyInvoice(i) nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
-        PROPERTIES(d) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) sumHomeInvoiceDetail AFTER sumInvoiceDetail SHOWIF isHomeCurrencyInvoice(i)
-        PROPERTIES(d) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) homePriceInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrencyInvoice(i)
+        //PROPERTIES(i) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) SHOWIF isHomeCurrencyInvoice(i) nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
+        //PROPERTIES(d) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) sumHomeInvoiceDetail AFTER sumInvoiceDetail SHOWIF isHomeCurrencyInvoice(i)
+        //PROPERTIES(d) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) homePriceInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrencyInvoice(i)
     ;
 END
 
