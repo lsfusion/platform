@@ -512,7 +512,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (Property property : getOrderProperties())
             if(property instanceof CaseUnionProperty) {
                 ((CaseUnionProperty)property).checkAbstract();
-                ((CaseUnionProperty)property).checkExclusive();
             }
     }
 

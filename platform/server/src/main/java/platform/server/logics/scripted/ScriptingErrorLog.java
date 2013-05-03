@@ -264,6 +264,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "form class must be a built-in class");
     }
 
+    public void emitIncompatibleTypes(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "properties' types don't match");
+    }
+
     public void emitCaptionNotSpecifiedError(ScriptParser parser, String name) throws SemanticErrorException {
         emitSimpleError(parser, format("caption wasn't specified for '%s' element", name));
     }
@@ -467,7 +471,7 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("wrong date %04d-%02d-%02d", y, m, d));
     }
 
-    private void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
+    public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
         emitSemanticError(msg, e);

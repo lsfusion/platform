@@ -481,15 +481,19 @@ public class ScriptingLogicsModule extends LogicsModule {
             checkCalculationProperty(when.property);
             allProps.add(when);
         }
-        List<Object> params = getParamsPlainList(allProps);
-        if (abstractLP instanceof LCP) {
-            checkCalculationProperty(implement.property);
-            ((LCP) abstractLP).addOperand(when!=null, params.toArray());
-        } else if (abstractLP instanceof LAP) {
-            checkActionProperty(implement.property);
-            ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(abstractLP.listInterfaces, params.toArray());
-            ((ListActionProperty) abstractLP.property).addAction(actionImplements.get(0));
-        } else assert false;
+        try {
+            List<Object> params = getParamsPlainList(allProps);
+            if (abstractLP instanceof LCP) {
+                checkCalculationProperty(implement.property);
+                ((LCP) abstractLP).addOperand(when != null, params.toArray());
+            } else if (abstractLP instanceof LAP) {
+                checkActionProperty(implement.property);
+                ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(abstractLP.listInterfaces, params.toArray());
+                ((ListActionProperty) abstractLP.property).addAction(actionImplements.get(0));
+            } else assert false;
+        } catch (RuntimeException e) {
+            errLog.emitSimpleError(parser, e.getMessage());
+        }
     }
 
     public int getParamIndex(String param, List<String> namedParams, boolean dynamic, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
@@ -1077,6 +1081,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (!(toPropertyLP.property instanceof DataProperty || toPropertyLP.property instanceof CaseUnionProperty)) {
             errLog.emitOnlyDataCasePropertyIsAllowed(parser, toPropertyName);
+        }
+
+        if (fromProperty.property != null && !(fromProperty.property.property instanceof NullValueProperty) &&
+                toPropertyLP.property.getType().getCompatible(fromProperty.property.property.getType()) == null) {
+            errLog.emitIncompatibleTypes(parser);
         }
 
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
