@@ -21,6 +21,7 @@ META defineInvoiceShipment(sign, stockProp)
     descriptionIndexInvoiceDetailUserShipmentDetail 'Строка накладной' (detail) = descriptionIndexInvoiceDetail(invoiceDetailUserShipmentDetail(detail));
 
     quantityShipmentDetailInvoiceShipment (invoice, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY invoiceInvoiceDetail(invoiceDetailShipmentDetail(shipmentDetail)), shipmentShipmentDetail(shipmentDetail);
+    relationInvoiceShipment 'Связь' (shipment) = GROUP SUM 1 IF quantityShipmentDetailInvoiceShipment (invoice, shipment) BY shipment;
 
     invoicesShipment 'Накладные' (shipment) = GROUP CONCAT toString255(descriptionInvoice(invoice)) IF quantityShipmentDetailInvoiceShipment(invoice, shipment) , ', '
                                                     BY shipment

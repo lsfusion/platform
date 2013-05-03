@@ -28,8 +28,10 @@ priceConsignmentDetail (detail) += priceShipmentDetail(detail);
 sumConsignmentDetail (detail) += sumShipmentDetail(detail);
 sumInvoiceConsignmentDetail (detail) += sumShipmentDetail(detail);
 
+showConsignmentShipment (shipment) = TRUE AND NOT relationInvoiceShipment(shipment);
+
 EXTEND FORM  shipments
-    PROPERTIES (s)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+    PROPERTIES (s)   FORCE PANEL SHOWIF showConsignmentShipment(s) printConsignmentVerticalA, printConsignmentHorizontalA,
                      printConsignmentVerticalB, printConsignmentHorizontalB,
                      printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
                      printConsignmentSimpleVertical, printConsignmentSimpleAttach
