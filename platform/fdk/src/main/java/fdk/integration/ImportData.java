@@ -16,9 +16,8 @@ public class ImportData {
     private List<Contract> contractsList;
     private List<RateWaste> rateWastesList;
     private List<Ware> waresList;
-    private List<Price> pricesList;
-    private List<Assortment> assortmentsList;
-    private List<StockSupplier> stockSuppliersList;
+    private List<PriceListStore> priceListStoresList;
+    private List<PriceListSupplier> priceListSuppliersList;
     private List<UserInvoiceDetail> userInvoicesList;
     private Integer numberOfItemsAtATime;
     private Integer numberOfUserInvoicesAtATime;
@@ -132,28 +131,20 @@ public class ImportData {
         this.waresList = waresList;
     }
 
-    public List<Price> getPricesList() {
-        return pricesList;
+    public List<PriceListStore> getPriceListStoresList() {
+        return priceListStoresList;
     }
 
-    public void setPricesList(List<Price> pricesList) {
-        this.pricesList = pricesList;
+    public void setPriceListStoresList(List<PriceListStore> priceListStoresList) {
+        this.priceListStoresList = priceListStoresList;
     }
 
-    public List<Assortment> getAssortmentsList() {
-        return assortmentsList;
+    public List<PriceListSupplier> getPriceListSuppliersList() {
+        return priceListSuppliersList;
     }
 
-    public void setAssortmentsList(List<Assortment> assortmentsList) {
-        this.assortmentsList = assortmentsList;
-    }
-
-    public List<StockSupplier> getStockSuppliersList() {
-        return stockSuppliersList;
-    }
-
-    public void setStockSuppliersList(List<StockSupplier> stockSuppliersList) {
-        this.stockSuppliersList = stockSuppliersList;
+    public void setPriceListSuppliersList(List<PriceListSupplier> priceListSuppliersList) {
+        this.priceListSuppliersList = priceListSuppliersList;
     }
 
     public List<UserInvoiceDetail> getUserInvoicesList() {

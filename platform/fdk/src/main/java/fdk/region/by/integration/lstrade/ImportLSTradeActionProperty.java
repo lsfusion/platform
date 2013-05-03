@@ -24,8 +24,6 @@ import java.io.*;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
@@ -43,6 +41,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             Integer numberOfItems = (Integer) getLCP("importNumberItems").read(context);
+            Integer assortmentNumberOfItems = (Integer) getLCP("importAssortmentNumberItems").read(context);
             String prefixStore = (String) getLCP("prefixStore").read(context);
             prefixStore = prefixStore == null ? "МГ" : prefixStore.trim();
 
@@ -90,11 +89,11 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                 importData.setItemsList((getLCP("importItems").read(context) != null) ?
                         importItemsFromDBF(path + "//_sprgrm.dbf", path + "//_postvar.dbf", numberOfItems, importInactive) : null);
 
-                importData.setAssortmentsList((getLCP("importAssortment").read(context) != null) ?
-                        importAssortmentFromDBF(path + "//_strvar.dbf") : null);
+                importData.setPriceListStoresList((getLCP("importAssortment").read(context) != null) ?
+                        importPriceListStoreFromDBF(path + "//_postvar.dbf", path + "//_strvar.dbf", assortmentNumberOfItems) : null);
 
-                importData.setStockSuppliersList((getLCP("importAssortment").read(context) != null) ?
-                        importStockSuppliersFromDBF(context, path + "//_strvar.dbf") : null);
+                importData.setPriceListSuppliersList((getLCP("importAssortment").read(context) != null) ?
+                        importPriceListSuppliersFromDBF(path + "//_postvar.dbf", assortmentNumberOfItems) : null);
 
                 importData.setUserInvoicesList((getLCP("importUserInvoices").read(context) != null) ?
                         importUserInvoicesFromDBF(path + "//_ostn.dbf") : null);
@@ -340,75 +339,85 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     }
 
 
-    private List<Assortment> importAssortmentFromDBF(String path) throws
-            IOException, xBaseJException {
+    private List<PriceListStore> importPriceListStoreFromDBF(String postvarPath, String strvarPath, Integer numberOfItems) throws
+            IOException, xBaseJException, ParseException {
 
-        if (!(new File(path).exists()))
-            throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
+        if (!(new File(postvarPath).exists()))
+            throw new RuntimeException("Запрашиваемый файл " + postvarPath + " не найден");
 
-        DBF importFile = new DBF(path);
-        int totalRecordCount = importFile.getRecordCount();
+        if (!(new File(strvarPath).exists()))
+            throw new RuntimeException("Запрашиваемый файл " + strvarPath + " не найден");
 
-        List<Assortment> data = new ArrayList<Assortment>();
+        Map<String, Object[]> postvarMap = new HashMap<String, Object[]>();
+
+        DBF importPostvarFile = new DBF(postvarPath);
+        int totalRecordCount = importPostvarFile.getRecordCount();
 
         for (int i = 0; i < totalRecordCount; i++) {
-            importFile.read();
+            importPostvarFile.read();
 
-            String item = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
-            String supplier = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
-            String departmentStore = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
+            String supplier = new String(importPostvarFile.getField("K_ANA").getBytes(), "Cp1251").trim();
+            String item = new String(importPostvarFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
+            Double price = new Double(new String(importPostvarFile.getField("N_CENU").getBytes(), "Cp1251").trim());
+            String dateString = new String(importPostvarFile.getField("DBANNED").getBytes(), "Cp1251").trim();
+            Date date = dateString.isEmpty() ? null : DateUtils.parseDate(dateString, new String[]{"yyyymmdd"});
+
+            postvarMap.put(supplier+item, new Object[]{price, date});
+        }
+
+        List<PriceListStore> data = new ArrayList<PriceListStore>();
+
+        DBF importStrvarFile = new DBF(strvarPath);
+        totalRecordCount = importStrvarFile.getRecordCount();
+
+        for (int i = 0; i < totalRecordCount; i++) {
+
+            if (numberOfItems != null && data.size() >= numberOfItems)
+                break;
+
+            importStrvarFile.read();
+
+            String supplier = new String(importStrvarFile.getField("K_ANA").getBytes(), "Cp1251").trim();
+            String departmentStore = new String(importStrvarFile.getField("K_SKL").getBytes(), "Cp1251").trim();
+            String item = new String(importStrvarFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             String currency = "BLR";
-            Double price = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
+            Double price = new Double(new String(importStrvarFile.getField("N_CENU").getBytes(), "Cp1251").trim());
 
+            Object[] priceDate = postvarMap.get(supplier+item);
             if (departmentStore.length() >= 2 && supplier.startsWith("ПС")) {
-                data.add(new Assortment(item, supplier, supplier + "ПР", departmentStore, currency, price, true));
+                Date date = priceDate == null ? null : (Date) priceDate[1];
+                price = (price == 0) ? (priceDate == null ? null : (Double) priceDate[0]) : price;
+                if (price!=null && (date == null || date.before(new Date(System.currentTimeMillis()))))
+                    data.add(new PriceListStore(supplier + departmentStore, item, supplier, departmentStore, currency, price, true, true));
             }
         }
         return data;
     }
 
-    private List<StockSupplier> importStockSuppliersFromDBF(ExecutionContext context, String path) throws
+    private List<PriceListSupplier> importPriceListSuppliersFromDBF(String postvarPath, Integer numberOfItems) throws
             IOException, xBaseJException, ScriptingErrorLog.SemanticErrorException, SQLException {
 
-        if (!(new File(path).exists()))
-            throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
+        if (!(new File(postvarPath).exists()))
+            throw new RuntimeException("Запрашиваемый файл " + postvarPath + " не найден");
 
-        DBF importFile = new DBF(path);
-        int totalRecordCount = importFile.getRecordCount();
+        List<PriceListSupplier> data = new ArrayList<PriceListSupplier>();
 
-        List<StockSupplier> data = new ArrayList<StockSupplier>();
-        List<String> stockSuppliers = new ArrayList<String>();
-        Set<String> stores = new HashSet<String>();
+        DBF importPostvarFile = new DBF(postvarPath);
+        int totalRecordCount = importPostvarFile.getRecordCount();
+
         for (int i = 0; i < totalRecordCount; i++) {
-            importFile.read();
 
-            String supplier = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
-            String store = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
+            if (numberOfItems != null && data.size() >= numberOfItems)
+                break;
 
-            if (supplier.startsWith("ПС") && (!stores.contains(store))) {
+            importPostvarFile.read();
 
-                Object storeObject = getLCP("externalizableSID").readClasses(context.getSession(), new DataObject(store, StringClass.get(110)));
-                if (!(storeObject instanceof NullValue)) {
-                    LCP isDepartmentStore = LM.is(getClass("departmentStore"));
-                    ImRevMap<Object, KeyExpr> keys = isDepartmentStore.getMapKeys();
-                    KeyExpr key = keys.singleValue();
-                    QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
-                    query.addProperty("sidExternalizable", getLCP("sidExternalizable").getExpr(context.getModifier(), key));
-                    query.and(isDepartmentStore.getExpr(key).getWhere());
-                    query.and(getLCP("storeDepartmentStore").getExpr(context.getModifier(), key).compare(((DataObject) storeObject).getExpr(), Compare.EQUALS));
-                    ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context.getSession().sql);
+            String supplier = new String(importPostvarFile.getField("K_ANA").getBytes(), "Cp1251").trim();
+            String item = new String(importPostvarFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
+            String currency = "BLR";
+            Double price = new Double(new String(importPostvarFile.getField("N_CENU").getBytes(), "Cp1251").trim());
 
-                    for (ImMap<Object, Object> entry : result.valueIt()) {
-                        StockSupplier stockSupplier = new StockSupplier(supplier + "ПР", (String) entry.get("sidExternalizable"), null, true);
-                        String sid = stockSupplier.departmentStore.trim() + stockSupplier.userPriceListID == null ? "" : stockSupplier.userPriceListID;
-                        if (!stockSuppliers.contains(sid)) {
-                            data.add(stockSupplier);
-                            stockSuppliers.add(sid);
-                        }
-                    }
-                    stores.add(store);
-                }
-            }
+            data.add(new PriceListSupplier(supplier, item, supplier, currency, price, true));
         }
         return data;
     }

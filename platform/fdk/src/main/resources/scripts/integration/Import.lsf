@@ -41,6 +41,7 @@ EXTEND CLASS Bank : Externalizable;
 EXTEND CLASS Barcode : Externalizable;
 EXTEND CLASS Brand : Externalizable;
 EXTEND CLASS CalcPriceListType : Externalizable;
+EXTEND CLASS DataPriceListType : Externalizable;
 EXTEND CLASS ChainStores : Externalizable;
 EXTEND CLASS DepartmentStore : Externalizable;
 EXTEND CLASS Employee : Externalizable;

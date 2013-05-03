@@ -131,7 +131,7 @@ pricePriceListDetailDataPriceListType(detail, dataPriceListType) => inPriceListD
 // Шапка
 inPriceList 'Отм' = ABSTRACT BOOLEAN (PriceList) PERSISTENT;
 inUserPriceList 'Отм' = DATA BOOLEAN (UserPriceList);
-inUserPriceList(userPriceList) <- TRUE WHEN ASSIGNED(userPriceList IS UserPriceList);
+//inUserPriceList(userPriceList) <- TRUE WHEN ASSIGNED(userPriceList IS UserPriceList);
 inPriceList (priceList) += inUserPriceList(priceList);
 
 TABLE priceListStockGroup(PriceList, StockGroup);

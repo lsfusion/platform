@@ -16,6 +16,7 @@ importItems 'Импортировать товары' = DATA BOOLEAN () IN lstra
 importNumberItems 'Кол-во' = DATA INTEGER () IN lstradeGroup;
 importNumberItemsAtATime 'Разбивать на пакеты по' = DATA INTEGER () IN lstradeGroup;
 importAssortment 'Импортировать ассортимент' = DATA BOOLEAN() IN lstradeGroup;
+importAssortmentNumberItems 'Кол-во' = DATA INTEGER () IN lstradeGroup;
 importUserInvoices 'Импортировать документы прихода' = DATA BOOLEAN() IN lstradeGroup;
 importLegalEntities 'Импортировать организации' = DATA BOOLEAN() IN lstradeGroup;
 importWarehouses 'Импортировать склады' = DATA BOOLEAN() IN lstradeGroup;
@@ -30,7 +31,7 @@ importContracts 'Импортировать договоры' = DATA BOOLEAN() I
 
 EXTEND FORM integrationData
     PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importWares, importItems,
-    importNumberItems, importNumberItemsAtATime, importAssortment, importUserInvoices,
+    importNumberItems, importNumberItemsAtATime, importAssortment, importAssortmentNumberItems, importUserInvoices,
     importLegalEntities, importWarehouses, importStores, importDepartmentStores, prefixStore, importBanks, importRateWastes,
     importContracts
 ;
