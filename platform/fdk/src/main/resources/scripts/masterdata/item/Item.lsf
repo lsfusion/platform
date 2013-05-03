@@ -231,9 +231,9 @@ DESIGN item FROM DEFAULT {
     }
 }
 
-seekBarcode 'Штрих-код' = DATA SESSION STRING[14] ();
+seekBarcode 'Штрих-код' = DATA SESSION STRING[15] ();
 seekSkuBarcode = ACTION (){
-    REQUEST STRING[14] INPUT;
+    REQUEST STRING[15] INPUT;
     SET seekBarcode() <- NULL;
     SET seekBarcode() <- requestedString();
     EXEC seek(skuBarcodeIdDate(seekBarcode(), currentDate()));
@@ -705,12 +705,12 @@ createItemBarcodeDate = ACTION (barcode, date) NEWSESSION {
     IF copy() THEN {
         FOR ADDOBJ i = Item DO {
             EXEC copyDataItem(skuAddedUser(currentUser()), i);
-            SET idBarcode(b) <- barcode AS STRING[14] WHERE skuBarcode(b) == i AND primaryBarcode(b);
+            SET idBarcode(b) <- barcode AS STRING[15] WHERE skuBarcode(b) == i AND primaryBarcode(b);
             FORM item OBJECTS i = i MANAGESESSION DOCKEDMODAL;
         }
     } ELSE {
         FOR ADDOBJ bc = Barcode DO {
-            SET idBarcode(bc) <- (barcode AS STRING[14]);
+            SET idBarcode(bc) <- (barcode AS STRING[15]);
             SET dataDateBarcode(bc) <- (date AS DATE);
 
             FOR ADDOBJ s = Item DO {

@@ -4,9 +4,9 @@ REQUIRE System, Stock, Utils, Numerator;
 
 CLASS Barcode 'Штрих код';
 TABLE barcode (Barcode);
-TABLE stringDate (STRING[14], DATE);
+TABLE stringDate (STRING[15], DATE);
 
-idBarcode 'Штрих код' = DATA STRING[14] (Barcode) IN recognize FIXEDCHARWIDTH 14 AGGPROP INDEXED;
+idBarcode 'Штрих код' = DATA STRING[15] (Barcode) IN recognize FIXEDCHARWIDTH 14 AGGPROP INDEXED;
 
 dataDateBarcode 'Дата действия' = DATA DATE (Barcode);
 dateBarcode 'Дата действия' = (2001_01_01 IF barcode IS Barcode) OVERRIDE dataDateBarcode(barcode) IN base PERSISTENT;
@@ -172,10 +172,10 @@ META defineAddDetailDialogBarcodeCustomInner(object, idetail, idetailClass, skuP
     } TOOLBAR EDITKEY 'F4';
 
     changeAddDetailInputBarcode###idetail###object = ACTION (object) {
-        REQUEST STRING[14] INPUT;
+        REQUEST STRING[15] INPUT;
         EXEC addDetailBarcode###idetail###object(object, requestedString());
     };
-    addDetailInputBarcode###idetail###object 'Ввод штрих-кода :' (object) = DATA SESSION STRING[14] (###object) TOOLBAR EDITKEY 'F4' EVENTID 'SCANNER'
+    addDetailInputBarcode###idetail###object 'Ввод штрих-кода :' (object) = DATA SESSION STRING[15] (###object) TOOLBAR EDITKEY 'F4' EVENTID 'SCANNER'
                                                                             ON CHANGE changeAddDetailInputBarcode###idetail###object(object);
 END
 
@@ -185,9 +185,9 @@ END
 
 // ----------------------------------- Расширение подбора товаров ---------------------------- //
 
-seekBarcode 'Штрих-код' = DATA SESSION STRING[14] ();
+seekBarcode 'Штрих-код' = DATA SESSION STRING[15] ();
 seekSkuBarcode = ACTION (){
-    REQUEST STRING[14] INPUT;
+    REQUEST STRING[15] INPUT;
     SET seekBarcode() <- NULL;
     SET seekBarcode() <- requestedString();
     EXEC seek(skuBarcodeIdDate(seekBarcode(), currentDate()));

@@ -190,7 +190,7 @@ GROUP receiptSaleActionGroup 'Продажа' : public;
 
 // По штрих-коду
 changeBarcodeSaleReceipt = ACTION (receipt) {
-    REQUEST STRING[14] INPUT;
+    REQUEST STRING[15] INPUT;
     LOCAL dialogBarcodeSku = Sku();
     SET dialogBarcodeSku() <- skuBarcodeIdDate(requestedString(), currentDate());
 
@@ -573,7 +573,7 @@ FORM POS
                                                    discountSumReceiptDetail, numberVATReceiptDetail, valueVATReceiptDetail, delete
     FILTERS receiptReceiptDetail(d) == r
 
-    OBJECTS bs = STRING[14] FIXED PANEL
+    OBJECTS bs = STRING[15] FIXED PANEL
     PROPERTIES(bs) SHOWIF currentZReport() barcodeSale = OBJVALUE ON CHANGE changeBarcodeSaleReceipt(r) EVENTID 'SCANNER'
 
     OBJECTS pc = PromotionCondition FIXED GRID

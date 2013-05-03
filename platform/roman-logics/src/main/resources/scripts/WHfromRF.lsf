@@ -200,7 +200,7 @@ createSkuWHfromRF = ACTION (barcode) NEWSESSION {
 
     ADDOBJ RomanLogicsModule.Item;
     FOR s == addedObject() DO {
-        SET barcode(s) <- (barcode AS STRING[14]);
+        SET barcode(s) <- (barcode AS STRING[15]);
         FORM addSkuWHfromRF OBJECTS i = s MODAL;
         IF formResult() == FormResult.ok THEN {
             EXEC apply();
@@ -224,7 +224,7 @@ addDialogSkuFreightUnitWHfromRFBarcode 'Ввод штрих-кода' = ACTION (
         SET dialogBarcodeSku() <- skuBarcodeIdDate(barcode, dateWHfromRF (WHfromRF));
         SET dialogBarcodeDetail() <- detailWHfromRFFreightUnitSku(WHfromRF, currentFreightUnit(WHfromRF), dialogBarcodeSku());
 
-        IF barcode IS STRING[14] AND NOT dialogBarcodeSku() IS Sku THEN {
+        IF barcode IS STRING[15] AND NOT dialogBarcodeSku() IS Sku THEN {
 
             IF currentFreightUnit(WHfromRF) THEN {
                 FORM addBarcodeWHfromRFFreightUnitSku OBJECTS f = currentFreightUnit(WHfromRF), w = WHfromRF MODAL;
@@ -261,10 +261,10 @@ addDialogSkuFreightUnitWHfromRFBarcode 'Ввод штрих-кода' = ACTION (
 };
 
 changeAddDetailInputBarcodeWHfromRFDetailWHfromRF = ACTION (WHfromRF) {
-    REQUEST STRING[14] INPUT;
+    REQUEST STRING[15] INPUT;
     EXEC addDialogSkuFreightUnitWHfromRFBarcode(WHfromRF, requestedString());
 };
-addDetailInputBarcodeWHfromRFDetailWHfromRF 'Ввод штрих-кода :' (WHfromRF) = DATA SESSION STRING[14] (WHfromRF) TOOLBAR EDITKEY 'F4'
+addDetailInputBarcodeWHfromRFDetailWHfromRF 'Ввод штрих-кода :' (WHfromRF) = DATA SESSION STRING[15] (WHfromRF) TOOLBAR EDITKEY 'F4'
                                                                         ON CHANGE changeAddDetailInputBarcodeWHfromRFDetailWHfromRF(WHfromRF) EVENTID 'SCANNER';
 
 fillWHfromRFDetailsSkuFreightUnit 'Заполнить строки из короба' (WHfromRF) = ACTION (WHfromRF) {

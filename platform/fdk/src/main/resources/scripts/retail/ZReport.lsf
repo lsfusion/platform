@@ -144,7 +144,7 @@ nameClientDiscountCardReceipt 'Держатель дисконтной карт�
 numberDiscountCardReceiptDetail 'Номер дисконтной карты' (receiptDetail) = numberDiscountCardReceipt(receiptReceiptDetail(receiptDetail));
 nameClientDiscountCardReceiptDetail 'Держатель дисконтной карты' (receiptDetail) = nameClientDiscountCardReceipt(receiptReceiptDetail(receiptDetail));
 
-idBarcodeReceiptDetail 'Штрих-код' (receiptDetail) = DATA STRING[14] (ReceiptDetail) FIXEDCHARWIDTH 14 INDEXED;
+idBarcodeReceiptDetail 'Штрих-код' (receiptDetail) = DATA STRING[15] (ReceiptDetail) FIXEDCHARWIDTH 14 INDEXED;
 
 exportReceipt 'Экспортировать' (receipt) = DATA SESSION BOOLEAN (Receipt);
 

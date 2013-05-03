@@ -214,7 +214,7 @@ terminalDocumentDetailIDDocumentIDDetail (terminalDocumentDetail, terminalDocume
     GROUP AGGR terminalDocumentDetail BY idTerminalDocument (terminalDocumentTerminalDocumentDetail(terminalDocumentDetail)), numberTerminalDocumentDetail(terminalDocumentDetail)
           WHERE terminalDocumentDetail IS TerminalDocumentDetail;
 
-barcodeTerminalDocumentDetail 'Штрих-код' = DATA STRING[14] (TerminalDocumentDetail) IN base;
+barcodeTerminalDocumentDetail 'Штрих-код' = DATA STRING[15] (TerminalDocumentDetail) IN base;
 quantityTerminalDocumentDetail 'Количество' = DATA NUMERIC[14,3] (TerminalDocumentDetail) IN base;
 priceTerminalDocumentDetail 'Цена' = DATA NUMERIC[14,3] (TerminalDocumentDetail) IN base;
 sumTerminalDocumentDetail 'Сумма' = DATA NUMERIC[14,3] (TerminalDocumentDetail) IN base;
