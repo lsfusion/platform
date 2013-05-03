@@ -201,9 +201,7 @@ public class ScriptingFormEntity {
 
             PropertyDrawEntity property;
             if (propertyName.equals("OBJVALUE")) {
-                if (mapping.size() != 1) {
-                    LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
-                }
+                checkSingleParam(mapping.size());
 
                 //assertion, что создастся только один PropertyDrawEntity
                 property = BaseUtils.<PropertyDrawEntity>single(
@@ -215,27 +213,26 @@ public class ScriptingFormEntity {
                         form.addPropertyDraw(LM.baseLM.selection, false, getMappingObjectsArray(mapping))
                 );
             } else if (propertyName.equals("ADDOBJ")) {
-                if (mapping.size() != 1) {
-                    LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
-                }
+                checkSingleParam(mapping.size());
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
                 LAP<?> addObjAction = LM.getFormAddObjectAction(obj[0]);
                 property = form.addPropertyDraw(addObjAction);
             } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM")) {
-                if (mapping.size() != 1) {
-                    LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
-                }
+                checkSingleParam(mapping.size());
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
                 property = LM.addAddFormAction(form, obj[0], propertyName.equals("ADDSESSIONFORM"));
             } else if (propertyName.equals("EDITFORM") || propertyName.equals("EDITSESSIONFORM")) {
-                if (mapping.size() != 1) {
-                    LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
-                }
+                checkSingleParam(mapping.size());
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
                 property = LM.addEditFormAction(form, obj[0], propertyName.equals("EDITSESSIONFORM"));
+            } else if (propertyName.equals("DELETE") || propertyName.equals("DELETESESSION")) {
+                checkSingleParam(mapping.size());
+
+                ObjectEntity[] obj = getMappingObjectsArray(mapping);
+                property = LM.addFormDeleteAction(form, obj[0], propertyName.equals("DELETESESSION"));
             } else {
                 MappedProperty prop = getPropertyWithMapping(propertyName, mapping);
                 property = form.addPropertyDraw(prop.property, prop.mapping);
@@ -249,6 +246,12 @@ public class ScriptingFormEntity {
             movePropertyDraw(property, propertyOptions);
 
             setPropertyDrawAlias(alias, property);
+        }
+    }
+
+    private void checkSingleParam(int size) throws ScriptingErrorLog.SemanticErrorException {
+        if (size != 1) {
+            LM.getErrLog().emitParamCountError(LM.getParser(), 1, size);
         }
     }
 

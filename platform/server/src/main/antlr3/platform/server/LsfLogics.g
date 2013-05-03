@@ -662,6 +662,8 @@ formPropertyName returns [String name]
 	|	cid='ADDSESSIONFORM'	{ $name = $cid.text; }
 	|	cid='EDITFORM'	        { $name = $cid.text; }
 	|	cid='EDITSESSIONFORM'	{ $name = $cid.text; }
+	|	cid='DELETE'			{ $name = $cid.text; }
+	|	cid='DELETESESSION'		{ $name = $cid.text; }
 	;
 
 
@@ -1617,6 +1619,7 @@ extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithPar
 	:	setPDB=setActionPropertyDefinitionBody[context] { $property = $setPDB.property; }
 	|	forPDB=forActionPropertyDefinitionBody[context] { $property = $forPDB.property; }
 	|	classPDB=changeClassActionPropertyDefinitionBody[context] { $property = $classPDB.property; }
+	|	delPDB=deleteActionPropertyDefinitionBody[context] { $property = $delPDB.property; }
 	|	addPDB=addObjectActionPropertyDefinitionBody[context] { $property = $addPDB.property; }
 	;
 	
@@ -1828,6 +1831,20 @@ changeClassActionPropertyDefinitionBody[List<String> context] returns [LPWithPar
 	}
 }
 	:	'CHANGECLASS' param=singleParameter[newContext, true] 'TO' className=classId 
+		('WHERE' pe=propertyExpression[newContext, false] { condition = $pe.property; })?
+	;  
+
+deleteActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
+@init {
+	List<String> newContext = new ArrayList<String>(context);
+	LPWithParams condition = null;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedDeleteAProp(context.size(), newContext, $param.property, condition);	
+	}
+}
+	:	'DELETE' param=singleParameter[newContext, true] 
 		('WHERE' pe=propertyExpression[newContext, false] { condition = $pe.property; })?
 	;  
 
@@ -2107,7 +2124,7 @@ writeWhenStatement
 		'<-'
 		valueExpr=propertyExpression[$mainProp.mapping, false] 
 		'WHEN'
-		('DO' {action = true;} )?
+		('DO' { action = true; })?
 		whenExpr=propertyExpression[$mainProp.mapping, false]
 		';'
 	;
@@ -2129,9 +2146,9 @@ eventStatement
 }
 	:	'WHEN'
 		et=baseEvent
-		prevStart = prevStartStatement
+		prevStart=prevStartStatement
 		whenExpr=propertyExpression[context, true]
-		in = inlineStatement[context]
+		in=inlineStatement[context]
 		'DO'
 		action=actionPropertyDefinitionBody[context, false]
 		(	'ORDER' ('DESC' { descending = true; })?
@@ -2155,7 +2172,7 @@ globalEventStatement
 }
 	:	'ON' 
 		et=baseEvent
-		prevStart = prevStartStatement
+		prevStart=prevStartStatement
 		('SINGLE' { single = true; })?
 		('SHOWDEP' property=ID)?
 		action=actionPropertyDefinitionBody[new ArrayList<String>(), false]

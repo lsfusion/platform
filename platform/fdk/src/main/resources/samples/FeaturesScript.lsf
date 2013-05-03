@@ -342,6 +342,10 @@ editActionTest(obj) = ACTION EDITFORM Store;
 // statement syntax:
 // MESSAGE propertyExpr
 
+// Delete action
+// statement syntax:
+// DELETE object [WHERE expression]
+
 // Change class action
 // statement syntax:
 // CHANGECLASS object TO className [WHERE expression]
@@ -358,6 +362,7 @@ changeAWhenCountB 'countCCB > 5' (a, b) = ACTION CHANGECLASS a TO CCB WHERE coun
 changeAWhenCountAB 'countCCACCB > 5' (a, b) = ACTION CHANGECLASS a TO CCB WHERE countCCACCB(a, b) > 5;
 changeA(a) = ACTION CHANGECLASS a TO CCB;
 changeAllA 'all where CCA > 5' () = ACTION CHANGECLASS a TO CCB WHERE countCCA(a) > 5;
+deleteA 'delete A > 5' () = ACTION DELETE a WHERE countCCA(a) > 5;
 
 changeAllAWhenCountAB 'all count CCACCB > 5' (b) = ACTION CHANGECLASS a TO CCB WHERE countCCACCB(a, b) > 5;
 changeAllAWhenCountB 'all count CCB > 5' (b) = ACTION CHANGECLASS a TO CCB WHERE countCCB(b) > 5 AND a IS CCA;
@@ -365,8 +370,8 @@ changeAllAWhenCountB 'all count CCB > 5' (b) = ACTION CHANGECLASS a TO CCB WHERE
 FORM testChangeClass
     OBJECTS a=CCA, b=CCB
     PROPERTIES name(a), name(b), countCCA(a), countCCB(b), CCBforCCA(a), countCCACCB(a, b)
-    PROPERTIES changeA(a), changeAllA(), changeAWhenCountB(a, b), changeAWhenCountAB(a, b)
-    PROPERTIES changeAllAWhenCountAB(b), changeAllAWhenCountB(b)
+    PROPERTIES changeA(a), changeAllA(), deleteA(), changeAWhenCountB(a, b), changeAWhenCountAB(a, b)
+    PROPERTIES changeAllAWhenCountAB(b), changeAllAWhenCountB(b), DELETE(a), DELETESESSION(a)
 ;
 
 // File open/load action
@@ -589,7 +594,7 @@ FORM documentArticle 'По документам (caption)' TITLE 'По доку�
 // PROPERTIES [commonOptions] [alias1=]propName1(param1, ..., paramN1) [options1], ..., [aliasK=]propNameK(param1, ..., paramNK) [optionsK]
 // or
 // PROPERTIES(param1, ..., paramN) [commonOptions] [alias1=]propName1 [options1], ..., [aliasK=]propNameK [optionsK]
-// Special properties: SELECTION, OBJVALUE, ADDOBJ, ADDFORM, ADDSESSIONFORM, EDITFORM, EDITSESSIONFORM
+// Special properties: SELECTION, OBJVALUE, ADDOBJ, ADDFORM, ADDSESSIONFORM, EDITFORM, EDITSESSIONFORM, DELETE, DELETESESSION
 // Property option:    [READONLY] [EDITABLE] [SELECTOR] [HINTNOUPDATE] [HINTTABLE] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [BACKGROUND <mappedProperty>]
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
 //                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS | SHORTCUT | EDIT) <mappedAction>] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)] [EVENTID 'id']

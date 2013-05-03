@@ -436,11 +436,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitOnlyDataCasePropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
-        emitSimpleError(parser, format("only DATA/ABSTRACT/CASE property is allowed here: %s", propertyName));
+        emitSimpleError(parser, format("'%s' is only allowed to be DATA/ABSTRACT/CASE property", propertyName));
     }
 
     public void emitOnlyDataPropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
-        emitSimpleError(parser, format("only DATA property is allowed here: %s", propertyName));
+        emitSimpleError(parser, format("'%s' is only allowed to be DATA property", propertyName));
     }
 
     public void emitStrLiteralEscapeSequenceError(ScriptParser parser, char ch) throws SemanticErrorException {

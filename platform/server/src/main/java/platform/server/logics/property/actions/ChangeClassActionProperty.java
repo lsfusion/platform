@@ -6,19 +6,14 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MExclSet;
-import platform.interop.KeyStrokes;
 import platform.server.classes.*;
 import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
@@ -158,23 +153,6 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
             }
 
         return FlowResult.FINISH;
-    }
-
-    @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<PropertyInterface> entity, FormEntity<?> form) {
-        super.proceedDefaultDraw(entity, form);
-        if (valueClass instanceof UnknownClass)
-            entity.shouldBeLast = true;
-    }
-
-    @Override
-    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
-        super.proceedDefaultDesign(propertyView, view);
-        if (valueClass instanceof UnknownClass) {
-            propertyView.editKey = KeyStrokes.getDeleteActionPropertyKeyStroke();
-            propertyView.design.setIconPath("delete.png");
-            propertyView.showEditKey = false;
-        }
     }
 
     @Override

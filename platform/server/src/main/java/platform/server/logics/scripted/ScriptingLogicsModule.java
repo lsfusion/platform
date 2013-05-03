@@ -1140,10 +1140,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, resultInterfaces);
     }
 
+    public LPWithParams addScriptedDeleteAProp(int oldContextSize, List<String> newContext, LPWithParams param, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+        LPWithParams res = addScriptedChangeClassAProp(oldContextSize, newContext, param, baseClass.unknown, whereProperty);
+        setDeleteActionOptions((LAP)res.property);
+        return res;
+    }
+
     public LPWithParams addScriptedChangeClassAProp(int oldContextSize, List<String> newContext, LPWithParams param, String className, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedChangeClassAProp(" + oldContextSize + ", " + newContext + ", " + param + ", " + className + ", " + whereProperty + ")");
         ValueClass cls = findClassByCompoundName(className);
         checkChangeClassActionClass(cls);
+        return addScriptedChangeClassAProp(oldContextSize, newContext, param, (ConcreteCustomClass) cls, whereProperty);
+    }
+
+    private LPWithParams addScriptedChangeClassAProp(int oldContextSize, List<String> newContext, LPWithParams param, ConcreteObjectClass cls, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedChangeClassAProp(" + oldContextSize + ", " + newContext + ", " + param + ", " + cls + ", " + whereProperty + ")");
 
         List<LPWithParams> paramList = new ArrayList<LPWithParams>();
         paramList.add(param);
@@ -1173,7 +1183,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         List<Object> resultParams = getParamsPlainList(paramsList);
 
-        LAP<?> res = addChangeClassAProp((ConcreteCustomClass) cls, resultInterfaces.size(), changedIndex, contextExtended, whereProperty != null, resultParams.toArray());
+        LAP<?> res = addChangeClassAProp(cls, resultInterfaces.size(), changedIndex, contextExtended, whereProperty != null, resultParams.toArray());
         return new LPWithParams(res,  resultInterfaces);
     }
 

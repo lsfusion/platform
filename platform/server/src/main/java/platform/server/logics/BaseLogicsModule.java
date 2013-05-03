@@ -12,7 +12,6 @@ import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.interop.Compare;
-import platform.interop.KeyStrokes;
 import platform.interop.form.layout.ContainerType;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
@@ -49,8 +48,6 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-import static platform.server.logics.PropertyUtils.mapCalcImplement;
-import static platform.server.logics.PropertyUtils.readCalcImplements;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 /**
@@ -370,13 +367,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         // Действия
 
         delete = addAProp(baseClass.unknown.getChangeClassAction());
+        setDeleteActionOptions(delete);
 
         deleteApply = addListAProp("deleteApply", delete.property.caption, delete, 1, apply);
-        deleteApply.setImage("delete.png");
-        deleteApply.setEditKey(KeyStrokes.getDeleteActionPropertyKeyStroke());
-        deleteApply.setShowEditKey(false);
+        setDeleteActionOptions(deleteApply);
         deleteApply.setAskConfirm(true);
-        deleteApply.setShouldBeLast(true);
 
         // Действия на форме
         formApply = addProperty(null, new LAP(new FormApplyActionProperty()));

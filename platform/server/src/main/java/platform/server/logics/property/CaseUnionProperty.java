@@ -285,7 +285,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         if (isAbstract()) {
             ClassWhere<Object> caseClassValueWhere = getCaseClassValueWhere(addCase);
             if (!caseClassValueWhere.means(classValueWhere)) {
-                throw new ScriptParsingException("Wrong signature of implementation " + addCase.property + " (specified " + caseClassValueWhere + ") for abstract property " + this + " (expected " + classValueWhere + ")");
+                throw new ScriptParsingException("wrong signature of implementation " + addCase.property + " (specified " + caseClassValueWhere + ") for abstract property " + this + " (expected " + classValueWhere + ")");
             }
         }
 
@@ -296,7 +296,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 CalcPropertyMapImplement<?, Interface> op1 = (CalcPropertyMapImplement<?, Interface>) listCases.get(i).where;
                 CalcPropertyMapImplement<?, Interface> op2 = (CalcPropertyMapImplement<?, Interface>) addCase.where;
                 if (op1.mapIntersect(op2)) {
-                    throw new ScriptParsingException("Signature intersection of property " + addCase.property + " (WHEN " + addCase.where +") with previosly defined implementation " + listCases.get(i).property + " (WHEN " + listCases.get(i).where +") for abstract property " + this + "\n" +
+                    throw new ScriptParsingException("signature intersection of property " + addCase.property + " (WHEN " + addCase.where +") with previosly defined implementation " + listCases.get(i).property + " (WHEN " + listCases.get(i).where +") for abstract property " + this + "\n" +
                             "Classes 1 : " + op1.mapClassWhere() + ", Classes 2 : " + op2.mapClassWhere());
                 }
             }

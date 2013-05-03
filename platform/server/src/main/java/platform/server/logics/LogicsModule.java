@@ -626,7 +626,7 @@ public abstract class LogicsModule {
         return addAProp(baseClass.getChangeClassValueAction());
     }
 
-    protected LAP addChangeClassAProp(ConcreteCustomClass cls, int resInterfaces, int changeIndex, boolean extendedContext, boolean conditional, Object... params) {
+    protected LAP addChangeClassAProp(ConcreteObjectClass cls, int resInterfaces, int changeIndex, boolean extendedContext, boolean conditional, Object... params) {
         int innerIntCnt = resInterfaces + (extendedContext ? 1 : 0);
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(innerIntCnt);
         ImOrderSet<PropertyInterface> mappedInterfaces = extendedContext ? innerInterfaces.removeOrderIncl(innerInterfaces.get(changeIndex)) : innerInterfaces;
@@ -1977,7 +1977,7 @@ public abstract class LogicsModule {
         assert readImplements.size() == 1;
 
         return addProperty(group, new LAP(
-                new MessageActionProperty(genSID(), caption, title, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>)readImplements.get(0))));
+                new MessageActionProperty(genSID(), caption, title, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(0))));
     }
 
     protected LAP addConfirmAProp(String message, String title) {
@@ -1999,7 +1999,7 @@ public abstract class LogicsModule {
         assert readImplements.size() == 1;
 
         return addProperty(group, new LAP(
-                new ConfirmActionProperty(genSID(), caption, title, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>)readImplements.get(0), getConfirmedProperty())));
+                new ConfirmActionProperty(genSID(), caption, title, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(0), getConfirmedProperty())));
     }
 
     protected LAP addAsyncUpdateAProp(Object... params) {
@@ -2016,7 +2016,7 @@ public abstract class LogicsModule {
 
         assert readImplements.size() == 1;
 
-        return addProperty(group, new LAP(new AsyncUpdateEditValueAction(genSID(), caption, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>)readImplements.get(0))));
+        return addProperty(group, new LAP(new AsyncUpdateEditValueAction(genSID(), caption, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(0))));
     }
 
     protected LAP addLFAProp(LCP lp) {
@@ -2237,6 +2237,24 @@ public abstract class LogicsModule {
         property.setForceViewType(ClassViewType.PANEL);
     }
 
+    @IdentityStrongLazy
+    public LAP getSimpleDeleteAction(ConcreteCustomClass cls, boolean oldSession) {
+        LAP res = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
+        if (!oldSession) {
+            res = (LAP) addNewSessionAProp(null, genSID(), res.property.caption, res, true, false, SetFact.<SessionDataProperty>EMPTY(), SetFact.<SessionDataProperty>EMPTY());
+            res.setAskConfirm(true);
+        }
+        setDeleteActionOptions(res);
+        return res;
+    }
+
+    protected void setDeleteActionOptions(LAP property) {
+        property.setImage("delete.png");
+        property.setShouldBeLast(true);
+        property.setEditKey(KeyStrokes.getDeleteActionPropertyKeyStroke());
+        property.setShowEditKey(false);
+    }
+
     protected LCP addHideCaptionProp(LCP hideProperty) {
         return addHideCaptionProp(privateGroup, "hideCaption", hideProperty);
     }
@@ -2379,7 +2397,7 @@ public abstract class LogicsModule {
         if(!((CalcProperty)lp.property).noDB())
             lp = addCHProp(lp, IncrementType.SET);
         // assert что lp уже в списке properties
-        setConstraint((CalcProperty)lp.property, type, event, checkProps);
+        setConstraint((CalcProperty) lp.property, type, event, checkProps);
     }
 
     public <T extends PropertyInterface> void setConstraint(CalcProperty property, CalcProperty.CheckType type, Event event, ImSet<CalcProperty<?>> checkProperties) {
@@ -2669,6 +2687,10 @@ public abstract class LogicsModule {
     
     public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object, boolean session) {
         return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass, session), object);
+    }
+
+    public PropertyDrawEntity addFormDeleteAction(FormEntity form, ObjectEntity object, boolean oldSession) {
+        return form.addPropertyDraw(getSimpleDeleteAction((ConcreteCustomClass) object.baseClass, oldSession), object);
     }
 
     public String getNamespace() {
