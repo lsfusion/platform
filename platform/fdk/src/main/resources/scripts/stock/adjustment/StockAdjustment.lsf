@@ -82,7 +82,8 @@ FORM userAdjustment 'Изменение остатков'
 
     OBJECTS d = UserAdjustmentDetail
     PROPERTIES (d) indexUserAdjustmentDetail, idBarcodeSkuUserAdjustmentDetail, nameSkuUserAdjustmentDetail, shortNameUOMSkuUserAdjustmentDetail,
-                   nameBatchUserAdjustmentDetail ON CHANGE batchDialogUserAdjustmentDetail(d), quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail, ADDOBJ, delete
+                   nameBatchUserAdjustmentDetail ON CHANGE batchDialogUserAdjustmentDetail(d), quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail,
+                   nameStockUserAdjustmentDetail, ADDOBJ, delete
 
     PROPERTIES(i) TODRAW d fillDocumentAdjustment, addDetailDialogSkuStockUserAdjustmentDetailUserAdjustment,
                            addDetailInputBarcodeUserAdjustmentDetailUserAdjustment, deleteUserAdjustmentDetailUserAdjustment
@@ -140,42 +141,56 @@ DESIGN userAdjustment FROM DEFAULT{
 }
 
 //-- SKU
-@defineDocumentSkuSystemLedgerPriceListType(userAdjustment, accountPriceListType, stock);
-@extendFormDocumentSku(userAdjustment, userAdjustment, i);
-@extendFormDocumentSkuAll(userAdjustment, userAdjustment, i);
+@defineDocumentSkuStockSystemLedgerPriceListType(userAdjustment, accountPriceListType, stock);
+@extendFormDocumentSkuStockCustom(userAdjustment, userAdjustment, i, legalEntityStock, stock);
+@extendFormDocumentSkuStockCustomAll(userAdjustment, userAdjustment, i);
 
-@defineDocumentBatchSystemLedgerPriceListType(userAdjustment, accountPriceListType, stock);
-@extendFormDocumentBatch(userAdjustment, userAdjustment, i);
-@extendFormDocumentBatchAll(userAdjustment, userAdjustment, i);
+@defineDocumentBatchStockSystemLedgerPriceListType(userAdjustment, accountPriceListType, stock);
+@extendFormDocumentBatchStock(userAdjustment, userAdjustment, i, row);
+@extendFormDocumentBatchStockAll(userAdjustment, userAdjustment, i);
 
 EXTEND FORM userAdjustment
 
     FILTERGROUP filter
-        FILTER 'С остатком ' 'F10' currentBalanceSkuUserAdjustment(s, i) DEFAULT
-        FILTER 'В документе ' 'F9' quantityUserAdjustmentDetailSkuUserAdjustment(s, i)
+        FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s,st) DEFAULT
+        FILTER 'В документе ' 'F9' quantitySkuUserAdjustmentStock(s, i, st)
+
 ;
+
 EXTEND FORM userAdjustment
 
     FILTERGROUP filter1
-        FILTER 'С остатком ' 'F10' currentBalanceBatchUserAdjustment(b, i) DEFAULT
-        FILTER 'В документе ' 'F9' quantityUserAdjustmentDetailBatchUserAdjustment(b, i)
+        FILTER 'С остатком ' 'F10' currentBalanceBatchStock(b,st) DEFAULT
+        FILTER 'В документе ' 'F9' quantityBatchUserAdjustmentStock(b, i, st)
 ;
 
 addUserAdjustment 'Добавить' = ACTION ADDFORM UserAdjustment;
 editUserAdjustment 'Редактировать' (userAdjustment) = ACTION EDITFORM UserAdjustment;
 editAdjustment (adjustment) += editUserAdjustment(adjustment);
 
-actualBalanceSkuUserAdjustment 'Остаток фактический' = currentBalanceSkuUserAdjustment(sku, userAdjustment) (+) quantityUserAdjustmentDetailSkuUserAdjustment(sku, userAdjustment);
+actualBalanceSkuUserAdjustmentStock 'Остаток фактический' (sku, userAdjustment, stock)= currentBalanceSkuStock(sku, stock) (+) quantitySkuUserAdjustmentStock(sku, userAdjustment, stock);
 
-changeActualQuantitySkuUserAdjustment = ACTION (sku, userAdjustment) {
+changeActualQuantitySkuUserAdjustmentStock = ACTION (sku, userAdjustment, stock) {
     REQUEST NUMERIC[14,3] INPUT;
-    SET requestedNumeric() <- (requestedNumeric() IF sku IS Sku AND userAdjustment IS UserAdjustment) (-) currentBalanceSkuUserAdjustment(sku, userAdjustment);
+    SET requestedNumeric() <- (requestedNumeric() IF sku IS Sku AND stock IS Stock) (-) currentBalanceSkuStock(sku, stock);
 
-    EXEC changeQuantityValueSkuUserAdjustment(sku, userAdjustment);
+    EXEC changeQuantityValueSkuUserAdjustmentStock(sku, userAdjustment, stock);
 }
 
 EXTEND FORM userAdjustment
-    PROPERTIES actualBalanceSkuUserAdjustment(s,i) ON CHANGE changeActualQuantitySkuUserAdjustment(s, i) BEFORE prevCurrentBalanceSkuUserAdjustment(s,i)
+    PROPERTIES actualBalanceSkuUserAdjustmentStock(s,i,st) ON CHANGE changeActualQuantitySkuUserAdjustmentStock(s,i,st) BEFORE currentBalanceSkuStock(s,st)
+;
+actualBalanceBatchUserAdjustmentStock 'Остаток фактический' (batch, userAdjustment, stock)= currentBalanceBatchStock(batch, stock) (+) quantityBatchUserAdjustmentStock(batch, userAdjustment, stock);
+
+changeActualQuantityBatchUserAdjustmentStock = ACTION (batch, userAdjustment, stock) {
+    REQUEST NUMERIC[14,3] INPUT;
+    SET requestedNumeric() <- (requestedNumeric() IF batch IS Batch AND stock IS Stock) (-) currentBalanceBatchStock(batch, stock);
+
+    EXEC changeQuantityValueBatchUserAdjustmentStock(batch, userAdjustment, stock);
+}
+
+EXTEND FORM userAdjustment
+    PROPERTIES actualBalanceBatchUserAdjustmentStock(b,i,sto) ON CHANGE changeActualQuantityBatchUserAdjustmentStock(b,i,sto) BEFORE prevCurrentBalanceBatchStock(b,sto)
 ;
 
 FORM adjustments 'Изменения остатков'
@@ -192,7 +207,7 @@ FORM adjustments 'Изменения остатков'
 
     OBJECTS d = AdjustmentDetail
     PROPERTIES (d) READONLY indexAdjustmentDetail, idBarcodeSkuAdjustmentDetail, nameSkuAdjustmentDetail, shortNameUOMSkuAdjustmentDetail,
-                   nameBatchAdjustmentDetail, quantityAdjustmentDetail, priceAdjustmentDetail, sumAdjustmentDetail
+                   nameBatchAdjustmentDetail, quantityAdjustmentDetail, priceAdjustmentDetail, sumAdjustmentDetail, nameStockAdjustmentDetail
 
     FILTERS adjustmentAdjustmentDetail(d) == i
 

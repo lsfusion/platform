@@ -376,7 +376,13 @@ META defineOrder(sign, legalEntityProp, stockProp)
     }
 
 //-- SKU
-    @defineDocumentSkuStock(userOrder, sku, stockProp);
+    @defineDocumentSkuStockPriceListType(userOrder, stockProp);
+
+    overChangeQuantityValueSkuUserOrderUserOrderDetail (d, o) +=  ACTION (d, o) {
+        SET shipmentDataDateUserOrderDetail (d) <- shipmentDateUserOrder(o);
+        SET shipmentDataTimeUserOrderDetail (d) <- shipmentTimeUserOrder(o);
+    };
+
     @extendFormDocumentSkuStockCustom(userOrder, userOrder, o, legalEntityProp, stockProp);
     @extendFormDocumentSkuStockCustomAll(userOrder, userOrder, o);
 
