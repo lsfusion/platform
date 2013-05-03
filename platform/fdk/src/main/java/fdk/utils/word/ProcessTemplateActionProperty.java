@@ -4,6 +4,9 @@ import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.util.IOUtils;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
@@ -24,6 +27,7 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class ProcessTemplateActionProperty extends ScriptingActionProperty {
@@ -38,9 +42,6 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-
-        BufferedInputStream buffInputStream = null;
-        BufferedOutputStream buffOutputStream = null;
 
         try {
 
@@ -74,29 +75,40 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                             templateEntriesMap.put(keyTemplateEntry.trim(), valueTemplateEntry.trim().replace('\n', '\r'));
                     }
 
-                    File templateFile = File.createTempFile("template", "doc");
-                    FileOutputStream fileStream = new FileOutputStream(templateFile);
-                    fileStream.write((byte[]) wordObject.object);
-                    fileStream.close();
+                    boolean isDocx = ((byte[]) fileObject).length<=2 ? false : ((byte[]) fileObject)[0] == 80 && ((byte[]) fileObject)[1] == 75;
 
-                    FileInputStream fileInputStream = new FileInputStream(templateFile.getAbsolutePath());
-                    buffInputStream = new BufferedInputStream(fileInputStream);
-                    HWPFDocument document = new HWPFDocument(new POIFSFileSystem(buffInputStream));
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-                    Range range = document.getRange();
+                    if (isDocx) {
+                        XWPFDocument document = new XWPFDocument(new ByteArrayInputStream((byte[]) wordObject.object));
+                        List<XWPFParagraph> docParagraphs = document.getParagraphs();
 
-                    for (Map.Entry<String, String> entry : templateEntriesMap.entrySet()) {
-                        range.replaceText(entry.getKey(), entry.getValue());
+                        for (Map.Entry<String, String> entry : templateEntriesMap.entrySet()) {
+                            for (XWPFParagraph p : docParagraphs) {
+                                List<XWPFRun> runs = p.getRuns();
+                                for (int i = runs.size() - 1; i >= 0; i--) {
+                                    String text = runs.get(i).getText(0);
+                                    if (text != null)
+                                        text = text.replace(entry.getKey(), entry.getValue());
+                                    runs.get(i).setText(text, 0);
+                                }
+                            }
+                        }
+
+                        document.write(outputStream);
+
+                    } else {
+                        HWPFDocument document = new HWPFDocument(new POIFSFileSystem(new ByteArrayInputStream((byte[]) wordObject.object)));
+                        Range range = document.getRange();
+
+                        for (Map.Entry<String, String> entry : templateEntriesMap.entrySet()) {
+                            range.replaceText(entry.getKey(), entry.getValue());
+                        }
+
+                        document.write(outputStream);
                     }
 
-                    File resultFile = File.createTempFile("result", "doc");
-                    FileOutputStream fileOutputStream = new FileOutputStream(resultFile);
-                    buffOutputStream = new BufferedOutputStream(fileOutputStream);
-                    document.write(buffOutputStream);
-                    buffOutputStream.close();
-
-                    LM.findLCPByCompoundName("resultTemplate").change(IOUtils.toByteArray(new FileInputStream(resultFile)), context);
-
+                    LM.findLCPByCompoundName("resultTemplate").change(outputStream.toByteArray(), context);
                 }
             }
         } catch (FileNotFoundException e) {
@@ -105,20 +117,6 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
             throw new RuntimeException(e);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
-        } finally {
-            if (buffInputStream != null) {
-                try {
-                    buffInputStream.close();
-                } catch (IOException ignored) {
-                }
-            }
-            if (buffOutputStream != null) {
-                try {
-                    buffOutputStream.flush();
-                    buffOutputStream.close();
-                } catch (IOException ignored) {
-                }
-            }
         }
     }
 }

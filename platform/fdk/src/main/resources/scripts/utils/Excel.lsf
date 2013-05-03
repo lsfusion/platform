@@ -9,6 +9,7 @@ nameTemplate 'Имя' = DATA STRING[100] (Template);
 fileTemplate 'Файл шаблона' (Template) = DATA EXCELFILE (Template);
 loadFileTemplate 'Загрузить шаблон'(t) = ACTION LOADFILE fileTemplate(t);
 openFileTemplate 'Открыть шаблон'(t) = ACTION OPENFILE fileTemplate(t);
+idTemplate 'Идентификатор' = DATA STRING[20] (Template) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 
 processTemplate = ACTION CUSTOM 'fdk.utils.excel.ProcessTemplateActionProperty';
 
@@ -27,16 +28,67 @@ templateTemplateEntry 'Шаблон' = DATA Template (TemplateEntry);
 keyTemplateEntry 'Параметр' = DATA STRING[100](TemplateEntry);
 valueTemplateEntry 'Значение' = DATA SESSION TEXT (TemplateEntry);
 
-FORM templates 'Шаблоны Excel'
+FORM template 'Шаблон Excel'
 
-    OBJECTS t = Template
-    PROPERTIES (t) nameTemplate, loadFileTemplate, openFileTemplate, openProcessTemplate TOOLBAR, ADDOBJ, delete
+    OBJECTS t = Template FIXED PANEL
+    PROPERTIES (t) nameTemplate, idTemplate
+    PROPERTIES (t) loadFileTemplate, openFileTemplate
 
     OBJECTS te = TemplateEntry
     PROPERTIES (te) keyTemplateEntry, valueTemplateEntry, ADDOBJ, delete
+    PROPERTIES (t) TODRAW te FORCE PANEL TOOLBAR openProcessTemplate
+
+    FILTERS templateTemplateEntry (te) == t
+
+    EDIT Template OBJECT t
+;
+
+DESIGN template FROM DEFAULT{
+    main{
+        preferredSize = (1024, 768);
+        childConstraints = TO THE BOTTOM;
+        ADD t.box {
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+                ADD PROPERTY(nameTemplate);
+                ADD PROPERTY(idTemplate);
+            };
+            NEW row2 {
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(loadFileTemplate);
+                ADD PROPERTY(openFileTemplate);
+            };
+        }
+        ADD te.box;
+    }
+    ADD functions.box;
+}
+
+FORM templates 'Шаблоны Excel'
+
+    OBJECTS t = Template
+    PROPERTIES (t) READONLY nameTemplate, idTemplate
+    PROPERTIES (t) ADDFORM, EDITFORM, delete
+
+    OBJECTS te = TemplateEntry
+    PROPERTIES (te) READONLY keyTemplateEntry, valueTemplateEntry
 
     FILTERS templateTemplateEntry (te) == t
 ;
+
+FORM dialogTemplates 'Шаблоны Excel'
+
+    OBJECTS t = Template
+    PROPERTIES (t) READONLY nameTemplate, idTemplate
+    PROPERTIES (t) ADDFORM, EDITFORM, delete
+
+    DIALOG Template OBJECT t
+;
+DESIGN dialogTemplates FROM DEFAULT{
+    main {
+        preferredSize = (1024, 768);
+    }
+}
 
 NAVIGATOR {
     masterData {

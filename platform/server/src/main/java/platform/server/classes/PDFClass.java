@@ -43,7 +43,7 @@ public class PDFClass extends StaticFormatFileClass {
         return Data.PDF;
     }
 
-    public String getOpenExtension() {
+    public String getOpenExtension(byte[] file) {
         return "pdf";
     }
 }

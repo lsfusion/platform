@@ -70,14 +70,9 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                             templateEntriesMap.put(keyTemplateEntry.trim(), valueTemplateEntry.trim());
                     }
 
-                    File templateFile = File.createTempFile("template", "xls");
-                    FileOutputStream fileStream = new FileOutputStream(templateFile);
-                    fileStream.write((byte[]) excelObject.object);
-                    fileStream.close();
+                    ByteArrayInputStream inputStream = new ByteArrayInputStream((byte[]) excelObject.object);
 
-                    FileInputStream fileInputStream = new FileInputStream(templateFile.getAbsolutePath());
-
-                    Workbook wb = WorkbookFactory.create(fileInputStream);
+                    Workbook wb = WorkbookFactory.create(inputStream);
                     for (int i = 0; i < wb.getNumberOfSheets(); i++) {
                         Sheet sheet = wb.getSheetAt(i);
                         for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
@@ -96,22 +91,19 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                             }
                         }
                     }
-                    File resultFile = File.createTempFile("result", "xls");
-                    FileOutputStream fileOutputStream = new FileOutputStream(resultFile);
-                    wb.write(fileOutputStream);
-                    fileOutputStream.close();
 
-                    LM.findLCPByCompoundName("resultTemplate").change(IOUtils.toByteArray(new FileInputStream(resultFile)), context);
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    wb.write(outputStream);
+
+                    LM.findLCPByCompoundName("resultTemplate").change(outputStream.toByteArray(), context);
                 }
             }
 
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
         } catch (InvalidFormatException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

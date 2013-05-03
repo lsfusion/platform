@@ -1,9 +1,10 @@
 package platform.server.classes;
 
+import org.apache.poi.POIXMLDocument;
 import platform.interop.Data;
 import platform.server.logics.ServerResourceBundle;
 
-import java.io.DataInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,7 +44,11 @@ public class ExcelClass extends StaticFormatFileClass {
         return Data.EXCEL;
     }
 
-    public String getOpenExtension() {
-        return "xls";
+    public String getOpenExtension(byte[] file) {
+        try {
+            return POIXMLDocument.hasOOXMLHeader(new ByteArrayInputStream(file)) ? "xlsx" : "xls";
+        } catch (IOException e) {
+            return "xls";
+        }
     }
 }

@@ -46,7 +46,7 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
     }
 
     @Override
-    public String getOpenExtension() {
+    public String getOpenExtension(byte[] file) {
         return filterExtensions[0];
     }
 

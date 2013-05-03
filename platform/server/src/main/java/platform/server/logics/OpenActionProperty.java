@@ -53,7 +53,7 @@ public class OpenActionProperty extends SystemActionProperty {
             if (fileClass instanceof DynamicFormatFileClass)
                 context.delayUserInterfaction(new OpenFileClientAction(BaseUtils.getFile(file), BaseUtils.getExtension(file)));
             else
-                context.delayUserInterfaction(new OpenFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass) fileClass).getOpenExtension(), ",")));
+                context.delayUserInterfaction(new OpenFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass) fileClass).getOpenExtension(file), ",")));
         }
     }
 

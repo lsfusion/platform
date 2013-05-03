@@ -43,7 +43,7 @@ public class ImageClass extends StaticFormatFileClass {
         return Data.IMAGE;
     }
 
-    public String getOpenExtension() {
+    public String getOpenExtension(byte[] file) {
         return "jpg"; //, jpeg, bmp, png";
     }
 }
