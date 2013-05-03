@@ -1,0 +1,133 @@
+MODULE PriceListManage;
+
+REQUIRE PriceListData;
+
+NAMESPACE PriceList;
+
+//Фильтры
+
+filterLegalEntityRangeManagement = DATA SESSION LegalEntity ();
+nameFilterLegalEntityRangeManagement 'Организация' () = nameLegalEntity(filterLegalEntityRangeManagement());
+filterLegalEntityRangeManagementUserPriceList (userPriceList) = (companyUserPriceList(userPriceList) == filterLegalEntityRangeManagement()) OR
+                                                                (userPriceList IS UserPriceList AND NOT filterLegalEntityRangeManagement());
+
+filterCompanySkuDateTimeRangeManagement (priceListType, sku, stock, dateTime) =
+    (companyLedgerPriceListTypeSkuStockDateTime(priceListType, sku, stock, dateTime) == filterLegalEntityRangeManagement()) OR
+    (priceListType IS PriceListType AND sku IS Sku  AND stock IS Stock AND dateTime IS DATETIME AND NOT filterLegalEntityRangeManagement());
+
+//Создание прайса через форму ассортимента
+
+inRangeManagement 'Отм.' = DATA SESSION BOOLEAN(Sku);
+
+createPriceRangeManagement 'Создать прайс' = ACTION (dataPriceListType){
+    FOR ADDOBJ u = UserPriceList DO {
+        SET fromDateUserPriceList(u) <- currentDate();
+        SET fromTimeUserPriceList(u) <- currentTime();
+        SET companyUserPriceList(u) <- filterLegalEntityRangeManagement();
+        SET currencyUserPriceList(u) <- currencyLegalEntity(filterLegalEntityRangeManagement());
+        SET inUserPriceListDataPriceListType(u, dataPriceListType) <- TRUE;
+        SET showUserPriceListPriceListType(u, dataPriceListType) <- TRUE;
+        FOR inRangeManagement(sku) ADDOBJ d = UserPriceListDetail DO {
+            SET skuUserPriceListDetail(d) <- sku AS Sku;
+            SET userPriceListUserPriceListDetail(d) <- u AS UserPriceList;
+        }
+        FORM userPriceList OBJECTS p = u DOCKEDMODAL;
+        IF TRUE IF NOT formResult() == FormResult.ok THEN {
+            FOR userPriceListUserPriceListDetail(detail) == u DO {
+                EXEC delete(detail);
+            }
+            EXEC delete(u);
+        }
+    }
+} TOOLBAR;
+
+FORM rangeManagement 'Управление ассортиментом'
+    OBJECTS dt = DATETIME FIXED PANEL
+    PROPERTIES(dt) objValue = OBJVALUE
+
+    OBJECTS pt = DataPriceListType FIXED PANEL
+    PROPERTIES(pt) SELECTOR namePriceListType
+
+    PROPERTIES() nameFilterLegalEntityRangeManagement
+
+    OBJECTS p = UserPriceList
+    PROPERTIES(p) READONLY isPostedUserPriceList FORCE GRID, numberObject, seriesObject, dateUserPriceList, timeUserPriceList,
+                           fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
+                           nameCurrencyUserPriceList, nameCompanyUserPriceList, priceListTypesPriceList, stocksPriceList,
+                           noteUserPriceList, objectClassName
+    PROPERTIES(p) EDITFORM, delete, renewPriceList FORCE PANEL TOOLBAR
+    ORDER BY fromDateUserPriceList, fromTimeUserPriceList
+    FILTERS filterLegalEntityRangeManagementUserPriceList(p),
+            inPriceListDataPriceListType(p, pt)
+
+    TREE stockTree a=STRING[3], st = StockGroup PARENT parentStockGroup
+    PROPERTIES READONLY OBJVALUE(a), stTreeName = nameStockGroup(st)
+    ORDER BY stTreeName
+    FILTERS stringEqualsAll(a), quantityStocksStockGroup(st)
+
+    TREE skuTree sg = SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sg)
+    ORDER BY skuTreeName
+
+    OBJECTS sm = (sk = Sku, s = Stock)
+    PROPERTIES(sk) inRangeManagement
+    PROPERTIES(s) READONLY nameStock
+    PROPERTIES(sk) READONLY nameSku, idBarcodeSku
+    PROPERTIES(sk, s, dt) READONLY balanceASkuStockDateTime
+    PROPERTIES createPriceRangeManagement(pt) TODRAW sk FORCE PANEL
+    ORDER BY nameStock
+    FILTERS isParentSkuGroupSku(sg, sk),
+            inStockGroupStock(st, s),
+            isCompanyStock(s)
+
+    PROPERTIES(pt, sk, s, dt) READONLY pricePriceListTypeSkuStockDateTime, nameCompanyLedgerPriceListTypeSkuStockDateTime,
+                                       descriptionLedgerPriceListTypeSkuStockDateTime
+
+    FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt),
+            filterCompanySkuDateTimeRangeManagement(pt, sk, s, dt)
+;
+
+DESIGN rangeManagement FROM DEFAULT{
+    NEW mainContainer{
+        NEW topContainer{
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD dt.box;
+            NEW filtersContainer{
+                caption = 'Фильтры';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(namePriceListType(pt)){caption ='Вид цены';}
+                ADD PROPERTY(nameFilterLegalEntityRangeManagement);
+            }
+        }
+        NEW firstContainer{
+            NEW tabContainer{
+                type = TABBED;
+                NEW priceContainer{
+                    caption = 'Текущие цены';
+                    childConstraints = TO THE RIGHT;
+                    type = SPLITH;
+                    NEW treeContainer{
+                        type = SPLITV;
+                        ADD skuTree.tree.box{caption = 'Товарные группы';}
+                        ADD stockTree.tree.box{caption = 'Группы складов';}
+                    }
+                    ADD sm.box{
+                        caption = 'Товары';
+                        fillHorizontal = 2.0;
+                        PROPERTY(pricePriceListTypeSkuStockDateTime){caption = 'Текущая цена';}
+                    }
+                }
+                ADD p.box{
+                    caption = 'Прайсы';
+                }
+            }
+        }
+    }
+    ADD functions.box;
+}
+
+NAVIGATOR {
+    priceListDocuments {
+        ADD rangeManagement FIRST;
+    }
+}

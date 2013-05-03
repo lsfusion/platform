@@ -1,6 +1,6 @@
 MODULE PurchaseInvoiceWholesalePrice;
 
-REQUIRE PurchaseInvoice;
+REQUIRE PurchaseInvoice, PriceListCalc;
 
 NAMESPACE Purchase;
 

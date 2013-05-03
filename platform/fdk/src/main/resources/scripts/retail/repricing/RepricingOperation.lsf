@@ -1,6 +1,6 @@
 MODULE RepricingOperation;
 
-REQUIRE Operation, LegalEntity, PriceList;
+REQUIRE Operation, LegalEntity, PriceListCalc;
 
 NAMESPACE Repricing;
 

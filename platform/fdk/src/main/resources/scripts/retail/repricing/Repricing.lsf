@@ -1,8 +1,6 @@
 MODULE Repricing;
 
-REQUIRE Employee, Store, Pricing, StockDocument, PriceList, RepricingOperation;
-
-NAMESPACE Repricing;
+REQUIRE Employee, Store, Pricing, StockDocument, PriceListCalc, RepricingOperation;
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 

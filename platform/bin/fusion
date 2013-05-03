@@ -5,7 +5,6 @@
 # Adapt the following lines to your configuration
 FUSION_HOME=/usr/local/fusion
 JAVA_HOME=/usr/java/latest/jre
-FUSION_IP=lsfusion.ru
 PID_FILE=/var/run/jsvc-fusion.pid
 
 FUSION_OPTS="-Xms512m -Xmx8192m"
@@ -20,7 +19,6 @@ case "$1" in
     -home $JAVA_HOME \
     -jvm server \
     -cwd $FUSION_HOME \
-    -Djava.rmi.server.hostname=$FUSION_IP \
     -pidfile $PID_FILE \
     -outfile $FUSION_HOME/logs/stdout.log \
     -errfile $FUSION_HOME/logs/stderr.log \

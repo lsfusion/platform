@@ -1,6 +1,6 @@
-MODULE  ProductionOrder;
+MODULE ProductionOrder;
 
-REQUIRE Substitute, PriceList, StockTax;
+REQUIRE Substitute, PriceList, PriceListCalc, StockTax;
 NAMESPACE Production;
 
 // ----------------  Заказ ------------------- //

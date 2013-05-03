@@ -53,6 +53,5 @@ editWarePriceListType 'Редактировать' = ACTION EDITFORM WarePriceLi
 editPriceListType(priceListType) += editWarePriceListType(priceListType);
 
 EXTEND FORM priceListTypes
-
-    PROPERTIES() addWarePriceListType AFTER addCalcPriceListType TODRAW pt FORCE PANEL
+    PROPERTIES() addWarePriceListType TODRAW pt FORCE PANEL
 ;
