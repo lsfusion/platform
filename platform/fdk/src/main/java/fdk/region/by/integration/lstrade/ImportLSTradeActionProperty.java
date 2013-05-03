@@ -89,10 +89,10 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                 importData.setItemsList((getLCP("importItems").read(context) != null) ?
                         importItemsFromDBF(path + "//_sprgrm.dbf", path + "//_postvar.dbf", numberOfItems, importInactive) : null);
 
-                importData.setPriceListStoresList((getLCP("importAssortment").read(context) != null) ?
+                importData.setPriceListStoresList((getLCP("importStoreAssortment").read(context) != null) ?
                         importPriceListStoreFromDBF(path + "//_postvar.dbf", path + "//_strvar.dbf", assortmentNumberOfItems) : null);
 
-                importData.setPriceListSuppliersList((getLCP("importAssortment").read(context) != null) ?
+                importData.setPriceListSuppliersList((getLCP("importSupplierAssortment").read(context) != null) ?
                         importPriceListSuppliersFromDBF(path + "//_postvar.dbf", assortmentNumberOfItems) : null);
 
                 importData.setUserInvoicesList((getLCP("importUserInvoices").read(context) != null) ?
