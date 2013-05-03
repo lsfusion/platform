@@ -85,7 +85,7 @@ dateToRate 'Действует по' = DATA DATE (Rate) IN base;
 
 rateRangeDate(range, date) = GROUP MAX rate IF dateFromRate(rate) <= date AND NOT dateToRate(rate) < date AND date AS DATE
                                          BY rangeRate(rate), date;
-valueRateRangeDate 'На дату' (range, date) = valueRate(rateRangeDate(range, date));
+valueRateRangeDate 'На дату' (range, date) = valueRate(rateRangeDate(range, date)) COMPLEX;
 
 currentRateRange (range) = rateRangeDate(range, currentDate()) PERSISTENT;
 valueCurrentRateRange 'Действующая ставка' (range) = valueRate(currentRateRange(range)) IN base;
@@ -304,7 +304,7 @@ END
 // ------------ derive
 META deriveDocumentDetailValueVATCustom(detail, prefix)
     value###prefix###VAT###detail (detail)  <- valueRateRangeDate(prefix###VAT###detail(detail), date###detail(detail))
-                    WHEN CHANGED(prefix###VAT###detail(detail)) OR CHANGED (date###detail(detail));
+                    WHEN DO CHANGED(prefix###VAT###detail(detail)) OR CHANGED (date###detail(detail));
 END
 META deriveDocumentDetailValueVAT(object, prefix)
     @deriveDocumentDetailValueVATCustom(object##Detail, prefix);
@@ -366,7 +366,7 @@ END
 // ------------ derive
 META deriveDocumentDetailVATDataSumCustom(detail, currencyProp)
     VATSum###detail (detail)  <- roundPriceCurrency((sum###detail(detail) * calcValueVAT###detail (detail) / 100), currencyProp###detail(detail))
-                    WHEN CHANGED(sum###detail(detail)) OR CHANGED (calcValueVAT###detail (detail)) OR CHANGED (currencyProp###detail (detail));
+                    WHEN DO CHANGED(sum###detail(detail)) OR CHANGED (calcValueVAT###detail (detail)) OR CHANGED (currencyProp###detail (detail));
 END
 META deriveDocumentDetailVATDataSum(object, currencyProp)
     @deriveDocumentDetailVATDataSumCustom(object##Detail, currencyProp);

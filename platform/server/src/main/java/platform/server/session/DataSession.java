@@ -98,10 +98,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             return env;
         }
 
-        protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, FunctionSet<CalcProperty> overrided) {
+        protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, PrereadRows<P> preread, FunctionSet<CalcProperty> overrided) {
             PropertyChange<P> propertyChange = getPropertyChange(property);
             if(propertyChange!=null)
                 return new ModifyChange<P>(propertyChange, false);
+            if(!preread.isEmpty())
+                return new ModifyChange<P>(property.getNoChange(), preread, false);
             return null;
         }
 
@@ -465,7 +467,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         BaseUtils.clearNotKeys(data, keep);
         news = null;
-        
+
         assert dataModifier.getHintProps().isEmpty(); // hint'ы все должны также уйти
 
         if(cancel) {
@@ -651,11 +653,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException {
         boolean hadStoredChanges = hasStoredChanges();
 
+        SinglePropertyTableUsage<ClassPropertyInterface> changeTable = null;
         if(neededProps!=null && property.isStored() && property.event==null) { // если транзакция, нет change event'а, singleApply'им
             assert isInTransaction();
 
             change = SinglePropertyTableUsage.getChange(splitApplySingleStored(property,
                     property.readFixChangeTable(sql, change, baseClass, getQueryEnv()), ThreadLocalContext.getBusinessLogics()));
+        } else {
+            changeTable = change.materialize(property, sql, baseClass, getQueryEnv());
+            change = SinglePropertyTableUsage.getChange(changeTable);
+
+            if(change.isEmpty()) // оптимизация по аналогии с changeClass
+                return;
         }
 
         ImSet<DataProperty> updateChanges = SetFact.singleton(property);
@@ -663,6 +672,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         updateSessionEvents(updateChanges);
 
         aspectChangeProperty(property, change);
+
+        if(changeTable!=null)
+            changeTable.drop(sql);
 
         updateProperties(updateChanges);
 
@@ -720,10 +732,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
             for(ActionProperty<?> action : getActiveSessionEvents()) {
                 if(sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends())) { // оптимизация аналогичная верхней
-                    sessionEventModifier = mapPrevStartSessionEventModifiers.get(action); // перегружаем modifier своим если он есть
-                    if(sessionEventModifier==null) sessionEventModifier = commonSessionEventModifier;
-
-                    action.execute(env);
+                    executeSessionEvent(env, action);
                     if(!isInSessionEvent())
                         return;
                 }
@@ -737,6 +746,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
     }
 
+    @LogTime
+    private void executeSessionEvent(ExecutionEnvironment env, ActionProperty<?> action) throws SQLException {
+        sessionEventModifier = mapPrevStartSessionEventModifiers.get(action); // перегружаем modifier своим если он есть
+        if(sessionEventModifier==null) sessionEventModifier = commonSessionEventModifier;
+
+        action.execute(env);
+    }
 
     private OverrideSessionModifier resolveModifier = null;
 
@@ -894,7 +910,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             return SetFact.EMPTY();
         }
 
-        protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, FunctionSet<CalcProperty> overrided) {
+        protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, PrereadRows<P> preread, FunctionSet<CalcProperty> overrided) {
+            if(!preread.isEmpty())
+                return new ModifyChange<P>(property.getNoChange(), preread, false);
             return null;
         }
 

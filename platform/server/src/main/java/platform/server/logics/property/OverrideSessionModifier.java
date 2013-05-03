@@ -3,17 +3,20 @@ package platform.server.logics.property;
 import platform.base.FullFunctionSet;
 import platform.base.FunctionSet;
 import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.Settings;
+import platform.server.caches.ManualLazy;
+import platform.server.caches.ValuesContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
-import platform.server.session.IncrementProps;
-import platform.server.session.ModifyChange;
-import platform.server.session.PropertyChange;
-import platform.server.session.SessionModifier;
+import platform.server.data.expr.Expr;
+import platform.server.session.*;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static platform.base.BaseUtils.merge;
 
@@ -35,17 +38,19 @@ public class OverrideSessionModifier extends SessionModifier {
         return super.getHintProps().merge(modifier.getHintProps());
     }
 
-    @Override
-    public FunctionSet<CalcProperty> getUsedHints() {
-        return merge(super.getUsedHints(), modifier.getUsedHints(), pushHints(), forceDisableHintIncrement, forceDisableNoUpdate);
-    }
-
     private FunctionSet<CalcProperty> pushHints() {
         return merge(override.getProperties(), forceHintIncrement, forceNoUpdate);
     }
 
-    private boolean pushHint(CalcProperty property) {
-        return !CalcProperty.depends(property, pushHints());
+//    private Map<CalcProperty, Boolean> pushHint = new HashMap<CalcProperty, Boolean>();
+    @ManualLazy
+    private boolean pushHint(CalcProperty property) { // частый вызов из-за кэширования хинтов, уже нет так как отрезается проверкой на complex
+//        Boolean result = pushHint.get(property);
+//        if(result==null) {
+            return  !CalcProperty.dependsSet(property, override.getProperties(), forceHintIncrement, forceNoUpdate);
+//            pushHint.put(property, result);
+//        }
+//        return result;
     }
 
     @Override
@@ -78,6 +83,29 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
+    public <P extends PropertyInterface> ValuesContext cacheAllowPrereadValues(CalcProperty<P> property) {
+        if(!allowPropertyPrereadValues(property)) // оптимизация
+            return null;
+
+        if(pushHint(property))
+            return modifier.cacheAllowPrereadValues(property);
+
+        return super.cacheAllowPrereadValues(property);
+    }
+
+    @Override
+    public <P extends PropertyInterface> boolean allowPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) {
+        if(!allowPropertyPrereadValues(property)) // оптимизация
+            return false;
+
+        if(pushHint(property))
+            return modifier.allowPrereadValues(property, values);
+
+        return super.allowPrereadValues(property, values);
+    }
+
+
+    @Override
     public int getLimitHintIncrementComplexity() {
         if(limitHintIncrementComplexity!=null)
             return limitHintIncrementComplexity;
@@ -107,9 +135,26 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
+    public <P extends PropertyInterface> void addPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) {
+        // если не зависит от override'а проталкиваем внутрь
+        if(pushHint(property)) {
+            modifier.addPrereadValues(property, values);
+            return;
+        }
+
+        super.addPrereadValues(property, values);
+    }
+
+    @Override
     public void clearHints(SQLSession session) throws SQLException {
         super.clearHints(session);
         modifier.clearHints(session);
+    }
+
+    @Override
+    public void clearPrereads() throws SQLException {
+        super.clearPrereads();
+        modifier.clearPrereads();
     }
 
     @Override
@@ -126,6 +171,7 @@ public class OverrideSessionModifier extends SessionModifier {
 
     // уведомляет что IncrementProps изменился
     public void eventIncrementChange(CalcProperty property) {
+//        pushHint.remove(property);
         eventDataChange(property);
 
         // пробежим по increment'ам modifier, и уведомим что они могли изменится
@@ -172,11 +218,11 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
-    protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, FunctionSet<CalcProperty> overrided) {
+    protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, PrereadRows<P> preread, FunctionSet<CalcProperty> overrided) {
         PropertyChange<P> overrideChange = override.getPropertyChange(property);
         if(overrideChange!=null)
             return new ModifyChange<P>(overrideChange, true);
-        return modifier.getModifyChange(property, merge(overrided, CalcProperty.getDependsOnSet(override.getProperties()), forceDisableHintIncrement));
+        return modifier.getModifyChange(property, preread, merge(overrided, CalcProperty.getDependsOnSet(override.getProperties()), forceDisableHintIncrement));
     }
 
     public ImSet<CalcProperty> calculateProperties() {

@@ -1288,7 +1288,7 @@ END
 
 META deriveDocumentDetailSumCustomPrefix(detail, prefix, currencyProp, quantityProp)
     prefix###sum###detail (detail)  <- roundPriceCurrency(quantityProp###detail(detail) * prefix###price###detail(detail), currencyProp###detail(detail))
-                    WHEN CHANGED(quantityProp###detail(detail)) OR CHANGED (prefix###price###detail(detail)) OR CHANGED(currencyProp###detail(detail));
+                    WHEN DO CHANGED(quantityProp###detail(detail)) OR CHANGED (prefix###price###detail(detail)) OR CHANGED(currencyProp###detail(detail));
 END
 
 META deriveDocumentDetailSumPrefix(object, prefix, currencyProp, quantityProp)
@@ -3093,7 +3093,7 @@ META defineAddDetailDialogSkuCustomInner (object, class, detail, detailClass, ca
     addDetailDialogSku###detail###object 'Подбор товаров'###caption = ACTION (object) {
         FORM form MODAL;
         IF formResult() == FormResult.ok THEN {
-            FOR form###quantity(sku) ADDOBJ w = detailClass INLINE DO {
+            FOR form###quantity(sku) INLINE ADDOBJ w = detailClass DO {
                 SET object###detail(w) <- object AS class;
                 SET skuProp###detail(w) <- sku AS Sku;
                 SET quantity###detail(w) <- form###quantity(sku);

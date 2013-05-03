@@ -43,8 +43,8 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
 
         WhereBuilder changedGroupWhere = cascadeWhere(changedWhere);
 
-        ImMap<Interface<I>, Expr> groups = getGroupImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
         ImList<Expr> exprs = getExprImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
+        ImMap<Interface<I>, Expr> groups = getGroupImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
         ImOrderMap<Expr, Boolean> orders = getOrderImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
 
         if(changedWhere!=null) {

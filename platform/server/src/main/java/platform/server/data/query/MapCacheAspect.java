@@ -357,7 +357,7 @@ public class MapCacheAspect {
             usedChanges = implement.usedChanges.translateValues(translator);
             this.changed = implement.changed;
             this.propClasses = implement.propClasses;
-            this.values = new MapTranslator(MapFact.<KeyExpr, KeyExpr>EMPTYREV(), translator).translate(implement.values);  // assert что keys'ов нет
+            this.values = translator.mapKeys().translate(implement.values);  // assert что keys'ов нет
         }
 
         protected QueryInterfaceImplement<K> translate(MapValuesTranslate translator) {

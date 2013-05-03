@@ -39,9 +39,10 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     private final CustomClass addClass;
     private final boolean forceDialog;
 
-    private final Inline inline;
+    private final ImSet<I> noInline; // из extend interfaces
+    private final boolean forceInline;
    
-    public ForActionProperty(String sID, String caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<?, I> ifProp, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, I> action, ActionPropertyMapImplement<?, I> elseAction, I addObject, CustomClass addClass, boolean forceDialog, boolean recursive, Inline inline) {
+    public ForActionProperty(String sID, String caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<?, I> ifProp, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, I> action, ActionPropertyMapImplement<?, I> elseAction, I addObject, CustomClass addClass, boolean forceDialog, boolean recursive, ImSet<I> noInline, boolean forceInline) {
        super(sID, caption, innerInterfaces, mapInterfaces);
 
         assert !recursive || (addObject == null && elseAction == null);
@@ -58,7 +59,10 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         this.addClass = addClass;
         this.forceDialog = forceDialog;
 
-        this.inline = inline;
+        this.noInline = noInline;
+        this.forceInline = forceInline;
+
+        assert (addObject==null || !noInline.contains(addObject)) && !noInline.intersect(mapInterfaces.getSet()) && innerInterfaces.containsAll(noInline);
 
         finalizeInit();
         assert innerInterfaces.containsAll(action.mapping.valuesSet().merge(ifProp != null ? ifProp.mapping.valuesSet() : SetFact.<I>EMPTY()));
@@ -145,6 +149,37 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     public ActionPropertyMapImplement<?, I> compileExtend() { // проталкивание FOR'ов
 
         ImSet<I> context = mapInterfaces.valuesSet();
+        assert innerInterfaces.size() > context.size();
+        boolean allNoInline = (innerInterfaces.size() == context.size() + noInline.size() + (addObject !=null ? 1 : 0));
+
+        if(!allNoInline && noInline.size() > 0) {
+            assert !noInline.intersect(context);
+            assert orders.isEmpty();
+            assert !recursive;
+
+            MList<ActionPropertyMapImplement<?, I>> mResult = ListFact.mList();
+            ImSet<I> extNoInline = context.addExcl(noInline);
+
+            CalcPropertyMapImplement<?, I> noInlineIfProp = ifProp;
+            ImSet<I> noInlineInterfaces = extNoInline;
+            if(CalcProperty.depends(ifProp.property, StoredDataProperty.set)) { // нужно создать сначала материалайзить условие for по аналогии с проталкиванием
+                noInlineIfProp = DerivedProperty.createDataProp(true, getExtendClasses(), ifProp.property.getValueClass());// делаем SET в session свойство, и подменяем условие на это свойство
+                mResult.add(DerivedProperty.createSetAction(innerInterfaces, context, null, noInlineIfProp, ifProp));
+                noInlineInterfaces = noInline;
+            }
+
+            // затем сделать GROUP ANY TRUE IF с группировкой по noInline интерфейсам, затем
+            CalcPropertyMapImplement<?, I> groupNoInline = DerivedProperty.createAnyGProp(noInlineIfProp, noInlineInterfaces);
+            // по нему уже сгруппировать FOR noInline интерфейсам с опцией Inline.NO, а внутри FOR по материализованному условию где noInline уже будут внешними интерфейсами
+            ActionPropertyMapImplement<?, I> cleanAction = createForAction(innerInterfaces, extNoInline, noInlineIfProp, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false,
+                    action, null, addObject, addClass, forceDialog, recursive, SetFact.<I>EMPTY(), forceInline);
+            mResult.add(createForAction(extNoInline, context, groupNoInline, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false,
+                    cleanAction, elseAction, false, noInline, false));
+            return DerivedProperty.createListAction(context, mResult.immutableList());
+        }
+
+        if(allNoInline)
+            return null;
 
         if (addObject != null) { // "компиляция" ADDOBJ
             assert !recursive;
@@ -158,7 +193,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                     if (changeClassProperty.valueClass instanceof CustomClass && changeClassProperty.where == null) // удаление не интересует
                         return DerivedProperty.createForAction(innerInterfaces, context, ifProp, orders, ordersNotNull,
                                 DerivedProperty.createListAction(innerInterfaces, list.subList(1, list.size())), elseAction, addObject,
-                                (CustomClass) changeClassProperty.valueClass, changeClassProperty.forceDialog, recursive, inline);
+                                (CustomClass) changeClassProperty.valueClass, changeClassProperty.forceDialog, recursive, noInline, forceInline);
                 }
             }
 
@@ -166,85 +201,86 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             return DerivedProperty.createListAction(context, ListFact.<ActionPropertyMapImplement<?, I>>toList(
                     DerivedProperty.createAddAction(addClass, forceDialog, innerInterfaces.removeIncl(addObject), context, ifProp, result),
                     DerivedProperty.createForAction(innerInterfaces, context, DerivedProperty.<I>createCompare(
-                            addObject, result, Compare.EQUALS), orders, ordersNotNull, action, elseAction, null, null, false, inline)));
-        } else { // проталкиваем for'ы
-            if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.VOLATILE))
-                return null;
+                            addObject, result, Compare.EQUALS), orders, ordersNotNull, action, elseAction, null, null, false, noInline, forceInline)));
+        }
 
-            ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
+        // проталкиваем for'ы
+        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.VOLATILE))
+            return null;
 
-            ImSet<CalcProperty>[] listChangeProps = new ImSet[list.size()];
-            ImSet<CalcProperty>[] listUsedProps = new ImSet[list.size()];
-            for (int i = 0; i < list.size(); i++) {
-                listChangeProps[i] = list.get(i).property.getChangeProps();
-                listUsedProps[i] = list.get(i).property.getUsedProps();
-            }
+        ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
 
-            // ищем сначала "вытаскиваемые" (changeProps не зависят от usedProps и т.д)
-            final MSet<CalcProperty> mPushChangedProps = SetFact.mSet();
-            MList<ActionPropertyMapImplement<?, I>> mCanBePushed = ListFact.mFilter(list);
-            MList<ActionPropertyMapImplement<?, I>> mRest = ListFact.mFilter(list);
-            for (int i = 0; i < list.size(); i++) {
-                ActionPropertyMapImplement<?, I> itemAction = list.get(i);
+        ImSet<CalcProperty>[] listChangeProps = new ImSet[list.size()];
+        ImSet<CalcProperty>[] listUsedProps = new ImSet[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            listChangeProps[i] = list.get(i).property.getChangeProps();
+            listUsedProps[i] = list.get(i).property.getUsedProps();
+        }
 
-                if (itemAction.hasPushFor(context, ordersNotNull)) {
-                    MSet<CalcProperty> mSiblingChangeProps = SetFact.mSet();
-                    MSet<CalcProperty> mSiblingUsedProps = SetFact.mSet();
-                    for (int j = 0; j < list.size(); j++) // читаем sibling'и
-                        if (j != i) {
-                            mSiblingChangeProps.addAll(listChangeProps[j]);
-                            mSiblingUsedProps.addAll(listUsedProps[j]);
-                        }
-                    ImSet<CalcProperty> siblingChangeProps = mSiblingChangeProps.immutable();
-                    ImSet<CalcProperty> siblingUsedProps = mSiblingUsedProps.immutable();
+        // ищем сначала "вытаскиваемые" (changeProps не зависят от usedProps и т.д)
+        final MSet<CalcProperty> mPushChangedProps = SetFact.mSet();
+        MList<ActionPropertyMapImplement<?, I>> mCanBePushed = ListFact.mFilter(list);
+        MList<ActionPropertyMapImplement<?, I>> mRest = ListFact.mFilter(list);
+        for (int i = 0; i < list.size(); i++) {
+            ActionPropertyMapImplement<?, I> itemAction = list.get(i);
 
-                    ImSet<CalcProperty> changeProps = listChangeProps[i];
-                    ImSet<CalcProperty> usedProps = listUsedProps[i];
+            if (itemAction.hasPushFor(context, ordersNotNull)) {
+                MSet<CalcProperty> mSiblingChangeProps = SetFact.mSet();
+                MSet<CalcProperty> mSiblingUsedProps = SetFact.mSet();
+                for (int j = 0; j < list.size(); j++) // читаем sibling'и
+                    if (j != i) {
+                        mSiblingChangeProps.addAll(listChangeProps[j]);
+                        mSiblingUsedProps.addAll(listUsedProps[j]);
+                    }
+                ImSet<CalcProperty> siblingChangeProps = mSiblingChangeProps.immutable();
+                ImSet<CalcProperty> siblingUsedProps = mSiblingUsedProps.immutable();
 
-                    CalcProperty where = itemAction.getPushWhere(context, ordersNotNull);
-                    if (inline==Inline.FORCE || (inline!=Inline.NO && !CalcProperty.depends(siblingUsedProps, changeProps) && // не меняют сиблингов
-                            !CalcProperty.depends(usedProps, siblingChangeProps) && // сиблинги не меняют
-                            !CalcProperty.depends(where!=null?Collections.singleton(where):usedProps, changeProps) && // не рекурсивно зависимо
-                            siblingChangeProps.disjoint(changeProps))) { // несколько раз не меняется
-                        mCanBePushed.add(itemAction);
-                        mPushChangedProps.addAll(changeProps);
-                    } else
-                        mRest.add(itemAction);
+                ImSet<CalcProperty> changeProps = listChangeProps[i];
+                ImSet<CalcProperty> usedProps = listUsedProps[i];
+
+                CalcProperty where = itemAction.getPushWhere(context, ordersNotNull);
+                if (forceInline || (!CalcProperty.depends(siblingUsedProps, changeProps) && // не меняют сиблингов
+                        !CalcProperty.depends(usedProps, siblingChangeProps) && // сиблинги не меняют
+                        !CalcProperty.depends(where!=null?Collections.singleton(where):usedProps, changeProps) && // не рекурсивно зависимо
+                        siblingChangeProps.disjoint(changeProps))) { // несколько раз не меняется
+                    mCanBePushed.add(itemAction);
+                    mPushChangedProps.addAll(changeProps);
                 } else
                     mRest.add(itemAction);
-            }
-            ImSet<CalcProperty> pushChangedProps = mPushChangedProps.immutable();
-            ImList<ActionPropertyMapImplement<?, I>> canBePushed = ListFact.imFilter(mCanBePushed, list);
-            ImList<ActionPropertyMapImplement<?, I>> rest = ListFact.imFilter(mRest, list);
+            } else
+                mRest.add(itemAction);
+        }
+        ImSet<CalcProperty> pushChangedProps = mPushChangedProps.immutable();
+        ImList<ActionPropertyMapImplement<?, I>> canBePushed = ListFact.imFilter(mCanBePushed, list);
+        ImList<ActionPropertyMapImplement<?, I>> rest = ListFact.imFilter(mRest, list);
 
-            if (canBePushed.size() == 0)
+        if (canBePushed.size() == 0)
+            return null;
+
+        MList<ActionPropertyMapImplement<?, I>> mResult = ListFact.mList();
+
+        CalcPropertyMapImplement<?, I> pushProp = ifProp;
+        if ((canBePushed.size() + (rest.size() > 0 ? 1 : 0) > 1)) {// если кол-во(вытаскиваемые+оставшиеся) > 1
+            if (CalcProperty.dependsImplement(orders.keys(), pushChangedProps)) // если orders'ы меняются пока не проталкиваем
                 return null;
 
-            MList<ActionPropertyMapImplement<?, I>> mResult = ListFact.mList();
-
-            CalcPropertyMapImplement<?, I> pushProp = ifProp;
-            if ((canBePushed.size() + (rest.size() > 0 ? 1 : 0) > 1)) {// если кол-во(вытаскиваемые+оставшиеся) > 1
-                if (CalcProperty.dependsImplement(orders.keys(), pushChangedProps)) // если orders'ы меняются пока не проталкиваем
-                    return null;
-
-                if (CalcProperty.depends(ifProp.property, pushChangedProps) || // если есть свойства из базы или меняет условия
-                        CalcProperty.depends(ifProp.property, StoredDataProperty.set)) {
-                    pushProp = DerivedProperty.createDataProp(true, getExtendClasses(), ifProp.property.getValueClass()); // делаем SET в session свойство, и подменяем условие на это свойство
-                    mResult.add(DerivedProperty.createSetAction(innerInterfaces, context, null, pushProp, ifProp));
-                }
+            if (CalcProperty.depends(ifProp.property, pushChangedProps) || // если есть stored свойства (а не чисто session) или меняет условия
+                    CalcProperty.depends(ifProp.property, StoredDataProperty.set)) {
+                pushProp = DerivedProperty.createDataProp(true, getExtendClasses(), ifProp.property.getValueClass()); // делаем SET в session свойство, и подменяем условие на это свойство
+                mResult.add(DerivedProperty.createSetAction(innerInterfaces, context, null, pushProp, ifProp));
             }
-
-            // "вытаскиваемым" проталкиваем where + order и добавляем в начало
-            for (ActionPropertyMapImplement<?, I> property : canBePushed)
-                mResult.add(property.pushFor(context, pushProp, orders, ordersNotNull));
-
-            // добавляем оставшиеся, с for'ом компилируя внутренние элементы
-            if (rest.size() > 0)
-                mResult.add(DerivedProperty.createForAction(innerInterfaces, context, pushProp, orders,
-                        ordersNotNull, DerivedProperty.createListAction(innerInterfaces, rest), elseAction, false, Inline.NO));
-
-            return DerivedProperty.createListAction(context, mResult.immutableList());
         }
+
+        // "вытаскиваемым" проталкиваем where + order и добавляем в начало
+        for (ActionPropertyMapImplement<?, I> property : canBePushed)
+            mResult.add(property.pushFor(context, pushProp, orders, ordersNotNull));
+
+        // добавляем оставшиеся, с for'ом компилируя внутренние элементы
+        if (rest.size() > 0)
+            mResult.add(DerivedProperty.createForAction(innerInterfaces, context, pushProp, orders,
+                    ordersNotNull, DerivedProperty.createListAction(innerInterfaces, rest), elseAction, false, innerInterfaces.remove(context), false));
+
+        return DerivedProperty.createListAction(context, mResult.immutableList());
     }
 
     @Override
@@ -262,7 +298,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
         return pushFor(innerInterfaces, ifProp, mapInterfaces, mapping, context, push, orders, ordersNotNull, new PushFor<I, PropertyInterface>() {
             public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
-                return createForAction(context, where, orders.mergeOrder(mapImplements(ForActionProperty.this.orders, mapInnerInterfaces)), ordersNotNull, action.map(mapInnerInterfaces), null, addObject != null ? mapInnerInterfaces.get(addObject): null, addClass, forceDialog, false, inline);
+                return createForAction(context, where, orders.mergeOrder(mapImplements(ForActionProperty.this.orders, mapInnerInterfaces)), ordersNotNull, action.map(mapInnerInterfaces), null, addObject != null ? mapInnerInterfaces.get(addObject): null, addClass, forceDialog, false, noInline.mapRev(mapInnerInterfaces), forceInline);
             }
         });
     }

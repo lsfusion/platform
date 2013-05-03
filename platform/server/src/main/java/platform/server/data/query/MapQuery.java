@@ -1,5 +1,6 @@
 package platform.server.data.query;
 
+import platform.base.Pair;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
@@ -7,6 +8,7 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.hash.HashContext;
+import platform.server.classes.BaseClass;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -53,6 +55,13 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
     public <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps, boolean full) {
         // нужно перемаппить ClassWhere, здесь по большому счету не нужен mapColValues потому как assert то классы совпадают
         return (ClassWhere<B>) new ClassWhere<Object>(query.getClassWhere(((ImSet<V>)classProps).mapRev(mapProps), full), MapFact.addRevExcl(mapProps, mapKeys).reverse());
+    }
+    public Pair<IQuery<K, Object>, ImRevMap<Expr, Object>> getClassQuery(BaseClass baseClass) {
+        Pair<IQuery<MK, Object>, ImRevMap<Expr, Object>> classQuery = query.getClassQuery(baseClass);
+
+        return new Pair<IQuery<K, Object>, ImRevMap<Expr, Object>>(
+                new MapQuery<K, Object, MK, Object>((Query<MK, Object>)classQuery.first, classQuery.second.valuesSet().toRevMap().addRevExcl(mapProps), mapKeys, mapValues),
+                mapValues.mapKeys().translateExprRevKeys(classQuery.second));
     }
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {

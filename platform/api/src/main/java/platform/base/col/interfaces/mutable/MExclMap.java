@@ -10,6 +10,7 @@ public interface MExclMap<K, V> {
     boolean isEmpty();
 
     V get(K key);
+    int size();
 
     ImMap<K, V> immutable();
 

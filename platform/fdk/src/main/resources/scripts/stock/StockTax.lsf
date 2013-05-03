@@ -6,11 +6,11 @@ NAMESPACE Stock;
 
 //------------------------- НДС -------------------------//
 
-VATSkuCountryDate = ABSTRACT Range (Sku, Country, DATE);
+VATSkuCountryDate = ABSTRACT Range (Sku, Country, DATE) COMPLEX;
 
 META deriveDocumentDetailVAT (concrete, prefixP, dateProp,  skuProp, stockProp)
     prefixP###VAT###concrete##Detail(detail) <- VATSkuCountryDate (skuProp###concrete##Detail(detail), countryStock(stockProp###concrete##Detail(detail)), dateProp###concrete##Detail(detail))
-        WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED (stockProp###concrete##Detail(detail)) OR CHANGED (dateProp###concrete##Detail(detail));
+        WHEN DO CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED (stockProp###concrete##Detail(detail)) OR CHANGED (dateProp###concrete##Detail(detail));
 END
 META deriveDocumentDetailVAT (concrete, prefixP, dateProp)
     @deriveDocumentDetailVAT (concrete, prefixP, dateProp,  sku, departmentStore);
@@ -50,7 +50,7 @@ META deriveDocumentDetailVATHeader(object, taxSID, stockProp, skuProp, dateProp)
         IF taxSID###object(object###object###Detail(object###Detail))
             THEN taxSID###object(object###object###Detail(object###Detail))
             ELSE VATSkuCountryDate (skuProp###object##Detail(object###detail), countryStock(stockProp###object##Detail(object###detail)), dateProp###object##Detail(object###detail))
-        WHEN CHANGED(taxSID###object(object###object###Detail(object###Detail))) OR
+        WHEN DO CHANGED(taxSID###object(object###object###Detail(object###Detail))) OR
              CHANGED(dateProp###object##Detail(object###detail)) OR
              CHANGED(stockProp###object##Detail(object###detail)) OR
              CHANGED(skuProp###object##Detail(object###detail));

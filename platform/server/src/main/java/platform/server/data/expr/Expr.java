@@ -1,5 +1,6 @@
 package platform.server.data.expr;
 
+import platform.base.Pair;
 import platform.base.Result;
 import platform.base.SFunctionSet;
 import platform.base.col.MapFact;
@@ -88,6 +89,10 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public abstract Where isClass(ValueClassSet set);
     public Where isUpClass(ValueClass set) {
         return isClass(set.getUpSet());
+    }
+
+    public boolean isNull() {
+        return getWhere().isFalse();
     }
 
     public abstract Where compareBase(BaseExpr expr, Compare compareBack);

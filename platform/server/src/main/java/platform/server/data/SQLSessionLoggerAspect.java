@@ -40,25 +40,31 @@ public class SQLSessionLoggerAspect {
     }
 
     private static long runningTotal = 0;
-    private static int breakPointTime = 60;
+    public static int breakPointTime = 60;
+    private static int breakPointLength = 10000;
 
     public Object executeMethodAndLogTime(ProceedingJoinPoint thisJoinPoint, String queryString) throws Throwable {
         boolean loggingEnabled = sqlLogger.isDebugEnabled();
 
         long startTime = 0;
         if (loggingEnabled)
-            startTime = System.currentTimeMillis();
+            startTime = System.nanoTime();
 
         Object result = thisJoinPoint.proceed();
 
         if (loggingEnabled) {
-            long runTime = System.currentTimeMillis() - startTime;
-            if(runTime > breakPointTime)
-                sqlLogger.debug("WARNING");
+            long runTime = System.nanoTime() - startTime;
+            if(runTime > breakPointTime * 1000000)
+                sqlLogger.debug("WARNING TIME");
+            if(queryString.length() > breakPointLength)
+                sqlLogger.debug("WARNING LENGTH");
             runningTotal += runTime;
+            queryString = "[length " + queryString.length() + "] " + queryString;
             if(result instanceof ImOrderMap) // cheat, но чисто для логинга
                 queryString = "[rows " + ((ImOrderMap)result).size() + "] " + queryString;
-            sqlLogger.info(String.format("Executed query (time: %1$d ms., running total: %3$d): %2$s", runTime, queryString, runningTotal));
+            if(result instanceof Integer) // cheat, но чисто для логинга
+                queryString = "[rows " + result + "] " + queryString;
+            sqlLogger.info(String.format("Executed query (time: %1$d ms., running total: %3$d): %2$s", runTime/1000000, queryString, runningTotal/1000000));
         }
 
         return result;

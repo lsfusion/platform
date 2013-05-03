@@ -25,6 +25,7 @@ public interface MapValuesTranslate extends MapObject {
 
     <K,U extends ValuesContext<U>> ImMap<K, U> translateValues(ImMap<K, U> map);
     <K1,U1 extends ValuesContext<U1>,K2,U2 extends ValuesContext<U2>> ImMap<ImMap<K1,U1>,ImMap<K2,U2>> translateMapKeyValues(ImMap<ImMap<K1,U1>,ImMap<K2,U2>> map);
+    <K1,U1 extends ValuesContext<U1>,U2 extends ValuesContext<U2>> ImMap<ImMap<K1,U1>,U2> translateMapKeyValue(ImMap<ImMap<K1,U1>,U2> map);
     <V extends Value> ImSet<V> translateValues(ImSet<V> values);
     <K,U extends Value> ImRevMap<K, U> translateMapValues(ImRevMap<K, U> map);
     <K,U extends Value> ImMap<K, U> translateMapValues(ImMap<K, U> map);

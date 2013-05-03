@@ -14,6 +14,7 @@ import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.GroupStatType;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.MeanClassWheres;
@@ -77,6 +78,16 @@ public class AfterTranslateAspect {
         MapTranslate translator = wheres.getOuter().getTranslator();
         if(from!=null && translator!=null)
             return from.getThis().getClassWhere().translateOuter(translator);
+        else
+            return thisJoinPoint.proceed();
+    }
+
+    @Around("execution(* platform.server.data.where.AbstractWhere.getFullStatKeys(platform.base.col.interfaces.immutable.ImSet)) && target(where) && args(groups)")
+    public Object callFullStatKeys(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, ImSet groups) throws Throwable {
+        Where from = where.getFrom();
+        MapTranslate translator = where.getTranslator();
+        if(from!=null && translator!=null)
+            return StatKeys.translateOuter(from.getFullStatKeys(translator.reverseMap().translateKeys(groups)), translator);
         else
             return thisJoinPoint.proceed();
     }

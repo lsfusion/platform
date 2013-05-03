@@ -62,6 +62,7 @@ public interface ImOrderMap<K,V> {
     public <M> ImOrderMap<K,M> mapOrderValues(GetStaticValue<M> getter);
     public <M> ImOrderMap<M, V> mapOrderKeys(GetValue<M, K> getter);
     <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(GetKeyValue<MK, K, V> getterKey, GetValue<MV, V> getterValue);
+    <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(GetValue<MK, K> getterKey, GetValue<MV, V> getterValue);
 
     <M> ImOrderSet<M> mapOrderSetValues(GetKeyValue<M, K, V> getter);
 

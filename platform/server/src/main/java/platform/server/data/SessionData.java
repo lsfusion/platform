@@ -15,10 +15,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.query.AbstractJoin;
-import platform.server.data.query.IQuery;
-import platform.server.data.query.Join;
-import platform.server.data.query.QueryBuilder;
+import platform.server.data.query.*;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
@@ -129,7 +126,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         }
 
         final IQuery<KeyField, PropertyField> insertQuery = query;
-        SessionTable table = new SessionTable(session, keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, new FillTemporaryTable() {
+        SessionTable table = session.createTemporaryTable(keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 return session.insertSessionSelect(name, insertQuery, env);
             }

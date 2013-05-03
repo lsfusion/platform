@@ -327,6 +327,10 @@ public class DerivedProperty {
     public static <T extends PropertyInterface> CalcProperty createAnyGProp(CalcProperty<T> property) {
         return createAnyGProp(property, SetFact.<T>EMPTY()).property;
     }
+    public static <T extends PropertyInterface, P extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(CalcPropertyMapImplement<P, T> implement, ImSet<T> groupInterfaces) {
+        return createAnyGProp(implement.property, implement.mapping.filterInclValuesRev(groupInterfaces).keys()).map(implement.mapping);
+    }
+
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(CalcProperty<T> prop, ImSet<T> groupInterfaces) {
         return createAnyGProp("ANY_" + prop.getSID()+"_"+groupInterfaces.toString("_"), "ANY " + prop.caption + " (" + groupInterfaces.toString(",") + ")", prop, groupInterfaces);
     }
@@ -740,27 +744,27 @@ public class DerivedProperty {
         return actionProperty.getImplement(listInterfaces);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> context, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean recursive, Inline inline) {
-        return createForAction(context, forProp, orders, ordersNotNull, action, elseAction, null, null, false, recursive, inline);
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> context, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+        return createForAction(context, forProp, orders, ordersNotNull, action, elseAction, null, null, false, recursive, noInline, forceInline);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean recursive, Inline inline) {
-        return createForAction(innerInterfaces, context, forProp, orders, ordersNotNull, action, elseAction, null, null, recursive, inline);
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+        return createForAction(innerInterfaces, context, forProp, orders, ordersNotNull, action, elseAction, null, null, recursive, noInline, forceInline);
     }
 
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, ActionPropertyMapImplement<?, L> action, L addObject, ConcreteCustomClass customClass, boolean recursive) {
-        return createForAction(innerInterfaces, context, action, addObject, customClass, false, recursive, null);
+        return createForAction(innerInterfaces, context, action, addObject, customClass, false, recursive, SetFact.<L>EMPTY(), false);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, ActionPropertyMapImplement<?, L> action, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive, Inline inline) {
-        return createForAction(innerInterfaces, context, null, MapFact.<CalcPropertyInterfaceImplement<L>, Boolean>EMPTYORDER(), false, action, null, addObject, customClass, forceDialog, recursive, inline);
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, ActionPropertyMapImplement<?, L> action, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+        return createForAction(innerInterfaces, context, null, MapFact.<CalcPropertyInterfaceImplement<L>, Boolean>EMPTYORDER(), false, action, null, addObject, customClass, forceDialog, recursive, noInline, forceInline);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, ConcreteCustomClass customClass, boolean recursive, Inline inline) {
-        return createForAction(innerInterfaces, context, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, false, recursive, inline);
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, ConcreteCustomClass customClass, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+        return createForAction(innerInterfaces, context, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, false, recursive, noInline, forceInline);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> context, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive, Inline inline) {
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> context, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive, ImSet<L> noInline, boolean forceInline) {
         MSet<L> mInnerInterfaces = SetFact.mSet();
         mInnerInterfaces.addAll(context);
         mInnerInterfaces.addAll(forProp.mapping.valuesSet());
@@ -771,15 +775,15 @@ public class DerivedProperty {
             mInnerInterfaces.add(addObject);
         mInnerInterfaces.addAll(getUsedInterfaces(orders.keys()));
 
-        return createForAction(mInnerInterfaces.immutable(), context.toOrderSet(), forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, forceDialog, recursive, inline);
+        return createForAction(mInnerInterfaces.immutable(), context.toOrderSet(), forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, forceDialog, recursive, noInline, forceInline);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive, Inline inline) {
-        return createForAction(innerInterfaces, context.toOrderSet(), forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, forceDialog, recursive, inline);
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+        return createForAction(innerInterfaces, context.toOrderSet(), forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, forceDialog, recursive, noInline, forceInline);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive, Inline inline) {
-        ForActionProperty<L> actionProperty = new ForActionProperty<L>(genID(), "sys", innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, forceDialog, recursive, inline);
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+        ForActionProperty<L> actionProperty = new ForActionProperty<L>(genID(), "sys", innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, forceDialog, recursive, noInline, forceInline);
         return actionProperty.getMapImplement();
     }
 

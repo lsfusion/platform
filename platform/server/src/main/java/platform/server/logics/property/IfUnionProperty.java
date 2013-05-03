@@ -57,20 +57,23 @@ public class IfUnionProperty extends IncrementUnionProperty {
     }
 
     protected Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return trueProp.mapExpr(joinImplement, propClasses, propChanges, changedWhere).ifElse(ifProp.mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere(), falseProp.mapExpr(joinImplement, propClasses, propChanges, changedWhere));
+        Expr trueExpr = trueProp.mapExpr(joinImplement, propClasses, propChanges, changedWhere); // до непосредственно вычисления, для хинтов
+        Expr falseExpr = falseProp.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
+        Where ifExpr = ifProp.mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere();
+        return trueExpr.ifElse(ifExpr, falseExpr);
     }
 
     protected Expr calculateIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
-        WhereBuilder changedIf = new WhereBuilder();
-        Where caseWhere = ifProp.mapExpr(joinImplement, propChanges, changedIf).getWhere();
-
         WhereBuilder changedTrue = new WhereBuilder();
         Expr trueExpr = trueProp.mapExpr(joinImplement, propChanges, changedTrue);
 
-        Where changedIfTrue = caseWhere.and(changedIf.toWhere().or(changedTrue.toWhere()));
-
         WhereBuilder changedFalse = new WhereBuilder();
         Expr falseExpr = falseProp.mapExpr(joinImplement, propChanges, changedFalse);
+
+        WhereBuilder changedIf = new WhereBuilder();
+        Where caseWhere = ifProp.mapExpr(joinImplement, propChanges, changedIf).getWhere();
+
+        Where changedIfTrue = caseWhere.and(changedIf.toWhere().or(changedTrue.toWhere()));
 
         Where changedIfFalse = caseWhere.not().and(changedIf.toWhere().or(changedFalse.toWhere()));
         

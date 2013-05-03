@@ -24,7 +24,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice
 
 VATSumInvoiceRange (invoice, range)= GROUP SUM VATSumInvoiceDetail(detail) BY invoiceInvoiceDetail(detail), VATInvoiceDetail(detail);
 descriptionInvoiceRange (invoice, range) = [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \'/ \' || CAST($2 AS TEXT) || \', шкала № \' || CAST($3 AS TEXT) || \' тек.ставка\' || \' ( \' || CAST($4 AS TEXT)|| \')\''](
-    descriptionInvoice(invoice), name(taxRange(range)), numberRange(range), valueRateRangeDate(range, dateInvoice(invoice)));
+    descriptionInvoice(invoice), staticCaption(taxRange(range)), numberRange(range), valueRateRangeDate(range, dateInvoice(invoice)));
 
 @defineGeneralLedgerAggregation (invoice, range, VAT, supplier, VATSumInvoiceRange, date, descriptionInvoiceRange, '90.1', '68.2', '1');
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceVATGeneralLedger(generalLedger)) WHEN CLASS(invoiceVATGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;

@@ -24,6 +24,7 @@ grammar LsfLogics;
 	import platform.server.form.view.GroupObjectView;
 	import platform.server.form.view.PropertyDrawView;
 	import platform.server.logics.linear.LP;
+	import platform.server.logics.linear.LCP;
 	import platform.server.logics.property.PropertyFollows;
 	import platform.server.logics.property.Cycle;
 	import platform.server.logics.scripted.*;
@@ -37,7 +38,9 @@ grammar LsfLogics;
 	import platform.server.logics.property.actions.SystemEvent;
 	import platform.server.logics.property.Event;
 	import javax.mail.Message;
-	
+
+	import platform.base.col.interfaces.immutable.ImSet;
+
 	import java.util.*;
 	import java.awt.*;
 	import org.antlr.runtime.BitSet;
@@ -1337,18 +1340,20 @@ propertyOptions[LP property, String propertyName, String caption, List<String> n
 	String groupName = null;
 	String table = null;
 	boolean isPersistent = false;
+	boolean isComplex = false;
 	Boolean isLoggable = null;
 	Boolean notNullResolve = null;
 	Event notNullEvent = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, table, notNullResolve, notNullEvent);
+		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, isComplex, table, notNullResolve, notNullEvent);
 		self.makeLoggable(property, isLoggable);
 	}
 }
 	: 	(	'IN' name=compoundID { groupName = $name.sid; }
 		|	'PERSISTENT' { isPersistent = true; }
+		|   'COMPLEX' { isComplex = true; }
 		|	'TABLE' tbl = compoundID { table = $tbl.sid; }
 		|	shortcutSetting [property, caption != null ? caption : propertyName]
 		|	asEditActionSetting [property]
@@ -1958,19 +1963,19 @@ forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, $elsePDB.property, $addObj.paramCnt, $addObj.className, recursive, descending, inline);
+		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, $elsePDB.property, $addObj.paramCnt, $addObj.className, recursive, descending, $in.noInline, $in.forceInline);
 	}	
 }
 	:	(	'FOR' 
 		| 	'WHILE' { recursive = true; }
 		)
 		(expr=propertyExpression[newContext, true]
-		('ORDER' 
+		('ORDER'
 			('DESC' { descending = true; } )? 
 			ordExprs=nonEmptyPropertyExpressionList[newContext, false] { orders = $ordExprs.props; }
 		)?)?
+		in = inlineStatement[newContext]
 		(addObj=forAddObjClause[newContext])?
-		('INLINE' { inline = Inline.FORCE; } | 'NOINLINE' { inline = Inline.NO; } )?
 		'DO' actPDB=actionPropertyDefinitionBody[newContext, false]
 		( {!recursive}?=> 'ELSE' elsePDB=actionPropertyDefinitionBody[context, false])?
 	;
@@ -2090,15 +2095,19 @@ followsResolveType returns [Integer type]
 ////////////////////////////////////////////////////////////////////////////////
 
 writeWhenStatement
+@init {
+    boolean action = false;
+}
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWriteWhen($mainProp.name, $mainProp.mapping, $valueExpr.property, $whenExpr.property);
+		self.addScriptedWriteWhen($mainProp.name, $mainProp.mapping, $valueExpr.property, $whenExpr.property, action);
 	}
 }
 	:	mainProp=mappedProperty 
 		'<-'
 		valueExpr=propertyExpression[$mainProp.mapping, false] 
 		'WHEN'
+		('DO' {action = true;} )?
 		whenExpr=propertyExpression[$mainProp.mapping, false]
 		';'
 	;
@@ -2115,12 +2124,14 @@ eventStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $et.event);
+		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $et.event, $prevStart.list, $in.noInline, $in.forceInline);
 	} 
 }
 	:	'WHEN'
 		et=baseEvent
+		prevStart = prevStartStatement
 		whenExpr=propertyExpression[context, true]
+		in = inlineStatement[context]
 		'DO'
 		action=actionPropertyDefinitionBody[context, false]
 		(	'ORDER' ('DESC' { descending = true; })?
@@ -2139,13 +2150,13 @@ globalEventStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedGlobalEvent($action.property, $et.event, single, $property.text, $prevStart.ids);
+		self.addScriptedGlobalEvent($action.property, $et.event, single, $property.text, $prevStart.list);
 	}
 }
 	:	'ON' 
 		et=baseEvent
+		prevStart = prevStartStatement
 		('SINGLE' { single = true; })?
-		('PREVSTART' prevStart=nonEmptyIdList)?
 		('SHOWDEP' property=ID)?
 		action=actionPropertyDefinitionBody[new ArrayList<String>(), false]
 		( {!self.semicolonNeeded()}?=>  | ';')
@@ -2164,6 +2175,24 @@ baseEvent returns [Event event]
 	:	('APPLY' { baseEvent = SystemEvent.APPLY; } | 'SESSION'	{ baseEvent = SystemEvent.SESSION; })?
 	    ('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
 	;
+
+inlineStatement[List<String> context] returns [List<LPWithParams> noInline = new ArrayList<LPWithParams>(), boolean forceInline = false]
+	:   ('NOINLINE' { $noInline = null; } ( '(' params=singleParameterList[context, false] { $noInline = $params.props; } ')' )? )?
+	    ('INLINE' { $forceInline = true; })?
+	;
+
+prevStartStatement returns [Set<LCP> list]
+@init {
+	List<String> ids = new ArrayList<String>();
+}
+@after {
+	if (inPropParseState()) {
+		$list = self.findLCPsByCompoundName(ids);
+	}
+}
+	:   ('PREVSTART' ('ALL' { ids = null; } | prevStart=nonEmptyIdList { ids = $prevStart.ids; } ) )?
+	;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// SHOWDEP STATEMENT //////////////////////////////

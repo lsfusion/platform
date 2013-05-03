@@ -1,8 +1,9 @@
 package platform.server.session;
 
-import platform.base.BaseUtils;
 import platform.base.FunctionSet;
+import platform.base.Pair;
 import platform.base.WeakIdentityHashSet;
+import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
@@ -11,14 +12,18 @@ import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.Settings;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.ValuesContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
+import platform.server.data.expr.Expr;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.OverrideSessionModifier;
 import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
+import java.util.*;
 
 import static platform.base.BaseUtils.merge;
 
@@ -47,9 +52,11 @@ public abstract class SessionModifier implements Modifier {
 
         // если increment использовал property drop'аем hint
         try {
-            for(CalcProperty<?> incrementProperty : increment.getProperties()) {
+            for(CalcProperty<?> incrementProperty : getIncrementProps()) {
                 if(CalcProperty.depends(incrementProperty, property)) {
-                    increment.remove(incrementProperty, getSQL());
+                    if(increment.contains(incrementProperty))
+                        increment.remove(incrementProperty, getSQL());
+                    preread.remove(incrementProperty);
                     eventSourceChange(incrementProperty);
                 }
             }
@@ -109,23 +116,33 @@ public abstract class SessionModifier implements Modifier {
     }
 
     public ImSet<CalcProperty> getHintProps() {
-        return noUpdate.immutableCopy().merge(increment.getProperties());
-    }
-    
-    public FunctionSet<CalcProperty> getUsedHints() { // для кэширования
-        return merge(noUpdate.immutableCopy(), increment.getProperties(), readProperty != null ? SetFact.singleton(readProperty) : SetFact.<CalcProperty>EMPTY());
+        return noUpdate.immutableCopy().merge(getIncrementProps());
     }
 
     private CalcProperty readProperty;
+    private Set<CalcProperty> prereadProps = new HashSet<CalcProperty>();
 
     // hint'ы хранит
     private TableProps increment = new TableProps();
+    private Map<CalcProperty, PrereadRows> preread = new HashMap<CalcProperty, PrereadRows>();
+    private ImSet<CalcProperty> getPrereadProps() {
+        return SetFact.fromJavaSet(preread.keySet());
+    }
+    private ImSet<CalcProperty> getIncrementProps() {
+        return increment.getProperties().merge(getPrereadProps());
+    }
 
     public void clearHints(SQLSession session) throws SQLException {
-        eventSourceChanges(increment.getProperties());
+        eventSourceChanges(getIncrementProps());
         increment.clear(session);
+        preread.clear();
         eventDataChanges(noUpdate);
         noUpdate = SetFact.mAddSet();
+    }
+
+    public void clearPrereads() throws SQLException {
+        eventSourceChanges(getPrereadProps());
+        preread.clear();
     }
 
     public abstract SQLSession getSQL();
@@ -152,6 +169,51 @@ public abstract class SessionModifier implements Modifier {
 
     public boolean forceNoUpdate(CalcProperty property) {
         return false;
+    }
+
+    protected <P extends PropertyInterface> boolean allowPropertyPrereadValues(CalcProperty<P> property) {
+        if(!property.complex)
+            return false;
+
+        if(Settings.get().isDisablePrereadValues())
+            return false;
+
+        if (prereadProps.contains(property))
+            return false;
+
+        return true;
+    }
+
+    public <P extends PropertyInterface> ValuesContext cacheAllowPrereadValues(CalcProperty<P> property) {
+        if(!allowPropertyPrereadValues(property))
+            return null;
+
+        PrereadRows prereadRows = preread.get(property);
+        if(prereadRows==null)
+            return PrereadRows.EMPTY();
+
+        return prereadRows;
+    }
+
+    // assert что в values только
+    public <P extends PropertyInterface> boolean allowPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) {
+        // assert что values только complex values
+
+        if(!allowPropertyPrereadValues(property))
+            return false;
+
+        PrereadRows prereadRows = preread.get(property);
+
+        if(values.size()==property.interfaces.size()) { // если все есть
+            if(prereadRows!=null && prereadRows.readValues.containsKey(values))
+                return false;
+        } else {
+            ImMap<P, Expr> complexValues = CalcProperty.onlyComplex(values);
+            if(complexValues.isEmpty() || (prereadRows!=null && prereadRows.readParams.keys().containsAll(complexValues.values().toSet())))
+                return false;
+        }
+
+        return true;
     }
 
     public boolean forceDisableNoUpdate(CalcProperty property) {
@@ -188,6 +250,48 @@ public abstract class SessionModifier implements Modifier {
         eventSourceChange(property);
     }
 
+    public <P extends PropertyInterface> void addPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) {
+        assert property.complex && allowPrereadValues(property, values);
+
+        try {
+            prereadProps.add(property);
+
+            PrereadRows<P> prereadRows = preread.get(property);
+
+            ImSet<Expr> valueSet = values.values().toSet();
+            ImMap<Expr, ObjectValue> prereadedParamValues;
+            if(prereadRows!=null) {
+                prereadedParamValues = prereadRows.readParams.filter(valueSet);
+                valueSet = valueSet.remove(prereadedParamValues.keys());
+            } else
+                prereadedParamValues = MapFact.EMPTY();
+
+            ImMap<Expr, ObjectValue> readedParamValues;
+            if(!valueSet.isEmpty())
+                readedParamValues = Expr.readValues(getSQL(), getBaseClass(), valueSet.toMap(), getQueryEnv());
+            else
+                readedParamValues = MapFact.EMPTY();
+
+            ImMap<ImMap<P, Expr>, Pair<ObjectValue, Boolean>> readValues;
+            if(values.size() == property.interfaces.size())
+                readValues = MapFact.singleton(values, property.readClassesChanged(getSQL(), values.join(prereadedParamValues.addExcl(readedParamValues)), getBaseClass(), this, getQueryEnv()));
+            else
+                readValues = MapFact.EMPTY();
+
+            PrereadRows<P> readRows = new PrereadRows<P>(readedParamValues, readValues);
+            if(prereadRows != null)
+                readRows = prereadRows.addExcl(readRows);
+
+            preread.put(property, readRows);
+
+            prereadProps.remove(property);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        eventSourceChange(property);
+    }
+
     private MAddSet<CalcProperty> noUpdate = SetFact.mAddSet();
     public void addNoUpdate(CalcProperty property) {
         assert allowNoUpdate(property);
@@ -198,21 +302,30 @@ public abstract class SessionModifier implements Modifier {
     }
 
     public <P extends PropertyInterface> ModifyChange<P> getModifyChange(CalcProperty<P> property) {
-        return getModifyChange(property, SetFact.<CalcProperty>EMPTY());
+        return getModifyChange(property, PrereadRows.<P>EMPTY(), SetFact.<CalcProperty>EMPTY());
     }
 
-    public <P extends PropertyInterface> ModifyChange<P> getModifyChange(CalcProperty<P> property, FunctionSet<CalcProperty> disableHint) {
-        if(noUpdate.contains(property) && !disableHint.contains(property))
-            return new ModifyChange<P>(property.getNoChange(), true);
+    public <P extends PropertyInterface> ModifyChange<P> getModifyChange(CalcProperty<P> property, PrereadRows<P> preread, FunctionSet<CalcProperty> disableHint) {
 
-        PropertyChange<P> change = increment.getPropertyChange(property);
-        if(change!=null && !disableHint.contains(property))
-            return new ModifyChange<P>(change, true);
+        if(!disableHint.contains(property)) {
+            PrereadRows<P> rows = this.preread.get(property);
+            if(rows!=null)
+                preread = preread.add(rows);
 
-        return calculateModifyChange(property, disableHint);
+            PropertyChange<P> change;
+            if(noUpdate.contains(property))
+                change = property.getNoChange();
+            else
+                change = increment.getPropertyChange(property);
+
+            if(change!=null)
+                return new ModifyChange<P>(change, preread, true);
+        }
+
+        return calculateModifyChange(property, preread, disableHint);
     }
 
-    protected abstract <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, FunctionSet<CalcProperty> overrided);
+    protected abstract <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, PrereadRows<P> preread, FunctionSet<CalcProperty> overrided);
 
     public ImSet<CalcProperty> getProperties() {
         return getHintProps().merge(calculateProperties());
@@ -232,6 +345,7 @@ public abstract class SessionModifier implements Modifier {
 
     public void clean(SQLSession sql) throws SQLException {
         increment.clear(sql);
+        preread.clear();
         assert views.isEmpty();
     }
 }

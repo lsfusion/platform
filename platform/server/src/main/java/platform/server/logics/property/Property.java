@@ -498,6 +498,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return links;
     }
     public abstract ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events);
+    public abstract ImSet<OldProperty> getParseOldDepends(); // именно так, а не через getSessionCalcDepends, так как может использоваться до инициализации логики
 
     public ImSet<OldProperty> getOldDepends() {
         return getOldDepends(false);

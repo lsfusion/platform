@@ -28,6 +28,7 @@ public interface MapTranslate extends MapObject {
     <K> ImMap<BaseExpr, K> translateKeys(ImMap<? extends BaseExpr, K> map);
 
     <K, E extends Expr> ImMap<E, K> translateExprKeys(ImMap<E, K> map);
+    <K, E extends Expr> ImRevMap<E, K> translateExprRevKeys(ImRevMap<E, K> map);
 
     <K extends TranslateContext, V extends TranslateContext> ImMap<K, V> translateMap(ImMap<? extends K, ? extends V> map);
 

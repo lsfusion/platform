@@ -38,17 +38,18 @@ CONSTRAINT currencyUserInvoiceDetail(detail) != currencyPriceListType(purchaseRe
            CHECKED BY purchaseRetailPriceListTypeUserInvoiceDetail
            MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
 
-purchaseRetailPriceListTypeUserInvoiceDetail(detail) <- IF prevPricePriceListTypeSkuStockDateTime(calcPurchaseRetailPriceListTypeUserInvoiceDetail(detail),
+WHEN SESSION FORMS userInvoice PREVSTART ALL // цены берем на начало сессии, а не этого event'а
+        (CHANGED(calcPurchaseRetailPriceListTypeUserInvoiceDetail(detail)) OR
+        CHANGED(calcPurchaseRetailCalcPriceListTypeUserInvoiceDetail(detail)) OR
+        CHANGED(skuUserInvoiceDetail(detail)) OR
+        CHANGED(customerStockUserInvoiceDetail(detail)) OR
+        CHANGED(dateTimeUserInvoiceDetail(detail))) AND pt == calcPurchaseRetailPriceListTypeUserInvoiceDetail(detail) NOINLINE (pt) DO
+    purchaseRetailPriceListTypeUserInvoiceDetail(detail) <- IF prevPricePriceListTypeSkuStockDateTime(pt,
                                                                                           skuUserInvoiceDetail(detail),
                                                                                           customerStockUserInvoiceDetail(detail),
                                                                                           dateTimeUserInvoiceDetail(detail))
-                                                    THEN calcPurchaseRetailPriceListTypeUserInvoiceDetail(detail)
-                                                    ELSE calcPurchaseRetailCalcPriceListTypeUserInvoiceDetail(detail)
+                                                    THEN pt ELSE calcPurchaseRetailCalcPriceListTypeUserInvoiceDetail(detail);
 
-                                                WHEN CHANGED(calcPurchaseRetailPriceListTypeUserInvoiceDetail(detail)) OR
-                                                     CHANGED(skuUserInvoiceDetail(detail)) OR
-                                                     CHANGED(customerStockUserInvoiceDetail(detail)) OR
-                                                     CHANGED(dateTimeUserInvoiceDetail(detail));
 
 // Базовая цена
 overPurchasePricingPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;

@@ -150,6 +150,15 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         return mResult.immutableOrder();
     }
 
+    public <MK, MV> ImOrderMap<MK, MV> mapOrderKeyValues(GetValue<MK, K> getterKey, GetValue<MV, V> getterValue) {
+        MOrderExclMap<MK, MV> mResult = MapFact.mOrderExclMap(size());
+        for(int i=0,size=size();i<size;i++) {
+            V value = getValue(i);
+            mResult.exclAdd(getterKey.getMapValue(getKey(i)), getterValue.getMapValue(value));
+        }
+        return mResult.immutableOrder();
+    }
+
     public <M> ImOrderMap<M, V> mapOrderKeys(GetValue<M, K> getter) {
         MOrderExclMap<M, V> mResult = MapFact.mOrderExclMap(size());
         for(int i=0,size=size();i<size;i++)

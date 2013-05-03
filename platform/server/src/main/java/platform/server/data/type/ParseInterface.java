@@ -21,6 +21,10 @@ public interface ParseInterface {
     public String getDBType(SQLSyntax syntax);
 
     public final static ParseInterface empty = new StringParseInterface() {
+        public boolean isSafeString() {
+            return false;
+        }
+
         public String getString(SQLSyntax syntax) {
             throw new RuntimeException("not supported");
         }

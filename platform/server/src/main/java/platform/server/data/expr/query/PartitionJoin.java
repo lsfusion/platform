@@ -77,7 +77,7 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
     }
 
     public StatKeys<KeyExpr> getStatKeys(KeyStat keyStat) {
-        return query.where.getStatKeys(keys);
+        return query.where.getFullStatKeys(keys);
     }
 
     public Where getWhere() {

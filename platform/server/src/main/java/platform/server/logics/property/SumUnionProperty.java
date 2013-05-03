@@ -1,9 +1,14 @@
 package platform.server.logics.property;
 
+import platform.base.Pair;
 import platform.base.col.interfaces.immutable.ImCol;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.data.expr.Expr;
+import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.entity.drilldown.DrillDownFormEntity;
 import platform.server.form.entity.drilldown.SumUnionDrillDownFormEntity;
@@ -28,22 +33,33 @@ public class SumUnionProperty extends IncrementUnionProperty {
         return operands.keys();
     }
 
-    protected Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
+        ImCol<Pair<Expr, Integer>> operandExprs = operands.mapColValues(new GetKeyValue<Pair<Expr, Integer>, CalcPropertyInterfaceImplement<Interface>, Integer>() { // до непосредственно вычисления, для хинтов
+            public Pair<Expr, Integer> getMapValue(CalcPropertyInterfaceImplement<Interface> key, Integer value) {
+                return new Pair<Expr, Integer>(key.mapExpr(joinImplement, propClasses, propChanges, changedWhere), value);
+            }});
+
         Expr result = Expr.NULL;
-        for(int i=0,size=operands.size();i<size;i++)
-            result = result.sum(operands.getKey(i).mapExpr(joinImplement, propClasses, propChanges, changedWhere).scale(operands.getValue(i)));
+        for(Pair<Expr, Integer> operandExpr : operandExprs)
+            result = result.sum(operandExpr.first.scale(operandExpr.second));
         return result;
     }
 
-    protected Expr calculateIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
+    protected Expr calculateIncrementExpr(final ImMap<Interface, ? extends Expr> joinImplement, final PropertyChanges propChanges, Expr prevExpr, final WhereBuilder changedWhere) {
+        ImMap<CalcPropertyInterfaceImplement<Interface>, Pair<Expr, Where>> operandExprs = operands.keys().mapValues(new GetValue<Pair<Expr, Where>, CalcPropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
+            public Pair<Expr, Where> getMapValue(CalcPropertyInterfaceImplement<Interface> key) {
+                WhereBuilder changedOperandWhere = new WhereBuilder();
+                return new Pair<Expr, Where>(key.mapExpr(joinImplement, propChanges, changedOperandWhere), changedOperandWhere.toWhere());
+            }
+        });
+
         Expr result = prevExpr;
         for(int i=0,size=operands.size();i<size;i++) {
-            WhereBuilder changedOperandWhere = new WhereBuilder();
             CalcPropertyInterfaceImplement<Interface> operand = operands.getKey(i);
-            Expr newOperandExpr = operand.mapExpr(joinImplement, propChanges, changedOperandWhere);
+            Pair<Expr, Where> newOperandExpr = operandExprs.get(operand);
             Expr prevOperandExpr = operand.mapExpr(joinImplement);
-            result = result.sum(newOperandExpr.diff(prevOperandExpr).and(changedOperandWhere.toWhere()).scale(operands.getValue(i)));
-            if(changedWhere!=null) changedWhere.add(changedOperandWhere.toWhere());
+            result = result.sum(newOperandExpr.first.diff(prevOperandExpr).and(newOperandExpr.second).scale(operands.getValue(i)));
+            if(changedWhere!=null) changedWhere.add(newOperandExpr.second);
         }
         return result;
     }

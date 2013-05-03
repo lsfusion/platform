@@ -23,7 +23,7 @@ public interface ImList<K> extends Iterable<K> {
     ImList<K> addList(K element);
 
     ImList<K> reverseList();
-    ImList<K> subList(int i, int length);
+    ImList<K> subList(int i, int to);
 
     <V> ImList<V> mapList(ImMap<? extends K, ? extends V> imMap);
 

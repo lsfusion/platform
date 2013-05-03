@@ -11,6 +11,7 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.flow.FlowResult;
+import platform.server.logics.property.actions.flow.Inline;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -53,12 +54,6 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, IncrementType type, Event event, LCP<P> lp, Integer... mapping) {
         lm.addEventAction(property, new CalcPropertyMapImplement<P, T>(lp.property.getChanged(type), lp.getRevMap(listInterfaces, mapping)), MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, event, false);
-    }
-
-    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, Event event, boolean descending, boolean ordersNotNull, Object... params) {
-        ImList<CalcPropertyInterfaceImplement<T>> listImplements = readCalcImplements(listInterfaces, params);
-        ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders = listImplements.subList(1, listImplements.size()).toOrderSet().toOrderMap(descending);
-        lm.addEventAction(property, (CalcPropertyMapImplement<?, T>) listImplements.get(0), orders, ordersNotNull, event, false);
     }
 
     public ValueClass[] getInterfaceClasses() {

@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
@@ -121,47 +122,68 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return result;
     }
 
-    protected Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         if(isAbstract() && propClasses)
             return getClassTableExpr(joinImplement);
 
+        ImList<Case> cases = getCases();
+
+        // до непосредственно вычисления, для хинтов
+        ImList<Pair<Expr, Expr>> caseExprs = cases.mapListValues(new GetValue<Pair<Expr, Expr>, Case>() {
+            public Pair<Expr, Expr> getMapValue(Case value) {
+                return new Pair<Expr, Expr>(
+                        value.where.mapExpr(joinImplement, propClasses, propChanges, changedWhere),
+                        value.property.mapExpr(joinImplement, propClasses, propChanges, changedWhere));
+            }});
+
         CaseExprInterface exprCases = Expr.newCases(isExclusive);
-        for(Case propCase : getCases())
-            exprCases.add(propCase.where.mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere(), propCase.property.mapExpr(joinImplement, propClasses, propChanges, changedWhere));
+        for(Pair<Expr, Expr> caseExpr : caseExprs)
+            exprCases.add(caseExpr.first.getWhere(), caseExpr.second);
         return exprCases.getFinal();
     }
 
     // вообще Case W1 E1, W2 E2, Wn En - эквивалентен Exclusive (W1 - E1, W2 AND !W1 - E2, ... )
-    protected Expr calculateIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
+    protected Expr calculateIncrementExpr(final ImMap<Interface, ? extends Expr> joinImplement, final PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
         // вообще инкрементальность делается следующим образом
         // Wi AND (OR(Cwi) OR CЕi) AND !OR(Wi-1) - Ei или вставлять прмежуточные (но у 1-го подхода - не надо отрезать сзади ничего, changed более релевантен)
+        ImList<Case> cases = getCases();
+
+        // до непосредственно вычисления, для хинтов
+        ImList<Pair<Pair<Expr, Where>, Pair<Expr, Where>>> caseExprs = cases.mapListValues(new GetValue<Pair<Pair<Expr, Where>, Pair<Expr, Where>>, Case>() {
+            public Pair<Pair<Expr, Where>, Pair<Expr, Where>> getMapValue(Case propCase) {
+                WhereBuilder changedWhereCase = new WhereBuilder();
+                WhereBuilder changedExprCase = new WhereBuilder();
+                return new Pair<Pair<Expr, Where>, Pair<Expr, Where>>(
+                        new Pair<Expr, Where>(propCase.where.mapExpr(joinImplement, propChanges, changedWhereCase), changedWhereCase.toWhere()),
+                        new Pair<Expr, Where>(propCase.property.mapExpr(joinImplement, propChanges, changedExprCase), changedExprCase.toWhere()));
+            }});
 
         CaseExprInterface exprCases = Expr.newCases(isExclusive);
 
         Where changedUpWheres = Where.FALSE; // для не exclusive
         Where changedAllWhere = Where.FALSE; // для exclusive
         Where nullWhere = Where.FALSE; // для exclusive
-        for(Case propCase : getCases()) {
-            WhereBuilder changedWhereCase = new WhereBuilder(); // высчитываем Where
-            Where caseWhere = propCase.where.mapExpr(joinImplement, propChanges, changedWhereCase).getWhere();
+        for(int i=0,size=cases.size();i<size;i++) {
+            Pair<Pair<Expr, Where>, Pair<Expr, Where>> pCaseExpr = caseExprs.get(i);
+            Where caseWhere = pCaseExpr.first.first.getWhere();
+            Where changedWhereCase = pCaseExpr.first.second;
+            Expr caseExpr = pCaseExpr.second.first;
+            Where changedExprCase = pCaseExpr.second.second;
 
             if(isExclusive) // интересуют только изменения этого where
-                changedUpWheres = changedWhereCase.toWhere();
+                changedUpWheres = changedWhereCase;
             else
-                changedUpWheres = changedUpWheres.or(changedWhereCase.toWhere());
+                changedUpWheres = changedUpWheres.or(changedWhereCase);
 
-            WhereBuilder changedExprCase = new WhereBuilder(); // высчитываем Property
-            Expr caseExpr = propCase.property.mapExpr(joinImplement, propChanges, changedExprCase);
-
-            Where changedCaseWhere = caseWhere.and(changedUpWheres.or(changedExprCase.toWhere()));
+            Where changedCaseWhere = caseWhere.and(changedUpWheres.or(changedExprCase));
             exprCases.add(changedCaseWhere, caseExpr);
 
             if(isExclusive) {
-                changedAllWhere = changedAllWhere.exclOr(changedCaseWhere); // фокус в том что changedCaseWhere не особо нужен в nullWhere, но если его добавить только в changed, то prevExpr может не уйти
-                nullWhere = nullWhere.exclOr(changedWhereCase.toWhere().and(propCase.where.mapExpr(joinImplement).getWhere()));
+                changedAllWhere = changedAllWhere.exclOr(changedCaseWhere); // фокус в том, что changedCaseWhere не особо нужен в nullWhere, но если его добавить только в changed, то prevExpr может не уйти
+                nullWhere = nullWhere.exclOr(changedWhereCase.and(cases.get(i).where.mapExpr(joinImplement).getWhere()));
             } else {
                 exprCases.add(caseWhere, prevExpr);
-                if(changedWhere!=null) changedWhere.add(changedWhereCase.toWhere().or(changedExprCase.toWhere()));
+                if(changedWhere!=null) changedWhere.add(changedWhereCase.or(changedExprCase));
             }
         }
         if(isExclusive) {
@@ -213,6 +235,13 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     @Override
     public boolean noOld() {
         return isAbstract() || super.noOld();
+    }
+    @Override
+    public ImSet<OldProperty> getParseOldDepends() {
+        if(isAbstract())
+            return SetFact.EMPTY();
+
+        return super.getParseOldDepends();
     }
 
     @Override

@@ -517,7 +517,7 @@ META deriveDocumentDetailPriceListTypeAgreementCustom (object, detail)
     priceListType###detail(d) <- IF agreement###object(object###detail(d))
                                  THEN priceListTypeAgreementSku(agreement###object(object###detail(d)), sku###detail(d))
                                  ELSE priceListType###object(object###detail(d))
-    WHEN CHANGED(agreement###object(object###detail(d))) OR
+    WHEN DO CHANGED(agreement###object(object###detail(d))) OR
          CHANGED(priceListType###object(object###detail(d))) OR
          CHANGED(sku###detail(d));
 END

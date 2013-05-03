@@ -1,8 +1,10 @@
 package platform.server.logics.property;
 
+import platform.base.Pair;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
@@ -35,22 +37,34 @@ public class XorUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    protected Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
+        ImList<Expr> operandExprs = operands.mapListValues(new GetValue<Expr, CalcPropertyInterfaceImplement<Interface>>() {
+            public Expr getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
+                return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
+            }});
+
         Where xorWhere = Where.FALSE;
-        for(CalcPropertyInterfaceImplement<Interface> operand : operands)
-            xorWhere = xorWhere.xor(operand.mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere());
+        for(Expr operandExpr : operandExprs)
+            xorWhere = xorWhere.xor(operandExpr.getWhere());
         return ValueExpr.get(xorWhere);
     }
 
     @Override
-    protected Expr calculateIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
+    protected Expr calculateIncrementExpr(final ImMap<Interface, ? extends Expr> joinImplement, final PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
+        ImList<Pair<Expr, Where>> operandExprs = operands.mapListValues(new GetValue<Pair<Expr, Where>, CalcPropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
+            public Pair<Expr, Where> getMapValue(CalcPropertyInterfaceImplement<Interface> key) {
+                WhereBuilder changedOperandWhere = new WhereBuilder();
+                return new Pair<Expr, Where>(key.mapExpr(joinImplement, propChanges, changedOperandWhere), changedOperandWhere.toWhere());
+            }
+        });
+
         Where resultWhere = prevExpr.getWhere();
-        for(CalcPropertyInterfaceImplement<Interface> operand : operands) {
-            WhereBuilder changedOperandWhere = new WhereBuilder();
-            Where newOperandWhere = operand.mapExpr(joinImplement, propChanges, changedOperandWhere).getWhere();
+        for(int i=0,size=operands.size();i<size;i++) {
+            CalcPropertyInterfaceImplement<Interface> operand = operands.get(i);
+            Pair<Expr, Where> operandExpr = operandExprs.get(i);
             Where prevOperandWhere = operand.mapExpr(joinImplement).getWhere();
-            resultWhere = resultWhere.xor(newOperandWhere.xor(prevOperandWhere).and(changedOperandWhere.toWhere()));
-            if(changedWhere!=null) changedWhere.add(changedOperandWhere.toWhere());
+            resultWhere = resultWhere.xor(operandExpr.first.getWhere().xor(prevOperandWhere).and(operandExpr.second));
+            if(changedWhere!=null) changedWhere.add(operandExpr.second);
         }
         return ValueExpr.get(resultWhere);
     }

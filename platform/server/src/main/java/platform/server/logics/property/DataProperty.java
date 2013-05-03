@@ -13,6 +13,8 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.where.extra.CompareWhere;
+import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.drilldown.DataDrillDownFormEntity;
@@ -93,9 +95,10 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        PropertyChange<ClassPropertyInterface> change = getEventChange(propChanges, getJoinValues(joinImplement));
+
         Expr prevExpr = getExpr(joinImplement);
 
-        PropertyChange<ClassPropertyInterface> change = getEventChange(propChanges);
         if(change!=null) {
             WhereBuilder changedExprWhere = new WhereBuilder();
             Expr changedExpr = change.getExpr(joinImplement, changedExprWhere);
@@ -106,31 +109,37 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         return prevExpr;
     }
 
-    public PropertyChange<ClassPropertyInterface> getEventChange(PropertyChanges changes) {
+    public PropertyChange<ClassPropertyInterface> getEventChange(PropertyChanges changes, ImMap<ClassPropertyInterface, Expr> joinValues) {
         PropertyChange<ClassPropertyInterface> result = null;
 
+        PropertyChange<ClassPropertyInterface> eventChange = null; // до непосредственно вычисления, для хинтов
+        if(event!=null)
+            eventChange = ((ChangeEvent<ClassPropertyInterface>)event).getDataChanges(changes, event.isData() ? joinValues : MapFact.<ClassPropertyInterface, Expr>EMPTY()).get(this);
+
+
         ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();
+        ImMap<ClassPropertyInterface, Expr> mapExprs = MapFact.override(mapKeys, joinValues);
         Expr prevExpr = null;
+        Where removeWhere = Where.FALSE;
         for(ClassPropertyInterface remove : interfaces) {
             IsClassProperty classProperty = remove.interfaceClass.getProperty();
             if(classProperty.hasChanges(changes)) {
                 if(prevExpr==null) // оптимизация
-                    prevExpr = getExpr(mapKeys);
-                result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, classProperty.getRemoveWhere(mapKeys.get(remove), changes).and(prevExpr.getWhere())));
+                    prevExpr = getExpr(mapExprs);
+                removeWhere = removeWhere.or(classProperty.getRemoveWhere(mapExprs.get(remove), changes).and(prevExpr.getWhere()));
             }
         }
         IsClassProperty classProperty = value.getProperty();
         if(classProperty.hasChanges(changes)) {
             if(prevExpr==null) // оптимизация
-                prevExpr = getExpr(mapKeys);
-            result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, classProperty.getRemoveWhere(prevExpr, changes)));
+                prevExpr = getExpr(mapExprs);
+            removeWhere = removeWhere.or(classProperty.getRemoveWhere(prevExpr, changes));
         }
+        if(!removeWhere.isFalse())
+            result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, removeWhere, joinValues));
 
-        if(event !=null) {
-            PropertyChange<ClassPropertyInterface> propertyChange = event.getDataChanges(changes).get(this);
-            if(propertyChange!=null)
-                result = PropertyChange.addNull(result, propertyChange);
-        }
+        if(eventChange!=null)
+            result = PropertyChange.addNull(result, eventChange);
 
         return result;
     }

@@ -173,8 +173,12 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public <D extends PropertyInterface> void setEventChange(Object... params) {
+        setEventChange(null, false, params);
+    }
+
+    public <D extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, Object... params) {
         ImList<CalcPropertyInterfaceImplement<T>> listImplements = readCalcImplements(listInterfaces, params);
-        property.setEventChange(listImplements.get(0), (CalcPropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
+        property.setEventChange(lm, action, listImplements.get(0), (CalcPropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
     }
 
     public ImOrderSet<T> listGroupInterfaces;

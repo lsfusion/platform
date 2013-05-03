@@ -11,5 +11,5 @@ import platform.server.data.where.Where;
 
 public interface ClassReader<T> extends Reader<T> {
     void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass);
-    ConcreteClass readClass(Expr expr, ImMap<Object, Object> classes, BaseClass baseClass, KeyType keyType);
+    ConcreteClass readClass(Expr expr, ImMap<Expr, Object> classes, BaseClass baseClass, KeyType keyType);
 }

@@ -113,6 +113,10 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return map.mapKeyValues(this.<K1, U1>TRANSMAP(), this.<K2, U2>TRANSMAP());
     }
 
+    public <K1, U1 extends ValuesContext<U1>, U2 extends ValuesContext<U2>> ImMap<ImMap<K1, U1>, U2> translateMapKeyValue(ImMap<ImMap<K1, U1>, U2> map) {
+        return map.mapKeyValues(this.<K1, U1>TRANSMAP(), this.<U2>TRANS());
+    }
+
     public <V extends Value> ImSet<V> translateValues(ImSet<V> values) {
         return values.mapSetValues(this.<V>TRANSVALUE());
     }

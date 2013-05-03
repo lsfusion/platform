@@ -16,6 +16,7 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MExclSet;
 import platform.base.col.interfaces.mutable.MOrderExclSet;
 import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ModalityType;
 import platform.server.ServerLoggers;
 import platform.server.classes.*;
@@ -548,7 +549,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return true;
     }
 
-    public void addSettingsToProperty(LP property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, String tableName, Boolean notNullResolve, Event notNullEvent) throws ScriptingErrorLog.SemanticErrorException {
+    public void addSettingsToProperty(LP property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, boolean isComplex, String tableName, Boolean notNullResolve, Event notNullEvent) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
                            namedParams + ", " + groupName + ", " + isPersistent  + ", " + tableName + ");");
         checkDuplicateProperty(name);
@@ -578,6 +579,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (isPersistent && (property.property instanceof AggregateProperty)) {
             addPersistent((LCP) property, targetTable);
         }
+
+        if(isComplex)
+            ((LCP<?>)property).property.complex = true;
 
         if (notNullResolve != null) {
             setNotNull((LCP)property, notNullEvent, notNullResolve ? PropertyFollows.RESOLVE_FALSE : PropertyFollows.RESOLVE_NOTHING);
@@ -785,7 +789,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedIfElseUProp(LPWithParams ifProp, LPWithParams thenProp, LPWithParams elseProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedIfElseUProp(" + ifProp + ", " + thenProp + ", " + elseProp + ");");
-        assert thenProp.property instanceof LCP && elseProp.property instanceof LCP; // assert что calculation'ы а не action'ы
+//        assert thenProp.property instanceof LCP && elseProp.property instanceof LCP; // assert что calculation'ы а не action'ы
         return addScriptedUProp(Union.EXCLUSIVE,
                                 asList(addScriptedJProp(and(false), asList(thenProp, ifProp)),
                                        addScriptedJProp(and(true), asList(elseProp, ifProp))),
@@ -1210,7 +1214,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, allParams);
     }
 
-    public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending, Inline inline) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedForAProp(" + oldContext + ", " + condition + ", " + orders + ", " + action + ", " + elseAction + ", " + recursive + ", " + descending + ");");
 
         boolean ordersNotNull = (condition != null ? doesExtendContext(singletonList(condition), orders) : !orders.isEmpty());
@@ -1230,10 +1234,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Integer> allParams = mergeAllParams(creationParams);
 
         List<Integer> usedParams = new ArrayList<Integer>();
+        List<Integer> extParams = new ArrayList<Integer>();
         for (int paramIndex : allParams) {
             if (paramIndex < oldContext.size()) {
                 usedParams.add(paramIndex);
-            }
+            } else
+                extParams.add(paramIndex);
         }
 
         checkForActionPropertyConstraints(recursive, usedParams, allParams);
@@ -1243,9 +1249,17 @@ public class ScriptingLogicsModule extends LogicsModule {
             allCreationParams.add(new LPWithParams(null, asList(usedParam)));
         }
         allCreationParams.addAll(creationParams);
+        if(noInline==null) { // предполагается надо включить все кроме addNum
+            noInline = new ArrayList<LPWithParams>();
+            for (int usedParam : extParams)
+                if(addNum==null || !addNum.equals(usedParam)) {
+                    noInline.add(new LPWithParams(null, asList(usedParam)));
+                }
+        }
+        allCreationParams.addAll(noInline);
 
         LP result = addForAProp(null, genSID(), "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(), 
-                addClassName != null ? (CustomClass)findClassByCompoundName(addClassName) : null, condition!=null, inline, getParamsPlainList(allCreationParams).toArray());
+                addClassName != null ? (CustomClass)findClassByCompoundName(addClassName) : null, condition!=null, noInline.size(), forceInline, getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
     }
 
@@ -1722,7 +1736,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedWriteWhen(String mainPropName, List<String> namedParams, LPWithParams valueProp, LPWithParams whenProp) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedWriteWhen(String mainPropName, List<String> namedParams, LPWithParams valueProp, LPWithParams whenProp, boolean action) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedWriteWhen(" + mainPropName + ", " + namedParams + ", " + valueProp + ", " + whenProp + ");");
         LP mainProp = findLPByCompoundName(mainPropName);
         if (!(mainProp.property instanceof DataProperty)) {
@@ -1733,31 +1747,44 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkCalculationProperty(mainProp);
 
         List<Object> params = getParamsPlainList(asList(valueProp, whenProp));
-        ((LCP)mainProp).setEventChange(params.toArray());
+        ((LCP)mainProp).setEventChange(this, action, params.toArray());
     }
 
-    public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent) throws ScriptingErrorLog.SemanticErrorException {
+    public Set<LCP> findLCPsByCompoundName(List<String> ids) throws ScriptingErrorLog.SemanticErrorException {
+        if(ids==null)
+            return null;
+
+        Set<LCP> prevStart = new HashSet<LCP>(); // функционально из-за exception'а не сделаешь
+        for(String id : ids)
+            prevStart.add(findLCPByCompoundName(id));
+        return prevStart;
+    }
+
+    public final static GetValue<CalcProperty, LCP> getProp = new GetValue<CalcProperty, LCP>() {
+        public CalcProperty getMapValue(LCP value) {
+            return ((LCP<?>)value).property;
+        }};
+
+    public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, Set<LCP> prevStart, List<LPWithParams> noInline, boolean forceInline) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedEvent(" + whenProp + ", " + event + ", " + orders + ", " + descending + ", " + baseEvent + ");");
         checkActionProperty(event.property);
-        List<Object> params = getParamsPlainList(asList(event, whenProp), orders);
-        addEventAction(baseEvent, descending, false, params.toArray());
+        if(noInline==null) {
+            noInline = new ArrayList<LPWithParams>();
+            for(Integer usedParam : whenProp.usedParams)
+                noInline.add(new LPWithParams(null, asList(usedParam)));
+        }
+        List<Object> params = getParamsPlainList(asList(event, whenProp), orders, noInline);
+        addEventAction(baseEvent, descending, false, prevStart == null ? null : SetFact.fromJavaSet(prevStart).mapSetValues(getProp), noInline.size(), forceInline, params.toArray());
     }
 
-    public void addScriptedGlobalEvent(LPWithParams event, Event baseEvent, boolean single, String showDep, List<String> sPrevStarts) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedGlobalEvent(LPWithParams event, Event baseEvent, boolean single, String showDep, Set<LCP> prevStart) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedGlobalEvent(" + event + ", " + baseEvent + ");");
         checkActionProperty(event.property);
         checkEventNoParameters(event.property);
         ActionProperty action = (ActionProperty) event.property.property;
         if(showDep!=null)
             action.showDep = findLPByCompoundName(showDep).property;
-        ImSet<CalcProperty> prevStart = null;
-        if(sPrevStarts!=null) {
-            MExclSet<CalcProperty> mPrevStart = SetFact.mExclSet(); // функционально из-за exception'а не сделаешь
-            for(String sPrevStart : sPrevStarts)
-                mPrevStart.exclAdd(findLCPByCompoundName(sPrevStart).property);
-            prevStart = mPrevStart.immutable();
-        }
-        addBaseEvent(action, baseEvent, false, single, prevStart);
+        addBaseEvent(action, baseEvent, false, single, SetFact.fromJavaSet(prevStart).mapSetValues(getProp));
     }
 
     public void addScriptedShowDep(String property, String propFrom) throws ScriptingErrorLog.SemanticErrorException {

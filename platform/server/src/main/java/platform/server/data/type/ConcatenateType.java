@@ -6,7 +6,6 @@ import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.MSet;
-import platform.interop.Data;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
@@ -166,7 +165,7 @@ public class ConcatenateType extends AbstractType<byte[]> {
         }
     }
 
-    public ConcreteClass readClass(Expr expr, ImMap<Object, Object> classes, BaseClass baseClass, KeyType keyType) {
+    public ConcreteClass readClass(Expr expr, ImMap<Expr, Object> classes, BaseClass baseClass, KeyType keyType) {
         ConcreteClass[] classSets = new ConcreteClass[types.length];
         for(int i=0;i<types.length;i++) {
             Expr partExpr = DeconcatenateExpr.create(expr, i, baseClass);

@@ -338,6 +338,9 @@ public class SetFact {
     // remove при необходимости получения mutable интерфейсов
 
     public static <T> ImSet<T> fromJavaSet(Set<T> set) {
+        if(set.isEmpty()) // оптимизация
+            return SetFact.EMPTY();
+
         MExclSet<T> mSet = SetFact.mExclSet(set.size());
         for(T element : set)
             mSet.exclAdd(element);

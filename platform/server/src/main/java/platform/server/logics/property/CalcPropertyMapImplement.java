@@ -118,6 +118,10 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return property.getChangeProps();
     }
 
+    public boolean mapIsComplex() {
+        return property.isComplex();
+    }
+
     public DataChanges mapJoinDataChanges(ImMap<T, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges) {
         return property.getJoinDataChanges(mapping.join(mapKeys), expr, where, propChanges, changedWhere);
     }

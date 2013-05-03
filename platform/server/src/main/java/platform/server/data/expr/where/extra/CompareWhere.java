@@ -1,10 +1,12 @@
 package platform.server.data.expr.where.extra;
 
 import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.where.OrObjectWhere;
 import platform.server.data.where.OrWhere;
@@ -52,6 +54,10 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
         for(int i=0,size=map1.size();i<size;i++)
             where = where.and(map1.getValue(i).compare(map2.get(map1.getKey(i)), Compare.EQUALS));
         return where;
+    }
+
+    public static <K> Where compareExprValues(ImRevMap<K, KeyExpr> mapKeys, ImMap<K, ? extends Expr> mapValues) {
+        return compare(mapKeys.filterIncl(mapValues.keys()), mapValues);
     }
 
     public static <K> Where compareValues(ImMap<K,? extends Expr> map,ImMap<K, DataObject> mapValues) {

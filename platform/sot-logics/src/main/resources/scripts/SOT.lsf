@@ -24,7 +24,7 @@ nameSotUOM 'Наименование' (sotUOM) = DATA STRING[100](SotUOM) IN bas
 netWeightSotUOM 'Вес нетто' (sotUOM) = DATA NUMERIC[9,3](SotUOM) IN base;
 
 UOMSotUOM 'Единица измерений' = DATA UOM (SotUOM);
-nameUOMSotUOM 'Единица измерений' (sotUOM) = name(UOMSotUOM(sotUOM)) IN base;
+nameUOMSotUOM 'Единица измерений' (sotUOM) = nameUOM(UOMSotUOM(sotUOM)) IN base;
 
 sotUOMWeightUOM (weight, uom) = GROUP MAX sotUOM BY netWeightSotUOM(sotUOM), UOMSotUOM(sotUOM);
 
@@ -46,7 +46,7 @@ mag2Stock 'Код MAG2' (stock) = mag2LegalEntityStock(legalEntityStock(stock), 
 
 codeOperation 'Код операции' = DATA STRING[2] (Sale.Operation);
 
-EXTEND FORM item PROPERTIES(i) BEFORE nameUOMItem(i) nameSotUOMItem SHOWIF showUOMItem(i);
+EXTEND FORM item PROPERTIES(i) BEFORE nameUOMUOMItem(i) nameSotUOMItem SHOWIF showUOMItem(i);
 EXTEND FORM items PROPERTIES(i) dateTimeLastMovedSku, sotSIDItem, sidExternalizable;
 
 EXTEND FORM Sale.dialogOperations PROPERTIES(o) codeOperation;
@@ -84,7 +84,7 @@ changeClassStock 'Сделать магазином' = ACTION (warehouse) NEWSES
     LOCAL b = BOOLEAN();
     LOCAL r = BOOLEAN (Employee);
 
-    SET n() <- name(warehouse);
+    SET n() <- nameWarehouse(warehouse);
     SET a() <- addressWarehouse(warehouse);
     SET le() <- legalEntityWarehouse(warehouse);
     SET la() <- latitudeWarehouse(warehouse);
@@ -104,14 +104,14 @@ changeClassStock 'Сделать магазином' = ACTION (warehouse) NEWSES
     CHANGECLASS warehouse TO DepartmentStore;
 
     FOR ADDOBJ s = Store DO{
-        SET name(s) <- n();
+        SET nameStore(s) <- n();
         SET addressStore(s) <- a();
         SET legalEntityStore(s) <- le();
         SET latitudeStore(s) <- la();
         SET longitudeStore(s) <- lo();
         SET priceStockGroupStore(s) <- p();
 
-        SET name(warehouse) <- n();
+        SET nameWarehouse(warehouse) <- n();
         SET storeDepartmentStore(warehouse) <- s;
         SET quantityDaysCloseDepartmentStore(warehouse) <- i();
         SET writeOffCommitteeStock(warehouse) <- w();

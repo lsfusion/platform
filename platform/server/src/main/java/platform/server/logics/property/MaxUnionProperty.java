@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.base.col.interfaces.immutable.ImCol;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.entity.drilldown.DrillDownFormEntity;
@@ -32,11 +33,15 @@ public class MaxUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
+
+        ImCol<Expr> operandExprs = operands.mapColValues(new GetValue<Expr, CalcPropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
+            public Expr getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
+                return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
+            }});
 
         Expr result = null;
-        for(CalcPropertyInterfaceImplement<Interface> operand : operands) {
-            Expr operandExpr = operand.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
+        for(Expr operandExpr : operandExprs) {
             if(result==null)
                 result = operandExpr;
             else

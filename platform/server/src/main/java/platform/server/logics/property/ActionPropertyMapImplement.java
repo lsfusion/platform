@@ -1,7 +1,5 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.server.form.entity.ActionPropertyObjectEntity;
@@ -14,7 +12,6 @@ import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 public class ActionPropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> implements PropertyInterfaceImplement<T> {
 
@@ -83,7 +80,11 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
                 return true;
         return false;
     }
-    
+
+    public ImSet<OldProperty> mapParseOldDepends() {
+        return property.getParseOldDepends();
+    }
+
     public ActionPropertyValueImplement<P> getValueImplement(ImMap<T, DataObject> mapObjects) {
         return new ActionPropertyValueImplement<P>(property, mapping.join(mapObjects));
     }

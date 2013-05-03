@@ -24,14 +24,15 @@ currencyRRPInvoiceDetail (invoiceDetail) = currencyPriceListType(RRPPriceListTyp
 nameCurrencyRRPInvoiceDetail 'Валюта (RRP)' (invoiceDetail) = nameCurrency(currencyRRPInvoiceDetail(invoiceDetail));
 
 @defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, RRP, ' (RRP)');
-RRPPriceUserInvoiceDetail (detail)  <-  prevPricePriceListTypeSkuStockDateTime(RRPPriceListTypeUserInvoiceDetail(detail),
+WHEN SESSION PREVSTART ALL (CHANGED(RRPPriceListTypeUserInvoiceDetail(detail)) OR
+             CHANGED(skuUserInvoiceDetail(detail)) OR
+             CHANGED(supplierStockUserInvoiceDetail(detail)) OR
+             CHANGED(dateTimeUserInvoiceDetail(detail))) AND pt == RRPPriceListTypeUserInvoiceDetail(detail) NOINLINE (pt) DO
+    RRPPriceUserInvoiceDetail (detail)  <-  prevPricePriceListTypeSkuStockDateTime(pt,
                                                                                skuUserInvoiceDetail(detail),
                                                                                supplierStockUserInvoiceDetail(detail),
                                                                                dateTimeUserInvoiceDetail(detail))
-                                                    WHEN CHANGED(RRPPriceListTypeUserInvoiceDetail(detail)) OR
-                                                         CHANGED(skuUserInvoiceDetail(detail)) OR
-                                                         CHANGED(supplierStockUserInvoiceDetail(detail)) OR
-                                                         CHANGED(dateTimeUserInvoiceDetail(detail));
+                                                    ;
 
 RRPSumUserInvoiceDetail 'Сумма (RRP)' (detail) = roundPriceCurrency(RRPPriceUserInvoiceDetail (detail)*quantityUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail));
 RRPSumInvoiceDetail 'Сумма (RRP)' (detail) = roundPriceCurrency(RRPPriceInvoiceDetail(detail)*quantityInvoiceDetail(detail), currencyInvoiceDetail(detail));

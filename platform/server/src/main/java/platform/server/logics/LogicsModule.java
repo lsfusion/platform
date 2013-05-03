@@ -733,10 +733,10 @@ public abstract class LogicsModule {
     }
 
     protected LAP addForAProp(boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, Object... params) {
-        return addForAProp(null, genSID(), "sys", ascending, ordersNotNull, recursive, hasElse, resInterfaces, null, true, null, params);
+        return addForAProp(null, genSID(), "sys", ascending, ordersNotNull, recursive, hasElse, resInterfaces, null, true, 0, false, params);
     }
 
-    protected LAP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean hasCondition, Inline inline, Object... params) {
+    protected LAP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
 
@@ -747,18 +747,20 @@ public abstract class LogicsModule {
         CalcPropertyMapImplement<?, PropertyInterface> ifProp = hasCondition? (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(resInterfaces) : null;
 
         ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
-                BaseUtils.<ImList<CalcPropertyInterfaceImplement<PropertyInterface>>>immutableCast(readImplements.subList(resInterfaces + (hasCondition ? 1 : 0), implCnt - (hasElse ? 2 : 1) - (addClass != null ? 1: 0))).toOrderExclSet().toOrderMap(!ascending);
+                BaseUtils.<ImList<CalcPropertyInterfaceImplement<PropertyInterface>>>immutableCast(readImplements.subList(resInterfaces + (hasCondition ? 1 : 0), implCnt - (hasElse ? 2 : 1) - (addClass != null ? 1: 0) - noInline)).toOrderExclSet().toOrderMap(!ascending);
         
-        PropertyInterface addedInterface = addClass!=null ? (PropertyInterface) readImplements.get(implCnt - (hasElse ? 3 : 2)) : null;
+        PropertyInterface addedInterface = addClass!=null ? (PropertyInterface) readImplements.get(implCnt - (hasElse ? 3 : 2) - noInline) : null;
         
         ActionPropertyMapImplement<?, PropertyInterface> elseAction =
-                !hasElse ? null : (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 2);
+                !hasElse ? null : (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 2 - noInline);
 
         ActionPropertyMapImplement<?, PropertyInterface> action =
-                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 1);
-        
+                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 1 - noInline);
+
+        ImSet<PropertyInterface> noInlineInterfaces = BaseUtils.<ImList<PropertyInterface>>immutableCast(readImplements.subList(implCnt - noInline, implCnt)).toOrderExclSet().getSet();
+
         return addProperty(group, new LAP<PropertyInterface>(
-                new ForActionProperty<PropertyInterface>(name, caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, false, recursive, inline))
+                new ForActionProperty<PropertyInterface>(name, caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, false, recursive, noInlineInterfaces, forceInline))
         );
     }
 
@@ -2399,28 +2401,43 @@ public abstract class LogicsModule {
         addProp(constraintAction.property);
     }
 
-    public <T extends PropertyInterface> void addEventAction(Event event, boolean descending, boolean ordersNotNull, Object... params) {
+    public <T extends PropertyInterface> void addEventAction(Event event, boolean descending, boolean ordersNotNull, ImSet<CalcProperty> prevStart, int noInline, boolean forceInline, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
 
         ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = readImplements(innerInterfaces, params);
-        ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders = BaseUtils.immutableCast(listImplements.subList(2, listImplements.size()).toOrderSet().toOrderMap(descending));
-        addEventAction(innerInterfaces.getSet(), (ActionPropertyMapImplement<?, PropertyInterface>) listImplements.get(0), (CalcPropertyMapImplement<?, PropertyInterface>) listImplements.get(1), orders, ordersNotNull, event, false);
+        int implCnt = listImplements.size();
+
+        ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders = BaseUtils.immutableCast(listImplements.subList(2, implCnt - noInline).toOrderSet().toOrderMap(descending));
+
+        ImSet<PropertyInterface> noInlineInterfaces = BaseUtils.<ImList<PropertyInterface>>immutableCast(listImplements.subList(implCnt - noInline, implCnt)).toOrderExclSet().getSet();
+
+        addEventAction(innerInterfaces.getSet(), (ActionPropertyMapImplement<?, PropertyInterface>) listImplements.get(0), (CalcPropertyMapImplement<?, PropertyInterface>) listImplements.get(1), orders, ordersNotNull, event, prevStart, noInlineInterfaces, forceInline, false);
     }
 
     public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ActionProperty<P> actionProperty, CalcPropertyMapImplement<?, P> whereImplement, ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve) {
-        addEventAction(actionProperty.interfaces, actionProperty.getImplement(), whereImplement, orders, ordersNotNull, event, resolve);
+        addEventAction(actionProperty.interfaces, actionProperty.getImplement(), whereImplement, orders, ordersNotNull, event, SetFact.<CalcProperty>EMPTY(), SetFact.<P>EMPTY(), false, resolve);
     }
 
-    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ImSet<P> innerInterfaces, ActionPropertyMapImplement<?, P> actionProperty, CalcPropertyMapImplement<?, P> whereImplement, ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve) {
+    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ImSet<P> innerInterfaces, ActionPropertyMapImplement<?, P> actionProperty, CalcPropertyMapImplement<?, P> whereImplement, ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, ImSet<CalcProperty> prevStart, ImSet<P> noInline, boolean forceInline, boolean resolve) {
         if(!((CalcProperty)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET);
 
-        ActionProperty<? extends PropertyInterface> action = DerivedProperty.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty, null, false, null).property;
+        if(prevStart==null)
+            prevStart = actionProperty.mapParseOldDepends().mapSetValues(new GetValue<CalcProperty, OldProperty>() {
+                public CalcProperty getMapValue(OldProperty value) {
+                    return value.property;
+                }});
+
+        ActionProperty<? extends PropertyInterface> action =
+                innerInterfaces.isEmpty() ?
+                    DerivedProperty.createIfAction(innerInterfaces, whereImplement, actionProperty, null).property :
+                    DerivedProperty.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty, null, false, noInline, forceInline).property;
+
         action.setStrongUsed(whereImplement.property); // добавить сильную связь
 //        action.caption = "WHEN " + whereImplement.property + " " + actionProperty;
         addProp(action);
 
-        addBaseEvent(action, event, resolve, false, null);
+        addBaseEvent(action, event, resolve, false, prevStart);
     }
 
     public <P extends PropertyInterface> void addBaseEvent(ActionProperty<P> action, Event event, boolean resolve, boolean single, ImSet<CalcProperty> prevStart) {

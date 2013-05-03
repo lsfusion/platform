@@ -38,9 +38,8 @@ public class SubQueryJoin extends QueryJoin<KeyExpr, Where, SubQueryJoin, SubQue
         super(partitionJoin, translator);
     }
 
-    @IdentityLazy
     public StatKeys<KeyExpr> getStatKeys() {
-        return query.getStatKeys(keys);
+        return query.getFullStatKeys(keys);
     }
 
     // кэшить

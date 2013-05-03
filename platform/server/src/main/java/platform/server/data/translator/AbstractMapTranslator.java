@@ -37,6 +37,10 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
         return map.mapKeys(this.<E>TRANS());
     }
 
+    public <K, E extends Expr> ImRevMap<E, K> translateExprRevKeys(ImRevMap<E, K> map) {
+        return map.mapRevKeys(this.<E>TRANS());
+    }
+
     public <K> ImMap<KeyExpr,K> translateMapKeys(ImMap<KeyExpr, K> map) {
         return translateExprKeys(map);
     }

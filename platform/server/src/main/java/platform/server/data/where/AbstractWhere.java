@@ -312,7 +312,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         }.proceed(this, exprs.toMap());
     }
 
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups) { // assertion что where keys входят в это where
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups) { // assertion что ключи groups входят в это where
         StatKeys<K> result = new StatKeys<K>(groups);
         for(GroupStatWhere<K> groupJoin : getStatJoins(groups, false, GroupStatType.ALL, true))
             result = result.or(groupJoin.stats);
@@ -320,8 +320,13 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     @IdentityLazy
+    public StatKeys<KeyExpr> getFullStatKeys(ImSet<KeyExpr> groups) { // assertion что ключи groups являются ключами этого where
+        assert BaseUtils.hashEquals(getOuterKeys(), groups);
+        return getStatKeys(groups);
+    }
+
     public Stat getStatRows() {
-        return getStatKeys(getOuterKeys()).rows;
+        return getFullStatKeys(getOuterKeys()).rows;
     }
 
     public <K extends Expr> StatKeys<K> getStatExprs(ImSet<K> groups) {
@@ -343,7 +348,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 
     protected abstract Where translate(MapTranslate translator);
 
-    protected abstract KeyEquals calculateKeyEquals();
+    public abstract KeyEquals calculateKeyEquals(); // для аспекта public
 
     private KeyEquals keyEquals = null;
     @ManualLazy

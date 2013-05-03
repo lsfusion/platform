@@ -1,5 +1,6 @@
 package platform.server.data;
 
+import org.postgresql.PGConnection;
 import platform.base.MutableObject;
 import platform.base.col.MapFact;
 import platform.server.Settings;
@@ -64,6 +65,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     public Connection newConnection() throws SQLException {
         try {
             Connection newConnection = startConnection();
+            ((PGConnection)newConnection).setPrepareThreshold(2);
             SQLSession.setACID(newConnection, false);
             return newConnection;
         } catch (ClassNotFoundException e) {

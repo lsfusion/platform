@@ -55,6 +55,13 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
         return DataObject.getMapClasses(DataObject.filterDataObjects(map));
     }
 
+    public static <K> ImMap<K,Object> getMapValues(ImMap<K,ObjectValue> map) {
+        return map.mapValues(new GetValue<Object, ObjectValue>() {
+            public Object getMapValue(ObjectValue value) {
+                return value.getValue();
+            }});
+    }
+
     public static <K> boolean containsNull(Collection<ObjectValue> col) {
         for(ObjectValue value : col)
             if(value instanceof NullValue)

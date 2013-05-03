@@ -1,5 +1,6 @@
 package platform.server.logics.property.actions;
 
+import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
@@ -8,6 +9,7 @@ import platform.base.col.interfaces.mutable.MSet;
 import platform.server.Settings;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.where.Where;
 import platform.server.logics.property.*;
 import platform.server.session.DataChanges;
@@ -47,21 +49,23 @@ public class ChangeEvent<C extends PropertyInterface> {
         return mResult.immutable();
     }
 
-    public PropertyChange<C> getChange(PropertyChanges changes) {
+    public PropertyChange<C> getChange(PropertyChanges changes, ImMap<C, Expr> joinValues) {
         ImRevMap<C, KeyExpr> mapKeys = writeTo.getMapKeys();
-        Where changeWhere = where.mapExpr(mapKeys, changes).getWhere();
+        ImMap<C, Expr> mapExprs = MapFact.override(mapKeys, joinValues);
+
+        Where changeWhere = where.mapExpr(mapExprs, changes).getWhere();
         if(changeWhere.isFalse()) // для оптимизации
             return writeTo.getNoChange();
 
-        ImMap<C, ? extends Expr> mapExprs = PropertyChange.simplifyExprs(mapKeys, changeWhere);
+        mapExprs = PropertyChange.simplifyExprs(mapExprs, changeWhere);
         Expr writeExpr = writeFrom.mapExpr(mapExprs, changes);
 //        if(!isWhereFull())
 //            changeWhere = changeWhere.and(writeExpr.getWhere().or(writeTo.getExpr(mapExprs, changes).getWhere()));
-        return new PropertyChange<C>(mapKeys, writeExpr, changeWhere);
+        return new PropertyChange<C>(mapKeys, changeWhere, writeExpr, joinValues);
     }
 
-    public DataChanges getDataChanges(PropertyChanges changes) {
-        return writeTo.getDataChanges(getChange(changes), changes);
+    public DataChanges getDataChanges(PropertyChanges changes, ImMap<C, Expr> joinValues) {
+        return writeTo.getDataChanges(getChange(changes, joinValues), changes);
     }
 
     public ImSet<CalcProperty> getUsedDataChanges(StructChanges changes) {
@@ -72,4 +76,7 @@ public class ChangeEvent<C extends PropertyInterface> {
         return SetFact.add(writeTo.getUsedDataChanges(changes), changes.getUsedChanges(getDepends()));
     }
 
+    public boolean isData() {
+        return writeTo instanceof DataProperty;
+    }
 }

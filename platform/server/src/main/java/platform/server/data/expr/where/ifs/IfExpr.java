@@ -53,7 +53,7 @@ public class IfExpr extends Expr {
     @ManualLazy
     public int getWhereDepth() {
         if(whereDepth<0)
-            whereDepth = trueExpr.getWhereDepth();
+            whereDepth = trueExpr.getWhereDepth() + 1;
         return whereDepth;
     }
 

@@ -20,7 +20,7 @@ public class Settings {
         this.innerGroupExprs = innerGroupExprs;
     }
 
-    public int packOnCacheComplexity = 3000;
+    public int packOnCacheComplexity = 300000;
 
     public int getPackOnCacheComplexity() {
         return packOnCacheComplexity;
@@ -287,6 +287,36 @@ public class Settings {
         this.disablePoolConnections = disablePoolConnections;
     }
 
+    private boolean disablePoolPreparedStatements = false;
+
+    public boolean isDisablePoolPreparedStatements() {
+        return disablePoolPreparedStatements;
+    }
+
+    public void setDisablePoolPreparedStatements(boolean disablePoolPreparedStatements) {
+        this.disablePoolPreparedStatements = disablePoolPreparedStatements;
+    }
+
+    private boolean disableWhenCalcDo = true;
+
+    public boolean isDisableWhenCalcDo() {
+        return disableWhenCalcDo;
+    }
+
+    public void setDisableWhenCalcDo(boolean disableWhenCalcDo) {
+        this.disableWhenCalcDo = disableWhenCalcDo;
+    }
+
+    private boolean disablePrereadValues = false;
+
+    public boolean isDisablePrereadValues() {
+        return disablePrereadValues;
+    }
+
+    public void setDisablePrereadValues(boolean disablePrereadValues) {
+        this.disablePrereadValues = disablePrereadValues;
+    }
+
     private boolean disableSumGroupNotZero = false;
 
     public boolean isDisableSumGroupNotZero() {
@@ -543,6 +573,16 @@ public class Settings {
         this.disableAutoHints = disableAutoHints;
     }
 
+    private boolean disableAutoHintCaches = true;
+
+    public boolean isDisableAutoHintCaches() {
+        return disableAutoHintCaches;
+    }
+
+    public void setDisableAutoHintCaches(boolean disableAutoHintCaches) {
+        this.disableAutoHintCaches = disableAutoHintCaches;
+    }
+
     private boolean disableWrapComplexity = true;
 
     public boolean isDisableWrapComplexity() {
@@ -674,5 +714,24 @@ public class Settings {
 
     public void setMergeUpClassSets(boolean mergeUpClassSets) {
         this.mergeUpClassSets = mergeUpClassSets;
+    }
+
+    private int queryPrepareLength = 1000; // длина запроса, при которой необходимо pool'ить preparedStatement'ы
+    private int queryPrepareRunTime = 40; // время выполнения запроса, при которой необходимо pool'ить preparedStatement'ы
+
+    public int getQueryPrepareLength() {
+        return queryPrepareLength;
+    }
+
+    public void setQueryPrepareLength(int queryPrepareLength) {
+        this.queryPrepareLength = queryPrepareLength;
+    }
+
+    public int getQueryPrepareRunTime() {
+        return queryPrepareRunTime;
+    }
+
+    public void setQueryPrepareRunTime(int queryPrepareRunTime) {
+        this.queryPrepareRunTime = queryPrepareRunTime;
     }
 }

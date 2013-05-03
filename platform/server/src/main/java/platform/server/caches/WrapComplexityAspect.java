@@ -28,12 +28,12 @@ public class WrapComplexityAspect {
     <K extends PropertyInterface> Expr wrapComplexity(Expr expr, Where where, CalcProperty<K> property, ImMap<K, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
         Expr wrapExpr = expr;
         if(expr.getComplexity(true) > Settings.get().getLimitWrapComplexity()) {
-            System.out.println("WRAP COMPLEX EXPR " + property + "(" + property.getSID() + ") : " + expr.getComplexity(true));
+//            System.out.println("WRAP COMPLEX EXPR " + property + "(" + property.getSID() + ") : " + expr.getComplexity(true));
             wrapExpr = SubQueryExpr.create(expr);
         }
         if(where != null) {
             if(where.getComplexity(true) > Settings.get().getLimitWrapComplexity()) {
-                System.out.println("WRAP COMPLEX WHERE " + property + " : " + where.getComplexity(true));
+//                System.out.println("WRAP COMPLEX WHERE " + property + " : " + where.getComplexity(true));
                 where = SubQueryExpr.create(where.and(expr.getWhere().or(property.getExpr(joinImplement).getWhere())));
             }
             changedWhere.add(where);
@@ -42,7 +42,7 @@ public class WrapComplexityAspect {
     }
 
     public <T extends PropertyInterface> Expr getJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty<T> property, ImMap<T, ? extends Expr> joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
-        if((Settings.get().isDisableWrapComplexity() && !(property instanceof OldProperty && Settings.get().isEnablePrevWrapComplexity())) || !property.isFull()) // если ключей не хватает wrapp'ить нельзя
+        if((Settings.get().isDisableWrapComplexity() && !property.complex && !(property instanceof OldProperty && Settings.get().isEnablePrevWrapComplexity())) || !property.isFull()) // если ключей не хватает wrapp'ить нельзя
             return (Expr) thisJoinPoint.proceed();
         WhereBuilder cascadeWhere = CalcProperty.cascadeWhere(changedWhere);
         return wrapComplexity((Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propClasses, propChanges, cascadeWhere}),
@@ -58,7 +58,7 @@ public class WrapComplexityAspect {
         assert property.isFull();
         IQuery<T, String> query = (IQuery<T, String>) thisJoinPoint.proceed();
         
-        if(Settings.get().isDisableWrapComplexity() && !(property instanceof OldProperty && Settings.get().isEnablePrevWrapComplexity()))
+        if(Settings.get().isDisableWrapComplexity() && !property.complex && !(property instanceof OldProperty && Settings.get().isEnablePrevWrapComplexity()))
             return query;
 
         ImRevMap<T, KeyExpr> mapKeys = query.getMapKeys();

@@ -16,6 +16,7 @@ import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
+import platform.server.classes.SystemClass;
 import platform.server.data.Modify;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
@@ -24,16 +25,20 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.type.ObjectType;
+import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
@@ -66,12 +71,12 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return mapKeys.addRevExcl(KeyExpr.getMapKeys(mapValues.keys()));
     }
 
-    public static <C> ImMap<C, ? extends Expr> simplifyExprs(ImMap<C, ? extends Expr> implementExprs, Where andWhere) {
+    public static <C> ImMap<C, Expr> simplifyExprs(ImMap<C, ? extends Expr> implementExprs, Where andWhere) {
         KeyEquals keyEquals = andWhere.getKeyEquals(); // оптимизация
         KeyEqual keyEqual;
         if(keyEquals.size() == 1 && !(keyEqual=keyEquals.getKey(0)).isEmpty())
             implementExprs = keyEqual.getTranslator().translate(implementExprs);
-        return implementExprs;
+        return (ImMap<C, Expr>) implementExprs;
     }
 
     public ImMap<T, Expr> getMapExprs() {
@@ -128,6 +133,14 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
 
     public PropertyChange(ImRevMap<T, KeyExpr> mapKeys, Where where) {
         this(mapKeys, Expr.NULL, where);
+    }
+
+    public PropertyChange(ImRevMap<T, KeyExpr> mapKeys, Where where, ImMap<T, Expr> mapValues) {
+        this(mapKeys, where, Expr.NULL, mapValues);
+    }
+
+    public PropertyChange(ImRevMap<T, KeyExpr> mapKeys, Where where, Expr expr, ImMap<T, Expr> mapValues) {
+        this(mapKeys, expr, where.and(CompareWhere.compareExprValues(mapKeys, mapValues)));
     }
 
     public ImSet<KeyExpr> getKeys() {
@@ -270,6 +283,22 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         if(change2==null)
             return change1;
         return change1.add(change2);
+    }
+
+    public SinglePropertyTableUsage<T> materialize(CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+        SinglePropertyTableUsage<T> result = property.createChangeTable();
+        writeRows(result, sql, baseClass, env);
+        return result;
+    }
+
+    public static <K> NoPropertyTableUsage<K> materialize(DataSession session, final ImRevMap<K, KeyExpr> mapKeys, final Where where) throws SQLException {
+        NoPropertyTableUsage<K> result = new NoPropertyTableUsage<K>(mapKeys.keys().toOrderSet(), new Type.Getter<K>() {
+            public Type getType(K key) {
+                return where.getKeyType(mapKeys.get(key));
+            }
+        });
+        result.writeRows(session.sql, new Query<K, Object>(mapKeys, where), session.baseClass, session.env);
+        return result;
     }
 
 /*    public StatKeys<T> getStatKeys() {

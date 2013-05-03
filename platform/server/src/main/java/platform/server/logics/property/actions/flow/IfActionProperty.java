@@ -118,7 +118,7 @@ public class IfActionProperty extends KeepContextActionProperty {
 
         return ForActionProperty.pushFor(interfaces, ifProp, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, new ForActionProperty.PushFor<PropertyInterface, PropertyInterface>() {
             public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
-                return createForAction(context, where, orders, ordersNotNull, trueAction.map(mapInnerInterfaces), null, false, null);
+                return createForAction(context, where, orders, ordersNotNull, trueAction.map(mapInnerInterfaces), null, false, SetFact.<PropertyInterface>EMPTY(), false);
             }
         });
     }

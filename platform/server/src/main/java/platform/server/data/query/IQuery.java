@@ -1,11 +1,14 @@
 package platform.server.data.query;
 
+import platform.base.Pair;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
+import platform.server.Message;
 import platform.server.caches.AbstractInnerContext;
+import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
@@ -47,13 +50,25 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         return compile(syntax, MapFact.<V, Boolean>EMPTYORDER(), 0, SubQueryContext.EMPTY, false);
     }
 
+    public CompiledQuery<K,V> compile(SQLSyntax syntax,ImOrderMap<V,Boolean> orders,int selectTop) {
+        return compile(syntax, orders, selectTop, SubQueryContext.EMPTY);
+    }
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer selectTop, SubQueryContext subcontext) {
+        return compile(syntax, orders, selectTop, subcontext, false);
+    }
     public abstract CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive);
+
+    @Message("message.query.execute")
+    protected ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException {
+        return compile(session.syntax, orders, selectTop).execute(session, env);
+    }
 
     public <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps) {
         return getClassWhere(classProps, false); // assert что full
     }
 
     public abstract <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps, boolean full);
+    public abstract Pair<IQuery<K, Object>, ImRevMap<Expr, Object>> getClassQuery(final BaseClass baseClass);
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
         return join(joinImplement, MapValuesTranslator.noTranslate);

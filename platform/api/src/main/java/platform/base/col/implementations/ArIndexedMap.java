@@ -1,7 +1,6 @@
 package platform.base.col.implementations;
 
 import platform.base.BaseUtils;
-import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.implementations.abs.AMRevMap;
 import platform.base.col.implementations.order.ArOrderIndexedMap;
@@ -245,6 +244,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> implements MCacheMap<K, V
                                 addedValue = add.addValue(key, addedValue, (V)mgValues[kj]);
                                 if(add.stopWhenNull() && addedValue==null)
                                     return null;
+                                break;
                             }
 
                         rKeys[r] = key;
@@ -359,5 +359,87 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> implements MCacheMap<K, V
     @Override
     public ImCol<V> values() {
         return new ArCol<V>(size, values);
+    }
+
+    // копия с merge
+    protected boolean twins(Object[] twKeys, Object[] twValues) {
+
+        int i=0;
+        int hash = keys[0].hashCode();
+        int twHash = twKeys[0].hashCode();
+        while(i<size) {
+//            assert iHash == keys[i].hashCode() && jHash == mgKeys[j].hashCode();
+            if(hash<twHash)
+                return false;
+            else if(twHash<hash)
+                return false;
+            else if(hash == twHash) {
+                if(keys[i]==twKeys[i] || keys[i].equals(twKeys[i])) { // самый частый случай
+                    if(!BaseUtils.hashEquals((V)values[i], (V)twValues[i]))
+                        return false;
+
+                    i++;
+                    if(i<size) {
+                        hash = keys[i].hashCode();
+                        twHash = twKeys[i].hashCode();
+                    }
+                } else {
+                    int ntw = i; // бежим по второму массиву пока не закончится этот хэш
+                    while(true) {
+                        ntw++;
+                        if(ntw >= size)
+                            break;
+                        twHash = twKeys[ntw].hashCode();
+                        if(twHash!=hash)
+                            break;
+                    }
+
+                    boolean[] found = new boolean[ntw-i];
+                    int ni = i;
+                    while(true) { // бежим по первому массиву пока не закончится хэш и ищем соответствия во втором массиве
+                        K key = (K)keys[ni];
+                        V addedValue = (V)values[ni];
+                        boolean founded = false;
+                        for(int ktw = i; ktw < ntw; ktw++)
+                            if(!found[ktw-i] && (key == twKeys[ktw] || key.equals(twKeys[ktw]))) {
+                                if(!BaseUtils.hashEquals(addedValue, (V)twValues[ktw]))
+                                    return false;
+
+                                found[ktw-i] = true;
+                                founded = true;
+                                break;
+                            }
+
+                        if(!founded)
+                            return false;
+
+                        ni++;
+
+                        int kHash = keys[ni].hashCode();
+                        if(kHash != hash) {
+                            if(ni<ntw)
+                                return false;
+                            hash = kHash;
+                            break;
+                        }
+                    }
+
+                    assert ni==ntw;
+
+                    i = ni;
+                }
+            }
+        }
+
+        return true;
+    }
+    @Override
+    protected boolean twins(ImMap<K, V> map) { // assert что size'ы совпадает
+        if(map instanceof ArIndexedMap) {
+            ArIndexedMap<K, V> arMap = ((ArIndexedMap<K, V>)map);
+            return twins(arMap.keys, arMap.values);
+        }
+
+        return super.twins(map);
     }
 }

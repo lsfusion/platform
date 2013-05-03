@@ -2,59 +2,63 @@ package platform.server.session;
 
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.AddValue;
 import platform.base.col.interfaces.mutable.SimpleAddValue;
+import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.AbstractValuesContext;
+import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.translator.MapValuesTranslator;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.PropertyInterface;
 
 public class ModifyChange<P extends PropertyInterface> extends AbstractValuesContext<ModifyChange<P>> {
     public final PropertyChange<P> change;
     public final boolean isFinal;
+    public final PrereadRows<P> preread;
 
     public ModifyChange(PropertyChange<P> change, boolean isFinal) {
+        this(change, PrereadRows.<P>EMPTY(), isFinal);
+    }
+
+    public ModifyChange(PropertyChange<P> change, PrereadRows<P> preread, boolean isFinal) {
         assert change!=null;
         this.change = change;
         this.isFinal = isFinal;
+        this.preread = preread;
     }
 
     public int hash(HashValues hashValues) {
-        return change.hashValues(hashValues) * 31 + (isFinal?1:0);
+        return 31 * (change.hashValues(hashValues) * 31 + preread.hash(hashValues)) + (isFinal?1:0);
     }
 
     public ImSet<Value> getValues() {
-        return change.getInnerValues();
+        return change.getInnerValues().merge(preread.getContextValues());
     }
 
     @Override
     public ModifyChange<P> translate(MapValuesTranslate mapValues) {
-        return new ModifyChange<P>(change.translateValues(mapValues), isFinal);
+        return new ModifyChange<P>(change.translateValues(mapValues), preread.translateValues(mapValues), isFinal);
     }
 
     @Override
     public boolean twins(TwinImmutableObject o) {
-        return change.equals(((ModifyChange)o).change) && isFinal == ((ModifyChange)o).isFinal;
+        return change.equals(((ModifyChange)o).change) && isFinal == ((ModifyChange)o).isFinal && preread.equals(((ModifyChange)o).preread);
     }
 
     public ModifyChange<P> add(ModifyChange<P> modify) {
         if(isFinal)
             return this;
-        return new ModifyChange<P>(change.add(modify.change), modify.isFinal);
-    }
-
-    public static <P extends PropertyInterface> ModifyChange<P> addNull(ModifyChange<P> change1, ModifyChange<P> change2) {
-        if(change1==null)
-            return change2;
-        if(change2==null)
-            return change1;
-        return change1.add(change2);
+        return new ModifyChange<P>(change.add(modify.change), preread.add(modify.preread), modify.isFinal);
     }
 
     public boolean isEmpty() {
-        return change.where.isFalse();
+        return change.where.isFalse() && preread.isEmpty();
     }
 
     public final static AddValue<Object, ModifyChange<PropertyInterface>> addValue = new SimpleAddValue<Object, ModifyChange<PropertyInterface>>() {

@@ -1,15 +1,17 @@
 package platform.server.data;
 
 import org.apache.log4j.Logger;
-import platform.base.BaseUtils;
-import platform.base.MutableObject;
-import platform.base.Result;
+import platform.base.*;
+import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.MOrderExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.*;
+import platform.base.col.lru.LRUCache;
+import platform.base.col.lru.MCacheMap;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.ServerLoggers;
@@ -26,14 +28,16 @@ import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.ServerResourceBundle;
 
 import java.lang.ref.WeakReference;
 import java.sql.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static platform.server.ServerLoggers.systemLogger;
 
@@ -311,6 +315,11 @@ public class SQLSession extends MutableObject {
     private final Map<String, WeakReference<Object>> sessionTablesMap = MapFact.mAddRemoveMap();
     private int sessionCounter = 0;
 
+    public SessionTable createTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, Object owner) throws SQLException {
+        Result<Integer> actual = new Result<Integer>();
+        return new SessionTable(getTemporaryTable(keys, properties, fill, count, actual, owner), keys, properties, queryClasses.first, queryClasses.second, actual.result);
+    }
+
     private final Set<String> transactionTables = SetFact.mAddRemoveSet();
 
     public String getTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable fill, Integer count, Result<Integer> actual, Object owner) throws SQLException {
@@ -359,7 +368,7 @@ public class SQLSession extends MutableObject {
             // assertion построен на том что между началом транзакции ее rollback'ом, все созданные таблицы в явную drop'ся, соответственно может нарушится если скажем открыта форма и не close'ута, или просто new IntegrationService идет
             // в принципе он не настолько нужен, но для порядка пусть будет
             // придется убрать так как чистых использований уже достаточно много, например ClassChange.materialize, DataSession.addObjects, правда что сейчас с assertion'ами делать неясно
-//            assert !sessionTablesMap.containsKey(table.name);
+            assert !sessionTablesMap.containsKey(table.name); // вернул назад
             sessionTablesMap.put(table.name, new WeakReference<Object>(owner));
         }
     }
@@ -441,15 +450,34 @@ public class SQLSession extends MutableObject {
         explainNoAnalyze = explainAnalyzeMode;
     }
     private boolean explainNoAnalyze = false;
-    private void executeExplain(PreparedStatement statement) throws SQLException {
+    private int executeExplain(PreparedStatement statement, boolean noAnalyze) throws SQLException {
+        long l = System.currentTimeMillis();
         ResultSet result = statement.executeQuery();
+        Integer rows = null;
         try {
+            int i=0;
             while(result.next()) {
-                systemLogger.info(result.getObject("QUERY PLAN"));
+                String row = (String) result.getObject("QUERY PLAN");
+                if(!noAnalyze && i++==0) { // первый ряд
+                    Pattern pt = Pattern.compile(" rows=((\\d)+) ");
+                    Matcher matcher = pt.matcher(row);
+                    int m=0;
+                    while(matcher.find()) {
+                        if(m++==1) { // 2-е соответствие
+                            rows = Integer.valueOf(matcher.group(1));
+                            break;
+                        }
+                    }
+                }
+                systemLogger.info(row);
             }
         } finally {
             result.close();
         }
+
+        if(rows==null)
+            return 0;
+        return rows;
     }
 
     @Message("message.sql.execute")
@@ -458,25 +486,35 @@ public class SQLSession extends MutableObject {
 
         env.before(this, connection, command);
 
-        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE, BUFFERS, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax);
+        Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
+        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE) ":"") + command, paramObjects, connection, syntax, returnStatement);
 
         int result = 0;
+        long runTime = 0;
         try {
             if(explainAnalyzeMode) {
                 PreparedStatement explainStatement = statement;
-                if(explainNoAnalyze)
-                    explainStatement = getStatement("EXPLAIN (VERBOSE, COSTS)" + command, paramObjects, connection, syntax);
+                Result<ReturnStatement> returnExplain = null; long explainStarted = 0;
+                if(explainNoAnalyze) {
+                    returnExplain = new Result<ReturnStatement>();
+                    explainStatement = getStatement("EXPLAIN (VERBOSE, COSTS)" + command, paramObjects, connection, syntax, returnExplain);
+                    explainStarted = System.currentTimeMillis();
+                }
                 systemLogger.info(explainStatement.toString());
-                executeExplain(explainStatement);
-                result = 100;
+                result = executeExplain(explainStatement, explainNoAnalyze);
+                if(explainNoAnalyze)
+                    returnExplain.result.proceed(explainStatement, System.currentTimeMillis() - explainStarted);
             }
-            if(!(explainAnalyzeMode && !explainNoAnalyze))
+            if(!(explainAnalyzeMode && !explainNoAnalyze)) {
+                long started = System.currentTimeMillis();
                 result = statement.executeUpdate();
+                runTime = System.currentTimeMillis() - started;
+            }
         } catch (SQLException e) {
             logger.error(statement.toString());
             throw e;
         } finally {
-            statement.close();
+            returnStatement.result.proceed(statement, runTime);
 
             env.after(this, connection, command);
 
@@ -513,13 +551,21 @@ public class SQLSession extends MutableObject {
 
         if(explainAnalyzeMode) {
             systemLogger.info(select);
-            executeExplain(getStatement("EXPLAIN ("+(explainNoAnalyze?"":"ANALYZE, BUFFERS, ")+"VERBOSE, COSTS) " + select, paramObjects, connection, syntax));
+            Result<ReturnStatement> returnExplain = new Result<ReturnStatement>();
+            PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze ? "VERBOSE, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, returnExplain);
+            long started = System.currentTimeMillis();
+            executeExplain(statement, explainNoAnalyze);
+            returnExplain.result.proceed(statement, System.currentTimeMillis() - started);
         }
 
-        PreparedStatement statement = getStatement(select, paramObjects, connection, syntax);
+        Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
+        PreparedStatement statement = getStatement(select, paramObjects, connection, syntax, returnStatement);
         MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = MapFact.mOrderExclMap();
+        long runTime = 0;
         try {
+            long started = System.currentTimeMillis();
             final ResultSet result = statement.executeQuery();
+            runTime = System.currentTimeMillis() - started;
             try {
                 while(result.next()) {
                     ImValueMap<K, Object> rowKeys = keyNames.mapItValues(); // потому как exception есть
@@ -537,7 +583,7 @@ public class SQLSession extends MutableObject {
             logger.error(statement.toString());
             throw e;
         } finally {
-            statement.close();
+            returnStatement.result.proceed(statement, runTime);
 
             env.after(this, connection, select);
 
@@ -850,40 +896,54 @@ public class SQLSession extends MutableObject {
             privateConnection.close();
     }
 
-    private static PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, Connection connection, SQLSyntax syntax) throws SQLException {
+    private static class ParsedStatement {
+        public final PreparedStatement statement;
+        public final ImList<String> preparedParams;
 
-        char[][] params = new char[paramObjects.size()][];
-        ParseInterface[] values = new ParseInterface[params.length];
+        private ParsedStatement(PreparedStatement statement, ImList<String> preparedParams) {
+            this.statement = statement;
+            this.preparedParams = preparedParams;
+        }
+    }
+
+    private static ParsedStatement parseStatement(ParseStatement parse, Connection connection, SQLSyntax syntax) throws SQLException {
+        char[][] paramArrays = new char[parse.params.size()][];
+        String[] params = new String[parse.params.size()];
+        String[] safeStrings = new String[paramArrays.length];
+        String[] notSafeTypes = new String[paramArrays.length];
         int paramNum = 0;
-        for (int i=0,size=paramObjects.size();i<size;i++) {
-            params[paramNum] = paramObjects.getKey(i).toCharArray();
-            values[paramNum++] = paramObjects.getValue(i);
+        for (int i=0,size= parse.params.size();i<size;i++) {
+            String param = parse.params.get(i);
+            paramArrays[paramNum] = param.toCharArray();
+            params[paramNum] = param;
+            safeStrings[paramNum] = parse.safeStrings.get(param);
+            notSafeTypes[paramNum++] = parse.notSafeTypes.get(param);
         }
 
         // те которые isString сразу транслируем
-        List<ParseInterface> preparedParams = new ArrayList<ParseInterface>();
-        char[] toparse = command.toCharArray();
+        MList<String> mPreparedParams = ListFact.mList();
+        char[] toparse = parse.statement.toCharArray();
         String parsedString = "";
-        char[] parsed = new char[toparse.length + params.length * 100];
+        char[] parsed = new char[toparse.length + paramArrays.length * 100];
         int num = 0;
         for (int i = 0; i < toparse.length;) {
             int charParsed = 0;
-            for (int p = 0; p < params.length; p++) {
-                if (BaseUtils.startsWith(toparse, i, params[p])) { // нашли
-                    if (values[p].isSafeString()) { // если можно вручную пропарсить парсим
-                        parsedString = parsedString + new String(parsed, 0, num) + values[p].getString(syntax);
-                        parsed = new char[toparse.length - i + (params.length - p) * 100];
+            for (int p = 0; p < paramArrays.length; p++) {
+                if (BaseUtils.startsWith(toparse, i, paramArrays[p])) { // нашли
+                    if (safeStrings[p]!=null) { // если можно вручную пропарсить парсим
+                        parsedString = parsedString + new String(parsed, 0, num) + safeStrings[p];
+                        parsed = new char[toparse.length - i + (paramArrays.length - p) * 100];
                         num = 0;
                     } else {
                         parsed[num++] = '?';
-                        preparedParams.add(values[p]);
+                        mPreparedParams.add(params[p]);
                     }
-                    if (!values[p].isSafeType()) {
-                        String castString = "::" + values[p].getDBType(syntax);
+                    if (notSafeTypes[p]!=null) {
+                        String castString = "::" + notSafeTypes[p];
                         System.arraycopy(castString.toCharArray(), 0, parsed, num, castString.length());
                         num += castString.length();
                     }
-                    charParsed = params[p].length;
+                    charParsed = paramArrays[p].length;
                     break;
                 }
             }
@@ -895,12 +955,90 @@ public class SQLSession extends MutableObject {
         }
         parsedString = parsedString + new String(parsed, 0, num);
 
-        PreparedStatement statement = connection.prepareStatement(parsedString);
-        paramNum = 1;
-        for (ParseInterface param : preparedParams)
-            param.writeParam(statement, paramNum++, syntax);
+        return new ParsedStatement(connection.prepareStatement(parsedString), mPreparedParams.immutableList());
+    }
 
-        return statement;
+    private static class ParseStatement extends TwinImmutableObject {
+        public final String statement;
+        public final ImSet<String> params;
+        public final ImMap<String, String> safeStrings;
+        public final ImMap<String, String> notSafeTypes;
+
+        private ParseStatement(String statement, ImSet<String> params, ImMap<String, String> safeStrings, ImMap<String, String> notSafeTypes) {
+            this.statement = statement;
+            this.params = params;
+            this.safeStrings = safeStrings;
+            this.notSafeTypes = notSafeTypes;
+        }
+
+        public boolean twins(TwinImmutableObject o) {
+            return notSafeTypes.equals(((ParseStatement) o).notSafeTypes) && params.equals(((ParseStatement) o).params) && safeStrings.equals(((ParseStatement) o).safeStrings) && statement.equals(((ParseStatement) o).statement);
+        }
+
+        public int immutableHashCode() {
+            return 31 * (31 * (31 * statement.hashCode() + params.hashCode()) + safeStrings.hashCode()) + notSafeTypes.hashCode();
+        }
+    }
+
+    private MCacheMap<ParseStatement, ParsedStatement> statementPool = LRUCache.mBig();
+
+    private static interface ReturnStatement {
+        void proceed(PreparedStatement statement, long runTime) throws SQLException;
+    }
+
+    private final static ReturnStatement keepStatement = new ReturnStatement() {
+        public void proceed(PreparedStatement statement, long runTime) throws SQLException {
+        }};
+
+    private final static ReturnStatement closeStatement = new ReturnStatement() {
+        public void proceed(PreparedStatement statement, long runTime) throws SQLException {
+            statement.close();
+        }};
+
+    private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, Connection connection, SQLSyntax syntax, Result<ReturnStatement> returnStatement) throws SQLException {
+
+        boolean poolPrepared = !Settings.get().isDisablePoolPreparedStatements() && command.length() > Settings.get().getQueryPrepareLength();
+
+        final ParseStatement parse = preparseStatement(command, poolPrepared, paramObjects, syntax);
+
+        ParsedStatement parsed = null;
+        if(poolPrepared)
+            parsed = statementPool.get(parse);
+        if(parsed==null) {
+            parsed = parseStatement(parse, connection, syntax);
+            if(poolPrepared) {
+                final ParsedStatement fParsed = parsed;
+                returnStatement.set(new ReturnStatement() {
+                    public void proceed(PreparedStatement statement, long runTime) throws SQLException {
+                        if(runTime > Settings.get().getQueryPrepareRunTime())
+                            statementPool.exclAdd(parse, fParsed);
+                        else
+                            statement.close();
+                    }
+                });
+            } else
+                returnStatement.set(closeStatement);
+        } else
+            returnStatement.set(keepStatement);
+
+        int paramNum = 1;
+        for (String param : parsed.preparedParams)
+            paramObjects.get(param).writeParam(parsed.statement, paramNum++, syntax);
+
+        return parsed.statement;
+    }
+
+    private ParseStatement preparseStatement(String command, boolean parseParams, ImMap<String, ParseInterface> paramObjects, SQLSyntax syntax) {
+        ImFilterValueMap<String, String> mvSafeStrings = paramObjects.mapFilterValues();
+        ImFilterValueMap<String, String> mvNotSafeTypes = paramObjects.mapFilterValues();
+        for(int i=0,size=paramObjects.size();i<size;i++) {
+            ParseInterface parseInterface = paramObjects.getValue(i);
+            if(parseInterface.isSafeString() && !(parseParams && parseInterface instanceof TypeObject))
+                mvSafeStrings.mapValue(i, parseInterface.getString(syntax));
+            if(!parseInterface.isSafeType())
+                mvNotSafeTypes.mapValue(i, parseInterface.getDBType(syntax));
+        }
+        return new ParseStatement(command, paramObjects.keys(), mvSafeStrings.immutableValue(), mvNotSafeTypes.immutableValue());
     }
 
     private final static GetKeyValue<String, String, String> addFieldAliases = new GetKeyValue<String, String, String>() {

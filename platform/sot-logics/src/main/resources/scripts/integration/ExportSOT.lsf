@@ -29,13 +29,13 @@ exportSOTReep 'Массив Reep' = DATA BOOLEAN () IN sotReepGroup;
 exportSOTReepDateFrom 'Дата с' = DATA DATE () IN sotReepGroup;
 exportSOTReepDateTo 'Дата по' = DATA DATE () IN sotReepGroup;
 exportSOTSupplier 'Поставщик' = DATA LegalEntity () IN sotReepGroup;
-nameExportSOTSupplier 'Поставщик' () = name(exportSOTSupplier()) IN sotReepGroup;
+nameExportSOTSupplier 'Поставщик' () = nameLegalEntity(exportSOTSupplier()) IN sotReepGroup;
 exportSOTSupplierStock 'Склад поставщика' = DATA Warehouse () IN sotReepGroup;
-nameExportSOTSupplierStock 'Склад поставщика' () = name(exportSOTSupplierStock()) IN sotReepGroup;
+nameExportSOTSupplierStock 'Склад поставщика' () = nameStock(exportSOTSupplierStock()) IN sotReepGroup;
 exportSOTCustomer 'Покупатель' = DATA LegalEntity () IN sotReepGroup;
-nameExportSOTCustomer 'Покупатель' () = name(exportSOTCustomer()) IN sotReepGroup;
+nameExportSOTCustomer 'Покупатель' () = nameLegalEntity(exportSOTCustomer()) IN sotReepGroup;
 exportSOTCustomerStock 'Склад покупателя' = DATA Warehouse () IN sotReepGroup;
-nameExportSOTCustomerStock 'Склад покупателя' () = name(exportSOTCustomerStock()) IN sotReepGroup;
+nameExportSOTCustomerStock 'Склад покупателя' () = nameStock(exportSOTCustomerStock()) IN sotReepGroup;
 
 exportSOTFtxpDateFrom 'Дата с' = DATA DATE () IN sotFtxpGroup;
 exportSOTFtxpDateTo 'Дата по' = DATA DATE () IN sotFtxpGroup;

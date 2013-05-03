@@ -110,7 +110,7 @@ public class ObjectType extends AbstractType<Integer> {
         exprs.add(expr);
     }
 
-    public ConcreteClass readClass(Expr expr, ImMap<Object, Object> classes, BaseClass baseClass, KeyType keyType) {
+    public ConcreteClass readClass(Expr expr, ImMap<Expr, Object> classes, BaseClass baseClass, KeyType keyType) {
         return baseClass.findConcreteClassID((Integer) classes.get(expr));
     }
 

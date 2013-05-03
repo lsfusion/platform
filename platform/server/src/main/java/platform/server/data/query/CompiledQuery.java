@@ -38,9 +38,7 @@ import platform.server.data.where.Where;
 import platform.server.logics.ServerResourceBundle;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 // нужен для Map'а ключей / значений
 // Immutable/Thread Safe
@@ -261,10 +259,23 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
     static class InnerSelect extends CompileSource {
 
-        public final MExclMap<KeyExpr,String> keySelect;
+        public final Map<KeyExpr,String> keySelect;
+        private Stack<MRevMap<String, String>> stackTranslate = new Stack<MRevMap<String, String>>();
+        private Stack<MSet<KeyExpr>> stackUsedPendingKeys = new Stack<MSet<KeyExpr>>();
+        private Set<KeyExpr> pending;
 
         public String getSource(KeyExpr key) {
-            return keySelect.get(key);
+            String source = keySelect.get(key);
+            if(source == null) {
+                source = "qxas" + keySelect.size() + "nbv";
+                keySelect.put(key, source);
+                pending.add(key);
+            }
+
+            if(pending.contains(key))
+                stackUsedPendingKeys.peek().add(key);
+
+            return source;
         }
 
         final WhereJoins whereJoins;
@@ -289,17 +300,20 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             this.subcontext = subcontext;
             this.whereJoins = whereJoins;
             this.upWheres = upWheres;
-            this.keySelect = MapFact.mExclMap(keys.size()); // сложное рекурсивное заполнение
+            this.keySelect = new HashMap<KeyExpr, String>(); // сложное рекурсивное заполнение
+            this.pending = new HashSet<KeyExpr>();
         }
 
         int aliasNum=0;
         MList<JoinSelect> mJoins = ListFact.mList();
         ImList<JoinSelect> joins;
+        MList<String> mImplicitJoins = ListFact.mList();
+        MList<JoinSelect> mOuterPendingJoins = ListFact.mList();
 
         private abstract class JoinSelect<I extends InnerJoin> {
 
             final String alias; // final
-            final String join; // final
+            String join; // final
             final I innerJoin;
 
             protected abstract ImMap<String, BaseExpr> initJoins(I innerJoin);
@@ -311,6 +325,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             protected JoinSelect(I innerJoin) {
                 alias = subcontext.wrapAlias("t" + (aliasNum++));
                 this.innerJoin = innerJoin;
+                boolean inner = isInner();
+                boolean outerPending = false;
 
                 // здесь проблема что keySelect может рекурсивно использоваться 2 раза, поэтому сначала пробежим не по ключам
                 String joinString = "";
@@ -319,25 +335,53 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 for(int i=0,size=initJoins.size();i<size;i++) {
                     BaseExpr expr = initJoins.getValue(i);
                     String keySource = alias + "." + initJoins.getKey(i);
-                    if(expr instanceof KeyExpr)
+                    if(expr instanceof KeyExpr && inner)
                         mJoinKeys.exclAdd(keySource, (KeyExpr) expr);
-                    else
-                        joinString = (joinString.length()==0?"":joinString+" AND ") + keySource + "=" + expr.getSource(InnerSelect.this);
+                    else {
+                        stackUsedPendingKeys.push(SetFact.<KeyExpr>mSet());
+                        stackTranslate.push(MapFact.<String, String>mRevMap());
+                        String exprJoin = keySource + "=" + expr.getSource(InnerSelect.this);
+                        ImSet<KeyExpr> usedPendingKeys = stackUsedPendingKeys.pop().immutable();
+                        ImRevMap<String, String> translate = stackTranslate.pop().immutableRev(); // их надо перетранслировать
+                        exprJoin = translatePlainParam(exprJoin, translate);
+
+                        boolean havePending = usedPendingKeys.size() > translate.size();
+                        if(havePending && inner) { // какие-то ключи еще зависли, придется в implicitJoins закидывать
+                            assert usedPendingKeys.intersect(SetFact.fromJavaSet(pending));
+                            mImplicitJoins.add(exprJoin);
+                        } else { // можно explicit join делать, перетранслировав usedPending
+                            joinString = (joinString.length() == 0 ? "" : joinString + " AND ") + exprJoin;
+                            if(havePending)
+                                outerPending = true;
+                        }
+                    }
                 }
                 ImMap<String, KeyExpr> joinKeys = mJoinKeys.immutable();
 
                 for(int i=0,size=joinKeys.size();i<size;i++) { // дозаполним ключи
                     String keyString = joinKeys.getKey(i); KeyExpr keyExpr = joinKeys.getValue(i);
                     String keySource = keySelect.get(keyExpr);
-                    if(keySource==null) {
-                        assert isInner();
-                        keySelect.exclAdd(keyExpr, keyString);
+                    if(keySource==null || pending.remove(keyExpr)) {
+                        if(keySource!=null) { // нашли pending ключ, проставляем во все implicit joins
+                            if(!stackUsedPendingKeys.isEmpty() && stackUsedPendingKeys.peek().contains(keyExpr)) // если ключ был использован, ну очень редкий случай
+                                stackTranslate.peek().revAdd(keySource, keyString);
+                            for(int j=0,sizeJ=mImplicitJoins.size();j<sizeJ;j++)
+                                mImplicitJoins.set(j, mImplicitJoins.get(j).replace(keySource, keyString));
+                            for(int j=0,sizeJ=mOuterPendingJoins.size();j<sizeJ;j++) {
+                                JoinSelect pendingJoin = mOuterPendingJoins.get(j);
+                                pendingJoin.join = pendingJoin.join.replace(keySource, keyString);
+                            }
+                        }
+                        keySelect.put(keyExpr, keyString);
                     } else
                         joinString = (joinString.length()==0?"":joinString+" AND ") + keyString + "=" + keySource;
                 }
                 join = joinString;
 
-                InnerSelect.this.mJoins.add(this);
+                if(outerPending)
+                    mOuterPendingJoins.add(this);
+                else
+                    mJoins.add(this);
             }
 
             public abstract String getSource(ExecuteEnvironment env);
@@ -345,8 +389,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             protected abstract Where getInnerWhere(); // assert что isInner
         }
 
-        public void fillInnerJoins(MCol<String> whereSelect) { // заполним Inner Joins, чтобы чтобы keySelect'ы были
+        public void fillInnerJoins(MCol<String> whereSelect) { // заполним Inner Joins, чтобы keySelect'ы были
             innerWhere = whereJoins.fillInnerJoins(upWheres, whereSelect, this);
+            whereSelect.addAll(mImplicitJoins.immutableList().getCol());
+            mJoins.addAll(mOuterPendingJoins.immutableList());
+            assert pending.isEmpty();
+            mImplicitJoins = null;
+            mOuterPendingJoins = null;
         }
 
         private Where innerWhere;
@@ -1255,6 +1304,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         resultKey.set(keySelect);
         resultProperty.set(mvPropertySelect.immutableValue());
         return compileFrom;
+    }
+
+    // нерекурсивное транслирование параметров
+    public static String translatePlainParam(String string,ImMap<String,String> paramValues) {
+        for(int i=0,size=paramValues.size();i<size;i++)
+            string = string.replace(paramValues.getKey(i), paramValues.getValue(i));
+        return string;
     }
 
     // key - какие есть, value - которые должны быть

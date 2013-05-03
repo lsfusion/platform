@@ -16,8 +16,8 @@ includeVATPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (PriceListType) 
 pricePriceListTypeSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (PriceListType, Sku, Stock, DATETIME);
 pricePriceListTypeBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (PriceListType, Batch, Stock, DATETIME);
 
-prevPricePriceListTypeSkuStockDateTime 'Цена (пред.)' (type, sku, stock, dateTime) = PREV(pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
-prevPricePriceListTypeBatchStockDateTime 'Цена (пред.)' (type, batch, stock, dateTime) = PREV(pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime));
+prevPricePriceListTypeSkuStockDateTime 'Цена (пред.)' (type, sku, stock, dateTime) = PREV(pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime)) COMPLEX;
+prevPricePriceListTypeBatchStockDateTime 'Цена (пред.)' (type, batch, stock, dateTime) = PREV(pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime)) COMPLEX;
 
 prevPriceMVATPriceListTypeSkuStockDateTimeVAT 'Цена без НДС (пред.)' (type, sku, stock, dateTime, VAT) =
     IF includeVATPriceListType(type)
@@ -449,7 +449,7 @@ META deriveDocumentDetailPricePriceListTypeCustom (detail, stockProp)
                                                                      sku###detail(detail),
                                                                      stockProp###detail(detail),
                                                                      dateTime###detail(detail))
-                                    WHEN CHANGED(priceListType###detail(detail)) OR
+                                    WHEN DO CHANGED(priceListType###detail(detail)) OR
                                          CHANGED(sku###detail(detail)) OR
                                          CHANGED(stockProp###detail(detail)) OR
                                          CHANGED(dateTime###detail(detail));
@@ -480,14 +480,14 @@ META deriveDocumentDetailPricePriceListTypeVATCustom (detail, stockProp)
                 prevListSkuPrice###detail(detail) * (100.0 + calcValueVAT###detail(detail)) / 100.0;
 
     price###detail(detail) <- prevListSkuPriceMVAT###detail (detail)
-                            WHEN priceListType###detail(detail) AND
+                            WHEN DO priceListType###detail(detail) AND
                                  (CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
                                  CHANGED(dateTime###detail(detail)));
 
     invoice###price###detail(detail) <- prevListSkuPricePVAT###detail (detail)
-                            WHEN priceListType###detail(detail) AND
+                            WHEN DO priceListType###detail(detail) AND
                                  (CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
@@ -510,7 +510,7 @@ META deriveDocumentDetailPriceBatchPriceListTypeCustom (detail, stockProp)
                                                                            sku###detail(detail),
                                                                            stockProp###detail(detail),
                                                                            dateTime###detail(detail))
-                                    WHEN priceListType###detail(detail) AND
+                                    WHEN DO priceListType###detail(detail) AND
                                         (CHANGED(batch###detail(detail)) OR
                                          CHANGED(priceListType###detail(detail)) OR
                                          CHANGED(sku###detail(detail)) OR
@@ -565,23 +565,33 @@ META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
 //                                 CHANGED(dateTime###detail(detail)) OR
 //                                 CHANGED(valueVAT###detail(detail)));
 
-    ON SESSION FORMS userInvoice PREVSTART pricePriceListTypeSkuStockDateTime, pricePriceListTypeBatchStockDateTime { // цены берем на начало сессии, а не этого event'а
-        LOCAL changedPriceListType = BOOLEAN (###detail);
-        SET changedPriceListType(d) <- TRUE IF priceListType###detail(d) AND
-                                               sku###detail(d) AND
-                                            (CHANGED(priceListType###detail(d)) OR
-                                             CHANGED(batch###detail(d)) OR
-                                             CHANGED(sku###detail(d)) OR
-                                             CHANGED(stockProp###detail(d)) OR
-                                             CHANGED(dateTime###detail(d)));
+//    ON SESSION FORMS userInvoice PREVSTART pricePriceListTypeSkuStockDateTime, pricePriceListTypeBatchStockDateTime { // цены берем на начало сессии, а не этого event'а
+//        LOCAL changedPriceListType = BOOLEAN (PriceListType, ###detail);
+//        SET changedPriceListType(pt, d) <- (CHANGED(priceListType###detail(d)) OR
+//                                        CHANGED(batch###detail(d)) OR
+//                                        CHANGED(sku###detail(d)) OR
+//                                        CHANGED(stockProp###detail(d)) OR
+//                                        CHANGED(dateTime###detail(d))) IF pt==priceListType###detail(d) AND sku###detail(d)
+//                                            ;
 
-        FOR [GROUP MAX(changedPriceListType(detail)) BY priceListType###detail(detail)](priceListType) NOINLINE DO {
-            SET price###detail(detail) <- prevListPriceMVAT###detail (priceListType, detail)
-                WHERE changedPriceListType(detail) AND priceListType###detail(detail) == priceListType;
-            SET invoicePrice###detail(detail) <- prevListPricePVAT###detail (priceListType, detail)
-                WHERE changedPriceListType(detail) AND priceListType###detail(detail) == priceListType;
+//        FOR [GROUP MAX(changedPriceListType(priceListType, detail)) BY priceListType](priceListType) NOINLINE DO {
+//            SET price###detail(detail) <- prevListPriceMVAT###detail (priceListType, detail)
+//                WHERE changedPriceListType(priceListType, detail);
+//            SET invoicePrice###detail(detail) <- prevListPricePVAT###detail (priceListType, detail)
+//                WHERE changedPriceListType(priceListType, detail);
+//        }
+//    }
+
+        WHEN SESSION FORMS userInvoice PREVSTART ALL // цены берем на начало сессии, а не этого event'а
+                (CHANGED(priceListType###detail(d)) OR
+                CHANGED(batch###detail(d)) OR
+                CHANGED(sku###detail(d)) OR
+                CHANGED(stockProp###detail(d)) OR
+                CHANGED(dateTime###detail(d))) AND pt == priceListType###detail(d) AND sku###detail(d) NOINLINE (pt) DO {
+            price###detail(d) <- prevListPriceMVAT###detail (pt, d);
+            invoicePrice###detail(d) <- prevListPricePVAT###detail (pt, d);
         }
-    }
+
 
 END
 
@@ -595,7 +605,7 @@ META deriveDocumentDetailPriceSystemLedgerPriceListType (concrete, priceListType
                                                                                            skuProp###concrete##Detail(detail),
                                                                                            stockProp###concrete##Detail(detail),
                                                                                            dateTime###concrete##Detail(detail))
-                                                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR
+                                                    WHEN DO CHANGED(skuProp###concrete##Detail(detail)) OR
                                                          CHANGED(stockProp###concrete##Detail(detail)) OR
                                                          CHANGED(dateTime###concrete##Detail(detail));
 END
@@ -611,7 +621,7 @@ META deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (concrete, priceLis
                                                                                            prefixB###skuProp###concrete##Detail(detail),
                                                                                            stockProp###concrete##Detail(detail),
                                                                                            dateTime###concrete##Detail(detail))
-                                                    WHEN CHANGED(prefixB###skuProp###concrete##Detail(detail)) OR
+                                                    WHEN DO CHANGED(prefixB###skuProp###concrete##Detail(detail)) OR
                                                          CHANGED(stockProp###concrete##Detail(detail)) OR
                                                          CHANGED(dateTime###concrete##Detail(detail)) OR
                                                          CHANGED(prefixB###batch###concrete##Detail(detail));

@@ -23,14 +23,13 @@ currencyRRPInvoiceDetail (invoiceDetail) = currencyPriceListType(RRPPriceListTyp
 nameCurrencyRRPInvoiceDetail 'Валюта (RRP)' (invoiceDetail) = nameCurrency(currencyRRPInvoiceDetail(invoiceDetail));
 
 @defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, RRP, ' (RRP)');
-RRPPriceUserInvoiceDetail (detail)  <-  prevPricePriceListTypeSkuStockDateTime(RRPPriceListTypeUserInvoiceDetail(detail),
-                                                                               skuUserInvoiceDetail(detail),
+WHEN SESSION PREVSTART ALL (CHANGED(RRPPriceListTypeUserInvoiceDetail(detail)) OR
+         CHANGED(skuUserInvoiceDetail(detail)) OR
+         CHANGED(customerStockUserInvoiceDetail(detail)) OR
+         CHANGED(dateTimeUserInvoiceDetail(detail))) AND pt == RRPPriceListTypeUserInvoiceDetail(detail) NOINLINE (pt) DO
+    RRPPriceUserInvoiceDetail (detail)  <-  prevPricePriceListTypeSkuStockDateTime(pt, skuUserInvoiceDetail(detail),
                                                                                customerStockUserInvoiceDetail(detail),
-                                                                               dateTimeUserInvoiceDetail(detail))
-                                                    WHEN CHANGED(RRPPriceListTypeUserInvoiceDetail(detail)) OR
-                                                         CHANGED(skuUserInvoiceDetail(detail)) OR
-                                                         CHANGED(customerStockUserInvoiceDetail(detail)) OR
-                                                         CHANGED(dateTimeUserInvoiceDetail(detail));
+                                                                               dateTimeUserInvoiceDetail(detail));
 
 EXTEND FORM userInvoice
     PROPERTIES(i) showRRPUserInvoice

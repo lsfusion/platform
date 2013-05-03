@@ -140,6 +140,13 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return mResult.immutable();
     }
 
+    public ImSet<OldProperty> getParseOldDepends() {
+        MSet<OldProperty> mResult = SetFact.mSet();
+        for(CalcProperty property : getUsedProps())
+            mResult.addAll(property.getParseOldDepends());
+        return mResult.immutable();
+    }
+
     public abstract ImSet<ActionProperty> getDependActions();
 
     public ImMap<P, ValueClass> getInterfaceClasses(boolean full) {
@@ -307,7 +314,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         assert getSessionEnv(SystemEvent.SESSION)!=null;
 
         ImSet<OldProperty> result = getOldDepends();
-        if(prevStart!=null)
+        if(!prevStart.isEmpty())
             result = result.filterFn(new NotFunctionSet<OldProperty>(prevStart.mapSetValues(new GetValue<OldProperty, CalcProperty>() {
                 public OldProperty getMapValue(CalcProperty value) {
                     return value.getOld();

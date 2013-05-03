@@ -5,9 +5,11 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.Settings;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ValuesContext;
@@ -17,6 +19,7 @@ import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.DataClass;
+import platform.server.context.ThreadLocalContext;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
@@ -60,23 +63,16 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return getStatProps(this, count);
     }
 
-    // просто дебилизм, но с ограничениями конструктора по другому не сделаешь
-    private SessionTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, FillTemporaryTable fill, Result<Integer> actual, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
-        super(session.getTemporaryTable(keys, properties, fill, count, actual, owner), keys, properties, classes, propertyClasses);
-
-        this.count = actual.result;
-    }
-    public SessionTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, FillTemporaryTable fill, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
-        this(session, keys, properties, count, fill, new Result<Integer>(), classes, propertyClasses, owner);
-    }
-    public SessionTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, Object owner) throws SQLException {
-        this(session, keys, properties, count, fill, new Result<Integer>(), queryClasses.first, queryClasses.second, owner);
+    // предполагается вызов через SQLSession
+    public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, int count) {
+        super(name, keys, properties, classes, propertyClasses);
+        this.count = count;
     }
 
     // создает таблицу batch'ем
     public static SessionTable create(final SQLSession session, final ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
         // прочитаем классы
-        return new SessionTable(session, keys, properties, rows.size(), new FillTemporaryTable() {
+        return session.createTemporaryTable(keys, properties, rows.size(), new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 session.insertBatchRecords(name, keys, rows);
                 return null;
@@ -177,9 +173,9 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     private Struct struct = null;
 
     @ManualLazy
-    public GlobalObject getValueClass() {
+    public Struct getValueClass() {
         if (struct == null) {
-            struct = new Struct(keys, properties, classes, propertyClasses, getStatKeys(), getStatProps());
+            struct = ThreadLocalContext.getLogicsInstance().twinObject(new Struct(keys, properties, classes, propertyClasses, getStatKeys(), getStatProps()));
         }
         return struct;
     }
@@ -298,7 +294,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     public SessionTable modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, Modify type, QueryEnvironment env, Object owner) throws SQLException {
 
-        if(query.getWhere().isFalse()) // оптимизация
+        if(query.isEmpty()) // оптимизация
             return this;
 
         ModifyQuery modify = new ModifyQuery(this, query, env);
@@ -393,7 +389,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     public SessionTable updateStatistics(final SQLSession session, int prevCount, final Object owner) throws SQLException {
         if(!SQLTemporaryPool.getDBStatistics(count).equals(SQLTemporaryPool.getDBStatistics(prevCount))) {
-            return new SessionTable(session, keys, properties, count, new FillTemporaryTable() {
+            return session.createTemporaryTable(keys, properties, count, new FillTemporaryTable() {
                 public Integer fill(String name) throws SQLException {
                     QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<KeyField, PropertyField>(SessionTable.this);
                     platform.server.data.query.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
@@ -403,7 +399,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     session.returnTemporaryTable(SessionTable.this, owner);
                     return null;
                 }
-            }, classes, propertyClasses, owner);
+            },new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(classes, propertyClasses), owner);
         }
         return this;
     }
@@ -417,7 +413,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         if(addKeys.isEmpty() && addProps.isEmpty())
             return this;
 
-        return new SessionTable(session, keys, properties.addExcl(addProps.keys()), count, new FillTemporaryTable() {
+        return session.createTemporaryTable(keys, properties.addExcl(addProps.keys()), count, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
                 ImSet<KeyField> tableKeys = getTableKeys();
@@ -441,7 +437,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         final ImOrderSet<KeyField> remainOrderKeys = keys.removeOrder(removeKeys);
         final ImSet<KeyField> remainKeys = remainOrderKeys.getSet();
         final ImSet<PropertyField> remainProps = properties.remove(removeProps);
-        return new SessionTable(session, remainOrderKeys, remainProps, count, new FillTemporaryTable() {
+        return session.createTemporaryTable(remainOrderKeys, remainProps, count, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
                 QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<KeyField, PropertyField>(remainKeys);

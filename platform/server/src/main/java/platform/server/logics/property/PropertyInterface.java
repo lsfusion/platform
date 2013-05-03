@@ -142,6 +142,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return SetFact.EMPTY();
     }
 
+    public boolean mapIsComplex() {
+        return false;
+    }
+
     public DataChanges mapDataChanges(PropertyChange<P> pPropertyChange, WhereBuilder changedWhere, PropertyChanges propChanges) {
         return DataChanges.EMPTY;
     }

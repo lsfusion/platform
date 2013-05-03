@@ -4,6 +4,9 @@ import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
+import platform.base.GlobalObject;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.server.ServerLoggers;
 import platform.server.Settings;
 import platform.server.context.LogicsInstanceContext;
@@ -35,6 +38,16 @@ public class LogicsInstance implements InitializingBean {
     private Settings settings;
 
     private Map<Class, Object> customObjects;
+
+    public MAddExclMap<Object, Object> twins = MapFact.mAddExclMap();
+    public synchronized <T extends GlobalObject> T twinObject(T object) {
+        T twin = (T) twins.get(object);
+        if(twin!=null)
+            return twin;
+
+        twins.exclAdd(object, object);
+        return object;
+    }
 
     public LogicsInstance() {
         context = new LogicsInstanceContext(this);
