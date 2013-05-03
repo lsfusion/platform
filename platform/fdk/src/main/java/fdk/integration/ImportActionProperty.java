@@ -729,6 +729,8 @@ public class ImportActionProperty {
                 ImportField isCompanyLegalEntityField = new ImportField(LM.findLCPByCompoundName("isCompanyLegalEntity"));
                 ImportField isCustomerLegalEntityField = new ImportField(LM.findLCPByCompoundName("isCustomerLegalEntity"));
 
+                ImportField currencyField = new ImportField(LM.findLCPByCompoundName("shortNameCurrency"));
+
                 DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
 
                 ImportKey<?> legalEntityKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("LegalEntity"),
@@ -748,6 +750,9 @@ public class ImportActionProperty {
 
                 ImportKey<?> countryKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Country"),
                         LM.findLCPByCompoundName("countryName").getMapping(nameCountryField));
+
+                ImportKey<?> currencyKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Currency"),
+                        LM.findLCPByCompoundName("currencyShortName").getMapping(currencyField));
 
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -779,6 +784,9 @@ public class ImportActionProperty {
                 props.add(new ImportProperty(bankIDField, LM.findLCPByCompoundName("Bank.bankAccount").getMapping(accountKey),
                         LM.object(LM.findClassByCompoundName("Bank")).getMapping(bankKey)));
 
+                props.add(new ImportProperty(currencyField, LM.findLCPByCompoundName("Bank.currencyAccount").getMapping(accountKey),
+                        LM.object(LM.findClassByCompoundName("Currency")).getMapping(currencyKey)));
+
                 props.add(new ImportProperty(nameCountryField, LM.findLCPByCompoundName("nameCountry").getMapping(countryKey)));
                 props.add(new ImportProperty(nameCountryField, LM.findLCPByCompoundName("countryLegalEntity").getMapping(legalEntityKey),
                         LM.object(LM.findClassByCompoundName("Country")).getMapping(countryKey)));
@@ -789,13 +797,14 @@ public class ImportActionProperty {
                             l.address, l.unp, l.okpo, l.phone, l.email, l.nameOwnership, l.shortNameOwnership, l.account,
                             valueWithPrefix(l.chainStoresID, "CS", null), l.nameChainStores,
                             valueWithPrefix(l.bankID, "B", null), l.country, l.isSupplierLegalEntity,
-                            l.isCompanyLegalEntity, l.isCustomerLegalEntity));
+                            l.isCompanyLegalEntity, l.isCustomerLegalEntity, "BLR"));
                 }
 
                 ImportTable table = new ImportTable(Arrays.asList(legalEntityIDField, nameLegalEntityField, legalAddressField,
                         unpField, okpoField, phoneField, emailField, nameOwnershipField, shortNameOwnershipField,
                         accountField, chainStoresIDField, nameChainStoresField, bankIDField, nameCountryField,
-                        isSupplierLegalEntityField, isCompanyLegalEntityField, isCustomerLegalEntityField), data);
+                        isSupplierLegalEntityField, isCompanyLegalEntityField, isCustomerLegalEntityField,
+                        currencyField), data);
 
                 DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(legalEntityKey, ownershipKey, accountKey, bankKey, chainStoresKey, countryKey), props);
