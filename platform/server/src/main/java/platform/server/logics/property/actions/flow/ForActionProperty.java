@@ -90,7 +90,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         FlowResult result = FlowResult.FINISH;
 
         boolean execElse = elseAction != null;
-        
+
         assert recursive || addObject==null;
 
         ImOrderSet<ImMap<I, DataObject>> rows;
@@ -178,9 +178,6 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             return DerivedProperty.createListAction(context, mResult.immutableList());
         }
 
-        if(allNoInline)
-            return null;
-
         if (addObject != null) { // "компиляция" ADDOBJ
             assert !recursive;
             // сначала проверим если первый в списке CHANGE CLASS, тогда заберем его в FOR
@@ -203,6 +200,9 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                     DerivedProperty.createForAction(innerInterfaces, context, DerivedProperty.<I>createCompare(
                             addObject, result, Compare.EQUALS), orders, ordersNotNull, action, elseAction, null, null, false, noInline, forceInline)));
         }
+
+        if(allNoInline)
+            return null;
 
         // проталкиваем for'ы
         if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.VOLATILE))
