@@ -50,7 +50,6 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.Event;
 import platform.server.logics.property.actions.BaseEvent;
 import platform.server.logics.property.actions.SessionEnvEvent;
-import platform.server.logics.property.actions.flow.Inline;
 import platform.server.logics.property.actions.flow.ListActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.ImplementTable;
@@ -1088,9 +1087,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitOnlyDataCasePropertyIsAllowedError(parser, toPropertyName);
         }
 
-        if (fromProperty.property != null && !(fromProperty.property.property instanceof NullValueProperty) &&
+        if (fromProperty.property != null && fromProperty.property.property.getType() != null &&
                 toPropertyLP.property.getType().getCompatible(fromProperty.property.property.getType()) == null) {
-            errLog.emitIncompatibleTypes(parser);
+            errLog.emitIncompatibleTypes(parser, "SET");
         }
 
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
@@ -1359,6 +1358,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedUProp(Union unionType, List<LPWithParams> paramProps, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedUProp(" + unionType + ", " + paramProps + ");");
         checkUnionPropertyParams(paramProps, errMsgPropType);
+        checkPropertyTypes(paramProps, errMsgPropType);
 
         int[] coeffs = null;
         if (unionType == Union.SUM) {
@@ -2156,6 +2156,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (LPWithParams lp : uPropParams) {
             if (lp.property.property.interfaces.size() != paramCnt) {
                 errLog.emitUnionArgumentsEqualParamsCountError(parser, errMsgPropType);
+            }
+        }
+    }
+
+    private void checkPropertyTypes(List<LPWithParams> properties, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
+        Property prop1 = properties.get(0).property.property;
+        for (int i = 1; i < properties.size(); i++) {
+            Property prop2 = properties.get(i).property.property;
+            if (prop1.getType() != null && prop2.getType() != null && prop1.getType().getCompatible(prop2.getType()) == null) {
+                errLog.emitIncompatibleTypes(parser, errMsgPropType);
             }
         }
     }

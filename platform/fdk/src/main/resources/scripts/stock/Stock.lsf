@@ -739,7 +739,7 @@ META extendFormFilterStockAccess(object, concrete, form)
     EXTEND FORM form FILTERS (concrete IS object AND NOT limitAccessEmployee(currentUser())) OR accessEmployeeEmployeeDivision(currentUser(), concrete);
 END
 META extendFormFilterStockGroupAccess(object, concrete, form, prop)
-    EXTEND FORM form FILTERS (concrete IS object AND NOT limitAccessEmployee(currentUser())) OR prop(currentUser(), concrete);
+    EXTEND FORM form FILTERS (concrete IS object AND NOT limitAccessEmployee(currentUser())) OR TRUE IF prop(currentUser(), concrete);
 END
 
 // ----------------------------- Автоматическое проставление организаций и складов --------------------------------------- //

@@ -147,7 +147,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Type getType() {
-        return getValueClass().getType();
+        return getValueClass() != null ? getValueClass().getType() : null;
     }
 
     public abstract ValueClass getValueClass();
