@@ -41,6 +41,7 @@ import platform.server.form.window.*;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.LogicsModule;
+import platform.server.logics.ScriptParsingException;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
@@ -491,7 +492,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(abstractLP.listInterfaces, params.toArray());
                 ((ListActionProperty) abstractLP.property).addAction(actionImplements.get(0));
             } else assert false;
-        } catch (RuntimeException e) {
+        } catch (ScriptParsingException e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
     }
@@ -1080,7 +1081,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP toPropertyLP = findLPByCompoundName(toPropertyName);
 
         if (!(toPropertyLP.property instanceof DataProperty || toPropertyLP.property instanceof CaseUnionProperty)) {
-            errLog.emitOnlyDataCasePropertyIsAllowed(parser, toPropertyName);
+            errLog.emitOnlyDataCasePropertyIsAllowedError(parser, toPropertyName);
         }
 
         if (fromProperty.property != null && !(fromProperty.property.property instanceof NullValueProperty) &&
@@ -1725,7 +1726,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedWriteWhen(" + mainPropName + ", " + namedParams + ", " + valueProp + ", " + whenProp + ");");
         LP mainProp = findLPByCompoundName(mainPropName);
         if (!(mainProp.property instanceof DataProperty)) {
-            errLog.emitOnlyDataPropertyIsAllowed(parser, mainPropName);
+            errLog.emitOnlyDataPropertyIsAllowedError(parser, mainPropName);
         }
         checkParamCount(mainProp, namedParams.size());
         checkDistinctParameters(namedParams);

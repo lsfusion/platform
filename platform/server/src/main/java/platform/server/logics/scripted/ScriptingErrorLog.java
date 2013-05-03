@@ -435,12 +435,12 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "TO clause should use only local parameters introduced in WHERE clause");
     }
 
-    public void emitOnlyDataCasePropertyIsAllowed(ScriptParser parser, String propertyName) throws SemanticErrorException {
-        emitSimpleError(parser, format("Only DATA/ABSTRACT/CASE property is allowed here: %s", propertyName));
+    public void emitOnlyDataCasePropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
+        emitSimpleError(parser, format("only DATA/ABSTRACT/CASE property is allowed here: %s", propertyName));
     }
 
-    public void emitOnlyDataPropertyIsAllowed(ScriptParser parser, String propertyName) throws SemanticErrorException {
-        emitSimpleError(parser, format("Only DATA property is allowed here: %s", propertyName));
+    public void emitOnlyDataPropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
+        emitSimpleError(parser, format("only DATA property is allowed here: %s", propertyName));
     }
 
     public void emitStrLiteralEscapeSequenceError(ScriptParser parser, char ch) throws SemanticErrorException {

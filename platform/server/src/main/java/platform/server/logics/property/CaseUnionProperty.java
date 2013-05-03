@@ -19,6 +19,7 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.drilldown.CaseUnionDrillDownFormEntity;
 import platform.server.form.entity.drilldown.DrillDownFormEntity;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.ScriptParsingException;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.DataChanges;
 import platform.server.session.PropertyChange;
@@ -255,7 +256,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         if (isAbstract()) {
             ClassWhere<Object> caseClassValueWhere = getCaseClassValueWhere(addCase);
             if (!caseClassValueWhere.means(classValueWhere)) {
-                throw new RuntimeException("Wrong signature of implementation " + addCase.property + " (specified " + caseClassValueWhere + ") for abstract property " + this + " (expected " + classValueWhere + ")");
+                throw new ScriptParsingException("Wrong signature of implementation " + addCase.property + " (specified " + caseClassValueWhere + ") for abstract property " + this + " (expected " + classValueWhere + ")");
             }
         }
 
@@ -266,7 +267,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 CalcPropertyMapImplement<?, Interface> op1 = (CalcPropertyMapImplement<?, Interface>) listCases.get(i).where;
                 CalcPropertyMapImplement<?, Interface> op2 = (CalcPropertyMapImplement<?, Interface>) addCase.where;
                 if (op1.mapIntersect(op2)) {
-                    throw new RuntimeException("Signature intersection of property " + addCase.property + " (WHEN " + addCase.where +") with previosly defined implementation " + listCases.get(i).property + " (WHEN " + listCases.get(i).where +") for abstract property " + this + "\n" +
+                    throw new ScriptParsingException("Signature intersection of property " + addCase.property + " (WHEN " + addCase.where +") with previosly defined implementation " + listCases.get(i).property + " (WHEN " + listCases.get(i).where +") for abstract property " + this + "\n" +
                             "Classes 1 : " + op1.mapClassWhere() + ", Classes 2 : " + op2.mapClassWhere());
                 }
             }
