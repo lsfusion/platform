@@ -20,7 +20,7 @@ nameCustomsGroup 'Наименование' = DATA ISTRING[200](CustomsGroup);
 hasCodeCustomsGroup 'Есть код' = DATA BOOLEAN (CustomsGroup) IN base;
 dateFromCustomsGroup 'Дата с' = DATA DATE (CustomsGroup) IN base;
 dateToCustomsGroup 'Дата по' = DATA DATE (CustomsGroup) IN base;
-codeCustomsGroup 'Код' = DATA STRING[10](CustomsGroup) IN base;
+codeCustomsGroup 'Код' = DATA STRING[10](CustomsGroup) IN base MINCHARWIDTH 10;
 customsGroupCode (code) = GROUP AGGR customsGroup BY codeCustomsGroup(customsGroup) WHERE customsGroup IS CustomsGroup;
 
 numberCustomsGroup 'Номер строки' = DATA INTEGER(CustomsGroup) IN base;
@@ -101,29 +101,54 @@ FORM customsGroups 'Позиции ТН ВЭД'
     OBJECTS cz = CustomsZone FIXED PANEL
     PROPERTIES(cz) SELECTOR nameCustomsZone, nameCurrencyCustomsZone
 
-    TREE treeGroups gcg=CustomsGroup PARENT parentCustomsGroup
-    PROPERTIES READONLY nameCustomsGroup(gcg), codeCustomsGroup(gcg), isCompliancedDataCustomsGroup(gcg)
+    TREE treeGroups a=STRING[3], gcg=CustomsGroup PARENT parentCustomsGroup
+    PROPERTIES READONLY OBJVALUE(a), nameCustomsGroup(gcg), codeCustomsGroup(gcg), isCompliancedDataCustomsGroup(gcg)
     PROPERTIES(gcg) addCustomsGroup, EDITFORM
     ORDER BY nameCustomsGroup
 
     OBJECTS cg = CustomsGroup
-    PROPERTIES(cg) READONLY numberCustomsGroup, codeCustomsGroup, nameCustomsGroup, canonicalNameCustomsGroup, nameParentCustomsGroup,
+    PROPERTIES(cg) READONLY numberCustomsGroup, codeCustomsGroup, nameCustomsGroup, canonicalNameCustomsGroup,
                    dateFromCustomsGroup, dateToCustomsGroup, isCompliancedCustomsGroup, registrationCustomsGroup,
                    valueCurrentRateSupplierVATCustomsGroup, percentDutyCustomsGroup, weightDutyCustomsGroup
     PROPERTIES(cg) ADDFORM, EDITFORM, delete
 
-    FILTERS customsZoneCustomsGroup(cg) == cz
+    FILTERS stringEqualsAll(a), customsZoneCustomsGroup(cg) == cz
+    //FILTERS (d IS EmployeeDivision AND NOT dg IS EmployeeDivisionGroup) OR isParentEmployeeDivisionGroupEmployeeDivision(dg, d)
 
     FILTERGROUP hasCode
         FILTER 'Только с кодом' 'F7' hasCodeCustomsGroup(gcg) DEFAULT
 
     FILTERGROUP filters
-        FILTER 'Все листья' 'F10' isParentLeafCustomsGroupCustomsGroup(cg, gcg) DEFAULT
-        FILTER 'Всех потомков' 'F9' isParentCustomsGroupCustomsGroup(cg, gcg)
-        FILTER 'Только непосредственных потомков' 'F8' parentCustomsGroup(cg) == gcg
+        FILTER 'Все листья' 'F10' isParentLeafCustomsGroupCustomsGroup(cg, gcg) OR (cg IS CustomsGroup AND isLeafCustomsGroup(cg) AND NOT gcg) DEFAULT
+        FILTER 'Всех потомков' 'F9' isParentCustomsGroupCustomsGroup(cg, gcg) OR (cg IS CustomsGroup AND NOT gcg)
+        FILTER 'Только непосредственных потомков' 'F8' parentCustomsGroup(cg) == gcg OR (cg IS CustomsGroup AND NOT parentCustomsGroup(cg) AND NOT gcg)
 
     DIALOG CustomsGroup OBJECT cg
 ;
+
+DESIGN customsGroups FROM DEFAULT{
+    main {
+        NEW split {
+            childConstraints = TO THE RIGHT;
+            type = SPLITH;
+            ADD treeGroups.tree.box{
+                fillHorizontal = 1;
+            };
+
+            ADD cg.box {
+                cg.grid {
+                    fillHorizontal = 2;
+                    defaultComponent = TRUE;
+                }
+            }
+
+            POSITION treeGroups.tree.box TO THE LEFT cg.box;
+        }
+
+        ADD functions.box;
+    }
+}
+
 
 NAVIGATOR {
     customsMasterData {
