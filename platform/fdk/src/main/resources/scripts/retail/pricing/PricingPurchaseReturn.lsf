@@ -1,6 +1,6 @@
 MODULE PricingPurchaseReturn;
 
-REQUIRE Pricing, PurchaseReturnInvoice, PurchaseReturnShipment, PricingPurchase;
+REQUIRE Pricing, PurchaseReturnInvoice, PurchaseReturnShipment, PricingPurchase, PriceListLedger;
 
 NAMESPACE PurchaseReturn;
 

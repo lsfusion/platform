@@ -1,6 +1,6 @@
 MODULE Pricing;
 
-REQUIRE Invoice, Employee, PriceRoundStore, Machinery, PriceListCalc;
+REQUIRE Invoice, Employee, PriceRoundStore, Machinery, PriceListCalc, PriceListLedger;
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
 

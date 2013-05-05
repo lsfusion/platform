@@ -387,6 +387,66 @@ META deriveDocumentDetailVATPrefixSum(object)
     @deriveDocumentDetailVATPrefixSum(object, prefix);
 END
 
+// ----------------------------- Объявление действий для цен с НДС и без ------------------------- //
+
+// Изменение цены без НДС
+META defineDocumentDetailPriceVATOnChangeCustom (detail)
+    changePrice###detail (detail) = ACTION (detail) {
+        REQUEST NUMERIC[14,2] INPUT;
+        SET price###detail (detail) <- requestedNumeric();
+        SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + calcValueVAT###detail(detail)) / 100;
+    }
+END
+
+META defineDocumentDetailPriceVATOnChange (object)
+    @defineDocumentDetailPriceVATOnChangeCustom(object###Detail);
+END
+
+// Изменение щкалы НДС
+META defineDocumentDetailNumberVATOnChangeCustom (detail, stockProp)
+    changeNumberVAT###detail (detail) = ACTION (detail) {
+        REQUEST OBJECT r
+            FORM rangeDialog OBJECTS c = country###stockProp###detail(detail) MODAL SHOWDROP;
+        IF formResult() == FormResult.ok THEN {
+            SET VAT###detail (detail) <- requestedObject();
+            SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + calcValueVAT###detail(detail))/100;
+        } ELSE IF formResult() == FormResult.drop THEN {
+            SET VAT###detail(detail) <- NULL;
+            SET invoicePrice###detail(detail) <- price###detail (detail);
+        }
+    }
+END
+
+META defineDocumentDetailNumberVATOnChange (object, stockProp)
+    @defineDocumentDetailNumberVATOnChangeCustom(object###Detail, stockProp);
+END
+
+// Изменение ставки НДС
+META defineDocumentDetailValueVATOnChangeCustom (detail)
+    changeValueVAT###detail (detail) = ACTION (detail) {
+        REQUEST NUMERIC[10,5] INPUT;
+        SET valueVAT###detail (detail) <- requestedNumeric();
+        SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + requestedNumeric())/100;
+    }
+END
+
+META defineDocumentDetailValueVATOnChange (object)
+    @defineDocumentDetailValueVATOnChangeCustom(object###Detail);
+END
+
+// Изменение цены с НДС
+META defineDocumentDetailInvoicePriceVATOnChangeCustom (detail)
+    changeInvoicePrice###detail (detail) = ACTION (detail) {
+        REQUEST NUMERIC[14,2] INPUT;
+        SET invoicePrice###detail (detail) <- requestedNumeric();
+        SET price###detail (detail) <- invoicePrice###detail (detail) * 100/(100 + calcValueVAT###detail(detail));
+    }
+END
+
+META defineDocumentDetailInvoicePriceVATOnChange (object)
+    @defineDocumentDetailInvoicePriceVATOnChangeCustom(object###Detail);
+END
+
 //-- НДС - Розничный
 
 META defineDocumentDetailVATDataSumCustomPrefix (detail, prefix, caption)

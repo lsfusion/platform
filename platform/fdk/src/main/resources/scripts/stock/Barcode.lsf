@@ -6,7 +6,7 @@ CLASS Barcode 'Штрих код';
 TABLE barcode (Barcode);
 TABLE stringDate (STRING[15], DATE);
 
-idBarcode 'Штрих код' = DATA STRING[15] (Barcode) IN recognize FIXEDCHARWIDTH 14 AGGPROP INDEXED;
+idBarcode 'Штрих код' = DATA STRING[15] (Barcode) IN recognize FIXEDCHARWIDTH 15 AGGPROP INDEXED;
 
 dataDateBarcode 'Дата действия' = DATA DATE (Barcode);
 dateBarcode 'Дата действия' = (2001_01_01 IF barcode IS Barcode) OVERRIDE dataDateBarcode(barcode) IN base PERSISTENT;

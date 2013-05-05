@@ -4,7 +4,7 @@ REQUIRE Stock,
         Numerator,
         Barcode,
         Document,
-        PriceList,
+        PriceListType,
         Manufacturing,
         MenuOperation,
         Utils;

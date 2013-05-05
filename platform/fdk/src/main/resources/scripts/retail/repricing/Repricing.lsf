@@ -1,6 +1,6 @@
 MODULE Repricing;
 
-REQUIRE Employee, Store, Pricing, StockDocument, PriceListCalc, RepricingOperation;
+REQUIRE Employee, Store, Pricing, StockDocument, PriceListCalc, RepricingOperation, PriceListLedger;
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 

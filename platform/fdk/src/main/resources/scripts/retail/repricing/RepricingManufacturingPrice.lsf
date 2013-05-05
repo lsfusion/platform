@@ -1,6 +1,6 @@
 MODULE RepricingManufacturingPrice;
 
-REQUIRE Repricing;
+REQUIRE Repricing, PriceListLedger;
 
 @defineDocumentInterfaceDetailPriceCustomPrefix(repricingDetail, manufacturing, ' изготовителя после');
 

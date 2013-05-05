@@ -1,6 +1,6 @@
 MODULE NaturalLoss;
 
-REQUIRE Document, PriceList, SaleLedger, Integration;
+REQUIRE Document, PriceListType, SaleLedger, Integration, PriceListLedger;
 
 GROUP rateGroup 'Нормы' : public;
 

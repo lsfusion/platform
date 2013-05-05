@@ -151,7 +151,7 @@ sidNavigatorElementGroupObject (groupObject) = sidNavigatorElement (navigatorEle
 groupObjectSIDGroupObjectSIDNavigatorElementGroupObject  'Группа объектов' (sidNavigatorElement, sidGroupObject) = GROUP AGGR groupObject BY sidGroupObject (groupObject), sidNavigatorElementGroupObject (groupObject) WHERE groupObject IS GroupObject;
 
 
-FORM physicalModel 'Физическая модель'
+FORM physicalModel 'Таблицы'
     OBJECTS t=Table
     PROPERTIES(t) READONLY sidTable, rowsTable, sparseColumnsTable
 
@@ -179,7 +179,7 @@ EXTEND DESIGN physicalModel {
         NEW container BEFORE functions.box{
             type = TABBED;
             NEW modelContainer {
-                title = 'Физическая модель';
+                title = 'Таблицы';
                 ADD t.box {
                     title = 'Таблицы';
                 };

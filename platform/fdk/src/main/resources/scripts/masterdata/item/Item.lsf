@@ -1,6 +1,6 @@
 MODULE Item;
 
-REQUIRE System, Stock, Hierarchy, Barcode, PriceList, PriceListCalc;
+REQUIRE System, Stock, Hierarchy, Barcode, PriceListType, PriceListCalc;
 
 // ------------------------------------ Классификатор товаров --------------------------- //
 

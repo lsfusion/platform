@@ -1,6 +1,6 @@
 MODULE PricingSale;
 
-REQUIRE Pricing, SaleInvoice, SaleShipment, SaleOperation;
+REQUIRE Pricing, SaleInvoice, SaleShipment, SaleOperation, PriceListLedger;
 
 NAMESPACE Sale;
 

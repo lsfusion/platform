@@ -7,7 +7,7 @@ REQUIRE System,
         Numerator,
         Document,
         Currency,
-        PriceList,
+        PriceListLedger,
         Employee,
         Barcode;
 

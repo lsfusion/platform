@@ -1,6 +1,6 @@
 MODULE StorePrice;
 
-REQUIRE System, Historizable, Tax, Stock, Barcode, Store, Ware, PriceList;
+REQUIRE System, Historizable, Tax, Stock, Barcode, Store, Ware, PriceListType;
 
 GROUP priceDetailGroup 'Цены' : public;
 

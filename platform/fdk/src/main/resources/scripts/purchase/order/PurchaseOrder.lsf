@@ -1,6 +1,6 @@
 MODULE PurchaseOrder;
 
-REQUIRE Order, PurchaseOperation, PurchasePack;
+REQUIRE Order, PurchaseOperation, PurchasePack, PriceListLedger;
 
 NAMESPACE Purchase;
 

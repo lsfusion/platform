@@ -1,6 +1,6 @@
 MODULE PriceListStore;
 
-REQUIRE PriceList, Store, PriceListStock;
+REQUIRE PriceListType, Store, PriceListStock;
 
 //------------------------- Расширяем форму Магазина -------------------------//
 

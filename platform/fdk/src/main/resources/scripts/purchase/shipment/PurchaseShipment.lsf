@@ -1,6 +1,6 @@
 MODULE PurchaseShipment;
 
-REQUIRE Shipment, PurchaseInvoice, PurchaseOperation, OrderShipment, InvoiceShipment;
+REQUIRE Shipment, PurchaseInvoice, PurchaseOperation, OrderShipment, InvoiceShipment, PriceListLedger;
 
 NAMESPACE Purchase;
 

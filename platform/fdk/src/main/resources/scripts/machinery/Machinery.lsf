@@ -1,6 +1,6 @@
 MODULE Machinery;
 
-REQUIRE System, Stock, Barcode, PriceList, DefaultData;
+REQUIRE System, Stock, Barcode, PriceListType, DefaultData;
 
 //---------------------------- Сервера управления оборудования ----------------------------//
 

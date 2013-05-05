@@ -1,6 +1,6 @@
 MODULE PriceListStock;
 
-REQUIRE PriceList, Stock;
+REQUIRE PriceListType, Stock;
 
 NAMESPACE PriceList;
 

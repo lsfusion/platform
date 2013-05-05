@@ -1,0 +1,467 @@
+MODULE PriceListType;
+
+REQUIRE System, Document, Numerator, Stock, Barcode, PriceRound, Operation;
+
+NAMESPACE PriceList;
+
+// --------------------------- Виды цен ------------------------- //
+
+CLASS ABSTRACT PriceListType 'Вид цены';
+TABLE priceListType(PriceListType);
+
+namePriceListType 'Наименование' = ABSTRACT ISTRING[50](PriceListType);
+
+includeVATPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (PriceListType) PERSISTENT;
+
+pricePriceListTypeSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (PriceListType, Sku, Stock, DATETIME);
+pricePriceListTypeBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (PriceListType, Batch, Stock, DATETIME);
+
+prevPricePriceListTypeSkuStockDateTime 'Цена (пред.)' (type, sku, stock, dateTime) = PREV(pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime)) COMPLEX;
+prevPricePriceListTypeBatchStockDateTime 'Цена (пред.)' (type, batch, stock, dateTime) = PREV(pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime)) COMPLEX;
+
+prevPriceMVATPriceListTypeSkuStockDateTimeVAT 'Цена без НДС (пред.)' (type, sku, stock, dateTime, VAT) =
+    IF includeVATPriceListType(type)
+        THEN
+            prevPricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) * 100 /(100 + VAT)
+        ELSE
+            prevPricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) IF VAT IS NUMERIC[10,5];
+
+prevPricePVATPriceListTypeSkuStockDateTimeVAT 'Цена с НДС (пред.)' (type, sku, stock, dateTime, VAT) =
+    IF includeVATPriceListType(type)
+        THEN
+            prevPricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) IF VAT IS NUMERIC[10,5]
+        ELSE
+            prevPricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) * (100 + VAT)/100;
+
+prevPriceMVATPriceListTypeBatchStockDateTimeVAT 'Цена без НДС (пред.)' (type, batch, stock, dateTime, VAT) =
+    IF includeVATPriceListType(type)
+        THEN
+            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) * 100 /(100 + VAT)
+        ELSE
+            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) IF VAT IS NUMERIC[10,5];
+
+prevPricePVATPriceListTypeBatchStockDateTimeVAT 'Цена с НДС (пред.)' (type, batch, stock, dateTime, VAT) =
+    IF includeVATPriceListType(type)
+        THEN
+            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) IF VAT IS NUMERIC[10,5]
+        ELSE
+            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) * (100 + VAT)/100;
+
+@defineDocumentAbstractHeaderCurrency(priceListType);
+
+roundConditionPriceListType 'Условие округления' = DATA RoundCondition (PriceListType);
+nameRoundConditionPriceListType 'Условие округления' (priceListType) = nameRoundCondition(roundConditionPriceListType(priceListType));
+
+CONSTRAINT currencyRoundCondition(roundConditionPriceListType(priceListType)) != currencyPriceListType(priceListType)
+           CHECKED BY roundConditionPriceListType
+           MESSAGE 'Валюта документа должна совпадать с валютой условия округления цены';
+
+CLASS ABSTRACT BasePriceListType 'Базовый вид цены' : PriceListType;
+
+nameBasePriceListType 'Наименование' = ABSTRACT ISTRING[50](BasePriceListType);
+namePriceListType(type) += nameBasePriceListType(type) IF type IS BasePriceListType;
+
+priceBasePriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (BasePriceListType, Sku, Stock, DATETIME);
+priceBasePriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (BasePriceListType, Batch, Stock, DATETIME);
+
+includeVATBasePriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (BasePriceListType);
+includeVATPriceListType(type) += includeVATBasePriceListType(type);
+
+pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
+pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
+// --------------------------- Системные виды цен ------------------------- //
+CLASS SystemPriceListType 'Системный вид цены' : BasePriceListType;
+
+nameBasePriceListType(type) += staticCaption(type) IF type IS SystemPriceListType;
+
+priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (SystemPriceListType, Sku, Stock, DATETIME) EXCLUSIVE;
+priceSystemPriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (SystemPriceListType, Batch, Stock, DATETIME) EXCLUSIVE;
+
+includeVATSystemPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (SystemPriceListType);
+includeVATBasePriceListType(type) += includeVATSystemPriceListType(type);
+
+priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceSystemPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
+priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceSystemPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
+// --------------------------- Формы ------------------------- //
+
+editPriceListType 'Редактировать' = ABSTRACT ACTION (priceListType) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+FORM priceListType 'Вид цены'
+    OBJECTS p = PriceListType
+    PROPERTIES(p) READONLY namePriceListType, nameCurrencyPriceListType, nameRoundConditionPriceListType
+    PROPERTIES(p) READONLY includeVATPriceListType, objectClassName
+
+    DIALOG PriceListType OBJECT p
+;
+
+FORM priceListTypes 'Виды цен'
+    OBJECTS dt = DATETIME FIXED PANEL
+    PROPERTIES(dt) objValue = OBJVALUE
+
+    OBJECTS s = Stock FIXED PANEL
+    PROPERTIES(s) SELECTOR nameStock
+
+    OBJECTS pt = PriceListType
+    PROPERTIES(pt) READONLY namePriceListType, nameCurrencyPriceListType, nameRoundConditionPriceListType, objectClassName
+    PROPERTIES(pt) editPriceListType, delete
+    ORDER BY objectClassName
+
+    TREE skuTree sg = SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sg)
+    ORDER BY skuTreeName
+
+    OBJECTS sk = Sku
+    PROPERTIES(sk) READONLY nameSku, idBarcodeSku
+    PROPERTIES(sk, s, dt) READONLY balanceASkuStockDateTime
+    ORDER BY nameSku
+    FILTERS isParentSkuGroupSku(sg, sk)
+
+    TREE skuTree2 sg2 = SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName2 = nameSkuGroup(sg2)
+    ORDER BY skuTreeName2
+
+    OBJECTS b = Batch
+    PROPERTIES(b) READONLY isPostedBatch, dateBatch, timeBatch, nameSkuBatch, nameStockBatch, descriptionBatch, nameBatch, costBatch
+    PROPERTIES(b, s, dt) READONLY balanceABatchStockDateTime
+    ORDER BY dateBatch, timeBatch
+    FILTERGROUP filters
+        FILTER 'Проведенные партии' 'F10' isPostedBatch(b) DEFAULT
+    FILTERS isParentSkuGroupBatch(sg2, b)
+
+    PROPERTIES(pt, sk, s, dt) READONLY pricePriceListTypeSkuStockDateTime
+    PROPERTIES(pt, b, s, dt) READONLY pricePriceListTypeBatchStockDateTime
+    FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt),
+            pricePriceListTypeBatchStockDateTime(pt, b, s, dt)
+;
+@extendFormFilterStockAccess(Stock, s, priceListTypes);
+
+DESIGN priceListTypes FROM DEFAULT{
+    NEW mainContainer{
+        type = SPLITV;
+        ADD pt.box;
+        NEW firstContainer{
+            fillVertical = 2.0;
+            NEW topContainer{
+                childConstraints = TO THE RIGHT;
+                ADD s.box;
+                ADD dt.box{caption = 'Дата/время';}
+            }
+            NEW priceContainer{
+                caption = 'Текущие цены';
+                childConstraints = TO THE BOTTOM;
+                NEW currentPriceContainer{
+                    type = TABBED;
+                    NEW skuContainer{
+                        caption = 'Товары';
+                        childConstraints = TO THE RIGHT;
+                        type = SPLITH;
+                        ADD skuTree.tree.box;
+                        ADD sk.box{fillHorizontal = 2.0;}
+                    }
+                    NEW batchContainer{
+                        caption = 'Партии';
+                        childConstraints = TO THE RIGHT;
+                        type = SPLITH;
+                        ADD skuTree2.tree.box;
+                        ADD b.box{fillHorizontal = 2.0;}
+                    }
+                }
+            }
+        }
+    }
+    ADD functions.box;
+}
+
+NAVIGATOR {
+    NEW priceListNavigator 'Цены' BEFORE administration TO toolbar IMAGE '/images/label.png' {
+        NEW priceListDocuments 'Документы';
+        NEW priceListMasterData 'Справочники' {
+            ADD priceListTypes;
+            ADD priceIntervals;
+        }
+    }
+}
+
+// ---------------------- Макросы по добавлению видов цен в документы ------------------------------------ //
+
+META defineDocumentHeaderPriceListType (object, type, prefix, caption)
+    @defineDocumentHeaderPriceListTypeInner (object, type, ###type, prefix, caption);
+END
+
+META defineDocumentHeaderPriceListTypeInner (object, type, typeClass, prefix, caption)
+    prefix###type###object (object) = DATA typeClass (###object);
+    name###prefix###type###object 'Вид цен'###caption (object)= namePriceListType(prefix###type###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+
+META defineDocumentAbstractHeaderPriceListType (object, type, prefix, caption)
+    @defineDocumentAbstractHeaderPriceListTypeInner (object, type, ###type, prefix, caption);
+END
+
+META defineDocumentAbstractHeaderPriceListTypeInner (object, type, typeClass, prefix, caption)
+    prefix###type###object (object) = ABSTRACT typeClass (###object) PERSISTENT;
+    name###prefix###type###object 'Вид цен'###caption (object)= namePriceListType(prefix###type###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentInterfaceHeaderPriceListType (object, type, prefix, caption)
+    @defineDocumentAbstractHeaderPriceListType(object, type, prefix, caption);
+    @defineDocumentHeaderPriceListType(user###object, type, prefix, caption);
+    prefix###type###object (object) += prefix###type###user###object(object);
+END
+
+META defineDocumentHeaderPriceListType (object)
+    @defineDocumentHeaderPriceListType(object, priceListType, ,);
+END
+META defineDocumentAbstractHeaderPriceListType (object)
+    @defineDocumentAbstractHeaderPriceListType(object, priceListType, ,);
+END
+META defineDocumentInterfaceHeaderPriceListType (object)
+    @defineDocumentInterfaceHeaderPriceListType(object, priceListType, ,);
+END
+
+//--
+META defineDocumentDetailPriceListTypePrefix (object, detail, type, prefix, caption)
+    prefix###type###detail = prefix###type###object(object###detail (detail));
+    name###prefix###type###detail 'Вид цен'###caption (idetail) = namePriceListType(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+//--
+
+META defineDocumentDetailPriceListType (object, detail, type, prefix, caption)
+    @defineDocumentDetailPriceListTypeInner (object, detail, type, ###type, prefix, caption);
+END
+
+META defineDocumentDetailPriceListTypeInner (object, detail, type, typeClass, prefix, caption)
+    prefix###type###detail =  DATA typeClass (###detail);
+    name###prefix###type###detail 'Вид цен'###caption (idetail) = namePriceListType(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+
+META defineDocumentAbstractDetailPriceListType (object, detail, type, prefix, caption)
+    @defineDocumentAbstractDetailPriceListTypeInner(object, detail, type, ###type, prefix, caption);
+END
+
+META defineDocumentAbstractDetailPriceListTypeInner (object, detail, type, typeClass, prefix, caption)
+    prefix###type###detail =  ABSTRACT typeClass (###detail) PERSISTENT;
+    name###prefix###type###detail 'Вид цен'###caption (idetail) = namePriceListType(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+
+META defineDocumentPriceListType (object, detail, type, prefix, caption)
+    @defineDocumentHeaderPriceListType(object, type, prefix, caption);
+    @defineDocumentDetailPriceListType(object, detail, type, prefix, caption);
+END
+META defineDocumentPriceListType (object, type, prefix, caption)
+    @defineDocumentPriceListType(object, object##Detail, type, prefix, caption);
+END
+
+META defineDocumentInterfaceDetailPriceListType (object, detail, type, prefix, caption)
+    @defineDocumentAbstractDetailPriceListType(object, detail, type, prefix, caption);
+    @defineDocumentDetailPriceListType(user###object, user###detail, type, prefix, caption);
+    prefix###type###detail (detail) += prefix###type###user###detail (detail);
+END
+
+META defineDocumentInterfaceDetailPriceListType (object, type, prefix, caption)
+    @defineDocumentInterfaceDetailPriceListType(object, object##Detail, type, prefix, caption);
+END
+
+META defineDocumentInterfacePriceListType (object, detail, type, prefix, caption)
+    @defineDocumentInterfaceHeaderPriceListType(object, type, prefix, caption);
+    @defineDocumentInterfaceDetailPriceListType(object, detail, type, prefix, caption);
+
+    CONSTRAINT currency###user###object(object) != currencyPriceListType(prefix###type###user###object(object))
+               CHECKED BY prefix###type###user###object
+               MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+
+    CONSTRAINT currency###user###detail(detail) != currencyPriceListType(prefix###type###user###detail(detail))
+               CHECKED BY prefix###type###user###detail
+               MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+END
+META defineDocumentInterfacePriceListType (object, type, prefix, caption)
+    @defineDocumentInterfacePriceListType(object, object##Detail, type, prefix, caption);
+END
+
+//--
+META defineDocumentDetailPriceListType (object, detail)
+    @defineDocumentDetailPriceListType(object, detail, priceListType, , );
+END
+
+META defineDocumentAbstractDetailPriceListType (object, detail)
+    @defineDocumentAbstractDetailPriceListType(object, detail, priceListType, , );
+END
+
+META defineDocumentPriceListType (object, detail)
+    @defineDocumentPriceListType (object, detail, priceListType, , );
+END
+META defineDocumentPriceListType (object)
+    @defineDocumentPriceListType(object, object##Detail);
+END
+
+META defineDocumentInterfaceDetailPriceListType (object, detail)
+    @defineDocumentInterfaceDetailPriceListType (object, detail, priceListType, , );
+END
+
+META defineDocumentInterfaceDetailPriceListType (object)
+    @defineDocumentInterfaceDetailPriceListType(object, object##Detail);
+END
+
+META defineDocumentInterfacePriceListType (object, detail)
+    @defineDocumentInterfacePriceListType (object, detail, priceListType, , );
+END
+META defineDocumentInterfacePriceListType (object)
+    @defineDocumentInterfacePriceListType(object, object##Detail);
+END
+
+// ----------------------------------------------- Автоматическое проставление
+
+META deriveDocumentDetailPricePriceListTypeCustom (detail, stockProp)
+    price###detail(detail) <- prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                     sku###detail(detail),
+                                                                     stockProp###detail(detail),
+                                                                     dateTime###detail(detail))
+                                    WHEN DO CHANGED(priceListType###detail(detail)) OR
+                                         CHANGED(sku###detail(detail)) OR
+                                         CHANGED(stockProp###detail(detail)) OR
+                                         CHANGED(dateTime###detail(detail));
+END
+
+META deriveDocumentDetailPricePriceListType (object, stockProp)
+    @deriveDocumentDetailPricePriceListTypeCustom(object##Detail, stockProp);
+END
+
+META deriveDocumentDetailPricePriceListTypeVATCustom (detail, stockProp)
+    prevListSkuPrice###detail (detail) = prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                                sku###detail(detail),
+                                                                                stockProp###detail(detail),
+                                                                                dateTime###detail(detail));
+
+    prevListSkuPriceMVAT###detail (detail) =
+        IF includeVATPriceListType(priceListType###detail(detail))
+            THEN
+                prevListSkuPrice###detail(detail) * 100.0 /(100.0 + calcValueVAT###detail(detail))
+            ELSE
+                prevListSkuPrice###detail(detail);
+
+    prevListSkuPricePVAT###detail (detail) =
+        IF includeVATPriceListType(priceListType###detail(detail))
+            THEN
+                prevListSkuPrice###detail(detail)
+            ELSE
+                prevListSkuPrice###detail(detail) * (100.0 + calcValueVAT###detail(detail)) / 100.0;
+
+    price###detail(detail) <- prevListSkuPriceMVAT###detail (detail)
+                            WHEN DO priceListType###detail(detail) AND
+                                 (CHANGED(priceListType###detail(detail)) OR
+                                 CHANGED(sku###detail(detail)) OR
+                                 CHANGED(stockProp###detail(detail)) OR
+                                 CHANGED(dateTime###detail(detail)));
+
+    invoice###price###detail(detail) <- prevListSkuPricePVAT###detail (detail)
+                            WHEN DO priceListType###detail(detail) AND
+                                 (CHANGED(priceListType###detail(detail)) OR
+                                 CHANGED(sku###detail(detail)) OR
+                                 CHANGED(stockProp###detail(detail)) OR
+                                 CHANGED(dateTime###detail(detail)));
+
+END
+
+META deriveDocumentDetailPricePriceListTypeVAT (object, stockProp)
+    @deriveDocumentDetailPricePriceListTypeVATCustom (object##Detail, stockProp);
+END
+
+META deriveDocumentDetailPriceBatchPriceListTypeCustom (detail, stockProp)
+    price###detail(detail) <- IF batch###detail(detail) THEN
+                                    prevPricePriceListTypeBatchStockDateTime(priceListType###detail(detail),
+                                                                             batch###detail(detail),
+                                                                             stockProp###detail(detail),
+                                                                             dateTime###detail(detail))
+                              ELSE
+                                    prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                           sku###detail(detail),
+                                                                           stockProp###detail(detail),
+                                                                           dateTime###detail(detail))
+                                    WHEN DO priceListType###detail(detail) AND
+                                        (CHANGED(batch###detail(detail)) OR
+                                         CHANGED(priceListType###detail(detail)) OR
+                                         CHANGED(sku###detail(detail)) OR
+                                         CHANGED(stockProp###detail(detail)) OR
+                                         CHANGED(dateTime###detail(detail)));
+END
+
+META deriveDocumentDetailPriceBatchPriceListType (object, stockProp)
+    @deriveDocumentDetailPriceBatchPriceListTypeCustom(object##Detail, stockProp);
+END
+
+META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
+    prevListSkuPrice###detail (priceListType, detail) = prevPricePriceListTypeSkuStockDateTime(priceListType,
+                                                                                               sku###detail(detail),
+                                                                                               stockProp###detail(detail),
+                                                                                               dateTime###detail(detail));
+    prevListBatchPrice###detail (priceListType, detail) = prevPricePriceListTypeBatchStockDateTime(priceListType,
+                                                                                                   batch###detail(detail),
+                                                                                                   stockProp###detail(detail),
+                                                                                                   dateTime###detail(detail));
+    prevListPrice###detail (priceListType, detail) = IF batch###detail(detail) THEN prevListBatchPrice###detail(priceListType, detail) ELSE prevListSkuPrice###detail (priceListType, detail);
+
+    prevListPriceMVAT###detail (priceListType, detail) =
+        IF includeVATPriceListType(priceListType)
+            THEN
+                prevListPrice###detail(priceListType, detail) * 100.0 /(100.0 + calcValueVAT###detail(detail))
+            ELSE
+                prevListPrice###detail(priceListType, detail);
+
+    prevListPricePVAT###detail (priceListType, detail) =
+        IF includeVATPriceListType(priceListType)
+            THEN
+                prevListPrice###detail(priceListType, detail)
+            ELSE
+                prevListPrice###detail(priceListType, detail) * (100.0 + calcValueVAT###detail(detail)) / 100.0;
+
+        WHEN SESSION FORMS userInvoice PREVSTART ALL // цены берем на начало сессии, а не этого event'а
+                (CHANGED(priceListType###detail(d)) OR
+                CHANGED(batch###detail(d)) OR
+                CHANGED(sku###detail(d)) OR
+                CHANGED(stockProp###detail(d)) OR
+                CHANGED(dateTime###detail(d))) AND pt == priceListType###detail(d) AND sku###detail(d) NOINLINE (pt) DO {
+            price###detail(d) <- prevListPriceMVAT###detail (pt, d);
+            invoicePrice###detail(d) <- prevListPricePVAT###detail (pt, d);
+        }
+
+
+END
+
+META deriveDocumentDetailPricePriceListTypeVATBatch (object, stockProp)
+    @deriveDocumentDetailPricePriceListTypeVATBatchCustom (object##Detail, stockProp);
+END
+
+// ----------------------------- Макрос по добавлению в операции видов цен -------------------------- //
+
+META defineOperationPriceListType(dumb)
+
+    TABLE priceListType###operation(PriceListType, Operation);
+    isPriceListType###operation 'Отм.' = DATA BOOLEAN (PriceListType, Operation);
+
+    EXTEND FORM operation
+        OBJECTS pt = PriceListType
+        PROPERTIES(pt, o) isPriceListType###operation
+        PROPERTIES(pt) READONLY namePriceListType, nameCurrencyPriceListType, objectClassName
+        FILTERGROUP filters
+            FILTER 'Показывать отмеченные' 'F9' isPriceListType###operation(pt, o)
+    ;
+
+    EXTEND DESIGN operation {
+        tabContainer {
+            ADD pt.box;
+        }
+    }
+
+END
+
+META defineDocumentOperationPriceListType(object, caption)
+    CONSTRAINT operation###object(object) AND priceListType###object(object)
+               AND NOT isPriceListType###operation(priceListType###object(object), operation###object(object))
+        CHECKED BY priceListType###object
+        MESSAGE 'Вид цены для '###caption###' должен совпадать с отмеченными в операции ';
+
+    CONSTRAINT operation###object##Detail(detail) AND priceListType###object##Detail(detail)
+               AND NOT isPriceListType###operation(priceListType###object##Detail(detail), operation###object##Detail(detail))
+        CHECKED BY priceListType###object##Detail
+        MESSAGE 'Вид цены для строки '###caption###' должен совпадать с отмеченными в операции';
+END

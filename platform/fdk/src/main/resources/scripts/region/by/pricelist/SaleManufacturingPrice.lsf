@@ -1,6 +1,6 @@
 MODULE SaleManufacturingPrice;
 
-REQUIRE SaleInvoice, PricingSale, PricingManufacturingPrice;
+REQUIRE SaleInvoice, PricingSale, PricingManufacturingPrice, PriceListLedger;
 
 NAMESPACE Sale;
 

@@ -1,6 +1,6 @@
 MODULE PurchasePriceList;
 
-REQUIRE PurchaseLedger, PriceListData;
+REQUIRE PurchaseLedger, PriceList;
 
 filterSupplierUserPriceList = DATA SESSION LegalEntity (UserPriceList);
 nameFilterSupplierUserPriceList 'Поставщик' (userPriceList) = nameLegalEntity(filterSupplierUserPriceList(userPriceList));

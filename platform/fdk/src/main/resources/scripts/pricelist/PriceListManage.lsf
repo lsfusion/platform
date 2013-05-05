@@ -1,6 +1,6 @@
 MODULE PriceListManage;
 
-REQUIRE PriceListData;
+REQUIRE PriceList;
 
 NAMESPACE PriceList;
 

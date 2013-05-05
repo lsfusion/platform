@@ -1,6 +1,6 @@
 MODULE SaleShipment;
 
-REQUIRE Shipment, SaleInvoice, SaleOperation, OrderShipment, InvoiceShipment;
+REQUIRE Shipment, SaleInvoice, SaleOperation, OrderShipment, InvoiceShipment, PriceListLedger;
 
 NAMESPACE Sale;
 

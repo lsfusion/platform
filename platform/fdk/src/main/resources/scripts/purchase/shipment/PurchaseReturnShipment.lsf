@@ -1,6 +1,6 @@
 MODULE PurchaseReturnShipment;
 
-REQUIRE Shipment, PurchaseReturnInvoice, OrderShipment, InvoiceShipment;
+REQUIRE Shipment, PurchaseReturnInvoice, OrderShipment, InvoiceShipment, PriceListLedger;
 
 PRIORITY Purchase, Operation;
 

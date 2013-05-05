@@ -4,7 +4,7 @@ REQUIRE Currency,
         Document,
         LegalEntity,
         Numerator,
-        PriceList;
+        PriceListType;
 
 CLASS Agreement 'Соглашение' : NumeratedObject;
 TABLE agreement (Agreement);

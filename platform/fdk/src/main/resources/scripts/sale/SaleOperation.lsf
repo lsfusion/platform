@@ -1,6 +1,6 @@
 MODULE SaleOperation;
 
-REQUIRE Operation, PriceList, Sale;
+REQUIRE Operation, PriceListType, Sale;
 
 NAMESPACE Sale;
 

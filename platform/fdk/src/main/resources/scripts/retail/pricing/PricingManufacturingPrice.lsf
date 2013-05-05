@@ -1,6 +1,6 @@
 MODULE PricingManufacturingPrice;
 
-REQUIRE Pricing;
+REQUIRE Pricing, PriceListLedger;
 
 @defineDocumentInterfaceDetailPriceCustomPrefix(pricingDetail, manufacturing, ' изготовителя');
 

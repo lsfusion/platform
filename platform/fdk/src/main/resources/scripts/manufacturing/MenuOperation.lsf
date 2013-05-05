@@ -1,6 +1,6 @@
 MODULE MenuOperation;
 
-REQUIRE Operation, PriceList;
+REQUIRE Operation, PriceListType;
 
 NAMESPACE Menu;
 

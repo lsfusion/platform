@@ -1,6 +1,6 @@
 MODULE SaleReturnShipment;
 
-REQUIRE Shipment, SaleReturnInvoice, OrderShipment, InvoiceShipment;
+REQUIRE Shipment, SaleReturnInvoice, OrderShipment, InvoiceShipment, PriceListLedger;
 
 PRIORITY Sale, Operation;
 

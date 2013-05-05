@@ -9,7 +9,8 @@ REQUIRE System,
         Document,
         Employee,
         StockDocument,
-        Utils;
+        Utils,
+        PriceListLedger;
 
 //----------------------------------- Пересорт товара -------------------------------------------------------
 

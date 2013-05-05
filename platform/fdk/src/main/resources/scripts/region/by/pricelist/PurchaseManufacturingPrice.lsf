@@ -1,6 +1,6 @@
 MODULE PurchaseManufacturingPrice;
 
-REQUIRE PurchaseInvoice, PricingPurchase, PricingManufacturingPrice, RepricingManufacturingPrice;
+REQUIRE PurchaseInvoice, PricingPurchase, PricingManufacturingPrice, RepricingManufacturingPrice, PriceListLedger;
 
 NAMESPACE Purchase;
 

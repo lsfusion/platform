@@ -1,6 +1,6 @@
 MODULE RepricingDisparityManufacturingPrice;
 
-REQUIRE RepricingDisparity, RepricingManufacturingPrice;
+REQUIRE RepricingDisparity, RepricingManufacturingPrice, PriceListLedger;
 
 @defineDocumentDetailPriceCustomPrefix(disparityDetail, curInputManufacturing, ' изготовителя до');
 @deriveDocumentDetailPriceSystemLedgerPriceListType(disparity, manufacturingPriceStockPriceListType, curInputManufacturing, sku, stock);

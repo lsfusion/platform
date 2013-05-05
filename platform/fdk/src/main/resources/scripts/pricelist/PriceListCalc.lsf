@@ -1,6 +1,6 @@
 MODULE PriceListCalc;
 
-REQUIRE PriceList;
+REQUIRE PriceListLedger;
 
 NAMESPACE PriceList;
 

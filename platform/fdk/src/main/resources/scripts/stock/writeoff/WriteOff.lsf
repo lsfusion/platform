@@ -2,7 +2,7 @@ MODULE WriteOff;
 
 REQUIRE System,
         Stock,
-        PriceList,
+        PriceListLedger,
 //        Store,
         Currency,
         Numerator,

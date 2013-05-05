@@ -2,7 +2,8 @@ MODULE RepricingDisparity;
 
 REQUIRE Disparity,
         Repricing,
-        DisparityOperation;
+        DisparityOperation,
+        PriceListLedger;
 
 @defineDocumentHeaderCreate(disparity, createRepricing, 'Создать акт переоценки');
 @defineDocumentDetailCreateCustom(disparity, disparityDetail, createRepricing, 'Создать акт переоценки');

@@ -13,7 +13,7 @@ REQUIRE System,
         SaleLedger,
         RetailCRM,
         PriceRoundStore,
-        PriceList,
+        PriceListType,
         PaymentLedger,
         StockDocument; // todo : эту зависимость надо будет убить, но сейчас не получается из-за того что нельзя донаследовать классы
 

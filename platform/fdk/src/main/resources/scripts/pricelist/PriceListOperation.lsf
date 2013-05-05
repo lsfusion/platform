@@ -1,6 +1,6 @@
-MODULE PriceListDataOperation;
+MODULE PriceListOperation;
 
-REQUIRE PriceListData;
+REQUIRE PriceList;
 
 NAMESPACE PriceList;
 
