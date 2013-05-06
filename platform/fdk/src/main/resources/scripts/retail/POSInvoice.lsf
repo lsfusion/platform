@@ -18,6 +18,7 @@ createInvoiceReceipt 'Создать накладную' = ACTION (receipt) {   
             SET quantityUserInvoiceDetail(d) <- quantityReceiptDetail(detail);
             SET invoiceSumUserInvoiceDetail(d) <- sumReceiptDetail(detail);
             SET invoicePriceUserInvoiceDetail(d) <- sumReceiptDetail(detail)/quantityReceiptDetail(detail);
+            SET priceUserInvoiceDetail(d) <- invoicePriceUserInvoiceDetail (d) * 100/(100 + calcValueVATUserInvoiceDetail(d));
 
             EXEC delete(detail);
         }
