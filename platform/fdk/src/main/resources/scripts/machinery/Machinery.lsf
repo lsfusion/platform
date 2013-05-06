@@ -437,9 +437,9 @@ createAttributeMachineryPriceTransactionStock = ABSTRACT ACTION (machineryPriceT
 createAttributeMachineryPriceTransactionGroupMachinery = ABSTRACT ACTION (machineryPriceTransaction, groupMachinery);
 
 createMachineryPriceTransaction 'Создать транзакцию' = ACTION (stock) {
-    LOCAL message = STRING[3000] ();
+    LOCAL message = TEXT();
     LOCAL sentSomething = BOOLEAN();
-    SET message() <- 'Принято к загрузке в оборудование : \n';
+    SET message() <- toText('Принято к загрузке в оборудование : \n');
 
     FOR stockGroupMachinery(groupMachinery) == stock DO {
         LOCAL inBarcode = BOOLEAN (Barcode);
@@ -470,7 +470,8 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                 EXEC createAttributeMachineryPriceTransactionGroupMachinery(t, groupMachineryMachineryPriceTransaction(t));
                 SET priceMachineryPriceTransactionBarcode(t, barcode) <- priceBarcodeGroupMachinery(barcode, groupMachinery) WHERE inMachineryPriceTransactionBarcode(t, barcode);
             }
-            SET message() <- [FORMULA STRING[3000] '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n']
+
+            SET message() <- [FORMULA TEXT '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n']
                              (message(), nameGroupMachinery(groupMachinery), countBarcode());
             SET sentSomething() <- TRUE;
         }
