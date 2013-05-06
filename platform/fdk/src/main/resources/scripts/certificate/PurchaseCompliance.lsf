@@ -5,7 +5,10 @@ REQUIRE Compliance, PurchaseCertificate;
 NAMESPACE Purchase;
 
 @defineDocumentCertificateObject(compliance, invoice, i, 'Сертификат соответствия');
+@deriveDocumentCertificate(compliance, invoice, customerStock, data);
 @defineDocumentCertificateObject(compliance, shipment, s, 'Сертификат соответствия');
+@deriveDocumentCertificate(compliance, shipment, customerStock, data);
+
 complianceShipmentDetail(detail) += complianceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
 
 overFillInvoiceUserShipmentDetailInvoiceDetail(s, i) += ACTION (s, i) {

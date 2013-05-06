@@ -5,7 +5,9 @@ REQUIRE Declaration, PurchaseCertificate, PurchaseInvoice;
 NAMESPACE Purchase;
 
 @defineDocumentCertificateObject(declaration, invoice, i, 'Таможенная декларация');
+@deriveDocumentCertificate(declaration, invoice, customerStock, data);
 @defineDocumentCertificateObject(declaration, shipment, s, 'Таможенная декларация');
+@deriveDocumentCertificate(declaration, shipment, customerStock, data);
 
 declarationShipmentDetail(detail) += declarationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
 

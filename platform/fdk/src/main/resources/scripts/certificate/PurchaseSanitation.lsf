@@ -5,8 +5,10 @@ REQUIRE Sanitation, PurchaseCertificate;
 NAMESPACE Purchase;
 
 @defineDocumentCertificateObject(sanitation, invoice, i, 'ГГР');
+@deriveDocumentCertificate(sanitation, invoice, customerStock, data);
 
 @defineDocumentCertificateObject(sanitation, shipment, s, 'ГГР');
+@deriveDocumentCertificate(sanitation, shipment, customerStock, data);
 
 sanitationShipmentDetail(detail) += sanitationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
 overFillInvoiceUserShipmentDetailInvoiceDetail(s, i) += ACTION (s, i) {
