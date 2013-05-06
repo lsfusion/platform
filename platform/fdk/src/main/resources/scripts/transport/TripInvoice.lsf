@@ -2,6 +2,8 @@ MODULE TripInvoice;
 
 REQUIRE OrderInvoice, Shipment, Trip;   //  Order, Invoice
 
+PRIORITY ContractLedger;
+
 quantityTripInvoice (trip, invoice) = GROUP SUM quantityOrderInvoice(order, invoice) IF inTripOrder(trip, order) BY trip, invoice;
 
 tripInvoice = DATA Trip(Invoice);

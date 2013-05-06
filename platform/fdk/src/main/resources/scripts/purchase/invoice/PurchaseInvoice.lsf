@@ -184,3 +184,6 @@ NAVIGATOR {
     }
 }
 
+//Платежи
+@defineInvoicePayment();
+

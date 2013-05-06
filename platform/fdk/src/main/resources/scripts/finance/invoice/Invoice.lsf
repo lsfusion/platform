@@ -15,7 +15,7 @@ REQUIRE System,
         SaleLedger,
         StockReserve,
         Employee,
-        ContractLedger,
+        ContractPayment,
         StockTax;
 
 CLASS ABSTRACT Invoice 'Накладная' : ContractLedger, ContractALedger, InContractLedger, OutContractLedger, Document;
@@ -649,5 +649,53 @@ META defineInvoiceHomeCurrency(dumb)
         //PROPERTIES(d) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) sumHomeInvoiceDetail AFTER sumInvoiceDetail SHOWIF isHomeCurrencyInvoice(i)
         //PROPERTIES(d) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) homePriceInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrencyInvoice(i)
     ;
+END
+
+META defineInvoicePayment(dumb)
+
+    addPaymentInvoice 'Оплатить' = ACTION (invoice) {
+        SET currentInContractLedger() <- invoice;
+        FOR ADDOBJ p = Payment DO{
+            SET contractPayment(p) <- contractSkuUserInvoice(invoice);
+            SET datePayment(p) <- currentDate();
+            SET timePayment(p) <- currentTime();
+            SET payerPayment(p) <- customerUserInvoice(invoice);
+            SET beneficiaryPayment(p) <- supplierUserInvoice(invoice);
+            SET sumFromPayment(p) <- invoiceSumUserInvoiceDetailUserInvoice(invoice);
+            SET costOutContractLedgerInContractLedger(p, invoice) <- sumContractPayment(p);
+            FORM payment OBJECTS p=p MODAL;
+            IF TRUE IF NOT formResult() == FormResult.ok THEN {
+                EXEC delete(p);
+            }
+        }
+    }
+
+    editPaymentInvoice 'Редактировать' = ACTION (payment, invoice) {
+        SET currentInContractLedger() <- invoice;
+        FORM payment OBJECTS p=payment MODAL;
+    }
+
+    EXTEND FORM userInvoice
+        OBJECTS pm = Payment
+        PROPERTIES(pm) READONLY seriesNumberObject, dateTimePayment, namePayerPayment, nameBeneficiaryPayment,
+                                notePayment, objectClassName
+        ORDER BY dateTimePayment
+        PROPERTIES(pm, i) costOutContractLedgerInContractLedger
+        PROPERTIES TODRAW pm FORCE PANEL TOOLBAR addPaymentInvoice(i), editPaymentInvoice(pm, i)
+        PROPERTIES(pm) delete
+
+        FILTERGROUP filters
+            FILTER 'Платежи по инвойсу' 'F10' costOutContractLedgerInContractLedger(pm, i) DEFAULT
+        FILTERS contractPayment(pm) == contractInContractLedger(i)
+    ;
+
+    EXTEND DESIGN userInvoice{
+        specification.box{
+            NEW paymentContainer{
+                caption = 'Платежи';
+                ADD pm.box;
+            }
+        }
+    }
 END
 

@@ -123,6 +123,11 @@ EXTEND FORM payments
 
 ;
 
+currentInContractLedger = DATA SESSION InContractLedger ();
+WHEN SESSION FORMS payment
+    CHANGED(sumContractPayment(p)) AND currentInContractLedger()
+        DO SET costOutContractLedgerInContractLedger(p, i) <- sumContractPayment(p) WHERE i == currentInContractLedger();
+
 //------------------------------------- Платежи по договору --------------------------------------------------------//
 
 payContractDate 'Оплатить по договору' = ACTION (contract, date) NEWSESSION {

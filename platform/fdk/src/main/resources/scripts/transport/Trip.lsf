@@ -2,6 +2,8 @@ MODULE Trip;
 
 REQUIRE Order, Shipment, Route, ContractLedger;
 
+PRIORITY ContractLedger;
+
 NAMESPACE Trip;
 
 CLASS Trip 'Рейс' : NumeratedObject;
