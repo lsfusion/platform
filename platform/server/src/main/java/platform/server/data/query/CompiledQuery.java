@@ -926,7 +926,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                             Type type = ((ValueExpr)value).getType();
                             outerParams += "," + type.getBinaryCast(paramValue, syntax, false);
                             paramValue = type.getCast("$1["+(iv++)+"]",syntax, false);
-                        }
+                        } else
+                            env.addNoPrepare();
                         mvInnerParams.mapValue(i, paramValue);
                     }
                     innerParams = mvInnerParams.immutableValueRev();

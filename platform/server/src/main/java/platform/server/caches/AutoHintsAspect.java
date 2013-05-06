@@ -262,7 +262,7 @@ public class AutoHintsAspect {
                         ImRevMap<?, KeyExpr> mapKeys = result.getMapKeys();
                         Expr prevExpr = property.getExpr(mapKeys);
                         if(whereComplexity > catchHint.getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * catchHint.getLimitGrowthIncrementComplexity()) {
-                            if (changed.getFullStatKeys(mapKeys.valuesSet()).rows.lessEquals(new Stat(catchHint.getLimitHintIncrementStat())))
+                            if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet()).rows.lessEquals(new Stat(catchHint.getLimitHintIncrementStat()))) // временно, из за отсутствия оптимизации в некоторых Expr внутренн
                                 throw new HintException(new IncrementHint(property, true));
                             if(allowNoUpdate && complexity > catchHint.getLimitHintNoUpdateComplexity()) {
                                 System.out.println("AUTO HINT NOUPDATE" + property);

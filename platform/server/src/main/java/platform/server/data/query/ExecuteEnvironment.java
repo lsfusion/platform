@@ -16,22 +16,26 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
 
     private boolean noReadOnly;
     private boolean volatileStats;
+    private boolean noPrepare;
+
 
     public ExecuteEnvironment() {
         this.noReadOnly = false;
         this.volatileStats = false;
+        this.noPrepare = false;
     }
 
     public ExecuteEnvironment(boolean noReadOnly) {
         this.noReadOnly = noReadOnly;
         this.volatileStats = false;
+        this.noPrepare = false;
     }
 
     void add(ExecuteEnvironment environment) {
         noReadOnly = noReadOnly || environment.noReadOnly;
         volatileStats = volatileStats || environment.volatileStats;
+        noPrepare = noPrepare || environment.noPrepare;
     }
-
 
     public void addNoReadOnly() {
         noReadOnly = true;
@@ -39,6 +43,10 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
 
     public void addVolatileStats() {
         volatileStats = true;
+    }
+
+    public void addNoPrepare() {
+        noPrepare = true;
     }
 
     public void before(SQLSession sqlSession, Connection connection, String command) throws SQLException {
@@ -55,14 +63,16 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
             sqlSession.popVolatileStats(connection);
     }
 
+    public boolean isNoPrepare() {
+        return noPrepare;
+    }
+
     public ExecuteEnvironment translateValues(MapValuesTranslate translate) {
         return this;
     }
 
     public boolean twins(TwinImmutableObject o) {
         throw new RuntimeException("not supported yet");
-
-
     }
 
     public int immutableHashCode() {

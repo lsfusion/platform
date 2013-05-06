@@ -487,7 +487,7 @@ public class SQLSession extends MutableObject {
         env.before(this, connection, command);
 
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
-        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE) ":"") + command, paramObjects, connection, syntax, returnStatement);
+        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE) ":"") + command, paramObjects, connection, syntax, returnStatement, env.isNoPrepare());
 
         int result = 0;
         long runTime = 0;
@@ -497,7 +497,7 @@ public class SQLSession extends MutableObject {
                 Result<ReturnStatement> returnExplain = null; long explainStarted = 0;
                 if(explainNoAnalyze) {
                     returnExplain = new Result<ReturnStatement>();
-                    explainStatement = getStatement("EXPLAIN (VERBOSE, COSTS)" + command, paramObjects, connection, syntax, returnExplain);
+                    explainStatement = getStatement("EXPLAIN (VERBOSE, COSTS)" + command, paramObjects, connection, syntax, returnExplain, env.isNoPrepare());
                     explainStarted = System.currentTimeMillis();
                 }
                 systemLogger.info(explainStatement.toString());
@@ -552,14 +552,14 @@ public class SQLSession extends MutableObject {
         if(explainAnalyzeMode) {
             systemLogger.info(select);
             Result<ReturnStatement> returnExplain = new Result<ReturnStatement>();
-            PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze ? "VERBOSE, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, returnExplain);
+            PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze ? "VERBOSE, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, returnExplain, env.isNoPrepare());
             long started = System.currentTimeMillis();
             executeExplain(statement, explainNoAnalyze);
             returnExplain.result.proceed(statement, System.currentTimeMillis() - started);
         }
 
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
-        PreparedStatement statement = getStatement(select, paramObjects, connection, syntax, returnStatement);
+        PreparedStatement statement = getStatement(select, paramObjects, connection, syntax, returnStatement, env.isNoPrepare());
         MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = MapFact.mOrderExclMap();
         long runTime = 0;
         try {
@@ -995,9 +995,9 @@ public class SQLSession extends MutableObject {
             statement.close();
         }};
 
-    private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, Connection connection, SQLSyntax syntax, Result<ReturnStatement> returnStatement) throws SQLException {
+    private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, Connection connection, SQLSyntax syntax, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {
 
-        boolean poolPrepared = !Settings.get().isDisablePoolPreparedStatements() && command.length() > Settings.get().getQueryPrepareLength();
+        boolean poolPrepared = !noPrepare && !Settings.get().isDisablePoolPreparedStatements() && command.length() > Settings.get().getQueryPrepareLength();
 
         final ParseStatement parse = preparseStatement(command, poolPrepared, paramObjects, syntax);
 
