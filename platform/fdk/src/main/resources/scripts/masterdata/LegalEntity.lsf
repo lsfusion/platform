@@ -176,16 +176,16 @@ toShowLegalEntity(legalEntity) += legalEntity IS LegalEntity AND NOT toShowIndiv
 
 FORM legalEntity 'Организация'
     OBJECTS l=LegalEntity FIXED PANEL
-    PROPERTIES(l)  nameLegalEntity, nameLegalEntityGroupLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity
-    PROPERTIES(l)  SHOWIF toShowLegalEntity(l) nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
-                   fullNameLegalEntity,
+    PROPERTIES(l)  nameLegalEntity, nameLegalEntityGroupLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+                   nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity
+    PROPERTIES(l)  SHOWIF toShowLegalEntity(l) fullNameLegalEntity,
                    addressLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity, phoneLegalEntity,
                    emailLegalEntity, siteLegalEntity,
                    isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
     PROPERTIES(l)  differentStocksInDetailsLegalEntity SHOWIF isCompanyLegalEntity(l)
 
-    OBJECTS li=License
-    PROPERTIES(li) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
+    OBJECTS li=License FIXED GRID
+    PROPERTIES(li) SHOWIF toShowLegalEntity(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
     FILTERS legalEntityLicense(li) == l
 
     EDIT LegalEntity OBJECT l

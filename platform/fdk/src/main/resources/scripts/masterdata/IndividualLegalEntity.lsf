@@ -53,7 +53,7 @@ EXTEND DESIGN legalEntity {
         ADD PROPERTY(emailContact);
     }
     column1 {
-        NEW contact AFTER ownership{
+        NEW contact AFTER regionContainer{
             title = 'Личные данные';
             childConstraints =  TO THE RIGHT;
             ADD PROPERTY(firstNameContact);
