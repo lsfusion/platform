@@ -109,13 +109,18 @@ TABLE groupGroup(Group, Group);
 @defineHierarchyAbstract(group, Group);
 
 CLASS ABSTRACT GroupType 'Тип классификатора SKU';
+nameGroupType 'Наименование' = ABSTRACT ISTRING[50](GroupType);
+
+FORM groupTypes
+    OBJECTS g = GroupType
+    PROPERTIES(g) READONLY nameGroupType
+    DIALOG GroupType OBJECT g
+;
+
 CLASS SystemGroupType 'Системный тип классификатор SKU' : GroupType;
 TABLE systemGroupType(SystemGroupType);
 
-nameGroupType 'Наименование' = ABSTRACT ISTRING[50](GroupType);
-nameSystemGroupType 'Наименование' = DATA ISTRING[50](SystemGroupType);
-
-nameGroupType(type) += nameSystemGroupType(type) IF type IS SystemGroupType;
+nameGroupType(type) += staticCaption(type) IF type IS SystemGroupType;
 
 groupTypeGroup = ABSTRACT GroupType (Group) PERSISTENT INDEXED;
 nameGroupTypeGroup 'Тип классификатора SKU' (group) = nameGroupType(groupTypeGroup(group));
