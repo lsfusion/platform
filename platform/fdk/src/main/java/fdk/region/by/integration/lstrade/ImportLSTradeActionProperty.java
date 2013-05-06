@@ -41,7 +41,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             Integer numberOfItems = (Integer) getLCP("importNumberItems").read(context);
-            Integer assortmentNumberOfItems = (Integer) getLCP("importAssortmentNumberItems").read(context);
+            Integer numberOfPriceLists = (Integer) getLCP("importNumberPriceLists").read(context);
             String prefixStore = (String) getLCP("prefixStore").read(context);
             prefixStore = prefixStore == null ? "МГ" : prefixStore.trim();
 
@@ -55,6 +55,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                 importData.setImportInactive(importInactive);
 
                 importData.setNumberOfItemsAtATime((Integer) getLCP("importNumberItemsAtATime").read(context));
+                importData.setNumberOfPriceListSuppliersAtATime((Integer) getLCP("importNumberPriceListSuppliersAtATime").read(context));
 
                 importData.setItemGroupsList((getLCP("importGroupItems").read(context) != null) ?
                         importItemGroupsFromDBF(path + "//_sprgrt.dbf", false) : null);
@@ -89,11 +90,11 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                 importData.setItemsList((getLCP("importItems").read(context) != null) ?
                         importItemsFromDBF(path + "//_sprgrm.dbf", path + "//_postvar.dbf", numberOfItems, importInactive) : null);
 
-                importData.setPriceListStoresList((getLCP("importStoreAssortment").read(context) != null) ?
-                        importPriceListStoreFromDBF(path + "//_postvar.dbf", path + "//_strvar.dbf", assortmentNumberOfItems) : null);
+                importData.setPriceListStoresList((getLCP("importPriceListStores").read(context) != null) ?
+                        importPriceListStoreFromDBF(path + "//_postvar.dbf", path + "//_strvar.dbf", numberOfPriceLists) : null);
 
-                importData.setPriceListSuppliersList((getLCP("importSupplierAssortment").read(context) != null) ?
-                        importPriceListSuppliersFromDBF(path + "//_postvar.dbf", assortmentNumberOfItems) : null);
+                importData.setPriceListSuppliersList((getLCP("importPriceListSuppliers").read(context) != null) ?
+                        importPriceListSuppliersFromDBF(path + "//_postvar.dbf", numberOfPriceLists) : null);
 
                 importData.setUserInvoicesList((getLCP("importUserInvoices").read(context) != null) ?
                         importUserInvoicesFromDBF(path + "//_ostn.dbf") : null);

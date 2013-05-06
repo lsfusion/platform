@@ -20,6 +20,7 @@ public class ImportData {
     private List<PriceListSupplier> priceListSuppliersList;
     private List<UserInvoiceDetail> userInvoicesList;
     private Integer numberOfItemsAtATime;
+    private Integer numberOfPriceListSuppliersAtATime;
     private Integer numberOfUserInvoicesAtATime;
     private Boolean importInactive;
     private Boolean importUserInvoicesPosted;
@@ -161,6 +162,14 @@ public class ImportData {
 
     public void setNumberOfItemsAtATime(Integer numberOfItemsAtATime) {
         this.numberOfItemsAtATime = numberOfItemsAtATime;
+    }
+
+    public Integer getNumberOfPriceListSuppliersAtATime() {
+        return numberOfPriceListSuppliersAtATime;
+    }
+
+    public void setNumberOfPriceListSuppliersAtATime(Integer numberOfPriceListSuppliersAtATime) {
+        this.numberOfPriceListSuppliersAtATime = numberOfPriceListSuppliersAtATime;
     }
 
     public Integer getNumberOfUserInvoicesAtATime() {
