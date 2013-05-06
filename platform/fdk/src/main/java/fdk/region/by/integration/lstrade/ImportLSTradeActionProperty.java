@@ -4,16 +4,6 @@ import fdk.integration.*;
 import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
-import platform.base.col.interfaces.immutable.ImMap;
-import platform.base.col.interfaces.immutable.ImOrderMap;
-import platform.base.col.interfaces.immutable.ImRevMap;
-import platform.interop.Compare;
-import platform.server.classes.*;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.QueryBuilder;
-import platform.server.logics.DataObject;
-import platform.server.logics.NullValue;
-import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
@@ -55,7 +45,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                 importData.setImportInactive(importInactive);
 
                 importData.setNumberOfItemsAtATime((Integer) getLCP("importNumberItemsAtATime").read(context));
-                importData.setNumberOfPriceListSuppliersAtATime((Integer) getLCP("importNumberPriceListSuppliersAtATime").read(context));
+                importData.setNumberOfPriceListsAtATime((Integer) getLCP("importNumberPriceListsAtATime").read(context));
 
                 importData.setItemGroupsList((getLCP("importGroupItems").read(context) != null) ?
                         importItemGroupsFromDBF(path + "//_sprgrt.dbf", false) : null);

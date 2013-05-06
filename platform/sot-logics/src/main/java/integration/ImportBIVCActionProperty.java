@@ -78,9 +78,9 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
         } catch (xBaseJException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new RuntimeException(e);
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new RuntimeException(e);
         }
     }
 
