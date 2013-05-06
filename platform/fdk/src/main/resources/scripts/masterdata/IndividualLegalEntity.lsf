@@ -1,0 +1,65 @@
+MODULE IndividualLegalEntity;
+
+REQUIRE System, Utils, LegalEntity;
+
+EXTEND CLASS LegalEntity: Contact;
+
+EXTEND CLASS Ownership { individual 'Физическое лицо' }
+
+overLoadDefaultOwnerships () += ACTION ()  {
+    EXEC loadDefaultStaticOwnership('Физическое лицо', 'Ф.Л.', '112', Ownership.individual);
+}
+
+isIndividualLegalEntity 'Физ.лицо' (legalEntity) =  ownershipLegalEntity(legalEntity) == Ownership.individual;
+
+WHEN SESSION CHANGED(nameContact(legalEntity)) AND isIndividualLegalEntity(legalEntity) DO {
+    SET nameLegalEntity(legalEntity) <- nameContact(legalEntity);
+}
+
+WHEN SESSION CHANGED(phoneContact(legalEntity)) AND isIndividualLegalEntity(legalEntity) DO {
+    SET dataPhoneLegalEntityDate(legalEntity, date) <- phoneContact(legalEntity) WHERE date == currentDate();
+}
+WHEN SESSION CHANGED(phoneLegalEntity(legalEntity)) AND isIndividualLegalEntity(legalEntity) DO {
+    SET phoneContact(legalEntity) <- phoneLegalEntity(legalEntity);
+}
+
+WHEN SESSION CHANGED(postAddressContact(legalEntity)) AND isIndividualLegalEntity(legalEntity) DO {
+    SET dataPostAddressLegalEntityDate(legalEntity, date) <- postAddressContact(legalEntity) WHERE date == currentDate();
+}
+WHEN SESSION CHANGED(postAddressLegalEntity(legalEntity)) AND isIndividualLegalEntity(legalEntity) DO {
+    SET postAddressContact(legalEntity) <- postAddressLegalEntity(legalEntity);
+}
+
+WHEN SESSION CHANGED(emailContact(legalEntity)) AND isIndividualLegalEntity(legalEntity) DO {
+    SET emailLegalEntity(legalEntity) <- emailContact(legalEntity);
+}
+WHEN SESSION CHANGED(emailLegalEntity(legalEntity)) AND isIndividualLegalEntity(legalEntity) DO {
+    SET emailContact(legalEntity) <- emailLegalEntity(legalEntity);
+}
+
+toShowIndividualLegalEntity(legalEntity) += isIndividualLegalEntity(legalEntity);
+
+
+EXTEND FORM legalEntity
+
+    PROPERTIES(l) SHOWIF toShowIndividualLegalEntity(l)  firstNameContact, lastNameContact, phoneContact,
+                    postAddressContact, birthdayContact, emailContact
+;
+
+EXTEND DESIGN legalEntity {
+    l.contactGroup {
+        ADD PROPERTY(phoneContact);
+        ADD PROPERTY(postAddressContact);
+        ADD PROPERTY(emailContact);
+    }
+    column1 {
+        NEW contact AFTER ownership{
+            title = 'Личные данные';
+            childConstraints =  TO THE RIGHT;
+            ADD PROPERTY(firstNameContact);
+            ADD PROPERTY(lastNameContact);
+            ADD PROPERTY(birthdayContact);
+        }
+    }
+}
+

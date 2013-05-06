@@ -126,7 +126,7 @@ numberAccountLegalEntity 'Основной р/сч.' (legalEntity) = numberAccou
 equalsLegalEntityAccount 'Основной' (legalEntity, account) = userAccountLegalEntity(legalEntity) == account;
 
 EXTEND FORM legalEntity
-    PROPERTIES(l)  numberAccountLegalEntity
+    PROPERTIES(l)  SHOWIF toShowLegalEntity(l) numberAccountLegalEntity
 
     OBJECTS a=Account
     PROPERTIES(a)  numberAccount, nameCurrencyAccount, nameBankAccount, addressBankAccount, departmentBankAccount,

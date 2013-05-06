@@ -18,7 +18,7 @@ END
 
 EXTEND FORM legalEntity
 
-    PROPERTIES(l) UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity
+    PROPERTIES(l) SHOWIF toShowLegalEntity(l) UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity
 ;
 
 EXTEND DESIGN legalEntity{
@@ -55,6 +55,8 @@ loadDefaultOwnerships () += ACTION ()  {
     EXEC loadDefaultOwnership ('Частное торговое унитарное предприятие', 'ЧТУП', '112');
     EXEC loadDefaultOwnership ('Частное унитарное предприятие', 'ЧУП', '112');
     EXEC loadDefaultOwnership ('Частное унитарное торговое предприятие', 'ЧУТП', '112');
+
+    EXEC overLoadDefaultOwnerships ();
 };
 
 

@@ -167,20 +167,22 @@ defaultCompanyEmployee 'Компания по умолчанию' (employee)= GR
 defaultCustomerEmployee 'Покупатель по умолчанию' (employee)= GROUP MIN legalEntity IF isCustomerLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
                                                                     BY employee;
 
+toShowLegalEntity = ABSTRACT BOOLEAN (LegalEntity);
+toShowIndividualLegalEntity = ABSTRACT BOOLEAN (LegalEntity);
+
+toShowLegalEntity(legalEntity) += legalEntity IS LegalEntity AND NOT toShowIndividualLegalEntity(legalEntity);
+
 // ---------------------------------------- Формы для ввода компаний ------------------------------------- //
 
 FORM legalEntity 'Организация'
     OBJECTS l=LegalEntity FIXED PANEL
-    PROPERTIES(l) nameLegalEntity, nameLegalEntityGroupLegalEntity, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
-                   nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
-                   addressLegalEntity,
-                   postAddressLegalEntity,
-                   managerLegalEntity,
-                   accountantLegalEntity,
-                   phoneLegalEntity,
+    PROPERTIES(l)  nameLegalEntity, nameLegalEntityGroupLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity
+    PROPERTIES(l)  SHOWIF toShowLegalEntity(l) nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
+                   fullNameLegalEntity,
+                   addressLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity, phoneLegalEntity,
                    emailLegalEntity, siteLegalEntity,
-                   isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity,
-                   differentStocksInDetailsLegalEntity SHOWIF isCompanyLegalEntity(l)
+                   isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
+    PROPERTIES(l)  differentStocksInDetailsLegalEntity SHOWIF isCompanyLegalEntity(l)
 
     OBJECTS li=License
     PROPERTIES(li) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
@@ -202,6 +204,11 @@ DESIGN legalEntity FROM DEFAULT {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY(nameLegalEntity(l));
                     ADD PROPERTY(nameLegalEntityGroupLegalEntity(l));
+                }
+                NEW ownership {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameOwnershipLegalEntity);
+                    ADD PROPERTY(shortNameOwnershipLegalEntity);
                 }
                 NEW regionContainer {
                     childConstraints =  TO THE RIGHT;
@@ -345,6 +352,12 @@ END
 
 // ----------------------------------- Стандартные данные ----------------------------------- //
 
+loadDefaultStaticOwnership 'Добавить Формы собственности' = ACTION (iname, isname, sidCountry, static) {    //статик класс
+        SET nameOwnership(t) <- iname WHERE t == static;
+        SET shortNameOwnership(t) <- isname WHERE t == static;
+        SET countryOwnership(t) <- countrySID(sidCountry) WHERE t == static;
+}
+
 loadDefaultOwnership 'Добавить Формы собственности' = ACTION (iname, isname, sidCountry) {
     FOR ADDOBJ t = Ownership DO {
         SET nameOwnership(t) <- iname;
@@ -352,6 +365,8 @@ loadDefaultOwnership 'Добавить Формы собственности' = 
         SET countryOwnership(t) <- countrySID(sidCountry);
     }
 }
+
+overLoadDefaultOwnerships () = ABSTRACT ACTION ();
 
 loadDefaultOwnerships 'Загрузить стандарные формы собственности' () = ABSTRACT ACTION () IN loadDefaultGroup;
 
