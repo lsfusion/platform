@@ -13,6 +13,8 @@ serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'platform.server
 getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'platform.server.logics.service.GetVMInfoActionProperty';
 toggleExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов' = ACTION CUSTOM 'platform.server.logics.service.ToggleExplainAnalyzeModeActionProperty';
 toggleExplainMode 'Выводить в лог EXPLAIN запросов' = ACTION CUSTOM 'platform.server.logics.service.ToggleExplainModeActionProperty';
+toggleVolatileStats 'Не использовать nested loop' = ACTION CUSTOM 'platform.server.logics.service.ToggleVolatileStatsActionProperty';
+toggleSQLLoggerDebugMode 'Выводить в лог доп.информацию' = ACTION CUSTOM 'platform.server.logics.service.ToggleSQLLoggerDebugModeActionProperty';
 
 restartServerAction 'Остановить сервер' = ACTION CUSTOM 'platform.server.logics.service.RestartActionProperty';
 runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'platform.server.logics.service.GarbageCollectorActionProperty';
@@ -23,7 +25,8 @@ FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, restartServerAction SHOWIF isNotServerRestarting(),
                  cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, recalculateAction,
                  recalculateFollowsAction, packAction, analyzeDBAction, serviceDBAction,
-                 runGarbageCollector, getVMInfo, toggleExplainAnalyzeMode, toggleExplainMode
+                 runGarbageCollector, getVMInfo, toggleExplainAnalyzeMode, toggleExplainMode, toggleVolatileStats,
+                 toggleSQLLoggerDebugMode
 ;
 
 NAVIGATOR {

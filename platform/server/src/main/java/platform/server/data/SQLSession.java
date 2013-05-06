@@ -1,5 +1,6 @@
 package platform.server.data;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import platform.base.*;
 import platform.base.col.ListFact;
@@ -39,6 +40,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static platform.server.ServerLoggers.sqlLogger;
 import static platform.server.ServerLoggers.systemLogger;
 
 public class SQLSession extends MutableObject {
@@ -412,6 +414,20 @@ public class SQLSession extends MutableObject {
                executeDDL("SET enable_nestloop=on");
     }
 
+    public void toggleVolatileStats() throws SQLException {
+        if(volatileStats==0)
+            pushVolatileStats(null);
+        else
+            popVolatileStats(null);
+    }
+
+    public void toggleSQLLoggerDebugMode() {
+
+        if(sqlLogger.getLevel()== Level.INFO)
+            sqlLogger.setLevel(Level.DEBUG);
+        else
+            sqlLogger.setLevel(Level.INFO);
+    }
 
     public void executeDDL(String DDL) throws SQLException {
         executeDDL(DDL, ExecuteEnvironment.EMPTY);
