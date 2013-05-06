@@ -118,12 +118,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = RequestUserInputClientAction.class)
-    public GRequestUserInputAction convertAction(RequestUserInputClientAction action) throws IOException {
+    public GRequestUserInputAction convertAction(RequestUserInputClientAction action, FormDispatchServlet servlet) throws IOException {
         GType type = typeConverter.convertOrCast(
                 ClientTypeSerializer.deserializeClientType(action.readType)
         ) ;
 
-        Object value = deserializeServerValue(action.oldValue);
+        Object value = valuesConverter.convertOrCast(deserializeServerValue(action.oldValue), servlet.getBLProvider());
 
         return new GRequestUserInputAction(type, value);
     }
@@ -143,8 +143,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = UpdateEditValueClientAction.class)
-    public GUpdateEditValueAction convertAction(UpdateEditValueClientAction action) throws IOException {
-        return new GUpdateEditValueAction(deserializeServerValue(action.value));
+    public GUpdateEditValueAction convertAction(UpdateEditValueClientAction action, FormDispatchServlet servlet) throws IOException {
+        return new GUpdateEditValueAction(valuesConverter.convertOrCast(deserializeServerValue(action.value), servlet.getBLProvider()));
     }
 
     @Converter(from = AsyncGetRemoteChangesClientAction.class)

@@ -61,8 +61,8 @@ public class GwtToClientConverter extends ObjectConverter {
     }
 
     @Converter(from = GUserInputResult.class)
-    public UserInputResult convertInputResult(GUserInputResult gInputResult) {
-        return new UserInputResult(gInputResult.isCanceled(), convertOrCast(gInputResult.getValue()));
+    public UserInputResult convertInputResult(GUserInputResult gInputResult, BusinessLogicsProvider blProvider) {
+        return new UserInputResult(gInputResult.isCanceled(), convertOrCast(gInputResult.getValue(), blProvider));
     }
 
     @Converter(from = GClassViewType.class)

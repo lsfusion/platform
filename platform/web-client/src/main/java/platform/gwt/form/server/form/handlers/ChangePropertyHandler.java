@@ -31,7 +31,7 @@ public class ChangePropertyHandler extends ServerResponseActionHandler<ChangePro
                         action.requestIndex,
                         action.propertyId,
                         fullKey,
-                        serializeObject(value),
+                        serializeObject(gwtConverter.convertOrCast(value, servlet.getBLProvider())),
                         action.addedObjectId
                 )
         );
