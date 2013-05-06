@@ -95,6 +95,7 @@ FORM UOMs 'Единицы измерений'
     OBJECTS u=UOM
     PROPERTIES(u) READONLY nameUOM, shortNameUOM, shortNameBaseUOM, genitiveNameUOM, factorUOM
     PROPERTIES(u) ADDFORM, EDITFORM, delete
+    DIALOG UOM OBJECT u
 ;
 
 // ----------------------------------- Абстрактная группа ------------------------------------------ //
