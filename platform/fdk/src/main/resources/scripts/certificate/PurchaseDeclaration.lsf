@@ -226,16 +226,17 @@ sumRateVATDeclaration 'НДС' (declaration) = GROUP SUM sumVATDataDeclarationDe
 // оформление
 sumRegistrationDeclarationDetail 'Таможенный сбор (валют.)' (declarationDetail) = registrationCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclarationDetail(declarationDetail));
 
-sumRegistrationMaxDeclaration 'Таможенный сбор (валют.)' (declaration) = GROUP MAX sumRegistrationDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) PERSISTENT;
+sumMaxRegistrationDeclaration 'Таможенный сбор (валют.)' (declaration) = GROUP MAX sumRegistrationDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) PERSISTENT;
 
-sumRegistrationRateDeclaration 'Таможенный сбор' (declaration) = roundCurrencyDeclaration(sumRegistrationMaxDeclaration(declaration) *
+sumRateRegistrationDeclaration 'Таможенный сбор' (declaration) = roundCurrencyDeclaration(sumMaxRegistrationDeclaration(declaration) *
                                                                                           rateExchangeCustomsZoneDeclaration(declaration), declaration) MINCHARWIDTH 12;
 
 sumRegistrationDataDeclaration 'Таможенный сбор' = DATA NUMERIC[14,3](Declaration);
 
-sumRegistrationDeclaration 'Таможенный сбор' (declaration) = sumRegistrationRateDeclaration(declaration) OVERRIDE sumRegistrationDataDeclaration(declaration);
+sumRegistrationDeclaration 'Таможенный сбор' (declaration) = sumRateRegistrationDeclaration(declaration) OVERRIDE sumRegistrationDataDeclaration(declaration);
 
 setSumDeclarationDetail 'Рассчитать суммы' = ACTION (declaration) {
+   SET sumRegistrationDataDeclaration(declaration) <- sumRateRegistrationDeclaration(declaration);
    FOR declarationDeclarationDetail(declarationDetail) == declaration DO {
       SET sumDataDeclarationDetail(declarationDetail) <- sumRateDeclarationDetail(declarationDetail);
       SET sumDutyDataDeclarationDetail(declarationDetail) <- sumRateDutyDeclarationDetail(declarationDetail);
@@ -263,7 +264,7 @@ toCreateDeclarationDetails 'Создать позиции' = ACTION (declaration
 } TOOLBAR;
 
 EXTEND FORM declaration
-    PROPERTIES(d) sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
+    PROPERTIES(d) sumRateDeclaration, sumRateRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
 
     OBJECTS dd=DeclarationDetail
     PROPERTIES(id, dd) inInvoiceDetailDeclarationDetail
@@ -290,7 +291,7 @@ EXTEND DESIGN declaration {
                 caption = 'Суммы документа';
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(sumRateDeclaration);
-                ADD PROPERTY(sumRegistrationDeclaration);
+                ADD PROPERTY(sumRateRegistrationDeclaration);
                 ADD PROPERTY(sumRateDutyDeclaration);
                 ADD PROPERTY(sumRateVATDeclaration);
             }
@@ -309,7 +310,7 @@ EXTEND DESIGN declaration {
 }
 
 EXTEND FORM declarations
-    PROPERTIES(d) FORCE GRID isPostedDeclaration BEFORE numberObject(d), sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
+    PROPERTIES(d) FORCE GRID isPostedDeclaration BEFORE numberObject(d), sumRateDeclaration, sumRateRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
 
     OBJECTS dd=DeclarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, nameCustomsDeclarationDetail, nameCountryDeclarationDetail, sumNetWeightDeclarationDetail,
@@ -343,7 +344,7 @@ sumDutyCostDeclaration 'Пошлина (факт)' (declaration) = GROUP SUM pri
 coeffInvoiceDetailDeclaration 'Удельный вес' (invoiceDetail) = sumHomeInvoiceDetail(invoiceDetail)/sumRateDeclaration(declarationInvoiceDetail(invoiceDetail))
                                                                IF declarationInvoiceDetail(invoiceDetail);
 
-calcRegistrationInvoiceDetail 'Таможенный сбор' (invoiceDetail) = PARTITION UNGROUP sumRegistrationDeclaration
+calcRegistrationInvoiceDetail 'Таможенный сбор' (invoiceDetail) = PARTITION UNGROUP sumRegistrationDataDeclaration
                                                                   PROPORTION STRICT ROUND(0) coeffInvoiceDetailDeclaration(invoiceDetail)
                                                                                  BY declarationInvoiceDetail(invoiceDetail)
                                                                               ORDER invoiceDetail PERSISTENT;
