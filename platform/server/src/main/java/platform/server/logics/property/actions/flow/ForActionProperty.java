@@ -149,8 +149,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     public ActionPropertyMapImplement<?, I> compileExtend() { // проталкивание FOR'ов
 
         ImSet<I> context = mapInterfaces.valuesSet();
-        assert innerInterfaces.size() > context.size();
-        boolean allNoInline = (innerInterfaces.size() == context.size() + noInline.size() + (addObject !=null ? 1 : 0));
+        assert recursive || innerInterfaces.size() > context.size();
+        boolean allNoInline = !recursive && (innerInterfaces.size() == context.size() + noInline.size() + (addObject !=null ? 1 : 0));
 
         if(!allNoInline && noInline.size() > 0) {
             assert !noInline.intersect(context);
