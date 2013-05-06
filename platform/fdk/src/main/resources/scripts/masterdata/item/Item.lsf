@@ -492,6 +492,21 @@ TABLE brand(Brand);
 
 nameBrand 'Наименование' = DATA ISTRING[50](Brand);
 
+FORM brand 'Артикул'
+    OBJECTS t=Brand FIXED PANEL
+    PROPERTIES(t) nameBrand
+    EDIT Brand OBJECT t
+;
+
+FORM brands 'Артикулы'
+    OBJECTS t=Brand
+    PROPERTIES(t) nameBrand READONLY, delete
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameBrand
+    DIALOG Brand OBJECT t
+;
+DESIGN brands FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
 @defineObjectItemAttribute(brand, nameBrand, 'Бренд', itemBaseGroup);
 @defineObjectItemAttributeBatch (brand, nameBrand, 'Бренд');
 
