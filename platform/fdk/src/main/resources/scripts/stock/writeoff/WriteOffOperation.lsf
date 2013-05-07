@@ -1,0 +1,12 @@
+MODULE WriteOffOperation;
+
+REQUIRE Operation, LegalEntity;
+
+NAMESPACE WriteOff;
+
+@defineOperation(' (списание)');
+
+@defineOperationRole();
+@extendFormFilterRole(o, dialogOperations);
+//@extendFormFilterRole(o, operations);     //-- пока не нужен
+

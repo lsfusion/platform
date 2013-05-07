@@ -3,7 +3,7 @@ MODULE WriteOff;
 REQUIRE System,
         Stock,
         PriceListLedger,
-//        Store,
+        WriteOffOperation,
         Currency,
         Numerator,
         Terminal,
@@ -321,11 +321,20 @@ DESIGN writeOffs FROM DEFAULT {
     }
 }
 
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineDocumentOperation(writeOff, w);
+@defineDocumentOperationRole(userWriteOff);
+EXTEND FORM  writeOffs
+    PROPERTIES (w) READONLY nameOperationWriteOff BEFORE nameReasonWriteOff
+;
+
 NAVIGATOR {
     stockNavigator {
         NEW writeOffNavigator 'Списания' BEFORE balanceSku {
             ADD writeOffs;
             ADD writeOffCommittees;
+            ADD operations;
         }
     }
 }

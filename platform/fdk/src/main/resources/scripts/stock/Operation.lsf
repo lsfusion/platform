@@ -67,6 +67,33 @@ END
 
 // -------------------------------------- Макросы по объявлению операций в документах ---------------------------------- //
 
+META defineDocumentOperationPrefix(object, prefix, NSR, caption)
+
+    prefix###operation###object = ABSTRACT NSR.Operation (###object) PERSISTENT;
+    name###prefix###operation###object 'Операция'###caption = NSR.nameOperation(prefix###operation###object(object));
+    prefix###operationUser###object = DATA NSR.Operation (User###object);
+    name###prefix###operationUser###object 'Операция'###caption = NSR.nameOperation(prefix###operationUser###object(user###object));
+    prefix###operation###object(object) += prefix###operationUser###object(object);
+
+    prefix###operation###object##Detail 'Операция'###caption (object##Detail) = prefix###operation###object(object###object##Detail(object##Detail));
+    prefix###operationUser###object##Detail 'Операция'###caption (user###object##Detail) = prefix###operationUser###object(user###object##User###object##Detail(user###object##Detail));
+
+END
+
+META extendFormOperationPrefix(object, char, afterProp, prefix, containerProp)
+
+    EXTEND FORM user###object
+        PROPERTIES(char) name###prefix###operationUser###object
+    ;
+
+    EXTEND DESIGN user###object{
+        containerProp{
+            ADD PROPERTY name###prefix###operationUser###object) AFTER PROPERTY(afterProp###object);
+        }
+    }
+END
+
+
 META defineDocumentOperation(object, char, befProp)
 
     operation###object = ABSTRACT Operation (###object) PERSISTENT;
