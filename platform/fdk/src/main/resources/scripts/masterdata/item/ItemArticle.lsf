@@ -27,7 +27,7 @@ FORM articles 'Артикулы'
 ;
 DESIGN articles FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(article, nameArticle, 'Артикул', itemArticleGroup);
+@defineObjectItemAttribute(article, Article, nameArticle, 'Артикул', itemArticleGroup);
 @defineObjectItemAttributeBatch (article, nameArticle, 'Артикул');
 
 // Цвет
@@ -51,7 +51,7 @@ FORM colors 'Цвета товара'
 ;
 DESIGN colors FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(color, nameColor, 'Цвет', itemArticleGroup);
+@defineObjectItemAttribute(color, Color, nameColor, 'Цвет', itemArticleGroup);
 @defineObjectItemAttributeBatch (color, nameColor, 'Цвет');
 
 // Размер
@@ -76,7 +76,7 @@ FORM sizes 'Размеры товара'
 ;
 DESIGN sizes FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(size, nameSize, 'Размер', itemArticleGroup);
+@defineObjectItemAttribute(size, Size, nameSize, 'Размер', itemArticleGroup);
 @defineObjectItemAttributeBatch (size, nameSize, 'Размер');
 //@implementObjectShortItemAttribute(size, 'Размер (сокр.)');
 

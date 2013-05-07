@@ -4,7 +4,7 @@ REQUIRE System, Item, Ware;
 
 NAMESPACE Item;
 
-@defineObjectItemAttribute(ware, nameWare, 'Посуда', itemBaseGroup);
+@defineObjectItemAttribute(ware, Ware, nameWare, 'Посуда', itemBaseGroup);
 @defineObjectItemAttributeBatch (ware, nameWare, 'Посуда');
 
 inWareItem 'Товар в посуде' (item) = item IS Item AND wareItem(item);

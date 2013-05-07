@@ -270,10 +270,10 @@ skuGroupSku (sku) = ABSTRACT SkuGroup (Sku) PERSISTENT INDEXED;
 groupTypeGroup(group) += SystemGroupType.skuGroupType IF group IS SkuGroup;
 groupGroupTypeSku(type, sku) += skuGroupSku(sku) WHEN CLASS(skuGroupSku(sku)) AND type == SystemGroupType.skuGroupType;
 
-nameSku 'Наименование' (sku) = ABSTRACT STRING[255] (Sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN base;
+nameSku 'Наименование' (sku) = ABSTRACT ISTRING[255] (Sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN base;
 
 TABLE skuLanguage(Sku, Language);
-nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT STRING[200] (Sku, Language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
+nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT ISTRING[200] (Sku, Language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
 
 nameSkuStock 'Наименование (иностр.)' (sku, stock) = IF languageStock(stock) THEN nameSkuLanguage(sku, languageStock(stock)) ELSE nameSku(sku);
 

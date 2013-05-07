@@ -27,7 +27,7 @@ FORM tastes 'Вкусы товара'
 ;
 DESIGN tastes FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(taste, nameTaste, 'Вкус', itemFoodGroup);
+@defineObjectItemAttribute(taste, Taste, nameTaste, 'Вкус', itemFoodGroup);
 @defineObjectItemAttributeBatch (taste, nameTaste, 'Вкус');
 
 // Степень охлаждения
@@ -52,7 +52,7 @@ FORM coolingDegrees 'Степени охлаждения товара'
 ;
 DESIGN coolingDegrees FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(coolingDegree, nameCoolingDegree, 'Степень охлаждения', itemFoodGroup);
+@defineObjectItemAttribute(coolingDegree, CoolingDegree, nameCoolingDegree, 'Степень охлаждения', itemFoodGroup);
 @defineObjectItemAttributeBatch (coolingDegree, nameCoolingDegree, 'Степень охлаждения');
 //@implementObjectShortItemAttribute(coolingDegree, 'Степень охлаждения (сокр.)');
 

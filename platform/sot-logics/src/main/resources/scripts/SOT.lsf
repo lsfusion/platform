@@ -46,7 +46,7 @@ mag2Stock 'Код MAG2' (stock) = mag2LegalEntityStock(legalEntityStock(stock), 
 
 codeOperation 'Код операции' = DATA STRING[2] (Sale.Operation);
 
-EXTEND FORM item PROPERTIES(i) BEFORE nameUOMUOMItem(i) nameSotUOMItem SHOWIF showUOMItem(i);
+EXTEND FORM item PROPERTIES(i) BEFORE nameUOMItem(i) nameSotUOMItem SHOWIF showUOMItem(i);
 EXTEND FORM items PROPERTIES(i) dateTimeLastMovedSku, sotSIDItem, sidExternalizable;
 
 EXTEND FORM Sale.dialogOperations PROPERTIES(o) codeOperation;
@@ -111,7 +111,7 @@ changeClassStock 'Сделать магазином' = ACTION (warehouse) NEWSES
         SET longitudeStore(s) <- lo();
         SET priceStockGroupStore(s) <- p();
 
-        SET nameWarehouse(warehouse) <- n();
+        SET nameDepartmentStore(warehouse) <- n();
         SET storeDepartmentStore(warehouse) <- s;
         SET quantityDaysCloseDepartmentStore(warehouse) <- i();
         SET writeOffCommitteeStock(warehouse) <- w();

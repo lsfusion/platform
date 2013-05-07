@@ -384,8 +384,8 @@ META defineItemAttributeBatch (attribute, caption)
 END
 
 META defineObjectItemAttributeBatch(attribute, identity, caption)
-    identity###attribute##Batch caption (batch) = identity###attribute##Item(skuBatch(batch));
-    @defineItemAttributeBatch(attribute, identity###attribute##Batch, caption);
+    identity##Batch caption (batch) = identity##Item(skuBatch(batch));
+    @defineItemAttributeBatch(attribute, identity##Batch, caption);
 END
 
 // -------------------------------------------- Формирование наименования ----------------------------------- //
@@ -453,14 +453,10 @@ META defineDoubleItemAttribute(attribute, type, caption, group)
     @definePrimitiveItemAttribute(attribute, type, caption, group, Double);
 END
 
-META defineObjectItemAttribute(attribute, identity, caption, group)
-    @defineObjectItemAttributeInner(attribute, ###attribute, identity, caption, group);
-END
-
-META defineObjectItemAttributeInner(attribute, attributeClass, identity, caption, group)
+META defineObjectItemAttribute(attribute, attributeClass, identity, caption, group)
     attribute##Item = DATA attributeClass (Item);
-    identity###attribute##Item caption (item) = identity(attribute##Item(item)) IN group;
-    @defineItemAttribute(attribute, identity###attribute##Item, caption, group, String, item###attribute);
+    identity##Item caption (item) = identity(attribute##Item(item)) IN group;
+    @defineItemAttribute(attribute, identity##Item, caption, group, String, item###attribute);
 END
 
 // ---------------------------- Конкретные свойства -------------------------------- //
@@ -477,7 +473,7 @@ GROUP itemBaseGroup 'Базовые свойства' : base;
 @defineItemAttributeBatch (caption, 'Название');
 
 // Единица измерения
-@defineObjectItemAttribute(UOM, nameUOM, 'Единица измерения', itemBaseGroup);
+@defineObjectItemAttribute(UOM, UOM, nameUOM, 'Единица измерения', itemBaseGroup);
 @defineObjectItemAttributeBatch (UOM, nameUOM, 'Единица измерения');
 
 shortNameUOMItem 'Единица измерения' (item) = shortNameUOM(UOMItem(item)) IN itemBaseGroup;
@@ -507,11 +503,11 @@ FORM brands 'Бренды'
 ;
 DESIGN brands FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(brand, nameBrand, 'Бренд', itemBaseGroup);
+@defineObjectItemAttribute(brand, Brand, nameBrand, 'Бренд', itemBaseGroup);
 @defineObjectItemAttributeBatch (brand, nameBrand, 'Бренд');
 
 // Страна
-@defineObjectItemAttribute(country, nameCountry, 'Страна', itemBaseGroup);
+@defineObjectItemAttribute(country, Country, nameCountry, 'Страна', itemBaseGroup);
 residentItem 'Отечественное производство' (item) = residentCountry(countryItem(item)) IN itemBaseGroup;
 countrySku(sku) += countryItem(sku);
 @defineObjectItemAttributeBatch (country, nameCountry, 'Страна');
@@ -537,7 +533,7 @@ FORM manufacturers 'Производители товара'
 ;
 DESIGN manufacturers FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(manufacturer, nameManufacturer, 'Производитель', itemBaseGroup);
+@defineObjectItemAttribute(manufacturer, Manufacturer, nameManufacturer, 'Производитель', itemBaseGroup);
 @defineObjectItemAttributeBatch (manufacturer, nameManufacturer, 'Производитель');
 
 //  Состав

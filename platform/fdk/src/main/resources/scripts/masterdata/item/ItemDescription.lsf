@@ -27,7 +27,7 @@ FORM types 'Виды товара'
 ;
 DESIGN types FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(type, nameType, 'Вид', itemDescriptionGroup);
+@defineObjectItemAttribute(type, Type, nameType, 'Вид', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (type, nameType, 'Вид');
 
 // Сорт
@@ -51,7 +51,7 @@ FORM sorts 'Сорта товара'
 ;
 DESIGN sorts FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(sort, nameSort, 'Сорт', itemDescriptionGroup);
+@defineObjectItemAttribute(sort, Sort, nameSort, 'Сорт', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (sort, nameSort, 'Сорт');
 
 // Форма
@@ -75,7 +75,7 @@ FORM forms 'Формы товара'
 ;
 DESIGN forms FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(form, nameForm, 'Форма', itemDescriptionGroup);
+@defineObjectItemAttribute(form, Form, nameForm, 'Форма', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (form, nameForm, 'Форма');
 
 // Особенность
@@ -100,7 +100,7 @@ FORM features 'Особенности товара'
 ;
 DESIGN features FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(feature, nameFeature, 'Особенность', itemDescriptionGroup);
+@defineObjectItemAttribute(feature, Feature, nameFeature, 'Особенность', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (feature, nameFeature, 'Особенность');
 //@implementObjectShortItemAttribute(feature, 'Особенность (сокр.)');
 
@@ -126,7 +126,7 @@ FORM packs 'Особенности товара'
 ;
 DESIGN packs FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(pack, namePack, 'Упаковка', itemDescriptionGroup);
+@defineObjectItemAttribute(pack, Pack, namePack, 'Упаковка', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (pack, namePack, 'Упаковка');
 //@implementObjectShortItemAttribute(pack, 'Упаковка (сокр.)');
 
