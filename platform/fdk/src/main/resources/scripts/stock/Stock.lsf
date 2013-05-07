@@ -2659,7 +2659,7 @@ FORM dialogBatch 'Партии'
     OBJECTS sk = Sku FIXED PANEL
 
     OBJECTS bt = Batch
-    PROPERTIES (bt) READONLY nameSkuBatch, dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch
+    PROPERTIES (bt) READONLY nameSkuBatch, dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch, expiryDateBatch
     PROPERTIES  READONLY balanceBBatchStockDateTime(bt, st, t)
     FILTERS skuBatch(bt) == sk
 
@@ -2793,7 +2793,7 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     ORDER BY dateTimeSkuLedger DESC
 
     OBJECTS bt=Batch
-    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch
+    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch, expiryDateBatch
     PROPERTIES(bt, st) READONLY  currentBalanceBatchStock
     FILTERS isPostedBatch(bt) AND skuBatch(bt)==s
     ORDER BY dateTimeBatch DESC

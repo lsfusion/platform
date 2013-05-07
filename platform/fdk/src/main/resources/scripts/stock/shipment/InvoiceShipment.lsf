@@ -277,6 +277,8 @@ META defineInvoiceShipmentBatch(dumb)
 
     @defineDocumentAggregationDetailBatch (invoice, invoiceShipment);
     batchShipmentDetail (shipmentDetail) += batchInvoiceShipmentDetail(shipmentDetail);
+
+    expiryDateUserInvoiceDetail(detail) <- prevExpiryDateBatch(batchUserInvoiceDetail(detail)) WHEN CHANGED (batchUserInvoiceDetail(detail));
 END
 
 META defineInvoiceShipmentPack(dumb)
