@@ -102,6 +102,8 @@ META defineShipment(sign, stockProp)
     @defineDocumentInterfaceDetailQuantity(shipment);
     Shipment.quantityShipmentDetail(detail) += quantityShipmentDetail(detail);
 
+    @defineDocumentInterfaceDetailExpiryDate(shipment);
+
     @defineDocumentInterfaceDetailPrice(shipment);
 
     @defineDocumentInterfaceDetailDataSum(shipment);
@@ -133,7 +135,7 @@ META defineShipment(sign, stockProp)
 
         OBJECTS d = UserShipmentDetail
         PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail
-        PROPERTIES (d) quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
+        PROPERTIES (d) quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail, expiryDateUserShipmentDetail,
                        name###stockProp###shipmentDetail, ADDOBJ, delete
 
         PROPERTIES(s) TODRAW d fillDocumentShipment, addDetailDialogSkuStockUserShipmentDetailUserShipment,
@@ -249,6 +251,7 @@ META defineShipment(sign, stockProp)
                     SET skuUserShipmentDetail(d) <- skuShipmentDetail(shipmentDetail);
                     SET quantityUserShipmentDetail(d) <- quantityShipmentDetail(shipmentDetail);
                     SET priceUserShipmentDetail(d) <- priceShipmentDetail(shipmentDetail);
+                    SET expiryDateUserShipmentDetail(d) <- expiryDateShipmentDetail(shipmentDetail);
                     SET data###stockProp###userShipmentDetail(d) <- data###stockProp###shipmentDetail(shipmentDetail);
                 }
             }
@@ -271,7 +274,7 @@ META defineShipment(sign, stockProp)
 
         OBJECTS d = ShipmentDetail
         PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail
-        PROPERTIES (d) READONLY quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail, name###stockProp###shipmentDetail
+        PROPERTIES (d) READONLY quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail, expiryDateShipmentDetail, name###stockProp###shipmentDetail
         FILTERS shipmentShipmentDetail(d) == s
 
         DIALOG Shipment OBJECT s

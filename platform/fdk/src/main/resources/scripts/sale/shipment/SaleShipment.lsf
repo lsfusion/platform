@@ -9,6 +9,7 @@ NAMESPACE Sale;
 
 @defineShipment(' (продажа)', supplierStock);
 @defineShipmentBatch(supplierStock);
+expiryDateUserShipmentDetail(detail) <- prevExpiryDateBatch(batchUserShipmentDetail(detail)) WHEN CHANGED (batchUserShipmentDetail(detail));
 
 @defineShipmentStockDestination(supplierStock, customerStock);
 

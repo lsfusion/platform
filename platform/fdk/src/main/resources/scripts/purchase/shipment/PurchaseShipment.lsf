@@ -8,6 +8,7 @@ NAMESPACE Purchase;
 
 @defineShipment(' (закупка)', customerStock);
 @defineShipmentBatch(customerStock);
+expiryDateUserShipmentDetail(detail) <- prevExpiryDateBatch(batchUserShipmentDetail(detail)) WHEN CHANGED (batchUserShipmentDetail(detail));
 
 @defineShipmentStockDestination(supplierStock, customerStock);
 
@@ -86,6 +87,7 @@ priceShipmentBatch (batch) = priceShipmentDetail(shipmentDetailShipmentBatch(bat
 
 @implementBatch(ShipmentBatch, sku, stock, price);
 quantityBatch (ledger) += quantityShipmentDetail(shipmentDetailShipmentBatch(ledger));
+expiryDateBatch (ledger) += expiryDateShipmentDetail(shipmentDetailShipmentBatch(ledger));
 sumInSkuLedger (ledger) += sumShipmentDetail(shipmentDetailShipmentBatch(ledger));
 
 ledgerBatchShipmentDetail (detail) = shipmentBatchShipmentDetail(detail) OVERRIDE batchShipmentDetail(detail) PERSISTENT;

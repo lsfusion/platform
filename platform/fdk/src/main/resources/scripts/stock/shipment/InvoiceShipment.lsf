@@ -151,6 +151,7 @@ META defineInvoiceShipment(sign, stockProp)
     @defineDocumentInterfaceHeaderSumPrefix (invoice, shipment, ' (учетная)');
 
     @defineDocumentInterfaceHeaderTimePrefix(Invoice, shipment, ' поставки');
+    @defineDocumentInterfaceDetailExpiryDate(invoice);
 
     overCopyInvoice(s, d) += ACTION (s, d) {
         SET createShipmentUserInvoice(d) <- createShipmentUserInvoice(s);
@@ -172,7 +173,7 @@ META defineInvoiceShipment(sign, stockProp)
         PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) SHOWIF createShipmentUserInvoice(i) shipmentSumUserInvoiceDetailUserInvoice,
                       shipmentDateUserInvoice, shipmentTimeUserInvoice
         PROPERTIES(d) BEFORE delete(d) SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
-                      name###stockProp###userInvoiceDetail, shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
+                      expiryDateUserInvoiceDetail, name###stockProp###userInvoiceDetail, shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
         PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
         PROPERTIES(d) shipmentQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
     ;
@@ -192,7 +193,7 @@ META defineInvoiceShipment(sign, stockProp)
         PROPERTIES(i) READONLY BACKGROUND backgroundShippedInvoice(i) createShipmentInvoice
         PROPERTIES(i) READONLY BACKGROUND backgroundShippedInvoice(i) shipmentSumInvoiceDetailInvoice BEFORE ordersInvoice
         PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
-                      name###stockProp###invoiceDetail, shipmentPriceInvoiceDetail, shipmentSumInvoiceDetail
+                      expiryDateInvoiceDetail, name###stockProp###invoiceDetail, shipmentPriceInvoiceDetail, shipmentSumInvoiceDetail
         PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail SHOWIF showShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
         PROPERTIES(d) READONLY shipmentQuantityInvoiceDetail AFTER quantityInvoiceDetail SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
     ;
@@ -253,6 +254,7 @@ META defineInvoiceShipment(sign, stockProp)
     skuShipmentDetail(shipmentDetail) +=  skuInvoiceShipmentDetail(shipmentDetail);
 
     quantityShipmentDetail(shipmentDetail) += shipmentQuantityInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
+    expiryDateShipmentDetail(shipmentDetail) += expiryDateInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
 
     priceInvoiceShipmentDetail(invoiceShipmentDetail) = shipmentPriceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
     priceShipmentDetail(shipmentDetail) += priceInvoiceShipmentDetail(shipmentDetail);

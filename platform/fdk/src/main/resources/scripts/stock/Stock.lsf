@@ -1440,6 +1440,27 @@ END
 META defineDocumentInterfaceDetailBatch(object, batchProp)
     @defineDocumentInterfaceDetailBatchCustom(object##Detail, batchProp);
 END
+
+META defineDocumentDetailExpiryDateCustomPrefix(detail, prefix)
+    prefix###expiryDate###detail 'Годен до' = DATA DATE (###detail);
+END
+META defineDocumentAbstractDetailExpiryDateCustomPrefix(detail, prefix)
+    prefix###expiryDate###detail 'Годен до' = ABSTRACT DATE (###detail) PERSISTENT;
+END
+META defineDocumentInterfaceDetailExpiryDateCustomPrefix(detail, prefix)
+    @defineDocumentAbstractDetailExpiryDateCustomPrefix(detail, prefix);
+    @defineDocumentDetailExpiryDateCustomPrefix(user###detail, prefix);
+    prefix###expiryDate###detail(detail) += prefix###expiryDate###user###detail(detail);
+END
+
+META defineDocumentInterfaceDetailExpiryDatePrefix(object, prefix)
+    @defineDocumentInterfaceDetailExpiryDateCustomPrefix(object##Detail, prefix);
+END
+
+META defineDocumentInterfaceDetailExpiryDate(object)
+    @defineDocumentInterfaceDetailExpiryDatePrefix(object, );
+END
+
 // ------------------------------------------------ Кол-во в документе ------------------------------------ //
 META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
     prefix###quantity###detail###object 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;

@@ -120,6 +120,7 @@ Purchase.skuShipmentDetail(shipmentDetail) +=  skuPurchaseShipmentDetail(shipmen
 Purchase.batchShipmentDetail(shipmentDetail) += batchPurchaseShipmentDetail(shipmentDetail);
 
 Purchase.quantityShipmentDetail(shipmentDetail) += quantityShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
+Purchase.expiryDateShipmentDetail(shipmentDetail) += expiryDateShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
 
 Purchase.priceShipmentDetail(shipmentDetail) += priceShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
 

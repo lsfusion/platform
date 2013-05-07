@@ -23,6 +23,10 @@ Purchase.createShipmentInvoice(invoice) += createPurchaseShipmentInvoice(invoice
 @defineDocumentInterfaceDetailQuantityPrefix (invoice, purchaseShipment, ' поставлено (закупка)');
 purchaseShipmentQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail) WHEN CHANGED(quantityUserInvoiceDetail(detail));
 
+@defineDocumentInterfaceDetailExpiryDatePrefix(invoice, purchase);
+purchaseExpiryDateUserInvoiceDetail(detail) <- prevExpiryDateBatch(batchUserInvoiceDetail(detail)) WHEN CHANGED (batchUserInvoiceDetail(detail));
+Purchase.expiryDateInvoiceDetail(detail) += purchaseExpiryDateUserInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));
+
 @defineDocumentInterfaceHeaderTimePrefix(Invoice, purchaseShipment, ' поставки (закупка)');
 
 @defineDocumentInterfaceDetailDataSumPrefix (invoice, purchaseShipment, ' учетная (закупка)');
@@ -43,7 +47,7 @@ EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundPurchaseShipmentInvoice(i) SHOWIF createPurchaseShipmentUserInvoice(i) purchaseShipmentSumUserInvoiceDetailUserInvoice,
                   purchaseShipmentDateUserInvoice, purchaseShipmentTimeUserInvoice
     PROPERTIES(d) BEFORE delete(d) SHOWIF createPurchaseShipmentInvoice(i) BACKGROUND backgroundPurchaseShipmentInvoice(i)
-                  nameCustomerStockUserInvoiceDetail, purchaseShipmentPriceUserInvoiceDetail, purchaseShipmentSumUserInvoiceDetail
+                  purchaseExpiryDateUserInvoiceDetail, nameCustomerStockUserInvoiceDetail, purchaseShipmentPriceUserInvoiceDetail, purchaseShipmentSumUserInvoiceDetail
     PROPERTIES(d) purchaseShipmentQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF createPurchaseShipmentInvoice(i) BACKGROUND backgroundPurchaseShipmentInvoice(i)
 ;
 EXTEND DESIGN userInvoice {
@@ -62,7 +66,7 @@ EXTEND FORM invoices
     PROPERTIES(i) READONLY BACKGROUND backgroundPurchaseShipmentInvoice(i) createPurchaseShipmentInvoice
     PROPERTIES(i) READONLY BACKGROUND backgroundPurchaseShipmentInvoice(i) purchaseShipmentSumInvoiceDetailInvoice BEFORE ordersInvoice
     PROPERTIES(d) READONLY SHOWIF createPurchaseShipmentInvoice(i) BACKGROUND backgroundPurchaseShipmentInvoice(i)
-                  nameCustomerStockInvoiceDetail, purchaseShipmentPriceInvoiceDetail, purchaseShipmentSumInvoiceDetail
+                  purchaseExpiryDateInvoiceDetail, nameCustomerStockInvoiceDetail, purchaseShipmentPriceInvoiceDetail, purchaseShipmentSumInvoiceDetail
     PROPERTIES(d) READONLY purchaseShipmentQuantityInvoiceDetail AFTER quantityInvoiceDetail SHOWIF createPurchaseShipmentInvoice(i) BACKGROUND backgroundPurchaseShipmentInvoice(i)
 ;
 

@@ -11,6 +11,7 @@ NAMESPACE SaleReturn;
 
 @defineShipment(' (продажа-возврат)', supplierStock);
 @defineShipmentBatch(supplierStock);
+expiryDateUserShipmentDetail(detail) <- prevExpiryDateBatch(batchUserShipmentDetail(detail)) WHEN CHANGED (batchUserShipmentDetail(detail));
 
 @defineShipmentStockDestination(customerStock, supplierStock);
 

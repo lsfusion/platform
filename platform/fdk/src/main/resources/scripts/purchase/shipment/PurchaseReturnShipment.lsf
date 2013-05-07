@@ -9,6 +9,7 @@ NAMESPACE PurchaseReturn;
 //----------------------------------------------- Поставка ---------------------------------------------------//
 @defineShipment(' (закупка-возврат)', customerStock);
 @defineShipmentBatch(customerStock);
+expiryDateUserShipmentDetail(detail) <- expiryDateBatch(batchUserShipmentDetail(detail)) WHEN CHANGED (batchUserShipmentDetail(detail));
 
 @defineShipmentStockDestination(customerStock, supplierStock);
 
