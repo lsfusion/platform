@@ -67,7 +67,7 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     }
 
     public String toString() {
-        return ClientResourceBundle.getString("logics.classes.time");
+        return ClientResourceBundle.getString("logics.classes.color");
     }
 
     @Override

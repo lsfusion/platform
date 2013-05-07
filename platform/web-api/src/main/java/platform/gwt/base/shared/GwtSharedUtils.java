@@ -27,6 +27,17 @@ public class GwtSharedUtils {
         return string.substring(0, len);
     }
 
+    public static boolean isRedundantString(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
+    public static <K> String toString(String separator, K... array) {
+        String result = "";
+        for (K element : array)
+            result = (result.length() == 0 ? "" : result + separator) + element;
+        return result;
+    }
+
     public static String replicate(char character, int length) {
         char[] chars = new char[length];
         Arrays.fill(chars, character);
@@ -74,6 +85,20 @@ public class GwtSharedUtils {
     public static Object nullBoolean(Boolean b) {
         if (b) return true;
         else return null;
+    }
+
+    public static String nullTrim(String string) {
+        if (string == null)
+            return "";
+        else
+            return string.trim();
+    }
+
+    public static String nullTrim(Object value) {
+        if (value == null)
+            return "";
+        else
+            return value.toString().trim();
     }
 
     public static <MK, K, V> void putUpdate(Map<MK, Map<K, V>> keyValues, MK key, Map<K, V> values, boolean update) {
@@ -164,5 +189,19 @@ public class GwtSharedUtils {
             java.sql.Date sqlDate = new java.sql.Date(date.getTime());
             return sqlDate;
         }
+    }
+
+    public static String stringFormat(final String format, final String... args) {
+        String[] split = format.split("%s");
+        final StringBuffer msg = new StringBuffer();
+        for (int pos = 0; pos < split.length - 1; pos++) {
+            msg.append(split[pos]);
+            msg.append(args[pos]);
+        }
+        msg.append(split[split.length - 1]);
+        if (args.length == split.length) {
+            msg.append(args[args.length - 1]);
+        }
+        return msg.toString();
     }
 }

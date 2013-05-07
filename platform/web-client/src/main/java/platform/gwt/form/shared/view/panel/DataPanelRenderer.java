@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 import platform.gwt.base.client.ui.ResizableHorizontalPanel;
 import platform.gwt.base.client.ui.ResizableSimplePanel;
@@ -11,6 +12,7 @@ import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.client.form.ui.GSinglePropertyTable;
+import platform.gwt.form.client.form.ui.TooltipManager;
 import platform.gwt.form.shared.view.GEditBindingMap;
 import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -36,6 +38,24 @@ public class DataPanelRenderer implements PanelRenderer {
     public DataPanelRenderer(GFormController form, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
         this.property = iproperty;
         label = new Label(caption = property.getEditCaption());
+        label.addMouseOverHandler(new MouseOverHandler() {
+            @Override
+            public void onMouseOver(MouseOverEvent event) {
+                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), property.getTooltipText(caption));
+            }
+        });
+        label.addMouseOutHandler(new MouseOutHandler() {
+            @Override
+            public void onMouseOut(MouseOutEvent event) {
+                TooltipManager.get().hideTooltip();
+            }
+        });
+        label.addMouseMoveHandler(new MouseMoveHandler() {
+            @Override
+            public void onMouseMove(MouseMoveEvent event) {
+                TooltipManager.get().updateMousePosition(event.getClientX(), event.getClientY());
+            }
+        });
 
         if (property.headerFont != null) {
             label.getElement().getStyle().setProperty("font", property.headerFont.getFullFont());

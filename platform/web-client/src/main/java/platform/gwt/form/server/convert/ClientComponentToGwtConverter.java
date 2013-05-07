@@ -8,6 +8,7 @@ import platform.client.logics.classes.ClientFileClass;
 import platform.gwt.form.server.FileUtils;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
+import platform.gwt.form.shared.view.classes.GClass;
 import platform.gwt.form.shared.view.reader.*;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
@@ -218,6 +219,16 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.sID = clientPropertyDraw.getSID();
         propertyDraw.caption = clientPropertyDraw.caption;
 
+        propertyDraw.toolTip = clientPropertyDraw.toolTip;
+        propertyDraw.tableName = clientPropertyDraw.tableName;
+        propertyDraw.interfacesCaptions = clientPropertyDraw.interfacesCaptions;
+        propertyDraw.interfacesTypes = new GClass[clientPropertyDraw.interfacesTypes.length];
+        for (int i = 0; i < clientPropertyDraw.interfacesTypes.length; i++) {
+            propertyDraw.interfacesTypes[i] = typeConverter.convertOrCast(clientPropertyDraw.interfacesTypes[i]);
+        }
+        propertyDraw.creationScript = clientPropertyDraw.creationScript;
+        propertyDraw.creationPath = clientPropertyDraw.creationPath;
+
         propertyDraw.groupObject = convertOrCast(clientPropertyDraw.groupObject);
         if (!clientPropertyDraw.columnGroupObjects.isEmpty()) {
             propertyDraw.columnGroupObjects = new ArrayList<GGroupObject>();
@@ -229,6 +240,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.baseType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
         propertyDraw.changeType = typeConverter.convertOrCast(clientPropertyDraw.changeType);
+        propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
 
         if (clientPropertyDraw.addRemove != null) {
             GObject addRemoveObject = convertOrCast(clientPropertyDraw.addRemove.first);

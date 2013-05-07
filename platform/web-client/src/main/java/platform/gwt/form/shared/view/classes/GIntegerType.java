@@ -23,4 +23,9 @@ public class GIntegerType extends GIntegralType {
             throw new ParseException("string " + s + "can not be converted to integer", 0);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Целое число";
+    }
 }

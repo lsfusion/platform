@@ -65,4 +65,9 @@ public class GTextType extends GDataType {
     public GCompare getDefaultCompare() {
         return GCompare.CONTAINS;
     }
+
+    @Override
+    public String toString() {
+        return "Текст";
+    }
 }

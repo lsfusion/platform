@@ -47,4 +47,9 @@ public class GLogicalType extends GDataType {
             throw new ParseException("string " + s + "can not be converted to logical", 0);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Логический класс";
+    }
 }

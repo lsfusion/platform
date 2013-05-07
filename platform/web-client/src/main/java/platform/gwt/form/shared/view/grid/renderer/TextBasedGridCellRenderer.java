@@ -3,6 +3,7 @@ package platform.gwt.form.shared.view.grid.renderer;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Style;
 import platform.gwt.base.client.EscapeUtils;
+import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GPropertyDraw;
 
@@ -55,7 +56,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
     protected void updateElement(DivElement div, Object value) {
         String text = value == null ? null : renderToString((T) value);
 
-        if (text == null || text.trim().isEmpty()) {
+        if (GwtSharedUtils.isRedundantString(text)) {
             div.setTitle("");
             setInnerText(div, null);
         } else {

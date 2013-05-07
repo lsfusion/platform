@@ -49,4 +49,9 @@ public class GDateType extends GDataType {
     public String getPreferredMask() {
         return "01.01.01";
     }
+
+    @Override
+    public String toString() {
+        return "Дата";
+    }
 }

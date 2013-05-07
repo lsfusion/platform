@@ -10,4 +10,9 @@ public class GNumericType extends GDoubleType {
         this.length = length;
         this.precision = precision;
     }
+
+    @Override
+    public String toString() {
+        return "Число" + '[' + length + ',' + precision + ']';
+    }
 }

@@ -1,7 +1,9 @@
 package platform.gwt.form.shared.view;
 
+import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.classes.GClass;
 import platform.gwt.form.shared.view.classes.GType;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -23,6 +25,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public String sID;
     public String caption;
     public GType baseType;
+    public GClass returnClass;
+
+    public String toolTip;
+    public String tableName;
+    public String[] interfacesCaptions;
+    public GClass[] interfacesTypes;
+    public String creationScript;
+    public String creationPath;
 
     public GGroupObject groupObject;
     public ArrayList<GGroupObject> columnGroupObjects;
@@ -134,6 +144,34 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         } else {
             return caption;
         }
+    }
+
+    public static final String toolTipFormat =
+            "<html><b>%s</b><br>" +
+                    "%s" +
+                    "<hr>" +
+                    "<b>sID:</b> %s<br>" +
+                    "<b>Таблица:</b> %s<br>" +
+                    "<b>Объекты:</b> %s<br>" +
+                    "<b>Сигнатура:</b> %s <i>%s</i> (%s)<br>" +
+                    "<b>Скрипт:</b> %s<br>" +
+                    "<b>Путь:</b> %s" +
+                    "</html>";
+
+    public static final String editKeyToolTipFormat =
+            "<hr><b>Горячая клавиша:</b> %s<br>";
+
+    public String getTooltipText(String caption) {
+        String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
+        String sid = sID;
+        String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
+        String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
+        String ifaceClasses = GwtSharedUtils.toString(", ", interfacesTypes);
+        String returnClass = this.returnClass.toString();
+        String editKeyText = editKey == null ? "" : GwtSharedUtils.stringFormat(editKeyToolTipFormat, editKey.toString());
+        String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
+        String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
+        return GwtSharedUtils.stringFormat(toolTipFormat, propCaption, editKeyText, sid, tableName, ifaceObjects, returnClass, sid, ifaceClasses, script, scriptPath);
     }
 
     public String getIconPath(boolean enabled) {

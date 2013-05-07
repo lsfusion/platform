@@ -7,4 +7,8 @@ public class GInsensitiveStringType extends GStringType {
         super(length);
     }
 
+    @Override
+    public String toString() {
+        return "Строка без регистра";
+    }
 }

@@ -43,4 +43,9 @@ public class GActionType extends GDataType {
     public String getPreferredMask() {
         return "1234567";
     }
+
+    @Override
+    public String toString() {
+        return "Класс действия";
+    }
 }

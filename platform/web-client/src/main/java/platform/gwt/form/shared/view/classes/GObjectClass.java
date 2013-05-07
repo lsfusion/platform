@@ -24,4 +24,9 @@ public class GObjectClass implements GClass {
     public boolean hasChildren() {
         return !children.isEmpty();
     }
+
+    @Override
+    public String toString() {
+        return caption;
+    }
 }

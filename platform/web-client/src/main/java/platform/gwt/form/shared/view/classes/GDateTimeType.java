@@ -37,4 +37,9 @@ public class GDateTimeType extends GDataType {
     public String getPreferredMask() {
         return "01.01.2001 00:00:00";
     }
+
+    @Override
+    public String toString() {
+        return "Дата со временем";
+    }
 }

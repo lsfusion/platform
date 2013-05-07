@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form.client.form.ui.GFormController;
@@ -51,6 +52,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         this.editDispatcher = new GEditPropertyDispatcher(form, this);
 
         button = new ImageButton(property.getEditCaption(), property.icon);
+        setTooltip(property.caption);
         button.addStyleName("panelActionProperty");
         if (property.getPreferredPixelHeight() > -1) {
             button.setHeight(property.getPreferredHeight());
@@ -149,6 +151,16 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     @Override
     public void setCaption(String caption) {
         button.setText(property.getEditCaption(caption));
+        setTooltip(caption);
+    }
+
+    public void setTooltip(String caption) {
+        String toolTip = !GwtSharedUtils.isRedundantString(property.toolTip) ? property.toolTip : caption;
+        toolTip += " (sID: " + property.sID + ")";
+        if (property.editKey != null) {
+            toolTip += "(" + property.editKey.toString() + ")";
+        }
+        button.setTitle(toolTip);
     }
 
     @Override

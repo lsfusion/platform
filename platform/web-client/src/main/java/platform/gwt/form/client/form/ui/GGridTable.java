@@ -235,6 +235,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 GGridPropertyTableHeader header = headers.get(i);
                 header.setCaption(columnCaptions.get(i));
+                header.setToolTip(property.getTooltipText(columnCaptions.get(i)));
 
                 putToColumnsMap(newColumnsMap, property, columnKey, column);
 

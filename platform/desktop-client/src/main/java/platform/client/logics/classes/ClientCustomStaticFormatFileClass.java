@@ -1,5 +1,7 @@
 package platform.client.logics.classes;
 
+import platform.base.BaseUtils;
+import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditor;
 import platform.client.form.PropertyRenderer;
 import platform.client.form.editor.FilePropertyEditor;
@@ -71,5 +73,10 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw design) {
         return new FilePropertyEditor(multiple, storeName, filterDescription, filterExtensions);
+    }
+
+    @Override
+    public String toString() {
+        return ClientResourceBundle.getString("logics.classes.static.format.file", BaseUtils.toString(",", filterExtensions));
     }
 }

@@ -93,4 +93,9 @@ public class GStringType extends GDataType {
         int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
         return font == null || font.size == null ? prefCharWidth * 10 : prefCharWidth * font.size * 5 / 8;
     }
+
+    @Override
+    public String toString() {
+        return "Строка" + "(" + length + ")";
+    }
 }

@@ -52,4 +52,9 @@ public class GObjectType extends GType {
     public Object parseString(String s) throws ParseException {
         throw new ParseException("Object class doesn't support conversion from string", 0);
     }
+
+    @Override
+    public String toString() {
+        return "Объект";
+    }
 }

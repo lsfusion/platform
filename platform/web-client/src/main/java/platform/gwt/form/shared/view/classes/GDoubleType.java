@@ -24,4 +24,9 @@ public class GDoubleType extends GIntegralType {
             throw new ParseException("string " + s + "can not be converted to double", 0);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Вещественное число";
+    }
 }

@@ -40,4 +40,9 @@ public class GTimeType extends GDataType {
     public String getPreferredMask() {
         return "00:00:00";
     }
+
+    @Override
+    public String toString() {
+        return "Время";
+    }
 }

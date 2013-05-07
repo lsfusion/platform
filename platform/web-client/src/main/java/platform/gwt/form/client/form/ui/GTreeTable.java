@@ -3,6 +3,7 @@ package platform.gwt.form.client.form.ui;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
+import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.cellview.client.DataGrid;
 import platform.gwt.cellview.client.KeyboardRowChangedEvent;
@@ -99,7 +100,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         if (index > -1) {
             if (!createdFields.contains(property.sID)) {
                 Column<GTreeGridRecord, Object> gridColumn = createGridColumn(property);
-                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, property.getCaptionOrEmpty());
+                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, property.getCaptionOrEmpty(), property.getTooltipText(property.getCaptionOrEmpty()));
 
                 headers.add(index, header);
                 insertColumn(index, gridColumn, header);
@@ -226,8 +227,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         for (GPropertyDraw property : getColumnProperties()) {
             Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
             if (captions != null) {
-                Object value = captions.values().iterator().next();
-                headers.get(getColumnIndex(property)).setCaption(value == null ? "" : value.toString().trim());
+                String value = GwtSharedUtils.nullTrim(captions.values().iterator().next());
+                GGridPropertyTableHeader header = headers.get(getColumnIndex(property));
+                header.setCaption(value);
+                header.setToolTip(property.getTooltipText(value));
                 needsHeaderRefresh = true;
             }
             rowHeight = Math.max(rowHeight, property.getMinimumPixelHeight());

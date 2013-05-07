@@ -23,4 +23,9 @@ public class GLongType extends GIntegralType {
             throw new ParseException("string " + s + "can not be converted to long", 0);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Длинное целое число";
+    }
 }

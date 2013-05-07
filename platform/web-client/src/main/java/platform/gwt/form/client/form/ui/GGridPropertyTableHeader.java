@@ -11,6 +11,7 @@ import platform.gwt.cellview.client.Header;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GPropertyDraw;
 
+import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
 import static com.google.gwt.user.client.Event.NativePreviewHandler;
@@ -29,32 +30,41 @@ public class GGridPropertyTableHeader extends Header<String> {
     private Boolean renderedSortDir;
 
     private Element renderedCaptionElement;
-    private Element renderedTooltipElement;
 
     private String caption;
+    private String toolTip;
 
     public GGridPropertyTableHeader(GGridPropertyTable table) {
         this(table, null);
     }
 
     public GGridPropertyTableHeader(GGridPropertyTable table, String caption) {
-        super("dblclick", "mousedown", "mousemove");
+        this(table, caption, null);
+    }
+
+    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String toolTip) {
+        super(DBLCLICK, MOUSEDOWN, MOUSEMOVE, MOUSEOVER, MOUSEOUT);
 
         this.caption = caption;
         this.table = table;
+        this.toolTip = toolTip;
     }
 
     public void setCaption(String caption) {
         this.caption = caption;
     }
 
+    public void setToolTip(String toolTip) {
+        this.toolTip = toolTip;
+    }
+
     @Override
     public void onBrowserEvent(Element target, NativeEvent event) {
         String eventType = event.getType();
-        if ("dblclick".equals(eventType)) {
+        if (DBLCLICK.equals(eventType)) {
             stopPropagation(event);
             table.headerClicked(this, event.getCtrlKey());
-        } else if ("mousemove".equals(eventType) || "mousedown".equals(eventType)) {
+        } else if (MOUSEMOVE.equals(eventType) || MOUSEDOWN.equals(eventType)) {
             if (resizeHelper == null) {
                 int mouseX = event.getClientX();
 
@@ -64,7 +74,7 @@ public class GGridPropertyTableHeader extends Header<String> {
                 int headerIndex = table.getHeaderIndex(this);
                 if ((mouseX > anchorRight && headerIndex != table.getColumnCount() - 1) || (mouseX < anchorLeft && headerIndex > 0)) {
                     target.getStyle().setCursor(Cursor.COL_RESIZE);
-                    if (eventType.equals("mousedown")) {
+                    if (eventType.equals(MOUSEDOWN)) {
                         int leftColumnIndex = mouseX > anchorRight ? headerIndex : headerIndex - 1;
                         Column leftColumn = table.getColumn(leftColumnIndex);
                         TableCellElement leftHeaderCell = ((TableRowElement) target.getParentElement()).getCells().getItem(leftColumnIndex);
@@ -86,6 +96,13 @@ public class GGridPropertyTableHeader extends Header<String> {
                     target.getStyle().setCursor(Cursor.DEFAULT);
                 }
             }
+        } else if (MOUSEOVER.equals(eventType)) {
+            TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), toolTip);
+        } else if (MOUSEOUT.equals(eventType)) {
+            TooltipManager.get().hideTooltip();
+        }
+        if (MOUSEMOVE.equals(eventType)) {
+            TooltipManager.get().updateMousePosition(event.getClientX(), event.getClientY());
         }
     }
 
@@ -104,7 +121,6 @@ public class GGridPropertyTableHeader extends Header<String> {
         div.getStyle().setOverflow(Style.Overflow.HIDDEN);
         div.getStyle().setTextAlign(Style.TextAlign.CENTER);
         div.getStyle().setWhiteSpace(Style.WhiteSpace.NOWRAP);
-        div.setTitle(escapedCaption);
         if (sortDir != null) {
             ImageElement img = Document.get().createImageElement();
             img.getStyle().setHeight(15, Style.Unit.PX);
@@ -116,7 +132,6 @@ public class GGridPropertyTableHeader extends Header<String> {
             span.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
             span.setInnerText(escapedCaption);
 
-            renderedTooltipElement = div;
             renderedCaptionElement = span;
 
             div.appendChild(img);
@@ -126,7 +141,7 @@ public class GGridPropertyTableHeader extends Header<String> {
             div.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
             div.setInnerText(escapedCaption);
 
-            renderedTooltipElement = renderedCaptionElement = div;
+            renderedCaptionElement = div;
             th.appendChild(div);
         }
 
@@ -150,7 +165,6 @@ public class GGridPropertyTableHeader extends Header<String> {
             String escapedCaption = getEscapedCaption();
 
             renderedCaptionElement.setInnerText(escapedCaption);
-            renderedTooltipElement.setTitle(escapedCaption);
         }
 
         setRendered(caption, sortDir);
@@ -203,13 +217,13 @@ public class GGridPropertyTableHeader extends Header<String> {
         public void onPreviewNativeEvent(NativePreviewEvent event) {
             NativeEvent nativeEvent = event.getNativeEvent();
             stopPropagation(nativeEvent);
-            if (nativeEvent.getType().equals("mousemove")) {
+            if (nativeEvent.getType().equals(MOUSEMOVE)) {
                 int clientX = nativeEvent.getClientX();
                 int tableLeft = table.getAbsoluteLeft();
                 if (clientX >= tableLeft && clientX <= tableLeft + table.getOffsetWidth()) {
                     resizeHeaders(clientX);
                 }
-            } else if (nativeEvent.getType().equals("mouseup")) {
+            } else if (nativeEvent.getType().equals(MOUSEUP)) {
                 previewHandlerReg.removeHandler();
                 resizeHelper = null;
             }

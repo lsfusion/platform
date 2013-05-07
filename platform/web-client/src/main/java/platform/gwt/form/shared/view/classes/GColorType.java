@@ -41,4 +41,9 @@ public class GColorType extends GDataType {
     public Object parseString(String s) throws ParseException {
         throw new ParseException("Color class doesn't support conversion from string", 0);
     }
+
+    @Override
+    public String toString() {
+        return "Цвет";
+    }
 }
