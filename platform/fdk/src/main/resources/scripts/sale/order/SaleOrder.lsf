@@ -42,6 +42,11 @@ EXTEND FORM userOrder
     PROPERTIES(o) numberVATUserOrder SHOWIF isDepartmentStoreSupplierStockOrder(o), valueVATUserOrder SHOWIF isDepartmentStoreSupplierStockOrder(o);
 ;
 
+// --------------------- НДС суммы ----------------------- //
+
+@deriveDocumentDetailVATDataSum(userOrder); // записываем сумму НДС
+@deriveDocumentDetailVATPrefixSum (userOrder, invoice); // записываем сумму с НДС
+
 // ----------------------------- Автоматическая отсылка почты ---------------------------------- //
 
 FORM emailOrder 'Заказ' PRINT

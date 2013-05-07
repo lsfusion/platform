@@ -23,6 +23,12 @@ Order.operationOrder(order) += operationOrder(order);
 @defineDocumentOperationLegalEntity(userOrder, customer, 'Покупатель');
 @defineDocumentOperationRole(userOrder);
 
+// --------------------- НДС суммы ----------------------- //
+
+@deriveDocumentDetailVAT (userOrder, , date,  sku, supplierStock); // записываем ставку НДС из товара
+@deriveDocumentDetailVATDataSum(userOrder); // записываем сумму НДС
+@deriveDocumentDetailVATPrefixSum (userOrder, invoice); // записываем сумму с НДС
+
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 
 CONSTRAINT supplierUserOrder(userOrder) AND NOT isCompanyLegalEntity(supplierUserOrder(userOrder))
