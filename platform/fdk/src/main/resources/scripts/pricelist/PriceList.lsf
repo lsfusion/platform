@@ -362,8 +362,9 @@ FORM userPriceList 'Прайс'
     PROPERTIES(d) BACKGROUND backgroundPriceListDetail(d)
                   isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                   shortNameUOMSkuUserPriceListDetail, fromDateUserPriceListDetail, fromTimeUserPriceListDetail,
-                  toDateUserPriceListDetail, toTimeUserPriceListDetail, nameCompanyUserPriceListDetail, ADDOBJ, delete
+                  toDateUserPriceListDetail, toTimeUserPriceListDetail, ADDOBJ, delete
     PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER headerNameDataPriceListType(p, t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID
+    PROPERTIES(d) nameCompanyUserPriceListDetail
     PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR fillDocumentPriceList, addDetailInputBarcodeUserPriceListDetailUserPriceList
     FILTERS userPriceListUserPriceListDetail(d) == p,
             isParentSkuGroupSku(sk, skuPriceListDetail(d)) OR (sk IS SkuGroup AND d IS PriceListDetail AND NOT skuPriceListDetail(d))

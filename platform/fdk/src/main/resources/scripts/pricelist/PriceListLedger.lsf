@@ -37,6 +37,23 @@ inPriceListLedgerStock (ledger, stock) = ABSTRACT BOOLEAN (PriceListLedger, Stoc
 
 orderPriceListLedger(ledger) = STRUCT(fromDateTimePriceListLedger(ledger), ledger) IF activePriceListLedger(ledger) PERSISTENT;
 
+// ------------------ Расчет цен для company / sku ---------------- //
+
+orderPriceListLedgerLedgerPriceListType(ledger, type) = orderPriceListLedger(ledger) IF pricePriceListLedgerLedgerPriceListType(ledger, type) PERSISTENT;
+
+concatLedgerPriceListTypeSkuCompanyDateTime(type, sku, company, dateTime) =
+    GROUP MAX orderPriceListLedgerLedgerPriceListType(ledger, type)
+              IF fromDateTimePriceListLedger(ledger) < (dateTimeIn AS DATETIME) AND NOT toDateTimePriceListLedger(ledger) <= (dateTimeIn AS DATETIME)
+          BY type, skuPriceListLedger(ledger), companyPriceListLedger(ledger), dateTimeIn;
+
+priceListLedgerLedgerPriceListTypeSkuCompanyDateTime(type, sku, company, dateTime) =
+    concatLedgerPriceListTypeSkuCompanyDateTime(type, sku, company, dateTime)[2];
+
+priceLedgerPriceListTypeSkuCompanyDateTime 'Цена' (type, sku, company, dateTime) =
+    pricePriceListLedgerLedgerPriceListType(priceListLedgerLedgerPriceListTypeSkuCompanyDateTime(type, sku, company, dateTime), type);
+
+// ------------------ Расчет цен для sku / stock / datetime
+
 TABLE priceListLedgerLedgerPriceListTypeStock (PriceListLedger, LedgerPriceListType, Stock);
 orderPriceListLedgerLedgerPriceListTypeStock(ledger, type, stock) =
     orderPriceListLedger(ledger) IF pricePriceListLedgerLedgerPriceListType(ledger, type) AND inPriceListLedgerStock(ledger, stock) PERSISTENT INDEXED;
