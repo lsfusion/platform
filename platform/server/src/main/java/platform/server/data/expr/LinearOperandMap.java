@@ -4,9 +4,12 @@ import platform.base.col.WrapMap;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.IntegralClass;
+import platform.server.data.expr.formula.AbstractFormulaImpl;
+import platform.server.data.expr.formula.ListExprSource;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.expr.formula.conversion.CompatibleTypeConversion;
 import platform.server.data.where.Where;
 
 public class LinearOperandMap extends WrapMap<Expr,Integer> {
@@ -16,7 +19,7 @@ public class LinearOperandMap extends WrapMap<Expr,Integer> {
     }
 
     public IntegralClass getType() {
-        return (IntegralClass) FormulaExpr.getCompatibleType(keys());
+        return (IntegralClass) AbstractFormulaImpl.getCompatibleType(new ListExprSource(keys().toList()), CompatibleTypeConversion.instance);
     }
 
     public int hashOuter(HashContext hashContext) {

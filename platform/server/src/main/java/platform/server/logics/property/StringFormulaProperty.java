@@ -7,7 +7,7 @@ import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.ConcreteValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.FormulaExpr;
+import platform.server.data.expr.formula.FormulaExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
 
@@ -57,6 +57,6 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
                 return joinImplement.get(value);
             }});
 
-        return FormulaExpr.create(formula, value, params);
+        return FormulaExpr.createFormula(formula, value, params);
     }
 }

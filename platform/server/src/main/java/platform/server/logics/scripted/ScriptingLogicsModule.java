@@ -929,12 +929,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedAdditiveProp(List<String> operands, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
         assert operands.size() + 1 == properties.size();
 
-        LPWithParams curLP = properties.get(0);
+        LPWithParams sumLP = properties.get(0);
         for (int i = 1; i < properties.size(); i++) {
-            String op = operands.get(i-1);
-            curLP = addScriptedJProp(getArithProp(op), asList(curLP, properties.get(i)));
+            LPWithParams currLP = properties.get(i);
+            sumLP = addScriptedJProp(getArithProp(operands.get(i-1)), asList(sumLP, currLP));
         }
-        return curLP;
+        return sumLP;
     }
 
 

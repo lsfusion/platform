@@ -11,6 +11,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcatenateClassSet;
 import platform.server.classes.ValueClassSet;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.formula.FormulaExpr;
 import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;

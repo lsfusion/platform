@@ -5,11 +5,9 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MExclMap;
-import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
-import platform.server.Settings;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ValuesContext;
@@ -21,15 +19,14 @@ import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.DataClass;
 import platform.server.context.ThreadLocalContext;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.formula.FormulaExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PropStat;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.IQuery;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.sql.SQLSyntax;
@@ -348,7 +345,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         if(shifts.length > 1)
             formula = "CASE " + formula + " END";
 
-        query.addProperty(field, FormulaExpr.create("prm1+" + formula, baseClass.unknown, mParams.immutable()));
+        query.addProperty(field, FormulaExpr.createFormula("prm1+" + formula, baseClass.unknown, mParams.immutable()));
         query.and(join.getWhere());
         session.updateRecords(new ModifyQuery(this, query.getQuery()));
     }

@@ -19,6 +19,7 @@ import platform.server.caches.OuterContext;
 import platform.server.classes.IntegralClass;
 import platform.server.data.*;
 import platform.server.data.expr.*;
+import platform.server.data.expr.formula.FormulaExpr;
 import platform.server.data.expr.order.PartitionCalc;
 import platform.server.data.expr.order.PartitionToken;
 import platform.server.data.expr.query.*;
@@ -901,9 +902,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         stepExprs = mStepExprs.immutableValue();
                     }
 
-                    Expr rowSource = FormulaExpr.create1(rowType.getCast("ARRAY[prm1]", syntax, false), rowType, concKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
+                    Expr rowSource = FormulaExpr.createFormula(rowType.getCast("ARRAY[prm1]", syntax, false), rowType, concKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
                     initialExprs = initialExprs.addRevExcl(rowPath, rowSource); // заполняем начальный путь
-                    stepExprs = stepExprs.addExcl(rowPath, FormulaExpr.create2(rowType.getCast("(prm1 || prm2)", syntax, false), rowType, prevPath, rowSource)); // добавляем тек. вершину
+                    stepExprs = stepExprs.addExcl(rowPath, FormulaExpr.createFormula(rowType.getCast("(prm1 || prm2)", syntax, false), rowType, prevPath, rowSource)); // добавляем тек. вершину
                 } else
                     recWhere = recJoin.getWhere();
 

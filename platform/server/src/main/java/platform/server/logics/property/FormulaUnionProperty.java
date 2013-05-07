@@ -30,7 +30,7 @@ public abstract class FormulaUnionProperty extends UnionProperty {
             public Expr getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
                 return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
             }});
-        return new FormulaUnionExpr(getFormula(), getDataClass(), paramExprs);
+        return FormulaUnionExpr.create(getFormula(), getDataClass(), paramExprs);
     }
 
     protected boolean useSimpleIncrement() {

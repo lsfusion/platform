@@ -9,6 +9,7 @@ import platform.server.caches.OuterContext;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClassSet;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.formula.FormulaExpr;
 import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.JoinData;

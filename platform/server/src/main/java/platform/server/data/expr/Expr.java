@@ -1,6 +1,5 @@
 package platform.server.data.expr;
 
-import platform.base.Pair;
 import platform.base.Result;
 import platform.base.SFunctionSet;
 import platform.base.col.MapFact;
@@ -15,9 +14,9 @@ import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
-import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
+import platform.server.data.expr.formula.FormulaExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.expr.where.cases.CaseExpr;
@@ -117,7 +116,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
     
     public Expr mult(Expr expr, IntegralClass intClass) {
-        return FormulaExpr.create2(FormulaExpr.MULT2, intClass, this, expr);
+        return FormulaExpr.createFormula(FormulaExpr.MULT2, intClass, this, expr);
     }
 
     public Expr sum(Expr expr) {

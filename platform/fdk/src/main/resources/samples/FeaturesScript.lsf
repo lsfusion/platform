@@ -562,11 +562,6 @@ okMessage() = ACTION() {
     formClose();
 }
 
-onChangeDocumentName(document) = ACTION {
-    REQUEST STRING[50] INPUT;
-    SET storeName(document) <- requestedString();
-}
-
 //////////////// FORM STATEMENT /////////////////
 // Syntax:
 // FORM name ['caption'] [TITLE 'title'] [PRINT] [DOCKED | MODAL | FULLSCREEN | DOCKEDMODAL] | EXTEND FORM name
@@ -599,9 +594,7 @@ FORM documentArticle 'По документам (caption)' TITLE 'По доку�
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
 //                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS | SHORTCUT | EDIT) <mappedAction>] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)] [EVENTID 'id']
 
-    PROPERTIES(document) store, testPush, testPush2, copy, date,
-                         storeName ON CHANGE onChangeDocumentName(document),
-                         documentTypeString
+    PROPERTIES(document) documentTypeString, storeName, testPush, testPush2, copy
     PROPERTIES name(article)
     PROPERTIES quantity(document, article)
     PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article), selCur(document, article), selAll(document, article), selArt(article)
@@ -756,7 +749,6 @@ FORM storeArticle 'По складам'
     PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
     FILTERGROUP filters1
         FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
-    ORDER BY name(s) DESC, foo, ssel
 ;
 
 EXTEND FORM storeArticle
@@ -969,6 +961,36 @@ DESIGN TestOnActions FROM DEFAULT {
     }
 }
 
+//castSome = CAST(name(12) AS TEXT) + ':';
+
+sinteger 'Integer' (store) = DATA INTEGER (Store);
+slong 'Long' (store) = DATA LONG (Store);
+sdouble 'Double' (store) = DATA DOUBLE (Store);
+snumeric 'Numeric' (store) = DATA NUMERIC[14,3] (Store);
+sboolean 'Boolean' (store) = DATA BOOLEAN (Store);
+stext 'Text' (store) = DATA TEXT (Store);
+
+nameDate 'store:date' (store) = name(store) + ':' + sdate(store);
+nameBalance 'article:balance' (store, article) = name(article) + ':' + balanceQuantity(store, article);
+
+sumDoubleInt 'double+integer' (store) = sdouble(store) + sinteger(store);
+sumDoubleNumeric 'double+numeric' (store) = sdouble(store) + snumeric(store);
+sumNumericInt 'numeric+integer' (store) = snumeric(store) + sinteger(store);
+sumIntLong 'integer+long' (store) = sinteger(store) + slong(store);
+sumStringBoolean 'name:boolean' (store) = name(store) + ':' + sboolean(store);
+sumTextInteger 'text+integer' (store) = stext(store) + sinteger(store);
+
+sumNameName 'store+article' (store, article) = name(store) + name(article);
+
+FORM TestAddOperator 'Тест оператора "+"'
+    OBJECTS s=Store, a=Article
+    PROPERTIES(s) OBJVALUE, name, sdate, sinteger, slong, sdouble, snumeric, sboolean
+    PROPERTIES(s) nameDate, sumDoubleInt, sumDoubleNumeric, sumNumericInt, sumIntLong, sumStringBoolean
+    PROPERTIES(s) FORCE PANEL stext, sumTextInteger
+    PROPERTIES(a) OBJVALUE, name
+    PROPERTIES(s, a) nameBalance, sumNameName
+;
+
 //////////////// INDEX STATEMENT //////////////////
 // Syntax:
 // INDEX propertyName1 [, ..., propertyNameN];
@@ -1045,18 +1067,23 @@ NAVIGATOR {
     objects TO objectsWindow;
 
     ADD dictionaries 'Словари' IN regionalData AFTER daysOffForm;
+
+    NEW tests 'Тесты' TO toolbar {
+        ADD TestDataPropForm;
+        ADD TestColumnGroupObjects;
+        ADD TestTree;
+        ADD TestAggr;
+        ADD TestHeaders;
+        ADD TestHotkeys;
+        ADD TestEvalActionForm;
+        ADD TestTabs;
+        ADD TestReadOnlyIf;
+        ADD TestOnActions;
+        ADD TestAddOperator;
+    }
+
     ADD storeArticle;
     ADD documentArticle;
-    ADD TestDataPropForm;
-    ADD TestColumnGroupObjects;
-    ADD TestTree;
-    ADD TestAggr;
-    ADD TestHeaders;
-    ADD TestHotkeys;
-    ADD TestEvalActionForm;
-    ADD TestTabs;
-    ADD TestReadOnlyIf;
-    ADD TestOnActions;
 }
 
 //////////////// DESIGN STATEMENT /////////////////

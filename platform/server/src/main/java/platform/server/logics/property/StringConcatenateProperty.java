@@ -10,7 +10,7 @@ import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.StringConcatenateExpr;
+import platform.server.data.expr.formula.FormulaExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
 
@@ -48,7 +48,7 @@ public class StringConcatenateProperty extends FormulaProperty<StringConcatenate
             public Expr getMapValue(Interface value) {
                 return joinImplement.get(value);
             }});
-        return StringConcatenateExpr.create(exprs, separator, caseSensitive);
+        return FormulaExpr.createStringConcat(exprs, separator, caseSensitive);
     }
 
     @Override

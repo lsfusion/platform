@@ -905,6 +905,10 @@ public abstract class LogicsModule {
         return addProperty(null, new LCP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(name, compare)));
     }
 
+    protected <P extends PropertyInterface> LCP addSumProp(String name) {
+        return addProperty(null, new LCP<SumProperty.Interface>(new SumProperty(name, "uSum")));
+    }
+
     protected <P extends PropertyInterface> LCP addSProp(int intNum) {
         return addSProp(genSID(), intNum);
     }

@@ -7,12 +7,11 @@ import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.formula.FormulaExpr;
 import platform.server.data.expr.query.AggrExpr;
 import platform.server.data.expr.query.PartitionExpr;
 import platform.server.data.expr.query.PartitionType;
@@ -55,7 +54,7 @@ public class PropertySet<T extends PropertyInterface> {
                 AggrExpr.fixOrders(orders, mapKeys), ordersNotNull, SetFact.<Expr>EMPTY(), mapKeys.valuesSet().toMap());
 
         QueryBuilder<T, String> query = new QueryBuilder<T, String>(mapKeys, exprNum.getWhere());
-        query.addProperty("value", FormulaExpr.create1("prm1", baseClass.unknown, exprNum));
+        query.addProperty("value", FormulaExpr.createFormula("prm1", baseClass.unknown, exprNum));
         return query.getQuery();
     }
 
