@@ -83,7 +83,8 @@ toTimePriceList(userPriceList) += toTimeUserPriceList(userPriceList);
 
 @defineDocumentInterfaceDescription(priceList, 'Прайс');
 
-@defineDocumentInterfaceLegalEntity(priceList, company, 'Организация');
+//@defineDocumentInterfaceLegalEntity(priceList, company, 'Организация');
+@defineDocumentInterfaceDataLegalEntity(priceList, company, 'Организация');
 userPriceListLegalEntity (legalEntity) = GROUP MAX userPriceList BY companyUserPriceList(userPriceList);
 
 @defineDocumentInterfaceCurrency(priceList);
@@ -175,7 +176,7 @@ isPostedPriceListLedger(ledger) += isPostedPriceListDetail(ledger);
 
 skuPriceListLedger (ledger) += skuPriceListDetail(ledger);
 
-companyPriceListLedger (ledger) += companyPriceList(priceListPriceListDetail(ledger));
+companyPriceListLedger (ledger) += companyPriceListDetail(ledger);
 
 descriptionPriceListLedger (ledger) += descriptionPriceList(priceListPriceListDetail(ledger));
 
@@ -361,7 +362,7 @@ FORM userPriceList 'Прайс'
     PROPERTIES(d) BACKGROUND backgroundPriceListDetail(d)
                   isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                   shortNameUOMSkuUserPriceListDetail, fromDateUserPriceListDetail, fromTimeUserPriceListDetail,
-                  toDateUserPriceListDetail, toTimeUserPriceListDetail, ADDOBJ, delete
+                  toDateUserPriceListDetail, toTimeUserPriceListDetail, nameCompanyUserPriceListDetail, ADDOBJ, delete
     PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER headerNameDataPriceListType(p, t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID
     PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR fillDocumentPriceList, addDetailInputBarcodeUserPriceListDetailUserPriceList
     FILTERS userPriceListUserPriceListDetail(d) == p,
@@ -579,7 +580,7 @@ FORM priceLists 'Прайсы'
 
     OBJECTS d = UserPriceListDetail
     PROPERTIES(d) READONLY indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
-                           shortNameUOMSkuUserPriceListDetail
+                           shortNameUOMSkuUserPriceListDetail, nameCompanyPriceListDetail
 
     OBJECTS ts = Stock
     PROPERTIES(ts) READONLY nameStock
