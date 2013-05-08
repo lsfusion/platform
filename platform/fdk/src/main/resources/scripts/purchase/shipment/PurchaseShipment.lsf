@@ -6,7 +6,7 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (закупка)', customerStock);
+@defineShipment('Поставки', ' (закупка)', customerStock);
 @defineShipmentBatch(customerStock);
 expiryDateUserShipmentDetail(detail) <- prevExpiryDateBatch(batchUserShipmentDetail(detail)) WHEN CHANGED (batchUserShipmentDetail(detail));
 
@@ -164,7 +164,7 @@ sumContainerIncStockDocumentLedger (ledger) += sumContainerShipmentDetailShipmen
 
 
 NAVIGATOR {
-    purchasePurchaseNavigator {
+    purchaseStockNavigator {
         ADD shipments;
     }
 }

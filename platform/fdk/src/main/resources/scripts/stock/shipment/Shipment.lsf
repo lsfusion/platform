@@ -49,7 +49,7 @@ END
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-META defineShipment(sign, stockProp)
+META defineShipment(captions, sign, stockProp)
 
     CLASS ABSTRACT Shipment 'Поставка'###sign : Shipment.Shipment;
     CLASS ABSTRACT ShipmentDetail 'Строка поставки'###sign : Shipment.ShipmentDetail;
@@ -265,7 +265,7 @@ META defineShipment(sign, stockProp)
         }
     } TOOLBAR;
 
-    FORM shipments 'Поставки' TITLE 'Поставки'###sign
+    FORM shipments captions TITLE captions###sign
         OBJECTS s = Shipment
         PROPERTIES (s) READONLY isPostedShipment FORCE GRID, numberShipment, seriesShipment, dateShipment, timeShipment,
                                 nameSupplierShipment, nameSupplierStockShipment, nameCustomerShipment, nameCustomerStockShipment,

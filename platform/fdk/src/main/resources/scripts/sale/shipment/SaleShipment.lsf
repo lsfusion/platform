@@ -7,7 +7,7 @@ NAMESPACE Sale;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (продажа)', supplierStock);
+@defineShipment('Поставки', ' (продажа)', supplierStock);
 @defineShipmentBatch(supplierStock);
 expiryDateUserShipmentDetail(detail) <- prevExpiryDateBatch(batchUserShipmentDetail(detail)) WHEN CHANGED (batchUserShipmentDetail(detail));
 
@@ -125,7 +125,7 @@ costSaleInvoiceDetail (invoiceDetail) = GROUP SUM costSumSkuLedger(shipmentDetai
 costSumSaleLedger(ledger) += costSaleInvoiceDetail(ledger);
 
 NAVIGATOR {
-    saleSaleNavigator {
+    saleStockNavigator {
         ADD shipments;
     }
 }

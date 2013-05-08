@@ -334,7 +334,7 @@ EXTEND DESIGN propertyPolicy {
                 ADD PROPERTY(SIDProperty);
             }
             NEW permissionContainer {
-                caption = 'Запреты';
+                caption = 'Доступ';
                 ADD PROPERTY(permitViewProperty);
                 ADD PROPERTY(forbidViewProperty);
                 ADD PROPERTY(permitChangeProperty);

@@ -9,7 +9,7 @@ NAMESPACE SaleReturn;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (продажа-возврат)', supplierStock);
+@defineShipment('Возвраты', ' (продажа-возврат)', supplierStock);
 @defineShipmentBatch(supplierStock);
 expiryDateUserShipmentDetail(detail) <- prevExpiryDateBatch(batchUserShipmentDetail(detail)) WHEN CHANGED (batchUserShipmentDetail(detail));
 
@@ -121,7 +121,7 @@ sumContainerIncStockDocumentLedger (ledger) += sumContainerShipmentDetailShipmen
 
 
 NAVIGATOR {
-    saleReturnNavigator {
+    saleStockNavigator {
         ADD shipments;
     }
 }

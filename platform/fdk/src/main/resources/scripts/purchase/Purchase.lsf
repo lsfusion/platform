@@ -8,4 +8,7 @@ NAVIGATOR {
         NEW purchaseReturnNavigator 'Возвраты';
         NEW purchaseMasterData 'Справочники';
     }
+    stockNavigator {
+        NEW purchaseStockNavigator 'Поступления' FIRST;
+    }
 }

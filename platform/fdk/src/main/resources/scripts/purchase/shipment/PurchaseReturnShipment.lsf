@@ -7,7 +7,7 @@ PRIORITY Purchase, Operation;
 NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
-@defineShipment(' (закупка-возврат)', customerStock);
+@defineShipment('Возвраты', ' (закупка-возврат)', customerStock);
 @defineShipmentBatch(customerStock);
 expiryDateUserShipmentDetail(detail) <- expiryDateBatch(batchUserShipmentDetail(detail)) WHEN CHANGED (batchUserShipmentDetail(detail));
 
@@ -111,7 +111,7 @@ sumContainerOutStockDocumentLedger (ledger) += sumContainerShipmentDetailShipmen
 
 
 NAVIGATOR {
-    purchaseReturnNavigator {
+    purchaseStockNavigator {
         ADD shipments;
     }
 }
