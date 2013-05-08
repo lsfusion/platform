@@ -166,10 +166,10 @@ END
 
 META extendFormDocumentPackSkuStock(object, form, concrete, stockProp)
     EXTEND FORM form
-        PROPERTIES SHOWIF showPack###object(concrete) BEFORE quantitySku###object###stockProp(s, concrete, st)
-                   idBarcodePackSku(s) READONLY, shortNameUOMPackSku(s) READONLY,
-                   amountPackSku(s) ON CHANGE changeAmountPackSku###object###Stock(s, concrete, st),
-                   packQuantitySku###object###stockProp(s, concrete, st) ON CHANGE changePackQuantitySku###object###Stock(s, concrete, st)
+        PROPERTIES SHOWIF showPack###object(concrete) BEFORE quantitySku###object###stockProp(ks, concrete, st)
+                   idBarcodePackSku(ks) READONLY, shortNameUOMPackSku(ks) READONLY,
+                   amountPackSku(ks) ON CHANGE changeAmountPackSku###object###Stock(ks, concrete, st),
+                   packQuantitySku###object###stockProp(ks, concrete, st) ON CHANGE changePackQuantitySku###object###Stock(ks, concrete, st)
     ;
 END
 
@@ -221,9 +221,9 @@ END
 
 META extendFormDocumentPackSku(object, form, concrete)
     EXTEND FORM form
-        PROPERTIES SHOWIF showPack###object(concrete) BEFORE quantity###object##Detail###sku###object(s, concrete)
-                   idBarcodePackSku(s) READONLY, shortNameUOMPackSku(s) READONLY,
-                   amountPackSku(s) ON CHANGE changeAmountPackSku###object(s, concrete),
-                   packQuantitySku###object(s, concrete) ON CHANGE changePackQuantitySku###object(s, concrete)
+        PROPERTIES SHOWIF showPack###object(concrete) BEFORE quantity###object##Detail###sku###object(ks, concrete)
+                   idBarcodePackSku(ks) READONLY, shortNameUOMPackSku(ks) READONLY,
+                   amountPackSku(ks) ON CHANGE changeAmountPackSku###object(ks, concrete),
+                   packQuantitySku###object(ks, concrete) ON CHANGE changePackQuantitySku###object(ks, concrete)
     ;
 END

@@ -232,13 +232,13 @@ META extendFormDocumentOrderLedgerStock(object, form, concrete)
     reviewReserveBPurchaseSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL;
 
     EXTEND FORM form
-        PROPERTIES BEFORE currentBalanceSkuStock(s, st) availableQuantitySkuStock###object(s, st, concrete) READONLY
+        PROPERTIES BEFORE currentBalanceSkuStock(ks, st) availableQuantitySkuStock###object(ks, st, concrete) READONLY
 
-        PROPERTIES AFTER currentBalanceSkuStock(s, st)
-                   currentReserveSaleSkuStock(s,st) ON CHANGE reviewReserveSaleSkuStock###object(s,st,concrete),
-                   currentReservePurchaseSkuStock(s,st) ON CHANGE reviewReservePurchaseSkuStock###object(s,st,concrete),
-                   reserveBSaleSkuStock###object(s, st, concrete) ON CHANGE reviewReserveBSaleSkuStock###object(s,st,concrete),
-                   reserveBPurchaseSkuStock###object(s, st, concrete) ON CHANGE reviewReserveBPurchaseSkuStock###object(s,st,concrete)
+        PROPERTIES AFTER currentBalanceSkuStock(ks, st)
+                   currentReserveSaleSkuStock(ks,st) ON CHANGE reviewReserveSaleSkuStock###object(ks,st,concrete),
+                   currentReservePurchaseSkuStock(ks,st) ON CHANGE reviewReservePurchaseSkuStock###object(ks,st,concrete),
+                   reserveBSaleSkuStock###object(ks, st, concrete) ON CHANGE reviewReserveBSaleSkuStock###object(ks,st,concrete),
+                   reserveBPurchaseSkuStock###object(ks, st, concrete) ON CHANGE reviewReserveBPurchaseSkuStock###object(ks,st,concrete)
     ;
     EXTEND DESIGN form {
         PROPERTY(availableQuantitySkuStock###object) { background = #F4FFBD; }
@@ -268,7 +268,7 @@ META extendFormDocumentOrderLedgerStockAll(object, form, concrete)
     }
 
     EXTEND FORM form
-        PROPERTIES AFTER availableQuantitySkuStock###object(s, st, concrete) available###form (s,st) ON CHANGE change###available###form(s,concrete,st)
+        PROPERTIES AFTER availableQuantitySkuStock###object(ks, st, concrete) available###form (ks,st) ON CHANGE change###available###form(ks,concrete,st)
     ;
 END
 
@@ -291,13 +291,13 @@ META extendFormDocumentOrderLedger(object, form, stockProp, concrete)
     reviewReserveBPurchaseSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL;
 
     EXTEND FORM form
-        PROPERTIES READONLY BEFORE prevCurrentBalanceSku###object(s, concrete) availableQuantitySku###object(s, concrete)
+        PROPERTIES READONLY BEFORE prevCurrentBalanceSku###object(ks, concrete) availableQuantitySku###object(ks, concrete)
 
-        PROPERTIES AFTER prevCurrentBalanceSku###object(s, concrete)
-                   currentReserveSaleSku###object(s,concrete) ON CHANGE reviewReserveSaleSku###object(s,concrete),
-                   currentReservePurchaseSku###object(s,concrete) ON CHANGE reviewReservePurchaseSku###object(s,concrete),
-                   reserveBSaleSku###object(s, concrete) ON CHANGE reviewReserveBSaleSku###object(s,concrete),
-                   reserveBPurchaseSku###object(s, concrete) ON CHANGE reviewReserveBPurchaseSku###object(s,concrete)
+        PROPERTIES AFTER prevCurrentBalanceSku###object(ks, concrete)
+                   currentReserveSaleSku###object(ks,concrete) ON CHANGE reviewReserveSaleSku###object(ks,concrete),
+                   currentReservePurchaseSku###object(ks,concrete) ON CHANGE reviewReservePurchaseSku###object(ks,concrete),
+                   reserveBSaleSku###object(ks, concrete) ON CHANGE reviewReserveBSaleSku###object(ks,concrete),
+                   reserveBPurchaseSku###object(ks, concrete) ON CHANGE reviewReserveBPurchaseSku###object(ks,concrete)
     ;
     EXTEND DESIGN form {
         PROPERTY(availableQuantitySku###object) { background = #F4FFBD; }
@@ -327,7 +327,7 @@ META extendFormDocumentOrderLedgerAll(object, form, concrete)
     }
 
     EXTEND FORM form
-        PROPERTIES AFTER availableQuantitySku###object(s, concrete) available###form (s,concrete) ON CHANGE change###available###form(s,concrete)
+        PROPERTIES AFTER availableQuantitySku###object(ks, concrete) available###form (ks,concrete) ON CHANGE change###available###form(ks,concrete)
     ;
 END
 

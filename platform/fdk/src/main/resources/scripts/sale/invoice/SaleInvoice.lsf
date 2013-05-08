@@ -135,12 +135,12 @@ inUserInvoiceSku (userInvoice, sku)= inCustomerSku(customerUserInvoice(userInvoi
 EXTEND FORM userInvoice
 
     FILTERGROUP filter
-        FILTER 'С остатком ' 'F10' prevCurrentBalanceSkuUserInvoice(s, i) DEFAULT
-        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailSkuUserInvoice(s, i)
+        FILTER 'С остатком ' 'F10' prevCurrentBalanceSkuUserInvoice(ks, i) DEFAULT
+        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailSkuUserInvoice(ks, i)
 
     FILTERGROUP filter2
-        FILTER 'С продажей ' 'F8' inUserInvoiceSku(i, s)
-        FILTER 'В ассортименте' 'F7' ledgerPriceSkuUserInvoice(s, i)
+        FILTER 'С продажей ' 'F8' inUserInvoiceSku(i, ks)
+        FILTER 'В ассортименте' 'F7' ledgerPriceSkuUserInvoice(ks, i)
 
 ;
 inUserInvoiceBatch (userInvoice, batch)= inCustomerSku(customerUserInvoice(userInvoice), skuBatch(batch));

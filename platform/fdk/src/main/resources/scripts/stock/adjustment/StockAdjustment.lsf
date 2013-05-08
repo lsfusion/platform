@@ -152,8 +152,8 @@ DESIGN userAdjustment FROM DEFAULT{
 EXTEND FORM userAdjustment
 
     FILTERGROUP filter
-        FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s,st) DEFAULT
-        FILTER 'В документе ' 'F9' quantitySkuUserAdjustmentStock(s, i, st)
+        FILTER 'С остатком ' 'F10' currentBalanceSkuStock(ks,st) DEFAULT
+        FILTER 'В документе ' 'F9' quantitySkuUserAdjustmentStock(ks, i, st)
 
 ;
 
@@ -178,7 +178,7 @@ changeActualQuantitySkuUserAdjustmentStock = ACTION (sku, userAdjustment, stock)
 }
 
 EXTEND FORM userAdjustment
-    PROPERTIES actualBalanceSkuUserAdjustmentStock(s,i,st) ON CHANGE changeActualQuantitySkuUserAdjustmentStock(s,i,st) BEFORE currentBalanceSkuStock(s,st)
+    PROPERTIES actualBalanceSkuUserAdjustmentStock(ks,i,st) ON CHANGE changeActualQuantitySkuUserAdjustmentStock(ks,i,st) BEFORE currentBalanceSkuStock(ks,st)
 ;
 actualBalanceBatchUserAdjustmentStock 'Остаток фактический' (batch, userAdjustment, stock)= currentBalanceBatchStock(batch, stock) (+) quantityBatchUserAdjustmentStock(batch, userAdjustment, stock);
 

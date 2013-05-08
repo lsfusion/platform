@@ -86,11 +86,11 @@ overChangeQuantityValueBatchUserInvoiceDetail(detail) += ACTION (detail) {
 EXTEND FORM userInvoice
 
     FILTERGROUP filter
-        FILTER 'С остатком ' 'F10' prevCurrentBalanceSkuUserInvoice(s, i) DEFAULT
-        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailSkuUserInvoice(s, i)
+        FILTER 'С остатком ' 'F10' prevCurrentBalanceSkuUserInvoice(ks, i) DEFAULT
+        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailSkuUserInvoice(ks, i)
     FILTERGROUP filter2
-        FILTER 'С поступлением ' 'F8' quantityPurchaseSupplierSku(supplierUserInvoice(i), s)
-        FILTER 'В ассортименте ' 'F7' companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(i, s), s, customerStockUserInvoice(i), dateTimeUserInvoice(i)) == supplierUserInvoice(i)
+        FILTER 'С поступлением ' 'F8' quantityPurchaseSupplierSku(supplierUserInvoice(i), ks)
+        FILTER 'В ассортименте ' 'F7' companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(i, ks), ks, customerStockUserInvoice(i), dateTimeUserInvoice(i)) == supplierUserInvoice(i)
 ;
 EXTEND FORM userInvoice
 

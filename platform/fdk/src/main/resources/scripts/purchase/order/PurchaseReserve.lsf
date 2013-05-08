@@ -23,7 +23,7 @@ fillRecommendedQuantityStockUserOrder 'Заполнить рекомендуем
 overCreateOrder(userOrder) += fillRecommendedQuantityStockUserOrder(userOrder);
 
 EXTEND FORM userOrder
-    PROPERTIES READONLY AFTER currentBalanceSkuStock(s,st) quantitySoldSkuStockUserOrder(s,st,o), stockReserveSkuStockUserOrder(s,st,o)
-    PROPERTIES READONLY AFTER quantitySkuUserOrderCustomerStock(s,o,st) recommendedQuantitySkuStockUserOrder(s,st,o)
-    PROPERTIES  fillRecommendedQuantityStockUserOrder(o) TODRAW s
+    PROPERTIES READONLY AFTER currentBalanceSkuStock(ks,st) quantitySoldSkuStockUserOrder(ks,st,o), stockReserveSkuStockUserOrder(ks,st,o)
+    PROPERTIES READONLY AFTER quantitySkuUserOrderCustomerStock(ks,o,st) recommendedQuantitySkuStockUserOrder(ks,st,o)
+    PROPERTIES  fillRecommendedQuantityStockUserOrder(o) TODRAW ks
 ;

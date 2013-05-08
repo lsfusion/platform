@@ -522,8 +522,8 @@ DESIGN userRepricing FROM DEFAULT {
 EXTEND FORM userRepricing
 
     FILTERGROUP filter
-        FILTER 'С остатком ' 'F10' currentBalanceSkuUserRepricing(s, p) DEFAULT
-        FILTER 'В документе ' 'F9' quantityUserRepricingDetailSkuUserRepricing(s, p)
+        FILTER 'С остатком ' 'F10' currentBalanceSkuUserRepricing(ks, p) DEFAULT
+        FILTER 'В документе ' 'F9' quantityUserRepricingDetailSkuUserRepricing(ks, p)
 ;
 
 //allSkuUserRepricing 'Весь остаток' = DATA SESSION BOOLEAN (Sku, UserRepricing);

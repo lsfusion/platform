@@ -111,6 +111,7 @@ META defineShipment(sign, stockProp)
 
     @defineDocumentInterfaceHeaderQuantity(shipment);
     @defineDocumentHeaderSkuQuantity(shipment, sku);
+    @defineDocumentHeaderSkuQuantity(userShipment, sku);
     @defineDocumentInterfaceHeaderSum(shipment);
 
     @defineDocumentHeaderItemSum(shipment, , );
@@ -227,6 +228,10 @@ META defineShipment(sign, stockProp)
             }
         }
     }
+
+    @defineDocumentSkuSystemLedgerPriceListType(userShipment, accountPriceListType, stockProp);
+    @extendFormDocumentSku(userShipment, userShipment, s);
+    @extendFormDocumentSkuAll(userShipment, userShipment, s);
 
     addUserShipment 'Добавить' = ACTION ADDFORM UserShipment;
     editUserShipment 'Редактировать' (userShipment) = ACTION EDITFORM UserShipment;

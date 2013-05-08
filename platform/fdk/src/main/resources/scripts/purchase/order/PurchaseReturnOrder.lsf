@@ -68,12 +68,12 @@ inAssortmentSkuStockUserOrder (sku, stock, userOrder) =
 EXTEND FORM userOrder
 
     FILTERGROUP filter
-        FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
-        FILTER 'В заказе ' 'F9' quantitySkuUserOrderCustomerStock(s, o, st)
+        FILTER 'С остатком ' 'F10' currentBalanceSkuStock(ks, st) DEFAULT
+        FILTER 'В заказе ' 'F9' quantitySkuUserOrderCustomerStock(ks, o, st)
 
    FILTERGROUP filter1
-        FILTER 'С поступлением' 'F8' quantityPurchaseSupplierSku(supplierUserOrder(o), s)
-        FILTER 'В ассортименте' 'F7' inAssortmentSkuStockUserOrder(s, st, o) DEFAULT
+        FILTER 'С поступлением' 'F8' quantityPurchaseSupplierSku(supplierUserOrder(o), ks)
+        FILTER 'В ассортименте' 'F7' inAssortmentSkuStockUserOrder(ks, st, o) DEFAULT
 ;
 
 // Резервы

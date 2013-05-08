@@ -1853,22 +1853,22 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
         PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
         ORDER BY skuTreeName
 
-        OBJECTS           sts=(st=Stock, s=Sku)
-        PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = nameStock(st)
-        PROPERTIES        addSku() TODRAW sts, editSku(s), copySku(s)
+        OBJECTS           sts=(st=Stock, ks=Sku)
+        PROPERTIES        READONLY nameSku(ks), idBarcodeSku(ks), shortNameUOMSku(ks), stockName = nameStock(st)
+        PROPERTIES        addSku() TODRAW sts, editSku(ks), copySku(ks)
 
-        FILTERS           isParentSkuGroupSku(sk, s),
+        FILTERS           isParentSkuGroupSku(sk, ks),
                           (st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts) AND NOT stockProp###object(concrete) OR
                           st == stockProp###object(concrete) AND NOT sg AND NOT ts
 
         FILTERGROUP stockFilters
             FILTER 'Собственные склады' 'F6' legalEntityStock(st) == legalEntityProp###object(concrete) DEFAULT
 
-        FILTERS           nameSku(s), nameStock(st)
+        FILTERS           nameSku(ks), nameStock(st)
         ORDER BY          nameSku, stockName
 
-        PROPERTIES        quantitySku###object###stockProp(s, concrete, st) ON CHANGE changeQuantitySku###object###stock(s, concrete, st) BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st),
-                          currentBalanceSkuStock(s,st) READONLY, priceSkuStock###object(s, st, concrete) READONLY
+        PROPERTIES        quantitySku###object###stockProp(ks, concrete, st) ON CHANGE changeQuantitySku###object###stock(ks, concrete, st) BACKGROUND backgroundQuantitySku###object###Stock(ks, concrete, st),
+                          currentBalanceSkuStock(ks,st) READONLY, priceSkuStock###object(ks, st, concrete) READONLY
     ;
 
     EXTEND DESIGN form {
@@ -1915,7 +1915,7 @@ META extendFormDocumentSkuStockCustomAll(object, form, concrete)
     }
 
     EXTEND FORM form
-        PROPERTIES AFTER currentBalanceSkuStock(s,st) form###all(s,st) ON CHANGE change###form###all(s, concrete, st)
+        PROPERTIES AFTER currentBalanceSkuStock(ks,st) form###all(ks,st) ON CHANGE change###form###all(ks, concrete, st)
     ;
 END
 
@@ -1989,16 +1989,16 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
         PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
         ORDER BY skuTreeName
 
-        OBJECTS s=Sku
-        PROPERTIES             READONLY    inputName = nameSku(s)
-        PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
-        PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE changeQuantitySku###object(s, concrete) BACKGROUND backgroundQuantitySku###object(s, concrete),
+        OBJECTS ks=Sku
+        PROPERTIES             READONLY    inputName = nameSku(ks)
+        PROPERTIES(ks)          READONLY idBarcodeSku, shortNameUOMSku
+        PROPERTIES(ks, concrete) quantity###detail###skuProp###object ON CHANGE changeQuantitySku###object(ks, concrete) BACKGROUND backgroundQuantitySku###object(ks, concrete),
                                 prevCurrentBalanceSku###object READONLY, priceSku###object READONLY
-        PROPERTIES              addSku() TODRAW s, editSku(s), copySku(s)
+        PROPERTIES              addSku() TODRAW ks, editSku(ks), copySku(ks)
 
-        FILTERS                isParentSkuGroupSku(sk, s)
+        FILTERS                isParentSkuGroupSku(sk, ks)
 
-        FILTERS nameSku(s)
+        FILTERS nameSku(ks)
         ORDER BY inputName
     ;
 
@@ -2015,8 +2015,8 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
                     childConstraints = TO THE BOTTOM;
                     NEW row1{
                         childConstraints = TO THE BOTTOM;
-                        ADD s.box {
-                            s.grid { fillHorizontal = 2; }
+                        ADD ks.box {
+                            ks.grid { fillHorizontal = 2; }
                         }
                     }
                 }
@@ -2047,7 +2047,7 @@ META extendFormDocumentSkuAll(object, form, concrete)
     }
 
     EXTEND FORM form
-        PROPERTIES AFTER prevCurrentBalanceSku###object(s,concrete) form###all(s,concrete) ON CHANGE change###form###all(s, concrete)
+        PROPERTIES AFTER prevCurrentBalanceSku###object(ks,concrete) form###all(ks,concrete) ON CHANGE change###form###all(ks, concrete)
     ;
 END
 
@@ -2194,9 +2194,6 @@ META defineDocumentBatchStockInner(object, detail, detailClass, batchProp, skuPr
     detail###batch###object###stockProp (batch, object, stock) =  GROUP MAX detail
         BY batchProp###detail(detail), object###detail(detail), stockProp###detail(detail);
 
-//    currentBalanceBatch###object 'Остаток' (batch, object) = currentBalanceBatchStock(batch, stockProp###object(object));
-//    prevCurrentBalanceBatch###object 'Остаток' (batch, object) = prevCurrentBalanceBatchStock(batch, stockProp###object(object));
-
     quantityBatch###object###stockProp 'Кол-во товара в документе' (batch, object, stockProp) = GROUP SUM quantity###detail(detail)
         BY batchProp###detail(detail), object###detail(detail), stockProp###detail(detail);
 
@@ -2241,17 +2238,6 @@ END
 META extendFormDocumentBatchStockCustom(object, form, concrete, batchProp, detail, containerProp, stockProp, legalEntityProp)
 
     EXTEND FORM form
-
-//        TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
-//        PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg), tsTreeName = nameStock(ts)
-//        ORDER BY sgTreeName
-//        FILTERS stringEqualsAll(a),
-//                stockGroupStock(ts) == sg
-
-//        OBJECTS b=Batch
-//        PROPERTIES             READONLY dateTimeBatch(b), nameSkuBatch(b), idBarcodeSkuBatch(b), shortNameUOMBatch(b), descriptionBatch(b), nameBatch(b)
-//        PROPERTIES(b, concrete) quantity###detail###batchProp###object ON CHANGE changeQuantityBatch###object(b, concrete) BACKGROUND backgroundQuantityBatch###object(b, concrete),
-//                                prevCurrentBalanceBatch###object READONLY, priceBatch###object READONLY
 
         OBJECTS           stb=(sto=Stock, b=Batch)
         PROPERTIES        READONLY dateTimeBatch(b), nameSkuBatch(b), idBarcodeSkuBatch(b), shortNameUOMBatch(b), descriptionBatch(b), nameBatch(b), stockName = nameStock(sto)
@@ -2373,29 +2359,29 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, fromLega
 
         OBJECTS cc = Stock FIXED GRID
 
-        OBJECTS           sts=(st=Stock, s=Sku)
-        PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = nameStock(st)
-        PROPERTIES        addSku() TODRAW sts, editSku(s), copySku(s)
-        FILTERS           isParentSkuGroupSku(sk, s),
+        OBJECTS           sts=(st=Stock, ks=Sku)
+        PROPERTIES        READONLY nameSku(ks), idBarcodeSku(ks), shortNameUOMSku(ks), stockName = nameStock(st)
+        PROPERTIES        addSku() TODRAW sts, editSku(ks), copySku(ks)
+        FILTERS           isParentSkuGroupSku(sk, ks),
                           (st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts) AND NOT fromStock###object(concrete) OR
                           st == fromStock###object(concrete) AND NOT sg AND NOT ts
 
         FILTERGROUP stockFilters
             FILTER 'Собственные склады' 'F6' legalEntityStock(st) == fromLegalEntity###object(concrete) DEFAULT
 
-        FILTERS           nameSku(s), nameStock(st)
+        FILTERS           nameSku(ks), nameStock(st)
         ORDER BY          nameSku, stockName
 
-        PROPERTIES quantitySku###object###fromStock(s, concrete, st) READONLY BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st)
-        PROPERTIES quantitySku###object###fromStock###toStock(s, concrete, st, cc)  COLUMNS (cc) HEADER nameQuantity###toStock(cc) ON CHANGE changeQuantitySku###object###Stock###toStock(s, concrete, st, cc)
-        PROPERTIES READONLY currentBalanceSkuStock(s,st)
-        PROPERTIES READONLY  priceSkuStock###object###toStock(s, st, concrete, cc)  COLUMNS (cc) HEADER namePrice###toStock(cc)
+        PROPERTIES quantitySku###object###fromStock(ks, concrete, st) READONLY BACKGROUND backgroundQuantitySku###object###Stock(ks, concrete, st)
+        PROPERTIES quantitySku###object###fromStock###toStock(ks, concrete, st, cc)  COLUMNS (cc) HEADER nameQuantity###toStock(cc) ON CHANGE changeQuantitySku###object###Stock###toStock(ks, concrete, st, cc)
+        PROPERTIES READONLY currentBalanceSkuStock(ks,st)
+        PROPERTIES READONLY  priceSkuStock###object###toStock(ks, st, concrete, cc)  COLUMNS (cc) HEADER namePrice###toStock(cc)
 
         FILTERS in###object###stock(concrete,cc)
 
         FILTERGROUP filtr2
-            FILTER 'С остатком' 'F10' prevCurrentBalanceSkuStock(s, st) DEFAULT
-            FILTER 'В заказе' 'F9' quantitySku###object###fromStock(s, concrete, st)
+            FILTER 'С остатком' 'F10' prevCurrentBalanceSkuStock(ks, st) DEFAULT
+            FILTER 'В заказе' 'F9' quantitySku###object###fromStock(ks, concrete, st)
 
 
     ;
@@ -2467,19 +2453,19 @@ META extendFormDocumentInSkuStock(object, form, concrete, contBox)
         PROPERTIES READONLY nameGroup(gg)
         FILTERS groupTypeGroup(gg) == groupType###object(concrete)
 
-        OBJECTS s=Sku
-        PROPERTIES             inSku###object(s,concrete) ON CHANGE changeInSku###object(s, concrete), inputName = nameSku(s) READONLY
-        PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
-        PROPERTIES(s, concrete)currentBalanceSku###object READONLY
-        PROPERTIES             addSku() TODRAW s, editSku(s), copySku(s)
+        OBJECTS ks=Sku
+        PROPERTIES             inSku###object(ks,concrete) ON CHANGE changeInSku###object(ks, concrete), inputName = nameSku(ks) READONLY
+        PROPERTIES(ks)          READONLY idBarcodeSku, shortNameUOMSku
+        PROPERTIES(ks, concrete)currentBalanceSku###object READONLY
+        PROPERTIES             addSku() TODRAW ks, editSku(ks), copySku(ks)
 
-        FILTERS                isParentGroupSku(gg, s) OR s IS Sku AND NOT gg
+        FILTERS                isParentGroupSku(gg, ks) OR ks IS Sku AND NOT gg
 
-        FILTERS nameSku(s)
+        FILTERS nameSku(ks)
         ORDER BY inputName
 
         FILTERGROUP filterBalance
-            FILTER 'С остатком' 'F11' prevCurrentBalanceSku###object(s, concrete)
+            FILTER 'С остатком' 'F11' prevCurrentBalanceSku###object(ks, concrete)
 
     ;
 
@@ -2494,8 +2480,8 @@ META extendFormDocumentInSkuStock(object, form, concrete, contBox)
                 ADD treeGroup.tree.box;
                 NEW wor {
                     childConstraints = TO THE BOTTOM;
-                    ADD s.box {
-                        s.grid { fillHorizontal = 2; }
+                    ADD ks.box {
+                        ks.grid { fillHorizontal = 2; }
                     }
                 }
             }
@@ -2513,7 +2499,7 @@ META defineDocumentSkuStockSupplier (object, form, concrete, concrete2)
 
     EXTEND FORM form
         PROPERTIES nameFilterSupplier###object(concrete) FORCE PANEL
-        FILTERS    filterSupplier###object###sku(concrete, s)
+        FILTERS    filterSupplier###object###sku(concrete, ks)
     ;
     EXTEND DESIGN form {
         row {
