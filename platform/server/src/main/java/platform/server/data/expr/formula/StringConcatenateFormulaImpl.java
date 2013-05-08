@@ -19,6 +19,7 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
     public String getSource(CompileSource compile, ExprSource source) {
         String delimeter = " || '" + separator + "' || ";
         StringBuilder builder = new StringBuilder();
+        builder.append("(");
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
             Type exprType = source.getType(i, compile.keyType);
             String exprSource = source.getSource(i, compile);
@@ -32,6 +33,7 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
 
             builder.append(exprSource);
         }
+        builder.append(")");
         return builder.toString();
     }
 
