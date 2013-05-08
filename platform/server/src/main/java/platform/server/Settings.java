@@ -287,7 +287,7 @@ public class Settings {
         this.disablePoolConnections = disablePoolConnections;
     }
 
-    private boolean disablePoolPreparedStatements = false;
+    private boolean disablePoolPreparedStatements = true;
 
     public boolean isDisablePoolPreparedStatements() {
         return disablePoolPreparedStatements;
