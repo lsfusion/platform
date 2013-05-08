@@ -37,6 +37,7 @@ inPriceListLedgerStock (ledger, stock) = ABSTRACT BOOLEAN (PriceListLedger, Stoc
 
 orderPriceListLedger(ledger) = STRUCT(fromDateTimePriceListLedger(ledger), ledger) IF activePriceListLedger(ledger) PERSISTENT;
 
+
 // ------------------ Расчет цен для company / sku ---------------- //
 
 orderPriceListLedgerLedgerPriceListType(ledger, type) = orderPriceListLedger(ledger) IF pricePriceListLedgerLedgerPriceListType(ledger, type) PERSISTENT;
