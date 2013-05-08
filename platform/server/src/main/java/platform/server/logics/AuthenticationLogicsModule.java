@@ -36,8 +36,11 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP currentComputer;
     public LCP hostnameCurrentComputer;
 
-    public LAP generateLoginPassword;
+    public LCP useLDAP;
+    public LCP serverLDAP;
+    public LCP portLDAP;
 
+    public LAP generateLoginPassword;
 
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(AuthenticationLogicsModule.class.getResourceAsStream("/scripts/system/Authentication.lsf"), baseLM, BL);
@@ -78,6 +81,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         sha256PasswordCustomUser.setEchoSymbols(true);
 
         calculatedHash = getLCPByName("calculatedHash");
+
+        useLDAP = getLCPByName("useLDAP");
+        serverLDAP = getLCPByName("serverLDAP");
+        portLDAP =  getLCPByName("portLDAP");
 
         generateLoginPassword = addAProp(new GenerateLoginPasswordActionProperty(BL.contactLM.emailContact, loginCustomUser, passwordCustomUser, customUser));
 

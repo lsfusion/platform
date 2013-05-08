@@ -51,6 +51,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
     public LCP sidUserRole;
     public LCP userRoleSID;
+    public LCP nameUserRole;
+    public LCP mainRoleCustomUser;
     public LCP inMainRoleCustomUser;
 
     public LCP mainRoleUser;
@@ -76,10 +78,13 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         super.initProperties();
         // ---- Роли
         sidUserRole = getLCPByName("sidUserRole");
+        nameUserRole = getLCPByName("nameUserRole");
+        userRoleSID = getLCPByName("userRoleSID");
         sidMainRoleCustomUser = getLCPByName("sidMainRoleCustomUser");
         nameMainRoleUser = getLCPByName("nameMainRoleUser");
 
         // Список ролей для пользователей
+        mainRoleCustomUser = getLCPByName("mainRoleCustomUser");
         inMainRoleCustomUser = getLCPByName("inMainRoleCustomUser");
 
         // ------------------------ Политика безопасности ------------------ //

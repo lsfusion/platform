@@ -126,7 +126,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     }
 
     public void setupDefaultAdminUser() throws SQLException {
-        setUserPolicies(addUser("admin", "fusion").ID, permitAllPolicy, allowConfiguratorPolicy);
+        DataSession session = createSession();
+        setUserPolicies(addUser("admin", "fusion", session).ID, permitAllPolicy, allowConfiguratorPolicy);
+        session.apply(businessLogics);
     }
 
     private DataSession createSession() throws SQLException {
@@ -183,8 +185,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         return null;
     }
 
-    protected User addUser(String login, String defaultPassword) throws SQLException {
-        DataSession session = createSession();
+    protected User addUser(String login, String defaultPassword, DataSession session) throws SQLException {
 
         User user = readUser(login, session);
         if (user == null) {
@@ -192,11 +193,8 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             businessLogics.authenticationLM.loginCustomUser.change(login, session, addObject);
             businessLogics.authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, addObject);
             Integer userID = (Integer) addObject.object;
-            session.apply(businessLogics);
             user = new User(userID);
         }
-
-        session.close();
 
         return user;
     }
@@ -261,7 +259,8 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         return businessLogics.getProperties().mapRevKeys(new GetValue<String, Property>() {
             public String getMapValue(Property value) {
                 return value.getSID();
-            }});
+            }
+        });
     }
 
     private void applyDefaultPolicy(User user) {
@@ -513,6 +512,26 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
         } catch (SQLException e) {
             throw new RuntimeException(getString("logics.info.error.reading.list.of.roles"), e);
+        }
+    }
+
+    public void setMainRoleCustomUser(User user, String userRoleSID, DataSession session) {
+        try {
+
+            if (userRoleSID != null) {
+                DataObject customUser = new DataObject(user.ID, businessLogics.authenticationLM.customUser);
+                ObjectValue userRole = securityLM.userRoleSID.readClasses(session, new DataObject(userRoleSID));
+
+                if (userRole instanceof NullValue) {
+                    userRole = session.addObject(securityLM.userRole);
+                    securityLM.sidUserRole.change(userRoleSID, session, (DataObject) userRole);
+                    securityLM.nameUserRole.change(userRoleSID, session, (DataObject) userRole);
+                }
+
+                securityLM.mainRoleCustomUser.change(userRole.getValue(), session, customUser);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 

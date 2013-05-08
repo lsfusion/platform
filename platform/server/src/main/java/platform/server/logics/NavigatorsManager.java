@@ -18,6 +18,8 @@ import platform.server.lifecycle.LifecycleEvent;
 import platform.server.logics.property.CalcProperty;
 import platform.server.session.DataSession;
 
+import javax.naming.AuthenticationException;
+import javax.naming.CommunicationException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -29,6 +31,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static platform.base.BaseUtils.mapEquals;
 import static platform.base.BaseUtils.nullEquals;
 import static platform.base.BaseUtils.nullTrim;
 import static platform.server.logics.ServerResourceBundle.getString;
@@ -116,22 +119,45 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
 
         try {
-            User user = securityManager.readUser(login, session);
-            if (user == null) {
-                throw new LoginException();
-            }
 
+            boolean needAuthentication = true;
             boolean isUniversalPasswordUsed = "unipass".equals(password.trim()) && Settings.get().getUseUniPass();
-            if (!isUniversalPasswordUsed) {
-                String hashPassword = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, new DataObject(user.ID, businessLogics.authenticationLM.customUser));
-                if (hashPassword != null) {
-                    if (!hashPassword.trim().equals(BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt))) {
+            User user = securityManager.readUser(login, session);
+
+            boolean ldapAuthentication = businessLogics.authenticationLM.useLDAP.read(session) != null;
+            if (ldapAuthentication) {
+                String server = (String) businessLogics.authenticationLM.serverLDAP.read(session);
+                Integer port = (Integer) businessLogics.authenticationLM.portLDAP.read(session);
+
+                try {
+                    LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port).authenticate(login, password);
+                    if (ldapParameters.isConnected()) {
+                        needAuthentication = false;
+                        if (user == null)
+                            user = securityManager.addUser(login, password, session);
+                        securityManager.setMainRoleCustomUser(user, ldapParameters.getGroupName(), session);
+                    } else {
                         throw new LoginException();
                     }
-                } else {
-                    String correctPassword = (String) businessLogics.authenticationLM.passwordCustomUser.read(session, new DataObject(user.ID, businessLogics.authenticationLM.customUser));
-                    if (!nullEquals(nullTrim(correctPassword), nullTrim(password))) {
-                        throw new LoginException();
+                } catch (CommunicationException e) {
+                    logger.error("LDAP authentication failed", e);
+                }
+            }
+            if (needAuthentication) {
+                if (user == null)
+                    throw new LoginException();
+
+                if (!isUniversalPasswordUsed) {
+                    String hashPassword = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, new DataObject(user.ID, businessLogics.authenticationLM.customUser));
+                    if (hashPassword != null) {
+                        if (!hashPassword.trim().equals(BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt))) {
+                            throw new LoginException();
+                        }
+                    } else {
+                        String correctPassword = (String) businessLogics.authenticationLM.passwordCustomUser.read(session, new DataObject(user.ID, businessLogics.authenticationLM.customUser));
+                        if (!nullEquals(nullTrim(correctPassword), nullTrim(password))) {
+                            throw new LoginException();
+                        }
                     }
                 }
             }
@@ -162,6 +188,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
             throw Throwables.propagate(e);
         } finally {
             try {
+                session.apply(businessLogics);
                 session.close();
             } catch (Exception e) {
                 throw Throwables.propagate(e);
@@ -219,7 +246,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         try {
             DataSession session = dbManager.createSession();
             synchronized (navigators) {
-                for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext();) {
+                for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext(); ) {
                     RemoteNavigator navigator = iterator.next().getValue();
                     if (NavigatorFilter.EXPIRED.accept(navigator) || filter.accept(navigator)) {
                         removeNavigator(navigator, session);

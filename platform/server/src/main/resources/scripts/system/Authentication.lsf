@@ -28,6 +28,10 @@ calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'platform
 logOut 'Выйти' = ACTION CUSTOM 'platform.server.logics.authentication.LogOutActionProperty';
 reloginUser 'Сменить пользователя' = ACTION CUSTOM 'platform.server.logics.authentication.ReloginUserActionProperty';
 
+useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
+serverLDAP 'Сервер' = DATA STRING[100] ();
+portLDAP 'Порт' = DATA INTEGER ();
+
 changeSHA256PasswordCustomUser = ACTION(customUser) {
     REQUEST STRING[30] INPUT;
     EXEC calculateBase64Hash('SHA-256', requestedString());
@@ -56,6 +60,8 @@ FORM customUsers 'Пользователи'
     PROPERTIES(u) READONLY nameContact, loginCustomUser, emailContact
     PROPERTIES(u) forbidChangePasswordCustomUser, forbidEditProfileCustomUser,
                   ADDFORM, EDITFORM FORCE PANEL, delete
+
+    PROPERTIES() useLDAP, serverLDAP, portLDAP
 
     DIALOG CustomUser OBJECT u
 ;
