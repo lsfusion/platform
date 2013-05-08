@@ -1,0 +1,28 @@
+MODULE PriceListManageStore;
+
+REQUIRE PriceListManage, Store;
+
+countStoresSkuChainStoresDateTime 'Кол-во магазинов' (sku, chainStore, dateTime) =
+    GROUP SUM 1 IF balanceASkuStockDateTime(sku, stock, dateTime) AND chainStoresDepartmentStore(stock) == chainStore
+    BY sku, chainStore, dateTime;
+
+countStoresSkuStoreTypeDateTime 'Кол-во магазинов' (sku, storeType, dateTime) =
+    GROUP SUM 1 IF balanceASkuStockDateTime(sku, stock, dateTime) AND storeTypeDepartmentStore(stock) == storeType
+    BY sku, storeType, dateTime;
+
+EXTEND FORM rangeManagement
+    OBJECTS t=ChainStores
+    PROPERTIES READONLY nameChainStores(t), countStoresSkuChainStoresDateTime(sk2, t, dt)
+    FILTERS countStoresSkuChainStoresDateTime(sk2, t, dt)
+
+    OBJECTS st=StoreType
+    PROPERTIES READONLY nameStoreType(st), countStoresSkuStoreTypeDateTime(sk2, st, dt)
+    FILTERS countStoresSkuStoreTypeDateTime(sk2, st, dt)
+;
+
+EXTEND DESIGN rangeManagement{
+    secondSkuContainer{
+        ADD t.box BEFORE s2.box;
+        ADD st.box BEFORE s2.box;
+    }
+}

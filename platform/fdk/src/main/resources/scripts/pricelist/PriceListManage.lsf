@@ -15,9 +15,13 @@ filterCompanySkuDateTimeRangeManagement (priceListType, sku, stock, dateTime) =
     (companyLedgerPriceListTypeSkuStockDateTime(priceListType, sku, stock, dateTime) == filterLegalEntityRangeManagement()) OR
     (priceListType IS PriceListType AND sku IS Sku  AND stock IS Stock AND dateTime IS DATETIME AND NOT filterLegalEntityRangeManagement());
 
+priceLedgerPriceListTypeSkuDateTime 'Цена' (priceListType, sku, dateTime) =
+    priceLedgerPriceListTypeSkuCompanyDateTime(priceListType, sku, filterLegalEntityRangeManagement(), dateTime);
+
 //Создание прайса через форму ассортимента
 
 inRangeManagement 'Отм.' = DATA SESSION BOOLEAN(Sku);
+inRangeManagement2 'Отм.' = DATA SESSION BOOLEAN(Sku);
 
 createPriceRangeManagement 'Создать прайс' = ACTION (dataPriceListType){
     FOR ADDOBJ u = UserPriceList DO {
@@ -60,14 +64,14 @@ FORM rangeManagement 'Управление ассортиментом'
     FILTERS filterLegalEntityRangeManagementUserPriceList(p),
             inPriceListDataPriceListType(p, pt)
 
-    TREE stockTree a=STRING[3], st = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY OBJVALUE(a), stTreeName = nameStockGroup(st)
-    ORDER BY stTreeName
-    FILTERS stringEqualsAll(a), quantityStocksStockGroup(st)
-
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = nameSkuGroup(sg)
     ORDER BY skuTreeName
+
+    TREE stockTree a=STRING[3], stg = StockGroup PARENT parentStockGroup
+    PROPERTIES READONLY OBJVALUE(a), stTreeName = nameStockGroup(stg)
+    ORDER BY stTreeName
+    FILTERS stringEqualsAll(a), quantityStocksStockGroup(stg)
 
     OBJECTS sm = (sk = Sku, s = Stock)
     PROPERTIES(sk) inRangeManagement
@@ -77,7 +81,7 @@ FORM rangeManagement 'Управление ассортиментом'
     PROPERTIES createPriceRangeManagement(pt) TODRAW sk FORCE PANEL
     ORDER BY nameStock
     FILTERS isParentSkuGroupSku(sg, sk),
-            s IS Stock AND NOT st IS StockGroup OR isParentStockGroupStock(st, s),
+            s IS Stock AND NOT stg IS StockGroup OR isParentStockGroupStock(stg, s),
             isCompanyStock(s)
 
     PROPERTIES(pt, sk, s, dt) READONLY pricePriceListTypeSkuStockDateTime, nameCompanyLedgerPriceListTypeSkuStockDateTime,
@@ -85,6 +89,26 @@ FORM rangeManagement 'Управление ассортиментом'
 
     FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt),
             filterCompanySkuDateTimeRangeManagement(pt, sk, s, dt)
+
+    TREE skuTree2 sg2 = SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName2 = nameSkuGroup(sg2)
+    ORDER BY skuTreeName2
+
+    OBJECTS sk2 = Sku
+    PROPERTIES(sk2) inRangeManagement2
+    PROPERTIES(sk2) READONLY nameSku, idBarcodeSku
+    PROPERTIES createPriceRangeManagement(pt) TODRAW sk2 FORCE PANEL
+
+    PROPERTIES(pt, sk2, dt) READONLY priceLedgerPriceListTypeSkuDateTime
+    FILTERS isParentSkuGroupSku(sg2, sk2),
+            (TRUE IF priceLedgerPriceListTypeSkuDateTime(pt, sk2, dt)) OR (pt IS DataPriceListType AND sk2 IS Sku AND dt IS DATETIME AND NOT filterLegalEntityRangeManagement())
+
+    OBJECTS s2 = Stock
+    PROPERTIES(s2) READONLY nameStock
+    PROPERTIES(sk2, s2, dt) READONLY balanceASkuStockDateTime
+    ORDER BY nameStock
+    FILTERS isCompanyStock(s),
+            balanceASkuStockDateTime(sk2, s2, dt)
 ;
 
 DESIGN rangeManagement FROM DEFAULT{
@@ -102,8 +126,27 @@ DESIGN rangeManagement FROM DEFAULT{
         NEW firstContainer{
             NEW tabContainer{
                 type = TABBED;
+                NEW skuContainer{
+                    caption = 'Товары';
+                    childConstraints = TO THE BOTTOM;
+                    type = SPLITV;
+                    NEW firstSkuContainer{
+                        fillVertical = 2.0;
+                        childConstraints = TO THE RIGHT;
+                        type = SPLITH;
+                        ADD skuTree2.tree.box{caption = 'Товарные группы';}
+                        ADD sk2.box{
+                            caption = 'Товары';
+                            fillHorizontal = 2.0;
+                        }
+                    }
+                    NEW secondSkuContainer{
+                        childConstraints = TO THE RIGHT;
+                        ADD s2.box{caption = 'Склады';}
+                    }
+                }
                 NEW priceContainer{
-                    caption = 'Текущие цены';
+                    caption = 'Товары/Магазины';
                     childConstraints = TO THE RIGHT;
                     type = SPLITH;
                     NEW treeContainer{
