@@ -31,9 +31,26 @@ FORM writeOffRateDialog 'Нормы отходов'
     DIALOG WriteOffRate OBJECT r
 ;
 
-//---------------------------------- Extend Invoice ------------------------------------//
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
+@defineOperationProperty(createPurchaseWriteOff, 'Акт списания', createContainer);
+
+
+writeOffOperation = DATA WriteOff.Operation (Purchase.Operation);
+nameWriteOffOperation 'Операция (списания)' (operation) = WriteOff.nameOperation(writeOffOperation(operation));
+
+EXTEND FORM Purchase.operation
+    PROPERTIES(o) nameWriteOffOperation
+;
+EXTEND DESIGN Purchase.operation {
+    createContainer {
+        ADD PROPERTY(nameWriteOffOperation) AFTER PROPERTY(createPurchaseWriteOffOperation);
+    }
+}
+
+//---------------------------------- Extend Invoice ------------------------------------//
 @defineDocumentInterfaceCreate (invoice, createPurchaseWriteOff, 'Создать акт списания');
+@deriveDocumentOperationProperty(UserInvoice, createPurchaseWriteOff);
 
 @defineDocumentInterfaceDetailQuantityPrefix (invoice, writeOff, ' (списания)');
 @defineDocumentInterfaceDetailPricePrefix(invoice, writeOff, ' (списания)');
@@ -43,11 +60,8 @@ FORM writeOffRateDialog 'Нормы отходов'
 @defineDocumentInterfaceHeaderWriteOffCommittee(invoice, customerStock);
 
 @defineDocumentOperationPrefix(invoice, writeOff, WriteOff, ' (списания)');
-
-//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
-
-@defineOperationProperty(createPurchaseWriteOff, 'Акт списания', createContainer);
-@deriveDocumentOperationProperty(UserInvoice, createPurchaseWriteOff);
+writeOffOperationUserInvoice (o) <- writeOffOperation(operationUserInvoice(o))
+    WHEN CHANGED(operationUserInvoice(o)) AND createPurchaseWriteOffUserInvoice(o);
 
 reasonInvoice 'Причина списания (ИД)' = ABSTRACT Reason (Invoice);
 reasonUserInvoice 'Причина списания (ИД)' = DATA Reason (UserInvoice);
@@ -136,6 +150,8 @@ overCopyInvoice(s, d) += ACTION (s, d) {
 @defineDocumentInterfaceHeaderWriteOffCommittee(shipment, customerStock);
 
 @defineDocumentOperationPrefix(shipment, writeOff, WriteOff, ' (списания)');
+writeOffOperationUserShipment (o) <- writeOffOperation(operationUserShipment(o))
+    WHEN CHANGED(operationUserShipment(o)) AND createPurchaseWriteOffUserShipment(o);
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
