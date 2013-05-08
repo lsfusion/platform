@@ -1071,7 +1071,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
                     + getString("form.create.new.object") + " " + entity.getCaption() + " ?";
         }
 
-        addActionsOnEvent(addPropertyObject(lm.getFormAddObjectAction(entity)), events);
+        addActionsOnEvent(addPropertyObject(lm.getFormAddObjectAction(this, entity)), events);
     }
 
     public void addActionsOnObjectChange(ObjectEntity object, ActionPropertyObjectEntity... actions) {

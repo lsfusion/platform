@@ -216,7 +216,7 @@ public class ScriptingFormEntity {
                 checkSingleParam(mapping.size());
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                LAP<?> addObjAction = LM.getFormAddObjectAction(obj[0]);
+                LAP<?> addObjAction = LM.getFormAddObjectAction(form, obj[0]);
                 property = form.addPropertyDraw(addObjAction);
             } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM")) {
                 checkSingleParam(mapping.size());

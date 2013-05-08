@@ -4809,7 +4809,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
-            addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[]{}, addPropertyObject(getFormAddObjectAction(objProject)), true);
+            addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[]{}, addPropertyObject(getFormAddObjectAction(null, objProject)), true);
 
             if (lng.equals("both")) {
                 editR1Project = addIfAProp((AbstractGroup)null, "editR1Project", "Редактировать проект", isR1Project, 1,
