@@ -90,6 +90,10 @@ EXTEND FORM userShipment
 
 // --------------------------- Расчет учетной цены для поставки --------------------- //
 
+// Для поставки
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (userShipment, accountPriceListType, sku, customerStock);
+
+// Для накладной
 @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (userInvoice, accountPriceListType, shipment, , sku, customerStock);
 //shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(detail) (+) extraShipmentPriceUserInvoiceDetail(detail) WHEN
 //    (CHANGED(calcShipmentPriceUserInvoiceDetail(detail)) OR CHANGED(extraShipmentPriceUserInvoiceDetail(detail)) OR CHANGED(createShipmentUserInvoiceDetail(detail)))
