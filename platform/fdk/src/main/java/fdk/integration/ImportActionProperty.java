@@ -33,6 +33,8 @@ public class ImportActionProperty {
     public void makeImport() throws SQLException {
         try {
 
+            context.getSession().sql.pushVolatileStats(null);
+
             Object countryBelarus = LM.findLCPByCompoundName("countrySID").read(context.getSession(), new DataObject("112", StringClass.get(3)));
             LM.findLCPByCompoundName("defaultCountry").change(countryBelarus, context.getSession());
             context.getSession().apply(context.getBL());
@@ -68,6 +70,8 @@ public class ImportActionProperty {
             importPriceListSuppliers(importData.getPriceListSuppliersList(), importData.getNumberOfPriceListsAtATime());
 
             importUserInvoices(importData.getUserInvoicesList(), importData.getImportUserInvoicesPosted(), importData.getNumberOfUserInvoicesAtATime());
+
+            context.getSession().sql.popVolatileStats(null);
 
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
