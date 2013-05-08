@@ -909,6 +909,15 @@ public abstract class LogicsModule {
         return addProperty(null, new LCP<SumProperty.Interface>(new SumProperty(name, "uSum")));
     }
 
+    @IdentityStrongLazy
+    protected <P extends PropertyInterface> LCP addCastProp(DataClass castClass) {
+        return addCastProp(genSID(), castClass);
+    }
+
+    protected <P extends PropertyInterface> LCP addCastProp(String name, DataClass castClass) {
+        return addProperty(null, new LCP<CastProperty.Interface>(new CastProperty(name, "castTo" + castClass.toString(), castClass)));
+    }
+
     protected <P extends PropertyInterface> LCP addSProp(int intNum) {
         return addSProp(genSID(), intNum);
     }

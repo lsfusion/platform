@@ -961,14 +961,15 @@ DESIGN TestOnActions FROM DEFAULT {
     }
 }
 
-//castSome = CAST(name(12) AS TEXT) + ':';
-
 sinteger 'Integer' (store) = DATA INTEGER (Store);
 slong 'Long' (store) = DATA LONG (Store);
 sdouble 'Double' (store) = DATA DOUBLE (Store);
 snumeric 'Numeric' (store) = DATA NUMERIC[14,3] (Store);
 sboolean 'Boolean' (store) = DATA BOOLEAN (Store);
 stext 'Text' (store) = DATA TEXT (Store);
+sstring 'String' (store) = DATA STRING[10] (Store);
+textToInt 'string->integer' (store) = INTEGER(sstring(store));
+longToString 'long->string' (store) = STRING[15](slong(store));
 
 nameDate 'store:date' (store) = name(store) + ':' + sdate(store);
 nameBalance 'article:balance' (store, article) = name(article) + ':' + balanceQuantity(store, article);
@@ -982,10 +983,10 @@ sumTextInteger 'text+integer' (store) = stext(store) + sinteger(store);
 
 sumNameName 'store+article' (store, article) = name(store) + name(article);
 
-FORM TestAddOperator 'Тест оператора "+"'
+FORM TestAddOperator 'Тест CAST и оператора "+"'
     OBJECTS s=Store, a=Article
-    PROPERTIES(s) OBJVALUE, name, sdate, sinteger, slong, sdouble, snumeric, sboolean
-    PROPERTIES(s) nameDate, sumDoubleInt, sumDoubleNumeric, sumNumericInt, sumIntLong, sumStringBoolean
+    PROPERTIES(s) OBJVALUE, name, sdate, sinteger, slong, sdouble, snumeric, sboolean, sstring
+    PROPERTIES(s) textToInt, longToString, nameDate, sumDoubleInt, sumDoubleNumeric, sumNumericInt, sumIntLong, sumStringBoolean
     PROPERTIES(s) FORCE PANEL stext, sumTextInteger
     PROPERTIES(a) OBJVALUE, name
     PROPERTIES(s, a) nameBalance, sumNameName

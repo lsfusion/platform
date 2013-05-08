@@ -953,6 +953,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(baseLM.minus, asList(prop));
     }
 
+    public LPWithParams addScriptedCastProp(String typeName, LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass cls = findClassByCompoundName(typeName);
+
+        //cls всегда будет DataClass из-за грамматики
+        assert cls instanceof DataClass;
+
+        return addScriptedJProp(addCastProp((DataClass) cls), asList(prop));
+    }
+
     private boolean doesExtendContext(List<LPWithParams> list, List<LPWithParams> orders) {
         Set<Integer> listContext = new HashSet<Integer>();
         for(LPWithParams lp : list)
@@ -976,7 +985,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         return new ArrayList<Integer>(s);
     }
-
 
     public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, boolean singleApply, Set<String> upLocalNames, String used, List<LPWithParams> properties, List<String> localPropNames) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedListAProp(" + newSession + ", " + doApply + ", " + properties + ");");

@@ -1023,6 +1023,7 @@ expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParam
 	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; }
 	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
 	|	concatDef=structCreationPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
+	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
@@ -1266,6 +1267,15 @@ structCreationPropertyDefinition[List<String> context, boolean dynamic] returns 
 		'('
 			list=nonEmptyPropertyExpressionList[context, dynamic] 
 		')' 
+	;
+
+castPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedCastProp($ptype.text, $expr.property);
+	}
+}
+	:   ptype=PRIMITIVE_TYPE '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
 sessionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
