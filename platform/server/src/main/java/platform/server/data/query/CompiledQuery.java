@@ -887,7 +887,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     Expr prevPath = recJoin.getExpr(rowPath);
 
                     Where noNodeCycle = concKeys.compare(prevPath, Compare.INARRAY).not();
-                     if(isLogical)
+                    if(isLogical)
                         recWhere = recJoin.getWhere().and(noNodeCycle);
                     else {
                         recWhere = Where.TRUE;
@@ -902,9 +902,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         stepExprs = mStepExprs.immutableValue();
                     }
 
-                    Expr rowSource = FormulaExpr.createFormula(rowType.getCast("ARRAY[prm1]", syntax, false), rowType, concKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
+                    Expr rowSource = FormulaExpr.createCustomFormula(rowType.getCast("ARRAY[prm1]", syntax, false), rowType, concKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
                     initialExprs = initialExprs.addRevExcl(rowPath, rowSource); // заполняем начальный путь
-                    stepExprs = stepExprs.addExcl(rowPath, FormulaExpr.createFormula(rowType.getCast("(prm1 || prm2)", syntax, false), rowType, prevPath, rowSource)); // добавляем тек. вершину
+                    stepExprs = stepExprs.addExcl(rowPath, FormulaExpr.createCustomFormula(rowType.getCast("(prm1 || prm2)", syntax, false), rowType, prevPath, rowSource)); // добавляем тек. вершину
                 } else
                     recWhere = recJoin.getWhere();
 

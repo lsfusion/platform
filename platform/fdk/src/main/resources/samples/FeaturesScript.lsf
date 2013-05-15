@@ -968,29 +968,87 @@ snumeric 'Numeric' (store) = DATA NUMERIC[14,3] (Store);
 sboolean 'Boolean' (store) = DATA BOOLEAN (Store);
 stext 'Text' (store) = DATA TEXT (Store);
 sstring 'String' (store) = DATA STRING[10] (Store);
+
 textToInt 'string->integer' (store) = INTEGER(sstring(store));
 longToString 'long->string' (store) = STRING[15](slong(store));
 
-nameDate 'store:date' (store) = name(store) + ':' + sdate(store);
-nameBalance 'article:balance' (store, article) = name(article) + ':' + balanceQuantity(store, article);
+nameDate 'name:date' (store) = name(store) + ':' + sdate(store);
 
-sumDoubleInt 'double+integer' (store) = sdouble(store) + sinteger(store);
-sumDoubleNumeric 'double+numeric' (store) = sdouble(store) + snumeric(store);
-sumNumericInt 'numeric+integer' (store) = snumeric(store) + sinteger(store);
-sumIntLong 'integer+long' (store) = sinteger(store) + slong(store);
-sumStringBoolean 'name:boolean' (store) = name(store) + ':' + sboolean(store);
-sumTextInteger 'text+integer' (store) = stext(store) + sinteger(store);
+sumDoubleInt 'double+integer' (store) = sdouble(store) + sinteger(store) MINCHARWIDTH 25;
+sumDoubleNumeric 'double+numeric' (store) = sdouble(store) + snumeric(store) MINCHARWIDTH 25;
+sumNumericInt 'numeric+integer' (store) = snumeric(store) + sinteger(store) MINCHARWIDTH 25;
+sumIntLong 'integer+long' (store) = sinteger(store) + slong(store) MINCHARWIDTH 25;
+sumStringBoolean 'name:boolean' (store) = name(store) + ':' + sboolean(store) MINCHARWIDTH 25;
+sumTextInteger 'text+integer' (store) = stext(store) + sinteger(store) MINCHARWIDTH 25;
+sumNameString 'name+string' (store) = name(store) + sstring(store) MINCHARWIDTH 25;
 
-sumNameName 'store+article' (store, article) = name(store) + name(article);
+subDoubleInt 'double-integer' (store) = sdouble(store) - sinteger(store) MINCHARWIDTH 25;
+subDoubleNumeric 'double-numeric' (store) = sdouble(store) - snumeric(store) MINCHARWIDTH 25;
+subNumericInt 'numeric-integer' (store) = snumeric(store) - sinteger(store) MINCHARWIDTH 25;
+subIntLong 'integer-long' (store) = sinteger(store) - slong(store) MINCHARWIDTH 25;
+
+multDoubleInt 'double*integer' (store) = sdouble(store) * sinteger(store) MINCHARWIDTH 25;
+multDoubleNumeric 'double*numeric' (store) = sdouble(store) * snumeric(store) MINCHARWIDTH 25;
+multNumericInt 'numeric*integer' (store) = snumeric(store) * sinteger(store) MINCHARWIDTH 25;
+multIntLong 'integer*long' (store) = sinteger(store) * slong(store) MINCHARWIDTH 25;
 
 FORM TestAddOperator 'Тест CAST и оператора "+"'
-    OBJECTS s=Store, a=Article
-    PROPERTIES(s) OBJVALUE, name, sdate, sinteger, slong, sdouble, snumeric, sboolean, sstring
-    PROPERTIES(s) textToInt, longToString, nameDate, sumDoubleInt, sumDoubleNumeric, sumNumericInt, sumIntLong, sumStringBoolean
-    PROPERTIES(s) FORCE PANEL stext, sumTextInteger
-    PROPERTIES(a) OBJVALUE, name
-    PROPERTIES(s, a) nameBalance, sumNameName
+    OBJECTS s=Store
+    PROPERTIES(s) OBJVALUE, name, sdate, sinteger, slong, sdouble, snumeric, sstring, sboolean
+    PROPERTIES(s) stext
+    PROPERTIES(s) FORCE PANEL textToInt, longToString
+    PROPERTIES(s) FORCE PANEL sumNameString, nameDate, sumDoubleInt, sumDoubleNumeric, sumNumericInt, sumIntLong, sumStringBoolean, sumTextInteger
+    PROPERTIES(s) FORCE PANEL subDoubleInt, subDoubleNumeric, subNumericInt, subIntLong
+    PROPERTIES(s) FORCE PANEL multDoubleInt, multDoubleNumeric, multNumericInt, multIntLong
 ;
+
+DESIGN TestAddOperator FROM DEFAULT {
+    s.box {
+        fillVertical = 1;
+    }
+
+    PROPERTY(stext) {
+        preferredSize = ( -1, 17);
+    }
+
+    NEW tabsContainer AFTER s.box {
+        type = TABBED;
+        fillVertical = 1;
+
+        NEW castTab {
+            caption = 'cast';
+            ADD PROPERTY(textToInt);
+            ADD PROPERTY(longToString);
+        }
+        NEW sumTab {
+            caption = 'sum';
+            ADD PROPERTY(sumStringBoolean);
+            ADD PROPERTY(sumIntLong);
+            ADD PROPERTY(sumNumericInt);
+            ADD PROPERTY(sumDoubleNumeric);
+            ADD PROPERTY(sumDoubleInt);
+            ADD PROPERTY(nameDate);
+            ADD PROPERTY(sumNameString);
+            ADD PROPERTY(sumTextInteger);
+        }
+
+        NEW subTab {
+            caption = 'sub';
+            ADD PROPERTY(subIntLong);
+            ADD PROPERTY(subNumericInt);
+            ADD PROPERTY(subDoubleNumeric);
+            ADD PROPERTY(subDoubleInt);
+        }
+
+        NEW multTab {
+            caption = 'mult';
+            ADD PROPERTY(multIntLong);
+            ADD PROPERTY(multNumericInt);
+            ADD PROPERTY(multDoubleNumeric);
+            ADD PROPERTY(multDoubleInt);
+        }
+    }
+}
 
 //////////////// INDEX STATEMENT //////////////////
 // Syntax:

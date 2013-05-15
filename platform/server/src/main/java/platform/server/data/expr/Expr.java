@@ -116,7 +116,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
     
     public Expr mult(Expr expr, IntegralClass intClass) {
-        return FormulaExpr.createFormula(FormulaExpr.MULT2, intClass, this, expr);
+        return FormulaExpr.createCustomFormula(FormulaExpr.MULT2, intClass, this, expr);
     }
 
     public Expr sum(Expr expr) {

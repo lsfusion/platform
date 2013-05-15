@@ -345,7 +345,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         if(shifts.length > 1)
             formula = "CASE " + formula + " END";
 
-        query.addProperty(field, FormulaExpr.createFormula("prm1+" + formula, baseClass.unknown, mParams.immutable()));
+        query.addProperty(field, FormulaExpr.createCustomFormula("prm1+" + formula, baseClass.unknown, mParams.immutable()));
         query.and(join.getWhere());
         session.updateRecords(new ModifyQuery(this, query.getQuery()));
     }

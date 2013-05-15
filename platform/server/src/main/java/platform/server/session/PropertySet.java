@@ -54,7 +54,7 @@ public class PropertySet<T extends PropertyInterface> {
                 AggrExpr.fixOrders(orders, mapKeys), ordersNotNull, SetFact.<Expr>EMPTY(), mapKeys.valuesSet().toMap());
 
         QueryBuilder<T, String> query = new QueryBuilder<T, String>(mapKeys, exprNum.getWhere());
-        query.addProperty("value", FormulaExpr.createFormula("prm1", baseClass.unknown, exprNum));
+        query.addProperty("value", FormulaExpr.createCustomFormula("prm1", baseClass.unknown, exprNum));
         return query.getQuery();
     }
 

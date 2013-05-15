@@ -9,17 +9,17 @@ import platform.server.data.expr.formula.conversion.TypeConversion;
 import platform.server.data.type.Type;
 
 public abstract class AbstractFormulaImpl implements FormulaImpl {
-    protected final TypeConversion conversions[];
+    protected final TypeConversion conversion;
 
     public AbstractFormulaImpl() {
-        this(new TypeConversion[]{CompatibleTypeConversion.instance});
+        this(CompatibleTypeConversion.instance);
     }
 
-    public AbstractFormulaImpl(TypeConversion[] conversions) {
-        this.conversions = conversions;
+    public AbstractFormulaImpl(TypeConversion conversion) {
+        this.conversion = conversion;
     }
 
-    public static Type getCompatibleType(ExprSource source, TypeConversion... conversions) {
+    public static Type getCompatibleType(ExprSource source, TypeConversion conversion) {
         Type type = null;
         for (int i = 0; i < source.getExprCount(); ++i) {
             Expr expr = source.getExpr(i);
@@ -28,12 +28,9 @@ public abstract class AbstractFormulaImpl implements FormulaImpl {
                 if (type == null) {
                     type = exprType;
                 } else {
-                    for (TypeConversion conversion : conversions) {
-                        Type conversionType = conversion.getType(type, exprType);
-                        if (conversionType != null) {
-                            type = conversionType;
-                            break;
-                        }
+                    Type conversionType = conversion.getType(type, exprType);
+                    if (conversionType != null) {
+                        type = conversionType;
                     }
                 }
             }
@@ -43,11 +40,11 @@ public abstract class AbstractFormulaImpl implements FormulaImpl {
 
     @Override
     public ConcreteClass getStaticClass(ExprSource source) {
-        return (ConcreteClass) getCompatibleType(source, conversions);
+        return (ConcreteClass) getCompatibleType(source, conversion);
     }
 
     @Override
     public Type getType(ExprSource source, KeyType keyType) {
-        return getCompatibleType(source, conversions);
+        return getCompatibleType(source, conversion);
     }
 }

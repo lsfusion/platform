@@ -86,11 +86,6 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
     @IdentityLazy
     public ClassWhere<Object> getClassValueWhere(boolean full) {
-        String sid = getSID();
-        if (sid.equals("aaaaaaa")) {
-            System.out.println(sid);
-        }
-
         QueryBuilder<T, String> query = new QueryBuilder<T, String>(this);
         query.addProperty("value", calculateClassExpr(query.getMapExprs()));
         return query.getQuery().getClassWhere(SetFact.singleton("value"), full);

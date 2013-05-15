@@ -712,8 +712,6 @@ public class VEDLogicsModule extends LogicsModule {
 
         dropStringActionProperty = addAProp(new DropObjectActionProperty(StringClass.get(13)));
 
-        LCP multiplyDouble2 = addMFProp(2);
-
         LCP positive = addJProp(baseLM.greater2, 1, baseLM.vzero);
         LCP negative = addJProp(baseLM.less2, 1, baseLM.vzero);
         LCP onlyPositive = addJProp(baseLM.and1, 1, positive, 1);
@@ -1048,7 +1046,7 @@ public class VEDLogicsModule extends LogicsModule {
         currentShopPriceDate = maxShopPriceProps[0]; addPersistent(currentShopPriceDate);
         currentShopPriceDoc = maxShopPriceProps[1]; addPersistent(currentShopPriceDoc);
 
-        LCP currentRRPPriceArticle = addJProp(priceGroup, "Необх. цена RRP", multiplyDouble2, currentRRP, 1, addJProp(currentCurrencyRate, currencyArticle, 1), 1);
+        LCP currentRRPPriceArticle = addJProp(priceGroup, "Необх. цена RRP", baseLM.multiply, currentRRP, 1, addJProp(currentCurrencyRate, currencyArticle, 1), 1);
         currentRRPPriceStoreArticle = addJProp(baseLM.and1, currentRRPPriceArticle, 2, is(store), 1);
 
         LCP revalueShopPrice = addDProp("revalueShopPrice", "Цена (прих.)", DoubleClass.instance, documentRevalue, article);
@@ -1124,7 +1122,7 @@ public class VEDLogicsModule extends LogicsModule {
         LCP articleStoreForecast = addJProp(baseLM.and1, addDProp(logisticsGroup, "articleStoreForecast", "Прогноз прод. (в день)", DoubleClass.instance, store, article), 1, 2, articleStoreToSell, 1, 2);
 
         // MAX((страховой запас+прогноз расхода до следующего цикла поставки)-остаток,0) (по внутренним складам)
-        articleFullStoreDemand = addSUProp("articleFullStoreDemand", true, "Общ. необходимость", Union.SUM, addJProp(multiplyDouble2, addSupplierProperty(articleStoreForecast), 1, 2, articleStorePeriod, 1, 2), addSupplierProperty(articleStoreMin));
+        articleFullStoreDemand = addSUProp("articleFullStoreDemand", true, "Общ. необходимость", Union.SUM, addJProp(baseLM.multiply, addSupplierProperty(articleStoreForecast), 1, 2, articleStorePeriod, 1, 2), addSupplierProperty(articleStoreMin));
         LCP articleStoreRequired = addJProp(onlyPositive, addDUProp(articleFullStoreDemand, addSupplierProperty(articleFreeOrderQuantity)), 1, 2);
 
         documentLogisticsRequired = addJProp(documentLogisticsGroup, "Необходимо", articleStoreRequired, subjectIncOrder, 1, 2);
@@ -1143,16 +1141,16 @@ public class VEDLogicsModule extends LogicsModule {
         LCP monthDay = addSFProp("EXTRACT(MONTH FROM prm1) * 40 + EXTRACT(DAY FROM prm1)", IntegerClass.instance, 1);
         orderBirthDay = addDCProp("orderBirthDay", "День рожд.", addJProp(baseLM.equals2, monthDay, 1, addJProp(monthDay, bornCustomerCheckRetail, 1), 2), true, date, 1, subjectIncOrder, 1);
 
-        sumManfrOrderArticle = addJProp(documentManfrGroup, "sumManfrOrderArticle", "Сумма изг.", multiplyDouble2, articleQuantity, 1, 2, priceManfrOrderArticle, 1, 2);
+        sumManfrOrderArticle = addJProp(documentManfrGroup, "sumManfrOrderArticle", "Сумма изг.", baseLM.multiply, articleQuantity, 1, 2, priceManfrOrderArticle, 1, 2);
         sumManfrOrder = addSGProp(documentManfrGroup, "sumManfrOrder", "Сумма изг.", sumManfrOrderArticle, 1);
 
-        sumOrderArticle = addJProp(documentSumGroup, "sumOrderArticle", "Сумма", multiplyDouble2, articleQuantity, 1, 2, priceOrderArticle, 1, 2);
-        sumNoNDSOrderArticleExtInc = addJProp(documentSumGroup, "sumNoNDSOrderArticleExtInc", "Сумма прихода без НДС", multiplyDouble2, innerQuantity, 1, 2, 3,  priceNoNDSOrderArticle, 3, 2);
-        sumNoNDSRetailArticleExtInc = addJProp(documentSumGroup, "sumNoNDSRetailArticleExtInc", "Сумма продажи без НДС", multiplyDouble2, innerQuantity, 1, 2, 3, priceNoNDSRetailArticle, 3, 2);
+        sumOrderArticle = addJProp(documentSumGroup, "sumOrderArticle", "Сумма", baseLM.multiply, articleQuantity, 1, 2, priceOrderArticle, 1, 2);
+        sumNoNDSOrderArticleExtInc = addJProp(documentSumGroup, "sumNoNDSOrderArticleExtInc", "Сумма прихода без НДС", baseLM.multiply, innerQuantity, 1, 2, 3,  priceNoNDSOrderArticle, 3, 2);
+        sumNoNDSRetailArticleExtInc = addJProp(documentSumGroup, "sumNoNDSRetailArticleExtInc", "Сумма продажи без НДС", baseLM.multiply, innerQuantity, 1, 2, 3, priceNoNDSRetailArticle, 3, 2);
 
         sumOrder = addSGProp(documentSumGroup, "sumOrder", "Сумма", sumOrderArticle, 1);
-        weightOrderArticle = addJProp("weightOrderArticle", "Вес поз.", multiplyDouble2, articleQuantity, 1, 2, weightArticle, 2);
-        transOrderArticle = addJProp("transOrderArticle", "Кол-во гр. мест", multiplyDouble2, articleQuantity, 1, 2, coeffTransArticle, 2);
+        weightOrderArticle = addJProp("weightOrderArticle", "Вес поз.", baseLM.multiply, articleQuantity, 1, 2, weightArticle, 2);
+        transOrderArticle = addJProp("transOrderArticle", "Кол-во гр. мест", baseLM.multiply, articleQuantity, 1, 2, coeffTransArticle, 2);
 
         LCP orderActionClientSum = addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, orderSaleArticleRetail, articleAction), addSUProp(Union.SUM, addJProp(baseLM.and1, orderClientSum, 1, is(articleAction), 2), addJProp(baseLM.and1, addSGProp(sumOrderArticle, 1), 1, articleActionWithCheck, 2)));
         LCP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleArticleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
@@ -1190,7 +1188,7 @@ public class VEDLogicsModule extends LogicsModule {
         transOrder = addSGProp("transOrder", "Общее кол-во гр. мест", transOrderArticle, 1);
 
         // для бухгалтерии магазинов
-        sumRetailOrderArticle = addJProp(documentRetailGroup, "sumRetailOrderArticle", "Сумма розн.", multiplyDouble2, shopPrice, 1, 2, articleQuantity, 1, 2);
+        sumRetailOrderArticle = addJProp(documentRetailGroup, "sumRetailOrderArticle", "Сумма розн.", baseLM.multiply, shopPrice, 1, 2, articleQuantity, 1, 2);
         sumNDSRetailOrderArticle = addJProp(documentRetailGroup, "sumNDSRetailOrderArticle", "Сумма НДС (розн.)", round0, addJProp(backPercent, sumRetailOrderArticle, 1, 2, ndsShopOrderPriceArticle, 1, 2), 1, 2);
         sumWithoutNDSRetailOrderArticle = addJProp(documentRetailGroup, "sumWithoutNDSRetailOrderArticle", "Сумма розн. без НДС", diff, sumRetailOrderArticle, 1, 2, sumNDSRetailOrderArticle, 1, 2);
         sumAddvOrderArticle = addJProp(documentRetailGroup, "sumAddvOrderArticle", "Сумма нацен.", diff, sumWithoutNDSRetailOrderArticle, 1, 2, sumNoNDSOrderArticle, 1, 2);
@@ -1214,8 +1212,8 @@ public class VEDLogicsModule extends LogicsModule {
 
         // переоценка
         revalChangeBalance = addJProp("revalChangeBalance", "Остаток (изм.)", baseLM.and1, revalBalance, 1, 2, addJProp(baseLM.diff2, shopPrice, 1, 2, prevPrice, 1, 2), 1, 2);
-        sumNewPrevRetailOrderArticle = addJProp("sumNewPrevRetailOrderArticle", "Сумма розн. (нов.)", multiplyDouble2, shopPrice, 1, 2, revalChangeBalance, 1, 2);
-        sumPrevRetailOrderArticle = addJProp("sumPrevRetailOrderArticle", "Сумма розн. (пред.)", multiplyDouble2, prevPrice, 1, 2, revalChangeBalance, 1, 2);
+        sumNewPrevRetailOrderArticle = addJProp("sumNewPrevRetailOrderArticle", "Сумма розн. (нов.)", baseLM.multiply, shopPrice, 1, 2, revalChangeBalance, 1, 2);
+        sumPrevRetailOrderArticle = addJProp("sumPrevRetailOrderArticle", "Сумма розн. (пред.)", baseLM.multiply, prevPrice, 1, 2, revalChangeBalance, 1, 2);
         sumPriceChangeOrderArticle = addJProp("sumPriceChangeOrderArticle", "Сумма переоц.", diff, sumNewPrevRetailOrderArticle, 1, 2, sumPrevRetailOrderArticle, 1, 2);
         sumRevalBalance = addSGProp("sumRevalBalance", "Кол-во переоц.", revalChangeBalance, 1);
         sumNewPrevRetailOrder = addSGProp("sumNewPrevRetailOrder", "Сумма розн. (нов.)", sumNewPrevRetailOrderArticle, 1);

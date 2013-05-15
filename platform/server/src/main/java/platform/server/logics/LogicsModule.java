@@ -23,6 +23,7 @@ import platform.server.context.ThreadLocalContext;
 import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.expr.StringAggUnionProperty;
+import platform.server.data.expr.formula.*;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.data.type.Type;
@@ -905,8 +906,20 @@ public abstract class LogicsModule {
         return addProperty(null, new LCP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(name, compare)));
     }
 
-    protected <P extends PropertyInterface> LCP addSumProp(String name) {
-        return addProperty(null, new LCP<SumProperty.Interface>(new SumProperty(name, "uSum")));
+    protected LCP addSumProp(String name) {
+        return addProperty(null, new LCP<FormulaImplProperty.Interface>(new FormulaImplProperty(name, "sum", 2, new SumFormulaImpl())));
+    }
+
+    protected LCP addMultProp(String name) {
+        return addProperty(null, new LCP<FormulaImplProperty.Interface>(new FormulaImplProperty(name, "multiply", 2, new MultiplyFormulaImpl())));
+    }
+
+    protected LCP addSubtractProp(String name) {
+        return addProperty(null, new LCP<FormulaImplProperty.Interface>(new FormulaImplProperty(name, "subtract", 2, new SubtractFormulaImpl())));
+    }
+
+    protected LCP addDivideProp(String name) {
+        return addProperty(null, new LCP<FormulaImplProperty.Interface>(new FormulaImplProperty(name, "divide", 2, new DivideFormulaImpl())));
     }
 
     @IdentityStrongLazy
@@ -915,7 +928,7 @@ public abstract class LogicsModule {
     }
 
     protected <P extends PropertyInterface> LCP addCastProp(String name, DataClass castClass) {
-        return addProperty(null, new LCP<CastProperty.Interface>(new CastProperty(name, "castTo" + castClass.toString(), castClass)));
+        return addProperty(null, new LCP<FormulaImplProperty.Interface>(new FormulaImplProperty(name, "castTo" + castClass.toString(), 1, new CastFormulaImpl(castClass))));
     }
 
     protected <P extends PropertyInterface> LCP addSProp(int intNum) {
@@ -940,20 +953,6 @@ public abstract class LogicsModule {
 
     protected <P extends PropertyInterface> LCP addInsensitiveSProp(String name, int intNum, String separator) {
         return addProperty(null, new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(name, ServerResourceBundle.getString("logics.join"), intNum, separator, false)));
-    }
-
-
-    protected LCP addMFProp(String name, int paramCount) {
-        return addMFProp(name, null, paramCount);
-    }
-    protected LCP addMFProp(String name, ConcreteValueClass value, int paramCount) {
-        return addProperty(null, new LCP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(name, value, paramCount)));
-    }
-    protected LCP addMFProp(int paramCount) {
-        return addMFProp(genSID(), null, paramCount);
-    }
-    protected LCP addMFProp(ConcreteValueClass value, int paramCount) {
-        return addMFProp(genSID(), value, paramCount);
     }
 
     protected LCP addAFProp(boolean... nots) {

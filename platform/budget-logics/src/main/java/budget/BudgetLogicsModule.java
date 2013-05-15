@@ -218,7 +218,6 @@ public class BudgetLogicsModule extends LogicsModule {
         LCP personEndWorkDay = addDProp(baseGroup, "personEndWorkDay", "День окончания раб.", IntegerClass.instance, person);
 
         addJProp(payerGroup, "Плательщик", name, operationPayer, 1);
-        LCP multiplyDouble2 = addMFProp(2);
         LCP divDouble = addSFProp("((prm1+0.0)/(prm2))", DoubleClass.instance, 2);
         LCP calcCoef = addSFProp("((prm1+0.0)/((prm2)*8))", DoubleClass.instance, 2);
         LCP calcExtraCoef = addSFProp("(round((0.0+(prm1)*(prm2))/(prm3)))", DoubleClass.instance, 3);
@@ -403,7 +402,7 @@ public class BudgetLogicsModule extends LogicsModule {
         addConstraint(addJProp("Расходы превышают доходы", baseLM.greater2, totalOutcome, 1, inCost, 1), false);
 
 
-        LCP extraSum = addJProp(baseLM.and1, addJProp(multiplyDouble2, outSum, 1, extraRate, 1), 1, is(extraCost), 1);
+        LCP extraSum = addJProp(baseLM.and1, addJProp(baseLM.multiply, outSum, 1, extraRate, 1), 1, is(extraCost), 1);
 
         salaryInMonth = addDProp(salaryGroup, "salaryInM", "Зарплата", DoubleClass.instance, person, absMonth, YearClass.instance);
         LCP currencyInMonth = addDProp("currencyInM", "Валюта (зарплата)", getCurrencyClass(), person, absMonth, YearClass.instance);
@@ -462,11 +461,11 @@ public class BudgetLogicsModule extends LogicsModule {
         // компенсации
 
         LCP totalDebt = addSGProp(baseGroup, "Затрачено", outSum, operationPayer, 1, outCur, 1);
-        LCP totalReimbursement = addSGProp(baseGroup, "Возмещено", addJProp(multiplyDouble2, reimbursementSum, 1, reimbursementRate, 1), reimbursementPayer, 1, reimbursementCurrencyIn, 1);
+        LCP totalReimbursement = addSGProp(baseGroup, "Возмещено", addJProp(baseLM.multiply, reimbursementSum, 1, reimbursementRate, 1), reimbursementPayer, 1, reimbursementCurrencyIn, 1);
         addDUProp(baseGroup, "Осталось", totalDebt, totalReimbursement);
 
         LCP totalDebtDep = addSGProp(baseGroup, "Затрачено", outSum, operationPayer, 1, outCur, 1, opDep, 1);
-        LCP totalReimbursementDep = addSGProp(baseGroup, "Возмещено", addJProp(multiplyDouble2, reimbursementSum, 1, reimbursementRate, 1), reimbursementPayer, 1, reimbursementCurrencyIn, 1, reimbursementDepartment, 1);
+        LCP totalReimbursementDep = addSGProp(baseGroup, "Возмещено", addJProp(baseLM.multiply, reimbursementSum, 1, reimbursementRate, 1), reimbursementPayer, 1, reimbursementCurrencyIn, 1, reimbursementDepartment, 1);
         addDUProp(baseGroup, "Осталось", totalDebtDep, totalReimbursementDep);
 
         // обороты
@@ -489,17 +488,17 @@ public class BudgetLogicsModule extends LogicsModule {
 
         // Обороты в базовой валюте
 
-        LCP personDepartSumInBC = addJProp("К выплате в БВ", multiplyDouble2, personDepartSum, 1, 2, 3, 4, addJProp("Курс выплаты к БВ", nearestExchangeRateMY, 1, baseCurrency, 2, 3), 4, 2, 3);
+        LCP personDepartSumInBC = addJProp("К выплате в БВ", baseLM.multiply, personDepartSum, 1, 2, 3, 4, addJProp("Курс выплаты к БВ", nearestExchangeRateMY, 1, baseCurrency, 2, 3), 4, 2, 3);
         LCP totalPersonDepartSumInBC = addSGProp(baseCurGroup, "Всего к выплате в БВ", personDepartSumInBC, 1, 2, 3);
 
-        LCP extraDepartmentSumInBC = addJProp("Доп. затрат в БВ", multiplyDouble2, extraDepartmentSum, 1, 2, 3, 4, addJProp("Курс выплаты к БВ", nearestExchangeRateMY, 1, baseCurrency, 2, 3), 4, 2, 3);
+        LCP extraDepartmentSumInBC = addJProp("Доп. затрат в БВ", baseLM.multiply, extraDepartmentSum, 1, 2, 3, 4, addJProp("Курс выплаты к БВ", nearestExchangeRateMY, 1, baseCurrency, 2, 3), 4, 2, 3);
         LCP totalExtraDepartmentSumInBC = addSGProp(baseCurGroup, "Всего доп. затрат в БВ", extraDepartmentSumInBC, 1, 2, 3);
 
         LCP outRateBC = addJProp(nearestExchangeRateOp, outCur, 1, baseCurrency, 1);
-        LCP outOperValInBC = addJProp("Опер. расход в БВ", multiplyDouble2, outOperVal, 1, outRateBC, 1);
+        LCP outOperValInBC = addJProp("Опер. расход в БВ", baseLM.multiply, outOperVal, 1, outRateBC, 1);
         departmentOutOperInBC = addSGProp(baseCurGroup, "Всего по опер. расходу в БВ", outOperValInBC, opDep, 1, transactionMonth, 1, transactionYear, 1);
 
-        LCP misOperValInBC = addJProp("Опер. расход ком. в БВ", multiplyDouble2, misOperVal, 1, outRateBC, 1);
+        LCP misOperValInBC = addJProp("Опер. расход ком. в БВ", baseLM.multiply, misOperVal, 1, outRateBC, 1);
         LCP departmentMisOperInBC = addSGProp(baseCurGroup, "Всего по опер. расходу ком. в БВ", misOperValInBC, opDep, 1, transactionMonth, 1, transactionYear, 1);
 
         investorInvestment = addDProp(idGroup, "investorInvestment", "Инвестор (ИД)", investor, investment);
@@ -522,7 +521,7 @@ public class BudgetLogicsModule extends LogicsModule {
         nameCurInvestment = addJProp(baseGroup, "nameCurInvestment", "Валюта", getCurrencyName(), curInvestment, 1);
 
         exchangeBaseRateInvestment = addJProp("exchangeBaseRateInvestment", "Курс", exchangeRateCurrencyTransaction, curInvestment, 1, 1);
-        sumBaseInvestment = addJProp("sumBaseInvestment", "Сумма (БВ)", addJProp(BL.getModule("Utils").getLCPByName("round"), 1, addCProp(IntegerClass.instance, 0)), addJProp(multiplyDouble2, sumInvestment, 1, exchangeBaseRateInvestment, 1), 1);
+        sumBaseInvestment = addJProp("sumBaseInvestment", "Сумма (БВ)", addJProp(BL.getModule("Utils").getLCPByName("round"), 1, addCProp(IntegerClass.instance, 0)), addJProp(baseLM.multiply, sumInvestment, 1, exchangeBaseRateInvestment, 1), 1);
 
         sumInvestmentInvestor = addSGProp("sumInvestmentInvestor", "Проинвестировано", sumBaseInvestment, investorInvestment, 1);
         investmentTotal = addSGProp("investmentTotal", "Всего проинвестировано", sumBaseInvestment);

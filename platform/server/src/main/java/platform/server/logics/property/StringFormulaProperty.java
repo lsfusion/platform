@@ -57,6 +57,6 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
                 return joinImplement.get(value);
             }});
 
-        return FormulaExpr.createFormula(formula, value, params);
+        return FormulaExpr.createCustomFormula(formula, value, params);
     }
 }

@@ -318,9 +318,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         // Математические операции
         sum = addSumProp("sum");
-        subtract = addSFProp("subtract", "((prm1)-(prm2))", 2);
-        multiply = addMFProp("multiply", 2);
-        divide = addSFProp("divide", "((prm1)/(prm2))", 2);
+        multiply = addMultProp("multiply");
+        subtract = addSubtractProp("subtract");
+        divide = addDivideProp("divide");
 
         minus = addSFProp("minus", "(-(prm1))", 1);
 

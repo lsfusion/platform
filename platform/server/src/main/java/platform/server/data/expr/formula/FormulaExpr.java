@@ -4,14 +4,11 @@ import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
-import platform.base.col.interfaces.immutable.ImList;
-import platform.base.col.interfaces.immutable.ImMap;
-import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
-import platform.server.classes.DataClass;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
@@ -114,15 +111,15 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     // методы для создания
-    public static Expr createFormula(final String formula, final ConcreteClass value, Expr prm1) {
-        return createFormula(formula, value, MapFact.singleton("prm1", prm1));
+    public static Expr createCustomFormula(final String formula, final ConcreteClass value, Expr prm1) {
+        return createCustomFormula(formula, value, MapFact.singleton("prm1", prm1));
     }
 
-    public static Expr createFormula(final String formula, final ConcreteClass value, Expr prm1, Expr prm2) {
-        return createFormula(formula, value, MapFact.toMap("prm1", prm1, "prm2", prm2));
+    public static Expr createCustomFormula(final String formula, final ConcreteClass value, Expr prm1, Expr prm2) {
+        return createCustomFormula(formula, value, MapFact.toMap("prm1", prm1, "prm2", prm2));
     }
 
-    public static Expr createFormula(final String formula, final ConcreteClass valueClass, ImMap<String, ? extends Expr> params) {
+    public static Expr createCustomFormula(final String formula, final ConcreteClass valueClass, ImMap<String, ? extends Expr> params) {
         ImOrderSet<String> keys = params.keys().toOrderSet();
 
         ImMap<String, Integer> mapParams = keys.mapOrderValues(new GetIndex<Integer>() {
@@ -136,19 +133,7 @@ public class FormulaExpr extends StaticClassExpr {
         return create(exprs, new CustomFormulaImpl(formula, mapParams, valueClass));
     }
 
-    public static Expr createSum(final Expr operand1, final Expr operand2) {
-        return create(ListFact.toList(operand1, operand2), new SumFormulaImpl());
-    }
-
-    public static Expr createStringConcat(ImList<? extends Expr> exprs, final String separator, final boolean caseSensitive) {
-        return create(exprs, new StringConcatenateFormulaImpl(separator, caseSensitive));
-    }
-
-    public static Expr createCast(Expr expr, DataClass castClass) {
-        return create(ListFact.singleton(expr), new CastFormulaImpl(castClass));
-    }
-
-    private static Expr create(ImList<? extends Expr> exprs, final FormulaImpl formula) {
+    public static Expr create(ImList<? extends Expr> exprs, final FormulaImpl formula) {
         return new ExprPullWheres<Integer>() {
             protected Expr proceedBase(ImMap<Integer, BaseExpr> map) {
                 return createBase(ListFact.fromIndexedMap(map), formula);

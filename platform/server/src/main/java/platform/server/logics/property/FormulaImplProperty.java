@@ -6,10 +6,11 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.formula.FormulaExpr;
+import platform.server.data.expr.formula.FormulaImpl;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
 
-public class SumProperty extends FormulaProperty<SumProperty.Interface> {
+public class FormulaImplProperty extends FormulaProperty<FormulaImplProperty.Interface> {
 
     public static class Interface extends PropertyInterface {
         public Interface(int ID) {
@@ -25,15 +26,17 @@ public class SumProperty extends FormulaProperty<SumProperty.Interface> {
         });
     }
 
-    public SumProperty(String sID, String caption) {
-        super(sID, caption, getInterfaces(2));
+    private final FormulaImpl formula;
+
+    public FormulaImplProperty(String sID, String caption, int intCount, FormulaImpl formula) {
+        super(sID, caption, getInterfaces(intCount));
+
+        this.formula = formula;
 
         finalizeInit();
     }
 
     protected Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        Expr expr1 = joinImplement.get(getOrderInterfaces().get(0));
-        Expr expr2 = joinImplement.get(getOrderInterfaces().get(1));
-        return FormulaExpr.createSum(expr1, expr2);
+        return FormulaExpr.create(getOrderInterfaces().mapList(joinImplement), formula);
     }
 }
