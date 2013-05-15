@@ -83,7 +83,7 @@ FORM userAdjustment 'Изменение остатков'
     OBJECTS d = UserAdjustmentDetail
     PROPERTIES (d) indexUserAdjustmentDetail, idBarcodeSkuUserAdjustmentDetail, nameSkuUserAdjustmentDetail, shortNameUOMSkuUserAdjustmentDetail,
                    nameBatchUserAdjustmentDetail ON CHANGE batchDialogUserAdjustmentDetail(d), quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail,
-                   nameStockUserAdjustmentDetail, ADDOBJ, delete
+                   nameStockUserAdjustmentDetail, ADDOBJ, DELETESESSION
 
     PROPERTIES(i) TODRAW d fillDocumentAdjustment, addDetailDialogSkuStockUserAdjustmentDetailUserAdjustment,
                            addDetailInputBarcodeUserAdjustmentDetailUserAdjustment, deleteUserAdjustmentDetailUserAdjustment
@@ -203,7 +203,7 @@ FORM adjustments 'Изменения остатков'
 
     PROPERTIES ()  addUserAdjustment TODRAW i
     PROPERTIES (i) editAdjustment
-    PROPERTIES (i) delete FORCE PANEL TOOLBAR  SHOWIF isUserAdjustment(i)
+    PROPERTIES (i) deletei=DELETE FORCE PANEL TOOLBAR  SHOWIF isUserAdjustment(i)
 
     OBJECTS d = AdjustmentDetail
     PROPERTIES (d) READONLY indexAdjustmentDetail, idBarcodeSkuAdjustmentDetail, nameSkuAdjustmentDetail, shortNameUOMSkuAdjustmentDetail,
@@ -218,7 +218,7 @@ FORM adjustments 'Изменения остатков'
 DESIGN adjustments FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
-        PROPERTY (delete(i)) {
+        PROPERTY (deletei) {
             askConfirm = TRUE;
         }
 

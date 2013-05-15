@@ -527,7 +527,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 
     PROPERTIES(d) nameUnitOfMeasureArticleSkuWHfromCSRDetail READONLY, selectWHfromCSRDetail
 
-    PROPERTIES(d) delete
+    PROPERTIES(d) DELETESESSION
 
     PROPERTIES(w) TODRAW d addDetailInputBarcodeWHfromCSRDetailWHfromCSR, deleteWHfromCSRDetailWHfromCSR
 

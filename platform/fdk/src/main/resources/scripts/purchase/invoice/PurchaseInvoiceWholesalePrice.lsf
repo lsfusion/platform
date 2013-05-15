@@ -74,7 +74,7 @@ backgroundWholesaleInvoice 'Цвет' (invoice) = RGB(238, 250, 200) IF invoice 
 
 EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundWholesaleInvoice(i) showWholesalePriceUserInvoice, nameWholesaleCalcPriceListTypeUserInvoice SHOWIF showWholesalePriceUserInvoice(i)
-    PROPERTIES(d) BACKGROUND backgroundWholesaleInvoice(i) SHOWIF showWholesalePriceUserInvoice(i) BEFORE delete(d) wholesaleMarkupUserInvoiceDetail,
+    PROPERTIES(d) BACKGROUND backgroundWholesaleInvoice(i) SHOWIF showWholesalePriceUserInvoice(i) BEFORE deleteid wholesaleMarkupUserInvoiceDetail,
                   wholesalePriceUserInvoiceDetail ON CHANGE changeWholesalePriceUserInvoiceDetail(d)
 ;
 EXTEND DESIGN userInvoice {

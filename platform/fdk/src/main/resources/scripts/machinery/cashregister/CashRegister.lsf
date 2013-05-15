@@ -29,7 +29,7 @@ FORM cashRegisterModel 'Модель касс'
 FORM cashRegistersModels 'Модели касс'
     OBJECTS c=CashRegisterModel
     PROPERTIES(c) READONLY nameCashRegisterModel, sidModel, handlerModel, noteModel, objectClassName
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
     DIALOG CashRegisterModel OBJECT c
 ;
 
@@ -94,7 +94,7 @@ FORM groupCashRegister 'Группа касс'
     OBJECTS c=CashRegister
     PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister,
                     directoryCashRegister, comPortCashRegister, baudRateCashRegister, nameModelMachinery,
-                    dateCashRegister, hostnameComputerCashRegister, nameLegalEntityCashRegister, ADDOBJ, delete
+                    dateCashRegister, hostnameComputerCashRegister, nameLegalEntityCashRegister, ADDOBJ, DELETESESSION
 
     OBJECTS cu=CustomUser
     PROPERTIES(cu) loginCustomUser, firstNameContact, lastNameContact, sidMainRoleCustomUser
@@ -110,7 +110,7 @@ FORM groupsCashRegister 'Группы касс'
     OBJECTS grc=GroupCashRegister, c=CashRegister
     PROPERTIES(grc)  READONLY nameStockGroupMachinery, nameLegalEntityCashRegister, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                      filterSkuGroupMachinery
-    PROPERTIES(grc)  ADDFORM, EDITFORM, delete
+    PROPERTIES(grc)  ADDFORM, EDITFORM, DELETE
 
     PROPERTIES(c) READONLY nppMachinery, descriptionMachinery, portMachinery,
                            numberCashRegister, directoryCashRegister, comPortCashRegister, baudRateCashRegister, nameModelMachinery,

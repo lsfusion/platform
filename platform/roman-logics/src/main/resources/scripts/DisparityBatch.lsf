@@ -177,7 +177,7 @@ FORM disparityBatches 'Пересорты м/у партиями'
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES (o)    ADDFORM, EDITFORM, deleteo=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS di = DisparityInBatchDetail
     OBJECTS do = DisparityOutBatchDetail
@@ -187,7 +187,7 @@ FORM disparityBatches 'Пересорты м/у партиями'
 ;
 
 DESIGN disparityBatches FROM DEFAULT {
-    PROPERTY (delete(o)) {
+    PROPERTY (deleteo) {
         askConfirm = TRUE;
     }
 
@@ -529,7 +529,7 @@ FORM disparityBatchAs 'Пересорты м/у партиями (бухг.)'
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES (o)    ADDFORM, EDITFORM, deleteo=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS di = DisparityInBatchADetail
     OBJECTS do = DisparityOutBatchADetail
@@ -539,7 +539,7 @@ FORM disparityBatchAs 'Пересорты м/у партиями (бухг.)'
 ;
 
 DESIGN disparityBatchAs FROM DEFAULT {
-    PROPERTY (delete(o)) {
+    PROPERTY (deleteo) {
         askConfirm = TRUE;
     }
 

@@ -228,7 +228,7 @@ EXTEND FORM order
     PROPERTIES(o)  BACKGROUND backgroundOutputOrder(o) createOutputOrder
     PROPERTIES(o)  BACKGROUND backgroundOutputOrder(o) SHOWIF createOutputOrder(o) outputProductsSumProductDetailOrder
 
-    PROPERTIES(pd) BEFORE delete(pd) SHOWIF createOutputOrder(o) BACKGROUND backgroundOutputOrder(o) outputProductsSumProductDetail
+    PROPERTIES(pd) BEFORE deletepd SHOWIF createOutputOrder(o) BACKGROUND backgroundOutputOrder(o) outputProductsSumProductDetail
 
     PROPERTIES(pd) READONLY outputProductDetail AFTER quantityProductDetail SHOWIF showOutputOrder(o) BACKGROUND backgroundOutputOrder(o)
     PROPERTIES(pd) outputQuantityProductDetail AFTER quantityProductDetail SHOWIF createOutputOrder(o) BACKGROUND backgroundOutputOrder(o)
@@ -317,7 +317,7 @@ FORM userOutput 'Производство'
     OBJECTS d = UserOutputDetail
     PROPERTIES (d) indexUserOutputDetail, idBarcodeSkuUserOutputDetail, nameSkuUserOutputDetail, shortNameUOMSkuUserOutputDetail,
                    namePriceListTypeUserOutputDetail, expiryDateUserOutputDetail, quantityUserOutputDetail, priceUserOutputDetail, sumUserOutputDetail,
-                   descriptionIndexProductDetailUserOutputDetail, ADDOBJ, delete
+                   descriptionIndexProductDetailUserOutputDetail, ADDOBJ, deleted=DELETESESSION
 
     PROPERTIES(o) TODRAW d fillDocumentOutput, addDetailDialogSkuStockUserOutputDetailUserOutput,
                            addDetailInputBarcodeUserOutputDetailUserOutput, deleteUserOutputDetailUserOutput
@@ -449,7 +449,7 @@ FORM outputs 'Производство'
 
     PROPERTIES ()  addUserOutput TODRAW o
     PROPERTIES (o) editOutput, copyOutput
-    PROPERTIES     delete(o) FORCE PANEL TOOLBAR  SHOWIF isUserOutput(o)
+    PROPERTIES     deleteo=DELETE(o) FORCE PANEL TOOLBAR  SHOWIF isUserOutput(o)
 
     OBJECTS d=OutputDetail
     PROPERTIES (d) READONLY indexOutputDetail, idBarcodeSkuOutputDetail, nameSkuOutputDetail, shortNameUOMSkuOutputDetail
@@ -462,7 +462,7 @@ FORM outputs 'Производство'
 @extendFormFilterAccess(Output, o, outputs, stock);
 
 DESIGN outputs FROM DEFAULT {
-    PROPERTY (delete(o)) {
+    PROPERTY (deleteo) {
         askConfirm = TRUE;
     }
 

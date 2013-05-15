@@ -71,7 +71,7 @@ FORM sanitations 'ГГР'
     OBJECTS s = Sanitation
     PROPERTIES(s) READONLY numberObject, seriesObject, dateSanitation, timeSanitation,
                   fromDateSanitation, fromTimeSanitation, toDateSanitation, toTimeSanitation, objectClassName
-    PROPERTIES(s) ADDFORM, EDITFORM, delete
+    PROPERTIES(s) ADDFORM, EDITFORM, DELETE
 ;
 
 FORM sanitationsDialog 'ГГР'

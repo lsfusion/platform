@@ -75,7 +75,7 @@ FORM warehouse 'Склад'
 
     OBJECTS           e = Employee
     PROPERTIES(e)     READONLY firstNameContact, lastNameContact
-    PROPERTIES(e)     ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES(e)     ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
     FILTERS           inEmployeeDivisionEmployee(w, e)
 
     EDIT Warehouse OBJECT w
@@ -98,13 +98,13 @@ FORM warehouses 'Склады'
 
     TREE warehouseTree b=STRING[3], wg = WarehouseGroup PARENT parentWarehouseGroup
     PROPERTIES READONLY OBJVALUE(b), wgTreeName = nameWarehouseGroup(wg)
-    PROPERTIES(wg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES(wg) ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
     ORDER BY wgTreeName
     FILTERS stringEqualsAll(b)
 
     OBJECTS w=Warehouse
     PROPERTIES(w) READONLY nameWarehouse, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, latitudePOI, longitudePOI
-    PROPERTIES(w) ADDFORM, EDITFORM, delete
+    PROPERTIES(w) ADDFORM, EDITFORM, deletew=DELETE
     ORDER BY nameWarehouse
     FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS Warehouse AND wg IS WarehouseGroup AND NOT warehouseGroupWarehouse(w)) OR (w IS Warehouse AND NOT wg)
 ;

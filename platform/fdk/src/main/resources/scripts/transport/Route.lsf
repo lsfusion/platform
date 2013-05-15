@@ -19,7 +19,7 @@ FORM route 'Маршрут'
 FORM routes 'Маршруты'
     OBJECTS r=Route
     PROPERTIES(r) READONLY nameNumeratorObject, numberObject, seriesObject, sidTruckRoute
-    PROPERTIES(r) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES(r) ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
 ;
 
 

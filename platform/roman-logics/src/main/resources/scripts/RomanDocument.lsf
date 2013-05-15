@@ -39,7 +39,7 @@ META extendFormDocumentDetailSkuArticleQuantity (form, object, concrete, quantit
                            sidArticle###concrete##Detail, sidSize###concrete##Detail,
                            sidColor###concrete##Detail, nameColor###concrete##Detail,
                            quantityProp, shortNameUOM###concrete##Detail,
-                           ADDOBJ, delete
+                           ADDOBJ, deleteod=DELETESESSION
     ;
 END
 META extendFormDocumentDetailSkuArticle (form, object, concrete)
@@ -85,7 +85,7 @@ META extendFormDocumentDetailSkuArticleQuantityCustom (form, object, idetail, qu
                            sidArticle###idetail, sidSize###idetail,
                            sidColor###idetail, nameColor###idetail,
                            quantityProp, shortNameUOM###idetail,
-                           ADDOBJ, delete
+                           ADDOBJ, DELETESESSION
     ;
 END
 META extendFormDocumentDetailSkuArticleCustom (form, object, idetail)

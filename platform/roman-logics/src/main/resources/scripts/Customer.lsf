@@ -71,7 +71,7 @@ FORM customerGroups 'Группы покупателей'
 //    OBJECTS pc = PaymentCondition
 //    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition,
 //                            nameFormPaymentCondition
-//    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
+//    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
 //    ORDER BY datePaymentCondition
 //
 //    FILTERS contractPaymentCondition(pc) == c
@@ -84,7 +84,7 @@ FORM customerGroups 'Группы покупателей'
 //    PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
 //                           nameLegalEntityContractSkuCustomer, nameCustomerContractSkuCustomer
 //
-//    PROPERTIES(c) ADDFORM, EDITFORM, delete
+//    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 //    ORDER BY dateFromContract
 //
 //    DIALOG ContractSkuCustomer OBJECT c
@@ -102,7 +102,7 @@ FORM customer 'Покупатель'
                    emailLegalEntity, siteLegalEntity
 
     OBJECTS a=Bank.Account
-    PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+    PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, DELETESESSION
     FILTERS Bank.legalEntityAccount(a) == cu
 
     OBJECTS co=LegalEntity
@@ -114,7 +114,7 @@ FORM customer 'Покупатель'
 //    PROPERTIES isLegalEntityCustomerContractSkuCustomer(co, cu, c)
 //    PROPERTIES(c) READONLY numberContract, nameLegalEntityContractSkuCustomer, nameTypeContractSku, dateFromContract,
 //                  dateToContract, nameCurrencyContract, noteContract
-//    PROPERTIES(c) ADDFORM, EDITFORM, delete
+//    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 //    FILTERS legalEntityContractSkuCustomer(c) == co,
 //            customerContractSkuCustomer(c) == cu
 
@@ -181,11 +181,11 @@ DESIGN customer FROM DEFAULT {
 FORM customers 'Покупатели'
     TREE customerGroupTree cg = CustomerGroup PARENT parentCustomerGroup
     PROPERTIES READONLY cgTreeName = nameCustomerGroup(cg)
-    PROPERTIES(cg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES(cg) ADDFORM, EDITFORM, deletecg=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS cu=Customer
     PROPERTIES(cu) READONLY nameLegalEntity, fullNameLegalEntity, nameCustomerGroupCustomer, shortNameOwnershipLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
-    PROPERTIES(cu) ADDFORM, EDITFORM, delete
+    PROPERTIES(cu) ADDFORM, EDITFORM, DELETE
 
     FILTERS inCustomerGroupCustomer(cg, cu)
 ;
@@ -195,7 +195,7 @@ DESIGN customers FROM DEFAULT{
         childConstraints = TO THE RIGHT;
         type = SPLITH;
         ADD customerGroupTree.tree.box{
-            PROPERTY(delete(cg)){
+            PROPERTY(deletecg){
                 askConfirm = TRUE;
             }
         }

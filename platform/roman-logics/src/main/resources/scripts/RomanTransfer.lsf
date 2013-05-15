@@ -153,9 +153,9 @@ createInnerOrderTransferTable 'Создать внутренние заказы'
 }  CONFIRM;
 
 deleteInnerOrderTransferTable 'Удалить внутренние заказы' = ACTION (transferTable) {
-    FOR transferTableInnerOrder (innerOrder) == transferTable DO {
-        EXEC delete(innerOrder AS InnerOrder);
-    };
+    //FOR transferTableInnerOrder (innerOrder) == transferTable DO {
+    DELETE innerOrder WHERE transferTableInnerOrder (innerOrder) == transferTable;
+    //};
 } CONFIRM;
 
 toShowTransferTable (transferTable)= GROUP SUM 1 BY transferTableInnerOrder(innerOrder);
@@ -220,7 +220,7 @@ FORM transferTable 'Трансфер'
         nameStockInnerOrder, nameDestinationStockInnerOrder, countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder
     PROPERTIES (o) EDITSESSIONFORM
 
-    PROPERTIES (o) delete
+    PROPERTIES (o) DELETESESSION
 
     OBJECTS d = InnerOrderDetail
     FILTERS    transferTableInnerOrder(o)==t,
@@ -299,7 +299,7 @@ FORM transferTables 'Трансферы'
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (t) ADDFORM, EDITFORM, delete
+    PROPERTIES (t) ADDFORM, EDITFORM, deletet=DELETE
 
     OBJECTS s=Sku
     PROPERTIES READONLY FORCE GRID inputName = nameSku(s), sidArticleSku(s), idBarcodeSku(s), shortNameUOMSku(s), quantitySkuTransferTable(s,t)
@@ -319,7 +319,7 @@ FORM transferTables 'Трансферы'
 ;
 
 DESIGN transferTables FROM DEFAULT {
-    PROPERTY (delete(t)) {
+    PROPERTY (deletet) {
         askConfirm = TRUE;
     }
 

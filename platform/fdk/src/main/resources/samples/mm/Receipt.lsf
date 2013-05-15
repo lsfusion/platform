@@ -32,7 +32,7 @@ FORM receipt 'Приходная накладная'
 	PROPERTIES(r) numberReceipt, dateReceipt, nameSupplierReceipt, nameStockReceipt
 
 	OBJECTS d=ReceiptDetail
-	PROPERTIES(d) indexReceiptDetail, nameItemReceiptDetail, quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail READONLY, ADDOBJ, delete
+	PROPERTIES(d) indexReceiptDetail, nameItemReceiptDetail, quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail READONLY, ADDOBJ, DELETESESSION
 	FILTERS receiptReceiptDetail(d) == r
 
 	EDIT Receipt OBJECT r
@@ -41,7 +41,7 @@ FORM receipt 'Приходная накладная'
 FORM receipts 'Приходные накладные'
 	OBJECTS r=Receipt
 	PROPERTIES(r) READONLY numberReceipt, dateReceipt, nameSupplierReceipt, nameStockReceipt
-	PROPERTIES(r) ADDFORM, EDITFORM, delete
+	PROPERTIES(r) ADDFORM, EDITFORM, DELETE
 
 	OBJECTS d=ReceiptDetail
 	PROPERTIES(d) READONLY indexReceiptDetail, nameItemReceiptDetail, quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail

@@ -448,7 +448,7 @@ FORM userPricing 'Акт расценки'
     PROPERTIES (d) BACKGROUND backgroundRetailPricing(p)
                    retailMarkupUserPricingDetail ON CHANGE changeRetailMarkupUserPricingDetail(d), retailMarkupSumUserPricingDetail, numberRetailVATUserPricingDetail, valueRetailVATUserPricingDetail,
                    retailVATSumUserPricingDetail, retailPriceUserPricingDetail ON CHANGE changeRetailPriceUserPricingDetail(d), retailSumUserPricingDetail
-    PROPERTIES (d) nameDepartmentStoreUserPricingDetail, ADDOBJ, delete
+    PROPERTIES (d) nameDepartmentStoreUserPricingDetail, ADDOBJ, deletepd=DELETESESSION
 
 
     PROPERTIES(p) TODRAW d addDetailDialogSkuStockUserPricingDetailUserPricing,
@@ -518,7 +518,7 @@ FORM pricings 'Акты расценки' TITLE 'Акты расценки'
 
     PROPERTIES ()  addUserPricing TODRAW p
     PROPERTIES (p) editUserPricing
-    PROPERTIES (p) delete FORCE PANEL TOOLBAR SHOWIF isUserPricing(p)
+    PROPERTIES (p) deletep=DELETE FORCE PANEL TOOLBAR SHOWIF isUserPricing(p)
     PROPERTIES (p) printPricing FORCE PANEL
 
     OBJECTS d = PricingDetail
@@ -535,7 +535,7 @@ FORM pricings 'Акты расценки' TITLE 'Акты расценки'
 @extendFormFilterAccess(Pricing, p, pricings, departmentStore);
 
 DESIGN pricings FROM DEFAULT {
-    PROPERTY (delete(p)) {
+    PROPERTY (deletep) {
         askConfirm = TRUE;
     }
 
@@ -935,7 +935,7 @@ META defineInvoicePricingRelation(sign, stockProp)
 
     EXTEND FORM userPricing
         PROPERTIES(p) fillInvoiceUserPricing, invoicesPricing READONLY
-        PROPERTIES(d) descriptionIndexInvoiceDetailUserPricingDetail BEFORE delete(d)
+        PROPERTIES(d) descriptionIndexInvoiceDetailUserPricingDetail BEFORE deletepd
     ;
     EXTEND DESIGN userPricing { headerColumn2 { ADD p.invoiceGroup; } }
 

@@ -580,7 +580,7 @@ FORM contractLedger 'Управление задолженностями'
                             sumPaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d),
                             notePaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d),
                             objectClassName BACKGROUND backgroundPaymentRequestDate(pr, d)
-    PROPERTIES(pr) ADDFORM, EDITFORM, delete
+    PROPERTIES(pr) ADDFORM, EDITFORM, DELETE
     ORDER BY datePaymentRequest, timePaymentRequest
 
     OBJECTS cm = CreditMemo
@@ -595,7 +595,7 @@ FORM contractLedger 'Управление задолженностями'
     PROPERTIES(cm) FORCE GRID READONLY costedInContractLedgerOutContractLedger BACKGROUND backgroundOutContractLedgerDate(cm, d) SHOWIF isOutContractLedger(cm)
     PROPERTIES(cm) FORCE PANEL TOOLBAR writeOutContractLedgerFIFO SHOWIF isOutContractLedger(cm),
                                              writeOutContractLedgerLIFO SHOWIF isOutContractLedger(cm)
-    PROPERTIES(cm) ADDFORM, EDITFORM, delete
+    PROPERTIES(cm) ADDFORM, EDITFORM, DELETE
     ORDER BY dateCreditMemo, timeCreditMemo
 
 

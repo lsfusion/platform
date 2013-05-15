@@ -153,7 +153,7 @@ FORM commercialInvoices 'Коммерческие инвойсы'
                            sumCommercialInvoice BACKGROUND backgroundInContractLedgerDate(c, d),
                            descriptionInvoiceCommercialInvoice BACKGROUND backgroundInContractLedgerDate(c, d)
 
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 
     FILTERS companyCommercialInvoice(c) == partyB() OR (c IS CommercialInvoice AND NOT partyB()),
             supplierCommercialInvoice(c) == partyA() OR (c IS CommercialInvoice AND NOT partyA())

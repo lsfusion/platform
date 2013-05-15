@@ -42,7 +42,7 @@ FORM inventoryCommittee 'Комиссия для инвентаризации'
 
     OBJECTS e=Employee
     PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
-    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
 
     PROPERTIES(c, e)   inCommitteeEmployee
     FILTERS            countDivisionEmployeeCommittee (e, c)
@@ -831,12 +831,12 @@ FORM listInventory 'Опись'
                     sumPageInventoryDetailListInventory
 
     OBJECTS         pl=PageInventory
-    PROPERTIES(pl)  namePageInventory, notePageInventory FORCE PANEL, countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, sumPageInventoryDetailPageInventory, ADDOBJ, delete
+    PROPERTIES(pl)  namePageInventory, notePageInventory FORCE PANEL, countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, sumPageInventoryDetailPageInventory, ADDOBJ, DELETESESSION
     FILTERS         listInventoryPageInventory(pl) == li
 
     OBJECTS         dp=PageInventoryDetail
     PROPERTIES (dp) indexPageInventoryDetail, idBarcodeSkuPageInventoryDetail, nameSkuPageInventoryDetail, nameBatchPageInventoryDetail SHOWIF isBatchListInventory(li), quantityPageInventoryDetail, pricePageInventoryDetail,
-                    sumPageInventoryDetail, ADDOBJ, delete
+                    sumPageInventoryDetail, ADDOBJ, DELETESESSION
     FILTERS         pageInventoryPageInventoryDetail(dp) == pl
 
     OBJECTS         i=Sku
@@ -939,7 +939,7 @@ FORM inventory 'Инвентаризация'
 
     PROPERTIES(li)   READONLY countPageInventoryDetailListInventory, quantityPageInventoryDetailListInventory, sumPageInventoryDetailListInventory, objectClassName
 
-    PROPERTIES(li)   editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL TOOLBAR SHOWIF isDraftListInventory(li),
+    PROPERTIES(li)   editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), deleteli=DELETE FORCE PANEL TOOLBAR SHOWIF isDraftListInventory(li),
                      postListInventory FORCE PANEL SHOWIF isDraftListInventory(li), unpostListInventory FORCE PANEL SHOWIF isPostedListInventory(li)
 
     PROPERTIES(pl)   READONLY countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, sumPageInventoryDetailPageInventory, dumb1
@@ -968,7 +968,7 @@ FORM inventory 'Инвентаризация'
                                  quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
                                  sumPageInventoryDetailCollationSheet, sumBalanceCollationSheet, sumShortageCollationSheet,
                                  countListInventoryCollationSheet, countPageInventoryCollationSheet
-    PROPERTIES (cs)              dialogSkuCollationSheet, prevDateCollationSheet, recalculatePriceCollationSheet, delete
+    PROPERTIES (cs)              dialogSkuCollationSheet, prevDateCollationSheet, recalculatePriceCollationSheet, deletecs=DELETE
     PROPERTIES (cs)  FORCE PANEL sumItemPageInventoryDetailCollationSheet, sumContainerPageInventoryDetailCollationSheet,
                                  sumItemBalanceCollationSheet, sumContainerBalanceCollationSheet,
                                  sumItemShortageCollationSheet, sumContainerShortageCollationSheet
@@ -1094,7 +1094,7 @@ DESIGN inventory FROM DEFAULT {
                     PROPERTY (editLI) {
                         caption = 'Редактировать';
                     }
-                    PROPERTY (delete(li)) {
+                    PROPERTY (deleteli) {
                         caption = 'Удалить';
                         askConfirm = TRUE;
                     }
@@ -1162,7 +1162,7 @@ FORM inventories 'Инвентаризации'
     PROPERTIES(in) READONLY             isPostedInventory FORCE GRID, isBatchInventory, numberObject, seriesObject, dateInventory, timeInventory,
                                         nameStockInventory, nameInventory, noteInventory, objectClassName
     PROPERTIES(in) FORCE PANEL READONLY nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
-    PROPERTIES(in)                      ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL TOOLBAR SHOWIF isDraftInventory(in),
+    PROPERTIES(in)                      ADDFORM, EDITFORM SHOWIF isDraftInventory(in), deletein=DELETE FORCE PANEL TOOLBAR SHOWIF isDraftInventory(in),
                                         postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)
 
     OBJECTS il=InventorySkuDetail
@@ -1241,7 +1241,7 @@ DESIGN inventories FROM DEFAULT {
                 PROPERTY(objectClassName) {
                     preferredCharWidth = 25;
                 }
-                PROPERTY (delete(in)) {
+                PROPERTY (deletein) {
                     askConfirm = TRUE;
                 }
             }

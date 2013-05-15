@@ -120,11 +120,11 @@ FORM paymentCondition 'Условие оплаты'
     PROPERTIES(pp) countDaysPaymentPeriod SHOWIF isPrepaymentTypePaymentCondition(pc),
                    percentPaymentPeriod SHOWIF isPrepaymentTypePaymentCondition(pc)
     PROPERTIES(pp) ADDOBJ SHOWIF isPrepaymentTypePaymentCondition(pc),
-                   delete SHOWIF isPrepaymentTypePaymentCondition(pc)
+                   DELETESESSION SHOWIF isPrepaymentTypePaymentCondition(pc)
 
     OBJECTS bp = BonusPeriod
     PROPERTIES(bp) countDaysBonusPeriod, percentBonusPeriod
-    PROPERTIES(bp) ADDOBJ, delete
+    PROPERTIES(bp) ADDOBJ, DELETESESSION
 
     FILTERS paymentConditionPaymentPeriod(pp) == pc,
             paymentConditionBonusPeriod(bp) == pc
@@ -142,7 +142,7 @@ FORM paymentConditions 'Условия оплаты'
 
     OBJECTS pc = PaymentCondition
     PROPERTIES(pc) READONLY descriptionPaymentCondition, nameTypePaymentCondition
-    PROPERTIES(pc) ADDFORM, EDITFORM, delete
+    PROPERTIES(pc) ADDFORM, EDITFORM, DELETE
 
     DIALOG PaymentCondition OBJECT pc
 ;
@@ -196,7 +196,7 @@ addUserContractSkuSupplierCustomer 'Добавить' = ACTION (supplier, custom
         SET customerContractSku(uc) <- (customer AS LegalEntity);
         FORM userContractSku OBJECTS c = uc DOCKEDMODAL;
         IF TRUE IF NOT formResult() == FormResult.ok THEN {
-            EXEC delete(uc);
+            DELETE uc;
         }
     }
 } IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
@@ -244,7 +244,7 @@ EXTEND FORM legalEntity
     PROPERTIES(css) READONLY seriesNumberObject, nameTypeContractSku, dateFromContract,
                     dateToContract, nameCurrencyContract, noteContract
     PROPERTIES addUserContractSkuSupplierCustomer(s, l) TODRAW css FORCE PANEL TOOLBAR
-    PROPERTIES(css)  EDITSESSIONFORM, delete SHOWIF isUserContractSku(css)
+    PROPERTIES(css)  EDITSESSIONFORM, DELETESESSION SHOWIF isUserContractSku(css)
     FILTERS customerContractSku(css) == l,
             supplierContractSku(css) == s
 
@@ -255,7 +255,7 @@ EXTEND FORM legalEntity
     PROPERTIES(csc) READONLY seriesNumberObject, nameTypeContractSku, dateFromContract,
                     dateToContract, nameCurrencyContract, noteContract
     PROPERTIES addUserContractSkuSupplierCustomer(l, c) TODRAW csc FORCE PANEL TOOLBAR
-    PROPERTIES(csc) EDITSESSIONFORM, delete SHOWIF isUserContractSku(csc)
+    PROPERTIES(csc) EDITSESSIONFORM, DELETESESSION SHOWIF isUserContractSku(csc)
     FILTERS customerContractSku(csc) == c,
             supplierContractSku(csc) == l
 

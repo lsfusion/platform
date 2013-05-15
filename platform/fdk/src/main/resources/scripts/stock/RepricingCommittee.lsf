@@ -32,7 +32,7 @@ FORM repricingCommittee 'Комиссия для переоценки'
 
     OBJECTS e=Employee
     PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
-    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
 
     PROPERTIES(c, e)   inCommitteeEmployee
     FILTERS            countDivisionEmployeeCommittee (e, c)

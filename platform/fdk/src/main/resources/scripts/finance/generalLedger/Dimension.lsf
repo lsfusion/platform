@@ -147,7 +147,7 @@ FORM dimensionType 'Тип субконто'
 FORM dimensionTypes 'Тип субконто'
     OBJECTS d = DimensionType
     PROPERTIES(d) READONLY nameDimensionType, idDimensionType
-    PROPERTIES(d) ADDFORM, EDITFORM, delete
+    PROPERTIES(d) ADDFORM, EDITFORM, DELETE
     DIALOG DimensionType OBJECT d
 ;
 
@@ -161,7 +161,7 @@ EXTEND DESIGN GLAccount {
     ADD d.box BEFORE functions.box;
 }
 EXTEND FORM GLAccounts
-    PROPERTIES(g) READONLY dimensionsTypeGLAccount BEFORE delete(g)
+    PROPERTIES(g) READONLY dimensionsTypeGLAccount BEFORE deletea
     PROPERTIES(gl) READONLY dimensionsDebitGeneralLedger AFTER idDebitGeneralLedger(gl)
     PROPERTIES(gl) READONLY dimensionsCreditGeneralLedger AFTER idCreditGeneralLedger(gl)
     OBJECTS w = DimensionType FIXED PANEL
@@ -220,7 +220,7 @@ EXTEND DESIGN GLAccounts {
 
 
 EXTEND FORM GLAccountDialog
-    PROPERTIES(g) READONLY dimensionsTypeGLAccount BEFORE delete(g)
+    PROPERTIES(g) READONLY dimensionsTypeGLAccount BEFORE deletea
 ;
 
 EXTEND FORM userGeneralLedger

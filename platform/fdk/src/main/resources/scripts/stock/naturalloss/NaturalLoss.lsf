@@ -140,15 +140,15 @@ FORM naturalLossGroups 'Справочник норм естественной �
 
     TREE treeNaturalLoss a=STRING[3], n=NaturalLossGroup
     PROPERTIES READONLY OBJVALUE(a)
-    PROPERTIES nameNaturalLossGroup(n), nameCountryNaturalLossGroup(n), ADDOBJ(n), delete(n) FORCE PANEL TOOLBAR
+    PROPERTIES nameNaturalLossGroup(n), nameCountryNaturalLossGroup(n), ADDOBJ(n), deleten=DELETE(n) FORCE PANEL TOOLBAR
     ORDER BY nameNaturalLossGroup(n)
 
     OBJECTS sg=SubNaturalLossGroup, d=SubNaturalLossGroupDetail
     PROPERTIES(sg) nameSubNaturalLossGroup, nameCountrySubNaturalLossGroup, nameParentNaturalLossGroup,
-                   codeSubNaturalLossGroup, ADDFORM TODRAW sg, delete FORCE PANEL TOOLBAR
+                   codeSubNaturalLossGroup, ADDFORM TODRAW sg, deletesg=DELETE FORCE PANEL TOOLBAR
     PROPERTIES(d) dayFromNaturalLossGroupDetail, nameMonthFromNaturalLossGroupDetail,
                   dayToNaturalLossGroupDetail, nameMonthToNaturalLossGroupDetail,
-                  percentNaturalLossGroupDetail, ADDOBJ, delete
+                  percentNaturalLossGroupDetail, ADDOBJ, DELETESESSION
     FILTERS stringEqualsAll(a), inParentSubNaturalLossGroup(n, sg),  inSubNaturalLossGroup(sg, d)
     ORDER BY nameSubNaturalLossGroup(sg)
 
@@ -177,12 +177,12 @@ DESIGN naturalLossGroups FROM DEFAULT {
 
     ADD functions.box;
 
-    PROPERTY (delete(n)) {
+    PROPERTY (deleten) {
     caption = 'Удалить';
     askConfirm = TRUE;
     }
 
-    PROPERTY (delete(sg)) {
+    PROPERTY (deletesg) {
     caption = 'Удалить';
     askConfirm = TRUE;
     }
@@ -299,7 +299,7 @@ FORM naturalLoss 'Ведомость естественной убыли'
     PROPERTIES(d) indexNaturalLossDetail, idBarcodeSkuNaturalLossDetail, nameSkuNaturalLossDetail, shortNameUOMSkuNaturalLossDetail,
                   nameBatchNaturalLossDetail, quantityLossNaturalLossDetail, nameSubNaturalLossGroupNaturalLossDetail,
                   codeNaturalLossDetail, nameSubNaturalDetailNaturalLossDetail, percentNaturalLossDetail, quantityNaturalLossDetail, priceNaturalLossDetail,
-                  sumNaturalLossDetail, ADDOBJ, delete
+                  sumNaturalLossDetail, ADDOBJ, DELETESESSION
 
     FILTERS inNaturalLossNaturalLossDetail(s, d)
 
@@ -350,7 +350,7 @@ FORM naturalLosses 'Ведомости естественной убыли'
     PROPERTIES(s) READONLY numberObject, seriesObject, dateNaturalLoss, timeNaturalLoss,
                            nameStockNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
                            quantityNaturalLossDetailNaturalLoss, sumNaturalLoss, noteNaturalLoss
-    PROPERTIES(s) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES(s) ADDFORM, EDITFORM, deletes=DELETE FORCE PANEL TOOLBAR
     PROPERTIES(s) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
     OBJECTS d=NaturalLossDetail
     PROPERTIES(d) READONLY indexNaturalLossDetail, idBarcodeSkuNaturalLossDetail, nameSkuNaturalLossDetail, shortNameUOMSkuNaturalLossDetail,
@@ -389,7 +389,7 @@ FORM naturalLosses 'Ведомости естественной убыли'
 //    ADD functions.box;
 //}
 DESIGN naturalLosses FROM DEFAULT {
-    PROPERTY (delete(s)) {
+    PROPERTY (deletes) {
         askConfirm = TRUE;
     }
 

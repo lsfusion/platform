@@ -276,7 +276,7 @@ EXTEND FORM declaration
     PROPERTIES(dd) READONLY sumDeclarationDetail, sumRateDeclarationDetail, sumRateDutyDeclarationDetail, numberVATRangeCustomGroupDeclarationDetail
     PROPERTIES(dd) numberVATRangeDataDeclarationDetail
     PROPERTIES(dd) READONLY percentVATDeclarationDetail, sumRateVATDeclarationDetail
-    PROPERTIES(dd) sumDataDeclarationDetail, sumDutyDataDeclarationDetail, sumVATDataDeclarationDetail, delete
+    PROPERTIES(dd) sumDataDeclarationDetail, sumDutyDataDeclarationDetail, sumVATDataDeclarationDetail, DELETESESSION
 
     PROPERTIES (d) toCreateDeclarationDetails TODRAW dd FORCE PANEL TOOLBAR
     PROPERTIES (d) setSumDeclarationDetail TODRAW dd FORCE PANEL TOOLBAR

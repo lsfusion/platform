@@ -110,7 +110,7 @@ backgroundRetailOutput 'Цвет' (output) = RGB(224, 255, 255) IF output IS Out
 
 EXTEND FORM userOutput
     PROPERTIES(o)  BACKGROUND backgroundRetailOutput(o) createPricingUserOutput, namePricingCommitteeUserOutput SHOWIF createPricingUserOutput(o)
-    PROPERTIES (d) BEFORE delete(d) SHOWIF createPricingUserOutput(o) BACKGROUND backgroundRetailOutput(o)
+    PROPERTIES (d) BEFORE deleted SHOWIF createPricingUserOutput(o) BACKGROUND backgroundRetailOutput(o)
                    supplierPriceUserOutputDetail, supplierSumUserOutputDetail, retailMarkupUserOutputDetail, retailMarkupSumUserOutputDetail,
                    valueRetailVATUserOutputDetail, retailVATSumUserOutputDetail, retailPriceUserOutputDetail, retailSumUserOutputDetail
 ;

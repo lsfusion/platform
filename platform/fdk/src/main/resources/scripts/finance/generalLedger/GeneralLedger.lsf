@@ -138,7 +138,7 @@ recBalanceGLAccountCompanyDateFromTo 'Сальдо' (GLAccount, company, dateFro
 @defineGLAccountBalance ( , rec);
 
 EXTEND FORM GLAccounts
-    PROPERTIES(g,l,dFrom,dTo) READONLY BEFORE delete(g) recSumCreditGLAccountCompanyDateFromTo, recSumDebitGLAccountCompanyDateFromTo, recBalanceGLAccountCompanyDateFromTo
+    PROPERTIES(g,l,dFrom,dTo) READONLY BEFORE deletea recSumCreditGLAccountCompanyDateFromTo, recSumDebitGLAccountCompanyDateFromTo, recBalanceGLAccountCompanyDateFromTo
 
     OBJECTS gl = GeneralLedger
     PROPERTIES(gl) READONLY dateGeneralLedger, descriptionGeneralLedger, idDebitGeneralLedger,
@@ -235,12 +235,12 @@ FORM generalLedgers 'Проводки'
 
     PROPERTIES ()  addUserGeneralLedger TODRAW g
     PROPERTIES (g) editGeneralLedger, copyGeneralLedger
-    PROPERTIES     delete(g) FORCE PANEL TOOLBAR  SHOWIF isUserGeneralLedger(g)
+    PROPERTIES     deleteg=DELETE(g) FORCE PANEL TOOLBAR  SHOWIF isUserGeneralLedger(g)
 
     DIALOG GeneralLedger OBJECT g
 ;
 DESIGN generalLedgers FROM DEFAULT {
-    PROPERTY (delete(g)) {
+    PROPERTY (deleteg) {
         askConfirm = TRUE;
     }
 

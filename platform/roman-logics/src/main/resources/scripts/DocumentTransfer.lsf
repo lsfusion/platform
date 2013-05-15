@@ -99,7 +99,7 @@ META defineDocumentFormTransferOutInner(object, class, formCaption)
 
         PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-        PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+        PROPERTIES (t) ADDFORM, EDITFORM, deletet=DELETE FORCE PANEL TOOLBAR
 
         OBJECTS d = class##OutDetail
 
@@ -107,7 +107,7 @@ META defineDocumentFormTransferOutInner(object, class, formCaption)
     ;
 
     DESIGN object##Outs FROM DEFAULT {
-        PROPERTY (delete(t)) {
+        PROPERTY (deletet) {
             askConfirm = TRUE;
         }
 

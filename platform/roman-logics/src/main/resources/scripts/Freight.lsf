@@ -187,11 +187,11 @@ EXTEND FORM freightListForm
     PROPERTIES (freight) READONLY dateArrivalFreight BEFORE nameRouteFreight(freight), nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
     PROPERTIES (freight) FORCE GRID toShipFreight, toArrivedFreight
 
-    PROPERTIES (freight) ADDFORM, EDITFORM, deleteApply FORCE PANEL TOOLBAR
+    PROPERTIES (freight) ADDFORM, EDITFORM, deletef=DELETE FORCE PANEL TOOLBAR
 ;
 
 EXTEND DESIGN freightListForm{
-    PROPERTY(deleteApply(freight)){
+    PROPERTY(deletef){
         askConfirm=TRUE;
     }
 }

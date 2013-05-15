@@ -27,7 +27,7 @@ percentWriteOffRateCountrySku 'Норма отходов,%' = percentWriteOffRat
 FORM writeOffRateDialog 'Нормы отходов'
     OBJECTS r=WriteOffRate
     PROPERTIES(r) READONLY nameWriteOffRate, percentWriteOffRate, nameCountryWriteOffRate
-    PROPERTIES(r) ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES(r) ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
     DIALOG WriteOffRate OBJECT r
 ;
 
@@ -98,7 +98,7 @@ EXTEND FORM userInvoice
     PROPERTIES (i) createPurchaseWriteOffUserInvoice BACKGROUND backgroundWrittenInvoice(i) SHOWIF toShowCreatePurchaseWriteOffInvoice(i)
     PROPERTIES (i) BACKGROUND backgroundWrittenInvoice(i) SHOWIF createPurchaseWriteOffUserInvoice(i)
                    nameWriteOffOperationUserInvoice, nameWriteOffCommitteeUserInvoice, nameReasonUserInvoice, writeOffSumUserInvoiceDetailUserInvoice
-    PROPERTIES (d) SHOWIF createPurchaseWriteOffUserInvoice(i) BEFORE delete(d) BACKGROUND backgroundWrittenInvoice(i)
+    PROPERTIES (d) SHOWIF createPurchaseWriteOffUserInvoice(i) BEFORE deleteid BACKGROUND backgroundWrittenInvoice(i)
                    nameWriteOffRateUserInvoiceDetail, percentWriteOffRateUserInvoiceDetail, writeOffQuantityUserInvoiceDetail,
                    writeOffPriceUserInvoiceDetail,  writeOffSumUserInvoiceDetail
 ;
@@ -232,7 +232,7 @@ EXTEND FORM userShipment
     PROPERTIES (s) BACKGROUND backgroundWrittenShipment(s) SHOWIF createPurchaseWriteOffUserShipment(s)
                    nameWriteOffOperationUserShipment, nameWriteOffCommitteeUserShipment, nameReasonUserShipment, writeOffSumUserShipmentDetailUserShipment
     PROPERTIES(d)  READONLY writtenOffShipmentDetail AFTER quantityUserShipmentDetail SHOWIF showWriteOffShipment(s) BACKGROUND backgroundWrittenShipment(s)
-    PROPERTIES (d) SHOWIF createPurchaseWriteOffUserShipment(s) BEFORE delete(d) BACKGROUND backgroundWrittenShipment(s)
+    PROPERTIES (d) SHOWIF createPurchaseWriteOffUserShipment(s) BEFORE deletesd BACKGROUND backgroundWrittenShipment(s)
                    nameWriteOffRateUserShipmentDetail, percentWriteOffRateUserShipmentDetail, writeOffQuantityUserShipmentDetail,
                    writeOffPriceUserShipmentDetail,  writeOffSumUserShipmentDetail
 ;
@@ -347,7 +347,7 @@ fillShipmentUserWriteOff 'Заполнить на основе поставки'
 
 EXTEND FORM userWriteOff
     PROPERTIES(w) fillShipmentUserWriteOff, shipmentsWriteOff READONLY
-    PROPERTIES(d) READONLY descriptionIndexShipmentDetailUserWriteOffDetail BEFORE delete(d)
+    PROPERTIES(d) READONLY descriptionIndexShipmentDetailUserWriteOffDetail BEFORE deletewd
 ;
 EXTEND DESIGN userWriteOff { headerRow1{ ADD w.shipmentGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
 

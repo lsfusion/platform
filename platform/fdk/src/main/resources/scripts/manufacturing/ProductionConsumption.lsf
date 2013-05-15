@@ -220,7 +220,7 @@ sumContainerOutStockDocumentLedger (ledger) += sumContainerConsumptionDetailCons
 
 EXTEND FORM order
             PROPERTIES(o)  BACKGROUND backgroundConsumptionOrder(o) createConsumptionOrder
-            PROPERTIES(cd) BEFORE delete(cd) BACKGROUND backgroundConsumptionOrder(o) SHOWIF createConsumptionOrder(o) consumedQuantityComponentDetail, consumedSumComponentDetail
+            PROPERTIES(cd) BEFORE deletecd BACKGROUND backgroundConsumptionOrder(o) SHOWIF createConsumptionOrder(o) consumedQuantityComponentDetail, consumedSumComponentDetail
             PROPERTIES(o)  TODRAW cd createOutputComponentOrder SHOWIF createConsumptionOrder(o)
 ;
 EXTEND DESIGN order {
@@ -299,7 +299,7 @@ FORM userConsumption 'Списание сырья'
     OBJECTS d = UserConsumptionDetail
     PROPERTIES (d) indexUserConsumptionDetail, idBarcodeSkuUserConsumptionDetail, nameSkuUserConsumptionDetail, shortNameUOMSkuUserConsumptionDetail,
                    namePriceListTypeUserConsumptionDetail, quantityUserConsumptionDetail, priceUserConsumptionDetail, sumUserConsumptionDetail,
-                   descriptionIndexComponentDetailUserConsumptionDetail, ADDOBJ, delete
+                   descriptionIndexComponentDetailUserConsumptionDetail, ADDOBJ, DELETESESSION
 
     PROPERTIES(o) TODRAW d fillDocumentConsumption, addDetailDialogSkuStockUserConsumptionDetailUserConsumption,
                            addDetailInputBarcodeUserConsumptionDetailUserConsumption, deleteUserConsumptionDetailUserConsumption
@@ -430,7 +430,7 @@ FORM consumptions 'Списания сырья'
 
     PROPERTIES ()  addUserConsumption TODRAW o
     PROPERTIES (o) editConsumption, copyConsumption
-    PROPERTIES     delete(o) FORCE PANEL TOOLBAR  SHOWIF isUserConsumption(o)
+    PROPERTIES     deleteo=DELETE(o) FORCE PANEL TOOLBAR  SHOWIF isUserConsumption(o)
 
     OBJECTS d=ConsumptionDetail
     PROPERTIES (d) READONLY indexConsumptionDetail, idBarcodeSkuConsumptionDetail, nameSkuConsumptionDetail, shortNameUOMSkuConsumptionDetail
@@ -443,7 +443,7 @@ FORM consumptions 'Списания сырья'
 @extendFormFilterAccess(Consumption, o, consumptions, stock);
 
 DESIGN consumptions FROM DEFAULT {
-    PROPERTY (delete(o)) {
+    PROPERTY (deleteo) {
         askConfirm = TRUE;
     }
 

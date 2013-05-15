@@ -19,7 +19,7 @@ FORM position 'Должность'
 FORM positions 'Должность'
     OBJECTS of=Position
     PROPERTIES(of) READONLY namePosition
-    PROPERTIES(of) ADDFORM, EDITFORM, delete
+    PROPERTIES(of) ADDFORM, EDITFORM, DELETE
     DIALOG Position OBJECT of
 ;
 
@@ -148,7 +148,7 @@ DESIGN employee FROM DEFAULT {
 FORM employees 'Сотрудники'
     OBJECTS e=Employee
     PROPERTIES(e) READONLY firstNameContact, lastNameContact, namePositionEmployee
-    PROPERTIES(e) ADDFORM, EDITFORM, delete
+    PROPERTIES(e) ADDFORM, EDITFORM, DELETE
 
     OBJECTS d=EmployeeDivision
     PROPERTIES READONLY nameD=nameEmployeeDivision(d)

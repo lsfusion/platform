@@ -77,7 +77,7 @@ generateBarcodeSku 'Сгенерировать штрих-код' = ACTION (sku)
 FORM barcodeDialog 'Штрих код'
     OBJECTS b = Barcode
     PROPERTIES (b) READONLY idBarcode, nameSkuBarcode, dateBarcode, shortNameUOMBarcode, amountBarcode, activeBarcode, primaryBarcode//, ordersBarcode
-    PROPERTIES (b) ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES (b) ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
     DIALOG Barcode OBJECT b
 ;
 

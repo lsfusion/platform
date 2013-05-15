@@ -20,9 +20,9 @@ createInvoiceReceipt 'Создать накладную' = ACTION (receipt) {   
             SET invoicePriceUserInvoiceDetail(d) <- sumReceiptDetail(detail)/quantityReceiptDetail(detail);
             SET priceUserInvoiceDetail(d) <- invoicePriceUserInvoiceDetail (d) * 100/(100 + calcValueVATUserInvoiceDetail(d));
 
-            EXEC delete(detail);
+            DELETE detail;
         }
-        EXEC delete(receipt);
+        DELETE receipt;
 
         FORM userInvoice OBJECTS i=i MANAGESESSION MODAL;
     }

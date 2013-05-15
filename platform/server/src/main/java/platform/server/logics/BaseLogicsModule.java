@@ -377,10 +377,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         delete = addAProp(baseClass.unknown.getChangeClassAction());
         setDeleteActionOptions(delete);
 
-        deleteApply = addListAProp("deleteApply", delete.property.caption, delete, 1, apply);
-        setDeleteActionOptions(deleteApply);
-        deleteApply.setAskConfirm(true);
-
         // Действия на форме
         formApply = addProperty(null, new LAP(new FormApplyActionProperty()));
         formCancel = addProperty(null, new LAP(new FormCancelActionProperty()));

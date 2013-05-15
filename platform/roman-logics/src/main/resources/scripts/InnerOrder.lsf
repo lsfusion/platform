@@ -109,7 +109,7 @@ FORM innerOrders 'Внутренние заказы'
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES (o) ADDFORM, EDITFORM, deleteo=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS d = InnerOrderDetail
 
@@ -117,7 +117,7 @@ FORM innerOrders 'Внутренние заказы'
 ;
 
 DESIGN innerOrders FROM DEFAULT {
-    PROPERTY (delete(o)) {
+    PROPERTY (deleteo) {
         askConfirm = TRUE;
     }
 
@@ -623,7 +623,7 @@ EXTEND FORM innerOrders
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking, quantityInnerDocumentOrderPicking,
         quantityPostedInnerDocumentOrderPicking, quantityDraftInnerDocumentOrderPicking, statusOrderPicking
 
-    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES(p) ADDFORM, EDITFORM, deletep=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS pd=OrderPickingDetail
 
@@ -639,7 +639,7 @@ EXTEND FORM innerOrders
     PROPERTIES (id) READONLY isPostedInnerDocument, objectClassName, seriesObject, numberObject, dateInnerDocument,
                     nameStockInnerDocument, nameDestinationStockInnerDocument, countDetailInnerDocument, quantityDetailInnerDocument
 
-    PROPERTIES (id) editInnerDocument, delete
+    PROPERTIES (id) editInnerDocument, DELETE
     PROPERTIES (p) TODRAW id FORCE PANEL  createDocumentsOrderPicking SHOWIF needInnerDocumentOrderPicking(p)
 
     FILTERS orderPickingInnerDocument(id)==p
@@ -652,7 +652,7 @@ EXTEND DESIGN innerOrders {
         NEW picking  {
             title = 'Подборка';
             ADD p.box {
-                PROPERTY (delete(p)) {
+                PROPERTY (deletep) {
                     askConfirm = TRUE;
                 }
             };
@@ -923,7 +923,7 @@ FORM orderPickings 'Подборки товара'
     PROPERTIES (id) READONLY isPostedInnerDocument, objectClassName, seriesObject, numberObject, dateInnerDocument,
                     nameStockInnerDocument, nameDestinationStockInnerDocument, countDetailInnerDocument, quantityDetailInnerDocument
 
-    PROPERTIES (id) editInnerDocument, delete
+    PROPERTIES (id) editInnerDocument, DELETE
 
     FILTERS orderPickingInnerDocument(id)==p
 

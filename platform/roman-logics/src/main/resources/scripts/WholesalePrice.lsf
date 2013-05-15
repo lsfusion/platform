@@ -192,7 +192,7 @@ FORM wholesalePriceDocuments 'Оптовые прайсы'
 
     OBJECTS w=WholesalePriceDocument
     PROPERTIES(w) READONLY numberObject, seriesObject, dateWholesalePriceDocument, timeWholesalePriceDocument
-    PROPERTIES(w) ADDFORM, EDITFORM, delete
+    PROPERTIES(w) ADDFORM, EDITFORM, DELETE
 
     OBJECTS a=Article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle

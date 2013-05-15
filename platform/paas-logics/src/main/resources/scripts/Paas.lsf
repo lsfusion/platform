@@ -65,7 +65,7 @@ selectProjectModules 'Выбрать модули' (project) = ACTION FORM selec
 FORM modulesForm 'Модули'
     OBJECTS m=Module
     PROPERTIES(m) moduleName
-    PROPERTIES(m) FORCE PANEL moduleSource, ADDOBJ, delete
+    PROPERTIES(m) FORCE PANEL moduleSource, ADDOBJ, DELETESESSION
 ;
 
 DESIGN modulesForm FROM DEFAULT {
@@ -87,10 +87,10 @@ DESIGN modulesForm FROM DEFAULT {
 
 FORM projectsForm 'Проекты'
     OBJECTS p=Project FIXED PANEL
-    PROPERTIES(p) projectName READONLY, projectOwnerName, ADDOBJ, delete
+    PROPERTIES(p) projectName READONLY, projectOwnerName, ADDOBJ, DELETESESSION
 
     OBJECTS m=Module
-    PROPERTIES(m) moduleName, moduleSource FORCE PANEL, ADDOBJ, delete
+    PROPERTIES(m) moduleName, moduleSource FORCE PANEL, ADDOBJ, DELETESESSION
     PROPERTIES(p) TODRAW m FORCE PANEL selectProjectModules
 
     OBJECTS c=Configuration

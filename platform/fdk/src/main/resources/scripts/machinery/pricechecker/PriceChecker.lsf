@@ -24,7 +24,7 @@ FORM priceCheckerModel 'Модель прайс чекера'
 FORM priceCheckerModels 'Модели прайс чекеров'
     OBJECTS m=PriceCheckerModel
     PROPERTIES(m) READONLY namePriceCheckerModel, maxProductModel, handlerModel, noteModel, objectClassName
-    PROPERTIES(m) ADDFORM, EDITFORM, delete
+    PROPERTIES(m) ADDFORM, EDITFORM, DELETE
 ;
 
 // Прайс-чекеры
@@ -50,7 +50,7 @@ FORM groupPriceChecker 'Группа прайс чекеров'
                      namePriceListTypeGroupMachinery
 
     OBJECTS ch=PriceChecker
-    PROPERTIES(ch)  nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, ADDOBJ, delete
+    PROPERTIES(ch)  nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, ADDOBJ, DELETESESSION
     FILTERGROUP filters3
         FILTER 'Показывать только для данной группы' 'F10' groupPriceCheckerPriceChecker(ch) == grch DEFAULT
     EDIT GroupPriceChecker OBJECT grch
@@ -60,7 +60,7 @@ FORM groupsPriceChecker 'Группы прайс чекеров'
     OBJECTS grch=GroupPriceChecker
     PROPERTIES(grch) READONLY nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                               filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grch)
-    PROPERTIES(grch)          ADDFORM, EDITFORM, delete
+    PROPERTIES(grch)          ADDFORM, EDITFORM, DELETE
 
     OBJECTS ch=PriceChecker
     PROPERTIES(ch)   READONLY nppMachinery, descriptionMachinery, portMachinery

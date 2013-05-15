@@ -75,7 +75,7 @@ FORM coefficientRetails 'Надбавки'
     OBJECTS c=CoefficientBrandRetail
     PROPERTIES (c) READONLY nameCategorySupplierCoefficientBrandRetail, nameSeasonYearCoefficientBrandRetail, dateCoefficientBrandRetail, markupCoefficientBrandRetail
 
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
     FILTERS brandSupplierCoefficientBrandRetail(c) == b
 
 ;
@@ -1085,7 +1085,7 @@ FORM priceSetDocuments 'Розничные прайсы'
     PROPERTIES(p) READONLY statusPriceSetDocument, objectClassName, numberObject, seriesObject, datePriceSetDocument,
                            timePriceSetDocument, dateTimeToPriceSetDocument, nameCurrencyPriceSetDocument, canonicalBrandPriceSetDocument, reasonPriceSetDocument
     PROPERTIES() importPriceList FORCE PANEL TODRAW p
-    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES(p) ADDFORM, EDITFORM, deletep=DELETE FORCE PANEL TOOLBAR
 
     TREE stockTree sg = StockGroup PARENT parentStockGroup
     PROPERTIES READONLY sgTreeName = nameStockGroup(sg)
@@ -1163,7 +1163,7 @@ DESIGN priceSetDocuments FROM DEFAULT {
     }
 
     ADD functions.box;
-    PROPERTY (delete(p)) {
+    PROPERTY (deletep) {
         askConfirm = TRUE;
     }
     PROPERTY(objectClassName) {

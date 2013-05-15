@@ -236,7 +236,7 @@ fillShipmentUserShipment 'Заполнить на основе поставки'
 
 EXTEND FORM Purchase.userShipment
     PROPERTIES(s) fillShipmentUserShipment, saleShipmentsShipment READONLY
-    PROPERTIES(d) descriptionIndexShipmentDetailUserShipmentDetail BEFORE delete(d)
+    PROPERTIES(d) descriptionIndexShipmentDetailUserShipmentDetail BEFORE deletesd
 ;
 EXTEND DESIGN Purchase.userShipment { headerCreateDetail{ ADD s.shipmentGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
 

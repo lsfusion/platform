@@ -34,7 +34,7 @@ FORM scalesModel 'Модель весов'
 FORM scalesModels 'Модели весов'
     OBJECTS m=ScalesModel
     PROPERTIES(m) READONLY objectClassName, nameScalesModel, maxProductModel, noteModel, handlerModel
-    PROPERTIES(m) ADDFORM, EDITFORM, delete
+    PROPERTIES(m) ADDFORM, EDITFORM, DELETE
 ;
 
 // Весы
@@ -67,7 +67,7 @@ FORM groupScales 'Группа весов'
 
     OBJECTS s=Scales
     PROPERTIES(s)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,
-                    dateScales, ADDOBJ, delete
+                    dateScales, ADDOBJ, DELETESESSION
     FILTERGROUP filters1
         FILTER 'Показывать только для данной группы' 'F10' groupScalesScales(s) == grs DEFAULT
     EDIT GroupScales OBJECT grs
@@ -78,7 +78,7 @@ FORM groupsScales 'Группы весов'
     PROPERTIES(grs) READONLY nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                          filterSkuGroupMachinery, directoryGroupScales,
                          pieceCodeGroupScales, weightCodeGroupScales
-    PROPERTIES(grs) ADDFORM, EDITFORM, delete
+    PROPERTIES(grs) ADDFORM, EDITFORM, DELETE
 
     OBJECTS s=Scales
     PROPERTIES(s)   READONLY nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,
@@ -115,7 +115,7 @@ FORM cellScales 'Ячейки весов'
                              pieceCodeGroupScales, weightCodeGroupScales
 
     OBJECTS cs=CellScales
-    PROPERTIES(cs)  numberCellScales, compositionCellScales, delete
+    PROPERTIES(cs)  numberCellScales, compositionCellScales, DELETESESSION
 
     FILTERS groupScalesCellScales(cs) == grs
 ;
@@ -160,7 +160,7 @@ FORM labelFormat 'Формат этикеток весов'
 FORM labelFormats 'Форматы этикеток весов'
     OBJECTS c=LabelFormat
     PROPERTIES(c) READONLY idLabelFormat, nameLabelFormat, nameScalesModelLabelFormat
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 
     DIALOG LabelFormat OBJECT c
 ;

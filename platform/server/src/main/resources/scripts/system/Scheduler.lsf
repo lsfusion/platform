@@ -52,7 +52,7 @@ FORM scheduledTask 'Планировщик'
 
     OBJECTS p=Property
     PROPERTIES (st, p) inScheduledTaskProperty, activeScheduledTaskProperty, orderScheduledTaskProperty
-    PROPERTIES (st) ADDOBJ, delete
+    PROPERTIES (st) ADDOBJ, DELETESESSION
     PROPERTIES (p) READONLY captionProperty, SIDProperty, classProperty, returnProperty
 
     OBJECTS stl=ScheduledTaskLog

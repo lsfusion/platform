@@ -35,7 +35,7 @@ FORM currencies 'Валюты'
     OBJECTS c = Currency
     PROPERTIES(c) READONLY nameCurrency, shortNameCurrency, symbolCurrency, documentNameCurrency
 
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 
     DIALOG Currency OBJECT c
 ;
@@ -104,14 +104,14 @@ FORM typeExchangeCurrencyDate 'Тип обмена / Курсы валют'
 
     OBJECTS t = TypeExchange
     PROPERTIES(t) READONLY nameTypeExchange, nameCurrencyTypeExchange
-    PROPERTIES(t) ADDFORM, EDITFORM, delete
+    PROPERTIES(t) ADDFORM, EDITFORM, DELETE
 
     PROPERTIES() importNBRBExchangeRateDateFrom, importNBRBExchangeRateDateTo
     PROPERTIES() importCBRFExchangeRateDateFrom, importCBRFExchangeRateDateTo
 
     OBJECTS c = Currency
     PROPERTIES(c) READONLY nameCurrency
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
     PROPERTIES(t, c) READONLY curRateTypeExchangeCurrency
 
     FILTERS curRateTypeExchangeCurrency(t, c)

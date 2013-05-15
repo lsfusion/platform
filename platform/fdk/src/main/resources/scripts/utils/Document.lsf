@@ -419,17 +419,17 @@ END
 // Action'ы
 META defineDocumentDetailActionsCustom (object, detailClass)
     delete##detailClass###object 'Очистить' = ACTION (o) {
-        FOR object##detailClass (d) == o DO {
-            EXEC delete(d);
-        }
+        //FOR object##detailClass (d) == o DO {
+        DELETE d WHERE object##detailClass (d) == o;
+        //}
     } IN documentPrmGroup TOOLBAR CONFIRM;
 END
 
 META defineDocumentDetailActions (object, detailClass)
     delete##detailClass###object 'Очистить' = ACTION (o) {
-        FOR object##detailClass (d) == o DO {
-            EXEC delete(d);
-        }
+        //FOR object##detailClass (d) == o DO {
+        DELETE d WHERE object##detailClass (d) == o;
+        //}
     } IN documentPrmGroup TOOLBAR CONFIRM;
 END
 

@@ -34,7 +34,7 @@ FORM GLAccountType 'План счетов'
 FORM GLAccountTypes 'Планы счетов'
     OBJECTS g = GLAccountType
     PROPERTIES(g) READONLY nameGLAccountType, idGLAccountType, nameCurrencyGLAccountType
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    PROPERTIES(g) ADDFORM, EDITFORM, DELETE
     DIALOG GLAccountType OBJECT g
 ;
 
@@ -87,7 +87,7 @@ FORM GLAccounts 'Счета'
     TREE treeGroups g=GLAccount PARENT parentGLAccount
     PROPERTIES(g) READONLY nameGLAccount, idGLAccount
     PROPERTIES(g) READONLY canonicalIdGLAccount
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    PROPERTIES(g) ADDFORM, EDITFORM, deletea=DELETE
     FILTERS GLAccountTypeGLAccount(g) == t
     ORDER BY canonicalIdGLAccount
 ;
@@ -125,7 +125,7 @@ FORM GLAccountDialog 'Счета'
     TREE treeGroups g=GLAccount PARENT parentGLAccount
     PROPERTIES(g) READONLY nameGLAccount, idGLAccount
     PROPERTIES(g) READONLY canonicalIdGLAccount
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    PROPERTIES(g) ADDFORM, EDITFORM, deletea=DELETE
     FILTERS GLAccountTypeGLAccount(g) == t
     ORDER BY canonicalIdGLAccount
     DIALOG GLAccount OBJECT g

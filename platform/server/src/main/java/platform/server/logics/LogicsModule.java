@@ -2256,7 +2256,7 @@ public abstract class LogicsModule {
     }
 
     @IdentityStrongLazy
-    public LAP getSimpleDeleteAction(ConcreteCustomClass cls, boolean oldSession) {
+    public LAP getSimpleDeleteAction(CustomClass cls, boolean oldSession) {
         LAP res = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
         if (!oldSession) {
             res = (LAP) addNewSessionAProp(null, genSID(), res.property.caption, res, true, false, SetFact.<SessionDataProperty>EMPTY(), SetFact.<SessionDataProperty>EMPTY());
@@ -2708,7 +2708,7 @@ public abstract class LogicsModule {
     }
 
     public PropertyDrawEntity addFormDeleteAction(FormEntity form, ObjectEntity object, boolean oldSession) {
-        return form.addPropertyDraw(getSimpleDeleteAction((ConcreteCustomClass) object.baseClass, oldSession), object);
+        return form.addPropertyDraw(getSimpleDeleteAction((CustomClass) object.baseClass, oldSession), object);
     }
 
     public String getNamespace() {

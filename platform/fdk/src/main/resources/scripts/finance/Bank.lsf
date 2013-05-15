@@ -29,7 +29,7 @@ FORM bank 'Банк'
 FORM banks 'Банки'
     OBJECTS b=Bank
     PROPERTIES(b) READONLY nameBank, addressBank, MFOBank, departmentBank, CBUBank, nameCountryBank, infoBank
-    PROPERTIES(b) ADDFORM, EDITFORM, delete
+    PROPERTIES(b) ADDFORM, EDITFORM, deleteb=DELETE
 
     DIALOG Bank OBJECT b
 ;
@@ -105,7 +105,7 @@ FORM accounts 'Счета'
     OBJECTS a = Account
     PROPERTIES(a) READONLY numberAccount, nameCurrencyAccount, nameLegalEntityAccount, nameBankAccount, addressBankAccount,
                            MFOBankAccount, departmentBankAccount, CBUBankAccount, noteAccount
-    PROPERTIES(a) editAccount FORCE PANEL TOOLBAR, delete
+    PROPERTIES(a) editAccount FORCE PANEL TOOLBAR, DELETE
     PROPERTIES() addAccount TODRAW a FORCE PANEL
 
     DIALOG Account OBJECT a
@@ -130,7 +130,7 @@ EXTEND FORM legalEntity
 
     OBJECTS a=Account
     PROPERTIES(a)  numberAccount, nameCurrencyAccount, nameBankAccount, addressBankAccount, departmentBankAccount,
-                   CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+                   CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, DELETESESSION
     FILTERS legalEntityAccount(a) == l
     PROPERTIES equalsLegalEntityAccount(l, a)
 ;

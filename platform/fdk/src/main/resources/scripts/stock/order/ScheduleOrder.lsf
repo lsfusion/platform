@@ -267,7 +267,7 @@ META defineScheduleOrder(sign, stockProp)
         PROPERTIES (sd) READONLY monthInDateScheduleOrderDetail, DOWInDateScheduleOrderDetail,
                         nameSupplierScheduleOrderDetail, nameSupplierStockScheduleOrderDetail,
                         nameCustomerScheduleOrderDetail, nameCustomerStockScheduleOrderDetail
-        PROPERTIES (sd) createOrder, delete
+        PROPERTIES (sd) createOrder, DELETESESSION
         ORDER BY dateSupplyScheduleOrderDetail
         PROPERTIES createScheduleOrder(s) TODRAW sd
 
@@ -358,7 +358,7 @@ META defineScheduleOrder(sign, stockProp)
 
             FORM scheduleOrder OBJECTS s = s MANAGESESSION DOCKEDMODAL;
             IF TRUE IF NOT formResult() == FormResult.ok THEN {
-                EXEC delete(s);
+                DELETE s;
             }
         }
     } IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
@@ -431,7 +431,7 @@ META defineScheduleOrder(sign, stockProp)
         PROPERTIES(s) READONLY nameSupplierScheduleOrder, nameSupplierStockScheduleOrder,
                       nameCustomerScheduleOrder, nameCustomerStockScheduleOrder, nameTypeScheduleOrder
 
-        PROPERTIES(s) ADDFORM, EDITFORM, delete TOOLBAR
+        PROPERTIES(s) ADDFORM, EDITFORM, DELETE TOOLBAR
 
         OBJECTS sd=ScheduleOrderDetail
         PROPERTIES(sd) READONLY dateOrderScheduleOrderDetail, dateSupplyScheduleOrderDetail,
@@ -482,14 +482,14 @@ EXTEND FORM legalEntity
 
     OBJECTS ss=ScheduleOrder
     PROPERTIES(ss) READONLY startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder, objectClassName
-    PROPERTIES(ss) delete, editScheduleOrder
+    PROPERTIES(ss) DELETE, editScheduleOrder
 
     FILTERS filterCompanySupplier(l, s)
     FILTERS supplierScheduleOrder(ss) == s, customerScheduleOrder(ss) == l
 
     OBJECTS sc=ScheduleOrder
     PROPERTIES(sc) READONLY startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder, objectClassName
-    PROPERTIES(sc) delete, editScheduleOrder
+    PROPERTIES(sc) DELETE, editScheduleOrder
 
     FILTERS filterCompanyCustomer(l, c)
     FILTERS customerScheduleOrder(sc) == c, supplierScheduleOrder(sc) == l

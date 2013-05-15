@@ -118,8 +118,8 @@ EXTEND DESIGN payment{
 
 EXTEND FORM payments
     PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY seriesNumberContractPayment AFTER timePayment,
-                                                                  nameCurrencyContractPayment BEFORE delete,
-                                                                  sumContractPayment BEFORE delete
+                                                                  nameCurrencyContractPayment BEFORE deletep,
+                                                                  sumContractPayment BEFORE deletep
 
 ;
 
@@ -236,7 +236,7 @@ EXTEND FORM contractLedger
 
     PROPERTIES(pm) FORCE PANEL TOOLBAR writeOutContractLedgerFIFO, writeOutContractLedgerLIFO
     PROPERTIES addContractPayment(c) TODRAW pm FORCE PANEL TOOLBAR
-    PROPERTIES(pm) EDITFORM, delete
+    PROPERTIES(pm) EDITFORM, DELETE
     ORDER BY datePayment, timePayment
 
     FILTERS contractPayment(pm) == c

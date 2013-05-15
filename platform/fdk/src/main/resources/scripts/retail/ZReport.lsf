@@ -411,19 +411,19 @@ FORM zReport 'Z-отчет'
     OBJECTS b=Receipt, d=ReceiptDetail
     PROPERTIES(b) numberReceipt, dateReceipt, timeReceipt, nameUserReceipt,
                   numberDiscountCardReceipt, nameClientDiscountCardReceipt, sumReceiptDetailReceipt, discountSumReceiptDetailReceipt,
-                  discountSumReceipt, countReceiptDetailReceipt, quantityReceiptDetailReceipt, exportReceipt, ADDOBJ, delete
+                  discountSumReceipt, countReceiptDetailReceipt, quantityReceiptDetailReceipt, exportReceipt, ADDOBJ, DELETESESSION
     FILTERS zReportReceipt(b)==z
 
     PROPERTIES(b) TODRAW d addDetailDialogSkuStockReceiptSaleDetailReceipt, addDetailDialogSkuStockReceiptReturnDetailReceipt
                            // todo : добавить операции возврата по штрих-коду
 
     PROPERTIES(d) typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, quantityReceiptDetail, quantityReturnedReceiptSaleDetail FORCE GRID, priceReceiptDetail,
-                  sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, descriptionSaleReceiptReturnDetail, numberVATReceiptDetail, ADDOBJ, delete
+                  sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, descriptionSaleReceiptReturnDetail, numberVATReceiptDetail, ADDOBJ, DELETESESSION
 
     FILTERS receiptReceiptDetail(d)==b
 
     OBJECTS p=Payment
-    PROPERTIES(p) namePaymentTypePayment, namePaymentMeansPayment, sumPayment, ADDOBJ, delete
+    PROPERTIES(p) namePaymentTypePayment, namePaymentMeansPayment, sumPayment, ADDOBJ, DELETESESSION
 
     FILTERS receiptPayment(p)==b
 
@@ -466,7 +466,7 @@ FORM zReports 'Z-отчеты'
     PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateZReport, timeZReport,
                             numberZReport, basisZReport, countReceiptZReport, quantityReceiptDetailZReport, sumCashZReport,
                             sumReceiptDetailZReport, discountSumReceiptDetailZReport, VATSumSaleZReport, VATSumReturnZReport
-    PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL TOOLBAR SHOWIF isDraftZReport(z),
+    PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), deletez=DELETE FORCE PANEL TOOLBAR SHOWIF isDraftZReport(z),
                             exportReceiptsZReport FORCE PANEL TOOLBAR, importReceiptsZReport FORCE PANEL TOOLBAR,
                             postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
@@ -523,7 +523,7 @@ DESIGN zReports FROM DEFAULT{
     PROPERTY(objectClassName) {
         preferredCharWidth = 15;
     }
-    PROPERTY (delete(z)) {
+    PROPERTY (deletez) {
         askConfirm = TRUE;
     }
 

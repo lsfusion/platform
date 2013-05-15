@@ -46,10 +46,9 @@ META definePackSku (caption, NS)
     
         } ELSE {
             IF packBarcodeSku(sku) THEN {
-                EXEC delete(packBarcodeSku(sku));
+                DELETE p WHERE p==packBarcodeSku(sku);
             }
         }
-    
     }
 
     changePackSku = ACTION (sku) {
@@ -127,7 +126,7 @@ META defineDocumentPackSkuStock(object, detail, skuProp, stockProp)
                 SET packQuantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
                 SET quantity###detail(detail) <- packQuantity###detail(detail)*amountPack###detail(detail) WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
             } ELSE {
-                EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
+                DELETE d WHERE d==detail###Sku###object###stockProp(sku, object, stock);
             }
         } ELSE {
             IF requestedNumeric() THEN  {
@@ -186,7 +185,7 @@ META defineDocumentPackSku(object, detail, skuProp, stockProp)
                 SET packQuantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object(sku, object);
                 SET quantity###detail(detail) <- packQuantity###detail(detail)*amountPack###detail(detail) WHERE detail == detail###Sku###object(sku, object);
             } ELSE {
-                EXEC delete(detail###Sku###object(sku, object));
+                DELETE d WHERE d==detail###Sku###object(sku, object);
             }
         } ELSE {
             IF requestedNumeric() THEN

@@ -134,7 +134,7 @@ META defineBlanketOrder(sign)
                        valueVATBlanketOrderDetail ON CHANGE changeValueVATBlanketOrderDetail(d),
                        invoicePriceBlanketOrderDetail ON CHANGE changeInvoicePriceBlanketOrderDetail(d),
                        VATSumBlanketOrderDetail, invoiceSumBlanketOrderDetail, nameSupplierStockBlanketOrderDetail, nameCustomerStockBlanketOrderDetail,
-                       shipmentDateBlanketOrderDetail, shipmentTimeBlanketOrderDetail, ADDOBJ, delete
+                       shipmentDateBlanketOrderDetail, shipmentTimeBlanketOrderDetail, ADDOBJ, DELETESESSION
 
         OBJECTS c = Stock
         PROPERTIES     nameStock(c) READONLY, inBlanketOrderStock(o,c)
@@ -236,7 +236,7 @@ META defineBlanketOrder(sign)
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-        PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+        PROPERTIES (o) ADDFORM, EDITFORM, deleteo=DELETE FORCE PANEL TOOLBAR
         PROPERTIES (o) closeBlanketOrder SHOWIF isOpenedBlanketOrder(o)
 
 
@@ -258,7 +258,7 @@ META defineBlanketOrder(sign)
         PROPERTY(objectClassName) {
             preferredCharWidth = 10;
         }
-        PROPERTY (delete(o)) {
+        PROPERTY (deleteo) {
             askConfirm = TRUE;
         }
 

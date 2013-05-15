@@ -20,7 +20,7 @@ FORM taste 'Вкус товара'
 
 FORM tastes 'Вкусы товара'
     OBJECTS t=Taste
-    PROPERTIES(t) nameTaste READONLY, delete
+    PROPERTIES(t) nameTaste READONLY, DELETE
     PROPERTIES(t) ADDFORM, EDITFORM
     ORDER BY nameTaste
     DIALOG Taste OBJECT t
@@ -45,7 +45,7 @@ FORM coolingDegree 'Степень охлаждения товара'
 
 FORM coolingDegrees 'Степени охлаждения товара'
     OBJECTS t=CoolingDegree
-    PROPERTIES(t) nameCoolingDegree READONLY, shortNameCoolingDegree READONLY, delete
+    PROPERTIES(t) nameCoolingDegree READONLY, shortNameCoolingDegree READONLY, DELETE
     PROPERTIES(t) ADDFORM, EDITFORM
     ORDER BY nameCoolingDegree
     DIALOG CoolingDegree OBJECT t

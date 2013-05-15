@@ -37,16 +37,16 @@ equipmentServerEquipmentServerLog 'Сервер оборудования (ID)' =
 FORM equipmentServers 'Серверы оборудования'
     OBJECTS es = EquipmentServer
     PROPERTIES(es)  READONLY nameEquipmentServer, sidEquipmentServer, delayEquipmentServer
-    PROPERTIES(es)  ADDFORM, EDITFORM, delete
+    PROPERTIES(es)  ADDFORM, EDITFORM, DELETE
 
     OBJECTS e = EquipmentServerError
     PROPERTIES(e) READONLY dataEquipmentServerError, dateEquipmentServerError
-    PROPERTIES(e) delete
+    PROPERTIES(e) DELETESESSION
     PROPERTIES(e) READONLY FORCE PANEL erTraceEquipmentServerError
 
     OBJECTS l = EquipmentServerLog
     PROPERTIES(l) READONLY dataEquipmentServerLog, dateEquipmentServerLog
-    PROPERTIES(l) delete
+    PROPERTIES(l) DELETESESSION
 
     FILTERS equipmentServerEquipmentServerError (e) == es
     FILTERS equipmentServerEquipmentServerLog (l) == es
@@ -332,7 +332,7 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
                            quantityMachineryPriceTransactionErrorMachineryPriceTransaction BACKGROUND quantityMachineryPriceTransactionErrorMachineryPriceTransaction(t),
                            nppsMachineryPriceTransaction FORCE PANEL SHOWIF snapshotMachineryPriceTransaction(t)
     PROPERTIES(t) READONLY nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
-    PROPERTIES(t)          ADDFORM, EDITFORM, delete
+    PROPERTIES(t)          ADDFORM, EDITFORM, DELETE
     FILTERS stockMachineryPriceTransaction(t) == s
 
     OBJECTS b = Barcode

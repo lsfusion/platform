@@ -73,7 +73,7 @@ FORM ware 'Посуда'
 FORM wares 'Посуда'
     OBJECTS w=Ware
     PROPERTIES(w) READONLY nameWare, canonicalNameWareGroupWare, warePrice, numberRangeRangeWare, valueCurrentRateRangeWare
-    PROPERTIES(w)          ADDFORM, EDITFORM, delete
+    PROPERTIES(w)          ADDFORM, EDITFORM, deletew=DELETE
 
     DIALOG Ware OBJECT w
 ;

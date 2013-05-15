@@ -121,14 +121,14 @@ FORM tax 'Налог'
     PROPERTIES(c) SELECTOR    nameCountry
 
     OBJECTS           ra = Range
-    PROPERTIES(ra)    numberRange, nameRangeTypeRange, delete
+    PROPERTIES(ra)    numberRange, nameRangeTypeRange, DELETESESSION
     PROPERTIES(ra)    READONLY valueCurrentRateRange, dateFromActingRateRange, dateToActingRateRange
     PROPERTIES(t, c)  addNewRange TODRAW ra
     FILTERS           taxRange(ra) == t
     FILTERS           countryRange(ra) == c
 
     OBJECTS           rt=Rate
-    PROPERTIES(rt)    valueRate, dateFromRate, dateToRate, timeCreatedHistorizable, nameUserCreatedHistorizable, ADDOBJ, delete
+    PROPERTIES(rt)    valueRate, dateFromRate, dateToRate, timeCreatedHistorizable, nameUserCreatedHistorizable, ADDOBJ, DELETESESSION
     FILTERS           rangeRate(rt) == ra
 
     TREE treeTaxUnit  a=STRING[3], ug = TaxUnitGroup PARENT parentTaxUnitGroup
@@ -180,7 +180,7 @@ DESIGN tax FROM DEFAULT {
 FORM taxes 'Налоги'
     OBJECTS           t=Tax
     PROPERTIES(t)     READONLY staticCaption
-    PROPERTIES(t)     EDITFORM, delete
+    PROPERTIES(t)     EDITFORM, DELETE
 
     OBJECTS           c=Country
     PROPERTIES(c)     nameCountry

@@ -260,7 +260,7 @@ META defineOrder(sign, legalEntityProp, stockProp)
                        invoicePriceUserOrderDetail ON CHANGE changeInvoicePriceUserOrderDetail(d),
                        VATSumUserOrderDetail, invoiceSumUserOrderDetail,
                        name###stockProp###userOrderDetail, shipmentDateUserOrderDetail,
-                       shipmentTimeUserOrderDetail, closeDateUserOrderDetail, isDataClosedUserOrderDetail, ADDOBJ, delete
+                       shipmentTimeUserOrderDetail, closeDateUserOrderDetail, isDataClosedUserOrderDetail, ADDOBJ, DELETESESSION
 
         PROPERTIES(o) TODRAW d fillDocumentOrder, addDetailDialogSkuStockUserOrderDetailUserOrder,
                                addDetailInputBarcodeUserOrderDetailUserOrder, deleteUserOrderDetailUserOrder
@@ -431,7 +431,7 @@ META defineOrder(sign, legalEntityProp, stockProp)
         PROPERTIES ()  addUserOrder TODRAW o
         PROPERTIES (o) editOrder, copyOrder
         PROPERTIES (o) closeUserOrder SHOWIF isOpenedUserOrder(o), openUserOrder SHOWIF isClosedUserOrder(o)
-        PROPERTIES     delete(o) FORCE PANEL TOOLBAR  SHOWIF isUserOrder(o)
+        PROPERTIES     deleteo=DELETE(o) FORCE PANEL TOOLBAR  SHOWIF isUserOrder(o)
 
         OBJECTS d=OrderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
@@ -445,7 +445,7 @@ META defineOrder(sign, legalEntityProp, stockProp)
     @extendFormFilterAccess(Order, o, orders, stockProp);
 
     DESIGN orders FROM DEFAULT {
-        PROPERTY (delete(o)) {
+        PROPERTY (deleteo) {
             askConfirm = TRUE;
         }
 

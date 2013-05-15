@@ -226,7 +226,7 @@ FORM CStoWH 'Расход с СВХ'
     PROPERTIES(d) READONLY indexCStoWHDetail, barcodeCStoWHDetail, nameCategoryCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
                   sidSizeCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, barcodeFreightUnitCStoWHDetail, nameDestinationCStoWHDetail,
                   sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail, quantityCStoWHDetail, priceCStoWHDetail, sumCStoWHDetail
-    PROPERTIES(d) delete
+    PROPERTIES(d) DELETESESSION
     PROPERTIES(c) TODRAW d deleteCStoWHDetailCStoWH
 
     FILTERS inCStoWHCStoWHDetail(c, d)
@@ -290,7 +290,7 @@ FORM CStoWHs 'Расходы с СВХ'
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES (t) ADDFORM, EDITFORM, deletet=DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES (t)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
                      printConsignmentVerticalB, printConsignmentHorizontalB,
@@ -316,7 +316,7 @@ DESIGN CStoWHs FROM DEFAULT {
         }
 
         ADD t.box{
-            PROPERTY (delete(t)) {
+            PROPERTY (deletet) {
                 askConfirm = TRUE;
             }
         }

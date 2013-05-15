@@ -394,7 +394,7 @@ FORM certificate 'Сертификат'
 FORM certificates 'Сертификаты'
     OBJECTS c=Certificate
     PROPERTIES(c) READONLY sidCertificate, objectClassName, dateIssueCertificate, dateValidityCertificate
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 ;
 
 certificatedCategoryDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) IN base;
@@ -1146,7 +1146,7 @@ FORM declaration 'Декларация'
     PROPERTIES(d) sumConsultationDeclaration, exportDeclarationToEXELLanguageDeclaration TODRAW dd FORCE PANEL SHOWIF allowImportExportXLSDeclarationUA(d)
 
     OBJECTS c=Correction
-    PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
+    PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, DELETESESSION
     FILTERS inDeclarationCorrection(d, c)
 
     PROPERTIES (dd) READONLY numberDeclarationDetail, sidInnerInvoiceDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameInvoiceDeclarationDetailLanguage SHOWIF languageDeclaration(d),
@@ -1177,7 +1177,7 @@ FORM declaration 'Декларация'
                     nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
                     quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
                     netWeightGroupDeclaration, grossWeightGroupDeclaration, sumContractGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
-                    sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, ADDOBJ, delete
+                    sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, ADDOBJ, DELETESESSION
     PROPERTIES (c, gd) sumCorrectionGroupDeclaration
 
     PROPERTIES (d) showFormDeclarationInvoices TODRAW dd FORCE PANEL TOOLBAR
@@ -1198,7 +1198,7 @@ FORM declaration 'Декларация'
                     nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
                     quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
                     netWeightGroupDeclaration, grossWeightGroupDeclaration, sumContractGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
-                    sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, delete
+                    sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, DELETESESSION
     //PROPERTIES (c, gd2) sumCorrectionGroupDeclaration
 
     OBJECTS dd2=DeclarationDetail
@@ -1393,7 +1393,7 @@ FORM declarations 'Декларации'
                            rateExchangeCustomDataDeclaration, rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration,
                            dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
                            expenseCertificateDeclaration, canonicalBrandDeclaration, nameExecuterDeclaration
-    PROPERTIES(d) FORCE PANEL ADDFORM, EDITFORM, delete TOOLBAR
+    PROPERTIES(d) FORCE PANEL ADDFORM, EDITFORM, deleted=DELETE TOOLBAR
 
     OBJECTS dd=DeclarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, sidInnerInvoiceDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail,
@@ -1440,7 +1440,7 @@ DESIGN declarations FROM DEFAULT {
         fillVertical = 0.3;
     }
 
-    PROPERTY (delete(d)) {
+    PROPERTY (deleted) {
         caption = 'Удалить';
     }
 
@@ -1483,7 +1483,7 @@ FORM innerInvoices 'Инвойсы РБ'
     OBJECTS i=InnerInvoice
     PROPERTIES(i) READONLY sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice, numberContractInnerInvoice, nameLanguageInnerInvoice,
                   nameCurrencyInnerInvoice, rateExchangeExpensesDirectInvoice
-    PROPERTIES(i) sidDeclarationInnerInvoice, delete
+    PROPERTIES(i) sidDeclarationInnerInvoice, DELETESESSION
     FILTERS freightArrivedInnerInvoice(i)
 
     OBJECTS s=Sku

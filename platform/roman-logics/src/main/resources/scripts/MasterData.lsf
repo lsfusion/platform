@@ -176,7 +176,7 @@ FORM categories 'Товарные группы'
 
     OBJECTS c = Category
     PROPERTIES(c) READONLY name, canonicalNameCategory, nameOrigin, nameTypeInvoiceCategory, warrantyCategory, nameUnitOfMeasureCategory, necessaryStampCategory, nameParentCategory
-    PROPERTIES(c) delete
+    PROPERTIES(c) DELETE
 
     ORDER BY canonicalNameCategory
 
@@ -222,7 +222,7 @@ FORM genders 'Пол'
     OBJECTS g = Gender FIXED PANEL
     PROPERTIES(g) sidGender
 
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    PROPERTIES(g) ADDFORM, EDITFORM, DELETE
     DIALOG Gender OBJECT g
 ;
 
@@ -230,7 +230,7 @@ FORM gendersDialog 'Пол'
 
     OBJECTS g = Gender
     PROPERTIES(g) READONLY sidGender
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    PROPERTIES(g) ADDFORM, EDITFORM, DELETE
     DIALOG Gender OBJECT g;
 ;
 
@@ -249,7 +249,7 @@ FORM typeFabric 'Тип одежды'
 FORM typeFabrics 'Типы одежды'
     OBJECTS t = TypeFabric
     PROPERTIES(t) READONLY name
-    PROPERTIES(t) ADDFORM, EDITFORM, delete
+    PROPERTIES(t) ADDFORM, EDITFORM, DELETE
     DIALOG TypeFabric OBJECT t
 ;
 
@@ -269,13 +269,13 @@ FORM seasonYears 'Сезоны'
     PROPERTIES(ss) READONLY name
     OBJECTS s = SeasonYear
     PROPERTIES(s) READONLY nameSeasonSeasonYear, yearSeasonYear, nameSeasonYear
-    PROPERTIES(s) ADDFORM, EDITFORM, delete
+    PROPERTIES(s) ADDFORM, EDITFORM, DELETE
 ;
 
 FORM dialogSeasonYear 'Сезон'
     OBJECTS s = SeasonYear
     PROPERTIES(s) READONLY nameSeasonSeasonYear, yearSeasonYear, nameSeasonYear
-    PROPERTIES(s) ADDFORM, EDITFORM, delete
+    PROPERTIES(s) ADDFORM, EDITFORM, DELETE
     DIALOG SeasonYear OBJECT s;
 ;
 
@@ -294,7 +294,7 @@ FORM typeLabel 'Тип этикетки'
 FORM typeLabels 'Типы этикеток'
     OBJECTS tl = TypeLabel
     PROPERTIES(tl) READONLY name, sidTypeLabel
-    PROPERTIES(tl) ADDFORM, EDITFORM, delete
+    PROPERTIES(tl) ADDFORM, EDITFORM, DELETE
     DIALOG TypeLabel OBJECT tl;
 ;
 
@@ -389,7 +389,7 @@ FORM customStores 'Склады временного хранения'
                   //addressLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity, phoneLegalEntity,
                   //emailLegalEntity, siteLegalEntity, allowImportExportXLSLegalEntityUA, allowImportExportXMLLegalEntityBY
 
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 
 ;
 

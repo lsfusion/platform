@@ -101,7 +101,7 @@ FORM compliances 'Сертификаты соответствия'
     PROPERTIES(c) READONLY numberObject, seriesObject, dateCompliance, timeCompliance,
                   fromDateCompliance, fromTimeCompliance, toDateCompliance, toTimeCompliance,
                   nameLegalEntityCompliance, nameStockCompliance, sumCompliance, objectClassName
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 ;
 
 FORM compliancesDialog 'Сертификаты соответствия'

@@ -49,7 +49,7 @@ FORM numerator 'Нумератор'
 FORM numerators 'Нумераторы'
     OBJECTS n = Numerator
     PROPERTIES(n) READONLY nameNumerator, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
-    PROPERTIES(n)          ADDFORM, EDITFORM, delete
+    PROPERTIES(n)          ADDFORM, EDITFORM, DELETE
 
     DIALOG Numerator OBJECT n
 ;
@@ -57,7 +57,7 @@ FORM numerators 'Нумераторы'
 FORM defaultNumerators 'Нумераторы'
     OBJECTS n = Numerator
     PROPERTIES(n) READONLY nameNumerator, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
-    PROPERTIES(n)          ADDFORM, EDITFORM, delete
+    PROPERTIES(n)          ADDFORM, EDITFORM, DELETE
 ;
 
 DESIGN defaultNumerators FROM DEFAULT {

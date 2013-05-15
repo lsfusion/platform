@@ -42,7 +42,7 @@ FORM language 'Язык'
 FORM languages 'Языки'
     OBJECTS l = Language
     PROPERTIES(l) READONLY nameLanguage, localeLanguage
-    PROPERTIES(l)          ADDFORM, EDITFORM, delete
+    PROPERTIES(l)          ADDFORM, EDITFORM, DELETE
 
     DIALOG Language OBJECT l
 ;
@@ -146,7 +146,7 @@ FORM dictionary 'Словарь'
     PROPERTIES(d) nameDictionary, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
 
     OBJECTS e = DictionaryEntry
-    PROPERTIES(e) termDictionaryEntry, translationDictionaryEntry, translateTermDictionaryEntry, ADDOBJ, delete
+    PROPERTIES(e) termDictionaryEntry, translationDictionaryEntry, translateTermDictionaryEntry, ADDOBJ, DELETESESSION
     FILTERS       dictionaryDictionaryEntry(e) == d
 
     EDIT Dictionary OBJECT d
@@ -180,7 +180,7 @@ FORM dictionaries 'Словари'
     OBJECTS d = Dictionary
     PROPERTIES(d) READONLY nameDictionary, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
 
-    PROPERTIES(d) ADDFORM, EDITFORM, delete
+    PROPERTIES(d) ADDFORM, EDITFORM, DELETE
 
     DIALOG Dictionary OBJECT d
 ;

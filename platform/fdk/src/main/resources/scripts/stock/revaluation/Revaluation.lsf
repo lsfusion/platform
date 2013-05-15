@@ -156,7 +156,7 @@ FORM userRevaluation 'Переоценка'
     PROPERTIES (d) indexUserRevaluationDetail, idBarcodeSkuUserRevaluationDetail, nameSkuUserRevaluationDetail,
                    shortNameUOMSkuUserRevaluationDetail, nameBatchUserRevaluationDetail ON CHANGE changeBatchUserRevaluationDetail(d), quantityUserRevaluationDetail,
                    curPriceUserRevaluationDetail, curSumUserRevaluationDetail,
-                   priceUserRevaluationDetail, sumUserRevaluationDetail, ADDOBJ, delete
+                   priceUserRevaluationDetail, sumUserRevaluationDetail, ADDOBJ, DELETESESSION
 
     PROPERTIES(p) TODRAW d addDetailDialogSkuStockUserRevaluationDetailUserRevaluation, addDetailDialogTerminalUserRevaluationDetailUserRevaluation,
                            addDetailInputBarcodeUserRevaluationDetailUserRevaluation, deleteUserRevaluationDetailUserRevaluation
@@ -249,7 +249,7 @@ FORM revaluations 'Переоценки' TITLE 'Переоценки'
 
     PROPERTIES ()  addUserRevaluation TODRAW p
     PROPERTIES (p) editUserRevaluation
-    PROPERTIES (p) delete FORCE PANEL TOOLBAR SHOWIF isUserRevaluation(p)
+    PROPERTIES (p) deletep=DELETE FORCE PANEL TOOLBAR SHOWIF isUserRevaluation(p)
     PROPERTIES (p) printRevaluation FORCE PANEL
 
 
@@ -264,7 +264,7 @@ FORM revaluations 'Переоценки' TITLE 'Переоценки'
 @extendFormFilterAccess(Revaluation, p, revaluations, stock);
 
 DESIGN revaluations FROM DEFAULT {
-    PROPERTY (delete(p)) {
+    PROPERTY (deletep) {
         askConfirm = TRUE;
     }
 

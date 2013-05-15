@@ -105,7 +105,7 @@ FORM priceListTypes 'Виды цен'
 
     OBJECTS pt = PriceListType
     PROPERTIES(pt) READONLY namePriceListType, nameCurrencyPriceListType, nameRoundConditionPriceListType, objectClassName
-    PROPERTIES(pt) editPriceListType, delete
+    PROPERTIES(pt) editPriceListType, DELETE
     ORDER BY objectClassName
 
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup

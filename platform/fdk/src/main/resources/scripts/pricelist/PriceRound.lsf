@@ -75,10 +75,10 @@ FORM priceIntervals 'Округления цен'
     PROPERTIES (c)  SELECTOR nameCurrency
 
     OBJECTS rc=RoundCondition
-    PROPERTIES(rc) nameRoundCondition, denominatorPriceRoundCondition, minPriceRoundCondition, priceRoundRoundCondition, ADDOBJ, delete
+    PROPERTIES(rc) nameRoundCondition, denominatorPriceRoundCondition, minPriceRoundCondition, priceRoundRoundCondition, ADDOBJ, DELETESESSION
     PROPERTIES(rc, c) isDefaultRoundConditionCurrency
     OBJECTS p=PriceInterval
-    PROPERTIES(p) fromPriceInterval, toPriceInterval, modifierPriceInterval, ADDOBJ, delete
+    PROPERTIES(p) fromPriceInterval, toPriceInterval, modifierPriceInterval, ADDOBJ, DELETESESSION
 
     OBJECTS rg=RoundGroup
     PROPERTIES(rg) READONLY nameRoundGroup

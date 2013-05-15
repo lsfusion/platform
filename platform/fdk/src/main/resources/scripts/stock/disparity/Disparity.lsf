@@ -114,7 +114,7 @@ FORM disparity 'Изменение сортности'
                     quantityDisparityDetail, priceDisparityDetail, sumDisparityDetail,
                     inputIdBarcodeSkuDisparityDetail, inputNameSkuDisparityDetail, inputShortNameUOMSkuDisparityDetail,
                     inputQuantityDisparityDetail, inputPriceDisparityDetail, inputSumDisparityDetail
-    PROPERTIES(d)   ADDOBJ, delete
+    PROPERTIES(d)   ADDOBJ, deletedd=DELETESESSION
 
     PROPERTIES(dis) TODRAW d addDetailDialogSkuStockDisparityDetailDisparity, addDetailDialogTerminalDisparityDetailDisparity,
                              addDetailInputBarcodeDisparityDetailDisparity, deleteDisparityDetailDisparity
@@ -181,7 +181,7 @@ FORM disparities 'Изменения сортности'
 
     PROPERTIES(dis)  READONLY FORCE PANEL timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable, timeClosed, nameUserClosed, hostnameComputerClosed
 
-    PROPERTIES (dis) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES (dis) ADDFORM, EDITFORM, deleted=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS d=DisparityDetail
     PROPERTIES(d)   READONLY indexDisparityDetail,
@@ -197,7 +197,7 @@ FORM disparities 'Изменения сортности'
 DESIGN disparities FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
-        PROPERTY (delete(dis)) {
+        PROPERTY (deleted) {
             askConfirm = TRUE;
         }
 

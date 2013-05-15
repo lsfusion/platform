@@ -42,7 +42,7 @@ FORM itemGroups 'Товарные группы'
     TREE treeGroups g=ItemGroup PARENT parentItemGroup
     PROPERTIES inItemGroup(g), moveItemGroup(g) TODRAW g FORCE PANEL TOOLBAR
     PROPERTIES READONLY nameItemGroup(g), canonicalNameItemGroup (g)
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    PROPERTIES(g) ADDFORM, EDITFORM, deleteg=DELETE
     ORDER BY canonicalNameItemGroup
 ;
 
@@ -52,7 +52,7 @@ FORM dialogItemGroups 'Товарные группы'
     ORDER BY nameItemGroup
 
     OBJECTS g=ItemGroup
-    PROPERTIES(g) nameItemGroup READONLY, canonicalNameItemGroup READONLY, delete
+    PROPERTIES(g) nameItemGroup READONLY, canonicalNameItemGroup READONLY, DELETE
     PROPERTIES(g) ADDFORM, EDITFORM
     ORDER BY canonicalNameItemGroup
 
@@ -139,7 +139,7 @@ FORM item 'Товар'
     PROPERTIES(b)       idBarcode, dateBarcode, shortNameUOMBarcode,
                         amountBarcode, activeBarcode, primaryBarcode ON CHANGE changePrimaryBarcodeSku(b,i)
     PROPERTIES(i)       generateBarcodeSku TODRAW b FORCE PANEL
-    PROPERTIES(b)       ADDOBJ, delete
+    PROPERTIES(b)       ADDOBJ, deleteb=DELETESESSION
     FILTERS skuBarcode(b) == i
 
     OBJECTS cgt = CustomGroupType
@@ -257,7 +257,7 @@ FORM items 'Товары'
 
     OBJECTS i=Item
     PROPERTIES(i) READONLY idBarcodeSku
-    PROPERTIES(i) ADDFORM, EDITFORM, delete
+    PROPERTIES(i) ADDFORM, EDITFORM, deletei=DELETE
     PROPERTIES seekBarcode()
     ON CHANGE seekSkuBarcode()
     DIALOG Item OBJECT i
@@ -347,7 +347,7 @@ META defineItemAttribute(attribute, formProperty, caption, group, itemType, attr
     EXTEND FORM itemGroup PROPERTIES(g) userShow###attribute##ItemGroup;
     EXTEND FORM itemGroups PROPERTIES(g) READONLY show###attribute##ItemGroup BACKGROUND backgroundShow###attribute##ItemGroup(g);
     EXTEND FORM item PROPERTIES(i) formProperty SHOWIF show###attribute##Item(i);
-    EXTEND FORM items PROPERTIES(i) READONLYIF isReadonly() BEFORE delete formProperty SHOWIF show###attribute##ItemGroup(g);
+    EXTEND FORM items PROPERTIES(i) READONLYIF isReadonly() BEFORE deletei formProperty SHOWIF show###attribute##ItemGroup(g);
 
     @implementItemAttribute(formProperty, caption, itemType, attributeClass);
 END
@@ -496,7 +496,7 @@ FORM brand 'Бренд'
 
 FORM brands 'Бренды'
     OBJECTS t=Brand
-    PROPERTIES(t) nameBrand READONLY, delete
+    PROPERTIES(t) nameBrand READONLY, DELETE
     PROPERTIES(t) ADDFORM, EDITFORM
     ORDER BY nameBrand
     DIALOG Brand OBJECT t
@@ -526,7 +526,7 @@ FORM manufacturer 'Производитель товара'
 
 FORM manufacturers 'Производители товара'
     OBJECTS m=Manufacturer
-    PROPERTIES(m) nameManufacturer READONLY, delete
+    PROPERTIES(m) nameManufacturer READONLY, DELETE
     PROPERTIES(m) ADDFORM, EDITFORM
     ORDER BY nameManufacturer
     DIALOG Manufacturer OBJECT m
@@ -626,7 +626,7 @@ titleScalesBarcode 'Наименование для весов' = nameScalesAttr
 loadDefaultItemAttributes() += ACTION {
     SET numberInNameScalesItemAttribute(a) <- 1 WHERE a == StringItemAttribute.itemCaption;
 }
-EXTEND FORM item PROPERTIES(b) BEFORE delete titleScalesBarcode, titleCashRegisterBarcode;
+EXTEND FORM item PROPERTIES(b) BEFORE deleteb titleScalesBarcode, titleCashRegisterBarcode;
 
 // --------------------------------------- Генерация штрих-кодов --------------------------------------------- //
 
@@ -741,7 +741,7 @@ replaceItem 'Объединить' = ACTION (item) {
         IF i != item THEN {
             replaceSkuSku(i, item);
             inItem(i) <- NULL;
-            delete(i);
+            DELETE i;
         } ELSE {
             MESSAGE 'Выделенный товар не может совпадать с объединяемым';
         }

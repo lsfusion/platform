@@ -75,7 +75,7 @@ FORM customsZone 'Таможенная зона'
 FORM customsZones 'Таможенная зона'
     OBJECTS cz = CustomsZone
     PROPERTIES(cz) READONLY nameCustomsZone, nameCurrencyCustomsZone
-    PROPERTIES(cz) ADDFORM, EDITFORM, delete
+    PROPERTIES(cz) ADDFORM, EDITFORM, DELETE
 ;
 
 FORM customsGroup 'Позиция ТН ВЭД'
@@ -110,7 +110,7 @@ FORM customsGroups 'Позиции ТН ВЭД'
     PROPERTIES(cg) READONLY numberCustomsGroup, codeCustomsGroup, nameCustomsGroup, canonicalNameCustomsGroup,
                    dateFromCustomsGroup, dateToCustomsGroup, isCompliancedCustomsGroup, registrationCustomsGroup,
                    valueCurrentRateSupplierVATCustomsGroup, percentDutyCustomsGroup, weightDutyCustomsGroup
-    PROPERTIES(cg) ADDFORM, EDITFORM, delete
+    PROPERTIES(cg) ADDFORM, EDITFORM, DELETE
 
     FILTERS stringEqualsAll(a), customsZoneCustomsGroup(cg) == cz
     //FILTERS (d IS EmployeeDivision AND NOT dg IS EmployeeDivisionGroup) OR isParentEmployeeDivisionGroupEmployeeDivision(dg, d)

@@ -313,7 +313,7 @@ EXTEND DESIGN securityPolicy {
 FORM userRoles 'Роли'
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY nameUserRole, sidUserRole
-    PROPERTIES(ur) ADDFORM, EDITFORM, delete
+    PROPERTIES(ur) ADDFORM, EDITFORM, DELETE
     DIALOG UserRole OBJECT ur
 ;
 

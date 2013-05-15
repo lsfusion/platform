@@ -92,7 +92,7 @@ FORM supplierGroups 'Группы поставщиков'
 //    OBJECTS pc = PaymentCondition
 //    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition,
 //                            nameFormPaymentCondition
-//    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
+//    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
 //    ORDER BY datePaymentCondition
 //
 //    FILTERS contractPaymentCondition(pc) == c
@@ -105,7 +105,7 @@ FORM supplierGroups 'Группы поставщиков'
 //    PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
 //                           nameLegalEntityContractSkuSupplier, nameSupplierContractSkuSupplier
 //
-//    PROPERTIES(c) ADDFORM, EDITFORM, delete
+//    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 //    ORDER BY dateFromContract
 //
 //    DIALOG contractSkuSupplier OBJECT c
@@ -128,7 +128,7 @@ FORM supplier 'Поставщик'
 
     OBJECTS a=Bank.Account
     PROPERTIES(a) numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount,
-                  ADDOBJ, delete
+                  ADDOBJ, DELETESESSION
     FILTERS Bank.legalEntityAccount(a) == s
 
     OBJECTS co=LegalEntity
@@ -141,7 +141,7 @@ FORM supplier 'Поставщик'
     PROPERTIES(c)  READONLY numberContract, dateFromContract, dateToContract,
                             nameTypeContractSku,
                             nameCurrencyContract, noteContract
-    PROPERTIES(c)  ADDFORM, EDITFORM, delete
+    PROPERTIES(c)  ADDFORM, EDITFORM, DELETE
     FILTERS supplierContractSku(c) == s,
             customerContractSku(c) == co
 
@@ -159,7 +159,7 @@ FORM supplier 'Поставщик'
             inAgreementSupplier(ag,co2)
 
     OBJECTS l=License
-    PROPERTIES(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
+    PROPERTIES(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, DELETESESSION
     FILTERS legalEntityLicense(l) == s
 
     OBJECTS dt=DATE FIXED PANEL
@@ -244,12 +244,12 @@ DESIGN supplier FROM DEFAULT {
 FORM suppliers 'Поставщики'
     TREE supplierGroupTree sg = SupplierGroup PARENT parentSupplierGroup
     PROPERTIES READONLY sgTreeName = nameSupplierGroup(sg)
-    PROPERTIES(sg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES(sg) ADDFORM, EDITFORM, deletesg=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS s=Supplier
     PROPERTIES(s) READONLY nameLegalEntity, fullNameLegalEntity, nameSupplierGroupSupplier, shortNameOwnershipLegalEntity,
                            numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
-    PROPERTIES(s) ADDFORM, EDITFORM, delete
+    PROPERTIES(s) ADDFORM, EDITFORM, deletes=DELETE
 
     FILTERS inSupplierGroupSupplier(sg, s)
 
@@ -261,7 +261,7 @@ DESIGN suppliers FROM DEFAULT{
         childConstraints = TO THE RIGHT;
         type = SPLITH;
         ADD supplierGroupTree.tree.box{
-            PROPERTY(delete(sg)){
+            PROPERTY(deletesg){
                 askConfirm = TRUE;
             }
         }

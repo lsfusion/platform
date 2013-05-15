@@ -160,7 +160,7 @@ META defineOrderShipment(sign, stockProp)
 
     EXTEND FORM userShipment
         PROPERTIES(s) fillOrderUserShipment, ordersShipment READONLY
-        PROPERTIES(d) descriptionOrderUserShipmentDetail BEFORE delete(d)
+        PROPERTIES(d) descriptionOrderUserShipmentDetail BEFORE deletesd
     ;
     EXTEND DESIGN userShipment { headerCreateDetail { ADD s.orderGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
 

@@ -16,7 +16,7 @@ FORM priceStockGroups 'Ценовые группы'
 
     OBJECTS g = PriceStockGroup
     PROPERTIES(g) READONLY objectClassName, namePriceStockGroup
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    PROPERTIES(g) ADDFORM, EDITFORM, DELETE
 
     OBJECTS s = Stock
     PROPERTIES(s) READONLY objectClassName, nameStock

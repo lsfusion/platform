@@ -33,7 +33,7 @@ FORM shipment 'Расходная накладная'
 	PROPERTIES(s) numberShipment, dateShipment, nameCustomerShipment, nameStockShipment
 
 	OBJECTS d=ShipmentDetail
-	PROPERTIES(d) nameItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail READONLY, ADDOBJ, delete
+	PROPERTIES(d) nameItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail READONLY, ADDOBJ, DELETESESSION
 	FILTERS shipmentShipmentDetail(d) == s
 
 	EDIT Shipment OBJECT s
@@ -42,7 +42,7 @@ FORM shipment 'Расходная накладная'
 FORM shipments 'Расходные накладные'
 	OBJECTS s=Shipment
 	PROPERTIES(s) READONLY numberShipment, dateShipment, nameCustomerShipment, nameStockShipment
-	PROPERTIES(s) ADDFORM, EDITFORM, delete
+	PROPERTIES(s) ADDFORM, EDITFORM, DELETE
 
 	OBJECTS d=ShipmentDetail
 	PROPERTIES(d) READONLY nameItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail

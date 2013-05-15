@@ -230,7 +230,7 @@ FORM surplusOuts 'Реализации излишков'
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES (t) ADDFORM, EDITFORM, deletet=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS d = SurplusOutDetail
 
@@ -247,7 +247,7 @@ FORM surplusOuts 'Реализации излишков'
     PROPERTIES (id) READONLY isPostedInnerDocument, objectClassName, seriesObject, numberObject, dateInnerDocument,
                     nameStockInnerDocument, nameDestinationStockInnerDocument, countDetailInnerDocument, quantityDetailInnerDocument
 
-    PROPERTIES (id) editInnerDocument FORCE GRID, delete, printConsignment FORCE GRID
+    PROPERTIES (id) editInnerDocument FORCE GRID, DELETE, printConsignment FORCE GRID
     PROPERTIES (t) FORCE PANEL  createInnerOrderSurplusOut, createInnerDocumentSurplusOut SHOWIF needInnerDocumentOrderPicking(o)
 
     FILTERS surplusOutSurplusOutDetail(d) == t,
@@ -257,7 +257,7 @@ FORM surplusOuts 'Реализации излишков'
 ;
 
 DESIGN surplusOuts FROM DEFAULT {
-    PROPERTY (delete(t)) {
+    PROPERTY (deletet) {
         askConfirm = TRUE;
     }
 

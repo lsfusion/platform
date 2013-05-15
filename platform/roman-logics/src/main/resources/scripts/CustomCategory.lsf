@@ -13,7 +13,7 @@ FORM customsZones 'Таможенные зоны'
     OBJECTS cz = CustomsZone
 
     PROPERTIES(cz) READONLY name, sidTypeDutyDutyCustomsZone, nameTypeDutyDutyCustomsZone, sidTypeDutyNDSCustomsZone, nameTypeDutyNDSCustomsZone, sidTypeDutyRegistrationCustomsZone, nameTypeDutyRegistrationCustomsZone
-    PROPERTIES(cz) ADDFORM, EDITFORM, delete
+    PROPERTIES(cz) ADDFORM, EDITFORM, DELETE
 ;
 
 
@@ -192,11 +192,11 @@ FORM customCategoryZones 'ТН ВЭД (зональный)'
     PROPERTIES(cz) importUATnved
     OBJECTS s = SubCategory
     PROPERTIES(s) READONLY nameSubCategory
-    PROPERTIES(s) ADDFORM, EDITFORM, delete
+    PROPERTIES(s) ADDFORM, EDITFORM, DELETE
 
     OBJECTS t = TypeDuty
     PROPERTIES(t) READONLY sidTypeDuty, nameTypeDuty
-    PROPERTIES(t) ADDFORM, EDITFORM, delete
+    PROPERTIES(t) ADDFORM, EDITFORM, DELETE
 
     FILTERS  customsZoneSubCategory(s) == cz,
              customsZoneTypeDuty(t) == cz
@@ -215,7 +215,7 @@ FORM customCategoryZones 'ТН ВЭД (зональный)'
 
     PROPERTIES(cd) READONLY sidCustomCategory10, nameCustomCategory, certificatedCustomCategory10, nameSpecUnitOfMeasureCustomCategory10,
                    nameAdditionalUnitOfMeasureCustomCategory10, valueCurrentRateSupplierVATCustomCategory10
-    PROPERTIES(cd) EDITFORM, delete
+    PROPERTIES(cd) EDITFORM, DELETE
     PROPERTIES(cc,cz) addCategory10Category9CustomsZone TODRAW cd
 
     FILTERS  inCategory4Category6Category9Category10(ca, cb, cc, cd),
@@ -387,10 +387,10 @@ FORM customCategoryOrigins 'ТН ВЭД (ориг.)'
     OBJECTS cd = CustomCategoryOrigin
 
     PROPERTIES(cd) READONLY sidCustomCategoryOrigin, nameCustomCategory
-    PROPERTIES(cd) EDITFORM, delete
+    PROPERTIES(cd) EDITFORM, DELETE
 
-    PROPERTIES(ca) editCA = EDITFORM, delete
-    PROPERTIES(cb) editCB = EDITFORM, delete
+    PROPERTIES(ca) editCA = EDITFORM, DELETE
+    PROPERTIES(cb) editCB = EDITFORM, DELETE
 
     PROPERTIES(cb) addCategoryOriginCategory6 TODRAW cd
 

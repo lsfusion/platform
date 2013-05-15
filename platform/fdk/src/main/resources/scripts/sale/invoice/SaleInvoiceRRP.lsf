@@ -39,7 +39,7 @@ RRPSumInvoiceDetail 'Сумма (RRP)' (detail) = roundPriceCurrency(RRPPriceInv
 
 EXTEND FORM userInvoice
     PROPERTIES(i) showRRPUserInvoice
-    PROPERTIES(d) SHOWIF showRRPUserInvoice(i) BEFORE delete(d) nameRRPPriceListTypeUserInvoiceDetail, nameCurrencyRRPUserInvoiceDetail READONLY, RRPPriceUserInvoiceDetail
+    PROPERTIES(d) SHOWIF showRRPUserInvoice(i) BEFORE deleteid nameRRPPriceListTypeUserInvoiceDetail, nameCurrencyRRPUserInvoiceDetail READONLY, RRPPriceUserInvoiceDetail
 ;
 EXTEND DESIGN userInvoice {
     headerExtraParams {

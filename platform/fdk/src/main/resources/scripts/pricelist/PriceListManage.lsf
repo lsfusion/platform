@@ -37,10 +37,10 @@ createPriceRangeManagement 'Создать прайс' = ACTION (dataPriceListTy
         }
         FORM userPriceList OBJECTS p = u DOCKEDMODAL;
         IF TRUE IF NOT formResult() == FormResult.ok THEN {
-            FOR userPriceListUserPriceListDetail(detail) == u DO {
-                EXEC delete(detail);
-            }
-            EXEC delete(u);
+            //FOR userPriceListUserPriceListDetail(detail) == u DO {
+            DELETE detail WHERE userPriceListUserPriceListDetail(detail) == u;
+            //}
+            DELETE u;
         }
     }
 } TOOLBAR;
@@ -59,7 +59,7 @@ FORM rangeManagement 'Управление ассортиментом'
                            fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
                            nameCurrencyUserPriceList, nameCompanyUserPriceList, priceListTypesPriceList, stocksPriceList,
                            noteUserPriceList, objectClassName
-    PROPERTIES(p) EDITFORM, delete, updatePriceList FORCE PANEL TOOLBAR
+    PROPERTIES(p) EDITFORM, DELETE, updatePriceList FORCE PANEL TOOLBAR
     ORDER BY fromDateUserPriceList, fromTimeUserPriceList
     FILTERS filterLegalEntityRangeManagementUserPriceList(p),
             inPriceListDataPriceListType(p, pt)

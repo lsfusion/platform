@@ -64,7 +64,7 @@ FORM countries 'Страны'
     PROPERTIES(c) READONLY nameCountry, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
                            residentCountry, nameCurrencyCountry, nameLanguageCountry
 
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
     ORDER BY nameCountry
 
     DIALOG Country OBJECT c

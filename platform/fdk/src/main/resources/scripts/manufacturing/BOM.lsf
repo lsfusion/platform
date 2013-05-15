@@ -184,7 +184,7 @@ FORM technologies 'Технологии'
     OBJECTS t=Technology
     PROPERTIES(t)  READONLY nameTechnology
 
-    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES (t) ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
     PROPERTIES (t) fillWastageTechnology
 
     OBJECTS m=Material
@@ -271,7 +271,7 @@ skuMaterial (material) += skuProduct(material);
 FORM products 'Изделия'
     OBJECTS p=Product
     PROPERTIES(p) READONLY descriptionProduct, indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct
-    PROPERTIES (p) ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES (p) ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
 
     DIALOG Product OBJECT p
 ;
@@ -369,7 +369,7 @@ overCurBruttoQuantityComponent 'Кол-во (брутто)' (component) =
 FORM components 'Компоненты'
     OBJECTS c=Component
     PROPERTIES(c) READONLY descriptionComponent, indexComponent, nameMaterialComponent, shortNameUOMComponent, nettoQuantityComponent
-    PROPERTIES (c) ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES (c) ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
 
     DIALOG Component OBJECT c
 ;
@@ -385,7 +385,7 @@ FORM BOM 'Спецификация'
     OBJECTS p = Product
     PROPERTIES(p) indexProduct, idBarcodeSkuProduct,nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct
 
-    PROPERTIES(p) ADDOBJ, delete
+    PROPERTIES(p) ADDOBJ, deletep=DELETESESSION
     PROPERTIES(b) TODRAW p deleteProductBOM
     FILTERS       BOMProduct(p) == b
 
@@ -394,7 +394,7 @@ FORM BOM 'Спецификация'
                   overCurWastageComponent ON CHANGE changeWastageComponent(c) BACKGROUND backgroundWastageComponent(c) READONLYIF technologyComponent(c),
                   overCurBruttoQuantityComponent ON CHANGE changeBruttoQuantityComponent(c) BACKGROUND backgroundBruttoQuantityComponent(c) READONLYIF technologyComponent(c)
 
-    PROPERTIES(c) ADDOBJ, delete
+    PROPERTIES(c) ADDOBJ, deletec=DELETESESSION
     PROPERTIES(b) TODRAW c deleteComponentBOM
     FILTERS       BOMComponent(c) == BOMProduct(p)//b
 
@@ -469,7 +469,7 @@ FORM BOMs 'Спецификации'
     OBJECTS b=BOM
 
     PROPERTIES(b) READONLY nameBOM, numberObject, seriesObject, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM, noteBOM, objectClassName
-    PROPERTIES (b) ADDFORM, EDITFORM, copyBOM, delete FORCE PANEL TOOLBAR
+    PROPERTIES (b) ADDFORM, EDITFORM, copyBOM, deleteb=DELETE FORCE PANEL TOOLBAR
     PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS p = Product
@@ -485,7 +485,7 @@ FORM BOMs 'Спецификации'
 DESIGN BOMs FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
-        PROPERTY (delete(b)) {
+        PROPERTY (deleteb) {
             askConfirm = TRUE;
         }
 
@@ -547,7 +547,7 @@ FORM actStudyOfCulinaryCommittee 'Комиссия для акта контро�
 
     OBJECTS e=Employee
     PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
-    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
 
     PROPERTIES(c, e)   inCommitteeEmployee
     FILTERS            countDivisionEmployeeCommittee (e, c)

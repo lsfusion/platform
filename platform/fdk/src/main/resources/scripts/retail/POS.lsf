@@ -69,7 +69,7 @@ FORM postReceiptPayment 'Оплата по чеку'
     PROPERTIES(r) READONLY sumReceiptDetailReceipt, changePaymentReceipt
 
     OBJECTS p = Payment FIXED GRID
-    PROPERTIES(p) sumPayment, namePaymentTypePayment, ADDOBJ, delete
+    PROPERTIES(p) sumPayment, namePaymentTypePayment, ADDOBJ, deletep=DELETESESSION
     FILTERS receiptPayment(p) == r
 ;
 
@@ -85,7 +85,7 @@ DESIGN postReceiptPayment FROM DEFAULT {
                 }
                 PROPERTY(sumPayment) { font = 'Tahoma bold 36'; }
                 PROPERTY(namePaymentTypePayment) { font = 'Tahoma bold 36'; }
-                PROPERTY(delete) { font = 'Tahoma bold 36'; }
+                PROPERTY(deletep) { font = 'Tahoma bold 36'; }
             }
             NEW southContainer {
                 childConstraints = TO THE RIGHT;
@@ -99,9 +99,9 @@ DESIGN postReceiptPayment FROM DEFAULT {
 
 postReceipt 'Смешанный платеж' = ACTION (receipt) {
     SET zReportReceipt(receipt) <- currentZReport();
-    FOR receiptPayment(payment) == receipt DO {
-           EXEC delete(payment);
-    }
+    //FOR receiptPayment(payment) == receipt DO {
+    DELETE payment WHERE receiptPayment(payment) == receipt;
+    //}
     IF sumReceiptDetailReceipt(receipt) THEN {
         ADDOBJ Payment;
         FOR p == addedObject() DO {
@@ -117,18 +117,18 @@ postReceipt 'Смешанный платеж' = ACTION (receipt) {
         IF formResult() == FormResult.ok THEN {
             EXEC postPrintReceipt(receipt);
         } ELSE {
-            FOR receiptPayment(p) == receipt DO {
-                EXEC delete(p);
-            }
+            //FOR receiptPayment(p) == receipt DO {
+            DELETE p WHERE receiptPayment(p) == receipt;
+            //}
         }
     }
 } EDITKEY 'F9' IN receiptActionGroup;
 
 postCardReceipt 'Карточкой' = ACTION (receipt) {
     SET zReportReceipt(receipt) <- currentZReport();
-    FOR receiptPayment(payment) == receipt DO {
-            EXEC delete(payment);
-    }
+    //FOR receiptPayment(payment) == receipt DO {
+    DELETE payment WHERE receiptPayment(payment) == receipt;
+    //}
     IF sumReceiptDetailReceipt(receipt) THEN {
         ADDOBJ Payment;
         FOR p == addedObject() DO {
@@ -142,9 +142,9 @@ postCardReceipt 'Карточкой' = ACTION (receipt) {
 
 postCashReceipt 'Наличными' = ACTION (receipt) {
     SET zReportReceipt(receipt) <- currentZReport();
-    FOR receiptPayment(payment) == receipt DO {
-        EXEC delete(payment);
-    }
+    //FOR receiptPayment(payment) == receipt DO {
+    DELETE payment WHERE receiptPayment(payment) == receipt;
+    //}
     IF sumReceiptDetailReceipt(receipt) THEN {
         ADDOBJ Payment;
         FOR p == addedObject() DO {
@@ -156,9 +156,9 @@ postCashReceipt 'Наличными' = ACTION (receipt) {
         IF formResult() == FormResult.ok THEN {
             EXEC postPrintReceipt(receipt);
         } ELSE {
-            FOR receiptPayment(p) == receipt DO {
-                EXEC delete(p);
-            }
+            //FOR receiptPayment(p) == receipt DO {
+            DELETE p WHERE receiptPayment(p) == receipt;
+            //}
         }
     }
 } EDITKEY 'F11' IN receiptActionGroup;
@@ -570,7 +570,7 @@ FORM POS
     OBJECTS d = ReceiptDetail FIXED GRID
     PROPERTIES(d) SHOWIF currentZReport() READONLY indexReceiptDetail, typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, prevCurrentBalanceReceiptDetail
     PROPERTIES(d) SHOWIF currentZReport()          quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID,
-                                                   discountSumReceiptDetail, numberVATReceiptDetail, valueVATReceiptDetail, delete
+                                                   discountSumReceiptDetail, numberVATReceiptDetail, valueVATReceiptDetail, deleted=DELETESESSION
     FILTERS receiptReceiptDetail(d) == r
 
     OBJECTS bs = STRING[15] FIXED PANEL
@@ -625,7 +625,7 @@ DESIGN POS FROM DEFAULT {
                     PROPERTY(sumReceiptDetail) { font = 'Tahoma 14'; }
                     PROPERTY(discountPercentReceiptSaleDetail) { font = 'Tahoma 14'; }
                     PROPERTY(discountSumReceiptDetail) { font = 'Tahoma 14'; }
-                    PROPERTY(delete) { font = 'Tahoma 14'; }
+                    PROPERTY(deleted) { font = 'Tahoma 14'; }
                 }
                 NEW promotionContainer {
                 type = TABBED;

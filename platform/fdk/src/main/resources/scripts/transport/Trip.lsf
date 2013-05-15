@@ -295,7 +295,7 @@ DESIGN trip FROM DEFAULT{
 FORM trips 'Рейсы'
     OBJECTS t=Trip
     PROPERTIES(t) READONLY numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameTruckModelTruckTrip, trailerTruckTrip, weightTruckTrip, grossWeightOrderedTrip, grossWeightShippedTrip
-    PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES(t) ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
 
     OBJECTS o=Order
     PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameSupplierOrder, nameFromStockOrder, nameCustomerOrder, nameToStockOrder, grossWeightOrderDetailOrder

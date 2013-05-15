@@ -105,7 +105,7 @@ FORM userMenu 'Меню'
 
     OBJECTS d = UserMenuDetail
     PROPERTIES (d) indexUserMenuDetail, idBarcodeSkuUserMenuDetail, nameSkuUserMenuDetail, shortNameUOMSkuUserMenuDetail, namePriceListTypeUserMenuDetail,
-                   priceUserMenuDetail, compositionUserMenuDetail, productYieldUserMenuDetail, ADDOBJ, delete
+                   priceUserMenuDetail, compositionUserMenuDetail, productYieldUserMenuDetail, ADDOBJ, DELETESESSION
 
     PROPERTIES(m) TODRAW d deleteUserMenuDetailUserMenu
 
@@ -246,7 +246,7 @@ FORM menus 'Меню'
 
     PROPERTIES ()  addUserMenu TODRAW m
     PROPERTIES (m) editMenu, copyMenu
-    PROPERTIES     delete(m) FORCE PANEL TOOLBAR  SHOWIF isUserMenu(m)
+    PROPERTIES     deletem=DELETE(m) FORCE PANEL TOOLBAR  SHOWIF isUserMenu(m)
     OBJECTS d=MenuDetail
     PROPERTIES (d) READONLY indexMenuDetail, idBarcodeSkuMenuDetail, nameSkuMenuDetail, shortNameUOMSkuMenuDetail
     PROPERTIES (d) READONLY namePriceListTypeMenuDetail, priceMenuDetail, compositionMenuDetail, productYieldMenuDetail
@@ -258,7 +258,7 @@ FORM menus 'Меню'
 @extendFormFilterAccess(Menu, m, menus, stock);
 
 DESIGN menus FROM DEFAULT {
-    PROPERTY (delete(m)) {
+    PROPERTY (deletem) {
         askConfirm = TRUE;
     }
 

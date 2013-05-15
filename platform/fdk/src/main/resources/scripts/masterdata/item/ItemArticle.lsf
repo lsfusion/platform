@@ -20,7 +20,7 @@ FORM article 'Артикул'
 
 FORM articles 'Артикулы'
     OBJECTS t=Article
-    PROPERTIES(t) nameArticle READONLY, delete
+    PROPERTIES(t) nameArticle READONLY, DELETE
     PROPERTIES(t) ADDFORM, EDITFORM
     ORDER BY nameArticle
     DIALOG Article OBJECT t
@@ -44,7 +44,7 @@ FORM color 'Цвет товара'
 
 FORM colors 'Цвета товара'
     OBJECTS t=Color
-    PROPERTIES(t) nameColor READONLY, delete
+    PROPERTIES(t) nameColor READONLY, DELETE
     PROPERTIES(t) ADDFORM, EDITFORM
     ORDER BY nameColor
     DIALOG Color OBJECT t
@@ -69,7 +69,7 @@ FORM size 'Размер товара'
 
 FORM sizes 'Размеры товара'
     OBJECTS t=Size
-    PROPERTIES(t) nameSize READONLY, shortNameSize READONLY, delete
+    PROPERTIES(t) nameSize READONLY, shortNameSize READONLY, DELETE
     PROPERTIES(t) ADDFORM, EDITFORM
     ORDER BY nameSize
     DIALOG Size OBJECT t

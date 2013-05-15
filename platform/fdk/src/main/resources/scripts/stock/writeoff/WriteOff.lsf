@@ -45,7 +45,7 @@ FORM writeOffCommittee 'Комиссия для списания товаров'
 
     OBJECTS e=Employee
     PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
-    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
 
     PROPERTIES(c, e)   inCommitteeEmployee
     FILTERS            countDivisionEmployeeCommittee (e, c)
@@ -124,6 +124,15 @@ nameReason 'Наименование' = DATA ISTRING[50](Reason);
 FORM reason 'Причина списания'
     OBJECTS r=Reason  FIXED PANEL
     PROPERTIES(r) nameReason
+    EDIT Reason OBJECT r
+;
+
+FORM reasons 'Причины списания'
+    OBJECTS r=Reason
+    PROPERTIES(r) READONLY nameReason
+    PROPERTIES(r) ADDFORM, EDITFORM, DELETE
+
+    DIALOG Reason OBJECT r
 ;
 
 CLASS WriteOff 'Списание' : Document;
@@ -211,7 +220,7 @@ FORM userWriteOff 'Списание'
     OBJECTS d=UserWriteOffDetail
     PROPERTIES (d) indexUserWriteOffDetail, idBarcodeSkuUserWriteOffDetail, nameSkuUserWriteOffDetail, shortNameUOMSkuUserWriteOffDetail,
                    nameBatchUserWriteOffDetail, quantityUserWriteOffDetail,
-                   priceUserWriteOffDetail, sumUserWriteOffDetail, ADDOBJ, delete
+                   priceUserWriteOffDetail, sumUserWriteOffDetail, ADDOBJ, deletewd=DELETESESSION
 
     PROPERTIES(w) TODRAW d fillDocumentWriteOff, addDetailDialogSkuStockUserWriteOffDetailUserWriteOff, addDetailDialogTerminalUserWriteOffDetailUserWriteOff,
                            addDetailInputBarcodeUserWriteOffDetailUserWriteOff, deleteUserWriteOffDetailUserWriteOff
@@ -276,7 +285,7 @@ FORM writeOffs 'Списания'
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
     PROPERTIES ()  addUserWriteOff TODRAW w
     PROPERTIES (w) editUserWriteOff
-    PROPERTIES (w) delete FORCE PANEL TOOLBAR  SHOWIF isUserWriteOff(w)
+    PROPERTIES (w) deletew=DELETE FORCE PANEL TOOLBAR  SHOWIF isUserWriteOff(w)
 
     OBJECTS d=WriteOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, nameBatchWriteOffDetail,
@@ -287,7 +296,7 @@ FORM writeOffs 'Списания'
 @extendFormFilterAccess(WriteOff, w, writeOffs, stock);
 
 DESIGN writeOffs FROM DEFAULT {
-    PROPERTY (delete(w)) {
+    PROPERTY (deletew) {
         askConfirm = TRUE;
     }
 

@@ -33,7 +33,7 @@ FORM dialogStatisticGroupType 'Тип классификатора статис�
 FORM statisticGroupTypes 'Типы классификаторов статистических групп'
     OBJECTS t = StatisticGroupType
     PROPERTIES(t) READONLY nameStatisticGroupType, idStatisticGroupType, nameCountryStatisticGroupType
-    PROPERTIES(t) ADDFORM, EDITFORM, delete
+    PROPERTIES(t) ADDFORM, EDITFORM, DELETE
 ;
 
 CLASS StatisticGroup 'Статистическая группа' : Externalizable;
@@ -149,7 +149,7 @@ FORM statisticGroups 'Статистические группы'
     OBJECTS cg=StatisticGroup
     PROPERTIES(cg)     READONLY canonicalNumberNameStatisticGroup, sidStatisticGroup, nameUOMStatisticGroup,
                        conversionFactorStatisticGroup
-    PROPERTIES(cg)  delete
+    PROPERTIES(cg)  DELETE
 
     FILTERS groupTypeStatisticGroup(g) == c,
             groupTypeStatisticGroup(cg) == c
@@ -202,7 +202,7 @@ FORM statisticGroupDialog 'Статистические группы'
 
     TREE treeGroups g=StatisticGroup PARENT parentStatisticGroup
     PROPERTIES(g) READONLY nameStatisticGroup, nameUOMStatisticGroup, sidStatisticGroup, canonicalNumberStatisticGroup
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    PROPERTIES(g) ADDFORM, EDITFORM, DELETE
     FILTERS groupTypeStatisticGroup(g) == c
     ORDER BY canonicalNumberStatisticGroup
 

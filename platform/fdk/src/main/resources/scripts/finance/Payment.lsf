@@ -155,7 +155,7 @@ FORM payments 'Платежи'
     PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY numberObject, seriesObject, datePayment, timePayment,
                   namePayerPayment, nameBeneficiaryPayment, notePayment, objectClassName
 
-    PROPERTIES(p) ADDFORM, EDITFORM, delete
+    PROPERTIES(p) ADDFORM, EDITFORM, deletep=DELETE
 
     ORDER BY datePayment
 

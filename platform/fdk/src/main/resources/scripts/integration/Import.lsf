@@ -71,18 +71,18 @@ sidExternalizableBatch 'Внешний код' (batch) = ABSTRACT STRING[100] (B
 sidExternalizableBatch (batch) += sidExternalizable (invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS ShipmentBatch;
 
 EXTEND FORM legalEntities
-    PROPERTIES (l) READONLY sidExternalizable BEFORE delete(l)
+    PROPERTIES (l) READONLY sidExternalizable BEFORE deletel
 ;
 
 EXTEND FORM banks
-    PROPERTIES (b) READONLY sidExternalizable BEFORE delete(b)
+    PROPERTIES (b) READONLY sidExternalizable BEFORE deleteb
 ;
 
 EXTEND FORM wares
-    PROPERTIES (w) READONLY sidExternalizable BEFORE delete(w)
+    PROPERTIES (w) READONLY sidExternalizable BEFORE deletew
 ;
 
 EXTEND FORM warehouses
-    PROPERTIES (w) READONLY sidExternalizable BEFORE delete(w)
+    PROPERTIES (w) READONLY sidExternalizable BEFORE deletew
 ;
 

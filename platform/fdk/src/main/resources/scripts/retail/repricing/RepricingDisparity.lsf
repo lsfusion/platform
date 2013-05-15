@@ -157,12 +157,12 @@ EXTEND FORM disparity
     PROPERTIES(dis)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) nameRepricingCommitteeDisparity, numberDisposalDisparity, beforeDateDisparity
     PROPERTIES(dis)   BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) diffRetailSumDisparityDetailDisparity
 
-    PROPERTIES(d)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE delete(d)
+    PROPERTIES(d)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE deletedd
                     curInputPriceDisparityDetail, curInputSumDisparityDetail,
                     curInputMarkupDisparityDetail ON CHANGE changeCurInputMarkupDisparityDetail(d), curInputMarkupSumDisparityDetail,
                     numberCurInputVATDisparityDetail, valueCurInputVATDisparityDetail, curInputVATSumDisparityDetail,
                     curInputRetailPriceDisparityDetail ON CHANGE changeCurInputRetailPriceDisparityDetail(d), curInputRetailSumDisparityDetail
-    PROPERTIES(d)   BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE delete(d)
+    PROPERTIES(d)   BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE deletedd
                     afterInputPriceDisparityDetail, afterInputSumDisparityDetail,
                     afterInputMarkupDisparityDetail ON CHANGE changeAfterInputMarkupDisparityDetail(d), afterInputMarkupSumDisparityDetail,
                     numberAfterInputVATDisparityDetail, valueAfterInputVATDisparityDetail, afterInputVATSumDisparityDetail,

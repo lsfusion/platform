@@ -27,7 +27,7 @@ FORM clients 'Покупатели (Ф.Л.)'
     OBJECTS c=Client
     PROPERTIES(c)      READONLY firstNameContact, lastNameContact, postAddressContact, phoneContact,
                        emailContact, birthdayContact
-    PROPERTIES(c)      ADDFORM, EDITFORM, delete
+    PROPERTIES(c)      ADDFORM, EDITFORM, DELETE
 ;
 
 //--------------------------------------Дисконтные карточки------------------------------------------------------------------//
@@ -140,7 +140,7 @@ FORM discountCards 'Дисконтные карты'
     OBJECTS d=DiscountCard
     PROPERTIES(d) READONLY numberObject, seriesObject, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard,
                   initialSumDiscountCard
-    PROPERTIES(d) ADDFORM, EDITFORM, delete
+    PROPERTIES(d) ADDFORM, EDITFORM, DELETE
 
     ORDER BY seriesObject, numberObject
 
@@ -302,7 +302,7 @@ FORM promotion 'Акция'
 
     OBJECTS sg=PromotionCondition
     PROPERTIES(sg)     namePromotionCondition, minQuantityPromotionCondition, minSumPromotionCondition, quantityDiscountPromotionCondition, percentPromotionCondition,
-                       resultPricePromotionCondition, sumDiscountPromotionCondition, sumReceiptPromotionCondition, ADDOBJ, delete
+                       resultPricePromotionCondition, sumDiscountPromotionCondition, sumReceiptPromotionCondition, ADDOBJ, DELETESESSION
 
     FILTERS            promotionPromotionCondition(sg)==sh
 
@@ -319,7 +319,7 @@ FORM promotion 'Акция'
     FILTERGROUP filterDiscountSkuGroup
         FILTER 'Только отмеченные' 'F11' inPromotionConditionDiscountSkuGroup(sg, dg)
 
-    OBJECTS sk= Sku
+    OBJECTS sk = Sku
     PROPERTIES(sk)    READONLY idBarcodeSku, nameSku
     FILTERS           isParentSkuGroupSku(skg, sk)
     PROPERTIES(sg, sk)   inPromotionConditionSku
@@ -501,7 +501,7 @@ FORM promotions 'Акции'
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
-    PROPERTIES(sh)    copyPromotion, ADDFORM, EDITFORM, delete
+    PROPERTIES(sh)    copyPromotion, ADDFORM, EDITFORM, DELETE
 
     PROPERTIES (sh) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
 
@@ -517,7 +517,7 @@ FORM promotionGroup 'Группа акций'
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
-    PROPERTIES(sh)     copyPromotion, ADDFORM, EDITFORM, delete
+    PROPERTIES(sh)     copyPromotion, ADDFORM, EDITFORM, DELETE
     ORDER BY userOrderPromotion
 
     FILTERS promotionGroupPromotion(sh)==st
@@ -528,7 +528,7 @@ FORM promotionGroup 'Группа акций'
 FORM promotionGroups 'Группы акций'
     OBJECTS st=PromotionGroup
     PROPERTIES(st)     READONLY namePromotionGroup
-    PROPERTIES(st)     ADDFORM, EDITFORM, delete
+    PROPERTIES(st)     ADDFORM, EDITFORM, DELETE
 
     OBJECTS sh=Promotion
     PROPERTIES(sh)     READONLY orderPromotion
@@ -536,7 +536,7 @@ FORM promotionGroups 'Группы акций'
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
-    PROPERTIES(sh)     ADDFORM, EDITFORM, delete
+    PROPERTIES(sh)     ADDFORM, EDITFORM, DELETE
     ORDER BY orderPromotion
 
     FILTERS promotionGroupPromotion(sh)==st

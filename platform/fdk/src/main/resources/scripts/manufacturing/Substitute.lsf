@@ -46,7 +46,7 @@ FORM substitute 'Замена'
 
     OBJECTS s=Substitute
     PROPERTIES(s) nameFromSkuSubstitute, nameToSkuSubstitute, multiplierSubstitute, allBOMsSubstitute
-    PROPERTIES(s) ADDOBJ, delete
+    PROPERTIES(s) ADDOBJ, DELETESESSION
 
     FILTERS fromSkuSubstitute(s)==sk
 

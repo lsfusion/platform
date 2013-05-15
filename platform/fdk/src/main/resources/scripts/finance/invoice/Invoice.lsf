@@ -227,7 +227,7 @@ META defineInvoice(sign, stockProp)
                        numberVATUserInvoiceDetail ON CHANGE changeNumberVATUserInvoiceDetail(d),
                        valueVATUserInvoiceDetail ON CHANGE changeValueVATUserInvoiceDetail(d),
                        invoicePriceUserInvoiceDetail ON CHANGE changeInvoicePriceUserInvoiceDetail(d),
-                       VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail, ADDOBJ, delete
+                       VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail, ADDOBJ, deleteid=DELETESESSION
 
         PROPERTIES(i) TODRAW d fillDocumentInvoice, addDetailDialogSkuStockUserInvoiceDetailUserInvoice,
                                addDetailInputBarcodeUserInvoiceDetailUserInvoice, deleteUserInvoiceDetailUserInvoice
@@ -379,7 +379,7 @@ META defineInvoice(sign, stockProp)
 
         PROPERTIES ()  addUserInvoice TODRAW i
         PROPERTIES (i) editInvoice, copyInvoice
-        PROPERTIES (i) delete FORCE PANEL TOOLBAR  SHOWIF isUserInvoice(i)
+        PROPERTIES (i) deletei=DELETE FORCE PANEL TOOLBAR  SHOWIF isUserInvoice(i)
 
         OBJECTS d = InvoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
@@ -395,7 +395,7 @@ META defineInvoice(sign, stockProp)
     DESIGN invoices FROM DEFAULT {
         main {
             preferredSize = (1024, 768);
-            PROPERTY (delete(i)) {
+            PROPERTY (deletei) {
                 askConfirm = TRUE;
             }
 
@@ -665,7 +665,7 @@ META defineInvoicePayment(dumb)
             SET costOutContractLedgerInContractLedger(p, invoice) <- sumContractPayment(p);
             FORM payment OBJECTS p=p MODAL;
             IF TRUE IF NOT formResult() == FormResult.ok THEN {
-                EXEC delete(p);
+                DELETE p;
             }
         }
     }
@@ -682,7 +682,7 @@ META defineInvoicePayment(dumb)
         ORDER BY dateTimePayment
         PROPERTIES(pm, i) costOutContractLedgerInContractLedger
         PROPERTIES TODRAW pm FORCE PANEL TOOLBAR addPaymentInvoice(i), editPaymentInvoice(pm, i)
-        PROPERTIES(pm) delete
+        PROPERTIES(pm) DELETESESSION
 
         FILTERGROUP filters
             FILTER 'Платежи по инвойсу' 'F10' costOutContractLedgerInContractLedger(pm, i) DEFAULT

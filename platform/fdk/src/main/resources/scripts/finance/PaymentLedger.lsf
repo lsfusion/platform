@@ -19,7 +19,7 @@ editAccount 'Редактировать' (account) = ABSTRACT ACTION (account) I
 FORM accounts 'Счета'
     OBJECTS a = Account
     PROPERTIES(a) READONLY nameAccount, nameCurrencyAccount, nameLegalEntityAccount
-    PROPERTIES(a) editAccount FORCE PANEL TOOLBAR, delete
+    PROPERTIES(a) editAccount FORCE PANEL TOOLBAR, DELETE
 
     DIALOG Account OBJECT a
 ;

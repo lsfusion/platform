@@ -297,7 +297,7 @@ FORM agreements 'Соглашения'
                            nameCurrencyAgreement, namePriceListTypeAgreement, customerAgreement, supplierAgreement, noteAgreement,
                            nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
 
-    PROPERTIES(a) ADDFORM, EDITFORM, delete
+    PROPERTIES(a) ADDFORM, EDITFORM, DELETE
 ;
 
 NAVIGATOR {
@@ -347,7 +347,7 @@ copySessionAgreement 'Копировать' = ACTION (agreement) {
         FORM agreement OBJECTS a = a DOCKEDMODAL;
 
         IF TRUE IF NOT formResult() == FormResult.ok THEN {
-            EXEC delete(a);
+            DELETE a;
         }
     };
 } TOOLBAR;
@@ -417,7 +417,7 @@ createAgreementSupplierCustomer 'Добавить' = ACTION (supplier, customer)
         SET dataInAgreementSupplier(ag, supplier) <- TRUE;
         FORM agreement OBJECTS a = ag DOCKEDMODAL;
         IF TRUE IF NOT formResult() == FormResult.ok THEN {
-            EXEC delete(ag);
+            DELETE ag;
         }
     }
 } IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
@@ -432,7 +432,7 @@ EXTEND FORM legalEntity
                              nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement,
                              nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
 
-    PROPERTIES(ags) delete, EDITSESSIONFORM, copySessionAgreement
+    PROPERTIES(ags) DELETESESSION, EDITSESSIONFORM, copySessionAgreement
     PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ags FORCE PANEL TOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ags FORCE PANEL TOOLBAR
     FILTERS inAgreementCustomer(ags, l) AND inAgreementSupplier(ags, s),
             isSellerLegalEntity(s),
@@ -448,7 +448,7 @@ EXTEND FORM legalEntity
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                              nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement,
                              nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
-    PROPERTIES(agc) delete, EDITSESSIONFORM, copySessionAgreement
+    PROPERTIES(agc) DELETESESSION, EDITSESSIONFORM, copySessionAgreement
 
     PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW agc FORCE PANEL TOOLBAR, addAgreementsCustomerSupplier (c,l) TODRAW agc FORCE PANEL TOOLBAR
     FILTERS inAgreementCustomer(agc, c) AND inAgreementSupplier(agc, l),

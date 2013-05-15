@@ -197,7 +197,7 @@ EXTEND FORM compliance
     PROPERTIES(id, cd) inInvoiceDetailComplianceDetail
     PROPERTIES(cd) numberComplianceDetail
     PROPERTIES(cd) READONLY invoicesComplianceDetail, nameComplianceComplianceDetail, quantityComplianceDetail
-    PROPERTIES(cd) nameSkuComplianceDetail, quantityCertificatedComplianceDetail, priceCertificatedComplianceDetail, sumDataCertificatedComplianceDetail, delete
+    PROPERTIES(cd) nameSkuComplianceDetail, quantityCertificatedComplianceDetail, priceCertificatedComplianceDetail, sumDataCertificatedComplianceDetail, DELETESESSION
 
     PROPERTIES (c) toCreateComplianceDetails TODRAW cd FORCE PANEL TOOLBAR
     PROPERTIES (c) setSumComplianceDetail TODRAW cd FORCE PANEL TOOLBAR

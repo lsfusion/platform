@@ -52,13 +52,13 @@ META defineOperation(postfix)
     FORM operations 'Операции' TITLE 'Операции'##postfix
         OBJECTS o = Operation
         PROPERTIES(o) READONLY nameOperation, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
-        PROPERTIES(o) ADDFORM, EDITFORM, delete
+        PROPERTIES(o) ADDFORM, EDITFORM, DELETE
     ;
 
     FORM dialogOperations 'Операции' TITLE 'Операции'##postfix
         OBJECTS o = Operation
         PROPERTIES(o) READONLY nameOperation, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
-        PROPERTIES(o) ADDFORM, EDITFORM, delete
+        PROPERTIES(o) ADDFORM, EDITFORM, DELETE
 
         DIALOG Operation OBJECT o
     ;

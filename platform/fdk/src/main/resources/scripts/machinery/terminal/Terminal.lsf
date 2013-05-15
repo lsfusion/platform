@@ -26,7 +26,7 @@ FORM terminalModel 'Модель ТСД'
 FORM terminalModels 'Модели ТСД'
     OBJECTS m=TerminalModel
     PROPERTIES(m) READONLY nameTerminalModel, maxProductModel, handlerModel, noteModel, objectClassName
-    PROPERTIES(m) ADDFORM, EDITFORM, delete
+    PROPERTIES(m) ADDFORM, EDITFORM, DELETE
 ;
 
 // Терминалы
@@ -75,7 +75,7 @@ terminalHandbookTypeID (terminalHandbookType) = GROUP AGGR terminalHandbookType 
 FORM handbooksTerminalDocumentType 'Виды справочников ТСД'
     OBJECTS h=TerminalHandbookType
     PROPERTIES(h)  staticCaption, idTerminalHandbookType
-    PROPERTIES(h)  ADDFORM, EDITFORM, delete
+    PROPERTIES(h)  ADDFORM, EDITFORM, DELETE
 ;
 
 //---------------------------- типы документов ----------------------------------------//
@@ -113,7 +113,7 @@ FORM groupTerminalDocumentType 'Группа типов документов'
     PROPERTIES(tdt)   idTerminalDocumentType, nameTerminalDocumentType, nameGroupTerminalDocumentTypeTerminalDocumentType,
                       nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
                       nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType,
-                      ADDOBJ, delete
+                      ADDOBJ, DELETESESSION
 
     FILTERGROUP filters3
         FILTER 'Показывать только для данной группы' 'F10' groupTerminalDocumentTypeTerminalDocumentType(tdt) == gtdt DEFAULT
@@ -124,7 +124,7 @@ FORM groupTerminalDocumentType 'Группа типов документов'
 FORM groupsTerminalDocumentType 'Группы типов документов'
     OBJECTS gtdt=GroupTerminalDocumentType, tdt=TerminalDocumentType
     PROPERTIES(gtdt) READONLY nameGroupTerminalDocumentType
-    PROPERTIES(gtdt) ADDFORM, EDITFORM, delete
+    PROPERTIES(gtdt) ADDFORM, EDITFORM, DELETE
 
     PROPERTIES(tdt) READONLY idTerminalDocumentType, nameTerminalDocumentType,
                              nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
@@ -152,7 +152,7 @@ FORM groupTerminal 'Группа ТСД'
 
     OBJECTS t=Terminal
     PROPERTIES(t)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, directoryTerminal, nameModelMachinery,
-                    ADDOBJ, delete
+                    ADDOBJ, DELETESESSION
 
     FILTERGROUP filters3
         FILTER 'Показывать только для данной группы' 'F10' groupTerminalTerminal(t) == grt DEFAULT
@@ -167,7 +167,7 @@ FORM groupsTerminal 'Группы ТСД'
                      filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grt),
                      namePriceListTypeGroupMachinery
 
-    PROPERTIES(grt)  ADDFORM, EDITFORM, delete
+    PROPERTIES(grt)  ADDFORM, EDITFORM, DELETE
 
     PROPERTIES(t) READONLY nppMachinery, descriptionMachinery, portMachinery,
                            directoryTerminal, nameModelMachinery,
@@ -263,7 +263,7 @@ FORM terminalDocuments 'Документы ТСД'
     OBJECTS td=TerminalDocument
     PROPERTIES(td)  READONLY idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
                     idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument
-    PROPERTIES(td)  ADDFORM, EDITFORM, delete
+    PROPERTIES(td)  ADDFORM, EDITFORM, DELETE
 
     OBJECTS tdd=TerminalDocumentDetail
     PROPERTIES(tdd) READONLY numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,

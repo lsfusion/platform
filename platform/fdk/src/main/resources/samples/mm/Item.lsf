@@ -11,5 +11,5 @@ salePriceItem 'Оптовая цена' (item) = DATA NUMERIC[17,2](Item) IN bas
 
 FORM items 'Товары'
 	OBJECTS i=Item
-	PROPERTIES(i) nameItem, barcodeItem, salePriceItem, ADDOBJ, delete
+	PROPERTIES(i) nameItem, barcodeItem, salePriceItem, ADDOBJ, DELETESESSION
 ;

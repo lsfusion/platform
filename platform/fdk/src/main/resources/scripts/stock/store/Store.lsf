@@ -35,7 +35,7 @@ FORM chainStores 'Торговая сеть'
 
     OBJECTS s=StoreType
     PROPERTIES(s) nameStoreType
-    PROPERTIES(s) ADDOBJ, delete
+    PROPERTIES(s) ADDOBJ, DELETESESSION
     FILTERS inChainStoresStoreType(n, s)
 
     EDIT ChainStores OBJECT n
@@ -170,7 +170,7 @@ FORM departmentStore 'Отдел магазина'
 
     OBJECTS e = Employee
     PROPERTIES(e) READONLY firstNameContact, lastNameContact
-    PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
     FILTERS inEmployeeDivisionEmployee(d, e)
 
     EDIT DepartmentStore OBJECT d
@@ -257,7 +257,7 @@ FORM store 'Магазин'
 
     OBJECTS d=DepartmentStore
     PROPERTIES(d) READONLY nameDepartmentStore, tradingSquareDepartmentStore, objectClassName
-    PROPERTIES(d)          ADDSESSIONFORM, EDITSESSIONFORM, delete
+    PROPERTIES(d)          ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
     FILTERS inStoreDepartment(s, d)
 
     EDIT Store OBJECT s
@@ -272,11 +272,11 @@ FORM stores 'Магазины'
     FILTERS stringEqualsAll(a)
     FILTERS inChainStoresStoreType (t, st)
 
-    PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, delete FORCE PANEL TOOLBAR
+    PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, deletet=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS s=Store
     PROPERTIES(s) READONLY nameStore, addressStore, nameStoreTypeStore, nameLegalEntityStore, nameRegionStore
-    PROPERTIES(s)          ADDFORM, EDITFORM, delete TOOLBAR
+    PROPERTIES(s)          ADDFORM, EDITFORM, DELETE TOOLBAR
     FILTERS inChainStoresStoreTypeStore(t, st, s)
 
     OBJECTS d=DepartmentStore
@@ -285,7 +285,6 @@ FORM stores 'Магазины'
 ;
 
 DESIGN stores FROM DEFAULT {
-
 
     NEW topContainer {
 
@@ -305,7 +304,7 @@ DESIGN stores FROM DEFAULT {
         }
     }
 
-    PROPERTY (delete(t)) {
+    PROPERTY (deletet) {
         caption = 'Удалить';
         askConfirm = TRUE;
     }

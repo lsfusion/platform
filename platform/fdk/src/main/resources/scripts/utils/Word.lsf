@@ -39,7 +39,7 @@ FORM template 'Шаблон Word'
     PROPERTIES (t) loadFileTemplate, openFileTemplate
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) keyTemplateEntry, valueTemplateEntry, ADDOBJ, delete
+    PROPERTIES (te) keyTemplateEntry, valueTemplateEntry, ADDOBJ, DELETESESSION
     PROPERTIES (t) TODRAW te FORCE PANEL TOOLBAR openProcessTemplate
 
     FILTERS templateTemplateEntry (te) == t
@@ -73,7 +73,7 @@ FORM templates 'Шаблоны Word'
 
     OBJECTS t = Template
     PROPERTIES (t) READONLY nameTemplate, idTemplate
-    PROPERTIES (t) ADDFORM, EDITFORM, delete
+    PROPERTIES (t) ADDFORM, EDITFORM, DELETE
 
     OBJECTS te = TemplateEntry
     PROPERTIES (te) READONLY keyTemplateEntry, valueTemplateEntry
@@ -84,7 +84,7 @@ FORM dialogTemplates 'Шаблоны Word'
 
     OBJECTS t = Template
     PROPERTIES (t) READONLY nameTemplate, idTemplate
-    PROPERTIES (t) ADDFORM, EDITFORM, delete
+    PROPERTIES (t) ADDFORM, EDITFORM, DELETE
 
     DIALOG Template OBJECT t
 ;

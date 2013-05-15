@@ -174,7 +174,7 @@ DESIGN labelType FROM DEFAULT {
 FORM labelTypes 'Типы ценников'
     OBJECTS l = LabelType
     PROPERTIES(l) READONLY nameLabelType, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType, namePriceListTypeLabelType
-    PROPERTIES(l)          ADDFORM, EDITFORM, delete
+    PROPERTIES(l)          ADDFORM, EDITFORM, DELETE
 ;
 
 //---------------------------- Документы для печати ценников ----------------------------------------//
@@ -269,7 +269,7 @@ FORM labelTransactions 'Печать ценников'
     OBJECTS l = LabelTransaction
     PROPERTIES(l) READONLY nameLabelTypeLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
     PROPERTIES(l) READONLY nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
-    PROPERTIES(l) delete
+    PROPERTIES(l) DELETESESSION
     FILTERS departmentStoreLabelTransaction(l) == d
 
     OBJECTS b = Barcode

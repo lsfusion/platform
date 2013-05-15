@@ -112,7 +112,7 @@ FORM declarations 'Таможенные декларации'
     PROPERTIES(d) READONLY numberObject, seriesObject, dateDeclaration, timeDeclaration, nameLegalEntityDeclaration,
                   nameHomeCurrencyDeclaration, nameCurrencyDeclaration, rateExchangeDeclaration,
                   nameCurrencyCustomsZoneDeclaration, rateExchangeCustomsZoneDeclaration, objectClassName
-    PROPERTIES(d) ADDFORM, EDITFORM, delete
+    PROPERTIES(d) ADDFORM, EDITFORM, DELETE
 ;
 
 FORM declarationsDialog 'Таможенные декларация'

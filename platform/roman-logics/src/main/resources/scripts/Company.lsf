@@ -21,7 +21,7 @@ FORM company 'Компания'
                    emailLegalEntity, siteLegalEntity
 
     OBJECTS a=Bank.Account
-    PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+    PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, DELETESESSION
     FILTERS Bank.legalEntityAccount(a) == co
 
     EDIT Company OBJECT co
@@ -66,5 +66,5 @@ FORM companies 'Компании'
     OBJECTS co=Company
     PROPERTIES(co) READONLY nameLegalEntity, fullNameLegalEntity, shortNameOwnershipLegalEntity,
                             numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
-    PROPERTIES(co) ADDFORM, EDITFORM, delete
+    PROPERTIES(co) ADDFORM, EDITFORM, DELETE
 ;

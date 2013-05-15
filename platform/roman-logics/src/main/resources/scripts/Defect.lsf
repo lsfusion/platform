@@ -54,7 +54,7 @@ FORM defectStock 'Склад брака'
 FORM defectStocks 'Склады брака'
     OBJECTS           d=DefectStock
     PROPERTIES(d)     READONLY nameStock, addressDefectStock, nameCompanyDefectStock
-    PROPERTIES(d)     ADDFORM, EDITFORM, delete
+    PROPERTIES(d)     ADDFORM, EDITFORM, DELETE
 
     ORDER BY          nameStock
 ;
@@ -195,7 +195,7 @@ META defineDocumentFormDefectProcessInner(object, class, stockProp1, stockProp2,
 
         PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-        PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+        PROPERTIES (t) ADDFORM, EDITFORM, deletet=DELETE FORCE PANEL TOOLBAR
 
         OBJECTS d = class##Detail
 
@@ -203,7 +203,7 @@ META defineDocumentFormDefectProcessInner(object, class, stockProp1, stockProp2,
     ;
 
     DESIGN object##s FROM DEFAULT {
-        PROPERTY (delete(t)) {
+        PROPERTY (deletet) {
             askConfirm = TRUE;
         }
 
@@ -480,7 +480,7 @@ FORM repairShops 'Ремонтные мастерские'
     OBJECTS s=RepairShop
     PROPERTIES(s)  READONLY nameRepairShop, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock,
                    contactNameExternalStock, infoExternalStock, currentBalanceRepairShop, quantityOverdueRepairShop
-    PROPERTIES(s)  ADDFORM, EDITFORM, delete
+    PROPERTIES(s)  ADDFORM, EDITFORM, DELETE
 
     OBJECTS sk=Sku
     PROPERTIES(sk)  READONLY nameSku, idBarcodeSku
@@ -765,7 +765,7 @@ FORM cleaningStocks 'Химчистки'
     OBJECTS s=CleaningStock
     PROPERTIES(s)  READONLY nameCleaningStock, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock,
                    contactNameExternalStock, infoExternalStock, currentBalanceCleaningStock, quantityOverdueCleaningStock
-    PROPERTIES(s)  ADDFORM, EDITFORM, delete
+    PROPERTIES(s)  ADDFORM, EDITFORM, DELETE
 
     OBJECTS sk=Sku
     PROPERTIES(sk)  READONLY nameSku, idBarcodeSku

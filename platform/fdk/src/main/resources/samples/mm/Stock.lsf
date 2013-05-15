@@ -9,5 +9,5 @@ addressStock 'Адрес' (stock) = DATA STRING[150](Stock) IN base;
 
 FORM stocks 'Склады'
 	OBJECTS s=Stock
-	PROPERTIES(s) nameStock, addressStock, ADDOBJ, delete
+	PROPERTIES(s) nameStock, addressStock, ADDOBJ, DELETESESSION
 ;

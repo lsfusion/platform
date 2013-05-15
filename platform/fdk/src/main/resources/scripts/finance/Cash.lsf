@@ -41,7 +41,7 @@ EXTEND FORM accounts
 FORM accounts 'Счета'
     OBJECTS a = Account
     PROPERTIES(a) READONLY numberAccount, nameCurrencyAccount, nameLegalEntityAccount
-    PROPERTIES(a) editAccount FORCE PANEL TOOLBAR, delete
+    PROPERTIES(a) editAccount FORCE PANEL TOOLBAR, DELETE
     PROPERTIES() addAccount TODRAW a FORCE PANEL
 
     DIALOG Account OBJECT a
@@ -49,7 +49,7 @@ FORM accounts 'Счета'
 
 EXTEND FORM legalEntity
     OBJECTS ca=Account
-    PROPERTIES(ca)  numberAccount, nameCurrencyAccount, ADDOBJ, delete
+    PROPERTIES(ca)  numberAccount, nameCurrencyAccount, ADDOBJ, DELETESESSION
     FILTERS legalEntityAccount(ca) == l
 ;
 

@@ -79,8 +79,8 @@ EXTEND FORM BOM
     PROPERTIES(b) showNutritionBOM
     PROPERTIES(b) SHOWIF showNutritionBOM(b) READONLY fatsBOM, carbohydratesBOM, proteinsBOM, energyBOM
     PROPERTIES(b) SHOWIF showNutritionBOM(b) recipesBOM
-    PROPERTIES(p) SHOWIF showNutritionBOM(b) BEFORE delete(p) fastProduct, carbohydratesProduct, proteinsProduct, energyProduct, compositionProduct, changeCompositionProduct, productYieldProduct
-    PROPERTIES(c) SHOWIF showNutritionBOM(b) BEFORE delete(c) fatsComponent, carbohydratesComponent, proteinsComponent, energyComponent
+    PROPERTIES(p) SHOWIF showNutritionBOM(b) BEFORE deletep fastProduct, carbohydratesProduct, proteinsProduct, energyProduct, compositionProduct, changeCompositionProduct, productYieldProduct
+    PROPERTIES(c) SHOWIF showNutritionBOM(b) BEFORE deletec fatsComponent, carbohydratesComponent, proteinsComponent, energyComponent
 ;
 
 EXTEND DESIGN BOM {

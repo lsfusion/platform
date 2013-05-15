@@ -242,7 +242,7 @@ expandComponentDetail 'Развернуть изделие' = ACTION (componentD
             }
         }
     }
-    EXEC delete(componentDetail);
+    DELETE componentDetail;
 } TOOLBAR;
 
 backgroundComponentDetail 'Цвет' (componentDetail) = RGB(255,255,229) IF productComponentDetail(componentDetail);
@@ -597,7 +597,7 @@ FORM order 'Производственный заказ'
     PROPERTIES(pd) markupProductDetail ON CHANGE changeMarkupProductDetail(pd),
                    productsPriceProductDetail, productsSumProductDetail
     PROPERTIES(pd) BACKGROUND backgroundVATOrder(o) SHOWIF includeVATOrder(o) valueVATProductDetail
-    PROPERTIES(pd) ADDOBJ, delete
+    PROPERTIES(pd) ADDOBJ, deletepd=DELETESESSION
     PROPERTIES(o) TODRAW pd createProductsOrder, fillPriceProductsOrder, deleteProductDetailOrder
 
     FILTERS orderProductDetail(pd)==o
@@ -610,7 +610,7 @@ FORM order 'Производственный заказ'
 
     PROPERTIES(o) TODRAW cd createComponentsOrder, createRecComponentsOrder
     PROPERTIES(cd) TODRAW cd expandComponentDetail SHOWIF productComponentDetail(cd)
-    PROPERTIES(cd) ADDOBJ, delete
+    PROPERTIES(cd) ADDOBJ, deletecd=DELETESESSION
     PROPERTIES(o) TODRAW cd deleteComponentsOrder
 
     FILTERS orderComponentDetail(cd)==o
@@ -784,7 +784,7 @@ FORM orders 'Производственные заказы'
                   fromDateOrder, toDateOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityComponentDetailOrder,
                   nameCalcPriceListTypeOrder, namePriceListTypeOrder, noteOrder, objectClassName
 
-    PROPERTIES(o) ADDFORM, EDITFORM, copyOrder, delete FORCE PANEL TOOLBAR
+    PROPERTIES(o) ADDFORM, EDITFORM, copyOrder, deleteo=DELETE FORCE PANEL TOOLBAR
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS pd=ProductDetail
@@ -808,7 +808,7 @@ FORM orders 'Производственные заказы'
 
 ;
 DESIGN orders FROM DEFAULT {
-    PROPERTY (delete(o)) {
+    PROPERTY (deleteo) {
         askConfirm = TRUE;
     }
 

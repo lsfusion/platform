@@ -137,7 +137,7 @@ META defineShipment(captions, sign, stockProp)
         OBJECTS d = UserShipmentDetail
         PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail
         PROPERTIES (d) quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail, expiryDateUserShipmentDetail,
-                       name###stockProp###shipmentDetail, ADDOBJ, delete
+                       name###stockProp###shipmentDetail, ADDOBJ, deletesd=DELETESESSION
 
         PROPERTIES(s) TODRAW d fillDocumentShipment, addDetailDialogSkuStockUserShipmentDetailUserShipment,
                                addDetailInputBarcodeUserShipmentDetailUserShipment, deleteUserShipmentDetailUserShipment
@@ -275,7 +275,7 @@ META defineShipment(captions, sign, stockProp)
 
         PROPERTIES ()  addUserShipment TODRAW s
         PROPERTIES (s) editShipment, copyShipment
-        PROPERTIES (s) delete FORCE PANEL TOOLBAR SHOWIF isUserShipment(s)
+        PROPERTIES (s) deletes=DELETE FORCE PANEL TOOLBAR SHOWIF isUserShipment(s)
 
         OBJECTS d = ShipmentDetail
         PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail
@@ -287,7 +287,7 @@ META defineShipment(captions, sign, stockProp)
     @extendFormFilterAccess(Shipment, s, shipments, stockProp);
 
     DESIGN shipments FROM DEFAULT {
-        PROPERTY (delete(s)) {
+        PROPERTY (deletes) {
             askConfirm = TRUE;
         }
 

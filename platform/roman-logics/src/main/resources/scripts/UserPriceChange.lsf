@@ -136,7 +136,7 @@ FORM userPriceChange 'Переоценка товаров'
                    curWarePriceUserPriceChangeDetail SHOWIF showWare(), warePriceUserPriceChangeDetail SHOWIF showWare(),
                    curNumberWareRangeUserPriceChangeDetail SHOWIF showWare(), curValueWareRangeUserPriceChangeDetail SHOWIF showWare(),
                    numberWareRangeUserPriceChangeDetail SHOWIF showWare(), valueWareRangeUserPriceChangeDetail SHOWIF showWare(),
-                   curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, ADDOBJ, delete
+                   curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, ADDOBJ, DELETESESSION
 
     PROPERTIES dialogAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
                dialogAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u)
@@ -208,7 +208,7 @@ FORM userPriceChanges 'Переоценки товаров'
     PROPERTIES (u) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (u)          printPriceChange FORCE PANEL,
-                            ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+                            ADDFORM, EDITFORM, deleteu=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS d=UserPriceChangeDetail
     PROPERTIES (d) READONLY indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
@@ -240,7 +240,7 @@ DESIGN userPriceChanges FROM DEFAULT {
     PROPERTY(objectClassName) {
         preferredCharWidth = 15;
     }
-    PROPERTY (delete(u)) {
+    PROPERTY (deleteu) {
         askConfirm = TRUE;
     }
 

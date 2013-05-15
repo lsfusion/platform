@@ -53,7 +53,7 @@ FORM contracts 'Договоры'
     OBJECTS c = Contract
     PROPERTIES(c) READONLY namePartyAContract, namePartyBContract, seriesNumberContract, dateFromContract,
                            dateToContract, nameCurrencyContract, noteContract
-    PROPERTIES(c) editContract, delete
+    PROPERTIES(c) editContract, DELETE
 
     DIALOG Contract OBJECT c
 ;

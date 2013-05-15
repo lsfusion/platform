@@ -25,7 +25,7 @@ FORM ownership 'Форма собственности'
 FORM ownerships 'Формы собственности'
     OBJECTS o = Ownership
     PROPERTIES(o) READONLY nameOwnership, shortNameOwnership, nameCountryOwnership
-    PROPERTIES(o)          ADDFORM, EDITFORM, delete
+    PROPERTIES(o)          ADDFORM, EDITFORM, DELETE
 
     DIALOG Ownership OBJECT o
 ;
@@ -185,7 +185,7 @@ FORM legalEntity 'Организация'
     PROPERTIES(l)  differentStocksInDetailsLegalEntity SHOWIF isCompanyLegalEntity(l)
 
     OBJECTS li=License FIXED GRID
-    PROPERTIES(li) SHOWIF toShowLegalEntity(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
+    PROPERTIES(li) SHOWIF toShowLegalEntity(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, DELETESESSION
     FILTERS legalEntityLicense(li) == l
 
     EDIT LegalEntity OBJECT l
@@ -243,14 +243,14 @@ FORM legalEntities 'Организации'
 
     TREE legalEntityGroupTree lg = LegalEntityGroup PARENT parentLegalEntityGroup
     PROPERTIES READONLY lgTreeName = nameLegalEntityGroup(lg)
-    PROPERTIES(lg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES(lg) ADDFORM, EDITFORM, deletelg=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS l=LegalEntity
     PROPERTIES(l) READONLYIF isReadonly() nameL = nameLegalEntity, fullNameLegalEntity, shortNameOwnershipLegalEntity,
                                           nameLegalEntityGroupLegalEntity
     PROPERTIES(l) READONLY                addressLegalEntity, phoneLegalEntity
     PROPERTIES(l) READONLYIF isReadonly() isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
-    PROPERTIES(l) ADDFORM, EDITFORM, delete
+    PROPERTIES(l) ADDFORM, EDITFORM, deletel=DELETE
     ORDER BY nameL
 
     FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(l), lg) OR
@@ -265,7 +265,7 @@ DESIGN legalEntities FROM DEFAULT{
         childConstraints = TO THE RIGHT;
         type = SPLITH;
         ADD legalEntityGroupTree.tree.box{
-            PROPERTY(delete(lg)){
+            PROPERTY(deletelg){
                 askConfirm = TRUE;
             }
         }

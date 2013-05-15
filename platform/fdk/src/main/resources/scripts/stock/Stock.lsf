@@ -72,6 +72,19 @@ nameRegion 'Наименование' = DATA ISTRING[100](Region);
 regionStock 'Регион' (stock) = ABSTRACT Region (Stock) PERSISTENT;
 nameRegionStock 'Регион' (stock)= nameRegion(regionStock(stock));
 
+FORM region 'Регион'
+    OBJECTS r=Region FIXED PANEL
+    PROPERTIES(r) nameRegion
+    EDIT Region OBJECT r
+;
+
+FORM regions 'Регионы'
+    OBJECTS r=Region
+    PROPERTIES(r) READONLY nameRegion
+    PROPERTIES(r) ADDFORM, EDITFORM, DELETE
+    DIALOG Region OBJECT r
+;
+
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 
 CLASS UOM 'Единица измерения';
@@ -94,7 +107,7 @@ FORM UOM 'Единица измерения'
 FORM UOMs 'Единицы измерений'
     OBJECTS u=UOM
     PROPERTIES(u) READONLY nameUOM, shortNameUOM, shortNameBaseUOM, genitiveNameUOM, factorUOM
-    PROPERTIES(u) ADDFORM, EDITFORM, delete
+    PROPERTIES(u) ADDFORM, EDITFORM, DELETE
     DIALOG UOM OBJECT u
 ;
 
@@ -203,7 +216,7 @@ FORM dialogCustomGroupType 'Тип дополнительного классиф
 FORM customGroupTypes 'Типы дополнительного классификатора SKU'
     OBJECTS t = CustomGroupType
     PROPERTIES(t) READONLY nameCustomGroupType
-    PROPERTIES(t) ADDFORM, EDITFORM, delete
+    PROPERTIES(t) ADDFORM, EDITFORM, DELETE
 ;
 
 FORM customGroup 'Дополнительная группа'
@@ -219,7 +232,7 @@ FORM customGroups 'Дополнительные группы'
     TREE treeGroups g=CustomGroup PARENT parentCustomGroup
     PROPERTIES inCustomGroup(g), moveCustomGroup(t) TODRAW g FORCE PANEL TOOLBAR
     PROPERTIES(g) READONLY nameCustomGroup, canonicalNameCustomGroup
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    PROPERTIES(g) ADDFORM, EDITFORM, DELETE
     FILTERS customGroupTypeCustomGroup(g) == t
     ORDER BY canonicalNameCustomGroup
 
@@ -1818,7 +1831,7 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
                 EXEC overChangeQuantityValueSku###object##Detail(detail###Sku###object###stockProp(sku, object, stock));
             } ELSE {
-                EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
+                DELETE d WHERE d==detail###Sku###object###stockProp(sku, object, stock);
             }
 
         } ELSE {
@@ -1960,7 +1973,7 @@ META defineDocumentSkuInner(object, detail, detailClass, skuProp, stockProp)
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object(sku, object);
                 EXEC overChangeQuantityValueSku###object##Detail(detail###Sku###object(sku, object));
             } ELSE {
-                EXEC delete(detail###Sku###object(sku, object));
+                DELETE d WHERE d==detail###Sku###object(sku, object);
             }
         } ELSE {
             IF requestedNumeric() THEN {
@@ -2096,7 +2109,7 @@ META defineDocumentBatchInner(object, detail, detailClass, batchProp, skuProp, s
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###batch###object(batch, object);
                 EXEC overChangeQuantityValueBatch###object##Detail(detail###batch###object(batch, object));
             } ELSE {
-                EXEC delete(detail###batch###object(batch, object));
+                DELETE d WHERE d==detail###batch###object(batch, object);
             }
         } ELSE {
             IF requestedNumeric() THEN {
@@ -2213,7 +2226,7 @@ META defineDocumentBatchStockInner(object, detail, detailClass, batchProp, skuPr
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###batch###object###stockProp(batch, object, stock);
                 EXEC overChangeQuantityValueBatch###object##Detail(detail###batch###object###stockProp(batch, object, stock));
             } ELSE {
-                EXEC delete(detail###batch###object###stockProp(batch, object, stock));
+                DELETE d WHERE d==detail###batch###object###stockProp(batch, object, stock);
             }
         } ELSE {
             IF requestedNumeric() THEN {
@@ -2321,9 +2334,9 @@ META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, 
             IF requestedNumeric() THEN {
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp###contactStock(sku, object, stockProp, contactStock);
             } ELSE {
-                FOR object###detail(detail) == object AND stockProp###detail(detail) == stockProp AND skuProp###detail(detail) == sku AND contactStock###detail(detail) == contactStock DO { //AND NOT quantity###detail(detail)
-                    EXEC delete(detail);
-                }
+                //FOR object###detail(detail) == object AND stockProp###detail(detail) == stockProp AND skuProp###detail(detail) == sku AND contactStock###detail(detail) == contactStock DO { //AND NOT quantity###detail(detail)
+                DELETE detail WHERE object###detail(detail) == object AND stockProp###detail(detail) == stockProp AND skuProp###detail(detail) == sku AND contactStock###detail(detail) == contactStock;
+                //}
             }
         } ELSE {
             IF requestedNumeric() THEN {
@@ -2431,9 +2444,9 @@ META defineDocumentInSkuStockCustom(object, detail, skuProp, stockProp)
         REQUEST BOOLEAN INPUT;
         IF TRUE IF NOT requestedLogical() THEN {
             IF detail###sku###object(sku, object) THEN {
-                FOR sku == skuProp###detail(detail) AND object == object###detail(detail) DO {
-                    EXEC delete(detail);
-                }
+                //FOR sku == skuProp###detail(detail) AND object == object###detail(detail) DO {
+                DELETE detail WHERE sku == skuProp###detail(detail) AND object == object###detail(detail);
+                //}
             }
         } ELSE {
             IF requestedLogical() THEN {
@@ -3303,7 +3316,7 @@ EXTEND FORM legalEntity
 
     OBJECTS st=Stock
     PROPERTIES(st) READONLY nameStock, nameLegalEntityStock, nameCountryStock, addressStock
-    PROPERTIES(st) FORCE PANEL TOOLBAR SHOWIF isDefaultLegalEntityStock(l,st) editSessionStock, delete
+    PROPERTIES(st) FORCE PANEL TOOLBAR SHOWIF isDefaultLegalEntityStock(l,st) editSessionStock, DELETESESSION
     PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL TOOLBAR
     FILTERS isParentStockGroupStock(sg, st) OR (st IS Stock AND NOT sg)
     FILTERS inLegalEntityStock(l, st)

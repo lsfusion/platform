@@ -517,8 +517,7 @@ FORM WHfromRF 'Приход товара из РФ'
 
     PROPERTIES(d) retailPriceWHfromRFDetail, accountSumWHfromRFDetail, selectWHfromRFDetail
 
-
-    PROPERTIES(d) delete
+    PROPERTIES(d) DELETESESSION
 
     PROPERTIES(w) TODRAW d addDetailInputBarcodeWHfromRFDetailWHfromRF, deleteWHfromRFDetailWHfromRF
 
@@ -673,7 +672,7 @@ FORM WHfromRFs 'Приход товара из РФ'
                            countWHfromRFDetailWHfromRF, quantityWHfromRFDetailWHfromRF, statusRecWHfromRF,
                            descriptionFreightWHfromRF, nameLegalEntityStockWHfromRF, accountSumWHfromRF
 
-    PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES(w) ADDFORM, EDITFORM, deletew=DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed,
                                         hostnameComputerClosed
@@ -714,7 +713,7 @@ DESIGN WHfromRFs FROM DEFAULT{
 
     ADD functions.box;
 
-    PROPERTY (delete(w)) {
+    PROPERTY (deletew) {
         caption = 'Удалить';
         askConfirm = TRUE;
     }

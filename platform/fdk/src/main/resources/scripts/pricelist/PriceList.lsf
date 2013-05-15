@@ -222,9 +222,9 @@ changeInSkuUserPriceList = ACTION (sku, price) {
     REQUEST BOOLEAN INPUT;
     IF TRUE IF NOT requestedLogical() THEN {
         IF detailSkuUserPriceList(sku, price) THEN {
-            FOR sku == skuUserPriceListDetail(detail) AND price == userPriceListUserPriceListDetail(detail) DO {
-                EXEC delete(detail);
-            }
+            //FOR sku == skuUserPriceListDetail(detail) AND price == userPriceListUserPriceListDetail(detail) DO {
+            DELETE detail WHERE sku == skuUserPriceListDetail(detail) AND price == userPriceListUserPriceListDetail(detail);
+            //}
         }
     } ELSE {
         IF requestedLogical() THEN {
@@ -360,7 +360,7 @@ FORM userPriceList 'Прайс'
     PROPERTIES(d) BACKGROUND backgroundPriceListDetail(d)
                   isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                   shortNameUOMSkuUserPriceListDetail, fromDateUserPriceListDetail, fromTimeUserPriceListDetail,
-                  toDateUserPriceListDetail, toTimeUserPriceListDetail, ADDOBJ, delete
+                  toDateUserPriceListDetail, toTimeUserPriceListDetail, ADDOBJ, DELETESESSION
     PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER headerNameDataPriceListType(p, t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID
     PROPERTIES(d) nameCompanyUserPriceListDetail
     PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR fillDocumentPriceList, addDetailInputBarcodeUserPriceListDetailUserPriceList
@@ -557,7 +557,7 @@ updatePriceList 'Обновить' = ACTION (priceList) {
             SET toDateUserPriceList(priceList) <- fromDateUserPriceList(u);
             SET toTimeUserPriceList(priceList) <- fromTimeUserPriceList(u);
         } ELSE {
-            EXEC delete(u);
+            DELETE u;
         }
     }
 }
@@ -573,7 +573,7 @@ FORM priceLists 'Прайсы'
 
     PROPERTIES ()  addUserPriceList TODRAW p
     PROPERTIES (p) editPriceList, copyPriceList FORCE PANEL TOOLBAR
-    PROPERTIES (p) delete FORCE PANEL TOOLBAR SHOWIF isUserPriceList(p)
+    PROPERTIES (p) DELETE FORCE PANEL TOOLBAR SHOWIF isUserPriceList(p)
 
     OBJECTS t = DataPriceListType
 
@@ -654,7 +654,7 @@ addUserPriceListLegalEntity 'Добавить' = ACTION (legalEntity) {
         SET companyUserPriceList(u) <- legalEntity;
         FORM userPriceList OBJECTS p = u DOCKEDMODAL;
         IF TRUE IF NOT formResult() == FormResult.ok THEN {
-            EXEC delete(u);
+            DELETE u;
         }
     }
 } TOOLBAR;
@@ -667,7 +667,7 @@ EXTEND FORM legalEntity
                            nameCurrencyUserPriceList, priceListTypesPriceList,
                            stocksPriceList, noteUserPriceList, objectClassName
     PROPERTIES addUserPriceListLegalEntity(l) TODRAW p FORCE PANEL, updatePriceList(p) TODRAW p FORCE PANEL TOOLBAR
-    PROPERTIES(p) EDITSESSIONFORM, delete FORCE PANEL TOOLBAR
+    PROPERTIES(p) EDITSESSIONFORM, DELETESESSION FORCE PANEL TOOLBAR
     FILTERS companyUserPriceList(p) == l
 ;
 

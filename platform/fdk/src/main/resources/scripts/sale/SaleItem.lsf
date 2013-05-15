@@ -6,7 +6,7 @@ NAMESPACE Sale;
 
 EXTEND FORM item
     PROPERTIES(i) saleAmount = amountPackSku ON CHANGE changePackSku(i)
-    PROPERTIES(b) packBarcode ON CHANGE changePackBarcodeSku(b,i) BEFORE delete(b)
+    PROPERTIES(b) packBarcode ON CHANGE changePackBarcodeSku(b,i) BEFORE deleteb
 ;
 EXTEND DESIGN item {
 //    itemHeaderColumn1 {

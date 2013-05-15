@@ -137,7 +137,7 @@ EXTEND FORM userInvoice
     PROPERTIES(i) SHOWIF createPurchasePricingUserInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i) namePurchasePricingCommitteeUserInvoice,
                   nameCalcPurchaseRetailPriceListTypeInvoice, nameCalcPurchaseRetailCalcPriceListTypeInvoice, purchaseRetailSumUserInvoiceDetailUserInvoice
 
-    PROPERTIES(d) BEFORE delete(d) SHOWIF createPurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
+    PROPERTIES(d) BEFORE deleteid SHOWIF createPurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
                   namePurchaseRetailPriceListTypeUserInvoiceDetail,
                   purchaseRetailMarkupUserInvoiceDetail ON CHANGE changePurchaseRetailMarkupUserInvoiceDetail(d), purchaseRetailMarkupSumUserInvoiceDetail, numberPurchaseRetailVATUserInvoiceDetail,
                   valuePurchaseRetailVATUserInvoiceDetail, purchaseRetailVATSumUserInvoiceDetail,

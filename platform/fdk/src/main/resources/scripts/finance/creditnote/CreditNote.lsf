@@ -74,7 +74,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
         PROPERTIES (d) indexUserCreditNoteDetail, idBarcodeSkuUserCreditNoteDetail, nameSkuUserCreditNoteDetail, shortNameUOMSkuUserCreditNoteDetail,
                        quantityUserCreditNoteDetail, priceUserCreditNoteDetail, sumUserCreditNoteDetail,
                        numberVATUserCreditNoteDetail, valueVATUserCreditNoteDetail, VATSumUserCreditNoteDetail, invoiceSumUserCreditNoteDetail,
-                       name###stockProp###userCreditNoteDetail, ADDOBJ, delete
+                       name###stockProp###userCreditNoteDetail, ADDOBJ, deletecd=DELETESESSION
 
         PROPERTIES(c) TODRAW d addDetailDialogSkuStockUserCreditNoteDetailUserCreditNote,
                                addDetailInputBarcodeUserCreditNoteDetailUserCreditNote, deleteUserCreditNoteDetailUserCreditNote
@@ -156,7 +156,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
         PROPERTIES ()  addUserCreditNote TODRAW c
         PROPERTIES (c) editUserCreditNote
-        PROPERTIES (c) delete FORCE PANEL TOOLBAR SHOWIF isUserCreditNote(c)
+        PROPERTIES (c) deletec=DELETE FORCE PANEL TOOLBAR SHOWIF isUserCreditNote(c)
 
         OBJECTS d = CreditNoteDetail
         PROPERTIES (d) READONLY indexCreditNoteDetail, idBarcodeSkuCreditNoteDetail, nameSkuCreditNoteDetail, shortNameUOMSkuCreditNoteDetail,
@@ -169,7 +169,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     @extendFormFilterAccess(CreditNote, c, creditNotes, stockProp);
 
     DESIGN creditNotes FROM DEFAULT {
-        PROPERTY (delete(c)) {
+        PROPERTY (deletec) {
             askConfirm = TRUE;
         }
 
@@ -224,7 +224,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     EXTEND FORM userCreditNote
         PROPERTIES(c) READONLY invoicesCreditNote
-        PROPERTIES(d) descriptionIndexInvoiceUserCreditNoteDetail BEFORE delete(d)
+        PROPERTIES(d) descriptionIndexInvoiceUserCreditNoteDetail BEFORE deletecd
     ;
     EXTEND DESIGN userCreditNote { headerRow12 { ADD c.invoiceGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
 

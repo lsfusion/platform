@@ -549,7 +549,7 @@ FORM operationCashRegister 'Кассовые операции'
     OBJECTS c = CashOperation
     PROPERTIES(c) READONLY objectClassName, numberCashOperation, dateCashOperation, timeCashOperation,
                            numberCashRegisterCashOperation, sumCashOperation, basisCashOperation
-    PROPERTIES(c) delete
+    PROPERTIES(c) DELETE
     PROPERTIES(c) isCompleteCashOperation FORCE GRID
     PROPERTIES addIncomeCashOperationForm() TODRAW c FORCE PANEL TOOLBAR
     PROPERTIES addOutcomeCashOperationForm() TODRAW c FORCE PANEL TOOLBAR
@@ -606,7 +606,7 @@ FORM centralCashRegister 'Центральная касса'
     PROPERTIES(i) READONLY isCompleteCashOperation FORCE GRID
     PROPERTIES addOutcomeCashOperationForm() TODRAW i FORCE PANEL TOOLBAR
     PROPERTIES editOutcomeCashOperation(i) SHOWIF isOutcomeCashOperation(i)
-    PROPERTIES(i) delete
+    PROPERTIES(i) DELETE
     ORDER BY dateCashDocument, timeCashDocument
 
     FILTERS departmentStoreCashDocument(i) == d,
@@ -620,7 +620,7 @@ FORM centralCashRegister 'Центральная касса'
     PROPERTIES addCollectionForm() TODRAW o FORCE PANEL TOOLBAR
     PROPERTIES editIncomeCashOperation(o) SHOWIF isIncomeCashOperation(o)
     PROPERTIES editCollection(o) SHOWIF isCollection(o)
-    PROPERTIES(o) delete
+    PROPERTIES(o) DELETE
     ORDER BY dateCashDocument(o), timeCashDocument(o)
     FILTERS departmentStoreCashDocument(o) == d,
             dateCashDocument(o) >= (dFrom AS DATE),

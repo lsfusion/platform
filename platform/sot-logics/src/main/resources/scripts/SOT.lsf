@@ -52,7 +52,7 @@ EXTEND FORM items PROPERTIES(i) dateTimeLastMovedSku, sotSIDItem, sidExternaliza
 EXTEND FORM Sale.dialogOperations PROPERTIES(o) codeOperation;
 
 EXTEND FORM warehouses
-    PROPERTIES (w) READONLY mag2Stock BEFORE delete(w)//, sidExternalizable BEFORE delete(w)
+    PROPERTIES (w) READONLY mag2Stock BEFORE deletew//, sidExternalizable BEFORE delete(w)
 ;
 
 EXTEND FORM batches
@@ -61,11 +61,13 @@ EXTEND FORM batches
 
 FORM sotUOMs 'Единицы измерений SOT'
     OBJECTS su=SotUOM
-    PROPERTIES(su) sidExternalizable, nameSotUOM, netWeightSotUOM, nameUOMSotUOM, ADDOBJ, delete
+    PROPERTIES(su) sidExternalizable, nameSotUOM, netWeightSotUOM, nameUOMSotUOM, ADDOBJ, DELETESESSION
+
+    DIALOG SotUOM OBJECT su
 ;
 
 EXTEND FORM itemGroups
-    PROPERTIES (g) READONLY sidExternalizable BEFORE delete(g)
+    PROPERTIES (g) READONLY sidExternalizable BEFORE deleteg
 ;
 
 changeClassStock 'Сделать магазином' = ACTION (warehouse) NEWSESSION AUTOAPPLY {

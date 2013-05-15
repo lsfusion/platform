@@ -46,7 +46,7 @@ EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundPurchaseShipmentInvoice(i) SHOWIF createPurchaseInvoiceUserInvoice(i) createPurchaseShipmentUserInvoice
     PROPERTIES(i) BACKGROUND backgroundPurchaseShipmentInvoice(i) SHOWIF createPurchaseShipmentUserInvoice(i) purchaseShipmentSumUserInvoiceDetailUserInvoice,
                   purchaseShipmentDateUserInvoice, purchaseShipmentTimeUserInvoice
-    PROPERTIES(d) BEFORE delete(d) SHOWIF createPurchaseShipmentInvoice(i) BACKGROUND backgroundPurchaseShipmentInvoice(i)
+    PROPERTIES(d) BEFORE deleteid SHOWIF createPurchaseShipmentInvoice(i) BACKGROUND backgroundPurchaseShipmentInvoice(i)
                   purchaseExpiryDateUserInvoiceDetail, nameCustomerStockUserInvoiceDetail, purchaseShipmentPriceUserInvoiceDetail, purchaseShipmentSumUserInvoiceDetail
     PROPERTIES(d) purchaseShipmentQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF createPurchaseShipmentInvoice(i) BACKGROUND backgroundPurchaseShipmentInvoice(i)
 ;
