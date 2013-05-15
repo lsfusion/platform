@@ -308,7 +308,12 @@ TABLE payment (Payment);
 CLASS PaymentMeans 'Форма оплаты'{
     paymentMeansCash 'Наличные',
     paymentMeansCard 'Карточка'
-};
+}
+FORM paymentMeans
+    OBJECTS m = PaymentMeans
+    PROPERTIES(m) staticCaption
+    DIALOG PaymentMeans OBJECT m
+;
 
 CLASS PaymentType 'Тип платежа';
 TABLE paymentType (PaymentType);

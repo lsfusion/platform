@@ -61,7 +61,12 @@ nameGroupTerminalDocumentTypeGroupTerminal 'Группа типов докуме
 
 CLASS TerminalHandbookType 'Вид справочника ТСД' {
     terminalHandbookTypeLegalEntity 'Организация'
-};
+}
+FORM terminalHandbookTypes
+    OBJECTS t = TerminalHandbookType
+    PROPERTIES(t) staticCaption
+    DIALOG TerminalHandbookType OBJECT t
+;
 
 TABLE terminalHandbookType(TerminalHandbookType);
 idTerminalHandbookType 'Код' = DATA STRING[10] (TerminalHandbookType) IN base;

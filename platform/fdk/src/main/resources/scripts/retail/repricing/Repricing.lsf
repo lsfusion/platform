@@ -316,7 +316,12 @@ sumInSkuLedger (ledger) += diffRetailSumRepricingDetail(ledger);
 CLASS ChangePriceType 'Тип изменения цены' {
     markupChange 'Процент торговой надбавки',
     discountChange 'Процент к розничной цене'
-};
+}
+FORM changePriceTypes
+    OBJECTS t = ChangePriceType
+    PROPERTIES(t) staticCaption
+    DIALOG ChangePriceType OBJECT t
+;
 
 changePriceTypeUserRepricing = DATA ChangePriceType (UserRepricing);
 nameChangePriceTypeUserRepricing 'Тип изменения цены' (userRepricing) = staticCaption(changePriceTypeUserRepricing(userRepricing)) MINCHARWIDTH 20 PREFCHARWIDTH 20 MAXCHARWIDTH 20;

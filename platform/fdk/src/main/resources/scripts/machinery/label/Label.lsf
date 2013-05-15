@@ -6,7 +6,12 @@ REQUIRE System, Store, Stock, Barcode;
 CLASS PrintOrientation 'Ориентация' {
     portrait 'Книжная',
     landscape 'Альбомная'
-};
+}
+FORM printOrientations
+    OBJECTS o = PrintOrientation
+    PROPERTIES(o) staticCaption
+    DIALOG PrintOrientation OBJECT o
+;
 
 // типы ценников
 CLASS LabelType 'Тип ценника';

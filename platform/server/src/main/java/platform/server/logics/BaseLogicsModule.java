@@ -112,6 +112,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP monthNumber;
     public LCP monthInDate;
 
+    public LCP nameMonth;
+    public LCP nameDOW;
+
     public LCP numberDOW;
     public LCP DOWNumber;
     public LCP DOWInDate;
@@ -221,8 +224,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 new String[]{"drop", "ok", "close"},
                 new String[]{"Сбросить", "Принять", "Закрыть"},
                 baseClass);
-
-        // todo : раскидать по модулям
     }
 
     @Override
@@ -404,23 +405,24 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
         currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
 
-        staticName = addDProp("staticName", getString("logics.statcode"), StringClass.get(250), baseClass);
-        staticCaption = addDProp(recognizeGroup, "staticCaption", "Статическое имя", InsensitiveStringClass.get(100), baseClass);
+        staticName = addDProp(publicGroup, "staticName", getString("logics.static.name"), StringClass.get(250), baseClass);
+        staticCaption = addDProp(publicGroup, "staticCaption", getString("logics.static.caption"), InsensitiveStringClass.get(100), baseClass);
         ((CalcProperty)staticCaption.property).aggProp = true;
 
         // todo : поменять возможно названия
         objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), staticCaption, objectClass, 1);
 
-/*        name.setEventChange(addJProp(string2SP, addJProp(name.getOld(), objectClass, 1), 1,
-                addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
-                is(named), 1);*/
-
         // Настройка форм
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
         defaultOverrideBackgroundColor = addSUProp("defaultOverrideBackgroundColor", true, getString("logics.default.background.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.YELLOW), defaultBackgroundColor);
         defaultForegroundColor = addDProp("defaultForegroundColor", getString("logics.default.foreground.color"), ColorClass.instance);
         defaultOverrideForegroundColor = addSUProp("defaultOverrideForegroundColor", true, getString("logics.default.foreground.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.RED), defaultForegroundColor);
+
+        // todo : эти свойства делаются только для правильного диалога
+        // в дальнейшем нужно вынести все операции с датами в свой модуль Time.lsf и там нарисовать диалоговую форму по умолчанию
+        nameMonth = addJProp(recognizeGroup, "nameMonth", "Название", and1, staticCaption, 1, is(month), 1);
+        nameDOW = addJProp(recognizeGroup, "nameDOW", "Название", and1, staticCaption, 1, is(DOW), 1);
 
         initNavigators();
     }

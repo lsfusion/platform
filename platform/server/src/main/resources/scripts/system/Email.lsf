@@ -5,8 +5,14 @@ REQUIRE System, Reflection;
 GROUP email 'Настройки почтового сервера' : public;   //rootGroup
 
 CLASS EncryptedConnectionTypeStatus 'Тип шифрованного подключения' {
-    SSL 'SSL', TLS 'TLS'
-};
+    SSL 'SSL',
+    TLS 'TLS'
+}
+FORM encryptedConnectionTypeStatuses
+    OBJECTS s = EncryptedConnectionTypeStatus
+    PROPERTIES(s) staticCaption
+    DIALOG EncryptedConnectionTypeStatus OBJECT s
+;
 
 encryptedConnectionType 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus();
 nameEncryptedConnectionType 'Тип шифрованного подключения' = staticCaption(encryptedConnectionType()) PREFCHARWIDTH 3 IN email;

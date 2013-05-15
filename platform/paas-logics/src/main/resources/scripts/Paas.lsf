@@ -23,6 +23,11 @@ CLASS Status 'Статус конфигурации' {
     stopping 'Останавливается',
     stopped 'Остановлен'
 }
+FORM statuses
+    OBJECTS s = Status
+    PROPERTIES(s) staticCaption
+    DIALOG Status OBJECT s
+;
 
 CLASS Configuration 'Конфигурация';
 configurationName 'Имя' = DATA ISTRING[100] (Configuration);

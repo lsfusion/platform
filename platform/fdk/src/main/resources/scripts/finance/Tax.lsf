@@ -4,11 +4,15 @@ REQUIRE System, Utils, Historizable, Hierarchy, Country, Finance;
 
 // ---------------------------------- Налог --------------------------------------- //
 
-CLASS Tax 'Налоги'
-{
+CLASS Tax 'Налоги' {
     taxVAT 'НДС',
     taxNP 'Налог с продаж'
 }
+FORM taxDialog
+    OBJECTS t = Tax
+    PROPERTIES(t) staticCaption
+    DIALOG Tax OBJECT t
+;
 
 // ---------------------------------- Шкала налога --------------------------------------- //
 
@@ -32,11 +36,15 @@ addNewRange 'Добавить шкалу' = ACTION (tax, country) {
     SET taxRange(r) <- tax AS Tax WHERE r == addedObject();
 } TOOLBAR IMAGE 'add.png';
 
-CLASS RangeType 'Для каких подразделений действует шкала'
-{
+CLASS RangeType 'Для каких подразделений действует шкала' {
     common 'Общий',
     units 'Для подразделений'
-};
+}
+FORM rangeTypes
+    OBJECTS t = RangeType
+    PROPERTIES(t) staticCaption
+    DIALOG RangeType OBJECT t
+;
 
 rangeTypeRange = DATA RangeType (Range) NOT NULL;
 nameRangeTypeRange 'Тип шкалы' = staticCaption(rangeTypeRange(range)) IN base;

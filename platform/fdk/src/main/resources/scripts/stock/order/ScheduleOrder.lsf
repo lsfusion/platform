@@ -11,7 +11,12 @@ CLASS GenType 'Тип генерации' {
     genDays 'Генерация через N дней',
     genNumber 'Генерация по числам',
     genDayMonth 'Генерация по дням недели и месяца'
-};
+}
+FORM genTypes
+    OBJECTS t = GenType
+    PROPERTIES(t) staticCaption
+    DIALOG GenType OBJECT t
+;
 
 CLASS ABSTRACT ScheduleOrder 'График';
 TABLE scheduleOrder(ScheduleOrder);

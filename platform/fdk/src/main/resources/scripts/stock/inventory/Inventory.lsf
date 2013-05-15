@@ -88,7 +88,12 @@ CLASS TypeOfAddition 'Тип инвентаризации' {
     register 'Товары из описей',
     remains 'Товары по остаткам',
     many    'Множество товаров'
-};
+}
+FORM typeOfAdditions
+    OBJECTS t = TypeOfAddition
+    PROPERTIES(t) staticCaption
+    DIALOG TypeOfAddition OBJECT t
+;
 
 CLASS Inventory 'Инвентаризация' : Historizable, NumeratedDocument;
 CLASS InventoryPosted 'Проведенная инвентаризация' : Inventory, PostedObject;

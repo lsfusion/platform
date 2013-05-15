@@ -254,6 +254,11 @@ CLASS SkuType {
     skuTypeContainer 'Тара',
     skuTypeCharge 'Услуги'
 }
+FORM skuTypes
+    OBJECTS t = SkuType
+    PROPERTIES(t) staticCaption
+    DIALOG SkuType OBJECT t
+;
 
 TABLE skuType (SkuType);
 isStockSkuType 'Складируемые' (type) = type IS SkuType AND NOT type == SkuType.skuTypeCharge PERSISTENT;

@@ -10,7 +10,12 @@ autoSynchronizeCoordinates 'Синхронизировать координат�
 CLASS MapProvider 'Использовать карты' {
     google 'Google',
     yandex 'Yandex'
-};
+}
+FORM mapProviders
+    OBJECTS m = MapProvider
+    PROPERTIES(m) staticCaption
+    DIALOG MapProvider OBJECT m
+;
 
 userMapProvider = DATA MapProvider ();
 mapProvider = MapProvider.yandex OVERRIDE userMapProvider();

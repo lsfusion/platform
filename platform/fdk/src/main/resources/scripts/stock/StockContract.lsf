@@ -15,13 +15,23 @@ GROUP paymentGroup 'Взаиморасчеты' : public;
 CLASS ContractSkuType 'Тип договора на поставку' {
     sale 'Договор купли-продажи',
     commission 'Договор комиссии'
-};
+}
+FORM contractSkuTypes
+    OBJECTS t = ContractSkuType
+    PROPERTIES(t) staticCaption
+    DIALOG ContractSkuType OBJECT t
+;
 
 CLASS AgreementPaymentType 'Порядок оплаты' {
     prepayment 'С отсрочкой платежа',
     implement 'По факту реализации',
     requirement 'Платежное требование'
-};
+}
+FORM agreementPaymentTypes
+    OBJECTS t = AgreementPaymentType
+    PROPERTIES(t) staticCaption
+    DIALOG AgreementPaymentType OBJECT t
+;
 
 wordContractSku 'Файл договора'  = ABSTRACT WORDFILE (ContractSku);
 saveWordContractSku 'Загрузить файл договора' (contractSku) = ACTION LOADFILE wordContractSku(contractSku);

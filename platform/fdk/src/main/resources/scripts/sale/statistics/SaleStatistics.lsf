@@ -51,7 +51,12 @@ CLASS GroupStatic 'Ед. изм.' {
     statisticConditionalPiece 'Усл. кус.',
     statisticSquareMeters 'Квадратный м',
     statisticCubicMeters 'Кубический м'
-};
+}
+FORM GroupStatics
+    OBJECTS g = GroupStatic
+    PROPERTIES(g) staticCaption
+    DIALOG GroupStatic OBJECT g
+;
 
 TABLE groupStaticUOM (GroupStatic, UOM);
 factorGroupStaticUOM 'Коэффициент перевода' = DATA NUMERIC[14,3] (GroupStatic, UOM);

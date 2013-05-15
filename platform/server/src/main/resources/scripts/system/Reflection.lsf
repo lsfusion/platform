@@ -47,11 +47,17 @@ captionProperty 'Заголовок' = DATA STRING[250] (Property) IN base;
 propertySID 'Свойство' (sid) = GROUP AGGR property BY SIDProperty(property) WHERE property IS Property;
 
 CLASS PropertyDraw 'Свойство на форме';
-CLASS PropertyDrawShowStatus 'Показ свойства'
-{
+
+CLASS PropertyDrawShowStatus 'Показ свойства' {
     Show 'Показать',
     Hide 'Спрятать'
-};
+}
+FORM propertyDrawShowStatuses
+    OBJECTS s = PropertyDrawShowStatus
+    PROPERTIES(s) staticCaption
+    DIALOG PropertyDrawShowStatus OBJECT s
+;
+
 TABLE formPropertyDraw (Form, PropertyDraw);
 TABLE propertyDraw (PropertyDraw);
 TABLE propertyDrawCustomUser (PropertyDraw, CustomUser);
