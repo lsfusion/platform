@@ -105,7 +105,6 @@ META defineDocumentHeaderRepricingCommittee(object, stockProp)
     nameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(repricingCommittee###object (object));
     namePositionChairman###object 'Должность' (object) = namePositionChairmanCommittee(repricingCommittee###object (object));
 
-
 END
 META defineDocumentHeaderAbstractRepricingCommittee(object)
     numberDisposal###object '№ распоряжения на переоценку' (object) = ABSTRACT STRING[30] (###object) PERSISTENT IN documentPrmGroup;
@@ -525,31 +524,6 @@ EXTEND FORM userRepricing
         FILTER 'С остатком ' 'F10' currentBalanceSkuUserRepricing(ks, p) DEFAULT
         FILTER 'В документе ' 'F9' quantityUserRepricingDetailSkuUserRepricing(ks, p)
 ;
-
-//allSkuUserRepricing 'Весь остаток' = DATA SESSION BOOLEAN (Sku, UserRepricing);
-//
-//overChangeAllSkuUserRepricing = ACTION (sku, userRepricing) {
-//    REQUEST BOOLEAN INPUT;
-//
-//    IF requestedLogical() THEN {
-//        SET allSkuUserRepricing(sku, userRepricing) <- TRUE;
-//
-//        IF currentBalanceSkuUserRepricing(sku, userRepricing) AND allSkuUserRepricing (sku, userRepricing) THEN {
-//            SET requestedNumeric() <- currentBalanceSkuUserRepricing(sku, userRepricing) ;
-//            EXEC changeQuantityValueSkuUserRepricing(sku, userRepricing);
-//        }
-//    }ELSE {
-//        SET allSkuUserRepricing(sku, userRepricing) <- NULL;
-//        SET requestedNumeric() <- NULL;
-//        EXEC changeQuantityValueSkuUserRepricing(sku, userRepricing);
-//    }
-//}
-//
-//
-//
-//EXTEND FORM userRepricing
-//    PROPERTIES allSkuUserRepricing(s,p) ON CHANGE overChangeAllSkuUserRepricing(s,p) AFTER currentBalanceSkuUserRepricing(s,p)
-//;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 

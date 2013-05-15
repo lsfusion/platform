@@ -1,0 +1,34 @@
+MODULE RevaluationManufacturingPrice;
+
+REQUIRE Revaluation, PurchaseManufacturingPrice;
+
+//-- До
+@defineDocumentInterfaceDetailPriceCustomPrefix(revaluationDetail, curManufacturing, ' изготовителя до');
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userRevaluation, manufacturingPriceStockPriceListType, curManufacturing, sku, stock);
+@defineDocumentInterfaceDetailDataSumPrefix (revaluation, curManufacturing, ' изготовителя до');
+@deriveDocumentDetailSumPrefix(userRevaluation, curManufacturing, currency, quantity);
+
+//-- После
+@defineDocumentInterfaceDetailPriceCustomPrefix(revaluationDetail, manufacturing, ' изготовителя после');
+@defineDocumentInterfaceDetailDataSumPrefix (revaluation, manufacturing, ' изготовителя после');
+@deriveDocumentDetailSumPrefix(userRevaluation, manufacturing, currency, quantity);
+
+// -- Разница
+@defineDocumentInterfaceDetailDiffSumPrefix (revaluation, manufacturingSum, , cur, ' изменения изготовителя');
+
+@defineDocumentInterfaceHeaderSumPrefix (revaluation, diffManufacturing, ' изменения изготовителя');
+
+
+EXTEND FORM userRevaluation
+    PROPERTIES(p) AFTER diffSumUserRevaluationDetailUserRevaluation diffManufacturingSumUserRevaluationDetailUserRevaluation
+    PROPERTIES(d) AFTER curSumUserRevaluationDetail curManufacturingSumUserRevaluationDetail, curManufacturingPriceUserRevaluationDetail
+    PROPERTIES(d) AFTER sumUserRevaluationDetail manufacturingSumUserRevaluationDetail, manufacturingPriceUserRevaluationDetail
+;
+
+EXTEND FORM revaluations
+    PROPERTIES(p) READONLY AFTER diffSumRevaluationDetailRevaluation diffManufacturingSumRevaluationDetailRevaluation
+    PROPERTIES(d) READONLY AFTER curSumRevaluationDetail curManufacturingSumRevaluationDetail, curManufacturingPriceRevaluationDetail
+    PROPERTIES(d) READONLY AFTER sumRevaluationDetail manufacturingSumRevaluationDetail, manufacturingPriceRevaluationDetail
+;
+
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceRevaluationDetail(ledger) WHEN CLASS(manufacturingPriceRevaluationDetail(ledger)) AND type == SystemLedgerPriceListType.manufacturingPriceStockPriceListType;
