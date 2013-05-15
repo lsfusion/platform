@@ -61,7 +61,8 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
 
     @Override
     protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, DataObject> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
-        if((where == null || where.property instanceof ValueProperty) && writeTo.property instanceof SessionDataProperty && !writeTo.mapping.valuesSet().intersect(mapInterfaces.valuesSet())) // оптимизация, в дальнейшем надо будет непосредственно в aspectChangeProperty сделать в случае SessionDataProperty ставить "удалить" изменения на null
+        if((where == null || where.property instanceof ValueProperty) && writeTo.property instanceof SessionDataProperty && !writeTo.mapping.valuesSet().intersect(mapInterfaces.valuesSet())
+                && !(writeFrom instanceof CalcPropertyMapImplement && CalcProperty.depends(((CalcPropertyMapImplement)writeFrom).property, writeTo.property))) // оптимизация, в дальнейшем надо будет непосредственно в aspectChangeProperty сделать в случае SessionDataProperty ставить "удалить" изменения на null
             context.getSession().dropChanges((SessionDataProperty)writeTo.property);
 
         // если не хватает ключей надо or добавить, так чтобы кэширование работало
