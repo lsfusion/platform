@@ -1,119 +1,9 @@
 MODULE Revaluation;
 
-REQUIRE Employee, Stock, StockDocument, PriceListCalc, Terminal, PriceListLedger;
-
-//--------------------------------Комиссия для списания----------------------------------//
-CLASS RevaluationCommittee 'Комиссия для переоценки' : Committee;
-
-nameRevaluationCommittee 'Наименование' = DATA ISTRING[150](RevaluationCommittee);
-
-nameCommittee(committee) += nameRevaluationCommittee(committee) IF committee IS RevaluationCommittee;
-
-revaluationCommitteeStock 'Комиссия для переоценки' = DATA RevaluationCommittee (Stock);
-nameRevaluationCommitteeStock 'Комиссия для переоценки' (stock) = nameRevaluationCommittee(revaluationCommitteeStock(stock)) IN committeeGroup;
-isRevaluationCommitteeStock 'По умолчанию' (revaluationCommittee, stock) = revaluationCommitteeStock(stock) == revaluationCommittee;
-CONSTRAINT revaluationCommitteeStock(stock) AND NOT inCommitteeEmployeeDivision(revaluationCommitteeStock(stock), stock)
-    CHECKED BY revaluationCommitteeStock MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
-
-FORM revaluationCommittee 'Комиссия для переоценки'
-    OBJECTS c=RevaluationCommittee FIXED PANEL
-    PROPERTIES(c)      nameRevaluationCommittee, nameChairmanCommittee
-
-    TREE stockTree sg = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = nameStockGroup(sg)
-
-    OBJECTS ts=Stock
-    PROPERTIES    READONLY tsTreeName = nameStock(ts)
-    PROPERTIES(c, ts) inCommitteeEmployeeDivision FORCE GRID, isRevaluationCommitteeStock
-
-    FILTERS isParentStockGroupStock(sg, ts)
-    ORDER BY tsTreeName
+REQUIRE RepricingCommittee, StockDocument, PriceListCalc, Terminal, PriceListLedger;
 
 
-    OBJECTS e=Employee
-    PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
-    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
-
-    PROPERTIES(c, e)   inCommitteeEmployee
-    FILTERS            countDivisionEmployeeCommittee (e, c)
-    FILTERGROUP filters6
-        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
-
-    FILTERGROUP filters5
-        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, ts)
-
-    EDIT RevaluationCommittee OBJECT c
-;
-@extendFormFilterStockAccess(Stock, ts, revaluationCommittee);
-@extendFormFilterStockGroupAccess(StockGroup, sg, revaluationCommittee, countAccessEmployeeEmployeeDivisionGroup);
-
-DESIGN revaluationCommittee FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-        NEW oneCase BEFORE e.box {
-            ADD PROPERTY (nameChairmanCommittee);
-        }
-
-        NEW caseOne BEFORE oneCase {
-            childConstraints = TO THE RIGHT;
-            title = 'Отделы, для которых действуют комиссии';
-
-            ADD stockTree.tree {
-                fillHorizontal = 1;
-            }
-
-            ADD ts.box {
-                fillHorizontal = 2;
-            }
-        };
-    }
-}
-
-FORM revaluationCommitteeDialog 'Комиссии для переоценки'
-    OBJECTS w=RevaluationCommittee
-    PROPERTIES(w)      READONLY nameRevaluationCommittee, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
-    PROPERTIES(w)      ADDFORM, EDITFORM
-
-    DIALOG RevaluationCommittee OBJECT w
-;
-// ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
-
-META defineDocumentHeaderRevaluationCommittee(object, stockProp)
-    numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (###object) IN documentPrmGroup;
-
-    revaluationCommittee###object (object) = DATA RevaluationCommittee(###object);
-    nameRevaluationCommittee###object 'Комиссия для переоценки' (object) = nameRevaluationCommittee(revaluationCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
-    revaluationCommittee###object (object) <- revaluationCommitteeStock(stockProp###object(object))
-        WHEN CHANGED(stockProp###object(object));
-
-    CONSTRAINT revaluationCommittee###object (object) AND NOT inCommitteeEmployeeDivision(revaluationCommittee###object (object), stockProp###object(object))
-        CHECKED BY revaluationCommittee###object MESSAGE 'Для документа выбрана комиссия, которая не действует для склада документа';
-
-    inCommittee###object##Employee (object, employee) = inCommitteeEmployee(revaluationCommittee###object (object), employee);
-    nameEmployeeCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(revaluationCommittee###object (object));
-    nameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(revaluationCommittee###object(object));
-    namePositionChairman###object 'Должность' (object) = namePositionChairmanCommittee(revaluationCommittee###object(object));
-END
-META defineDocumentHeaderAbstractRevaluationCommittee(object)
-    numberDisposal###object '№ распоряжения на переоценку' (object) = ABSTRACT STRING[30] (###object) IN documentPrmGroup;
-
-    revaluationCommittee###object (object) = ABSTRACT RevaluationCommittee(###object);
-    nameRevaluationCommittee###object 'Комиссия для переоценки' (object) = nameRevaluationCommittee(revaluationCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
-
-    inCommittee###object##Employee (object, employee) = inCommitteeEmployee(revaluationCommittee###object (object), employee);
-    nameEmployeeCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(revaluationCommittee###object (object));
-    nameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(revaluationCommittee###object(object));
-    namePositionChairman###object 'Должность' (object) = namePositionChairmanCommittee(revaluationCommittee###object(object));
-END
-
-META defineDocumentInterfaceHeaderRevaluationCommittee (object, stockProp)
-    @defineDocumentHeaderAbstractRevaluationCommittee (object);
-    @defineDocumentHeaderRevaluationCommittee (user###object, stockProp);
-    revaluationCommittee###object (object) += revaluationCommittee###user###object(object);
-    numberDisposal###object (object) += numberDisposal###user###object(object);
-END
-
-//----------------------------------------------- Переоценка ---------------------------------------------------//
+//----------------------------------------------- Переоценка (опт) ---------------------------------------------------//
 
 CLASS ABSTRACT Revaluation 'Переоценка';
 CLASS ABSTRACT RevaluationDetail 'Строка переоценки': InLIFOSkuLedger;
@@ -137,7 +27,7 @@ CLASS UserRevaluationPosted 'Проведенная переоценки (пол
 @deriveDocumentCurrency(userRevaluation, stock);
 
 // Комиссия
-@defineDocumentInterfaceHeaderRevaluationCommittee (revaluation, stock);
+@defineDocumentInterfaceHeaderRepricingCommittee (revaluation, stock);
 
 // Sku
 @defineDocumentInterfaceDetailSku(revaluation, sku);
@@ -233,8 +123,8 @@ FORM revaluation 'Переоценка (печать)' PRINT
     PROPERTIES (p) numberRevaluation, seriesRevaluation, dateRevaluation, timeRevaluation, beforeDateRevaluation, nameStockRevaluation,
                    diffSumRevaluationDetailRevaluation, curSumRevaluationDetailRevaluation, sumRevaluationDetailRevaluation,
                    quantityRevaluationDetailRevaluation, countRevaluationDetailRevaluation,
-                   nameRevaluationCommitteeRevaluation, skipChangeLedgerRevaluation,
-                   noteRevaluation, numberDisposalRevaluation, revaluationCommitteeRevaluation, nameEmployeeCommitteeRevaluation,
+                   nameRepricingCommitteeRevaluation, skipChangeLedgerRevaluation,
+                   noteRevaluation, numberDisposalRevaluation, repricingCommitteeRevaluation, nameEmployeeCommitteeRevaluation,
                    nameChairmanRevaluation, namePositionChairmanRevaluation
 
     OBJECTS d = RevaluationDetail
@@ -260,7 +150,7 @@ FORM userRevaluation 'Переоценка'
     PROPERTIES (p) objectClassName, nameNumeratorObject, numberObject, seriesObject,
                    dateUserRevaluation, timeUserRevaluation, beforeDateUserRevaluation, nameStockUserRevaluation,
                    diffSumUserRevaluationDetailUserRevaluation, noteUserRevaluation, numberDisposalUserRevaluation,
-                   nameRevaluationCommitteeUserRevaluation, skipChangeLedgerUserRevaluation
+                   nameRepricingCommitteeUserRevaluation, skipChangeLedgerUserRevaluation
 
     OBJECTS d=UserRevaluationDetail
     PROPERTIES (d) indexUserRevaluationDetail, idBarcodeSkuUserRevaluationDetail, nameSkuUserRevaluationDetail,
@@ -421,11 +311,8 @@ DESIGN revaluations FROM DEFAULT {
 }
 
 NAVIGATOR {
-    stockNavigator {
-        NEW revaluationNavigator 'Переоценка' BEFORE balanceSku {
-            ADD revaluations;
-            ADD revaluationCommitteeDialog;
-        }
+    revaluationNavigator {
+        ADD revaluations BEFORE repricingCommitteeDialog;
     }
 }
 

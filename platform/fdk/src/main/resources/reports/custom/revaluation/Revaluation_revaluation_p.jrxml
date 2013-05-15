@@ -39,11 +39,11 @@
 	<field name="beforeDateRevaluation" class="java.util.Date"/>
 	<field name="nameStockRevaluation" class="java.lang.String"/>
 	<field name="diffSumRevaluationDetailRevaluation" class="java.lang.Double"/>
-	<field name="nameRevaluationCommitteeRevaluation" class="java.lang.String"/>
+	<field name="nameRepricingCommitteeRevaluation" class="java.lang.String"/>
 	<field name="skipChangeLedgerRevaluation" class="java.lang.Boolean"/>
 	<field name="noteRevaluation" class="java.lang.String"/>
 	<field name="numberDisposalRevaluation" class="java.lang.String"/>
-	<field name="revaluationCommitteeRevaluation" class="java.lang.Integer"/>
+	<field name="repricingCommitteeRevaluation" class="java.lang.Integer"/>
 	<field name="nameEmployeeCommitteeRevaluation" class="java.lang.String"/>
 	<field name="nameChairmanRevaluation" class="java.lang.String"/>
 	<field name="namePositionChairmanRevaluation" class="java.lang.String"/>
@@ -267,7 +267,7 @@
 				</subreport>
 			</band>
 			<band height="69">
-				<printWhenExpression><![CDATA[$F{revaluationCommitteeRevaluation}==null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{repricingCommitteeRevaluation}==null]]></printWhenExpression>
 				<line>
 					<reportElement x="159" y="59" width="119" height="1"/>
 				</line>

@@ -1,130 +1,8 @@
 MODULE Repricing;
 
-REQUIRE Employee, Store, Pricing, StockDocument, PriceListCalc, RepricingOperation, PriceListLedger;
+REQUIRE RepricingCommittee, Store, Pricing, StockDocument, PriceListCalc, RepricingOperation, PriceListLedger;  //Employee
 
-// ----------------------------------- Комиссия ------------------------------------------ //
-
-CLASS RepricingCommittee 'Комиссия переоценки' : Committee;
-
-nameRepricingCommittee 'Наименование' = DATA ISTRING[150](RepricingCommittee);
-
-nameCommittee(committee) += nameRepricingCommittee(committee) IF committee IS RepricingCommittee;
-
-// ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
-
-repricingCommitteeDepartmentStore = DATA RepricingCommittee (DepartmentStore);
-nameRepricingCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = nameRepricingCommittee(repricingCommitteeDepartmentStore(departmentStore)) IN committeeGroup;
-isDefaultRepricingCommitteeDepartmentStore 'По умолчанию' (repricingCommittee, departmentStore) = repricingCommitteeDepartmentStore(departmentStore) == repricingCommittee;
-CONSTRAINT repricingCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(repricingCommitteeDepartmentStore(departmentStore), departmentStore)
-    CHECKED BY repricingCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
-
-EXTEND FORM departmentStore PROPERTIES nameRepricingCommitteeDepartmentStore(d);
-
-// ----------------------------------- Формы для комиссий переоценки ------------------------------------------ //
-
-FORM repricingCommittee 'Комиссия переоценки'
-    OBJECTS c=RepricingCommittee FIXED PANEL
-    PROPERTIES(c)      nameRepricingCommittee, nameChairmanCommittee
-
-    TREE treeStore a=STRING[3], t=ChainStores, st=StoreType, s=Store
-    PROPERTIES         READONLY OBJVALUE(a), nameChainStores(t), nameStoreType(st), nameStore(s)
-    FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
-
-    OBJECTS dep=DepartmentStore
-    PROPERTIES(dep)    READONLY depName = nameDepartmentStore
-    PROPERTIES(c, dep) inCommitteeEmployeeDivision, isDefaultRepricingCommitteeDepartmentStore
-    FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
-    ORDER BY depName
-
-    OBJECTS e=Employee
-    PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
-    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
-
-    PROPERTIES(c, e)   inCommitteeEmployee
-    FILTERS            countDivisionEmployeeCommittee (e, c)
-    FILTERGROUP filters6
-        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
-
-    FILTERGROUP filters5
-        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, dep)
-
-    EDIT RepricingCommittee OBJECT c
-;
-@extendFormFilterStockAccess(DepartmentStore, dep, repricingCommittee);
-@extendFormFilterStockGroupAccess(ChainStores, t, repricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
-@extendFormFilterStockGroupAccess(StoreType, st, repricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
-@extendFormFilterStockGroupAccess(Store, s, repricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
-
-DESIGN repricingCommittee FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        NEW OneCase BEFORE e.box {
-            ADD PROPERTY (nameChairmanCommittee);
-        }
-
-        NEW caseOne BEFORE OneCase {
-            childConstraints = TO THE RIGHT;
-            title = 'Отделы, для которых действуют комиссии';
-
-            ADD treeStore.tree {
-                fillHorizontal = 1;
-            }
-
-            ADD dep.box {
-                fillHorizontal = 2;
-            }
-        };
-    }
-}
-
-FORM repricingCommitteeDialog 'Комиссии переоценки'
-    OBJECTS rc=RepricingCommittee
-    PROPERTIES(rc)      READONLY nameRepricingCommittee, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
-    PROPERTIES(rc)      ADDFORM, EDITFORM
-
-    DIALOG RepricingCommittee OBJECT rc
-;
-
-// ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
-
-
-META defineDocumentHeaderRepricingCommittee(object, stockProp)
-    numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (###object) IN documentPrmGroup;
-
-    repricingCommittee###object (object) = DATA RepricingCommittee(###object);
-    nameRepricingCommittee###object 'Комиссия переоценки' (object) = nameRepricingCommittee(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
-    repricingCommittee###object (object) <- repricingCommitteeDepartmentStore(stockProp###object(object))
-        WHEN CHANGED(stockProp###object(object));
-
-    CONSTRAINT repricingCommittee###object(object) AND NOT inCommitteeEmployeeDivision(repricingCommittee###object(object), stockProp###object(object))
-        CHECKED BY repricingCommittee###object MESSAGE 'Для документа выбрана комиссия, которая не действует для склада документа';
-
-    inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
-    nameEmployeeCommittee###object 'Сотрудники комиссии' (object) = namePositionEmployeeCommittee(repricingCommittee###object (object));
-    nameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(repricingCommittee###object (object));
-    namePositionChairman###object 'Должность' (object) = namePositionChairmanCommittee(repricingCommittee###object (object));
-
-END
-META defineDocumentHeaderAbstractRepricingCommittee(object)
-    numberDisposal###object '№ распоряжения на переоценку' (object) = ABSTRACT STRING[30] (###object) PERSISTENT IN documentPrmGroup;
-    repricingCommittee###object (object) = ABSTRACT RepricingCommittee(###object) PERSISTENT;
-    nameRepricingCommittee###object 'Комиссия переоценки' (object) = nameRepricingCommittee(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
-
-    inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
-    nameEmployeeCommittee###object 'Сотрудники комиссии' (object) = namePositionEmployeeCommittee(repricingCommittee###object (object));
-    nameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(repricingCommittee###object (object));
-    namePositionChairman###object 'Должность' (object) = namePositionChairmanCommittee(repricingCommittee###object (object));
-END
-
-META defineDocumentInterfaceHeaderRepricingCommittee (object, stockProp)
-    @defineDocumentHeaderAbstractRepricingCommittee (object);
-    @defineDocumentHeaderRepricingCommittee (user###object, stockProp);
-    repricingCommittee###object (object) += repricingCommittee###user###object(object);
-    numberDisposal###object (object) += numberDisposal###user###object(object);
-END
-
-//----------------------------------------------- Переоценка ---------------------------------------------------//
+//----------------------------------------------- Переоценка (розница) ---------------------------------------------------//
 
 CLASS ABSTRACT Repricing 'Акт переоценки';
 CLASS ABSTRACT RepricingDetail 'Строка акта переоценки': InLIFOSkuLedger;
@@ -706,7 +584,7 @@ DESIGN repricings FROM DEFAULT {
 NAVIGATOR {
     pricingNavigator {
         ADD repricings;
-        ADD repricingCommitteeDialog;
+//        ADD repricingCommitteeDialog;
         ADD operations;
     }
 }
