@@ -435,15 +435,15 @@ END
 
 META defineOperationPriceListType(dumb)
 
-    TABLE priceListType###operation(PriceListType, Operation);
-    isPriceListType###operation 'Отм.' = DATA BOOLEAN (PriceListType, Operation);
+    TABLE priceListTypeOperation(PriceListType, Operation);
+    inPriceListTypeOperation 'Отм.' = DATA BOOLEAN (PriceListType, Operation);
 
     EXTEND FORM operation
         OBJECTS pt = PriceListType
-        PROPERTIES(pt, o) isPriceListType###operation
+        PROPERTIES(pt, o) inPriceListTypeOperation
         PROPERTIES(pt) READONLY namePriceListType, nameCurrencyPriceListType, objectClassName
         FILTERGROUP filters
-            FILTER 'Показывать отмеченные' 'F9' isPriceListType###operation(pt, o)
+            FILTER 'Показывать отмеченные' 'F9' inPriceListTypeOperation(pt, o)
     ;
 
     EXTEND DESIGN operation {
@@ -456,12 +456,12 @@ END
 
 META defineDocumentOperationPriceListType(object, caption)
     CONSTRAINT operation###object(object) AND priceListType###object(object)
-               AND NOT isPriceListType###operation(priceListType###object(object), operation###object(object))
+               AND NOT inPriceListTypeOperation(priceListType###object(object), operation###object(object))
         CHECKED BY priceListType###object
         MESSAGE 'Вид цены для '###caption###' должен совпадать с отмеченными в операции ';
 
     CONSTRAINT operation###object##Detail(detail) AND priceListType###object##Detail(detail)
-               AND NOT isPriceListType###operation(priceListType###object##Detail(detail), operation###object##Detail(detail))
+               AND NOT inPriceListTypeOperation(priceListType###object##Detail(detail), operation###object##Detail(detail))
         CHECKED BY priceListType###object##Detail
         MESSAGE 'Вид цены для строки '###caption###' должен совпадать с отмеченными в операции';
 END

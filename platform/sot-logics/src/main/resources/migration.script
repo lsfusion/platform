@@ -625,3 +625,33 @@ V0.2.2 {
 V0.8.0 {
     PROPERTY classSID -> staticName
 }
+
+V0.8.5 {
+    PROPERTY PriceList_isLegalEntityGroupOperation -> PriceList_dataInLegalEntityGroupOperation
+    PROPERTY PriceList_isLegalEntityOperation -> PriceList_dataInLegalEntityOperation
+    PROPERTY Purchase_isSupplierGroupOperation -> Purchase_dataInSupplierGroupOperation
+    PROPERTY Purchase_isSupplierOperation -> Purchase_dataInSupplierOperation
+    PROPERTY Purchase_isCustomerGroupOperation -> Purchase_dataInCustomerGroupOperation
+    PROPERTY Purchase_isCustomerOperation -> Purchase_dataInCustomerOperation
+    PROPERTY Sale_isSupplierGroupOperation -> Sale_dataInSupplierGroupOperation
+    PROPERTY Sale_isSupplierOperation -> Sale_dataInSupplierOperation
+    PROPERTY Sale_isCustomerGroupOperation -> Sale_dataInCustomerGroupOperation
+    PROPERTY Sale_isCustomerOperation -> Sale_dataInCustomerOperation
+    PROPERTY Menu_isPriceListTypeOperation -> Menu_inPriceListTypeOperation
+    PROPERTY Purchase_isPriceListTypeOperation -> Purchase_inPriceListTypeOperation
+    PROPERTY Sale_isPriceListTypeOperation -> Sale_inPriceListTypeOperation
+    PROPERTY PriceList_isPriceListTypeOperation -> PriceList_changeDataPriceListTypeOperation
+    PROPERTY Menu_includeOperation -> Menu_allRolesOperation
+    PROPERTY Menu_includeDataUserRoleOperation -> Menu_dataInUserRoleOperation
+    PROPERTY PriceList_includeOperation -> PriceList_allRolesOperation
+    PROPERTY PriceList_includeDataUserRoleOperation -> PriceList_dataInUserRoleOperation
+    PROPERTY Purchase_includeOperation -> Purchase_allRolesOperation
+    PROPERTY Purchase_includeDataUserRoleOperation -> Purchase_dataInUserRoleOperation
+    PROPERTY Sale_includeOperation -> Sale_allRolesOperation
+    PROPERTY Sale_includeDataUserRoleOperation -> Sale_dataInUserRoleOperation
+    PROPERTY Repricing_includeOperation -> Repricing_allRolesOperation
+    PROPERTY Repricing_includeDataUserRoleOperation -> Repricing_dataInUserRoleOperation
+    PROPERTY WriteOff_includeOperation -> WriteOff_allRolesOperation
+    PROPERTY WriteOff_includeDataUserRoleOperation -> WriteOff_dataInUserRoleOperation
+    PROPERTY PriceList_isCurrencyOperation -> PriceList_inCurrencyOperation
+}

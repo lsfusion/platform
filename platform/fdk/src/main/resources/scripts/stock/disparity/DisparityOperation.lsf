@@ -2,6 +2,8 @@ MODULE DisparityOperation;
 
 REQUIRE Operation, Disparity;
 
+NAMESPACE Disparity;
+
 @defineOperation('(изменение сортности)');
 @defineOperationRole();
 @extendFormFilterRole(o, dialogOperations);

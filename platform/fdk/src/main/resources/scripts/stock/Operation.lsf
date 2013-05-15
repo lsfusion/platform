@@ -125,29 +125,30 @@ END
 META defineOperationLegalEntity(prop, object, tabcaption)
 
     // Отметка для групп
-    is###prop###group###operation 'Отм.' = DATA BOOLEAN (LegalEntityGroup, Operation);
+    dataIn###prop##GroupOperation 'Отм.' = DATA BOOLEAN (LegalEntityGroup, Operation);
 
-    levelParent###prop###operation###legalEntityGroup (operation, legalEntityGroup) = GROUP MIN level###legalEntityGroup###legalEntityGroup(legalEntityGroup, parent) IF is###prop##Group###operation(parent, operation)
-                                                                   BY operation, legalEntityGroup PERSISTENT;
-    nearestParent###prop##Group###legalEntityGroup (operation, legalEntityGroup) = legalEntityGroup###legalEntityGroup###level(legalEntityGroup, levelParent###prop###operation###legalEntityGroup(operation, legalEntityGroup));
-    nearest###is###prop##Group###operation (legalEntityGroup, operation) =
-        is###prop##Group###operation(nearestParent###prop##Group###legalEntityGroup(operation, legalEntityGroup), operation) PERSISTENT;
+    levelParent###prop##OperationLegalEntityGroup (operation, legalEntityGroup) =
+        GROUP MIN levelLegalEntityGroupLegalEntityGroup(legalEntityGroup, parent) IF dataIn###prop##GroupOperation(parent, operation)
+              BY operation, legalEntityGroup PERSISTENT;
+    nearestParent###prop##GroupLegalEntityGroup (operation, legalEntityGroup) = legalEntityGroupLegalEntityGroupLevel(legalEntityGroup, levelParent###prop##OperationLegalEntityGroup(operation, legalEntityGroup));
+    nearestIn###prop##GroupOperation (legalEntityGroup, operation) =
+        dataIn###prop##GroupOperation(nearestParent###prop##GroupLegalEntityGroup(operation, legalEntityGroup), operation) PERSISTENT;
 
-    is###prop##Group###operation##Over 'Отм' (legalEntityGroup, operation) =
-        nearest###is###prop##Group###operation(legalEntityGroup, operation) OVERRIDE is###prop##Group###operation(legalEntityGroup, operation);
+    in###prop##GroupOperation 'Отм' (legalEntityGroup, operation) =
+        nearestIn###prop##GroupOperation(legalEntityGroup, operation) OVERRIDE dataIn###prop##GroupOperation(legalEntityGroup, operation);
 
     // Отметка для организаций
-    is###prop###operation 'Отм.' = DATA BOOLEAN (LegalEntity, Operation);
-    is###prop###operation##Over 'Отм' (legalEntity, operation) =
-        nearest###is###prop##Group###operation(legalEntityGroup###legalEntity(legalEntity), operation) OVERRIDE is###prop###operation(legalEntity, operation);
+    dataIn###prop##Operation 'Отм.' = DATA BOOLEAN (LegalEntity, Operation);
+    in###prop##Operation 'Отм' (legalEntity, operation) =
+        nearestIn###prop##GroupOperation(legalEntityGroupLegalEntity(legalEntity), operation) OVERRIDE dataIn###prop##Operation(legalEntity, operation);
 
     EXTEND FORM operation
         TREE prop###groupTree object##g = LegalEntityGroup PARENT parentLegalEntityGroup
         PROPERTIES READONLY sgTreeName = nameLegalEntityGroup(object##g)
-        PROPERTIES is###prop###Group###operation##Over(object##g, o)
+        PROPERTIES in###prop###GroupOperation(object##g, o)
 
         OBJECTS object = LegalEntity
-        PROPERTIES(object, o) is###prop###operation##Over
+        PROPERTIES(object, o) in###prop##Operation
         PROPERTIES(object) READONLY nameLegalEntity, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
                                addressLegalEntity, phoneLegalEntity,
                                isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
@@ -155,7 +156,7 @@ META defineOperationLegalEntity(prop, object, tabcaption)
                 object IS LegalEntity AND NOT object##g IS LegalEntityGroup OR
                 (object IS LegalEntity AND object##g IS LegalEntityGroup AND NOT legalEntityGroupLegalEntity(object))
         FILTERGROUP filters2
-                FILTER 'Показывать отмеченные' 'F10' is###prop###operation(object, o)
+                FILTER 'Показывать отмеченные' 'F10' in###prop##Operation(object, o)
     ;
 
     EXTEND DESIGN operation {
@@ -174,60 +175,59 @@ END
 
 META defineDocumentOperationLegalEntity(object, prop, caption)
     CONSTRAINT operation###object(object)
-               AND NOT is###prop###operation##Over(prop###object(object), operation###object(object))
+               AND NOT in###prop##Operation(prop###object(object), operation###object(object))
         CHECKED BY prop###object
         MESSAGE caption##' должен совпадать с отмеченными в операции';
 END
 
 //Валюта
 
-META defineOperationCurrency(prop, object, tabcaption)
-is###prop###operation 'Отм.' = DATA BOOLEAN (Currency, Operation);
+META defineOperationCurrency(dumb)
+    inCurrencyOperation 'Отм.' = DATA BOOLEAN (Currency, Operation);
 
-EXTEND FORM operation
-    OBJECTS object = Currency
-    PROPERTIES(object, o) is###prop###operation
-    PROPERTIES(object) READONLY name###prop
-    FILTERGROUP filters3
-        FILTER 'Показывать отмеченные' 'F11' is###prop###operation(object, o)
-;
+    EXTEND FORM operation
+        OBJECTS c = Currency
+        PROPERTIES(c, o) inCurrencyOperation
+        PROPERTIES(c) READONLY nameCurrency
+        FILTERGROUP filters3
+            FILTER 'Показывать отмеченные' 'F11' inCurrencyOperation(c, o)
+    ;
 
-EXTEND DESIGN operation{
-    tabContainer {
-        NEW prop###Container{
-            caption = tabcaption;
-            ADD object.box;
+    EXTEND DESIGN operation{
+        tabContainer {
+            NEW currencyContainer{
+                caption = 'Валюта';
+                ADD c.box;
+            }
         }
     }
-}
-
 END
 
 META defineOperationRole(dumb)
 
-    includeOperation 'Для всех ролей' = DATA BOOLEAN (Operation);
+    allRolesOperation 'Для всех ролей' = DATA BOOLEAN (Operation);
 
     TABLE userRoleOperation (UserRole, Operation);
-    includeDataUserRoleOperation 'Отм.' = DATA BOOLEAN (UserRole, Operation);
+    dataInUserRoleOperation 'Отм.' = DATA BOOLEAN (UserRole, Operation);
 
-    includeUserRoleOperation 'Отм' (role, operation) =
-        includeOperation(operation) AND role IS UserRole OVERRIDE includeDataUserRoleOperation(role, operation);
+    inUserRoleOperation 'Отм' (role, operation) =
+        allRolesOperation(operation) AND role IS UserRole OVERRIDE dataInUserRoleOperation(role, operation);
 
-    includeUserOperation (user, operation) = includeOperation(operation) AND user IS User OR includeUserRoleOperation(mainRoleUser(user), operation);
+    inUserOperation (user, operation) = allRolesOperation(operation) AND user IS User OR inUserRoleOperation(mainRoleUser(user), operation);
 
-    countOperationsUser (user) = GROUP SUM 1 IF includeUserOperation(user, operation) BY user;
-    defaultOperationUser 'Операция по умолчанию' (user) = GROUP MIN operation IF includeUserOperation(user, operation) BY user;
+    countOperationsUser (user) = GROUP SUM 1 IF inUserOperation(user, operation) BY user;
+    defaultOperationUser 'Операция по умолчанию' (user) = GROUP MIN operation IF inUserOperation(user, operation) BY user;
 
 
     EXTEND FORM operation
-        PROPERTIES(o)  includeOperation
+        PROPERTIES(o) allRolesOperation
 
         OBJECTS r = UserRole
         PROPERTIES(r) READONLY nameUserRole
-        PROPERTIES(r, o) includeUserRoleOperation
+        PROPERTIES(r, o) inUserRoleOperation
 
         FILTERGROUP filtersRole
-                FILTER 'Показывать отмеченные' 'F8' includeDataUserRoleOperation(r, o)
+                FILTER 'Показывать отмеченные' 'F8' inUserRoleOperation(r, o)
     ;
 
     EXTEND DESIGN operation {
@@ -236,7 +236,7 @@ META defineOperationRole(dumb)
                 childConstraints = TO THE BOTTOM;
                 caption = 'Роли';
                 NEW roleContainer1 {
-                    ADD PROPERTY(includeOperation);
+                    ADD PROPERTY(allRolesOperation);
                     caption = 'Для всех';
                 }
                 ADD r.box;
@@ -247,7 +247,7 @@ META defineOperationRole(dumb)
 END
 
 META extendFormFilterRole(concrete, form)
-    EXTEND FORM form FILTERS includeUserOperation(currentUser(), concrete);
+    EXTEND FORM form FILTERS inUserOperation(currentUser(), concrete);
 END
 
 META defineDocumentOperationRole(object, objectClass)

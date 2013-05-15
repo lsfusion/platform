@@ -571,7 +571,7 @@ FORM managementRepricing 'Управленческая переоценка'
 
     OBJECTS o = Operation FIXED PANEL
     PROPERTIES (o) SELECTOR nameOperation
-    FILTERS includeUserOperation(currentUser(), o)
+    FILTERS inUserOperation(currentUser(), o)
 
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE

@@ -20,22 +20,22 @@ operationOrder(order) += operationBlanketOrder(blanketOrderBlanketOrderOrder(ord
 operationBlanketOrderDetail 'Операция' (blanketOrderDetail) = operationBlanketOrder(blanketOrderBlanketOrderDetail(blanketOrderDetail));
 
 CONSTRAINT operationBlanketOrderDetail(blanketOrderDetail) AND priceListTypeBlanketOrderDetail(blanketOrderDetail)
-           AND NOT isPriceListTypeOperation(priceListTypeBlanketOrderDetail(blanketOrderDetail), operationBlanketOrderDetail(blanketOrderDetail))
+           AND NOT inPriceListTypeOperation(priceListTypeBlanketOrderDetail(blanketOrderDetail), operationBlanketOrderDetail(blanketOrderDetail))
     CHECKED BY priceListTypeBlanketOrderDetail
     MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
 
 CONSTRAINT operationBlanketOrder(blanketOrder) AND priceListTypeBlanketOrderStock(blanketOrder, stock)
-           AND NOT isPriceListTypeOperation(priceListTypeBlanketOrderStock(blanketOrder, stock), operationBlanketOrder(blanketOrder))
+           AND NOT inPriceListTypeOperation(priceListTypeBlanketOrderStock(blanketOrder, stock), operationBlanketOrder(blanketOrder))
     CHECKED BY priceListTypeBlanketOrderStock
     MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
 
 CONSTRAINT operationBlanketOrder(blanketOrder)
-           AND NOT isSupplierOperationOver(supplierBlanketOrder(blanketOrder), operationBlanketOrder(blanketOrder))
+           AND NOT inSupplierOperation(supplierBlanketOrder(blanketOrder), operationBlanketOrder(blanketOrder))
     CHECKED BY supplierBlanketOrder
     MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
 
 CONSTRAINT operationBlanketOrder(blanketOrder)
-           AND NOT isCustomerOperationOver(customerBlanketOrder(blanketOrder), operationBlanketOrder(blanketOrder))
+           AND NOT inCustomerOperation(customerBlanketOrder(blanketOrder), operationBlanketOrder(blanketOrder))
     CHECKED BY customerBlanketOrder
     MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
 
