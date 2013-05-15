@@ -738,3 +738,14 @@ V0.8.5 {
     PROPERTY WriteOff_includeDataUserRoleOperation -> WriteOff_dataInUserRoleOperation
     PROPERTY PriceList_isCurrencyOperation -> PriceList_inCurrencyOperation
 }
+
+V0.8.6 {
+    PROPERTY PriceList_inUserPriceList -> PriceList_allStocksUserPriceList
+    PROPERTY PriceList_inUserPriceListStockGroup -> PriceList_dataInUserPriceListStockGroup
+    PROPERTY PriceList_inUserPriceListStock -> PriceList_dataInUserPriceListStock
+    PROPERTY PriceList_markupCalcPriceListTypeGroup -> PriceList_dataMarkupCalcPriceListTypeGroup
+    PROPERTY RetailCRM_inPromotion -> RetailCRM_allStoresPromotion
+    PROPERTY RetailCRM_inPromotionChainStores -> RetailCRM_dataInPromotionChainStores
+    PROPERTY RetailCRM_inPromotionStoreType -> RetailCRM_dataInPromotionStoreType
+    PROPERTY RetailCRM_inPromotionStore -> RetailCRM_dataInPromotionStore
+}

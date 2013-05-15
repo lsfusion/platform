@@ -1196,6 +1196,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 }
             if (oldProperty != null) {
                 String newSID = entry.getValue();
+                systemLogger.info("Renaming column from " + oldProperty.sID + " to " + newSID + " in table " + oldProperty.tableName);
                 sql.renameColumn(oldProperty.tableName, oldProperty.sID, newSID);
                 oldProperty.sID = newSID;
             }
@@ -1216,6 +1217,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             if (tableChanges.containsKey(table.name)) {
                 String newSID = tableChanges.get(table.name);
+                systemLogger.info("Renaming table from " + table.name + " to " + newSID);
                 sql.renameTable(table.name, newSID);
                 table.name = newSID;
             }

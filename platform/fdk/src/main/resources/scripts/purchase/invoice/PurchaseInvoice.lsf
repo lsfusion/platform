@@ -54,18 +54,18 @@ certificateCostPriceInvoiceDetail 'Цена за сертификацию' = ABS
 certificateCostPriceUserInvoiceDetail 'Цена за сертификацию' = ABSTRACT NUMERIC[14,2](UserInvoiceDetail) PERSISTENT;
 certificateCostPriceInvoiceDetail(detail) += certificateCostPriceUserInvoiceDetail(detail);
 
-priceInvoiceDetailOver (detail) = IF isHomeCurrencyInvoice(invoiceInvoiceDetail(detail)) THEN
-                                     homePriceInvoiceDetail(detail)
-                                ELSE priceInvoiceDetail(detail);
+incomePriceInvoiceDetail (detail) = IF isHomeCurrencyInvoice(invoiceInvoiceDetail(detail)) THEN
+                                       homePriceInvoiceDetail(detail)
+                                    ELSE priceInvoiceDetail(detail);
 
-priceUserInvoiceDetailOver (detail) = IF isHomeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(detail)) THEN
+incomePriceUserInvoiceDetail (detail) = IF isHomeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(detail)) THEN
                                          homePriceUserInvoiceDetail(detail)
                                     ELSE priceUserInvoiceDetail(detail);
 
-costPriceInvoiceDetail(detail) = priceInvoiceDetailOver(detail) (+) extraCostPriceInvoiceDetail(detail) (+)
+costPriceInvoiceDetail(detail) = incomePriceInvoiceDetail(detail) (+) extraCostPriceInvoiceDetail(detail) (+)
                                  customCostPriceInvoiceDetail(detail) (+) certificateCostPriceInvoiceDetail(detail);
 
-costPriceUserInvoiceDetail(detail) = priceUserInvoiceDetailOver(detail) (+) extraCostPriceUserInvoiceDetail(detail) (+)
+costPriceUserInvoiceDetail(detail) = incomePriceUserInvoiceDetail(detail) (+) extraCostPriceUserInvoiceDetail(detail) (+)
                                      customCostPriceUserInvoiceDetail(detail) (+) certificateCostPriceUserInvoiceDetail(detail);
 
 // -------------------------------------- Формирование задолженности ---------------------------------------------------

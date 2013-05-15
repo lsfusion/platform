@@ -190,34 +190,31 @@ timeOfToPromotion 'ВРЕМЯ ДО:' =  DATA TIME (Promotion) IN retailCRMGroup;
 TABLE promotionDOW (Promotion, DOW);
 skipPromotionDOW 'Исключить' = DATA BOOLEAN (Promotion, DOW);
 
-inPromotion 'В акции' = DATA BOOLEAN (Promotion);
-inPromotion(promotion) <- TRUE WHEN ASSIGNED(promotion IS Promotion);
+allStoresPromotion 'В акции' = DATA BOOLEAN (Promotion);
+allStoresPromotion(promotion) <- TRUE WHEN ASSIGNED(promotion IS Promotion);
 
 TABLE promotionChainStores(Promotion, ChainStores);
-inPromotionChainStores 'В акции' = DATA BOOLEAN (Promotion, ChainStores);
+dataInPromotionChainStores 'В акции' = DATA BOOLEAN (Promotion, ChainStores);
 
 TABLE promotionStoreType(Promotion, StoreType);
-inPromotionStoreType 'В акции' = DATA BOOLEAN (Promotion, StoreType);
+dataInPromotionStoreType 'В акции' = DATA BOOLEAN (Promotion, StoreType);
 
 TABLE promotionStore(Promotion, Store);
-inPromotionStore 'В акции' = DATA BOOLEAN (Promotion, Store);
+dataInPromotionStore 'В акции' = DATA BOOLEAN (Promotion, Store);
 
-inPromotionChainStoresOver 'В акции' (promotion, chainStores) =
-    inPromotion(promotion) AND chainStores IS ChainStores OVERRIDE
-    inPromotionChainStores(promotion, chainStores);
+inPromotionChainStores 'В акции' (promotion, chainStores) =
+    allStoresPromotion(promotion) AND chainStores IS ChainStores OVERRIDE
+    dataInPromotionChainStores(promotion, chainStores) PERSISTENT;
 
-inPromotionStoreTypeOver 'В акции' (promotion, storeType) =
-    inPromotion(promotion) AND storeType IS StoreType OVERRIDE
+inPromotionStoreType 'В акции' (promotion, storeType) =
     inPromotionChainStores(promotion, chainStoresStoreType(storeType)) OVERRIDE
-    inPromotionStoreType(promotion, storeType);
+    dataInPromotionStoreType(promotion, storeType) PERSISTENT;
 
-inPromotionStoreOver 'В акции' (promotion, store) =
-    (inPromotion(promotion) AND store IS Store OVERRIDE
-     inPromotionChainStores(promotion, chainStoresStore(store)) OVERRIDE
-     inPromotionStoreType(promotion, storeTypeStore(store)) OVERRIDE
-     inPromotionStore(promotion, store)) AND isCompanyStore(store);
+inPromotionStore 'В акции' (promotion, store) =
+    (inPromotionStoreType(promotion, storeTypeStore(store)) OVERRIDE
+     dataInPromotionStore(promotion, store)) AND isCompanyStore(store);
 
-storePromotion 'Магазины' (promotion) = GROUP CONCAT nameStore(store) IF inPromotionStoreOver(promotion, store), ', '
+storesPromotion 'Магазины' (promotion) = GROUP CONCAT nameStore(store) IF inPromotionStore(promotion, store), ', '
                                               BY promotion
                                               ORDER store PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
@@ -342,12 +339,12 @@ FORM promotion 'Акция'
     FILTERS inChainStoresStoreTypeStore(t, st, s),
             isCompanyStore(s)
 
-    PROPERTIES(sh) inPromotion TODRAW a FORCE GRID
-    PROPERTIES(sh, t) inPromotionChainStoresOver
-    PROPERTIES(sh, st) inPromotionStoreTypeOver
-    PROPERTIES(sh, s) inPromotionStoreOver
+    PROPERTIES(sh) allStoresPromotion TODRAW a FORCE GRID
+    PROPERTIES(sh, t) inPromotionChainStores
+    PROPERTIES(sh, st) inPromotionStoreType
+    PROPERTIES(sh, s) inPromotionStore
     FILTERGROUP filterStore
-        FILTER 'Только отмеченные' 'F9' inPromotionStoreOver(sh, s)
+        FILTER 'Только отмеченные' 'F9' inPromotionStore(sh, s)
 
     OBJECTS dis= DiscountCard
     PROPERTIES(dis)    READONLY numberObject, seriesObject, nameClientDiscountCard
@@ -500,7 +497,7 @@ copyPromotion 'Копировать' = ACTION (promotion) NEWSESSION {
 
 FORM promotions 'Акции'
     OBJECTS sh=Promotion
-    PROPERTIES(sh)     READONLY namePromotion, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storePromotion,
+    PROPERTIES(sh)     READONLY namePromotion, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storesPromotion,
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
@@ -516,7 +513,7 @@ FORM promotionGroup 'Группа акций'
 
     OBJECTS sh=Promotion
     PROPERTIES(sh)     userOrderPromotion
-    PROPERTIES(sh)     READONLY namePromotion, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
+    PROPERTIES(sh)     READONLY namePromotion, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storesPromotion,
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
@@ -535,7 +532,7 @@ FORM promotionGroups 'Группы акций'
 
     OBJECTS sh=Promotion
     PROPERTIES(sh)     READONLY orderPromotion
-    PROPERTIES(sh)     READONLY namePromotion, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
+    PROPERTIES(sh)     READONLY namePromotion, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storesPromotion,
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
@@ -549,7 +546,7 @@ FORM promotionGroups 'Группы акций'
 EXTEND FORM discountCard
     OBJECTS p=Promotion
     PROPERTIES(p, d) inPromotionDiscountCard
-    PROPERTIES(p) READONLY namePromotion, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storePromotion,
+    PROPERTIES(p) READONLY namePromotion, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storesPromotion,
                            timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                            hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                            useCurrentReceiptPromotion, allDiscountCardPromotion

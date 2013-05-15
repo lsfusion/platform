@@ -27,22 +27,22 @@ groupTypeCalcPriceListType = DATA GroupType (CalcPriceListType);
 nameGroupTypeCalcPriceListType 'Тип классификатора' (type) = nameGroupType(groupTypeCalcPriceListType(type));
 
 TABLE calcPriceListTypeGroup (CalcPriceListType, Group);
-markupCalcPriceListTypeGroup 'Надбавка, %' = DATA NUMERIC[8,2] (CalcPriceListType, Group);
+dataMarkupCalcPriceListTypeGroup 'Надбавка, %' = DATA NUMERIC[8,2] (CalcPriceListType, Group);
 
 TABLE calcPriceListTypeSku (CalcPriceListType, Sku);
 dataMarkupCalcPriceListTypeSku 'Надбавка, % (перегруженная)' = DATA NUMERIC[8,2] (CalcPriceListType, Sku);
 
-levelParentMarkupGroup (calcPriceListType, group) = GROUP MIN levelGroupGroup(group, parent) IF markupCalcPriceListTypeGroup(calcPriceListType, parent)
+levelParentMarkupGroup (calcPriceListType, group) = GROUP MIN levelGroupGroup(group, parent) IF dataMarkupCalcPriceListTypeGroup(calcPriceListType, parent)
                                                               BY calcPriceListType, group PERSISTENT;
 nearestParentGroup (calcPriceListType, group) = groupGroupLevel(group, levelParentMarkupGroup(calcPriceListType, group));
 nearestMarkupCalcPriceListTypeGroup 'Расчетная надбавка, %' (calcPriceListType, group) =
-    markupCalcPriceListTypeGroup(calcPriceListType, nearestParentGroup(calcPriceListType, group)) PERSISTENT;
+    dataMarkupCalcPriceListTypeGroup(calcPriceListType, nearestParentGroup(calcPriceListType, group)) PERSISTENT;
 
-markupCalcPriceListTypeGroupOver 'Надбавка, %' (type, group) =
-    nearestMarkupCalcPriceListTypeGroup(type, group) OVERRIDE markupCalcPriceListTypeGroup(type, group) PERSISTENT;
+markupCalcPriceListTypeGroup 'Надбавка, %' (type, group) =
+    nearestMarkupCalcPriceListTypeGroup(type, group) OVERRIDE dataMarkupCalcPriceListTypeGroup(type, group) PERSISTENT;
 
 markupCalcPriceListTypeSku 'Надбавка, %' (type, sku) =
-    markupCalcPriceListTypeGroupOver(type, groupGroupTypeSku(groupTypeCalcPriceListType(type), sku)) OVERRIDE
+    markupCalcPriceListTypeGroup(type, groupGroupTypeSku(groupTypeCalcPriceListType(type), sku)) OVERRIDE
     dataMarkupCalcPriceListTypeSku(type, sku);
 
 multiplierCalcPriceListTypeSku (type, sku) = (100 + markupCalcPriceListTypeSku(type, sku)) / 100 PERSISTENT;
@@ -59,7 +59,7 @@ pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcP
 
 // ------------------------------------- Формы ---------------------------------- //
 
-backgroundMarkup 'Цвет' (calcPriceListType, group) = RGB(255,160,160) IF markupCalcPriceListTypeGroup(calcPriceListType, group);
+backgroundMarkup 'Цвет' (calcPriceListType, group) = RGB(255,160,160) IF dataMarkupCalcPriceListTypeGroup(calcPriceListType, group);
 
 FORM calcPriceListType 'Расчетный вид цен'
     OBJECTS c = CalcPriceListType FIXED PANEL
@@ -70,7 +70,7 @@ FORM calcPriceListType 'Расчетный вид цен'
     PROPERTIES READONLY nameGroup(g)
     FILTERS groupTypeGroup(g) == groupTypeCalcPriceListType(c)
     ORDER BY nameGroup(g)
-    PROPERTIES(c, g) markupCalcPriceListTypeGroup , nearestMarkupCalcPriceListTypeGroup
+    PROPERTIES(c, g) dataMarkupCalcPriceListTypeGroup , nearestMarkupCalcPriceListTypeGroup
 
     OBJECTS s = Sku
     PROPERTIES(s) READONLY nameSku, idBarcodeSku

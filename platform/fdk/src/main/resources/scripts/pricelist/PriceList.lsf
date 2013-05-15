@@ -130,38 +130,36 @@ pricePriceListDetailDataPriceListType(detail, dataPriceListType) => inPriceListD
 // ---------------------  Склады, для которых действует прайс
 
 // Шапка
-inPriceList 'Отм' = ABSTRACT BOOLEAN (PriceList) PERSISTENT;
-inUserPriceList 'Отм' = DATA BOOLEAN (UserPriceList);
-//inUserPriceList(userPriceList) <- TRUE WHEN ASSIGNED(userPriceList IS UserPriceList);
-inPriceList (priceList) += inUserPriceList(priceList);
+allStocksPriceList 'Отм' = ABSTRACT BOOLEAN (PriceList) PERSISTENT;
+allStocksUserPriceList 'Отм' = DATA BOOLEAN (UserPriceList);
+allStocksPriceList (priceList) += allStocksUserPriceList(priceList);
 
 TABLE priceListStockGroup(PriceList, StockGroup);
-inPriceListStockGroup 'Отм' = ABSTRACT BOOLEAN (PriceList, StockGroup) PERSISTENT;
-inUserPriceListStockGroup 'Отм' = DATA BOOLEAN (UserPriceList, StockGroup);
-inPriceListStockGroup (priceList, stockGroup) += inUserPriceListStockGroup(priceList, stockGroup);
+dataInPriceListStockGroup 'Отм' = ABSTRACT BOOLEAN (PriceList, StockGroup) PERSISTENT;
+dataInUserPriceListStockGroup 'Отм' = DATA BOOLEAN (UserPriceList, StockGroup);
+dataInPriceListStockGroup (priceList, stockGroup) += dataInUserPriceListStockGroup(priceList, stockGroup);
 
 TABLE priceListStock(PriceList, Stock);
-inPriceListStock 'Отм' = ABSTRACT BOOLEAN (PriceList, Stock) PERSISTENT;
-inUserPriceListStock 'Отм' = DATA BOOLEAN (UserPriceList, Stock);
-inPriceListStock (priceList, stock) += inUserPriceListStock(priceList, stock);
+dataInPriceListStock 'Отм' = ABSTRACT BOOLEAN (PriceList, Stock) PERSISTENT;
+dataInUserPriceListStock 'Отм' = DATA BOOLEAN (UserPriceList, Stock);
+dataInPriceListStock (priceList, stock) += dataInUserPriceListStock(priceList, stock);
 
-levelParentPriceListStockGroup (priceList, stockGroup) = GROUP MIN levelStockGroupStockGroup(stockGroup, parent) IF inPriceListStockGroup(priceList, parent)
+levelParentPriceListStockGroup (priceList, stockGroup) = GROUP MIN levelStockGroupStockGroup(stockGroup, parent) IF dataInPriceListStockGroup(priceList, parent)
                                                                BY priceList, stockGroup PERSISTENT;
-nearestParentStockGroup (priceList, stockGroup) = stockGroupStockGroupLevel(stockGroup, levelParentPriceListStockGroup(priceList, stockGroup));
-nearestInPriceListStockGroup (priceList, stockGroup) =
-    inPriceListStockGroup(priceList, nearestParentStockGroup(priceList, stockGroup)) PERSISTENT;
 
-inPriceListStockGroupOver 'Отм' (priceList, stockGroup) =
-    inPriceList(priceList) AND stockGroup IS StockGroup OVERRIDE
-    nearestInPriceListStockGroup(priceList, stockGroup) OVERRIDE
-    inPriceListStockGroup(priceList, stockGroup);
+inParentPriceListStockGroup (priceList, stockGroup) = TRUE IF levelParentPriceListStockGroup (priceList, stockGroup) PERSISTENT;
 
-inPriceListStockOver 'Отм' (priceList, stock) =
-    (inPriceList(priceList) AND stock IS Stock OVERRIDE
-     nearestInPriceListStockGroup(priceList, stockGroupStock(stock)) OVERRIDE
-     inPriceListStock(priceList, stock)) AND isCompanyStock(stock);
+inPriceListStockGroup 'Отм' (priceList, stockGroup) =
+    allStocksPriceList(priceList) AND stockGroup IS StockGroup OVERRIDE
+    inParentPriceListStockGroup (priceList, stockGroup) OVERRIDE
+    dataInPriceListStockGroup(priceList, stockGroup);
 
-stocksPriceList 'Склады' (priceList) = GROUP CONCAT nameStock(stock) IF inPriceListStockOver(priceList, stock) , ', '
+inPriceListStock 'Отм' (priceList, stock) =
+    (allStocksPriceList(priceList) AND stock IS Stock OVERRIDE
+     inParentPriceListStockGroup(priceList, stockGroupStock(stock)) OVERRIDE
+     dataInPriceListStock(priceList, stock)) AND isCompanyStock(stock);
+
+stocksPriceList 'Склады' (priceList) = GROUP CONCAT nameStock(stock) IF inPriceListStock(priceList, stock) , ', '
                                        BY priceList
                                        ORDER stock MINCHARWIDTH 20 PREFCHARWIDTH 40 PERSISTENT;
 
@@ -181,7 +179,7 @@ companyPriceListLedger (ledger) += companyPriceListDetail(ledger);
 descriptionPriceListLedger (ledger) += descriptionPriceList(priceListPriceListDetail(ledger));
 
 pricePriceListLedgerLedgerPriceListType (ledger, type) += pricePriceListDetailDataPriceListType(ledger, type);
-inPriceListLedgerStock (ledger, stock) += inPriceListStockOver(priceListPriceListDetail(ledger), stock);
+inPriceListLedgerStock (ledger, stock) += inPriceListStock(priceListPriceListDetail(ledger), stock);
 
 // -------------- Текущая действующая цена --------------- //
 
@@ -374,21 +372,21 @@ FORM userPriceList 'Прайс'
 
     TREE stockTree a=STRING[3], sg = StockGroup PARENT parentStockGroup
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg)
-    PROPERTIES(p) inPriceList TODRAW a FORCE GRID
-    PROPERTIES(p, sg) inPriceListStockGroupOver
+    PROPERTIES(p) allStocksPriceList TODRAW a FORCE GRID
+    PROPERTIES(p, sg) inPriceListStockGroup
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a)
     FILTERS quantityStocksStockGroup(sg)
 
     OBJECTS ts = Stock
     PROPERTIES READONLY  nameStock(ts)
-    PROPERTIES(p, ts)    inPriceListStockOver
+    PROPERTIES(p, ts)    inPriceListStock
     PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER headerNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t)
     PROPERTIES(d, t, ts) changePricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER headerNameChangeDataPriceListType(p, t) BACKGROUND backgroundChangeDataPriceListType(t)
     FILTERS ts IS Stock AND NOT sg IS StockGroup OR isParentStockGroupStock(sg, ts),
             isCompanyStock(ts)
     FILTERGROUP filters2
-            FILTER 'Выбранные склады' 'F10' inPriceListStockOver(p, ts) DEFAULT
+            FILTER 'Выбранные склады' 'F10' inPriceListStock(p, ts) DEFAULT
 
     OBJECTS tt = Stock FIXED PANEL
     PROPERTIES SELECTOR stockName = nameStock(tt) FORCE PANEL
@@ -404,7 +402,7 @@ FORM userPriceList 'Прайс'
 
     OBJECTS ts2 = Stock FIXED PANEL
     PROPERTIES(ts2) SELECTOR nameStock
-    FILTERS inPriceListStockOver(p, ts2),
+    FILTERS inPriceListStock(p, ts2),
             isCompanyStock(ts2)
     PROPERTIES(p) FORCE PANEL nameFilterPriceListTypeUserPriceList
 
@@ -523,9 +521,9 @@ copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
 
     FOR ADDOBJ u = UserPriceList DO {
         SET currencyUserPriceList(u) <- currencyUserPriceList(priceList);
-        SET inUserPriceListStock(u, stock) <- inUserPriceListStock(priceList, stock);
-        SET inUserPriceListStockGroup(u, stockGroup) <- inUserPriceListStockGroup(priceList, stockGroup);
-        SET inUserPriceList(u) <- inUserPriceList(priceList);
+        SET dataInUserPriceListStock(u, stock) <- dataInUserPriceListStock(priceList, stock);
+        SET dataInUserPriceListStockGroup(u, stockGroup) <- dataInUserPriceListStockGroup(priceList, stockGroup);
+        SET allStocksUserPriceList(u) <- allStocksUserPriceList(priceList);
         SET inUserPriceListDataPriceListType(u, priceListType) <- inPriceListDataPriceListType(priceList, priceListType);
         FOR userPriceListUserPriceListDetail(detail) == priceList DO {
             FOR ADDOBJ d = UserPriceListDetail DO {
@@ -543,9 +541,9 @@ updatePriceList 'Обновить' = ACTION (priceList) {
     FOR ADDOBJ u = UserPriceList DO {
         SET currencyUserPriceList(u) <- currencyUserPriceList(priceList);
         SET companyUserPriceList(u) <- companyUserPriceList(priceList);
-        SET inUserPriceListStock(u, stock) <- inUserPriceListStock(priceList, stock);
-        SET inUserPriceListStockGroup(u, stockGroup) <- inUserPriceListStockGroup(priceList, stockGroup);
-        SET inUserPriceList(u) <- inUserPriceList(priceList);
+        SET dataInUserPriceListStock(u, stock) <- dataInUserPriceListStock(priceList, stock);
+        SET dataInUserPriceListStockGroup(u, stockGroup) <- dataInUserPriceListStockGroup(priceList, stockGroup);
+        SET allStocksUserPriceList(u) <- allStocksUserPriceList(priceList);
         SET inUserPriceListDataPriceListType(u, priceListType) <- inPriceListDataPriceListType(priceList, priceListType);
         FOR userPriceListUserPriceListDetail(detail) == priceList DO {
             FOR ADDOBJ d = UserPriceListDetail DO {
@@ -585,7 +583,7 @@ FORM priceLists 'Прайсы'
 
     OBJECTS ts = Stock
     PROPERTIES(ts) READONLY nameStock
-    PROPERTIES(p, ts) READONLY inPriceListStockOver
+    PROPERTIES(p, ts) READONLY inPriceListStock
 
     PROPERTIES(d, t) READONLY pricePriceListDetailDataPriceListType COLUMNS (t) HEADER nameDataPriceListType(t)
 
@@ -595,7 +593,7 @@ FORM priceLists 'Прайсы'
 
     FILTERS userPriceListUserPriceListDetail(d) == p,
             inPriceListDataPriceListType(p, t),
-            inPriceListStockOver(p, ts),
+            inPriceListStock(p, ts),
             currencyUserPriceList(p) == currencyDataPriceListType(t),
             isCompanyStock(ts)
 
