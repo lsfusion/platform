@@ -11,6 +11,8 @@ public interface ExprSource {
 
     Expr getExpr(int i);
 
+    Type getSelfType(int i);
+
     Type getType(int i, KeyType keyType);
 
     String getSource(int i, CompileSource compile);

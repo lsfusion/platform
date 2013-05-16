@@ -1,5 +1,6 @@
 package platform.server.data.expr.formula;
 
+import platform.server.classes.ConcreteClass;
 import platform.server.classes.InsensitiveStringClass;
 import platform.server.classes.StringClass;
 import platform.server.data.expr.KeyType;
@@ -7,8 +8,8 @@ import platform.server.data.query.CompileSource;
 import platform.server.data.type.Type;
 
 public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
-    private final String separator;
-    private final boolean caseSensitive;
+    protected final String separator;
+    protected final boolean caseSensitive;
 
     public StringConcatenateFormulaImpl(String separator, boolean caseSensitive) {
         this.separator = separator;
@@ -17,18 +18,16 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
 
     @Override
     public String getSource(CompileSource compile, ExprSource source) {
-        String delimeter = " || '" + separator + "' || ";
+        Type type = getType(source, compile.keyType);
+
+        String separator = " || '" + this.separator + "' || ";
         StringBuilder builder = new StringBuilder();
         builder.append("(");
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
-            Type exprType = source.getType(i, compile.keyType);
-            String exprSource = source.getSource(i, compile);
-            if (exprType instanceof StringClass) {
-                exprSource = "rtrim(" + exprSource + ")";
-            }
+            String exprSource = getExprSource(compile, source, type, i);
 
-            if (i != 0) {
-                builder.append(delimeter);
+            if (i > 0) {
+                builder.append(separator);
             }
 
             builder.append(exprSource);
@@ -37,13 +36,37 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
         return builder.toString();
     }
 
+    protected String getExprSource(CompileSource compile, ExprSource source, Type selfType, int i) {
+        Type exprType = source.getType(i, compile.keyType);
+        String exprSource = source.getSource(i, compile);
+        if (exprType instanceof StringClass) {
+            exprSource = "rtrim(" + exprSource + ")";
+        } else {
+            exprSource = selfType.getCast(exprSource, compile.syntax, false);
+        }
+        return exprSource;
+    }
+
     @Override
-    public Type getType(ExprSource source, KeyType keyType) {
+    public StringClass getType(ExprSource source, KeyType keyType) {
+
+        int separatorLength = separator.length();
+
         int length = 0;
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
-            length += source.getType(i, keyType).getBinaryLength(true);
+            Type exprType = keyType == null ? source.getSelfType(i) : source.getType(i, keyType);
+            length += exprType != null ? exprType.getBinaryLength(true) : 0;
+
+            if (i > 0) {
+                length += separatorLength;
+            }
         }
         return caseSensitive ? StringClass.get(length) : InsensitiveStringClass.get(length);
+    }
+
+    @Override
+    public ConcreteClass getStaticClass(ExprSource source) {
+        return getType(source, null);
     }
 
     @Override

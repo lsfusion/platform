@@ -1,6 +1,7 @@
 package platform.server.data.expr.formula;
 
 import platform.base.col.interfaces.immutable.ImList;
+import platform.server.caches.ParamExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.query.CompileSource;
@@ -26,6 +27,12 @@ public class ListExprSource implements ExprSource {
     @Override
     public Type getType(int i, KeyType keyType) {
         return getExpr(i).getType(keyType);
+    }
+
+    @Override
+    public Type getSelfType(int i) {
+        Expr expr = getExpr(i);
+        return expr instanceof ParamExpr ? null : expr.getSelfType();
     }
 
     @Override

@@ -218,14 +218,14 @@ testAbstract(named) += 6 IF named IS Store;
 // Abstract action property
 // Expression syntax:
 // ABSTRACT ACTION ( [param1, ..., paramN] )
-testAbstractAction(object) = ABSTRACT ACTION (object);
+testAbstractAction(object) = ABSTRACT ACTION (Object);
 // overriding abstract action property syntax:
 // propertyName(namedParam1, ..., namedParamN) += ACTION actionBody;
 
-testAbstractAction(store) += ACTION MESSAGE 'testing store' AND store IS Store;
-testAbstractAction(store) += ACTION MESSAGE 'testing store2' AND store IS Store;
-testAbstractAction(document) += ACTION MESSAGE 'testing document' AND document IS Document;
-testAbstractAction(document) += ACTION MESSAGE 'testing document2' AND document IS Document;
+testAbstractAction(store) += ACTION IF store IS Store THEN MESSAGE 'testing store';
+testAbstractAction(store) += ACTION IF store IS Store THEN MESSAGE 'testing store2';
+testAbstractAction(document) += ACTION IF document IS Document THEN MESSAGE 'testing document';
+testAbstractAction(document) += ACTION IF document IS Document THEN MESSAGE 'testing document2';
 
 // Formula property
 // Expression syntax:
@@ -992,12 +992,15 @@ multDoubleNumeric 'double*numeric' (store) = sdouble(store) * snumeric(store) MI
 multNumericInt 'numeric*integer' (store) = snumeric(store) * sinteger(store) MINCHARWIDTH 25;
 multIntLong 'integer*long' (store) = sinteger(store) * slong(store) MINCHARWIDTH 25;
 
-FORM TestAddOperator 'Тест CAST и оператора "+"'
+concatNull(store) = name(store) + ',' + sstring(store) + ',' + slong(store);
+concatNotNull(store) = CONCAT ', ', name(store), sstring(store), slong(store);
+
+FORM TestAddOperator 'Тест операторов, CAST, CONCAT, "+"'
     OBJECTS s=Store
     PROPERTIES(s) OBJVALUE, name, sdate, sinteger, slong, sdouble, snumeric, sstring, sboolean
     PROPERTIES(s) stext
     PROPERTIES(s) FORCE PANEL textToInt, longToString
-    PROPERTIES(s) FORCE PANEL sumNameString, nameDate, sumDoubleInt, sumDoubleNumeric, sumNumericInt, sumIntLong, sumStringBoolean, sumTextInteger
+    PROPERTIES(s) FORCE PANEL sumNameString, nameDate, sumDoubleInt, sumDoubleNumeric, sumNumericInt, sumIntLong, sumStringBoolean, sumTextInteger, concatNull, concatNotNull
     PROPERTIES(s) FORCE PANEL subDoubleInt, subDoubleNumeric, subNumericInt, subIntLong
     PROPERTIES(s) FORCE PANEL multDoubleInt, multDoubleNumeric, multNumericInt, multIntLong
 ;
@@ -1016,9 +1019,12 @@ DESIGN TestAddOperator FROM DEFAULT {
         fillVertical = 1;
 
         NEW castTab {
-            caption = 'cast';
+            caption = 'cast, concat';
             ADD PROPERTY(textToInt);
             ADD PROPERTY(longToString);
+
+            ADD PROPERTY(concatNull);
+            ADD PROPERTY(concatNotNull);
         }
         NEW sumTab {
             caption = 'sum';

@@ -37,6 +37,6 @@ public class FormulaImplProperty extends FormulaProperty<FormulaImplProperty.Int
     }
 
     protected Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return FormulaExpr.create(getOrderInterfaces().mapList(joinImplement), formula);
+        return FormulaExpr.create(formula, getOrderInterfaces().mapList(joinImplement));
     }
 }

@@ -49,7 +49,7 @@ public class FormulaExpr extends StaticClassExpr {
         ImMap<Integer, BaseExpr> indexedExprs = exprs.toIndexedMap();
         ImMap<Integer, Expr> packParams = packPushFollowFalse(indexedExprs, where);
         if (!BaseUtils.hashEquals(packParams, indexedExprs)) {
-            return create(ListFact.fromIndexedMap(packParams), formula);
+            return create(formula, ListFact.fromIndexedMap(packParams));
         }
 
         return this;
@@ -82,7 +82,7 @@ public class FormulaExpr extends StaticClassExpr {
 
     @Override
     public Expr translateQuery(QueryTranslator translator) {
-        return create(translator.translate(exprs), formula);
+        return create(formula, translator.translate(exprs));
     }
 
     public Stat getTypeStat(KeyStat keyStat) {
@@ -130,10 +130,10 @@ public class FormulaExpr extends StaticClassExpr {
         });
         ImList<Expr> exprs = keys.map(params);
 
-        return create(exprs, new CustomFormulaImpl(formula, mapParams, valueClass));
+        return create(new CustomFormulaImpl(formula, mapParams, valueClass), exprs);
     }
 
-    public static Expr create(ImList<? extends Expr> exprs, final FormulaImpl formula) {
+    public static Expr create(final FormulaImpl formula, ImList<? extends Expr> exprs) {
         return new ExprPullWheres<Integer>() {
             protected Expr proceedBase(ImMap<Integer, BaseExpr> map) {
                 return createBase(ListFact.fromIndexedMap(map), formula);

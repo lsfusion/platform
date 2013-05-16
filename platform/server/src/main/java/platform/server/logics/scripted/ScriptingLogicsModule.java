@@ -1422,6 +1422,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addCCProp(params.size()), params);
     }
 
+    public LPWithParams addScriptedConcatProp(String separator, List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedConcatProp(" + separator + ", " + params + ");");
+        return addScriptedJProp(addSFUProp(params.size(), separator), params);
+    }
+
     public LPWithParams addScriptedDCCProp(LPWithParams ccProp, int index) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedDCCProp(" + ccProp + ", " + index + ");");
         checkDeconcatenateIndex(ccProp, index);
