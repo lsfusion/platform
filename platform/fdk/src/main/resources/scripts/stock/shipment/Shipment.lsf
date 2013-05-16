@@ -30,7 +30,7 @@ CLASS ABSTRACT ShipmentDetail 'Строка поставки' : DocumentDetail;
 
 quantityShipmentDetailOrderShipment = ABSTRACT NUMERIC[14,3] (Order, Shipment);
 
-editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editShipment 'Редактировать' = ABSTRACT ACTION (Shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 // ----------------------------------- Создавать поставку по умолчанию для склада ------------------------------------------ //
 
@@ -124,7 +124,7 @@ META defineShipment(captions, sign, stockProp)
 
 // --------------------------- Формы --------------------------------- //
 
-    editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+    editShipment 'Редактировать' = ABSTRACT ACTION (Shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
     Shipment.editShipment (shipment) += editShipment(shipment);
 
     FORM userShipment 'Поставка'###sign
@@ -237,7 +237,7 @@ META defineShipment(captions, sign, stockProp)
     editUserShipment 'Редактировать' (userShipment) = ACTION EDITFORM UserShipment;
     editShipment (shipment) += editUserShipment(shipment);
 
-    overCopyShipment = ABSTRACT ACTION (s, d);
+    overCopyShipment = ABSTRACT ACTION (Shipment, Shipment);
 
     copyShipment 'Копировать' = ACTION (shipment) NEWSESSION {
         FOR ADDOBJ s = UserShipment DO {

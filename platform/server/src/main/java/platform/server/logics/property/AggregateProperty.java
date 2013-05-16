@@ -1,20 +1,27 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
 import platform.base.col.MapFact;
-import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.server.Message;
 import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
+import platform.server.classes.ValueClass;
 import platform.server.data.ModifyQuery;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.NotNullKeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.data.translator.MapValuesTranslator;
+import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.DataSession;
 import platform.server.session.PropertyChanges;
@@ -85,9 +92,22 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     }
 
     @IdentityLazy
-    public ClassWhere<Object> getClassValueWhere(boolean full) {
-        QueryBuilder<T, String> query = new QueryBuilder<T, String>(this);
-        query.addProperty("value", calculateClassExpr(query.getMapExprs()));
-        return query.getQuery().getClassWhere(SetFact.singleton("value"), full);
+    public ClassWhere<Object> getClassValueWhere(ClassType type) {
+        if(type == ClassType.ASSERTFULL) {
+            assert isFull();
+            return getClassValueWhere(ClassType.ASIS);
+        }
+        if(type == ClassType.FULL) {
+            ClassWhere<Object> result = getClassValueWhere(ClassType.ASIS);
+            if(!isFull())
+                result = result.and(new ClassWhere<Object>(BaseUtils.<ImMap<Object, ValueClass>>immutableCast(getInterfaceCommonClasses(null)), true));
+            return result;
+        }
+
+        ImRevMap<T,NotNullKeyExpr> mapExprs = interfaces.mapRevValues(new GetIndexValue<NotNullKeyExpr, T>() {
+            public NotNullKeyExpr getMapValue(int i, T value) {
+                return new NotNullKeyExpr(i);
+            }});
+        return Query.getClassWhere(Where.TRUE, mapExprs, MapFact.singleton((Object)"value", calculateClassExpr(mapExprs)));
     }
 }

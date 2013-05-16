@@ -6,7 +6,6 @@ import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
-import platform.server.data.query.QueryBuilder;
 import platform.server.data.where.Where;
 
 public interface ClassReader<T> extends Reader<T> {

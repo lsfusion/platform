@@ -613,7 +613,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 LCP<?> lcp = (LCP<?>) lp;
                 CalcProperty<?> property = lcp.property;
                 if (property.autoset) {
-                    ValueClass interfaceClass = property.getInterfaceClasses().singleValue();
+                    ValueClass interfaceClass = property.getInterfaceClasses(ClassType.ASSERTFULL).singleValue();
                     ValueClass valueClass = property.getValueClass();
                     if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
                             cls.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации

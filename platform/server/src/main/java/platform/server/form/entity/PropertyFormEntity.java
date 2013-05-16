@@ -8,17 +8,16 @@ import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.ClassType;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
-
-import java.util.Map;
 
 public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
     public <P extends PropertyInterface> PropertyFormEntity(CalcProperty<P> property, AbstractGroup recognizeGroup) {
         super(null, null);
 
-        ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(true);
+        ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.ASSERTFULL);
         ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues(new GetValue<ObjectEntity, ValueClass>() {
             public ObjectEntity getMapValue(ValueClass value) {
                 return new ObjectEntity(genID(), value, value.toString());

@@ -460,7 +460,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             for (LogicsModule module : orderedModules) {
                 module.initIndexes();
             }
-            assert checkProps();
 
         } catch (RecognitionException e) {
             initException = new ScriptParsingException(e.getMessage());
@@ -961,35 +960,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return (LAP) LM.getLP(sID);
     }
 
-    private boolean intersect(LCP[] props) {
-        for (int i = 0; i < props.length; i++)
-            for (int j = i + 1; j < props.length; j++)
-                if (((LCP<?>) props[i]).intersect((LCP<?>) props[j]))
-                    return true;
-        return false;
-    }
-
-    public final static boolean checkClasses = false;
-    private boolean checkProps() {
-        if (checkClasses)
-            for (Property prop : getOrderProperties()) {
-                debuglogger.debug("Checking property : " + prop + "...");
-                assert prop.check();
-            }
-        for (LCP[] props : LM.checkCUProps) {
-            debuglogger.debug("Checking class properties : " + Arrays.toString(props) + "...");
-            assert !intersect(props);
-        }
-        for (LCP[] props : LM.checkSUProps) {
-            debuglogger.debug("Checking union properties : " + Arrays.toString(props) + "...");
-//            assert intersect(props);
-        }
-        return true;
-    }
-
-    private void outputPropertyClasses() {
+    private void outputCalcPropertyClasses() {
         for (LP lp : LM.lproperties) {
-            debuglogger.debug(lp.property.getSID() + " : " + lp.property.caption + " - " + lp.getClassWhere());
+            debuglogger.debug(lp.property.getSID() + " : " + lp.property.caption + " - " + lp.getClassWhere(ClassType.ASIS));
         }
     }
 

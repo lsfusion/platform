@@ -3,6 +3,7 @@ package platform.server.data.where;
 import platform.base.Pair;
 import platform.base.col.interfaces.immutable.*;
 import platform.server.caches.OuterContext;
+import platform.server.caches.ParamExpr;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -83,7 +84,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop);
     <K extends BaseExpr> ImCol<GroupStatWhere<K>> getStatJoins(ImSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere);
     <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> keys);
-    StatKeys<KeyExpr> getFullStatKeys(ImSet<KeyExpr> groups);
+    <K extends ParamExpr> StatKeys<K> getFullStatKeys(ImSet<K> groups);
     <K extends BaseExpr> Stat getStatRows();
     <K extends Expr> ImCol<GroupStatWhere<K>> getStatJoins(boolean notExclusive, ImSet<K> exprs, GroupStatType type, boolean noWhere);
     <K extends Expr> StatKeys<K> getStatExprs(ImSet<K> keys);

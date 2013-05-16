@@ -15,6 +15,7 @@ import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.*;
 import platform.server.form.view.report.ReportDrawField;
 import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.ClassType;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.serialization.SerializationType;
@@ -253,7 +254,7 @@ public class PropertyDrawView extends ComponentView {
                         ((CalcProperty<?>)entity.propertyObject.property).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.name : null);
 
-        ImMap<PropertyInterface, ValueClass> interfaceClasses = (ImMap<PropertyInterface, ValueClass>) entity.propertyObject.property.getInterfaceClasses(true);
+        ImMap<PropertyInterface, ValueClass> interfaceClasses = (ImMap<PropertyInterface, ValueClass>) entity.propertyObject.property.getInterfaceClasses(ClassType.FULL);
         ImMap<PropertyInterface, PropertyObjectInterfaceEntity> interfaceEntities = (ImMap<PropertyInterface, PropertyObjectInterfaceEntity>) entity.propertyObject.mapping;
         outStream.writeInt(entity.propertyObject.property.interfaces.size());
         for (PropertyInterface iFace : entity.propertyObject.property.interfaces) {

@@ -1,6 +1,8 @@
 package platform.server.data.expr;
 
-import platform.base.*;
+import platform.base.BaseUtils;
+import platform.base.Result;
+import platform.base.TwinImmutableObject;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImCol;
 import platform.base.col.interfaces.immutable.ImSet;
@@ -9,6 +11,7 @@ import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.where.NotNullWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.UnionJoin;
@@ -29,68 +32,9 @@ public abstract class NotNullExpr extends VariableSingleClassExpr {
         return Where.TRUE;
     }
 
-    public abstract class NotNull extends DataWhere {
-
-        public NotNullExpr getExpr() {
+    public abstract class NotNull extends NotNullWhere {
+        protected BaseExpr getExpr() {
             return NotNullExpr.this;
-        }
-
-        protected boolean isComplex() {
-            return false;
-        }
-
-        public String getSource(CompileSource compile) {
-            return getExpr().getSource(compile) + " IS NOT NULL";
-        }
-
-        @Override
-        protected String getNotSource(CompileSource compile) {
-            return getExpr().getSource(compile) + " IS NULL";
-        }
-
-        protected Where translate(MapTranslate translator) {
-            return getExpr().translateOuter(translator).getNotNullWhere();
-        }
-
-        @Override
-        public Where packFollowFalse(Where falseWhere) {
-            Expr packExpr = NotNullExpr.this.packFollowFalse(falseWhere);
-//            if(packExpr instanceof BaseExpr) // чтобы бесконечных циклов не было
-//                return ((BaseExpr)packExpr).getNotNullWhere();
-            if(BaseUtils.hashEquals(packExpr, NotNullExpr.this)) // чтобы бесконечных циклов не было
-                return this;
-            else
-                return packExpr.getWhere();
-        }
-
-        public Where translateQuery(QueryTranslator translator) {
-            Expr translateExpr = getExpr().translateQuery(translator);
-//            if(translateExpr instanceof BaseExpr) // ??? в pack на это нарвались, здесь по идее может быть аналогичная ситуация
-//                return ((BaseExpr)translateExpr).getNotNullWhere();
-            if(BaseUtils.hashEquals(translateExpr, NotNullExpr.this)) // чтобы бесконечных циклов не было
-                return this;
-            else
-                return translateExpr.getWhere();
-        }
-
-        public ImSet<OuterContext> calculateOuterDepends() {
-            return SetFact.<OuterContext>singleton(getExpr());
-        }
-
-        protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
-            getExpr().fillAndJoinWheres(joins,andWhere);
-        }
-
-        public int hash(HashContext hashContext) {
-            return getExpr().hashOuter(hashContext);
-        }
-
-        protected ImSet<DataWhere> calculateFollows() {
-            return NotNullExpr.getFollows(getExprFollows(false, true));
-        }
-
-        public boolean twins(TwinImmutableObject o) {
-            return getExpr().equals(((NotNull) o).getExpr());
         }
     }
 

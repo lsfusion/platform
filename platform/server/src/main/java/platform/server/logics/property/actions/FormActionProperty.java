@@ -1,6 +1,5 @@
 package platform.server.logics.property.actions;
 
-import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.interop.ModalityType;

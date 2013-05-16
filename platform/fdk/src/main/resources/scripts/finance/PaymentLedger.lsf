@@ -14,7 +14,7 @@ nameCurrencyAccount 'Валюта счета' = nameCurrency(currencyAccount(acc
 legalEntityAccount = ABSTRACT LegalEntity (Account);
 nameLegalEntityAccount 'Организация' (account) = nameLegalEntity(legalEntityAccount(account));
 
-editAccount 'Редактировать' (account) = ABSTRACT ACTION (account) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editAccount 'Редактировать' (account) = ABSTRACT ACTION (Account) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 FORM accounts 'Счета'
     OBJECTS a = Account

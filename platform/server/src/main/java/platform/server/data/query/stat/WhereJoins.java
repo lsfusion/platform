@@ -9,13 +9,17 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
-import platform.base.col.interfaces.mutable.*;
+import platform.base.col.interfaces.mutable.MCol;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.MExclSet;
+import platform.base.col.interfaces.mutable.SimpleAddValue;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
+import platform.server.caches.ParamExpr;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
@@ -442,7 +446,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 
 
     public Where getPartitionPushWhere(ImMap<KeyExpr, BaseExpr> joinMap, ImSet<Expr> partitions, ImMap<WhereJoin, Where> upWheres, QueryJoin<KeyExpr, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
-        joinMap = joinMap.filterIncl(AbstractOuterContext.getOuterKeys(partitions)); // так как в partitions могут быть не все ключи, то в явную добавим условия на не null для таких ключей
+        joinMap = joinMap.filterIncl(BaseUtils.<ImSet<KeyExpr>>immutableCast(AbstractOuterContext.getOuterKeys(partitions))); // так как в partitions могут быть не все ключи, то в явную добавим условия на не null для таких ключей
         Where pushWhere = getPushWhere(joinMap, upWheres, skipJoin, keyStat, currentStat, currentJoinStat);
         if(pushWhere!=null) {
             ImMap<Expr, Expr> partMap = partitions.toMap();
@@ -527,7 +531,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return innerWhere;
     }
 
-    public ImSet<KeyExpr> getOuterKeys() {
+    public ImSet<ParamExpr> getOuterKeys() {
         return AbstractOuterContext.getOuterKeys(this);
     }
 

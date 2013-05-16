@@ -1167,12 +1167,12 @@ abstractPropertyDefinition returns [LP property]
 abstractActionPropertyDefinition returns [LP property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedAbstractActionProp($params.ids.size());	
+		$property = self.addScriptedAbstractActionProp($params.ids);
 	}
 }
 	:	'ABSTRACT' 'ACTION' 
 		'(' 
-			params=idList
+			params=classIdList
 		')'	
 	;
 	

@@ -8,8 +8,6 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.property.CalcPropertyInterfaceImplement;
 import platform.server.logics.property.PropertyInterface;
 
-import static platform.base.BaseUtils.nullInnerJoin;
-
 public class FormEnvironment<P extends PropertyInterface> {
     private final ImMap<P, PropertyObjectInterfaceInstance> mapObjects;
     private final PropertyDrawInstance drawInstance;

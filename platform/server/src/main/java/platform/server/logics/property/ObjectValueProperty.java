@@ -1,12 +1,10 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;

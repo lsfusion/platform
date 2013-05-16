@@ -1,6 +1,5 @@
 package platform.server.classes;
 
-import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ConcatenateType;
 import platform.server.data.type.Type;

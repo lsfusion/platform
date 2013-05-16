@@ -271,8 +271,8 @@ invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(
 
 //-- Действие
 
-overFillInvoiceUserInvoiceInvoice = ABSTRACT ACTION (userInvoice, invoice);
-overFillInvoiceUserInvoiceDetailInvoiceDetail = ABSTRACT ACTION (userDetail, detail);
+overFillInvoiceUserInvoiceInvoice = ABSTRACT ACTION (Purchase.UserInvoice, Invoice);
+overFillInvoiceUserInvoiceDetailInvoiceDetail = ABSTRACT ACTION (Purchase.UserInvoiceDetail, InvoiceDetail);
 
 moveUserInvoiceInvoice 'Накладная (закупка)' =  ACTION (invoice) NEWSESSION{
 

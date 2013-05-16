@@ -6,8 +6,6 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 
-import java.util.Collections;
-
 public abstract class ExclExprPullWheres<R> extends ExclPullWheres<R, Integer, Where> {
 
     protected R proceedBase(Where data, ImMap<Integer, BaseExpr> map) {

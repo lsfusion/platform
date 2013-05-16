@@ -1,8 +1,8 @@
 package platform.server.caches.hash;
 
 import platform.base.col.interfaces.immutable.ImSet;
+import platform.server.caches.ParamExpr;
 import platform.server.data.Value;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.MapTranslate;
 
 public class HashContext extends HashObject {
@@ -37,11 +37,11 @@ public class HashContext extends HashObject {
         return 31 * keys.hashCode() + values.hashCode();
     }
 
-    public HashContext filterKeysValues(ImSet<KeyExpr> filterKeys, ImSet<Value> filterValues) {
+    public HashContext filterKeysValues(ImSet<ParamExpr> filterKeys, ImSet<Value> filterValues) {
         return HashContext.create(keys.filterKeys(filterKeys), values.filterValues(filterValues));
     }
 
-    public HashContext reverseTranslate(MapTranslate translator, ImSet<KeyExpr> contextKeys, ImSet<Value> contextValues) {
+    public HashContext reverseTranslate(MapTranslate translator, ImSet<ParamExpr> contextKeys, ImSet<Value> contextValues) {
         HashKeys transKeys = keys.reverseTranslate(translator, contextKeys);
         if(transKeys==null)
             return null;

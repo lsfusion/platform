@@ -64,17 +64,11 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         env.change(property, change.map(mapping));
     }
 
-    public ImMap<T,ValueClass> mapInterfaceClasses() {
-        return mapInterfaceClasses(false);
+    public ImMap<T,ValueClass> mapInterfaceClasses(ClassType type) {
+        return mapping.rightCrossJoin(property.getInterfaceClasses(type));
     }
-    public ImMap<T,ValueClass> mapInterfaceClasses(boolean full) {
-        return mapping.rightCrossJoin(property.getInterfaceClasses(full));
-    }
-    public ClassWhere<T> mapClassWhere() {
-        return mapClassWhere(false);
-    }
-    public ClassWhere<T> mapClassWhere(boolean full) {
-        return new ClassWhere<T>(property.getClassWhere(full),mapping);
+    public ClassWhere<T> mapClassWhere(ClassType type) {
+        return new ClassWhere<T>(property.getClassWhere(type),mapping);
     }
 
     public boolean mapIsFull(ImSet<T> interfaces) {
@@ -144,8 +138,8 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return mapping.crossJoin(property.getInterfaceCommonClasses(commonValue));
     }
 
-    public ClassWhere<Object> mapClassValueWhere() {
-        return property.getClassValueWhere().remap(MapFact.<Object, Object>addRevExcl(mapping, "value", "value"));
+    public ClassWhere<Object> mapClassValueWhere(ClassType type) {
+        return property.getClassValueWhere(type).remap(MapFact.<Object, Object>addRevExcl(mapping, "value", "value"));
     }
 
     public CalcPropertyObjectInstance<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {

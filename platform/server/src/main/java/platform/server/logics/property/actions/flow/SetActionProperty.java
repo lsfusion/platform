@@ -4,18 +4,14 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
-import platform.server.session.DataSession;
 import platform.server.session.NoPropertyTableUsage;
 import platform.server.session.PropertyChange;
-import platform.server.session.SinglePropertyTableUsage;
 
 import java.sql.SQLException;
 
@@ -75,8 +71,8 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
         if(!exprWhere.isFalse()) { // оптимизация, важна так как во многих event'ах может учавствовать
 
             NoPropertyTableUsage<I> mapTable = null;
-            if(writeFrom.mapIsComplex()) { // оптимизация с materialize'ингом
-                mapTable = PropertyChange.<I>materialize(context.getSession(), innerKeys, exprWhere);
+            if(writeFrom.mapIsComplex() && PropertyChange.needMaterializeWhere(exprWhere)) { // оптимизация с materialize'ингом
+                mapTable = PropertyChange.<I>materializeWhere(context.getSession(), innerKeys, exprWhere);
                 exprWhere = mapTable.join(innerKeys).getWhere();
             }
 

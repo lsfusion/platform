@@ -47,7 +47,7 @@ symbolCurrencyContract 'Символ' (contract) = symbolCurrency(currencyContra
 
 noteContract 'Примечание' = DATA TEXT (Contract) MINCHARWIDTH 50 PREFCHARWIDTH 50 IN attributeGroup;
 
-editContract 'Редактировать' (contract) = ABSTRACT ACTION (contract) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editContract 'Редактировать' (contract) = ABSTRACT ACTION (Contract) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 FORM contracts 'Договоры'
     OBJECTS c = Contract

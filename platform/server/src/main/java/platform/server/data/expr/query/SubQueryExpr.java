@@ -5,10 +5,9 @@ import platform.base.Result;
 import platform.base.SFunctionSet;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
-import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.*;
 import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.CompileSource;
@@ -60,7 +59,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
 
     @IdentityInstanceLazy
     public SubQueryJoin getInnerJoin() {
-        return new SubQueryJoin(getInner().getInnerKeys(), getInner().getInnerValues(), getInner().getFullWhere(), group);
+        return new SubQueryJoin(getInner().getQueryKeys(), getInner().getInnerValues(), getInner().getFullWhere(), group);
     }
 
     public SubQueryExpr(SubQueryExpr expr, MapTranslate translator) {
@@ -105,7 +104,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
     }
 
     public static Expr create(final Expr expr, final ImMap<KeyExpr, ? extends Expr> group, final PullExpr noPull) {
-        ImMap<KeyExpr, KeyExpr> pullKeys = getOuterKeys(expr).filterFn(new SFunctionSet<KeyExpr>() {
+        ImMap<KeyExpr, KeyExpr> pullKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterKeys(expr)).filterFn(new SFunctionSet<KeyExpr>() {
             public boolean contains(KeyExpr key) {
                 return key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull);
             }}).toMap();
@@ -129,7 +128,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
         }, restGroup);
 
         if(translate.size()>0) {
-            QueryTranslator translator = new PartialQueryTranslator(translate);
+            QueryTranslator translator = new PartialQueryTranslator(translate, true);
             expr = expr.translateQuery(translator);
         }
 

@@ -8,7 +8,6 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.LongMutable;
 import platform.base.col.interfaces.mutable.MOrderExclSet;
-import platform.base.col.interfaces.mutable.MOrderSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
@@ -22,7 +21,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {

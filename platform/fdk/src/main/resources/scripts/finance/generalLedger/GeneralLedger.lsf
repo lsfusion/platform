@@ -66,7 +66,7 @@ skipGeneralLedger 'Не изменять значение' (generalLedger) = ABS
 skipUserGeneralLedger 'Не изменять значение' (userGeneralLedger) = DATA BOOLEAN (UserGeneralLedger);
 skipGeneralLedger (generalLedger) += skipUserGeneralLedger (generalLedger);
 
-editGeneralLedger 'Редактировать' = ABSTRACT ACTION (generalLedger) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editGeneralLedger 'Редактировать' = ABSTRACT ACTION (GeneralLedger) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 // ----------------------------- Сальдо ---------------------------//
 
@@ -205,7 +205,7 @@ editUserGeneralLedger 'Редактировать' (userGeneralLedger) = ACTION 
 editGeneralLedger(generalLedger) += editUserGeneralLedger(generalLedger);
 isUserGeneralLedger(generalLedger) = TRUE IF generalLedger IS UserGeneralLedger;
 
-overCopyGeneralLedger = ABSTRACT ACTION (from, to);
+overCopyGeneralLedger = ABSTRACT ACTION (GeneralLedger, GeneralLedger);
 copyGeneralLedger 'Копировать' = ACTION (generalLedger) NEWSESSION {
 
     FOR ADDOBJ g = UserGeneralLedger DO {

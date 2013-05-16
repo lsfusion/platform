@@ -5,6 +5,7 @@ import platform.base.TwinImmutableObject;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.Compare;
+import platform.server.caches.ParamExpr;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.*;
@@ -29,7 +30,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         return create(operator1, operator2, new EqualsWhere(operator1, operator2));
     }
 
-    public EqualsWhere(KeyExpr operator1, BaseExpr operator2) {
+    public EqualsWhere(ParamExpr operator1, BaseExpr operator2) {
         super(operator1, operator2);
     }
 
@@ -60,10 +61,10 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     @Override
     public KeyEquals calculateKeyEquals() {
-        if(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1))
-            return new KeyEquals((KeyExpr) operator1, operator2);
-        if(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2))
-            return new KeyEquals((KeyExpr) operator2, operator1);
+        if(operator1 instanceof ParamExpr && !operator2.hasKey((ParamExpr) operator1))
+            return new KeyEquals((ParamExpr) operator1, operator2);
+        if(operator2 instanceof ParamExpr && !operator1.hasKey((ParamExpr) operator2))
+            return new KeyEquals((ParamExpr) operator2, operator1);
         return super.calculateKeyEquals();
     }
 

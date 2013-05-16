@@ -3,7 +3,6 @@ package platform.server.form.entity;
 import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.TypeSerializer;

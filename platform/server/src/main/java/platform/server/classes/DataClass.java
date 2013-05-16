@@ -1,14 +1,12 @@
 package platform.server.classes;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
-import org.springframework.aop.support.DynamicMethodMatcher;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
-import platform.interop.Data;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
@@ -29,7 +27,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.IsClassProperty;
 import platform.server.logics.property.group.AbstractGroup;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;

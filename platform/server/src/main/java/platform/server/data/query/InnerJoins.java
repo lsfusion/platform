@@ -11,8 +11,6 @@ import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 
-import java.util.Collection;
-
 public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
 
     public InnerJoins() {

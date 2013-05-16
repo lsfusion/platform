@@ -56,6 +56,12 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         this(sID, caption, interfaces, false, operands.reverseList().mapListValues(new OperandCase(caseClasses)));
     }
 
+    public CaseUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
+        this(sID, caption, interfaces, operands, caseClasses);
+
+        classValueWhere = new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(interfaceClasses, "value", valueClass), true);
+    }
+
     public CaseUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses) {
         this(sID, caption, interfaces, true, operands.mapColValues(new OperandCase(caseClasses)).toList());
     }
@@ -297,7 +303,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 CalcPropertyMapImplement<?, Interface> op2 = (CalcPropertyMapImplement<?, Interface>) addCase.where;
                 if (op1.mapIntersect(op2)) {
                     throw new ScriptParsingException("signature intersection of property " + addCase.property + " (WHEN " + addCase.where +") with previosly defined implementation " + listCases.get(i).property + " (WHEN " + listCases.get(i).where +") for abstract property " + this + "\n" +
-                            "Classes 1 : " + op1.mapClassWhere() + ", Classes 2 : " + op2.mapClassWhere());
+                            "Classes 1 : " + op1.mapClassWhere(ClassType.ASSERTFULL) + ", Classes 2 : " + op2.mapClassWhere(ClassType.ASSERTFULL));
                 }
             }
         }
@@ -313,17 +319,17 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return classValueWhere != null;
     }
 
-    public ClassWhere<Object> getClassValueWhere(boolean full) {
+    public ClassWhere<Object> getClassValueWhere(ClassType type) {
         if(isAbstract())
             return classValueWhere;
 
-        return super.getClassValueWhere(full);
+        return super.getClassValueWhere(type);
     }
 
     @Override
     public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
         if(isAbstract())
-            return getInterfaceClasses();
+            return getInterfaceClasses(ClassType.ASSERTFULL);
 
         return super.getInterfaceCommonClasses(commonValue);
     }
@@ -346,9 +352,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     private ClassWhere<Object> getCaseClassValueWhere(Case propCase) {
-        ClassWhere<Object> operandClassValueWhere = BaseUtils.immutableCast(((CalcPropertyMapImplement<?, Interface>) propCase.where).mapClassWhere());
+        ClassWhere<Object> operandClassValueWhere = BaseUtils.immutableCast(((CalcPropertyMapImplement<?, Interface>) propCase.where).mapClassWhere(ClassType.ASSERTFULL));
         if(propCase.property instanceof CalcPropertyMapImplement)
-            operandClassValueWhere = operandClassValueWhere.and(((CalcPropertyMapImplement<?, Interface>) propCase.property).mapClassValueWhere());
+            operandClassValueWhere = operandClassValueWhere.and(((CalcPropertyMapImplement<?, Interface>) propCase.property).mapClassValueWhere(ClassType.ASSERTFULL));
         else { // идиотизм, но ту еще есть вопросы
             Interface operandInterface = (Interface)propCase.property;
             ValueClass valueClass = operandClassValueWhere.filterKeys(SetFact.<Object>singleton(operandInterface)).getCommonParent(SetFact.<Object>singleton(operandInterface)).singleValue();

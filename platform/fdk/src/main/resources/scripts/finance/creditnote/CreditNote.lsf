@@ -209,7 +209,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     invoiceDetailCreditNoteDetail(creditNoteDetail) += invoiceDetailUserCreditNoteDetail(creditNoteDetail);
 
     CONSTRAINT supplierCreditNoteDetail(detail) != supplierInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)) OR
-               customerUserCreditNote(detail) != customerInvoice(invoiceDetailUserCreditNoteDetail(detail)) OR
+               customerUserCreditNote(detail) != customerInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)) OR
                skuUserCreditNoteDetail(detail) != skuInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
         CHECKED BY invoiceDetailUserCreditNoteDetail
             MESSAGE 'Поставщик, покупатель и товар в накладной и акте расхождения должны соответствовать друг другу';

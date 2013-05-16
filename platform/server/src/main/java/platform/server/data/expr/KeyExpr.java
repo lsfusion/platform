@@ -1,29 +1,18 @@
 package platform.server.data.expr;
 
-import platform.base.TwinImmutableObject;
-import platform.base.col.MapFact;
-import platform.base.col.SetFact;
-import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.GlobalInteger;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.SystemProperties;
-import platform.server.caches.hash.HashContext;
-import platform.server.data.expr.query.PropStat;
-import platform.server.data.expr.query.Stat;
+import platform.server.caches.ParamExpr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.stat.InnerBaseJoin;
-import platform.server.data.query.stat.KeyStat;
-import platform.server.data.query.stat.StatKeys;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
-public class KeyExpr extends VariableSingleClassExpr implements InnerBaseJoin<Object> {
+public class KeyExpr extends ParamExpr {
 
     private static final GetValue<KeyExpr, Object> genStringKeys = new GetValue<KeyExpr, Object>() {
         public KeyExpr getMapValue(Object value) {
@@ -65,65 +54,13 @@ public class KeyExpr extends VariableSingleClassExpr implements InnerBaseJoin<Ob
     public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
     }
 
-    public Type getType(KeyType keyType) {
-        return keyType.getKeyType(this);
-    }
-    public Stat getTypeStat(KeyStat keyStat) {
-        return keyStat.getKeyStat(this);
-    }
-
-    public Expr translateQuery(QueryTranslator translator) {
-        return translator.translate(this);
-    }
-
-    protected KeyExpr translate(MapTranslate translator) {
-        return translator.translate(this);
-    }
-    public KeyExpr translateOuter(MapTranslate translator) {
-        return (KeyExpr) aspectTranslate(translator);
-    }
-
-    @Override
-    public int immutableHashCode() {
-        return System.identityHashCode(this);
-    }
-
-    protected int hash(HashContext hashContext) {
-        return hashContext.keys.hash(this);
-    }
-
-    public boolean twins(TwinImmutableObject obj) {
-        return false;
-    }
-
-    public PropStat getStatValue(KeyStat keyStat) {
-        return PropStat.ALOT; // временный фикс, так как при других формулах
-//        return FormulaExpr.getStatValue(this, keyStat);
-    }
-
-    public StatKeys<Object> getStatKeys(KeyStat keyStat) {
-        return new StatKeys<Object>(SetFact.EMPTY(), Stat.ALOT);
-//        return new StatKeys<Object>(SetFact.EMPTY(), keyStat.getKeyStat(this));
-    }
-
-    public InnerBaseJoin<?> getBaseJoin() {
-        return this;
-    }
-
-    public ImMap<Object, BaseExpr> getJoins() {
-        return MapFact.EMPTY();
-    }
-
-    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
-        return InnerExpr.getExprFollows(this, recursive);
-    }
-
-    @Override
-    protected ImSet<KeyExpr> getKeys() {
-        return SetFact.singleton(this);
-    }
-
     public boolean isTableIndexed() {
         return true;
+    }
+
+    private final static GlobalInteger keyClass = new GlobalInteger(39916801);
+
+    public GlobalInteger getKeyClass() {
+        return keyClass;
     }
 }

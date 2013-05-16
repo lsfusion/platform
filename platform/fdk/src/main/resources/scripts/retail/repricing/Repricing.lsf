@@ -240,7 +240,7 @@ DESIGN addPercentUserRepricing FROM DEFAULT {
     }
 }
 
-overChangePriceUserRepricing = ABSTRACT ACTION (a);
+overChangePriceUserRepricing = ABSTRACT ACTION (RepricingDetail);
 
 changePriceUserRepricing 'Изменить цену' (userRepricing) = ACTION (userRepricing) {
         FORM addPercentUserRepricing OBJECTS u = userRepricing MODAL;
@@ -448,7 +448,7 @@ DESIGN managementRepricing FROM DEFAULT {
     }
 }
 
-overManagementRepricing = ABSTRACT ACTION (a,b,c,d);
+overManagementRepricing = ABSTRACT ACTION (RepricingDetail,Sku,Stock,DATETIME);
 
 prevPricePriceListCalcListSkuStockDateTime (priceList, calcList, sku, department, time) =
     IF prevPricePriceListTypeSkuStockDateTime(priceList, sku, department, time) AND calcList IS CalcPriceListType

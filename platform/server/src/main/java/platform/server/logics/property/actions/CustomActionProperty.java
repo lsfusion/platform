@@ -8,7 +8,6 @@ import platform.server.logics.property.actions.flow.ChangeFlowType;
 import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 
 public abstract class CustomActionProperty extends ActionProperty<ClassPropertyInterface> {
 

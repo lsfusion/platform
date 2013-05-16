@@ -22,16 +22,13 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.UserInfo;
 import platform.server.ServerLoggers;
 import platform.server.classes.ValueClass;
-import platform.server.logics.*;
-import platform.server.logics.SecurityManager;
 import platform.server.data.type.TypeSerializer;
 import platform.server.lifecycle.LifecycleEvent;
 import platform.server.lifecycle.LifecycleListener;
+import platform.server.logics.*;
+import platform.server.logics.SecurityManager;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyClassImplement;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.ValueClassWrapper;
+import platform.server.logics.property.*;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
 
@@ -325,7 +322,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         byte[] fileBytes;
         try {
             DataSession session = createSession();
-            ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(true);
+            ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.ASIS);
             for (int i = 0; i < interfaces.size(); i++) {
                 objects[i] = session.getDataObject(interfaceClasses.get(interfaces.get(i)), Integer.decode(params[i]));
             }

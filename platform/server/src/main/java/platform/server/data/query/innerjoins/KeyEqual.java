@@ -6,11 +6,10 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.mutable.AddValue;
 import platform.base.col.interfaces.mutable.SimpleAddValue;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
+import platform.server.caches.ParamExpr;
 import platform.server.caches.TranslateContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.ExprEqualsJoin;
@@ -25,23 +24,23 @@ import platform.server.data.where.Where;
 
 public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface<KeyEqual>,TranslateContext<KeyEqual> {
 
-    public final ImMap<KeyExpr, BaseExpr> keyExprs;
+    public final ImMap<ParamExpr, BaseExpr> keyExprs;
 
     private KeyEqual() {
         this.keyExprs = MapFact.EMPTY();
     }
     public final static KeyEqual EMPTY = new KeyEqual();
 
-    public KeyEqual(KeyExpr key, BaseExpr expr) {
+    public KeyEqual(ParamExpr key, BaseExpr expr) {
         keyExprs = MapFact.singleton(key, expr);
     }
 
-    public KeyEqual(ImMap<KeyExpr, BaseExpr> keyExprs) {
+    public KeyEqual(ImMap<ParamExpr, BaseExpr> keyExprs) {
         this.keyExprs = keyExprs;
     }
     
-    private final static AddValue<KeyExpr, Expr> keepValue = new SimpleAddValue<KeyExpr, Expr>() {
-        public Expr addValue(KeyExpr key, Expr prevValue, Expr newValue) {
+    private final static AddValue<ParamExpr, Expr> keepValue = new SimpleAddValue<ParamExpr, Expr>() {
+        public Expr addValue(ParamExpr key, Expr prevValue, Expr newValue) {
             if(!prevValue.isValue()) // если было не value, предпочтительнее использовать value;
                 return newValue;
             return prevValue;
@@ -51,8 +50,8 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
             return true;
         }
     };
-    public static <E extends Expr> AddValue<KeyExpr, E> keepValue() {
-        return (AddValue<KeyExpr, E>) keepValue;
+    public static <E extends Expr> AddValue<ParamExpr, E> keepValue() {
+        return (AddValue<ParamExpr, E>) keepValue;
     }
 
     public KeyEqual and(KeyEqual and) {
@@ -88,10 +87,10 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
     }
 
     public static KeyEqual getKeyEqual(BaseExpr operator1, BaseExpr operator2) {
-        if(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1))
-            return new KeyEqual((KeyExpr) operator1, operator2);
-        if(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2))
-            return new KeyEqual((KeyExpr) operator2, operator1);
+        if(operator1 instanceof ParamExpr && !operator2.hasKey((ParamExpr) operator1))
+            return new KeyEqual((ParamExpr) operator1, operator2);
+        if(operator2 instanceof ParamExpr && !operator1.hasKey((ParamExpr) operator2))
+            return new KeyEqual((ParamExpr) operator2, operator1);
         return KeyEqual.EMPTY;
     }
 
@@ -104,7 +103,7 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
     
     public KeyStat getKeyStat(final KeyStat keyStat) {
         return new platform.server.data.query.stat.KeyStat() {
-            public Stat getKeyStat(KeyExpr key) {
+            public Stat getKeyStat(ParamExpr key) {
                 BaseExpr keyExpr = keyExprs.get(key);
                 if(keyExpr!=null)
                     return keyExpr.getTypeStat(keyStat);

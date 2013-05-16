@@ -101,7 +101,7 @@ META defineInvoiceShipment(sign, stockProp)
             }
         }
     }
-    overFillInvoiceUserShipmentInvoice = ABSTRACT ACTION (userShipment, invoice);                          // документ
+    overFillInvoiceUserShipmentInvoice = ABSTRACT ACTION (UserShipment, Invoice);                          // документ
     overFillInvoiceUserShipmentDetailInvoiceDetail = ABSTRACT ACTION (UserShipmentDetail, InvoiceDetail);  // детайл
 
     fillInvoiceUserShipment 'Заполнить на основе накладной' =  ACTION (userShipment) {

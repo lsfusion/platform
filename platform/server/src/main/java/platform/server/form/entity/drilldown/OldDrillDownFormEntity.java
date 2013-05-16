@@ -5,7 +5,6 @@ import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.property.ChangedProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.OldProperty;
 

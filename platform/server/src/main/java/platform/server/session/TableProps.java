@@ -8,7 +8,6 @@ import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 
 public class TableProps {

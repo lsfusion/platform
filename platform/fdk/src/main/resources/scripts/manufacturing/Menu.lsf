@@ -62,7 +62,7 @@ productYieldUserMenuDetail 'Выход' = DATA STRING[100] (UserMenuDetail) MINC
 productYieldMenuDetail(detail)+= productYieldUserMenuDetail(detail);
 
 // --------------------------- Формы Меню ---------------------------------
-editMenu 'Редактировать' = ABSTRACT ACTION (menu) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editMenu 'Редактировать' = ABSTRACT ACTION (Menu) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 countUserMenuGroup 'Количество позиций в группе' (userMenu,group)= GROUP SUM 1
     BY userMenuUserMenuDetail(detail), groupGroupTypeSku(groupTypeUserMenu(userMenuUserMenuDetail(detail)), skuUserMenuDetail(detail));

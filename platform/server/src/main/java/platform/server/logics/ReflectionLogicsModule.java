@@ -3,7 +3,6 @@ package platform.server.logics;
 import org.antlr.runtime.RecognitionException;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.LogicalClass;
-import platform.server.classes.LongClass;
 import platform.server.classes.StringClass;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;

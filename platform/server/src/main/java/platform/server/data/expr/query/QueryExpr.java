@@ -6,10 +6,7 @@ import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
-import platform.server.caches.AbstractInnerContext;
-import platform.server.caches.AbstractInnerHashContext;
-import platform.server.caches.IdentityLazy;
-import platform.server.caches.OuterContext;
+import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DataClass;
@@ -95,7 +92,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             return thisObj.query.hashOuter(hashContext) * 31 + hash;
         }
 
-        public ImSet<KeyExpr> getInnerKeys() {
+        public ImSet<ParamExpr> getInnerKeys() {
             return thisObj.getInner().getInnerKeys();
         }
         public ImSet<Value> getInnerValues() {
@@ -132,8 +129,12 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             return true;
         }
 
-        public ImSet<KeyExpr> getKeys() {
+        public ImSet<ParamExpr> getKeys() {
             return getOuterKeys(thisObj.group.keys()).merge(thisObj.query.getOuterKeys());
+        }
+
+        public ImSet<KeyExpr> getQueryKeys() {
+            return BaseUtils.immutableCast(getInnerKeys());
         }
 
         public ImSet<Value> getValues() {

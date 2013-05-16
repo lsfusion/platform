@@ -5,10 +5,7 @@ import platform.base.Result;
 import platform.base.TwinImmutableObject;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
-import platform.server.caches.AbstractInnerContext;
-import platform.server.caches.AbstractInnerHashContext;
-import platform.server.caches.AbstractOuterContext;
-import platform.server.caches.OuterContext;
+import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
@@ -90,7 +87,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
             outer = createOuterContext();
         return outer;
     }
-    public ImSet<KeyExpr> getOuterKeys() {
+    public ImSet<ParamExpr> getOuterKeys() {
         return getOuter().getOuterKeys();
     }
     public ImSet<Value> getOuterValues() {
@@ -144,8 +141,8 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     protected final ImSet<KeyExpr> keys;
     private final ImSet<Value> values;
 
-    public ImSet<KeyExpr> getKeys() {
-        return keys;
+    public ImSet<ParamExpr> getKeys() {
+        return BaseUtils.immutableCast(keys);
     }
 
     public ImSet<Value> getValues() {
@@ -202,8 +199,8 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
             return hash * 31 + thisObj.query.hashOuter(hashContext);
         }
 
-        public ImSet<KeyExpr> getInnerKeys() {
-            return thisObj.keys;
+        public ImSet<ParamExpr> getInnerKeys() {
+            return BaseUtils.immutableCast(thisObj.keys);
         }
         public ImSet<Value> getInnerValues() {
             return thisObj.values;
@@ -227,7 +224,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     protected abstract T createThis(ImSet<KeyExpr> keys, ImSet<Value> values, I query, ImMap<K, BaseExpr> group);
 
     protected T translate(MapTranslate translator) {
-        return createThis(translator.translateKeys(keys), translator.translateValues(values), query.translateOuter(translator), (ImMap<K,BaseExpr>) translator.translateExprKeys(group));
+        return createThis(translator.translateDirect(keys), translator.translateValues(values), query.translateOuter(translator), (ImMap<K,BaseExpr>) translator.translateExprKeys(group));
     }
 
     public boolean equalsInner(T object) {

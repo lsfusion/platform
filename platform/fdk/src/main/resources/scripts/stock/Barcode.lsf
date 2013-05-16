@@ -107,7 +107,7 @@ DESIGN barcodeInput FROM DEFAULT {
 
 sessionSku = DATA SESSION Sku();
 
-createSkuBarcodeDate = ABSTRACT ACTION (barcode, date);
+createSkuBarcodeDate = ABSTRACT ACTION (STRING[15], DATE);
 
 skuAddedUser = DATA Sku(User);
 setSkuAddedUser = ACTION (sku) NEWSESSION AUTOAPPLY {

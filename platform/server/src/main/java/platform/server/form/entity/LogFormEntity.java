@@ -113,7 +113,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     }
 
     private static ValueClass[] getValueClassesList(LCP<?> property) {
-        ImMap<PropertyInterface, ValueClass> interfaces = (ImMap<PropertyInterface, ValueClass>) property.property.getInterfaceClasses();
+        ImMap<PropertyInterface, ValueClass> interfaces = (ImMap<PropertyInterface, ValueClass>) property.property.getInterfaceClasses(ClassType.ASSERTFULL);
         ValueClass[] classes = new ValueClass[interfaces.size()];
         int index = 0;
         for (PropertyInterface pi : property.property.interfaces) {

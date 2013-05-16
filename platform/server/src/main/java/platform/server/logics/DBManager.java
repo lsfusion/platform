@@ -443,7 +443,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     private boolean needsToBeSynchronized(Property property) {
-        return !LM.isGeneratedSID(property.getSID()) && (property instanceof ActionProperty || property.isFull());
+        return !LM.isGeneratedSID(property.getSID()) && (property instanceof ActionProperty || ((CalcProperty)property).isFull());
     }
 
     private void synchronizeProperties() {
@@ -474,10 +474,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 try {
                     classProperty = property.getClass().getSimpleName();
                     if(property instanceof CalcProperty) {
-                        complexityProperty = ((CalcProperty)property).getExpr(property.getMapKeys(), Property.defaultModifier).getComplexity(false);
+                        complexityProperty = ((CalcProperty)property).getExpr(((CalcProperty)property).getMapKeys(), Property.defaultModifier).getComplexity(false);
                     }
                     returnClass = property.getValueClass().getSID();
-                    for (Object cc : property.getInterfaceClasses().valueIt()) {
+                    for (Object cc : property.getInterfaceClasses(property instanceof ActionProperty ? ClassType.FULL : ClassType.ASSERTFULL).valueIt()) {
                         if (cc instanceof CustomClass)
                             commonClasses += ((CustomClass) cc).getSID() + ", ";
                         else if (cc instanceof DataClass)

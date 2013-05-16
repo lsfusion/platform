@@ -10,6 +10,7 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassType;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 
@@ -21,11 +22,6 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
     public ImOrderSet<T> listInterfaces;
     private String creationScript = null;
     private String creationPath = null;
-
-    public <IT extends PropertyInterface> boolean intersect(LP<IT, ?> lp) {
-        assert listInterfaces.size()==lp.listInterfaces.size();
-        return property.intersect(lp.property,lp.getRevMap(listInterfaces));
-    }
 
     public LP(P property) {
         this.property = property;
@@ -41,8 +37,8 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         return getMap(objects);
     }
 
-    public ClassWhere<Integer> getClassWhere() {
-        ClassWhere<T> classWhere = property.getClassWhere();
+    public ClassWhere<Integer> getClassWhere(ClassType type) {
+        ClassWhere<T> classWhere = property.getClassWhere(type);
         ImRevMap<T,Integer> mapping = listInterfaces.mapOrderRevValues(new GetIndex<Integer>() {
             public Integer getMapValue(int i) {
                 return i+1;

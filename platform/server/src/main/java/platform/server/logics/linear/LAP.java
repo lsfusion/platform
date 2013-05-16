@@ -1,22 +1,16 @@
 package platform.server.logics.linear;
 
 import platform.base.col.MapFact;
-import platform.base.col.interfaces.immutable.ImList;
-import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
-import platform.interop.form.ServerResponse;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.flow.FlowResult;
-import platform.server.logics.property.actions.flow.Inline;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-
-import static platform.server.logics.PropertyUtils.readCalcImplements;
 
 public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
 
@@ -57,7 +51,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public ValueClass[] getInterfaceClasses() {
-        return listInterfaces.mapOrder(property.getInterfaceClasses()).toArray(new ValueClass[listInterfaces.size()]);
+        return listInterfaces.mapOrder(property.getInterfaceClasses(ClassType.ASIS)).toArray(new ValueClass[listInterfaces.size()]); // тут все равно obsolete
     }
 
     public <U extends PropertyInterface> ActionPropertyMapImplement<T, U> getImplement(U... mapping) {

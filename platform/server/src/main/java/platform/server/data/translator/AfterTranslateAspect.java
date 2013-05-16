@@ -7,6 +7,7 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.CacheAspect;
+import platform.server.caches.ParamExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.NotNullExpr;
@@ -87,7 +88,7 @@ public class AfterTranslateAspect {
         Where from = where.getFrom();
         MapTranslate translator = where.getTranslator();
         if(from!=null && translator!=null)
-            return StatKeys.translateOuter(from.getFullStatKeys(translator.reverseMap().translateKeys(groups)), translator);
+            return StatKeys.translateOuter(from.getFullStatKeys(translator.reverseMap().translateDirect(groups)), translator);
         else
             return thisJoinPoint.proceed();
     }
@@ -123,7 +124,7 @@ public class AfterTranslateAspect {
 
     @Around("execution(* platform.server.data.query.AbstractSourceJoin.translateQuery(platform.server.data.translator.QueryTranslator)) && target(toTranslate) && args(translator)")
     public Object callTranslateQuery(ProceedingJoinPoint thisJoinPoint, AbstractSourceJoin toTranslate, PartialQueryTranslator translator) throws Throwable {
-        ImSet<KeyExpr> keys = ((SourceJoin<?>)toTranslate).getOuterKeys();
+        ImSet<ParamExpr> keys = ((SourceJoin<?>)toTranslate).getOuterKeys();
         if(keys.disjoint(translator.keys.keys()))
             return toTranslate;
         else

@@ -1,5 +1,6 @@
 package platform.server.data.expr;
 
+import platform.base.BaseUtils;
 import platform.base.Result;
 import platform.base.SFunctionSet;
 import platform.base.col.MapFact;
@@ -23,8 +24,8 @@ import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.expr.where.cases.ExprCase;
 import platform.server.data.expr.where.cases.ExprCaseList;
 import platform.server.data.expr.where.cases.MExprCaseList;
-import platform.server.data.expr.where.ifs.MIfCases;
 import platform.server.data.expr.where.ifs.IfExpr;
+import platform.server.data.expr.where.ifs.MIfCases;
 import platform.server.data.expr.where.ifs.NullExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
@@ -187,7 +188,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
 
     public void checkInfiniteKeys() {
-        ImSet<KeyExpr> keys = getOuterKeys();
+        ImSet<KeyExpr> keys = BaseUtils.immutableCast(getOuterKeys());
 
         Result<ImSet<KeyExpr>> keyRest = new Result<ImSet<KeyExpr>>();
         ImSet<KeyExpr> keyValues = keys.split(new SFunctionSet<KeyExpr>() {
@@ -200,7 +201,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
                      translateQuery(new PartialQueryTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
                          public Expr getMapValue(KeyExpr key) {
                              return ((DataClass)key.getType(getWhere())).getDefaultExpr();
-                         }}))).getWhere()).compile(PostgreDataAdapter.debugSyntax);
+                         }}), true)).getWhere()).compile(PostgreDataAdapter.debugSyntax);
     }
 
     public static <K> ImMap<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException { // assert что в mapExprs только values

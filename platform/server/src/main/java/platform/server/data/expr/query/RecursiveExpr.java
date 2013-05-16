@@ -139,7 +139,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
     }
 
     public RecursiveJoin getInnerJoin() {
-        return new RecursiveJoin(getInner().getInnerKeys(), getInner().getInnerValues(), query.initial.getWhere(), query.step.getWhere(), query.mapIterate, query.cyclePossible, query.getType() instanceof LogicalClass, group);
+        return new RecursiveJoin(getInner().getQueryKeys(), getInner().getInnerValues(), query.initial.getWhere(), query.step.getWhere(), query.mapIterate, query.cyclePossible, query.getType() instanceof LogicalClass, group);
     }
 
     public Expr translateQuery(QueryTranslator translator) {
@@ -164,7 +164,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         }, restGroup);
         
         if(translate.size()>0) {
-            QueryTranslator translator = new PartialQueryTranslator(translate);
+            QueryTranslator translator = new PartialQueryTranslator(translate, true);
             initial = initial.translateQuery(translator);
             step = step.translateQuery(translator);
         }

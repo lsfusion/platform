@@ -262,6 +262,13 @@ public class DerivedProperty {
         return new CalcPropertyMapImplement<UnionProperty.Interface,T>(unionProperty, revMapInterfaces);
     }
 
+    public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<UnionProperty.Interface,T> createUnion(String sID, ImSet<T> interfaces, ValueClass valueClass, ImMap<T, ValueClass> interfaceClasses) {
+        ImRevMap<T,UnionProperty.Interface> mapInterfaces = interfaces.mapRevValues(UnionProperty.genInterface);
+        ImRevMap<UnionProperty.Interface, T> revMapInterfaces = mapInterfaces.reverse();
+        CaseUnionProperty unionProperty = new CaseUnionProperty(sID, false, true, "sys", revMapInterfaces.keys().toOrderSet(), valueClass, revMapInterfaces.join(interfaceClasses));
+        return new CalcPropertyMapImplement<UnionProperty.Interface,T>(unionProperty, revMapInterfaces);
+    }
+
     public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<?,T> createXUnion(ImSet<T> interfaces, ImList<CalcPropertyInterfaceImplement<T>> props) {
         ImRevMap<T,UnionProperty.Interface> mapInterfaces = interfaces.mapRevValues(UnionProperty.genInterface);
         ImRevMap<UnionProperty.Interface, T> revMapInterfaces = mapInterfaces.reverse();
@@ -711,7 +718,7 @@ public class DerivedProperty {
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createDataProp(boolean session, CalcProperty<T> property) {
-        ImMap<T, ValueClass> interfaces = property.getInterfaceClasses();
+        ImMap<T, ValueClass> interfaces = property.getInterfaceClasses(ClassType.ASSERTFULL);
         ValueClass valueClass = property.getValueClass();
         return createDataProp(session, "pc" + property.getSID(), property.toString(), interfaces, valueClass);
     }
@@ -840,7 +847,7 @@ public class DerivedProperty {
 
             ImSet<I> checkContext = whereInterfaces.filter(context);
             if(!where.mapIsFull(checkContext)) // может быть избыточно для 2-го случая сверху, но для where в принципе надо
-                where = (CalcPropertyMapImplement<W, I>) createAnd(whereInterfaces, where, IsClassProperty.getMapProperty(where.mapInterfaceClasses(true).filterIncl(checkContext)));
+                where = (CalcPropertyMapImplement<W, I>) createAnd(whereInterfaces, where, IsClassProperty.getMapProperty(where.mapInterfaceClasses(ClassType.FULL).filterIncl(checkContext)));
 
             ImRevMap<W, I> mapPushInterfaces = where.mapping.filterValuesRev(innerInterfaces); ImRevMap<I, W> mapWhere = where.mapping.reverse();
             writeFrom = createLastGProp(where.property, writeFrom.map(mapWhere), mapPushInterfaces.keys(), mapImplements(orders, mapWhere), ordersNotNull).map(mapPushInterfaces);

@@ -51,7 +51,7 @@ priceListTypeUserConsumptionDetail(detail) <- priceListTypeUserConsumption(userC
 @defineAddDetailDialogSkuStock(userConsumption, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(userConsumption, sku);
 
-editConsumption 'Редактировать' = ABSTRACT ACTION (consumption) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editConsumption 'Редактировать' = ABSTRACT ACTION (Consumption) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 @implementDocument(consumption);
 supplierStockDocument(consumption) += stockConsumption(consumption);

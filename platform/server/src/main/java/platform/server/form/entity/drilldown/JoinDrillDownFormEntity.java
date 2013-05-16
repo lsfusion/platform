@@ -37,7 +37,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
 
         CalcProperty<I> implProperty = property.implement.property;
         ImMap<I, CalcPropertyInterfaceImplement<JoinProperty.Interface>> implMapping = property.implement.mapping;
-        ImMap<I, ValueClass> implClasses = implProperty.getInterfaceClasses();
+        ImMap<I, ValueClass> implClasses = implProperty.getInterfaceClasses(ClassType.ASSERTFULL);
 
         MMap<I, ObjectEntity> mImplObjects = MapFact.mMap(MapFact.<I, ObjectEntity>override());
 

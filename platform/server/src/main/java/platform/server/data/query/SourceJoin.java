@@ -13,4 +13,7 @@ public interface SourceJoin<T extends SourceJoin<T>> extends OuterContext<T>, An
 
     //    void fillJoins(List<? extends JoinSelect> Joins);
     void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere);
+
+    boolean needMaterialize();
+
 }

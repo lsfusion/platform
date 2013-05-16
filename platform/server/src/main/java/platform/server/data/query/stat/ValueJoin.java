@@ -9,9 +9,6 @@ import platform.server.data.expr.InnerExpr;
 import platform.server.data.expr.NotNullExpr;
 import platform.server.data.expr.query.Stat;
 
-import java.util.HashMap;
-import java.util.HashSet;
-
 public class ValueJoin implements InnerBaseJoin<Object> {
 
     private ValueJoin() {

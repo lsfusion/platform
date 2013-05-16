@@ -42,7 +42,7 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         }
 
         protected Query translate(MapTranslate translator) {
-            return new Query(where.translateOuter(translator), StatKeys.translateOuter(stats, translator), translator.translateMapKeys(keyTypes));
+            return new Query(where.translateOuter(translator), StatKeys.translateOuter(stats, translator), translator.translateExprKeys(keyTypes));
         }
 
         public ImSet<OuterContext> calculateOuterDepends() {

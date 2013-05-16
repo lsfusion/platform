@@ -13,7 +13,6 @@ import platform.server.classes.BaseClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.SystemClass;
 import platform.server.classes.ValueClass;
-import platform.server.context.Context;
 import platform.server.data.PropertyField;
 import platform.server.data.SQLSession;
 import platform.server.data.StructTable;
@@ -25,8 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static platform.server.logics.ServerResourceBundle.getString;
 
 public class TableFactory {
 

@@ -4,8 +4,8 @@ REQUIRE Order, Invoice;
 
 NAMESPACE Invoice;
 
-createUserInvoiceOrder 'Создать накладную' = ABSTRACT ACTION (order);
-createUserInvoicePostedOrder 'Создать проведенную накладную' = ABSTRACT ACTION (order);
+createUserInvoiceOrder 'Создать накладную' = ABSTRACT ACTION (Order);
+createUserInvoicePostedOrder 'Создать проведенную накладную' = ABSTRACT ACTION (Order);
 
 orderInvoiceDetail = ABSTRACT Order(InvoiceDetail);
 
@@ -140,7 +140,7 @@ META defineOrderInvoice(sign, stockProp)
         }
     }
 
-    createExplicitBatchDetailUserInvoiceOrder = ABSTRACT ACTION (userInvoice, order);
+    createExplicitBatchDetailUserInvoiceOrder = ABSTRACT ACTION (UserInvoice, Order);
     useExplicitBatchDetailUserInvoiceOrder = ABSTRACT BOOLEAN (UserInvoice, Order);
 
     differentStocksInDetailsStock (stock) = differentStocksInDetailsLegalEntity(legalEntityStock(stock)) PERSISTENT;

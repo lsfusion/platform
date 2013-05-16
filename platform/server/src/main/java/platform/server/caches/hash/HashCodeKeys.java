@@ -1,7 +1,7 @@
 package platform.server.caches.hash;
 
 import platform.base.col.interfaces.immutable.ImSet;
-import platform.server.data.expr.KeyExpr;
+import platform.server.caches.ParamExpr;
 import platform.server.data.translator.MapTranslate;
 
 public class HashCodeKeys implements HashKeys {
@@ -10,15 +10,15 @@ public class HashCodeKeys implements HashKeys {
     }
     public static final HashCodeKeys instance = new HashCodeKeys();
 
-    public int hash(KeyExpr expr) {
+    public int hash(ParamExpr expr) {
         return expr.hashCode();
     }
 
-    public HashKeys filterKeys(ImSet<KeyExpr> keys) {
+    public HashKeys filterKeys(ImSet<ParamExpr> keys) {
         return this;
     }
 
-    public HashKeys reverseTranslate(MapTranslate translator, ImSet<KeyExpr> keys) {
+    public HashKeys reverseTranslate(MapTranslate translator, ImSet<ParamExpr> keys) {
         if(translator.identityKeys(keys))
             return this;
         else

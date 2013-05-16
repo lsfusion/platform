@@ -70,7 +70,7 @@ batchDialogUserAdjustmentDetail = ACTION (userAdjustmentDetail) {
     }
 };
 
-editAdjustment 'Редактировать' = ABSTRACT ACTION (adjustment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editAdjustment 'Редактировать' = ABSTRACT ACTION (Adjustment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 
 FORM userAdjustment 'Изменение остатков'

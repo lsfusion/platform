@@ -5,8 +5,8 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.hash.*;
 import platform.server.data.Value;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.MapTranslator;
 import platform.server.data.translator.MapValuesTranslate;
 
 public abstract class AbstractInnerContext<I extends InnerContext<I>> extends AbstractKeysValuesContext<I> implements InnerContext<I> {
@@ -23,7 +23,7 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         return aspectGetValues();
     }
 
-    public ImSet<KeyExpr> getInnerKeys() {
+    public ImSet<ParamExpr> getInnerKeys() {
         return aspectGetKeys();
     }
 
@@ -31,7 +31,7 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         public int hashInner(HashContext hashContext) {
             return AbstractInnerContext.this.hashInner(hashContext);
         }
-        public ImSet<KeyExpr> getInnerKeys() {
+        public ImSet<ParamExpr> getInnerKeys() {
             return AbstractInnerContext.this.getInnerKeys();
         }
         public ImSet<Value> getInnerValues() {
@@ -45,13 +45,13 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
     public int hashValues(HashValues hashValues) {
         return inherit.hashValues(hashValues);
     }
-    public BaseUtils.HashComponents<KeyExpr> getComponents(HashValues hashValues) {
+    public BaseUtils.HashComponents<ParamExpr> getComponents(HashValues hashValues) {
         return inherit.getComponents(hashValues);
     }
 
-    private BaseUtils.HashComponents<KeyExpr> innerComponents, valuesInnerComponents;
+    private BaseUtils.HashComponents<ParamExpr> innerComponents, valuesInnerComponents;
     @ManualLazy
-    public BaseUtils.HashComponents<KeyExpr> getInnerComponents(boolean values) {
+    public BaseUtils.HashComponents<ParamExpr> getInnerComponents(boolean values) {
         if(values) {
             if(valuesInnerComponents == null)
                 valuesInnerComponents = aspectGetInnerComponents(values);
@@ -62,10 +62,10 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
             return innerComponents;
         }
     }
-    private static BaseUtils.HashComponents<KeyExpr> translate(BaseUtils.HashComponents<KeyExpr> components, MapTranslate translator) {
-        return new BaseUtils.HashComponents<KeyExpr>(translator.translateMapKeys(components.map), components.hash);
+    private static BaseUtils.HashComponents<ParamExpr> translate(BaseUtils.HashComponents<ParamExpr> components, MapTranslate translator) {
+        return new BaseUtils.HashComponents<ParamExpr>(translator.translateExprKeys(components.map), components.hash);
     }
-    private BaseUtils.HashComponents<KeyExpr> aspectGetInnerComponents(boolean values) {
+    private BaseUtils.HashComponents<ParamExpr> aspectGetInnerComponents(boolean values) {
         I from = getFrom();
         MapTranslate translator = getTranslator();
         if(from!=null && translator!=null && (values || translator.identityValues(from.getInnerValues()))) // объект не ушел
@@ -73,7 +73,7 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
 
         return calculateInnerComponents(values);
     }
-    private BaseUtils.HashComponents<KeyExpr> calculateInnerComponents(boolean values) {
+    private BaseUtils.HashComponents<ParamExpr> calculateInnerComponents(boolean values) {
         return getComponents(values ? HashMapValues.create(getValueComponents().map) : HashCodeValues.instance);
     }
 

@@ -7,9 +7,6 @@ import platform.server.data.expr.where.Case;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.where.Where;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MIfCases implements CaseExprInterface {
 
     MList<Case<Expr>> cases = ListFact.mList();

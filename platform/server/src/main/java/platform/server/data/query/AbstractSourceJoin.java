@@ -3,13 +3,17 @@ package platform.server.data.query;
 import platform.base.ArrayInstancer;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.Settings;
 import platform.server.caches.AbstractOuterContext;
+import platform.server.caches.ParamExpr;
 import platform.server.data.Table;
 import platform.server.data.Value;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.QueryExpr;
+import platform.server.data.expr.where.NotNullWhere;
+import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
@@ -20,7 +24,7 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
     protected static class ToString extends CompileSource  {
         public ToString(ImSet<Value> values) {
             super(new KeyType() {
-                public Type getKeyType(KeyExpr expr) {
+                public Type getKeyType(ParamExpr expr) {
                     return ObjectType.instance;
                 }
             }, Where.FALSE, values.mapRevValues(new GetValue<String, Value>() {
@@ -66,5 +70,12 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
 
     public T calculatePack() {
         return followFalse(Where.FALSE, true);
+    }
+
+    public boolean needMaterialize() {
+        if(getComplexity(false) > Settings.get().getLimitMaterializeComplexity())
+            return true;
+
+        return false;
     }
 }

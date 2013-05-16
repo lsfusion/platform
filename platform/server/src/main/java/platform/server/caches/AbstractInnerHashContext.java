@@ -1,11 +1,14 @@
 package platform.server.caches;
 
-import platform.base.*;
+import platform.base.BaseUtils;
+import platform.base.GlobalInteger;
+import platform.base.GlobalObject;
+import platform.base.TwinImmutableObject;
 import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashMapKeys;
 import platform.server.caches.hash.HashValues;
-import platform.server.data.expr.KeyExpr;
 
 public abstract class AbstractInnerHashContext extends AbstractHashContext<HashValues> implements InnerHashContext {
 
@@ -30,16 +33,18 @@ public abstract class AbstractInnerHashContext extends AbstractHashContext<HashV
         return hash.filterValues(getInnerValues());
     }
 
-    private final static GlobalInteger keyClass = new GlobalInteger(39916801);
+    private final static GetValue<GlobalInteger, ParamExpr> getKeyClasses = new GetValue<GlobalInteger, ParamExpr>() {
+        public GlobalInteger getMapValue(ParamExpr value) {
+            return value.getKeyClass();
+        }};
+    public BaseUtils.HashComponents<ParamExpr> getComponents(final HashValues hashValues) {
+        return BaseUtils.getComponents(new BaseUtils.HashInterface<ParamExpr, GlobalInteger>() {
 
-    public BaseUtils.HashComponents<KeyExpr> getComponents(final HashValues hashValues) {
-        return BaseUtils.getComponents(new BaseUtils.HashInterface<KeyExpr, GlobalInteger>() {
-
-                public ImMap<KeyExpr, GlobalInteger> getParams() {
-                    return getInnerKeys().toMap(keyClass);
+                public ImMap<ParamExpr, GlobalInteger> getParams() {
+                    return getInnerKeys().mapValues(getKeyClasses);
                 }
 
-                public int hashParams(ImMap<KeyExpr, ? extends GlobalObject> map) {
+                public int hashParams(ImMap<ParamExpr, ? extends GlobalObject> map) {
                     return hashInner(HashContext.create(HashMapKeys.create(map), hashValues));
                 }
             });

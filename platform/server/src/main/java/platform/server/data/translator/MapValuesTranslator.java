@@ -7,6 +7,7 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.caches.ParamExpr;
 import platform.server.caches.TranslateValues;
 import platform.server.caches.ValuesContext;
 import platform.server.caches.hash.HashCodeValues;
@@ -87,7 +88,7 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return mapValues.filterInclRev(values).identity();
     }
 
-    public boolean identityKeysValues(ImSet<KeyExpr> keys, ImSet<? extends Value> values) {
+    public boolean identityKeysValues(ImSet<ParamExpr> keys, ImSet<? extends Value> values) {
         return identityValues(values);
     }
 
@@ -151,7 +152,7 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return mapValues.hashCode();
     }
 
-    public KeyExpr translate(KeyExpr expr) {
+    public ParamExpr translate(ParamExpr expr) {
         return expr;
     }
 
@@ -163,11 +164,11 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return MapValuesTranslator.noTranslate;
     }
 
-    public boolean identityKeys(ImSet<KeyExpr> keys) {
+    public boolean identityKeys(ImSet<ParamExpr> keys) {
         return true;
     }
 
-    public <K> Map<K, KeyExpr> translateKey(Map<K, KeyExpr> map) {
+    public <K> Map<K, ParamExpr> translateKey(Map<K, ParamExpr> map) {
         return map;
     }
 

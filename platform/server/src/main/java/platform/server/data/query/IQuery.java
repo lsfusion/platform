@@ -63,11 +63,8 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         return compile(session.syntax, orders, selectTop).execute(session, env);
     }
 
-    public <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps) {
-        return getClassWhere(classProps, false); // assert что full
-    }
+    public abstract <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps);
 
-    public abstract <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps, boolean full);
     public abstract Pair<IQuery<K, Object>, ImRevMap<Expr, Object>> getClassQuery(final BaseClass baseClass);
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {

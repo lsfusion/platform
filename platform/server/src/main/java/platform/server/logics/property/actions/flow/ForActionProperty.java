@@ -142,7 +142,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     private ImMap<I, ValueClass> getExtendClasses() {
         if(ifProp==null)
             return MapFact.<I, ValueClass>EMPTY();
-        return ifProp.mapInterfaceClasses().remove(mapInterfaces.valuesSet());
+        return ifProp.mapInterfaceClasses(ClassType.ASSERTFULL).remove(mapInterfaces.valuesSet());
     }
 
     @Override

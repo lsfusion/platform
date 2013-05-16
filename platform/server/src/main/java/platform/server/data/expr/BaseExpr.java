@@ -12,6 +12,7 @@ import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
+import platform.server.caches.ParamExpr;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
@@ -127,7 +128,7 @@ public abstract class BaseExpr extends Expr {
         return expr.compareBase(this, compare);
     }
 
-    public boolean hasKey(KeyExpr key) {
+    public boolean hasKey(ParamExpr key) {
         return getOuterKeys().contains(key);
     }
 

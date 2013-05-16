@@ -17,8 +17,6 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * User: DAle

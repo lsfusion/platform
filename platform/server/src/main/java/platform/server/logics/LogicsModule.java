@@ -19,6 +19,7 @@ import platform.interop.form.GlobalConstants;
 import platform.server.Settings;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
+import platform.server.classes.sets.UpClassSet;
 import platform.server.context.ThreadLocalContext;
 import platform.server.data.Time;
 import platform.server.data.Union;
@@ -683,9 +684,9 @@ public abstract class LogicsModule {
                 readActionImplements(listInterfaces, params))));
     }
 
-    protected LAP addAbstractListAProp(int paramCnt) {
-        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(paramCnt);
-        return addProperty(null, new LAP(new ListActionProperty(genSID(), "sys", listInterfaces)));
+    protected LAP addAbstractListAProp(ValueClass[] params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
+        return addProperty(null, new LAP(new ListActionProperty(genSID(), "sys", listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
 
     protected LAP addIfAProp(Object... params) {
@@ -1579,10 +1580,8 @@ public abstract class LogicsModule {
     }
 
     protected LCP addAGProp(AbstractGroup group, String name, String caption, boolean noConstraint, LCP... props) {
-        ClassWhere<Integer> classWhere = ClassWhere.TRUE();
-        for (LCP<?> prop : props)
-            classWhere = classWhere.and(prop.getClassWhere());
-        return addAGProp(group, name, caption, noConstraint, (CustomClass) classWhere.getCommonParent(SetFact.singleton(1)).singleValue(), props);
+        LCP andProp = addJProp(and(new boolean[props.length - 1]), getUParams(props));
+        return addAGProp(group, name, caption, noConstraint, (CustomClass) andProp.getInterfaceClasses()[0], props);
     }
 
     protected LCP addAGProp(String name, String caption, CustomClass customClass, LCP... props) {
@@ -1772,7 +1771,6 @@ public abstract class LogicsModule {
     }
 
     protected LCP addCUProp(AbstractGroup group, String name, boolean persistent, String caption, LCP... props) {
-        assert baseLM.checkCUProps.add(props);
         return addXSUProp(group, name, persistent, caption, props);
     }
 
@@ -1911,7 +1909,6 @@ public abstract class LogicsModule {
     }
 
     protected LCP addSUProp(AbstractGroup group, String name, boolean persistent, String caption, Union unionType, LCP... props) {
-        assert baseLM.checkSUProps.add(props);
         return addUProp(group, name, persistent, caption, unionType, null, (unionType == Union.SUM ? BaseUtils.genArray(1, props.length) : null), getUParams(props));
     }
 
@@ -2503,7 +2500,7 @@ public abstract class LogicsModule {
     }
 
     public <T extends PropertyInterface, L extends PropertyInterface> void setNotNull(CalcProperty<T> property, int options, Event event) {
-        CalcPropertyMapImplement<L, T> mapClasses = (CalcPropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses());
+        CalcPropertyMapImplement<L, T> mapClasses = (CalcPropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses(ClassType.ASSERTFULL));
         addFollows(mapClasses.property, new CalcPropertyMapImplement<T, L>(property, mapClasses.mapping.reverse()),
                 ServerResourceBundle.getString("logics.property") + " " + property.caption + " [" + property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
                 options, event);

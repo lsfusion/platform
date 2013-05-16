@@ -3,8 +3,6 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.logics.ServerResourceBundle;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 

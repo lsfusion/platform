@@ -2,19 +2,13 @@ package platform.server.session;
 
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
-import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.AddValue;
 import platform.base.col.interfaces.mutable.SimpleAddValue;
-import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.AbstractValuesContext;
-import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
-import platform.server.data.translator.MapValuesTranslator;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.property.PropertyInterface;
 
 public class ModifyChange<P extends PropertyInterface> extends AbstractValuesContext<ModifyChange<P>> {

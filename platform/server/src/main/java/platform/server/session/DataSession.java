@@ -606,8 +606,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             mChangeOldClasses.add(prevcl);
             mChangeNewClasses.add(newcl);
         } else {
-            changeTable = change.materialize(sql, baseClass, env); // materialize'им изменение
-            change = changeTable.getChange();
+            if(change.needMaterialize()) {
+                changeTable = change.materialize(sql, baseClass, env); // materialize'им изменение
+                change = changeTable.getChange();
+            }
+
             if(change.isEmpty()) // оптимизация, важна так как во многих event'ах может учавствовать
                 return;
 
@@ -660,8 +663,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             change = SinglePropertyTableUsage.getChange(splitApplySingleStored(property,
                     property.readFixChangeTable(sql, change, baseClass, getQueryEnv()), ThreadLocalContext.getBusinessLogics()));
         } else {
-            changeTable = change.materialize(property, sql, baseClass, getQueryEnv());
-            change = SinglePropertyTableUsage.getChange(changeTable);
+            if(change.needMaterialize()) {
+                changeTable = change.materialize(property, sql, baseClass, getQueryEnv());
+                change = SinglePropertyTableUsage.getChange(changeTable);
+            }
 
             if(change.isEmpty()) // оптимизация по аналогии с changeClass
                 return;
@@ -1433,7 +1438,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                 neededProps = null;
                 assert !flush;
             }
-                
+
+            recursiveUsed.clear();
+            recursiveActions.clear();
+
             // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
             apply.clear(sql);
             dataModifier.clearHints(sql); // drop'ем hint'ы (можно и без sql но пока не важно)

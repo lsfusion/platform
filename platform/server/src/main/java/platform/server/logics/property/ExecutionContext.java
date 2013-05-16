@@ -22,10 +22,10 @@ import platform.server.data.QueryEnvironment;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.*;
-import platform.server.remote.RemoteForm;
 import platform.server.logics.*;
 import platform.server.logics.SecurityManager;
 import platform.server.logics.property.actions.FormEnvironment;
+import platform.server.remote.RemoteForm;
 import platform.server.session.*;
 
 import java.io.File;

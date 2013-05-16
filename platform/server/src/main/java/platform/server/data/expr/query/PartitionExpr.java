@@ -1,6 +1,9 @@
 package platform.server.data.expr.query;
 
-import platform.base.*;
+import platform.base.BaseUtils;
+import platform.base.Result;
+import platform.base.SFunctionSet;
+import platform.base.TwinImmutableObject;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImList;
@@ -170,7 +173,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         ImSet<Expr> restPartitions = partitions.remove(translate.keys());
 
         if(translate.size()>0) {
-            QueryTranslator translator = new PartialQueryTranslator(translate);
+            QueryTranslator translator = new PartialQueryTranslator(translate, true);
             exprs = translator.translate(exprs);
             orders = translator.translate(orders);
             restPartitions = translator.translate(restPartitions);
@@ -180,7 +183,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     }
 
     public static Expr create(final PartitionType partitionType, final ImList<Expr> exprs, final ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, final ImSet<? extends Expr> partitions, final ImMap<KeyExpr, ? extends Expr> group, final PullExpr noPull) {
-        ImMap<KeyExpr, KeyExpr> pullKeys = getOuterKeys(exprs.getCol()).merge(getOuterKeys(orders.keys())).merge(getOuterKeys(partitions)).filterFn(new SFunctionSet<KeyExpr>() {
+        ImMap<KeyExpr, KeyExpr> pullKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterKeys(exprs.getCol()).merge(getOuterKeys(orders.keys())).merge(getOuterKeys(partitions))).filterFn(new SFunctionSet<KeyExpr>() {
             public boolean contains(KeyExpr key) {
                 return key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull);
             }}).toMap();
@@ -232,6 +235,6 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
     @IdentityInstanceLazy
     public PartitionJoin getInnerJoin() {
-        return new PartitionJoin(getInner().getInnerKeys(), getInner().getInnerValues(),query.getWhere(), Settings.get().isPushOrderWhere() ?query.partitions:SetFact.<Expr>EMPTY(),group);
+        return new PartitionJoin(getInner().getQueryKeys(), getInner().getInnerValues(),query.getWhere(), Settings.get().isPushOrderWhere() ?query.partitions:SetFact.<Expr>EMPTY(),group);
     }
 }

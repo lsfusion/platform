@@ -1,6 +1,8 @@
 package platform.server.data.query.innerjoins;
 
-import platform.base.*;
+import platform.base.BaseUtils;
+import platform.base.Pair;
+import platform.base.Result;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
@@ -13,6 +15,7 @@ import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.server.Settings;
+import platform.server.caches.ParamExpr;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -37,7 +40,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
         assert !where.isFalse();
     }
 
-    public KeyEquals(KeyExpr key, BaseExpr expr) {
+    public KeyEquals(ParamExpr key, BaseExpr expr) {
         super(new KeyEqual(key, expr), expr.getWhere());
     }
 
@@ -53,23 +56,23 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
                 Where where2 = joins.getValue(i2);
 
                 // сначала определяем общие ключи
-                Result<ImMap<KeyExpr, BaseExpr>> diffEq1 = new Result<ImMap<KeyExpr, BaseExpr>>(); 
-                Result<ImMap<KeyExpr, BaseExpr>> diffEq2 = new Result<ImMap<KeyExpr, BaseExpr>>();
-                ImMap<KeyExpr, BaseExpr> sameEq1 = eq1.keyExprs.splitKeys(eq2.keyExprs.keys(), diffEq1);
-                ImMap<KeyExpr, BaseExpr> sameEq2 = eq2.keyExprs.splitKeys(eq1.keyExprs.keys(), diffEq2);
+                Result<ImMap<ParamExpr, BaseExpr>> diffEq1 = new Result<ImMap<ParamExpr, BaseExpr>>();
+                Result<ImMap<ParamExpr, BaseExpr>> diffEq2 = new Result<ImMap<ParamExpr, BaseExpr>>();
+                ImMap<ParamExpr, BaseExpr> sameEq1 = eq1.keyExprs.splitKeys(eq2.keyExprs.keys(), diffEq1);
+                ImMap<ParamExpr, BaseExpr> sameEq2 = eq2.keyExprs.splitKeys(eq1.keyExprs.keys(), diffEq2);
 
                 // транслируем правые левыми, погнали топологическую сортировку отсеивая Expr'ы
-                java.util.Map<KeyExpr, Expr> mTransEq1 = MapFact.mAddRemoveMap(); // remove есть
+                java.util.Map<ParamExpr, Expr> mTransEq1 = MapFact.mAddRemoveMap(); // remove есть
                 MapFact.addJavaAll(mTransEq1, new PartialQueryTranslator(diffEq2.result).translate(diffEq1.result));
 
-                MExclMap<KeyExpr, Expr> mCleanEq1 = MapFact.mExclMap();// складываются "очищенные" equals'ы
+                MExclMap<ParamExpr, Expr> mCleanEq1 = MapFact.mExclMap();// складываются "очищенные" equals'ы
 
                 while(!mTransEq1.isEmpty()) {
                     boolean found = false;
-                    Iterator<java.util.Map.Entry<KeyExpr,Expr>> it = mTransEq1.entrySet().iterator();
+                    Iterator<java.util.Map.Entry<ParamExpr,Expr>> it = mTransEq1.entrySet().iterator();
                     while(it.hasNext()) {
-                        java.util.Map.Entry<KeyExpr,Expr> keyEq = it.next();
-                        ImSet<KeyExpr> enumKeys = keyEq.getValue().getOuterKeys();
+                        java.util.Map.Entry<ParamExpr,Expr> keyEq = it.next();
+                        ImSet<ParamExpr> enumKeys = keyEq.getValue().getOuterKeys();
                         if(MapFact.disjointJava(enumKeys, mTransEq1.keySet())) {// если не зависит от остальных
                             mCleanEq1.exclAdd(keyEq.getKey(), keyEq.getValue().translateQuery(new PartialQueryTranslator(mCleanEq1.immutableCopy()))); // транслэйтим clean'ами
                             it.remove();
@@ -79,38 +82,38 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
                     }
 
                     if(!found) { // значит остались циклы, берем любую и перекидываем в where
-                        java.util.Map.Entry<KeyExpr, Expr> cycle = mTransEq1.entrySet().iterator().next();
+                        java.util.Map.Entry<ParamExpr, Expr> cycle = mTransEq1.entrySet().iterator().next();
                         where1 = where1.and(cycle.getKey().compare(cycle.getValue(), Compare.EQUALS));
                     }
                 }
-                ImMap<KeyExpr, Expr> cleanEq1 = mCleanEq1.immutable();
+                ImMap<ParamExpr, Expr> cleanEq1 = mCleanEq1.immutable();
 
                 // второй просто транслируем первым
                 PartialQueryTranslator cleanTranslator1 = new PartialQueryTranslator(cleanEq1);
-                ImMap<KeyExpr, Expr> cleanEq2 = cleanTranslator1.translate(diffEq2.result);
+                ImMap<ParamExpr, Expr> cleanEq2 = cleanTranslator1.translate(diffEq2.result);
                 PartialQueryTranslator cleanTranslator2 = new PartialQueryTranslator(cleanEq2);
                 Where andWhere = where2.translateQuery(cleanTranslator1).and(where1.translateQuery(cleanTranslator2));
 
                 // сливаем same'ы, их также надо translateOuter'ить так как могут быть несвободными от противоположных ключей
-                ImMap<KeyExpr, Expr> transSameEq1 = cleanTranslator2.translate(sameEq1);
-                ImMap<KeyExpr, Expr> transSameEq2 = cleanTranslator1.translate(sameEq2);
+                ImMap<ParamExpr, Expr> transSameEq1 = cleanTranslator2.translate(sameEq1);
+                ImMap<ParamExpr, Expr> transSameEq2 = cleanTranslator1.translate(sameEq2);
 
                 assert BaseUtils.hashEquals(sameEq1.keys(), sameEq2.keys());
                 Where extraWhere = Where.TRUE;
                 for(int i=0,size=transSameEq2.size();i<size;i++) {
-                    KeyExpr key = transSameEq2.getKey(i);
+                    ParamExpr key = transSameEq2.getKey(i);
                     Expr value2 = transSameEq2.getValue(i);
                     Expr value1 = transSameEq1.get(key);
                     if(!BaseUtils.hashEquals(value1, value2)) // закидываем compare
                         extraWhere = extraWhere.and(value1.compare(value2, Compare.EQUALS));
                 }
-                ImMap<KeyExpr, Expr> mergeSame = transSameEq1.merge(transSameEq2, KeyEqual.keepValue()); // предпочитаем статичные значение
+                ImMap<ParamExpr, Expr> mergeSame = transSameEq1.merge(transSameEq2, KeyEqual.keepValue()); // предпочитаем статичные значение
 
-                ImMap<KeyExpr, Expr> mergeKeys = mergeSame.addExcl(cleanEq1.addExcl(cleanEq2));
+                ImMap<ParamExpr, Expr> mergeKeys = mergeSame.addExcl(cleanEq1.addExcl(cleanEq2));
 
-                Result<ImMap<KeyExpr, Expr>> notBaseExprs = new Result<ImMap<KeyExpr, Expr>>();
-                ImMap<KeyExpr, BaseExpr> andEq = BaseUtils.immutableCast(mergeKeys.splitKeys(new GetKeyValue<Boolean, KeyExpr, Expr>() {
-                    public Boolean getMapValue(KeyExpr key, Expr value) {
+                Result<ImMap<ParamExpr, Expr>> notBaseExprs = new Result<ImMap<ParamExpr, Expr>>();
+                ImMap<ParamExpr, BaseExpr> andEq = BaseUtils.immutableCast(mergeKeys.splitKeys(new GetKeyValue<Boolean, ParamExpr, Expr>() {
+                    public Boolean getMapValue(ParamExpr key, Expr value) {
                         return value instanceof BaseExpr;
                     }}, notBaseExprs));
                 for(int i=0,size=notBaseExprs.result.size();i<size;i++)

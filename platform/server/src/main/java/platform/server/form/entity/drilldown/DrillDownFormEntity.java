@@ -12,6 +12,7 @@ import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.property.ClassType;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 
@@ -33,7 +34,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
         paramObjects = new ObjectEntity[property.interfaces.size()];
         MMap<I, ObjectEntity> interfaceObjects = MapFact.mMap(MapFact.<I, ObjectEntity>override());
 
-        ImMap<I, ValueClass> interfaceClasses = property.getInterfaceClasses();
+        ImMap<I, ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.ASSERTFULL);
         int i = 0;
         for (I pi : property.interfaces) {
             ObjectEntity paramObject  = addSingleGroupObject(interfaceClasses.get(pi), BL.LM.objectValue, BL.LM.recognizeGroup, true);

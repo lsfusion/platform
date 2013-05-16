@@ -7,9 +7,9 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.FormSessionScope;
-import platform.server.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsInstance;
+import platform.server.remote.RemoteForm;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;

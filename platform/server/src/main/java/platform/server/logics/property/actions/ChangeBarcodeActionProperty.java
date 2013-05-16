@@ -10,7 +10,6 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
-import java.util.Collections;
 
 public class ChangeBarcodeActionProperty extends SystemActionProperty {
 

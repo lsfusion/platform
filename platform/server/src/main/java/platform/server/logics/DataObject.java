@@ -1,9 +1,9 @@
 package platform.server.logics;
 
 import platform.base.BaseUtils;
+import platform.base.SFunctionSet;
 import platform.base.TwinImmutableObject;
 import platform.base.col.SetFact;
-import platform.base.SFunctionSet;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;

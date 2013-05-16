@@ -134,7 +134,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         for(int i=0,size=orders.size();i<size;i++) {
              V order = orders.getKey(i);
              Expr orderExpr = orderExprs.get(order);
-             if(!currentKeys.containsAll(orderExpr.getOuterKeys())) {
+             if(!currentKeys.containsAll(BaseUtils.<ImSet<KeyExpr>>immutableCast(orderExpr.getOuterKeys()))) {
                  if(orderExpr instanceof KeyExpr) {
                      mOrdersNotNull.keep(order);
                      currentKeys.add((KeyExpr)orderExpr);
@@ -574,7 +574,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
             GroupSelect(GroupJoin groupJoin) {
                 super(groupJoin);
-                keys = groupJoin.getInnerKeys();
+                keys = BaseUtils.immutableCast(groupJoin.getInnerKeys());
             }
 
             public String getSource(ExecuteEnvironment env) {

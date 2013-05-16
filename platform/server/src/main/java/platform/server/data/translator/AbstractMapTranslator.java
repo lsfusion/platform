@@ -7,9 +7,13 @@ import platform.base.col.lru.LRUCache;
 import platform.base.col.lru.MCacheMap;
 import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.ParamExpr;
 import platform.server.caches.TranslateContext;
 import platform.server.data.Value;
-import platform.server.data.expr.*;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.VariableClassExpr;
+import platform.server.data.expr.VariableSingleClassExpr;
 import platform.server.logics.DataObject;
 
 public abstract class AbstractMapTranslator extends TwinImmutableObject implements MapTranslate {
@@ -25,8 +29,8 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
         return (GetValue<V, V>)trans;
     }
 
-    public <K> ImMap<K, BaseExpr> translateDirect(ImMap<K, ? extends BaseExpr> map) {
-        return ((ImMap<K, BaseExpr>)map).mapValues(this.<BaseExpr>TRANS());
+    public <K, V extends BaseExpr> ImMap<K, V> translateDirect(ImMap<K, V> map) {
+        return map.mapValues(this.<V>TRANS());
     }
 
     public <K> ImMap<BaseExpr, K> translateKeys(ImMap<? extends BaseExpr, K> map) {
@@ -41,16 +45,20 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
         return map.mapRevKeys(this.<E>TRANS());
     }
 
-    public <K> ImMap<KeyExpr,K> translateMapKeys(ImMap<KeyExpr, K> map) {
-        return translateExprKeys(map);
+    public <K> ImMap<ParamExpr,K> translateMapKeys(ImMap<ParamExpr, K> map) {
+        return map.mapKeys(this.<ParamExpr>TRANS());
     }
 
     public <K extends TranslateContext, V extends TranslateContext> ImMap<K, V> translateMap(ImMap<? extends K, ? extends V> map) {
         return ((ImMap<K, V>)map).mapKeyValues(this.<K>TRANS(), this.<V>TRANS());
     }
 
-    public <K extends BaseExpr> ImRevMap<KeyExpr, K> translateRevMap(ImRevMap<KeyExpr, K> map) {
-        return map.mapRevKeyValues(this.<KeyExpr>TRANS(), this.<K>TRANS());
+    public <K extends BaseExpr, V extends BaseExpr> ImRevMap<K, V> translateRevMap(ImRevMap<K, V> map) {
+        return map.mapRevKeyValues(this.<K>TRANS(), this.<V>TRANS());
+    }
+
+    public <K, V extends BaseExpr> ImRevMap<K, V> translateRevValues(ImRevMap<K, V> map) {
+        return map.mapRevValues(this.<V>TRANS());
     }
 
     // для кэша classWhere на самом деле надо
@@ -70,16 +78,16 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
         return list.mapListValues(this.<BaseExpr>TRANS());
     }
 
-    public ImSet<BaseExpr> translateDirect(ImSet<BaseExpr> set) {
-        return set.mapSetValues(this.<BaseExpr>TRANS());
+    public <K extends BaseExpr> ImSet<K> translateDirect(ImSet<K> set) {
+        return set.mapSetValues(this.<K>TRANS());
     }
 
-    public ImSet<KeyExpr> translateKeys(ImSet<KeyExpr> set) {
-        return set.mapSetValues(this.<KeyExpr>TRANS());
+    public ImSet<ParamExpr> translateKeys(ImSet<ParamExpr> set) {
+        return set.mapSetValues(this.<ParamExpr>TRANS());
     }
 
-    public <K> ImRevMap<K, KeyExpr> translateKey(ImRevMap<K, KeyExpr> map) {
-        return map.mapRevValues(this.<KeyExpr>TRANS());
+    public <K> ImRevMap<K, ParamExpr> translateKey(ImRevMap<K, ParamExpr> map) {
+        return map.mapRevValues(this.<ParamExpr>TRANS());
     }
 
     public ImSet<VariableClassExpr> translateVariable(ImSet<VariableClassExpr> set) {

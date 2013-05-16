@@ -1,6 +1,5 @@
 package platform.server.form.entity.drilldown;
 
-import platform.base.col.interfaces.immutable.ImCol;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.form.entity.ObjectEntity;

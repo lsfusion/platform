@@ -1,6 +1,8 @@
 package platform.server.data.query;
 
-import platform.base.*;
+import platform.base.BaseUtils;
+import platform.base.Pair;
+import platform.base.Result;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
@@ -102,8 +104,8 @@ public class Query<K,V> extends IQuery<K,V> {
         return properties.get(property).getType(where);
     }
 
-    public ImSet<KeyExpr> getKeys() {
-        return mapKeys.valuesSet();
+    public ImSet<ParamExpr> getKeys() {
+        return BaseUtils.immutableCast(mapKeys.valuesSet());
     }
 
     public ImSet<Value> getValues() {
@@ -157,7 +159,7 @@ public class Query<K,V> extends IQuery<K,V> {
         if(joinKeys==null)
             return joinExprs(joinImplement, mapValues);
         else
-            return new MapJoin<V>(new MapTranslator(mapKeys.crossJoin(joinKeys), mapValues), getJoin());
+            return new MapJoin<V>(new MapTranslator(BaseUtils.<ImRevMap<ParamExpr, ParamExpr>>immutableCast(mapKeys.crossJoin(joinKeys)), mapValues), getJoin());
     }
 
     @ContextTwin
@@ -216,17 +218,17 @@ public class Query<K,V> extends IQuery<K,V> {
 
     @IdentityLazy
     @Pack
-    public <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps, boolean full) {
-        return (ClassWhere<B>) getClassWhere(where, mapKeys, properties.filterIncl(classProps), full);
+    public <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps) {
+        return (ClassWhere<B>) getClassWhere(where, mapKeys, properties.filterIncl(classProps));
     }
 
-    private static <B, K extends B, V extends B> ClassWhere<B> getClassWhere(Where where, final ImRevMap<K, KeyExpr> mapKeys, ImMap<V, Expr> mapProps, final boolean full) {
+    public static <B, K extends B, V extends B> ClassWhere<B> getClassWhere(Where where, final ImMap<K, ? extends BaseExpr> mapKeys, ImMap<V, Expr> mapProps) {
         return new ExclPullWheres<ClassWhere<B>, V, Where>() {
             protected ClassWhere<B> initEmpty() {
                 return ClassWhere.FALSE();
             }
             protected ClassWhere<B> proceedBase(Where data, ImMap<V, BaseExpr> map) {
-                return (ClassWhere<B>)(ClassWhere<?>)getClassWhereBase(data, mapKeys, map, full);
+                return (ClassWhere<B>)(ClassWhere<?>)getClassWhereBase(data, mapKeys, map);
             }
             protected ClassWhere<B> add(ClassWhere<B> op1, ClassWhere<B> op2) {
                 return op1.or(op2);
@@ -234,11 +236,13 @@ public class Query<K,V> extends IQuery<K,V> {
         }.proceed(where, mapProps);
     }
 
-    private static <B, K extends B, V extends B> ClassWhere<B> getClassWhereBase(Where where, ImRevMap<K, KeyExpr> mapKeys, ImMap<V, BaseExpr> mapProps, boolean full) {
-        return where.and(Expr.getWhere(mapProps.values())).
-                getClassWhere().get(MapFact.<B, BaseExpr>addExcl(mapProps, mapKeys), full);
+    private static <B, K extends B, V extends B> ClassWhere<B> getClassWhereBase(Where where, ImMap<K, ? extends BaseExpr> mapKeys, ImMap<V, BaseExpr> mapProps) {
+        return getClassWhereBase(where.and(Expr.getWhere(mapProps.values())), MapFact.<B, BaseExpr>addExcl(mapProps, mapKeys));
     }
 
+    private static <B> ClassWhere<B> getClassWhereBase(Where where, ImMap<B, BaseExpr> mapExprs) {
+        return where.getClassWhere().get(mapExprs);
+    }
 
     private static <K> ImMap<K, Expr> pullValues(ImMap<K, ? extends Expr> map, Where where) {
         ImMap<BaseExpr, BaseExpr> exprValues = where.getExprValues();
@@ -260,7 +264,7 @@ public class Query<K,V> extends IQuery<K,V> {
     public PullValues<K, V> pullValues() {
         ImMap<K, Expr> pullKeys = pullValues(mapKeys, where);
 
-        QueryTranslator keyTranslator = new PartialQueryTranslator(mapKeys.rightCrossJoin(pullKeys));
+        QueryTranslator keyTranslator = new PartialQueryTranslator(mapKeys.rightCrossJoin(pullKeys), true);
         Where transWhere = where.translateQuery(keyTranslator);
         ImMap<V, Expr> transProps = keyTranslator.translate(properties);
 
@@ -528,7 +532,7 @@ public class Query<K,V> extends IQuery<K,V> {
             this.thisObj = thisObj;
         }
 
-        protected ImSet<KeyExpr> getKeys() {
+        protected ImSet<ParamExpr> getKeys() {
             return thisObj.getInnerKeys();
         }
         public ImSet<Value> getValues() {
@@ -571,7 +575,7 @@ public class Query<K,V> extends IQuery<K,V> {
         return new MapQuery<K,V,K,V>(this, properties.keys().toRevMap(), mapKeys.keys().toRevMap(), translate);
     }
     public Query<K, V> translateQuery(MapTranslate translate) {
-        return new Query<K,V>(translate.translateKey(mapKeys), translate.translate(properties), where.translateOuter(translate));
+        return new Query<K,V>(translate.translateRevValues(mapKeys), translate.translate(properties), where.translateOuter(translate));
     }
 
     public boolean equalsInner(Query<K, V> object) { // нужно проверить что совпадут

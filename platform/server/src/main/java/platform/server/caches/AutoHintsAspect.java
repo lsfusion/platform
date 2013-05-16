@@ -95,7 +95,7 @@ public class AutoHintsAspect {
             return 31 * (31 * (31 * usedChanges.hashValues(hashContext.values) + (joinImplement==null ? 0 : AbstractOuterContext.hashOuter(joinImplement, hashContext))) + usedHints.hashCode()) + MapValuesIterable.hash(usedPrereads, hashContext.values);
         }
 
-        public ImSet<KeyExpr> getKeys() {
+        public ImSet<ParamExpr> getKeys() {
             if(joinImplement==null)
                 return SetFact.EMPTY();
             return AbstractOuterContext.getOuterKeys(joinImplement.values());

@@ -27,7 +27,6 @@ import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
-import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.logics.property.ClassField;
@@ -49,7 +48,6 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         if(classTables.size()==1) {
             return classTables.single().getStoredExpr(expr);
         } else {
-            KeyExpr keyExpr = new KeyExpr("isSetClass");
             assert classTables.size() > inlineThreshold;
             // будем делить на inlineThreshold корзин
             Pair<KeyExpr,Expr> subQuery = getBaseClass().getSubQuery(classTables);

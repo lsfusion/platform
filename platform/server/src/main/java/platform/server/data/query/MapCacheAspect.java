@@ -8,7 +8,6 @@ import org.aspectj.lang.annotation.DeclareParents;
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
 import platform.base.col.ListFact;
-import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
@@ -25,7 +24,6 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.MapTranslator;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.where.Where;
@@ -59,7 +57,7 @@ public class MapCacheAspect {
             this.mapValues = mapValues;
         }
 
-        public ImSet<KeyExpr> getKeys() {
+        public ImSet<ParamExpr> getKeys() {
             return AbstractOuterContext.getOuterKeys(exprs.values());
         }
 
@@ -223,7 +221,7 @@ public class MapCacheAspect {
             return 31 * usedChanges.hashValues(hashContext.values) + change.hashInner(hashContext) + (where?1:0);
         }
 
-        public ImSet<KeyExpr> getKeys() {
+        public ImSet<ParamExpr> getKeys() {
             return change.getInnerKeys();
         }
 
@@ -450,7 +448,7 @@ public class MapCacheAspect {
             return 31 * usedChanges.hashValues(hashContext.values) + AbstractOuterContext.hashOuter(joinImplement, hashContext) + (where?1:0) + (propClasses?5:0);
         }
 
-        public ImSet<KeyExpr> getKeys() {
+        public ImSet<ParamExpr> getKeys() {
             return AbstractOuterContext.getOuterKeys(joinImplement.values());
         }
 
@@ -538,7 +536,7 @@ public class MapCacheAspect {
                 expr = expr;
 
             // проверим
-            if(checkInfinite)
+            if(checkInfinite && property.isFull())
                 expr.checkInfiniteKeys();
 
             if(changedWheres!=null) changedWheres.add(cacheWheres.toWhere());

@@ -8,13 +8,17 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.*;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.ParamExpr;
 import platform.server.caches.TwinLazy;
+import platform.server.data.Table;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.where.NotNullWhere;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.expr.where.extra.IsClassWhere;
@@ -201,13 +205,13 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             BaseExpr expr = null; BaseExpr valueExpr = null;
             if(opWhere instanceof EqualsWhere) {
                 CompareWhere where = (CompareWhere)opWhere;
-                if(where.operator1.isValue()) { //  && !(where.operator2 instanceof KeyExpr && and))
+                if(where.operator1.isValue()) { //  && !(where.operator2 instanceof ParamExpr && and))
                     if(!where.operator2.isValue()) { // если operator2 тоже value то нет смысла, обозначать
                         expr = where.operator2;
                         valueExpr = where.operator1;
                     }
                 } else
-                if(where.operator2.isValue()) { // && !(where.operator1 instanceof KeyExpr && and))
+                if(where.operator2.isValue()) { // && !(where.operator1 instanceof ParamExpr && and))
                     expr = where.operator1;
                     valueExpr = where.operator2;
                 }
@@ -320,13 +324,13 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     @IdentityLazy
-    public StatKeys<KeyExpr> getFullStatKeys(ImSet<KeyExpr> groups) { // assertion что ключи groups являются ключами этого where
+    public <K extends ParamExpr> StatKeys<K> getFullStatKeys(ImSet<K> groups) { // assertion что ключи groups являются ключами этого where
         assert BaseUtils.hashEquals(getOuterKeys(), groups);
         return getStatKeys(groups);
     }
 
     public Stat getStatRows() {
-        return getFullStatKeys(getOuterKeys()).rows;
+        return getFullStatKeys(BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterKeys())).rows;
     }
 
     public <K extends Expr> StatKeys<K> getStatExprs(ImSet<K> groups) {
@@ -336,10 +340,10 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return result;
     }
 
-    public Type getKeyType(KeyExpr expr) {
+    public Type getKeyType(ParamExpr expr) {
         return getClassWhere().getKeyType(expr);
     }
-    public Stat getKeyStat(KeyExpr key) {
+    public Stat getKeyStat(ParamExpr key) {
         return getClassWhere().getKeyStat(key);
     }
     public Where getKeepWhere(KeyExpr expr) {
@@ -390,5 +394,17 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     };
     public static <T> AddValue<T, CheckWhere> addOrCheck() {
         return (AddValue<T, CheckWhere>) addOrCheck;
+    }
+
+    @Override
+    public boolean needMaterialize() {
+        KeyEquals keyEquals = getKeyEquals();
+        for(int i=0,size=keyEquals.size();i<size;i++) {
+            Where where = keyEquals.getValue(i);
+            if(!(where.isTrue() || where instanceof NotNullWhere || where instanceof Table.Join.IsIn))
+                return true;
+        }
+
+        return super.needMaterialize();
     }
 }

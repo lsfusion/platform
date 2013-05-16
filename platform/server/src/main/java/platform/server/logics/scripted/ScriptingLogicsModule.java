@@ -464,9 +464,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addAUProp(null, genSID(), isExclusive, false, "", value, params);
     }
 
-    public LP addScriptedAbstractActionProp(int paramCnt) {
-        scriptLogger.info("addScriptedAbstractActionProp(" + paramCnt + ");");
-        return addAbstractListAProp(paramCnt);
+    public LP addScriptedAbstractActionProp(List<String> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAbstractActionProp(" + paramClasses + ");");
+
+        ValueClass[] params = new ValueClass[paramClasses.size()];
+        for (int i = 0; i < paramClasses.size(); i++) {
+            params[i] = findClassByCompoundName(paramClasses.get(i));
+        }
+        return addAbstractListAProp(params);
     }
 
     public void addImplementationToAbstract(String abstractPropName, List<String> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
@@ -568,7 +573,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImplementTable targetTable = null;
         if (tableName != null) {
             targetTable = findTableByCompoundName(tableName);
-            if (!targetTable.equalClasses(((LCP<?>)property).property.getInterfaceClasses())) {
+            if (!targetTable.equalClasses(((LCP<?>)property).property.getInterfaceClasses(ClassType.ASSERTFULL))) {
                 // todo : проверка неправильная - должна быть на ClassWhere
                 //errLog.emitWrongClassesForTable(parser, name, tableName);
             }
@@ -588,7 +593,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (property.property instanceof CalcProperty) {
             checkPropertyValue(property, name);
-            checkClassWhere(property, name);
+            checkClassWhere((LCP)property, name);
         }
         addNamedParams(property.property.getSID(), namedParams);
     }
@@ -2400,8 +2405,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void checkClassWhere(LP property, String name) {
-        ClassWhere<Integer> classWhere = property.getClassWhere();
+    private void checkClassWhere(LCP<?> property, String name) {
+        ClassWhere<Integer> classWhere = property.getClassWhere(ClassType.ASIS);
         boolean needWarning = false;
         if (classWhere.wheres.length > 1) {
             needWarning = true;

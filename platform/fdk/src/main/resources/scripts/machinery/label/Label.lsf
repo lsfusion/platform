@@ -305,7 +305,7 @@ quantityLabelTransactionSku = DATA SESSION NUMERIC[14,3] (Sku);
 createLabelTransactionDocument = DATA SESSION PriceTransactionDocument();
 createLabelTransactionSnapshot = DATA SESSION BOOLEAN();
 
-createAttributeLabelTransaction = ABSTRACT ACTION (labelTransaction);
+createAttributeLabelTransaction = ABSTRACT ACTION (LabelTransaction);
 
 
     WHEN SESSION FORMS customLabelTransaction

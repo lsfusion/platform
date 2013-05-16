@@ -131,7 +131,7 @@ FORM GLAccountDialog 'Счета'
     DIALOG GLAccount OBJECT g
 ;
 
-overCopyGLAccount = ABSTRACT ACTION (from, to);
+overCopyGLAccount = ABSTRACT ACTION (GLAccount, GLAccount);
 copyGLAccountType 'Копировать' = ACTION (GLAccountType) NEWSESSION {
     LOCAL mapping = GLAccount (GLAccount);
 

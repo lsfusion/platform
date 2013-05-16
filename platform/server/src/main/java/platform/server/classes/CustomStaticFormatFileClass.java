@@ -2,7 +2,6 @@ package platform.server.classes;
 
 import platform.interop.Data;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;

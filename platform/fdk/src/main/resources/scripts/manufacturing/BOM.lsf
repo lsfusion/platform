@@ -18,7 +18,7 @@ nameMaterial 'Наименование' (material) = ABSTRACT STRING[255] (Mater
 UOMMaterial (material) = ABSTRACT UOM (Material) PERSISTENT;
 shortNameUOMMaterial 'Ед. изм.' (material) = shortNameUOM(UOMMaterial(material)) IN base;
 
-editMaterial 'Редактировать' = ABSTRACT ACTION (material) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editMaterial 'Редактировать' = ABSTRACT ACTION (Material) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 addMaterial 'Добавить' = ABSTRACT ACTION () IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
 
 skuMaterial (material) = ABSTRACT Sku (Material) PERSISTENT;

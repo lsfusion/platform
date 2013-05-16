@@ -1,23 +1,16 @@
 package platform.server.logics.authentication;
 
 import platform.base.BaseUtils;
-import platform.interop.remote.Authentication;
 import platform.interop.remote.UserInfo;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.AuthenticationLogicsModule;
-import platform.server.logics.DataObject;
-import platform.server.logics.SecurityLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.session.DataSession;
 
-import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.util.Iterator;
-
-import static platform.server.logics.ServerResourceBundle.getString;
 
 public class CalculateBase64HashActionProperty extends ScriptingActionProperty {
     AuthenticationLogicsModule LM;

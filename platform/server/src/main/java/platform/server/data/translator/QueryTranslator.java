@@ -1,11 +1,13 @@
 package platform.server.data.translator;
 
+import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.caches.ParamExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
@@ -14,7 +16,7 @@ import platform.server.data.query.SourceJoin;
 // в отдельный класс для allKeys и для аспектов
 public class QueryTranslator extends TwinImmutableObject {
 
-    public final ImMap<KeyExpr,? extends Expr> keys;
+    public final ImMap<ParamExpr,? extends Expr> keys;
 
     private final boolean allKeys;
 
@@ -33,14 +35,14 @@ public class QueryTranslator extends TwinImmutableObject {
         return new QueryTranslator(translate.mapKeys().translate(keys), allKeys);
     }
 
-    protected QueryTranslator(ImMap<KeyExpr, ? extends Expr> keys, boolean allKeys) {
+    protected QueryTranslator(ImMap<ParamExpr, ? extends Expr> keys, boolean allKeys) {
         this.keys = keys;
 
         this.allKeys = allKeys;
     }
 
     public QueryTranslator(ImMap<KeyExpr, ? extends Expr> joinImplement) {
-        this(joinImplement, true);
+        this(BaseUtils.<ImMap<ParamExpr, ? extends KeyExpr>>immutableCast(joinImplement), true);
     }
 
     public <K> ImMap<K, Expr> translate(ImMap<K, ? extends Expr> map) {
@@ -59,7 +61,7 @@ public class QueryTranslator extends TwinImmutableObject {
         return ((ImSet<Expr>)set).mapSetValues(this.<Expr>TRANS());
     }
 
-    public Expr translate(KeyExpr key) {
+    public Expr translate(ParamExpr key) {
         Expr transExpr = keys.get(key);
         if(transExpr==null) {
             if(allKeys)

@@ -1,10 +1,8 @@
 package platform.server.logics.authentication;
 
 import platform.interop.action.LogOutClientAction;
-import platform.interop.remote.Authentication;
 import platform.server.classes.ValueClass;
 import platform.server.logics.AuthenticationLogicsModule;
-import platform.server.logics.SecurityLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;

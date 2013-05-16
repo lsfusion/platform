@@ -6,7 +6,6 @@ import platform.base.FunctionSet;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.auth.SecurityPolicy;
-import platform.server.data.type.ObjectType;
 import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;

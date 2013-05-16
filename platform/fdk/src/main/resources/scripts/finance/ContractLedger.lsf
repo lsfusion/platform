@@ -341,7 +341,7 @@ END
 @defineCreditMemoPrefix(In, 'Кредитная нота', 'Проведенная кредитная нота');
 @defineCreditMemoPrefix(Out, 'Дебетная нота', 'Проведенная дебитовая нота');
 
-prePostCreditMemo 'Провести' (creditMemo) = ABSTRACT ACTION(creditMemo);
+prePostCreditMemo 'Провести' (creditMemo) = ABSTRACT ACTION (CreditMemo);
 prePostCreditMemo(creditMemo) += prePostCreditMemoIn(creditMemo);
 prePostCreditMemo(creditMemo) += prePostCreditMemoOut(creditMemo);
 

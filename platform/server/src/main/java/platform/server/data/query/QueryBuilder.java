@@ -1,7 +1,10 @@
 package platform.server.data.query;
 
 import platform.base.col.MapFact;
-import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MExclMap;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;

@@ -3,7 +3,6 @@ package platform.server.data.where;
 import platform.base.BaseUtils;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.StaticExpr;
-import platform.server.data.expr.StaticValueExpr;
 import platform.server.data.expr.ValueExpr;
 
 public class Equal {

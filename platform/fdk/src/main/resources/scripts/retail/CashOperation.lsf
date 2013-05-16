@@ -228,7 +228,7 @@ cashRegisterModelCashOperation (cashOperation) = cashRegisterModelCashRegister(c
 sidCashRegisterModelCashOperation 'Код модели' (cashOperation) = sidModel(cashRegisterModelCashOperation (cashOperation));
 numberCashRegisterCashOperation 'Касса' (cashOperation) = numberCashRegister(cashRegisterCashOperation(cashOperation)) IN documentPrmGroup;
 
-fiscalServiceCashOperation 'Движение денег в фискальном регистраторе' (cashOperation) = ABSTRACT ACTION(cashOperation) CONFIRM;
+fiscalServiceCashOperation 'Движение денег в фискальном регистраторе' (cashOperation) = ABSTRACT ACTION (CashOperation) CONFIRM;
 fiscalServiceCashRegisterCashOperation 'Движение денег в фискальном регистраторе' (cashOperation) = fiscalServiceCashOperation(cashOperation) IF cashRegisterCashOperation(cashOperation) == currentCashRegister();
 
 sumCashOperation 'Сумма' (cashOperation) = ABSTRACT NUMERIC[16,2] (CashOperation);

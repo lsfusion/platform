@@ -15,18 +15,13 @@ import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ClassViewType;
 import platform.server.Settings;
-import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.ActionClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.cases.CaseExpr;
-import platform.server.data.query.MapKeysInterface;
 import platform.server.data.type.Type;
-import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
@@ -41,7 +36,6 @@ import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 
 import javax.swing.*;
@@ -53,7 +47,7 @@ import java.util.List;
 import static platform.interop.form.ServerResponse.CHANGE_WYS;
 import static platform.interop.form.ServerResponse.GROUP_CHANGE;
 
-public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, ServerIdentitySerializable {
+public abstract class Property<T extends PropertyInterface> extends AbstractNode implements ServerIdentitySerializable {
     public static final GetIndex<PropertyInterface> genInterface = new GetIndex<PropertyInterface>() {
         public PropertyInterface getMapValue(int i) {
             return new PropertyInterface(i);
@@ -153,23 +147,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public abstract ValueClass getValueClass();
 
     public ValueClass[] getInterfaceClasses(ImOrderSet<T> listInterfaces) {
-        return listInterfaces.mapOrder(getInterfaceClasses()).toArray(new ValueClass[listInterfaces.size()]);
+        return listInterfaces.mapOrder(getInterfaceClasses(ClassType.ASSERTFULL)).toArray(new ValueClass[listInterfaces.size()]);
     }
-    public ImMap<T, ValueClass> getInterfaceClasses() {
-        return getInterfaceClasses(false);
-    }
-    public abstract ImMap<T, ValueClass> getInterfaceClasses(boolean full);
-    public ClassWhere<T> getClassWhere() {
-        return getClassWhere(false);
-    }
-    public abstract ClassWhere<T> getClassWhere(boolean full);
+    public abstract ImMap<T, ValueClass> getInterfaceClasses(ClassType type);
+    public abstract ClassWhere<T> getClassWhere(ClassType type);
 
     public boolean check() {
-        return !getClassWhere().isFalse();
-    }
-
-    public <P extends PropertyInterface> boolean intersect(Property<P> property, ImRevMap<P, T> map) {
-        return !getClassWhere().and(new ClassWhere<T>(property.getClassWhere(), map)).isFalse();
+        return !getClassWhere(ClassType.ASIS).isFalse();
     }
 
     @IdentityLazy
@@ -178,48 +162,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny) {
-        return isAny ? anyInInterface(interfaceClasses) : allInInterface(interfaceClasses);
-    }
+        ClassWhere<T> interfaceClassWhere = new ClassWhere<T>(interfaceClasses);
+        ClassWhere<T> fullClassWhere = getClassWhere(ClassType.FULL);
 
-    private boolean allInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses) {
-        return new ClassWhere<T>(interfaceClasses).meansCompatible(getClassWhere(true));
-    }
-
-    private boolean anyInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses) {
-        return !getClassWhere(true).andCompatible(new ClassWhere<T>(interfaceClasses)).isFalse();
-    }
-
-    public boolean isFull(ImCol<T> checkInterfaces) {
-        ClassWhere<T> classWhere = getClassWhere();
-        if(classWhere.isFalse())
-            return false;
-        for (AbstractClassWhere.And<T> where : classWhere.wheres) {
-            for (T i : checkInterfaces)
-                if(where.get(i)==null)
-                    return false;
-        }
-        return true;
-    }
-    
-    private boolean calculateIsFull() {
-        return isFull(interfaces);
-    }
-    private Boolean isFull;
-    private static ThreadLocal<Boolean> isFullRunning = new ThreadLocal<Boolean>();
-    @ManualLazy
-    public boolean isFull() {
-        if(isFull==null) {
-            if(isFullRunning.get()!=null)
-                return false;
-            isFullRunning.set(true);
-
-            try {
-            isFull = calculateIsFull();
-            } finally {
-                isFullRunning.set(null);
-            }
-        }
-        return isFull;
+        if(isAny)
+            return !fullClassWhere.andCompatible(interfaceClassWhere).isFalse();
+        else
+            return interfaceClassWhere.meansCompatible(fullClassWhere);
     }
 
     public Property(String sID, String caption, ImOrderSet<T> interfaces) {
@@ -235,11 +184,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return orderInterfaces;
     }
 
-    @IdentityInstanceLazy
-    public ImRevMap<T, KeyExpr> getMapKeys() {
-        return KeyExpr.getMapKeys(interfaces);
-    }
-
     public static Modifier defaultModifier = new Modifier() {
         public PropertyChanges getPropertyChanges() {
             return PropertyChanges.EMPTY;
@@ -247,8 +191,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     };
 
     @IdentityLazy
-    public Type getInterfaceType(T propertyInterface) { // true потому как может быть old не полный (в частности NewSessionAction)
-        return getInterfaceClasses(true).get(propertyInterface).getType();
+    public Type getInterfaceType(T propertyInterface) {
+        return getInterfaceClasses(ClassType.ASSERTFULL).get(propertyInterface).getType();
     }
 
     public String getSID() {
@@ -407,18 +351,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     @Override
     public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface) {
         MList<PropertyClassImplement> mResultList = ListFact.mList();
-        if (isFull()) {
-            for (ImSet<ValueClassWrapper> classes : classLists) {
-                if (interfaces.size() == classes.size()) {
-                    final ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
-                    for (ImOrderSet<T> mapping : new ListPermutations<T>(getOrderInterfaces())) {
-                        ImMap<T, AndClassSet> propertyInterface = mapping.mapOrderValues(new GetIndexValue<AndClassSet, T>() {
-                            public AndClassSet getMapValue(int i, T value) {
-                                return orderClasses.get(i).valueClass.getUpSet();
-                            }});
-                        if (isInInterface(propertyInterface, anyInInterface)) {
-                            mResultList.add(createClassImplement(orderClasses, mapping));
-                        }
+        for (ImSet<ValueClassWrapper> classes : classLists) {
+            if (interfaces.size() == classes.size()) {
+                final ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
+                for (ImOrderSet<T> mapping : new ListPermutations<T>(getOrderInterfaces())) {
+                    ImMap<T, AndClassSet> propertyInterface = mapping.mapOrderValues(new GetIndexValue<AndClassSet, T>() {
+                        public AndClassSet getMapValue(int i, T value) {
+                            return orderClasses.get(i).valueClass.getUpSet();
+                        }});
+                    if (isInInterface(propertyInterface, anyInInterface)) {
+                        mResultList.add(createClassImplement(orderClasses, mapping));
                     }
                 }
             }
@@ -477,11 +419,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         contextMenuBindings = contextMenuBindings == null ? MapFact.EMPTYORDER() : ((MOrderMap)contextMenuBindings).immutableOrder();
     }
 
-    @IdentityInstanceLazy
-    public PropertyChange<T> getNoChange() {
-        return new PropertyChange<T>(getMapKeys(), CaseExpr.NULL);
-    }
-    
     public abstract void prereadCaches();
 
     protected abstract ImCol<Pair<Property<?>, LinkType>> calculateLinks();

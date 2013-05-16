@@ -428,6 +428,8 @@ public class Settings {
     private int limitHintNoUpdateComplexity = 4000;
     private int limitWrapComplexity = 200;
 
+    private int limitMaterializeComplexity = 20;
+
     public boolean noApplyIncrement = false;
     private int limitApplyHintIncrementComplexity = 100;
     private int limitApplyHintIncrementStat = 1000;
@@ -542,6 +544,12 @@ public class Settings {
     }
     public void setLimitExclusiveComplexity(int limitExclusiveComplexity) {
         this.limitExclusiveComplexity = limitExclusiveComplexity;
+    }
+    public int getLimitMaterializeComplexity() {
+        return limitMaterializeComplexity;
+    }
+    public void setLimitMaterializeComplexity(int limitMaterializeComplexity) {
+        this.limitMaterializeComplexity = limitMaterializeComplexity;
     }
 
     private boolean autoAnalyzeTempStats = true; // автоматически анализировать статистику после каждого заполнения временной таблицы (прикол в том что после удаления таблицы и добавления новых записей статистика сама увеличивается)

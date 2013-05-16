@@ -2,11 +2,10 @@ package platform.server.data.expr;
 
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
-import platform.server.classes.ConcreteObjectClass;
+import platform.server.caches.ParamExpr;
 import platform.server.classes.ValueClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
-import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.data.expr.where.extra.IsClassWhere;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
@@ -20,7 +19,7 @@ public abstract class SingleClassExpr extends VariableClassExpr {
     }
 
     private boolean isTrueWhere() {
-        return this instanceof KeyExpr || this instanceof CurrentEnvironmentExpr;
+        return this instanceof ParamExpr || this instanceof CurrentEnvironmentExpr;
     }
 
     public Expr classExpr(ImSet<ClassField> classes) {

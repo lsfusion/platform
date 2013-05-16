@@ -149,11 +149,11 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public abstract ImSet<ActionProperty> getDependActions();
 
-    public ImMap<P, ValueClass> getInterfaceClasses(boolean full) {
-        return getWhereProperty().mapInterfaceClasses(full);
+    public ImMap<P, ValueClass> getInterfaceClasses(ClassType type) {
+        return getWhereProperty().mapInterfaceClasses(type);
     }
-    public ClassWhere<P> getClassWhere(boolean full) {
-        return getWhereProperty().mapClassWhere(full);
+    public ClassWhere<P> getClassWhere(ClassType type) {
+        return getWhereProperty().mapClassWhere(type);
     }
 
     public abstract CalcPropertyMapImplement<?, P> getWhereProperty();
@@ -251,8 +251,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public void prereadCaches() {
         compile();
-        getInterfaceClasses();
-        getInterfaceClasses(true);
+        getInterfaceClasses(ClassType.ASIS);
+        getInterfaceClasses(ClassType.FULL);
     }
 
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException;

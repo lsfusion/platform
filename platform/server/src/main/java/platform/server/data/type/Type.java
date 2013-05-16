@@ -3,19 +3,14 @@ package platform.server.data.type;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.ObjectValueClassSet;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.classes.sets.ObjectClassSet;
 import platform.server.data.SQLSession;
-import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.view.report.ReportDrawField;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
-import java.util.List;
 
 public interface Type<T> extends ClassReader<T> {
 

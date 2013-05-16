@@ -36,8 +36,8 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
     }
 
     @Override
-    public ClassWhere<Object> getClassValueWhere(boolean full) {
-        return property.getClassValueWhere(full);
+    public ClassWhere<Object> getClassValueWhere(ClassType type) {
+        return property.getClassValueWhere(ClassType.ASSERTFULL);
     }
 
     public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {

@@ -659,8 +659,8 @@ weightNumeratorItem (item) = weightNumeratorItemGroup(itemGroupItem(item));
 barcodeNumeratorSku(item) += IF isWeightItem(item) THEN weightNumeratorItem(item) ELSE pieceNumeratorItem(item);
 
 // ---------------------------------------- Копирование товара ----------------------- //
-overCopyItem = ABSTRACT ACTION (s, d);
-overCopyItemBarcode = ABSTRACT ACTION (b, barcode, i);
+overCopyItem = ABSTRACT ACTION (Item, Item);
+overCopyItemBarcode = ABSTRACT ACTION (Barcode, Barcode, Sku);
 
 copyDataItem = ACTION (item, i) {
     SET itemGroupItem(i) <- itemGroupItem(item);

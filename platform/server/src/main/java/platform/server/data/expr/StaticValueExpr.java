@@ -2,9 +2,9 @@ package platform.server.data.expr;
 
 import platform.base.TwinImmutableObject;
 import platform.server.caches.hash.HashContext;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.StaticClass;
-import platform.server.classes.ConcreteCustomClass;
 import platform.server.data.query.CompileSource;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;

@@ -322,7 +322,7 @@ isWeightSku 'Весовой товар' =  ABSTRACT BOOLEAN (Sku) PERSISTENT;
 
 inactiveSku 'Неактивный' = ABSTRACT BOOLEAN (Sku) PERSISTENT;
 
-replaceSkuSku = ABSTRACT ACTION(sku, sku);
+replaceSkuSku = ABSTRACT ACTION(Sku, Sku);
 
 // ----------------------------------- Ledger ------------------------------------------ //
 
@@ -1784,9 +1784,9 @@ META deriveDocumentDetailSkuBalance (object, skuProp, stockProp)
     @deriveDocumentDetailSkuBalanceCustom(object##Detail, skuProp, stockProp);
 END
 
-editSku 'Редактировать' = ABSTRACT ACTION (sku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editSku 'Редактировать' = ABSTRACT ACTION (Sku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 addSku 'Добавить' = ABSTRACT ACTION () IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
-copySku 'Копировать' = ABSTRACT ACTION (sku)  TOOLBAR;
+copySku 'Копировать' = ABSTRACT ACTION (Sku)  TOOLBAR;
 
 // ---------------------------------------------- Остатки или партия или товар -------------------------------------------- //
 
@@ -1822,8 +1822,8 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
     backgroundQuantitySku###object###Stock 'Цвет' (sku, object, stock) = RGB(255,128,128) IF quantitySku###object###stockProp(sku, object, stock) AND NOT
         (quantitySku###object###stockProp(sku, object, stock) <= currentBalanceSkuStock(sku, stock));
 
-    overChangeQuantityValueSku###object##Detail = ABSTRACT ACTION (detail);
-    overChangeQuantityValueSku###object###object##Detail = ABSTRACT ACTION (detail, object);
+    overChangeQuantityValueSku###object##Detail = ABSTRACT ACTION (###detail);
+    overChangeQuantityValueSku###object###object##Detail = ABSTRACT ACTION (###detail, ###object);
 
     changeQuantityValueSku###object###Stock = ACTION (sku, object, stock) {
 
@@ -1966,7 +1966,7 @@ META defineDocumentSkuInner(object, detail, detailClass, skuProp, stockProp)
     backgroundQuantitySku###object 'Цвет' (sku, object) = RGB(255,128,128) IF quantity###detail###skuProp###object(sku, object) AND NOT
         (quantity###detail###skuProp###object(sku, object) <= currentBalanceSku###object(sku, object));
 
-    overChangeQuantityValueSku###object##Detail = ABSTRACT ACTION (detail);
+    overChangeQuantityValueSku###object##Detail = ABSTRACT ACTION (###detail);
 
     changeQuantityValueSku###object = ACTION (sku, object) {
         IF detail###Sku###object(sku, object) THEN {
@@ -2102,7 +2102,7 @@ META defineDocumentBatchInner(object, detail, detailClass, batchProp, skuProp, s
     backgroundQuantityBatch###object 'Цвет' (batch, object) = RGB(255,128,128) IF quantity###detail###batchProp###object(batch, object) AND NOT
         (quantity###detail###batchProp###object(batch, object) <= currentBalanceBatch###object(batch, object));
 
-    overChangeQuantityValueBatch###object##Detail = ABSTRACT ACTION (detail);
+    overChangeQuantityValueBatch###object##Detail = ABSTRACT ACTION (###detail);
 
     changeQuantityValueBatch###object = ACTION (batch, object) {
         IF detail###batch###object(batch, object) THEN {
@@ -2219,7 +2219,7 @@ META defineDocumentBatchStockInner(object, detail, detailClass, batchProp, skuPr
     backgroundQuantityBatch###object###Stock 'Цвет' (batch, object, stock) = RGB(255,128,128) IF quantityBatch###object###stockProp(batch, object, stock) AND NOT
         quantityBatch###object###stockProp(batch, object, stock) <= currentBalanceBatchStock(batch, stock);
 
-    overChangeQuantityValueBatch###object##Detail = ABSTRACT ACTION (detail);
+    overChangeQuantityValueBatch###object##Detail = ABSTRACT ACTION (###detail);
 
     changeQuantityValueBatch###object###Stock = ACTION (batch, object, stock) {
         IF detail###batch###object###stockProp(batch, object, stock) THEN {
@@ -2540,8 +2540,8 @@ END
 
 // ---------------------------------- Диалоги --------------------------- //
 
-editStock 'Редактировать' = ABSTRACT ACTION (stock) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
-editSessionStock 'Редактировать' = ABSTRACT ACTION (stock) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editStock 'Редактировать' = ABSTRACT ACTION (Stock) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editSessionStock 'Редактировать' = ABSTRACT ACTION (Stock) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 FORM stocks 'Склады'
 

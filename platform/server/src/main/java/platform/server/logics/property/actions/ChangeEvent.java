@@ -9,7 +9,6 @@ import platform.base.col.interfaces.mutable.MSet;
 import platform.server.Settings;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.where.Where;
 import platform.server.logics.property.*;
 import platform.server.session.DataChanges;

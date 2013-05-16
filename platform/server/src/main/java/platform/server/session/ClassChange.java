@@ -5,7 +5,6 @@ import platform.base.col.MapFact;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteObjectClass;
-import platform.server.classes.SystemClass;
 import platform.server.data.Modify;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
@@ -19,7 +18,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
 import java.sql.SQLException;
-import java.util.Collections;
 
 public class ClassChange extends ImmutableObject {
     
@@ -69,6 +67,13 @@ public class ClassChange extends ImmutableObject {
 
     public Join<String> join(Expr expr) {
         return getQuery().join(MapFact.singleton("key", expr));
+    }
+
+    public boolean needMaterialize() {
+        if(keyValue != null)
+            return false;
+
+        return where.needMaterialize() || expr.needMaterialize();
     }
 
     public SingleKeyPropertyUsage materialize(SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {

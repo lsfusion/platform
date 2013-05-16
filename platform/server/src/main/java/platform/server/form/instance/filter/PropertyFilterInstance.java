@@ -14,7 +14,6 @@ import platform.server.logics.property.PropertyInterface;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.Map;
 
 public abstract class PropertyFilterInstance<P extends PropertyInterface> extends FilterInstance {
 

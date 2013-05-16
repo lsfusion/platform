@@ -17,7 +17,6 @@ import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 
 import java.sql.SQLException;
-import java.util.Set;
 
 public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> extends PropertyInterfaceImplement<P> {
 

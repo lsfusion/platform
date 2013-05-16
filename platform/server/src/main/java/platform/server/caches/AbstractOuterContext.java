@@ -5,13 +5,12 @@ import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 
 public abstract class AbstractOuterContext<T extends OuterContext<T>> extends AbstractKeysValuesContext<T> implements OuterContext<T> {
 
-    public static ImSet<KeyExpr> getOuterKeys(OuterContext<?> context) {
+    public static ImSet<ParamExpr> getOuterKeys(OuterContext<?> context) {
         return getOuterKeys(context.getOuterDepends());
     }
 
@@ -26,15 +25,15 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
         return complexity;
     }
 
-    public static ImSet<KeyExpr> getOuterKeys(ImCol<? extends OuterContext> array) {
-        MSet<KeyExpr> mResult = SetFact.mSet();
+    public static ImSet<ParamExpr> getOuterKeys(ImCol<? extends OuterContext> array) {
+        MSet<ParamExpr> mResult = SetFact.mSet();
         for(OuterContext<?> element : array)
             mResult.addAll(element.getOuterKeys());
         return mResult.immutable();
     }
 
-    public static ImSet<KeyExpr> getOuterKeys(ImSet<? extends OuterContext> array) {
-        MSet<KeyExpr> mResult = SetFact.mSet();
+    public static ImSet<ParamExpr> getOuterKeys(ImSet<? extends OuterContext> array) {
+        MSet<ParamExpr> mResult = SetFact.mSet();
         for(int i=0,size=array.size();i<size;i++)
             mResult.addAll(array.get(i).getOuterKeys());
         return mResult.immutable();
@@ -59,7 +58,7 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
         return aspectGetValues();
     }
 
-    public ImSet<KeyExpr> getOuterKeys() {
+    public ImSet<ParamExpr> getOuterKeys() {
         return aspectGetKeys();
     }
 
@@ -156,7 +155,7 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
             return calculateOuterDepends();
     }
 
-    protected ImSet<KeyExpr> getKeys() {
+    protected ImSet<ParamExpr> getKeys() {
         return getOuterKeys(this);
     }
 

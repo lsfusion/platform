@@ -1,7 +1,6 @@
 package platform.server.data.where;
 
 import platform.server.caches.TranslateContext;
-import platform.server.data.translator.MapTranslate;
 
 public interface CheckWhere<T extends TranslateContext<T>> extends TranslateContext<T> {
 

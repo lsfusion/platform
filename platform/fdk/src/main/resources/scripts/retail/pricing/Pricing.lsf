@@ -821,7 +821,7 @@ META defineInvoicePricingRelation(sign, stockProp)
     invoiceDetailPricingDetail(pricingDetail) += invoiceDetailUserPricingDetail(pricingDetail);
 
     CONSTRAINT supplierPricingDetail(detail) != supplierInvoiceDetail(invoiceDetailUserPricingDetail(detail)) OR
-               departmentStorePricingDetail(detail) != stockProp###invoice(invoiceDetailUserPricingDetail(detail)) OR
+               departmentStorePricingDetail(detail) != stockProp###invoiceDetail(invoiceDetailUserPricingDetail(detail)) OR
                skuUserPricingDetail(detail) != skuInvoiceDetail(invoiceDetailUserPricingDetail(detail))
         CHECKED BY invoiceDetailUserPricingDetail
             MESSAGE 'Поставщик, покупатель и товар в накладной и акте расценки должны соответствовать друг другу';

@@ -18,7 +18,10 @@ import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.property.*;
+import platform.server.logics.property.CalcPropertyInterfaceImplement;
+import platform.server.logics.property.CalcPropertyMapImplement;
+import platform.server.logics.property.GroupProperty;
+import platform.server.logics.property.PropertyInterface;
 
 public class GroupDrillDownFormEntity<I extends PropertyInterface> extends DrillDownFormEntity<GroupProperty.Interface<I>, GroupProperty<I>> {
 

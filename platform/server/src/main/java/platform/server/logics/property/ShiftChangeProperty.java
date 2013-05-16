@@ -67,7 +67,7 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
 
     @IdentityInstanceLazy
     private CalcPropertyRevImplement<?, Interface<P>> getIsClassProperty() {
-        return IsClassProperty.getProperty(getMapInterfaces().crossJoin(property.getInterfaceClasses()));
+        return IsClassProperty.getProperty(getMapInterfaces().crossJoin(property.getInterfaceClasses(ClassType.ASSERTFULL))); // obsolete по идее
     }
 
     protected void fillDepends(MSet<CalcProperty> depends, boolean events) {

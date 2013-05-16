@@ -1,10 +1,7 @@
 package platform.server.classes;
 
 import platform.base.ArrayCombinations;
-import platform.base.BaseUtils;
 import platform.base.col.ListFact;
-import platform.base.col.MapFact;
-import platform.base.col.SetFact;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.data.expr.query.Stat;

@@ -4,7 +4,6 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.mutable.LongMutable;
 import platform.base.col.interfaces.mutable.MOrderExclSet;
-import platform.base.col.interfaces.mutable.MOrderSet;
 import platform.base.identity.IdentityObject;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
@@ -12,7 +11,6 @@ import platform.server.serialization.ServerSerializationPool;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class TreeGroupEntity extends IdentityObject implements ServerIdentitySerializable {
     public boolean plainTreeMode = false;

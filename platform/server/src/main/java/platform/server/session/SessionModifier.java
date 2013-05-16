@@ -23,9 +23,10 @@ import platform.server.logics.property.OverrideSessionModifier;
 import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
-import java.util.*;
-
-import static platform.base.BaseUtils.merge;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 // поддерживает hint'ы, есть информация о сессии
 public abstract class SessionModifier implements Modifier {

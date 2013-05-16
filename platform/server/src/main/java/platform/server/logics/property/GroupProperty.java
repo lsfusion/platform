@@ -128,7 +128,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
                 .and(Expr.getWhere(getOrderImplements(mapKeys, PropertyChanges.EMPTY).keys()))
                 ;
 
-        ClassWhere<I> classWhere = w.getClassWhere().get(mapKeys, true);
+        ClassWhere<I> classWhere = w.getClassWhere().get(mapKeys);
 
         return classWhere.getCommonParent(innerInterfaces);
     }

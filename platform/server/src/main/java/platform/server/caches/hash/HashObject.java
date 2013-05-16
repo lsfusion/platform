@@ -1,7 +1,6 @@
 package platform.server.caches.hash;
 
 import platform.server.caches.AbstractHashContext;
-import platform.server.caches.AbstractTranslateContext;
 
 import java.util.IdentityHashMap;
 

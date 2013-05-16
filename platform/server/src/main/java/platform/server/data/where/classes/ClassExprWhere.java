@@ -13,8 +13,8 @@ import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
+import platform.server.caches.ParamExpr;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.UnknownClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.ValueClassSet;
 import platform.server.classes.sets.AndClassSet;
@@ -27,11 +27,14 @@ import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-import platform.server.data.where.*;
+import platform.server.data.where.DNFWheres;
+import platform.server.data.where.Equal;
+import platform.server.data.where.EqualMap;
+import platform.server.data.where.Where;
 
 public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere>, OuterContext<ClassExprWhere>, KeyType {
 
-    public Type getKeyType(KeyExpr keyExpr) {
+    public Type getKeyType(ParamExpr keyExpr) {
         if (wheres.length == 0) {
             return ObjectType.instance;
         }
@@ -48,7 +51,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         return type;
     }
 
-    public Stat getKeyStat(KeyExpr keyExpr) {
+    public Stat getKeyStat(ParamExpr keyExpr) {
         AndClassSet classSet = wheres[0].get(keyExpr);
         if(classSet==null) {
             if(keyExpr instanceof PullExpr)
@@ -76,7 +79,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         return keyExpr.isClass(keepClass);
     }
     
-    public boolean checkType(KeyExpr keyExpr,Type type) {
+    public boolean checkType(ParamExpr keyExpr,Type type) {
         for(int i=1;i<wheres.length;i++)
             assert type.getCompatible(wheres[0].get(keyExpr).getType())!=null;
         return true;
@@ -173,29 +176,13 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         super(classes, map);
     }
 
-    private <K> ImMap<K, AndClassSet> getFull(ImMap<K, ? extends BaseExpr> map) {
-        MMap<K,AndClassSet> mResult = MapFact.mMap(AbstractClassWhere.<K>addOr());
-        for(And<VariableSingleClassExpr> where : wheres)
-            for(int i=0,size=map.size();i<size;i++) {
-                AndClassSet classSet = map.getValue(i).getAndClassSet(where);
-                if(classSet!=null)
-                    mResult.add(map.getKey(i), classSet);
-            }
-        return mResult.immutable();
-    }
     // получает классы для BaseExpr'ов
-    public <K> ClassWhere<K> get(ImMap<K, ? extends BaseExpr> map, boolean full) {
-        ImMap<K, AndClassSet> fullMap = null;
-        if(full)
-            fullMap = getFull(map);
-
+    public <K> ClassWhere<K> get(ImMap<K, ? extends BaseExpr> map) {
         ClassWhere<K> transWhere = ClassWhere.FALSE();
         for(And<VariableSingleClassExpr> andWhere : wheres) {
             ImFilterValueMap<K, AndClassSet> andTrans = map.mapFilterValues();
             for(int i=0,size=map.size();i<size;i++) {
                 AndClassSet classSet = map.getValue(i).getAndClassSet(andWhere);
-                if(full && classSet==null)
-                    classSet = fullMap.get(map.getKey(i));
                 if(classSet!=null)
                     andTrans.mapValue(i, classSet);
             }
@@ -326,7 +313,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             outer = new OuterContext();
         return outer;
     }
-    public ImSet<KeyExpr> getOuterKeys() {
+    public ImSet<ParamExpr> getOuterKeys() {
         return getOuter().getOuterKeys();
     }
     public ImSet<Value> getOuterValues() {

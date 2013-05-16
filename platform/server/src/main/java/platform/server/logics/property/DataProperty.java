@@ -13,7 +13,6 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
@@ -45,7 +44,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     @Override
-    public ClassWhere<Object> getClassValueWhere(boolean full) {
+    public ClassWhere<Object> getClassValueWhere(ClassType type) {
         return new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", value), true);
     }
 

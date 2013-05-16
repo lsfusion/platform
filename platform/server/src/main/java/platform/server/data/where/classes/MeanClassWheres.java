@@ -9,9 +9,9 @@ import platform.base.col.interfaces.mutable.AddValue;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
+import platform.server.caches.ParamExpr;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.AbstractWhere;
@@ -96,7 +96,7 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
             outer = new OuterContext();
         return outer;
     }
-    public ImSet<KeyExpr> getOuterKeys() {
+    public ImSet<ParamExpr> getOuterKeys() {
         return getOuter().getOuterKeys();
     }
     public ImSet<Value> getOuterValues() {

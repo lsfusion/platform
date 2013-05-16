@@ -1,9 +1,7 @@
 package platform.server.logics;
 
 import org.antlr.runtime.RecognitionException;
-import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.property.actions.GenerateLoginPasswordActionProperty;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;

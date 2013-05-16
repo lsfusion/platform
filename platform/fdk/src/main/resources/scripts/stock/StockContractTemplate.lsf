@@ -2,7 +2,7 @@ MODULE StockContractTemplate;
 
 REQUIRE StockContract, Word, LegalEntityBy, Bank;
 
-overCreateStockContractTemplate = ABSTRACT ACTION (s, d);
+overCreateStockContractTemplate = ABSTRACT ACTION (TemplateEntry, Contract);
 
 createStockContractTemplate 'Заполнить по шаблону' = ACTION (contract) {
     SET valueTemplateEntry(detail) <- NULL;

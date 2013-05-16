@@ -13,10 +13,9 @@ import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.AbstractInnerContext;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
+import platform.server.caches.ParamExpr;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
-import platform.server.classes.SystemClass;
 import platform.server.data.Modify;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
@@ -32,7 +31,6 @@ import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
@@ -143,8 +141,8 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         this(mapKeys, expr, where.and(CompareWhere.compareExprValues(mapKeys, mapValues)));
     }
 
-    public ImSet<KeyExpr> getKeys() {
-        return mapKeys.valuesSet();
+    public ImSet<ParamExpr> getKeys() {
+        return BaseUtils.immutableCast(mapKeys.valuesSet());
     }
 
     public ImSet<Value> getValues() {
@@ -259,7 +257,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     }
 
     protected PropertyChange<T> translate(MapTranslate translator) {
-        return new PropertyChange<T>(translator.translateDataObjects(mapValues), translator.translateKey(mapKeys),expr.translateOuter(translator),where.translateOuter(translator));
+        return new PropertyChange<T>(translator.translateDataObjects(mapValues), translator.translateRevValues(mapKeys),expr.translateOuter(translator),where.translateOuter(translator));
     }
 
     protected long calculateComplexity(boolean outer) {
@@ -285,13 +283,21 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return change1.add(change2);
     }
 
+    public boolean needMaterialize() {
+        return where.needMaterialize() || expr.needMaterialize();
+    }
+
     public SinglePropertyTableUsage<T> materialize(CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
         SinglePropertyTableUsage<T> result = property.createChangeTable();
         writeRows(result, sql, baseClass, env);
         return result;
     }
 
-    public static <K> NoPropertyTableUsage<K> materialize(DataSession session, final ImRevMap<K, KeyExpr> mapKeys, final Where where) throws SQLException {
+    public static boolean needMaterializeWhere(Where where) throws SQLException {
+        return where.needMaterialize();
+    }
+
+    public static <K> NoPropertyTableUsage<K> materializeWhere(DataSession session, final ImRevMap<K, KeyExpr> mapKeys, final Where where) throws SQLException {
         NoPropertyTableUsage<K> result = new NoPropertyTableUsage<K>(mapKeys.keys().toOrderSet(), new Type.Getter<K>() {
             public Type getType(K key) {
                 return where.getKeyType(mapKeys.get(key));

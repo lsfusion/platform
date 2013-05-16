@@ -86,7 +86,7 @@ priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceS
 
 // --------------------------- Формы ------------------------- //
 
-editPriceListType 'Редактировать' = ABSTRACT ACTION (priceListType) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editPriceListType 'Редактировать' = ABSTRACT ACTION (PriceListType) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 FORM priceListType 'Вид цены'
     OBJECTS p = PriceListType

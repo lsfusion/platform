@@ -7,9 +7,6 @@ import platform.server.form.instance.InstanceFactory;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class CalcPropertyObjectEntity<P extends PropertyInterface> extends PropertyObjectEntity<P, CalcProperty<P>> implements OrderEntity<CalcPropertyObjectInstance<P>> {
 
     public CalcPropertyObjectEntity() {

@@ -49,13 +49,13 @@ createCurrentReceipt 'Создать новый чек' = ACTION () {
 
 // Вывод на дисплей
 
-fiscalDisplayTextReceiptDetail 'Вывести текст на дисплей'(receiptDetail) = ABSTRACT ACTION (receiptDetail);
+fiscalDisplayTextReceiptDetail 'Вывести текст на дисплей'(receiptDetail) = ABSTRACT ACTION (ReceiptDetail);
 
 // Проведение чека
 
 GROUP receiptActionGroup 'Оплата' : public;
 
-postPrintReceipt 'Напечатать фискальный чек' = ABSTRACT ACTION (receipt);
+postPrintReceipt 'Напечатать фискальный чек' = ABSTRACT ACTION (Receipt);
 noFiscalPostPrintReceipt 'Создать чек (без фискального регистратора)' = ACTION (receipt) {
     IF receipt IS Receipt THEN {
         EXEC apply();

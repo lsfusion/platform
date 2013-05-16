@@ -7,8 +7,6 @@ import platform.server.logics.property.CalcPropertyMapImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.derived.DerivedProperty;
 
-import java.util.HashSet;
-
 public abstract class ChangeFlowActionProperty extends KeepContextActionProperty {
 
     protected ChangeFlowActionProperty(String sID, String caption) {

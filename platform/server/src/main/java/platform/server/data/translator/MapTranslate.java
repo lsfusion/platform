@@ -1,14 +1,18 @@
 package platform.server.data.translator;
 
 import platform.base.col.interfaces.immutable.*;
+import platform.server.caches.ParamExpr;
 import platform.server.caches.TranslateContext;
 import platform.server.data.Value;
-import platform.server.data.expr.*;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.VariableClassExpr;
+import platform.server.data.expr.VariableSingleClassExpr;
 import platform.server.logics.DataObject;
 
 public interface MapTranslate extends MapObject {
 
-    KeyExpr translate(KeyExpr expr);
+    ParamExpr translate(ParamExpr expr);
     <V extends Value> V translate(V expr);
 
     MapTranslate filterValues(ImSet<? extends Value> values);
@@ -21,9 +25,9 @@ public interface MapTranslate extends MapObject {
     // для кэша classWhere на самом деле надо
     <K> ImRevMap<K, VariableSingleClassExpr> translateVariable(ImRevMap<K, ? extends VariableSingleClassExpr> map);
 
-    <K> ImMap<K, BaseExpr> translateDirect(ImMap<K, ? extends BaseExpr> map);
+    <K, V extends BaseExpr> ImMap<K, V> translateDirect(ImMap<K, V> map);
 
-    <K> ImRevMap<K, KeyExpr> translateKey(ImRevMap<K, KeyExpr> map);
+    <K> ImRevMap<K, ParamExpr> translateKey(ImRevMap<K, ParamExpr> map);
 
     <K> ImMap<BaseExpr, K> translateKeys(ImMap<? extends BaseExpr, K> map);
 
@@ -32,9 +36,10 @@ public interface MapTranslate extends MapObject {
 
     <K extends TranslateContext, V extends TranslateContext> ImMap<K, V> translateMap(ImMap<? extends K, ? extends V> map);
 
-    <K extends BaseExpr> ImRevMap<KeyExpr, K> translateRevMap(ImRevMap<KeyExpr, K> map); // по аналогии с верхним
+    <K extends BaseExpr, V extends BaseExpr> ImRevMap<K, V> translateRevMap(ImRevMap<K, V> map); // по аналогии с верхним
+    <K, V extends BaseExpr> ImRevMap<K, V> translateRevValues(ImRevMap<K, V> map); // по аналогии с верхним
 
-    <K> ImMap<KeyExpr,K> translateMapKeys(ImMap<KeyExpr, K> map);
+    <K> ImMap<ParamExpr,K> translateMapKeys(ImMap<ParamExpr, K> map);
 
     <K> ImMap<K, Expr> translate(ImMap<K, ? extends Expr> map);
 
@@ -42,9 +47,9 @@ public interface MapTranslate extends MapObject {
 
     ImList<BaseExpr> translateDirect(ImList<BaseExpr> list);
 
-    ImSet<BaseExpr> translateDirect(ImSet<BaseExpr> set);
+    <K extends BaseExpr> ImSet<K> translateDirect(ImSet<K> set);
 
-    ImSet<KeyExpr> translateKeys(ImSet<KeyExpr> set);
+    ImSet<ParamExpr> translateKeys(ImSet<ParamExpr> set);
 
     ImSet<VariableClassExpr> translateVariable(ImSet<VariableClassExpr> set);
 
@@ -60,7 +65,7 @@ public interface MapTranslate extends MapObject {
 
     MapTranslate reverseMap();
 
-    boolean identityKeysValues(ImSet<KeyExpr> keys, ImSet<? extends Value> values);
-    boolean identityKeys(ImSet<KeyExpr> keys);
+    boolean identityKeysValues(ImSet<ParamExpr> keys, ImSet<? extends Value> values);
+    boolean identityKeys(ImSet<ParamExpr> keys);
     boolean identityValues(ImSet<? extends Value> values);
 }

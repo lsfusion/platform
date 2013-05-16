@@ -1,5 +1,6 @@
 package platform.server.data.expr.formula;
 
+import platform.server.caches.ParamExpr;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -23,7 +24,7 @@ public abstract class AbstractFormulaImpl implements FormulaImpl {
         Type type = null;
         for (int i = 0; i < source.getExprCount(); ++i) {
             Expr expr = source.getExpr(i);
-            if (!(expr instanceof KeyExpr)) {
+            if (!(expr instanceof ParamExpr)) {
                 Type exprType = expr.getSelfType();
                 if (type == null) {
                     type = exprType;

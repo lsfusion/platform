@@ -55,7 +55,7 @@ expiryDateOutputDetail (outputDetail) += expiryDateUserOutputDetail (outputDetai
 @defineAddDetailDialogSkuStock(userOutput, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(userOutput, sku);
 
-editOutput 'Редактировать' = ABSTRACT ACTION (output) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editOutput 'Редактировать' = ABSTRACT ACTION (Output) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 // Подбор документа
 @implementDocument(output);

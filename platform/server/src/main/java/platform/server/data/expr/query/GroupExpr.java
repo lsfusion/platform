@@ -3,9 +3,9 @@ package platform.server.data.expr.query;
 import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.Result;
+import platform.base.SFunctionSet;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
-import platform.base.SFunctionSet;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MList;
@@ -136,7 +136,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 return element instanceof KeyExpr;
             }
         }));
-        return where.getStatKeys(getInner().getInnerKeys().remove(pushedKeys));
+        return where.getStatKeys(getInner().getQueryKeys().remove(pushedKeys));
     }
     private boolean checkNoKeys() {
         return getStatGroup().rows.lessEquals(new Stat(Long.MAX_VALUE));
@@ -180,7 +180,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
         protected ImMap<KeyExpr, Type> getInnerKeyTypes() {
             final KeyType contextType = getFullWhere();
-            return getInnerKeys().mapValues(new GetValue<Type, KeyExpr>() {
+            return getQueryKeys().mapValues(new GetValue<Type, KeyExpr>() {
                 public Type getMapValue(KeyExpr value) {
                     return contextType.getKeyType(value);
                 }
@@ -224,7 +224,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
         final Result<ImMap<Expr,String>> fromPropertySelect = new Result<ImMap<Expr, String>>();
         Result<ImCol<String>> fromWhereSelect = new Result<ImCol<String>>(); // проверить crossJoin
-        String fromSelect = new platform.server.data.query.Query<KeyExpr,Expr>(getInner().getInnerKeys().toRevMap(),
+        String fromSelect = new platform.server.data.query.Query<KeyExpr,Expr>(getInner().getQueryKeys().toRevMap(),
                 group.keys().addExcl(query.getExprs()).toMap(), getInner().getFullWhere())
             .compile(source.syntax, subcontext).fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, source.params, null);
         
@@ -345,13 +345,14 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     private static <K> Expr create(final ImMap<K, ? extends Expr> inner, Query query, ImMap<K, ? extends Expr> outer, final PullExpr noPull) {
-        ImMap<Object, KeyExpr> pullKeys = getOuterKeys(inner.values()).merge(query.getOuterKeys()).filterFn(new SFunctionSet<KeyExpr>() {
+        ImMap<Object, KeyExpr> pullKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterKeys(inner.values()).merge(query.getOuterKeys())).filterFn(new SFunctionSet<KeyExpr>() {
             public boolean contains(KeyExpr key) {
                 return key instanceof PullExpr && !((ImMap<K,Expr>)inner).containsValue(key) && !key.equals(noPull);
             }}).mapRevKeys(new GetStaticValue<Object>() {
             public Object getMapValue() {
                 return new Object();
-            }});
+            }
+        });
         return createTypeAdjust(MapFact.addExcl(inner, pullKeys), query, MapFact.addExcl(outer, pullKeys));
     }
 
@@ -544,7 +545,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     protected static ImSet<KeyExpr> getKeys(Query query, ImMap<Expr, BaseExpr> group) {
-        return getOuterKeys(group.keys()).merge(query.getOuterKeys());
+        return BaseUtils.immutableCast(getOuterKeys(group.keys()).merge(query.getOuterKeys()));
     }
 
     private static <K> Where getFullWhere(Query query, ImMap<K, ? extends Expr> mapInner) {
@@ -615,8 +616,8 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     private static Where getKeepWhere(Where fullWhere) {
 
         Where keepWhere = Where.TRUE;
-        for(KeyExpr key : fullWhere.getOuterKeys())
-            keepWhere = keepWhere.and(fullWhere.getKeepWhere(key));
+        for(ParamExpr key : fullWhere.getOuterKeys())
+            keepWhere = keepWhere.and(fullWhere.getKeepWhere((KeyExpr)key));
         return keepWhere;
     }
 

@@ -4,18 +4,15 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.type.Type;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.SessionDataProperty;
 
 import java.sql.SQLException;
-import java.util.Set;
 
 public interface SessionChanges {
 

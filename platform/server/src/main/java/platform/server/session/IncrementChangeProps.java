@@ -6,8 +6,6 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 public class IncrementChangeProps extends IncrementProps {

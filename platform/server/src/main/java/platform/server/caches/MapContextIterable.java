@@ -2,7 +2,6 @@ package platform.server.caches;
 
 import platform.base.EmptyIterator;
 import platform.base.col.interfaces.immutable.ImRevMap;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapTranslator;
 import platform.server.data.translator.MapValuesTranslate;
@@ -26,12 +25,12 @@ public class MapContextIterable implements Iterable<MapTranslate> {
         return new MapIterator();
     }
 
-    // перебирает Map'ы KeyExpr -> KeyExpr и ValueExpr -> ValueExpr
+    // перебирает Map'ы ParamExpr -> ParamExpr и ValueExpr -> ValueExpr
     private class MapIterator implements Iterator<MapTranslate> {
         private KeyPairs keyPairs;
 
         private Iterator<MapValuesTranslate> valueIterator;
-        private Iterator<ImRevMap<KeyExpr,KeyExpr>> keysIterator;
+        private Iterator<ImRevMap<ParamExpr,ParamExpr>> keysIterator;
 
         public MapIterator() {
             mapValues = null;
@@ -46,7 +45,7 @@ public class MapContextIterable implements Iterable<MapTranslate> {
             }
 
             if(mapValues==null) {
-                keysIterator = new EmptyIterator<ImRevMap<KeyExpr, KeyExpr>>();
+                keysIterator = new EmptyIterator<ImRevMap<ParamExpr, ParamExpr>>();
                 return;
             }
 
@@ -63,7 +62,7 @@ public class MapContextIterable implements Iterable<MapTranslate> {
         private MapValuesTranslate mapValues;
 
         public MapTranslate next() {
-            ImRevMap<KeyExpr,KeyExpr> mapKeys;
+            ImRevMap<ParamExpr,ParamExpr> mapKeys;
             if(!keysIterator.hasNext()) {
                 mapValues = valueIterator.next();
                 keysIterator = keyPairs.iterator();

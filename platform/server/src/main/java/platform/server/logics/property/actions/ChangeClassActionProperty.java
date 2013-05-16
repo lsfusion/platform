@@ -47,7 +47,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
      @Override
      public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
          OrObjectClassSet orSet;
-         if(needDialog() || where==null || (orSet = where.mapClassWhere().getOrSet(changeInterface))==null)
+         if(needDialog() || where==null || (orSet = where.mapClassWhere(ClassType.ASIS).getOrSet(changeInterface))==null)
              return baseClass.getChildProps().toMap(false);
 
          MExclSet<CalcProperty> mResult = SetFact.mExclSet();

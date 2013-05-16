@@ -16,11 +16,8 @@ import platform.server.caches.ManualLazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
-import platform.server.data.expr.Expr;
 import platform.server.data.translator.MapValuesTranslate;
-import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.PropertyInterface;
 
 public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {

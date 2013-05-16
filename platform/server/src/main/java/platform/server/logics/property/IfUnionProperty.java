@@ -1,7 +1,10 @@
 package platform.server.logics.property;
 
 import platform.base.col.SetFact;
-import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;

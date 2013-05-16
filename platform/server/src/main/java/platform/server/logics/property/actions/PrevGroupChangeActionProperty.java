@@ -117,7 +117,7 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        ImRevMap<P, KeyExpr> mainKeys = mainProperty.getMapKeys();
+        ImRevMap<P, KeyExpr> mainKeys = KeyExpr.getMapKeys(mainProperty.interfaces);
 
         ImRevMap<P, PropertyObjectInterfaceInstance> mainMapObjects = getMapObjectsForMainProperty(context.getObjectInstances());
 

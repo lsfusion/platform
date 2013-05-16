@@ -36,8 +36,7 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
         throw new RuntimeException("should not be");
     }
 
-    protected ClassWhere<Object>
-    getClassValueWhere(boolean full) {
+    protected ClassWhere<Object> getClassValueWhere(ClassType type) {
         return new ClassWhere<Object>(MapFact.<Object, AndClassSet>toMap(interfaces.single(), set, "value", set.getBaseClass().objectClass));
     }
 

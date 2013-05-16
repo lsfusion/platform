@@ -1,13 +1,10 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
-import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.ClassViewType;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
@@ -21,7 +18,6 @@ import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.actions.ChangeClassActionProperty;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
-import platform.server.session.StructChanges;
 
 public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
