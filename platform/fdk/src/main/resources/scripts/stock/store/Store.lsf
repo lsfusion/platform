@@ -29,6 +29,21 @@ inChainStoresStoreType(chainStores, storeType) = chainStoresStoreType(storeType)
 
 parentStockGroup (storeType) += chainStoresStoreType(storeType);
 
+FORM storeType 'Формат магазина'
+    OBJECTS t=StoreType FIXED PANEL
+    PROPERTIES(t) nameStoreType
+    EDIT StoreType OBJECT t
+;
+
+FORM storeTypes 'Форматы магазинов'
+    OBJECTS t=StoreType
+    PROPERTIES(t) nameStoreType READONLY, DELETE
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameStoreType
+    DIALOG StoreType OBJECT t
+;
+DESIGN storeTypes FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
 FORM chainStores 'Торговая сеть'
     OBJECTS n=ChainStores FIXED PANEL
     PROPERTIES(n) nameChainStores
@@ -275,7 +290,7 @@ FORM stores 'Магазины'
     PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, deletet=DELETE FORCE PANEL TOOLBAR
 
     OBJECTS s=Store
-    PROPERTIES(s) READONLY nameStore, addressStore, nameStoreTypeStore, nameLegalEntityStore, nameRegionStore
+    PROPERTIES(s) READONLYIF isReadonly() nameStore, addressStore, nameStoreTypeStore, nameLegalEntityStore, nameRegionStore
     PROPERTIES(s)          ADDFORM, EDITFORM, DELETE TOOLBAR
     FILTERS inChainStoresStoreTypeStore(t, st, s)
 
@@ -320,6 +335,7 @@ DESIGN stores FROM DEFAULT {
 
     ADD functions.box;
 }
+@extendFormEditable(stores);
 
 NAVIGATOR {
     retailMasterData {

@@ -84,6 +84,7 @@ FORM regions 'Регионы'
     PROPERTIES(r) ADDFORM, EDITFORM, DELETE
     DIALOG Region OBJECT r
 ;
+DESIGN regions FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 
