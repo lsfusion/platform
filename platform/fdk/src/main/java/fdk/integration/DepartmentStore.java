@@ -2,13 +2,13 @@ package fdk.integration;
 
 
 public class DepartmentStore {
-    public String departmentStoreID;
+    public String idDepartmentStore;
     public String name;
-    public String storeID;
+    public String idStore;
 
-    public DepartmentStore(String departmentStoreID, String name, String storeID) {
-        this.departmentStoreID = departmentStoreID;
+    public DepartmentStore(String idDepartmentStore, String name, String idStore) {
+        this.idDepartmentStore = idDepartmentStore;
         this.name = name;
-        this.storeID = storeID;
+        this.idStore = idStore;
     }
 }

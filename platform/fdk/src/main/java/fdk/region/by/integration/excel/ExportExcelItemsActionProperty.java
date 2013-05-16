@@ -54,8 +54,8 @@ public class ExportExcelItemsActionProperty extends ExportExcelActionProperty {
         DataSession session = context.getSession();
 
         try {
-            ObjectValue retailCPLT = LM.findLCPByCompoundName("externalizableSID").readClasses(session, new DataObject("cplt_retail", StringClass.get(100)));
-            ObjectValue wholesaleCPLT = LM.findLCPByCompoundName("externalizableSID").readClasses(session, new DataObject("cplt_wholesale", StringClass.get(100)));
+            ObjectValue retailCPLT = LM.findLCPByCompoundName("calcPriceListTypeId").readClasses(session, new DataObject("retail", StringClass.get(100)));
+            ObjectValue wholesaleCPLT = LM.findLCPByCompoundName("calcPriceListTypeId").readClasses(session, new DataObject("wholesale", StringClass.get(100)));
 
             KeyExpr itemExpr = new KeyExpr("Item");
             ImRevMap<Object, KeyExpr> itemKeys = MapFact.singletonRev((Object) "Item", itemExpr);

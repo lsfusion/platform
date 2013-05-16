@@ -55,26 +55,26 @@ public class ImportFormularActionProperty extends ScriptingActionProperty {
         ResultSet rs = conn.createStatement().executeQuery(
                 "SELECT num_class AS ext_id, name_u AS name, par AS par_id FROM klass");
 
-        ImportField itemGroupID = new ImportField(getLCP("sidExternalizable"));
+        ImportField idItemGroup = new ImportField(getLCP("idItemGroup"));
         ImportField itemGroupName = new ImportField(getLCP("name"));
-        ImportField parentGroupID = new ImportField(getLCP("sidExternalizable"));
+        ImportField idParentGroup = new ImportField(getLCP("idItemGroup"));
 
         ImportKey<?> itemGroupKey = new ImportKey((ConcreteCustomClass) getClass("itemGroup"),
-                getLCP("externalizableSID").getMapping(itemGroupID));
-        ImportProperty<?> itemGroupIDProperty = new ImportProperty(itemGroupID, getLCP("sidExternalizable").getMapping(itemGroupKey));
+                getLCP("itemGroupId").getMapping(idItemGroup));
+        ImportProperty<?> itemGroupIDProperty = new ImportProperty(idItemGroup, getLCP("idItemGroup").getMapping(itemGroupKey));
         ImportProperty<?> itemGroupNameProperty = new ImportProperty(itemGroupName, getLCP("name").getMapping(itemGroupKey));
 
         ImportKey<?> parentGroupKey = new ImportKey((ConcreteCustomClass) getClass("itemGroup"),
-                getLCP("externalizableSID").getMapping(parentGroupID));
+                getLCP("itemGroupId").getMapping(idParentGroup));
 
-        ImportProperty<?> parentGroupProperty = new ImportProperty(parentGroupID, getLCP("parentItemGroup").getMapping(itemGroupKey),
-                LM.object((ConcreteCustomClass) getClass("itemGroup")).getMapping(parentGroupKey));
+        ImportProperty<?> parentGroupProperty = new ImportProperty(idParentGroup, getLCP("parentItemGroup").getMapping(itemGroupKey),
+                LM.object(getClass("itemGroup")).getMapping(parentGroupKey));
 
         Collection<? extends ImportKey<?>> keys = Arrays.asList(itemGroupKey, parentGroupKey);
         Collection<ImportProperty<?>> properties = Arrays.asList(itemGroupIDProperty, itemGroupNameProperty, parentGroupProperty);
 
         new IntegrationService(context.getSession(),
-                new ImportTable(Arrays.asList(itemGroupID, itemGroupName, parentGroupID), createData(rs)),
+                new ImportTable(Arrays.asList(idItemGroup, itemGroupName, idParentGroup), createData(rs)),
                 keys,
                 properties).synchronize();
     }

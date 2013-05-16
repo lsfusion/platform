@@ -2,7 +2,6 @@ package fdk.integration;
 
 
 
-import java.sql.Timestamp;
 import java.util.Date;
 
 public class UserInvoiceDetail {
@@ -12,7 +11,7 @@ public class UserInvoiceDetail {
     public Boolean createShipment;
     public String sid;
     public Date date;
-    public String itemID;
+    public String idItem;
     public Boolean isWare;
     public Double quantity;
     public String supplier;
@@ -26,21 +25,21 @@ public class UserInvoiceDetail {
     public Double retailPrice;
     public Double retailMarkup;
     public String textCompliance;
-    public String contractID;
+    public String idContract;
 
 
     public UserInvoiceDetail(String number, String series, Boolean createPricing, Boolean createShipment, String sid,
-                             Date date, String itemID, Boolean isWare, Double quantity, String supplier, String customerWarehouse,
+                             Date date, String idItem, Boolean isWare, Double quantity, String supplier, String customerWarehouse,
                              String supplierWarehouse, Double price, Double chargePrice, Double manufacturingPrice,
                              Double wholesalePrice, Double wholesaleMarkup, Double retailPrice, Double retailMarkup,
-                             String textCompliance, String contractID) {
+                             String textCompliance, String idContract) {
         this.number = number;
         this.series = series;
         this.createPricing = createPricing;
         this.createShipment = createShipment;
         this.sid = sid;
         this.date = date;
-        this.itemID = itemID;
+        this.idItem = idItem;
         this.isWare = isWare;
         this.quantity = quantity;
         this.supplier = supplier;
@@ -54,6 +53,6 @@ public class UserInvoiceDetail {
         this.retailPrice = retailPrice;
         this.retailMarkup = retailMarkup;
         this.textCompliance = textCompliance;
-        this.contractID = contractID;
+        this.idContract = idContract;
     }
 }

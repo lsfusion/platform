@@ -2,16 +2,16 @@ package fdk.integration;
 
 public class Store extends LegalEntity {
 
-    public String storeID;
+    public String idStore;
     public String storeType;
 
-    public Store(String storeID, String nameLegalEntity, String address, String legalEntityID,
-                 String storeType, String chainStoresID) {
-        this.storeID = storeID;
+    public Store(String idStore, String nameLegalEntity, String address, String idLegalEntity,
+                 String storeType, String idChainStores) {
+        this.idStore = idStore;
         this.nameLegalEntity = nameLegalEntity;
         this.address = address;
-        this.legalEntityID = legalEntityID;
+        this.idLegalEntity = idLegalEntity;
         this.storeType = storeType;
-        this.chainStoresID = chainStoresID;
+        this.idChainStores = idChainStores;
     }
 }

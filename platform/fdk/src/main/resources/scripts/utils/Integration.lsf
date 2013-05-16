@@ -2,10 +2,11 @@ MODULE Integration;
 
 REQUIRE System;
 
-CLASS Externalizable 'Внешний объект';
-TABLE externalizable (Externalizable);
+META defineExternalizable (object, type)
+    @defineExternalizable(object, type, );
+END
 
-sidExternalizable 'Внешний код' = DATA STRING[100] (Externalizable) INDEXED;
-externalizableSID (sid) = GROUP AGGR externalizable BY sidExternalizable (externalizable) WHERE externalizable IS Externalizable;
-
-
+META defineExternalizable (object, type, prefix)
+    prefix###id###object = DATA type (###object) INDEXED;
+    prefix###object##Id (object) = GROUP AGGR object BY prefix###id###object (object);
+END

@@ -2,17 +2,17 @@ package fdk.integration;
 
 
 public class Warehouse {
-    public String legalEntityID;
-    public String warehouseGroupID;
-    public String warehouseID;
+    public String idLegalEntity;
+    public String idWarehouseGroup;
+    public String idWarehouse;
     public String warehouseName;
     public String warehouseAddress;
 
 
-    public Warehouse(String legalEntityID, String warehouseGroupID, String warehouseID, String warehouseName, String warehouseAddress) {
-        this.legalEntityID = legalEntityID;
-        this.warehouseGroupID = warehouseGroupID;
-        this.warehouseID = warehouseID;
+    public Warehouse(String idLegalEntity, String idWarehouseGroup, String idWarehouse, String warehouseName, String warehouseAddress) {
+        this.idLegalEntity = idLegalEntity;
+        this.idWarehouseGroup = idWarehouseGroup;
+        this.idWarehouse = idWarehouse;
         this.warehouseName = warehouseName;
         this.warehouseAddress = warehouseAddress;
     }

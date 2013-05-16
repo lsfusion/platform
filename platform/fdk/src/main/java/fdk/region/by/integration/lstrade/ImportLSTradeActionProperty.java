@@ -69,7 +69,8 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                         importLegalEntitiesFromDBF(path + "//_sprana.dbf", prefixStore, importInactive, true) : null);
 
                 importData.setDepartmentStoresList((getLCP("importDepartmentStores").read(context) != null) ?
-                        importDepartmentStoresFromDBF(path + "//_sprana.dbf", importInactive, path + "//_storestr.dbf") : null);
+                        importDepartmentStoresFromDBF(path + "//_sprana.dbf", importInactive, path + "//_storestr.dbf",
+                                prefixStore) : null);
 
                 importData.setRateWastesList((getLCP("importRateWastes").read(context) != null) ?
                         importRateWastesFromDBF(path + "//_sprvgrt.dbf") : null);
@@ -81,13 +82,13 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                         importItemsFromDBF(path + "//_sprgrm.dbf", path + "//_postvar.dbf", numberOfItems, importInactive) : null);
 
                 importData.setPriceListStoresList((getLCP("importPriceListStores").read(context) != null) ?
-                        importPriceListStoreFromDBF(path + "//_postvar.dbf", path + "//_strvar.dbf", numberOfPriceLists) : null);
+                        importPriceListStoreFromDBF(path + "//_postvar.dbf", path + "//_strvar.dbf", prefixStore, numberOfPriceLists) : null);
 
                 importData.setPriceListSuppliersList((getLCP("importPriceListSuppliers").read(context) != null) ?
                         importPriceListSuppliersFromDBF(path + "//_postvar.dbf", numberOfPriceLists) : null);
 
                 importData.setUserInvoicesList((getLCP("importUserInvoices").read(context) != null) ?
-                        importUserInvoicesFromDBF(path + "//_ostn.dbf") : null);
+                        importUserInvoicesFromDBF(path + "//_sprcont.dbf", path + "//_ostn.dbf") : null);
 
                 new ImportActionProperty(LM, importData, context).makeImport();
             }
@@ -132,42 +133,45 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             String group2 = new String(importFile.getField("GROUP2").getBytes(), "Cp1251").trim();
             String group3 = new String(importFile.getField("GROUP3").getBytes(), "Cp1251").trim();
 
-            if (!group2.isEmpty() && (!group3.isEmpty())) {
+            if (!pol_naim.isEmpty()) {
 
-                if (!parents) {
-                    //sid - name - parentSID(null)
-                    addIfNotContains(new ItemGroup((group3.substring(0, 3) + "/" + groupTop), group3, null));
-                    addIfNotContains(new ItemGroup((group2 + "/" + group3.substring(0, 3) + "/" + groupTop), group2, null));
-                    addIfNotContains(new ItemGroup((group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + groupTop), group1, null));
-                    addIfNotContains(new ItemGroup(k_grtov, pol_naim, null));
-                } else {
-                    //sid - name(null) - parentSID
-                    addIfNotContains(new ItemGroup((group3.substring(0, 3) + "/" + groupTop), null, groupTop));
-                    addIfNotContains(new ItemGroup((group2 + "/" + group3.substring(0, 3) + "/" + groupTop), null, group3.substring(0, 3) + "/" + groupTop));
-                    addIfNotContains(new ItemGroup((group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + groupTop), null, group2 + "/" + group3.substring(0, 3) + "/" + groupTop));
-                    addIfNotContains(new ItemGroup(k_grtov, null, group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + groupTop));
-                }
+                if (!group2.isEmpty() && (!group3.isEmpty())) {
 
-            } else {
-                if (k_grtov.endsWith("."))
-                    k_grtov = k_grtov.substring(0, k_grtov.length() - 1);
-
-                int dotCount = 0;
-                for (char c : k_grtov.toCharArray())
-                    if (c == '.')
-                        dotCount++;
-
-                if (!parents) {
-                    //sid - name - parentSID(null)
-                    addIfNotContains(new ItemGroup(k_grtov, pol_naim, null));
-                    if (dotCount == 1)
-                        addIfNotContains(new ItemGroup(group1, group1, null));
+                    if (!parents) {
+                        //id - name - idParent(null)
+                        addIfNotContains(new ItemGroup((group3.substring(0, 3) + "/" + groupTop), group3, null));
+                        addIfNotContains(new ItemGroup((group2 + "/" + group3.substring(0, 3) + "/" + groupTop), group2, null));
+                        addIfNotContains(new ItemGroup((group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + groupTop), group1, null));
+                        addIfNotContains(new ItemGroup(k_grtov, pol_naim, null));
+                    } else {
+                        //id - name(null) - idParent
+                        addIfNotContains(new ItemGroup((group3.substring(0, 3) + "/" + groupTop), null, groupTop));
+                        addIfNotContains(new ItemGroup((group2 + "/" + group3.substring(0, 3) + "/" + groupTop), null, group3.substring(0, 3) + "/" + groupTop));
+                        addIfNotContains(new ItemGroup((group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + groupTop), null, group2 + "/" + group3.substring(0, 3) + "/" + groupTop));
+                        addIfNotContains(new ItemGroup(k_grtov, null, group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + groupTop));
+                    }
 
                 } else {
-                    //sid - name(null) - parentSID
-                    addIfNotContains(new ItemGroup(k_grtov, null, group1));
-                    if (dotCount == 1)
-                        addIfNotContains(new ItemGroup(group1, null, groupTop));
+                    if (k_grtov.endsWith("."))
+                        k_grtov = k_grtov.substring(0, k_grtov.length() - 1);
+
+                    int dotCount = 0;
+                    for (char c : k_grtov.toCharArray())
+                        if (c == '.')
+                            dotCount++;
+
+                    if (!parents) {
+                        //sid - name - parentSID(null)
+                        addIfNotContains(new ItemGroup(k_grtov, pol_naim, null));
+                        if (dotCount == 1)
+                            addIfNotContains(new ItemGroup(group1, group1, null));
+
+                    } else {
+                        //sid - name(null) - parentSID
+                        addIfNotContains(new ItemGroup(k_grtov, null, group1));
+                        if (dotCount == 1)
+                            addIfNotContains(new ItemGroup(group1, null, groupTop));
+                    }
                 }
             }
         }
@@ -284,13 +288,30 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    private List<UserInvoiceDetail> importUserInvoicesFromDBF(String path) throws
+    private List<UserInvoiceDetail> importUserInvoicesFromDBF(String sprcontPath, String ostnPath) throws
             IOException, xBaseJException, ParseException, ScriptingErrorLog.SemanticErrorException {
 
-        if (!(new File(path).exists()))
-            throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
+        Map<String, String> contractSupplierMap = new HashMap<String, String>();
 
-        DBF importFile = new DBF(path);
+        if (new File(sprcontPath).exists()) {
+
+            DBF importFile = new DBF(sprcontPath);
+            int totalRecordCount = importFile.getRecordCount();
+
+            for (int i = 0; i < totalRecordCount; i++) {
+                importFile.read();
+                String idLegalEntity1 = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
+                String idLegalEntity2 = new String(importFile.getField("DPRK").getBytes(), "Cp1251").trim();
+                String idContract = new String(importFile.getField("K_CONT").getBytes(), "Cp1251").trim();
+                contractSupplierMap.put(idContract, idLegalEntity1.startsWith("ПС") ? idLegalEntity1 : idLegalEntity2);
+            }
+        }
+
+        if (!(new File(ostnPath).exists()))
+            throw new RuntimeException("Запрашиваемый файл " + ostnPath + " не найден");
+
+
+        DBF importFile = new DBF(ostnPath);
         int totalRecordCount = importFile.getRecordCount();
 
         List<UserInvoiceDetail> data = new ArrayList<UserInvoiceDetail>();
@@ -303,34 +324,40 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             String[] seriesNumber = post_dok.split("-");
             String number = seriesNumber[0];
             String series = seriesNumber.length == 1 ? null : seriesNumber[1];
-            String itemID = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
-            String userInvoiceDetailSID = "SD_" + number + series + itemID;
+            String idItem = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
+            String idUserInvoiceDetail = number + series + idItem;
             String dateString = new String(importFile.getField("D_PRIH").getBytes(), "Cp1251").trim();
             Date dateShipment = "".equals(dateString) ? null : new java.sql.Date(DateUtils.parseDate(dateString, new String[]{"yyyyMMdd"}).getTime());
             Double quantityShipmentDetail = new Double(new String(importFile.getField("N_MAT").getBytes(), "Cp1251").trim());
-            String supplierID = new String(importFile.getField("K_POST").getBytes(), "Cp1251").trim();
+            String idSupplier = new String(importFile.getField("K_POST").getBytes(), "Cp1251").trim();
             if (userInvoiceSupplierMap.containsKey(post_dok))
-                supplierID = userInvoiceSupplierMap.get(post_dok);
+                idSupplier = userInvoiceSupplierMap.get(post_dok);
             else
-                userInvoiceSupplierMap.put(post_dok, supplierID);
+                userInvoiceSupplierMap.put(post_dok, idSupplier);
 
-            String warehouseID = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
-            String supplierWarehouse = supplierID + "WH";
+            String idWarehouse = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
+            String supplierWarehouse = idSupplier + "WH";
             Double priceShipmentDetail = new Double(new String(importFile.getField("N_IZG").getBytes(), "Cp1251").trim());
             Double retailPriceShipmentDetail = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
             Double retailMarkupShipmentDetail = new Double(new String(importFile.getField("N_TN").getBytes(), "Cp1251").trim());
-            String contractID = new String(importFile.getField("K_CONT").getBytes(), "Cp1251").trim();
-
-            if ((seriesNumber.length != 1) && (supplierID.startsWith("ПС")) && (quantityShipmentDetail != 0))
-                data.add(new UserInvoiceDetail(number, series, true, true, userInvoiceDetailSID, dateShipment, itemID, false,
-                        quantityShipmentDetail, supplierID, warehouseID, supplierWarehouse, priceShipmentDetail, null, null, null, null,
-                        retailPriceShipmentDetail, retailMarkupShipmentDetail, null, contractID.isEmpty() ? null : contractID));
+            String idContract;
+            try {
+                idContract = new String(importFile.getField("K_CONT").getBytes(), "Cp1251").trim();
+                idContract = idSupplier.equals(contractSupplierMap.get(idContract)) ? idContract : null;
+            } catch (xBaseJException e) {
+                idContract = null;
+            }
+            if ((seriesNumber.length != 1) && (idSupplier.startsWith("ПС")) && (quantityShipmentDetail != 0))
+                data.add(new UserInvoiceDetail(number, series, true, true, idUserInvoiceDetail, dateShipment, idItem, false,
+                        quantityShipmentDetail, idSupplier, idWarehouse, supplierWarehouse, priceShipmentDetail, null, null, null, null,
+                        retailPriceShipmentDetail, retailMarkupShipmentDetail, null, idContract));
         }
         return data;
     }
 
 
-    private List<PriceListStore> importPriceListStoreFromDBF(String postvarPath, String strvarPath, Integer numberOfItems) throws
+    private List<PriceListStore> importPriceListStoreFromDBF(String postvarPath, String strvarPath,
+                                                             String prefixStore, Integer numberOfItems) throws
             IOException, xBaseJException, ParseException {
 
         if (!(new File(postvarPath).exists()))
@@ -353,7 +380,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             String dateString = new String(importPostvarFile.getField("DBANNED").getBytes(), "Cp1251").trim();
             Date date = dateString.isEmpty() ? null : DateUtils.parseDate(dateString, new String[]{"yyyymmdd"});
 
-            postvarMap.put(supplier+item, new Object[]{price, date});
+            postvarMap.put(supplier + item, new Object[]{price, date});
         }
 
         List<PriceListStore> data = new ArrayList<PriceListStore>();
@@ -370,15 +397,16 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
             String supplier = new String(importStrvarFile.getField("K_ANA").getBytes(), "Cp1251").trim();
             String departmentStore = new String(importStrvarFile.getField("K_SKL").getBytes(), "Cp1251").trim();
+            departmentStore = departmentStore.replace("МГ", prefixStore);
             String item = new String(importStrvarFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             String currency = "BLR";
             Double price = new Double(new String(importStrvarFile.getField("N_CENU").getBytes(), "Cp1251").trim());
 
-            Object[] priceDate = postvarMap.get(supplier+item);
+            Object[] priceDate = postvarMap.get(supplier + item);
             if (departmentStore.length() >= 2 && supplier.startsWith("ПС")) {
                 Date date = priceDate == null ? null : (Date) priceDate[1];
                 price = (price == 0) ? (priceDate == null ? null : (Double) priceDate[0]) : price;
-                if (price!=null && (date == null || date.before(new Date(System.currentTimeMillis()))))
+                if (price != null && (date == null || date.before(new Date(System.currentTimeMillis()))))
                     data.add(new PriceListStore(supplier + departmentStore, item, supplier, departmentStore, currency, price, true, true));
             }
         }
@@ -508,7 +536,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
 
     private List<DepartmentStore> importDepartmentStoresFromDBF(String path, Boolean importInactive, String
-            pathStores) throws IOException, xBaseJException {
+            pathStores, String prefixStore) throws IOException, xBaseJException {
 
         if (!(new File(path).exists()))
             throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
@@ -535,6 +563,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             if ("СК".equals(k_ana.substring(0, 2)) && (!inactiveItem || importInactive)) {
                 String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
                 String store = storeDepartmentStoreMap.get(k_ana);
+                store = store == null ? null : store.replace("МГ", prefixStore);
                 String[] ownership = getAndTrimOwnershipFromName(name);
                 if (store != null)
                     data.add(new DepartmentStore(k_ana, ownership[2], store));
@@ -599,6 +628,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
         String shortNameCurrency = "BLR";
 
         List<Contract> contractsList = new ArrayList<Contract>();
+        List<String> contractIDs = new ArrayList<String>();
 
         for (int i = 0; i < recordCount; i++) {
 
@@ -612,10 +642,13 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             java.sql.Date dateFrom = new java.sql.Date(DateUtils.parseDate(new String(importFile.getField("D_VV").getBytes(), "Cp1251").trim(), new String[]{"yyyymmdd"}).getTime());
             java.sql.Date dateTo = new java.sql.Date(DateUtils.parseDate(new String(importFile.getField("D_END").getBytes(), "Cp1251").trim(), new String[]{"yyyymmdd"}).getTime());
 
-            if (legalEntity1ID.startsWith("ПС"))
-                contractsList.add(new Contract(contractID, legalEntity1ID, legalEntity2ID, number, dateFrom, dateTo, shortNameCurrency));
-            else
-                contractsList.add(new Contract(contractID, legalEntity2ID, legalEntity1ID, number, dateFrom, dateTo, shortNameCurrency));
+            if (!contractIDs.contains(contractID)) {
+                if (legalEntity1ID.startsWith("ПС"))
+                    contractsList.add(new Contract(contractID, legalEntity1ID, legalEntity2ID, number, dateFrom, dateTo, shortNameCurrency));
+                else
+                    contractsList.add(new Contract(contractID, legalEntity2ID, legalEntity1ID, number, dateFrom, dateTo, shortNameCurrency));
+                contractIDs.add(contractID);
+            }
         }
         return contractsList;
     }

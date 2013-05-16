@@ -110,7 +110,7 @@ public class ImportXMLDeclarationActionProperty extends ScriptingActionProperty 
                     ImportField codeCustomsGroupField = new ImportField(LM.findLCPByCompoundName("codeCustomsGroupDeclarationDetail"));
                     ImportField sidOrigin2CountryField = new ImportField(LM.findLCPByCompoundName("sidOrigin2CountryDeclarationDetail"));
                     ImportField nameUOMField = new ImportField(LM.findLCPByCompoundName("name"));
-                    ImportField UOMIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+                    ImportField UOMIDField = new ImportField(LM.findLCPByCompoundName("idUOM"));
 
                     List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
@@ -124,7 +124,7 @@ public class ImportXMLDeclarationActionProperty extends ScriptingActionProperty 
                             LM.findLCPByCompoundName("countrySIDOrigin2").getMapping(sidOrigin2CountryField));
 
                     ImportKey<?> UOMKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("UOM"),
-                            LM.findLCPByCompoundName("externalizableSID").getMapping(UOMIDField));
+                            LM.findLCPByCompoundName("UOMId").getMapping(UOMIDField));
 
                     properties.add(new ImportProperty(userNumberField, LM.findLCPByCompoundName("userNumberDeclarationDetail").getMapping(declarationDetailKey)));
                     properties.add(new ImportProperty(nameCustomsField, LM.findLCPByCompoundName("nameCustomsDeclarationDetail").getMapping(declarationDetailKey)));
@@ -135,7 +135,7 @@ public class ImportXMLDeclarationActionProperty extends ScriptingActionProperty 
 
                     properties.add(new ImportProperty(nameUOMField, LM.findLCPByCompoundName("name").getMapping(UOMKey)));
                     properties.add(new ImportProperty(nameUOMField, LM.findLCPByCompoundName("shortName").getMapping(UOMKey)));
-                    properties.add(new ImportProperty(UOMIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(UOMKey)));
+                    properties.add(new ImportProperty(UOMIDField, LM.findLCPByCompoundName("idUOM").getMapping(UOMKey)));
                     properties.add(new ImportProperty(UOMIDField, getLCP("UOMDeclarationDetail").getMapping(declarationDetailKey),
                             LM.object(getClass("UOM")).getMapping(UOMKey)));
 

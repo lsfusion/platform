@@ -183,7 +183,6 @@ V0.2.1 {
     CLASS Currency_currency -> Currency_Currency
     CLASS Currency_typeExchange -> Currency_TypeExchange
     CLASS Historizable_historizable -> Historizable_Historizable
-    CLASS Integration_externalizable -> Integration_Externalizable
     CLASS Numerator_numerator -> Numerator_Numerator
     CLASS Utils_doubleNamed -> Utils_DoubleNamed
     CLASS Utils_yesNo -> Utils_YesNo

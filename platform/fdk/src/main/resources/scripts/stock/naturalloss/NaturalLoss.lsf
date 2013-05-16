@@ -6,17 +6,17 @@ GROUP rateGroup 'Нормы' : public;
 
 // ----------------------------------- Справочник норм естественной убыли -------------------------------------------- //
 
-CLASS NaturalLossGroup 'Группа естественной убыли': Externalizable;
+CLASS NaturalLossGroup 'Группа естественной убыли';
 TABLE naturalLossGroup(NaturalLossGroup);
 
 nameNaturalLossGroup 'Наименование' = DATA ISTRING[110](NaturalLossGroup);
 
-CLASS SubNaturalLossGroup 'Группа естественной убыли': Externalizable;
+CLASS SubNaturalLossGroup 'Группа естественной убыли';
 TABLE subNaturalLossGroup(SubNaturalLossGroup);
 
 nameSubNaturalLossGroup 'Наименование' = DATA ISTRING[110](SubNaturalLossGroup);
 
-CLASS SubNaturalLossGroupDetail 'Строка группы естественной убыли' : Externalizable;
+CLASS SubNaturalLossGroupDetail 'Строка группы естественной убыли';
 TABLE subNaturalLossGroupDetail(SubNaturalLossGroupDetail);
 
 parentNaturalLossGroup = DATA NaturalLossGroup (SubNaturalLossGroup);
@@ -190,8 +190,8 @@ DESIGN naturalLossGroups FROM DEFAULT {
 
 //------------------------------------- Ведомость расчета естественной убыли ----------------------------------//
 
-CLASS NaturalLoss 'Ведомость естественной убыли' : Historizable, Externalizable, NumberedObject;
-CLASS NaturalLossDetail 'Строка ведомости естественной убыли': Externalizable;
+CLASS NaturalLoss 'Ведомость естественной убыли' : Historizable, NumberedObject;
+CLASS NaturalLossDetail 'Строка ведомости естественной убыли';
 CLASS NaturalLossPosted 'Проведенная ведомость естественной убыли' : NaturalLoss, PostedObject;
 
 @defineDocument(naturalLoss);

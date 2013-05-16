@@ -2,7 +2,7 @@ package fdk.integration;
 
 
 public class PriceListStore {
-    public String userPriceListID;
+    public String idUserPriceList;
     public String item;
     public String supplier;
     public String departmentStore;
@@ -11,9 +11,9 @@ public class PriceListStore {
     public Boolean inPriceList;
     public Boolean inPriceListStock;
 
-    public PriceListStore(String userPriceListID, String item, String supplier, String departmentStore, String currency,
+    public PriceListStore(String idUserPriceList, String item, String supplier, String departmentStore, String currency,
                           Double price, Boolean inPriceList, Boolean inPriceListStock) {
-        this.userPriceListID = userPriceListID;
+        this.idUserPriceList = idUserPriceList;
         this.item = item;
         this.supplier = supplier;
         this.departmentStore = departmentStore;

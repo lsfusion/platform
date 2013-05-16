@@ -36,7 +36,7 @@ FORM statisticGroupTypes 'Типы классификаторов статист
     PROPERTIES(t) ADDFORM, EDITFORM, DELETE
 ;
 
-CLASS StatisticGroup 'Статистическая группа' : Externalizable;
+CLASS StatisticGroup 'Статистическая группа';
 TABLE statisticGroup(StatisticGroup);
 
 nameStatisticGroup 'Наименование' = DATA ISTRING[100](StatisticGroup);

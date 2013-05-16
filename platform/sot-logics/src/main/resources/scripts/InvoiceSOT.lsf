@@ -1,6 +1,6 @@
 MODULE InvoiceSOT;
 
-REQUIRE System, Integration, PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation, Warehouse,
+REQUIRE System, Integration, Import, PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation, Warehouse,
         PurchaseManufacturingPrice, PurchaseCertificateSOT, PurchaseInvoiceCharge, PurchaseInvoiceWholesalePrice;
 
 NAMESPACE PurchaseInvoice;
@@ -44,13 +44,13 @@ overShipmentPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetai
     WHEN customerStockUserInvoiceDetail(detail) IS Warehouse;
 
 //Задание торговой надбавки в документе
-retailMarkupSkuUserInvoiceDetail 'Надбавка,% (розничная)' (detail) = markupCalcPriceListTypeSku (externalizableSID('cplt_retail'), Purchase.skuUserInvoiceDetail(detail));
+retailMarkupSkuUserInvoiceDetail 'Надбавка,% (розничная)' (detail) = markupCalcPriceListTypeSku (calcPriceListTypeId('retail'), Purchase.skuUserInvoiceDetail(detail));
 toShowRetailMarkupSkuUserInvoice 'Розничная надбавка' (invoice) = DATA BOOLEAN (Purchase.UserInvoice) IN documentPrmGroup;
 
 changeRetailMarkupSkuUserInvoiceDetail = ACTION(detail) {
     REQUEST NUMERIC[8,2] INPUT;
     IF requestedNumeric() THEN {
-        SET dataMarkupCalcPriceListTypeSku(t, s) <- requestedNumeric() WHERE sidExternalizable(t) == 'cplt_retail' AND s == Purchase.skuUserInvoiceDetail(detail);
+        SET dataMarkupCalcPriceListTypeSku(t, s) <- requestedNumeric() WHERE idCalcPriceListType(t) == 'retail' AND s == Purchase.skuUserInvoiceDetail(detail);
     }
 }
 

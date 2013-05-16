@@ -19,7 +19,7 @@ nameStock 'Наименование' = ABSTRACT ISTRING[150](Stock) PERSISTENT I
 stockGroupStock (stock) = ABSTRACT StockGroup (Stock) PERSISTENT INDEXED;
 nameStockGroupStock 'Группа' (stock) = nameStockGroup(stockGroupStock (stock));
 
-legalEntityStock (stock) = ABSTRACT LegalEntity (Stock) PERSISTENT NOT NULL INDEXED;
+legalEntityStock (stock) = ABSTRACT LegalEntity (Stock) PERSISTENT INDEXED;
 nameLegalEntityStock 'Компания' (stock) = nameLegalEntity(legalEntityStock(stock));
 
 quantityDaysCloseOrdersStock 'Срок автоматического закрытия заказов' = ABSTRACT INTEGER(Stock) PERSISTENT;

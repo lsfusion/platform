@@ -820,20 +820,20 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
         if (data != null) {
 
-            ImportField legalEntityIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
-            ImportField warehouseIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+            ImportField legalEntityIDField = new ImportField(LM.findLCPByCompoundName("idLegalEntity"));
+            ImportField warehouseIDField = new ImportField(LM.findLCPByCompoundName("idWarehouse"));
             ImportField dataField = new ImportField(LM.findLCPByCompoundName("mag2LegalEntityStock"));
 
             ImportKey<?> legalEntityKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("LegalEntity"),
-                    LM.findLCPByCompoundName("externalizableSID").getMapping(legalEntityIDField));
+                    LM.findLCPByCompoundName("legalEntityId").getMapping(legalEntityIDField));
 
             ImportKey<?> warehouseKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Warehouse"),
-                    LM.findLCPByCompoundName("externalizableSID").getMapping(warehouseIDField));
+                    LM.findLCPByCompoundName("warehouseId").getMapping(warehouseIDField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-            props.add(new ImportProperty(legalEntityIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(legalEntityKey)));
-            props.add(new ImportProperty(warehouseIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(warehouseKey)));
+            props.add(new ImportProperty(legalEntityIDField, LM.findLCPByCompoundName("idLegalEntity").getMapping(legalEntityKey)));
+            props.add(new ImportProperty(warehouseIDField, LM.findLCPByCompoundName("idWarehouse").getMapping(warehouseKey)));
             props.add(new ImportProperty(dataField, LM.findLCPByCompoundName("mag2LegalEntityStock").getMapping(legalEntityKey, warehouseKey)));
 
             ImportTable table = new ImportTable(Arrays.asList(legalEntityIDField, warehouseIDField,
@@ -884,7 +884,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String mag2LegalEntityStock = reader.readLine();
 
                     if (warehousesSWTP.contains(warehouseID))
-                        data.add(Arrays.asList((Object) ("L" + legalEntityID), "WHS" + warehouseID, mag2LegalEntityStock));
+                        data.add(Arrays.asList((Object) legalEntityID, "S" + warehouseID, mag2LegalEntityStock));
                 }
             }
         }
@@ -897,32 +897,32 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         List<List<Object>> data = importSotUOMItemsFromFile(sediPath, ostPath, numberOfItems);
 
         if (data != null) {
-            ImportField UOMField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
-            ImportField sotUOMIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
-            ImportField netWeightField = new ImportField(LM.findLCPByCompoundName("netWeightSotUOM"));
-            ImportField nameField = new ImportField(LM.findLCPByCompoundName("nameSotUOM"));
-            ImportField itemField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+            ImportField idUOMField = new ImportField(LM.findLCPByCompoundName("idUOM"));
+            ImportField idSotUOMField = new ImportField(LM.findLCPByCompoundName("idSotUOM"));
+            ImportField netWeightSotUOMField = new ImportField(LM.findLCPByCompoundName("netWeightSotUOM"));
+            ImportField nameSotUOMField = new ImportField(LM.findLCPByCompoundName("nameSotUOM"));
+            ImportField idItemField = new ImportField(LM.findLCPByCompoundName("idItem"));
 
             ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Item"),
-                    LM.findLCPByCompoundName("externalizableSID").getMapping(itemField));
+                    LM.findLCPByCompoundName("itemId").getMapping(idItemField));
 
             ImportKey<?> UOMKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("UOM"),
-                    LM.findLCPByCompoundName("externalizableSID").getMapping(UOMField));
+                    LM.findLCPByCompoundName("UOMId").getMapping(idUOMField));
 
             ImportKey<?> sotUOMKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("SotUOM"),
-                    LM.findLCPByCompoundName("externalizableSID").getMapping(sotUOMIDField));
+                    LM.findLCPByCompoundName("sotUOMId").getMapping(idSotUOMField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-            props.add(new ImportProperty(sotUOMIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(sotUOMKey)));
-            props.add(new ImportProperty(netWeightField, LM.findLCPByCompoundName("netWeightSotUOM").getMapping(sotUOMKey)));
-            props.add(new ImportProperty(nameField, LM.findLCPByCompoundName("nameSotUOM").getMapping(sotUOMKey)));
-            props.add(new ImportProperty(UOMField, LM.findLCPByCompoundName("UOMSotUOM").getMapping(sotUOMKey),
+            props.add(new ImportProperty(idSotUOMField, LM.findLCPByCompoundName("idSotUOM").getMapping(sotUOMKey)));
+            props.add(new ImportProperty(netWeightSotUOMField, LM.findLCPByCompoundName("netWeightSotUOM").getMapping(sotUOMKey)));
+            props.add(new ImportProperty(nameSotUOMField, LM.findLCPByCompoundName("nameSotUOM").getMapping(sotUOMKey)));
+            props.add(new ImportProperty(idUOMField, LM.findLCPByCompoundName("UOMSotUOM").getMapping(sotUOMKey),
                     LM.object(LM.findClassByCompoundName("UOM")).getMapping(UOMKey)));
-            props.add(new ImportProperty(sotUOMIDField, LM.findLCPByCompoundName("sotUOMItem").getMapping(itemKey),
+            props.add(new ImportProperty(idSotUOMField, LM.findLCPByCompoundName("sotUOMItem").getMapping(itemKey),
                     LM.object(LM.findClassByCompoundName("SotUOM")).getMapping(sotUOMKey)));
 
-            ImportTable table = new ImportTable(Arrays.asList(sotUOMIDField, UOMField, netWeightField, nameField, itemField), data);
+            ImportTable table = new ImportTable(Arrays.asList(idSotUOMField, idUOMField, netWeightSotUOMField, nameSotUOMField, idItemField), data);
 
             DataSession session = context.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(UOMKey, sotUOMKey, itemKey), props);
@@ -960,10 +960,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String uomName = uomObject == null ? null : uomObject.uomName;
                     String uomFullName = uomObject == null ? "" : uomObject.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
-                    data.add(Arrays.asList((Object) (uomID == null ? null : "UOMS" + uomID),
-                            uomName == null ? null : "UOM" + uomName,
+                    data.add(Arrays.asList((Object) (uomID == null ? null : "S" + uomID), uomName,
                             uomObject == null ? null : uomObject.netWeight,
-                            uomObject == null ? null : uomObject.uomFullName, "I" + itemID));
+                            uomObject == null ? null : uomObject.uomFullName, itemID));
                 }
             }
         }
@@ -976,16 +975,16 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             List<List<Object>> data = importSOTUserInvoicesFromFile(sediPath, ostPath, startDate, numberOfItems);
             if (data != null) {
 
-                ImportField itemField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
-                ImportField userInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+                ImportField idItemField = new ImportField(LM.findLCPByCompoundName("idItem"));
+                ImportField userInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("idUserInvoiceDetail"));
                 ImportField sotSIDField = new ImportField(LM.findLCPByCompoundName("sotSIDItem"));
                 ImportField priceListTextUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("priceListTextUserInvoiceDetail"));
 
                 ImportKey<?> userInvoiceDetailKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Purchase.UserInvoiceDetail"),
-                        LM.findLCPByCompoundName("externalizableSID").getMapping(userInvoiceDetailField));
+                        LM.findLCPByCompoundName("userInvoiceDetailId").getMapping(userInvoiceDetailField));
 
                 ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Item"),
-                        LM.findLCPByCompoundName("externalizableSID").getMapping(itemField));
+                        LM.findLCPByCompoundName("itemId").getMapping(idItemField));
 
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -993,7 +992,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 props.add(new ImportProperty(sotSIDField, LM.findLCPByCompoundName("sotSIDUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
                 props.add(new ImportProperty(priceListTextUserInvoiceDetailField, LM.findLCPByCompoundName("priceListTextUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
 
-                ImportTable table = new ImportTable(Arrays.asList(itemField, userInvoiceDetailField,
+                ImportTable table = new ImportTable(Arrays.asList(idItemField, userInvoiceDetailField,
                         sotSIDField, priceListTextUserInvoiceDetailField), data);
 
                 DataSession session = context.createSession();
@@ -1060,7 +1059,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
 
                     if (isCorrectUserInvoiceDetail(quantity, startDate, date, groupID))
-                        SOTUserInvoicesList.add(Arrays.asList((Object) ("I" + itemID), "UID" + supplierWarehouseID + "/" + trimWarehouseSID(customerWarehouseID) + "/" + dateField + "/" + pnt13 + pnt48,
+                        SOTUserInvoicesList.add(Arrays.asList((Object) itemID, supplierWarehouseID + "/" + trimWarehouseSID(customerWarehouseID) + "/" + dateField + "/" + pnt13 + pnt48,
                                 pnt13 + pnt48, priceListText));
                 }
             }

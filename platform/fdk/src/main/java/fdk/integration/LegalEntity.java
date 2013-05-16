@@ -1,7 +1,7 @@
 package fdk.integration;
 
 public class LegalEntity {
-    public String legalEntityID;
+    public String idLegalEntity;
     public String nameLegalEntity;
     public String address;
     public String unp;
@@ -11,19 +11,19 @@ public class LegalEntity {
     public String nameOwnership;
     public String shortNameOwnership;
     public String account;
-    public String chainStoresID;
+    public String idChainStores;
     public String nameChainStores;
-    public String bankID;
+    public String idBank;
     public String country;
     public Boolean isSupplierLegalEntity;
     public Boolean isCompanyLegalEntity;
     public Boolean isCustomerLegalEntity;
 
-    public LegalEntity(String legalEntityID, String nameLegalEntity, String address, String unp, String okpo, String phone,
-                       String email, String nameOwnership, String shortNameOwnership, String account, String chainStoresID,
-                       String nameChainStores, String bankID, String country, Boolean supplierLegalEntity,
+    public LegalEntity(String idLegalEntity, String nameLegalEntity, String address, String unp, String okpo, String phone,
+                       String email, String nameOwnership, String shortNameOwnership, String account, String idChainStores,
+                       String nameChainStores, String idBank, String country, Boolean supplierLegalEntity,
                        Boolean companyLegalEntity, Boolean customerLegalEntity) {
-        this.legalEntityID = legalEntityID;
+        this.idLegalEntity = idLegalEntity;
         this.nameLegalEntity = nameLegalEntity;
         this.address = address;
         this.unp = unp;
@@ -33,9 +33,9 @@ public class LegalEntity {
         this.nameOwnership = nameOwnership;
         this.shortNameOwnership = shortNameOwnership;
         this.account = account;
-        this.chainStoresID = chainStoresID;
+        this.idChainStores = idChainStores;
         this.nameChainStores = nameChainStores;
-        this.bankID = bankID;
+        this.idBank = idBank;
         this.country = country;
         this.isSupplierLegalEntity = supplierLegalEntity;
         this.isCompanyLegalEntity = companyLegalEntity;

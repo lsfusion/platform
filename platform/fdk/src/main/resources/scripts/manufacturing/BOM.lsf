@@ -219,7 +219,7 @@ descriptionBOM 'Название спецификации' (BOM) =
     'Спецификация', nameBOM(BOM), seriesNumberObject(BOM)) IF BOM IS BOM MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
 // ------------- Изделия ----------- //
-CLASS Product 'Изделие' : Externalizable, Material;
+CLASS Product 'Изделие' : Material;
 TABLE product (Product);
 
 EXTEND FORM materials

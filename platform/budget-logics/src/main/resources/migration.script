@@ -31,13 +31,10 @@ V0.4 {
 }
 
 V0.5 {
-    CLASS externalObject -> Integration_externalizable
     CLASS historyObject -> Historizable_historizable
 
-    TABLE externalObject -> Integration_externalizable
     TABLE historyObject ->  Historizable_historizable
 
-    PROPERTY extSID -> Integration_sidExternalizable
     PROPERTY timeCreated -> Historizable_timeCreatedHistorizable
     PROPERTY userCreated -> Historizable_userCreatedHistorizable
     PROPERTY computerCreated -> Historizable_computerCreatedHistorizable

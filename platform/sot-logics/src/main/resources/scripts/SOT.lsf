@@ -2,6 +2,7 @@ MODULE SOT;
 
 REQUIRE System,
         Integration,
+        Import,
         Item,
         LegalEntity,
         PurchaseInvoice,
@@ -16,8 +17,10 @@ REQUIRE System,
         PriceListStock,
         MasterData;
 
-CLASS SotUOM 'Единица измерений SOT' : Externalizable;
+CLASS SotUOM 'Единица измерений SOT';
 TABLE sotUOM(SotUOM);
+
+@defineExternalizable(sotUOM, STRING[100]);
 
 nameSotUOM 'Наименование' (sotUOM) = DATA STRING[100](SotUOM) IN base;
 
@@ -47,12 +50,12 @@ mag2Stock 'Код MAG2' (stock) = mag2LegalEntityStock(legalEntityStock(stock), 
 codeOperation 'Код операции' = DATA STRING[2] (Sale.Operation);
 
 EXTEND FORM item PROPERTIES(i) BEFORE nameUOMItem(i) nameSotUOMItem SHOWIF showUOMItem(i);
-EXTEND FORM items PROPERTIES(i) dateTimeLastMovedSku, sotSIDItem, sidExternalizable;
+EXTEND FORM items PROPERTIES(i) dateTimeLastMovedSku, sotSIDItem, idItem;
 
 EXTEND FORM Sale.dialogOperations PROPERTIES(o) codeOperation;
 
 EXTEND FORM warehouses
-    PROPERTIES (w) READONLY mag2Stock BEFORE deletew//, sidExternalizable BEFORE delete(w)
+    PROPERTIES (w) READONLY mag2Stock BEFORE deletew
 ;
 
 EXTEND FORM batches
@@ -61,13 +64,13 @@ EXTEND FORM batches
 
 FORM sotUOMs 'Единицы измерений SOT'
     OBJECTS su=SotUOM
-    PROPERTIES(su) sidExternalizable, nameSotUOM, netWeightSotUOM, nameUOMSotUOM, ADDOBJ, DELETESESSION
+    PROPERTIES(su) idSotUOM, nameSotUOM, netWeightSotUOM, nameUOMSotUOM, ADDOBJ, DELETESESSION
 
     DIALOG SotUOM OBJECT su
 ;
 
 EXTEND FORM itemGroups
-    PROPERTIES (g) READONLY sidExternalizable BEFORE deleteg
+    PROPERTIES (g) READONLY idItemGroup BEFORE deleteg
 ;
 
 changeClassStock 'Сделать магазином' = ACTION (warehouse) NEWSESSION AUTOAPPLY {

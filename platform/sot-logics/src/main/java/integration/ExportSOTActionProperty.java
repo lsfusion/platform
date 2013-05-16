@@ -148,12 +148,12 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
                         DataObject itemObject = new DataObject(sku, (ConcreteClass) LM.findClassByCompoundName("Item"));
 
                         Object uomObject = LM.findLCPByCompoundName("sotUOMItem").read(context, itemObject);
-                        String uomID = uomObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(uomObject, (ConcreteClass) LM.findClassByCompoundName("SotUOM")));
+                        String uomID = uomObject == null ? null : (String) LM.findLCPByCompoundName("idUOM").read(context, new DataObject(uomObject, (ConcreteClass) LM.findClassByCompoundName("SotUOM")));
                         Object itemGroupValue = LM.findLCPByCompoundName("itemGroupItem").read(context, itemObject);
                         DataObject itemGroupObject = itemGroupValue == null ? null : new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("ItemGroup"));
-                        String itemGroupID = itemGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("ItemGroup")));
+                        String itemGroupID = itemGroupObject == null ? null : (String) LM.findLCPByCompoundName("idItemGroup").read(context, new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("ItemGroup")));
                         Object parentGroupObject = itemGroupObject == null ? null : LM.findLCPByCompoundName("parentItemGroup").read(context, itemGroupObject);
-                        String parentGroupID = parentGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(parentGroupObject, (ConcreteClass) LM.findClassByCompoundName("ItemGroup")));
+                        String parentGroupID = parentGroupObject == null ? null : (String) LM.findLCPByCompoundName("idItemGroup").read(context, new DataObject(parentGroupObject, (ConcreteClass) LM.findClassByCompoundName("ItemGroup")));
 
                         String nameSku = (String) uidValues.get("Sale.nameSkuInvoiceDetail");
                         Double price = (Double) uidValues.get("Sale.RRPPriceInvoiceDetail");

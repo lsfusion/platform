@@ -490,24 +490,24 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         List<List<Object>> data = importSotUOMItemsFromFile(stmcPath);
 
         if (data != null) {
-            ImportField sotUOMIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
-            ImportField itemField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+            ImportField idSotUOMField = new ImportField(LM.findLCPByCompoundName("idSotUOM"));
+            ImportField itemField = new ImportField(LM.findLCPByCompoundName("idItem"));
             ImportField weightItemField = new ImportField(LM.findLCPByCompoundName("netWeightItem"));
 
             ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Item"),
-                    LM.findLCPByCompoundName("externalizableSID").getMapping(itemField));
+                    LM.findLCPByCompoundName("idItem").getMapping(itemField));
 
             ImportKey<?> sotUOMKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("SotUOM"),
-                    LM.findLCPByCompoundName("externalizableSID").getMapping(sotUOMIDField));
+                    LM.findLCPByCompoundName("sotUOMId").getMapping(idSotUOMField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
             props.add(new ImportProperty(weightItemField, LM.findLCPByCompoundName("netWeightItem").getMapping(itemKey)));
             props.add(new ImportProperty(weightItemField, LM.findLCPByCompoundName("grossWeightItem").getMapping(itemKey)));
-            props.add(new ImportProperty(sotUOMIDField, LM.findLCPByCompoundName("sotUOMItem").getMapping(itemKey),
+            props.add(new ImportProperty(idSotUOMField, LM.findLCPByCompoundName("sotUOMItem").getMapping(itemKey),
                     LM.object(LM.findClassByCompoundName("SotUOM")).getMapping(sotUOMKey)));
 
-            ImportTable table = new ImportTable(Arrays.asList(sotUOMIDField, itemField, weightItemField), data);
+            ImportTable table = new ImportTable(Arrays.asList(idSotUOMField, itemField, weightItemField), data);
 
             DataSession session = context.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(sotUOMKey, itemKey), props);
@@ -554,8 +554,8 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         break;
                     case 38:
                         if ((itemName != null) && (!"".equals(itemName))) {
-                            data.add(Arrays.asList((Object) (uomID == null ? null : "UOMS" + uomID),
-                                    "I" + itemID, weight));
+                            data.add(Arrays.asList((Object) (uomID == null ? null : "S" + uomID),
+                                    itemID, weight));
                         }
                         uomID = null;
                         weight = null;

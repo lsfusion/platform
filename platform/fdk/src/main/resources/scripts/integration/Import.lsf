@@ -37,52 +37,59 @@ REQUIRE System,
         PurchaseInvoiceWholesalePrice,
         PurchaseManufacturingPrice;
 
-EXTEND CLASS Bank : Externalizable;
-EXTEND CLASS Barcode : Externalizable;
-EXTEND CLASS Brand : Externalizable;
-EXTEND CLASS CalcPriceListType : Externalizable;
-EXTEND CLASS DataPriceListType : Externalizable;
-EXTEND CLASS ChainStores : Externalizable;
-EXTEND CLASS DepartmentStore : Externalizable;
-EXTEND CLASS Employee : Externalizable;
-EXTEND CLASS Item : Externalizable;
-EXTEND CLASS ItemGroup : Externalizable;
-EXTEND CLASS LegalEntity : Externalizable;
-EXTEND CLASS Position : Externalizable;
-EXTEND CLASS Store : Externalizable;
-EXTEND CLASS StoreType : Externalizable;
-EXTEND CLASS UOM : Externalizable;
-EXTEND CLASS UserContractSku : Externalizable;
-EXTEND CLASS UserInvoiceDetail : Externalizable;
-EXTEND CLASS UserPriceList : Externalizable;
-EXTEND CLASS Ware : Externalizable;
-EXTEND CLASS Warehouse : Externalizable;
-EXTEND CLASS WarehouseGroup : Externalizable;
-EXTEND CLASS WriteOffRate : Externalizable;
+@defineExternalizable(bank, STRING[100]);
+@defineExternalizable(barcode, STRING[100], ext);
+@defineExternalizable(brand, STRING[100]);
+@defineExternalizable(calcPriceListType, STRING[100]);
+@defineExternalizable(dataPriceListType, STRING[100]);
+@defineExternalizable(chainStores, STRING[100]);
+@defineExternalizable(departmentStore, STRING[100]);
+@defineExternalizable(employee, STRING[100]);
+@defineExternalizable(item, STRING[100]);
+@defineExternalizable(itemGroup, STRING[100]);
+@defineExternalizable(legalEntity, STRING[100]);
+@defineExternalizable(position, STRING[100]);
+@defineExternalizable(store, STRING[100]);
+@defineExternalizable(storeType, STRING[100]);
+@defineExternalizable(UOM, STRING[100]);
+@defineExternalizable(userContractSku, STRING[100]);
+@defineExternalizable(userPriceList, STRING[100]);
+@defineExternalizable(userInvoiceDetail, STRING[100]);
+@defineExternalizable(ware, STRING[100]);
+@defineExternalizable(warehouse, STRING[100]);
+@defineExternalizable(warehouseGroup, STRING[100]);
+@defineExternalizable(writeOffRate, STRING[100]);
+
+showIDs 'Показывать ID объектов' = DATA BOOLEAN ();
 
 numberSeriesToUserInvoice (number, series) = GROUP AGGR userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS UserInvoice;
 
-userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP AGGR userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS UserPriceListDetail;
+userPriceListDetailIdSkuIdUserPriceList (sku, userPriceList) = GROUP AGGR userPriceListDetail BY idItem(skuUserPriceListDetail(userPriceListDetail)), idUserPriceList(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS UserPriceListDetail;
 
-storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP AGGR storeType BY nameStoreType(storeType), sidExternalizable(storeType) WHERE storeType IS StoreType; ////
+storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP AGGR storeType BY nameStoreType(storeType), idStoreType(storeType) WHERE storeType IS StoreType; ////
 
-sidExternalizableBatch 'Внешний код' (batch) = ABSTRACT STRING[100] (Batch) PERSISTENT;
+extIdBatch 'Внешний код' (batch) = ABSTRACT STRING[100] (Batch) PERSISTENT;
 
-sidExternalizableBatch (batch) += sidExternalizable (invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS ShipmentBatch;
+extIdBatch (batch) += idUserInvoiceDetail (invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS ShipmentBatch;
 
-EXTEND FORM legalEntities
-    PROPERTIES (l) READONLY sidExternalizable BEFORE deletel
-;
+EXTEND FORM options PROPERTIES() showIDs;
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(showIDs);
+    }
+}
 
-EXTEND FORM banks
-    PROPERTIES (b) READONLY sidExternalizable BEFORE deleteb
-;
-
-EXTEND FORM wares
-    PROPERTIES (w) READONLY sidExternalizable BEFORE deletew
-;
-
-EXTEND FORM warehouses
-    PROPERTIES (w) READONLY sidExternalizable BEFORE deletew
-;
-
+EXTEND FORM banks PROPERTIES (b) READONLY idBank BEFORE deleteb SHOWIF showIDs();
+EXTEND FORM brands PROPERTIES (t) READONLY idBrand SHOWIF showIDs();
+EXTEND FORM chainStores PROPERTIES (n) READONLY idChainStores SHOWIF showIDs();
+EXTEND FORM employees PROPERTIES (e) READONLY idEmployee SHOWIF showIDs();
+EXTEND FORM items PROPERTIES (i) READONLY idItem BEFORE deletei SHOWIF showIDs();
+EXTEND FORM itemGroups PROPERTIES (g) READONLY idItemGroup BEFORE deleteg SHOWIF showIDs();
+EXTEND FORM legalEntities PROPERTIES (l) READONLY idLegalEntity BEFORE deletel SHOWIF showIDs();
+EXTEND FORM stores PROPERTIES (d) READONLY idDepartmentStore SHOWIF showIDs();
+EXTEND FORM stores PROPERTIES (s) READONLY idStore SHOWIF showIDs();
+EXTEND FORM UOMs PROPERTIES (u) READONLY idUOM SHOWIF showIDs();
+EXTEND FORM positions PROPERTIES (of) READONLY idPosition SHOWIF showIDs();
+EXTEND FORM priceLists PROPERTIES (p) READONLY idUserPriceList SHOWIF showIDs();
+EXTEND FORM wares PROPERTIES (w) READONLY idWare BEFORE deletew SHOWIF showIDs();
+EXTEND FORM warehouses PROPERTIES (w) READONLY idWarehouse BEFORE deletew SHOWIF showIDs();
