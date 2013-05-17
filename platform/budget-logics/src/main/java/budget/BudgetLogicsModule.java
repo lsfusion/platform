@@ -1,5 +1,6 @@
 package budget;
 
+import platform.base.col.ListFact;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -14,6 +15,9 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LCP;
+import platform.server.logics.property.CalcPropertyRevImplement;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 
 import java.util.Arrays;
@@ -184,6 +188,14 @@ public class BudgetLogicsModule extends LogicsModule {
     LCP inactiveAbsOutPerson;
 
     LCP name;
+
+    public LCP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
+        return addCProp(genSID(), "sys", valueClass, value, params);
+    }
+    public LCP addCProp(String name, String caption, StaticClass valueClass, Object value, ValueClass... params) {
+        CalcPropertyRevImplement implement = DerivedProperty.createCProp(name, caption, valueClass, value, ListFact.toList(params).toIndexedMap());
+        return addProperty(privateGroup, false, new LCP<PropertyInterface>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
+    }
 
     @Override
     public void initProperties() {

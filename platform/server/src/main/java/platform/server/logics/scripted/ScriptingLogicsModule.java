@@ -1188,7 +1188,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             paramsList.add(whereProperty);
         }
         List<Object> resultParams = getParamsPlainList(paramsList);
-        LAP result = getAddObjectAction((CustomClass) cls, false, resultInterfaces.size(), whereProperty != null, toProperty != null || whereProperty == null, resultParams.toArray());
+        LAP result = getScriptAddObjectAction((CustomClass) cls, false, resultInterfaces.size(), whereProperty != null, toProperty != null || whereProperty == null, resultParams.toArray());
         return new LPWithParams(result, resultInterfaces);
     }
 
@@ -1235,7 +1235,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         List<Object> resultParams = getParamsPlainList(paramsList);
 
-        LAP<?> res = addChangeClassAProp(cls, resultInterfaces.size(), changedIndex, contextExtended, whereProperty != null, resultParams.toArray());
+        LAP<?> res = addChangeClassAProp(genSID(), cls, resultInterfaces.size(), changedIndex, contextExtended, whereProperty != null, resultParams.toArray());
         return new LPWithParams(res,  resultInterfaces);
     }
 

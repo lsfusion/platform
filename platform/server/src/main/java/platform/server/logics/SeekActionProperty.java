@@ -17,24 +17,15 @@ import java.sql.SQLException;
 
 public class SeekActionProperty extends SystemActionProperty {
 
-    private final CalcProperty property;
-
-    public SeekActionProperty(BaseClass baseClass, CalcProperty property) {
-        super("seek" + (property!=null ? "_" + property.getSID() : "" ),
-                ServerResourceBundle.getString("logics.property.actions.seekobject") + (property!=null ? "(" + property.getSID() + ")" : null ),
-                new ValueClass[]{baseClass});
-        this.property = property;
+    public SeekActionProperty(BaseClass baseClass) {
+        super("seek", ServerResourceBundle.getString("logics.property.actions.seekobject"), new ValueClass[]{baseClass});
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         context.emitExceptionIfNotInFormSession();
 
         FormInstance<?> form = context.getFormInstance();
-        ImCol<ObjectInstance> objects;
-        if (property != null)
-            objects = form.instanceFactory.getInstance(form.entity.getPropertyObject(property)).mapping.values();
-        else
-            objects = form.getObjects();
+        ImCol<ObjectInstance> objects = form.getObjects();
         ImMap<ClassPropertyInterface,DataObject> keys = context.getKeys();
         for (int i=0,size=keys.size();i<size;i++)
             if (context.getObjectInstance(keys.getKey(i)) == null) {

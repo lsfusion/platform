@@ -1,5 +1,6 @@
 package platform.server.logics;
 
+import platform.base.BaseUtils;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
@@ -17,7 +18,9 @@ import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
 import platform.server.data.Time;
 import platform.server.data.Union;
+import platform.server.data.expr.formula.CastFormulaImpl;
 import platform.server.data.expr.query.PartitionType;
+import platform.server.form.entity.ClassFormEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.navigator.NavigatorElement;
@@ -32,6 +35,7 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.FormAddObjectActionProperty;
 import platform.server.logics.property.actions.flow.ApplyActionProperty;
 import platform.server.logics.property.actions.flow.BreakActionProperty;
 import platform.server.logics.property.actions.flow.CancelActionProperty;
@@ -110,7 +114,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP seek;
 
     public LAP delete;
-    public LAP deleteApply;
 
     public LAP<?> apply;
     public LCP<?> canceled;
@@ -128,8 +131,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP defaultOverrideBackgroundColor;
     public LCP defaultForegroundColor;
     public LCP defaultOverrideForegroundColor;
-
-    public LCP dumb1;
 
     public SelectionPropertySet selection;
     public ObjectValuePropertySet objectValue;
@@ -201,8 +202,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initProperties() throws ScriptingErrorLog.SemanticErrorException {
-
-        dumb1 = dumb(1);
 
         canceled = addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("canceled", "Canceled", LogicalClass.instance)));
 
@@ -283,14 +282,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         subtractInteger = addSFProp("subtractInteger", "((prm1)-(prm2))", IntegerClass.instance, 2);
 
         // Константы
-        vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
-        vzero = addCProp("0", DoubleClass.instance, 0);
+        vtrue = addCProp(LogicalClass.instance, true);
+        vzero = addCProp(DoubleClass.instance, 0);
         vnull = addProperty(privateGroup, new LCP<PropertyInterface>(NullValueProperty.instance));
-
-        // Действия
-
-        delete = addAProp(baseClass.unknown.getChangeClassAction());
-        setDeleteActionOptions(delete);
 
         // Действия на форме
         formApply = addProperty(null, new LAP(new FormApplyActionProperty()));
@@ -302,8 +296,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formRefresh = addProperty(null, new LAP(new RefreshActionProperty()));
         formOk = addProperty(null, new LAP(new OkActionProperty()));
         formClose = addProperty(null, new LAP(new CloseActionProperty()));
-        
-        seek = addSAProp(null);
+
+        seek = addSAProp();
 
         staticName = addDProp(publicGroup, "staticName", getString("logics.static.name"), StringClass.get(250), baseClass);
         staticCaption = addDProp(publicGroup, "staticCaption", getString("logics.static.caption"), InsensitiveStringClass.get(100), baseClass);
@@ -638,14 +632,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     Collection<LCP[]> checkSUProps = new ArrayList<LCP[]>();
 
+    // --------------------------------- Identity Strong Lazy ----------------------------------- //
 
     @Override
-    @IdentityStrongLazy // для ID
+    @IdentityStrongLazy
     public LCP is(ValueClass valueClass) {
         return addProperty(null, new LCP<ClassPropertyInterface>(valueClass.getProperty()));
     }
     @Override
-    @IdentityStrongLazy // для ID
+    @IdentityStrongLazy
     public LCP object(ValueClass valueClass) {
         return addJProp(valueClass.toString(), and1, 1, is(valueClass), 1);
     }
@@ -654,6 +649,129 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     @IdentityStrongLazy
     public LCP not() {
         return addProperty(null, new LCP<PropertyInterface>(NotFormulaProperty.instance));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
+        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp(genSID(), "sys", valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
+        return addProperty(null, false, new LCP<T>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    protected <P extends PropertyInterface> LCP addCastProp(DataClass castClass) {
+        return addProperty(null, new LCP<FormulaImplProperty.Interface>(new FormulaImplProperty(genSID(), "castTo" + castClass.toString(), 1, new CastFormulaImpl(castClass))));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public SessionDataProperty getAddedObjectProperty() {
+        SessionDataProperty addedObject = new SessionDataProperty("addedObject", "Added Object", baseLM.baseClass);
+        addProperty(null, new LCP<ClassPropertyInterface>(addedObject));
+        return addedObject;
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public LCP getConfirmedProperty() {
+        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("confirmed", "Confirmed", LogicalClass.instance)));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public AnyValuePropertyHolder getChosenValueProperty() {
+        return addAnyValuePropertyHolder("chosen", "Chosen", StringClass.get(100));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public AnyValuePropertyHolder getRequestedValueProperty() {
+        return addAnyValuePropertyHolder("requested", "Requested");
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public LCP getRequestCanceledProperty() {
+        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("requestCanceled", "Request Input Canceled", LogicalClass.instance)));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public LCP getFormResultProperty() {
+        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("formResult", "Form Result", baseLM.formResult)));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    protected LAP<?> addSAProp() {
+        return addProperty(null, new LAP(new SeekActionProperty(baseLM.baseClass)));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public <T extends PropertyInterface> LCP<T> addOldProp(LCP<T> lp) {
+        return addProperty(null, new LCP<T>(lp.property.getOld(), lp.listInterfaces));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public <T extends PropertyInterface> LCP<T> addCHProp(LCP<T> lp, IncrementType type) {
+        addOldProp(lp); // регистрируем старое значение в списке свойств
+        return addProperty(null, new LCP<T>(lp.property.getChanged(type), lp.listInterfaces));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public <T extends PropertyInterface> LCP addClassProp(LCP<T> lp) {
+        return mapLProp(null, false, lp.property.getClassProperty().cloneProp(), lp);
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
+        String sid = "addObject" + "_" + BaseUtils.capitalize(cls.getSID()) +
+                                   "_" + BaseUtils.capitalize(formEntity.getSID()) +
+                                   "_" + BaseUtils.capitalize(obj.getSID());
+        return addAProp(new FormAddObjectActionProperty(sid, cls, obj));
+    }
+
+    @IdentityStrongLazy
+    public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
+        String sid = "delete" + (oldSession ? "Session" : "") + "_" + BaseUtils.capitalize(cls.getSID());
+
+        LAP res = addChangeClassAProp(oldSession ? sid : genSID(), baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
+        if (!oldSession) {
+            res = (LAP) addNewSessionAProp(null, sid, res.property.caption, res, true, false, SetFact.<SessionDataProperty>EMPTY(), SetFact.<SessionDataProperty>EMPTY());
+            res.setAskConfirm(true);
+        }
+        setDeleteActionOptions(res);
+        return res;
+    }
+
+    @IdentityStrongLazy
+    public LAP getAddFormAction(CustomClass cls, boolean oldSession) {
+        ClassFormEntity form = cls.getEditForm(baseLM);
+
+        String sid = "addForm" + (oldSession ? "Session" : "") + "_" + BaseUtils.capitalize(cls.getSID());
+
+        LAP property = addDMFAProp(publicGroup, sid, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
+                form.form, new ObjectEntity[]{},
+                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), !oldSession);
+        setAddFormActionProperties(property, form, oldSession);
+        return property;
+    }
+
+    @IdentityStrongLazy
+    public LAP getEditFormAction(CustomClass cls, boolean oldSession) {
+        ClassFormEntity form = cls.getEditForm(baseLM);
+
+        String sid = "editForm" + (oldSession ? "Session" : "") + "_" + BaseUtils.capitalize(cls.getSID());
+
+        LAP property = addDMFAProp(publicGroup, sid, ServerResourceBundle.getString("logics.edit"),
+                form.form, new ObjectEntity[]{form.object}, !oldSession);
+        setEditFormActionProperties(property);
+        return property;
     }
 
     //////////////////////////////////////////////////////////////////////////////

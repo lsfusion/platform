@@ -9,7 +9,7 @@ public class ListFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
     protected ListFormEntity(BaseLogicsModule<T> LM, CustomClass cls, String sID, String caption) {
         super(LM, cls, sID, caption);
 
-        LM.addObjectActions(this, object, true);
+        LM.addObjectActions(this, object);
     }
 
     public ListFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {

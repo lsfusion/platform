@@ -9,6 +9,7 @@ import jasperapi.PdfUtils;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
@@ -45,12 +46,10 @@ import platform.server.logics.*;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.AttachmentFormat;
 import platform.server.session.DataSession;
@@ -1689,6 +1688,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     public LCP name;
 
+    public LCP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
+        return addCProp(genSID(), "sys", valueClass, value, params);
+    }
+    public LCP addCProp(String name, String caption, StaticClass valueClass, Object value, ValueClass... params) {
+        CalcPropertyRevImplement implement = DerivedProperty.createCProp(name, caption, valueClass, value, ListFact.toList(params).toIndexedMap());
+        return addProperty(privateGroup, false, new LCP<PropertyInterface>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
+    }
+
+    public LAP delete;
+
     public void initProperties0() {
 
         name = addDProp(recognizeGroup, "name", "Имя", InsensitiveStringClass.get(110), named);
@@ -1700,11 +1709,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
         date.setEventChange(BL.timeLM.currentDate, is(transaction), 1);
 
+        delete = addAProp(baseClass.unknown.getChangeClassAction());
+        setDeleteActionOptions(delete);
+
         webHost = addDProp("webHost", "Web хост", StringClass.get(50));
 
         LCP charLength = BL.getModule("Utils").getLCPByName("charLength");
 
-        previousDate = addJProp("previousDate", "Вчерашняя дата", timeLM.subtractDate, BL.timeLM.currentDate, addCProp("1", IntegerClass.instance, 1));
+        previousDate = addJProp("previousDate", "Вчерашняя дата", timeLM.subtractDate, BL.timeLM.currentDate, addCProp(IntegerClass.instance, 1));
         monthInPreviousDate = addJProp("monthInPreviousDate", "Вчерашний месяц", timeLM.numberMonthInDate, previousDate);
         yearInPreviousDate = addJProp("yearInPreviousDate", "Вчерашний год", timeLM.yearInDate, previousDate);
 
@@ -4097,7 +4109,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         ConcreteCustomClass country = (ConcreteCustomClass) BL.getModule("Country").getClassByName("Country");
 
         dateAgreementExpert = addDProp("dateAgreementExpert", "Дата соглашения с экспертом", DateClass.instance, expert);
-        vone = addCProp("1", IntegerClass.instance, 1);
+        vone = addCProp(IntegerClass.instance, 1);
         claimerProjectVote = addJProp("claimerProjectVote", "claimerProjectVote", claimerProject, projectVote, 1);
         nameNativeJoinClaimerProjectVote = addJProp("nameNativeJoinClaimerProjectVote", "Имя заявителя", nameNativeJoinClaimerProject, projectVote, 1);
         nameNativeJoinClaimerProjectVote.setMinimumWidth(10);
@@ -4811,7 +4823,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
-            addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[]{}, addPropertyObject(getFormAddObjectAction(null, objProject)), true);
+            addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[]{}, addPropertyObject(getAddObjectAction(this, objProject)), true);
 
             if (lng.equals("both")) {
                 editR1Project = addIfAProp((AbstractGroup)null, "editR1Project", "Редактировать проект", isR1Project, 1,
@@ -5488,7 +5500,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objLegalCheck = addSingleGroupObject(legalCheck);
             addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, changeLegalCheck, nameProjectActionLegalCheck,
                     dateTimeLegalCheck, nameUserLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck,
-                    dateResultNoticedLegalCheck, overdueDateLegalCheck, baseLM.delete);
+                    dateResultNoticedLegalCheck, overdueDateLegalCheck, delete);
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
             
             addPropertyDraw(objLegalCheck, changeLegalCheckGroup);
@@ -5703,7 +5715,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             showIf(this, loadFileResolutionIPProject, addJProp(baseLM.andNot1, isR1Project, 1, fileResolutionIPProject, 1), objProject);
 
-            addObjectActions(this, objProject, false, false);
+            addObjectActions(this, objProject);
 
             addPropertyDraw(objProject, editR1Project, editR2Project, editClaimerProject);
 
@@ -5762,7 +5774,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote,
                     attachProtocolDecisionVote, loadFileDecisionVote, openFileDecisionVote,
                     emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, emailNoticeAcceptedPreliminaryVote,
-                    decisionNoticedVote, dateDecisionNoticedVote, baseLM.delete);
+                    decisionNoticedVote, dateDecisionNoticedVote, delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             getPropertyDraw(percentNeededVote).forceViewType = ClassViewType.GRID;
@@ -5822,14 +5834,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objFormalControl = addSingleGroupObject(formalControl);
             addPropertyDraw(new LP[]{addNoListOfExpertsFCResult, addNotEnoughDocumentsFCResult, addNotSuitableClusterFCResult, addRepeatedFCResult, addPositiveFCResult});
-            addPropertyDraw(objFormalControl, dateTimeSubmitFormalControl, nameResultFormalControl, nameProjectActionFormalControl, dateTimeFormalControl, emailClaimerFormalControl, resultNoticedFormalControl, dateResultNoticedFormalControl, baseLM.delete);
+            addPropertyDraw(objFormalControl, dateTimeSubmitFormalControl, nameResultFormalControl, nameProjectActionFormalControl, dateTimeFormalControl, emailClaimerFormalControl, resultNoticedFormalControl, dateResultNoticedFormalControl, delete);
             addPropertyDraw(commentFormalControl, objFormalControl).forceViewType = ClassViewType.PANEL;
 
             showIf(this, new LP[] {addPositiveFCResult, addNotEnoughDocumentsFCResult, addNoListOfExpertsFCResult, addNotSuitableClusterFCResult, addRepeatedFCResult},
                     needFormalCheckStatusProject, objProject);
 
             objLegalCheck = addSingleGroupObject(legalCheck);
-            addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, changeLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, nameUserLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck, dateResultNoticedLegalCheck, baseLM.delete);
+            addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, changeLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, nameUserLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck, dateResultNoticedLegalCheck, delete);
             addPropertyDraw(new LP[]{addNegativeLCResult, addPositiveLCResult});
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
 
@@ -6247,7 +6259,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote);
 
             if (!restricted)
-                addPropertyDraw(objVote, emailClosedVote, baseLM.delete);
+                addPropertyDraw(objVote, emailClosedVote, delete);
 
             objExpert = addSingleGroupObject(expert);
             if (!restricted)

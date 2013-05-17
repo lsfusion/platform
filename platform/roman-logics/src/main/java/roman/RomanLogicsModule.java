@@ -1,6 +1,7 @@
 package roman;
 
 import platform.base.BaseUtils;
+import platform.base.col.ListFact;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.interop.*;
 import platform.interop.action.AudioClientAction;
@@ -34,6 +35,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import roman.actions.TNVEDImportUAActionProperty;
 import roman.actions.TranslateActionProperty;
@@ -111,6 +113,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP nameCompanyInvoice;
     private LCP languageInvoice;
     private LCP nameLanguageInvoice;
+
+    public LCP dumb1;
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
         super("RomanLogicsModule");
@@ -1814,12 +1818,35 @@ public class RomanLogicsModule extends LogicsModule {
 
     public LCP name;
 
+    protected LCP dumb(int interfaces) {
+        ValueClass params[] = new ValueClass[interfaces];
+        for (int i = 0; i < interfaces; ++i) {
+            params[i] = baseLM.baseClass;
+        }
+        return addCProp("dumb" + interfaces, "dumbProperty" + interfaces, StringClass.get(1), "", params);
+    }
+
+    public LCP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
+        return addCProp(genSID(), "sys", valueClass, value, params);
+    }
+    public LCP addCProp(String name, String caption, StaticClass valueClass, Object value, ValueClass... params) {
+        CalcPropertyRevImplement implement = DerivedProperty.createCProp(name, caption, valueClass, value, ListFact.toList(params).toIndexedMap());
+        return addProperty(privateGroup, false, new LCP<PropertyInterface>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
+    }
+
+    public LAP delete;
+
     @Override
     public void initProperties() {
 
         name = addDProp(recognizeGroup, "name", "Имя", InsensitiveStringClass.get(110), named);
 
+        dumb1 = dumb(1);
+
         ConcreteCustomClass country = getCountryClass();
+
+        delete = addAProp(baseClass.unknown.getChangeClassAction());
+        setDeleteActionOptions(delete);
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
         date.setEventChange(BL.timeLM.currentDate, is(transaction), 1);
@@ -1829,14 +1856,14 @@ public class RomanLogicsModule extends LogicsModule {
         barcodeToObject = addAGProp("barcodeToObject", "Объект", barcode);
 //        barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", name, barcodeToObject, 1);
         equalsObjectBarcode = addJProp(baseLM.equals2, barcode, 1, 2);
-        seekBarcodeAction = addJoinAProp("Поиск штрихкода", addSAProp(null), barcodeToObject, 1);
+        seekBarcodeAction = addJoinAProp("Поиск штрихкода", addSAProp(), barcodeToObject, 1);
         reverseBarcode = addSDProp("reverseBarcode", "Реверс", LogicalClass.instance);
 
         between = addJProp("between", "Между", baseLM.and1, baseLM.groeq2, 1, 2, baseLM.groeq2, 3, 1);
         betweenDates = addJProp("Между датами", between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
         idGroup.add(baseLM.objectValue);
-        baseLM.delete.property.askConfirm = true;
+        delete.property.askConfirm = true;
 
         round2 = addSFProp("round2", "round(CAST((prm1) as numeric), 2)", NumericClass.get(14, 2), 1);
 
@@ -2548,7 +2575,7 @@ public class RomanLogicsModule extends LogicsModule {
         articleSIDSupplier = addAGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", sidArticle, supplierArticle);
         articleCustomsSIDSupplier = addAGProp(idGroup, "articleCustomsSIDSupplier", "Артикул (ИД)", sidArticle, customsSIDArticle);
 
-        seekArticleSIDSupplier = addJoinAProp("Поиск артикула", addSAProp(null), articleSIDSupplier, 1, 2);
+        seekArticleSIDSupplier = addJoinAProp("Поиск артикула", addSAProp(), articleSIDSupplier, 1, 2);
         seekArticleSIDInvoice = addJoinAProp("Поиск артикула", seekArticleSIDSupplier, 1, supplierDocument, 2);
 
         addNEColorSupplierSIDSupplier = addIfAProp("Ввод цвета (НС)", true, colorSIDSupplier, 1, 2, addAAProp(colorSupplier, sidColorSupplier, supplierColorSupplier), 1, 2);
@@ -2556,7 +2583,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         executeAddColorDocument = addSetPropertyAProp("Наличие цвета", inListArticleColorSupplier, 1, 2, 3, baseLM.vtrue);
 
-        seekColorSIDSupplier = addJoinAProp("Поиск цвета", addSAProp(null), colorSIDSupplier, 1, 2);
+        seekColorSIDSupplier = addJoinAProp("Поиск цвета", addSAProp(), colorSIDSupplier, 1, 2);
         seekColorSIDInvoice = addJoinAProp("Поиск цвета", seekColorSIDSupplier, 1, supplierDocument, 2);
 
         executeArticleCompositeItemSIDSupplier = addSetPropertyAProp("Замена артикула", articleCompositeItem, 1, articleSIDSupplier, 2, 3);
@@ -2807,7 +2834,7 @@ public class RomanLogicsModule extends LogicsModule {
         customCategory9Sku = addJProp(baseGroup, "customCategory9Sku", "ТН ВЭД", customCategory9CustomCategory10, customCategory10Sku, 1);
         sidCustomCategory10Sku = addJProp(baseGroup, "sidCustomCategory10Sku", "ТН ВЭД", sidCustomCategory10, customCategory10Sku, 1);
 
-        diffCountRelationCustomCategory10Sku = addJProp("diffCountRelationCustomCategory10Sku", baseLM.greater2, addJProp(countRelationCustomCategory10, customCategory10Sku, 1), 1, addCProp("1", IntegerClass.instance, 1));
+        diffCountRelationCustomCategory10Sku = addJProp("diffCountRelationCustomCategory10Sku", baseLM.greater2, addJProp(countRelationCustomCategory10, customCategory10Sku, 1), 1, addCProp(IntegerClass.instance, 1));
         diffCountRelationCustomCategory10FreightSku = addJProp("diffCountRelationCustomCategory10FreightSku", baseLM.and1, diffCountRelationCustomCategory10Sku, 2, is(freight), 1);
 
         subCategoryDataSku = addDProp(idGroup, "subCategoryDataSku", "Дополнительное деление (ИД)", subCategory, sku);
@@ -2857,7 +2884,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         supplierBoxSIDSupplier = addAGProp(idGroup, "supplierBoxSIDSupplier", "Короб поставщика (ИД)", sidSupplierBox, supplierSupplierBox);
 
-        seekSupplierBoxSIDSupplier = addJoinAProp("Поиск короба поставщика", addSAProp(null), supplierBoxSIDSupplier, 1, 2);
+        seekSupplierBoxSIDSupplier = addJoinAProp("Поиск короба поставщика", addSAProp(), supplierBoxSIDSupplier, 1, 2);
 
         // заказ по артикулам
         documentList = addCUProp(idGroup, "documentList", "Документ (ИД)", object(order), object(simpleInvoice), boxInvoiceSupplierBox);
@@ -4815,7 +4842,7 @@ public class RomanLogicsModule extends LogicsModule {
                     nameCategoryArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     sidBrandSupplierArticleSku, nameBrandSupplierArticleSku, originalNameArticleSku,
                     nameCountrySupplierOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku,
-                    mainCompositionOriginSku, additionalCompositionOriginSku, baseLM.delete}, objSku);
+                    mainCompositionOriginSku, additionalCompositionOriginSku, delete}, objSku);
 
             setEditType(sidArticleSku, PropertyEditType.READONLY, objSku.groupTo);
 
@@ -5099,7 +5126,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objInvoice = addSingleGroupObject("invoice", (box ? boxInvoice : simpleInvoice), "Инвойс", date, baseLM.objectClassName,
                     sidDocument, nameCurrencyDocument, nameCurrencyRRPDocument, sumDocument, quantityDocument, netWeightDocument,
-                    nameCompanyInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument, baseLM.delete);
+                    nameCompanyInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument, delete);
             //addObjectActions(this, objInvoice);
             setEditType(PropertyEditType.READONLY, objInvoice.groupTo);
             setEditType(baseLM.objectClassName, PropertyEditType.EDITABLE, objInvoice.groupTo);
@@ -5107,7 +5134,7 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(nameCurrencyRRPDocument, PropertyEditType.EDITABLE, objInvoice.groupTo);
             setEditType(nameCompanyInvoice, PropertyEditType.EDITABLE, objInvoice.groupTo);
             setEditType(nameDestinationDestinationDocument, PropertyEditType.EDITABLE, objInvoice.groupTo);
-            setEditType(baseLM.delete, PropertyEditType.EDITABLE, objInvoice.groupTo);
+            setEditType(delete, PropertyEditType.EDITABLE, objInvoice.groupTo);
 
             for (PropertyDrawEntity propertyDraw : getProperties(importInvoiceActionGroup)) {
                 propertyDraw.toDraw = objInvoice.groupTo;
@@ -5412,7 +5439,7 @@ public class RomanLogicsModule extends LogicsModule {
                     sidShipmentShipmentDetail, priceInShipmentDetail,
                     sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
                     barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
-                    quantityShipmentDetail, nameUserShipmentDetail, sidStampShipmentDetail, seriesOfStampShipmentDetail, timeShipmentDetail, baseLM.delete);
+                    quantityShipmentDetail, nameUserShipmentDetail, sidStampShipmentDetail, seriesOfStampShipmentDetail, timeShipmentDetail, delete);
 
             objShipmentDetail.groupTo.setSingleClassView(ClassViewType.GRID);
 
@@ -5591,7 +5618,7 @@ public class RomanLogicsModule extends LogicsModule {
 //            ));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(
-                    addJoinAProp(addSAProp(null), skuBarcodeObject, 1),
+                    addJoinAProp(addSAProp(), skuBarcodeObject, 1),
                     objBarcode));
 
             addActionsOnObjectChange(objBarcode,
@@ -6173,12 +6200,12 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             if (type.equals(FormType.LIST))
-                addPropertyDraw(objCreate, baseLM.delete);
+                addPropertyDraw(objCreate, delete);
 
             if (type.equals(FormType.ADD))
                 setAddOnTransaction(objCreate, RomanLogicsModule.this);
 
-            objStamp = addSingleGroupObject(stamp, "Таможенные марки", sidStamp, baseLM.delete);
+            objStamp = addSingleGroupObject(stamp, "Таможенные марки", sidStamp, delete);
             setEditType(objStamp, PropertyEditType.READONLY);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationStampStamp, objStamp), Compare.EQUALS, objCreate));
@@ -6517,7 +6544,7 @@ public class RomanLogicsModule extends LogicsModule {
         private BalanceBrandWarehouseFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, dumb1, dumb1, dumb1);
 
             objBrand = addSingleGroupObject(brandSupplier, "Бренд", name, quantityBrandSupplier);
 
@@ -6539,7 +6566,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objArticle2 = addSingleGroupObject(article, "Артикул", sidArticle);
             addPropertyDraw(quantityDocumentArticle, objInvoice, objArticle2);
-            addPropertyDraw(objArticle2, baseLM.dumb1, nameArticleSku, nameThemeSupplierArticle, nameCategoryArticleSku);
+            addPropertyDraw(objArticle2, dumb1, nameArticleSku, nameThemeSupplierArticle, nameCategoryArticleSku);
 
             objSku = addSingleGroupObject(sku, "SKU", barcode);
             addPropertyDraw(quantityStockSku, objBox, objSku);
@@ -6550,7 +6577,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSku2 = addSingleGroupObject(sku, "SKU", barcode);
             addPropertyDraw(quantityDocumentSku, objInvoice, objSku2);
-            addPropertyDraw(objSku2, baseLM.dumb1, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+            addPropertyDraw(objSku2, dumb1, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameCountrySku, netWeightSku, mainCompositionSku, additionalCompositionSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku2.groupTo);

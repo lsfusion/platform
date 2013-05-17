@@ -19,7 +19,6 @@ import platform.interop.form.GlobalConstants;
 import platform.server.Settings;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
-import platform.server.classes.sets.UpClassSet;
 import platform.server.context.ThreadLocalContext;
 import platform.server.data.Time;
 import platform.server.data.Union;
@@ -28,7 +27,6 @@ import platform.server.data.expr.formula.*;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.data.type.Type;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
 import platform.server.form.instance.FormSessionScope;
 import platform.server.form.navigator.NavigatorAction;
@@ -628,7 +626,7 @@ public abstract class LogicsModule {
         return addAProp(baseClass.getChangeClassValueAction());
     }
 
-    protected LAP addChangeClassAProp(ConcreteObjectClass cls, int resInterfaces, int changeIndex, boolean extendedContext, boolean conditional, Object... params) {
+    protected LAP addChangeClassAProp(String sID, ConcreteObjectClass cls, int resInterfaces, int changeIndex, boolean extendedContext, boolean conditional, Object... params) {
         int innerIntCnt = resInterfaces + (extendedContext ? 1 : 0);
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(innerIntCnt);
         ImOrderSet<PropertyInterface> mappedInterfaces = extendedContext ? innerInterfaces.removeOrderIncl(innerInterfaces.get(changeIndex)) : innerInterfaces;
@@ -636,7 +634,7 @@ public abstract class LogicsModule {
         CalcPropertyMapImplement<PropertyInterface, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<PropertyInterface, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces) : null);
 
-        return addAProp(new ChangeClassActionProperty<PropertyInterface, PropertyInterface>(genSID(), cls, false, innerInterfaces.getSet(),
+        return addAProp(new ChangeClassActionProperty<PropertyInterface, PropertyInterface>(sID, cls, false, innerInterfaces.getSet(),
                 mappedInterfaces, innerInterfaces.get(changeIndex), conditionalPart, baseClass));
     }
 
@@ -827,30 +825,11 @@ public abstract class LogicsModule {
 
     protected <P extends PropertyInterface> LCP addSCProp(AbstractGroup group, String caption, LCP<P> lp) {
         return addProperty(group, new LCP<ShiftChangeProperty.Interface<P>>(new ShiftChangeProperty<P, PropertyInterface>(genSID(), caption,
-                ((CalcProperty)lp.property), new CalcPropertyMapImplement<PropertyInterface, P>((CalcProperty<PropertyInterface>) getLCPByName("reverseBarcode").property))));
+                ((CalcProperty) lp.property), new CalcPropertyMapImplement<PropertyInterface, P>((CalcProperty<PropertyInterface>) getLCPByName("reverseBarcode").property))));
     }
 
-    public LCP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
-        return addCProp("sys", valueClass, value, params);
-    }
-
-    protected LCP addCProp(String caption, StaticClass valueClass, Object value, ValueClass... params) {
-        return addCProp(null, false, caption, valueClass, value, params);
-    }
-
-    protected LCP addCProp(AbstractGroup group, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
-        return addCProp(group, persistent, caption, valueClass, value, Arrays.asList(params));
-    }
-
-    // только для того, чтобы обернуть все в IdentityLazy, так как только для List нормально сделан equals
-    @IdentityStrongLazy // для ID
-    protected LCP addCProp(AbstractGroup group, boolean persistent, String caption, StaticClass valueClass, Object value, List<ValueClass> params) {
-        return addCProp(group, genSID(), persistent, caption, valueClass, value, params.toArray(new ValueClass[]{}));
-    }
-
-    protected <T extends PropertyInterface> LCP addCProp(AbstractGroup group, String name, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
-        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp(name, caption, valueClass, value, ListFact.toList(params).toIndexedMap());
-        return addProperty(group, persistent, new LCP<T>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
+    protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
+        return baseLM.addCProp(valueClass, value);
     }
 
     // добавляет свойство с бесконечным значением
@@ -923,13 +902,8 @@ public abstract class LogicsModule {
         return addProperty(null, new LCP<FormulaImplProperty.Interface>(new FormulaImplProperty(name, "divide", 2, new DivideFormulaImpl())));
     }
 
-    @IdentityStrongLazy
     protected <P extends PropertyInterface> LCP addCastProp(DataClass castClass) {
-        return addCastProp(genSID(), castClass);
-    }
-
-    protected <P extends PropertyInterface> LCP addCastProp(String name, DataClass castClass) {
-        return addProperty(null, new LCP<FormulaImplProperty.Interface>(new FormulaImplProperty(name, "castTo" + castClass.toString(), 1, new CastFormulaImpl(castClass))));
+        return baseLM.addCastProp(castClass);
     }
 
     protected <P extends PropertyInterface> LCP addSProp(int intNum) {
@@ -1171,7 +1145,7 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP<L>(implement.property, listInterfaces.mapOrder(implement.mapping.reverse())));
     }
 
-    private <P extends PropertyInterface, L extends PropertyInterface> LCP mapLProp(AbstractGroup group, boolean persistent, CalcPropertyMapImplement<L, P> implement, LCP<P> property) {
+    protected <P extends PropertyInterface, L extends PropertyInterface> LCP mapLProp(AbstractGroup group, boolean persistent, CalcPropertyMapImplement<L, P> implement, LCP<P> property) {
         return mapLProp(group, persistent, implement, property.listInterfaces);
     }
 
@@ -1970,9 +1944,8 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP(property));
     }
 
-    @IdentityStrongLazy // для ID
-    protected LAP<?> addSAProp(LCP lp) {
-        return addProperty(null, new LAP(new SeekActionProperty(baseLM.baseClass, lp == null ? null : (CalcProperty) lp.property)));
+    protected LAP<?> addSAProp() {
+        return baseLM.addSAProp();
     }
 
     protected LAP addMAProp(String message, String title) {
@@ -2089,7 +2062,7 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> innerInterfaces = mInnerInterfaces.immutableOrder();
         ImCol<CalcPropertyMapImplement<?, PropertyInterface>> checkClasses = mCheckClasses.immutableCol();
 
-        mList.add(addSAProp(null).getImplement(addedInterface));
+        mList.add(addSAProp().getImplement(addedInterface));
 
         ImSet<PropertyInterface> addedInnerInterfaces = innerInterfaces.getSet().addExcl(addedInterface);
         ActionPropertyMapImplement<?, PropertyInterface> result = createForAction(addedInnerInterfaces, innerInterfaces.getSet(), createListAction(addedInnerInterfaces, mList.immutableList()), addedInterface, customClass, false);
@@ -2102,41 +2075,28 @@ public abstract class LogicsModule {
         return addAProp(null, new EvalActionProperty(genSID(), "", scriptSource));
     }
 
-    public LAP getAddObjectAction(CustomClass cls, boolean forceDialog, CalcProperty storeNewObjectProperty) {
-        return addAProp(null, new AddObjectActionProperty(genSID(), cls, forceDialog, storeNewObjectProperty));
-    }
-
-    public <T extends PropertyInterface, I extends PropertyInterface> LAP getAddObjectAction(CustomClass cls, boolean forceDialog, int resInterfaces, boolean conditional, boolean resultExists, Object... params) {
-        ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
-        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
-        CalcPropertyMapImplement<T, PropertyInterface> resultPart = (CalcPropertyMapImplement<T, PropertyInterface>)
-                (resultExists ? readImplements.get(resInterfaces) : null);
-        CalcPropertyMapImplement<T, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<T, PropertyInterface>)
-                (conditional ? readImplements.get(resInterfaces + (resultExists ? 1 : 0)) : DerivedProperty.createTrue());
-
-        return addAProp(null, new AddObjectActionProperty(genSID(), cls, forceDialog, innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart));
-    }
-
-    @IdentityStrongLazy // data
     public SessionDataProperty getAddedObjectProperty() {
-        SessionDataProperty addedObject = new SessionDataProperty("addedObject", "Added Object", baseLM.baseClass);
-        addProperty(null, new LCP<ClassPropertyInterface>(addedObject));
-        return addedObject;
+        return baseLM.getAddedObjectProperty();
     }
 
-    @IdentityStrongLazy // data
     public LCP getConfirmedProperty() {
-        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("confirmed", "Confirmed", LogicalClass.instance)));
+        return baseLM.getConfirmedProperty();
     }
 
-    @IdentityStrongLazy // data
     public AnyValuePropertyHolder getChosenValueProperty() {
-        return addAnyValuePropertyHolder("chosen", "Chosen", StringClass.get(100));
+        return baseLM.getChosenValueProperty();
     }
 
-    @IdentityStrongLazy // data
     public AnyValuePropertyHolder getRequestedValueProperty() {
-        return addAnyValuePropertyHolder("requested", "Requested");
+        return baseLM.getRequestedValueProperty();
+    }
+
+    public LCP getRequestCanceledProperty() {
+        return baseLM.getRequestCanceledProperty();
+    }
+
+    public LCP getFormResultProperty() {
+        return baseLM.getFormResultProperty();
     }
 
     public AnyValuePropertyHolder addAnyValuePropertyHolder(String sidPrefix, String captionPrefix, ValueClass... classes) {
@@ -2162,64 +2122,57 @@ public abstract class LogicsModule {
         );
     }
 
-    @IdentityStrongLazy // data
-    public LCP getRequestCanceledProperty() {
-        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("requestCanceled", "Request Input Canceled", LogicalClass.instance)));
+    // ---------------------- Add Object ---------------------- //
+
+    public <T extends PropertyInterface, I extends PropertyInterface> LAP getScriptAddObjectAction(CustomClass cls, boolean forceDialog, int resInterfaces, boolean conditional, boolean resultExists, Object... params) {
+        ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
+        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
+        CalcPropertyMapImplement<T, PropertyInterface> resultPart = (CalcPropertyMapImplement<T, PropertyInterface>)
+                (resultExists ? readImplements.get(resInterfaces) : null);
+        CalcPropertyMapImplement<T, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<T, PropertyInterface>)
+                (conditional ? readImplements.get(resInterfaces + (resultExists ? 1 : 0)) : DerivedProperty.createTrue());
+
+        return addAProp(null, new AddObjectActionProperty(genSID(), cls, forceDialog, innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart));
     }
 
-    @IdentityStrongLazy // data
-    public LCP getFormResultProperty() {
-        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("formResult", "Form Result", baseLM.formResult)));
+    public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj) {
+        return getAddObjectAction((CustomClass)obj.baseClass, formEntity, obj);
     }
 
-    public LAP getFormAddObjectAction(FormEntity formEntity, ObjectEntity obj) {
-        return getFormAddObjectAction(formEntity, obj, false);
+    public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
+        return baseLM.getAddObjectAction(cls, formEntity, obj);
     }
 
-    public LAP getFormAddObjectAction(FormEntity formEntity, ObjectEntity obj, boolean forceDialog) {
-        return getFormAddObjectAction(formEntity, obj, null, forceDialog);
+    // ---------------------- Delete Object ---------------------- //
+
+    public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
+        return baseLM.getDeleteAction(cls, oldSession);
     }
 
-    @IdentityStrongLazy
-    public LAP getFormAddObjectAction(FormEntity formEntity, ObjectEntity obj, CustomClass forceClass, boolean forceDialog) { // добавляем и делаем resolveAdd для добавленного объекта
-        String sid = "add" + (formEntity==null ? "" : BaseUtils.capitalize(formEntity.getSID())) + BaseUtils.capitalize(obj.getSID())
-                + (forceClass==null ? "" : BaseUtils.capitalize(forceClass.getSID())) + (forceDialog ? "Force" : "");
-        return addAProp(new FormAddObjectActionProperty(sid, forceClass!=null ? forceClass : (CustomClass)obj.baseClass, forceDialog, obj));
-//        PropertyInterface added = new PropertyInterface();
-//        return addAProp(null, createForAction(Collections.singleton(added), new ArrayList<PropertyInterface>(),
-//                new ResolveAddObjectActionProperty(genSID(), obj).getImplement(added), added, forceClass, forceDialog, false).property);
+    protected void setDeleteActionOptions(LAP property) {
+        property.setImage("delete.png");
+        property.setShouldBeLast(true);
+        property.setEditKey(KeyStrokes.getDeleteActionPropertyKeyStroke());
+        property.setShowEditKey(false);
     }
 
-    protected LAP getFormAddObjectActionWithClassCheck(FormEntity formEntity, ObjectEntity objectEntity, ValueClass checkClass) {
-        LAP addObjectAction = getFormAddObjectAction(formEntity, objectEntity);
-        return addIfAProp(addObjectAction.property.caption, is(checkClass), 1, addObjectAction);
-    }
+    // ---------------------- Add Form ---------------------- //
 
     public LAP getScriptAddFormAction(CustomClass cls, boolean session) {
         ClassFormEntity form = cls.getEditForm(baseLM);
 
         LAP property = addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.add"),
                 form.form, new ObjectEntity[] {},
-                form.form.addPropertyObject(getFormAddObjectAction(form.form, form.object, cls, false)), !session);
+                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), !session);
         setAddFormActionProperties(property, form, session);
         return property;
     }
 
-    @IdentityStrongLazy // для ID
     public LAP getAddFormAction(CustomClass cls, boolean oldSession) {
-        ClassFormEntity form = cls.getEditForm(baseLM);
-
-        String sid = "add" + BaseUtils.capitalize(form.form.getSID()) + BaseUtils.capitalize(form.object.getSID())
-                + (oldSession ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID());
-
-        LAP property = addDMFAProp(publicGroup, sid, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
-                form.form, new ObjectEntity[]{},
-                form.form.addPropertyObject(getFormAddObjectAction(form.form, form.object, cls, false)), !oldSession);
-        setAddFormActionProperties(property, form, oldSession);
-        return property;
+        return baseLM.getAddFormAction(cls, oldSession);
     }
 
-    private void setAddFormActionProperties(LAP property, ClassFormEntity form, boolean oldSession) {
+    protected void setAddFormActionProperties(LAP property, ClassFormEntity form, boolean oldSession) {
         property.setImage("add.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
@@ -2231,9 +2184,11 @@ public abstract class LogicsModule {
         FormActionProperty formAction = (FormActionProperty)property.property;
         formAction.seekOnOk.add(form.object);
         if (oldSession) {
-            formAction.closeAction = form.form.addPropertyObject(baseLM.delete, form.object);
+            formAction.closeAction = form.form.addPropertyObject(getDeleteAction((CustomClass)form.object.baseClass, true), form.object);
         }
     }
+
+    // ---------------------- Edit Form ---------------------- //
 
     public LAP getScriptEditFormAction(CustomClass cls, boolean oldSession) {
         ClassFormEntity form = cls.getEditForm(baseLM);
@@ -2242,40 +2197,17 @@ public abstract class LogicsModule {
         return property;
     }
 
-    @IdentityStrongLazy // для ID
     public LAP getEditFormAction(CustomClass cls, boolean oldSession) {
-        ClassFormEntity form = cls.getEditForm(baseLM);
-        LAP property = addDMFAProp(publicGroup, "edit" + (oldSession ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit"), // + "(" + cls + ")",
-                form.form, new ObjectEntity[]{form.object}, !oldSession);
-        setEditFormActionProperties(property);
-        return property;
+        return baseLM.getEditFormAction(cls, oldSession);
     }
 
-    private void setEditFormActionProperties(LAP property) {
+    protected void setEditFormActionProperties(LAP property) {
         property.setImage("edit.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
         property.setShowEditKey(false);
         property.setDrawToToolbar(true);
         property.setForceViewType(ClassViewType.PANEL);
-    }
-
-    @IdentityStrongLazy
-    public LAP getSimpleDeleteAction(CustomClass cls, boolean oldSession) {
-        LAP res = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
-        if (!oldSession) {
-            res = (LAP) addNewSessionAProp(null, genSID(), res.property.caption, res, true, false, SetFact.<SessionDataProperty>EMPTY(), SetFact.<SessionDataProperty>EMPTY());
-            res.setAskConfirm(true);
-        }
-        setDeleteActionOptions(res);
-        return res;
-    }
-
-    protected void setDeleteActionOptions(LAP property) {
-        property.setImage("delete.png");
-        property.setShouldBeLast(true);
-        property.setEditKey(KeyStrokes.getDeleteActionPropertyKeyStroke());
-        property.setShowEditKey(false);
     }
 
     protected LCP addHideCaptionProp(LCP hideProperty) {
@@ -2344,7 +2276,7 @@ public abstract class LogicsModule {
         }
     }
 
-    private <T extends LP<?, ?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
+    protected <T extends LP<?, ?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
         setPropertySID(lp, lp.property.getSID(), true);
         if (group != null && group != baseLM.privateGroup || persistent) {
             lp.property.freezeSID();
@@ -2392,20 +2324,16 @@ public abstract class LogicsModule {
 
     // нужен так как иначе начинает sID расширять
 
-    @IdentityStrongLazy // для ID
     public <T extends PropertyInterface> LCP<T> addOldProp(LCP<T> lp) {
-        return addProperty(null, new LCP<T>(lp.property.getOld(), lp.listInterfaces));
+        return baseLM.addOldProp(lp);
     }
 
-    @IdentityStrongLazy // для ID
     public <T extends PropertyInterface> LCP<T> addCHProp(LCP<T> lp, IncrementType type) {
-        addProperty(null, new LCP(lp.property.getOld(), lp.listInterfaces));
-        return addProperty(null, new LCP<T>(lp.property.getChanged(type), lp.listInterfaces));
+        return baseLM.addCHProp(lp, type);
     }
 
-    @IdentityStrongLazy // для ID
     public <T extends PropertyInterface> LCP addClassProp(LCP<T> lp) {
-        return mapLProp(null, false, lp.property.getClassProperty().cloneProp(), lp);
+        return baseLM.addClassProp(lp);
     }
 
     public void addConstraint(CalcProperty property, boolean checkChange) {
@@ -2598,15 +2526,6 @@ public abstract class LogicsModule {
         return addAFProp(nots);
     }
 
-    @IdentityStrongLazy // для ID
-    protected LCP dumb(int interfaces) {
-        ValueClass params[] = new ValueClass[interfaces];
-        for (int i = 0; i < interfaces; ++i) {
-            params[i] = baseLM.baseClass;
-        }
-        return addCProp(privateGroup, "dumb" + interfaces, false, "dumbProperty" + interfaces, StringClass.get(1), "", params);
-    }
-
     protected NavigatorElement addNavigatorElement(String name, String caption, String icon) {
         return addNavigatorElement(null, name, caption, icon);
     }
@@ -2656,42 +2575,16 @@ public abstract class LogicsModule {
     }
 
     public void addObjectActions(FormEntity form, ObjectEntity object) {
-        addObjectActions(form, object, false);
+        addObjectActions(form, object, true);
     }
 
-    protected void addObjectActions(FormEntity form, ObjectEntity object, ObjectEntity checkObject) {
-        addObjectActions(form, object, checkObject, null);
-    }
-
-    protected void addObjectActions(FormEntity form, ObjectEntity object, ObjectEntity checkObject, ValueClass checkObjectClass) {
-        addObjectActions(form, object, false, true, checkObject, checkObjectClass);
-    }
-
-    public void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport) {
-        addObjectActions(form, object, actionImport, true);
-    }
-
-    public void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, boolean shouldBeLast) {
-        addObjectActions(form, object, actionImport, shouldBeLast, null, null);
-    }
-
-    protected void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, boolean shouldBeLast, ObjectEntity checkObject, ValueClass checkObjectClass) {
-
+    protected void addObjectActions(FormEntity form, ObjectEntity object, boolean shouldBeLast) {
         PropertyDrawEntity actionAddPropertyDraw;
-        if (checkObject == null) {
-            actionAddPropertyDraw = form.addPropertyDraw(getFormAddObjectAction(form, object));
-        } else {
-            actionAddPropertyDraw = form.addPropertyDraw(
-                    getFormAddObjectActionWithClassCheck(form, object, checkObjectClass != null ? checkObjectClass : checkObject.baseClass),
-                    checkObject);
-
-            actionAddPropertyDraw.forceViewType = ClassViewType.PANEL;
-        }
-
+        actionAddPropertyDraw = form.addPropertyDraw(getAddObjectAction(form, object));
         actionAddPropertyDraw.shouldBeLast = shouldBeLast;
         actionAddPropertyDraw.toDraw = object.groupTo;
 
-        form.addPropertyDraw(baseLM.delete, object).shouldBeLast = shouldBeLast;
+        form.addPropertyDraw(getDeleteAction((CustomClass)object.baseClass, true), object).shouldBeLast = shouldBeLast;
     }
 
     public void addFormActions(FormEntity form, ObjectEntity object) {
@@ -2701,7 +2594,7 @@ public abstract class LogicsModule {
     public void addFormActions(FormEntity form, ObjectEntity object, boolean session) {
         addAddFormAction(form, object, session);
         addEditFormAction(form, object, session);
-        form.addPropertyDraw(baseLM.delete, object);
+        form.addPropertyDraw(getDeleteAction((CustomClass)object.baseClass, false), object);
     }
 
     public PropertyDrawEntity addAddFormAction(FormEntity form, ObjectEntity object, boolean session) {
@@ -2717,7 +2610,7 @@ public abstract class LogicsModule {
     }
 
     public PropertyDrawEntity addFormDeleteAction(FormEntity form, ObjectEntity object, boolean oldSession) {
-        return form.addPropertyDraw(getSimpleDeleteAction((CustomClass) object.baseClass, oldSession), object);
+        return form.addPropertyDraw(getDeleteAction((CustomClass) object.baseClass, oldSession), object);
     }
 
     public String getNamespace() {

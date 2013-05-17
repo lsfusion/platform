@@ -917,6 +917,8 @@ addListInventoryStockInventory 'Добавить' = ACTION (stock, inventory) NE
 
 // --------------------------------------------- Формы инвентаризаций ------------------------------------- //
 
+dumbPageInventory (p) = ' ' IF p IS PageInventory;
+
 FORM inventory 'Инвентаризация'
     OBJECTS          in=Inventory FIXED PANEL
     PROPERTIES (in)  isBatchInventory, nameNumeratorObject, numberObject, seriesObject,
@@ -941,7 +943,7 @@ FORM inventory 'Инвентаризация'
     PROPERTIES(li)   editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), deleteli=DELETE FORCE PANEL TOOLBAR SHOWIF isDraftListInventory(li),
                      postListInventory FORCE PANEL SHOWIF isDraftListInventory(li), unpostListInventory FORCE PANEL SHOWIF isPostedListInventory(li)
 
-    PROPERTIES(pl)   READONLY countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, sumPageInventoryDetailPageInventory, dumb1
+    PROPERTIES(pl)   READONLY countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, sumPageInventoryDetailPageInventory, dumbPageInventory
 
     OBJECTS          dp=PageInventoryDetail
     PROPERTIES (dp)  READONLY indexPageInventoryDetail, idBarcodeSkuPageInventoryDetail, nameSkuPageInventoryDetail, nameBatchPageInventoryDetail  SHOWIF isBatchListInventory(li),
@@ -1080,7 +1082,7 @@ DESIGN inventory FROM DEFAULT {
                     PROPERTY(objectClassName) {
                             preferredCharWidth = 15;
                     }
-                    PROPERTY (dumb1) {
+                    PROPERTY (dumbPageInventory) {
                         caption = 'Статус';
                         minimumCharWidth = 15;
                     }

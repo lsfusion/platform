@@ -241,12 +241,14 @@ FORM forms 'Формы'
         FILTER 'Свойства только текущей группы объектов' 'F8' groupObjectPropertyDraw(p)==g
 ;
 
+dumbPropertyGroup (pg) = ' ' IF pg IS PropertyGroup;
+
 FORM properties 'Свойства'
     OBJECTS p=Property
     PROPERTIES(p) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     TREE treePropertiesObject tps=PropertyGroup, ps=Property PARENT parentPropertyGroup
-    PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumb1, dumb1, dumb1, parentPropertyGroup, numberPropertyGroup, dumb1, dumb1, dumb1, dumb1
+    PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, parentPropertyGroup, numberPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup
     PROPERTIES(ps) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     ORDER BY numberProperty

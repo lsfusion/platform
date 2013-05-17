@@ -17,8 +17,8 @@ public class FormAddObjectActionProperty extends AddObjectActionProperty<Propert
     
     private final ObjectEntity objectEntity;
 
-    public FormAddObjectActionProperty(String sID, CustomClass customClass, boolean forceDialog, ObjectEntity objectEntity) {
-        super(sID, customClass!=null ? customClass : (CustomClass) objectEntity.baseClass, forceDialog, null);
+    public FormAddObjectActionProperty(String sID, CustomClass customClass, ObjectEntity objectEntity) {
+        super(sID, customClass, false, null);
 
         this.objectEntity = objectEntity;
     }

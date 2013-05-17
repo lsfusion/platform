@@ -4,6 +4,7 @@ import jxl.Sheet;
 import jxl.Workbook;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
+import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
@@ -38,13 +39,11 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import platform.server.logics.property.actions.DropObjectActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
 import platform.server.session.PropertyChange;
@@ -681,6 +680,14 @@ public class VEDLogicsModule extends LogicsModule {
 
     public LCP<?> name;
 
+    public LCP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
+        return addCProp(genSID(), "sys", valueClass, value, params);
+    }
+    public LCP addCProp(String name, String caption, StaticClass valueClass, Object value, ValueClass... params) {
+        CalcPropertyRevImplement implement = DerivedProperty.createCProp(name, caption, valueClass, value, ListFact.toList(params).toIndexedMap());
+        return addProperty(privateGroup, false, new LCP<PropertyInterface>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
+    }
+
     @Override
     public void initProperties() {
 
@@ -706,7 +713,7 @@ public class VEDLogicsModule extends LogicsModule {
         barcode.setFixedCharWidth(13);
         barcodeToObject = addAGProp("barcodeToObject", "Объект", barcode);
         barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", name, barcodeToObject, 1);
-        seekBarcodeAction = addJoinAProp("Поиск штрихкода", addSAProp(null), barcodeToObject, 1);
+        seekBarcodeAction = addJoinAProp("Поиск штрихкода", addSAProp(), barcodeToObject, 1);
         barcodeNotFoundMessage = addIfAProp(addJProp(baseLM.andNot1, is(StringClass.get(13)), 1, barcodeToObject, 1), 1, addMAProp("Штрих-код не найден!", "Ошибка"));
         reverseBarcode = addSDProp("reverseBarcode", "Реверс", LogicalClass.instance);
 

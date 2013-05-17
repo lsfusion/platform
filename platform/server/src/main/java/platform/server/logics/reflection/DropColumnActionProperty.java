@@ -5,6 +5,7 @@ import platform.server.classes.ValueClass;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ReflectionLogicsModule;
+import platform.server.logics.linear.LAP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
@@ -12,8 +13,12 @@ import platform.server.logics.scripted.ScriptingActionProperty;
 import java.sql.SQLException;
 
 public class DropColumnActionProperty extends ScriptingActionProperty {
+
+    LAP delete;
+
     public DropColumnActionProperty(ReflectionLogicsModule LM) {
-        super(LM, new ValueClass[]{LM.getClassByName("DropColumn")});
+        super(LM, new ValueClass[]{LM.dropColumn});
+        delete = LM.getDeleteAction(LM.dropColumn, true);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
@@ -26,6 +31,6 @@ public class DropColumnActionProperty extends ScriptingActionProperty {
         } catch (SQLException e) {
             context.requestUserInteraction(new MessageClientAction(e.getMessage(), "Ошибка при удалении колонки"));
         }
-        LM.baseLM.delete.execute(context, dropColumnObject);
+        delete.execute(context, dropColumnObject);
     }
 }
