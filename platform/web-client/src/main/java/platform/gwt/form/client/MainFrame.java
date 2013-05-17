@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.client.ErrorHandlingCallback;
 import platform.gwt.base.client.GwtClientUtils;
+import platform.gwt.base.shared.actions.BooleanResult;
 import platform.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import platform.gwt.form.client.form.DefaultFormsController;
 import platform.gwt.form.client.form.dispatch.GwtActionDispatcher;
@@ -36,6 +37,7 @@ import java.util.Map;
 
 public class MainFrame implements EntryPoint {
     private final NavigatorDispatchAsync dispatcher = NavigatorDispatchAsync.Instance.get();
+    public static boolean configurationAccessAllowed;
 
     private GNavigatorController navigatorController;
     private WindowsController windowsController;
@@ -98,6 +100,13 @@ public class MainFrame implements EntryPoint {
                 windowsController.setInitialSize(window, width, height);
             }
         };
+
+        dispatcher.execute(new IsConfigurationAccessAllowedAction(), new ErrorHandlingCallback<BooleanResult>() {
+            @Override
+            public void success(BooleanResult result) {
+                configurationAccessAllowed = result.value;
+            }
+        });
 
         initCommonWindows();
     }

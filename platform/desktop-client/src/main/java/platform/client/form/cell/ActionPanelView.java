@@ -1,6 +1,7 @@
 package platform.client.form.cell;
 
 import platform.base.BaseUtils;
+import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientPropertyContextMenuPopup;
@@ -148,9 +149,11 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
     public void setToolTip(String caption) {
         String toolTip = !BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption;
-        toolTip += " (sID: " + property.getSID() + ")";
+        if (Main.configurationAccessAllowed) {
+            toolTip += " (sID: " + property.getSID() + ")";
+        }
         if (property.editKey != null) {
-            toolTip += "(" + SwingUtils.getKeyStrokeCaption(property.editKey) + ")";
+            toolTip += " (" + SwingUtils.getKeyStrokeCaption(property.editKey) + ")";
         }
         setToolTipText(toolTip);
     }

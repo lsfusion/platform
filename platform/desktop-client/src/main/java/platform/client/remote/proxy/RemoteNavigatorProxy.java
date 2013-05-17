@@ -129,8 +129,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @Override
-    public boolean isConfiguratorAllowed() throws RemoteException {
-        return target.isConfiguratorAllowed();
+    public boolean isConfigurationAccessAllowed() throws RemoteException {
+        return target.isConfigurationAccessAllowed();
     }
 
     @Override

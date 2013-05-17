@@ -28,11 +28,13 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.*;
-import java.rmi.RemoteException;
-import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static platform.base.BaseUtils.mergeLinked;
@@ -367,14 +369,10 @@ public class DockableMainFrame extends MainFrame {
         logicsConfigurator.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                try {
-                    if (Main.frame.remoteNavigator.isConfiguratorAllowed()) {
-                        openLogicSetupForm();
-                    } else {
-                        JOptionPane.showMessageDialog(null, getString("descriptor.view.access.denied"), getString("descriptor.view.error"), JOptionPane.ERROR_MESSAGE);
-                    }
-                } catch (RemoteException e1) {
-                    e1.printStackTrace();
+                if (Main.configurationAccessAllowed) {
+                    openLogicSetupForm();
+                } else {
+                    JOptionPane.showMessageDialog(null, getString("descriptor.view.access.denied"), getString("descriptor.view.error"), JOptionPane.ERROR_MESSAGE);
                 }
             }
         });

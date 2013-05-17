@@ -9,6 +9,6 @@ public class GInsensitiveStringType extends GStringType {
 
     @Override
     public String toString() {
-        return "Строка без регистра";
+        return "Строка без регистра(" + length + ")";
     }
 }

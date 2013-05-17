@@ -161,7 +161,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             applyForAllButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        if (Main.frame.remoteNavigator.isConfiguratorAllowed()) {
+                        if (Main.configurationAccessAllowed) {
                             applyButtonPressed(true);
                         } else {
                             JOptionPane.showMessageDialog(null, getString("form.grid.hide.not.enough.rights"), getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);
@@ -195,7 +195,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             resetForAllButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        if (Main.frame.remoteNavigator.isConfiguratorAllowed()) {
+                        if (Main.configurationAccessAllowed) {
                             resetButtonPressed(true);
                         } else {
                             JOptionPane.showMessageDialog(null, getString("form.grid.hide.not.enough.rights"), getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);

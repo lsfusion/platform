@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.context.ApplicationContext;
+import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.form.*;
@@ -456,32 +457,43 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return descriptor;
     }
 
-    public static final String toolTipFormat =
+    public static final String TOOL_TIP_FORMAT =
             "<html><b>%1$s</b><br>" +
-                    "%7$s" +
-                    "<hr>" +
-                    "<b>sID:</b> %2$s<br>" +
-                    "<b>" + getString("logics.grid") + ":</b> %3$s<br>" +
-                    "<b>" + getString("logics.objects") + ":</b> %4$s<br>" +
-                    "<b>" + getString("logics.signature") + ":</b> %6$s <i>%2$s</i> (%5$s)<br>" +
+                    "%2$s";
+
+    public static final String DETAILED_TOOL_TIP_FORMAT =
+            "<hr>" +
+                    "<b>sID:</b> %3$s<br>" +
+                    "<b>" + getString("logics.grid") + ":</b> %4$s<br>" +
+                    "<b>" + getString("logics.objects") + ":</b> %5$s<br>" +
+                    "<b>" + getString("logics.signature") + ":</b> %7$s <i>%3$s</i> (%6$s)<br>" +
                     "<b>" + getString("logics.script") + ":</b> %8$s<br>" +
                     "<b>" + getString("logics.scriptpath") + ":</b> %9$s" +
                     "</html>";
 
-    public static final String editKeyToolTipFormat =
+    public static final String EDIT_KEY_TOOL_TIP_FORMAT =
             "<hr><b>" + getString("logics.property.edit.key") + ":</b> %1$s<br>";
 
     public String getTooltipText(String caption) {
+        boolean configurationAccessAllowed;
+        configurationAccessAllowed = Main.configurationAccessAllowed;
+
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
-        String sid = getSID();
-        String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
-        String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);
-        String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
-        String returnClass = this.returnClass.toString();
-        String editKeyText = editKey == null ? "" : String.format(editKeyToolTipFormat, SwingUtils.getKeyStrokeCaption(editKey));
-        String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
-        String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
-        return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass, editKeyText, script, scriptPath);
+        String editKeyText = editKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, SwingUtils.getKeyStrokeCaption(editKey));
+
+        if (!configurationAccessAllowed) {
+            return String.format(TOOL_TIP_FORMAT, propCaption, editKeyText);
+        } else {
+            String sid = getSID();
+            String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
+            String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);
+            String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
+            String returnClass = this.returnClass.toString();
+
+            String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
+            String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
+            return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT, propCaption, editKeyText, sid, tableName, ifaceObjects, ifaceClasses, returnClass, script, scriptPath);
+        }
     }
 
     public class CaptionReader implements ClientPropertyReader {

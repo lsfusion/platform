@@ -17,8 +17,8 @@ import platform.client.remote.ImmutableProxyMethodsAspect;
 import platform.client.remote.proxy.RemoteFormProxy;
 import platform.client.rmi.ConnectionLostManager;
 import platform.client.rmi.RMITimeoutSocketFactory;
-import platform.interop.RemoteLogicsLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.RemoteLogicsLoaderInterface;
 import platform.interop.event.EventBus;
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.ReportGenerationData;
@@ -60,6 +60,8 @@ public class Main {
 
     public static final String PLATFORM_TITLE = "lsFusion";
     private static final String DEFAULT_SPLASH_PATH = "/images/lsfusion.jpg";
+
+    public static boolean configurationAccessAllowed;
 
     public static ModuleFactory module;
 
@@ -151,6 +153,8 @@ public class Main {
                             computerId = loginAction.getComputerId();
 
                             timeZone = remoteLogics.getTimeZone();
+
+                            configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
 
                             startSplashScreen();
 

@@ -30,6 +30,7 @@ public class DataPanelRenderer implements PanelRenderer {
     protected ResizableSimplePanel gridPanel;
 
     private String caption;
+    private String tooltip;
 
     private EventTarget focusTargetAfterEdit;
 
@@ -38,10 +39,12 @@ public class DataPanelRenderer implements PanelRenderer {
     public DataPanelRenderer(GFormController form, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
         this.property = iproperty;
         label = new Label(caption = property.getEditCaption());
+        tooltip = property.getTooltipText(property.getCaptionOrEmpty());
+
         label.addMouseOverHandler(new MouseOverHandler() {
             @Override
             public void onMouseOver(MouseOverEvent event) {
-                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), property.getTooltipText(caption));
+                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), tooltip);
             }
         });
         label.addMouseOutHandler(new MouseOutHandler() {
@@ -145,6 +148,7 @@ public class DataPanelRenderer implements PanelRenderer {
         if (!GwtSharedUtils.nullEquals(this.caption, caption)) {
             this.caption = caption;
             label.setText(property.getEditCaption(caption));
+            tooltip = property.getTooltipText(caption);
         }
     }
 

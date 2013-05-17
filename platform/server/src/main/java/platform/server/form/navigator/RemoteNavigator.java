@@ -323,7 +323,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    public boolean isConfiguratorAllowed() throws RemoteException {
+    public boolean isConfigurationAccessAllowed() throws RemoteException {
         return securityPolicy.configurator != null && securityPolicy.configurator;
     }
 

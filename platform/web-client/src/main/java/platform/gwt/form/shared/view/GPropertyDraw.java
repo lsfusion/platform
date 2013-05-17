@@ -1,6 +1,7 @@
 package platform.gwt.form.shared.view;
 
 import platform.gwt.base.shared.GwtSharedUtils;
+import platform.gwt.form.client.MainFrame;
 import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.classes.GClass;
@@ -146,32 +147,40 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         }
     }
 
-    public static final String toolTipFormat =
+    public static final String TOOL_TIP_FORMAT =
             "<html><b>%s</b><br>" +
-                    "%s" +
-                    "<hr>" +
-                    "<b>sID:</b> %s<br>" +
-                    "<b>Таблица:</b> %s<br>" +
-                    "<b>Объекты:</b> %s<br>" +
-                    "<b>Сигнатура:</b> %s <i>%s</i> (%s)<br>" +
-                    "<b>Скрипт:</b> %s<br>" +
-                    "<b>Путь:</b> %s" +
-                    "</html>";
+                    "%s";
 
-    public static final String editKeyToolTipFormat =
+    public static final String DETAILED_TOOL_TIP_FORMAT =
+            "<hr>" +
+            "<b>sID:</b> %s<br>" +
+            "<b>Таблица:</b> %s<br>" +
+            "<b>Объекты:</b> %s<br>" +
+            "<b>Сигнатура:</b> %s <i>%s</i> (%s)<br>" +
+            "<b>Скрипт:</b> %s<br>" +
+            "<b>Путь:</b> %s" +
+            "</html>";
+
+    public static final String EDIT_KEY_TOOL_TIP_FORMAT =
             "<hr><b>Горячая клавиша:</b> %s<br>";
 
     public String getTooltipText(String caption) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
-        String sid = sID;
-        String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
-        String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
-        String ifaceClasses = GwtSharedUtils.toString(", ", interfacesTypes);
-        String returnClass = this.returnClass.toString();
-        String editKeyText = editKey == null ? "" : GwtSharedUtils.stringFormat(editKeyToolTipFormat, editKey.toString());
-        String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
-        String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
-        return GwtSharedUtils.stringFormat(toolTipFormat, propCaption, editKeyText, sid, tableName, ifaceObjects, returnClass, sid, ifaceClasses, script, scriptPath);
+        String editKeyText = editKey == null ? "" : GwtSharedUtils.stringFormat(EDIT_KEY_TOOL_TIP_FORMAT, editKey.toString());
+
+        if (!MainFrame.configurationAccessAllowed) {
+            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, editKeyText);
+        } else {
+            String sid = sID;
+            String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
+            String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
+            String ifaceClasses = GwtSharedUtils.toString(", ", interfacesTypes);
+            String returnClass = this.returnClass.toString();
+
+            String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
+            String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
+            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT, propCaption, editKeyText, sid, tableName, ifaceObjects, returnClass, sid, ifaceClasses, script, scriptPath);
+        }
     }
 
     public String getIconPath(boolean enabled) {

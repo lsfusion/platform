@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.shared.GwtSharedUtils;
+import platform.gwt.form.client.MainFrame;
 import platform.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form.client.form.ui.GFormController;
@@ -156,9 +157,11 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     public void setTooltip(String caption) {
         String toolTip = !GwtSharedUtils.isRedundantString(property.toolTip) ? property.toolTip : caption;
-        toolTip += " (sID: " + property.sID + ")";
+        if (MainFrame.configurationAccessAllowed) {
+            toolTip += " (sID: " + property.sID + ")";
+        }
         if (property.editKey != null) {
-            toolTip += "(" + property.editKey.toString() + ")";
+            toolTip += " (" + property.editKey.toString() + ")";
         }
         button.setTitle(toolTip);
     }

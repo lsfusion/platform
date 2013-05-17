@@ -57,5 +57,5 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     String getCurrentFormSID() throws RemoteException;
     
-    boolean isConfiguratorAllowed() throws RemoteException;
+    boolean isConfigurationAccessAllowed() throws RemoteException;
 }
