@@ -446,7 +446,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     private boolean needsToBeSynchronized(Property property) {
-        return !LM.isGeneratedSID(property.getSID()) && (property instanceof ActionProperty || ((CalcProperty)property).isFull());
+        return !LM.isGeneratedSID(property.getSID()) && (property instanceof ActionProperty || (((CalcProperty)property).isFull() && !(((CalcProperty)property).isEmpty())));
     }
 
     private void synchronizeProperties() {

@@ -996,10 +996,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return isFull(interfaces);
     }
     private Boolean isFull;
-    @ManualLazy
+    @IdentityLazy
     public boolean isFull() {
         if(isFull==null)
             isFull = calculateIsFull();
         return isFull;
     }
+
+    public boolean isEmpty() {
+        return getClassValueWhere(ClassType.ASIS).isFalse();
+    }
+
 }

@@ -20,10 +20,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TableFactory {
 
@@ -72,23 +69,30 @@ public class TableFactory {
             }
 
         // если не найдена таблица, то создаем новую
-        ValueClass[] valueClasses = new ValueClass[findItem.size()];
+        List<ValueClass> valueClasses = new ArrayList<ValueClass>();
+
+        for (int i = 0; i < findItem.size(); i++) {
+            ValueClass valueClass = findItem.getValue(i);
+            valueClasses.add(valueClass instanceof CustomClass ? baseClass : valueClass);
+        }
+        Collections.sort(valueClasses, new Comparator<ValueClass>() {
+            public int compare(ValueClass o1, ValueClass o2) {
+                String sid1 = o1.getSID();
+                String sid2 = o2.getSID();
+                return sid1.compareTo(sid2);
+            }
+        });
 
         int baseClassCount = 0;
         String dataPrefix = "";
-        for (int i = 0; i < findItem.size(); i++) {
-            ValueClass valueClass = findItem.values().get(i);
-            T key = findItem.keys().get(i);
-            valueClasses[i] = valueClass instanceof CustomClass ? baseClass : valueClass;
-            if (valueClass instanceof CustomClass){
-                findItem = findItem.remove(key);
-                findItem = findItem.addExcl(key, baseClass);
+        for (ValueClass valueClass : valueClasses) {
+            if (valueClass instanceof CustomClass)
                 baseClassCount++;
-            }
             else
                 dataPrefix += "_" + valueClass.getSID();
         }
-        MapKeysTable<T> resultTable = include("base_" + baseClassCount + dataPrefix, valueClasses).getMapTable(findItem);
+
+        MapKeysTable<T> resultTable = include("base_" + baseClassCount + dataPrefix, valueClasses.toArray(new ValueClass[findItem.size()])).getMapTable(findItem);
         if (resultTable != null)
             return resultTable;
         else
