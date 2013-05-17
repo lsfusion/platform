@@ -60,9 +60,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     // classes
     public BaseClass baseClass;
 
-    public ConcreteCustomClass month;
-    public ConcreteCustomClass DOW;
-
     public ConcreteCustomClass formResult;
 
     // groups
@@ -87,37 +84,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP multiply;
     public LCP subtractInteger;
     public LCP divide;
-    public LCP sumDate;
-    public LCP sumDateTimeDay;
-    public LCP subtractDateTimeSeconds;
-    public LCP subtractDate;
-    public LCP dateTimeToDateTime;
-    public LCP toDateTime;
 
     public LCP string2SP, istring2SP, string3SP, istring3SP, string4SP, istring4SP, string5SP, istring5SP;
     public LCP string2, istring2, string3, istring3;
     public LCP string5CM;
     public LCP ustring2CM, ustring2SP, ustring3SP, ustring4SP, ustring5SP, ustring2, ustring3, ustring4, ustring3CM, ustring4CM, ustring5CM;
     public LCP ustring2CR;
-
-    public LCP weekInDate;
-    public LCP numberDOWInDate;
-    public LCP numberMonthInDate;
-    public LCP yearInDate;
-    public LCP dayInDate;
-    public LCP toDate;
-    public LCP toTime;
-
-    public LCP numberMonth;
-    public LCP monthNumber;
-    public LCP monthInDate;
-
-    public LCP nameMonth;
-    public LCP nameDOW;
-
-    public LCP numberDOW;
-    public LCP DOWNumber;
-    public LCP DOWInDate;
 
     public LCP vtrue;
     public LCP vzero;
@@ -136,15 +108,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP formClose;
 
     public LAP seek;
-
-    public LCP currentDate;
-    public LCP currentMonth;
-    public LCP currentYear;
-    public LCP currentHour;
-    public LCP currentMinute;
-    protected LCP currentEpoch;
-    protected LCP currentDateTime;
-    protected LCP currentTime;
 
     public LAP delete;
     public LAP deleteApply;
@@ -212,14 +175,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public void initClasses() {
         baseClass = addBaseClass("Object", getString("logics.object"));
 
-        month = addConcreteClass("Month", getString("logics.month"),
-                new String[]{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"},
-                new String[]{getString("logics.month.january"), getString("logics.month.february"), getString("logics.month.march"), getString("logics.month.april"), getString("logics.month.may"), getString("logics.month.june"), getString("logics.month.july"), getString("logics.month.august"), getString("logics.month.september"), getString("logics.month.october"), getString("logics.month.november"), getString("logics.month.december")},
-                baseClass);
-        DOW = addConcreteClass("DOW", getString("logics.week.day"),
-                new String[]{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"},
-                new String[]{getString("logics.days.sunday"), getString("logics.days.monday"), getString("logics.days.tuesday"), getString("logics.days.wednesday"), getString("logics.days.thursday"), getString("logics.days.friday"), getString("logics.days.saturday")},
-                baseClass);
         formResult = addConcreteClass("FormResult", "Результат вызова формы",
                 new String[]{"drop", "ok", "close"},
                 new String[]{"Сбросить", "Принять", "Закрыть"},
@@ -242,9 +197,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     @Override
     public void initTables() {
         tableFactory = new TableFactory(baseClass);
-
-        addTable("month", month);
-        addTable("dow", DOW);
     }
 
     @Override
@@ -330,47 +282,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         // Операции с целыми числами
         subtractInteger = addSFProp("subtractInteger", "((prm1)-(prm2))", IntegerClass.instance, 2);
 
-        // Операции над датами
-        sumDate = addSFProp("sumDate", "((prm1)+(prm2))", DateClass.instance, 2);
-        subtractDate = addSFProp("subtractDate", "((prm1)-(prm2))", DateClass.instance, 2);
-
-        sumDateTimeDay = addSFProp("sumDateTimeDay", "((prm1)+(prm2)*CAST('1 days' AS INTERVAL))", DateTimeClass.instance, 2);
-
-        subtractDateTimeSeconds = addSFProp("subtractDateTimeSeconds", "((prm1)-(prm2)*CAST('1 seconds' AS INTERVAL))", DateTimeClass.instance, 2);
-
         // Константы
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
         vnull = addProperty(privateGroup, new LCP<PropertyInterface>(NullValueProperty.instance));
-
-        // Обработка дат
-
-        numberDOW = addJProp(baseGroup, "numberDOW", true, getString("logics.week.day.number"), subtractInteger,
-                addOProp("numberDOWP1", getString("logics.week.day.number.plus.one"), PartitionType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), is(DOW), 1), true, false, 0, 1), 1,
-                addCProp(IntegerClass.instance, 1));
-        DOWNumber = addAGProp("DOWNumber", getString("logics.week.day.id"), numberDOW);
-
-        numberMonth = addOProp(baseGroup, "numberMonth", true, getString("logics.month.number"), addJProp(and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
-        monthNumber = addAGProp("monthNumber", getString("logics.month.id"), numberMonth);
-
-        // Преобразование типов
-
-        dayInDate = addSFProp("dayInDate", "(extract(day from (prm1)))", IntegerClass.instance, 1);
-        weekInDate = addSFProp("weekInDate", "(extract(week from (prm1)))", IntegerClass.instance, 1);
-
-        numberDOWInDate = addSFProp("numberDOWInDate", "(extract(dow from (prm1)))", IntegerClass.instance, 1);
-        DOWInDate = addJProp("DOWInDate", getString("logics.week.day.id"), DOWNumber, numberDOWInDate, 1);
-
-        numberMonthInDate = addSFProp("numberMonthInDate", "(extract(month from (prm1)))", IntegerClass.instance, 1);
-        monthInDate = addJProp("monthInDate", getString("logics.month.id"), monthNumber, numberMonthInDate, 1);
-
-        yearInDate = addSFProp("yearInDate", "(extract(year from (prm1)))", IntegerClass.instance, 1);
-
-        toDate = addSFProp("toDate", "(CAST((prm1) as date))", DateClass.instance, 1);
-        toTime = addSFProp("toTime", "(CAST((prm1) as time))", TimeClass.instance, 1);
-        toDateTime = addSFProp("toDateTime", "(CAST((prm1) as timestamp))", DateTimeClass.instance, 1);
-
-        dateTimeToDateTime = addSFProp("dateTimeToDateTime", "to_timestamp(CAST(prm1 as char(10)) || CAST(prm2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')", DateTimeClass.instance, 2);
 
         // Действия
 
@@ -390,17 +305,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         
         seek = addSAProp(null);
 
-        // Текущие значения
-        currentDate = addDProp(baseGroup, "currentDate", getString("logics.date.current.date"), DateClass.instance);
-        currentMonth = addJProp(baseGroup, "currentMonth", getString("logics.date.current.month"), numberMonthInDate, currentDate);
-        currentYear = addJProp(baseGroup, "currentYear", getString("logics.date.current.year"), yearInDate, currentDate);
-
-        currentDateTime = addTProp("currentDateTime", getString("logics.date.current.datetime"), Time.DATETIME);
-        currentTime = addJProp("currentTime", getString("logics.date.current.time"), toTime, currentDateTime);
-        currentMinute = addTProp("currentMinute", getString("logics.date.current.minute"), Time.MINUTE);
-        currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
-        currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
-
         staticName = addDProp(publicGroup, "staticName", getString("logics.static.name"), StringClass.get(250), baseClass);
         staticCaption = addDProp(publicGroup, "staticCaption", getString("logics.static.caption"), InsensitiveStringClass.get(100), baseClass);
         ((CalcProperty)staticCaption.property).aggProp = true;
@@ -414,11 +318,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         defaultOverrideBackgroundColor = addSUProp("defaultOverrideBackgroundColor", true, getString("logics.default.background.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.YELLOW), defaultBackgroundColor);
         defaultForegroundColor = addDProp("defaultForegroundColor", getString("logics.default.foreground.color"), ColorClass.instance);
         defaultOverrideForegroundColor = addSUProp("defaultOverrideForegroundColor", true, getString("logics.default.foreground.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.RED), defaultForegroundColor);
-
-        // todo : эти свойства делаются только для правильного диалога
-        // в дальнейшем нужно вынести все операции с датами в свой модуль Time.lsf и там нарисовать диалоговую форму по умолчанию
-        nameMonth = addJProp(recognizeGroup, "nameMonth", "Название", and1, staticCaption, 1, is(month), 1);
-        nameDOW = addJProp(recognizeGroup, "nameDOW", "Название", and1, staticCaption, 1, is(DOW), 1);
 
         initNavigators();
     }

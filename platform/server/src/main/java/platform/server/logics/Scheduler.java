@@ -136,10 +136,10 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         try {
             DataSession session = dbManager.createSession();
 
-            java.sql.Date currentDate = (java.sql.Date) businessLogics.LM.currentDate.read(session);
+            java.sql.Date currentDate = (java.sql.Date) businessLogics.timeLM.currentDate.read(session);
             java.sql.Date newDate = DateConverter.getCurrentDate();
             if (currentDate == null || currentDate.getDay() != newDate.getDay() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
-                businessLogics.LM.currentDate.change(newDate, session);
+                businessLogics.timeLM.currentDate.change(newDate, session);
                 session.apply(businessLogics);
             }
 

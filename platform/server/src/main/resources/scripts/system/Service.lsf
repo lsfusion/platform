@@ -1,6 +1,6 @@
 MODULE Service;
 
-REQUIRE System, Reflection;
+REQUIRE System, Reflection, Time;
 
 NAMESPACE Service;
 

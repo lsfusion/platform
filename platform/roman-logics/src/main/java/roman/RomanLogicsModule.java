@@ -1822,7 +1822,7 @@ public class RomanLogicsModule extends LogicsModule {
         ConcreteCustomClass country = getCountryClass();
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
-        date.setEventChange(baseLM.currentDate, is(transaction), 1);
+        date.setEventChange(BL.timeLM.currentDate, is(transaction), 1);
 
         barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.get().getBarcodeLength()), barcodeObject);
         barcode.setFixedCharWidth(13);
@@ -4093,8 +4093,8 @@ public class RomanLogicsModule extends LogicsModule {
         //sumOutFreight = addSGProp(baseGroup, "sumOutFreight", true, "Сумма выходная", sumOutImporterFreight, 2);
 
         // итоги с начала года
-        sumInCurrentYear = addSGProp(baseGroup, "sumInCurrentYear", "Итого вход", addJProp(baseLM.and1, sumInFreight, 1, addJProp(baseLM.equals2, addJProp(baseLM.yearInDate, baseLM.currentDate), addJProp(baseLM.yearInDate, date, 1), 1), 1));
-        sumInOutCurrentYear = addSGProp(baseGroup, "sumInOutCurrentYear", "Итого выход", addJProp(baseLM.and1, sumInOutFreight, 1, addJProp(baseLM.equals2, addJProp(baseLM.yearInDate, baseLM.currentDate), addJProp(baseLM.yearInDate, date, 1), 1), 1));
+        sumInCurrentYear = addSGProp(baseGroup, "sumInCurrentYear", "Итого вход", addJProp(baseLM.and1, sumInFreight, 1, addJProp(baseLM.equals2, addJProp(BL.timeLM.yearInDate, BL.timeLM.currentDate), addJProp(BL.timeLM.yearInDate, date, 1), 1), 1));
+        sumInOutCurrentYear = addSGProp(baseGroup, "sumInOutCurrentYear", "Итого выход", addJProp(baseLM.and1, sumInOutFreight, 1, addJProp(baseLM.equals2, addJProp(BL.timeLM.yearInDate, BL.timeLM.currentDate), addJProp(BL.timeLM.yearInDate, date, 1), 1), 1));
         balanceSumCurrentYear = addDUProp(baseGroup, "balanceSumCurrentYear", "Сальдо", sumInOutCurrentYear, sumInCurrentYear);
 
         currentFreightBoxRouteUser = addDProp("currentFreightBoxRouteUser", "Тек. короб (ИД)", freightBox, route, BL.authenticationLM.user);

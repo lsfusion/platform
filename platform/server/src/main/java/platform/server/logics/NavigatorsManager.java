@@ -206,7 +206,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
                 businessLogics.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
                 businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
                 businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
-                businessLogics.systemEventsLM.connectTimeConnection.change(baseLM.currentDateTime.read(session), session, newConnection);
+                businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.read(session), session, newConnection);
                 businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
                 session.apply(businessLogics);
                 session.close();

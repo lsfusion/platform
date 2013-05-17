@@ -97,6 +97,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private SystemEventsLogicsModule systemEventsLM;
 
+    private TimeLogicsModule timeLM;
+
     private int systemUserObject;
     private int systemComputer;
 
@@ -146,6 +148,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         this.reflectionLM = businessLogics.reflectionLM;
         this.emailLM = businessLogics.emailLM;
         this.systemEventsLM = businessLogics.systemEventsLM;
+        this.timeLM = businessLogics.timeLM;
         try {
             systemLogger.info("Synchronizing DB.");
             synchronizeDB();
@@ -828,7 +831,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         DataObject newLaunch = session.addObject(systemEventsLM.launch);
         systemEventsLM.computerLaunch.change(getServerComputer(), session, newLaunch);
-        systemEventsLM.timeLaunch.change(LM.currentDateTime.read(session), session, newLaunch);
+        systemEventsLM.timeLaunch.change(timeLM.currentDateTime.read(session), session, newLaunch);
         systemEventsLM.revisionLaunch.change(getRevision(), session, newLaunch);
 
         session.apply(businessLogics);

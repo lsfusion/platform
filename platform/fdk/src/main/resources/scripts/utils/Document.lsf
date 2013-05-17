@@ -1,6 +1,6 @@
 MODULE Document;
 
-REQUIRE System, Numerator, Authentication;
+REQUIRE System, Numerator, Authentication, Time;
 
 // Логика проведения документов
 

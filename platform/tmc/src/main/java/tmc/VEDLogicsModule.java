@@ -700,7 +700,7 @@ public class VEDLogicsModule extends LogicsModule {
         yellowColor = addCProp(ColorClass.instance, Color.YELLOW);
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
-        date.setEventChange(baseLM.currentDate, is(transaction), 1);
+        date.setEventChange(VEDBL.timeLM.currentDate, is(transaction), 1);
 
         barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.get().getBarcodeLength()), barcodeObject);
         barcode.setFixedCharWidth(13);
@@ -947,8 +947,8 @@ public class VEDLogicsModule extends LogicsModule {
         inAction = addXorUProp(baseGroup, "inAction", true, "В акции", addJProp(baseLM.and1, xorActionAll, 1, is(article), 2), addJProp(xorActionArticleGroup, 1, articleToGroup, 2), xorActionArticle);
 
         LCP isStarted = addJProp(baseGroup, "Началась", and(true, true), is(action), 1,
-                addJProp(baseLM.less2, baseLM.currentDate, actionFrom, 1), 1,  // активация акции, если текущая дата в диапазоне акции
-                addJProp(baseLM.greater2, baseLM.currentDate, actionTo, 1), 1);
+                addJProp(baseLM.less2, VEDBL.timeLM.currentDate, actionFrom, 1), 1,  // активация акции, если текущая дата в диапазоне акции
+                addJProp(baseLM.greater2, VEDBL.timeLM.currentDate, actionTo, 1), 1);
 
         exclActionStore = addDProp(baseGroup, "exclActionStore", "Искл.", LogicalClass.instance, action, store);
         inclActionStore = addJProp("inclActionStore", "Вкл.", baseLM.andNot1, addCProp(LogicalClass.instance, true, action, store), 1, 2, exclActionStore, 1, 2);
@@ -1132,8 +1132,8 @@ public class VEDLogicsModule extends LogicsModule {
         LCP orderClientSaleSum = addDProp("orderClientSaleSum", "Нак. сумма", DoubleClass.instance, orderSaleArticleRetail);
         LCP orderClientInitialSum = addDCProp("orderClientInitialSum", "Нак. сумма", clientInitialSum, true, subjectIncOrder, 1);
         orderClientSum = addSUProp(baseGroup, "Нак. сумма", Union.SUM, orderClientSaleSum, orderClientInitialSum);
-        orderHour = addDCProp(baseGroup, "orderHour", "Час", baseLM.currentHour, is(orderSale), 1, orderSaleArticleRetail);
-        orderMinute = addDCProp(baseGroup, "orderMinute", "Минута", baseLM.currentMinute, is(orderSale), 1, orderSaleArticleRetail);
+        orderHour = addDCProp(baseGroup, "orderHour", "Час", VEDBL.timeLM.currentHour, is(orderSale), 1, orderSaleArticleRetail);
+        orderMinute = addDCProp(baseGroup, "orderMinute", "Минута", VEDBL.timeLM.currentMinute, is(orderSale), 1, orderSaleArticleRetail);
 
         changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", false, "Время выбора", articleInnerQuantity, orderSaleArticleRetail);
         changeQuantityOrder = addOProp(documentGroup, "Номер", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), true, true, 1, 1, changeQuantityTime, 1, 2);
@@ -1276,18 +1276,18 @@ public class VEDLogicsModule extends LogicsModule {
         orderSalePayCard = addDProp(documentPayGroup, "orderSalePayCard", "Карточкой", DoubleClass.instance, orderSaleRetail);
 
         impSumCard = addDProp(baseGroup, "inpSumCard", "Безнал. в кассе (ввод)", DoubleClass.instance, DateClass.instance, shop);
-        LCP curCard = addJProp(cashRegGroup, true, "Безнал. в кассе (ввод)", impSumCard, baseLM.currentDate, currentShop);
+        LCP curCard = addJProp(cashRegGroup, true, "Безнал. в кассе (ввод)", impSumCard, VEDBL.timeLM.currentDate, currentShop);
         impSumCash = addDProp(baseGroup, "inpSumCash", "Наличных в кассе (ввод)", DoubleClass.instance, DateClass.instance, shop);
-        LCP curCash = addJProp(cashRegGroup, true, "Наличных в кассе (ввод)", impSumCash, baseLM.currentDate, currentShop);
+        LCP curCash = addJProp(cashRegGroup, true, "Наличных в кассе (ввод)", impSumCash, VEDBL.timeLM.currentDate, currentShop);
         impSumBank = addDProp(baseGroup, "inpSumBank", "Отправить в банк", DoubleClass.instance, DateClass.instance, shop);
-        LCP curBank = addJProp(cashRegGroup, true, "Отправить в банк (ввод)", impSumBank, baseLM.currentDate, currentShop);
+        LCP curBank = addJProp(cashRegGroup, true, "Отправить в банк (ввод)", impSumBank, VEDBL.timeLM.currentDate, currentShop);
 
         LCP allOrderSalePayCard = addSGProp(baseGroup, "Безнал. в кассе", orderSalePayCard, date, 1, subjectOutOrder, 1);
         LCP retailSumOrderRetail = addJProp(baseLM.and1, sumWithDiscountObligationOrder, 1, is(orderRetail), 1);
         LCP allOrderSalePayCash = addDUProp(cashRegGroup, "Наличных в кассе", addDUProp(addSGProp(retailSumOrderRetail, date, 1, subjectOutOrder, 1), addSGProp(retailSumOrderRetail, date, 1, subjectIncOrder, 1)), allOrderSalePayCard);
 
-        LCP allOrderSalePayCardCur = addJProp(cashRegGroup, "allOrderSalePayCardCur", "Безнал. в кассе", allOrderSalePayCard, baseLM.currentDate, currentShop);
-        LCP allOrderSalePayCashCur = addJProp(cashRegGroup, "Наличных в кассе", allOrderSalePayCash, baseLM.currentDate, currentShop);
+        LCP allOrderSalePayCardCur = addJProp(cashRegGroup, "allOrderSalePayCardCur", "Безнал. в кассе", allOrderSalePayCard, VEDBL.timeLM.currentDate, currentShop);
+        LCP allOrderSalePayCashCur = addJProp(cashRegGroup, "Наличных в кассе", allOrderSalePayCash, VEDBL.timeLM.currentDate, currentShop);
 
         // сдача/доплата
         LCP orderSalePayAll = addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash);

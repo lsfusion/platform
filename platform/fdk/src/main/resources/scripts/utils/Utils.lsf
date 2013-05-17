@@ -1,6 +1,6 @@
 MODULE Utils;
 
-REQUIRE System;
+REQUIRE System, Time;
 
 dateDiffersCurrent(date) = date IS DATE AND date != currentDate();
 

@@ -238,7 +238,7 @@ public class BudgetLogicsModule extends LogicsModule {
 
         LCP personEndDate = addJProp(dateBy, personEndWorkDay, 1, addJProp(monthNum, personEndWorkMonth, 1), 1, personEndWorkYear, 1);
         LCP totalDaysWorkedTillDate = addJProp(baseGroup, "daysWorkedTillDate", "Дней отработано", daysBetweenDates,
-                addSUProp(Union.OVERRIDE, addJProp(baseLM.and1, baseLM.currentDate, is(person), 1), personEndDate), 1,
+                addSUProp(Union.OVERRIDE, addJProp(baseLM.and1, BL.timeLM.currentDate, is(person), 1), personEndDate), 1,
                 addJProp(dateBy, personStartWorkDay, 1, addJProp(monthNum, personStartWorkMonth, 1), 1, personStartWorkYear, 1), 1);
 
         vacationPerson = addDProp("vacationPerson", "Сотрудник", person, vacation);
@@ -251,7 +251,7 @@ public class BudgetLogicsModule extends LogicsModule {
         LCP totalVacationWorkDays = addSGProp(baseGroup, "totalVacationWorkDays", "Отпуск, рабочих дней", vacationWorkDays, vacationPerson, 1);
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
-        date.setEventChange(baseLM.currentDate, is(transaction), 1);
+        date.setEventChange(BL.timeLM.currentDate, is(transaction), 1);
         
         LCP transactionMonth = addJProp("Месяц", monthInDate, date, 1);
         LCP transactionYear = addJProp("Год", yearInDate, date, 1);
@@ -284,7 +284,7 @@ public class BudgetLogicsModule extends LogicsModule {
         outMonth = addDProp("outM", "Месяц", absMonth, absOutTime);
         outYear = addDProp("outY", "Год", YearClass.instance, absOutTime);
 
-        inactiveAbsOutPerson = addJProp(baseLM.greater2, baseLM.currentDate, personEndDate, 1);
+        inactiveAbsOutPerson = addJProp(baseLM.greater2, BL.timeLM.currentDate, personEndDate, 1);
 
         reimbursementPayer = addDProp("reimbPayer", "Плательщик", payer, reimbursement);
         LCP reimbursementSum = addDProp(baseGroup, "reimbSum", "Сумма", IntegerClass.instance, reimbursement);

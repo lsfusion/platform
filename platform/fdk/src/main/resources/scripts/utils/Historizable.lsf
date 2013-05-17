@@ -1,6 +1,6 @@
 MODULE Historizable;
 
-REQUIRE System, Authentication;
+REQUIRE System, Authentication, Time;
 
 CLASS Historizable 'Объект с историей создания' ;
 TABLE historizable (Historizable);

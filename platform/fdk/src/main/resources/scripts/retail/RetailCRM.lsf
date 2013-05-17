@@ -1,6 +1,7 @@
 MODULE RetailCRM;
 
 REQUIRE System,
+        Time,
         Retail,
         Stock,
         Barcode,

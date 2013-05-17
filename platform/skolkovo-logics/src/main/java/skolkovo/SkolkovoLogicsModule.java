@@ -86,6 +86,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private EmailLogicsModule emailLM;
     private ContactLogicsModule contactLM;
     private AuthenticationLogicsModule authenticationLM;
+    private TimeLogicsModule timeLM;
 
     public SkolkovoLogicsModule(BaseLogicsModule<SkolkovoBusinessLogics> baseLM, SkolkovoBusinessLogics BL) {
         super("SkolkovoLogicsModule");
@@ -94,6 +95,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         this.emailLM = BL.emailLM;
         this.contactLM = BL.contactLM;
         this.authenticationLM = BL.authenticationLM;
+        this.timeLM = BL.timeLM;
     }
 
     private LCP incrementVote;
@@ -1696,18 +1698,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
         negative = addJProp(baseLM.less2, 1, baseLM.vzero);
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
-        date.setEventChange(baseLM.currentDate, is(transaction), 1);
+        date.setEventChange(BL.timeLM.currentDate, is(transaction), 1);
 
         webHost = addDProp("webHost", "Web хост", StringClass.get(50));
 
         LCP charLength = BL.getModule("Utils").getLCPByName("charLength");
 
-        previousDate = addJProp("previousDate", "Вчерашняя дата", baseLM.subtractDate, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1));
-        monthInPreviousDate = addJProp("monthInPreviousDate", "Вчерашний месяц", baseLM.numberMonthInDate, previousDate);
-        yearInPreviousDate = addJProp("yearInPreviousDate", "Вчерашний год", baseLM.yearInDate, previousDate);
+        previousDate = addJProp("previousDate", "Вчерашняя дата", timeLM.subtractDate, BL.timeLM.currentDate, addCProp("1", IntegerClass.instance, 1));
+        monthInPreviousDate = addJProp("monthInPreviousDate", "Вчерашний месяц", timeLM.numberMonthInDate, previousDate);
+        yearInPreviousDate = addJProp("yearInPreviousDate", "Вчерашний год", timeLM.yearInDate, previousDate);
 
         // monthInYeasterdayDate = addJProp("monthInYeasterdayDate", "Вчерашний месяц", baseLM.numberMonthInDate, addJProp(baseLM.sumDate, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1)));
-        isNewMonth = addJProp("isNewMonth", "Начало месяца", baseLM.diff2, baseLM.currentMonth, monthInPreviousDate);
+        isNewMonth = addJProp("isNewMonth", "Начало месяца", baseLM.diff2, timeLM.currentMonth, monthInPreviousDate);
 
         nameNative = addDProp(recognizeGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), multiLanguageNamed);
         ((CalcProperty)nameNative.property).aggProp = true;
@@ -1774,7 +1776,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         sidCluster.setFixedCharWidth(3);
 
         withdrawnProject = addDProp(withdrawnGroup, "withdrawnProject", "Отозвана заявителем", LogicalClass.instance, project);
-        dateWithdrawnProject = addDCProp(withdrawnGroup, "dateWithdrawnProject", "Дата отзыва заявителем", true, baseLM.currentDate, withdrawnProject, 1);
+        dateWithdrawnProject = addDCProp(withdrawnGroup, "dateWithdrawnProject", "Дата отзыва заявителем", true, BL.timeLM.currentDate, withdrawnProject, 1);
 
         statementClaimer = addDProp("statementClaimer", "Заявление", DynamicFormatFileClass.get(false, false), claimer);
         loadStatementClaimer = addLFAProp(documentGroup, "Загрузить заявление", statementClaimer);
@@ -2872,11 +2874,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateStartVote = addJProp(baseGroup, "dateStartVote", true, "Дата начала", baseLM.and1, date, 1, is(vote), 1);
 //        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", sumDate, dateStartVote, 1, requiredPeriod);
-        aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", baseLM.sumDate, dateStartVote, 1, requiredPeriod);
+        aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", timeLM.sumDate, dateStartVote, 1, requiredPeriod);
         dateEndVote = addDProp(baseGroup, "dateEndVote", "Дата окончания", DateClass.instance, vote);
         dateEndVote.setEventChangeNewSet(aggrDateEndVote, 1, dateStartVote, 1);
 
-        weekStartVote = addJProp("weekStartVote", true, "Неделя начала", baseLM.weekInDate, dateStartVote, 1);
+        weekStartVote = addJProp("weekStartVote", true, "Неделя начала", timeLM.weekInDate, dateStartVote, 1);
         quantityNewExpertWeek = addSGProp("quantityNewExpertWeek", "Кол-во заседаний", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), 1, weekStartVote, 2);
         quantityNewExpertWeek.setFixedCharWidth(2);
         quantityNewWeek = addSGProp("quantityNewWeek", "Кол-во заседаний", quantityNewExpertWeek, 2);
@@ -2889,7 +2891,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                  addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, vote), 1,
                          isStatusVote, 1), projectVote, 1);
 
-        openedVote = addJProp(baseGroup, "openedVote", "Открыто", baseLM.groeq2, dateEndVote, 1, baseLM.currentDate);
+        openedVote = addJProp(baseGroup, "openedVote", "Открыто", baseLM.groeq2, dateEndVote, 1, BL.timeLM.currentDate);
         closedVote = addJProp(baseGroup, "closedVote", "Закрыто", baseLM.andNot1, is(vote), 1, openedVote, 1);
 
         voteInProgressProject = addAGProp(idGroup, "voteInProgressProject", true, "Тек. заседание (ИД)",
@@ -3129,8 +3131,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityInExpertDateFromDateTo = addSGProp("quantityInExpertDateFromDateTo", "Кол-во участ.",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
-        LCP expertVoteMonthYear = addJProp(baseLM.and1, addJProp(baseLM.equals2, 3, addJProp(baseLM.numberMonthInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 3,
-                addJProp(baseLM.equals2, 3, addJProp(baseLM.yearInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 4);
+        LCP expertVoteMonthYear = addJProp(baseLM.and1, addJProp(baseLM.equals2, 3, addJProp(timeLM.numberMonthInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 3,
+                addJProp(baseLM.equals2, 3, addJProp(timeLM.yearInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 4);
         doneExpertVoteMonthYear = addJProp("doneExpertVoteMonthYear", "Проголосовал в текущем месяце", baseLM.and1, doneNewExpertVote, 1, 2, expertVoteMonthYear, 1, 2, 3, 4);
         quantityDoneExpertMonthYear = addSGProp("quantityDoneExpertMonthYear", "Кол-во голосов.",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneExpertVoteMonthYear, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал за месяц
@@ -3296,7 +3298,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, addCProp(StringClass.get(10), "Англ"), fillForeignProject, 1));
 
         transferredProject = addDProp(translationGroup, "transferredProject", "Переведена", LogicalClass.instance, project);
-        dateTransferredProject = addDCProp(translationGroup, "dateTransferredProject", "Дата перевода", true, baseLM.currentDate, transferredProject, 1);
+        dateTransferredProject = addDCProp(translationGroup, "dateTransferredProject", "Дата перевода", true, BL.timeLM.currentDate, transferredProject, 1);
 
         translatedToRussianProject = transferredProject; // addDProp(projectTranslationsGroup, "translatedToRussianProject", "Переведено на русский", LogicalClass.instance, project);
         translatedToEnglishProject = transferredProject; // addDProp(projectTranslationsGroup, "translatedToEnglishProject", "Переведено на английский", LogicalClass.instance, project);
@@ -3346,15 +3348,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateTimeSubmitFormalControl = addDProp("dateTimeSubmitFormalControl", "Дата/время отправки проекта", DateTimeClass.instance, formalControl);
         dateTimeSubmitFormalControl.setEventChangeNewSet(updateDateFormalControl, 1, is(formalControl), 1);
-        dateSubmitFormalControl = addJProp("dateSubmitFormalControl", "Дата отправки проекта", baseLM.toDate, dateTimeSubmitFormalControl, 1);
+        dateSubmitFormalControl = addJProp("dateSubmitFormalControl", "Дата отправки проекта", timeLM.toDate, dateTimeSubmitFormalControl, 1);
 
         dateTimeFormalControl = addTCProp(Time.DATETIME, "dateTimeFormalControl", true, "Дата/время экспертизы", resultFormalControl);
-        dateFormalControl = addJProp("dateFormalControl", "Дата экспертизы", baseLM.toDate, dateTimeFormalControl, 1);
+        dateFormalControl = addJProp("dateFormalControl", "Дата экспертизы", timeLM.toDate, dateTimeFormalControl, 1);
         resultNoticedFormalControl = addDProp("resultNoticedFormalControl", "Отослано уведомление", LogicalClass.instance, formalControl);
         dateResultNoticedFormalControl = addDProp("dateResultNoticedFormalControl", "Дата отсылки уведомления", DateClass.instance, formalControl);
 
         LCP defaultCountry = BL.getModule("Country").getLCPByName("defaultCountry");
-        overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.sumDate, addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateResultNoticedFormalControl, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
+        overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", timeLM.sumDate, addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateResultNoticedFormalControl, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(timeLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         addNotEnoughDocumentsFCResult = addJoinAProp(formalControlResultGroup, "addNotEnoughDocumentsFCResult", "Неполный перечень документов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "notEnoughDocuments"));
         addNoListOfExpertsFCResult = addJoinAProp(formalControlResultGroup, "Отсутствует перечень экспертов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "noListOfExperts"));
@@ -3382,13 +3384,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateTimeSubmitLegalCheck = addDProp("dateTimeSubmitLegalCheck", "Дата/время отправки проекта", DateTimeClass.instance, legalCheck);
         dateTimeSubmitLegalCheck.setEventChangeNewSet(updateDateLegalCheck, 1, is(legalCheck), 1);
-        dateSubmitLegalCheck = addJProp("dateSubmitLegalCheck", "Дата отправки проекта", baseLM.toDate, dateTimeSubmitLegalCheck, 1);
+        dateSubmitLegalCheck = addJProp("dateSubmitLegalCheck", "Дата отправки проекта", timeLM.toDate, dateTimeSubmitLegalCheck, 1);
 
         resultNoticedLegalCheck = addDProp("resultNoticedLegalCheck", "Отослано уведомление", LogicalClass.instance, legalCheck);
         dateResultNoticedLegalCheck = addDProp("dateResultNoticedLegalCheck", "Дата отсылки уведомления", DateClass.instance, legalCheck);
 
         dateTimeLegalCheck = addTCProp(Time.DATETIME, "dateTimeLegalCheck", true, "Дата проверки", resultLegalCheck);
-        dateLegalCheck = addJProp("dateLegalCheck", "Дата отправки уведомления", baseLM.toDate, dateTimeLegalCheck, 1);
+        dateLegalCheck = addJProp("dateLegalCheck", "Дата отправки уведомления", timeLM.toDate, dateTimeLegalCheck, 1);
 
         isR1LegalCheck = addJProp("isR1LegalCheck", "ЮП по R1", isR1Project, projectLegalCheck, 1);
         projectActionLegalCheck = addDProp(idGroup, "projectActionLegalCheck", "Тип заявки (ИД)", projectAction, legalCheck);
@@ -3401,9 +3403,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         LCMinDateProjectActionProject = addMGProp("LCMinDateProjectActionProject", true, "Дата первой отсылки ЮП", true, dateResultNoticedLegalCheck, projectActionLegalCheck, 1, projectLegalCheck, 1);
         minDateLegalCheck = addJProp("minDateLegalCheck", "Дата отсылки", LCMinDateProjectActionProject, projectActionLegalCheck, 1, projectLegalCheck, 1);
-        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.sumDate,
+        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", timeLM.sumDate,
                 addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, minDateLegalCheck, 1, addCProp(IntegerClass.instance, 1)), 1,
-                addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
+                addJProp(timeLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         userLegalCheck = addDCProp("userLegalCheck", "Пользователь ЮП (ИД)", true, authenticationLM.currentUser, resultLegalCheck, 1);
         nameUserLegalCheck = addJProp("nameUserLegalCheck", "Пользователь ЮП", name, userLegalCheck, 1);
@@ -3456,7 +3458,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         datePrevFormalControl = addJProp("datePrevFormalControl", "Дата пред. формальной эскпертизы", dateFormalControl, prevFormalControl, 1);
 
         overdueFormalControlProject = addJProp("overdueFormalControlProject", true, "Просрочена формальная экспертиза", baseLM.and1,
-                addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateFormalControl, executeFormalControlProject, 1), 1), 1,
+                addJProp(baseLM.greater2, BL.timeLM.currentDate, addJProp(overdueDateFormalControl, executeFormalControlProject, 1), 1), 1,
                 notEnoughDocumentsProject, 1);
 
         // последняя юридическая проверка
@@ -3497,13 +3499,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         datePositiveStatusLegalCheckProject = addJProp("datePositiveStatusLegalCheckProject", "Дата прохождения юридической экспертизы (статус)", dateLegalCheck, positiveStatusLegalCheckProject, 1);
 
         overdueLegalCheckProject = addJProp("overdueLegalCheckProject", true, "Просрочена юридическая проверка", baseLM.and1,
-                addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateLegalCheck, executeLegalCheckProject, 1), 1), 1,
+                addJProp(baseLM.greater2, BL.timeLM.currentDate, addJProp(overdueDateLegalCheck, executeLegalCheckProject, 1), 1), 1,
                 negativeLegalResultProject, 1);
 
         resultForesightCheckProject = addDProp("resultForesightCheckProject", "Решение проверки на форсайты (ИД)", foresightCheckResult, project);
         nameResultForesightCheckProject = addJProp("nameResultForesightCheckProject", "Решение проверки на форсайты", name, resultForesightCheckProject, 1);
         sidResultForesightCheckProject = addJProp("sidResultForesightCheckProject", "Результат проверки", baseLM.staticName, resultForesightCheckProject, 1);
-        dateResultForesightCheckProject = addDCProp("dateResultForesightCheckProject", "Дата проверки на форсайты", true, baseLM.currentDate, resultForesightCheckProject, 1);
+        dateResultForesightCheckProject = addDCProp("dateResultForesightCheckProject", "Дата проверки на форсайты", true, BL.timeLM.currentDate, resultForesightCheckProject, 1);
         userResultForesightCheckProject = addDCProp("userResultForesightCheckProject", "Пользователь проверки на форсайты (ИД)", true, authenticationLM.currentUser, resultForesightCheckProject, 1);
         nameUserResultForesightCheckProject = addJProp("nameUserResultForesightCheckProject", "Пользователь проверки на форсайты", name, userResultForesightCheckProject, 1);
         positiveResultForesightCheckProject = addJProp("positiveResultForesightCheckProject", "Положительное решение проверки на форсайты", baseLM.equals2, resultForesightCheckProject, 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
@@ -3555,7 +3557,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         sentForTranslationProject = addDProp(translationGroup, "sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
         sentForTranslationProject.setEventChangeNewSet(addCProp(LogicalClass.instance, true), needTranslationProject, 1);
 
-        dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
+        dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, BL.timeLM.currentDate, sentForTranslationProject, 1);
         dateToSentForTranslationProject = addDCProp(translationGroup, "dateToSentForTranslationProject", "Дата до которой д.б. переведен", BL.getModule("Country").getLCPByName("jumpWorkdays"), true, defaultCountry, dateSentForTranslationProject, 1, addCProp(IntegerClass.instance, 5));
 
         oficialNameProjectStatus = addDProp(baseGroup, "oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
@@ -3595,8 +3597,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         commentOriginalDocsCheck = addDProp("commentOriginalDocsCheck", "Комментарий", TextClass.instance, originalDocsCheck);
         nameResultOriginalDocsCheck = addJProp("nameResultOriginalDocsCheck", "Проверка оригиналов документов", name, resultOriginalDocsCheck, 1);
 
-        dateOriginalDocsCheck = addJProp("dateOriginalDocsCheck", "Дата отправки уведомления", baseLM.toDate, dateTimeOriginalDocsCheck, 1);
-        overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки подачи оригиналов документов", baseLM.sumDate, addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateOriginalDocsCheck, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
+        dateOriginalDocsCheck = addJProp("dateOriginalDocsCheck", "Дата отправки уведомления", timeLM.toDate, dateTimeOriginalDocsCheck, 1);
+        overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки подачи оригиналов документов", timeLM.sumDate, addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateOriginalDocsCheck, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(timeLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         dateFirstSubmitOriginalDocsProject = addMGProp("dateFirstSubmitOriginalDocsProject", true, "Дата первой подачи документов", true, date, projectOriginalDocsCheck, 1);
 
@@ -3615,28 +3617,28 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         negativeOriginalDocsCheckProject = addJProp("negativeOriginalDocsCheckProject", true, "Не полный пакет документов", baseLM.equals2, resultExecuteOriginalDocsCheckProject, 1, addCProp(originalDocsCheckResult, "notCompleteOriginalDocsPacket"));
         positiveOriginalDocsCheckProject = addJProp("positiveOriginalDocsCheckProject", true, "Полный пакет документов", baseLM.equals2, resultExecuteOriginalDocsCheckProject, 1, addCProp(originalDocsCheckResult, "completeOriginalDocsPacket"));
-        overdueOriginalDocsCheckProject = addJProp("overdueOriginalDocsCheckProject", true, "Пакет оригиналов документов не пополнен в срок", baseLM.greater2, baseLM.currentDate, addJProp(overdueDateOriginalDocsCheck, executeOriginalDocsCheckProject, 1), 1);
+        overdueOriginalDocsCheckProject = addJProp("overdueOriginalDocsCheckProject", true, "Пакет оригиналов документов не пополнен в срок", baseLM.greater2, BL.timeLM.currentDate, addJProp(overdueDateOriginalDocsCheck, executeOriginalDocsCheckProject, 1), 1);
 
         prevOriginalDocsCheck = addOProp("prevOriginalDocsCheck", "Пред. проверка", PartitionType.PREVIOUS, object(originalDocsCheck), true, true, 1, projectOriginalDocsCheck, 1, object(originalDocsCheck), 1);
         datePrevOriginalDocsCheck = addJProp("datePrevOriginalDocsCheck", "Дата пред. проверки", dateOriginalDocsCheck, prevOriginalDocsCheck, 1);
 
         sentForSignatureProject = addDProp(registerGroup, "sentForSignatureProject", "Решение передано на подпись", LogicalClass.instance, project);
-        dateSentForSignatureProject = addDCProp(registerGroup, "dateSentForSignatureProject", "Дата передачи на подпись", true, baseLM.currentDate, sentForSignatureProject, 1);
+        dateSentForSignatureProject = addDCProp(registerGroup, "dateSentForSignatureProject", "Дата передачи на подпись", true, BL.timeLM.currentDate, sentForSignatureProject, 1);
 
         signedProject = addDProp(registerGroup, "signedProject", "Решение подписано", LogicalClass.instance, project);
-        dateSignedProject = addDCProp(registerGroup, "dateSignedProject", "Дата подписания", true, baseLM.currentDate, signedProject, 1);
+        dateSignedProject = addDCProp(registerGroup, "dateSignedProject", "Дата подписания", true, BL.timeLM.currentDate, signedProject, 1);
 
         sentToFinDepProject = addDProp(registerGroup, "sentToFinDepProject", "Документы переданы в Финансовый департамент", LogicalClass.instance, project);
-        dateSentToFinDepProject = addDCProp(registerGroup, "dateSentToFinDepProject", "Дата передачи в Финансовый департамент", true, baseLM.currentDate, sentToFinDepProject, 1);
+        dateSentToFinDepProject = addDCProp(registerGroup, "dateSentToFinDepProject", "Дата передачи в Финансовый департамент", true, BL.timeLM.currentDate, sentToFinDepProject, 1);
 
         submittedToRegisterProject = addDProp(registerGroup, "submittedToRegisterProject", "Внесен в реестр участников", LogicalClass.instance, project);
-        dateSubmittedToRegisterProject = addDCProp(registerGroup, "dateSubmittedToRegisterProject", "Дата внесения в реестр участников", true, baseLM.currentDate, submittedToRegisterProject, 1);
+        dateSubmittedToRegisterProject = addDCProp(registerGroup, "dateSubmittedToRegisterProject", "Дата внесения в реестр участников", true, BL.timeLM.currentDate, submittedToRegisterProject, 1);
 
         preparedCertificateProject = addDProp(registerGroup, "preparedCertificateProject", "Подготовлено свидетельство участника", LogicalClass.instance, project);
-        datePreparedCertificateProject = addDCProp(registerGroup, "datePreparedCertificateProject", "Дата подготовки свидетельства участника", true, baseLM.currentDate, preparedCertificateProject, 1);
+        datePreparedCertificateProject = addDCProp(registerGroup, "datePreparedCertificateProject", "Дата подготовки свидетельства участника", true, BL.timeLM.currentDate, preparedCertificateProject, 1);
 
         certifiedProject = addDProp(registerGroup, "certifiedProject", "Выдано свидетельство участника", LogicalClass.instance, project);
-        dateCertifiedProject = addDCProp(registerGroup, "dateCertifiedProject", "Дата выдачи свидетельства участника", true, baseLM.currentDate, certifiedProject, 1);
+        dateCertifiedProject = addDCProp(registerGroup, "dateCertifiedProject", "Дата выдачи свидетельства участника", true, BL.timeLM.currentDate, certifiedProject, 1);
         quantitySubDefaultVoteProject = addSUProp("quantitySubDefaultVoteProject", true, "Вместо заседаний", Union.OVERRIDE, quantityDefaultVoteProject, quantityVoteProject);
 
         hasPreliminaryVoteProject = addJProp("hasPreliminaryVoteProject", "Подавался на предв. экспертизу", baseLM.and1, is(project), 1, quantityPreliminaryVoteProject, 1);
@@ -3829,7 +3831,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailLM.addEARecipients(emailNoticeRejectedVoteEA, claimerEmailVote, 1);
 
         setCurrentDateDecisionNoticedVote = addSetPropertyAProp(actionGroup, "setCurrentDateDecisionNoticedVote", "Установить текущую дату уведомления",
-                dateDecisionNoticedVote, 1, baseLM.currentDate);
+                dateDecisionNoticedVote, 1, BL.timeLM.currentDate);
 
         emailNoticeRejectedVote = addIfAProp(actionGroup, "emailNoticeRejectedVote", "Письмо о несоответствии", closedRejectedVote, 1,
                 addListAProp(
@@ -3928,7 +3930,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         resultNeedVoteProject = addDProp("resultNeedVoteProject", "Отослано уведомление", LogicalClass.instance, project);
         dateResultNeedVoteProject = addDProp("dateResultNeedVoteProject", "Дата отсылки уведомления", DateClass.instance, project);
-        setCurrentDateResultNeedVoteProject = addSetPropertyAProp(actionGroup, "setCurrentDateResultNeedVoteProject", "Установить текущую дату уведомления", dateResultNeedVoteProject, 1, baseLM.currentDate);
+        setCurrentDateResultNeedVoteProject = addSetPropertyAProp(actionGroup, "setCurrentDateResultNeedVoteProject", "Установить текущую дату уведомления", dateResultNeedVoteProject, 1, BL.timeLM.currentDate);
         emailNeedVoteProjectEA = emailLM.addEAProp(emailIO, project);
         emailLM.addEARecipients(emailNeedVoteProjectEA, emailPresident);
         emailLM.addEARecipientsType(emailNeedVoteProjectEA, MimeMessage.RecipientType.CC, emailIO);
@@ -3969,7 +3971,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
 
         setCurrentDateResultNoticedFormalControl = addSetPropertyAProp(actionGroup, "setCurrentDateResultNoticedFormalControl", "Установить текущую дату уведомления",
-                dateResultNoticedFormalControl, 1, baseLM.currentDate);
+                dateResultNoticedFormalControl, 1, BL.timeLM.currentDate);
 
         emailLM.addEARecipients(emailClaimerFormalControlEA, claimerEmailFormalControl, 1);
 
@@ -4011,7 +4013,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeClaimerLegalCheck.setPreferredWidth(50);
 
         setCurrentDateResultNoticedLegalCheck = addSetPropertyAProp(actionGroup, "setCurrentDateResultNoticedLegalCheck", "Установить текущую дату уведомления",
-                dateResultNoticedLegalCheck, 1, baseLM.currentDate);
+                dateResultNoticedLegalCheck, 1, BL.timeLM.currentDate);
 
         emailLM.addEARecipients(emailClaimerLegalCheckEA, claimerEmailLegalCheck, 1);
         emailLM.addEARecipientsType(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
@@ -4030,7 +4032,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailClaimerChangeLegalCheckEA = emailLM.addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, legalCheck);
         setCurrentDateChangeLegalCheck = addSetPropertyAProp(actionGroup, "setCurrentDateChangeLegalCheck", "Установить текущую дату уведомления",
-                dateChangeLegalCheck, 1, baseLM.currentDate);
+                dateChangeLegalCheck, 1, BL.timeLM.currentDate);
 
         emailLM.addEARecipients(emailClaimerChangeLegalCheckEA, claimerEmailLegalCheck, 1);
         emailLM.addEARecipientsType(emailClaimerChangeLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
@@ -4430,8 +4432,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isWorkDaysNormalPeriodStatus = addDProp(baseGroup, "isWorkDaysNormalPeriodStatus", "В рабочих днях", LogicalClass.instance, projectStatus);
         overdueDateStatusProject = addIfElseUProp(baseGroup, "overdueDateStatusProject", true, "Дата просрочки статуса",
                 addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateInStatusProject, 1, normalPeriodStatusProject, 1),
-                addJProp(baseLM.sumDate, dateInStatusProject, 1, normalPeriodStatusProject, 1), addJProp(isWorkDaysNormalPeriodStatus, statusProject, 1), 1);
-        quantityDaysToOverdueDateStatusProject = addJProp("quantityDaysToOverdueDateStatusProject", true, "Количество дней до просрочки", baseLM.subtractInteger, overdueDateStatusProject, 1, baseLM.currentDate);
+                addJProp(timeLM.sumDate, dateInStatusProject, 1, normalPeriodStatusProject, 1), addJProp(isWorkDaysNormalPeriodStatus, statusProject, 1), 1);
+        quantityDaysToOverdueDateStatusProject = addJProp("quantityDaysToOverdueDateStatusProject", true, "Количество дней до просрочки", baseLM.subtractInteger, overdueDateStatusProject, 1,BL.timeLM.currentDate);
         quantityDaysToOverdueDateStatusProject.setFixedCharWidth(4);
 
         dateInStatusApplication = addIfElseUProp(idGroup, "dateInStatusApplication", "Дата статуса", addJProp(dateDecisionNoticedProject, projectApplication, 1), addJProp(dateInStatusProject, projectApplication, 1), isPreliminaryAfterStatusApplication, 1);
@@ -4439,8 +4441,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         normalPeriodStatusApplication.setFixedCharWidth(2);
         overdueDateStatusApplication = addIfElseUProp(baseGroup, "overdueDateStatusApplication", "Дата просрочки статуса",
                 addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateInStatusApplication, 1, normalPeriodStatusApplication, 1),
-                addJProp(baseLM.sumDate, dateInStatusApplication, 1, normalPeriodStatusApplication, 1), addJProp(isWorkDaysNormalPeriodStatus, statusApplication, 1), 1);
-        quantityDaysToOverdueDateStatusApplication = addJProp("quantityDaysToOverdueDateStatusApplication", "Количество дней до просрочки", baseLM.subtractInteger, overdueDateStatusApplication, 1, baseLM.currentDate);
+                addJProp(timeLM.sumDate, dateInStatusApplication, 1, normalPeriodStatusApplication, 1), addJProp(isWorkDaysNormalPeriodStatus, statusApplication, 1), 1);
+        quantityDaysToOverdueDateStatusApplication = addJProp("quantityDaysToOverdueDateStatusApplication", "Количество дней до просрочки", baseLM.subtractInteger, overdueDateStatusApplication, 1, BL.timeLM.currentDate);
         quantityDaysToOverdueDateStatusApplication.setFixedCharWidth(4);
 
         oneApplications = addJProp("oneApplications", "К-во заявок" ,and(false,true, true),  addCProp(IntegerClass.instance, 1), is(application), 1, inactiveApplication, 1, inTestApplication, 1);
@@ -6221,7 +6223,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod,
+            addPropertyDraw(new LP[]{BL.timeLM.currentDate, requiredPeriod, overduePeriod,
                     requiredQuantity, requiredBusinessQuantity, useAllClusterExperts,
                     limitExperts, percentNeeded,
                     emailDocuments, emailPresident, emailClaimerFromAddress, emailForCertificates, emailIO, emailExperts, emailFondFC, emailForesightLC, emailFondTransferred, emailFondStartVote, emailBureauTranslation,

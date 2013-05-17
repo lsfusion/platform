@@ -210,7 +210,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
 
             try {
                 Object importStore = BL.VEDLM.subjectIncOrder.read(session, (DataObject) docValue);
-                BL.VEDLM.dateLastImportShop.change(BL.VEDLM.baseLM.currentDate.read(session), session, session.getDataObject(BL.LM.baseClass, importStore));
+                BL.VEDLM.dateLastImportShop.change(BL.timeLM.currentDate.read(session), session, session.getDataObject(BL.LM.baseClass, importStore));
             } catch (SQLException e) {
             }
 

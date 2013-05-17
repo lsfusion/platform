@@ -1,6 +1,6 @@
 MODULE SystemEvents;
 
-REQUIRE System, Reflection;
+REQUIRE System, Reflection, Time;
 
 CLASS ABSTRACT Exception 'Исключение';
 CLASS ClientException 'Исключение на клиенте' : Exception;

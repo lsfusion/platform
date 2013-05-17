@@ -1,6 +1,6 @@
 MODULE Currency;
 
-REQUIRE System, MasterData, DefaultData;
+REQUIRE System, Time, MasterData, DefaultData;
 
 CLASS Currency 'Валюта';
 TABLE currency(Currency);

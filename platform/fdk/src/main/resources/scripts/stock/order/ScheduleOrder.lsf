@@ -1,6 +1,7 @@
 MODULE ScheduleOrder;
 
 REQUIRE System,
+        Time,
         Utils,
         Historizable,
         Stock,

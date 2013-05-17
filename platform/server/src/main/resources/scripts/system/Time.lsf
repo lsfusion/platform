@@ -1,0 +1,76 @@
+MODULE Time;
+
+REQUIRE System;
+
+dayInDate = FORMULA INTEGER '(extract(day from ($1)))';
+weekInDate = FORMULA INTEGER '(extract(week from ($1)))';
+numberMonthInDate = FORMULA INTEGER '(extract(month from ($1)))';
+yearInDate = FORMULA INTEGER '(extract(year from ($1)))';
+
+currentDate 'Тек. дата' = DATA DATE ();
+currentMonth 'Тек. месяц' = numberMonthInDate (currentDate());
+currentYear 'Тек. год' = yearInDate (currentDate());
+
+toDate = FORMULA DATE '(CAST(($1) as date))';
+toDateTime = FORMULA DATETIME '(CAST(($1) as timestamp))';
+
+sumDate = FORMULA DATE '(($1)+($2))';
+subtractDate = FORMULA DATE '(($1)-($2))';
+sumDateTimeDay = FORMULA DATETIME '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))';
+subtractDateTimeSeconds = FORMULA DATETIME '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))';
+dateTimeToDateTime = FORMULA DATETIME 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')';
+
+// --------------------------------- Месяца ------------------------ //
+
+CLASS Month 'Месяц' {
+    january 'Январь',
+    february 'Февраль',
+    march 'Март',
+    april 'Апрель',
+    may 'Май',
+    june 'Июнь',
+    july 'Июль',
+    august 'Август',
+    september 'Сентябрь',
+    october 'Октябрь',
+    november 'Ноябрь',
+    december 'Декабрь'
+}
+
+FORM months
+    OBJECTS m = Month
+    PROPERTIES(m) staticCaption
+    DIALOG Month OBJECT m
+;
+
+TABLE month (Month);
+
+numberMonth 'Номер месяца' = PARTITION SUM 1 IF m IS Month ORDER m;
+monthNumber 'Месяц (ИД)' (month) = GROUP AGGR month BY numberMonth(month);
+
+monthInDate 'Месяц (ИД)' (date) = monthNumber(numberMonthInDate(date));
+
+// --------------------------------- Дни недели ------------------------ //
+
+CLASS DOW 'День недели' {
+    sunday 'Воскресенье',
+    monday 'Понедельник',
+    tuesday 'Вторник',
+    wednesday 'Среда',
+    thursday 'Четверг',
+    friday 'Пятница',
+    saturday 'Суббота'
+}
+FORM DOWs
+    OBJECTS d = DOW
+    PROPERTIES(d) staticCaption
+    DIALOG DOW OBJECT d
+;
+
+TABLE dow (DOW);
+
+numberDOW 'Номер дня недели' = PARTITION SUM 1 IF d IS DOW ORDER d (-) 1;
+DOWNumber 'День недели (ИД)' (dow) = GROUP AGGR dow BY numberDOW(dow);
+
+numberDOWInDate = FORMULA INTEGER '(extract(dow from ($1)))';
+DOWInDate 'День недели (ИД)' (date) = DOWNumber(numberDOWInDate(date));
