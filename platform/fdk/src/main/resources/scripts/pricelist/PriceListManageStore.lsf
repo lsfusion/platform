@@ -2,21 +2,45 @@ MODULE PriceListManageStore;
 
 REQUIRE PriceListManage, Store;
 
-countStoresSkuChainStoresDateTime 'Кол-во магазинов' (sku, chainStore, dateTime) =
-    GROUP SUM 1 IF balanceASkuStockDateTime(sku, stock, dateTime) AND chainStoresDepartmentStore(stock) == chainStore
-    BY sku, chainStore, dateTime;
+countStoresChainStores 'Кол-во магазинов' (chainStores) =
+    GROUP SUM 1 IF chainStoresStore(store) == chainStores
+    BY chainStores;
 
-countStoresSkuStoreTypeDateTime 'Кол-во магазинов' (sku, storeType, dateTime) =
-    GROUP SUM 1 IF balanceASkuStockDateTime(sku, stock, dateTime) AND storeTypeDepartmentStore(stock) == storeType
-    BY sku, storeType, dateTime;
+countStoresStoreType 'Кол-во магазинов' (storeType) =
+    GROUP SUM 1 IF storeTypeStore(store) == storeType
+    BY storeType;
+
+countDepartmentStoresPriceListTypeSkuChainStoresDateTime 'Кол-во отделов магазинов(в ассортименте)' (type, sku, store, dateTime) =
+    GROUP SUM 1 IF concatLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime)
+    BY type, sku, storeDepartmentStore(stock), dateTime;
+
+countDepartmentStoresPriceListTypeSkuStoreTypeDateTime 'Кол-во отделов магазинов(в ассортименте)' (type, sku, store, dateTime) =
+    GROUP SUM 1 IF concatLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime)
+    BY type, sku, storeDepartmentStore(stock), dateTime;
+
+countStoresPriceListTypeSkuChainStoresDateTime 'Кол-во магазинов(в ассортименте)' (type, sku, chainStores, dateTime) =
+    GROUP SUM 1 IF countDepartmentStoresPriceListTypeSkuChainStoresDateTime(type, sku, store, dateTime)
+    BY type, sku, chainStoresStore(store), dateTime;
+
+countStoresPriceListTypeSkuStoreTypeDateTime 'Кол-во магазинов(в ассортименте)' (type, sku, storeType, dateTime) =
+    GROUP SUM 1 IF countDepartmentStoresPriceListTypeSkuStoreTypeDateTime(type, sku, store, dateTime)
+    BY type, sku, storeTypeStore(store), dateTime;
+
+countStoresSkuChainStoresDateTime 'Кол-во магазинов(в наличии)' (sku, chainStores, dateTime) =
+    GROUP SUM 1 IF balanceASkuStoreDateTime(sku, store, dateTime)
+    BY sku, chainStoresStore(store), dateTime;
+
+countStoresSkuStoreTypeDateTime 'Кол-во магазинов(в наличии)' (sku, storeType, dateTime) =
+    GROUP SUM 1 IF balanceASkuStoreDateTime(sku, store, dateTime)
+    BY sku, storeTypeStore(store), dateTime;
 
 EXTEND FORM rangeManagement
     OBJECTS t=ChainStores
-    PROPERTIES READONLY nameChainStores(t), countStoresSkuChainStoresDateTime(sk2, t, dt)
+    PROPERTIES READONLY nameChainStores(t), countStoresChainStores(t), countStoresPriceListTypeSkuChainStoresDateTime(pt, sk2, t, dt), countStoresSkuChainStoresDateTime(sk2, t, dt)
     FILTERS countStoresSkuChainStoresDateTime(sk2, t, dt)
 
     OBJECTS st=StoreType
-    PROPERTIES READONLY nameStoreType(st), countStoresSkuStoreTypeDateTime(sk2, st, dt)
+    PROPERTIES READONLY nameStoreType(st), countStoresStoreType(st), countStoresPriceListTypeSkuStoreTypeDateTime(pt, sk2, st, dt), countStoresSkuStoreTypeDateTime(sk2, st, dt)
     FILTERS countStoresSkuStoreTypeDateTime(sk2, st, dt)
 ;
 

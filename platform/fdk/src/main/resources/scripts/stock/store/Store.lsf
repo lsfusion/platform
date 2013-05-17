@@ -176,6 +176,10 @@ inChainStoresStoreTypeStoreDepartmentStore (chainStores, storeType, store, depar
     (chainStoresDepartmentStore(department) == chainStores AND NOT store AND NOT storeType) OR
     (department IS DepartmentStore AND NOT store AND NOT storeType AND NOT chainStores);
 
+balanceASkuStoreDateTime(sku, stock, dateTime) =
+    GROUP SUM balanceASkuStockDateTime(sku, stock, dateTime)
+    BY sku, storeDepartmentStore(stock), dateTime;
+
 // -------------------------------------- Формы отдела магазинов ------------------------------------------ //
 
 FORM departmentStore 'Отдел магазина'

@@ -15,15 +15,22 @@ filterCompanySkuDateTimeRangeManagement (priceListType, sku, stock, dateTime) =
     (companyLedgerPriceListTypeSkuStockDateTime(priceListType, sku, stock, dateTime) == filterLegalEntityRangeManagement()) OR
     (priceListType IS PriceListType AND sku IS Sku  AND stock IS Stock AND dateTime IS DATETIME AND NOT filterLegalEntityRangeManagement());
 
-priceLedgerPriceListTypeSkuDateTime 'Цена' (priceListType, sku, dateTime) =
+priceLedgerPriceListTypeSkuDateTimeFilterLegalEntity 'Цена' (priceListType, sku, dateTime) =
     priceLedgerPriceListTypeSkuCompanyDateTime(priceListType, sku, filterLegalEntityRangeManagement(), dateTime);
 
+nameCompanyLedgerPriceListTypeSkuDateTimeFilterLegalEntity 'Компания прайса' (priceListType, sku, dateTime) =
+    nameCompanyLedgerPriceListTypeSkuCompanyDateTime(priceListType, sku, filterLegalEntityRangeManagement(), dateTime);
+
+descriptionLedgerPriceListTypeSkuDateTimeFilterLegalEntity 'Описание' (priceListType, sku, dateTime) =
+    descriptionLedgerPriceListTypeSkuCompanyDateTime(priceListType, sku, filterLegalEntityRangeManagement(), dateTime);
+
+showNameCompanyLedger() = TRUE AND NOT nameFilterLegalEntityRangeManagement();
 //Создание прайса через форму ассортимента
 
 inRangeManagement 'Отм.' = DATA SESSION BOOLEAN(Sku);
 inRangeManagement2 'Отм.' = DATA SESSION BOOLEAN(Sku);
 
-createPriceRangeManagement 'Создать прайс' = ACTION (dataPriceListType){
+createPriceRangeManagement 'Создать прайс' = ACTION (dataPriceListType) NEWSESSION{
     FOR ADDOBJ u = UserPriceList DO {
         SET fromDateUserPriceList(u) <- currentDate();
         SET fromTimeUserPriceList(u) <- currentTime();
@@ -84,7 +91,7 @@ FORM rangeManagement 'Управление ассортиментом'
             s IS Stock AND NOT stg IS StockGroup OR isParentStockGroupStock(stg, s),
             isCompanyStock(s)
 
-    PROPERTIES(pt, sk, s, dt) READONLY pricePriceListTypeSkuStockDateTime, nameCompanyLedgerPriceListTypeSkuStockDateTime,
+    PROPERTIES(pt, sk, s, dt) READONLY pricePriceListTypeSkuStockDateTime, nameCompanyLedgerPriceListTypeSkuStockDateTime SHOWIF showNameCompanyLedger(),
                                        descriptionLedgerPriceListTypeSkuStockDateTime
 
     FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt),
@@ -99,9 +106,16 @@ FORM rangeManagement 'Управление ассортиментом'
     PROPERTIES(sk2) READONLY nameSku, idBarcodeSku
     PROPERTIES createPriceRangeManagement(pt) TODRAW sk2 FORCE PANEL
 
-    PROPERTIES(pt, sk2, dt) READONLY priceLedgerPriceListTypeSkuDateTime
+    PROPERTIES(pt, sk2, dt) READONLY priceLedgerPriceListTypeSkuDateTime SHOWIF showNameCompanyLedger(),
+                                     nameCompanyLedgerPriceListTypeSkuDateTime SHOWIF showNameCompanyLedger(),
+                                     descriptionLedgerPriceListTypeSkuDateTime SHOWIF showNameCompanyLedger(),
+                                     priceLedgerPriceListTypeSkuDateTimeFilterLegalEntity SHOWIF filterLegalEntityRangeManagement(),
+                                     nameCompanyLedgerPriceListTypeSkuDateTimeFilterLegalEntity SHOWIF filterLegalEntityRangeManagement(),
+                                     descriptionLedgerPriceListTypeSkuDateTimeFilterLegalEntity SHOWIF filterLegalEntityRangeManagement()
     FILTERS isParentSkuGroupSku(sg2, sk2),
-            (TRUE IF priceLedgerPriceListTypeSkuDateTime(pt, sk2, dt)) OR (pt IS DataPriceListType AND sk2 IS Sku AND dt IS DATETIME AND NOT filterLegalEntityRangeManagement())
+            IF filterLegalEntityRangeManagement()
+                THEN priceLedgerPriceListTypeSkuDateTimeFilterLegalEntity(pt, sk2, dt)
+                ELSE priceLedgerPriceListTypeSkuDateTime(pt, sk2, dt)
 
     OBJECTS s2 = Stock
     PROPERTIES(s2) READONLY nameStock
