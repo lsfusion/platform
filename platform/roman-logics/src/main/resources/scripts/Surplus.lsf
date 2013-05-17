@@ -78,49 +78,50 @@ createDetailSurplusOut 'Сделать подборку строк излишк�
 innerOrderSurplusOut (surplusOut) = DATA InnerOrder (SurplusOut);
 descriptionInnerOrderSurplusOut 'Внутр. заказ' (surplusOut) = descriptionInnerOrder(innerOrderSurplusOut(surplusOut));
 
-createInnerOrderSurplusOut 'Создать внутренний заказ' = [ACTION (surplusOut) NEWSESSION {
+createInnerOrderSurplusOut 'Создать внутренний заказ' = ACTION (surplusOut) NEWSESSION {
+    IF NOT innerOrderSurplusOut (surplusOut) THEN {
 
-    LOCAL order = InnerOrder();
-    LOCAL picking = OrderPickingPosted();
+        LOCAL order = InnerOrder();
+        LOCAL picking = OrderPickingPosted();
 
-    ADDOBJ InnerOrder;
-    FOR i == addedObject() DO {
-        SET innerOrderSurplusOut(surplusOut) <- i AS InnerOrder;
-        SET stockInnerOrder(i) <- stockSurplusOut(surplusOut);
-        SET destinationStockInnerOrder(i) <- destinationStockSurplusOut(surplusOut);
-        SET order() <- i;
+        ADDOBJ InnerOrder;
+        FOR i == addedObject() DO {
+            SET innerOrderSurplusOut(surplusOut) <- i AS InnerOrder;
+            SET stockInnerOrder(i) <- stockSurplusOut(surplusOut);
+            SET destinationStockInnerOrder(i) <- destinationStockSurplusOut(surplusOut);
+            SET order() <- i;
 
-        FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
-            ADDOBJ InnerOrderDetail;
-            FOR d == addedObject() DO {
-                SET innerOrderInnerOrderDetail(d) <- i AS InnerOrder;
-                SET skuInnerOrderDetail(d) <- sku AS Sku;
-                SET quantityInnerOrderDetail(d) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
+            FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+                ADDOBJ InnerOrderDetail;
+                FOR d == addedObject() DO {
+                    SET innerOrderInnerOrderDetail(d) <- i AS InnerOrder;
+                    SET skuInnerOrderDetail(d) <- sku AS Sku;
+                    SET quantityInnerOrderDetail(d) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
+                }
             }
         }
-    }
-    FORM innerOrder OBJECTS o = order()  MODAL;
+        FORM innerOrder OBJECTS o = order()  MODAL;
 
-    ADDOBJ OrderPickingPosted;
-    FOR p == addedObject() DO {
-        SET picking() <- p;
-        SET innerOrderOrderPicking (p) <- order();
+        ADDOBJ OrderPickingPosted;
+        FOR p == addedObject() DO {
+            SET picking() <- p;
+            SET innerOrderOrderPicking (p) <- order();
 
-        FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
-            ADDOBJ OrderPickingDetail;
-            FOR pd == addedObject() DO {
-                SET orderPickingOrderPickingDetail(pd) <- p AS OrderPickingPosted;
-                SET skuOrderPickingDetail(pd) <- sku AS Sku;
-                SET quantityOrderPickingDetail(pd) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
+            FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+                ADDOBJ OrderPickingDetail;
+                FOR pd == addedObject() DO {
+                    SET orderPickingOrderPickingDetail(pd) <- p AS OrderPickingPosted;
+                    SET skuOrderPickingDetail(pd) <- sku AS Sku;
+                    SET quantityOrderPickingDetail(pd) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
+                }
             }
         }
+        FORM orderPicking OBJECTS o = innerOrderOrderPicking(picking()), p = picking() MODAL;
+        IF formResult() == FormResult.ok THEN {
+            EXEC apply();
+        }
     }
-    FORM orderPicking OBJECTS o = innerOrderOrderPicking(picking()), p = picking() MODAL;
-    IF formResult() == FormResult.ok THEN {
-        EXEC apply();
-    }
-
-}] (surplusOut) IF NOT innerOrderSurplusOut (surplusOut) IN documentPrmGroup CONFIRM;
+} IN documentPrmGroup CONFIRM;
 
 editOrderPicking 'Редактировать' (orderPicking) = ACTION (orderPicking) {
     IF orderPicking IS OrderPicking  THEN {

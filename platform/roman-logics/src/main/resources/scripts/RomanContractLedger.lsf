@@ -88,23 +88,23 @@ sumCommercialInvoice (commercialInvoice) <- sumDocument(invoiceCommercialInvoice
     WHEN CHANGED(sumDocument(invoiceCommercialInvoice(commercialInvoice))) OR
          CHANGED(invoiceCommercialInvoice(commercialInvoice));
 
-createCommercialInvoice 'Создать коммерческий инвойс' = [ACTION (invoice) NEWSESSION{
+createCommercialInvoice 'Создать коммерческий инвойс' = ACTION (invoice) NEWSESSION {
+    IF NOT commercialInvoiceInvoice(invoice) THEN {
+        ADDOBJ CommercialInvoice;
+        FOR c == addedObject() DO {
+            SET invoiceCommercialInvoice(c) <- invoice AS Invoice;
+            SET commercialInvoiceInvoice(invoice) <- c AS CommercialInvoice;
+            SET numberObject(c) <- sidDocument(invoice);
+            SET seriesObject(c) <- 'КИ' IF invoice IS Invoice;
+            SET dateCommercialInvoice(c) <- date(invoice);
+            SET contractCommercialInvoice(c) <- contractInvoice(invoice);
+            SET currencyCommercialInvoice(c) <- currencyDocument(invoice);
+            SET sumCommercialInvoice(c) <- sumDocument(invoice);
+        }
 
-    ADDOBJ CommercialInvoice;
-    FOR c == addedObject() DO {
-        SET invoiceCommercialInvoice(c) <- invoice AS Invoice;
-        SET commercialInvoiceInvoice(invoice) <- c AS CommercialInvoice;
-        SET numberObject(c) <- sidDocument(invoice);
-        SET seriesObject(c) <- 'КИ' IF invoice IS Invoice;
-        SET dateCommercialInvoice(c) <- date(invoice);
-        SET contractCommercialInvoice(c) <- contractInvoice(invoice);
-        SET currencyCommercialInvoice(c) <- currencyDocument(invoice);
-        SET sumCommercialInvoice(c) <- sumDocument(invoice);
+        EXEC apply();
     }
-
-    EXEC apply();
-
-}](invoice) IF NOT commercialInvoiceInvoice(invoice) CONFIRM;
+} CONFIRM;
 
 FORM commercialInvoice 'Коммерческий инвойс'
 
@@ -191,7 +191,7 @@ dateTimeCommercialInvoice 'Дата/время' (commercialInvoice) = toDateTime
 descriptionCommercialInvoice 'Название документа' (commercialInvoice) =
     [FORMULA STRING[200] '\'Коммерческий инвойс \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberObject(commercialInvoice), dateCommercialInvoice(commercialInvoice),
-    nameSupplierCommercialInvoice(commercialInvoice)) AND commercialInvoice IS CommercialInvoice;
+    nameSupplierCommercialInvoice(commercialInvoice)) IF commercialInvoice IS CommercialInvoice;
 @implementContractLedger(a, commercialInvoice, contract);
 sumContractALedger(contractALedger) += sumCommercialInvoice(contractALedger);
 

@@ -150,60 +150,61 @@ payContractDate 'Оплатить по договору' = ACTION (contract, dat
 
 //------------------------------------------- Платеж c учетом бонусов договора --------------------------------------------//
 
-payPaymentConditionInContractLedgerDate 'Оплатить c учетом бонусов договора' = [ACTION (inContractLedger, date) NEWSESSION {
-
-    ADDOBJ Payment;
-    FOR pm == addedObject() DO {
-        SET datePayment(pm) <- date AS DATE;
-        SET contractPayment(pm) <- contractInContractLedger(inContractLedger);
-        SET sumContractPayment(pm) <- bonusDebtSumInContractLedgerDate(inContractLedger, date);
-        SET sumFromPayment(pm) <- bonusDebtSumInContractLedgerDate(inContractLedger, date) IF currencyContractPayment(pm) == currencyAccountFromPayment(pm);
-        SET costOutContractLedgerInContractLedger(pm, inContractLedger) <- bonusDebtSumInContractLedgerDate(inContractLedger, date);
-        FORM payment OBJECTS p = pm MODAL;
-        IF formResult() == FormResult.ok THEN {
-            ADDOBJ CreditMemoOut;
-            FOR cm == addedObject() DO {
-                SET dateCreditMemoOut(cm) <- date AS DATE;
-                SET contractCreditMemoOut(cm) <- contractInContractLedger(inContractLedger);
-                SET sumCreditMemoOut(cm) <- bonusSumInContractLedger(inContractLedger, date);
-                SET costOutContractLedgerInContractLedger(cm, inContractLedger) <- bonusSumInContractLedger(inContractLedger, date);
-                FORM creditMemo OBJECTS c = cm MODAL;
-                IF formResult() == FormResult.ok THEN {
-                    EXEC apply();
+payPaymentConditionInContractLedgerDate 'Оплатить c учетом бонусов договора' = ACTION (inContractLedger, date) NEWSESSION {
+    IF bonusSumInContractLedger(inContractLedger, date) > 0.0 THEN {
+        ADDOBJ Payment;
+        FOR pm == addedObject() DO {
+            SET datePayment(pm) <- date AS DATE;
+            SET contractPayment(pm) <- contractInContractLedger(inContractLedger);
+            SET sumContractPayment(pm) <- bonusDebtSumInContractLedgerDate(inContractLedger, date);
+            SET sumFromPayment(pm) <- bonusDebtSumInContractLedgerDate(inContractLedger, date) IF currencyContractPayment(pm) == currencyAccountFromPayment(pm);
+            SET costOutContractLedgerInContractLedger(pm, inContractLedger) <- bonusDebtSumInContractLedgerDate(inContractLedger, date);
+            FORM payment OBJECTS p = pm MODAL;
+            IF formResult() == FormResult.ok THEN {
+                ADDOBJ CreditMemoOut;
+                FOR cm == addedObject() DO {
+                    SET dateCreditMemoOut(cm) <- date AS DATE;
+                    SET contractCreditMemoOut(cm) <- contractInContractLedger(inContractLedger);
+                    SET sumCreditMemoOut(cm) <- bonusSumInContractLedger(inContractLedger, date);
+                    SET costOutContractLedgerInContractLedger(cm, inContractLedger) <- bonusSumInContractLedger(inContractLedger, date);
+                    FORM creditMemo OBJECTS c = cm MODAL;
+                    IF formResult() == FormResult.ok THEN {
+                        EXEC apply();
+                    }
                 }
             }
         }
     }
-}](inContractLedger, date) IF bonusSumInContractLedger(inContractLedger, date) > 0.0;
+}
 
-payPaymentConditionContractDate 'Оплатить c учетом бонусов договора' = [ACTION (contract, date) NEWSESSION {
-
-    ADDOBJ Payment;
-    FOR pm == addedObject() DO {
-        SET datePayment(pm) <- date AS DATE;
-        SET contractPayment(pm) <- contract AS Contract;
-        SET sumContractPayment(pm) <- bonusDebtSumContractDate(contract, date);
-        SET sumFromPayment(pm) <- bonusDebtSumContractDate(contract, date) IF currencyContractPayment(pm) == currencyAccountFromPayment(pm);
-        SET costOutContractLedgerInContractLedger(pm, inContractLedger) <- bonusDebtSumInContractLedgerDate(inContractLedger, date)
-            WHERE contractPayment(pm) == contractInContractLedger(inContractLedger);
-        FORM payment OBJECTS p = pm MODAL;
-        IF formResult() == FormResult.ok THEN {
-            ADDOBJ CreditMemoOut;
-            FOR cm == addedObject() DO {
-                SET dateCreditMemoOut(cm) <- date AS DATE;
-                SET contractCreditMemoOut(cm) <- contract AS Contract;
-                SET sumCreditMemoOut(cm) <- bonusSumContractDate(contract, date);
-                SET costOutContractLedgerInContractLedger(cm, inContractLedger) <- bonusSumInContractLedger(inContractLedger, date)
-                    WHERE contractCreditMemo(cm) == contractInContractLedger(inContractLedger);
-                FORM creditMemo OBJECTS c = cm MODAL;
-                IF formResult() == FormResult.ok THEN {
-                    EXEC apply();
+payPaymentConditionContractDate 'Оплатить c учетом бонусов договора' = ACTION (contract, date) NEWSESSION {
+    IF bonusSumContractDate(contract, date) > 0.0 THEN {
+        ADDOBJ Payment;
+        FOR pm == addedObject() DO {
+            SET datePayment(pm) <- date AS DATE;
+            SET contractPayment(pm) <- contract AS Contract;
+            SET sumContractPayment(pm) <- bonusDebtSumContractDate(contract, date);
+            SET sumFromPayment(pm) <- bonusDebtSumContractDate(contract, date) IF currencyContractPayment(pm) == currencyAccountFromPayment(pm);
+            SET costOutContractLedgerInContractLedger(pm, inContractLedger) <- bonusDebtSumInContractLedgerDate(inContractLedger, date)
+                WHERE contractPayment(pm) == contractInContractLedger(inContractLedger);
+            FORM payment OBJECTS p = pm MODAL;
+            IF formResult() == FormResult.ok THEN {
+                ADDOBJ CreditMemoOut;
+                FOR cm == addedObject() DO {
+                    SET dateCreditMemoOut(cm) <- date AS DATE;
+                    SET contractCreditMemoOut(cm) <- contract AS Contract;
+                    SET sumCreditMemoOut(cm) <- bonusSumContractDate(contract, date);
+                    SET costOutContractLedgerInContractLedger(cm, inContractLedger) <- bonusSumInContractLedger(inContractLedger, date)
+                        WHERE contractCreditMemo(cm) == contractInContractLedger(inContractLedger);
+                    FORM creditMemo OBJECTS c = cm MODAL;
+                    IF formResult() == FormResult.ok THEN {
+                        EXEC apply();
+                    }
                 }
             }
         }
     }
-
-}](contract, date) IF bonusSumContractDate(contract, date) > 0.0;
+}
 
 addContractPayment 'Оплатить' = ACTION (contract) NEWSESSION{
     FOR ADDOBJ p = Payment DO{

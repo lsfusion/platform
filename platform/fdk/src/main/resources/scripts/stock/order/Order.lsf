@@ -158,11 +158,9 @@ META defineOrder(sign, legalEntityProp, stockProp)
 
     isOpenedUserOrder 'Не закрыт' (o) = isPostedUserOrder(o) AND NOT isClosedUserOrder(o) PERSISTENT;
 
-    closeUserOrder 'Закрыть' (o) = [ACTION (o) NEWSESSION AUTOAPPLY { SET isDataClosedUserOrder(o) <- TRUE; } ] (o)
-                                                IF isPostedUserOrder(o) AND NOT isClosedUserOrder(o) TOOLBAR CONFIRM;
+    closeUserOrder 'Закрыть' (o) = ACTION (o) NEWSESSION AUTOAPPLY { IF isPostedUserOrder(o) AND NOT isClosedUserOrder(o) THEN SET isDataClosedUserOrder(o) <- TRUE; } TOOLBAR CONFIRM;
 
-    openUserOrder 'Открыть' (o) = [ACTION (o) NEWSESSION AUTOAPPLY { SET isDataClosedUserOrder(o) <- NULL; } ] (o)
-                                      IF isClosedUserOrder(o) TOOLBAR CONFIRM;
+    openUserOrder 'Открыть' (o) = ACTION (o) NEWSESSION AUTOAPPLY { IF isClosedUserOrder(o) THEN SET isDataClosedUserOrder(o) <- NULL; } TOOLBAR CONFIRM;
 
     @defineDocumentInterfaceDescription(order, 'Заказ'###sign);
 

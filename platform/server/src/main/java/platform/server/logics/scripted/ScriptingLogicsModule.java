@@ -763,30 +763,65 @@ public class ScriptingLogicsModule extends LogicsModule {
         return res;
     }
 
+    private boolean isLogical(LP property) {
+        return property != null && property.property.getValueClass() != null && property.property.getValueClass().equals(LogicalClass.instance);
+    }
+
+    private LPWithParams toLogical(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJProp(and(false), Arrays.<LPWithParams>asList(new LPWithParams(baseLM.vtrue, new ArrayList<Integer>()), property));
+    }
+
+    public LPWithParams addScriptedIfProp(List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+        LPWithParams curLP = properties.get(0);
+        if (properties.size() > 1) {
+            boolean[] notsArray = new boolean[properties.size() - 1];
+            Arrays.fill(notsArray, false);
+            if (properties.get(0).property != null) {
+                checkCalculationProperty(properties.get(0).property);
+            }
+            curLP = addScriptedJProp(and(notsArray), properties);
+        }
+        return curLP;
+    }
+
     public LPWithParams addScriptedOrProp(List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
         LPWithParams res = properties.get(0);
         if (properties.size() > 1) {
+            for (LPWithParams prop : properties) {
+                if (!isLogical(prop.property)) {
+                    prop.property = toLogical(prop).property;
+                }
+            }
             res = addScriptedUProp(Union.OVERRIDE, properties, "OR");
         }
         return res;
     }
 
-    public LPWithParams addScriptedAndProp(List<Boolean> nots, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
-        assert nots.size() + 1 == properties.size();
-
-        LPWithParams curLP = properties.get(0);
-        if (nots.size() > 0) {
-            boolean[] notsArray = new boolean[nots.size()];
-            for (int i = 0; i < nots.size(); i++) {
-                notsArray[i] = nots.get(i);
+    public LPWithParams addScriptedXorProp(List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+        LPWithParams res = properties.get(0);
+        if (properties.size() > 1) {
+            for (LPWithParams prop : properties) {
+                if (!isLogical(prop.property)) {
+                    prop.property = toLogical(prop).property;
+                }
             }
-//            assert properties.get(0).property instanceof LCP; // assert что calculation'ы а не action'ы
-            if(properties.get(0).property instanceof LAP) { // если action то подставляем if, потом надо будет запретить верхним assert'ом
-                curLP = properties.get(0);
-                for(int i=0;i<notsArray.length;i++)
-                    curLP = addScriptedIfAProp(properties.get(i+1), curLP, null, notsArray[i]);
-            } else
-                curLP = addScriptedJProp(and(notsArray), properties);
+            res = addScriptedUProp(Union.XOR, properties, "XOR");
+        }
+        return res;
+    }
+
+    public LPWithParams addScriptedAndProp(List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+        LPWithParams curLP = properties.get(0);
+        if (properties.size() > 1) {
+            boolean[] notsArray = new boolean[properties.size() - 1];
+            Arrays.fill(notsArray, false);
+            if (properties.get(0).property != null) {
+                checkCalculationProperty(properties.get(0).property);
+            }
+            if (!isLogical(properties.get(0).property)) {
+                properties.get(0).property = toLogical(properties.get(0)).property;
+            }
+            curLP = addScriptedJProp(and(notsArray), properties);
         }
         return curLP;
     }
@@ -956,6 +991,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedUnaryMinusProp(LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJProp(baseLM.minus, asList(prop));
+    }
+
+    public LPWithParams addScriptedNotProp(LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJProp(not(), asList(prop));
     }
 
     public LPWithParams addScriptedCastProp(String typeName, LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
@@ -2446,7 +2485,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void checkChangeClassWhere(boolean contextExtended, LPWithParams param, LPWithParams where, List<String> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        if (contextExtended && !where.usedParams.contains(param.usedParams.get(0))) {
+        if (contextExtended && (where == null || !where.usedParams.contains(param.usedParams.get(0)))) {
             errLog.emitChangeClassWhereError(parser, newContext.get(newContext.size() - 1));
         }
     }

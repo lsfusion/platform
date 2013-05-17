@@ -215,7 +215,7 @@ FORM statisticGroupDialog 'Статистические группы'
 
 netWeightSoldSkuStockDateFromTo 'Вес проданного товара, кг' (sku, stock, dateFrom, dateTo) =
     quantitySoldSkuStockDateFromTo(sku, stock, dateFrom, dateTo) *
-    (1 IF sku IS Sku OVERRIDE netWeightSku(sku) AND NOT isWeightSku(sku));
+    (1 IF sku IS Sku OVERRIDE netWeightSku(sku) IF NOT isWeightSku(sku));
 volumeSoldSkuStockDateFromTo 'Объем проданного товара, л' (sku, stock, dateFrom, dateTo) =
     quantitySoldSkuStockDateFromTo(sku, stock, dateFrom, dateTo) * volumeSku(sku);
 // sumSoldSkuStockDateFromTo 'Продано, сумма' (sku, stock, dateFrom, dateTo)   - рубли

@@ -305,14 +305,17 @@ META defineDocumentHeaderPosted(objectClass)
     isDraft##objectClass 'Не проведен' (o) = o IS objectClass AND NOT o IS objectClass##Posted PERSISTENT;
     isPosted##objectClass 'Проведен' (o) = o IS objectClass##Posted PERSISTENT;
 
-    prePost##objectClass 'Провести' (o) = [ACTION (o) CHANGECLASS o TO objectClass##Posted ] (o)
-                                    IF o IS objectClass AND NOT o IS objectClass##Posted;
+    prePost##objectClass 'Провести' (o) = ACTION IF o IS objectClass AND NOT o IS objectClass##Posted
+                                                    THEN CHANGECLASS o TO objectClass##Posted;
 
-    post##objectClass 'Провести' (o) = [ACTION (o) NEWSESSION AUTOAPPLY { CHANGECLASS o TO objectClass##Posted; } ] (o)
-                                    IF o IS objectClass AND NOT o IS objectClass##Posted TOOLBAR CONFIRM;
 
-    unpost##objectClass 'Распровести' (o) = [ACTION (o) NEWSESSION AUTOAPPLY { CHANGECLASS o TO objectClass; } ] (o)
-                                      IF o IS objectClass##Posted TOOLBAR CONFIRM;
+    post##objectClass 'Провести' (o) = ACTION NEWSESSION AUTOAPPLY {
+                                            IF o IS objectClass AND NOT o IS objectClass##Posted THEN CHANGECLASS o TO objectClass##Posted;
+                                       } TOOLBAR CONFIRM;
+
+    unpost##objectClass 'Распровести' (o) = ACTION NEWSESSION AUTOAPPLY {
+                                                IF o IS objectClass##Posted THEN CHANGECLASS o TO objectClass;
+                                            } TOOLBAR CONFIRM;
 END
 
 META defineDocumentAbstractHeaderPosted (objectClass)
@@ -353,11 +356,13 @@ META defineDocumentHeaderClosed (objectClass)
     isClosed##objectClass 'Закрыт' = DATA BOOLEAN (objectClass);
     isOpened##objectClass 'Не закрыт' (o) = isPosted##objectClass(o) AND NOT isClosed##objectClass(o) PERSISTENT;
 
-    close##objectClass 'Закрыть' (o) = [ACTION (o) NEWSESSION AUTOAPPLY { SET isClosed##objectClass(o) <- TRUE; } ] (o)
-                                                IF isPosted##objectClass(o) AND NOT isClosed##objectClass(o) TOOLBAR CONFIRM;
+    close##objectClass 'Закрыть' (o) = ACTION NEWSESSION AUTOAPPLY {
+                                            IF isPosted##objectClass(o) AND NOT isClosed##objectClass(o) THEN SET isClosed##objectClass(o) <- TRUE;
+                                       } TOOLBAR CONFIRM;
 
-    open##objectClass 'Открыть' (o) = [ACTION (o) NEWSESSION AUTOAPPLY { SET isClosed##objectClass(o) <- NULL; } ] (o)
-                                      IF isClosed##objectClass(o) TOOLBAR CONFIRM;
+    open##objectClass 'Открыть' (o) = ACTION NEWSESSION AUTOAPPLY {
+                                            IF isClosed##objectClass(o) THEN SET isClosed##objectClass(o) <- NULL;
+                                      } TOOLBAR CONFIRM;
 END
 
 META defineDocumentAbstractHeaderClosed (objectClass)

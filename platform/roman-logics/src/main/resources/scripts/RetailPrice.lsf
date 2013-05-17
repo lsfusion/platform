@@ -960,51 +960,52 @@ userPriceChangeStockPriceSetDocument (stock, priceSetDocument) = DATA UserPriceC
 nameUserPriceChangeStockPriceSetDocument 'Документ переоценки' (stock, priceSetDocument) = descriptionUserPriceChange(
     userPriceChangeStockPriceSetDocument (stock, priceSetDocument)) MINCHARWIDTH 30 MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 
-createUserPriceChangeStockPriceSetDocument 'Создать документ переоценки' =  [ACTION (stock, priceSetDocument) NEWSESSION {
-    LOCAL priceDateTime = DATETIME ();
-    SET priceDateTime() <- dateTimePriceSetDocument(priceSetDocument);
+createUserPriceChangeStockPriceSetDocument 'Создать документ переоценки' =  ACTION (stock, priceSetDocument) NEWSESSION {
+    IF NOT userPriceChangeStockPriceSetDocument(stock, priceSetDocument) AND isPostedPriceSetDocument(priceSetDocument) AND stock IS DepartmentStore THEN {
+        LOCAL priceDateTime = DATETIME ();
+        SET priceDateTime() <- dateTimePriceSetDocument(priceSetDocument);
 
-    ADDOBJ UserPriceChangePosted;
-    FOR p == addedObject() DO {
-        SET userPriceChangeStockPriceSetDocument(stock, priceSetDocument) <- p AS UserPriceChange;
-        SET departmentStoreUserPriceChange(p) <- stock;
-        SET dateUserPriceChange(p) <- datePriceSetDocument(priceSetDocument);
-        SET timeUserPriceChange(p) <- timePriceSetDocument(priceSetDocument);
-        SET noteUserPriceChange(p) <- [FORMULA STRING[200] 'CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
-                                      objectClassName(priceSetDocument), seriesNumberObject(priceSetDocument), datePriceSetDocument(priceSetDocument));
+        ADDOBJ UserPriceChangePosted;
+        FOR p == addedObject() DO {
+            SET userPriceChangeStockPriceSetDocument(stock, priceSetDocument) <- p AS UserPriceChange;
+            SET departmentStoreUserPriceChange(p) <- stock;
+            SET dateUserPriceChange(p) <- datePriceSetDocument(priceSetDocument);
+            SET timeUserPriceChange(p) <- timePriceSetDocument(priceSetDocument);
+            SET noteUserPriceChange(p) <- [FORMULA STRING[200] 'CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
+                                          objectClassName(priceSetDocument), seriesNumberObject(priceSetDocument), datePriceSetDocument(priceSetDocument));
 
-        FOR balanceBASkuStockDateTime(sku, stock, priceDateTime()) !=0 AND overInPriceSetDocumentSku(priceSetDocument, sku)
-            AND priceAPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(stock), priceDateTime()) != retailPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime())
-            AND isPostedPriceSetDocument(priceSetDocument) DO {
-            ADDOBJ UserPriceChangeDetail;
-            FOR  d == addedObject() DO {
-                SET userPriceChangeUserPriceChangeDetail(d) <- p AS UserPriceChange;
-                SET skuUserPriceChangeDetail(d) <- sku AS Sku;
-                SET quantityUserPriceChangeDetail(d) <- balanceBASkuStockDateTime(sku, stock, priceDateTime());
+            FOR balanceBASkuStockDateTime(sku, stock, priceDateTime()) !=0 AND overInPriceSetDocumentSku(priceSetDocument, sku)
+                AND priceAPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(stock), priceDateTime()) != retailPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime())
+                AND isPostedPriceSetDocument(priceSetDocument) DO {
+                ADDOBJ UserPriceChangeDetail;
+                FOR  d == addedObject() DO {
+                    SET userPriceChangeUserPriceChangeDetail(d) <- p AS UserPriceChange;
+                    SET skuUserPriceChangeDetail(d) <- sku AS Sku;
+                    SET quantityUserPriceChangeDetail(d) <- balanceBASkuStockDateTime(sku, stock, priceDateTime());
 
-                SET curImporterPriceUserPriceChangeDetail(d) <- importerPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
-                SET curSupplierPriceUserPriceChangeDetail(d) <- supplierPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
-                SET curRetailVATUserPriceChangeDetail(d) <- retailVATBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
-                SET curWareUserPriceChangeDetail(d) <- wareBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
-                SET curWarePriceUserPriceChangeDetail(d) <- warePriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
-                SET curRetailPriceUserPriceChangeDetail(d) <- retailPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
+                    SET curImporterPriceUserPriceChangeDetail(d) <- importerPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
+                    SET curSupplierPriceUserPriceChangeDetail(d) <- supplierPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
+                    SET curRetailVATUserPriceChangeDetail(d) <- retailVATBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
+                    SET curWareUserPriceChangeDetail(d) <- wareBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
+                    SET curWarePriceUserPriceChangeDetail(d) <- warePriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
+                    SET curRetailPriceUserPriceChangeDetail(d) <- retailPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
 
-                SET importerPriceUserPriceChangeDetail(d) <- importerPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
-                SET supplierPriceUserPriceChangeDetail(d) <- supplierPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
-                SET retailVATUserPriceChangeDetail(d) <- retailVATBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
-                SET wareUserPriceChangeDetail(d) <- wareBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
-                SET warePriceUserPriceChangeDetail(d) <- warePriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
-                SET retailPriceUserPriceChangeDetail(d) <- priceAPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(stock), priceDateTime());
+                    SET importerPriceUserPriceChangeDetail(d) <- importerPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
+                    SET supplierPriceUserPriceChangeDetail(d) <- supplierPriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
+                    SET retailVATUserPriceChangeDetail(d) <- retailVATBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
+                    SET wareUserPriceChangeDetail(d) <- wareBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
+                    SET warePriceUserPriceChangeDetail(d) <- warePriceBSkuDepartmentStoreDateTime(sku, stock, priceDateTime());
+                    SET retailPriceUserPriceChangeDetail(d) <- priceAPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(stock), priceDateTime());
 
+                }
             }
         }
+        FORM userPriceChange OBJECTS u = userPriceChangeStockPriceSetDocument (stock, priceSetDocument) MODAL;
+        IF formResult() == FormResult.ok THEN {
+            EXEC apply();
+        }
     }
-    FORM userPriceChange OBJECTS u = userPriceChangeStockPriceSetDocument (stock, priceSetDocument) MODAL;
-    IF formResult() == FormResult.ok THEN {
-        EXEC apply();
-    }
-
-}] (stock, priceSetDocument) IF NOT userPriceChangeStockPriceSetDocument(stock, priceSetDocument) AND isPostedPriceSetDocument(priceSetDocument) AND stock IS DepartmentStore CONFIRM;
+} CONFIRM;
 
 // ------------------------------------------- Печать маркировки article -------------------------------------- //
 
@@ -1031,11 +1032,11 @@ FORM priceArticlePriceSetDocumentPrint 'Цены для маркировки' PR
     FILTERS shouldBePrintArticle(a)
 ;
 
-printPricePriceSetDocumentArticle 'Печать цен для маркировки' = [ACTION (stock, priceSetDocument, article) {
+printPricePriceSetDocumentArticle 'Печать цен для маркировки' = ACTION (stock, priceSetDocument, article) IF isPostedPriceSetDocument(priceSetDocument) THEN {
     SET shouldBePrintArticle(a) <- NULL;
     SET shouldBePrintArticle(a) <- TRUE IF (a == (article AS Article));
     FORM priceArticlePriceSetDocumentPrint OBJECTS s = stock, p = priceSetDocument MODAL;
-}](stock, priceSetDocument, article) IF isPostedPriceSetDocument(priceSetDocument);
+}
 
 printAllPricePriceSetDocumentArticle 'Печать цен для маркировки' = ACTION (stock, priceSetDocument) {
     SET shouldBePrintArticle(article) <- NULL;
@@ -1065,11 +1066,11 @@ FORM priceSkuPriceSetDocumentPrint 'Цены для маркировки' PRINT
     FILTERS shouldBePrintSku(sk)
 ;
 
-printPricePriceSetDocumentSku 'Печать цен для маркировки' = [ACTION (stock, priceSetDocument, sku) {
+printPricePriceSetDocumentSku 'Печать цен для маркировки' = ACTION (stock, priceSetDocument, sku) IF isPostedPriceSetDocument(priceSetDocument) THEN {
     SET shouldBePrintSku(sk) <- NULL;
     SET shouldBePrintSku(sk) <- TRUE IF (sk == (sku AS Sku));
     FORM priceSkuPriceSetDocumentPrint OBJECTS s = stock, p = priceSetDocument MODAL;
-}](stock, priceSetDocument, sku) IF isPostedPriceSetDocument(priceSetDocument);
+}
 
 printAllPricePriceSetDocumentSku 'Печать цен для маркировки' = ACTION (stock, priceSetDocument) {
     SET shouldBePrintSku(sku) <- NULL;

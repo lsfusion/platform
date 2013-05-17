@@ -62,7 +62,7 @@ noFiscalPostPrintReceipt 'Создать чек (без фискального �
         EXEC createCurrentReceipt();
     }
 }
-postPrintReceipt(receipt) += noFiscalPostPrintReceipt(receipt) IF NOT sidCashRegisterModelReceipt(receipt);
+postPrintReceipt(receipt) += ACTION IF NOT sidCashRegisterModelReceipt(receipt) THEN noFiscalPostPrintReceipt(receipt);
 
 FORM postReceiptPayment 'Оплата по чеку'
     OBJECTS r = Receipt FIXED PANEL
@@ -721,7 +721,7 @@ NAVIGATOR {
 
 // ----------------------------------------- Кассовые операции ---------------------------------------------- //
 fiscalZReport 'Закрыть Z-отчёт' = ABSTRACT ACTION() CONFIRM;
-fiscalZReport() += closeCurrentZReport() IF NOT sidModelCurrentCashRegister();
+fiscalZReport() += ACTION IF NOT sidModelCurrentCashRegister() THEN closeCurrentZReport();
 
 currentZReportDepartmentStore() = currentZReport() IF departmentStoreCurrentCashRegister();
 closedCurrentZReportDepartmentStore() = closedCurrentZReport() IF departmentStoreCurrentCashRegister();

@@ -390,7 +390,7 @@ changeSubstituteSkuOrder = ACTION (substitute, sku, order) {
 }
 
 resetSubstituteOrder 'Сбросить все замены' = ACTION (order) {
-    FOR (TRUE IF substituteSkuOrder(sku, order)) OR (TRUE IF multiplierSkuOrder(sku, order)) DO {
+    FOR substituteSkuOrder(sku, order) OR multiplierSkuOrder(sku, order) DO {
         SET substituteSkuOrder(sku, order) <- NULL;
         SET multiplierSkuOrder(sku, order) <- NULL;
     }

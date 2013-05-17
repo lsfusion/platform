@@ -114,49 +114,50 @@ quantitySkuStoreWHfromCSI (store, WHfromCSI) = GROUP SUM quantityWHfromCSRDetail
 TABLE storeWHfromCSI (RomanLogicsModule.Store, WHfromCSI);
 innerOrderStoreWHfromCSI (store, WHfromCSI) = DATA InnerOrder (RomanLogicsModule.Store, WHfromCSI);
 
-createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' = [ACTION (store, WHfromCSI) NEWSESSION {
+createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' = ACTION (store, WHfromCSI) NEWSESSION {
+    IF NOT innerOrderStoreWHfromCSI(store, WHfromCSI) THEN {
 
-    LOCAL picking = OrderPickingPosted();
+        LOCAL picking = OrderPickingPosted();
 
-    ADDOBJ InnerOrder;
-    FOR i == addedObject() DO {
-        SET innerOrderStoreWHfromCSI(store, WHfromCSI) <- i AS InnerOrder;
-        SET stockInnerOrder(i) <- stockWHfromCSI(WHfromCSI);
-        SET destinationStockInnerOrder(i) <- primaryDepartmentStoreStore(store AS RomanLogicsModule.Store);
+        ADDOBJ InnerOrder;
+        FOR i == addedObject() DO {
+            SET innerOrderStoreWHfromCSI(store, WHfromCSI) <- i AS InnerOrder;
+            SET stockInnerOrder(i) <- stockWHfromCSI(WHfromCSI);
+            SET destinationStockInnerOrder(i) <- primaryDepartmentStoreStore(store AS RomanLogicsModule.Store);
 
-            FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI AND destinationWHfromCSRDetail(WHfromCSRDetail) == store DO {
-                ADDOBJ InnerOrderDetail;
-                FOR d == addedObject() DO {
-                    SET skuInnerOrderDetail(d) <- skuWHfromCSRDetail(WHfromCSRDetail);
-                    SET innerOrderInnerOrderDetail(d) <- i AS InnerOrder;
-                    SET quantityInnerOrderDetail(d) <- quantityWHfromCSRDetail(WHfromCSRDetail);
+                FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI AND destinationWHfromCSRDetail(WHfromCSRDetail) == store DO {
+                    ADDOBJ InnerOrderDetail;
+                    FOR d == addedObject() DO {
+                        SET skuInnerOrderDetail(d) <- skuWHfromCSRDetail(WHfromCSRDetail);
+                        SET innerOrderInnerOrderDetail(d) <- i AS InnerOrder;
+                        SET quantityInnerOrderDetail(d) <- quantityWHfromCSRDetail(WHfromCSRDetail);
+                    }
                 }
-            }
-    }
-    FORM innerOrder OBJECTS o = innerOrderStoreWHfromCSI (store, WHfromCSI)  MODAL;
-    IF formResult() == FormResult.ok THEN {
-        EXEC apply();
-
-        ADDOBJ OrderPickingPosted;
-        FOR p == addedObject() DO {
-            SET picking() <- p AS OrderPickingPosted;
-            SET innerOrderOrderPicking (p) <- innerOrderStoreWHfromCSI(store, WHfromCSI);
-            FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI AND destinationWHfromCSRDetail(WHfromCSRDetail) == store DO {
-                ADDOBJ OrderPickingDetail;
-                FOR pd == addedObject() DO {
-                    SET skuOrderPickingDetail(pd) <- skuWHfromCSRDetail(WHfromCSRDetail);
-                    SET orderPickingOrderPickingDetail(pd) <- p AS OrderPickingPosted;
-                    SET quantityOrderPickingDetail(pd) <- quantityWHfromCSRDetail(WHfromCSRDetail);
-                }
-            }
         }
-        FORM orderPicking OBJECTS p = picking()  MODAL;
+        FORM innerOrder OBJECTS o = innerOrderStoreWHfromCSI (store, WHfromCSI)  MODAL;
         IF formResult() == FormResult.ok THEN {
             EXEC apply();
+
+            ADDOBJ OrderPickingPosted;
+            FOR p == addedObject() DO {
+                SET picking() <- p AS OrderPickingPosted;
+                SET innerOrderOrderPicking (p) <- innerOrderStoreWHfromCSI(store, WHfromCSI);
+                FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI AND destinationWHfromCSRDetail(WHfromCSRDetail) == store DO {
+                    ADDOBJ OrderPickingDetail;
+                    FOR pd == addedObject() DO {
+                        SET skuOrderPickingDetail(pd) <- skuWHfromCSRDetail(WHfromCSRDetail);
+                        SET orderPickingOrderPickingDetail(pd) <- p AS OrderPickingPosted;
+                        SET quantityOrderPickingDetail(pd) <- quantityWHfromCSRDetail(WHfromCSRDetail);
+                    }
+                }
+            }
+            FORM orderPicking OBJECTS p = picking()  MODAL;
+            IF formResult() == FormResult.ok THEN {
+                EXEC apply();
+            }
         }
     }
-
-}] (store, WHfromCSI) IF NOT innerOrderStoreWHfromCSI(store, WHfromCSI) CONFIRM;
+} CONFIRM;
 
 FORM addBarcodeWHfromCSRFreightUnitSku 'Поиск товара(с коробами и выбором шрих-кода)'
 

@@ -751,6 +751,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         return addJProp(valueClass.toString(), and1, 1, is(valueClass), 1);
     }
 
+    @Override
+    @IdentityStrongLazy
+    public LCP not() {
+        return addProperty(null, new LCP<PropertyInterface>(NotFormulaProperty.instance));
+    }
+
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
     /// Forms

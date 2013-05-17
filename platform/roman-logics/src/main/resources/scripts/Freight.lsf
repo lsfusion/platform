@@ -88,8 +88,7 @@ FORM dateFreightArrived
 isFreightShipped(freight) = freight IS FreightShipped;
 isFreightArrived(freight) = freight IS FreightArrived;
 
-toShipFreight 'Отгрузить' =  [ACTION (freight) {
-
+toShipFreight 'Отгрузить' =  ACTION (freight) IF freight IS FreightPriced AND NOT freight IS FreightShipped THEN {
     FORM dateFreightShipped MODAL;
         IF formResult() == FormResult.ok THEN {
             SET dateShipmentFreight(freight) <- chosenDate('d');
@@ -97,10 +96,9 @@ toShipFreight 'Отгрузить' =  [ACTION (freight) {
             EXEC apply();
         }
 
-}](freight) IF freight IS FreightPriced AND NOT freight IS FreightShipped IMAGE 'sign_tick.png';
+} IMAGE 'sign_tick.png';
 
-toArrivedFreight 'Прибыл' = [ACTION (freight) {
-
+toArrivedFreight 'Прибыл' = ACTION (freight) IF freight IS FreightShipped THEN {
     FORM dateFreightArrived MODAL;
 
         IF formResult() == FormResult.ok THEN {
@@ -110,7 +108,7 @@ toArrivedFreight 'Прибыл' = [ACTION (freight) {
             EXEC apply();
         }
 
-}](freight) IF freight IS FreightShipped IMAGE 'sign_tick.png'; //AND NOT freight IS FreightArrived
+} IMAGE 'sign_tick.png'; //AND NOT freight IS FreightArrived
 
 FORM freight 'Фрахт'
 

@@ -4,25 +4,25 @@ REQUIRE System,
         POS;
 
 fiscalVMKPrintReceipt 'Напечатать фискальный чек' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKPrintReceiptActionProperty';
-postPrintReceipt(receipt) += fiscalVMKPrintReceipt(receipt) IF sidCashRegisterModelReceipt(receipt) == 'VMK';
+postPrintReceipt(receipt) += ACTION IF sidCashRegisterModelReceipt(receipt) == 'VMK' THEN fiscalVMKPrintReceipt(receipt);
 
 fiscalVMKAdvancePaper 'Прогон ленты' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKAdvancePaperActionProperty';
-fiscalAdvancePaper() += fiscalVMKAdvancePaper() IF sidModelCurrentCashRegister() == 'VMK';
+fiscalAdvancePaper() += ACTION IF sidModelCurrentCashRegister() == 'VMK' THEN fiscalVMKAdvancePaper();
 
 fiscalVMKXReport 'X-отчёт' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKXReportActionProperty';
-fiscalXReport() += fiscalVMKXReport() IF sidModelCurrentCashRegister() == 'VMK';
+fiscalXReport() += ACTION IF sidModelCurrentCashRegister() == 'VMK' THEN fiscalVMKXReport();
 
 fiscalVMKZReport 'Z-отчёт' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKZReportActionProperty';
-fiscalZReport() += fiscalVMKZReport() IF sidModelCurrentCashRegister() == 'VMK';
+fiscalZReport() += ACTION IF sidModelCurrentCashRegister() == 'VMK' THEN fiscalVMKZReport();
 
 fiscalVMKUpdateData 'Загрузить информацию' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKUpdateDataActionProperty';
-fiscalUpdateData() += fiscalVMKUpdateData() IF sidModelCurrentCashRegister() == 'VMK';
+fiscalUpdateData() += ACTION IF sidModelCurrentCashRegister() == 'VMK' THEN fiscalVMKUpdateData();
 
 fiscalVMKServiceCashOperation 'Перемещение денег' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKServiceInOutActionProperty';
-fiscalServiceCashOperation(cashOperation) += fiscalVMKServiceCashOperation(cashOperation) IF sidCashRegisterModelCashOperation(cashOperation) == 'VMK';
+fiscalServiceCashOperation(cashOperation) += ACTION IF sidCashRegisterModelCashOperation(cashOperation) == 'VMK' THEN fiscalVMKServiceCashOperation(cashOperation);
 
 fiscalVMKDisplayTextReceiptDetail 'Вывести текст на дисплей' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKDisplayTextActionProperty';
-fiscalDisplayTextReceiptDetail (receiptDetail) += fiscalVMKDisplayTextReceiptDetail(receiptDetail) IF sidCashRegisterModelReceiptDetail(receiptDetail) == 'VMK';
+fiscalDisplayTextReceiptDetail (receiptDetail) += ACTION IF sidCashRegisterModelReceiptDetail(receiptDetail) == 'VMK' THEN fiscalVMKDisplayTextReceiptDetail(receiptDetail);
 
 fiscalVMKCancelReceipt 'Отменить чек' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKCancelReceiptActionProperty';
-fiscalCancelReceipt() += fiscalVMKCancelReceipt() IF sidModelCurrentCashRegister() == 'VMK';
+fiscalCancelReceipt() += ACTION IF sidModelCurrentCashRegister() == 'VMK' THEN fiscalVMKCancelReceipt();

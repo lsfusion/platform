@@ -838,8 +838,21 @@ overridePE[List<String> context, boolean dynamic] returns [LPWithParams property
 		$property = self.addScriptedOverrideProp(props);
 	}
 }
+	:	firstExpr=ifPE[context, dynamic] { props.add($firstExpr.property); }
+		('OVERRIDE' nextExpr=ifPE[context, dynamic] { props.add($nextExpr.property); })*
+	;
+
+ifPE[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedIfProp(props);
+	}
+} 
 	:	firstExpr=orPE[context, dynamic] { props.add($firstExpr.property); }
-		('OVERRIDE' nextExpr=orPE[context, dynamic] { props.add($nextExpr.property); })*
+		('IF' nextExpr=orPE[context, dynamic] { props.add($nextExpr.property); })*
 	;
 
 orPE[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -851,24 +864,47 @@ orPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 		$property = self.addScriptedOrProp(props);
 	}
 } 
+	:	firstExpr=xorPE[context, dynamic] { props.add($firstExpr.property); }
+		('OR' nextExpr=xorPE[context, dynamic] { props.add($nextExpr.property); })*
+	;
+
+xorPE[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedXorProp(props);
+	}
+} 
 	:	firstExpr=andPE[context, dynamic] { props.add($firstExpr.property); }
-		('OR' nextExpr=andPE[context, dynamic] { props.add($nextExpr.property); })*
+		('XOR' nextExpr=andPE[context, dynamic] { props.add($nextExpr.property); })*
 	;
 
 andPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
-	List<Boolean> nots = new ArrayList<Boolean>();
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedAndProp(nots, props);				
+		$property = self.addScriptedAndProp(props);				
 	}
 }
-	:	firstExpr=equalityPE[context, dynamic] { props.add($firstExpr.property); }
-		((('AND') | ('IF')) { nots.add(false); }
-		('NOT' { nots.set(nots.size()-1, true); })?
-		nextExpr=equalityPE[context, dynamic] { props.add($nextExpr.property); })*
+	:	firstExpr=notPE[context, dynamic] { props.add($firstExpr.property); }
+		('AND' nextExpr=notPE[context, dynamic] { props.add($nextExpr.property); })*
+	;
+
+notPE[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	boolean notWas = false;
+}
+@after {
+	if (inPropParseState() && notWas) { 
+		$property = self.addScriptedNotProp($notExpr.property);  
+	}
+}
+	:	'NOT' notExpr=notPE[context, dynamic] { notWas = true; } 
+	|	expr=equalityPE[context, dynamic] { $property = $expr.property; } 
 	;
 
 equalityPE[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -959,22 +995,22 @@ multiplicativePE[List<String> context, boolean dynamic] returns [LPWithParams pr
 		$property = self.addScriptedMultiplicativeProp(ops, props);				
 	}
 }
-	:	firstExpr=prefixUnaryPE[context, dynamic] { props.add($firstExpr.property); }
+	:	firstExpr=unaryMinusPE[context, dynamic] { props.add($firstExpr.property); }
 		(operand=MULT_OPERAND { ops.add($operand.text); }
-		nextExpr=prefixUnaryPE[context, dynamic] { props.add($nextExpr.property); })*
+		nextExpr=unaryMinusPE[context, dynamic] { props.add($nextExpr.property); })*
 	;
 
 	
-prefixUnaryPE[List<String> context, boolean dynamic] returns [LPWithParams property] 
+unaryMinusPE[List<String> context, boolean dynamic] returns [LPWithParams property] 
 @init {
-	boolean hasPrefix = false;
+	boolean minusWas = false;
 }
 @after {
-	if (inPropParseState() && hasPrefix) {
+	if (inPropParseState() && minusWas) {
 		$property = self.addScriptedUnaryMinusProp($expr.property);
 	} 
 }
-	:	MINUS expr=prefixUnaryPE[context, dynamic]  { hasPrefix = true; }
+	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } 
 	|	simpleExpr=postfixUnaryPE[context, dynamic] { $property = $simpleExpr.property; }
 	;
 

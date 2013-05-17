@@ -2581,6 +2581,10 @@ public abstract class LogicsModule {
             lp.makeUserLoggable(systemEventsLM);
     }
 
+    public LCP not() {
+        return baseLM.not();
+    }
+
     // получает свойство is
     public LCP<?> is(ValueClass valueClass) {
         return baseLM.is(valueClass);

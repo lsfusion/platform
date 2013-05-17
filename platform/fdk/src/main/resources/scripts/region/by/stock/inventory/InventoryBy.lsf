@@ -108,7 +108,7 @@ FORM printCollationSheetBy 'Сличительная ведомость' PRINT
     PROPERTIES(cs,b) SELECTOR pricePageInventoryDetailCollationSheetBatch, priceBalanceCollationSheetBatch
     PROPERTIES(cs,b) READONLY sumPageInventoryDetailCollationSheetBatch, sumBalanceCollationSheetBatch, sumShortageCollationSheetBatch
     FILTERS                   includeCollationSheetBatch(cs,b),
-                              (TRUE IF quantityPageInventoryDetailCollationSheetBatch(cs,b)) OR (TRUE IF quantityBalanceCollationSheetBatch(cs,b))
+                              quantityPageInventoryDetailCollationSheetBatch(cs,b) OR quantityBalanceCollationSheetBatch(cs,b)
     ORDER BY nameSkuBatch
 ;
 

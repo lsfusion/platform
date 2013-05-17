@@ -462,7 +462,7 @@ sumBatchPageInventoryDetailCollationSheet 'Сумма по описям' (collat
 includeCollationSheetSku(collationSheet, sku) = UNION CLASS
     collationSheet IS RegisterCollationSheet IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku),
     (inManyCollationSheetSku(collationSheet, sku) OVERRIDE collationSheet IS ManyCollationSheet IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku)),
-    (collationSheet IS RemainsCollationSheet IF (quantityBalanceCollationSheetSku(collationSheet, sku) != 0 OR TRUE IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku)));
+    (collationSheet IS RemainsCollationSheet IF (quantityBalanceCollationSheetSku(collationSheet, sku) != 0 OR quantityPageInventoryDetailCollationSheetSku(collationSheet, sku)));
 
 priceBalanceCollationSheetSku(collationSheet, sku) <- priceLedgerPriceListTypeSkuStockDateTime(SystemLedgerPriceListType.accountPriceListType,
                 sku, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
@@ -818,8 +818,7 @@ DESIGN dialogSkuCollationSheet FROM DEFAULT {
 
 }
 
-dialogSkuCollationSheet 'Добавить товар' (collationSheet) =
-    [ACTION FORM dialogSkuCollationSheet OBJECTS cs = collationSheet MODAL](collationSheet) IF collationSheet IS ManyCollationSheet;
+dialogSkuCollationSheet 'Добавить товар' (collationSheet) = ACTION IF collationSheet IS ManyCollationSheet THEN FORM dialogSkuCollationSheet OBJECTS cs = collationSheet MODAL;
 
 //------------------------------------ Формы редактирования описей ------------------------------------------//
 
@@ -1003,7 +1002,7 @@ FORM inventory 'Инвентаризация'
     FILTERGROUP notEqualsPriceBatchFilters
             FILTER 'Партии с разными ценами' 'F9' differentPriceCollationSheetBatch(cs, b)
     FILTERGROUP notEqualsPriceBatchFilters
-            FILTER 'Партии с остатками' 'F8' TRUE IF quantityPageInventoryDetailCollationSheetBatch(cs,b) OR TRUE IF quantityBalanceCollationSheetBatch(cs,b) DEFAULT
+            FILTER 'Партии с остатками' 'F8' quantityPageInventoryDetailCollationSheetBatch(cs,b) OR quantityBalanceCollationSheetBatch(cs,b) DEFAULT
 
     EDIT Inventory OBJECT in
 ;
@@ -1225,7 +1224,7 @@ FORM inventories 'Инвентаризации'
                                                                 priceBalanceCollationSheetBatch BACKGROUND differentPriceCollationSheetBatch(cs, bt)
     PROPERTIES(cs,bt) READONLY SHOWIF isBatchCollationSheet(cs) sumPageInventoryDetailCollationSheetBatch, sumBalanceCollationSheetBatch, sumShortageCollationSheetBatch
     FILTERS                                                     includeCollationSheetBatch(cs, bt),
-                                                                TRUE IF quantityPageInventoryDetailCollationSheetBatch(cs,bt) OR TRUE IF quantityBalanceCollationSheetBatch(cs,bt)
+                                                                quantityPageInventoryDetailCollationSheetBatch(cs,bt) OR quantityBalanceCollationSheetBatch(cs,bt)
 ;
 
 DESIGN inventories FROM DEFAULT {

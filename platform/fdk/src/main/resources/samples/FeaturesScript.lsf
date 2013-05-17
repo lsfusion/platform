@@ -208,7 +208,7 @@ onlyIncomeQuantity(store, article) = ioQuantity(store, article)[1];
 
 // Abstract property
 // Expression syntax:
-// ABSTRACT returnClass ( [paramClass1, ..., paramClassN] ) [EXCLUSIVE]
+// ABSTRACT returnClass (paramClass1, ..., paramClassN) [EXCLUSIVE]
 testAbstract(named) = ABSTRACT INTEGER (Named);
 // overriding abstract property syntax:
 // propertyName(namedParam1, ..., namedParamN) += expression;
@@ -217,8 +217,9 @@ testAbstract(named) += 6 IF named IS Store;
 
 // Abstract action property
 // Expression syntax:
-// ABSTRACT ACTION ( [param1, ..., paramN] )
-testAbstractAction(object) = ABSTRACT ACTION (Object);
+// ABSTRACT ACTION (className1, ..., classNameN)
+
+testAbstractAction = ABSTRACT ACTION (Object);
 // overriding abstract action property syntax:
 // propertyName(namedParam1, ..., namedParamN) += ACTION actionBody;
 
@@ -409,7 +410,7 @@ PROPERTIES(d) store, script, evalScript;
 
 
 copyStoreNameToArticles 'Скопировать имя склада в имена артиклей' (s) = ACTION(s) {
-    name(a) <- (name(s) AND s IS Store) WHERE a IS Article;
+    name(a) <- (name(s) IF s IS Store) WHERE a IS Article;
 };
 
 copyStoreNameToArticle 'Добавить имя склада к имени артикля' (s, a) = ACTION(s, a) NEWSESSION AUTOAPPLY {

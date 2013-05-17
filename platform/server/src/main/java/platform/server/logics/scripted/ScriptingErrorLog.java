@@ -309,11 +309,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitNotActionPropertyError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "property should be an action");
+        emitSimpleError(parser, "should be an action here");
     }
 
     public void emitNotCalculationPropertyError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "property cannot be an action");
+        emitSimpleError(parser, "should be a calculation property here");
     }
 
     public void emitExtendActionContextError(ScriptParser parser) throws SemanticErrorException {

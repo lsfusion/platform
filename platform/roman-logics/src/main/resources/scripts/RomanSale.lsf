@@ -84,8 +84,8 @@ useRetailPriceSaleOutDetail(detail) = [stockSaleOutDetail(detail) IS DepartmentS
 // Проводим по регистру
 @implementSkuLedgerOutFIFO(SaleOutDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantitySaleOutDetail (ledger);
-limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceABatchStock(batch, stockSaleOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch)
-                                             IF batch IS BatchA;
+limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceABatchStock(batch, stockSaleOutDetail(ledger)) IF NOT commissionContractSkuBatchA(batch)
+                                             AND batch IS BatchA;
 sumOutSkuLedger(ledger) += accountSumSaleOutDetail(ledger);
 skipSkuLedger (ledger) += skipSkuLedgerSaleOutDetail(ledger);
 
