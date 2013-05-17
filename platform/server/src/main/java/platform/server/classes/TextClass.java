@@ -76,7 +76,9 @@ public class TextClass extends DataClass<String> {
 
     @Override
     public int getBinaryLength(boolean charBinary) {
-        throw new RuntimeException("not supported");
+        //временный фикс
+//        throw new RuntimeException("not supported");
+        return 100;
     }
 
     public String parseString(String s) throws ParseException {
