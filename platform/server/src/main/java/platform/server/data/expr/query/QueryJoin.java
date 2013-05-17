@@ -53,8 +53,14 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
             return BaseUtils.immutableCast(thisObj.group.values().toSet());
         }
 
+        @Override
         public ImSet<Value> getValues() {
             return super.getValues().merge(thisObj.getInnerValues());
+        }
+
+        @Override
+        public ImSet<StaticValueExpr> getOuterStaticValues() {
+            throw new RuntimeException("should not be");
         }
 
         public boolean twins(TwinImmutableObject o) {
@@ -229,5 +235,10 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
 
     public boolean equalsInner(T object) {
         return getClass() == object.getClass() && BaseUtils.hashEquals(query, object.query) && BaseUtils.hashEquals(group,object.group);
+    }
+
+    @Override
+    public ImSet<StaticValueExpr> getOuterStaticValues() {
+        throw new RuntimeException("should not be");
     }
 }

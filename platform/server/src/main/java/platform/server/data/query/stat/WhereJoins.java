@@ -550,4 +550,8 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
     public WhereJoins pack() {
         throw new RuntimeException("not supported yet");
     }
+
+    public ImSet<StaticValueExpr> getOuterStaticValues() {
+        throw new RuntimeException("should not be");
+    }
 }

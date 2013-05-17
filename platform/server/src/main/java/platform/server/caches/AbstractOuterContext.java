@@ -5,6 +5,7 @@ import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
+import platform.server.data.expr.StaticValueExpr;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 
@@ -16,6 +17,10 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
 
     public static ImSet<Value> getOuterValues(OuterContext<?> context) {
         return getOuterValues(context.getOuterDepends());
+    }
+
+    public static ImSet<StaticValueExpr> getOuterStaticValues(OuterContext<?> context) {
+        return getOuterStaticValues(context.getOuterDepends());
     }
 
     public static long getComplexity(ImCol<? extends OuterContext> elements, boolean outer) {
@@ -43,6 +48,13 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
         MSet<Value> mResult = SetFact.mSet();
         for(int i=0,size=set.size();i<size;i++)
             mResult.addAll(set.get(i).getOuterValues());
+        return mResult.immutable();
+    }
+
+    public static ImSet<StaticValueExpr> getOuterStaticValues(ImCol<? extends OuterContext> set) {
+        MSet<StaticValueExpr> mResult = SetFact.mSet();
+        for(int i=0,size=set.size();i<size;i++)
+            mResult.addAll(set.get(i).getOuterStaticValues());
         return mResult.immutable();
     }
 
@@ -161,5 +173,9 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
 
     public ImSet<Value> getValues() {
         return getOuterValues(this);
+    }
+
+    public ImSet<StaticValueExpr> getOuterStaticValues() {
+        return getOuterStaticValues(getOuterDepends());
     }
 }

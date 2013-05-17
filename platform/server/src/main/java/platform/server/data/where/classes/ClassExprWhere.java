@@ -353,4 +353,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         return result;
     }
 
+    public ImSet<StaticValueExpr> getOuterStaticValues() {
+        throw new RuntimeException("should not be");
+    }
 }

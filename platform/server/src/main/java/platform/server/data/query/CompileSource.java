@@ -1,12 +1,15 @@
 package platform.server.data.query;
 
 import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.mutable.MRevMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.data.ParseValue;
 import platform.server.data.Table;
 import platform.server.data.Value;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
+import platform.server.data.expr.StaticValueExpr;
 import platform.server.data.expr.query.QueryExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
@@ -22,13 +25,13 @@ public abstract class CompileSource {
         return (GetValue<String, V>)getSource;
     }
 
-    public final ImRevMap<Value,String> params;
+    public final ImRevMap<ParseValue,String> params;
     public final SQLSyntax syntax;
 
     public final KeyType keyType;
     public final Where fullWhere;
 
-    protected CompileSource(KeyType keyType, Where fullWhere, ImRevMap<Value, String> params, SQLSyntax syntax) {
+    protected CompileSource(KeyType keyType, Where fullWhere, ImRevMap<ParseValue, String> params, SQLSyntax syntax) {
         this.keyType = keyType;
         this.fullWhere = fullWhere;
         this.params = params;

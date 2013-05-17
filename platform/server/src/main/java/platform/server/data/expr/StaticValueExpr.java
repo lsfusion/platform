@@ -1,18 +1,23 @@
 package platform.server.data.expr;
 
 import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.StaticClass;
+import platform.server.data.ParseValue;
 import platform.server.data.query.CompileSource;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
+import platform.server.data.type.ParseInterface;
 import platform.server.data.type.Type;
+import platform.server.data.type.TypeObject;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
-public class StaticValueExpr extends StaticExpr<StaticClass> {
+public class StaticValueExpr extends StaticExpr<StaticClass> implements ParseValue {
 
     private final Object object;
     private boolean sID;
@@ -55,11 +60,29 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
             return ((ConcreteCustomClass)objectClass).getString(object,compile.syntax);
         else {
             Type type = objectClass.getType();
-            String result = type.getString(object, compile.syntax);
+            String result;
+            if(type.isSafeString(object))
+                result = type.getString(object, compile.syntax);
+            else
+                result = compile.params.get(this);
             if(!type.isSafeType(object))
                 result = type.getCast(result, compile.syntax, type.needPadding(object)); // cast часто rtrim делает и глотает пробелы (важно если ' ' строка), с другой стороны lpad возвращает text и при join'е с char'ом не использует индексы
             return result;
         }
+    }
+
+    @Override
+    public ImSet<StaticValueExpr> getOuterStaticValues() {
+        if(!objectClass.getType().isSafeString(object))
+            return SetFact.singleton(this);
+
+        return super.getOuterStaticValues();
+    }
+
+
+    public TypeObject getParseInterface() {
+        assert !sID && !objectClass.getType().isSafeString(object);
+        return new TypeObject(object, objectClass.getType());
     }
 
     @Override

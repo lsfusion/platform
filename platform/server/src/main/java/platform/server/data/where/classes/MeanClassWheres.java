@@ -12,6 +12,7 @@ import platform.server.caches.OuterContext;
 import platform.server.caches.ParamExpr;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
+import platform.server.data.expr.StaticValueExpr;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.AbstractWhere;
@@ -119,5 +120,8 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
     }
     public MeanClassWheres pack() {
         throw new RuntimeException("not supported yet");
+    }
+    public ImSet<StaticValueExpr> getOuterStaticValues() {
+        throw new RuntimeException("should not be");
     }
 }

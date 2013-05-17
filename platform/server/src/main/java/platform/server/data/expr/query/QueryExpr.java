@@ -44,6 +44,10 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
     public ImSet<Value> getValues() {
         return super.getValues().merge(getInner().getInnerValues());
     }
+    @Override
+    public ImSet<StaticValueExpr> getOuterStaticValues() {
+        return super.getOuterStaticValues().merge(getInner().getInnerStaticValues());
+    }
 
     protected long calculateComplexity(boolean outer) {
         long result = super.calculateComplexity(outer);
@@ -139,6 +143,10 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
 
         public ImSet<Value> getValues() {
             return getOuterValues(thisObj.group.keys()).merge(thisObj.query.getOuterValues());
+        }
+
+        public ImSet<StaticValueExpr> getInnerStaticValues() { // можно было бы вынести в общий интерфейс InnerContext, но нужен только для компиляции запросов
+            return getOuterStaticValues(thisObj.group.keys()).merge(thisObj.query.getOuterStaticValues());
         }
 
         protected IC translate(MapTranslate translate) {

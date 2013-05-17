@@ -1,19 +1,19 @@
 package platform.server.data.query;
 
 import platform.base.ArrayInstancer;
+import platform.base.BaseUtils;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.Settings;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.ParamExpr;
+import platform.server.data.ParseValue;
 import platform.server.data.Table;
 import platform.server.data.Value;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.QueryExpr;
-import platform.server.data.expr.where.NotNullWhere;
-import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
@@ -27,8 +27,8 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
                 public Type getKeyType(ParamExpr expr) {
                     return ObjectType.instance;
                 }
-            }, Where.FALSE, values.mapRevValues(new GetValue<String, Value>() {
-                public String getMapValue(Value value) {
+            }, Where.FALSE, BaseUtils.<ImSet<ParseValue>>immutableCast(values).mapRevValues(new GetValue<String, ParseValue>() {
+                public String getMapValue(ParseValue value) {
                     return value.toString();
                 }}), PostgreDataAdapter.debugSyntax);
         }

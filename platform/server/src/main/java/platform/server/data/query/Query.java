@@ -112,6 +112,10 @@ public class Query<K,V> extends IQuery<K,V> {
         return AbstractOuterContext.getOuterValues(properties.values()).merge(where.getOuterValues());
     }
 
+    public ImSet<StaticValueExpr> getInnerStaticValues() { // можно было бы вынести в общий интерфейс InnerContext, но нужен только для компиляции запросов
+        return AbstractOuterContext.getOuterStaticValues(properties.values()).merge(where.getOuterStaticValues());
+    }
+
     public Where getWhere() {
         return where;
     }

@@ -142,10 +142,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     }
 
     public Expr getStaticExpr(Object value) {
-        Type type = getType();
-        return type instanceof DateClass || type instanceof ColorClass || type.isSafeString(value) // идея в том что, если не Safe String то нужно по любому использовать ValueExpr, очень маловероятно что он пересекется с другим значением
-               ? new StaticValueExpr(value, this)
-               : new ValueExpr(value, this);
+        return new StaticValueExpr(value, this);
     }
 
     protected abstract Class getReportJavaClass();

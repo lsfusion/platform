@@ -59,7 +59,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
     public boolean union;
 
-    final ImRevMap<Value,String> params;
+    final ImRevMap<ParseValue,String> params;
     public final ExecuteEnvironment env;
 
     private boolean checkQuery() {
@@ -67,7 +67,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     // перемаппит другой CompiledQuery
-    public <MK,MV> CompiledQuery(CompiledQuery<MK,MV> compile,ImRevMap<K,MK> mapKeys,ImRevMap<V,MV> mapProperties, MapValuesTranslate mapValues) {
+    public <MK,MV> CompiledQuery(CompiledQuery<MK,MV> compile,ImRevMap<K,MK> mapKeys,ImRevMap<V,MV> mapProperties, final MapValuesTranslate mapValues) {
         from = compile.from;
         whereSelect = compile.whereSelect;
         keySelect = mapKeys.join(compile.keySelect);
@@ -82,7 +82,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         propertyReaders = mapProperties.join(compile.propertyReaders);
         union = compile.union;
 
-        params = mapValues.translateValuesMapKeys(compile.params);
+        params = compile.params.mapRevKeys(new GetValue<ParseValue, ParseValue>() {
+            public ParseValue getMapValue(ParseValue value) {
+                if(value instanceof Value)
+                    return mapValues.translate((Value)value);
+                assert value instanceof StaticValueExpr;
+                return value;
+            }});
 
         env = compile.env.translateValues(mapValues);
 
@@ -91,7 +97,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
     private static class FullSelect extends CompileSource {
 
-        private FullSelect(KeyType keyType, Where fullWhere, ImRevMap<Value, String> params, SQLSyntax syntax, ImMap<KeyExpr,String> keySelect, ImMap<JoinData, String> joinData) {
+        private FullSelect(KeyType keyType, Where fullWhere, ImRevMap<ParseValue, String> params, SQLSyntax syntax, ImMap<KeyExpr, String> keySelect, ImMap<JoinData, String> joinData) {
             super(keyType, fullWhere, params, syntax);
             this.keySelect = keySelect;
             this.joinData = joinData;
@@ -152,7 +158,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         keyNames = query.mapKeys.mapRevValues(new GenNameIndex("jkey", ""));
         propertyNames = query.properties.mapRevValues(new GenNameIndex("jprop",""));
-        params = query.getInnerValues().mapRevValues(new GenNameIndex("qwer","ffd"));
+        params = SetFact.addExcl(query.getInnerValues(), query.getInnerStaticValues()).mapRevValues(new GenNameIndex("qwer", "ffd"));
 
         env = new ExecuteEnvironment();
 
@@ -294,7 +300,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         final SubQueryContext subcontext;
         final KeyStat keyStat;
 
-        public InnerSelect(ImSet<KeyExpr> keys, KeyType keyType, KeyStat keyStat, Where fullWhere, WhereJoins whereJoins, ImMap<WhereJoin, Where> upWheres, SQLSyntax syntax, ImRevMap<Value, String> params, SubQueryContext subcontext) {
+        public InnerSelect(ImSet<KeyExpr> keys, KeyType keyType, KeyStat keyStat, Where fullWhere, WhereJoins whereJoins, ImMap<WhereJoin, Where> upWheres, SQLSyntax syntax, ImRevMap<ParseValue, String> params, SubQueryContext subcontext) {
             super(keyType, fullWhere, params, syntax);
 
             this.keyStat = keyStat;
@@ -776,7 +782,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 super(recJoin);
             }
 
-            private String getSelect(ImRevMap<String, KeyExpr> keys, ImMap<String, Expr> props, final ImMap<String, Type> columnTypes, Where where, Result<ImOrderSet<String>> keyOrder, Result<ImOrderSet<String>> propOrder, boolean useRecursionFunction, boolean recursive, ImRevMap<Value, String> params, SubQueryContext subcontext, ExecuteEnvironment env) {
+            private String getSelect(ImRevMap<String, KeyExpr> keys, ImMap<String, Expr> props, final ImMap<String, Type> columnTypes, Where where, Result<ImOrderSet<String>> keyOrder, Result<ImOrderSet<String>> propOrder, boolean useRecursionFunction, boolean recursive, ImRevMap<ParseValue, String> params, SubQueryContext subcontext, ExecuteEnvironment env) {
                 ImRevMap<String, KeyExpr> itKeys = innerJoin.getMapIterate().mapRevKeys(new GenNameIndex("pv_", ""));
 
                 Result<ImMap<String, String>> keySelect = new Result<ImMap<String, String>>();
@@ -914,14 +920,15 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     }});
 
                 String outerParams = null;
-                ImRevMap<Value, String> innerParams;
+                ImRevMap<ParseValue, String> innerParams;
                 if(useRecursionFunction) {
-                    ImSet<Value> values = AbstractOuterContext.getOuterValues(SetFact.merge(queries.valuesSet(), initialWhere));
+                    ImSet<OuterContext> outerContext = SetFact.<OuterContext>merge(queries.valuesSet(), initialWhere);
+                    ImSet<ParseValue> values = SetFact.addExcl(AbstractOuterContext.getOuterValues(outerContext), AbstractOuterContext.getOuterStaticValues(outerContext));
                     outerParams = "";
-                    ImRevValueMap<Value, String> mvInnerParams = values.mapItRevValues(); // "совместная" обработка / последействие
+                    ImRevValueMap<ParseValue, String> mvInnerParams = values.mapItRevValues(); // "совместная" обработка / последействие
                     int iv = 1;
                     for(int i=0,size=values.size();i<size;i++) {
-                        Value value = values.get(i);
+                        ParseValue value = values.get(i);
                         String paramValue = params.get(value);
                         if(!value.getParseInterface().isSafeString()) {
                             Type type = ((ValueExpr)value).getType();
@@ -1079,7 +1086,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     // castTypes параметр чисто для бага Postgre и может остальных
-    private static <K,V> String getInnerSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<V, Expr> compiledProps, ImRevMap<Value, String> params, ImOrderMap<V, Boolean> orders, int top, SQLSyntax syntax, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, Result<ImOrderSet<K>> keyOrder, Result<ImOrderSet<V>> propertyOrder, ImMap<V, Type> castTypes, SubQueryContext subcontext, boolean noInline, ExecuteEnvironment env) {
+    private static <K,V> String getInnerSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<V, Expr> compiledProps, ImRevMap<ParseValue, String> params, ImOrderMap<V, Boolean> orders, int top, SQLSyntax syntax, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, Result<ImOrderSet<K>> keyOrder, Result<ImOrderSet<V>> propertyOrder, ImMap<V, Type> castTypes, SubQueryContext subcontext, boolean noInline, ExecuteEnvironment env) {
         Result<ImMap<K,String>> andKeySelect = new Result<ImMap<K, String>>(); Result<ImCol<String>> andWhereSelect = new Result<ImCol<String>>(); Result<ImMap<V,String>> andPropertySelect = new Result<ImMap<V, String>>();
         String andFrom = fillInnerSelect(mapKeys, innerSelect, compiledProps, andKeySelect, andPropertySelect, andWhereSelect, params, syntax, subcontext, env);
 
@@ -1096,7 +1103,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 whereSelect.toString(" AND "), Query.stringOrder(propertyOrder.result, keySelect.size(), orders, ordersNotNull, syntax),"", "", top==0?"":String.valueOf(top));
     }
 
-    private static <K,AV> String fillSingleSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<AV, Expr> compiledProps, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, ImRevMap<Value,String> params, SQLSyntax syntax, SubQueryContext subcontext, ExecuteEnvironment env) {
+    private static <K,AV> String fillSingleSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<AV, Expr> compiledProps, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, ImRevMap<ParseValue, String> params, SQLSyntax syntax, SubQueryContext subcontext, ExecuteEnvironment env) {
         return fillFullSelect(mapKeys, SetFact.singleton(innerSelect), innerSelect.getFullWhere(), compiledProps, MapFact.<AV, Boolean>EMPTYORDER(), 0, resultKey, resultProperty, params, syntax, subcontext, env);
 
 /*        FullSelect FJSelect = new FullSelect(innerSelect.where, params,syntax); // для keyType'а берем первый where
@@ -1128,7 +1135,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         return "(" + getInnerSelect(mapKeys, innerSelect, joinProps, params, new OrderedMap<String, Boolean>(),0 , syntax, keyNames, BaseUtils.toMap(joinProps.keySet()), new ArrayList<K>(), new ArrayList<String>(), null, subcontext, true) + ") " + innerAlias;*/
     }
 
-    private static <K,AV> String fillInnerSelect(ImRevMap<K, KeyExpr> mapKeys, final GroupJoinsWhere innerSelect, ImMap<AV, Expr> compiledProps, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, Result<ImCol<String>> resultWhere, ImRevMap<Value, String> params, SQLSyntax syntax, SubQueryContext subcontext, ExecuteEnvironment env) {
+    private static <K,AV> String fillInnerSelect(ImRevMap<K, KeyExpr> mapKeys, final GroupJoinsWhere innerSelect, ImMap<AV, Expr> compiledProps, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, Result<ImCol<String>> resultWhere, ImRevMap<ParseValue, String> params, SQLSyntax syntax, SubQueryContext subcontext, ExecuteEnvironment env) {
 
         final InnerSelect compile = new InnerSelect(mapKeys.valuesSet(), innerSelect.where, innerSelect.where, innerSelect.where,innerSelect.joins,innerSelect.upWheres,syntax,params, subcontext);
 
@@ -1189,7 +1196,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
     };
 
-    private static <K,AV> String fillFullSelect(ImRevMap<K, KeyExpr> mapKeys, ImCol<GroupJoinsWhere> innerSelects, Where fullWhere, ImMap<AV, Expr> compiledProps, ImOrderMap<AV, Boolean> orders, int top, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, ImRevMap<Value, String> params, SQLSyntax syntax, final SubQueryContext subcontext, ExecuteEnvironment env) {
+    private static <K,AV> String fillFullSelect(ImRevMap<K, KeyExpr> mapKeys, ImCol<GroupJoinsWhere> innerSelects, Where fullWhere, ImMap<AV, Expr> compiledProps, ImOrderMap<AV, Boolean> orders, int top, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, ImRevMap<ParseValue, String> params, SQLSyntax syntax, final SubQueryContext subcontext, ExecuteEnvironment env) {
 
         // создаем And подзапросыs
         final ImSet<AndJoinQuery> andProps = innerSelects.mapColSetValues(new GetIndexValue<AndJoinQuery, GroupJoinsWhere>() {
@@ -1329,8 +1336,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         return query;
     }
     
-    private final static GetValue<ParseInterface, Value> GETPARSE = new GetValue<ParseInterface, Value>() {
-        public ParseInterface getMapValue(Value value) {
+    private final static GetValue<ParseInterface, ParseValue> GETPARSE = new GetValue<ParseInterface, ParseValue>() {
+        public ParseInterface getMapValue(ParseValue value) {
             return value.getParseInterface();
         }
     };
@@ -1361,12 +1368,12 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         return translateParam(from, params);
     }
 
-    private ImRevMap<String, String> getTranslate(ImRevMap<Value, String> mapValues) {
+    private ImRevMap<String, String> getTranslate(ImRevMap<ParseValue, String> mapValues) {
         return params.crossJoin(mapValues);
     }
 
     // для подзапросов
-    public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, ImRevMap<Value, String> mapValues, ExecuteEnvironment fillEnv) {
+    public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, ImRevMap<ParseValue, String> mapValues, ExecuteEnvironment fillEnv) {
         return fillSelect(getTranslate(mapValues), fillKeySelect, fillPropertySelect, fillWhereSelect, fillEnv);
     }
 

@@ -770,15 +770,16 @@ FORM editStore 'Редактирование склада'
 ;
 
 dateProp(store) = 2007_12_01 AND store IS Store;
-//dateTimeProp(store) = 2007_12_01_18:00 AND store IS Store;
-//timeProp(store) = 18:00 AND store IS Store;
+dateTimeProp(store) = 2007_12_01_18:00 AND store IS Store;
+timeProp(store) = 18:00 AND store IS Store;
 variableDateTime(store) = DATA DATETIME (Store);
+teststring(store) = '\n\'\\ghhgh\\"' AND store IS Store;
 
 FORM TestDataPropForm 'Тест дат'
     OBJECTS store=Store
     PROPERTIES(store) dateProp, variableDateTime
-    //PROPERTIES dateTimeProp(store)
-    //PROPERTIES timeProp(store)
+    PROPERTIES dateTimeProp(store), teststring(store)
+    PROPERTIES timeProp(store)
 ;
 
 colorizeMatchingStoreSize (s, ss) = scolor(s) IF storeSize(s) == ss;
