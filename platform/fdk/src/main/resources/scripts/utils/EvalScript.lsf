@@ -1,14 +1,29 @@
 MODULE EvalScript;
 
-REQUIRE System;
+REQUIRE System, Utils;
 
 NAMESPACE System;
 
 scriptStorage 'Скрипт' () = DATA TEXT ();
 
 scriptExecution 'Выполнить скрипт' () = ACTION EVAL scriptStorage();
-actionBodyExecution 'Выполнить action' () = ACTION EVAL ustring3('run() = ACTION {', scriptStorage(), ';\n};');
-formExecution 'Показать форму' () = ACTION EVAL ustring3SP('FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;');
+
+actionBodyExecution 'Выполнить action' () = ACTION () {
+     LOCAL s = TEXT();
+     s() <- toText('run() = ACTION {');
+     s() <- s() + scriptStorage();
+     s() <- s() + ';\n};';
+     EVAL s();
+}
+
+formExecution 'Показать форму' () = ACTION {
+     LOCAL s = TEXT();
+     s() <- toText('FORM form');
+     s() <- s() + ' ';
+     s() <- s() + scriptStorage();
+     s() <- s() + ';\nrun() = ACTION FORM form;';
+     EVAL s();
+}
 
 FORM mainForm 'Скрипт'
     PROPERTIES() scriptStorage,

@@ -1016,7 +1016,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     // Набор методов для поиска модуля, в котором находится элемент системы
     private LogicsModule getModuleContainingObject(String namespaceName, String name, LogicsModule.ModuleFinder finder) {
-        for (LogicsModule module : namespaceToModules.get(namespaceName)) {
+        List<LogicsModule> modules = namespaceToModules.get(namespaceName);
+        if(modules==null)
+            return null;
+        for (LogicsModule module : modules) {
             if (finder.resolveInModule(module, name) != null) {
                 return module;
             }
