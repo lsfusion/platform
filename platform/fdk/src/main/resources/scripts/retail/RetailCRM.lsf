@@ -7,29 +7,10 @@ REQUIRE System,
         Barcode,
         Store,
         Numerator,
+        LegalEntity,
         Document;
 
 PRIORITY Stock;
-
-
-// ------------------------------------- Физические лица -------------------------------------- //
-
-CLASS Client 'Покупатель (Ф.Л.)' : Contact;
-
-FORM client 'Покупатель (Ф.Л.)'
-    OBJECTS c=Client FIXED PANEL
-    PROPERTIES(c)      firstNameContact, lastNameContact, postAddressContact, phoneContact,
-                       emailContact, birthdayContact
-
-    EDIT Client OBJECT c
-;
-
-FORM clients 'Покупатели (Ф.Л.)'
-    OBJECTS c=Client
-    PROPERTIES(c)      READONLY firstNameContact, lastNameContact, postAddressContact, phoneContact,
-                       emailContact, birthdayContact
-    PROPERTIES(c)      ADDFORM, EDITFORM, DELETE
-;
 
 //--------------------------------------Дисконтные карточки------------------------------------------------------------------//
 CLASS DiscountCard 'Дисконтная карта' : NumeratedObject;
@@ -44,8 +25,8 @@ nameDiscountSkuGroup 'Наименование' = ABSTRACT ISTRING[150](Discount
 discountCardSeriesNumber (discountCard) = GROUP AGGR discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS DiscountCard;
 discountCardNumber (discountCard) = GROUP MAX discountCard BY numberObject(discountCard) IF discountCard IS DiscountCard;
 
-clientDiscountCard (discountCard) = DATA Client(DiscountCard);
-nameClientDiscountCard 'Держатель дисконтной карты' (discountCard) = nameContact(clientDiscountCard(discountCard)) IN recognize;
+legalEntityDiscountCard (discountCard) = DATA LegalEntity(DiscountCard);
+nameLegalEntityDiscountCard 'Держатель дисконтной карты' (discountCard) = nameLegalEntity(legalEntityDiscountCard(discountCard)) IN recognize MINCHARWIDTH 30 PREFCHARWIDTH 40;
 
 GROUP discountCardDateGroup 'Срок действия' : base;
 dateDiscountCard 'Дата выдачи' (discountCard) = DATA DATE (DiscountCard) IN discountCardDateGroup;
@@ -96,7 +77,7 @@ generateDiscountCards 'Сгенерировать дисконтные карт�
 
 FORM discountCard 'Дисконтная карта'
     OBJECTS d=DiscountCard FIXED PANEL
-    PROPERTIES(d) nameClientDiscountCard, initialSumDiscountCard,
+    PROPERTIES(d) nameLegalEntityDiscountCard, initialSumDiscountCard,
                   nameNumeratorObject, numberObject, seriesObject,
                   dateDiscountCard, dateToDiscountCard
 
@@ -111,7 +92,7 @@ DESIGN discountCard FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 NEW row1 {
                     childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(nameClientDiscountCard) {
+                    ADD PROPERTY(nameLegalEntityDiscountCard) {
                         font = 'Tahoma 24';
                     }
                     ADD PROPERTY(initialSumDiscountCard) {
@@ -131,7 +112,7 @@ DESIGN discountCard FROM DEFAULT {
 FORM discountCardDialog 'Дисконтные карты'
 
     OBJECTS d = DiscountCard
-    PROPERTIES(d) READONLY nameClientDiscountCard, initialSumDiscountCard, numberObject, seriesObject,
+    PROPERTIES(d) READONLY nameLegalEntityDiscountCard, initialSumDiscountCard, numberObject, seriesObject,
                          dateDiscountCard, dateToDiscountCard
 
     DIALOG DiscountCard OBJECT d
@@ -139,7 +120,7 @@ FORM discountCardDialog 'Дисконтные карты'
 
 FORM discountCards 'Дисконтные карты'
     OBJECTS d=DiscountCard
-    PROPERTIES(d) READONLY numberObject, seriesObject, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard,
+    PROPERTIES(d) READONLY numberObject, seriesObject, nameLegalEntityDiscountCard, dateDiscountCard, dateToDiscountCard,
                   initialSumDiscountCard
     PROPERTIES(d) ADDFORM, EDITFORM, DELETE
 
@@ -348,7 +329,7 @@ FORM promotion 'Акция'
         FILTER 'Только отмеченные' 'F9' inPromotionStore(sh, s)
 
     OBJECTS dis= DiscountCard
-    PROPERTIES(dis)    READONLY numberObject, seriesObject, nameClientDiscountCard
+    PROPERTIES(dis)    READONLY numberObject, seriesObject, nameLegalEntityDiscountCard
     PROPERTIES(sh, dis) inPromotionDiscountCard
     FILTERGROUP filterDiscountCard
         FILTER 'Только отмеченные' 'F8' inPromotionDiscountCard(sh, dis)
@@ -564,7 +545,6 @@ NAVIGATOR {
             ADD promotions;
             ADD promotionGroups;
             ADD discountCards;
-            ADD clients;
         }
     }
 }

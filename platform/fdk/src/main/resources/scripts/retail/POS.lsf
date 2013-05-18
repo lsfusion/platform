@@ -273,7 +273,7 @@ FORM scanBarcodeReturnReceipt 'Выбор строки возврата'
     PROPERTIES idBarcodeSku(s) READONLY, nameSkuStock(s, d)
 
     OBJECTS r = ReceiptSaleDetail FIXED GRID
-    PROPERTIES(r) READONLY numberReceiptReceiptDetail, dateTimeReceiptSaleDetail, numberDiscountCardReceiptDetail, nameClientDiscountCardReceiptDetail, sumReceiptDetailReceiptDetail,
+    PROPERTIES(r) READONLY numberReceiptReceiptDetail, dateTimeReceiptSaleDetail, numberDiscountCardReceiptDetail, nameLegalEntityDiscountCardReceiptDetail, sumReceiptDetailReceiptDetail,
                            indexReceiptDetail, quantityReceiptDetail, quantityReturnedReceiptSaleDetail, priceReceiptDetail,
                            sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail
     FILTERS departmentStoreReceiptSaleDetail(r) == d,
@@ -313,7 +313,7 @@ FORM searchSkuReturnReceipt 'Поиск строки возврата'
 
     OBJECTS s = Receipt FIXED GRID
     PROPERTIES(s) READONLY  numberReceipt, dateReceipt, timeReceipt,
-                            numberDiscountCardReceipt, nameClientDiscountCardReceipt, sumReceiptDetailReceipt, discountSumReceiptDetailReceipt,
+                            numberDiscountCardReceipt, nameLegalEntityDiscountCardReceipt, sumReceiptDetailReceipt, discountSumReceiptDetailReceipt,
                             countReceiptDetailReceipt, quantityReceiptDetailReceipt
     FILTERS departmentStoreReceipt(s) == st
 
@@ -564,7 +564,7 @@ FORM POS
                                           searchSkuSaleReceipt,
                                           searchSkuReturnReceipt, scanBarcodeReturnReceipt,
                                           postReceipt, postCardReceipt, postCashReceipt, cancelReceipt,
-                                          numberDiscountCardReceipt, nameClientDiscountCardReceipt,
+                                          numberDiscountCardReceipt, nameLegalEntityDiscountCardReceipt,
                                           inputDiscountCardNumberReceipt, clearDiscountCardReceipt
 
     OBJECTS d = ReceiptDetail FIXED GRID
@@ -666,7 +666,7 @@ DESIGN POS FROM DEFAULT {
                     NEW receiptDiscountGroup1 {
                         childConstraints = TO THE RIGHTBOTTOM;
                         ADD PROPERTY(numberDiscountCardReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; }
-                        ADD PROPERTY(nameClientDiscountCardReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; }
+                        ADD PROPERTY(nameLegalEntityDiscountCardReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; }
                     }
                     NEW buttonDiscountContainer {
                         childConstraints = TO THE RIGHT;
