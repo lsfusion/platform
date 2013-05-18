@@ -11,11 +11,11 @@ countStoresStoreType 'Кол-во магазинов' (storeType) =
     BY storeType;
 
 countDepartmentStoresPriceListTypeSkuChainStoresDateTime 'Кол-во отделов магазинов(в ассортименте)' (type, sku, store, dateTime) =
-    GROUP SUM 1 IF concatLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime)
+    GROUP SUM 1 IF pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime)
     BY type, sku, storeDepartmentStore(stock), dateTime;
 
 countDepartmentStoresPriceListTypeSkuStoreTypeDateTime 'Кол-во отделов магазинов(в ассортименте)' (type, sku, store, dateTime) =
-    GROUP SUM 1 IF concatLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime)
+    GROUP SUM 1 IF pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime)
     BY type, sku, storeDepartmentStore(stock), dateTime;
 
 countStoresPriceListTypeSkuChainStoresDateTime 'Кол-во магазинов(в ассортименте)' (type, sku, chainStores, dateTime) =

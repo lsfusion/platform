@@ -35,10 +35,12 @@ deriveChargePriceUserInvoice 'Расписать сумму услуг по то
 
 EXTEND CLASS SystemLedgerPriceListType {chargePriceStockPriceListType 'Услуги (последняя по складу)' }
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType. chargePriceStockPriceListType;
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(chargePriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.chargePriceStockPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += chargePriceInvoiceDetail(ledger) WHEN CLASS(chargePriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.chargePriceStockPriceListType;
 
 EXTEND CLASS SystemLedgerPriceListType { chargePricePriceListType 'Услуги (последняя по ценовой группе)' }
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.chargePricePriceListType;
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(chargePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.chargePricePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += chargePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(chargePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.chargePricePriceListType;
 
 extraCostPriceUserInvoiceDetail(detail) += chargePriceUserInvoiceDetail(detail);

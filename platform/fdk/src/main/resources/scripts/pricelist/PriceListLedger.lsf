@@ -30,6 +30,7 @@ descriptionPriceListLedger = ABSTRACT STRING[200] (PriceListLedger) PERSISTENT;
 companyPriceListLedger = ABSTRACT LegalEntity (PriceListLedger) PERSISTENT;
 
 TABLE priceListLedgerLedgerPriceListType(PriceListLedger, LedgerPriceListType);
+inPriceListLedgerLedgerPriceListType = ABSTRACT BOOLEAN (PriceListLedger, LedgerPriceListType) PERSISTENT;
 pricePriceListLedgerLedgerPriceListType = ABSTRACT NUMERIC[14,2] (PriceListLedger, LedgerPriceListType) PERSISTENT;
 
 TABLE priceListLedgerStock(PriceListLedger, Stock);
@@ -40,7 +41,7 @@ orderPriceListLedger(ledger) = STRUCT(fromDateTimePriceListLedger(ledger), ledge
 
 // ------------------ Расчет цен для sku ---------------- //
 
-orderPriceListLedgerLedgerPriceListType(ledger, type) = orderPriceListLedger(ledger) IF pricePriceListLedgerLedgerPriceListType(ledger, type) PERSISTENT;
+orderPriceListLedgerLedgerPriceListType(ledger, type) = orderPriceListLedger(ledger) IF inPriceListLedgerLedgerPriceListType(ledger, type) PERSISTENT;
 
 concatLedgerPriceListTypeSkuDateTime(type, sku, dateTime) =
     GROUP MAX orderPriceListLedgerLedgerPriceListType(ledger, type)
@@ -86,7 +87,7 @@ descriptionLedgerPriceListTypeSkuCompanyDateTime 'Описание' (type, sku, 
 
 TABLE priceListLedgerLedgerPriceListTypeStock (PriceListLedger, LedgerPriceListType, Stock);
 orderPriceListLedgerLedgerPriceListTypeStock(ledger, type, stock) =
-    orderPriceListLedger(ledger) IF pricePriceListLedgerLedgerPriceListType(ledger, type) AND inPriceListLedgerStock(ledger, stock) PERSISTENT INDEXED;
+    orderPriceListLedger(ledger) IF inPriceListLedgerLedgerPriceListType(ledger, type) AND inPriceListLedgerStock(ledger, stock) PERSISTENT INDEXED;
 
 concatLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
     GROUP MAX orderPriceListLedgerLedgerPriceListTypeStock(ledger, type, stock)
@@ -147,7 +148,9 @@ batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.accountPrice
 includeVATSystemLedgerPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (SystemLedgerPriceListType) EXCLUSIVE;
 includeVATLedgerPriceListType (type) += includeVATSystemLedgerPriceListType(type);
 
+inPriceListLedgerSystemLedgerPriceListType = ABSTRACT BOOLEAN (PriceListLedger, SystemLedgerPriceListType) EXCLUSIVE PERSISTENT;
 pricePriceListLedgerSystemLedgerPriceListType = ABSTRACT NUMERIC[14,2] (PriceListLedger, SystemLedgerPriceListType) EXCLUSIVE PERSISTENT;
+inPriceListLedgerLedgerPriceListType(ledger, type) += inPriceListLedgerSystemLedgerPriceListType(ledger, type);
 pricePriceListLedgerLedgerPriceListType(ledger, type) += pricePriceListLedgerSystemLedgerPriceListType(ledger, type);
 
 // --------------------------- Формы ---------------------------- //
@@ -160,36 +163,32 @@ EXTEND FORM priceListTypes
 // ----------------------------- Метакоды ------------------------ //
 
 // Implement
-META implementSystemLedgerPriceListType (type, object, stockProp, prefix)
-    @implementSystemLedgerPriceListTypeInner (type, object, ###object, stockProp, prefix);
+META implementSystemLedgerPriceListType (type, objectClass, companyProp, stockProp, prefix)
+    EXTEND CLASS objectClass : PriceListLedger;
+
+    fromDateTimePriceListLedger (ledger) += dateTime###objectClass(ledger);
+
+    isPostedPriceListLedger(ledger) += isPosted###objectClass(ledger);
+
+    skuPriceListLedger (ledger) += sku###objectClass(ledger);
+
+    descriptionPriceListLedger (ledger) += description###objectClass(ledger);
+
+    companyPriceListLedger (ledger) += companyProp###objectClass(ledger);
+
+    inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(prefix###price###objectClass(ledger)) AND type == SystemLedgerPriceListType.##type##PriceListType;
+    pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += prefix###price###objectClass(ledger) WHEN CLASS(prefix###price###objectClass(ledger)) AND type == SystemLedgerPriceListType.##type##PriceListType;
+
+    inPriceListLedgerStock (ledger, stock) += stockProp###objectClass(ledger) == stock;
 END
 
-META implementSystemLedgerPriceListTypeInner (type, object, class, stockProp, prefix)
-    EXTEND CLASS class : PriceListLedger;
-
-    fromDateTimePriceListLedger (ledger) += dateTime###object(ledger);
-
-    isPostedPriceListLedger(ledger) += isPosted###object(ledger);
-
-    skuPriceListLedger (ledger) += sku###object(ledger);
-
-    descriptionPriceListLedger (ledger) += description###object(ledger);
-
-    pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += prefix###price###object(ledger) WHEN CLASS(prefix###price###object(ledger)) AND type == SystemLedgerPriceListType.##type##PriceListType;
-    inPriceListLedgerStock (ledger, stock) += stockProp###object(ledger) == stock;
+META implementSystemLedgerPriceListType (type, objectClass, companyProp, stockProp)
+    @implementSystemLedgerPriceListType(type, objectClass, companyProp, stockProp, );
 END
 
-META implementSystemLedgerPriceListType (type, object, stockProp)
-    @implementSystemLedgerPriceListType(type, object, stockProp, );
-END
-
-META implementSystemLedgerPriceListTypeBatch (type, object, stockProp)
-    @implementSystemLedgerPriceListTypeBatchInner(type, object, ###object, stockProp);
-END
-
-META implementSystemLedgerPriceListTypeBatchInner (type, object, class, stockProp)
-    @implementSystemLedgerPriceListType(type, object, stockProp);
-    batchPriceListLedger (ledger) += ledger AS class;
+META implementSystemLedgerPriceListTypeBatch (type, objectClass, companyProp, stockProp)
+    @implementSystemLedgerPriceListType(type, objectClass, companyProp, stockProp);
+    batchPriceListLedger (ledger) += ledger AS objectClass;
 END
 
 // Derive

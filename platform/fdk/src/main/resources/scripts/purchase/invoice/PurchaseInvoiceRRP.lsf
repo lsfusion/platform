@@ -53,11 +53,13 @@ EXTEND FORM invoices
 // Создаем виды цен
 EXTEND CLASS SystemLedgerPriceListType { purchaseRRPInvoiceStockPriceListType 'RRP (последняя по складу)' }
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType;
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(RRPPriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceDetail(ledger) WHEN CLASS(RRPPriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType;
 
 // Создаем вид цен по всем складам компании
 EXTEND CLASS SystemLedgerPriceListType { purchaseRRPInvoicePriceListType 'RRP (последняя по ценовой группе)' }
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.purchaseRRPInvoicePriceListType;
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(RRPPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.purchaseRRPInvoicePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(RRPPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.purchaseRRPInvoicePriceListType;
 
 //// Тип обмена для RRP, пок не используется.

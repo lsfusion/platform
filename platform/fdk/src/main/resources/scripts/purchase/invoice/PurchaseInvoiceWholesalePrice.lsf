@@ -95,9 +95,11 @@ EXTEND FORM invoices
 // Создаем виды цен
 EXTEND CLASS SystemLedgerPriceListType { purchaseWholesaleInvoiceStockPriceListType 'Оптовая (последняя по складу)' }
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.purchaseWholesaleInvoiceStockPriceListType;
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(wholesalePriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.purchaseWholesaleInvoiceStockPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += wholesalePriceInvoiceDetail(ledger) WHEN CLASS(wholesalePriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.purchaseWholesaleInvoiceStockPriceListType;
 
 // Создаем вид цен по всем складам компании
 EXTEND CLASS SystemLedgerPriceListType { purchaseWholesaleInvoicePriceListType 'Оптовая (последняя по ценовой группе)' }
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.purchaseWholesaleInvoicePriceListType;
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(wholesalePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.purchaseWholesaleInvoicePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += wholesalePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(wholesalePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.purchaseWholesaleInvoicePriceListType;

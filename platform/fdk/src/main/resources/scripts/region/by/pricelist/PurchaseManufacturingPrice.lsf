@@ -14,10 +14,12 @@ NAMESPACE Purchase;
 
 EXTEND CLASS SystemLedgerPriceListType { manufacturingPriceStockPriceListType 'Изготовителя (последняя по складу)' }
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType. manufacturingPriceStockPriceListType;
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(manufacturingPriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.manufacturingPriceStockPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(ledger) WHEN CLASS(manufacturingPriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.manufacturingPriceStockPriceListType;
 
 EXTEND CLASS SystemLedgerPriceListType { manufacturingPricePriceListType 'Изготовителя (последняя по ценовой группе)' }
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.manufacturingPricePriceListType;
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.manufacturingPricePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.manufacturingPricePriceListType;
 
 @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, customerStock);

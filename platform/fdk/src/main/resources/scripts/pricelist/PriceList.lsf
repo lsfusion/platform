@@ -178,6 +178,7 @@ companyPriceListLedger (ledger) += companyPriceListDetail(ledger);
 
 descriptionPriceListLedger (ledger) += descriptionPriceList(priceListPriceListDetail(ledger));
 
+inPriceListLedgerLedgerPriceListType (ledger, type) += inPriceListDataPriceListType(priceListPriceListDetail(ledger), type);
 pricePriceListLedgerLedgerPriceListType (ledger, type) += pricePriceListDetailDataPriceListType(ledger, type);
 inPriceListLedgerStock (ledger, stock) += inPriceListStock(priceListPriceListDetail(ledger), stock);
 

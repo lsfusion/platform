@@ -16,12 +16,8 @@ showPriceListTypeOperation 'Показывать цены' = DATA BOOLEAN (Price
 
 @defineOperationLegalEntity(legalEntity, l, 'Организации');
 
-userDefaultLegalEntityOperation = DATA LegalEntity (Operation);
-calcDefaultLegalEntityOperation(operation) =
-    GROUP MAX legalEntity IF inLegalEntityOperation(legalEntity, operation)
-    BY operation PERSISTENT;
-defaultLegalEntityOperation(operation) = calcDefaultLegalEntityOperation(operation) OVERRIDE
-                                         userDefaultLegalEntityOperation(operation) PERSISTENT;
+defaultLegalEntityOperation = DATA LegalEntity (Operation);
+
 nameDefaultLegalEntityOperation 'Организация по умолчанию' (operation) = nameLegalEntity(defaultLegalEntityOperation(operation));
 isDefaultLegalEntityOperation 'Организация по умолчанию' (legalEntity, operation) =
     defaultLegalEntityOperation(operation) == legalEntity;

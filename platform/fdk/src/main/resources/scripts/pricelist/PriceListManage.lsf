@@ -52,7 +52,7 @@ createPriceRangeManagement 'Создать прайс' = ACTION (dataPriceListTy
     }
 } TOOLBAR;
 
-FORM rangeManagement 'Управление ассортиментом'
+FORM rangeManagement 'Управление ценами'
     OBJECTS dt = DATETIME FIXED PANEL
     PROPERTIES(dt) objValue = OBJVALUE
 
@@ -122,7 +122,7 @@ FORM rangeManagement 'Управление ассортиментом'
     PROPERTIES(sk2, s2, dt) READONLY balanceASkuStockDateTime
     ORDER BY nameStock
     FILTERS isCompanyStock(s),
-            concatLedgerPriceListTypeSkuStockDateTime(pt, sk2, s2, dt)
+            priceLedgerPriceListTypeSkuStockDateTime(pt, sk2, s2, dt)
 //            balanceASkuStockDateTime(sk2, s2, dt)
 ;
 

@@ -129,7 +129,8 @@ nameBatch(batch) += ustring3(toString10(dateShipmentDetail(shipmentDetailShipmen
                              string2('/ ', nameSupplierShipmentDetail(shipmentDetailShipmentBatch(batch))));
 
 // Проводим по регистру учетных цен
-@implementSystemLedgerPriceListTypeBatch(account, shipmentBatch, stock);
+supplierShipmentBatch (ledger) = supplierShipmentDetail(shipmentDetailShipmentBatch(ledger));
+@implementSystemLedgerPriceListTypeBatch(account, ShipmentBatch, supplier, stock);
 
 // Создаем просто inLIFOSkuLedger
 createSkuLedgerShipmentDetail (detail) = detail IS ShipmentDetail AND NOT createBatchShipmentDetail(detail);
@@ -153,7 +154,8 @@ costShipmentDetailBatch(detail, batch) += IF createBatchShipmentDetail(detail) T
 
 // ------------------------------- Проведение регистру учетных цен ------------------------ //
 
-@implementSystemLedgerPriceListType(account, shipmentSkuLedger, stock);
+supplierShipmentSkuLedger (ledger) = supplierShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
+@implementSystemLedgerPriceListType(account, ShipmentSkuLedger, supplier, stock);
 batchPriceListLedger(ledger) += batchShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
 
 // ------------------------------- Проведение по товарному отчету ------------------------ //

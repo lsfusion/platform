@@ -329,6 +329,7 @@ skuPriceListLedger (ledger) += skuRevaluationDetail(ledger);
 
 descriptionPriceListLedger (ledger) += descriptionRevaluationDetail(ledger);
 
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(priceRevaluationDetail(ledger)) AND type == SystemLedgerPriceListType.accountPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceRevaluationDetail(ledger) WHEN CLASS(priceRevaluationDetail(ledger)) AND type == SystemLedgerPriceListType.accountPriceListType;
 
 inPriceListLedgerStock (ledger, stock) += stockRevaluationDetail(ledger) == stock;

@@ -31,4 +31,5 @@ EXTEND FORM revaluations
     PROPERTIES(d) READONLY AFTER sumRevaluationDetail manufacturingSumRevaluationDetail, manufacturingPriceRevaluationDetail
 ;
 
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(manufacturingPriceRevaluationDetail(ledger)) AND type == SystemLedgerPriceListType.manufacturingPriceStockPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceRevaluationDetail(ledger) WHEN CLASS(manufacturingPriceRevaluationDetail(ledger)) AND type == SystemLedgerPriceListType.manufacturingPriceStockPriceListType;
