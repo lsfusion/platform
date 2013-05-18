@@ -153,6 +153,7 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     public boolean isBinaryString() {
+//        return false;
         return true;
     }
 
@@ -164,6 +165,7 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     public int getBinarySQL() {
+//        return Types.BINARY;
         return getStringSQL();
     }
 

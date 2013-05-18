@@ -39,6 +39,8 @@ grammar LsfLogics;
 	import platform.server.logics.property.Event;
 	import javax.mail.Message;
 
+	import platform.server.form.entity.GroupObjectProp;
+
 	import platform.base.col.interfaces.immutable.ImSet;
 
 	import java.util.*;
@@ -1365,13 +1367,14 @@ formulaPropertyDefinition returns [LP property]
 filterPropertyDefinition returns [LP property]
 @init {
 	String className = null;
+	GroupObjectProp prop = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFilterProp($gobj.sid);
+		$property = self.addScriptedGroupObjectProp($gobj.sid, prop);
 	}
 }
-	:	'FILTER'
+	:	('FILTER' { prop = GroupObjectProp.FILTER; } | 'ORDER' { prop = GroupObjectProp.ORDER; } | 'VIEW' { prop = GroupObjectProp.VIEW; } )
 		gobj=groupObjectID
 	;
 

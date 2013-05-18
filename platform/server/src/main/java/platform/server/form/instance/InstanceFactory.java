@@ -63,7 +63,7 @@ public class InstanceFactory {
 
             groupInstances.exclAdd(entity, new GroupObjectInstance(entity, objects, entity.propertyBackground != null ? getInstance(entity.propertyBackground) : null,
                     entity.propertyForeground != null ? getInstance(entity.propertyForeground) : null, parentInstances,
-                    entity.readFilterProperty !=null ? getInstance(entity.readFilterProperty) : null));
+                    getInstance(entity.getProperties())));
         }
 
         return groupInstances.get(entity);
@@ -110,8 +110,11 @@ public class InstanceFactory {
             }});
     }
 
-    public <P extends PropertyInterface> CalcPropertyRevImplement<P, ObjectInstance> getInstance(CalcPropertyRevImplement<P, ObjectEntity> entity) {
-        return new CalcPropertyRevImplement<P, ObjectInstance>(entity.property, getInstanceMap(entity));
+    public <T, P extends PropertyInterface> ImMap<T, CalcPropertyRevImplement<P, ObjectInstance>> getInstance(ImMap<T, CalcPropertyRevImplement<P, ObjectEntity>> entities) {
+        return entities.mapValues(new GetValue<CalcPropertyRevImplement<P, ObjectInstance>, CalcPropertyRevImplement<P, ObjectEntity>>() {
+            public CalcPropertyRevImplement<P, ObjectInstance> getMapValue(CalcPropertyRevImplement<P, ObjectEntity> entity) {
+                return new CalcPropertyRevImplement<P, ObjectInstance>(entity.property, getInstanceMap(entity));
+            }});
     }
 
         // временно

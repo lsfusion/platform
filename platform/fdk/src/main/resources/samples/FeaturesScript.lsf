@@ -203,8 +203,8 @@ testLimitPartition(store, article) = PARTITION UNGROUP testAmount LIMIT STRICT t
 // STRUCT(propertyExpression1[, ..., propertyExpressionN])
 // Access expression syntax with one-base indices:
 // concatenatePropertyExpression[2]
-ioQuantity(store, article) = STRUCT(incomeQuantity(store, article), outcomeQuantity(store, article));
-onlyIncomeQuantity(store, article) = ioQuantity(store, article)[1];
+ioQuantity(store, article) = STRUCT(incomeQuantity(store, article), outcomeQuantity(store, article)) PERSISTENT;
+onlyIncomeQuantity 'Test STRUCT' (store, article) = ioQuantity(store, article)[1];
 
 // Abstract property
 // Expression syntax:
@@ -741,36 +741,43 @@ testRequestInput 'Тестирование REQUEST input' = ACTION(s) {
 loadf(s) = ACTION OPENFILE simage(s);
 savef(s) = ACTION LOADFILE simage(s);
 
-fs = ABSTRACT BOOLEAN (Store);
-countF 'Кол-во фильтр. складов' = GROUP SUM 1 IF fs(s);
-setNameX 'Добавить X к имени' = ACTION () {
-    FOR fs(s) DO
-        name(s) <- 'X' + name(s);
-}
+//fs = ABSTRACT BOOLEAN (Store);
+//countF 'Кол-во фильтр. складов' = GROUP SUM 1 IF fs(s);
+//setNameX 'Добавить X к имени' = ACTION () {
+//    FOR fs(s) DO
+//        name(s) <- 'X' + name(s);
+//}
 
 FORM storeArticle 'По складам'
     OBJECTS s=Store, a=Article
     PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
     PROPERTIES TODRAW s FORCE PANEL setDefaultNames(), copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm() TOOLBAR, testRequestInput(s) TOOLBAR
-    PROPERTIES() countF, setNameX
+//    PROPERTIES() countF, setNameX
     PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
     PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, ssi=Features.simage, spdf, scustom, sexcel, testAbstractAction, editActionTest, loadf, savef
-    PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
+    PROPERTIES(s, a) incomeQuantity, onlyIncomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
     FILTERGROUP filters1
         FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
 ;
 
-fs(s) += [FILTER storeArticle.s](s);
+//fs(s) += [FILTER storeArticle.s](s);
 
-//countF 'Кол-во фильтр. складов' = GROUP SUM 1 IF [FILTER storeArticle.s](s);
-//setNameX 'Добавить X к имени' = ACTION () {
-//    FOR [FILTER storeArticle.s](s) DO
-//        name(s) <- 'X' + name(s);
-//}
+countF 'Кол-во фильтр. складов' = GROUP SUM 1 IF [FILTER storeArticle.s](s);
+orderF 'Порядок в группе объектов' (s) = PARTITION SUM 1 IF [FILTER storeArticle.s](s) ORDER [ORDER storeArticle.s](s), s;
+setNameX 'Добавить X к имени' = ACTION () {
+    LOCAL k = INTEGER ();
+    k() <- 0;
+    FOR [FILTER storeArticle.s](s) ORDER [ORDER storeArticle.s](s) DO {
+        k() <- k() + 1;
+        name(s) <- 'X' + k() + name(s);
+    }
+}
 
-//EXTEND FORM storeArticle
-//    PROPERTIES() countF, setNameX
-//;
+EXTEND FORM storeArticle
+    PROPERTIES() countF, setNameX
+    PROPERTIES OBJVALUE(s)
+    PROPERTIES(s) orderF
+;
 
 EXTEND FORM storeArticle
     PROPERTIES(s) ssw=sword AFTER ssi
@@ -829,7 +836,7 @@ DESIGN TestTree FROM DEFAULT {
 
 FORM TestAggr 'Тест агрегаций'
     OBJECTS s=QuantityString
-    PROPERTIES dateDocumentQuantityString(s), storeNameDocumentQuantityString(s), nameArticleQuantityString(s), delete(s)
+    PROPERTIES dateDocumentQuantityString(s), storeNameDocumentQuantityString(s), nameArticleQuantityString(s), DELETE(s)
 ;
 
 FORM TestHeaders 'Тест заголовков'
@@ -969,7 +976,7 @@ onHelloWorld() = ACTION {
 
 FORM TestOnActions 'Тест "ON actions"'
     OBJECTS s=Store
-    PROPERTIES(s) OBJVALUE, name ON CHANGE onChangeStoreName(), ssc1=storeSizeCode ON EDIT onEditStoreSizeCode(), delete ON SHORTCUT 'Hello world!' onHelloWorld()
+    PROPERTIES(s) OBJVALUE, name ON CHANGE onChangeStoreName(), ssc1=storeSizeCode ON EDIT onEditStoreSizeCode(), DELETE ON SHORTCUT 'Hello world!' onHelloWorld()
     PROPERTIES(s) onChangeStoreSizeCode, ssc2=storeSizeCode ON CHANGE onChangeStoreSizeCode(s)
 ;
 

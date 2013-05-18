@@ -7,11 +7,14 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.LongMutable;
+import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MOrderExclSet;
+import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
+import platform.server.classes.ByteArrayClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.GroupObjectInstance;
@@ -68,16 +71,28 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public CalcPropertyObjectEntity<?> propertyBackground;
     public CalcPropertyObjectEntity<?> propertyForeground;
 
-    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> readFilterProperty;
-    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> getFilterProperty() {
-        if(readFilterProperty==null) {
-            assert finalizedObjects;
-            readFilterProperty = DerivedProperty.createDataPropRev(true, "FILTER_" + getSID(), "Фильтр (" + objects.toString() + ")", getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
+    private boolean finalizedProps = false;
+    private Object props = MapFact.mExclMap();
+    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> getProperty(GroupObjectProp type) {
+        assert finalizedObjects && !finalizedProps;
+        MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
+        if(prop==null) {
+            prop = DerivedProperty.createDataPropRev(true, type.getSID() + "_" + getSID(), type.toString() + " (" + objects.toString() + ")", getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
                 public ValueClass getMapValue(ObjectEntity value) {
                     return value.baseClass;
-                }}), LogicalClass.instance);
+                }}), type.getValueClass());
+            mProps.exclAdd(type, prop);
         }
-        return readFilterProperty;
+        return prop;
+    }
+
+    public ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>> getProperties() {
+        if(!finalizedProps) {
+            props = ((MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props).immutable();
+            finalizedProps = true;
+        }
+        return (ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
     }
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {

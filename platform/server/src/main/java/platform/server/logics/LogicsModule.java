@@ -2337,8 +2337,8 @@ public abstract class LogicsModule {
     }
 
     @IdentityStrongLazy // для ID
-    public LCP addFilterProp(GroupObjectEntity groupObject) {
-        CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getFilterProperty();
+    public LCP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getProperty(prop);
         return addProperty(null, new LCP<ClassPropertyInterface>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
 

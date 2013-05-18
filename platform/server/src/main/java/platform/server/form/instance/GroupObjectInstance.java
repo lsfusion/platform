@@ -1,6 +1,7 @@
 package platform.server.form.instance;
 
 import platform.base.*;
+import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
@@ -18,18 +19,23 @@ import platform.server.Message;
 import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
+import platform.server.classes.ByteArrayClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
+import platform.server.data.expr.ConcatenateExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.formula.CastFormulaImpl;
+import platform.server.data.expr.formula.FormulaExpr;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.GroupObjectProp;
 import platform.server.form.instance.filter.AndFilterInstance;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.filter.OrFilterInstance;
@@ -108,7 +114,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         }
     }
 
-    public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, CalcPropertyObjectInstance propertyBackground, CalcPropertyObjectInstance propertyForeground, ImMap<ObjectInstance, CalcPropertyObjectInstance> parent, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> filterProperty) {
+    public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, CalcPropertyObjectInstance propertyBackground, CalcPropertyObjectInstance propertyForeground, ImMap<ObjectInstance, CalcPropertyObjectInstance> parent, ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
 
         this.entity = entity;
 
@@ -133,7 +139,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         }
 
         this.parent = parent;
-        this.filterProperty = filterProperty;
+        this.props = props;
     }
 
     public ImRevMap<ObjectInstance, KeyExpr> getMapKeys() {
@@ -509,7 +515,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         change(session, value);
     }
 
-    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> filterProperty;
+    public ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props;
 
     private boolean pendingHidden;
     
@@ -577,17 +583,20 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                     break;
                 }
 
-        if(updateFilters && filterProperty!=null) { // изменились фильтры
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> filterProperty = props.get(GroupObjectProp.FILTER);
+        if(updateFilters && filterProperty!=null) { // изменились фильтры, надо обновить свойства созданные при помощи соответствующих операторов форм
             ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
             environmentIncrement.add(filterProperty.property, new PropertyChange<ClassPropertyInterface>(filterProperty.mapping.join(mapKeys), ValueExpr.TRUE, getWhere(mapKeys, modifier)));
+
             changedProps.set(BaseUtils.merge(changedProps.result, CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)filterProperty.property))));
         }
 
-        boolean updateKeys = updateFilters;
+        boolean updateOrders = false;
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> orderProperty = props.get(GroupObjectProp.ORDER);
 
         // порядки
         if(OrderInstance.ignoreInInterface) {
-            updateKeys |= (updated & UPDATED_ORDER) != 0;
+            updateOrders |= (updated & UPDATED_ORDER) != 0;
             orders = getSetOrders();
         } else {
             ImOrderMap<OrderInstance, Boolean> setOrders = getSetOrders();
@@ -608,22 +617,37 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                         return isInInterface;
                     }});
             }
-            updateKeys |= !orders.equals(newOrders);
+            updateOrders |= !orders.equals(newOrders);
             orders = newOrders;
         }
 
-        if (!updateKeys) // изменились "верхние" объекты для порядков
+        if (!updateOrders && (!updateFilters || orderProperty!=null)) // изменились "верхние" объекты для порядков
             for (OrderInstance order : orders.keyIt())
                 if (order.objectUpdated(SetFact.singleton(this))) {
-                    updateKeys = true;
+                    updateOrders = true;
                     break;
                 }
-        if (!updateKeys) // изменились данные по порядкам
+        if (!updateOrders && (!updateFilters || orderProperty!=null)) // изменились данные по порядкам
             for (OrderInstance order : orders.keyIt())
                 if (order.dataUpdated(changedProps.result)) {
-                    updateKeys = true;
+                    updateOrders = true;
                     break;
                 }
+
+        if(updateOrders && orderProperty!=null) { // изменились порядки, надо обновить свойства созданные при помощи соответствующих операторов форм
+            ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+            PropertyChange<ClassPropertyInterface> change;
+            if(orders.isEmpty())
+                change = orderProperty.property.getNoChange();
+            else
+                change = new PropertyChange<ClassPropertyInterface>(orderProperty.mapping.join(mapKeys),
+                        FormulaExpr.create(new CastFormulaImpl(GroupObjectProp.ORDER.getValueClass()), ListFact.singleton(orders.getKey(0).getExpr(mapKeys, modifier))), getClassWhere(mapKeys, modifier));
+            environmentIncrement.add(orderProperty.property, change);
+
+            changedProps.set(BaseUtils.merge(changedProps.result, CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)orderProperty.property))));
+        }
+
+        boolean updateKeys = updateFilters || updateOrders;
 
         if(hidden) {
             pendingHidden |= updateKeys;
@@ -747,6 +771,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 // параллельно будем обновлять ключи чтобы JoinSelect'ить
                 keyTable.writeKeys(sql, keys.keys());
                 result.gridObjects.exclAdd(this, keys.keyOrderSet());
+
+                CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
+                if(viewProperty != null) {
+                    ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+                    environmentIncrement.add(viewProperty.property, new PropertyChange<ClassPropertyInterface>(viewProperty.mapping.join(mapKeys), ValueExpr.TRUE, keyTable.join(mapKeys).getWhere()));
+
+                    changedProps.set(BaseUtils.merge(changedProps.result, CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)viewProperty.property))));
+                }
 
                 if (!keys.containsKey(currentObject)) { // если нету currentObject'а, его нужно изменить
                     if(getUpTreeGroup()==null) // если верхняя группа

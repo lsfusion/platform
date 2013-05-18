@@ -34,6 +34,7 @@ import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.GroupObjectProp;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormSessionScope;
 import platform.server.form.navigator.NavigatorElement;
@@ -1736,7 +1737,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultProp;
     }
 
-    public LCP addScriptedFilterProp(String name) throws ScriptingErrorLog.SemanticErrorException {
+    public LCP addScriptedGroupObjectProp(String name, GroupObjectProp prop) throws ScriptingErrorLog.SemanticErrorException {
         int pointPos = name.lastIndexOf('.');
         assert pointPos > 0;
 
@@ -1751,7 +1752,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         GroupObjectEntity groupObject = form.getGroupObject(objectName);
         if (groupObject != null) {
-            resultProp = addFilterProp(groupObject);
+            resultProp = addGroupObjectProp(groupObject, prop);
         } else {
             errLog.emitNotFoundError(parser, "оbject", objectName);
         }
