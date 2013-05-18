@@ -122,7 +122,8 @@ FORM rangeManagement 'Управление ассортиментом'
     PROPERTIES(sk2, s2, dt) READONLY balanceASkuStockDateTime
     ORDER BY nameStock
     FILTERS isCompanyStock(s),
-            balanceASkuStockDateTime(sk2, s2, dt)
+            concatLedgerPriceListTypeSkuStockDateTime(pt, sk2, s2, dt)
+//            balanceASkuStockDateTime(sk2, s2, dt)
 ;
 
 DESIGN rangeManagement FROM DEFAULT{

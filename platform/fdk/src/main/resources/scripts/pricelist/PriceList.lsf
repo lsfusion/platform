@@ -558,21 +558,26 @@ editPriceList (p) += editUserPriceList(p);
 
 // ------------------ Копирование прайс-листов ------------------- //
 
-copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
-
-    FOR ADDOBJ u = UserPriceList DO {
-        SET currencyUserPriceList(u) <- currencyUserPriceList(priceList);
-        SET dataInUserPriceListStock(u, stock) <- dataInUserPriceListStock(priceList, stock);
-        SET dataInUserPriceListStockGroup(u, stockGroup) <- dataInUserPriceListStockGroup(priceList, stockGroup);
-        SET allStocksUserPriceList(u) <- allStocksUserPriceList(priceList);
-        SET inUserPriceListDataPriceListType(u, priceListType) <- inPriceListDataPriceListType(priceList, priceListType);
+copyDataPriceList = ACTION (priceList, char){
+        SET currencyUserPriceList(char) <- currencyUserPriceList(priceList);
+        SET companyUserPriceList(char) <- companyUserPriceList(priceList);
+        SET dataInUserPriceListStock(char, stock) <- dataInUserPriceListStock(priceList, stock);
+        SET dataInUserPriceListStockGroup(char, stockGroup) <- dataInUserPriceListStockGroup(priceList, stockGroup);
+        SET allStocksUserPriceList(char) <- allStocksUserPriceList(priceList);
+        SET inUserPriceListDataPriceListType(char, priceListType) <- inPriceListDataPriceListType(priceList, priceListType);
         FOR userPriceListUserPriceListDetail(detail) == priceList DO {
             FOR ADDOBJ d = UserPriceListDetail DO {
-                SET userPriceListUserPriceListDetail(d) <- u;
+                SET userPriceListUserPriceListDetail(d) <- char;
                 SET skuUserPriceListDetail(d) <- skuUserPriceListDetail(detail);
                 SET priceUserPriceListDetailDataPriceListType(d, priceListType) <- pricePriceListDetailDataPriceListType(detail, priceListType);
             }
         }
+}
+
+copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
+
+    FOR ADDOBJ u = UserPriceList DO {
+        EXEC copyDataPriceList(priceList, u);
         FORM userPriceList OBJECTS p = u MANAGESESSION DOCKEDMODAL;
     }
 }
@@ -580,19 +585,7 @@ copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
 updatePriceList 'Обновить' = ACTION (priceList) {
 
     FOR ADDOBJ u = UserPriceList DO {
-        SET currencyUserPriceList(u) <- currencyUserPriceList(priceList);
-        SET companyUserPriceList(u) <- companyUserPriceList(priceList);
-        SET dataInUserPriceListStock(u, stock) <- dataInUserPriceListStock(priceList, stock);
-        SET dataInUserPriceListStockGroup(u, stockGroup) <- dataInUserPriceListStockGroup(priceList, stockGroup);
-        SET allStocksUserPriceList(u) <- allStocksUserPriceList(priceList);
-        SET inUserPriceListDataPriceListType(u, priceListType) <- inPriceListDataPriceListType(priceList, priceListType);
-        FOR userPriceListUserPriceListDetail(detail) == priceList DO {
-            FOR ADDOBJ d = UserPriceListDetail DO {
-                SET userPriceListUserPriceListDetail(d) <- u;
-                SET skuUserPriceListDetail(d) <- skuUserPriceListDetail(detail);
-                SET priceUserPriceListDetailDataPriceListType(d, priceListType) <- pricePriceListDetailDataPriceListType(detail, priceListType);
-            }
-        }
+        EXEC copyDataPriceList(priceList, u);
         FORM userPriceList OBJECTS p = u DOCKEDMODAL;
         IF formResult() == FormResult.ok THEN {
             SET toDateUserPriceList(priceList) <- fromDateUserPriceList(u);
