@@ -9,11 +9,17 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.LongMutable;
 import platform.base.col.interfaces.mutable.MOrderExclSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
+import platform.server.classes.LogicalClass;
+import platform.server.classes.ValueClass;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
+import platform.server.logics.property.CalcPropertyRevImplement;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -61,6 +67,18 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public CalcPropertyObjectEntity<?> propertyBackground;
     public CalcPropertyObjectEntity<?> propertyForeground;
+
+    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> readFilterProperty;
+    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> getFilterProperty() {
+        if(readFilterProperty==null) {
+            assert finalizedObjects;
+            readFilterProperty = DerivedProperty.createDataPropRev(true, "FILTER_" + getSID(), "Фильтр (" + objects.toString() + ")", getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
+                public ValueClass getMapValue(ObjectEntity value) {
+                    return value.baseClass;
+                }}), LogicalClass.instance);
+        }
+        return readFilterProperty;
+    }
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);

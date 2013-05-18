@@ -182,7 +182,11 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     public <V extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, V> getImplement(ImOrderSet<V> list) {
         return new CalcPropertyMapImplement<ClassPropertyInterface, V>(this, getMapInterfaces(list));
     }
-    
+
+    public <V> CalcPropertyRevImplement<ClassPropertyInterface, V> getRevImplement(ImOrderSet<V> list) {
+        return new CalcPropertyRevImplement<ClassPropertyInterface, V>(this, getMapInterfaces(list));
+    }
+
     public boolean depends(ImSet<CustomClass> cls) { // оптимизация
         if(SetFact.contains(value, cls))
             return true;

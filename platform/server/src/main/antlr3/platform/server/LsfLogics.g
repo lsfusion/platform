@@ -1076,6 +1076,7 @@ contextIndependentPD[boolean innerPD] returns [LP property]
 	|	abstractActionDef=abstractActionPropertyDefinition { $property = $abstractActionDef.property; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; }
 	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; }
+	|	filterProp=filterPropertyDefinition { $property = $filterProp.property; }
 	;
 
 joinPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -1359,6 +1360,19 @@ formulaPropertyDefinition returns [LP property]
 	:	'FORMULA' 
 		(clsName=classId { className = $clsName.sid; })? 
 		formulaText=stringLiteral
+	;
+
+filterPropertyDefinition returns [LP property]
+@init {
+	String className = null;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedFilterProp($gobj.sid);
+	}
+}
+	:	'FILTER'
+		gobj=groupObjectID
 	;
 
 
@@ -2900,7 +2914,11 @@ compoundID returns [String sid]
 staticObjectID returns [String sid]
 	:	(namespacePart=ID '.')? classPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $classPart.text + '.' + $namePart.text; }
 	;
-	
+
+groupObjectID returns [String sid]
+    :	(namespacePart=ID '.')? formPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text + '.' + $namePart.text; }
+    ;
+
 multiCompoundID returns [String sid]
 	:	id=ID { $sid = $id.text; } ('.' cid=ID { $sid = $sid + '.' + $cid.text; } )*
 	;

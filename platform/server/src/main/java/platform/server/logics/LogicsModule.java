@@ -2336,6 +2336,12 @@ public abstract class LogicsModule {
         return baseLM.addClassProp(lp);
     }
 
+    @IdentityStrongLazy // для ID
+    public LCP addFilterProp(GroupObjectEntity groupObject) {
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getFilterProperty();
+        return addProperty(null, new LCP<ClassPropertyInterface>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
+    }
+
     public void addConstraint(CalcProperty property, boolean checkChange) {
         addConstraint(addProp(property), checkChange);
     }

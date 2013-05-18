@@ -736,6 +736,19 @@ public class DerivedProperty {
         return dataProperty.getImplement(listInterfaces);
     }
 
+    public static <T> CalcPropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(boolean session, ImMap<T, ValueClass> interfaces, ValueClass valueClass) {
+        return createDataPropRev(session, genID(), "sys", interfaces, valueClass);
+    }
+
+    public static <T> CalcPropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(boolean session, String sID, String caption, ImMap<T, ValueClass> interfaces, ValueClass valueClass) {
+        ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
+        ImOrderSet<T> listInterfaces = orderInterfaces.keyOrderSet();
+        ValueClass[] interfaceClasses = orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]);
+        DataProperty dataProperty = (session ? new SessionDataProperty(sID, caption, interfaceClasses, valueClass) :
+                new StoredDataProperty(sID, caption, interfaceClasses, valueClass));
+        return dataProperty.getRevImplement(listInterfaces);
+    }
+
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createIfAction(ImSet<L> innerInterfaces, CalcPropertyMapImplement<?, L> where, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
         IfActionProperty actionProperty = new IfActionProperty(genID(), "sys", false, listInterfaces, where, action, elseAction);

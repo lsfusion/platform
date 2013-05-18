@@ -24,6 +24,7 @@ import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
@@ -37,13 +38,8 @@ import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.IsClassProperty;
-import platform.server.logics.property.Property;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
-import platform.server.session.NoPropertyTableUsage;
-import platform.server.session.SessionChanges;
+import platform.server.logics.property.*;
+import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -112,7 +108,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         }
     }
 
-    public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, CalcPropertyObjectInstance propertyBackground, CalcPropertyObjectInstance propertyForeground, ImMap<ObjectInstance, CalcPropertyObjectInstance> parent) {
+    public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, CalcPropertyObjectInstance propertyBackground, CalcPropertyObjectInstance propertyForeground, ImMap<ObjectInstance, CalcPropertyObjectInstance> parent, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> filterProperty) {
 
         this.entity = entity;
 
@@ -137,6 +133,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         }
 
         this.parent = parent;
+        this.filterProperty = filterProperty;
     }
 
     public ImRevMap<ObjectInstance, KeyExpr> getMapKeys() {
@@ -512,11 +509,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         change(session, value);
     }
 
+    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> filterProperty;
+
     private boolean pendingHidden;
     
     @Message("message.form.update.group.keys")
     @ThisMessage
-    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, FunctionSet<CalcProperty> changedProps) throws SQLException {
+    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, IncrementChangeProps environmentIncrement, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<FunctionSet<CalcProperty>> changedProps) throws SQLException {
         if (refresh || (updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.exclAdd(this, curClassView);
         }
@@ -527,11 +526,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         if (curClassView == HIDE) return null;
 
         // если изменились класс грида или представление
-        boolean updateKeys = refresh || (updated & (UPDATED_GRIDCLASS | UPDATED_CLASSVIEW)) != 0;
+        boolean updateFilters = refresh || (updated & (UPDATED_GRIDCLASS | UPDATED_CLASSVIEW)) != 0;
 
         ImSet<FilterInstance> setFilters = getSetFilters();
         if (FilterInstance.ignoreInInterface) {
-            updateKeys |= (updated & UPDATED_FILTER) != 0;
+            updateFilters |= (updated & UPDATED_FILTER) != 0;
             filters = setFilters;
         } else {
             if ((updated & UPDATED_FILTER) != 0) {
@@ -541,7 +540,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                     }
                 });
 
-                updateKeys |= !BaseUtils.hashEquals(newFilters, filters);
+                updateFilters |= !BaseUtils.hashEquals(newFilters, filters);
                 filters = newFilters;
             } else { // остались те же setFilters
                 for (FilterInstance filt : setFilters)
@@ -552,11 +551,39 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                                 filters = filters.addExcl(filt);
                             else
                                 filters = filters.removeIncl(filt);
-                            updateKeys = true;
+                            updateFilters = true;
                         }
                     }
             }
         }
+
+        if (!updateFilters) // изменились "верхние" объекты для фильтров
+            for (FilterInstance filt : filters)
+                if (filt.objectUpdated(SetFact.singleton(this))) {
+                    updateFilters = true;
+                    break;
+                }
+
+        if (!updateFilters) // изменились данные по фильтрам
+            for (FilterInstance filt : filters)
+                if (filt.dataUpdated(changedProps.result)) {
+                    updateFilters = true;
+                    break;
+                }
+        if (!updateFilters) // классы удалились\добавились
+            for (ObjectInstance object : objects)
+                if (object.classChanged(changedProps.result)) {  // || object.classUpdated() сомнительный or
+                    updateFilters = true;
+                    break;
+                }
+
+        if(updateFilters && filterProperty!=null) { // изменились фильтры
+            ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+            environmentIncrement.add(filterProperty.property, new PropertyChange<ClassPropertyInterface>(filterProperty.mapping.join(mapKeys), ValueExpr.TRUE, getWhere(mapKeys, modifier)));
+            changedProps.set(BaseUtils.merge(changedProps.result, CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)filterProperty.property))));
+        }
+
+        boolean updateKeys = updateFilters;
 
         // порядки
         if(OrderInstance.ignoreInInterface) {
@@ -585,33 +612,15 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             orders = newOrders;
         }
 
-        if (!updateKeys) // изменились "верхние" объекты для фильтров
-            for (FilterInstance filt : filters)
-                if (filt.objectUpdated(SetFact.singleton(this))) {
-                    updateKeys = true;
-                    break;
-                }
         if (!updateKeys) // изменились "верхние" объекты для порядков
             for (OrderInstance order : orders.keyIt())
                 if (order.objectUpdated(SetFact.singleton(this))) {
                     updateKeys = true;
                     break;
                 }
-        if (!updateKeys) // изменились данные по фильтрам
-            for (FilterInstance filt : filters)
-                if (filt.dataUpdated(changedProps)) {
-                    updateKeys = true;
-                    break;
-                }
         if (!updateKeys) // изменились данные по порядкам
             for (OrderInstance order : orders.keyIt())
-                if (order.dataUpdated(changedProps)) {
-                    updateKeys = true;
-                    break;
-                }
-        if (!updateKeys) // классы удалились\добавились
-            for (ObjectInstance object : objects)
-                if (object.classChanged(changedProps)) {  // || object.classUpdated() сомнительный or
+                if (order.dataUpdated(changedProps.result)) {
                     updateKeys = true;
                     break;
                 }

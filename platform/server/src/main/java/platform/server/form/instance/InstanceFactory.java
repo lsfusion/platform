@@ -1,14 +1,18 @@
 package platform.server.form.instance;
 
+import org.apache.poi.ss.formula.functions.T;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.filter.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.CalcPropertyRevImplement;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyInterface;
 
 public class InstanceFactory {
@@ -58,7 +62,8 @@ public class InstanceFactory {
             }
 
             groupInstances.exclAdd(entity, new GroupObjectInstance(entity, objects, entity.propertyBackground != null ? getInstance(entity.propertyBackground) : null,
-                    entity.propertyForeground != null ? getInstance(entity.propertyForeground) : null, parentInstances));
+                    entity.propertyForeground != null ? getInstance(entity.propertyForeground) : null, parentInstances,
+                    entity.readFilterProperty !=null ? getInstance(entity.readFilterProperty) : null));
         }
 
         return groupInstances.get(entity);
@@ -98,7 +103,18 @@ public class InstanceFactory {
         return (CalcPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
     }
 
-    // временно
+    private <P extends PropertyInterface> ImRevMap<P, ObjectInstance> getInstanceMap(CalcPropertyRevImplement<P, ObjectEntity> entity) {
+        return entity.mapping.mapRevValues(new GetValue<ObjectInstance, ObjectEntity>() {
+            public ObjectInstance getMapValue(ObjectEntity value) {
+                return InstanceFactory.this.getInstance(value);
+            }});
+    }
+
+    public <P extends PropertyInterface> CalcPropertyRevImplement<P, ObjectInstance> getInstance(CalcPropertyRevImplement<P, ObjectEntity> entity) {
+        return new CalcPropertyRevImplement<P, ObjectInstance>(entity.property, getInstanceMap(entity));
+    }
+
+        // временно
     public <P extends PropertyInterface> PropertyObjectInstance<P, ?> getInstance(PropertyObjectEntity<P, ?> entity) {
         if(entity instanceof CalcPropertyObjectEntity)
             return getInstance((CalcPropertyObjectEntity<P>)entity);

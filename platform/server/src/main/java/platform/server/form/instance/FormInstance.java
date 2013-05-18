@@ -245,6 +245,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
+
+        environmentIncrement = createEnvironmentIncrement(isModal, this instanceof DialogInstance, manageSession, entity.isReadOnly(), showDrop);
     }
 
     private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean manageSession, boolean isReadOnly, boolean showDrop) {
@@ -414,12 +416,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if (objects == null)
             objects = GroupObjectInstance.getObjects(getGroups());
         return objects;
-    }
-
-    public void addFixedFilter(FilterEntity newFilter) {
-        FilterInstance newFilterInstance = newFilter.getInstance(instanceFactory);
-        GroupObjectInstance applyObject = newFilterInstance.getApplyObject();
-        applyObject.fixedFilters = applyObject.fixedFilters.merge(newFilterInstance);
     }
 
     // ----------------------------------- Поиск объектов по ID ------------------------------ //
@@ -1151,9 +1147,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         } else
             changedProps = SetFact.EMPTY();
 
+        Result<FunctionSet<CalcProperty>> mGroupChangedProps = new Result<FunctionSet<CalcProperty>>(changedProps);  // так как могут еще измениться свойства созданные при помощи операторов форм
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : getOrderGroups()) {
-            ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), BL.LM.baseClass, isHidden(group), refresh, result, changedProps);
+            ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, BL.LM.baseClass, isHidden(group), refresh, result, mGroupChangedProps);
             if (selectObjects != null) // то есть нужно изменять объект
                 updateGroupObject = new GroupObjectValue(group, selectObjects);
 
@@ -1162,6 +1159,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 updateGroupObject = null;
             }
         }
+        changedProps = mGroupChangedProps.result;
 
         ImOrderMap<ImSet<GroupObjectInstance>, ImOrderSet<PropertyReaderInstance>> changedDrawProps = getChangedDrawProps(result, changedProps).groupOrderValues();
         for (int i=0,size=changedDrawProps.size();i<size;i++)
@@ -1519,17 +1517,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return session;
     }
 
-    private IncrementChangeProps environmentIncrement;
-    @ManualLazy
-    private IncrementChangeProps getEnvironmentIncrement() {
-        if(environmentIncrement == null)
-            environmentIncrement = createEnvironmentIncrement(isModal, this instanceof DialogInstance, manageSession, entity.isReadOnly(), showDrop);
-        return environmentIncrement;
-    }
+    private final IncrementChangeProps environmentIncrement;
 
     private SessionModifier createModifier() {
         FunctionSet<CalcProperty> noHints = getNoHints();
-        return new OverrideSessionModifier(getEnvironmentIncrement(), noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier());
+        return new OverrideSessionModifier(environmentIncrement, noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier());
     }
 
     public Map<SessionModifier, SessionModifier> modifiers = new HashMap<SessionModifier, SessionModifier>();

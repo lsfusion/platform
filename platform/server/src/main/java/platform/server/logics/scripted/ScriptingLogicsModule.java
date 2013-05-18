@@ -33,6 +33,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormSessionScope;
 import platform.server.form.navigator.NavigatorElement;
@@ -1731,6 +1732,28 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         } else {
             errLog.emitAbstractClassInstancesUseError(parser, className, instanceName);
+        }
+        return resultProp;
+    }
+
+    public LCP addScriptedFilterProp(String name) throws ScriptingErrorLog.SemanticErrorException {
+        int pointPos = name.lastIndexOf('.');
+        assert pointPos > 0;
+
+        String formName = name.substring(0, pointPos);
+        String objectName = name.substring(pointPos+1);
+        LCP resultProp = null;
+
+        FormEntity form = findFormByCompoundName(formName);
+        if(form == null) {
+            errLog.emitNotFoundError(parser, "form", formName);
+        }
+
+        GroupObjectEntity groupObject = form.getGroupObject(objectName);
+        if (groupObject != null) {
+            resultProp = addFilterProp(groupObject);
+        } else {
+            errLog.emitNotFoundError(parser, "оbject", objectName);
         }
         return resultProp;
     }
