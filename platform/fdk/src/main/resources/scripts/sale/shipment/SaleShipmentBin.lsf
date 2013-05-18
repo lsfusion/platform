@@ -1,0 +1,18 @@
+MODULE SaleShipmentBin;
+
+REQUIRE Bin, SaleShipment;
+
+NAMESPACE Sale;
+
+// -- Операция
+@defineOperationProperty(showBin, 'Ячейка', showContainer);
+
+//---------------------------------Ячейка ----------------------------------//
+
+@defineDocumentInterfaceDetailBin(shipment);
+@extendFormInterfaceDetailBin(shipment, , quantity);
+@deriveDocumentOperationProperty(UserShipment, showBin);
+
+@defineInvoiceShipmentBin();
+@deriveDocumentOperationProperty(UserInvoice, showBin);
+

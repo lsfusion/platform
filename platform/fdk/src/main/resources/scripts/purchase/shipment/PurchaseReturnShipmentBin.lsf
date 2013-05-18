@@ -1,0 +1,14 @@
+MODULE PurchaseReturnShipmentBin;
+
+REQUIRE Bin, PurchaseReturnShipment, PurchaseShipmentBin;
+
+NAMESPACE PurchaseReturn;
+
+//---------------------------------Ячейка ----------------------------------//
+
+@defineDocumentInterfaceDetailBin(shipment);
+@extendFormInterfaceDetailBin(shipment, , quantity);
+@deriveDocumentOperationProperty(UserShipment, showBin);
+
+@defineInvoiceShipmentBin();
+@deriveDocumentOperationProperty(UserInvoice, showBin);

@@ -1,0 +1,27 @@
+MODULE PurchaseShipmentBin;
+
+REQUIRE Bin, PurchaseShipment;
+
+NAMESPACE Purchase;
+
+// -- Операция
+@defineOperationProperty(showBin, 'Ячейка', showContainer);
+
+//---------------------------------Ячейка ----------------------------------//
+
+@defineDocumentInterfaceDetailBin(shipment);
+@extendFormInterfaceDetailBin(shipment, , quantity);
+binUserShipmentDetail(detail) <- binStockSku(customerStockUserShipmentDetail(detail), skuUserShipmentDetail(detail))
+    WHEN CHANGED(customerStockUserShipmentDetail(detail)) OR
+         CHANGED(skuUserShipmentDetail(detail));
+binBatch (ledger) += binShipmentDetail(shipmentDetailShipmentBatch(ledger));
+
+@deriveDocumentOperationProperty(UserShipment, showBin);
+
+//-- invoice
+@defineInvoiceShipmentBin();
+binUserInvoiceDetail(detail) <- binStockSku(customerStockUserInvoiceDetail(detail), skuUserInvoiceDetail(detail))
+    WHEN CHANGED(customerStockUserInvoiceDetail(detail)) OR
+         CHANGED(skuUserInvoiceDetail(detail));
+
+@deriveDocumentOperationProperty(UserInvoice, showBin);
