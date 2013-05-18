@@ -235,7 +235,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         applyFilters();
-        fireOnInit();
 
         this.session.registerForm(this);
 
@@ -247,6 +246,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
 
         environmentIncrement = createEnvironmentIncrement(isModal, this instanceof DialogInstance, manageSession, entity.isReadOnly(), showDrop);
+
+        fireOnInit();
     }
 
     private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean manageSession, boolean isReadOnly, boolean showDrop) {
