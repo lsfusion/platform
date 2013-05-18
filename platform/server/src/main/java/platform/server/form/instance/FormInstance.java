@@ -237,14 +237,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         this.session.registerForm(this);
 
+        environmentIncrement = createEnvironmentIncrement(isModal, this instanceof DialogInstance, manageSession, entity.isReadOnly(), showDrop);
+
         if (!interactive) {
             endApply();
             this.mapObjects = mapObjects;
         }
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
-
-        environmentIncrement = createEnvironmentIncrement(isModal, this instanceof DialogInstance, manageSession, entity.isReadOnly(), showDrop);
 
         fireOnInit();
     }

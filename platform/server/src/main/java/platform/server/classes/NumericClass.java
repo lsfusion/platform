@@ -96,7 +96,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
 
     public Object getDefaultValue() {
-        return 0.0;
+        return new BigDecimal("0.0");
     }
 
     public BigDecimal parseString(String s) throws ParseException {
