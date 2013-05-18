@@ -939,6 +939,20 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 sql.createTable(table.name, table.keys);
         }
 
+        // проверяем изменение структуры ключей
+        for (Table table : newDBStructure.tables.keySet()) {
+            Table oldTable = oldDBStructure.getTable(table.name);
+            if (oldTable != null) {
+                for (KeyField key : table.keys) {
+                    KeyField oldKey = oldTable.findKey(key.name);
+                    if (!(key.type.equals(oldKey.type))) {
+                        sql.modifyColumn(table.name, key, oldKey.type);
+                        systemLogger.info("Changing type of key column " + key.name + " in table " + table.name + " from " + oldKey.type + " to " + key.type);
+                    }
+                }
+            }
+        }
+
         MExclSet<Pair<String, String>> mDropColumns = SetFact.mExclSet(); // вообще pend'ить нужно только classDataProperty, но их тогда надо будет отличать
 
         // бежим по свойствам
@@ -973,7 +987,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         } else { // надо проверить что тип не изменился
                             Type oldType = oldTable.findProperty(oldProperty.sID).type;
                             if (!oldType.equals(newProperty.property.field.type)) {
-                                systemLogger.info("Changing type of column " + newProperty.property.field.name + " in table " + newProperty.property.mapTable.table.name + " from " + oldType + " to " + newProperty.property.field.type);
+                                systemLogger.info("Changing type of property column " + newProperty.property.field.name + " in table " + newProperty.property.mapTable.table.name + " from " + oldType + " to " + newProperty.property.field.type);
                                 sql.modifyColumn(newProperty.property.mapTable.table.name, newProperty.property.field, oldType);
                             }
                         }

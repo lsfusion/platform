@@ -298,7 +298,7 @@ public class SQLSession extends MutableObject {
         executeDDL("ALTER TABLE " + table + " RENAME " + columnName + " TO " + newColumnName);
     }
 
-    public void modifyColumn(String table, PropertyField field, Type oldType) throws SQLException {
+    public void modifyColumn(String table, Field field, Type oldType) throws SQLException {
         executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.name + " TYPE " +
                 field.type.getDB(syntax) + " " + syntax.typeConvertSuffix(oldType, field.type, field.name));
     }
