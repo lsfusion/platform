@@ -1,11 +1,15 @@
 package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
+import platform.client.form.PropertyEditor;
+import platform.client.form.editor.DoublePropertyEditor;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.Format;
 import java.text.NumberFormat;
 
@@ -77,5 +81,9 @@ public class ClientNumericClass extends ClientDoubleClass {
         format.setMaximumIntegerDigits(length - precision - ((precision > 0) ? 1 : 0));
         format.setMaximumFractionDigits(precision);
         return format;
+    }
+
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new DoublePropertyEditor(value, (NumberFormat) property.getFormat(), property.design, BigDecimal.class);
     }
 }

@@ -54,8 +54,8 @@ public class TooltipManager {
                             tooltip.setPopupPosition(mouseX - tooltipWidth, mouseY - tooltipHeight);
                         } else {
                             tooltip.setPopupPosition(
-                                    tooltipXCorrection > 0 ? mouseX - tooltipXCorrection : mouseX + 1,
-                                    tooltipYCorrection > 0 ? mouseY - tooltipYCorrection : mouseY + 1
+                                    tooltipXCorrection > 0 ? Math.max(mouseX - tooltipXCorrection, 0) : mouseX + 1,
+                                    tooltipYCorrection > 0 ? Math.max(mouseY - tooltipYCorrection, 0) : mouseY + 1
                             );
                         }
                     }

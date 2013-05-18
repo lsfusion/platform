@@ -1,6 +1,5 @@
 package platform.base;
 
-import com.google.common.base.Throwables;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import platform.base.col.MapFact;
@@ -20,6 +19,7 @@ import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -503,6 +503,10 @@ public class BaseUtils {
             return new Color(inStream.readInt());
         }
 
+        if (objectType == 11) {
+            return readObjectFromStream(inStream);
+        }
+
         throw new IOException();
     }
 
@@ -520,6 +524,15 @@ public class BaseUtils {
             }
 
             return result.toString();
+        }
+    }
+
+    public static Object readObjectFromStream(DataInputStream inStream) throws IOException {
+        ObjectInputStream ois = new ObjectInputStream(inStream);
+        try {
+            return ois.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -598,6 +611,12 @@ public class BaseUtils {
             return;
         }
 
+        if (object instanceof BigDecimal) {
+            outStream.writeByte(11);
+            writeObjectToStream(object, outStream);
+            return;
+        }
+
         throw new IOException();
     }// -------------------------------------- Сериализация классов -------------------------------------------- //
 
@@ -619,6 +638,11 @@ public class BaseUtils {
                 outStream.writeUTF(str.substring(i * chunkSize, min(length, (i + 1) * chunkSize)));
             }
         }
+    }
+
+    public static void writeObjectToStream(Object object, DataOutputStream outStream) throws IOException {
+        ObjectOutputStream oos = new ObjectOutputStream(outStream);
+        oos.writeObject(object);
     }
 
     public static boolean startsWith(char[] string, int off, char[] check) {

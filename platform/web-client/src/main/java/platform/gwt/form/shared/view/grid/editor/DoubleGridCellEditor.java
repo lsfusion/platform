@@ -19,7 +19,7 @@ public class DoubleGridCellEditor extends TextBasedGridCellEditor {
 
     @Override
     protected String renderToString(Object value) {
-        return value == null ? "" : format.format((Double) value).replaceAll("\\u00A0", "");
+        return value == null ? "" : format.format((Number) value).replaceAll("\\u00A0", "");
     }
 
     @Override

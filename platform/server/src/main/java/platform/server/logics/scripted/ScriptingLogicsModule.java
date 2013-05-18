@@ -63,6 +63,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -1558,7 +1559,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LCP addNumericConst(String value) {
-        return addCProp(NumericClass.get(value.length(), value.length() - value.indexOf('.') - 1), Double.parseDouble(value));
+        return addCProp(NumericClass.get(value.length(), value.length() - value.indexOf('.') - 1), new BigDecimal(value));
     }
 
     public Color createScriptedColor(int r, int g, int b) throws ScriptingErrorLog.SemanticErrorException {

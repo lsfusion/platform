@@ -8,12 +8,13 @@ import platform.server.logics.ServerResourceBundle;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class NumericClass extends IntegralClass<Double> {
+public class NumericClass extends IntegralClass<BigDecimal> {
 
     public String toString() {
         return ServerResourceBundle.getString("classes.number")+" "+length+","+precision;
@@ -29,7 +30,7 @@ public class NumericClass extends IntegralClass<Double> {
     }
 
     public Class getReportJavaClass() {
-        return Double.class;
+        return BigDecimal.class;
     }
 
     public byte getTypeID() {
@@ -59,13 +60,17 @@ public class NumericClass extends IntegralClass<Double> {
         return syntax.getNumericSQL();
     }
 
-    public Double read(Object value) {
+    public BigDecimal read(Object value) {
         if(value==null) return null;
-        return ((Number) value).doubleValue();
+        if (value instanceof BigDecimal) {
+            return (BigDecimal) value;
+        } else {
+            return BigDecimal.valueOf(((Number) value).doubleValue());
+        }
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setDouble(num, (Double)value);
+        statement.setBigDecimal(num, (BigDecimal) value);
     }
 
     public static NumericClass get(int length, int precision) {
@@ -94,11 +99,11 @@ public class NumericClass extends IntegralClass<Double> {
         return 0.0;
     }
 
-    public Double parseString(String s) throws ParseException {
+    public BigDecimal parseString(String s) throws ParseException {
         try {
-            return Double.parseDouble(s.replace(',','.'));
+            return new BigDecimal(s.replace(',','.'));
         } catch (Exception e) {
-            return 0.0;
+            return new BigDecimal("0.0");
         }
     }
 
@@ -108,7 +113,7 @@ public class NumericClass extends IntegralClass<Double> {
 
     @Override
     public Number getInfiniteValue() {
-        return Double.MAX_VALUE / 2;
+        return BigDecimal.valueOf(Double.MAX_VALUE / 2);
     }
 
     @Override
