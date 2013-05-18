@@ -58,6 +58,9 @@ copyOperationPriceList = ACTION (priceList, userPriceList){
 }
 copyAbstractDataPriceList(priceList, userPriceList) +=copyOperationPriceList(priceList, userPriceList);
 
+CONSTRAINT operationUserPriceList(priceList) AND NOT inLegalEntityOperation(companyUserPriceList(priceList), operationUserPriceList(priceList))
+    CHECKED BY companyUserPriceList MESSAGE 'Компания прайса должна соответствовать ограничениям операции';
+
 EXTEND FORM operation
     OBJECTS pt = PriceListType
     PROPERTIES(pt, o) changeDataPriceListTypeOperation TODRAW pt FORCE GRID, showPriceListTypeOperation
