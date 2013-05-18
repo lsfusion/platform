@@ -12,6 +12,10 @@ Purchase.binShipmentDetail (detail) += purchaseBinShipmentDetail(shipmentDetailP
 showBinCreateUserShipment (shipment) = showBinUserShipment(shipment) AND createPurchaseUserShipment(shipment);
 showBinCreateShipment (shipment) = showBinShipment(shipment) AND createPurchaseShipment(shipment);
 
+purchaseBinUserShipmentDetail(detail) <- binStockSku(customerStockUserShipmentDetail(detail), skuUserShipmentDetail(detail))
+    WHEN CHANGED(customerStockUserShipmentDetail(detail)) OR
+         CHANGED(skuUserShipmentDetail(detail));
+
 EXTEND FORM userShipment
     PROPERTIES(d) BACKGROUND backgroundPurchaseShipment(s) SHOWIF showBinCreateUserShipment(s) purchaseNameBinUserShipmentDetail BEFORE deletesd
 ;

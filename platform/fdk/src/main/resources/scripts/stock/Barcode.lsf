@@ -224,6 +224,17 @@ EXTEND DESIGN currentBalanceSkuStock{
         }
     }
 }
+EXTEND FORM balanceSkuStock
+    PROPERTIES(s) READONLY idBarcodeSku AFTER nameSku
+    PROPERTIES seekBarcode() TODRAW s FORCE PANEL TOOLBAR ON CHANGE seekSkuBarcode()
+;
+EXTEND DESIGN balanceSkuStock{
+    sts.box{
+        PROPERTY(seekBarcode){
+            editKey = 'F4';
+        }
+    }
+}
 
 EXTEND FORM currentBalanceBatchStock
     PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch

@@ -8,7 +8,19 @@ NAMESPACE PurchaseReturn;
 
 @defineDocumentInterfaceDetailBin(shipment);
 @extendFormInterfaceDetailBin(shipment, , quantity);
+binUserShipmentDetail(detail) <- binStockSku(customerStockUserShipmentDetail(detail), skuUserShipmentDetail(detail))
+    WHEN CHANGED(customerStockUserShipmentDetail(detail)) OR
+         CHANGED(skuUserShipmentDetail(detail));
+
 @deriveDocumentOperationProperty(UserShipment, showBin);
 
+//-- invoice
 @defineInvoiceShipmentBin();
 @deriveDocumentOperationProperty(UserInvoice, showBin);
+
+binUserInvoiceDetail(detail) <- binStockSku(customerStockUserInvoiceDetail(detail), skuUserInvoiceDetail(detail))
+    WHEN CHANGED(customerStockUserInvoiceDetail(detail)) OR
+         CHANGED(skuUserInvoiceDetail(detail));
+
+//-- Проводим по регистру (ячейка)
+binDataSkuLedger(ledger) += binShipmentDetail(ledger);

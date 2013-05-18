@@ -14,7 +14,6 @@ NAMESPACE Purchase;
 binUserShipmentDetail(detail) <- binStockSku(customerStockUserShipmentDetail(detail), skuUserShipmentDetail(detail))
     WHEN CHANGED(customerStockUserShipmentDetail(detail)) OR
          CHANGED(skuUserShipmentDetail(detail));
-binBatch (ledger) += binShipmentDetail(shipmentDetailShipmentBatch(ledger));
 
 @deriveDocumentOperationProperty(UserShipment, showBin);
 
@@ -25,3 +24,6 @@ binUserInvoiceDetail(detail) <- binStockSku(customerStockUserInvoiceDetail(detai
          CHANGED(skuUserInvoiceDetail(detail));
 
 @deriveDocumentOperationProperty(UserInvoice, showBin);
+
+//-- Проводим по регистру (ячейка)
+binBatch (ledger) += binShipmentDetail(shipmentDetailShipmentBatch(ledger));

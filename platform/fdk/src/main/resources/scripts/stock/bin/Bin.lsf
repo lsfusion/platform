@@ -176,6 +176,7 @@ END
 
 EXTEND FORM currentBalanceSkuStock
 
+    PROPERTIES(bil)   READONLY nameBinSkuLedger  BEFORE signedQuantitySkuLedger
     PROPERTIES(bt)    READONLY nameBinBatch  BEFORE quantityBatch
 
     OBJECTS           bin=Bin
@@ -183,6 +184,21 @@ EXTEND FORM currentBalanceSkuStock
     FILTERS           currentBalanceSkuStockBin(s,st,bin)
 ;
 EXTEND DESIGN currentBalanceSkuStock {
+    ledger.box {
+        ADD bin.box;
+    }
+}
+
+EXTEND FORM balanceSkuStock
+
+    PROPERTIES(bil)   READONLY nameBinSkuLedger  BEFORE signedQuantitySkuLedger
+    PROPERTIES(bt)    READONLY nameBinBatch  BEFORE quantityBatch
+
+    OBJECTS           bin=Bin
+    PROPERTIES        READONLY nameBin(bin), balanceASkuStockBinDateTime(s,st,bin,t)
+    FILTERS           balanceASkuStockBinDateTime(s,st,bin,t)
+;
+EXTEND DESIGN balanceSkuStock {
     ledger.box {
         ADD bin.box;
     }
