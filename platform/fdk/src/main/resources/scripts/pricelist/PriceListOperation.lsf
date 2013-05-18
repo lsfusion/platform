@@ -53,6 +53,11 @@ companyUserPriceList(priceList) <- defaultLegalEntityOperation(operationUserPric
 currencyUserPriceList(priceList) <- defaultCurrencyOperation(operationUserPriceList(priceList))
     WHEN CHANGED(operationUserPriceList(priceList));
 
+copyOperationPriceList = ACTION (priceList, userPriceList){
+    SET operationUserPriceList(userPriceList) <- operationUserPriceList(priceList);
+}
+copyAbstractDataPriceList(priceList, userPriceList) +=copyOperationPriceList(priceList, userPriceList);
+
 EXTEND FORM operation
     OBJECTS pt = PriceListType
     PROPERTIES(pt, o) changeDataPriceListTypeOperation TODRAW pt FORCE GRID, showPriceListTypeOperation

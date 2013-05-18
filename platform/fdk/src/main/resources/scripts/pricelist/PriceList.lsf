@@ -558,20 +558,31 @@ editPriceList (p) += editUserPriceList(p);
 
 // ------------------ Копирование прайс-листов ------------------- //
 
-copyDataPriceList = ACTION (priceList, char){
-        SET currencyUserPriceList(char) <- currencyUserPriceList(priceList);
-        SET companyUserPriceList(char) <- companyUserPriceList(priceList);
-        SET dataInUserPriceListStock(char, stock) <- dataInUserPriceListStock(priceList, stock);
-        SET dataInUserPriceListStockGroup(char, stockGroup) <- dataInUserPriceListStockGroup(priceList, stockGroup);
-        SET allStocksUserPriceList(char) <- allStocksUserPriceList(priceList);
-        SET inUserPriceListDataPriceListType(char, priceListType) <- inPriceListDataPriceListType(priceList, priceListType);
+copyAbstractDataPriceList = ABSTRACT ACTION(PriceList, UserPriceList);
+
+copyDataPriceList = ACTION (priceList, userPriceList){
+        SET currencyUserPriceList(userPriceList) <- currencyUserPriceList(priceList);
+        SET companyUserPriceList(userPriceList) <- companyUserPriceList(priceList);
+        SET dataInUserPriceListStock(userPriceList, stock) <- dataInUserPriceListStock(priceList, stock);
+        SET dataInUserPriceListStockGroup(userPriceList, stockGroup) <- dataInUserPriceListStockGroup(priceList, stockGroup);
+        SET allStocksUserPriceList(userPriceList) <- allStocksUserPriceList(priceList);
+        SET inUserPriceListDataPriceListType(userPriceList, priceListType) <- inPriceListDataPriceListType(priceList, priceListType);
+        EXEC copyAbstractDataPriceList(priceList, userPriceList);
         FOR userPriceListUserPriceListDetail(detail) == priceList DO {
             FOR ADDOBJ d = UserPriceListDetail DO {
-                SET userPriceListUserPriceListDetail(d) <- char;
+                SET userPriceListUserPriceListDetail(d) <- userPriceList;
                 SET skuUserPriceListDetail(d) <- skuUserPriceListDetail(detail);
                 SET priceUserPriceListDetailDataPriceListType(d, priceListType) <- pricePriceListDetailDataPriceListType(detail, priceListType);
             }
         }
+}
+
+copySessionPriceList 'Копировать' = ACTION (priceList){
+
+    FOR ADDOBJ u = UserPriceList DO {
+        EXEC copyDataPriceList(priceList, u);
+        FORM userPriceList OBJECTS p = u MANAGESESSION DOCKEDMODAL;
+    }
 }
 
 copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
@@ -582,7 +593,21 @@ copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
     }
 }
 
-updatePriceList 'Обновить' = ACTION (priceList) {
+updateSessionPriceList 'Обновить' = ACTION (priceList) {
+
+    FOR ADDOBJ u = UserPriceList DO {
+        EXEC copyDataPriceList(priceList, u);
+        FORM userPriceList OBJECTS p = u DOCKEDMODAL;
+        IF formResult() == FormResult.ok THEN {
+            SET toDateUserPriceList(priceList) <- fromDateUserPriceList(u);
+            SET toTimeUserPriceList(priceList) <- fromTimeUserPriceList(u);
+        } ELSE {
+            DELETE u;
+        }
+    }
+}
+
+updatePriceList 'Обновить' = ACTION (priceList) NEWSESSION{
 
     FOR ADDOBJ u = UserPriceList DO {
         EXEC copyDataPriceList(priceList, u);
@@ -597,7 +622,6 @@ updatePriceList 'Обновить' = ACTION (priceList) {
 }
 
 FORM priceLists 'Прайсы'
-
     OBJECTS p = PriceList
     PROPERTIES(p) READONLY BACKGROUND backgroundPriceList(p)
            isPostedPriceList FORCE GRID, numberObject, seriesObject, datePriceList, timePriceList,
@@ -700,7 +724,7 @@ EXTEND FORM legalEntity
                            fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
                            nameCurrencyUserPriceList, priceListTypesPriceList,
                            stocksPriceList, noteUserPriceList, objectClassName
-    PROPERTIES addUserPriceListLegalEntity(l) TODRAW p FORCE PANEL, updatePriceList(p) TODRAW p FORCE PANEL TOOLBAR
+    PROPERTIES addUserPriceListLegalEntity(l) TODRAW p FORCE PANEL, updateSessionPriceList(p) TODRAW p FORCE PANEL TOOLBAR
     PROPERTIES(p) EDITSESSIONFORM, DELETESESSION FORCE PANEL TOOLBAR
     FILTERS companyUserPriceList(p) == l
 ;

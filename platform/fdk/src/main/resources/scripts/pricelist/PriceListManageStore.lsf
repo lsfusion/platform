@@ -37,11 +37,11 @@ countStoresSkuStoreTypeDateTime 'Кол-во магазинов(в наличи�
 EXTEND FORM rangeManagement
     OBJECTS t=ChainStores
     PROPERTIES READONLY nameChainStores(t), countStoresChainStores(t), countStoresPriceListTypeSkuChainStoresDateTime(pt, sk2, t, dt), countStoresSkuChainStoresDateTime(sk2, t, dt)
-    FILTERS countStoresSkuChainStoresDateTime(sk2, t, dt)
+    FILTERS countStoresPriceListTypeSkuChainStoresDateTime(pt, sk2, t, dt)
 
     OBJECTS st=StoreType
     PROPERTIES READONLY nameStoreType(st), countStoresStoreType(st), countStoresPriceListTypeSkuStoreTypeDateTime(pt, sk2, st, dt), countStoresSkuStoreTypeDateTime(sk2, st, dt)
-    FILTERS countStoresSkuStoreTypeDateTime(sk2, st, dt)
+    FILTERS countStoresPriceListTypeSkuStoreTypeDateTime(pt, sk2, st, dt)
 ;
 
 EXTEND DESIGN rangeManagement{

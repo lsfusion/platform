@@ -110,7 +110,7 @@ FORM rangeManagement 'Управление ассортиментом'
                                      nameCompanyLedgerPriceListTypeSkuDateTime SHOWIF showNameCompanyLedger(),
                                      descriptionLedgerPriceListTypeSkuDateTime SHOWIF showNameCompanyLedger(),
                                      priceLedgerPriceListTypeSkuDateTimeFilterLegalEntity SHOWIF filterLegalEntityRangeManagement(),
-                                     nameCompanyLedgerPriceListTypeSkuDateTimeFilterLegalEntity SHOWIF filterLegalEntityRangeManagement(),
+//                                     nameCompanyLedgerPriceListTypeSkuDateTimeFilterLegalEntity SHOWIF filterLegalEntityRangeManagement(),
                                      descriptionLedgerPriceListTypeSkuDateTimeFilterLegalEntity SHOWIF filterLegalEntityRangeManagement()
     FILTERS isParentSkuGroupSku(sg2, sk2),
             IF filterLegalEntityRangeManagement()
