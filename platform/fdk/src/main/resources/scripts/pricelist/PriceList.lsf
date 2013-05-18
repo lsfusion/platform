@@ -243,15 +243,46 @@ sumSelectedPriceList (priceList) =
     GROUP SUM 1 IF isSelectedPriceListDetail(priceListDetail)
           BY priceListPriceListDetail(priceListDetail);
 
+CLASS TypeMarkUpSkuUserPriceList 'Метод изменения цены'{
+    percent 'Наценка, %',
+    multiplication 'Умножение',
+    division 'Деление'
+}
+
+FORM typeMarkUpSkuUserPriceList 'Метод изменения цены'
+    OBJECTS m = TypeMarkUpSkuUserPriceList
+    PROPERTIES(m) READONLY staticCaption
+
+    DIALOG TypeMarkUpSkuUserPriceList OBJECT m
+;
+
+DESIGN typeMarkUpSkuUserPriceList FROM DEFAULT{
+    PROPERTY(staticCaption(m)){caption = 'Метод изменения цены';}
+}
+
+headerNumericCaption(type) =
+    CASE
+        WHEN type == TypeMarkUpSkuUserPriceList.percent
+            THEN '% наценки' IF type IS TypeMarkUpSkuUserPriceList
+        WHEN type == TypeMarkUpSkuUserPriceList.multiplication
+            THEN 'Множитель' IF type IS TypeMarkUpSkuUserPriceList
+        WHEN type == TypeMarkUpSkuUserPriceList.division
+            THEN 'Делитель' IF type IS TypeMarkUpSkuUserPriceList
+        DEFAULT '% наценки' IF type IS TypeMarkUpSkuUserPriceList
+    END;
+
 FORM chooseMarkUpSkuUserPriceList 'Наценка'
 
     OBJECTS p = UserPriceList FIXED PANEL
+
+    OBJECTS m = TypeMarkUpSkuUserPriceList FIXED PANEL
+    PROPERTIES(m) SELECTOR staticCaption
 
     OBJECTS t = PriceListType FIXED PANEL
     PROPERTIES(t) SELECTOR namePriceListType
 
     OBJECTS n = NUMERIC[20,7] FIXED PANEL
-    PROPERTIES(n) objValue = OBJVALUE
+    PROPERTIES(n) objValue = OBJVALUE HEADER headerNumericCaption(m)
 
     OBJECTS t2 = DataPriceListType FIXED PANEL
     PROPERTIES(t2) SELECTOR nameDataPriceListType
@@ -263,10 +294,11 @@ DESIGN chooseMarkUpSkuUserPriceList FROM DEFAULT {
     REMOVE p.box;
     NEW topContainer {
         childConstraints = TO THE BOTTOM;
+        ADD PROPERTY(staticCaption(m)){caption = 'Метод изменения цены';}
         ADD PROPERTY(namePriceListType(t));
         PROPERTY(namePriceListType(t)){caption = 'Старая цена';}
         ADD PROPERTY(objValue);
-        PROPERTY(objValue){caption = 'Изменение, %';}
+        PROPERTY(objValue){caption = 'Изменение';}
         ADD PROPERTY(nameDataPriceListType(t2));
         PROPERTY(nameDataPriceListType(t2)){caption = 'Новая цена';}
     }
@@ -276,11 +308,20 @@ DESIGN chooseMarkUpSkuUserPriceList FROM DEFAULT {
 changeMarkUpSkuUserPriceList 'Рассчитать цену' = ACTION (userPriceList, stock) {
     FORM chooseMarkUpSkuUserPriceList OBJECTS p = userPriceList MODAL;
     IF formResult() == FormResult.ok THEN {
-        IF TRUE IF NOT sumSelectedPriceList(userPriceList) THEN MESSAGE 'Выберите хотя бы одну позицию' ELSE
-        SET priceUserPriceListDetailDataPriceListType(detail, t) <-
-                //currentPricePriceListDetailDataPriceListTypeStock(detail, chosenObject('t'), stock) * (chosenNumeric('n') + 100.0) / 100.0
-                roundPriceRoundCondition((currentPricePriceListDetailDataPriceListTypeStock(detail, chosenObject('t'), stock) * (chosenNumeric('n') + 100.0) / 100.0), roundConditionPriceListType(chosenObject('t2')))
-                WHERE isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList AND t == chosenObject('t2');
+        IF TRUE IF NOT sumSelectedPriceList(userPriceList) THEN MESSAGE 'Выберите хотя бы одну позицию' ELSE{
+            IF chosenObject('m') == TypeMarkUpSkuUserPriceList.percent THEN
+                SET priceUserPriceListDetailDataPriceListType(detail, t) <-
+                    roundPriceRoundCondition((currentPricePriceListDetailDataPriceListTypeStock(detail, chosenObject('t'), stock) * (chosenNumeric('n') + 100.0) / 100.0), roundConditionPriceListType(chosenObject('t2')))
+                    WHERE isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList AND t == chosenObject('t2');
+            IF chosenObject('m') == TypeMarkUpSkuUserPriceList.multiplication THEN
+                SET priceUserPriceListDetailDataPriceListType(detail, t) <-
+                    roundPriceRoundCondition((currentPricePriceListDetailDataPriceListTypeStock(detail, chosenObject('t'), stock) * chosenNumeric('n')), roundConditionPriceListType(chosenObject('t2')))
+                    WHERE isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList AND t == chosenObject('t2');
+            IF chosenObject('m') == TypeMarkUpSkuUserPriceList.division THEN
+                SET priceUserPriceListDetailDataPriceListType(detail, t) <-
+                    roundPriceRoundCondition((currentPricePriceListDetailDataPriceListTypeStock(detail, chosenObject('t'), stock) / chosenNumeric('n')), roundConditionPriceListType(chosenObject('t2')))
+                    WHERE isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList AND t == chosenObject('t2');
+        }
     }
 }
 
