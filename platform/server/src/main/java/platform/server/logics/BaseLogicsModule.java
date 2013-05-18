@@ -180,6 +180,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 new String[]{"drop", "ok", "close"},
                 new String[]{"Сбросить", "Принять", "Закрыть"},
                 baseClass);
+
+        initBaseClassAliases();
     }
 
     @Override
