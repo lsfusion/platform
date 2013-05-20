@@ -37,8 +37,8 @@ nameDefaultCurrencyOperation 'Валюта по умолчанию' (operation) 
 isDefaultCurrencyOperation 'Валюта по умолчанию' (currency, operation) =
     defaultCurrencyOperation(operation) == currency;
 
-CONSTRAINT defaultCurrencyOperation(operation) AND NOT inCurrencyOperation(defaultCurrencyOperation(operation), operation)
-    CHECKED BY defaultCurrencyOperation MESSAGE 'Валюта по умолчанию должны быть в списке отмечанных валют';
+CONSTRAINT userDefaultCurrencyOperation(operation) AND NOT inCurrencyOperation(userDefaultCurrencyOperation(operation), operation)
+    CHECKED BY userDefaultCurrencyOperation MESSAGE 'Валюта по умолчанию должны быть в списке отмечанных валют';
 
 //Определение операции для прайсов
 @defineDocumentOperation(priceList, p);

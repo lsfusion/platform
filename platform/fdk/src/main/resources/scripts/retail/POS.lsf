@@ -608,13 +608,13 @@ DESIGN POS FROM DEFAULT {
             }
         }
         NEW centerContainer {
-            childConstraints = TO THE RIGHT;
-            type = SPLITH;
+            childConstraints = TO THE BOTTOM;
+//            type = SPLITV;
             NEW receiptContainer {
-                type = SPLITV;
+//                type = SPLITV;
                 childConstraints = TO THE BOTTOM;
                 ADD d.box {
-                    fillVertical = 3;
+                    fillVertical = 2;
                     PROPERTY(indexReceiptDetail) { focusable = FALSE; font = 'Tahoma 14'; }
                     PROPERTY(typeReceiptDetail) { focusable = FALSE; font = 'Tahoma 14'; }
                     PROPERTY(idBarcodeReceiptDetail) { focusable = FALSE; font = 'Tahoma 14'; }
@@ -628,57 +628,66 @@ DESIGN POS FROM DEFAULT {
                     PROPERTY(deleted) { font = 'Tahoma 14'; }
                 }
                 NEW promotionContainer {
-                type = TABBED;
-                fillVertical = 0.3;
-                    ADD pc.box {
-                      //  fillVertical = 0.3;
-                    }
-                    ADD pcu.box {
-                        title = 'Возможные акции';
-                     //   fillVertical = 0.3;
-                    }
-              }
+                    type = TABBED;
+                    //                fillVertical = 0.3;
+                        ADD pc.box {
+                          //  fillVertical = 0.3;
+                        }
+                        ADD pcu.box {
+                            title = 'Возможные акции';
+                         //   fillVertical = 0.3;
+                        }
+                }
             }
             NEW eastContainer {
                 childConstraints = TO THE BOTTOM;
-                ADD r.receiptSaleActionGroup {
+                NEW firstEastContainer{
                     childConstraints = TO THE RIGHTBOTTOM;
-                    ADD PROPERTY(searchSkuSaleReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
-                    ADD PROPERTY(barcodeSale) { caption = 'Ввести штрих-код'; panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; editKey = 'F4'; }
+                    ADD r.receiptSaleActionGroup {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(searchSkuSaleReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
+                        ADD PROPERTY(barcodeSale) { caption = 'Ввести штрих-код'; panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; editKey = 'F4'; }
+                    }
+                    ADD r.receiptReturnActionGroup {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(searchSkuReturnReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
+                        ADD PROPERTY(scanBarcodeReturnReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
+                    }
+                    ADD r.receiptActionGroup {
+                        childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY(postReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
+                        NEW receiptActionGroup1 {
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(postCardReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
+                            ADD PROPERTY(postCashReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
+                        }
+                        ADD PROPERTY(cancelReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
+                    }
                 }
-                ADD r.receiptReturnActionGroup {
+                NEW secondEastContainer{
                     childConstraints = TO THE RIGHTBOTTOM;
-                    ADD PROPERTY(searchSkuReturnReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
-                    ADD PROPERTY(scanBarcodeReturnReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
-                }
-                ADD r.receiptActionGroup {
-                    childConstraints = TO THE BOTTOM;
-                    ADD PROPERTY(postReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
-                    NEW receiptActionGroup1 {
-                        childConstraints = TO THE RIGHTBOTTOM;
-                        ADD PROPERTY(postCardReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
-                        ADD PROPERTY(postCashReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
+                    NEW secondFirstEastContainer{
+                        childConstraints = TO THE BOTTOM;
+                        ADD r.receiptDiscountGroup {
+                            childConstraints = TO THE BOTTOM;
+                            NEW receiptDiscountGroup1 {
+                                childConstraints = TO THE RIGHTBOTTOM;
+                                ADD PROPERTY(numberDiscountCardReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; }
+                                ADD PROPERTY(nameLegalEntityDiscountCardReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; }
+                            }
+                            NEW buttonDiscountContainer {
+                                childConstraints = TO THE RIGHT;
+                                ADD PROPERTY(inputDiscountCardNumberReceipt) { focusable = FALSE; font = 'Tahoma bold 14'; }
+                                ADD PROPERTY(clearDiscountCardReceipt) { focusable = FALSE; font = 'Tahoma bold 14'; }
+                            }
+                        }
                     }
-                    ADD PROPERTY(cancelReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
-                }
-                ADD r.receiptDiscountGroup {
-                    childConstraints = TO THE BOTTOM;
-                    NEW receiptDiscountGroup1 {
-                        childConstraints = TO THE RIGHTBOTTOM;
-                        ADD PROPERTY(numberDiscountCardReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; }
-                        ADD PROPERTY(nameLegalEntityDiscountCardReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; }
+                    NEW sumContainer {
+                        title = 'Итого';
+                        childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY(discountSumReceiptDetailReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 54'; }
+                        ADD PROPERTY(sumReceiptDetailReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 54'; }
                     }
-                    NEW buttonDiscountContainer {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(inputDiscountCardNumberReceipt) { focusable = FALSE; font = 'Tahoma bold 14'; }
-                        ADD PROPERTY(clearDiscountCardReceipt) { focusable = FALSE; font = 'Tahoma bold 14'; }
-                    }
-                }
-                NEW sumContainer {
-                    title = 'Итого';
-                    childConstraints = TO THE BOTTOM;
-                    ADD PROPERTY(discountSumReceiptDetailReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 54'; }
-                    ADD PROPERTY(sumReceiptDetailReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 54'; }
                 }
             }
         }
