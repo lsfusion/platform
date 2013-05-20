@@ -41,12 +41,25 @@ configurationStatusName 'Статус' (configuration) = staticCaption(configura
 
 databaseConfiguration 'Конфигурация' (database) = GROUP AGGR configuration BY configurationDatabase(configuration);
 
-configurationDelete 'Удалить' (configuration) = delete(configuration) IF configurationStatus(configuration) == Status.stopped IMAGE 'delete.png';
+configurationDelete 'Удалить' = ACTION (c) {
+    IF configurationStatus(c) == Status.stopped THEN {
+        DELETE c;
+    }
+} IMAGE 'delete.png';
 
-configurationStart 'Запустить' = [ACTION (c) CUSTOM 'paas.properties.StartConfigurationActionProperty'](c)
-                                    IF configurationStatus(c) == Status.stopped IMAGE 'start.png';
-configurationStop 'Остановить' = [ACTION (c) CUSTOM 'paas.properties.StopConfigurationActionProperty'](c)
-                                    IF configurationStatus(c) == Status.started IMAGE 'stop.png';
+configurationStartAction = ACTION CUSTOM 'paas.properties.StartConfigurationActionProperty';
+configurationStart 'Запустить' = ACTION (c) {
+    IF configurationStatus(c) == Status.stopped THEN {
+        configurationStartAction(c);
+    }
+} IMAGE 'start.png';
+
+configurationStopAction = ACTION CUSTOM 'paas.properties.StopConfigurationActionProperty';
+configurationStop 'Остановить' = ACTION (c) {
+    IF configurationStatus(c) == Status.started THEN {
+        configurationStopAction(c);
+    }
+} IMAGE 'stop.png';
 
 refreshStatuses 'Обновить' = ACTION CUSTOM 'paas.properties.RefreshStatusActionProperty' IMAGE 'refresh.png';
 
