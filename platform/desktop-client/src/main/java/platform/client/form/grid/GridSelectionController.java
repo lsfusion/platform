@@ -255,7 +255,6 @@ public class GridSelectionController {
 
     private Object modifyIfString(Object value, boolean multiline) {
         if (value != null && value instanceof String) {
-            value = BaseUtils.rtrim((String) value);
             if (multiline) {
                 if (((String) value).contains("\n") || ((String) value).contains("\t")) {
                     value = "\"" + ((String) value).replace("\"", "\"\"") + "\"";

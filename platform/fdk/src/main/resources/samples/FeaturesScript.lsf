@@ -1029,7 +1029,7 @@ concatToVar(store) = CONCAT ', ', name(store), sstring(store), slong(store), '<c
 concatVarNull(store) =  'name: ' + name(store) + '; long: ' + slong(store) + '; string: ' + sstring(store);
 concatVarNotNull(store) = CONCAT '', 'name: ' IF store IS Store, name(store), '; long: ' IF store IS Store, slong(store), '; string: ' IF store IS Store, sstring(store);
 
-FORM TestAddOperator 'Тест операторов CAST, CONCAT, "+-*"'
+FORM TestOperators 'Тест операторов CAST, CONCAT, "+-*"'
     OBJECTS s=Store
     PROPERTIES(s) OBJVALUE, name, sdate, sinteger, slong, sdouble, snumeric, sstring, svarstring, sboolean
     PROPERTIES(s) stext
@@ -1040,13 +1040,15 @@ FORM TestAddOperator 'Тест операторов CAST, CONCAT, "+-*"'
     PROPERTIES(s) FORCE PANEL multDoubleInt, multDoubleNumeric, multNumericInt, multIntLong
 ;
 
-DESIGN TestAddOperator FROM DEFAULT {
+DESIGN TestOperators FROM DEFAULT {
     s.box {
         fillVertical = 1;
     }
 
     PROPERTY(stext) {
+        minimumSize = ( -1, 17);
         preferredSize = ( -1, 17);
+        maximumSize = ( -1, 17);
     }
 
     NEW tabsContainer AFTER s.box {
@@ -1183,7 +1185,7 @@ NAVIGATOR {
         ADD TestTabs;
         ADD TestReadOnlyIf;
         ADD TestOnActions;
-        ADD TestAddOperator;
+        ADD TestOperators;
     }
 
     ADD storeArticle;

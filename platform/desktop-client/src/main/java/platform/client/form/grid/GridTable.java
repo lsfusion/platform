@@ -3,7 +3,6 @@ package platform.client.form.grid;
 import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
 import platform.base.Pair;
-import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientPropertyTable;
@@ -29,7 +28,6 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
@@ -284,24 +282,6 @@ public class GridTable extends ClientPropertyTable {
         }
 
         tableHeader.repaint();
-    }
-
-    @Override
-    public String getToolTipText(MouseEvent e) {
-        java.awt.Point p = e.getPoint();
-        int rowIndex = rowAtPoint(p);
-        int colIndex = columnAtPoint(p);
-        Object value = (rowIndex != -1 && colIndex != -1 && !getProperty(rowIndex, colIndex).echoSymbols) ? getValueAt(rowIndex, colIndex) : null;
-        if (value instanceof Date) {
-            value = Main.formatDate(value);
-        } else if (value instanceof Double) {
-            value = (double) Math.round(((Double) value) * 1000) / 1000;
-        } else if (value instanceof Color) {
-            value = "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
-        }
-        Format format = (rowIndex != -1 && colIndex != -1 && value instanceof Double) ? getProperty(rowIndex, colIndex).getFormat() : NumberFormat.getInstance();
-        String formattedValue = (value instanceof Double) ? format.format(value) : BaseUtils.rtrim(String.valueOf(value));
-        return (value != null) ? SwingUtils.toMultilineHtml(formattedValue, createToolTip().getFont()) : null;
     }
 
     private void initializeActionMap() {

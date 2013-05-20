@@ -47,7 +47,7 @@ public class DataPanelView extends JPanel implements PanelView {
 
         //игнорируем key.readOnly, чтобы разрешить редактирование,
         //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType
-        table = new DataPanelViewTable(iform, this, columnKey, property);
+        table = new DataPanelViewTable(iform, columnKey, property);
 
         setToolTip(property.getCaption());
 

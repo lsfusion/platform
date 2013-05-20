@@ -3,9 +3,7 @@ package platform.client.logics.classes;
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditor;
-import platform.client.form.PropertyRenderer;
 import platform.client.form.editor.StringPropertyEditor;
-import platform.client.form.renderer.StringPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
@@ -24,10 +22,6 @@ public class ClientVarStringClass extends ClientStringClass {
         return caseInsensitive ? insensetiveType : type;
     }
 
-    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new StringPropertyRenderer(property);
-    }
-
     @Override
     public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
         return new StringPropertyEditor(property, value, length, true, false);
@@ -35,6 +29,11 @@ public class ClientVarStringClass extends ClientStringClass {
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new StringPropertyEditor(property, value, length, true, true);
+    }
+
+    @Override
+    public String formatString(Object obj) {
+        return obj.toString();
     }
 
     @Override

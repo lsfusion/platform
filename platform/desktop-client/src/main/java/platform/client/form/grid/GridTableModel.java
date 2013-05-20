@@ -41,14 +41,15 @@ public class GridTableModel extends AbstractTableModel {
             Object rowForeground = mapRowForegroundValues.get(rowKey);
 
             for (int j = 0; j < columnProps.length; ++j) {
+                ClientPropertyDraw columnProp = columnProps[j];
                 ClientGroupObjectValue cellKey = new ClientGroupObjectValue(rowKey, columnKeys[j]);
 
-                Map<ClientGroupObjectValue, Object> propValues = values.get(columnProps[j]);
-                Map<ClientGroupObjectValue, Object> readOnlyValues = mapReadOnlyValues.get(columnProps[j]);
-                Map<ClientGroupObjectValue, Object> backgroundValues = mapBackgroundValues.get(columnProps[j]);
-                Map<ClientGroupObjectValue, Object> foregroundValues = mapForegroundValues.get(columnProps[j]);
+                Map<ClientGroupObjectValue, Object> propValues = values.get(columnProp);
+                Map<ClientGroupObjectValue, Object> readOnlyValues = mapReadOnlyValues.get(columnProp);
+                Map<ClientGroupObjectValue, Object> backgroundValues = mapBackgroundValues.get(columnProp);
+                Map<ClientGroupObjectValue, Object> foregroundValues = mapForegroundValues.get(columnProp);
 
-                data[i][j] = propValues != null ? propValues.get(cellKey) : null;
+                data[i][j] = propValues == null ? null : columnProp.baseType.transformServerValue(propValues.get(cellKey));
                 readOnly[i][j] = readOnlyValues != null && readOnlyValues.get(cellKey) != null;
 
                 if (rowBackground != null) {

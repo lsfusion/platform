@@ -1,8 +1,6 @@
 package platform.client.form.cell;
 
 import com.google.common.base.Throwables;
-import platform.base.BaseUtils;
-import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientPropertyTable;
@@ -11,10 +9,10 @@ import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -64,26 +62,6 @@ public abstract class SingleCellTable extends ClientPropertyTable {
 
     public ClientPropertyDraw getProperty(int row, int column) {
         return model.getProperty();
-    }
-
-    @Override
-    public String getToolTipText(MouseEvent e) {
-        Object value = model.getValue();
-        if (!BaseUtils.isRedundantString(value)) {
-            String tooltip = value.toString();
-            if (value instanceof Date) {
-                tooltip = Main.formatDate(value);
-            } else if (value instanceof Double) {
-                tooltip = String.valueOf((double) Math.round(((Double) value) * 1000) /1000);
-            } else if (value instanceof Color) {
-                tooltip = "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
-            } else if (getProperty().echoSymbols) {
-                tooltip = null;
-            }
-            return tooltip == null ? null : SwingUtils.toMultilineHtml(BaseUtils.rtrim(tooltip), createToolTip().getFont());
-        } else {
-            return null;
-        }
     }
 
     public void pasteTable(List<List<String>> table) {

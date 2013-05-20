@@ -1,6 +1,7 @@
 package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
+import platform.client.Main;
 import platform.client.form.PropertyEditor;
 import platform.client.form.PropertyRenderer;
 import platform.client.form.editor.TimePropertyEditor;
@@ -34,7 +35,11 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
     }
 
     public Format getDefaultFormat() {
-        return new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        if (Main.timeZone != null) {
+            format.setTimeZone(Main.timeZone);
+        }
+        return format;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

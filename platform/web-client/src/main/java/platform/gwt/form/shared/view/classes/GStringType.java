@@ -5,6 +5,8 @@ import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.StringGridCellEditor;
+import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
+import platform.gwt.form.shared.view.grid.renderer.StringGridCellRenderer;
 
 public class GStringType extends GAbstractStringType {
     protected int length = 50;
@@ -28,8 +30,13 @@ public class GStringType extends GAbstractStringType {
     }
 
     @Override
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new StringGridCellRenderer(property, false);
+    }
+
+    @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new StringGridCellEditor(editManager, editProperty);
+        return new StringGridCellEditor(editManager, editProperty, false);
     }
 
     @Override

@@ -96,6 +96,11 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return obj.toString();
     }
 
+    @Override
+    public Object transformServerValue(Object obj) {
+        return obj;
+    }
+
     public String getConfirmMessage() {
         return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.edit.property");
     }

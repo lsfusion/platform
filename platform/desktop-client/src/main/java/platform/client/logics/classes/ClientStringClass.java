@@ -68,6 +68,11 @@ public class ClientStringClass extends ClientAbstractStringClass {
     }
 
     @Override
+    public String formatString(Object obj) {
+        return BaseUtils.rtrim(obj.toString());
+    }
+
+    @Override
     public String getSID() {
         return sID;
     }

@@ -41,6 +41,8 @@ public interface ClientType {
 
     String formatString(Object obj) throws ParseException;
 
+    Object transformServerValue(Object obj);
+
     boolean shouldBeDrawn(ClientFormController form);
     
     String getConfirmMessage();

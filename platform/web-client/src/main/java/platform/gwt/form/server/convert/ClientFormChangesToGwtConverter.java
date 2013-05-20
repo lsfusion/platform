@@ -4,7 +4,6 @@ import platform.client.logics.*;
 import platform.client.logics.classes.ClientFileClass;
 import platform.client.logics.classes.ClientImageClass;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
-import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.server.FileUtils;
 import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -138,11 +137,6 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     @Converter(from = Color.class)
     public ColorDTO convertColor(Color color) {
         return new ColorDTO(Integer.toHexString(color.getRGB()).substring(2, 8));
-    }
-
-    @Converter(from = String.class)
-    public String convertString(String s) {
-        return GwtSharedUtils.rtrim(s);
     }
 
     @Converter(from = ClientGroupObjectValue.class)

@@ -45,9 +45,6 @@ public class TableTransferHandler extends TransferHandler {
             if (value == null) {
                 return null;
             }
-            if (value instanceof String) {
-                value = BaseUtils.rtrim((String) value);
-            }
 
             TableInterface transferTable = (TableInterface) table;
             ClientPropertyDraw property = transferTable.getProperty(row, column);

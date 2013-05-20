@@ -2,6 +2,7 @@ package platform.client.logics.classes;
 
 import platform.base.DateConverter;
 import platform.client.ClientResourceBundle;
+import platform.client.Main;
 import platform.client.form.PropertyEditor;
 import platform.client.form.PropertyRenderer;
 import platform.client.form.editor.DateTimePropertyEditor;
@@ -36,7 +37,11 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
     }
 
     public Format getDefaultFormat() {
-        return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+        if (Main.timeZone != null) {
+            format.setTimeZone(Main.timeZone);
+        }
+        return format;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

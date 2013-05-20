@@ -36,7 +36,7 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
         });
 
         if (value != null) {
-            setText(isVarString ? value.toString() : rtrim(value.toString()));
+            setText(value.toString());
         }
     }
 

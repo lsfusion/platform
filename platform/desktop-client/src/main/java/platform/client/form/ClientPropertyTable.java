@@ -1,6 +1,7 @@
 package platform.client.form;
 
 import com.google.common.base.Preconditions;
+import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
@@ -19,7 +20,9 @@ import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.text.ParseException;
 import java.util.EventObject;
 
 import static platform.client.form.EditBindingMap.isEditableAwareEditEvent;
@@ -257,6 +260,37 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             listener = new ClientPropertyTableUIHandler(this);
         }
         super.addMouseListener(listener);
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent e) {
+        java.awt.Point p = e.getPoint();
+        int rowIndex = rowAtPoint(p);
+        int colIndex = columnAtPoint(p);
+
+        if (rowIndex != -1 && colIndex != -1) {
+            ClientPropertyDraw cellProperty = getProperty(rowIndex, colIndex);
+            if (!cellProperty.echoSymbols) {
+                Object value = getValueAt(rowIndex, colIndex);
+                if (value != null) {
+                    if (value instanceof Double) {
+                        value = (double) Math.round(((Double) value) * 1000) / 1000;
+                    }
+
+                    String formattedValue;
+                    try {
+                        formattedValue = cellProperty.baseType.formatString(value);
+                    } catch (ParseException e1) {
+                        formattedValue = String.valueOf(value);
+                    }
+
+                    if (!BaseUtils.isRedundantString(formattedValue)) {
+                        return SwingUtils.toMultilineHtml(formattedValue, createToolTip().getFont());
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     protected void quickLog(String msg) {

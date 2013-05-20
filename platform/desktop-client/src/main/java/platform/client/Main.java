@@ -40,10 +40,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
-import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.TimeZone;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -407,21 +404,6 @@ public class Main {
         }
 
         return title;
-    }
-
-    public static String formatDate(Object date) {
-        DateFormat df;
-        if (date instanceof java.sql.Date) {
-            df = DateFormat.getDateInstance(DateFormat.SHORT);
-        } else if (date instanceof Timestamp) {
-            df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
-        } else
-            return String.valueOf(date);
-
-        if (timeZone != null) {
-            df.setTimeZone(Main.timeZone);
-        }
-        return df.format((Date) date);
     }
 
     public static void shutdown() {

@@ -37,6 +37,11 @@ public abstract class ClientAbstractStringClass extends ClientDataClass {
     }
 
     @Override
+    public Object transformServerValue(Object obj) {
+        return obj == null ? null : formatString(obj);
+    }
+
+    @Override
     public Compare[] getFilterCompares() {
         return Compare.values();
     }

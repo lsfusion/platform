@@ -8,16 +8,14 @@ import java.awt.*;
 
 public class DataPanelViewTable extends SingleCellTable {
     private final ClientFormController form;
-    private final DataPanelView valueCellView;
 
     private Color backgroundColor;
     private Color foregroundColor;
 
-    public DataPanelViewTable(ClientFormController form, DataPanelView valueCellView, ClientGroupObjectValue columnKey, ClientPropertyDraw property) {
+    public DataPanelViewTable(ClientFormController form, ClientGroupObjectValue columnKey, ClientPropertyDraw property) {
         super(columnKey);
 
         this.form = form;
-        this.valueCellView = valueCellView;
 
         setProperty(property);
     }
