@@ -18,6 +18,7 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -112,13 +113,13 @@ public class ExportExcelUserInvoicesActionProperty extends ExportExcelActionProp
                     for (ImMap<Object, Object> userInvoiceDetailValues : userInvoiceDetailResult.valueIt()) {
 
                         String idBarcodeSkuInvoiceDetail = (String) userInvoiceDetailValues.get("Purchase.idBarcodeSkuInvoiceDetail");
-                        Double quantityUserInvoiceDetail = (Double) userInvoiceDetailValues.get("quantityUserInvoiceDetail");
-                        Double priceUserInvoiceDetail = (Double) userInvoiceDetailValues.get("priceUserInvoiceDetail");
-                        Double chargePriceUserInvoiceDetail = (Double) userInvoiceDetailValues.get("Purchase.chargePriceUserInvoiceDetail");
-                        Double retailPriceUserInvoiceDetail = (Double) userInvoiceDetailValues.get("Purchase.retailPriceUserInvoiceDetail");
-                        Double retailMarkupUserInvoiceDetail = (Double) userInvoiceDetailValues.get("Purchase.retailMarkupUserInvoiceDetail");
-                        Double wholesalePriceUserInvoiceDetail = (Double) userInvoiceDetailValues.get("Purchase.wholesalePriceUserInvoiceDetail");
-                        Double wholesaleMarkupUserInvoiceDetail = (Double) userInvoiceDetailValues.get("Purchase.wholesaleMarkupUserInvoiceDetail");
+                        BigDecimal quantityUserInvoiceDetail = (BigDecimal) userInvoiceDetailValues.get("quantityUserInvoiceDetail");
+                        BigDecimal priceUserInvoiceDetail = (BigDecimal) userInvoiceDetailValues.get("priceUserInvoiceDetail");
+                        BigDecimal chargePriceUserInvoiceDetail = (BigDecimal) userInvoiceDetailValues.get("Purchase.chargePriceUserInvoiceDetail");
+                        BigDecimal retailPriceUserInvoiceDetail = (BigDecimal) userInvoiceDetailValues.get("Purchase.retailPriceUserInvoiceDetail");
+                        BigDecimal retailMarkupUserInvoiceDetail = (BigDecimal) userInvoiceDetailValues.get("Purchase.retailMarkupUserInvoiceDetail");
+                        BigDecimal wholesalePriceUserInvoiceDetail = (BigDecimal) userInvoiceDetailValues.get("Purchase.wholesalePriceUserInvoiceDetail");
+                        BigDecimal wholesaleMarkupUserInvoiceDetail = (BigDecimal) userInvoiceDetailValues.get("Purchase.wholesaleMarkupUserInvoiceDetail");
                         String certificateTextInvoiceDetail = (String) userInvoiceDetailValues.get("certificateTextInvoiceDetail");
 
                         data.add(Arrays.asList(trimNotNull(seriesUserInvoice), trimNotNull(numberUserInvoice),

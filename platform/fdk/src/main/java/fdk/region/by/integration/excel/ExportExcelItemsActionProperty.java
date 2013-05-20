@@ -20,6 +20,7 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -54,14 +55,14 @@ public class ExportExcelItemsActionProperty extends ExportExcelActionProperty {
         DataSession session = context.getSession();
 
         try {
-            ObjectValue retailCPLT = LM.findLCPByCompoundName("calcPriceListTypeId").readClasses(session, new DataObject("retail", StringClass.get(100)));
-            ObjectValue wholesaleCPLT = LM.findLCPByCompoundName("calcPriceListTypeId").readClasses(session, new DataObject("wholesale", StringClass.get(100)));
+            ObjectValue retailCPLT = LM.findLCPByCompoundName("idCalcPriceListType").readClasses(session, new DataObject("retail", StringClass.get(100)));
+            ObjectValue wholesaleCPLT = LM.findLCPByCompoundName("idCalcPriceListType").readClasses(session, new DataObject("wholesale", StringClass.get(100)));
 
             KeyExpr itemExpr = new KeyExpr("Item");
             ImRevMap<Object, KeyExpr> itemKeys = MapFact.singletonRev((Object) "Item", itemExpr);
 
             String[] itemProperties = new String[]{"itemGroupItem", "nameAttributeItem", "UOMItem",
-                    "brandItem", "countryItem", "nameCountryCountryItem", "idBarcodeSku", "isWeightItem", "netWeightItem", "grossWeightItem",
+                    "brandItem", "countryItem", "idBarcodeSku", "isWeightItem", "netWeightItem", "grossWeightItem",
                     "compositionItem", "wareItem", "Purchase.amountPackSku", "Sale.amountPackSku"};
             QueryBuilder<Object, Object> itemQuery = new QueryBuilder<Object, Object>(itemKeys);
             for (String iProperty : itemProperties) {
@@ -78,14 +79,13 @@ public class ExportExcelItemsActionProperty extends ExportExcelActionProperty {
 
                 Integer itemID = (Integer) itemResult.getKey(i).get("Item");
                 String name = (String) itemValue.get("nameAttributeItem");
-                String nameCountry = (String) itemValue.get("nameCountryCountryItem");
                 String idBarcodeSku = (String) itemValue.get("idBarcodeSku");
                 Boolean isWeightItem = itemValue.get("idBarcodeSku") != null;
-                Double netWeightItem = (Double) itemValue.get("netWeightItem");
-                Double grossWeightItem = (Double) itemValue.get("grossWeightItem");
+                BigDecimal netWeightItem = (BigDecimal) itemValue.get("netWeightItem");
+                BigDecimal grossWeightItem = (BigDecimal) itemValue.get("grossWeightItem");
                 String compositionItem = (String) itemValue.get("compositionItem");
-                Double purchaseAmount = (Double) itemValue.get("Purchase.amountPackSku");
-                Double saleAmount = (Double) itemValue.get("Sale.amountPackSku");
+                BigDecimal purchaseAmount = (BigDecimal) itemValue.get("Purchase.amountPackSku");
+                BigDecimal saleAmount = (BigDecimal) itemValue.get("Sale.amountPackSku");
                 Integer itemGroupID = (Integer) itemValue.get("itemGroupItem");
 
                 Object uomItem = itemValue.get("UOMItem");
@@ -105,12 +105,12 @@ public class ExportExcelItemsActionProperty extends ExportExcelActionProperty {
                 }
 
                 Object wareItem = itemValue.get("wareItem");
-                Double priceWare = null;
-                Double vatWare = null;
+                BigDecimal priceWare = null;
+                BigDecimal vatWare = null;
                 if (wareItem != null) {
                     DataObject wareObject = new DataObject(wareItem, (ConcreteClass) LM.findClassByCompoundName("Ware"));
-                    priceWare = (Double) LM.findLCPByCompoundName("warePrice").read(session, wareObject);
-                    vatWare = (Double) LM.findLCPByCompoundName("valueCurrentRateRangeWare").read(session, wareObject);
+                    priceWare = (BigDecimal) LM.findLCPByCompoundName("warePrice").read(session, wareObject);
+                    vatWare = (BigDecimal) LM.findLCPByCompoundName("valueCurrentRateRangeWare").read(session, wareObject);
                 }
 
 
@@ -118,7 +118,8 @@ public class ExportExcelItemsActionProperty extends ExportExcelActionProperty {
                 Object countryItem = itemValue.get("countryItem");
                 DataObject countryObject = countryItem == null ? null : new DataObject(countryItem, (ConcreteClass) LM.findClassByCompoundName("Country"));
                 DataObject dateObject = new DataObject(new Date(System.currentTimeMillis()), DateClass.instance);
-                Double vatItem = countryObject == null ? null : (Double) LM.findLCPByCompoundName("valueVATItemCountryDate").read(session, itemObject, countryObject, dateObject);
+                BigDecimal vatItem = countryObject == null ? null : (BigDecimal) LM.findLCPByCompoundName("valueVATItemCountryDate").read(session, itemObject, countryObject, dateObject);
+                String nameCountry = countryObject == null ? null : (String) LM.findLCPByCompoundName("nameCountry").read(session, countryObject);
 
                 Integer writeOffRateID = countryObject == null ? null : (Integer) LM.findLCPByCompoundName("writeOffRateCountryItem").read(session, countryObject, itemObject);
 
