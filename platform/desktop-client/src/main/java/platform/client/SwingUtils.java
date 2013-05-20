@@ -50,7 +50,7 @@ public class SwingUtils {
             comp = comp.getParent();
         }
 
-        return (Window) comp;
+        return comp == null ? Main.frame : (Window) comp;
     }
 
     public static void assertDispatchThread() {
