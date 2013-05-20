@@ -23,14 +23,7 @@ public class StringTypeConversion implements TypeConversion {
                     (type1 instanceof StringClass && ((StringClass) type1).caseInsensitive) ||
                             (type2 instanceof StringClass && ((StringClass) type2).caseInsensitive);
 
-            boolean isVar;
-            if (type1 instanceof StringClass && type2 instanceof StringClass) {
-                //если складываем 2 строки, то результирующий тип (VarString или String) такой же как у последнего параметра
-                isVar = type2 instanceof VarStringClass;
-            } else {
-                //если одно из слагаемых - не строка, то результирующий тип такой же как у другого слагамого
-                isVar = type1 instanceof VarStringClass || type2 instanceof VarStringClass;
-            }
+            boolean isVar = type1 instanceof VarStringClass || type2 instanceof VarStringClass;
 
             return get(isVar, caseInsensitive, length1 + length2);
         }
