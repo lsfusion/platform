@@ -22,6 +22,9 @@ nameDefaultLegalEntityOperation 'Организация по умолчанию'
 isDefaultLegalEntityOperation 'Организация по умолчанию' (legalEntity, operation) =
     defaultLegalEntityOperation(operation) == legalEntity;
 
+CONSTRAINT defaultLegalEntityOperation(operation) AND NOT inLegalEntityOperation(defaultLegalEntityOperation(operation), operation)
+    CHECKED BY defaultLegalEntityOperation MESSAGE 'Организация по умолчанию должна быть в списке отмечанных организаций';
+
 @defineOperationCurrency();
 userDefaultCurrencyOperation = DATA Currency (Operation);
 //userDefaultCurrencyOperation(operation) => inCurrencyOperation(userDefaultCurrencyOperation(operation), operation) RESOLVE FALSE;
@@ -33,6 +36,9 @@ defaultCurrencyOperation(operation) = calcDefaultCurrencyOperation(operation) OV
 nameDefaultCurrencyOperation 'Валюта по умолчанию' (operation) = nameCurrency(defaultCurrencyOperation(operation));
 isDefaultCurrencyOperation 'Валюта по умолчанию' (currency, operation) =
     defaultCurrencyOperation(operation) == currency;
+
+CONSTRAINT defaultCurrencyOperation(operation) AND NOT inCurrencyOperation(defaultCurrencyOperation(operation), operation)
+    CHECKED BY defaultCurrencyOperation MESSAGE 'Валюта по умолчанию должны быть в списке отмечанных валют';
 
 //Определение операции для прайсов
 @defineDocumentOperation(priceList, p);

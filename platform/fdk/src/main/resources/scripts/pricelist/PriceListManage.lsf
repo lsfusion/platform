@@ -86,7 +86,7 @@ FORM rangeManagement 'Управление ценами'
     PROPERTIES(sk) READONLY nameSku, idBarcodeSku
     PROPERTIES(sk, s, dt) READONLY balanceASkuStockDateTime
     PROPERTIES createPriceRangeManagement(pt) TODRAW sk FORCE PANEL
-    ORDER BY nameStock
+    ORDER BY nameSku(sk)
     FILTERS isParentSkuGroupSku(sg, sk),
             s IS Stock AND NOT stg IS StockGroup OR isParentStockGroupStock(stg, s),
             isCompanyStock(s)
@@ -105,7 +105,7 @@ FORM rangeManagement 'Управление ценами'
     PROPERTIES(sk2) inRangeManagement2
     PROPERTIES(sk2) READONLY nameSku, idBarcodeSku
     PROPERTIES createPriceRangeManagement(pt) TODRAW sk2 FORCE PANEL
-
+    ORDER BY nameSku(sk2)
     PROPERTIES(pt, sk2, dt) READONLY priceLedgerPriceListTypeSkuDateTime SHOWIF showNameCompanyLedger(),
                                      nameCompanyLedgerPriceListTypeSkuDateTime SHOWIF showNameCompanyLedger(),
                                      descriptionLedgerPriceListTypeSkuDateTime SHOWIF showNameCompanyLedger(),
