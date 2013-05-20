@@ -38,7 +38,7 @@ public class DeclarationExportActionProperty extends UserActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
-            DeclarationExporter exporter = new DeclarationExporter(context.getKeys());
+            DeclarationExporter exporter = new DeclarationExporter(context.getDataKeys());
             exporter.extractData(context);
 
             Map<String, byte[]> files = new HashMap<String, byte[]>();

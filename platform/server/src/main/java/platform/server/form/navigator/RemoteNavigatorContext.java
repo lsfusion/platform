@@ -7,8 +7,8 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.FormSessionScope;
-import platform.server.logics.DataObject;
 import platform.server.logics.LogicsInstance;
+import platform.server.logics.ObjectValue;
 import platform.server.remote.RemoteForm;
 import platform.server.session.DataSession;
 
@@ -40,7 +40,7 @@ public class RemoteNavigatorContext extends AbstractContext {
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
         return new FormInstance(formEntity, navigator.logicsInstance,
                                    sessionScope.isNewSession() ? session.createSession() : session,
                                    navigator.securityPolicy, navigator, navigator,

@@ -1714,6 +1714,7 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 	|	actPDB=customActionPropertyDefinitionBody { $property.property = $actPDB.property; }
 	|   msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
 	|   asyncPDB=asyncUpdateActionPropertyDefinitionBody[context, dynamic] { $property = $asyncPDB.property; }
+	|   seekPDB=seekObjectActionPropertyDefinitionBody[context, dynamic] { $property = $seekPDB.property; }
 	|   confirmPDB=confirmActionPropertyDefinitionBody[context, dynamic] { $property = $confirmPDB.property; }
 	|   mailPDB=emailActionPropertyDefinitionBody[context, dynamic] { $property = $mailPDB.property; }
 	|	filePDB=fileActionPropertyDefinitionBody[context, dynamic] { $property = $filePDB.property; }
@@ -1878,6 +1879,15 @@ asyncUpdateActionPropertyDefinitionBody[List<String> context, boolean dynamic] r
 	}
 }
 	:	'ASYNCUPDATE' pe=propertyExpression[context, dynamic]
+	;
+
+seekObjectActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedObjectSeekProp($gobj.sid, $pe.property);
+	}
+}
+	:	'SEEK' gobj=groupObjectID pe=propertyExpression[context, dynamic]
 	;
 
 fileActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]

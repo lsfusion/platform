@@ -34,7 +34,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 public class ExecutionContext<P extends PropertyInterface> {
-    private final ImMap<P, DataObject> keys;
+    private final ImMap<P, ? extends ObjectValue> keys;
 
     private final ObjectValue pushedUserInput;
     private final DataObject pushedAddObject;
@@ -42,7 +42,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     private final ExecutionEnvironment env;
     private final FormEnvironment<P> form;
 
-    public ExecutionContext(ImMap<P, DataObject> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form) {
+    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form) {
         this.keys = keys;
         this.pushedUserInput = pushedUserInput;
         this.pushedAddObject = pushedAddObject;
@@ -54,24 +54,36 @@ public class ExecutionContext<P extends PropertyInterface> {
         return env;
     }
 
-    public ImMap<P, DataObject> getKeys() {
+    public ImMap<P, ? extends ObjectValue> getKeys() {
         return keys;
     }
 
-    public DataObject getKeyValue(P key) {
-        return keys.get(key);
+    public ImMap<P, DataObject> getDataKeys() { // предполагается что вызывается из действий у которых !allowNulls
+        return DataObject.assertDataObjects(keys);
+    }
+
+    public ObjectValue getKeyValue(P key) {
+        return getKeys().get(key);
+    }
+
+    public DataObject getDataKeyValue(P key) {
+        return getDataKeys().get(key);
     }
 
     public Object getKeyObject(P key) {
-        return keys.get(key).object;
+        return getKeyValue(key).getValue();
     }
 
-    public DataObject getSingleKeyValue() {
-        return keys.singleValue();
+    public ObjectValue getSingleKeyValue() {
+        return getKeys().singleValue();
+    }
+
+    public DataObject getSingleDataKeyValue() {
+        return getDataKeys().singleValue();
     }
 
     public Object getSingleKeyObject() {
-        return getSingleKeyValue().object;
+        return getSingleKeyValue().getValue();
     }
 
     public int getKeyCount() {
@@ -211,7 +223,7 @@ public class ExecutionContext<P extends PropertyInterface> {
         return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form);
     }
 
-    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, DataObject> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
+    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
         return override(keys, form!=null ? form.mapJoin(mapInterfaces) : null, pushedUserInput);
     }
 
@@ -219,15 +231,15 @@ public class ExecutionContext<P extends PropertyInterface> {
         return override(mapping.join(keys), form!=null ? form.map(mapping) : null, pushedUserInput);
     }
 
-    public ExecutionContext<P> override(ImMap<P, DataObject> keys) {
+    public ExecutionContext<P> override(ImMap<P, ? extends ObjectValue> keys) {
         return override(keys, form, pushedUserInput);
     }
 
-    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, DataObject> keys, FormEnvironment<T> form) {
+    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form) {
         return override(keys, form, pushedUserInput);
     }
 
-    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, DataObject> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
+    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
         return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form);
     }
 
@@ -283,7 +295,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive)  throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive)  throws SQLException {
         return ThreadLocalContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive);
     }
 
@@ -291,7 +303,7 @@ public class ExecutionContext<P extends PropertyInterface> {
         return ThreadLocalContext.createRemoteForm(formInstance);
     }
 
-    public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects) throws SQLException {
+    public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException {
         return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, FormSessionScope.OLDSESSION, false, false, false));
     }
 

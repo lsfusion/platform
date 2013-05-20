@@ -27,15 +27,9 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
-        ImFilterValueMap<T, DataObject> mvReadValues = action.mapping.mapFilterValues();
-        for (int i=0,size=action.mapping.size();i<size;i++) {
-            ObjectValue value = action.mapping.getValue(i).readClasses(context, context.getKeys());
-            if (value instanceof DataObject) {
-                mvReadValues.mapValue(i, (DataObject) value);
-            } else {
-                return FlowResult.FINISH;
-            }
-        }
+        ImFilterValueMap<T, ObjectValue> mvReadValues = action.mapping.mapFilterValues();
+        for (int i=0,size=action.mapping.size();i<size;i++)
+            mvReadValues.mapValue(i, action.mapping.getValue(i).readClasses(context, context.getKeys()));
         action.property.execute(context.override(mvReadValues.immutableValue(), action.mapping));
         return FlowResult.FINISH;
     }

@@ -10,7 +10,7 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class ChangeReadObjectActionProperty extends SystemActionProperty {
+public class ChangeReadObjectActionProperty extends SystemExplicitActionProperty {
 
     private final CalcProperty filterProperty;
 

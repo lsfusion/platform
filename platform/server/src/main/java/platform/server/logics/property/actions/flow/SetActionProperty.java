@@ -8,6 +8,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.NoPropertyTableUsage;
@@ -56,7 +57,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     }
 
     @Override
-    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, DataObject> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
+    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
         if((where == null || where.property instanceof ValueProperty) && writeTo.property instanceof SessionDataProperty && !writeTo.mapping.valuesSet().intersect(mapInterfaces.valuesSet())
                 && !(writeFrom instanceof CalcPropertyMapImplement && CalcProperty.depends(((CalcPropertyMapImplement)writeFrom).property, writeTo.property))) // оптимизация, в дальнейшем надо будет непосредственно в aspectChangeProperty сделать в случае SessionDataProperty ставить "удалить" изменения на null
             context.getSession().dropChanges((SessionDataProperty)writeTo.property);
@@ -78,8 +79,12 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
 
             if(!exprWhere.isFalse()) {
                 Expr fromExpr = writeFrom.mapExpr(PropertyChange.simplifyExprs(innerExprs, exprWhere), context.getModifier());
-                context.getEnv().change(writeTo.property, new PropertyChange<P>(writeTo.mapping.innerJoin(innerValues), writeTo.mapping.rightJoin(innerKeys), // нет FormEnvironment так как заведомо не action
-                        fromExpr, exprWhere));
+                ImMap<P, DataObject> writeInnerValues = DataObject.onlyDataObjects(writeTo.mapping.innerJoin(innerValues));
+                if(writeInnerValues!=null)
+                    context.getEnv().change(writeTo.property, new PropertyChange<P>(writeInnerValues, writeTo.mapping.rightJoin(innerKeys), // нет FormEnvironment так как заведомо не action
+                            fromExpr, exprWhere));
+                else
+                    proceedNullException();
             }
 
             if(mapTable!=null)

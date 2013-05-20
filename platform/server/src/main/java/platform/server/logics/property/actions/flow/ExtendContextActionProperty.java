@@ -10,6 +10,7 @@ import platform.server.caches.ManualLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 
 import java.sql.SQLException;
@@ -39,7 +40,7 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
 
     @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
-        ImMap<I, DataObject> innerValues = mapInterfaces.crossJoin(context.getKeys());
+        ImMap<I, ? extends ObjectValue> innerValues = mapInterfaces.crossJoin(context.getKeys());
         ImRevMap<I, KeyExpr> innerKeys = KeyExpr.getMapKeys(innerInterfaces.remove(innerValues.keys()));
         ImMap<I, Expr> innerExprs = MapFact.addExcl(innerKeys, DataObject.getMapExprs(innerValues));
 
@@ -48,7 +49,7 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
         return FlowResult.FINISH;
     }
 
-    protected abstract FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, DataObject> innerValues, ImMap<I, Expr> innerExprs) throws SQLException;
+    protected abstract FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException;
 
     // потом надо будет вверх реализацию перенести
     private ActionPropertyMapImplement<?, PropertyInterface> compile;

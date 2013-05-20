@@ -15,6 +15,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.ChangeClassActionProperty;
 import platform.server.logics.property.derived.DerivedProperty;
@@ -86,7 +87,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     @Override
-    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, DataObject> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
+    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
         FlowResult result = FlowResult.FINISH;
 
         boolean execElse = elseAction != null;
@@ -101,7 +102,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                 execElse = false;
             }
             for (ImMap<I, DataObject> row : rows) {
-                FlowResult actionResult = execute(context, action, innerValues.addExcl(row), mapInterfaces);
+                FlowResult actionResult = execute(context, action, MapFact.addExcl(innerValues, row), mapInterfaces);
                 if (actionResult != FlowResult.FINISH) {
                     if (actionResult != FlowResult.BREAK) {
                         result = actionResult;

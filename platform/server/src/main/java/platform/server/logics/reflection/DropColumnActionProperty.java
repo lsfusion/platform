@@ -23,7 +23,7 @@ public class DropColumnActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         BusinessLogics BL = context.getBL();
-        DataObject dropColumnObject = context.getSingleKeyValue();
+        DataObject dropColumnObject = context.getSingleDataKeyValue();
         String columnName = (String) BL.reflectionLM.sidDropColumn.getOld().read(context, dropColumnObject);
         String tableName = (String) BL.reflectionLM.sidTableDropColumn.getOld().read(context, dropColumnObject);
         try {

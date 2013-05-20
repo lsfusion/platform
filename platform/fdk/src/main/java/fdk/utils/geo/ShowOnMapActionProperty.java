@@ -2,7 +2,6 @@ package fdk.utils.geo;
 
 import platform.interop.action.OpenUriClientAction;
 import platform.server.classes.DoubleClass;
-import platform.server.classes.LogicalClass;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
@@ -35,10 +34,10 @@ public class ShowOnMapActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
-            DataObject latitude = context.getKeyValue(latitudeInterface);
-            DataObject longitude = context.getKeyValue(longitudeInterface);
-            DataObject mapProvider = context.getKeyValue(mapProviderInterface);
-            DataObject addressMap = context.getKeyValue(addressInterface);
+            DataObject latitude = context.getDataKeyValue(latitudeInterface);
+            DataObject longitude = context.getDataKeyValue(longitudeInterface);
+            DataObject mapProvider = context.getDataKeyValue(mapProviderInterface);
+            DataObject addressMap = context.getDataKeyValue(addressInterface);
 
             if (latitude.object != null && longitude.object != null) {
                 String url =  ((String)getLCP("staticName").read(context, mapProvider)).contains("yandex")  ?

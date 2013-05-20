@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
-public class FormActionProperty extends SystemActionProperty {
+public class FormActionProperty extends SystemExplicitActionProperty {
 
     public final FormEntity<?> form;
     public final ImRevMap<ObjectEntity, ClassPropertyInterface> mapObjects;
@@ -80,6 +80,10 @@ public class FormActionProperty extends SystemActionProperty {
     }
 
     protected boolean isVolatile() {
+        return true;
+    }
+
+    protected boolean allowNulls() {
         return true;
     }
 

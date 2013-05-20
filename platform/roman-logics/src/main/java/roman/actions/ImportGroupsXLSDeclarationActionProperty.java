@@ -47,7 +47,7 @@ public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionPro
             ObjectValue objectValue = context.requestUserData(valueClass, null);
             List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());
 
-            DataObject declaration = context.getKeyValue(declarationInterface);
+            DataObject declaration = context.getDataKeyValue(declarationInterface);
             ObjectValue customsZone = LM.findLCPByCompoundName("customsZoneDeclaration").readClasses(context.getSession(), declaration);
 
             for (byte[] file : fileList) {

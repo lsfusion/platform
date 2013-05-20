@@ -1,6 +1,7 @@
 package platform.server.logics.property.actions.edit;
 
 import platform.base.BaseUtils;
+import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImRevMap;
@@ -47,7 +48,7 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
         }
         for(ImMap<ObjectInstance, DataObject> row : groupKeys) // бежим по всем
             if(!BaseUtils.hashEquals(row, context.getKeys())) { // кроме текущего
-                proceed(context.override(context.getKeys().override(context.getObjectInstances().innerJoin(row))));
+                proceed(context.override(MapFact.override(context.getKeys(), context.getObjectInstances().innerJoin(row))));
             }
 
         return FlowResult.FINISH;

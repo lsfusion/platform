@@ -16,7 +16,6 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.PullExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
@@ -73,11 +72,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return joinImplement.get((P) this);
     }
 
-    public Object read(ExecutionContext context, ImMap<P, DataObject> interfaceValues) throws SQLException {
-        return interfaceValues.get((P) this).object;
+    public Object read(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException {
+        return interfaceValues.get((P) this).getValue();
     }
 
-    public ObjectValue readClasses(ExecutionContext context, ImMap<P, DataObject> interfaceValues) throws SQLException {
+    public ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException {
         return interfaceValues.get((P) this);
     }
 

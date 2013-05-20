@@ -1,7 +1,6 @@
 package skolkovo.actions;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
@@ -10,7 +9,6 @@ import platform.interop.Compare;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
@@ -38,7 +36,7 @@ public class CopyProjectActionProperty extends UserActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        DataObject projectObject = context.getKeyValue(projectInterface);
+        DataObject projectObject = context.getDataKeyValue(projectInterface);
         DataObject projectCopy = context.addObject(LM.project);
 
         List<LCP> propertiesToCopy = BaseUtils.toList(

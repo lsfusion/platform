@@ -11,7 +11,7 @@ import platform.server.logics.property.ExecutionContext;
 import java.sql.SQLException;
 
 // сбрасывает объект в null
-public class DropObjectActionProperty extends SystemActionProperty {
+public class DropObjectActionProperty extends SystemExplicitActionProperty {
 
     public DropObjectActionProperty(ValueClass valueClass) {
         super("drop" + valueClass.getSID(), ServerResourceBundle.getString("logics.property.actions.drop") + " " + valueClass, new ValueClass[]{valueClass});

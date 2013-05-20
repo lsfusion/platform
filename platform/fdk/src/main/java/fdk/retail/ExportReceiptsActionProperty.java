@@ -57,7 +57,7 @@ public class ExportReceiptsActionProperty extends ScriptingActionProperty {
             Element rootElement = doc.createElement("zReport");
             doc.appendChild(rootElement);
 
-            DataObject zReportObject = context.getKeyValue(zReportInterface);
+            DataObject zReportObject = context.getDataKeyValue(zReportInterface);
             String numberZReport = (String) LM.findLCPByCompoundName("numberZReport").read(session, zReportObject);
 
             KeyExpr receiptExpr = new KeyExpr("receipt");

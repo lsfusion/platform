@@ -29,6 +29,7 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.SystemActionProperty;
+import platform.server.logics.property.actions.SystemExplicitActionProperty;
 import platform.server.remote.RemoteForm;
 
 import javax.mail.Message;
@@ -53,7 +54,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
  * Time: 11:53
  */
 
-public class EmailActionProperty extends SystemActionProperty {
+public class EmailActionProperty extends SystemExplicitActionProperty {
     private final static Logger logger = ServerLoggers.mailLogger;
 
     public static enum FormStorageType {INLINE, ATTACH}
@@ -239,13 +240,9 @@ public class EmailActionProperty extends SystemActionProperty {
     }
 
     private RemoteForm createReportForm(ExecutionContext context, FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements) throws SQLException {
-        Map<ObjectEntity, DataObject> objectValues = new HashMap<ObjectEntity, DataObject>();
-        for (Map.Entry<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectImpl : objectsImplements.entrySet()) {
-            ObjectValue objectValue = objectImpl.getValue().readClasses(context, context.getKeys());
-            if (objectValue instanceof DataObject) {
-                objectValues.put(objectImpl.getKey(), (DataObject) objectValue);
-            }
-        }
+        Map<ObjectEntity, ObjectValue> objectValues = new HashMap<ObjectEntity, ObjectValue>();
+        for (Map.Entry<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectImpl : objectsImplements.entrySet())
+            objectValues.put(objectImpl.getKey(), objectImpl.getValue().readClasses(context, context.getKeys()));
 
         return context.createReportForm(form, MapFact.fromJavaMap(objectValues));
     }

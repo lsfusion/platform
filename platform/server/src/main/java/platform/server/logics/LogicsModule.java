@@ -18,6 +18,8 @@ import platform.interop.Compare;
 import platform.interop.KeyStrokes;
 import platform.interop.ModalityType;
 import platform.interop.form.GlobalConstants;
+import platform.server.Settings;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
 import platform.server.context.ThreadLocalContext;
@@ -1242,13 +1244,12 @@ public abstract class LogicsModule {
     }
 
     protected LAP addMAProp(AbstractGroup group, String caption, String title, Object... params) {
-        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+        return addJoinAProp(group, genSID(), caption, addMAProp(title), params);
+    }
 
-        assert readImplements.size() == 1;
-
-        return addProperty(group, new LAP(
-                new MessageActionProperty(genSID(), caption, title, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(0))));
+    @IdentityInstanceLazy
+    protected LAP addMAProp(String title) {
+        return addProperty(null, new LAP(new MessageActionProperty(genSID(), "Message", title)));
     }
 
     // ------------------- CONFIRM ----------------- //
@@ -1258,13 +1259,12 @@ public abstract class LogicsModule {
     }
 
     protected LAP addConfirmAProp(AbstractGroup group, String caption, String title, Object... params) {
-        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+        return addJoinAProp(group, genSID(), caption, addConfirmAProp(title), params);
+    }
 
-        assert readImplements.size() == 1;
-
-        return addProperty(group, new LAP(
-                new ConfirmActionProperty(genSID(), caption, title, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(0), getConfirmedProperty())));
+    @IdentityInstanceLazy
+    protected LAP addConfirmAProp(String title) {
+        return addProperty(null, new LAP(new ConfirmActionProperty(genSID(), "Confirm", title, getConfirmedProperty())));
     }
 
     // ------------------- Async Update Action ----------------- //
@@ -1278,12 +1278,12 @@ public abstract class LogicsModule {
     }
 
     protected LAP addAsyncUpdateAProp(AbstractGroup group, String caption, Object... params) {
-        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+        return addJoinAProp(group, genSID(), caption, addAsyncUpdateAProp(), params);
+    }
 
-        assert readImplements.size() == 1;
-
-        return addProperty(group, new LAP(new AsyncUpdateEditValueAction(genSID(), caption, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(0))));
+    @IdentityInstanceLazy
+    protected LAP addAsyncUpdateAProp() {
+        return addProperty(null, new LAP(new AsyncUpdateEditValueActionProperty(genSID(), "Async Update")));
     }
 
     // ------------------- LOAD FILE ----------------- //
@@ -1577,6 +1577,20 @@ public abstract class LogicsModule {
     public LCP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getProperty(prop);
         return addProperty(null, new LCP<ClassPropertyInterface>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
+    }
+
+    protected LAP addOSAProp(ObjectEntity object, Object... params) {
+        return addOSAProp(null, "", object, params);
+    }
+
+    protected LAP addOSAProp(AbstractGroup group, String caption, ObjectEntity object, Object... params) {
+        return addJoinAProp(group, genSID(), caption, addOSAProp(object), params);
+    }
+
+    @IdentityStrongLazy // для ID
+    public LAP addOSAProp(ObjectEntity object) {
+        SeekActionProperty seekProperty = new SeekActionProperty(object);
+        return addProperty(null, new LAP<ClassPropertyInterface>(seekProperty));
     }
 
     public void addConstraint(CalcProperty property, boolean checkChange) {

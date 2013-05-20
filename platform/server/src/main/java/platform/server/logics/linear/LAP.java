@@ -5,6 +5,7 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.flow.FlowResult;
@@ -22,7 +23,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         super(property, listInterfaces);
     }
 
-    public void execute(DataSession session, DataObject... objects) throws SQLException {
+    public void execute(DataSession session, ObjectValue... objects) throws SQLException {
         property.execute(getMapValues(objects), session, null);
     }
 

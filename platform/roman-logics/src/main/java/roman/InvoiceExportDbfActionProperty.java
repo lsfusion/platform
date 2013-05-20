@@ -41,7 +41,7 @@ public class InvoiceExportDbfActionProperty extends UserActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
-            InvoiceExporter exporter = new InvoiceExporter(context.getKeys());
+            InvoiceExporter exporter = new InvoiceExporter(context.getDataKeys());
             exporter.extractData(context);
             context.delayUserInterfaction(new ExportFileClientAction("invoice.dbf", IOUtils.getFileBytes(dbfInvoice.getFFile())));
             tempDbfInvoice.delete();

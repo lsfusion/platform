@@ -18,7 +18,7 @@ public class ReloginUserActionProperty extends ScriptingActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        DataObject user = context.getSingleKeyValue();
+        DataObject user = context.getSingleDataKeyValue();
         context.getSession().user.changeCurrentUser(user);
         context.delayUserInterfaction(new UserChangedClientAction());
     }

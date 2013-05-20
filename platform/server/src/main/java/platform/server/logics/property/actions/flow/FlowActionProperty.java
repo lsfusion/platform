@@ -7,6 +7,7 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 
 import java.sql.SQLException;
@@ -24,7 +25,7 @@ public abstract class FlowActionProperty extends ActionProperty<PropertyInterfac
     @Override
     public abstract FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException;
 
-    public static <P extends PropertyInterface, M extends  PropertyInterface> FlowResult execute(ExecutionContext<PropertyInterface> context, ActionPropertyMapImplement<P, M> implement, ImMap<M, DataObject> keys, ImRevMap<PropertyInterface, M> mapInterfaces) throws SQLException {
+    public static <P extends PropertyInterface, M extends  PropertyInterface> FlowResult execute(ExecutionContext<PropertyInterface> context, ActionPropertyMapImplement<P, M> implement, ImMap<M, ? extends ObjectValue> keys, ImRevMap<PropertyInterface, M> mapInterfaces) throws SQLException {
         return implement.property.execute(context.override(implement.mapping.join(keys),
                 BaseUtils.<ImMap<P, CalcPropertyInterfaceImplement<PropertyInterface>>>immutableCast(MapFact.innerCrossValues(implement.mapping, mapInterfaces))));
     }

@@ -111,13 +111,25 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return object;
     }
 
-    public static <K> ImMap<K, DataObject> filterDataObjects(ImMap<K, ObjectValue> map) {
+    public static <K> ImMap<K, DataObject> filterDataObjects(ImMap<K, ? extends ObjectValue> map) {
         return BaseUtils.immutableCast(
-                map.filterFnValues(new SFunctionSet<ObjectValue>() {
+                ((ImMap<K, ObjectValue>)map).filterFnValues(new SFunctionSet<ObjectValue>() {
                     public boolean contains(ObjectValue element) {
                         return element instanceof DataObject;
                     }
                 }));
+    }
+
+    public static <K> ImMap<K, DataObject> onlyDataObjects(ImMap<K, ? extends ObjectValue> map) {
+        for(int i=0,size=map.size();i<size;i++)
+            if(!(map.getValue(i) instanceof DataObject))
+                return null;
+        return BaseUtils.immutableCast(map);
+    }
+
+    public static <K> ImMap<K, DataObject> assertDataObjects(ImMap<K, ? extends ObjectValue> map) {
+        assert onlyDataObjects(map) != null;
+        return BaseUtils.immutableCast(map);
     }
 
     public static <K> ImMap<K,Object> getMapValues(ImMap<K,DataObject> map) {

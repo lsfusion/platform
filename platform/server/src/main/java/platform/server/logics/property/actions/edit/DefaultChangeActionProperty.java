@@ -21,12 +21,13 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.SystemActionProperty;
+import platform.server.logics.property.actions.SystemExplicitActionProperty;
 import platform.server.session.Modifier;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class DefaultChangeActionProperty<P extends PropertyInterface> extends SystemActionProperty {
+public class DefaultChangeActionProperty<P extends PropertyInterface> extends SystemExplicitActionProperty {
 
     private final CalcPropertyMapImplement<P, ClassPropertyInterface> implement;
     private final String editActionSID;
@@ -63,7 +64,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        ImMap<ClassPropertyInterface,DataObject> keys = context.getKeys();
+        ImMap<ClassPropertyInterface,DataObject> keys = context.getDataKeys();
         Modifier modifier = context.getModifier();
         final FormInstance<?> formInstance = context.getFormInstance();
 

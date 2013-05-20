@@ -11,6 +11,7 @@ import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.CalcPropertyMapImplement;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.actions.SystemActionProperty;
 import platform.server.logics.property.derived.DerivedProperty;
 
 import java.io.IOException;
@@ -18,18 +19,10 @@ import java.sql.SQLException;
 
 import static platform.base.BaseUtils.serializeObject;
 
-public class AsyncUpdateEditValueAction extends KeepContextActionProperty {
-    private final CalcPropertyMapImplement<?, PropertyInterface> valueProperty;
+public class AsyncUpdateEditValueActionProperty extends SystemActionProperty {
 
-    public <I extends PropertyInterface> AsyncUpdateEditValueAction(String sID, String caption, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> valueProperty) {
-        super(sID, caption, innerInterfaces.size());
-
-        if (valueProperty != null) {
-            ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
-            this.valueProperty = valueProperty.map(mapInterfaces);
-        } else {
-            this.valueProperty = null;
-        }
+    public AsyncUpdateEditValueActionProperty(String sID, String caption) {
+        super(sID, caption, SetFact.singletonOrder(new PropertyInterface()));
     }
 
     @Override
@@ -38,19 +31,12 @@ public class AsyncUpdateEditValueAction extends KeepContextActionProperty {
     }
 
     @Override
-    public ImSet<ActionProperty> getDependActions() {
-        return SetFact.EMPTY();
-    }
-
-    @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
-        if (valueProperty != null) {
-            Object updatedValue = valueProperty.read(context, context.getKeys());
-            try {
-                context.delayUserInteraction(new UpdateEditValueClientAction(serializeObject(updatedValue)));
-            } catch (IOException e) {
-                Throwables.propagate(e);
-            }
+        Object updatedValue = context.getSingleKeyObject();
+        try {
+            context.delayUserInteraction(new UpdateEditValueClientAction(serializeObject(updatedValue)));
+        } catch (IOException e) {
+            Throwables.propagate(e);
         }
         context.delayUserInteraction(new AsyncGetRemoteChangesClientAction());
         return FlowResult.FINISH;

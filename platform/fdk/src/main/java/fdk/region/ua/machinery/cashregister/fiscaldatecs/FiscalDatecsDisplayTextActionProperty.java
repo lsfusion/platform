@@ -27,7 +27,7 @@ public class FiscalDatecsDisplayTextActionProperty extends ScriptingActionProper
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
 
         DataSession session = context.getSession();
-        DataObject receiptDetailObject = context.getKeyValue(receiptDetailInterface);
+        DataObject receiptDetailObject = context.getDataKeyValue(receiptDetailInterface);
 
         try {
             ObjectValue receiptObject = LM.findLCPByCompoundName("receiptReceiptDetail").readClasses(session, receiptDetailObject);

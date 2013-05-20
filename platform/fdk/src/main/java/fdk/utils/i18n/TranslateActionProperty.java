@@ -37,9 +37,9 @@ public class TranslateActionProperty extends ScriptingActionProperty {
 
             DataSession session = context.getSession();
 
-            DataObject translationEntry = context.getKeyValue(translationInterface);
-            DataObject languageFromObject = context.getKeyValue(languageFromInterface);
-            DataObject languageToObject = context.getKeyValue(languageToInterface);
+            DataObject translationEntry = context.getDataKeyValue(translationInterface);
+            DataObject languageFromObject = context.getDataKeyValue(languageFromInterface);
+            DataObject languageToObject = context.getDataKeyValue(languageToInterface);
 
             if (languageFromObject != null && languageToObject != null && translationEntry != null) {
 

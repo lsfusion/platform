@@ -35,24 +35,24 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         super(property, listInterfaces);
     }
 
-    public Object read(FormInstance form, DataObject... objects) throws SQLException {
+    public Object read(FormInstance form, ObjectValue... objects) throws SQLException {
         return property.read(form, getMapValues(objects));
     }
 
-    public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
+    public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException {
         return property.read(session, getMapValues(objects), modifier, env);
     }
 
-    public Object read(ExecutionContext context, DataObject... objects) throws SQLException {
+    public Object read(ExecutionContext context, ObjectValue... objects) throws SQLException {
         return read(context.getSession().sql, context.getModifier(), context.getQueryEnv(), objects);
     }
 
-    public Object read(DataSession session, DataObject... objects) throws SQLException {
+    public Object read(DataSession session, ObjectValue... objects) throws SQLException {
         return read(session.sql, session.getModifier(), session.env, objects);
     }
 
-    public ObjectValue readClasses(DataSession session, Modifier modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
-        ImMap<T, DataObject> mapValues = getMapValues(objects);
+    public ObjectValue readClasses(DataSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException {
+        ImMap<T, ObjectValue> mapValues = getMapValues(objects);
         return property.readClasses(session, mapValues, modifier, env);
     }
 
@@ -82,11 +82,11 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public void change(ObjectValue value, ExecutionEnvironment env, DataObject... objects) throws SQLException {
-        change(value, env, getMapValues(objects));
+        change(value, env, getMapDataValues(objects));
     }
 
     public void change(Object value, ExecutionEnvironment env, DataObject... objects) throws SQLException {
-        change(value, env, getMapValues(objects));
+        change(value, env, getMapDataValues(objects));
     }
 
     public void change(ObjectValue value, ExecutionEnvironment env, ImMap<T, DataObject> keys) throws SQLException {

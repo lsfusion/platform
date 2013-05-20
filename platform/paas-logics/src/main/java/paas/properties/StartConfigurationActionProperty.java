@@ -20,7 +20,7 @@ public class StartConfigurationActionProperty extends ScriptingActionProperty {
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        DataObject confObj = context.getSingleKeyValue();
+        DataObject confObj = context.getSingleDataKeyValue();
 
         try {
             AppManager appManager = context.getLogicsInstance().getCustomObject(AppManager.class);

@@ -28,7 +28,7 @@ public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
     protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         try {
 
-            DataObject supplier = context.getSingleKeyValue();
+            DataObject supplier = context.getSingleDataKeyValue();
 
             List<byte[]> fileList = valueClass.getFiles(userValue);
             for (byte[] file : fileList) {

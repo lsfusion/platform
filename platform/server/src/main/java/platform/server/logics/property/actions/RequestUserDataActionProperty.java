@@ -12,7 +12,7 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class RequestUserDataActionProperty extends SystemActionProperty {
+public class RequestUserDataActionProperty extends SystemExplicitActionProperty {
 
     private final DataClass dataClass;
 

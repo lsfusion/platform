@@ -44,7 +44,7 @@ public class ImportCBRFExchangeRateActionProperty extends ScriptingActionPropert
 
         try {
 
-            DataObject currencyObject = context.getKeyValue(currencyInterface);
+            DataObject currencyObject = context.getDataKeyValue(currencyInterface);
 
             String extraSIDCurrency = (String) LM.findLCPByCompoundName("extraSIDCurrency").read(context, currencyObject);
             Date cbrfDateFrom = (Date) LM.findLCPByCompoundName("importCBRFExchangeRateDateFrom").read(context);

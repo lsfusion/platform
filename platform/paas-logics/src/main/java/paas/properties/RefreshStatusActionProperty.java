@@ -16,7 +16,7 @@ public class RefreshStatusActionProperty extends ScriptingActionProperty {
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        ((PaasBusinessLogics)context.getBL()).refreshConfigurationStatuses(context.getSingleKeyValue());
+        ((PaasBusinessLogics)context.getBL()).refreshConfigurationStatuses(context.getSingleDataKeyValue());
 
         context.emitExceptionIfNotInFormSession();
 

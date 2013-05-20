@@ -106,7 +106,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
                  valueClass instanceof ConcreteCustomClass && ((ConcreteCustomClass)valueClass).hasChildren());
      }
 
-    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, DataObject> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
+    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
         ConcreteObjectClass readClass;
 
         if (needDialog()) {
@@ -132,19 +132,22 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
         boolean singleWhereNotNull = true;
         if(where==null || (innerKeys.isEmpty() && (singleWhereNotNull = where.read(context, innerValues)!=null))) {
             PropertyObjectInterfaceInstance objectInstance = context.getSingleObjectInstance();
-            DataObject object = innerValues.get(changeInterface);
+            ObjectValue object = innerValues.get(changeInterface);
+            if(object instanceof DataObject) {
+                DataObject dataObject = (DataObject)object;
+                DataObject nearObject = null; // после удаления выбираем соседний объект
+                if (objectInstance != null && objectInstance instanceof ObjectInstance) {
+                    CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
+                    if(readClass instanceof UnknownClass || !((CustomClass) readClass).isChild(customObjectInstance.gridClass)) // если удаляется
+                        nearObject = BaseUtils.getNearValue((ObjectInstance)objectInstance, dataObject, ListFact.toJavaMapList(customObjectInstance.groupTo.keys.keyOrderSet()));
+                }
 
-            DataObject nearObject = null; // после удаления выбираем соседний объект
-            if (objectInstance != null && objectInstance instanceof ObjectInstance) {
-                CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
-                if(readClass instanceof UnknownClass || !((CustomClass) readClass).isChild(customObjectInstance.gridClass)) // если удаляется
-                    nearObject = BaseUtils.getNearValue((ObjectInstance)objectInstance, object, ListFact.toJavaMapList(customObjectInstance.groupTo.keys.keyOrderSet()));
-            }
+                context.changeClass(objectInstance, dataObject, (ConcreteObjectClass) readClass);
 
-            context.changeClass(objectInstance, object, (ConcreteObjectClass) readClass);
-
-            if (nearObject != null)
-                ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject, false);
+                if (nearObject != null)
+                    ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject, false);
+            } else
+                proceedNullException();
         } else
             if(singleWhereNotNull) { // дебильный кейс, но надо все равно поддержать
                 Where exprWhere = where.mapExpr(innerExprs, context.getModifier()).getWhere();

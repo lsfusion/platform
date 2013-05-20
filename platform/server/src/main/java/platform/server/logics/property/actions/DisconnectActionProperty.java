@@ -19,7 +19,7 @@ public class DisconnectActionProperty extends AdminActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        DataObject connection = context.getKeyValue(getOrderInterfaces().get(0));
+        DataObject connection = context.getDataKeyValue(getOrderInterfaces().get(0));
 
         String login = ((String) context.getBL().systemEventsLM.userLoginConnection.read(context, connection)).trim();
         Integer computer = (Integer) context.getBL().systemEventsLM.computerConnection.read(context, connection);

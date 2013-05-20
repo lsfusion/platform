@@ -7,18 +7,19 @@ import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ClassType;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class ChangeBarcodeActionProperty extends SystemActionProperty {
+public class ChangeBarcodeActionProperty extends SystemExplicitActionProperty {
 
     // заполнять поле barcode значением префикс + 0000 + id
     private final CalcProperty barcode;
     private final CalcProperty barcodePrefix;
 
-    public ChangeBarcodeActionProperty(BaseClass baseClass, CalcProperty barcode, CalcProperty barcodePrefix) {
-        super("CBAR" + barcode.getSID(), "sys", new ValueClass[]{baseClass});
+    public ChangeBarcodeActionProperty(CalcProperty<?> barcode, CalcProperty barcodePrefix) {
+        super("CBAR" + barcode.getSID(), "sys", new ValueClass[]{barcode.getInterfaceClasses(ClassType.ASSERTFULL).singleValue()});
         this.barcode = barcode;
         this.barcodePrefix = barcodePrefix;
     }
@@ -41,7 +42,7 @@ public class ChangeBarcodeActionProperty extends SystemActionProperty {
     }
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        DataObject object = context.getSingleKeyValue();
+        DataObject object = context.getSingleDataKeyValue();
         String prefix = null;
         if (barcodePrefix != null)
             prefix = (String) barcodePrefix.read(context);

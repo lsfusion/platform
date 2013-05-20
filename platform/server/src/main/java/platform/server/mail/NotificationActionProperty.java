@@ -10,6 +10,7 @@ import platform.server.ServerLoggers;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.EmailLogicsModule;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.CalcProperty;
@@ -17,6 +18,7 @@ import platform.server.logics.property.CalcPropertyMapImplement;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.SystemActionProperty;
+import platform.server.logics.property.actions.SystemExplicitActionProperty;
 
 import javax.mail.Message;
 import java.sql.SQLException;
@@ -24,7 +26,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class NotificationActionProperty extends SystemActionProperty {
+public class NotificationActionProperty extends SystemExplicitActionProperty {
     private final static Logger logger = ServerLoggers.mailLogger;
 
     private final LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
@@ -97,13 +99,13 @@ public class NotificationActionProperty extends SystemActionProperty {
             LCP replaceProperty = context.getBL().getLCP(propertySID.trim());
             Object replacePropertyValue;
             if (!"".equals(m.group(2))) {
-                DataObject[] objects = new DataObject[interfacesCount];
+                ObjectValue[] objects = new ObjectValue[interfacesCount];
                 for (int i = 0; i < interfacesCount; i++) {
                     for (int j = 0; j < context.getKeyCount(); j++) {
                         String sidFromReplaceProperty = getValueClasses(replaceProperty)[i].getSID();
                         String sidFromContext = ((ClassPropertyInterface) (context.getKeys().getKey(j))).interfaceClass.getSID();
                         if (sidFromReplaceProperty.equals(sidFromContext))
-                            objects[i] = (DataObject) context.getKeys().getValue(j);
+                            objects[i] = context.getKeys().getValue(j);
                     }
                 }
                 replacePropertyValue = replaceProperty.read(context, objects);

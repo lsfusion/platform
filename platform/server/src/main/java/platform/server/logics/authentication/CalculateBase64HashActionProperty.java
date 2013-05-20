@@ -27,8 +27,8 @@ public class CalculateBase64HashActionProperty extends ScriptingActionProperty {
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        String algorithm = String.valueOf(context.getKeyValue(algorithmInterface).getValue());
-        String password = String.valueOf(context.getKeyValue(passwordInterface).getValue()).trim();
+        String algorithm = String.valueOf(context.getDataKeyValue(algorithmInterface).getValue());
+        String password = String.valueOf(context.getDataKeyValue(passwordInterface).getValue()).trim();
 
         LM.calculatedHash.change(BaseUtils.calculateBase64Hash(algorithm, password, UserInfo.salt), context.getSession());
     }

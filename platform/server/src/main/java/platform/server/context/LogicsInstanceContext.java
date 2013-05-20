@@ -11,6 +11,7 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.FormSessionScope;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsInstance;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.SecurityManager;
 import platform.server.remote.RemoteForm;
 import platform.server.session.DataSession;
@@ -38,7 +39,7 @@ public class LogicsInstanceContext extends AbstractContext {
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
         DataObject serverComputer = logicsInstance.getDbManager().getServerComputerObject();
         return new FormInstance(formEntity,
                                 logicsInstance, session, SecurityManager.serverSecurityPolicy, null, null,

@@ -2,7 +2,6 @@ package skolkovo.actions;
 
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
@@ -10,7 +9,6 @@ import platform.interop.Compare;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
@@ -44,7 +42,7 @@ public class ExportProjectDocumentsActionProperty extends UserActionProperty {
 
         Map<String, byte[]> files = new HashMap<String, byte[]>();
 
-        DataObject projectObject = context.getKeyValue(projectInterface);
+        DataObject projectObject = context.getDataKeyValue(projectInterface);
 
         // документы по проекту
 

@@ -6,6 +6,7 @@ import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.property.actions.flow.ChangeFlowType;
 import platform.server.logics.property.actions.flow.FlowResult;
@@ -85,7 +86,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return property.getParseOldDepends();
     }
 
-    public ActionPropertyValueImplement<P> getValueImplement(ImMap<T, DataObject> mapObjects) {
+    public ActionPropertyValueImplement<P> getValueImplement(ImMap<T, ? extends ObjectValue> mapObjects) {
         return new ActionPropertyValueImplement<P>(property, mapping.join(mapObjects));
     }
 }

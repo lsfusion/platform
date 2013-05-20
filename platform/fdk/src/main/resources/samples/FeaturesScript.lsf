@@ -772,9 +772,19 @@ setNameX 'Добавить X к имени' = ACTION () {
         name(s) <- 'X' + k() + name(s);
     }
 }
+seekX 'Seek object' = ACTION () {         Ex
+    REQUEST OBJECT s
+        FORM storeArticle MODAL SHOWDROP;
+    IF (formResult() == FormResult.ok) THEN {
+        SEEK storeArticle.s requestedObject();
+    }
+    IF (formResult() == FormResult.drop) THEN {
+        SEEK storeArticle.s NULL;
+    }
+}
 
 EXTEND FORM storeArticle
-    PROPERTIES() countF, setNameX
+    PROPERTIES() countF, setNameX, seekX
     PROPERTIES OBJVALUE(s)
     PROPERTIES(s) orderF
 ;

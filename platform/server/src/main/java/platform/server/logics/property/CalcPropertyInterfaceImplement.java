@@ -31,8 +31,8 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
     void mapFillDepends(MSet<CalcProperty> depends);
     ImSet<OldProperty> mapOldDepends();
 
-    Object read(ExecutionContext context, ImMap<P, DataObject> interfaceValues) throws SQLException;
-    ObjectValue readClasses(ExecutionContext context, ImMap<P, DataObject> interfaceValues) throws SQLException;
+    Object read(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException;
+    ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException;
 
     public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty);
 

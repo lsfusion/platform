@@ -93,7 +93,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
 
     protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
-        DataObject supplier = context.getKeyValue(supplierInterface);
+        DataObject supplier = context.getDataKeyValue(supplierInterface);
 
         initFields();
 

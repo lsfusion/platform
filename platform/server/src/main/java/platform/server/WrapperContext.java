@@ -11,7 +11,6 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.DialogInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.FormSessionScope;
-import platform.server.logics.DataObject;
 import platform.server.logics.LogicsInstance;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ExecutionContext;
@@ -37,7 +36,7 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getFormInstance();
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
         return wrappedContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive);
     }
 

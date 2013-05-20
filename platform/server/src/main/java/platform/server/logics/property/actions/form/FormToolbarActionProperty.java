@@ -12,12 +12,13 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.SystemActionProperty;
+import platform.server.logics.property.actions.SystemExplicitActionProperty;
 
 import java.awt.*;
 
 import static platform.server.logics.property.derived.DerivedProperty.*;
 
-public abstract class FormToolbarActionProperty extends SystemActionProperty {
+public abstract class FormToolbarActionProperty extends SystemExplicitActionProperty {
     public final static Dimension BUTTON_SIZE = new Dimension(25, 20);
 
     private final boolean showCaption;

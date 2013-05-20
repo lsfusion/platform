@@ -24,7 +24,7 @@ public class FiscalDatecsServiceInOutActionProperty extends ScriptingActionPrope
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
-            DataObject cashOperationObject = context.getKeyValue(cashOperationInterface);
+            DataObject cashOperationObject = context.getDataKeyValue(cashOperationInterface);
 
             Integer comPort = (Integer) LM.findLCPByCompoundName("comPortCurrentCashRegister").read(context.getSession());
             Integer baudRate = (Integer) LM.findLCPByCompoundName("baudRateCurrentCashRegister").read(context.getSession());

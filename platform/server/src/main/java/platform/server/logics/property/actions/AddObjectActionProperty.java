@@ -91,7 +91,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         return null;
     }
 
-    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, DataObject> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
+    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
         ObjectClass readClass;
         if (needDialog()) {
             ObjectValue objectValue = context.requestUserClass(valueClass, valueClass, true);

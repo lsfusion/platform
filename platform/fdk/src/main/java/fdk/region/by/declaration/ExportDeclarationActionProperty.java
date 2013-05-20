@@ -83,7 +83,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "Заявляемый срок временного ввоза", "Код вида платежа (льготы)", "ОПЕРЕЖАЮЩАЯ ПОСТАВКА",
                     "Запрашиваемый срок переработки", "Код страны (сертификат происхождения)", "Код вида упрощений (реестр УЭО)", "Наименование документа");
 
-            DataObject declarationObject = context.getKeyValue(declarationInterface);
+            DataObject declarationObject = context.getDataKeyValue(declarationInterface);
 
             Map<String, byte[]> files = new HashMap<String, byte[]>();
             File fileTSware = File.createTempFile("TSware", ".csv");

@@ -49,7 +49,7 @@ public abstract class ExecutionEnvironment {
             execute(property, row, formEnv, null, null);
     }
 
-    public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, ImMap<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject) throws SQLException {
+    public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, ImMap<P, ? extends ObjectValue> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject) throws SQLException {
         return property.execute(new ExecutionContext<P>(change, pushUserInput, pushAddObject, this, formEnv));
     }
 

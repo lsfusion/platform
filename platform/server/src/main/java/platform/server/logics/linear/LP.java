@@ -10,6 +10,7 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ClassType;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
@@ -33,7 +34,11 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         this.listInterfaces = listInterfaces;
     }
 
-    public ImMap<T, DataObject> getMapValues(final DataObject... objects) {
+    public ImMap<T, ObjectValue> getMapValues(final ObjectValue... objects) {
+        return getMap(objects);
+    }
+
+    public ImMap<T, DataObject> getMapDataValues(final DataObject... objects) {
         return getMap(objects);
     }
 

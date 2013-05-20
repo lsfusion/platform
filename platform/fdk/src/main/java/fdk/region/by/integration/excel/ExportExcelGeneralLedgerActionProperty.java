@@ -6,7 +6,6 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.classes.DateClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
@@ -60,8 +59,8 @@ public class ExportExcelGeneralLedgerActionProperty extends ExportExcelActionPro
 
         try {
 
-            DataObject dateFromObject = context.getKeyValue(dateFromInterface);
-            DataObject dateToObject = context.getKeyValue(dateToInterface);
+            DataObject dateFromObject = context.getDataKeyValue(dateFromInterface);
+            DataObject dateToObject = context.getDataKeyValue(dateToInterface);
 
             KeyExpr generalLedgerExpr = new KeyExpr("GeneralLedger");
             ImRevMap<Object, KeyExpr> generalLedgerKeys = MapFact.singletonRev((Object) "GeneralLedger", generalLedgerExpr);

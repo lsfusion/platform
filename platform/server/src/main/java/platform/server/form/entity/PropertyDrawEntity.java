@@ -24,7 +24,7 @@ import platform.server.logics.property.ActionPropertyMapImplement;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.ExplicitActionProperty;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -147,7 +147,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         ImMap<P, ObjectEntity> groupObjects = propertyObject.mapping.filterValues(getToDraw(entity).getObjects()); // берем нижний объект в toDraw
         for (ObjectEntity objectInstance : groupObjects.valueIt()) {
             if (objectInstance.baseClass instanceof CustomClass) {
-                CustomActionProperty dialogAction = objectInstance.getChangeAction(property);
+                ExplicitActionProperty dialogAction = objectInstance.getChangeAction(property);
                 return new ActionPropertyObjectEntity<ClassPropertyInterface>(
                         dialogAction,
                         MapFact.singleton(dialogAction.interfaces.single(), (PropertyObjectInterfaceEntity) objectInstance)

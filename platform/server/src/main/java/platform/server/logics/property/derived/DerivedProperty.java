@@ -221,7 +221,7 @@ public class DerivedProperty {
         return createAnd(interfaces, object, SetFact.singleton(and));
     }
 
-    public static <MP extends PropertyInterface, MT extends PropertyInterface, P extends PropertyInterface, T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<?,C> createAnd(CalcPropertyMapImplement<T, C> object, CalcPropertyMapImplement<P, C> and) {
+    public static <MP extends PropertyInterface, MT extends PropertyInterface, P extends PropertyInterface, T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<?,C> createAnd(CalcPropertyMapImplement<T, C> object, CalcPropertyInterfaceImplement<C> and) {
         return createAnd(getUsedInterfaces(SetFact.toSet(object, and)), object, and);
     }
 

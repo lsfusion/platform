@@ -1,29 +1,42 @@
 package platform.server.logics.property.actions;
 
 import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.classes.ValueClass;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.flow.ChangeFlowType;
 import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
 
-public abstract class CustomActionProperty extends ActionProperty<ClassPropertyInterface> {
+// с явным задание классов параметров (where определяется этими классами)
+public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPropertyInterface> {
 
-    protected CustomActionProperty(String sID, ValueClass... classes) {
+    protected ExplicitActionProperty(String sID, ValueClass... classes) {
         this(sID, "sys", classes);
     }
 
-    protected CustomActionProperty(String sID, String caption, ValueClass[] classes) {
+    protected ExplicitActionProperty(String sID, String caption, ValueClass[] classes) {
         super(sID, caption, IsClassProperty.getInterfaces(classes));
     }
 
     protected abstract void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException;
 
+    protected boolean allowNulls() {
+        return false;
+    }
+
     public final FlowResult aspectExecute(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(context.getKeys()))) // если подходит по классам выполнем
-            executeCustom(context);
+        ImMap<ClassPropertyInterface, ? extends ObjectValue> keys = context.getKeys();
+        ImMap<ClassPropertyInterface,DataObject> dataKeys = DataObject.filterDataObjects(keys);
+        if(!allowNulls() && dataKeys.size() < keys.size())
+            proceedNullException();
+        else
+            if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys))) // если подходит по классам выполнем
+                executeCustom(context);
         return FlowResult.FINISH;
     }
 
@@ -31,10 +44,6 @@ public abstract class CustomActionProperty extends ActionProperty<ClassPropertyI
         return IsClassProperty.getProperty(interfaces);
     }
 
-    public ImSet<ActionProperty> getDependActions() {
-        return SetFact.EMPTY();
-    }
-    
     protected boolean isVolatile() {
         return false;
     }

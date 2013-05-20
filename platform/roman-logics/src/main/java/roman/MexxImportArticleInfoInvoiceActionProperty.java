@@ -33,7 +33,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
         //ImportField seasonField = new ImportField(LM.sidSeasonSupplier);
         ImportField themeField = new ImportField(RomanLM.sidThemeSupplier);
 
-        DataObject supplier = context.getKeyValue(supplierInterface);
+        DataObject supplier = context.getDataKeyValue(supplierInterface);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 

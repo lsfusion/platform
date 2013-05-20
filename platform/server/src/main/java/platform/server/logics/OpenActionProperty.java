@@ -14,6 +14,7 @@ import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.SystemActionProperty;
+import platform.server.logics.property.actions.SystemExplicitActionProperty;
 
 import java.sql.SQLException;
 
@@ -24,7 +25,7 @@ import java.sql.SQLException;
 * Time: 9:37
 * To change this template use File | Settings | File Templates.
 */
-public class OpenActionProperty extends SystemActionProperty {
+public class OpenActionProperty extends SystemExplicitActionProperty {
 
     LCP<?> fileProperty;
 
@@ -44,7 +45,7 @@ public class OpenActionProperty extends SystemActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        DataObject[] objects = new DataObject[context.getKeyCount()];
+        ObjectValue[] objects = new ObjectValue[context.getKeyCount()];
         int i = 0; // здесь опять учитываем, что порядок тот же
         for (ClassPropertyInterface classInterface : interfaces)
             objects[i++] = context.getKeyValue(classInterface);

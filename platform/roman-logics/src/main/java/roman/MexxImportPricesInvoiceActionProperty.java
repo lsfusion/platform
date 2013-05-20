@@ -34,7 +34,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
         ImportField customCode6Field = new ImportField(RomanLM.sidCustomCategory6);
         ImportField unitPriceField = new ImportField(RomanLM.priceDataDocumentItem);
 
-        DataObject supplier = context.getKeyValue(supplierInterface);
+        DataObject supplier = context.getDataKeyValue(supplierInterface);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 

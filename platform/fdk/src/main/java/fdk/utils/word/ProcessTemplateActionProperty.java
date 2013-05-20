@@ -3,7 +3,6 @@ package fdk.utils.word;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.util.IOUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -45,7 +44,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
         try {
 
-            DataObject templateObject = context.getKeyValue(templateInterface);
+            DataObject templateObject = context.getDataKeyValue(templateInterface);
 
             if (templateObject != null) {
 

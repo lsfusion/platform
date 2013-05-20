@@ -11,10 +11,11 @@ import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.SystemActionProperty;
+import platform.server.logics.property.actions.SystemExplicitActionProperty;
 
 import java.sql.SQLException;
 
-public class LoadActionProperty extends SystemActionProperty {
+public class LoadActionProperty extends SystemExplicitActionProperty {
 
     LCP<?> fileProperty;
 
@@ -48,7 +49,7 @@ public class LoadActionProperty extends SystemActionProperty {
         DataObject[] objects = new DataObject[context.getKeyCount()];
         int i = 0; // здесь опять учитываем, что порядок тот же
         for (ClassPropertyInterface classInterface : interfaces)
-            objects[i++] = context.getKeyValue(classInterface);
+            objects[i++] = context.getDataKeyValue(classInterface);
         fileProperty.change(objectValue, context, objects);
     }
 

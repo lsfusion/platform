@@ -30,7 +30,7 @@ public class FillDaysOffActionProperty extends ScriptingActionProperty {
         try {
             DataSession session = context.createSession();
 
-            DataObject countryObject = context.getKeyValue(countryInterface);
+            DataObject countryObject = context.getDataKeyValue(countryInterface);
             generateDates(context, countryObject);
 
             session.close();

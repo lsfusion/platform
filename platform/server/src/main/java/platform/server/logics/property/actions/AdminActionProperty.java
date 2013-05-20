@@ -2,7 +2,7 @@ package platform.server.logics.property.actions;
 
 import platform.server.classes.ValueClass;
 
-public abstract class AdminActionProperty extends SystemActionProperty {
+public abstract class AdminActionProperty extends SystemExplicitActionProperty {
 
     protected AdminActionProperty(String sID, ValueClass... classes) {
         super(sID, classes);

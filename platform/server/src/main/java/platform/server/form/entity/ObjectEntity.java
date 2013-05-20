@@ -13,7 +13,7 @@ import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.actions.ChangeReadObjectActionProperty;
-import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.ExplicitActionProperty;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -83,7 +83,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     }
 
     @IdentityInstanceLazy
-    public CustomActionProperty getChangeAction(Property filterProperty) {
+    public ExplicitActionProperty getChangeAction(Property filterProperty) {
         assert baseClass instanceof CustomClass;
         return new ChangeReadObjectActionProperty((CalcProperty) filterProperty, baseClass.getBaseClass());
     }

@@ -21,7 +21,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LogPropertyActionProperty<P extends PropertyInterface> extends SystemActionProperty {
+public class LogPropertyActionProperty<P extends PropertyInterface> extends SystemExplicitActionProperty {
 
     private final CalcProperty<P> property;
     private final AbstractGroup recognizeGroup;

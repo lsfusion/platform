@@ -62,8 +62,8 @@ public class ExportExcelUserInvoicesActionProperty extends ExportExcelActionProp
 
         try {
 
-            DataObject dateFromObject = context.getKeyValue(dateFromInterface);
-            DataObject dateToObject = context.getKeyValue(dateToInterface);
+            DataObject dateFromObject = context.getDataKeyValue(dateFromInterface);
+            DataObject dateToObject = context.getDataKeyValue(dateToInterface);
 
             KeyExpr userInvoiceExpr = new KeyExpr("UserInvoice");
             ImRevMap<Object, KeyExpr> userInvoiceKeys = MapFact.singletonRev((Object) "UserInvoice", userInvoiceExpr);

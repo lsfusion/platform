@@ -7,12 +7,14 @@ import platform.interop.action.MessageClientAction;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.SystemActionProperty;
+import platform.server.logics.property.actions.SystemExplicitActionProperty;
 
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicLong;
@@ -23,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Time: 17:11
  */
 
-public class EvalActionProperty<P extends PropertyInterface> extends SystemActionProperty {
+public class EvalActionProperty<P extends PropertyInterface> extends SystemExplicitActionProperty {
     private final LCP<P> source;
     private final ImMap<P, ClassPropertyInterface> mapSource;
     private static AtomicLong counter = new AtomicLong(0);
@@ -34,9 +36,14 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemActio
         this.source = source;
     }
 
+    @Override
+    protected boolean allowNulls() {
+        return true;
+    }
+
     private String getScript(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        ImMap<P, DataObject> sourceToData = mapSource.join(context.getKeys());
-        return (String) source.read(context, source.listInterfaces.mapOrder(sourceToData).toArray(new DataObject[interfaces.size()]));
+        ImMap<P, ? extends ObjectValue> sourceToData = mapSource.join(context.getKeys());
+        return (String) source.read(context, source.listInterfaces.mapOrder(sourceToData).toArray(new ObjectValue[interfaces.size()]));
     }
 
     private String getUniqueName() {

@@ -23,7 +23,7 @@ public class StopConfigurationActionProperty extends ScriptingActionProperty {
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        DataObject confObj = context.getSingleKeyValue();
+        DataObject confObj = context.getSingleDataKeyValue();
 
         PaasBusinessLogics paas = (PaasBusinessLogics)context.getBL();
 

@@ -4,10 +4,11 @@ import platform.server.classes.ValueClass;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.SystemActionProperty;
+import platform.server.logics.property.actions.SystemExplicitActionProperty;
 
 import java.sql.SQLException;
 
-public class CancelActionProperty extends SystemActionProperty {
+public class CancelActionProperty extends SystemExplicitActionProperty {
 
     public CancelActionProperty() {
         super("cancel", "cancel", new ValueClass[] {});

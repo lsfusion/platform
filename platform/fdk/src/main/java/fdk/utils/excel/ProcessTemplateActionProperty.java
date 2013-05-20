@@ -2,7 +2,6 @@ package fdk.utils.excel;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.util.IOUtils;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
@@ -40,7 +39,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
         try {
 
-            DataObject templateObject = context.getKeyValue(templateInterface);
+            DataObject templateObject = context.getDataKeyValue(templateInterface);
 
             if (templateObject != null) {
 

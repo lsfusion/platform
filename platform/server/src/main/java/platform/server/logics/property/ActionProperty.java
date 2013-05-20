@@ -17,6 +17,7 @@ import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.actions.BaseEvent;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.SessionEnvEvent;
@@ -266,7 +267,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         execute(MapFact.<P, DataObject>EMPTY(), env, null);
     }
 
-    public void execute(ImMap<P, DataObject> keys, ExecutionEnvironment env, FormEnvironment<P> formEnv) throws SQLException {
+    public void execute(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env, FormEnvironment<P> formEnv) throws SQLException {
         env.execute(this, keys, formEnv, null, null);
     }
 
@@ -345,5 +346,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?,T> pushFor(ImRevMap<P, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> where, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         throw new RuntimeException("should not be");
+    }
+
+    protected void proceedNullException() {
     }
 }

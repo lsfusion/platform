@@ -17,6 +17,8 @@ import platform.server.data.where.Where;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.PropertyUtils;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.property.ActionProperty;
@@ -31,7 +33,7 @@ import java.util.TreeSet;
 
 import static platform.base.BaseUtils.toListFromArray;
 
-public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends SystemActionProperty {
+public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends SystemExplicitActionProperty {
 
     private final GroupObjectEntity filterGroupObject;
     private final ActionProperty<P> mainProperty;
@@ -124,7 +126,7 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
         //включаем в сравнение на конкретные значения те интерфейсы главноего свойства, которые мэпятся на интерфейсы текущего свойства
         Where changeWhere = CompareWhere.compareValues(
                 removeGroupingInterfaces ? mainKeys.filter(mapMainToThis.keys()) : mainKeys.removeRev(grouping),
-                mapMainToThis.join(context.getKeys())
+                mapMainToThis.join(context.getDataKeys())
         );
 
         if (filterGroupObject != null) {

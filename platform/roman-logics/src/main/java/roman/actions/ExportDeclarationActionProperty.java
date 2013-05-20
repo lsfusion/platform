@@ -2,7 +2,6 @@ package roman.actions;
 
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
-import platform.base.OrderedMap;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
@@ -12,13 +11,11 @@ import platform.interop.action.ExportFileClientAction;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
@@ -89,7 +86,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "Заявляемый срок временного ввоза", "Код вида платежа (льготы)", "ОПЕРЕЖАЮЩАЯ ПОСТАВКА",
                     "Запрашиваемый срок переработки", "Код страны (сертификат происхождения)", "Код вида упрощений (реестр УЭО)", "Наименование документа");
 
-            DataObject declarationObject = context.getKeyValue(declarationInterface);
+            DataObject declarationObject = context.getDataKeyValue(declarationInterface);
 
             Map<String, byte[]> files = new HashMap<String, byte[]>();
             File fileTSware = File.createTempFile("TSware", ".csv");

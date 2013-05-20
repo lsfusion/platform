@@ -4781,7 +4781,7 @@ public class RomanLogicsModule extends LogicsModule {
             java.util.List<DataObject> maxPropertyInput = new ArrayList<DataObject>();
 
             for (ClassPropertyInterface classInterface : interfaces) {
-                dataPropertyInput[i] = context.getKeyValue(classInterface);
+                dataPropertyInput[i] = context.getDataKeyValue(classInterface);
                 if (params.contains(i + 1)) {
                     maxPropertyInput.add(dataPropertyInput[i]);
                 }
@@ -4805,7 +4805,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             
-            ImOrderSet<DataObject> listKeys = getOrderInterfaces().mapOrder(context.getKeys());
+            ImOrderSet<DataObject> listKeys = getOrderInterfaces().mapOrder(context.getDataKeys());
             DataObject[] keys = listKeys.toArray(new DataObject[listKeys.size()]);
             
             ObjectValue value = context.requestUserData((DataClass) quantityListArticleCompositeColorSize.property.getValueClass(), quantityListArticleCompositeColorSize.read(context, keys));
@@ -8740,8 +8740,8 @@ public class RomanLogicsModule extends LogicsModule {
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
-            DataObject sID = context.getKeyValue(sidInterface);
-            DataObject document = context.getKeyValue(docInterface);
+            DataObject sID = context.getDataKeyValue(sidInterface);
+            DataObject document = context.getDataKeyValue(docInterface);
 
             ObjectValue supplier = supplierDocument.readClasses(context, document);
             if (supplier.isNull()) {
@@ -8772,7 +8772,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            DataObject objCreateStamp = context.getKeyValue(createStampInterface);
+            DataObject objCreateStamp = context.getDataKeyValue(createStampInterface);
             if ((firstNumberCreationStamp.read(context, objCreateStamp) == null) || (lastNumberCreationStamp.read(context, objCreateStamp) == null)) {
                 context.delayUserInterfaction(new MessageClientAction("Необходимо задать диапазон", "Ошибка"));
                 return;
@@ -8814,7 +8814,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         @Override
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            DataObject cloneObject = context.getKeyValue(itemInterface);
+            DataObject cloneObject = context.getDataKeyValue(itemInterface);
             DataObject newObject = context.addObject(item);
 
             for(LCP lp : new LCP[]{colorSupplierItem, sizeSupplierItem})
@@ -8842,8 +8842,8 @@ public class RomanLogicsModule extends LogicsModule {
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
-            DataObject objShipment = context.getKeyValue(shipmentInterface);
-            DataObject objSku = context.getKeyValue(skuInterface);
+            DataObject objShipment = context.getDataKeyValue(shipmentInterface);
+            DataObject objSku = context.getDataKeyValue(skuInterface);
 
             DataObject objRouteRB = route.getDataObject("rb");
             DataObject objRouteRF = route.getDataObject("rf");

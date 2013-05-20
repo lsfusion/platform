@@ -26,7 +26,7 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
         try {
 
             DataSession session = context.createSession();
-            DataObject backupObject = context.getKeyValue(backupInterface);
+            DataObject backupObject = context.getDataKeyValue(backupInterface);
 
             String backupFilePath = (String) LM.findLCPByCompoundName("fileBackup").read(session, backupObject);
             String backupLogFilePath = (String) LM.findLCPByCompoundName("fileLogBackup").read(session, backupObject);

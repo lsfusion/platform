@@ -1,5 +1,6 @@
 package platform.server.logics.property.actions.edit;
 
+import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
@@ -32,7 +33,7 @@ public class PasteActionProperty extends AroundAspectActionProperty {
         ImOrderMap<ImMap<ObjectInstance, DataObject>, ObjectValue> pasteRows = (ImOrderMap<ImMap<ObjectInstance, DataObject>, ObjectValue>)objectValue.getValue();
         for(int i=0,size=pasteRows.size();i<size;i++) {
             ExecutionContext<PropertyInterface> innerContext = context.pushUserInput(pasteRows.getValue(i)); // нужно для getObjectInstances перегузить
-            proceed(innerContext.override(innerContext.getKeys().override(innerContext.getObjectInstances().innerJoin(pasteRows.getKey(i)))));
+            proceed(innerContext.override(MapFact.override(innerContext.getKeys(), innerContext.getObjectInstances().innerJoin(pasteRows.getKey(i)))));
         }
 
         return FlowResult.FINISH;

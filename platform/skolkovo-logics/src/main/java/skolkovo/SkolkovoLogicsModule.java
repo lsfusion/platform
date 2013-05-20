@@ -5564,7 +5564,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-            DataObject projectObject = context.getKeyValue(projectInterface);
+            DataObject projectObject = context.getDataKeyValue(projectInterface);
 
             Object fillNative = fillNativeProject.read(context, projectObject);
             Object fillForeign = fillForeignProject.read(context, projectObject);
@@ -5597,9 +5597,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            DataObject projectObject = context.getKeyValue(projectInterface);
-            DataObject clusterObject = context.getKeyValue(clusterInterface);
-            DataObject foresightObject = context.getKeyValue(foresightInterface);
+            DataObject projectObject = context.getDataKeyValue(projectInterface);
+            DataObject clusterObject = context.getDataKeyValue(clusterInterface);
+            DataObject foresightObject = context.getDataKeyValue(foresightInterface);
 
             Object valueInProjectForesight = null;
             if (inProjectForesight.read(context, projectObject, foresightObject) == null)
@@ -7619,8 +7619,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            DataObject projectObject = context.getKeyValue(projectInterface);
-            DataObject documentTemplateObject = context.getKeyValue(documentTemplateInterface);
+            DataObject projectObject = context.getDataKeyValue(projectInterface);
+            DataObject documentTemplateObject = context.getDataKeyValue(documentTemplateInterface);
 
             QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.singleton("key"));
             query.and(documentTemplateDocumentTemplateDetail.getExpr(context.getModifier(), query.getMapExprs().get("key")).compare(documentTemplateObject.getExpr(), Compare.EQUALS));
@@ -7654,7 +7654,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             try {
-                DataObject projectObject = context.getKeyValue(projectInterface);
+                DataObject projectObject = context.getDataKeyValue(projectInterface);
 
                 byte[] file = (byte[]) fileNativeApplicationFormProject.read(context, projectObject);
 
@@ -7693,7 +7693,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             try {
-                DataObject voteObject = context.getKeyValue(voteInterface);
+                DataObject voteObject = context.getDataKeyValue(voteInterface);
 
                 File tempFile = context.generateFileFromForm(BL, voteProtocolSimple, voteProtocolSimple.objVote, voteObject);
                 fileDecisionVote.change(IOUtils.getFileBytes(tempFile), context, voteObject);
@@ -7717,7 +7717,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-            DataObject expertObject = context.getKeyValue(expertInterface);
+            DataObject expertObject = context.getDataKeyValue(expertInterface);
 
             List<String> expertSIDList = new ArrayList<String>();
 
@@ -7786,7 +7786,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             try {
 
-                DataObject projectObject = context.getKeyValue(projectInterface);
+                DataObject projectObject = context.getDataKeyValue(projectInterface);
                 DataObject documentObject;
 
                 Object regulation = nameRegulationsProject.read(context, projectObject);
@@ -8111,7 +8111,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            DataObject projectObject = context.getKeyValue(projectInterface);
+            DataObject projectObject = context.getDataKeyValue(projectInterface);
 
             boolean r2 = isR2Project.read(context, projectObject) != null;
             boolean allExperts = useAllClusterExpertsUnionProject.read(context, projectObject) != null;
@@ -8291,7 +8291,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         @Override
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            DataObject voteObject = context.getKeyValue(voteInterface);
+            DataObject voteObject = context.getDataKeyValue(voteInterface);
             java.sql.Date dateStart = (java.sql.Date) dateStartVote.read(context, voteObject);
 
             DataObject projectObject = new DataObject(projectVote.read(context, voteObject), project);

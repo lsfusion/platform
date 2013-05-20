@@ -15,8 +15,8 @@ import static platform.base.BaseUtils.toCaption;
 public class ConfirmActionProperty extends MessageActionProperty {
     private final LCP<?> confirmedProperty;
 
-    public <I extends PropertyInterface> ConfirmActionProperty(String sID, String caption, String title, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> msgProperty, LCP confirmedProperty) {
-        super(sID, caption, title, innerInterfaces, msgProperty);
+    public <I extends PropertyInterface> ConfirmActionProperty(String sID, String caption, String title, LCP confirmedProperty) {
+        super(sID, caption, title);
         this.confirmedProperty = confirmedProperty;
     }
 

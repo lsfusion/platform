@@ -36,6 +36,7 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormAddObjectActionProperty;
+import platform.server.logics.property.actions.SleepActionProperty;
 import platform.server.logics.property.actions.flow.ApplyActionProperty;
 import platform.server.logics.property.actions.flow.BreakActionProperty;
 import platform.server.logics.property.actions.flow.CancelActionProperty;
@@ -112,6 +113,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP formClose;
 
     public LAP seek;
+
+    public LAP sleep;
 
     public LAP delete;
 
@@ -300,6 +303,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formClose = addProperty(null, new LAP(new CloseActionProperty()));
 
         seek = addSAProp();
+
+        sleep = addProperty(null, new LAP(new SleepActionProperty()));
 
         staticName = addDProp(publicGroup, "staticName", getString("logics.static.name"), StringClass.get(250), baseClass);
         staticCaption = addDProp(publicGroup, "staticCaption", getString("logics.static.caption"), StringClass.geti(100), baseClass);

@@ -29,7 +29,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
         ImportField colorCodeField = new ImportField(RomanLM.sidColorSupplier);
         ImportField colorNameField = new ImportField(RomanLM.name);
 
-        DataObject supplier = context.getKeyValue(supplierInterface);
+        DataObject supplier = context.getDataKeyValue(supplierInterface);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 

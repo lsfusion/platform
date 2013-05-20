@@ -9,7 +9,7 @@ import platform.server.logics.property.ExecutionContext;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class ChangeClassValueActionProperty extends SystemActionProperty {
+public class ChangeClassValueActionProperty extends SystemExplicitActionProperty {
 
     private ClassPropertyInterface objectInterface;
     private ClassPropertyInterface classInterface;
@@ -32,9 +32,14 @@ public class ChangeClassValueActionProperty extends SystemActionProperty {
     }
 
     @Override
+    protected boolean allowNulls() {
+        return true;
+    }
+
+    @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.changeClass(context.getObjectInstance(objectInterface), context.getKeyValue(objectInterface),
-                getBaseClass().findConcreteClassID((Integer) context.getKeyValue(classInterface).object));
+        context.changeClass(context.getObjectInstance(objectInterface), context.getDataKeyValue(objectInterface),
+                getBaseClass().findConcreteClassID((Integer) context.getKeyObject(classInterface)));
     }
 
 }

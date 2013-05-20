@@ -33,7 +33,7 @@ public class FiscalDatecsPrintReceiptActionProperty extends ScriptingActionPrope
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
 
-        DataObject receiptObject = context.getKeyValue(receiptInterface);
+        DataObject receiptObject = context.getDataKeyValue(receiptInterface);
 
         try {
             Integer comPort = (Integer) LM.findLCPByCompoundName("comPortCurrentCashRegister").read(context);

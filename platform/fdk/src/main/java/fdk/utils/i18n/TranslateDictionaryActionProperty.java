@@ -8,20 +8,10 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
-import platform.server.session.DataSession;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface dictionaryInterface;
@@ -39,8 +29,8 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
 
         try {
 
-            DataObject dictionaryObject = context.getKeyValue(dictionaryInterface);
-            DataObject termObject = context.getKeyValue(termInterface);
+            DataObject dictionaryObject = context.getDataKeyValue(dictionaryInterface);
+            DataObject termObject = context.getDataKeyValue(termInterface);
 
             if (dictionaryObject != null && termObject != null) {
 

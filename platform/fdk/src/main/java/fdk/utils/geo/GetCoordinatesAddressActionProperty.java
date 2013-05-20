@@ -7,7 +7,6 @@ import com.google.code.geocoder.model.GeocoderRequest;
 import com.google.code.geocoder.model.GeocoderResult;
 import org.json.JSONException;
 import org.json.JSONObject;
-import platform.server.classes.LogicalClass;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
@@ -38,8 +37,8 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
             DataSession session = context.getSession();
-            DataObject fullAddress = context.getKeyValue(POIInterface);
-            DataObject mapProvider = context.getKeyValue(mapProviderInterface);
+            DataObject fullAddress = context.getDataKeyValue(POIInterface);
+            DataObject mapProvider = context.getDataKeyValue(mapProviderInterface);
 
             Double longitude = null;
             Double latitude = null;

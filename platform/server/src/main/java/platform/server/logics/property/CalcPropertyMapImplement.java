@@ -100,11 +100,11 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return property.getOldDepends();
     }
 
-    public Object read(ExecutionContext context, ImMap<T, DataObject> interfaceValues) throws SQLException {
+    public Object read(ExecutionContext context, ImMap<T, ? extends ObjectValue> interfaceValues) throws SQLException {
         return property.read(context.getSession().sql, mapping.join(interfaceValues), context.getModifier(), context.getQueryEnv());
     }
 
-    public ObjectValue readClasses(ExecutionContext context, ImMap<T, DataObject> interfaceValues) throws SQLException {
+    public ObjectValue readClasses(ExecutionContext context, ImMap<T, ? extends ObjectValue> interfaceValues) throws SQLException {
         return property.readClasses(context.getSession(), mapping.join(interfaceValues), context.getModifier(), context.getQueryEnv());
     }
 

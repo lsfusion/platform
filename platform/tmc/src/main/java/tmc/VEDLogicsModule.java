@@ -4267,7 +4267,7 @@ public class VEDLogicsModule extends LogicsModule {
 
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             //To change body of implemented methods use File | Settings | File Templates.
-            DataObject document = context.getSingleKeyValue();
+            DataObject document = context.getSingleDataKeyValue();
             if(orderSalePayCash.read(context, document)==null && orderSalePayCard.read(context, document)==null) {
                 orderSalePayCash.change((Object)null, context, document);
                 orderSalePayCard.change(sumWithDiscountObligationOrder.read(context, document), context, document);
@@ -4337,8 +4337,8 @@ public class VEDLogicsModule extends LogicsModule {
                     protected void setRemoteFormFilter(FormInstance formInstance) throws ParseException {
                         PropertyDrawInstance<?> dateDraw = formInstance.getPropertyDraw(date);
                         CalcPropertyObjectInstance datePropertyObject = (CalcPropertyObjectInstance) dateDraw.propertyObject;
-                        dateDraw.toDraw.addTempFilter(new CompareFilterInstance(datePropertyObject, Compare.GREATER_EQUALS, context.getKeyValue(dateFrom)));
-                        dateDraw.toDraw.addTempFilter(new CompareFilterInstance(datePropertyObject, Compare.LESS_EQUALS, context.getKeyValue(dateTo)));
+                        dateDraw.toDraw.addTempFilter(new CompareFilterInstance(datePropertyObject, Compare.GREATER_EQUALS, context.getDataKeyValue(dateFrom)));
+                        dateDraw.toDraw.addTempFilter(new CompareFilterInstance(datePropertyObject, Compare.LESS_EQUALS, context.getDataKeyValue(dateTo)));
                     }
 
                     protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {
@@ -4420,7 +4420,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
-            DataObject document = context.getKeyValue(documentInterface);
+            DataObject document = context.getDataKeyValue(documentInterface);
 
             Sheet sh;
             try {
@@ -4600,7 +4600,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
-            DataObject storeObject = context.getSingleKeyValue();
+            DataObject storeObject = context.getSingleDataKeyValue();
 
             Sheet sh;
             try {
@@ -4673,7 +4673,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            DataObject documentObject = context.getSingleKeyValue();
+            DataObject documentObject = context.getSingleDataKeyValue();
 
             // сколько в документе, сколько на остатках, уменьшаем на разницу
             KeyExpr docKey = new KeyExpr("doc"); KeyExpr articleKey = new KeyExpr("article");

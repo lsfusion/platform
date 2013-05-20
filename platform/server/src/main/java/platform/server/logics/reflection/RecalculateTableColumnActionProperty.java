@@ -28,7 +28,7 @@ public class RecalculateTableColumnActionProperty extends ScriptingActionPropert
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         SQLSession sqlSession = context.getSession().sql;
 
-        DataObject tableColumnObject = context.getKeyValue(tableColumnInterface);
+        DataObject tableColumnObject = context.getDataKeyValue(tableColumnInterface);
         String propertySID = (String) context.getBL().reflectionLM.sidTableColumn.read(context, tableColumnObject);
 
         sqlSession.startTransaction();

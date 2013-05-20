@@ -1,7 +1,6 @@
 package tmc.integration.exp;
 
 import platform.base.BaseUtils;
-import platform.base.col.SetFact;
 import platform.interop.action.ClientAction;
 import platform.server.classes.DataClass;
 import platform.server.classes.DoubleClass;
@@ -14,7 +13,6 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import tmc.VEDLogicsModule;

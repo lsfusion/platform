@@ -33,7 +33,7 @@ public class GenerateLoginPasswordActionProperty extends AdminActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        DataObject userObject = context.getKeyValue(customUserInterface);
+        DataObject userObject = context.getDataKeyValue(customUserInterface);
 
         String currentEmail = (String) email.read(context, userObject);
 
