@@ -513,7 +513,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 
     OBJECTS w = WHfromCSR FIXED PANEL, d = WHfromCSRDetail
 
-    PROPERTIES(w)          objectClassName, numberObject, seriesObject, dateWHfromCSR, timeWHfromCSR, nameStockWHfromCSR READONLY,
+    PROPERTIES(w)          objectClassName, dateWHfromCSR, timeWHfromCSR, nameStockWHfromCSR READONLY,
                            barcodeCurrentFreightUnit, fillWHfromCSRDetailsSkuFreightUnit, printMarksSkuFreightUnit,
                            printMarksSkuWHfromCSR TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w),
@@ -584,8 +584,6 @@ DESIGN WHfromCSR FROM DEFAULT {
                     childConstraints = TO THE RIGHTBOTTOM;
                     ADD PROPERTY(objectClassName){preferredCharWidth = 15;}
                     ADD PROPERTY(nameStockWHfromCSR);
-                    ADD PROPERTY(numberObject);
-                    ADD PROPERTY(seriesObject);
                     ADD PROPERTY(dateWHfromCSR);
                     ADD PROPERTY(timeWHfromCSR);
                 }
@@ -972,7 +970,7 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
 
     PROPERTIES(t) FORCE PANEL receiveWHfromCSI, postRecWHfromCSI SHOWIF isDraftRecWHfromCSI(t)
 
-    PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
 
     OBJECTS d = WHfromCSIDetail
     PROPERTIES(d) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameCategoryArticleSkuWHfromCSIDetail,
@@ -1050,7 +1048,6 @@ DESIGN WHfromCSIs FROM DEFAULT {
 
                 title = 'История';
                 ADD t.historyGroup;
-                ADD t.postedGroup;
             }
 
             ADD dr.box {

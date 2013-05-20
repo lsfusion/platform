@@ -391,10 +391,10 @@ FORM userPriceList 'Прайс'
     PROPERTIES(p) objectClassName, nameNumeratorObject, numberObject, seriesObject,
                   dateUserPriceList, timeUserPriceList,
                   fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
-                  nameCurrencyUserPriceList, nameCompanyUserPriceList, noteUserPriceList, includeVATLedgerPriceListType
+                  nameCurrencyUserPriceList, nameCompanyUserPriceList, noteUserPriceList
 
     OBJECTS t = PriceListType
-    PROPERTIES(t) READONLY namePriceListType
+    PROPERTIES(t) namePriceListType READONLY, includeVATLedgerPriceListType
     PROPERTIES(p, t) inPriceListDataPriceListType TODRAW t FORCE GRID, showPriceListPriceListType
     FILTERS (currencyUserPriceList(p) == currencyPriceListType(t)) OR (p IS UserPriceList AND t IS PriceListType AND NOT currencyPriceListType(t))
 

@@ -266,7 +266,7 @@ META defineDocumentFormTransferIn(object, caption)
                                 nameStock###object##In, nameSourceStock###object##In, note###object##In,
                                 count###object##InDetail###object##In, quantity###object##InDetail###object##In
 
-        PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+        PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
 
         OBJECTS d = ###object##InDetail
 
@@ -290,7 +290,6 @@ META defineDocumentFormTransferIn(object, caption)
                     title = 'История';
 
                     ADD t.historyGroup;
-                    ADD t.postedGroup;
                 }
             }
         }

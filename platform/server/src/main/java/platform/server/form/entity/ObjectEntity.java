@@ -5,6 +5,7 @@ import platform.base.identity.IdentityObject;
 import platform.server.caches.IdentityInstanceLazy;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -85,5 +86,10 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     public CustomActionProperty getChangeAction(Property filterProperty) {
         assert baseClass instanceof CustomClass;
         return new ChangeReadObjectActionProperty((CalcProperty) filterProperty, baseClass.getBaseClass());
+    }
+
+    @Override
+    public AndClassSet getAndClassSet() {
+        return baseClass.getUpSet();
     }
 }

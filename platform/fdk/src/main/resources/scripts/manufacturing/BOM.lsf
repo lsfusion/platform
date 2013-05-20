@@ -470,7 +470,7 @@ FORM BOMs 'Спецификации'
 
     PROPERTIES(b) READONLY nameBOM, numberObject, seriesObject, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM, noteBOM, objectClassName
     PROPERTIES (b) ADDFORM, EDITFORM, copyBOM, deleteb=DELETE FORCE PANEL TOOLBAR
-    PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
 
     OBJECTS p = Product
     PROPERTIES(p) READONLY indexProduct, idBarcodeSkuProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct

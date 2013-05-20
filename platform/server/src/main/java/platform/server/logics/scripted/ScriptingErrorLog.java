@@ -199,6 +199,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "can't set custom form for built-in class '" + className + "'");
     }
 
+    public void emitCustomClassExpextedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
+        emitSimpleError(parser, format("custom class parameter expected for property '%s'", propertyName));
+    }
+
     public void emitAbstractClassInstancesDefError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "abstract class cannot be instantiated");
     }
@@ -433,6 +437,10 @@ public class ScriptingErrorLog {
 
     public void emitAddObjToPropertyError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "TO clause should use only local parameters introduced in WHERE clause");
+    }
+
+    public void emitWrongPropertyParametersError(ScriptParser parser, String propertyName) throws SemanticErrorException {
+        emitSimpleError(parser, format("unable to add property '%s' to the form: wrong parameters", propertyName));
     }
 
     public void emitOnlyDataCasePropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {

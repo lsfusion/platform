@@ -108,7 +108,7 @@ FORM groupCashRegister 'Группа касс'
 
 FORM groupsCashRegister 'Группы касс'
     OBJECTS grc=GroupCashRegister, c=CashRegister
-    PROPERTIES(grc)  READONLY nameStockGroupMachinery, nameLegalEntityCashRegister, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+    PROPERTIES(grc)  READONLY nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                      filterSkuGroupMachinery
     PROPERTIES(grc)  ADDFORM, EDITFORM, DELETE
 

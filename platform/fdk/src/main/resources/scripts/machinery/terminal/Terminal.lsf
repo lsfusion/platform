@@ -170,9 +170,7 @@ FORM groupsTerminal 'Группы ТСД'
     PROPERTIES(grt)  ADDFORM, EDITFORM, DELETE
 
     PROPERTIES(t) READONLY nppMachinery, descriptionMachinery, portMachinery,
-                           directoryTerminal, nameModelMachinery,
-                           nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
-                           nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType
+                           directoryTerminal, nameModelMachinery
     FILTERS groupTerminalTerminal(t) == grt
 ;
 

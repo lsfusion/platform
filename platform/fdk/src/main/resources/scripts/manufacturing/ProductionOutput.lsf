@@ -137,7 +137,6 @@ FORM outputOrders 'Производственные заказы'
     OBJECTS cd = ComponentDetail
     PROPERTIES(cd) READONLY indexComponentDetail, nameSkuComponentDetail, nameComponentComponentDetail,
                    shortNameUOMComponentDetail, quantityComponentDetail
-    PROPERTIES(cd) READONLY toOutputProductDetail
     FILTERS orderComponentDetail(cd)==o
 ;
 

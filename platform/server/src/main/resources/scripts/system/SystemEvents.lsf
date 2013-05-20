@@ -57,9 +57,6 @@ userSession 'Пользователь сессии' = DATA CustomUser (Session);
 nameUserSession (session) = nameContact(userSession(session));
 userSession (session) <- currentUser() WHEN ASSIGNED(session IS Session);
 
-dateSession 'Дата сессии' = DATA DATETIME (Session);
-dateSession (session) <- currentDateTime() WHEN ASSIGNED(session IS Session);
-
 connectionFormCount 'Количество открытых форм' = DATA INTEGER (Connection, NavigatorElement);
 
 CLASS Session 'Сессия';
@@ -87,7 +84,7 @@ FORM connections 'Журнал подключений'
 
     OBJECTS c=Connection
     PROPERTIES (c) hostnameComputerConnection, remoteAddressConnection, userLoginConnection, nameConnectionStatusConnection,
-                   connectTimeConnection, disconnectTimeConnection, nameUserSession, dateSession
+                   connectTimeConnection, disconnectTimeConnection
 
     OBJECTS n=NavigatorElement
     PROPERTIES (n) captionNavigatorElement, sidNavigatorElement
@@ -95,7 +92,7 @@ FORM connections 'Журнал подключений'
     PROPERTIES (c, n) connectionFormCount
 
     OBJECTS s=Session
-    PROPERTIES (s) READONLY captionNavigatorElementSession, dateTimeSession
+    PROPERTIES (s) READONLY captionNavigatorElementSession, nameUserSession, dateTimeSession
 
     FILTERS connectionFormCount(c, n)>0
     FILTERS connectionSession(s)==c

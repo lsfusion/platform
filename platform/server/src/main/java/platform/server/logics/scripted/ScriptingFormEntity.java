@@ -2,14 +2,18 @@ package platform.server.logics.scripted;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
 import platform.interop.ModalityType;
 import platform.server.classes.ColorClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
@@ -147,6 +151,18 @@ public class ScriptingFormEntity {
         return LM.getMappingObjectsArray(form, mapping);
     }
 
+    private ObjectEntity getSingleMappingObject(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        checkSingleParam(mapping.size());
+        ObjectEntity[] objects = getMappingObjectsArray(mapping);
+        return objects[0];
+    }
+
+    private ObjectEntity getSingleCustomClassMappingObject(String property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        ObjectEntity object = getSingleMappingObject(mapping);
+        checkCustomClassParam(object, property);
+        return object;
+    }
+
     private ObjectEntity getObjectEntity(String name) throws ScriptingErrorLog.SemanticErrorException {
         return LM.getObjectEntityByName(form, name);
     }
@@ -213,28 +229,32 @@ public class ScriptingFormEntity {
                         form.addPropertyDraw(LM.baseLM.selection, false, getMappingObjectsArray(mapping))
                 );
             } else if (propertyName.equals("ADDOBJ")) {
-                checkSingleParam(mapping.size());
-
-                ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                LAP<?> addObjAction = LM.getAddObjectAction(form, obj[0]);
+                ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                LAP<?> addObjAction = LM.getAddObjectAction(form, obj);
                 property = form.addPropertyDraw(addObjAction);
             } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM")) {
-                checkSingleParam(mapping.size());
-
-                ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                property = LM.addAddFormAction(form, obj[0], propertyName.equals("ADDSESSIONFORM"));
+                ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                property = LM.addAddFormAction(form, obj, propertyName.equals("ADDSESSIONFORM"));
             } else if (propertyName.equals("EDITFORM") || propertyName.equals("EDITSESSIONFORM")) {
-                checkSingleParam(mapping.size());
-
-                ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                property = LM.addEditFormAction(form, obj[0], propertyName.equals("EDITSESSIONFORM"));
+                ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                property = LM.addEditFormAction(form, obj, propertyName.equals("EDITSESSIONFORM"));
             } else if (propertyName.equals("DELETE") || propertyName.equals("DELETESESSION")) {
-                checkSingleParam(mapping.size());
-
-                ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                property = LM.addFormDeleteAction(form, obj[0], propertyName.equals("DELETESESSION"));
+                ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                property = LM.addFormDeleteAction(form, obj, propertyName.equals("DELETESESSION"));
             } else {
                 MappedProperty prop = getPropertyWithMapping(propertyName, mapping);
+
+                ImMap<PropertyInterface, AndClassSet> map = prop.property.listInterfaces.mapList(ListFact.toList(prop.mapping)).mapValues(new GetValue<AndClassSet, PropertyObjectInterfaceEntity>() {
+                    @Override
+                    public AndClassSet getMapValue(PropertyObjectInterfaceEntity value) {
+                        return value.getAndClassSet();
+                    }
+                });
+
+                if (!prop.getProperty().isInInterface(map, true)) {
+                    LM.getErrLog().emitWrongPropertyParametersError(LM.getParser(), propertyName);
+                }
+
                 property = form.addPropertyDraw(prop.property, prop.mapping);
             }
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
@@ -252,6 +272,12 @@ public class ScriptingFormEntity {
     private void checkSingleParam(int size) throws ScriptingErrorLog.SemanticErrorException {
         if (size != 1) {
             LM.getErrLog().emitParamCountError(LM.getParser(), 1, size);
+        }
+    }
+
+    private void checkCustomClassParam(ObjectEntity param, String propertyName) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(param.baseClass instanceof CustomClass)) {
+            LM.getErrLog().emitCustomClassExpextedError(LM.getParser(), propertyName);
         }
     }
 

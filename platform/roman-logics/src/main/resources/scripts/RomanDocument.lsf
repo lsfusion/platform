@@ -117,15 +117,6 @@ META defineDocumentRetailPrice (concrete, object)
     retailPrice###concrete##Detail(concrete##Detail) <- priceAPriceSetDocumentSkuCurrencyDateTime(sku###concrete##Detail(concrete##Detail), currency###concrete##Detail(concrete##Detail), dateTime###concrete##Detail(concrete##Detail))
                                                             WHEN CHANGED(dateTime###concrete##Detail(concrete##Detail))
                                                                  OR CHANGED(sku###concrete##Detail(concrete##Detail));
-
-    EXTEND FORM concrete##s
-        PROPERTIES (object) READONLY retailPrice###concrete##Detail
-    ;
-
-    EXTEND FORM concrete
-        PROPERTIES (object) retailPrice###concrete##Detail
-    ;
-
 END
 
 META defineDocumentTransferAccountCustom(concrete, retailProp, detail, object)

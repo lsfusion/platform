@@ -107,7 +107,7 @@ FORM innerOrders 'Внутренние заказы'
                             nameStockInnerOrder, nameDestinationStockInnerOrder,
                             countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder
 
-    PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
 
     PROPERTIES (o) ADDFORM, EDITFORM, deleteo=DELETE FORCE PANEL TOOLBAR
 
@@ -139,7 +139,6 @@ DESIGN innerOrders FROM DEFAULT {
                 title = 'История';
 
                 ADD o.historyGroup;
-                ADD o.postedGroup;
             }
         }
     }

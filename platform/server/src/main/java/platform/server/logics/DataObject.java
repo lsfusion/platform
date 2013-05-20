@@ -234,4 +234,9 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public Expr getDeleteExpr(SessionTableUsage<String, ImportField> importTable, KeyExpr intraKeyExpr, Modifier modifier) {
         return getExpr();
     }
+
+    @Override
+    public AndClassSet getAndClassSet() {
+        return objectClass;
+    }
 }
