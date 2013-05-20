@@ -772,7 +772,7 @@ setNameX 'Добавить X к имени' = ACTION () {
         name(s) <- 'X' + k() + name(s);
     }
 }
-seekX 'Seek object' = ACTION () {         Ex
+seekX 'Seek object' = ACTION () {
     REQUEST OBJECT s
         FORM storeArticle MODAL SHOWDROP;
     IF (formResult() == FormResult.ok) THEN {
