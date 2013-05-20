@@ -203,7 +203,7 @@ DESIGN userGeneralLedger FROM DEFAULT{
 addUserGeneralLedger 'Добавить' = ACTION ADDFORM UserGeneralLedger;
 editUserGeneralLedger 'Редактировать' (userGeneralLedger) = ACTION EDITFORM UserGeneralLedger;
 editGeneralLedger(generalLedger) += editUserGeneralLedger(generalLedger);
-isUserGeneralLedger(generalLedger) = TRUE IF generalLedger IS UserGeneralLedger;
+isUserGeneralLedger(generalLedger) = generalLedger IS UserGeneralLedger;
 
 overCopyGeneralLedger = ABSTRACT ACTION (GeneralLedger, GeneralLedger);
 copyGeneralLedger 'Копировать' = ACTION (generalLedger) NEWSESSION {

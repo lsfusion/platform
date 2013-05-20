@@ -486,8 +486,8 @@ META defineInvoiceReturn(NS, NSR, stockProp)
     invoiceDetailUserInvoiceDetail (userInvoiceDetail) = DATA NS.InvoiceDetail (NSR.UserInvoiceDetail);
     invoiceDetailInvoiceDetail(detail) += invoiceDetailUserInvoiceDetail(detail);
 
-    returnQuantityInvoiceDetail 'Кол-во (возвращено)' (invoiceDetail)= GROUP SUM NSR.quantityInvoiceDetail(invoiceDetail) BY invoiceDetailInvoiceDetail(invoiceDetail);
-    returnQuantityInvoiceDetailInvoice 'Кол-во (возвращено)' (invoice) =  GROUP SUM returnQuantityInvoiceDetail(invoiceDetail) BY NS.invoiceInvoiceDetail(invoiceDetail);
+    returnQuantityInvoiceDetail 'Кол-во (возвращено)' (invoiceDetail)= GROUP SUM NSR.quantityInvoiceDetail(invoiceDetail) BY invoiceDetailInvoiceDetail(invoiceDetail) PERSISTENT;
+    returnQuantityInvoiceDetailInvoice 'Кол-во (возвращено)' (invoice) =  GROUP SUM returnQuantityInvoiceDetail(invoiceDetail) BY NS.invoiceInvoiceDetail(invoiceDetail) PERSISTENT;
 
     CONSTRAINT returnQuantityInvoiceDetail(detail) > NS.quantityInvoiceDetail(detail)
         MESSAGE 'Количество строки возврата больше чем количество строки основания';
@@ -500,7 +500,7 @@ META defineInvoiceReturn(NS, NSR, stockProp)
 
     CONSTRAINT NS.customerInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != NSR.customerUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
         MESSAGE 'Покупатель строки основания должен соответствовать Покупатель строки возврата';
-        
+
     descriptionInvoiceDetailInvoiceDetail 'Основание' (invoiceDetail) = NS.descriptionInvoiceDetail(invoiceDetailInvoiceDetail(invoiceDetail));
     descriptionInvoiceDetailUserInvoiceDetail 'Основание' (userInvoiceDetail) = NS.descriptionInvoiceDetail(invoiceDetailUserInvoiceDetail(userInvoiceDetail));
 
@@ -664,7 +664,7 @@ META defineInvoicePayment(dumb)
             SET sumFromPayment(p) <- invoiceSumUserInvoiceDetailUserInvoice(invoice);
             SET costOutContractLedgerInContractLedger(p, invoice) <- sumContractPayment(p);
             FORM payment OBJECTS p=p MODAL;
-            IF TRUE IF NOT formResult() == FormResult.ok THEN {
+            IF NOT formResult() == FormResult.ok THEN {
                 DELETE p;
             }
         }

@@ -300,7 +300,7 @@ META defineDocumentInterfaceHeaderLegalEntity (object, contact, contactCaption)
 END
 
 META defineDocumentDetailLegalEntity (object, detail, contact, contactCaption)
-    contact###detail (idetail) = contact###object(object###detail(idetail));
+    contact###detail (idetail) = contact###object(object###detail(idetail)) PERSISTENT;
     name###contact###detail contactCaption (idetail) = nameLegalEntity(contact###detail(idetail));
 END
 
