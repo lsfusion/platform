@@ -12,10 +12,10 @@ import platform.base.IOUtils;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
-import platform.base.col.interfaces.immutable.ImMap;
-import platform.base.col.interfaces.immutable.ImOrderMap;
-import platform.base.col.interfaces.immutable.ImRevMap;
-import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MCol;
+import platform.base.col.interfaces.mutable.MList;
+import platform.base.col.interfaces.mutable.MOrderExclSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
@@ -47,6 +47,8 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.Event;
+import platform.server.logics.property.actions.ChangeBarcodeActionProperty;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.derived.DerivedProperty;
@@ -69,7 +71,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static platform.base.BaseUtils.add;
 import static platform.base.BaseUtils.nvl;
+import static platform.server.logics.PropertyUtils.*;
+import static platform.server.logics.property.derived.DerivedProperty.*;
+import static platform.server.logics.property.derived.DerivedProperty.createAnd;
 
 /**
  * User: DAle
@@ -8329,4 +8335,387 @@ public class SkolkovoLogicsModule extends LogicsModule {
             }
         }
     }
+
+    protected LCP addDProp(AbstractGroup group, String name, String caption, ValueClass value, boolean stored, ValueClass... params) {
+        if(stored)
+            return addDProp(group, name, caption, value, params);
+        else
+            return addSDProp(group, name, caption, value, params);
+    }
+
+    protected <D extends PropertyInterface> LCP addDCProp(AbstractGroup group, String name, String caption, LCP<D> derivedProp, Object... params) {
+        return addDCProp(group, name, caption, 0, derivedProp, params);
+    }
+
+    protected <D extends PropertyInterface> LCP addDCProp(String name, String caption, boolean forced, LCP<D> derivedProp, Object... params) {
+        return addDCProp(null, name, caption, forced, derivedProp, params);
+    }
+
+    protected <D extends PropertyInterface> LCP addDCProp(AbstractGroup group, String name, String caption, boolean forced, LCP<D> derivedProp, Object... params) {
+        return addDCProp(group, name, false, caption, forced, derivedProp, params);
+    }
+
+    protected <D extends PropertyInterface> LCP addDCProp(AbstractGroup group, String name, boolean persistent, String caption, boolean forced, LCP<D> derivedProp, Object... params) {
+        return addDCProp(group, name, persistent, caption, forced, 0, derivedProp, params);
+    }
+
+    protected LAP addFAProp(String caption, FormEntity form, ObjectEntity... params) {
+        return addFAProp(null, caption, form, params, null, false, false);
+    }
+
+    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession) {
+        return addMFAProp(group, genSID(), caption, form, objectsToSet, startAction, newSession);
+    }
+
+    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession, boolean isModal) {
+        return addFAProp(group, genSID(), caption, form, objectsToSet, startAction, newSession, isModal, false);
+    }
+
+    protected <P extends PropertyInterface> LCP addTCProp(Time time, String name, boolean isStored, String caption, LCP<P> changeProp, ValueClass... classes) {
+        return addTCProp(null, time, name, isStored, caption, changeProp, classes);
+    }
+
+    protected <P extends PropertyInterface, T extends PropertyInterface> LCP addTCProp(AbstractGroup group, Time time, String name, boolean isStored, String caption, LCP<P> changeProp, ValueClass... classes) {
+        LCP timeProperty = addDProp(group, name, caption, time.getConcreteValueClass(), isStored, overrideClasses(changeProp.getInterfaceClasses(), classes));
+        LCP curTime = addTProp(time);
+        LAP setCurTime = addSetPropertyAProp(BaseUtils.add(directLI(timeProperty), curTime));
+        setCurTime.setEventAction(this, Event.SESSION, changeProp, getIntParams(changeProp));
+/*        LAP editAction = changeProp.getEditAction(ServerResponse.CHANGE);
+        LAP<?> overrideAction = addListAProp(BaseUtils.add(directLI(editAction), directLI(setCurTime)));
+        changeProp.setEditAction(ServerResponse.CHANGE, overrideAction);*/
+        return timeProperty;
+    }
+
+    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(Object... params) {
+        return addSetPropertyAProp("sys", params);
+    }
+
+    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(String caption, Object... params) {
+        return addSetPropertyAProp(genSID(), caption, params);
+    }
+
+    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String caption, Object... params) {
+        return addSetPropertyAProp(group, genSID(), caption, params);
+    }
+
+    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(String name, String caption, Object... params) {
+        return addSetPropertyAProp(null, name, caption, params);
+    }
+
+    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String name, String caption, Object... params) {
+        int resInterfaces = getIntNum(params);
+        return addSetPropertyAProp(group, name, caption, resInterfaces, false, BaseUtils.add(ListFact.consecutiveList(resInterfaces).toArray(new Integer[resInterfaces]), params));
+    }
+
+    protected LAP addIfAProp(AbstractGroup group, String caption, Object... params) {
+        return addIfAProp(group, caption, false, params);
+    }
+
+    protected LAP addIfAProp(AbstractGroup group, String name, String caption, Object... params) {
+        return addIfAProp(group, name, caption, false, params);
+    }
+
+    protected LAP addJoinAProp(AbstractGroup group, String caption, LAP action, Object... params) {
+        return addJoinAProp(group, genSID(), caption, null, action, params);
+    }
+
+    protected LCP addTProp(Time time) {
+        return addTProp(genSID(), time.toString(), time);
+    }
+
+    protected LCP addJProp(boolean implementChange, String name, String caption, LCP mainProp, Object... params) {
+        return addJProp(null, implementChange, name, caption, mainProp, params);
+    }
+
+    public void showIf(FormEntity<?> form, LP[] properties, LCP ifProperty, ObjectEntity... objects) {
+        for (LP property : properties)
+            showIf(form, property, ifProperty, objects);
+    }
+
+    public void showIf(FormEntity<?> form, LP property, LCP ifProperty, ObjectEntity... objects) {
+        PropertyObjectEntity hideCaptionProp = form.addPropertyObject(addHideCaptionProp(ifProperty), objects);
+        for (PropertyDrawEntity propertyDraw : form.getProperties(property.property)) {
+            propertyDraw.propertyCaption = (CalcPropertyObjectEntity) hideCaptionProp;
+        }
+    }
+
+    protected <P extends PropertyInterface> LCP addOProp(String name, String caption, PartitionType partitionType, LCP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp(null, name, caption, partitionType, sum, ascending, includeLast, partNum, params);
+    }
+
+    protected <P extends PropertyInterface> LCP addOProp(AbstractGroup group, String name, String caption, PartitionType partitionType, LCP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp(group, name, false, caption, sum, partitionType, ascending, includeLast, partNum, params);
+    }
+
+    protected <P extends PropertyInterface> LCP addOProp(AbstractGroup group, String name, boolean persistent, String caption, LCP<P> sum, PartitionType partitionType, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        ImList<CalcPropertyInterfaceImplement<P>> li = readCalcImplements(sum.listInterfaces, params);
+
+        ImSet<CalcPropertyInterfaceImplement<P>> partitions = li.subList(0, partNum).toOrderSet().getSet();
+        ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders = li.subList(partNum, li.size()).toOrderSet().toOrderMap(!ascending);
+
+        CalcPropertyMapImplement<?, P> orderProperty;
+        orderProperty = DerivedProperty.createOProp(name, caption, partitionType, (CalcProperty<P>) sum.property, partitions, orders, includeLast);
+
+        return mapLProp(group, persistent, orderProperty, sum);
+    }
+
+    protected LCP addSGProp(String caption, LCP groupProp, Object... params) {
+        return addSGProp((AbstractGroup) null, caption, groupProp, params);
+    }
+
+    protected LCP addSGProp(AbstractGroup group, String caption, LCP groupProp, Object... params) {
+        return addSGProp(group, genSID(), caption, groupProp, params);
+    }
+
+    protected LCP addSGProp(String name, String caption, LCP groupProp, Object... params) {
+        return addSGProp(name, false, caption, groupProp, params);
+    }
+
+    protected LCP addSGProp(String name, boolean persistent, String caption, LCP groupProp, Object... params) {
+        return addSGProp(null, name, persistent, caption, groupProp, params);
+    }
+
+    protected LCP addSGProp(AbstractGroup group, String name, String caption, LCP groupProp, Object... params) {
+        return addSGProp(group, name, false, caption, groupProp, params);
+    }
+
+    protected LCP addSGProp(AbstractGroup group, String name, boolean persistent, String caption, LCP groupProp, Object... params) {
+        return addSGProp(group, name, persistent, false, caption, groupProp, params);
+    }
+
+    protected <T extends PropertyInterface> LCP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, LCP<T> groupProp, Object... params) {
+        return addSGProp(group, name, persistent, notZero, caption, groupProp, readCalcImplements(groupProp.listInterfaces, params));
+    }
+
+    private <T extends PropertyInterface> LCP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, LCP<T> groupProp, ImList<CalcPropertyInterfaceImplement<T>> listImplements) {
+        return addSGProp(group, name, persistent, notZero, caption, groupProp.listInterfaces, ListFact.add(((CalcProperty<T>) groupProp.property).getImplement(), listImplements));
+    }
+
+    public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean descending, LCP<T> groupProp, Object... params) {
+        return addOGProp(group, name, persist, caption, type, numOrders, Settings.get().isDefaultOrdersNotNull(), descending, groupProp.listInterfaces, ListFact.add(((CalcProperty<T>) groupProp.property).getImplement(), readCalcImplements(groupProp.listInterfaces, params)));
+    }
+
+    protected LCP addMGProp(String name, String caption, LCP groupProp, Object... params) {
+        return addMGProp(null, name, caption, groupProp, params);
+    }
+
+    protected LCP addMGProp(String name, boolean persist, String caption, boolean min, LCP groupProp, Object... params) {
+        return addMGProp(null, name, persist, caption, min, groupProp, params);
+    }
+
+    protected <T extends PropertyInterface> LCP[] addMGProp(AbstractGroup group, String[] names, String[] captions, int extra, LCP<T> groupProp, Object... params) {
+        return addMGProp(group, false, names, captions, extra, groupProp, params);
+    }
+
+    protected <T extends PropertyInterface> LCP[] addMGProp(AbstractGroup group, boolean persist, String[] names, String[] captions, int extra, LCP<T> groupProp, Object... params) {
+        return addMGProp(group, persist, names, captions, extra + 1, false, groupProp.listInterfaces.size(), add(directLI(groupProp), params));
+    }
+
+    protected LCP addAGProp(String name, String caption, LCP... props) {
+        return addAGProp(null, name, caption, props);
+    }
+
+    protected LCP addAGProp(AbstractGroup group, String name, String caption, LCP... props) {
+        return addAGProp(group, name, caption, false, props);
+    }
+
+    protected LCP addAGProp(AbstractGroup group, String name, String caption, boolean noConstraint, LCP... props) {
+        LCP andProp = addJProp(and(new boolean[props.length - 1]), getUParams(props));
+        return addAGProp(group, name, caption, noConstraint, (CustomClass) andProp.getInterfaceClasses()[0], props);
+    }
+
+    protected LCP addAGProp(AbstractGroup group, String name, String caption, boolean noConstraint, CustomClass customClass, LCP... props) {
+        return addAGProp(group, false, name, false, caption, noConstraint, customClass, props);
+    }
+
+    protected LCP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, CustomClass customClass, LCP... props) {
+        return addAGProp(group, checkChange, name, persistent, caption, false, customClass, props);
+    }
+
+    protected LCP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, CustomClass customClass, LCP... props) {
+        if(props.length==1)
+            ((CalcProperty)props[0].property).aggProp = true;
+        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, is(customClass), add(1, getUParams(props)));
+    }
+
+    protected <T extends PropertyInterface> LCP addAGProp(AbstractGroup group, String name, String caption, LCP<T> lp, int aggrInterface, Object... props) {
+        return addAGProp(group, false, name, false, caption, lp, aggrInterface, props);
+    }
+
+    protected <T extends PropertyInterface<T>> LCP addAGProp(AbstractGroup group, String name, boolean persistent, String caption, LCP<T> lp, int aggrInterface, Object... props) {
+        return addAGProp(group, false, name, persistent, caption, lp, aggrInterface, props);
+    }
+
+    protected <T extends PropertyInterface<T>> LCP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, LCP<T> lp, int aggrInterface, Object... props) {
+        return addAGProp(group, checkChange, name, persistent, caption, false, lp, add(aggrInterface, props));
+    }
+
+    protected <T extends PropertyInterface<T>> LCP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, LCP<T> lp, Object... props) {
+        ImList<CalcPropertyInterfaceImplement<T>> readImplements = readCalcImplements(lp.listInterfaces, props);
+        T aggrInterface = (T) readImplements.get(0);
+        ImList<CalcPropertyInterfaceImplement<T>> groupImplements = readImplements.subList(1, readImplements.size());
+        ImList<CalcPropertyInterfaceImplement<T>> fullInterfaces = groupImplements.addList(lp.listInterfaces.removeOrderIncl(aggrInterface));
+        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, lp.listInterfaces, SetFact.toOrderExclSet(aggrInterface, lp.property.getImplement()).addList(fullInterfaces));
+    }
+
+    protected LCP addCUProp(String name, String caption, LCP... props) {
+        return addCUProp(name, false, caption, props);
+    }
+
+    protected LCP addCUProp(String name, boolean persistent, String caption, LCP... props) {
+        return addCUProp(null, name, persistent, caption, props);
+    }
+
+    protected LCP addCUProp(AbstractGroup group, String name, String caption, LCP... props) {
+        return addCUProp(group, name, false, caption, props);
+    }
+
+    protected LCP addCUProp(AbstractGroup group, String name, boolean persistent, String caption, LCP... props) {
+        return addXSUProp(group, name, persistent, caption, props);
+    }
+
+    protected LCP addDUProp(String name, String caption, LCP prop1, LCP prop2) {
+        return addDUProp(null, name, caption, prop1, prop2);
+    }
+
+    protected LCP addDUProp(AbstractGroup group, String name, String caption, LCP prop1, LCP prop2) {
+        return addDUProp(group, name, false, caption, prop1, prop2);
+    }
+
+    protected LCP addDUProp(AbstractGroup group, String name, boolean persistent, String caption, LCP prop1, LCP prop2) {
+        return addUProp(group, name, persistent, caption, Union.SUM, null, new int[]{1, -1}, getUParams(new LCP[]{prop1, prop2}));
+    }
+
+    protected LCP addIfElseUProp(LCP prop1, LCP prop2, LCP ifProp, Object... params) {
+        return addIfElseUProp(baseLM.privateGroup, "sys", prop1, prop2, ifProp, params);
+    }
+
+    protected LCP addIfElseUProp(AbstractGroup group, String caption, LCP prop1, LCP prop2, LCP ifProp, Object... params) {
+        return addIfElseUProp(group, genSID(), caption, prop1, prop2, ifProp, params);
+    }
+
+    protected LCP addIfElseUProp(AbstractGroup group, String name, String caption, LCP prop1, LCP prop2, LCP ifProp, Object... params) {
+        return addIfElseUProp(group, name, false, caption, prop1, prop2, ifProp, params);
+    }
+
+    protected LCP addIfElseUProp(AbstractGroup group, String name, boolean persistent, String caption, LCP prop1, LCP prop2, LCP ifProp, Object... params) {
+        return addXSUProp(group, name, persistent, caption, addIfProp(prop1, false, ifProp, params), addIfProp(prop2, true, ifProp, params));
+    }
+
+    public LCP addSUProp(Union unionType, LCP... props) {
+        return addSUProp(baseLM.privateGroup, "sys", unionType, props);
+    }
+
+    protected LCP addSUProp(AbstractGroup group, String caption, Union unionType, LCP... props) {
+        return addSUProp(group, genSID(), caption, unionType, props);
+    }
+
+    protected LCP addSUProp(String name, String caption, Union unionType, LCP... props) {
+        return addSUProp(name, false, caption, unionType, props);
+    }
+
+    protected LCP addSFUProp(AbstractGroup group, String name, String caption, String separator, LCP... props) {
+        return addSFUProp(group, name, false, caption, separator, props);
+    }
+
+    protected LCP addSFUProp(AbstractGroup group, String name, boolean persistent, String caption, String separator, LCP... props) {
+        return addUProp(group, name, persistent, caption, Union.STRING_AGG, separator, null, getUParams(props));
+    }
+
+    protected LCP addXSUProp(AbstractGroup group, String name, boolean persistent, String caption, LCP... props) {
+        return addUProp(group, name, persistent, caption, Union.EXCLUSIVE, null, null, getUParams(props));
+    }
+
+    protected LAP addAAProp(ConcreteCustomClass customClass, LCP... properties) {
+        return addAAProp(null, customClass, null, properties);
+    }
+
+    protected LAP addAAProp(LCP barcode, ConcreteCustomClass customClass, LCP barcodePrefix, LCP... properties) {
+        return addAAProp(ServerResourceBundle.getString("logics.add"), barcode, customClass, barcodePrefix, properties);
+    }
+
+    protected LAP addAAProp(String caption, LCP<?> barcode, ConcreteCustomClass customClass, LCP<?> barcodePrefix, LCP... properties) {
+        PropertyInterface addedInterface = new PropertyInterface();
+
+        MList<ActionPropertyMapImplement<?, PropertyInterface>> mList = ListFact.mList();
+
+        // генерация штрихкода
+        if(barcode!=null)
+            mList.add(new ChangeBarcodeActionProperty(baseClass, barcode.property, barcodePrefix != null ? barcodePrefix.property : null).getImplement(SetFact.singletonOrder(addedInterface)));
+
+        MCol<CalcPropertyMapImplement<?, PropertyInterface>> mCheckClasses = ListFact.mCol();
+        MOrderExclSet<PropertyInterface> mInnerInterfaces = SetFact.mOrderExclSet(properties.length);
+        for(LCP<?> lp : properties) {
+            PropertyInterface genInterface = new PropertyInterface();
+            ImSet<PropertyInterface> setInterfaces = SetFact.toExclSet(genInterface, addedInterface);
+            mList.add(createSetAction(setInterfaces, lp.getImplement(addedInterface), genInterface));
+            mInnerInterfaces.exclAdd(genInterface);
+
+            ValueClass valueClass = lp.property.getValueClass();
+            if(valueClass instanceof CustomClass) {
+                mCheckClasses.add(((CustomClass)valueClass).getProperty().getImplement(SetFact.singletonOrder(genInterface)));
+            }
+        }
+        ImOrderSet<PropertyInterface> innerInterfaces = mInnerInterfaces.immutableOrder();
+        ImCol<CalcPropertyMapImplement<?, PropertyInterface>> checkClasses = mCheckClasses.immutableCol();
+
+        mList.add(addSAProp().getImplement(addedInterface));
+
+        ImSet<PropertyInterface> addedInnerInterfaces = innerInterfaces.getSet().addExcl(addedInterface);
+        ActionPropertyMapImplement<?, PropertyInterface> result = createForAction(addedInnerInterfaces, innerInterfaces.getSet(), createListAction(addedInnerInterfaces, mList.immutableList()), addedInterface, customClass, false);
+        if(checkClasses.size() > 0)
+            result = createIfAction(innerInterfaces.getSet(), createAnd(checkClasses), result, null);
+        return mapLAProp(null, result, innerInterfaces);
+    }
+
+    protected void followed(LCP first, LCP... lps) {
+        for (LCP lp : lps) {
+            Integer[] mapping = new Integer[lp.listInterfaces.size()];
+            for (int i = 0; i < mapping.length; i++) {
+                mapping[i] = i + 1;
+            }
+            follows(lp, first, mapping);
+        }
+    }
+
+    private <P extends PropertyInterface, L extends PropertyInterface> LAP mapLAProp(AbstractGroup group, ActionPropertyMapImplement<L, P> implement, ImOrderSet<P> listInterfaces) {
+        return addProperty(group, new LAP<L>(implement.property, listInterfaces.mapOrder(implement.mapping.reverse())));
+    }
+
+    protected LCP addMGProp(LCP groupProp, Object... params) {
+        return addMGProp("sys", groupProp, params);
+    }
+
+    protected LCP addMGProp(String caption, LCP groupProp, Object... params) {
+        return addMGProp(baseLM.privateGroup, genSID(), caption, groupProp, params);
+    }
+
+    protected LCP addMGProp(AbstractGroup group, String name, String caption, LCP groupProp, Object... params) {
+        return addMGProp(group, name, false, caption, groupProp, params);
+    }
+
+    protected LCP addMGProp(AbstractGroup group, String name, boolean persist, String caption, LCP groupProp, Object... params) {
+        return addMGProp(group, name, persist, caption, false, groupProp, params);
+    }
+
+    protected LCP addMGProp(AbstractGroup group, String name, boolean persist, String caption, boolean min, LCP groupProp, Object... params) {
+        return addMGProp(group, name, persist, caption, min, groupProp.listInterfaces.size(), add(directLI(groupProp), params));
+    }
+
+    protected LCP addIfProp(LCP prop, boolean not, LCP ifProp, Object... params) {
+        return addIfProp(baseLM.privateGroup, genSID(), "sys", prop, not, ifProp, params);
+    }
+
+    protected LCP addIfProp(AbstractGroup group, String name, String caption, LCP prop, boolean not, LCP ifProp, Object... params) {
+        return addIfProp(group, name, false, caption, prop, not, ifProp, params);
+    }
+
+    protected LCP addIfProp(AbstractGroup group, String name, boolean persistent, String caption, LCP prop, boolean not, LCP ifProp, Object... params) {
+        return addJProp(group, name, persistent, caption, and(not), add(getUParams(new LCP[]{prop}), add(new LCP[]{ifProp}, params)));
+    }
+
+    protected LCP addSUProp(AbstractGroup group, String name, String caption, Union unionType, LCP... props) {
+        return addSUProp(group, name, false, caption, unionType, props);
+    }
+
 }

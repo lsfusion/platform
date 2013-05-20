@@ -154,7 +154,7 @@ public class PropertyUtils {
         return property.listInterfaces.mapList(propImpl);
     }
 
-    static ValueClass[] overrideClasses(ValueClass[] commonClasses, ValueClass[] overrideClasses) {
+    public static ValueClass[] overrideClasses(ValueClass[] commonClasses, ValueClass[] overrideClasses) {
         ValueClass[] classes = new ValueClass[commonClasses.length];
         int ic = 0;
         for (ValueClass common : commonClasses) {
