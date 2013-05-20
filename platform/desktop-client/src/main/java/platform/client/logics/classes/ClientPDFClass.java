@@ -9,18 +9,13 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.io.DataInputStream;
-import java.io.IOException;
 
 public class ClientPDFClass extends ClientStaticFormatFileClass {
 
-    public final static ClientPDFClass instance = new ClientPDFClass();
+    public final static ClientPDFClass instance = new ClientPDFClass(false, false);
 
-    public ClientPDFClass() {
-    }
-
-    public ClientPDFClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public ClientPDFClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
     @Override

@@ -17,7 +17,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ClientDateTimeClass extends ClientDataClass implements ClientTypeClass {
-
     public final static ClientDateTimeClass instance = new ClientDateTimeClass();
 
     private final String sID = "DateTimeClass";

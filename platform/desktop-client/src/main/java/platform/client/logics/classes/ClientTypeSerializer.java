@@ -43,6 +43,7 @@ public class ClientTypeSerializer {
         return deserializeClientClass(inStream, false);
     }
 
+    //по сути этот метод дублирует логику platform.server.data.type.TypeSerializer.deserializeDataClass() для последней версии ДБ
     public static ClientClass deserializeClientClass(DataInputStream inStream, boolean nulls) throws IOException {
 
         if (nulls && inStream.readByte() == 0) return null;
@@ -53,25 +54,29 @@ public class ClientTypeSerializer {
         if (type == Data.INTEGER) return ClientIntegerClass.instance;
         if (type == Data.LONG) return ClientLongClass.instance;
         if (type == Data.DOUBLE) return ClientDoubleClass.instance;
-        if (type == Data.NUMERIC) return new ClientNumericClass(inStream);
+        if (type == Data.NUMERIC) return new ClientNumericClass(inStream.readInt(), inStream.readInt());
         if (type == Data.LOGICAL) return ClientLogicalClass.instance;
         if (type == Data.DATE) return ClientDateClass.instance;
-        if (type == Data.STRING) return new ClientStringClass(inStream);
-        if (type == Data.INSENSITIVESTRING) return new ClientInsensitiveStringClass(inStream);
-        if (type == Data.TEXT) return ClientTextClass.instance;
+        if (type == Data.STRING) return new ClientStringClass(inStream.readBoolean(), inStream.readInt());
+        if (type == Data.VARSTRING) return new ClientVarStringClass(inStream.readBoolean(), inStream.readInt());
+        if (type == Data.TEXT) {
+            boolean caseInsensitive = inStream.readBoolean();
+            assert !caseInsensitive;
+            return ClientTextClass.instance;
+        }
         if (type == Data.YEAR) return ClientIntegerClass.instance;
         if (type == Data.DATETIME) return ClientDateTimeClass.instance;
         if (type == Data.TIME) return ClientTimeClass.instance;
         if (type == Data.COLOR) return ClientColorClass.instance;
 
-        if (type == Data.PDF) return new ClientPDFClass(inStream);
-        if (type == Data.IMAGE) return new ClientImageClass(inStream);
-        if (type == Data.WORD) return new ClientWordClass(inStream);
-        if (type == Data.EXCEL) return new ClientExcelClass(inStream);
-        if (type == Data.DYNAMICFORMATFILE) return new ClientDynamicFormatFileClass(inStream);
-        if (type == Data.CUSTOMSTATICFORMATFILE) return new ClientCustomStaticFormatFileClass(inStream);
+        if (type == Data.PDF) return new ClientPDFClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.IMAGE) return new ClientImageClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.WORD) return new ClientWordClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.EXCEL) return new ClientExcelClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.DYNAMICFORMATFILE) return new ClientDynamicFormatFileClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.CUSTOMSTATICFORMATFILE) return ClientCustomStaticFormatFileClass.deserialize(inStream);
 
-        if (type == Data.ACTION) return new ClientActionClass(inStream);
+        if (type == Data.ACTION) return ClientActionClass.instance;
 
         throw new IOException();
     }

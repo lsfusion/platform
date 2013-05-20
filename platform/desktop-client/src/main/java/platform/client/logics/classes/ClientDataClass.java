@@ -11,7 +11,6 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Compare;
 
 import java.awt.*;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -20,10 +19,6 @@ import static platform.interop.Compare.*;
 public abstract class ClientDataClass extends ClientClass implements ClientType {
 
     protected ClientDataClass() {
-    }
-
-    ClientDataClass(DataInputStream inStream) throws IOException {
-        super(inStream);
     }
 
     @Override

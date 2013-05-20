@@ -11,7 +11,6 @@ import platform.server.data.ParseValue;
 import platform.server.data.query.CompileSource;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.type.ParseInterface;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.logics.DataObject;
@@ -54,19 +53,23 @@ public class StaticValueExpr extends StaticExpr<StaticClass> implements ParseVal
     }
 
     public String getSource(CompileSource compile) {
-        if(compile instanceof ToString)
+        if (compile instanceof ToString) {
             return object + " - " + objectClass + " sID";
-        if(sID)
-            return ((ConcreteCustomClass)objectClass).getString(object,compile.syntax);
-        else {
+        }
+        if (sID) {
+            return objectClass.getString(object, compile.syntax);
+        } else {
             Type type = objectClass.getType();
             String result;
-            if(type.isSafeString(object))
+            if (type.isSafeString(object)) {
                 result = type.getString(object, compile.syntax);
-            else
+            } else {
                 result = compile.params.get(this);
-            if(!type.isSafeType(object))
-                result = type.getCast(result, compile.syntax, type.needPadding(object)); // cast часто rtrim делает и глотает пробелы (важно если ' ' строка), с другой стороны lpad возвращает text и при join'е с char'ом не использует индексы
+            }
+            if (!type.isSafeType(object)) {
+                // cast часто rtrim делает и глотает пробелы (важно если ' ' строка), с другой стороны lpad возвращает text и при join'е с char'ом не использует индексы
+                result = type.getCast(result, compile.syntax, type.needPadding(object));
+            }
             return result;
         }
     }

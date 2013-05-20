@@ -16,21 +16,15 @@ public class ClientObjectClass extends ClientClass {
     private final String sID;
 
     private final boolean concreate;
-    private final List<ClientObjectClass> children = new ArrayList<ClientObjectClass>();
+    private final List<ClientObjectClass> children;
     private final String caption;
 
-    ClientObjectClass(DataInputStream inStream) throws IOException {
-        super(inStream);
-
-        concreate = inStream.readBoolean();
-        caption = inStream.readUTF();
-        ID = inStream.readInt();
-        sID = inStream.readUTF();
-
-        int count = inStream.readInt();
-        for (int i = 0; i < count; i++) {
-            children.add(ClientTypeSerializer.deserializeClientObjectClass(inStream));
-        }
+    private ClientObjectClass(int ID, String sID, String caption, boolean concreate, List<ClientObjectClass> children) {
+        this.ID = ID;
+        this.sID = sID;
+        this.concreate = concreate;
+        this.children = children;
+        this.caption = caption;
     }
 
     @Override
@@ -87,6 +81,17 @@ public class ClientObjectClass extends ClientClass {
     }
 
     public static ClientObjectClass deserialize(DataInputStream inStream) throws IOException {
-        return new ClientObjectClass(inStream);
+        boolean concreate = inStream.readBoolean();
+        String caption = inStream.readUTF();
+        int ID = inStream.readInt();
+        String sID = inStream.readUTF();
+
+        int count = inStream.readInt();
+        List<ClientObjectClass> children = new ArrayList<ClientObjectClass>();
+        for (int i = 0; i < count; i++) {
+            children.add(ClientTypeSerializer.deserializeClientObjectClass(inStream));
+        }
+
+        return new ClientObjectClass(ID, sID, caption, concreate, children);
     }
 }

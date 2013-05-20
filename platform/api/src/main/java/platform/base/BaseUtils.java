@@ -1595,6 +1595,10 @@ public class BaseUtils {
         return new String(chars);
     }
 
+    public static String truncate(String s, int length) {
+        return length < s.length() ? s.substring(0, length) : s;
+    }
+
     public static String padRight(String s, int n) {
         return String.format("%1$-" + n + "s", s);
     }

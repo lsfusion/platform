@@ -1,6 +1,5 @@
 package platform.server.data.expr.formula.conversion;
 
-import platform.server.data.query.CompileSource;
 import platform.server.data.type.Type;
 
 public class CompoundTypeConversion implements TypeConversion {
@@ -22,17 +21,5 @@ public class CompoundTypeConversion implements TypeConversion {
             }
         }
         return result;
-    }
-
-    @Override
-    public String getSource(CompileSource compile, Type type1, Type type2, String src1, String src2) {
-        String conversionSource = null;
-        for (TypeConversion conversion : conversions) {
-            conversionSource = conversion.getSource(compile, type1, type2, src1, src2);
-            if (conversionSource != null) {
-                break;
-            }
-        }
-        return conversionSource;
     }
 }

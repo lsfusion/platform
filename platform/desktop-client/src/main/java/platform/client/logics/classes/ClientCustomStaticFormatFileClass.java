@@ -17,24 +17,15 @@ import java.util.Arrays;
 
 public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileClass {
 
-    public String filterDescription;
-    public String filterExtensions[];
+    private String sID;
 
-    public ClientCustomStaticFormatFileClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public final String filterDescription;
+    public final String filterExtensions[];
 
-        filterDescription = inStream.readUTF();
-        int extCount = inStream.readInt();
-        if (extCount <= 0) {
-            filterExtensions = new String[1];
-            filterExtensions[0] = "*";
-        } else {
-            filterExtensions = new String[extCount];
-
-            for (int i = 0; i < extCount; ++i) {
-                filterExtensions[i] = inStream.readUTF();
-            }
-        }
+    public ClientCustomStaticFormatFileClass(String filterDescription, String[] filterExtensions, boolean multiple, boolean storeName) {
+        super(multiple, storeName);
+        this.filterDescription = filterDescription;
+        this.filterExtensions = filterExtensions;
     }
 
     @Override
@@ -46,7 +37,6 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
         throw new RuntimeException("SID overrided");
     }
 
-    private String sID;
     public String getSID() {
         if(sID==null)
             sID = "FileActionClass[" + multiple + ", " + filterDescription + "," + Arrays.toString(filterExtensions) + "]";
@@ -78,5 +68,23 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.static.format.file", BaseUtils.toString(",", filterExtensions));
+    }
+
+    public static ClientCustomStaticFormatFileClass deserialize(DataInputStream inStream) throws IOException {
+        String filterDescription = inStream.readUTF();
+        String[] filterExtensions;
+        int extCount = inStream.readInt();
+        if (extCount <= 0) {
+            filterExtensions = new String[1];
+            filterExtensions[0] = "*";
+        } else {
+            filterExtensions = new String[extCount];
+
+            for (int i = 0; i < extCount; ++i) {
+                filterExtensions[i] = inStream.readUTF();
+            }
+        }
+
+        return new ClientCustomStaticFormatFileClass(filterDescription, filterExtensions, inStream.readBoolean(), inStream.readBoolean());
     }
 }

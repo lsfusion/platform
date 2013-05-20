@@ -5,17 +5,11 @@ import platform.client.form.PropertyRenderer;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.text.*;
 
 abstract public class ClientIntegralClass extends ClientDataClass {
 
     protected ClientIntegralClass() {
-    }
-
-    ClientIntegralClass(DataInputStream inStream) throws IOException {
-        super(inStream);
     }
 
     @Override

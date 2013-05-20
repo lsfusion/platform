@@ -13,22 +13,20 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
 
 public class ClientActionClass extends ClientDataClass implements ClientTypeClass {
+    public final static ClientActionClass instance = new ClientActionClass();
 
     private final String sID = "ActionClass";
+
+    private ClientActionClass() {
+    }
 
     @Override
     public String getSID() {
         return sID;
-    }
-
-    public ClientActionClass(DataInputStream inStream) throws IOException {
-        super(inStream);
     }
 
     public byte getTypeId() {

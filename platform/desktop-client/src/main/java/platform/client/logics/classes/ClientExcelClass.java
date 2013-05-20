@@ -9,18 +9,13 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.io.DataInputStream;
-import java.io.IOException;
 
 public class ClientExcelClass extends ClientStaticFormatFileClass {
 
-    public final static ClientExcelClass instance = new ClientExcelClass();
+    public final static ClientExcelClass instance = new ClientExcelClass(false, false);
 
-    public ClientExcelClass() {
-    }
-
-    public ClientExcelClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public ClientExcelClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
     @Override

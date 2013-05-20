@@ -92,16 +92,17 @@ public class ValueClassEditor extends JPanel {
                 }
 
                 // полиморфно для TypeClass'а, добавляем новый компонент, заполняем его текущими значения
-                if (typeClass.equals(ClientStringClass.type) ||
-                    typeClass.equals(ClientInsensitiveStringClass.type)) {
+                if (typeClass instanceof ClientStringClass.ClientStringTypeClass) {
+                    final ClientStringClass.ClientStringTypeClass stringTypClass = (ClientStringClass.ClientStringTypeClass) typeClass;
 
                     final JTextField fieldLength = new JTextField();
                     fieldLength.setText(Integer.toString(((ClientStringClass) clientClass).length));
                     fieldLength.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            BaseUtils.invokeCheckSetter(object, property, typeClass.equals(ClientStringClass.type)
-                                                                          ? new ClientStringClass(Integer.parseInt(fieldLength.getText()))
-                                                                          : new ClientInsensitiveStringClass(Integer.parseInt(fieldLength.getText()))
+                            ClientStringClass stringClass = stringTypClass instanceof ClientVarStringClass.ClientVarStringTypeClass
+                                                            ? new ClientVarStringClass(stringTypClass.caseInsensitive, Integer.parseInt(fieldLength.getText()))
+                                                            : new ClientStringClass(stringTypClass.caseInsensitive, Integer.parseInt(fieldLength.getText()));
+                            BaseUtils.invokeCheckSetter(object, property, stringClass
                             );
                         }
                     });

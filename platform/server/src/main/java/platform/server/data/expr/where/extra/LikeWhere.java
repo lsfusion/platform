@@ -4,9 +4,10 @@ import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.InsensitiveStringClass;
+import platform.server.classes.AbstractStringClass;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.CompileSource;
+import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
 public class LikeWhere extends BinaryWhere<LikeWhere> {
@@ -48,8 +49,8 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
 
     @Override
     public String getSource(CompileSource compile) {
-        String likeString = operator1.getType(compile.keyType) instanceof InsensitiveStringClass
-                               ? " " + compile.syntax.getInsensitiveLike() + " " : " LIKE ";
+        Type type = operator1.getType(compile.keyType);
+        String likeString = type instanceof AbstractStringClass && ((AbstractStringClass) type).caseInsensitive ? " " + compile.syntax.getInsensitiveLike() + " " : " LIKE ";
 
         return operator1.getSource(compile)
                + likeString

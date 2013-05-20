@@ -9,18 +9,13 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.io.DataInputStream;
-import java.io.IOException;
 
 public class ClientImageClass extends ClientStaticFormatFileClass {
 
-    public final static ClientImageClass instance = new ClientImageClass();
+    public final static ClientImageClass instance = new ClientImageClass(false, false);
 
-    public ClientImageClass() {
-    }
-
-    public ClientImageClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public ClientImageClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
     @Override

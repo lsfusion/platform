@@ -25,4 +25,5 @@ public class Data {
     public final static byte DYNAMICFORMATFILE = 21;
     public final static byte TIME = 22;
     public final static byte COLOR = 23;
+    public final static byte VARSTRING = 24;
 }

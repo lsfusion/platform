@@ -1,6 +1,5 @@
 package platform.client.logics.classes;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -19,13 +18,12 @@ abstract public class ClientClass implements Serializable {
     protected ClientClass() {
     }
 
-    ClientClass(DataInputStream inStream) {
-    }
-
     public static ClientTypeClass[] getEnumTypeClasses() {
         return new ClientTypeClass[] {
             ClientStringClass.type,
-            ClientInsensitiveStringClass.type,
+            ClientStringClass.insensetiveType,
+            ClientVarStringClass.type,
+            ClientVarStringClass.insensetiveType,
             ClientObjectClass.type,
             ClientNumericClass.type,
             ClientDateClass.instance,

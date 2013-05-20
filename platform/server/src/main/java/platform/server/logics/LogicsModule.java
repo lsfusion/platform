@@ -931,7 +931,7 @@ public abstract class LogicsModule {
     }
 
     protected <P extends PropertyInterface> LCP addInsensitiveSProp(String name, int intNum, String separator) {
-        return addProperty(null, new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(name, ServerResourceBundle.getString("logics.join"), intNum, separator, false)));
+        return addProperty(null, new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(name, ServerResourceBundle.getString("logics.join"), intNum, separator, true)));
     }
 
     protected LCP addAFProp(boolean... nots) {

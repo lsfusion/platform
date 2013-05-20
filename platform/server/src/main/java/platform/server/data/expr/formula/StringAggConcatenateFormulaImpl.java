@@ -6,7 +6,7 @@ import platform.server.data.type.Type;
 public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImpl {
 
     public StringAggConcatenateFormulaImpl(String separator) {
-        super(separator, false);
+        super(separator, true);
     }
 
     //считает, что последний expr - сепаратор

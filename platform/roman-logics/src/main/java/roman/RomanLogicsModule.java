@@ -1839,7 +1839,7 @@ public class RomanLogicsModule extends LogicsModule {
     @Override
     public void initProperties() {
 
-        name = addDProp(recognizeGroup, "name", "Имя", InsensitiveStringClass.get(110), named);
+        name = addDProp(recognizeGroup, "name", "Имя", StringClass.geti(110), named);
 
         dumb1 = dumb(1);
 
@@ -1923,8 +1923,8 @@ public class RomanLogicsModule extends LogicsModule {
         tariffVolumeFreights = addDProp(baseGroup, "tariffVolumeFreights", "Тариф для перевозок (м3)", NumericClass.get(14, 2));
 
         // GENERAL
-        nameOrigin = addDProp(baseGroup, "nameOrigin", "Наименование (ориг.)", InsensitiveStringClass.get(50), secondNameClass);
-//        nameOriginCountry = addDProp(baseGroup, "nameOriginCountry", "Наименование (ориг.)", InsensitiveStringClass.get(50), baseLM.country);
+        nameOrigin = addDProp(baseGroup, "nameOrigin", "Наименование (ориг.)", StringClass.geti(50), secondNameClass);
+//        nameOriginCountry = addDProp(baseGroup, "nameOriginCountry", "Наименование (ориг.)", StringClass.geti(50), baseLM.country);
 //
 //        sidOrigin2Country = addDProp(baseGroup, "sidOrigin2Country", "Код 2 знака (ориг.)", StringClass.get(2), baseLM.country);
 //        sidOrigin3Country = addDProp(baseGroup, "sidOrigin3Country", "Код 3 знака (ориг.)", StringClass.get(3), baseLM.country);
@@ -2226,7 +2226,7 @@ public class RomanLogicsModule extends LogicsModule {
         supplierCollectionSupplier = addDProp(idGroup, "supplierCollectionSupplier", "Поставщик (ИД)", supplier, collectionSupplier);
         nameSupplierCollectionSupplier = addJProp(baseGroup, "nameSupplierCollectionSupplier", "Поставщик", name, supplierCollectionSupplier, 1);
 
-        sidDestinationSupplier = addDProp(idGroup, "sidDestinationSupplier", "Идентификатор магазина у поставщика", InsensitiveStringClass.get(50),  destination, supplier);
+        sidDestinationSupplier = addDProp(idGroup, "sidDestinationSupplier", "Идентификатор магазина у поставщика", StringClass.geti(50),  destination, supplier);
 
         supplierCategorySupplier = addDProp(idGroup, "supplierCategorySupplier", "Поставщик (ИД)", supplier, categorySupplier);
         categorySupplierSubCategorySupplier = addDProp(idGroup, "categorySupplierSubCategorySupplier", "Группа (ИД)", categorySupplier, subCategorySupplier);
@@ -2362,14 +2362,14 @@ public class RomanLogicsModule extends LogicsModule {
         sidArticle.setMinimumCharWidth(15);
         sidArticleSku = addJProp(supplierAttributeGroup, "sidArticleSku", "Артикул", sidArticle, articleSku, 1);
 
-        originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Наименование (ориг.)", InsensitiveStringClass.get(50), article);
+        originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Наименование (ориг.)", StringClass.geti(50), article);
         originalNameArticleSku = addJProp(supplierAttributeGroup, "originalNameArticleSku", "Наименование (ориг.)", originalNameArticle, articleSku, 1);
 
-        translateNameArticle = addDProp(supplierAttributeGroup, "translateNameArticle", "Наименование", InsensitiveStringClass.get(50), article);
+        translateNameArticle = addDProp(supplierAttributeGroup, "translateNameArticle", "Наименование", StringClass.geti(50), article);
         translateNameArticleSku = addJProp(supplierAttributeGroup, true, "translateNameArticleSku", "Наименование", translateNameArticle, articleSku, 1);
 
         originalNameArticleSkuLanguage = addJProp(baseLM.and1, originalNameArticleSku, 1, is((CustomClass) BL.I18n.getClassByName("Language")), 2);
-        translateNameSkuLanguage = addDProp(supplierAttributeGroup, "translateNameSkuLanguage", "Наименование", InsensitiveStringClass.get(50), sku, (CustomClass) BL.I18n.getClassByName("Language"));
+        translateNameSkuLanguage = addDProp(supplierAttributeGroup, "translateNameSkuLanguage", "Наименование", StringClass.geti(50), sku, (CustomClass) BL.I18n.getClassByName("Language"));
 
         translationNameSku = addJoinAProp(actionGroup, "translationNameSku", "Перевести", addTAProp(originalNameArticleSku, translateNameArticleSku), dictionaryName, 1);
         translationNameSku.addToContextMenuFor(translateNameArticleSku);
@@ -2382,12 +2382,12 @@ public class RomanLogicsModule extends LogicsModule {
         translationNameSkuInvoice = addJoinAProp("translationNameSkuInvoice", "Перевести", translationNameSkuLanguage, 1, languageInvoice, 2);
         translationNameSkuInvoice.addToContextMenuFor(translateNameSkuInvoice);
 
-        translateNameColorSupplier = addDProp(supplierAttributeGroup, "translateNameColorSupplier", "Наименование", InsensitiveStringClass.get(50), colorSupplier);
+        translateNameColorSupplier = addDProp(supplierAttributeGroup, "translateNameColorSupplier", "Наименование", StringClass.geti(50), colorSupplier);
 
         coefficientArticle = addDProp(intraAttributeGroup, "coefficientArticle", "Кол-во в комплекте", IntegerClass.instance, article);
         coefficientArticleSku = addJProp(intraAttributeGroup, true, "coefficientArticleSku", "Кол-во в комплекте", coefficientArticle, articleSku, 1);
 
-        sidTypeLabel = addDProp(baseGroup, "sidTypeLabel", "Код", InsensitiveStringClass.get(50), typeLabel);
+        sidTypeLabel = addDProp(baseGroup, "sidTypeLabel", "Код", StringClass.geti(50), typeLabel);
 
         typeLabelArticle = addDProp(idGroup, "typeLabelArticle", "Тип этикетки (ИД)", typeLabel, article);
         nameTypeLabelArticle = addJProp("nameTypeLabelArticle", "Тип этикетки", name, typeLabelArticle, 1);

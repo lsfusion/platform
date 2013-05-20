@@ -200,7 +200,7 @@ public class BudgetLogicsModule extends LogicsModule {
     @Override
     public void initProperties() {
 
-        name = addDProp(recognizeGroup, "name", "Имя", InsensitiveStringClass.get(110), named);
+        name = addDProp(recognizeGroup, "name", "Имя", StringClass.geti(110), named);
 
         concat2 = addCCProp(2);
         greater22 = addJProp(baseLM.greater2, concat2, 1, 2, concat2, 3, 4);

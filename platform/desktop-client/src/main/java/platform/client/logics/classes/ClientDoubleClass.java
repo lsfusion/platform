@@ -7,8 +7,6 @@ import platform.client.form.editor.DoublePropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.text.*;
 
 public class ClientDoubleClass extends ClientIntegralClass implements ClientTypeClass {
@@ -23,10 +21,6 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     }
 
     protected ClientDoubleClass() {
-    }
-
-    protected ClientDoubleClass(DataInputStream inStream) throws IOException {
-        super(inStream);
     }
 
     public byte getTypeId() {

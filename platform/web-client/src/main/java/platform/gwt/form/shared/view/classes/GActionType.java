@@ -12,7 +12,7 @@ import platform.gwt.form.shared.view.panel.PanelRenderer;
 import java.text.ParseException;
 
 public class GActionType extends GDataType {
-    public static GActionType instance = new GActionType();
+    public final static GActionType instance = new GActionType();
 
     @Override
     public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {

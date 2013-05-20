@@ -1,20 +1,17 @@
 package platform.server.data.expr.formula;
 
-import platform.server.classes.StringClass;
-import platform.server.classes.TextClass;
+import platform.server.classes.AbstractStringClass;
 import platform.server.data.expr.formula.conversion.*;
 import platform.server.data.query.CompileSource;
 import platform.server.data.type.Type;
 
 public class SumFormulaImpl extends ArithmeticFormulaImpl {
     public final static CompoundTypeConversion sumConversion = new CompoundTypeConversion(
-            TextTypeConversion.instance,
             StringTypeConversion.instance,
             IntegralTypeConversion.instance
     );
 
     public final static CompoundConversionSource sumConversionSource = new CompoundConversionSource(
-            TextSumConversionSource.instance,
             StringSumConversionSource.instance,
             IntegralSumConversionSource.instance
     );
@@ -56,37 +53,19 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
         public String getSource(CompileSource compile, Type type1, Type type2, String src1, String src2) {
             Type type = conversion.getType(type1, type2);
             if (type != null) {
-                if (!(type1 instanceof StringClass)) {
+                if (!(type1 instanceof AbstractStringClass)) {
                     src1 = type.getCast(src1, compile.syntax, false);
+                } else if (((AbstractStringClass)type1).needRTrim()) {
+                    src1 = "rtrim(" + src1 + ")";
                 }
-                if (!(type2 instanceof StringClass)) {
+
+                if (!(type2 instanceof AbstractStringClass)) {
                     src2 = type.getCast(src2, compile.syntax, false);
+                } else if (((AbstractStringClass)type2).needRTrim()) {
+                    src2 = "rtrim(" + src2 + ")";
                 }
 
-                return "(rtrim(" + src1 + ") || rtrim(" + src2 + "))";
-            }
-            return null;
-        }
-    }
-
-    public static class TextSumConversionSource extends AbstractConversionSource {
-        public final static TextSumConversionSource instance = new TextSumConversionSource();
-
-        protected TextSumConversionSource() {
-            super(TextTypeConversion.instance);
-        }
-
-        @Override
-        public String getSource(CompileSource compile, Type type1, Type type2, String src1, String src2) {
-            if (conversion.getType(type1, type2) != null) {
-                TextClass type = TextClass.instance;
-                if (type1 != type) {
-                    src1 = type.getCast(src1, compile.syntax, false);
-                }
-                if (type2 != type) {
-                    src2 = type.getCast(src2, compile.syntax, false);
-                }
-                return "(" + src1 + " || " + src2 + ")";
+                return type.getCast("(" + src1 + " || " + src2 + ")", compile.syntax, false);
             }
             return null;
         }

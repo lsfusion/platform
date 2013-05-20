@@ -211,7 +211,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             return StringClass.get(Integer.parseInt(name));
         } else if (name.startsWith("ISTRING[")) {
             name = name.substring("ISTRING[".length(), name.length() - 1);
-            return InsensitiveStringClass.get(Integer.parseInt(name));
+            return StringClass.geti(Integer.parseInt(name));
+        } else if (name.startsWith("VARSTRING[")) {
+            name = name.substring("VARSTRING[".length(), name.length() - 1);
+            return StringClass.getv(Integer.parseInt(name));
+        } else if (name.startsWith("VARISTRING[")) {
+            name = name.substring("VARISTRING[".length(), name.length() - 1);
+            return StringClass.getvi(Integer.parseInt(name));
         } else if (name.startsWith("NUMERIC[")) {
             String length = name.substring("NUMERIC[".length(), name.indexOf(","));
             String precision = name.substring(name.indexOf(",") + 1, name.length() - 1);
@@ -1548,7 +1554,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case LONG: return addCProp(LongClass.instance, value);
             case NUMERIC: return addNumericConst((String) value);
             case REAL: return addCProp(DoubleClass.instance, value);
-            case STRING: return addCProp(StringClass.get(((String)value).length()), value);
+            case STRING: return addCProp(StringClass.getv(((String) value).length()), value);
             case LOGICAL: return addCProp(LogicalClass.instance, value);
             case DATE: return addCProp(DateClass.instance, value);
             case DATETIME: return addCProp(DateTimeClass.instance, value);

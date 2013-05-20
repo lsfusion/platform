@@ -691,7 +691,7 @@ public class VEDLogicsModule extends LogicsModule {
     @Override
     public void initProperties() {
 
-        name = addDProp(recognizeGroup, "name", "Имя", InsensitiveStringClass.get(110), named);
+        name = addDProp(recognizeGroup, "name", "Имя", StringClass.geti(110), named);
 
         removePercent = addSFProp("((prm1*(100-prm2))/100)", DoubleClass.instance, 2);
         addPercent = addSFProp("((prm1*(100+prm2))/100)", DoubleClass.instance, 2);

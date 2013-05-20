@@ -1,6 +1,5 @@
 package platform.client.form.editor;
 
-import platform.base.BaseUtils;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
@@ -9,17 +8,20 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 import java.awt.event.ActionEvent;
 
+import static platform.base.BaseUtils.rtrim;
 import static platform.client.ClientResourceBundle.getString;
 
 public class StringPropertyEditor extends TextFieldPropertyEditor {
 
     private final ClientPropertyDraw property;
     private final boolean matchRegexp;
+    private final boolean isVarString;
 
     private String currentError = null;
 
-    public StringPropertyEditor(ClientPropertyDraw property, Object value, final int length, boolean matchRegexp) {
+    public StringPropertyEditor(ClientPropertyDraw property, Object value, final int length, boolean isVarString, boolean matchRegexp) {
         super(property.design);
+        this.isVarString = isVarString;
         this.matchRegexp = matchRegexp;
         this.property = property;
 
@@ -34,12 +36,15 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
         });
 
         if (value != null) {
-            setText(BaseUtils.rtrim(value.toString()));
+            setText(isVarString ? value.toString() : rtrim(value.toString()));
         }
     }
 
     public Object getCellEditorValue() {
         String text = getText();
+        if (!isVarString) {
+            text = rtrim(text);
+        }
         return text.isEmpty() ? null : text;
     }
 

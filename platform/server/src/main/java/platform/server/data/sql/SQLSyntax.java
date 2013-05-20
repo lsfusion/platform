@@ -38,6 +38,9 @@ public interface SQLSyntax {
     String getStringType(int length);
     int getStringSQL();
 
+    String getVarStringType(int length);
+    int getVarStringSQL();
+
     String getNumericType(int length,int precision);
     int getNumericSQL();
 

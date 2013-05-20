@@ -9,18 +9,13 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.io.DataInputStream;
-import java.io.IOException;
 
 public class ClientWordClass extends ClientStaticFormatFileClass {
 
-    public final static ClientWordClass instance = new ClientWordClass();
+    public final static ClientWordClass instance = new ClientWordClass(false, false);
 
-    public ClientWordClass() {
-    }
-
-    public ClientWordClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public ClientWordClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
     @Override

@@ -997,6 +997,7 @@ snumeric 'Numeric' (store) = DATA NUMERIC[14,3] (Store);
 sboolean 'Boolean' (store) = DATA BOOLEAN (Store);
 stext 'Text' (store) = DATA TEXT (Store);
 sstring 'String' (store) = DATA STRING[10] (Store);
+svarstring 'VarString (no rtrim)' (store) = DATA VARSTRING[10] (Store);
 
 textToInt 'string->integer' (store) = INTEGER(sstring(store));
 longToString 'long->string' (store) = STRING[15](slong(store));
@@ -1021,15 +1022,20 @@ multDoubleNumeric 'double*numeric' (store) = sdouble(store) * snumeric(store) MI
 multNumericInt 'numeric*integer' (store) = snumeric(store) * sinteger(store) MINCHARWIDTH 25;
 multIntLong 'integer*long' (store) = sinteger(store) * slong(store) MINCHARWIDTH 25;
 
-concatNull(store) = name(store) + ',' + sstring(store) + ',' + slong(store);
+concatNull(store) = name(store) + ', ' + sstring(store) + ', ' + slong(store);
 concatNotNull(store) = CONCAT ', ', name(store), sstring(store), slong(store);
+concatToText(store) = CONCAT ', ', stext(store), name(store), sstring(store), slong(store);
+concatToVar(store) = CONCAT ', ', name(store), sstring(store), slong(store), '<const>' IF store IS Store;
+concatVarNull(store) =  'name: ' + name(store) + '; long: ' + slong(store) + '; string: ' + sstring(store);
+concatVarNotNull(store) = CONCAT '', 'name: ' IF store IS Store, name(store), '; long: ' IF store IS Store, slong(store), '; string: ' IF store IS Store, sstring(store);
 
-FORM TestAddOperator 'Тест операторов, CAST, CONCAT, "+"'
+FORM TestAddOperator 'Тест операторов CAST, CONCAT, "+-*"'
     OBJECTS s=Store
-    PROPERTIES(s) OBJVALUE, name, sdate, sinteger, slong, sdouble, snumeric, sstring, sboolean
+    PROPERTIES(s) OBJVALUE, name, sdate, sinteger, slong, sdouble, snumeric, sstring, svarstring, sboolean
     PROPERTIES(s) stext
     PROPERTIES(s) FORCE PANEL textToInt, longToString
-    PROPERTIES(s) FORCE PANEL sumNameString, nameDate, sumDoubleInt, sumDoubleNumeric, sumNumericInt, sumIntLong, sumStringBoolean, sumTextInteger, concatNull, concatNotNull
+    PROPERTIES(s) FORCE PANEL sumNameString, nameDate, sumDoubleInt, sumDoubleNumeric, sumNumericInt, sumIntLong, sumStringBoolean, sumTextInteger
+    PROPERTIES(s) FORCE PANEL concatNull, concatNotNull, concatVarNull, concatVarNotNull, concatToText, concatToVar
     PROPERTIES(s) FORCE PANEL subDoubleInt, subDoubleNumeric, subNumericInt, subIntLong
     PROPERTIES(s) FORCE PANEL multDoubleInt, multDoubleNumeric, multNumericInt, multIntLong
 ;
@@ -1054,6 +1060,10 @@ DESIGN TestAddOperator FROM DEFAULT {
 
             ADD PROPERTY(concatNull);
             ADD PROPERTY(concatNotNull);
+            ADD PROPERTY(concatVarNull);
+            ADD PROPERTY(concatVarNotNull);
+            ADD PROPERTY(concatToText);
+            ADD PROPERTY(concatToVar);
         }
         NEW sumTab {
             caption = 'sum';

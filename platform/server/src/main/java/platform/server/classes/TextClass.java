@@ -2,14 +2,9 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.Format;
-
-public class TextClass extends DataClass<String> {
+public class TextClass extends AbstractStringClass {
 
     public final static TextClass instance = new TextClass();
 
@@ -17,10 +12,12 @@ public class TextClass extends DataClass<String> {
         DataClass.storeClass(instance);
     }
 
-    private TextClass() { super(ServerResourceBundle.getString("classes.text")); }
+    private TextClass() {
+        this(false);
+    }
 
-        public String toString() {
-        return ServerResourceBundle.getString("classes.text");
+    private TextClass(boolean caseInsensitive) {
+        super(ServerResourceBundle.getString("classes.text"), caseInsensitive);
     }
 
     public int getMinimumWidth() {
@@ -31,61 +28,32 @@ public class TextClass extends DataClass<String> {
         return 200;
     }
 
-    public Format getReportFormat() {
-        return null;
-    }
-
-    public Class getReportJavaClass() {
-        return String.class;
-    }
-
     public byte getTypeID() {
         return Data.TEXT;
     }
 
-    public Object getDefaultValue() {
-        return "";
-    }
-
     public DataClass getCompatible(DataClass compClass) {
-        return compClass instanceof TextClass ? this : null;
+        return compClass instanceof AbstractStringClass ? this : null;
     }
 
     public String getDB(SQLSyntax syntax) {
         return syntax.getTextType();
     }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getTextSQL();
     }
 
-    public boolean isSafeString(Object value) {
+    @Override
+    public boolean needRTrim() {
         return false;
     }
 
-    public String getString(Object value, SQLSyntax syntax) {
-        return "'" + value + "'";
-    }
-
-    public String read(Object value) {
-        return (String) value;
-    }
-
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setString(num, (String) value);
-    }
-
-    @Override
-    public int getBinaryLength(boolean charBinary) {
-        //временный фикс
-//        throw new RuntimeException("not supported");
-        return 100;
-    }
-
-    public String parseString(String s) throws ParseException {
-        return s;
-    }
-
     public String getSID() {
-        return "TextClass";
+        return "TextClass_" + (caseInsensitive ? "insensitive" : "");
+    }
+
+    public String toString() {
+        return ServerResourceBundle.getString("classes.text") + (caseInsensitive ? "(Insensitive)" : "");
     }
 }

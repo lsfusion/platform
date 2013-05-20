@@ -41,6 +41,15 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return Types.CHAR;
     }
 
+    @Override
+    public String getVarStringType(int length) {
+        return "varchar(" + length + ")";
+    }
+    @Override
+    public int getVarStringSQL() {
+        return Types.VARCHAR;
+    }
+
     public String getNumericType(int length, int precision) {
         return "numeric(" + length + "," + precision + ")";
     }

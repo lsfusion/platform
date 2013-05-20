@@ -302,7 +302,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         seek = addSAProp();
 
         staticName = addDProp(publicGroup, "staticName", getString("logics.static.name"), StringClass.get(250), baseClass);
-        staticCaption = addDProp(publicGroup, "staticCaption", getString("logics.static.caption"), InsensitiveStringClass.get(100), baseClass);
+        staticCaption = addDProp(publicGroup, "staticCaption", getString("logics.static.caption"), StringClass.geti(100), baseClass);
         ((CalcProperty)staticCaption.property).aggProp = true;
 
         // todo : поменять возможно названия

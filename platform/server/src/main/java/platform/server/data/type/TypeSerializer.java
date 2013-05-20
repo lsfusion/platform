@@ -29,15 +29,6 @@ public class TypeSerializer {
         }
     }
 
-    public static void serializeValueClass(DataOutputStream outStream, ValueClass cls) throws IOException {
-        if (cls == null)
-            outStream.writeBoolean(true);
-        else {
-            outStream.writeBoolean(false);
-            cls.serialize(outStream);
-        }
-    }
-
     public static Type deserializeType(DataInputStream inStream, int version) throws IOException {
         if (version < 6) {
             if(inStream.readBoolean())
@@ -75,13 +66,29 @@ public class TypeSerializer {
         if (type == Data.NUMERIC) return NumericClass.get(inStream.readInt(), inStream.readInt());
         if (type == Data.LOGICAL) return LogicalClass.instance;
         if (type == Data.DATE) return DateClass.instance;
-        if (type == Data.STRING) return StringClass.get(inStream.readInt());
-        if (type == Data.INSENSITIVESTRING) return InsensitiveStringClass.get(inStream.readInt());
-        if (type == Data.TEXT) return TextClass.instance;
         if (type == Data.YEAR) return YearClass.instance;
         if (type == Data.DATETIME) return DateTimeClass.instance;
         if (type == Data.TIME) return TimeClass.instance;
         if (type == Data.COLOR) return ColorClass.instance;
+
+        if (type == Data.VARSTRING) return StringClass.getv(inStream.readBoolean(), inStream.readInt());
+
+        if (version < 7) {
+            if (type == Data.STRING) return StringClass.get(inStream.readInt());
+            if (type == Data.INSENSITIVESTRING) return StringClass.geti(inStream.readInt());
+            if (type == Data.TEXT) return TextClass.instance;
+        } else {
+            if (type == Data.STRING) return StringClass.get(inStream.readBoolean(), inStream.readInt());
+            if (type == Data.INSENSITIVESTRING) {
+                // в 7й версии тип INSENSITIVESTRING был удалён
+                throw new IllegalStateException("Incorrect type id");
+            }
+            if (type == Data.TEXT) {
+                boolean caseInsensitive = inStream.readBoolean();
+                assert !caseInsensitive;
+                return TextClass.instance;
+            }
+        }
 
         if(version>=2) { // обратная совместимость
             if (type == Data.IMAGE) return ImageClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false);
@@ -125,9 +132,17 @@ public class TypeSerializer {
         if (type == Data.NUMERIC) return NumericClass.get(inStream.readInt(), inStream.readInt());
         if (type == Data.LOGICAL) return LogicalClass.instance;
         if (type == Data.DATE) return DateClass.instance;
-        if (type == Data.STRING) return StringClass.get(inStream.readInt());
-        if (type == Data.INSENSITIVESTRING) return InsensitiveStringClass.get(inStream.readInt());
-        if (type == Data.TEXT) return TextClass.instance;
+        if (type == Data.STRING) return StringClass.get(inStream.readBoolean(), inStream.readInt());
+        if (type == Data.VARSTRING) return StringClass.getv(inStream.readBoolean(), inStream.readInt());
+        if (type == Data.INSENSITIVESTRING) {
+            // в 7й версии тип INSENSITIVESTRING был удалён
+            throw new IllegalStateException("Incorrect type id");
+        }
+        if (type == Data.TEXT) {
+            boolean caseInsensitive = inStream.readBoolean();
+            assert !caseInsensitive;
+            return TextClass.instance;
+        }
         if (type == Data.YEAR) return YearClass.instance;
         if (type == Data.OBJECT) return context.LM.baseClass.findClassID(inStream.readInt());
         if (type == Data.ACTION) return ActionClass.instance;

@@ -9,11 +9,11 @@ import platform.server.data.expr.formula.StringConcatenateFormulaImpl;
 public class StringConcatenateProperty extends FormulaImplProperty {
 
     public StringConcatenateProperty(String sID, String caption, int intNum, String separator) {
-        this(sID, caption, intNum, separator, true);
+        this(sID, caption, intNum, separator, false);
     }
 
-    public StringConcatenateProperty(String sID, String caption, int intNum, String separator, boolean caseSensitive) {
-        super(sID, caption, intNum, new StringConcatenateFormulaImpl(separator, caseSensitive));
+    public StringConcatenateProperty(String sID, String caption, int intNum, String separator, boolean caseInsensitive) {
+        super(sID, caption, intNum, new StringConcatenateFormulaImpl(separator, caseInsensitive));
     }
 
     @Override

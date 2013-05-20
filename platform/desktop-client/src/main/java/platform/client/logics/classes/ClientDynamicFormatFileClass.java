@@ -9,18 +9,13 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.io.DataInputStream;
-import java.io.IOException;
 
 public class ClientDynamicFormatFileClass extends ClientFileClass {
 
-    public final static ClientDynamicFormatFileClass instance = new ClientDynamicFormatFileClass();
+    public final static ClientDynamicFormatFileClass instance = new ClientDynamicFormatFileClass(false, false);
 
-    public ClientDynamicFormatFileClass() {
-    }
-
-    public ClientDynamicFormatFileClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public ClientDynamicFormatFileClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
     @Override
