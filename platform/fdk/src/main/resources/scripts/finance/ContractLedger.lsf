@@ -339,7 +339,7 @@ META defineCreditMemoUnion (prop, caption)
 END
 
 @defineCreditMemoPrefix(In, 'Кредитная нота', 'Проведенная кредитная нота');
-@defineCreditMemoPrefix(Out, 'Дебетная нота', 'Проведенная дебитовая нота');
+@defineCreditMemoPrefix(Out, 'Дебетная нота', 'Проведенная дебетовая нота');
 
 prePostCreditMemo 'Провести' (creditMemo) = ABSTRACT ACTION (CreditMemo);
 prePostCreditMemo(creditMemo) += prePostCreditMemoIn(creditMemo);

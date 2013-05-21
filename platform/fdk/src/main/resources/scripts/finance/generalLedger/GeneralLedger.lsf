@@ -95,13 +95,13 @@ META defineGLAccountBalance (caption, prefix)
 END
 
 sumCreditGLAccountCompany 'Сумма (кредит)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) IF isPostedGeneralLedger(ledger) BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
-sumDebitGLAccountCompany 'Сумма (дебит)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) IF isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
+sumDebitGLAccountCompany 'Сумма (дебет)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) IF isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
 balanceGLAccountCompany 'Сальдо' (GLAccount, company)= sumDebitGLAccountCompany(GLAccount, company) (-) sumCreditGLAccountCompany(GLAccount, company);
 
 TABLE GLAccountLegalEntityDate(GLAccount, LegalEntity, DATE);
 sumCreditGLAccountCompanyDate 'Сумма (кредит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) IF isPostedGeneralLedger(ledger)
     BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger) PERSISTENT;
-sumDebitGLAccountCompanyDate 'Сумма (дебит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) IF isPostedGeneralLedger(ledger)
+sumDebitGLAccountCompanyDate 'Сумма (дебет)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) IF isPostedGeneralLedger(ledger)
     BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger) PERSISTENT;
 balanceGLAccountCompanyDate 'Сальдо' (GLAccount, company, date) =
     sumDebitGLAccountCompanyDate(GLAccount, company, date) (-) sumCreditGLAccountCompanyDate(GLAccount, company, date);
@@ -109,41 +109,41 @@ balanceGLAccountCompanyDate 'Сальдо' (GLAccount, company, date) =
 sumCreditGLAccountCompanyDateFromTo 'Сумма (кредит)' (GLAccount, company, dateFrom, dateTo) = GROUP SUM
         sumCreditGLAccountCompanyDate(GLAccount, company, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY GLAccount, company, dateFrom, dateTo;
-sumDebitGLAccountCompanyDateFromTo 'Сумма (дебит)' (GLAccount, company, dateFrom, dateTo) = GROUP SUM
+sumDebitGLAccountCompanyDateFromTo 'Сумма (дебет)' (GLAccount, company, dateFrom, dateTo) = GROUP SUM
         sumDebitGLAccountCompanyDate(GLAccount, company, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY GLAccount, company, dateFrom, dateTo;
 balanceGLAccountCompanyDateFromTo 'Сальдо' (GLAccount, company, dateFrom, dateTo) =
     sumDebitGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo) (-) sumCreditGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo);
 
 @defineGLAccountSum ('(кредит)', credit, );
-@defineGLAccountSum ('(дебит)', debit, );
+@defineGLAccountSum ('(дебет)', debit, );
 @defineGLAccountBalance ( , );
 
 //- Рекурсивно
 recSumCreditGLAccountCompany 'Сумма (кредит)' (GLAccount, company)=  GROUP SUM sumCreditGLAccountCompany(child, company)
     IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company;
-recSumDebitGLAccountCompany 'Сумма (дебит)' (GLAccount, company)=  GROUP SUM sumDebitGLAccountCompany(child, company)
+recSumDebitGLAccountCompany 'Сумма (дебет)' (GLAccount, company)=  GROUP SUM sumDebitGLAccountCompany(child, company)
     IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company;
 recBalanceGLAccountCompany 'Сальдо' (GLAccount, company)=
     recSumDebitGLAccountCompany(GLAccount, company) (-) recSumCreditGLAccountCompany(GLAccount, company);
 
 recSumCreditGLAccountCompanyDate 'Сумма (кредит)' (GLAccount, company, date)=  GROUP SUM sumCreditGLAccountCompanyDate(child, company, date)
     IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, date PERSISTENT;
-recSumDebitGLAccountCompanyDate 'Сумма (дебит)' (GLAccount, company, date)=  GROUP SUM sumDebitGLAccountCompanyDate(child, company, date)
+recSumDebitGLAccountCompanyDate 'Сумма (дебет)' (GLAccount, company, date)=  GROUP SUM sumDebitGLAccountCompanyDate(child, company, date)
     IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, date PERSISTENT;
 recBalanceGLAccountCompanyDate 'Сальдо' (GLAccount, company, date) =
     recSumDebitGLAccountCompanyDate(GLAccount, company, date) (-) recSumCreditGLAccountCompanyDate(GLAccount, company, date);
 
 recSumCreditGLAccountCompanyDateFromTo 'Сумма (кредит)' (GLAccount, company, dateFrom, dateTo)=  GROUP SUM sumCreditGLAccountCompanyDateFromTo(child, company, dateFrom, dateTo)
     IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, dateFrom, dateTo;
-recSumDebitGLAccountCompanyDateFromTo 'Сумма (дебит)' (GLAccount, company, dateFrom, dateTo)=  GROUP SUM sumDebitGLAccountCompanyDateFromTo(child, company, dateFrom, dateTo)
+recSumDebitGLAccountCompanyDateFromTo 'Сумма (дебет)' (GLAccount, company, dateFrom, dateTo)=  GROUP SUM sumDebitGLAccountCompanyDateFromTo(child, company, dateFrom, dateTo)
     IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, dateFrom, dateTo;
 recBalanceGLAccountCompanyDateFromTo 'Сальдо' (GLAccount, company, dateFrom, dateTo) =
     recSumDebitGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo) (-) recSumCreditGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo);
 
 
 @defineGLAccountSum ('(кредит)', credit, rec);
-@defineGLAccountSum ('(дебит)', debit, rec);
+@defineGLAccountSum ('(дебет)', debit, rec);
 @defineGLAccountBalance ( , rec);
 
 EXTEND FORM GLAccounts
@@ -159,7 +159,7 @@ EXTEND FORM GLAccounts
 
     FILTERGROUP filter3
             FILTER 'По счету' 'F8' debitGeneralLedger(gl)==g OR creditGeneralLedger(gl)==g DEFAULT
-            FILTER 'Только дебит' 'F7' debitGeneralLedger(gl)==g
+            FILTER 'Только дебет' 'F7' debitGeneralLedger(gl)==g
             FILTER 'Только кредит' 'F6' creditGeneralLedger(gl)==g
 ;
 EXTEND DESIGN GLAccounts {

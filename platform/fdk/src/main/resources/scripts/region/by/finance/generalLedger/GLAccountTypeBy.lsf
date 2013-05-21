@@ -141,7 +141,7 @@ loadDefaultGLAccountsBy 'Загрузить стандарный план сче
     EXEC loadDefaultGLAccount('Расчеты с учредителями', '75', '1','VI');
     EXEC loadDefaultGLAccount('Расчеты по вкладам в уставный капитал', '75.1', '1','75');
     EXEC loadDefaultGLAccount('Расчеты по выплате дивидендов и других доходов', '75.2', '1','75');
-    EXEC loadDefaultGLAccount('Расчеты с разными дебиторами и кредиторами', '76', '1','VI');
+    EXEC loadDefaultGLAccount('Расчеты с разными дебеторами и кредиторами', '76', '1','VI');
     EXEC loadDefaultGLAccount('Расчеты по исполнительным документам', '76.1', '1','76');
     EXEC loadDefaultGLAccount('Расчеты по имущественному и личному страхованию', '76.2', '1','76');
     EXEC loadDefaultGLAccount('Расчеты по претензиям', '76.3', '1','76');
@@ -197,7 +197,7 @@ loadDefaultGLAccountsBy 'Загрузить стандарный план сче
     EXEC loadDefaultGLAccount('Товары, принятые на комиссию', '004', '1','VIIII');
     EXEC loadDefaultGLAccount('Оборудование, принятое для монтажа', '005', '1','VIIII');
     EXEC loadDefaultGLAccount('Бланки строгой отчетности', '006', '1','VIIII');
-    EXEC loadDefaultGLAccount('Списанная безнадежная к получению дебиторская задолженность', '007', '1','VIIII');
+    EXEC loadDefaultGLAccount('Списанная безнадежная к получению дебеторская задолженность', '007', '1','VIIII');
     EXEC loadDefaultGLAccount('Обеспечения обязательств полученные', '008', '1','VIIII');
     EXEC loadDefaultGLAccount('Обеспечения обязательств выданные', '009', '1','VIIII');
     EXEC loadDefaultGLAccount(' ', '010', '1','VIIII');
