@@ -6,7 +6,7 @@ import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditManager;
 
 public class DoubleGridCellEditor extends TextBasedGridCellEditor {
-    private final NumberFormat format;
+    protected final NumberFormat format;
 
     public DoubleGridCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, NumberFormat.getDecimalFormat());
@@ -25,9 +25,13 @@ public class DoubleGridCellEditor extends TextBasedGridCellEditor {
     @Override
     protected Object tryParseInputText(String inputText) throws ParseException {
         try {
-            return inputText.isEmpty() ? null : format.parse(inputText.replaceAll(" ", ""));
+            return inputText.isEmpty() ? null : parseNotNullString(inputText.replaceAll(" ", ""));
         } catch (NumberFormatException e) {
             throw new ParseException();
         }
+    }
+
+    protected Object parseNotNullString(String doubleString) {
+        return format.parse(doubleString);
     }
 }
