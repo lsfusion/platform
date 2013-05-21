@@ -19,9 +19,9 @@
 	<field name="indexWriteOffDetail" class="java.lang.Integer"/>
 	<field name="idBarcodeSkuWriteOffDetail" class="java.lang.String"/>
 	<field name="nameSkuWriteOffDetail" class="java.lang.String"/>
-	<field name="quantityWriteOffDetail" class="java.lang.Double"/>
-	<field name="priceWriteOffDetail" class="java.lang.Double"/>
-	<field name="sumWriteOffDetail" class="java.lang.Double"/>
+	<field name="quantityWriteOffDetail" class="java.math.BigDecimal"/>
+	<field name="priceWriteOffDetail" class="java.math.BigDecimal"/>
+	<field name="sumWriteOffDetail" class="java.math.BigDecimal"/>
 	<field name="shortNameUOMSkuWriteOffDetail" class="java.lang.String"/>
 	<field name="descriptionBatchWriteOffDetail" class="java.lang.String"/>
 	<detail>

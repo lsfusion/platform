@@ -48,11 +48,11 @@
 	<field name="nameCurrencyPricing" class="java.lang.String"/>
 	<field name="notePricing" class="java.lang.String"/>
 	<field name="countPricingDetailPricing" class="java.lang.Integer"/>
-	<field name="quantityPricingDetailPricing" class="java.lang.Double"/>
-	<field name="sumPricingDetailPricing" class="java.lang.Double"/>
-	<field name="retailMarkupSumPricingDetailPricing" class="java.lang.Double"/>
-	<field name="retailVATSumPricingDetailPricing" class="java.lang.Double"/>
-	<field name="retailSumPricingDetailPricing" class="java.lang.Double"/>
+	<field name="quantityPricingDetailPricing" class="java.math.BigDecimal"/>
+	<field name="sumPricingDetailPricing" class="java.math.BigDecimal"/>
+	<field name="retailMarkupSumPricingDetailPricing" class="java.math.BigDecimal"/>
+	<field name="retailVATSumPricingDetailPricing" class="java.math.BigDecimal"/>
+	<field name="retailSumPricingDetailPricing" class="java.math.BigDecimal"/>
 	<field name="nameRegisterCommitteePricing" class="java.lang.String"/>
 	<field name="nameFormedManPricing" class="java.lang.String"/>
 	<field name="nameCheckedManPricing" class="java.lang.String"/>
@@ -64,18 +64,18 @@
 	<field name="idBarcodeSkuPricingDetail" class="java.lang.String"/>
 	<field name="nameSkuPricingDetail" class="java.lang.String"/>
 	<field name="shortNameUOMSkuPricingDetail" class="java.lang.String"/>
-	<field name="quantityPricingDetail" class="java.lang.Double"/>
-	<field name="pricePricingDetail" class="java.lang.Double"/>
-	<field name="sumPricingDetail" class="java.lang.Double"/>
-	<field name="retailMarkupPricingDetail" class="java.lang.Double"/>
-	<field name="retailMarkupSumPricingDetail" class="java.lang.Double"/>
+	<field name="quantityPricingDetail" class="java.math.BigDecimal"/>
+	<field name="pricePricingDetail" class="java.math.BigDecimal"/>
+	<field name="sumPricingDetail" class="java.math.BigDecimal"/>
+	<field name="retailMarkupPricingDetail" class="java.math.BigDecimal"/>
+	<field name="retailMarkupSumPricingDetail" class="java.math.BigDecimal"/>
 	<field name="numberRetailVATPricingDetail" class="java.lang.Integer"/>
-	<field name="valueRetailVATPricingDetail" class="java.lang.Double"/>
-	<field name="retailVATSumPricingDetail" class="java.lang.Double"/>
-	<field name="retailPricePricingDetail" class="java.lang.Double"/>
-	<field name="retailSumPricingDetail" class="java.lang.Double"/>
-	<field name="overPricingPricePricingDetail" class="java.lang.Double"/>
-	<field name="pricingPricePricingDetail" class="java.lang.Double"/>
+	<field name="valueRetailVATPricingDetail" class="java.math.BigDecimal"/>
+	<field name="retailVATSumPricingDetail" class="java.math.BigDecimal"/>
+	<field name="retailPricePricingDetail" class="java.math.BigDecimal"/>
+	<field name="retailSumPricingDetail" class="java.math.BigDecimal"/>
+	<field name="overPricingPricePricingDetail" class="java.math.BigDecimal"/>
+	<field name="pricingPricePricingDetail" class="java.math.BigDecimal"/>
 	<field name="extraDescriptionPricingDetail" class="java.lang.String"/>
 	<group name="captionGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{p})]]></groupExpression>

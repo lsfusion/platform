@@ -57,11 +57,11 @@
 	<field name="departureTimeConsignment" class="java.util.Date"/>
 	<field name="downtimeConsignment" class="java.lang.String"/>
 	<field name="raceQuantityConsignment" class="java.lang.Integer"/>
-	<field name="quantityConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="packQuantityConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="grossWeightTonConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="sumConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="quantityConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="packQuantityConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="grossWeightTonConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="sumConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="sumVATConsignmentDetailConsignment" class="java.math.BigDecimal"/>
 	<field name="UNPCustomerConsignment" class="java.lang.String"/>
 	<field name="UNPSupplierConsignment" class="java.lang.String"/>
 	<field name="UNPPayerConsignment" class="java.lang.String"/>
@@ -72,29 +72,29 @@
 	<field name="fullNameCustomerConsignment" class="java.lang.String"/>
 	<field name="fullNamePayerConsignment" class="java.lang.String"/>
 	<field name="countConsignmentDetailConsignment" class="java.lang.Integer"/>
-	<field name="sumInvoiceConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="sumInvoiceConsignmentDetailConsignment" class="java.math.BigDecimal"/>
 	<field name="documentNameCurrencyConsignment" class="java.lang.String"/>
 	<field name="isCustomsFlowConsignment" class="java.lang.Boolean"/>
 	<field name="noteConsignment" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="nameSkuConsignmentDetail" class="java.lang.String"/>
 	<field name="shortNameUOMConsignmentDetail" class="java.lang.String"/>
-	<field name="quantityConsignmentDetail" class="java.lang.Double"/>
-	<field name="priceConsignmentDetail" class="java.lang.Double"/>
-	<field name="sumConsignmentDetail" class="java.lang.Double"/>
-	<field name="vatConsignmentDetail" class="java.lang.Double"/>
-	<field name="sumVATConsignmentDetail" class="java.lang.Double"/>
-	<field name="sumInvoiceConsignmentDetail" class="java.lang.Double"/>
-	<field name="packQuantityConsignmentDetail" class="java.lang.Double"/>
-	<field name="grossWeightTonConsignmentDetail" class="java.lang.Double"/>
+	<field name="quantityConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="priceConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="vatConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumVATConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumInvoiceConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="packQuantityConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="grossWeightTonConsignmentDetail" class="java.math.BigDecimal"/>
 	<field name="noteConsignmentDetail" class="java.lang.String"/>
 	<field name="nameWareConsignmentDetail" class="java.lang.String"/>
-	<field name="warePriceConsignmentDetail" class="java.lang.Double"/>
-	<field name="valueWareRangeConsignmentDetail" class="java.lang.Double"/>
-	<field name="wareSumConsignmentDetail" class="java.lang.Double"/>
-	<field name="wareSupplierSumConsignmentDetail" class="java.lang.Double"/>
-	<field name="wareVATSumConsignmentDetail" class="java.lang.Double"/>
-	<field name="wareSupplierPriceConsignmentDetail" class="java.lang.Double"/>
+	<field name="warePriceConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="valueWareRangeConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="wareSumConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="wareSupplierSumConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="wareVATSumConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="wareSupplierPriceConsignmentDetail" class="java.math.BigDecimal"/>
 	<field name="extraDescriptionConsignmentDetail" class="java.lang.String"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
@@ -775,7 +775,7 @@
 			</textField>
 		</band>
 		<band height="14">
-			<printWhenExpression><![CDATA[$F{countConsignmentDetailConsignment}<6 && $F{warePriceConsignmentDetail}>0 && $F{isCustomsFlowConsignment}==null]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{countConsignmentDetailConsignment}<6 && $F{warePriceConsignmentDetail}.compareTo(BigDecimal.ZERO)>0 && $F{isCustomsFlowConsignment}==null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" mode="Transparent" x="24" y="0" width="112" height="14"/>
 				<box>
@@ -906,7 +906,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{warePriceConsignmentDetail}>0?$F{quantityConsignmentDetail}:0.0]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{warePriceConsignmentDetail}.compareTo(BigDecimal.ZERO)>0?$F{quantityConsignmentDetail}:BigDecimal.valueOf(0.0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" mode="Transparent" x="240" y="0" width="47" height="14"/>

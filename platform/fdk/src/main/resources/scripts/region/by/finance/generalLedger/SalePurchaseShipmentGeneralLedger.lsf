@@ -1,0 +1,29 @@
+MODULE SalePurchaseShipmentGeneralLedger;
+
+REQUIRE GeneralLedger, SalePurchaseShipment, DimensionLegalEntity, DimensionStock;
+PRIORITY Sale;
+
+////------------------- Внутреннее перемещение (расх.) между отделами, т.е. розница --------------------//
+//
+//EXTEND CLASS Shipment : GeneralLedger.GLDocument;
+//nameGLDocument(document) += descriptionShipment(document);
+//
+////-------------------------------- Розничная сумма ----------------------------------//
+//
+//retailSumShipmentDetail (detail) = sumShipmentDetail(detail) IF isCompanyLegalEntity(legalEntitySupplierStockShipmentDetail(detail))
+//    IF isCompanyLegalEntity(legalEntityCustomerStockShipmentDetail(detail))
+//    IF supplierStockShipmentDetail(detail) IS DepartmentStore
+//    IF supplierStockShipmentDetail(detail) IS DepartmentStore;
+////    IF createPurchaseShipmentDetail(detail);
+//
+//
+////-- Тара
+//@defineDocumentHeaderItemSum (shipment, retail, retail);
+//@defineGeneralLedgerAggregation (invoice, InvSupVATC, customer, VATSumContainerInvoiceDetailInvoice, date, descriptionInvoice, '41.3', '60.1', '1');
+//debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerStockInvoice(invoiceInvSupVATCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvSupVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceInvSupVATCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvSupVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+//
+////-- Не тара
+//@defineGeneralLedgerAggregation (invoice, InvSupVATI, customer, VATSumItemInvoiceDetailInvoice, date, descriptionInvoice, '41.2, '60.1', '1');
+//debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerStockInvoice(invoiceInvSupVATIGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvSupVATIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceInvSupVATIGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvSupVATIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;

@@ -1,0 +1,27 @@
+MODULE PricingGeneralLedger;
+
+REQUIRE GeneralLedger, Pricing, DimensionStock, DimensionLegalEntity;
+
+//------------------- Расценка --------------------//
+                                                                              //todo: добавить в аналитику по кредиту организацию
+EXTEND CLASS Pricing : GeneralLedger.GLDocument;
+nameGLDocument(document) += descriptionPricing(document);
+
+//-------------------------------- Торговая надбавка ----------------------------------//
+//-- Тара
+@defineDocumentHeaderItemSum (pricing, retailMarkup, retailMarkup);
+@defineGeneralLedgerAggregation (pricing, PrMarkC, legalEntityStock, retailMarkupSumContainerPricingDetailPricing, date, descriptionPricing, '41.3', '42.1', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrMarkCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrMarkCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//-- Товар
+@defineGeneralLedgerAggregation (pricing, PrMarkI, legalEntityStock, retailMarkupSumItemPricingDetailPricing, date, descriptionPricing, '41.2', '42.1', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrMarkIGeneralLedger(generalLedger)) WHEN CLASS(pricingPrMarkIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+//-------------------------------- НДС розничный ----------------------------------//
+//-- Тара
+@defineDocumentHeaderItemSum (pricing, retailVAT, retailVAT);
+@defineGeneralLedgerAggregation (pricing, PrVATC, legalEntityStock, retailVATSumContainerPricingDetailPricing, date, descriptionPricing, '41.3', '42.2', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrVATCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+//-- Товар
+@defineGeneralLedgerAggregation (pricing, PrVATI, legalEntityStock, retailVATSumItemPricingDetailPricing, date, descriptionPricing, '41.2', '42.2', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrVATIGeneralLedger(generalLedger)) WHEN CLASS(pricingPrVATIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;

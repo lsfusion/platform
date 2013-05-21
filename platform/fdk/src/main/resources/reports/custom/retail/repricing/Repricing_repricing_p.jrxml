@@ -39,20 +39,20 @@
 	<field name="nameDepartmentStoreRepricing" class="java.lang.String"/>
 	<field name="nameStoreRepricing" class="java.lang.String"/>
 	<field name="countRepricingDetailRepricing" class="java.lang.Integer"/>
-	<field name="quantityRepricingDetailRepricing" class="java.lang.Double"/>
+	<field name="quantityRepricingDetailRepricing" class="java.math.BigDecimal"/>
 	<field name="nameLegalEntityStockRepricing" class="java.lang.String"/>
-	<field name="curSumRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="curMarkupSumRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="curVATSumRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="curRetailSumRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="sumRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="markupSumRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="VATSumRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="retailSumRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="diffSumRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="diffMarkupSumRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="diffVATSumRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="diffRetailSumRepricingDetailRepricing" class="java.lang.Double"/>
+	<field name="curSumRepricingDetailRepricing" class="java.math.BigDecimal"/>
+	<field name="curMarkupSumRepricingDetailRepricing" class="java.math.BigDecimal"/>
+	<field name="curVATSumRepricingDetailRepricing" class="java.math.BigDecimal"/>
+	<field name="curRetailSumRepricingDetailRepricing" class="java.math.BigDecimal"/>
+	<field name="sumRepricingDetailRepricing" class="java.math.BigDecimal"/>
+	<field name="markupSumRepricingDetailRepricing" class="java.math.BigDecimal"/>
+	<field name="VATSumRepricingDetailRepricing" class="java.math.BigDecimal"/>
+	<field name="retailSumRepricingDetailRepricing" class="java.math.BigDecimal"/>
+	<field name="diffSumRepricingDetailRepricing" class="java.math.BigDecimal"/>
+	<field name="diffMarkupSumRepricingDetailRepricing" class="java.math.BigDecimal"/>
+	<field name="diffVATSumRepricingDetailRepricing" class="java.math.BigDecimal"/>
+	<field name="diffRetailSumRepricingDetailRepricing" class="java.math.BigDecimal"/>
 	<field name="noteRepricing" class="java.lang.String"/>
 	<field name="numberDisposalRepricing" class="java.lang.String"/>
 	<field name="nameRepricingCommitteeRepricing" class="java.lang.String"/>
@@ -335,7 +335,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[$F{diffRetailSumRepricingDetailRepricing}>=0?"Сумма дооценки":"Сумма уценки"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{diffRetailSumRepricingDetailRepricing}.compareTo(BigDecimal.ZERO)>=0?"Сумма дооценки":"Сумма уценки"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="159" y="18" width="643" height="13"/>
@@ -361,7 +361,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[($F{diffRetailSumRepricingDetailRepricing}>=0?(platform.base.Words.toString($F{diffRetailSumRepricingDetailRepricing})):(platform.base.Words.toString(-$F{diffRetailSumRepricingDetailRepricing})))+
+					<textFieldExpression><![CDATA[($F{diffRetailSumRepricingDetailRepricing}.compareTo(BigDecimal.ZERO)>=0?(platform.base.Words.toString($F{diffRetailSumRepricingDetailRepricing})):(platform.base.Words.toString($F{diffRetailSumRepricingDetailRepricing}.negate())))+
 " "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">

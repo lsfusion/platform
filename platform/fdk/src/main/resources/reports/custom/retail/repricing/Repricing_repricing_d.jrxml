@@ -20,29 +20,29 @@
 	<field name="idBarcodeSkuRepricingDetail" class="java.lang.String"/>
 	<field name="nameSkuRepricingDetail" class="java.lang.String"/>
 	<field name="shortNameUOMSkuRepricingDetail" class="java.lang.String"/>
-	<field name="quantityRepricingDetail" class="java.lang.Double"/>
-	<field name="curPriceRepricingDetail" class="java.lang.Double"/>
-	<field name="curSumRepricingDetail" class="java.lang.Double"/>
-	<field name="curMarkupRepricingDetail" class="java.lang.Double"/>
-	<field name="curMarkupSumRepricingDetail" class="java.lang.Double"/>
+	<field name="quantityRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="curPriceRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="curSumRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="curMarkupRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="curMarkupSumRepricingDetail" class="java.math.BigDecimal"/>
 	<field name="numberCurVATRepricingDetail" class="java.lang.Integer"/>
-	<field name="valueCurVATRepricingDetail" class="java.lang.Double"/>
-	<field name="curVATSumRepricingDetail" class="java.lang.Double"/>
-	<field name="curRetailPriceRepricingDetail" class="java.lang.Double"/>
-	<field name="curRetailSumRepricingDetail" class="java.lang.Double"/>
-	<field name="priceRepricingDetail" class="java.lang.Double"/>
-	<field name="sumRepricingDetail" class="java.lang.Double"/>
-	<field name="markupRepricingDetail" class="java.lang.Double"/>
-	<field name="markupSumRepricingDetail" class="java.lang.Double"/>
+	<field name="valueCurVATRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="curVATSumRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="curRetailPriceRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="curRetailSumRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="priceRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="sumRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="markupRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="markupSumRepricingDetail" class="java.math.BigDecimal"/>
 	<field name="numberVATRepricingDetail" class="java.lang.Integer"/>
-	<field name="valueVATRepricingDetail" class="java.lang.Double"/>
-	<field name="VATSumRepricingDetail" class="java.lang.Double"/>
-	<field name="retailPriceRepricingDetail" class="java.lang.Double"/>
-	<field name="retailSumRepricingDetail" class="java.lang.Double"/>
-	<field name="diffSumRepricingDetail" class="java.lang.Double"/>
-	<field name="diffMarkupSumRepricingDetail" class="java.lang.Double"/>
-	<field name="diffVATSumRepricingDetail" class="java.lang.Double"/>
-	<field name="diffRetailSumRepricingDetail" class="java.lang.Double"/>
+	<field name="valueVATRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="VATSumRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="retailPriceRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="retailSumRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="diffSumRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="diffMarkupSumRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="diffVATSumRepricingDetail" class="java.math.BigDecimal"/>
+	<field name="diffRetailSumRepricingDetail" class="java.math.BigDecimal"/>
 	<pageHeader>
 		<band height="48">
 			<textField isStretchWithOverflow="true">

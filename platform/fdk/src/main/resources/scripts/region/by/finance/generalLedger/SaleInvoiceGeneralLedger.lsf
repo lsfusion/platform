@@ -1,0 +1,21 @@
+MODULE SaleInvoiceGeneralLedger;
+
+REQUIRE GeneralLedger, SaleInvoice, DimensionLegalEntity;
+PRIORITY Sale;
+
+//------------------- Отгрузка по безналу --------------------//
+
+EXTEND CLASS Invoice : GeneralLedger.GLDocument;
+nameGLDocument(document) += descriptionInvoice(document);
+invoicesSumInvoiceDetail (detail)= invoiceSumInvoiceDetail(detail) IF isCompanyLegalEntity(legalEntitySupplierStockInvoiceDetail(detail)) IF supplierStockInvoiceDetail(detail) IS DepartmentStore
+    IF NOT isCompanyLegalEntity(legalEntityCustomerStockInvoiceDetail(detail));
+
+//------------------- Розничная сумма --------------------//
+//-- Тара
+@defineDocumentHeaderItemSum (invoice, invoices, invoices);
+@defineGeneralLedgerAggregation (invoice, InvRetC, supplier, invoicesSumContainerInvoiceDetailInvoice, date, descriptionInvoice, '62.1', '41.3', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceInvRetCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+//-- Товар
+@defineGeneralLedgerAggregation (invoice, InvRetI, supplier, invoicesSumItemInvoiceDetailInvoice, date, descriptionInvoice, '62.1', '41.2', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceInvRetIGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+

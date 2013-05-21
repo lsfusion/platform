@@ -47,21 +47,21 @@
 	<field name="warrantConsignment" class="java.lang.String"/>
 	<field name="warrantHolderConsignment" class="java.lang.String"/>
 	<field name="goodsAcceptedConsignment" class="java.lang.String"/>
-	<field name="quantityConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="sumConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="quantityConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="sumConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="sumVATConsignmentDetailConsignment" class="java.math.BigDecimal"/>
 	<field name="documentNameCurrencyConsignment" class="java.lang.String"/>
 	<field name="isCustomsFlowConsignment" class="java.lang.Boolean"/>
 	<field name="noteConsignment" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="nameSkuConsignmentDetail" class="java.lang.String"/>
 	<field name="shortNameUOMConsignmentDetail" class="java.lang.String"/>
-	<field name="quantityConsignmentDetail" class="java.lang.Double"/>
-	<field name="priceConsignmentDetail" class="java.lang.Double"/>
-	<field name="sumConsignmentDetail" class="java.lang.Double"/>
-	<field name="vatConsignmentDetail" class="java.lang.Double"/>
-	<field name="sumVATConsignmentDetail" class="java.lang.Double"/>
-	<field name="sumInvoiceConsignmentDetail" class="java.lang.Double"/>
+	<field name="quantityConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="priceConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="vatConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumVATConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumInvoiceConsignmentDetail" class="java.math.BigDecimal"/>
 	<field name="noteConsignmentDetail" class="java.lang.String"/>
 	<field name="UNPCustomerConsignment" class="java.lang.String"/>
 	<field name="UNPSupplierConsignment" class="java.lang.String"/>
@@ -71,15 +71,15 @@
 	<field name="fullNameSupplierConsignment" class="java.lang.String"/>
 	<field name="fullNameCustomerConsignment" class="java.lang.String"/>
 	<field name="countConsignmentDetailConsignment" class="java.lang.Integer"/>
-	<field name="sumInvoiceConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="warePriceConsignmentDetail" class="java.lang.Double"/>
+	<field name="sumInvoiceConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="warePriceConsignmentDetail" class="java.math.BigDecimal"/>
 	<field name="nameWareConsignmentDetail" class="java.lang.String"/>
-	<field name="valueWareRangeConsignmentDetail" class="java.lang.Double"/>
-	<field name="wareSumConsignmentDetail" class="java.lang.Double"/>
+	<field name="valueWareRangeConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="wareSumConsignmentDetail" class="java.math.BigDecimal"/>
 	<field name="isWareConsignment" class="java.lang.Boolean"/>
-	<field name="wareVATSumConsignmentDetail" class="java.lang.Double"/>
-	<field name="wareSupplierPriceConsignmentDetail" class="java.lang.Double"/>
-	<field name="wareSupplierSumConsignmentDetail" class="java.lang.Double"/>
+	<field name="wareVATSumConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="wareSupplierPriceConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="wareSupplierSumConsignmentDetail" class="java.math.BigDecimal"/>
 	<field name="extraDescriptionConsignmentDetail" class="java.lang.String"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
@@ -1083,7 +1083,7 @@
 			</textField>
 		</band>
 		<band height="12">
-			<printWhenExpression><![CDATA[$F{countConsignmentDetailConsignment}<6 && $F{warePriceConsignmentDetail}>0 && $F{isCustomsFlowConsignment}==null]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{countConsignmentDetailConsignment}<6 && $F{warePriceConsignmentDetail}.compareTo(BigDecimal.ZERO)>0 && $F{isCustomsFlowConsignment}==null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="24" height="12" backcolor="#FFFFFF">
 					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>

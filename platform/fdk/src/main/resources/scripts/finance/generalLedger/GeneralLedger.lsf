@@ -9,6 +9,15 @@ TABLE GLDocument(GLDocument);
 nameGLDocument 'Регистр-основание' = ABSTRACT STRING[200] (GLDocument);
 editGLDocument 'Редактировать регистр' = ABSTRACT ACTION (GLDocument) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
+createPostings 'Создавать проводки онлайн' = DATA BOOLEAN ();
+EXTEND FORM options
+    PROPERTIES() createPostings
+;
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(createPostings);
+    }
+}
 //-------------------------- Проводки -------------------------//
 
 CLASS ABSTRACT GeneralLedger 'Проводка';
@@ -225,8 +234,8 @@ FORM generalLedgers 'Проводки'
     OBJECTS g = GeneralLedger
     PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, dateGeneralLedger, nameLegalEntityGeneralLedger, nameGLDocumentGeneralLedger, descriptionGeneralLedger, idDebitGeneralLedger,
                    idCreditGeneralLedger, sumGeneralLedger
-
-    // todo : не работает поскольку для абстрактного свойства не задано ни одной реализации
+    ORDER BY dateGeneralLedger, nameLegalEntityGeneralLedger, nameGLDocumentGeneralLedger
+//    todo : не работает поскольку для абстрактного свойства не задано ни одной реализации
 //    PROPERTIES(g)  editGLDocumentGeneralLedger
 
 
@@ -253,6 +262,7 @@ DESIGN generalLedgers FROM DEFAULT {
     ADD g.box BEFORE documentHistory;
 }
 
+//-- Для одного объекта
 META defineGeneralLedgerAggregation (object, prop, companyProp, property, dateProp, description, debit, credit, accountType)
     @defineGeneralLedgerAggregationInner (object, prop, ###prop, companyProp, property, dateProp, description, debit, credit, accountType);
 END
@@ -262,7 +272,9 @@ META defineGeneralLedgerAggregationInner (object, prop, propClass, companyProp, 
     CLASS propClass###generalLedger : GeneralLedger;
 
     TABLE prop###generalLedger (propClass###generalLedger);
-    @defineAggregation(object, prop###generalLedger, property);
+
+    needTo###property (object)=  property(object) IF createPostings(); //чтобы можно было не создавать проводки автоматом
+    @defineAggregation(object, prop###generalLedger, needTo###property);
 
     GLDocumentGeneralLedger(generalLedger) += object###prop###generalLedger(generalLedger);
     legalEntityGeneralLedger(generalLedger) += companyProp###object(object###prop###generalLedger(generalLedger));
@@ -275,6 +287,7 @@ META defineGeneralLedgerAggregationInner (object, prop, propClass, companyProp, 
 
 END
 
+//-- Для двух объектов
 META defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, companyProp, property, dateProp, description, debit, credit, accountType)   //  prim1Object - документ
     @defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, ###prop, companyProp, property, dateProp, description, debit, credit, accountType);
 END
@@ -284,7 +297,9 @@ META defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, propCl
     CLASS propClass###generalLedger : GeneralLedger;
 
     TABLE prop###generalLedger (propClass###generalLedger);
-    @defineAggregation (prim1Object, prim2Object, prop###generalLedger, property);
+
+    needTo###property (prim1Object, prim2Object)=  property(prim1Object, prim2Object) IF createPostings();     //чтобы можно было не создавать проводки автоматом
+    @defineAggregation (prim1Object, prim2Object, prop###generalLedger, needTo###property);
 
     GLDocumentGeneralLedger(generalLedger) += prim1Object###prop###generalLedger(generalLedger);
     legalEntityGeneralLedger(generalLedger) += companyProp###prim1Object(prim1Object###prop###generalLedger(generalLedger));

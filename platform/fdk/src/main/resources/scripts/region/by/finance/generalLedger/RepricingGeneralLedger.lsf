@@ -1,0 +1,32 @@
+MODULE RepricingGeneralLedger;
+
+REQUIRE GeneralLedger, Repricing, DimensionStock;
+
+//------------------- Переоценка --------------------//
+
+EXTEND CLASS Repricing : GeneralLedger.GLDocument;
+nameGLDocument(document) += descriptionRepricing(document);
+//-------------------------------- Торговая надбавка ----------------------------------//
+//-- Тара
+@defineDocumentHeaderItemSum (repricing, diffMarkup, diffMarkup);
+@defineGeneralLedgerAggregation (repricing, RepMark, legalEntityStock, diffMarkupSumNotChargeRepricingDetailRepricing, date, descriptionRepricing, '41.2', '42.1', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreRepricing(repricingRepMarkGeneralLedger(generalLedger)) WHEN CLASS(repricingRepMarkGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+//-------------------------------- НДС поставщика ----------------------------------//
+//-- Тара
+@defineDocumentHeaderItemSum (repricing, diffVAT, diffVAT);
+@defineGeneralLedgerAggregation (repricing, RepVATC, legalEntityStock, diffVATSumContainerRepricingDetailRepricing, date, descriptionRepricing, '41.3', '42.2', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreRepricing(repricingRepVATCGeneralLedger(generalLedger)) WHEN CLASS(repricingRepVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//-- Не тара
+@defineGeneralLedgerAggregation (repricing, RepVATNC, legalEntityStock, diffVATSumNotContainerRepricingDetailRepricing, date, descriptionRepricing, '41.2', '42.2', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreRepricing(repricingRepVATNCGeneralLedger(generalLedger)) WHEN CLASS(repricingRepVATNCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+//-------------------------------- Сумма поставщика ----------------------------------//
+//-- Тара
+@defineDocumentHeaderItemSum (repricing, diff, diff);
+@defineGeneralLedgerAggregation (repricing, RepSup, legalEntityStock, diffSumContainerRepricingDetailRepricing, date, descriptionRepricing, '41.3', '92.1', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreRepricing(repricingRepSupGeneralLedger(generalLedger)) WHEN CLASS(repricingRepSupGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//-- Не тара
+@defineGeneralLedgerAggregation (repricing, RepSupC, legalEntityStock, diffSumNotContainerRepricingDetailRepricing, date, descriptionRepricing, '41.2', '92.1', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreRepricing(repricingRepSupCGeneralLedger(generalLedger)) WHEN CLASS(repricingRepSupCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+

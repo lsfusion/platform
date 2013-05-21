@@ -946,6 +946,10 @@ public class BaseUtils {
         return value1 == null ? value2 : value1;
     }
 
+    public static BigDecimal nvl(BigDecimal value1, Double value2) {
+        return value1 == null ? BigDecimal.valueOf(value2) : value1;
+    }
+
     public static String evl(String primary, String secondary) {
         return (primary.length() == 0 ? secondary : primary);
     }

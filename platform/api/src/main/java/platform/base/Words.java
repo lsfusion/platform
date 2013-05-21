@@ -1,5 +1,6 @@
 package platform.base;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 
 public class Words {
@@ -253,6 +254,31 @@ public class Words {
     }
 
     public static String toString(Double numObject) {
+        return toString(numObject, false);
+    }
+
+    public static String toString(BigDecimal numObject, String type) {
+        if (numObject == null) return toString((Double)null, type);
+        return toString(numObject.doubleValue(), type);
+    }
+
+    //для дабла без типа
+    public static String toString(BigDecimal numObject, Integer numOfDigits, Boolean female) {
+        if (numObject == null) return toString((Double)null, numOfDigits, female);
+        return toString(numObject.doubleValue(), numOfDigits, female);
+    }
+
+    public static String toString(BigDecimal numObject, Integer numOfDigits) {
+        if (numObject == null) return toString((Double)null, numOfDigits);
+        return toString(numObject.doubleValue(), numOfDigits);
+    }
+
+    public static String toString(BigDecimal numObject, Boolean female) {
+        if (numObject == null) return toString((Double)null, female);
+        return toString(numObject.doubleValue(), female);
+    }
+
+    public static String toString(BigDecimal numObject) {
         return toString(numObject, false);
     }
 }

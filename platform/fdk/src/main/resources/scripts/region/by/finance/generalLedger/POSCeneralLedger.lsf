@@ -1,0 +1,13 @@
+MODULE POSGeneralLedger;
+
+REQUIRE GeneralLedger, POS, DimensionStock;
+
+//------------------- Реализация через кассы --------------------//
+
+EXTEND CLASS Receipt : GeneralLedger.GLDocument;
+nameGLDocument(document) += descriptionReceipt(document);
+
+//------------------- Розничная сумма --------------------//
+companyReceipt (receipt) = legalEntityStore(storeDepartmentStore(departmentStoreReceipt(receipt)));
+@defineGeneralLedgerAggregation (receipt, POS, company, sumReceiptDetailReceipt, date, descriptionReceipt, '90.1', '41.2', '1');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreReceipt(receiptPOSGeneralLedger(generalLedger)) WHEN CLASS(receiptPOSGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;

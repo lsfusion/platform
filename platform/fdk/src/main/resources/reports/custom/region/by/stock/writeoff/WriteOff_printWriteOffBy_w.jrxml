@@ -29,8 +29,8 @@
 	<field name="timeWriteOff" class="java.sql.Time"/>
 	<field name="nameReasonWriteOff" class="java.lang.String"/>
 	<field name="noteWriteOff" class="java.lang.String"/>
-	<field name="quantityWriteOffDetailWriteOff" class="java.lang.Double"/>
-	<field name="sumWriteOffDetailWriteOff" class="java.lang.Double"/>
+	<field name="quantityWriteOffDetailWriteOff" class="java.math.BigDecimal"/>
+	<field name="sumWriteOffDetailWriteOff" class="java.math.BigDecimal"/>
 	<field name="nameLegalEntityStockWriteOff" class="java.lang.String"/>
 	<field name="addressLegalEntityWriteOff" class="java.lang.String"/>
 	<field name="UNPLegalEntityStockWriteOff" class="java.lang.String"/>

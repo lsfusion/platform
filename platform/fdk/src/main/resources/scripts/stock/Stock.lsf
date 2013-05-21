@@ -317,6 +317,9 @@ isStockSku 'Складируемый' (sku) = isStockSkuType(skuTypeSku(sku)) PE
 isItemSku 'Товар' (sku) = skuTypeSku(sku) == SkuType.skuTypeItem PERSISTENT;
 isContainerSku 'Тара' (sku) = skuTypeSku(sku) == SkuType.skuTypeContainer PERSISTENT;
 isChargeSku 'Услуги' (sku) = skuTypeSku(sku) == SkuType.skuTypeCharge PERSISTENT;
+isNotChargeSku 'Не услуги' (sku) = NOT isChargeSku(sku) AND sku IS Sku PERSISTENT;
+isNotItemSku 'Не товар' (sku) = NOT isItemSku(sku) AND sku IS Sku PERSISTENT;
+isNotContainerSku 'Не тара' (sku) = NOT isContainerSku(sku) AND sku IS Sku PERSISTENT;
 
 isWeightSku 'Весовой товар' =  ABSTRACT BOOLEAN (Sku) PERSISTENT;
 
@@ -1334,6 +1337,20 @@ META defineDocumentHeaderItemSumCustom (object, detail, prefixA, prefixB)
     prefixB###sumContainer###detail###object 'Сумма, тара' (object) =
         GROUP SUM prefixA###sum###detail(idetail) IF isContainerSku(sku###detail(idetail))
             BY object###detail(idetail) IN documentSumGroup;
+    prefixB###sumCharge###detail###object 'Сумма услуг' (object) =
+        GROUP SUM prefixA###sum###detail(idetail) IF isChargeSku(sku###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
+    prefixB###sumNotCharge###detail###object 'Сумма кроме услуг' (object) =
+        GROUP SUM prefixA###sum###detail(idetail) IF isNotChargeSku(sku###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
+    prefixB###sumNotItem###detail###object 'Сумма кроме товара' (object) =
+        GROUP SUM prefixA###sum###detail(idetail) IF isNotItemSku(sku###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
+    prefixB###sumNotContainer###detail###object 'Сумма кроме тары' (object) =
+        GROUP SUM prefixA###sum###detail(idetail) IF isNotContainerSku(sku###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
+
+
 END
 META defineDocumentHeaderItemSum (object, prefixA, prefixB)
     @defineDocumentHeaderItemSumCustom(object, object##Detail, prefixA, prefixB);
