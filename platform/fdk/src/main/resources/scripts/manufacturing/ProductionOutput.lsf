@@ -165,7 +165,6 @@ DESIGN outputOrders FROM DEFAULT {
                 }
             }
         }
-        PROPERTY(toOutputProductDetail) { background = #FFFFCC; }
     }
 }
 
