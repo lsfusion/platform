@@ -84,7 +84,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     }
 
     protected boolean allowNulls() {
-        return true;
+        return false;
     }
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
