@@ -516,6 +516,11 @@ public class GridTable extends ClientPropertyTable {
             isInternalNavigating = false;
             moveToFocusableCellIfNeeded();
         } else {
+            if (rowNumber != getSelectedRow()) {
+                isInternalNavigating = true;
+                changeSelection(rowNumber, colSel, false, false);
+                isInternalNavigating = false;
+            }
             getSelectionModel().setLeadSelectionIndex(rowNumber);
         }
     }
