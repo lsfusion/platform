@@ -484,8 +484,8 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
                                                                        promotionPromotionCondition(promotionCondition) == promotion;
 
             LOCAL countPromotionCondition = INTEGER (PromotionCondition);
-            SET countPromotionCondition(promotionCondition) <- -(UNION MAX -divideInteger(quantityPromotionCondition (promotionCondition), minQuantityPromotionCondition (promotionCondition)),
-                                                                           -divideInteger(sumPromotionCondition(promotionCondition), minSumPromotionCondition(promotionCondition)));
+            SET countPromotionCondition(promotionCondition) <- -(MAX -divideInteger(quantityPromotionCondition (promotionCondition), minQuantityPromotionCondition (promotionCondition)),
+                                                                     -divideInteger(sumPromotionCondition(promotionCondition), minSumPromotionCondition(promotionCondition)));
 
             LOCAL countPromotion = INTEGER ();
             SET countPromotion () <- [GROUP MIN countPromotionCondition(promotionCondition)]();

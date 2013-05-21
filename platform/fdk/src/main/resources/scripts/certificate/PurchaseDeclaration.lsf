@@ -201,8 +201,8 @@ sumPriceDutyDeclarationDetail 'Пошлина по стоимости (валю�
 sumRatePriceDutyDeclarationDetail 'Пошлина по стоимости' (declarationDetail) = sumPriceDutyDeclarationDetail(declarationDetail) *
                                                                                rateExchangeDeclarationDetail(declarationDetail) PERSISTENT;
 
-sumRateDutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = roundCurrencyDeclarationDetail((UNION MAX sumRateWeightDutyDeclarationDetail(declarationDetail),
-                                                                                                               sumRatePriceDutyDeclarationDetail(declarationDetail)), declarationDetail) PERSISTENT MINCHARWIDTH 12;
+sumRateDutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = roundCurrencyDeclarationDetail((MAX sumRateWeightDutyDeclarationDetail(declarationDetail),
+                                                                                                         sumRatePriceDutyDeclarationDetail(declarationDetail)), declarationDetail) PERSISTENT MINCHARWIDTH 12;
 
 sumDutyDataDeclarationDetail 'Пошлина' (declarationDetail) = DATA NUMERIC[14,3](DeclarationDetail) MINCHARWIDTH 12;
 

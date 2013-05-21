@@ -248,10 +248,6 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "number of named parameters should be equal to actual number of parameters");
     }
 
-    public void emitUnionArgumentsEqualParamsCountError(ScriptParser parser, String errMsgPropType) throws SemanticErrorException {
-        emitSimpleError(parser, format("arguments of %s property should all have same number of parameters that equals to the number of parameters of the result property", errMsgPropType));
-    }
-
     public void emitCasePropWhenParamMissingInThenParams(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "WHEN expressions should only have parameters used in THEN expressions");
     }

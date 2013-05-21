@@ -754,7 +754,7 @@ dutyPriceGroupDeclaration (groupDeclaration) = sumGroupDeclaration(groupDeclarat
                                                (dutyPercentCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration),
                                                                                     typeDutyDutyCustomsZone(customsZoneGroupDeclaration(groupDeclaration)))/100) PERSISTENT;
 
-dutyGroupDeclaration 'Пошлина (расч.)' (groupDeclaration) = UNION MAX dutyWeightGroupDeclaration(groupDeclaration), dutyPriceGroupDeclaration(groupDeclaration);
+dutyGroupDeclaration 'Пошлина (расч.)' (groupDeclaration) = MAX dutyWeightGroupDeclaration(groupDeclaration), dutyPriceGroupDeclaration(groupDeclaration);
 
 //--------------------------------------- импорт из Декларанта ------------------------------------------------------//
 // стоимости и пошлины

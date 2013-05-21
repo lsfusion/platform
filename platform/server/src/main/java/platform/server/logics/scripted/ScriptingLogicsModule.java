@@ -1451,9 +1451,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultProp;
     }
 
+    public LPWithParams addScriptedMaxProp(List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedUProp(Union.MAX, paramProps, "MAX");
+    }
+
     public LPWithParams addScriptedUProp(Union unionType, List<LPWithParams> paramProps, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedUProp(" + unionType + ", " + paramProps + ");");
-        checkUnionPropertyParams(paramProps, errMsgPropType);
         checkPropertyTypes(paramProps, errMsgPropType);
 
         int[] coeffs = null;
@@ -2268,18 +2271,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         LogicsModule module = BL.getModuleContainingTable(getNamespace(), name);
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "table", name, module.getName());
-        }
-    }
-
-    private void checkUnionPropertyParams(List<LPWithParams> uPropParams, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
-        int paramCnt = uPropParams.get(0).property.property.interfaces.size();
-        if (mergeAllParams(uPropParams).size() != paramCnt) {
-            errLog.emitUnionArgumentsEqualParamsCountError(parser, errMsgPropType);
-        }
-        for (LPWithParams lp : uPropParams) {
-            if (lp.property.property.interfaces.size() != paramCnt) {
-                errLog.emitUnionArgumentsEqualParamsCountError(parser, errMsgPropType);
-            }
         }
     }
 

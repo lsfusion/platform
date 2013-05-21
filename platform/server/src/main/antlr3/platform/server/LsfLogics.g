@@ -1057,6 +1057,7 @@ expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParam
 	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; } 
 	|	unionDef=unionPropertyDefinition[context, dynamic] { $property = $unionDef.property;} 
 	|	ifElseDef=ifElsePropertyDefinition[context, dynamic] { $property = $ifElseDef.property; }
+	|	maxDef=maxPropertyDefinition[context, dynamic] { $property = $maxDef.property; }
 	|	caseDef=casePropertyDefinition[context, dynamic] { $property = $caseDef.property; }
 	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; }
 	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
@@ -1227,7 +1228,7 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPa
 	}
 }
 	:	'UNION'
-		(('MAX' {type = Union.MAX;}) | ('SUM' {type = Union.SUM;}) | ('OVERRIDE' {type = Union.OVERRIDE;}) | ('XOR' { type = Union.XOR;}) | ('EXCLUSIVE' {type = Union.EXCLUSIVE;}) | ('CLASS' {type = Union.CLASS;}))
+		(('EXCLUSIVE' {type = Union.EXCLUSIVE;}) | ('CLASS' {type = Union.CLASS;}))
 		exprList=nonEmptyPropertyExpressionList[context, dynamic]
 	;
 
@@ -1241,6 +1242,16 @@ ifElsePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithP
 	:	'IF' ifExpr=propertyExpression[context, dynamic]
 		'THEN' thenExpr=propertyExpression[context, dynamic]
 		'ELSE' elseExpr=propertyExpression[context, dynamic]
+	;
+
+
+maxPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedMaxProp($exprList.props);
+	}
+}
+	:	'MAX' exprList=nonEmptyPropertyExpressionList[context, dynamic]	
 	;
 
 
