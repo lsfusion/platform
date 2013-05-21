@@ -18,6 +18,7 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -40,8 +41,8 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
             DataObject fullAddress = context.getDataKeyValue(POIInterface);
             DataObject mapProvider = context.getDataKeyValue(mapProviderInterface);
 
-            Double longitude = null;
-            Double latitude = null;
+            BigDecimal longitude = null;
+            BigDecimal latitude = null;
             String address = (String) fullAddress.object;
             if (address != null) {
 
@@ -56,8 +57,8 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
                         JSONObject point = featureMember.getJSONObject("GeoObject").getJSONObject("Point");
                         String position[] = point.getString("pos").split(" ");
 
-                        longitude = Double.parseDouble(position[0]);
-                        latitude = Double.parseDouble(position[1]);
+                        longitude = new BigDecimal(position[0]);
+                        latitude = new BigDecimal(position[1]);
                     }
                 } else {
 
@@ -68,8 +69,8 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
                     if (geocoderResponse != null && geocoderResponse.getResults().size() != 0) {
                         GeocoderResult result = geocoderResponse.getResults().get(0);
 
-                        longitude = result.getGeometry().getLocation().getLng().doubleValue();
-                        latitude = result.getGeometry().getLocation().getLat().doubleValue();
+                        longitude = result.getGeometry().getLocation().getLng();
+                        latitude = result.getGeometry().getLocation().getLat();
                     }
                 }
 

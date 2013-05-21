@@ -17,6 +17,7 @@ import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
@@ -43,8 +44,8 @@ public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
             String uri = "http://maps.google.com/?";
             int index = 1;
             for (ImMap<Object, Object> values : result.valueIt()) {
-                Double latitude = (Double) values.get("latitude");
-                Double longitude = (Double) values.get("longitude");
+                BigDecimal latitude = (BigDecimal) values.get("latitude");
+                BigDecimal longitude = (BigDecimal) values.get("longitude");
                 String name = (String) values.get("namePOI");
                 String description = (String) values.get("descriptionPathPOI");
                 String overDescription = description==null ? name : description;

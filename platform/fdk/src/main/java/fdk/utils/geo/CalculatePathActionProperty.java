@@ -21,6 +21,7 @@ import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -56,8 +57,8 @@ public class CalculatePathActionProperty extends ScriptingActionProperty {
                 for (int i = 0, size = result.size(); i < size; i++) {
                     ImMap<Object, ObjectValue> values = result.getValue(i);
 
-                    Double latitude = (Double) values.get("latitude").getValue();
-                    Double longitude = (Double) values.get("longitude").getValue();
+                    BigDecimal latitude = (BigDecimal) values.get("latitude").getValue();
+                    BigDecimal longitude = (BigDecimal) values.get("longitude").getValue();
 
                     if (latitude != null && longitude != null) {
                         String prefix = index != 1 ? "|" : "";
