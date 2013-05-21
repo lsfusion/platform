@@ -2,6 +2,7 @@ package fdk.integration;
 
 
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 public class UserInvoiceDetail {
@@ -13,26 +14,26 @@ public class UserInvoiceDetail {
     public Date date;
     public String idItem;
     public Boolean isWare;
-    public Double quantity;
+    public BigDecimal quantity;
     public String supplier;
     public String customerWarehouse;
     public String supplierWarehouse;
-    public Double price;
-    public Double chargePrice;
-    public Double manufacturingPrice;
-    public Double wholesalePrice;
-    public Double wholesaleMarkup;
-    public Double retailPrice;
-    public Double retailMarkup;
+    public BigDecimal price;
+    public BigDecimal chargePrice;
+    public BigDecimal manufacturingPrice;
+    public BigDecimal wholesalePrice;
+    public BigDecimal wholesaleMarkup;
+    public BigDecimal retailPrice;
+    public BigDecimal retailMarkup;
     public String textCompliance;
     public String idContract;
 
 
     public UserInvoiceDetail(String number, String series, Boolean createPricing, Boolean createShipment, String sid,
-                             Date date, String idItem, Boolean isWare, Double quantity, String supplier, String customerWarehouse,
-                             String supplierWarehouse, Double price, Double chargePrice, Double manufacturingPrice,
-                             Double wholesalePrice, Double wholesaleMarkup, Double retailPrice, Double retailMarkup,
-                             String textCompliance, String idContract) {
+                             Date date, String idItem, Boolean isWare, BigDecimal quantity, String supplier,
+                             String customerWarehouse, String supplierWarehouse, BigDecimal price, BigDecimal chargePrice,
+                             BigDecimal manufacturingPrice, BigDecimal wholesalePrice, BigDecimal wholesaleMarkup,
+                             BigDecimal retailPrice, BigDecimal retailMarkup, String textCompliance, String idContract) {
         this.number = number;
         this.series = series;
         this.createPricing = createPricing;

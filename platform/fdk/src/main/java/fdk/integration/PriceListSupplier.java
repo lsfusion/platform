@@ -1,14 +1,16 @@
 package fdk.integration;
 
+import java.math.BigDecimal;
+
 public class PriceListSupplier {
     public String idUserPriceList;
     public String item;
     public String supplier;
     public String currency;
-    public Double price;
+    public BigDecimal price;
     public Boolean inPriceList;
 
-    public PriceListSupplier(String idUserPriceList, String item, String supplier, String currency, Double price,
+    public PriceListSupplier(String idUserPriceList, String item, String supplier, String currency, BigDecimal price,
                              Boolean inPriceList) {
         this.idUserPriceList = idUserPriceList;
         this.item = item;

@@ -1,6 +1,8 @@
 package fdk.region.by.integration.excel;
 
-import fdk.integration.*;
+import fdk.integration.ImportActionProperty;
+import fdk.integration.ImportData;
+import fdk.integration.UserInvoiceDetail;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
@@ -12,6 +14,7 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -65,14 +68,14 @@ public class ImportExcelUserInvoicesActionProperty extends ImportExcelActionProp
             String userInvoiceNumber = parseString(sheet.getCell(1, i).getContents());
             Date date = parseDate(sheet.getCell(2, i).getContents());
             String itemID = parseString(sheet.getCell(3, i).getContents());
-            Double quantity = parseDouble(sheet.getCell(4, i).getContents());
+            BigDecimal quantity = parseBigDecimal(sheet.getCell(4, i).getContents());
             String supplier = parseString(sheet.getCell(5, i).getContents());
             String customerWarehouse = parseString(sheet.getCell(6, i).getContents());
             String supplierWarehouse = parseString(sheet.getCell(7, i).getContents());
-            Double price = parseDouble(sheet.getCell(8, i).getContents());
-            Double chargePrice = parseDouble(sheet.getCell(9, i).getContents());
-            Double retailPrice = parseDouble(sheet.getCell(10, i).getContents());
-            Double retailMarkup = parseDouble(sheet.getCell(11, i).getContents());
+            BigDecimal price = parseBigDecimal(sheet.getCell(8, i).getContents());
+            BigDecimal chargePrice = parseBigDecimal(sheet.getCell(9, i).getContents());
+            BigDecimal retailPrice = parseBigDecimal(sheet.getCell(10, i).getContents());
+            BigDecimal retailMarkup = parseBigDecimal(sheet.getCell(11, i).getContents());
             String textCompliance = parseString(sheet.getCell(12, i).getContents());
 
             String userInvoiceDetailSID = (userInvoiceSeries==null ? "" : userInvoiceSeries) + userInvoiceNumber + itemID;

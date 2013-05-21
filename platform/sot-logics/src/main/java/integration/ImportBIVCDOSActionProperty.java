@@ -4,7 +4,6 @@ import fdk.integration.*;
 import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.xBaseJException;
 import platform.interop.action.MessageClientAction;
-import platform.server.ServerLoggers;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.integration.*;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -18,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.NumberFormat;
@@ -195,7 +195,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String pnt13 = null;
         String pnt48 = null;
         String uomID = null;
-        Double price = null;
+        BigDecimal price = null;
         String name = null;
         String wareID;
         String line;
@@ -207,7 +207,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 String extra = splittedLine.length > 4 ? splittedLine[4] : null;
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
-                    price = Double.parseDouble(splittedLine.length > 2 ? splittedLine[2] : null);
+                    price = parseBigDecimal(splittedLine.length > 2 ? splittedLine[2] : null);
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
@@ -245,7 +245,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         if (m.matches()) {
                             String uomName = m.group(1).trim();
                             Integer coefficient = (m.groupCount() >= 3 && m.group(3) != null) ? ((m.group(3).equals("Г") || m.group(3).equals("ГР") || m.group(3).equals("МЛ")) ? 1000 : 1) : 1;
-                            Double weight = m.groupCount() < 2 ? null : (Double.parseDouble(m.group(2)) / coefficient);
+                            BigDecimal weight = m.groupCount() < 2 ? null : new BigDecimal(parseBigDecimal(m.group(2)).doubleValue() / coefficient);
                             uomMap.put(splittedLine[1], new UOM(uomLine, uomName,
                                     uomName.length() <= 5 ? uomName : uomName.substring(0, 5), weight, weight));
                             break;
@@ -261,7 +261,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
         List<Item> itemsList = new ArrayList<Item>();
         Map<String, UOM> uomMap = getUOMMap(sediPath);
-        Map<String, Double> retailMarkups = new HashMap<String, Double>();
+        Map<String, BigDecimal> retailMarkups = new HashMap<String, BigDecimal>();
 
         BufferedReader prcReader = new BufferedReader(new InputStreamReader(new FileInputStream(prcPath), "cp866"));
         String line;
@@ -271,7 +271,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 if (splittedLine.length == 2) {
                     String[] markupString = prcReader.readLine().split(":");
                     if (markupString.length > 0 && !markupString[0].trim().isEmpty()) {
-                        Double markup = Double.parseDouble(markupString[0]);
+                        BigDecimal markup = parseBigDecimal(markupString[0]);
                         retailMarkups.put(splittedLine[1].replace("\"", ""), markup);
                     }
                 }
@@ -292,9 +292,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String name = null;
         String nameID = null;
         String wareID = null;
-        Double baseMarkup = null;
-        Double retailVAT = null;
-        Double packAmount = null;
+        BigDecimal baseMarkup = null;
+        BigDecimal retailVAT = null;
+        BigDecimal packAmount = null;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && itemsList.size() >= numberOfItems)
                 break;
@@ -315,8 +315,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     Pattern rPack = Pattern.compile(".*(?:\\\\|\\/)(\\d+)(?:\\\\|\\/)?");
                     Matcher mPack = rPack.matcher(name);
                     if (mPack.matches()) {
-                        Double value = Double.parseDouble(mPack.group(1));
-                        packAmount = value <= 1000 ? value : null;
+                        BigDecimal value = parseBigDecimal(mPack.group(1));
+                        packAmount = value.compareTo(new BigDecimal(1000))<0 ? value : null;
                     }
                     wareID = null;
                     if (name != null) {
@@ -329,15 +329,15 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     }
 
                     try {
-                        baseMarkup = splittedLine.length > 15 ? Double.parseDouble(splittedLine[15].endsWith(".") ?
+                        baseMarkup = splittedLine.length > 15 ? parseBigDecimal(splittedLine[15].endsWith(".") ?
                                 splittedLine[15].substring(0, splittedLine[15].length() - 1) : splittedLine[15]) : null;
                     } catch (NumberFormatException e) {
                         baseMarkup = null;
                     }
 
-                    retailVAT = splittedLine.length > 18 ? Double.parseDouble(splittedLine[18]) : 20;
+                    retailVAT = splittedLine.length > 18 ? parseBigDecimal(splittedLine[18]) : new BigDecimal(20);
                     //Так как ещё остались товары со старым НДС 18%
-                    retailVAT = (retailVAT == 18) ? 20 : retailVAT;
+                    retailVAT = retailVAT.equals(new BigDecimal(18)) ? new BigDecimal(20) : retailVAT;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
                     if (groupID.split(":")[0].length() == 2)
@@ -352,7 +352,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                                 uom == null ? null : uom.uomName, null, null, null, null, itemID, date, null,
                                 uom == null ? null : uom.netWeight, uom == null ? null : uom.grossWeight, null,
                                 retailVAT, wareID, null, null, null, baseMarkup, retailMarkups.get(markupID),
-                                itemID, packAmount));
+                                itemID, packAmount, null, null, null, null));
                     }
                 }
             }
@@ -363,9 +363,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return itemsList;
     }
 
-    private boolean isCorrectUserInvoiceDetail(Double quantity, Date startDate, Date date, String groupID) throws ParseException {
+    private boolean isCorrectUserInvoiceDetail(BigDecimal quantity, Date startDate, Date date, String groupID) throws ParseException {
         Boolean correctDate = startDate != null && (date != null && startDate.before(date));
-        Boolean correctQuantity = quantity != null && quantity != 0;
+        Boolean correctQuantity = quantity != null && !quantity.equals(BigDecimal.ZERO);
         Boolean correctGroupID = groupID == null || !groupID.startsWith("929");
         return (correctDate || correctQuantity) || correctGroupID;
     }
@@ -426,7 +426,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         }
         reader.close();
 
-        Map<String, Double> totalSumWarehouse = new HashMap<String, Double>();
+        Map<String, BigDecimal> totalSumWarehouse = new HashMap<String, BigDecimal>();
 
         List<UserInvoiceDetail> userInvoiceDetailsList = new ArrayList<UserInvoiceDetail>();
         Map<String, UOM> uomMap = getUOMMap(sediPath);
@@ -439,12 +439,12 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String name = null;
         String supplierID = null;
         String supplierWarehouseID = null;
-        Double quantity = null;
-        Double price = null;
-        Double chargePrice = null;
-        Double manufacturingPrice = null;
-        Double wholesalePrice = null;
-        Double wholesaleMarkup = null;
+        BigDecimal quantity = null;
+        BigDecimal price = null;
+        BigDecimal chargePrice = null;
+        BigDecimal manufacturingPrice = null;
+        BigDecimal wholesalePrice = null;
+        BigDecimal wholesaleMarkup = null;
         String textCompliance = null;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && userInvoiceDetailsList.size() >= numberOfItems)
@@ -509,23 +509,23 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         supplierID = "ds";
                         supplierWarehouseID = "dsw";
                     }
-                    quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
-                    Double sumPrice = Double.parseDouble(splittedLine.length > 2 ? splittedLine[2] : null);
-                    sumPrice = sumPrice == null ? null : ((double) (Math.round(sumPrice * 100))) / 100;
+                    quantity = splittedLine.length > 7 ? parseBigDecimal(splittedLine[7]) : null;
+                    BigDecimal sumPrice = parseBigDecimal(splittedLine.length > 2 ? splittedLine[2] : null);
+                    sumPrice = sumPrice == null ? null : new BigDecimal((Math.round(sumPrice.doubleValue() * 100)) / 100);
 
-                    Double chargePricePercent = splittedLine.length > 19 ? readPercent(splittedLine[19]) : 0.0;
+                    BigDecimal chargePricePercent = splittedLine.length > 19 ? readPercent(splittedLine[19]) : BigDecimal.ZERO;
                     try {
-                        chargePrice = (double) Math.round((sumPrice * chargePricePercent) / (100 + chargePricePercent) * 100) / 100;
+                        chargePrice = new BigDecimal(Math.round((sumPrice.doubleValue() * chargePricePercent.doubleValue()) / (100 + chargePricePercent.doubleValue()) * 100) / 100);
                     } catch (NumberFormatException e) {
-                        chargePrice = 0.0;
+                        chargePrice = BigDecimal.ZERO;
                     }
-                    manufacturingPrice = sumPrice - chargePrice;
+                    manufacturingPrice = new BigDecimal(sumPrice.doubleValue() - chargePrice.doubleValue());
 
-                    Double manufacturingPercent = splittedLine.length > 17 ? readPercent(splittedLine[17]) : 0.0;
-                    price = manufacturingPrice * (100 - manufacturingPercent) / 100;
+                    BigDecimal manufacturingPercent = splittedLine.length > 17 ? readPercent(splittedLine[17]) : BigDecimal.ZERO;
+                    price = new BigDecimal(manufacturingPrice.doubleValue() * (100 - manufacturingPercent.doubleValue()) / 100);
 
-                    wholesaleMarkup = splittedLine.length > 15 ? readPercent(splittedLine[15]) : 0.0;
-                    wholesalePrice = sumPrice * (100 + wholesaleMarkup) / 100;
+                    wholesaleMarkup = splittedLine.length > 15 ? readPercent(splittedLine[15]) : BigDecimal.ZERO;
+                    wholesalePrice = new BigDecimal(sumPrice.doubleValue() * (100 + wholesaleMarkup.doubleValue()) / 100);
                 } else if ("1".equals(extra)) {
                     String extraCompliance = reader.readLine();
                     if (extraCompliance != null && !extraCompliance.isEmpty()) {
@@ -547,31 +547,31 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                                 "AA", null, true, supplierWarehouseID + "/" + customerWarehouseID + "/" + dateField + "/" + pnt13 + pnt48,
                                 date, itemID, isWare, quantity, supplierID, customerWarehouseID, supplierWarehouseID, price, chargePrice,
                                 manufacturingPrice, wholesalePrice, wholesaleMarkup, null, null, textCompliance, null));
-                        Double sum = ((double) (Math.round(((price + (chargePrice == null ? 0 : chargePrice)) * quantity) * 100))) / 100;
-                        Double subtotal = totalSumWarehouse.get(customerWarehouseID);
+                        BigDecimal sum = new BigDecimal((Math.round(((price.doubleValue() + (chargePrice == null ? 0 : chargePrice.doubleValue())) * quantity.doubleValue()) * 100)) / 100);
+                        BigDecimal subtotal = totalSumWarehouse.get(customerWarehouseID);
                         if (subtotal == null)
                             totalSumWarehouse.put(customerWarehouseID, sum);
                         else
-                            totalSumWarehouse.put(customerWarehouseID, sum + subtotal);
+                            totalSumWarehouse.put(customerWarehouseID, sum.add(subtotal));
                     }
                 }
             }
         }
         reader.close();
         String message = "Кол-во позиций :" + userInvoiceDetailsList.size() + "\r\n";
-        for (Map.Entry<String, Double> entry : totalSumWarehouse.entrySet())
+        for (Map.Entry<String, BigDecimal> entry : totalSumWarehouse.entrySet())
             message += entry.getKey() + ": " + NumberFormat.getNumberInstance().format(entry.getValue()) + "\r\n";
         context.requestUserInteraction(new MessageClientAction(message, "Общая сумма"));
         return userInvoiceDetailsList;
     }
 
-    private Double readPercent(String percentString) {
+    private BigDecimal readPercent(String percentString) {
         if (percentString == null) return null;
         if (percentString.endsWith(".00"))
             percentString = percentString.substring(0, percentString.length() - 3);
-        Double result = 0.0;
+        BigDecimal result = BigDecimal.ZERO;
         try {
-            result = Double.parseDouble(percentString);
+            result = parseBigDecimal(percentString);
         } catch (Exception e) {
         }
         return result;
@@ -603,7 +603,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         Set<String> warehousesOST = new HashSet<String>();
         String smol;
         Date date = null;
-        Double quantity = 0.0;
+        BigDecimal quantity = new BigDecimal(0.0);
         String line;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^OST")) {
@@ -617,7 +617,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String date2Field = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
                     Date date2 = date2Field == null ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
                     date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
-                    quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : 0;
+                    quantity = splittedLine.length > 7 ? parseBigDecimal(splittedLine[7]) : BigDecimal.ZERO;
                 }
                 if (smol != null && isCorrectUserInvoiceDetail(quantity, startDate, date, null))
                     warehousesOST.add(smol);
@@ -1021,7 +1021,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String name = null;
         String priceListText = null;
         String supplierWarehouseID = null;
-        Double quantity = null;
+        BigDecimal quantity = null;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && SOTUserInvoicesList.size() >= numberOfItems)
                 break;
@@ -1049,7 +1049,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         supplierWarehouseID = suppliersFastMap.get(supplierString)[1];
                     else
                         supplierWarehouseID = "dsw";
-                    quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
+                    quantity = splittedLine.length > 7 ? parseBigDecimal(splittedLine[7]) : null;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
                     if (groupID.split(":")[0].length() == 2)
@@ -1066,5 +1066,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         }
         reader.close();
         return SOTUserInvoicesList;
+    }
+
+    private BigDecimal parseBigDecimal(String value) {
+        return BigDecimal.valueOf(Double.parseDouble(value));
     }
 }

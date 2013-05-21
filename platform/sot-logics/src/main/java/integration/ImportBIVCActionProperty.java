@@ -13,6 +13,7 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -170,15 +171,15 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "windows-1251"));
         String line;
         String itemID;
-        Double baseMarkup = null;
-        Double retailMarkup = null;
+        BigDecimal baseMarkup = null;
+        BigDecimal retailMarkup = null;
         String uomID = null;
         String uomName = null;
         String uomShortName = null;
         String group1ID = null;
         String group2ID = null;
         String group3ID = null;
-        Double retailVAT = null;
+        BigDecimal retailVAT = null;
         String itemName = null;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && itemsList.size() > numberOfItems)
@@ -189,11 +190,11 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                 switch (field) {
                     case 2:
                         String baseMarkupValue = reader.readLine().trim();
-                        baseMarkup = baseMarkupValue.isEmpty() ? null : Double.parseDouble(baseMarkupValue);
+                        baseMarkup = baseMarkupValue.isEmpty() ? null : parseBigDecimal(baseMarkupValue);
                         break;
                     case 3:
                         String retailMarkupValue = reader.readLine().trim();
-                        retailMarkup = retailMarkupValue.isEmpty() ? null : Double.parseDouble(retailMarkupValue);
+                        retailMarkup = retailMarkupValue.isEmpty() ? null : parseBigDecimal(retailMarkupValue);
                         break;
                     case 11:
                         String[] splittedLine = reader.readLine().split(":");
@@ -214,7 +215,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         group1ID = splittedLine.length > 0 ? splittedLine[0] : null;
                         break;
                     case 15:
-                        retailVAT = Double.parseDouble(reader.readLine().trim());
+                        retailVAT = parseBigDecimal(reader.readLine().trim());
                         break;
                     case 18:
                         itemName = reader.readLine().trim();
@@ -231,7 +232,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                             }
                             itemsList.add(new Item(itemID, groupID, itemName, uomName, uomShortName, uomID, null, null,
                                     nameCountry, null, null, date, null, null, null, null, retailVAT, null, null, null, null,
-                                    baseMarkup, retailMarkup, null, null));
+                                    baseMarkup, retailMarkup, null, null, null, null, null, null));
                             group1ID = null;
                             group2ID = null;
                             group3ID = null;
@@ -257,13 +258,13 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         String line;
         String sid;
         String itemID;
-        Double baseMarkup = null;
-        Double supplierMarkup = null;
-        Double quantity = null;
-        Double price;
-        Double manufacturingPrice = null;
-        Double chargePrice = null;
-        Double wholesalePrice;
+        BigDecimal baseMarkup = null;
+        BigDecimal supplierMarkup = null;
+        BigDecimal quantity = null;
+        BigDecimal price;
+        BigDecimal manufacturingPrice = null;
+        BigDecimal chargePrice = null;
+        BigDecimal wholesalePrice;
         String customerWarehouseID = null;
         String supplierWarehouseID = null;
         String supplierID = null;
@@ -276,21 +277,21 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                 Integer field = Integer.parseInt(line.split("\\(|\\)|,")[2]);
                 switch (field) {
                     case 0:
-                        quantity = Double.parseDouble(reader.readLine().trim());
+                        quantity = parseBigDecimal(reader.readLine().trim());
                         break;
                     case 2:
                         String baseMarkupString = reader.readLine().trim();
-                        baseMarkup = baseMarkupString.isEmpty() ? 0 : Double.parseDouble(baseMarkupString);
+                        baseMarkup = baseMarkupString.isEmpty() ? new BigDecimal(0) : parseBigDecimal(baseMarkupString);
                         break;
                     case 4:
                         String supplierMarkupString = reader.readLine().trim();
-                        supplierMarkup = supplierMarkupString.isEmpty() ? 0 : Double.parseDouble(supplierMarkupString);
+                        supplierMarkup = supplierMarkupString.isEmpty() ? new BigDecimal(0) : parseBigDecimal(supplierMarkupString);
                         break;
                     case 8:
                         textCompliance = reader.readLine().trim();
                         break;
                     case 23:
-                        manufacturingPrice = Double.parseDouble(reader.readLine().trim());
+                        manufacturingPrice = parseBigDecimal(reader.readLine().trim());
                         break;
                     case 27:
                         customerWarehouseID = trimWarehouseSID(reader.readLine().trim());
@@ -302,15 +303,15 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                     case 32:
                         String cp = reader.readLine().trim();
                         if (!"".equals(cp))
-                            chargePrice = Double.valueOf((cp.startsWith(".") ? "0" : "") + cp);
+                            chargePrice = parseBigDecimal((cp.startsWith(".") ? "0" : "") + cp);
                         break;
                     case 37:
                         number = reader.readLine().trim();
                         break;
                     case 38:
                         if ((number != null) && (!"".equals(number))) {
-                            price = manufacturingPrice * (100 - supplierMarkup) / 100;
-                            wholesalePrice = (manufacturingPrice + chargePrice) * (100 + baseMarkup) / 100;
+                            price = manufacturingPrice.multiply(new BigDecimal(100).subtract(supplierMarkup)).divide(new BigDecimal(100));
+                            wholesalePrice = manufacturingPrice.add(chargePrice).multiply(baseMarkup.add(new BigDecimal(100))).divide(new BigDecimal(100));
                             String d = reader.readLine().trim();
                             Date date;
                             try {
@@ -527,7 +528,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         String line;
         String itemID;
         String uomID = null;
-        Double weight = null;
+        BigDecimal weight = null;
         String itemName = null;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^stmc")) {
@@ -540,7 +541,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         Matcher m = r.matcher(uomLine);
                         if (m.matches()) {
                             uomID = m.group(1).trim();
-                            weight = Double.parseDouble(m.group(2).trim());
+                            weight = parseBigDecimal(m.group(2).trim());
                         } else {
                             String[] splittedLine = uomLine.split(":");
                             uomID = splittedLine.length > 0 ? splittedLine[0] : null;
@@ -566,5 +567,9 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         }
         reader.close();
         return data;
+    }
+
+    private BigDecimal parseBigDecimal(String value) {
+        return BigDecimal.valueOf(Double.parseDouble(value));
     }
 }

@@ -6,6 +6,7 @@ REQUIRE System,
         Country,
         Currency,
         CustomsGroup,
+        CustomsGroupItem,
         Employee,
         Integration,
         Item,
@@ -48,12 +49,14 @@ REQUIRE System,
 @defineExternalizable(item, STRING[100]);
 @defineExternalizable(itemGroup, STRING[100]);
 @defineExternalizable(legalEntity, STRING[100]);
+@defineExternalizable(manufacturer, STRING[100]);
 @defineExternalizable(position, STRING[100]);
 @defineExternalizable(store, STRING[100]);
 @defineExternalizable(storeType, STRING[100]);
 @defineExternalizable(UOM, STRING[100]);
 @defineExternalizable(userContractSku, STRING[100]);
 @defineExternalizable(userPriceList, STRING[100]);
+@defineExternalizable(userInvoice, STRING[100]);
 @defineExternalizable(userInvoiceDetail, STRING[100]);
 @defineExternalizable(ware, STRING[100]);
 @defineExternalizable(warehouse, STRING[100]);
@@ -62,7 +65,7 @@ REQUIRE System,
 
 showIDs 'Показывать ID объектов' = DATA BOOLEAN ();
 
-numberSeriesToUserInvoice (number, series) = GROUP AGGR userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS UserInvoice;
+//numberSeriesToUserInvoice (number, series) = GROUP AGGR userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS UserInvoice;
 
 userPriceListDetailIdSkuIdUserPriceList (sku, userPriceList) = GROUP AGGR userPriceListDetail BY idItem(skuUserPriceListDetail(userPriceListDetail)), idUserPriceList(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS UserPriceListDetail;
 

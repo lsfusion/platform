@@ -14,6 +14,7 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -75,21 +76,22 @@ public class ImportExcelItemsActionProperty extends ImportExcelActionProperty {
             String barcode = parseString(sheet.getCell(9, i).getContents());
             Date date = parseDate(sheet.getCell(10, i).getContents());
             Boolean isWeight = parseBoolean(sheet.getCell(11, i).getContents());
-            Double netWeight = parseDouble(sheet.getCell(12, i).getContents());
-            Double grossWeight = parseDouble(sheet.getCell(13, i).getContents());
+            BigDecimal netWeight = parseBigDecimal(sheet.getCell(12, i).getContents());
+            BigDecimal grossWeight = parseBigDecimal(sheet.getCell(13, i).getContents());
             String composition = parseString(sheet.getCell(14, i).getContents());
-            Double retailVAT = parseDouble(sheet.getCell(15, i).getContents());
+            BigDecimal retailVAT = parseBigDecimal(sheet.getCell(15, i).getContents());
             String wareID = parseString(sheet.getCell(16, i).getContents());
-            Double priceWare = parseDouble(sheet.getCell(17, i).getContents());
-            Double wareVAT = parseDouble(sheet.getCell(18, i).getContents());
+            BigDecimal priceWare = parseBigDecimal(sheet.getCell(17, i).getContents());
+            BigDecimal wareVAT = parseBigDecimal(sheet.getCell(18, i).getContents());
             String writeOffRateID = parseString(sheet.getCell(19, i).getContents());
-            Double baseMarkup = parseDouble(sheet.getCell(20, i).getContents());
-            Double retailMarkup = parseDouble(sheet.getCell(21, i).getContents());
-            Double amountPack = parseDouble(sheet.getCell(22, i).getContents());
+            BigDecimal baseMarkup = parseBigDecimal(sheet.getCell(20, i).getContents());
+            BigDecimal retailMarkup = parseBigDecimal(sheet.getCell(21, i).getContents());
+            BigDecimal amountPack = parseBigDecimal(sheet.getCell(22, i).getContents());
 
             data.add(new Item(itemID, groupID, name, uomName, uomShortName, uomID, brandName, brandID, country,
                     barcode, barcode, date, isWeight, netWeight, grossWeight, composition, retailVAT, wareID,
-                    priceWare, wareVAT, writeOffRateID, baseMarkup, retailMarkup, itemID, amountPack));
+                    priceWare, wareVAT, writeOffRateID, baseMarkup, retailMarkup, itemID, amountPack, null, null,
+                    null, null));
         }
 
         return data;

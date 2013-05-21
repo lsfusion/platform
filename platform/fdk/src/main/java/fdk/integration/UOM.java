@@ -1,14 +1,16 @@
 package fdk.integration;
 
 
+import java.math.BigDecimal;
+
 public class UOM {
     public String uomFullName;
     public String uomName;
     public String uomShortName;
-    public Double netWeight;
-    public Double grossWeight;
+    public BigDecimal netWeight;
+    public BigDecimal grossWeight;
 
-    public UOM(String uomFullName, String uomName, String uomShortName, Double netWeight, Double grossWeight) {
+    public UOM(String uomFullName, String uomName, String uomShortName, BigDecimal netWeight, BigDecimal grossWeight) {
         this.uomFullName = uomFullName;
         this.uomName = uomName;
         this.uomShortName = uomShortName;
