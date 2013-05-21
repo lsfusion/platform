@@ -75,6 +75,8 @@ public class PasteExternalTableHandler extends ServerResponseActionHandler<Paste
                 return ClientTimeClass.instance.parseString(s);
             } else if (property.baseType instanceof GDoubleType) {
                 return ClientDoubleClass.instance.parseString(s);
+            } else if (property.baseType instanceof GNumericType) {
+                return ClientNumericClass.instance.parseString(s);
             } else if (property.baseType instanceof GColorType) {
                 return ClientColorClass.instance.parseString(s);
             } else {

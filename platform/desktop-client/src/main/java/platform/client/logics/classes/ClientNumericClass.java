@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.Format;
 import java.text.NumberFormat;
+import java.text.ParseException;
 
 public class ClientNumericClass extends ClientDoubleClass {
 
@@ -77,5 +78,14 @@ public class ClientNumericClass extends ClientDoubleClass {
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new DoublePropertyEditor(value, (NumberFormat) property.getFormat(), property.design, BigDecimal.class);
+    }
+
+    @Override
+    public Object parseString(String s) throws ParseException {
+        try {
+            return BigDecimal.valueOf(NumberFormat.getInstance().parse(s).doubleValue());
+        } catch (NumberFormatException nfe) {
+            throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.big.decimal"), 0);
+        }
     }
 }
