@@ -72,7 +72,6 @@ import static java.util.Arrays.copyOfRange;
 import static platform.base.BaseUtils.add;
 import static platform.server.logics.PropertyUtils.*;
 import static platform.server.logics.property.derived.DerivedProperty.*;
-import static platform.server.logics.property.derived.DerivedProperty.createAnd;
 
 /**
  * User: DAle
@@ -5126,7 +5125,7 @@ public class VEDLogicsModule extends LogicsModule {
 
         // генерация штрихкода
         if(barcode!=null)
-            mList.add(new ChangeBarcodeActionProperty(baseClass, barcode.property, barcodePrefix != null ? barcodePrefix.property : null).getImplement(SetFact.singletonOrder(addedInterface)));
+            mList.add(new ChangeBarcodeActionProperty(barcode.property, barcodePrefix != null ? barcodePrefix.property : null).getImplement(SetFact.singletonOrder(addedInterface)));
 
         MCol<CalcPropertyMapImplement<?, PropertyInterface>> mCheckClasses = ListFact.mCol();
         MOrderExclSet<PropertyInterface> mInnerInterfaces = SetFact.mOrderExclSet(properties.length);
