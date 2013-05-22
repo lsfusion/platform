@@ -15,7 +15,7 @@ nameCurrencyCustomsZone 'Валюта' (customsZone) = nameCurrency(currencyCust
 CLASS CustomsGroup 'Позиция ТН ВЭД';
 TABLE customsGroup (CustomsGroup);
 
-nameCustomsGroup 'Наименование' = DATA ISTRING[200](CustomsGroup);
+nameCustomsGroup 'Наименование' = DATA VARISTRING[1000](CustomsGroup);
 
 hasCodeCustomsGroup 'Есть код' = DATA BOOLEAN (CustomsGroup) IN base;
 dateFromCustomsGroup 'Дата с' = DATA DATE (CustomsGroup) IN base;
@@ -80,10 +80,10 @@ FORM customsZones 'Таможенная зона'
 
 FORM customsGroup 'Позиция ТН ВЭД'
     OBJECTS cg = CustomsGroup FIXED PANEL
-    PROPERTIES(cg) numberCustomsGroup, codeCustomsGroup, nameCustomsGroup, nameParentCustomsGroup, nameCustomsZoneCustomsGroup,
+    PROPERTIES(cg) codeCustomsGroup, nameCustomsGroup, nameParentCustomsGroup, nameCustomsZoneCustomsGroup,
                    dateFromCustomsGroup, dateToCustomsGroup, isCompliancedCustomsGroup, registrationCustomsGroup,
                    valueCurrentRateSupplierVATCustomsGroup ON CHANGE dialogSupplierVATCustomsGroup(cg),
-                   percentDutyCustomsGroup, weightDutyCustomsGroup
+                   percentDutyCustomsGroup, weightDutyCustomsGroup, numberCustomsGroup
 
     EDIT CustomsGroup OBJECT cg
 ;
@@ -107,10 +107,11 @@ FORM customsGroups 'Позиции ТН ВЭД'
     ORDER BY nameCustomsGroup
 
     OBJECTS cg = CustomsGroup
-    PROPERTIES(cg) READONLY numberCustomsGroup, codeCustomsGroup, nameCustomsGroup, canonicalNameCustomsGroup,
+    PROPERTIES(cg) READONLY codeCustomsGroup, nameCustomsGroup, canonicalNameCustomsGroup,
                    dateFromCustomsGroup, dateToCustomsGroup, isCompliancedCustomsGroup, registrationCustomsGroup,
-                   valueCurrentRateSupplierVATCustomsGroup, percentDutyCustomsGroup, weightDutyCustomsGroup
+                   valueCurrentRateSupplierVATCustomsGroup, percentDutyCustomsGroup, weightDutyCustomsGroup, numberCustomsGroup
     PROPERTIES(cg) ADDFORM, EDITFORM, DELETE
+    ORDER BY numberCustomsGroup
 
     FILTERS stringEqualsAll(a), customsZoneCustomsGroup(cg) == cz
     //FILTERS (d IS EmployeeDivision AND NOT dg IS EmployeeDivisionGroup) OR isParentEmployeeDivisionGroupEmployeeDivision(dg, d)
@@ -119,8 +120,8 @@ FORM customsGroups 'Позиции ТН ВЭД'
         FILTER 'Только с кодом' 'F7' hasCodeCustomsGroup(gcg) DEFAULT
 
     FILTERGROUP filters
-        FILTER 'Все листья' 'F10' isParentLeafCustomsGroupCustomsGroup(cg, gcg) OR (cg IS CustomsGroup AND isLeafCustomsGroup(cg) AND NOT gcg) DEFAULT
-        FILTER 'Всех потомков' 'F9' isParentCustomsGroupCustomsGroup(cg, gcg) OR (cg IS CustomsGroup AND NOT gcg)
+        FILTER 'Все листья' 'F10' isParentLeafCustomsGroupCustomsGroup(cg, gcg) OR (cg IS CustomsGroup AND isLeafCustomsGroup(cg) AND NOT gcg)
+        FILTER 'Всех потомков' 'F9' isParentCustomsGroupCustomsGroup(cg, gcg) OR (cg IS CustomsGroup AND NOT gcg) DEFAULT
         FILTER 'Только непосредственных потомков' 'F8' parentCustomsGroup(cg) == gcg OR (cg IS CustomsGroup AND NOT parentCustomsGroup(cg) AND NOT gcg)
 
     DIALOG CustomsGroup OBJECT cg

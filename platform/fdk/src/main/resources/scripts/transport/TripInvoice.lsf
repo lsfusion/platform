@@ -19,7 +19,7 @@ createConsignmentTrip 'Создать накладные по заказам' (t
     FOR tripOrder(order) == trip DO {
         EXEC createUserInvoicePostedOrder(order);
         FOR createdUserInvoiceOrder (invoice, order) DO {
-            SET tripInvoice(invoice) <- trip IF quantityTripInvoice (trip, invoice); //
+            SET tripInvoice(invoice) <- trip; // IF quantityTripInvoice (trip, invoice)
         }
 
         EXEC apply();
