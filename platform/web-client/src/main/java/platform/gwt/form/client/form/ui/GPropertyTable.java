@@ -1,16 +1,12 @@
 package platform.gwt.form.client.form.ui;
 
-import com.bfr.client.selection.Range;
-import com.bfr.client.selection.RangeEndPoint;
 import com.bfr.client.selection.Selection;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.cellview.client.DataGrid;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.cellview.client.cell.HasCell;
@@ -95,18 +91,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
                         }
                     });
                 } else if (GKeyStroke.isCopyToClipboardEvent(event)) {
-                    if (selection.getRange() == null || selection.getRange().getText().isEmpty()) {
-                        selection.setRange(new Range(getFocusCellElement()));
-
-                        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                            @Override
-                            public void execute() {
-                                Range range = selection.getRange();
-                                range.collapse(true);
-                                selection.setRange(range);
-                            }
-                        });
-                    }
+                    CopyPasteUtils.putIntoClipboard(getFocusCellElement());
                 } else if (GKeyStroke.isPasteFromClipboardEvent(event)) {  // для IE, в котором не удалось словить ONPASTE, но он и так даёт доступ к буферу обмена
                     executePaste(event);
                 } else {
@@ -121,11 +106,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     @Override
     protected void onFocus() {
         super.onFocus();
-
-        if (!GwtClientUtils.isIEUserAgent()) {
-            // для вставки в Chrome без предварительного клика по ячейке, но валит весь селекшн в IE
-            selection.setRange(new Range(new RangeEndPoint(getFocusCellElement(), true)));
-        }
+        CopyPasteUtils.setEmptySelection(getFocusCellElement());
     }
 
     @Override
@@ -296,7 +277,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     }
 
     private void executePaste(Event event) {
-        String line = getClipboardData(event);
+        String line = CopyPasteUtils.getClipboardData(event);
         if (!line.isEmpty()) {
             stopPropagation(event);
             line = line.replaceAll("\r\n", "\n");    // браузеры заменяют разделители строк на "\r\n"
@@ -304,33 +285,4 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
             pasteData(line, line.contains("\t") || isMultiLine);
         }
     }
-
-    private native String getClipboardData(Event event)
-    /*-{
-        var text = "";
-
-        // This should eventually work in Firefox:
-        // https://bugzilla.mozilla.org/show_bug.cgi?id=407983
-        if (event.clipboardData) // WebKit (Chrome/Safari)
-        {
-            try {
-                text = event.clipboardData.getData("text/plain");
-                return text;
-            }
-            catch (e) {
-            }
-        }
-
-        if ($wnd.clipboardData) // IE
-        {
-            try {
-                text = $wnd.clipboardData.getData("Text");
-                return text;
-            }
-            catch (e) {
-            }
-        }
-
-        return text;
-    }-*/;
 }

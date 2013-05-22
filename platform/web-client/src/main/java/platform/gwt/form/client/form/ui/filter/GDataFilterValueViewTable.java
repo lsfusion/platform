@@ -7,9 +7,11 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.Event;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.cellview.client.DataGrid;
 import platform.gwt.cellview.client.cell.AbstractCell;
+import platform.gwt.form.client.form.ui.CopyPasteUtils;
 import platform.gwt.form.client.form.ui.GPropertyTableBuilder;
 import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -24,6 +26,7 @@ import java.util.Arrays;
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Unit;
 import static platform.gwt.base.client.GwtClientUtils.removeAllChildren;
+import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     private GDataFilterValueView valueView;
@@ -48,6 +51,8 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
         this.valueView = valueView;
         this.property = property;
+
+        sinkEvents(Event.ONPASTE);
 
         setRemoveKeyboardStylesOnBlur(true);
 
@@ -103,7 +108,15 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     }
 
     public void focusOnValue() {
-        setFocus(true);
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                setFocus(true);
+
+                Element focusElement = getChildElement(0).getCells().getItem(0).getFirstChildElement();
+                CopyPasteUtils.setEmptySelection(focusElement);
+            }
+        });
     }
 
     @Override
@@ -123,6 +136,24 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
     public void startEditing(EditEvent event) {
         cell.beginEditing(event);
+    }
+
+    @Override
+    protected void onBrowserEvent2(Event event) {
+        if (cell.cellEditor == null && event.getTypeInt() == Event.ONPASTE) { // пока работает только для Chrome
+            executePaste(event);
+        } else {
+            super.onBrowserEvent2(event);
+        }
+    }
+
+    private void executePaste(Event event) {
+        String line = CopyPasteUtils.getClipboardData(event);
+        if (!line.isEmpty()) {
+            stopPropagation(event);
+            line = line.replaceAll("\r\n", "\n");    // браузеры заменяют разделители строк на "\r\n"
+            cell.pasteValue(line);
+        }
     }
 
     class DataFilterValueEditableCell extends AbstractCell<Object> {
@@ -177,6 +208,21 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             if (event.getKeyCode() == KeyCodes.KEY_ENTER) {
                 valueView.applyFilter();
             }
+            if (GKeyStroke.isCopyToClipboardEvent(event)) {
+                CopyPasteUtils.putIntoClipboard(parent);
+            } else if (GKeyStroke.isPasteFromClipboardEvent(event)) {  // для IE, в котором не удалось словить ONPASTE, но он и так даёт доступ к буферу обмена
+                executePaste((Event) event);
+            }
+        }
+
+        public void pasteValue(final String value) {
+            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                    renderDom(context, parentElement, value);
+                    valueView.valueChanged(value);
+                }
+            });
         }
 
         public void beginEditing(final EditEvent event) {
