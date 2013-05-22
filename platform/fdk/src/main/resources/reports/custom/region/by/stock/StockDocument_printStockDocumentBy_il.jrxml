@@ -18,14 +18,14 @@
 	<field name="il" class="java.lang.Integer"/>
 	<field name="iObjName" class="java.lang.String"/>
 	<field name="iDescription" class="java.lang.String"/>
-	<field name="sumItemIncStockDocumentLedger" class="java.lang.Double"/>
-	<field name="sumContainerIncStockDocumentLedger" class="java.lang.Double"/>
-	<field name="sumIncStockDocumentLedger" class="java.lang.Double"/>
+	<field name="sumItemIncStockDocumentLedger" class="java.math.BigDecimal"/>
+	<field name="sumContainerIncStockDocumentLedger" class="java.math.BigDecimal"/>
+	<field name="sumIncStockDocumentLedger" class="java.math.BigDecimal"/>
 	<field name="countIncStockDocumentStockDateInterval" class="java.lang.Integer"/>
-	<field name="sumItemIncStockDocumentStockDateInterval" class="java.lang.Double"/>
-	<field name="sumContainerIncStockDocumentStockDateInterval" class="java.lang.Double"/>
-	<field name="subtotalItemIncStockDocumentStockDateInterval" class="java.lang.Double"/>
-	<field name="subtotalContainerIncStockDocumentStockDateInterval" class="java.lang.Double"/>
+	<field name="sumItemIncStockDocumentStockDateInterval" class="java.math.BigDecimal"/>
+	<field name="sumContainerIncStockDocumentStockDateInterval" class="java.math.BigDecimal"/>
+	<field name="subtotalItemIncStockDocumentStockDateInterval" class="java.math.BigDecimal"/>
+	<field name="subtotalContainerIncStockDocumentStockDateInterval" class="java.math.BigDecimal"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>

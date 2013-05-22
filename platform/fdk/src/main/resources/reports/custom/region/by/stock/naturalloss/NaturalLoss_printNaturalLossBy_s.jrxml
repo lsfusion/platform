@@ -29,8 +29,8 @@
 	<field name="dateNaturalLoss" class="java.util.Date"/>
 	<field name="dateFromNaturalLoss" class="java.util.Date"/>
 	<field name="dateToNaturalLoss" class="java.util.Date"/>
-	<field name="quantityNaturalLossDetailNaturalLoss" class="java.lang.Double"/>
-	<field name="sumNaturalLoss" class="java.lang.Double"/>
+	<field name="quantityNaturalLossDetailNaturalLoss" class="java.math.BigDecimal"/>
+	<field name="sumNaturalLoss" class="java.math.BigDecimal"/>
 	<field name="noteNaturalLoss" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="indexNaturalLossDetail" class="java.lang.Integer"/>
@@ -38,14 +38,14 @@
 	<field name="nameSkuNaturalLossDetail" class="java.lang.String"/>
 	<field name="shortNameUOMSkuNaturalLossDetail" class="java.lang.String"/>
 	<field name="descriptionBatchNaturalLossDetail" class="java.lang.String"/>
-	<field name="quantityLossNaturalLossDetail" class="java.lang.Double"/>
+	<field name="quantityLossNaturalLossDetail" class="java.math.BigDecimal"/>
 	<field name="nameSubNaturalLossGroupNaturalLossDetail" class="java.lang.String"/>
 	<field name="codeNaturalLossDetail" class="java.lang.String"/>
 	<field name="nameSubNaturalDetailNaturalLossDetail" class="java.lang.String"/>
-	<field name="percentNaturalLossDetail" class="java.lang.Double"/>
-	<field name="quantityNaturalLossDetail" class="java.lang.Double"/>
-	<field name="priceNaturalLossDetail" class="java.lang.Double"/>
-	<field name="sumNaturalLossDetail" class="java.lang.Double"/>
+	<field name="percentNaturalLossDetail" class="java.math.BigDecimal"/>
+	<field name="quantityNaturalLossDetail" class="java.math.BigDecimal"/>
+	<field name="priceNaturalLossDetail" class="java.math.BigDecimal"/>
+	<field name="sumNaturalLossDetail" class="java.math.BigDecimal"/>
 	<group name="captionGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{s})]]></groupExpression>
 	</group>

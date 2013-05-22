@@ -25,14 +25,14 @@
 	<field name="nameSkuBatch" class="java.lang.String"/>
 	<field name="idBarcodeSkuBatch" class="java.lang.String"/>
 	<field name="descriptionBatch" class="java.lang.String"/>
-	<field name="quantityPageInventoryDetailCollationSheetBatch" class="java.lang.Double"/>
-	<field name="quantityBalanceCollationSheetBatch" class="java.lang.Double"/>
-	<field name="quantityShortageCollationSheetBatch" class="java.lang.Double"/>
-	<field name="pricePageInventoryDetailCollationSheetBatch" class="java.lang.Double"/>
-	<field name="priceBalanceCollationSheetBatch" class="java.lang.Double"/>
-	<field name="sumPageInventoryDetailCollationSheetBatch" class="java.lang.Double"/>
-	<field name="sumBalanceCollationSheetBatch" class="java.lang.Double"/>
-	<field name="sumShortageCollationSheetBatch" class="java.lang.Double"/>
+	<field name="quantityPageInventoryDetailCollationSheetBatch" class="java.math.BigDecimal"/>
+	<field name="quantityBalanceCollationSheetBatch" class="java.math.BigDecimal"/>
+	<field name="quantityShortageCollationSheetBatch" class="java.math.BigDecimal"/>
+	<field name="pricePageInventoryDetailCollationSheetBatch" class="java.math.BigDecimal"/>
+	<field name="priceBalanceCollationSheetBatch" class="java.math.BigDecimal"/>
+	<field name="sumPageInventoryDetailCollationSheetBatch" class="java.math.BigDecimal"/>
+	<field name="sumBalanceCollationSheetBatch" class="java.math.BigDecimal"/>
+	<field name="sumShortageCollationSheetBatch" class="java.math.BigDecimal"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -167,7 +167,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{priceBalanceCollationSheetBatch}!=null?$F{priceBalanceCollationSheetBatch}:($F{pricePageInventoryDetailCollationSheetBatch}!=null?$F{pricePageInventoryDetailCollationSheetBatch}:0))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{priceBalanceCollationSheetBatch}!=null?$F{priceBalanceCollationSheetBatch}:($F{pricePageInventoryDetailCollationSheetBatch}!=null?$F{pricePageInventoryDetailCollationSheetBatch}:BigDecimal.valueOf(0)))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="377" y="0" width="40" height="10"/>

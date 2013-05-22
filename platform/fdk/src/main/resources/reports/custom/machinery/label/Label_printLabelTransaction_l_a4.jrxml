@@ -36,7 +36,7 @@
 	<field name="sidLabelType" class="java.lang.String"/>
 	<field name="idBarcode" class="java.lang.String"/>
 	<field name="nameLabelTransactionBarcode" class="java.lang.String"/>
-	<field name="priceLabelTransactionBarcode" class="java.lang.Double"/>
+	<field name="priceLabelTransactionBarcode" class="java.math.BigDecimal"/>
 	<field name="quantityLabelTransactionBarcode" class="java.lang.Integer"/>
 	<detail>
 		<band height="480">

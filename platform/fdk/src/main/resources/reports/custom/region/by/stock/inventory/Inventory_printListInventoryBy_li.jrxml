@@ -38,8 +38,8 @@
 	<field name="nameEmployeeListInventory" class="java.lang.String"/>
 	<field name="countPageInventoryListInventory" class="java.lang.Integer"/>
 	<field name="countPageInventoryDetailListInventory" class="java.lang.Integer"/>
-	<field name="quantityPageInventoryDetailListInventory" class="java.lang.Double"/>
-	<field name="sumPageInventoryDetailListInventory" class="java.lang.Double"/>
+	<field name="quantityPageInventoryDetailListInventory" class="java.math.BigDecimal"/>
+	<field name="sumPageInventoryDetailListInventory" class="java.math.BigDecimal"/>
 	<field name="countIndexListInventory" class="java.lang.Integer"/>
 	<field name="countIndexBatchListInventory" class="java.lang.Integer"/>
 	<field name="isBatchListInventory" class="java.lang.Boolean"/>

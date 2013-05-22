@@ -37,21 +37,21 @@
 	<field name="nameTypeOfAdditionCollationSheet" class="java.lang.String"/>
 	<field name="nameStockCollationSheet" class="java.lang.String"/>
 	<field name="dateCollationSheet" class="java.util.Date"/>
-	<field name="quantityPageInventoryDetailCollationSheet" class="java.lang.Double"/>
-	<field name="quantityBalanceCollationSheet" class="java.lang.Double"/>
-	<field name="quantityShortageCollationSheet" class="java.lang.Double"/>
-	<field name="sumPageInventoryDetailCollationSheet" class="java.lang.Double"/>
-	<field name="sumBalanceCollationSheet" class="java.lang.Double"/>
-	<field name="sumShortageCollationSheet" class="java.lang.Double"/>
+	<field name="quantityPageInventoryDetailCollationSheet" class="java.math.BigDecimal"/>
+	<field name="quantityBalanceCollationSheet" class="java.math.BigDecimal"/>
+	<field name="quantityShortageCollationSheet" class="java.math.BigDecimal"/>
+	<field name="sumPageInventoryDetailCollationSheet" class="java.math.BigDecimal"/>
+	<field name="sumBalanceCollationSheet" class="java.math.BigDecimal"/>
+	<field name="sumShortageCollationSheet" class="java.math.BigDecimal"/>
 	<field name="countListInventoryCollationSheet" class="java.lang.Integer"/>
 	<field name="countPageInventoryCollationSheet" class="java.lang.Integer"/>
 	<field name="prevDateCollationSheet" class="java.util.Date"/>
-	<field name="sumItemPageInventoryDetailCollationSheet" class="java.lang.Double"/>
-	<field name="sumContainerPageInventoryDetailCollationSheet" class="java.lang.Double"/>
-	<field name="sumItemBalanceCollationSheet" class="java.lang.Double"/>
-	<field name="sumContainerBalanceCollationSheet" class="java.lang.Double"/>
-	<field name="sumItemShortageCollationSheet" class="java.lang.Double"/>
-	<field name="sumContainerShortageCollationSheet" class="java.lang.Double"/>
+	<field name="sumItemPageInventoryDetailCollationSheet" class="java.math.BigDecimal"/>
+	<field name="sumContainerPageInventoryDetailCollationSheet" class="java.math.BigDecimal"/>
+	<field name="sumItemBalanceCollationSheet" class="java.math.BigDecimal"/>
+	<field name="sumContainerBalanceCollationSheet" class="java.math.BigDecimal"/>
+	<field name="sumItemShortageCollationSheet" class="java.math.BigDecimal"/>
+	<field name="sumContainerShortageCollationSheet" class="java.math.BigDecimal"/>
 	<field name="isBatchCollationSheet" class="java.lang.Boolean"/>
 	<field name="isSkuCollationSheet" class="java.lang.Boolean"/>
 	<group name="captionGroup10">

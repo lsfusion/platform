@@ -26,9 +26,9 @@
 	<field name="idBarcodeSkuProduct" class="java.lang.String"/>
 	<field name="nameSkuProduct" class="java.lang.String"/>
 	<field name="shortNameUOMProduct" class="java.lang.String"/>
-	<field name="quantityProduct" class="java.lang.Double"/>
-	<field name="pricePercentProduct" class="java.lang.Double"/>
-	<field name="netWeightProduct" class="java.lang.Double"/>
+	<field name="quantityProduct" class="java.math.BigDecimal"/>
+	<field name="pricePercentProduct" class="java.math.BigDecimal"/>
+	<field name="netWeightProduct" class="java.math.BigDecimal"/>
 	<field name="descriptionBOMProduct" class="java.lang.String"/>
 	<field name="c" class="java.lang.Integer"/>
 	<field name="indexComponent" class="java.lang.Integer"/>
@@ -36,9 +36,9 @@
 	<field name="nameMaterialComponent" class="java.lang.String"/>
 	<field name="shortNameUOMComponent" class="java.lang.String"/>
 	<field name="nameTechnologyComponent" class="java.lang.String"/>
-	<field name="nettoQuantityComponent" class="java.lang.Double"/>
-	<field name="wastageComponentDate" class="java.lang.Double"/>
-	<field name="bruttoQuantityComponentDate" class="java.lang.Double"/>
+	<field name="nettoQuantityComponent" class="java.math.BigDecimal"/>
+	<field name="wastageComponentDate" class="java.math.BigDecimal"/>
+	<field name="bruttoQuantityComponentDate" class="java.math.BigDecimal"/>
 	<group name="captionGroup26">
 		<groupExpression><![CDATA[String.valueOf($F{p})]]></groupExpression>
 		<groupHeader>
@@ -212,7 +212,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{wastageComponentDate}!=null?$F{wastageComponentDate}:0.0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{wastageComponentDate}!=null?$F{wastageComponentDate}:BigDecimal.valueOf(0.0))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="217" y="0" width="112" height="12"/>

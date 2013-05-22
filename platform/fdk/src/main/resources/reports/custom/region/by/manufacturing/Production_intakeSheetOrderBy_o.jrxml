@@ -39,8 +39,8 @@
 	<field name="descriptionBOMProductDetail" class="java.lang.String"/>
 	<field name="nameSkuProductDetail" class="java.lang.String"/>
 	<field name="shortNameUOMProductDetail" class="java.lang.String"/>
-	<field name="componentsPriceProductDetail" class="java.lang.Double"/>
-	<field name="productsPriceProductDetail" class="java.lang.Double"/>
+	<field name="componentsPriceProductDetail" class="java.math.BigDecimal"/>
+	<field name="productsPriceProductDetail" class="java.math.BigDecimal"/>
 	<field name="UNPProductsLegalEntityStockOrder" class="java.lang.String"/>
 	<field name="addressProductsLegalEntityStockOrder" class="java.lang.String"/>
 	<group name="captionGroup10">

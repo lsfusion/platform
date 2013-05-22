@@ -38,7 +38,7 @@
 	<field name="timeRevaluation" class="java.sql.Time"/>
 	<field name="beforeDateRevaluation" class="java.util.Date"/>
 	<field name="nameStockRevaluation" class="java.lang.String"/>
-	<field name="diffSumRevaluationDetailRevaluation" class="java.lang.Double"/>
+	<field name="diffSumRevaluationDetailRevaluation" class="java.math.BigDecimal"/>
 	<field name="nameRepricingCommitteeRevaluation" class="java.lang.String"/>
 	<field name="skipChangeLedgerRevaluation" class="java.lang.Boolean"/>
 	<field name="noteRevaluation" class="java.lang.String"/>
@@ -47,10 +47,10 @@
 	<field name="nameEmployeeCommitteeRevaluation" class="java.lang.String"/>
 	<field name="nameChairmanRevaluation" class="java.lang.String"/>
 	<field name="namePositionChairmanRevaluation" class="java.lang.String"/>
-	<field name="curSumRevaluationDetailRevaluation" class="java.lang.Double"/>
-	<field name="sumRevaluationDetailRevaluation" class="java.lang.Double"/>
+	<field name="curSumRevaluationDetailRevaluation" class="java.math.BigDecimal"/>
+	<field name="sumRevaluationDetailRevaluation" class="java.math.BigDecimal"/>
 	<field name="countRevaluationDetailRevaluation" class="java.lang.Integer"/>
-	<field name="quantityRevaluationDetailRevaluation" class="java.lang.Double"/>
+	<field name="quantityRevaluationDetailRevaluation" class="java.math.BigDecimal"/>
 	<group name="captionGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{p})]]></groupExpression>
 		<groupHeader>
@@ -176,7 +176,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[$F{diffSumRevaluationDetailRevaluation}>=0?"Сумма дооценки":"Сумма уценки"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{diffSumRevaluationDetailRevaluation}.compareTo(BigDecimal.ZERO)>=0?"Сумма дооценки":"Сумма уценки"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="159" y="23" width="643" height="13"/>
@@ -202,7 +202,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[($F{diffSumRevaluationDetailRevaluation}>=0?(platform.base.Words.toString($F{diffSumRevaluationDetailRevaluation})):(platform.base.Words.toString(-$F{diffSumRevaluationDetailRevaluation})))+
+					<textFieldExpression><![CDATA[($F{diffSumRevaluationDetailRevaluation}.compareTo(BigDecimal.ZERO)>=0?(platform.base.Words.toString($F{diffSumRevaluationDetailRevaluation})):(platform.base.Words.toString($F{diffSumRevaluationDetailRevaluation}.negate())))+
 " "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">

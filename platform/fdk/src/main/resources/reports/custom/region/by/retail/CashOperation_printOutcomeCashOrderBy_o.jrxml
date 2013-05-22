@@ -41,7 +41,7 @@
 	<field name="timeCashDocument" class="java.sql.Time"/>
 	<field name="nameCompanyCashDocument" class="java.lang.String"/>
 	<field name="nameDepartmentStoreCashDocument" class="java.lang.String"/>
-	<field name="sumCashOutcomeCashOrder" class="java.lang.Double"/>
+	<field name="sumCashOutcomeCashOrder" class="java.math.BigDecimal"/>
 	<field name="basisCashDocument" class="java.lang.String"/>
 	<pageHeader>
 		<band height="92">

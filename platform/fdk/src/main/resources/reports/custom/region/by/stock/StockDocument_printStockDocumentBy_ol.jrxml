@@ -18,15 +18,15 @@
 	<field name="ol" class="java.lang.Integer"/>
 	<field name="oObjName" class="java.lang.String"/>
 	<field name="oDescription" class="java.lang.String"/>
-	<field name="sumItemOutStockDocumentLedger" class="java.lang.Double"/>
-	<field name="sumContainerOutStockDocumentLedger" class="java.lang.Double"/>
-	<field name="sumOutStockDocumentLedger" class="java.lang.Double"/>
+	<field name="sumItemOutStockDocumentLedger" class="java.math.BigDecimal"/>
+	<field name="sumContainerOutStockDocumentLedger" class="java.math.BigDecimal"/>
+	<field name="sumOutStockDocumentLedger" class="java.math.BigDecimal"/>
 	<field name="countOutStockDocumentStockDateInterval" class="java.lang.Integer"/>
-	<field name="sumItemOutStockDocumentStoreDateInterval" class="java.lang.Double"/>
-	<field name="sumContainerOutStockDocumentStockDateInterval" class="java.lang.Double"/>
+	<field name="sumItemOutStockDocumentStoreDateInterval" class="java.math.BigDecimal"/>
+	<field name="sumContainerOutStockDocumentStockDateInterval" class="java.math.BigDecimal"/>
 	<field name="objTo" class="java.util.Date"/>
-	<field name="sumItemAccountADocumentLedgerDate" class="java.lang.Double"/>
-	<field name="sumContainerAccountADocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumItemAccountADocumentLedgerDate" class="java.math.BigDecimal"/>
+	<field name="sumContainerAccountADocumentLedgerDate" class="java.math.BigDecimal"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>

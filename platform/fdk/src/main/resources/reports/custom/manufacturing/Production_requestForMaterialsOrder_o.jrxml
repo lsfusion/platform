@@ -36,7 +36,7 @@
 	<field name="indexComponentDetail" class="java.lang.Integer"/>
 	<field name="nameComponentComponentDetail" class="java.lang.String"/>
 	<field name="shortNameUOMSkuComponentDetail" class="java.lang.String"/>
-	<field name="quantityComponentDetail" class="java.lang.Double"/>
+	<field name="quantityComponentDetail" class="java.math.BigDecimal"/>
 	<field name="nameSkuComponentDetail" class="java.lang.String"/>
 	<field name="idBarcodeSkuComponentDetail" class="java.lang.String"/>
 	<group name="captionGroup10">

@@ -20,9 +20,9 @@
 	<field name="idBarcodeSkuBatch" class="java.lang.String"/>
 	<field name="nameSkuBatch" class="java.lang.String"/>
 	<field name="descriptionBatch" class="java.lang.String"/>
-	<field name="quantityPageInventoryDetailListInventoryBatch" class="java.lang.Double"/>
-	<field name="pricePageInventoryDetailListInventoryBatch" class="java.lang.Double"/>
-	<field name="sumPageInventoryDetailListInventoryBatch" class="java.lang.Double"/>
+	<field name="quantityPageInventoryDetailListInventoryBatch" class="java.math.BigDecimal"/>
+	<field name="pricePageInventoryDetailListInventoryBatch" class="java.math.BigDecimal"/>
+	<field name="sumPageInventoryDetailListInventoryBatch" class="java.math.BigDecimal"/>
 	<detail>
 		<band height="12">
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">

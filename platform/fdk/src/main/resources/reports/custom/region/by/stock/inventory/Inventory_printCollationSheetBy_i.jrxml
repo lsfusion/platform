@@ -24,14 +24,14 @@
 	<field name="i" class="java.lang.Integer"/>
 	<field name="nameSku" class="java.lang.String"/>
 	<field name="idBarcodeSku" class="java.lang.String"/>
-	<field name="quantityPageInventoryDetailCollationSheetSku" class="java.lang.Double"/>
-	<field name="quantityBalanceCollationSheetSku" class="java.lang.Double"/>
-	<field name="quantityShortageCollationSheetSku" class="java.lang.Double"/>
-	<field name="pricePageInventoryDetailCollationSheetSku" class="java.lang.Double"/>
-	<field name="priceBalanceCollationSheetSku" class="java.lang.Double"/>
-	<field name="sumPageInventoryDetailCollationSheetSku" class="java.lang.Double"/>
-	<field name="sumBalanceCollationSheetSku" class="java.lang.Double"/>
-	<field name="sumShortageCollationSheetSku" class="java.lang.Double"/>
+	<field name="quantityPageInventoryDetailCollationSheetSku" class="java.math.BigDecimal"/>
+	<field name="quantityBalanceCollationSheetSku" class="java.math.BigDecimal"/>
+	<field name="quantityShortageCollationSheetSku" class="java.math.BigDecimal"/>
+	<field name="pricePageInventoryDetailCollationSheetSku" class="java.math.BigDecimal"/>
+	<field name="priceBalanceCollationSheetSku" class="java.math.BigDecimal"/>
+	<field name="sumPageInventoryDetailCollationSheetSku" class="java.math.BigDecimal"/>
+	<field name="sumBalanceCollationSheetSku" class="java.math.BigDecimal"/>
+	<field name="sumShortageCollationSheetSku" class="java.math.BigDecimal"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -138,7 +138,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{priceBalanceCollationSheetSku}!=null?$F{priceBalanceCollationSheetSku}:($F{pricePageInventoryDetailCollationSheetSku}!=null?$F{pricePageInventoryDetailCollationSheetSku}:0))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{priceBalanceCollationSheetSku}!=null?$F{priceBalanceCollationSheetSku}:($F{pricePageInventoryDetailCollationSheetSku}!=null?$F{pricePageInventoryDetailCollationSheetSku}:BigDecimal.valueOf(0)))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="90" y="0" width="167" height="10"/>

@@ -40,22 +40,22 @@
 	<field name="nameSkuProduct" class="java.lang.String"/>
 	<field name="idBarcodeSkuProduct" class="java.lang.String"/>
 	<field name="shortNameUOMProduct" class="java.lang.String"/>
-	<field name="quantityProduct" class="java.lang.Double"/>
-	<field name="fastProduct" class="java.lang.Double"/>
-	<field name="carbohydratesProduct" class="java.lang.Double"/>
-	<field name="proteinsProduct" class="java.lang.Double"/>
-	<field name="energyProduct" class="java.lang.Double"/>
+	<field name="quantityProduct" class="java.math.BigDecimal"/>
+	<field name="fastProduct" class="java.math.BigDecimal"/>
+	<field name="carbohydratesProduct" class="java.math.BigDecimal"/>
+	<field name="proteinsProduct" class="java.math.BigDecimal"/>
+	<field name="energyProduct" class="java.math.BigDecimal"/>
 	<field name="c" class="java.lang.Integer"/>
 	<field name="indexComponent" class="java.lang.Integer"/>
 	<field name="nameMaterialComponent" class="java.lang.String"/>
 	<field name="idBarcodeSkuComponent" class="java.lang.String"/>
 	<field name="shortNameUOMComponent" class="java.lang.String"/>
-	<field name="nettoQuantityComponent" class="java.lang.Double"/>
-	<field name="bruttoQuantityComponentDate" class="java.lang.Double"/>
-	<field name="fatsComponent" class="java.lang.Double"/>
-	<field name="carbohydratesComponent" class="java.lang.Double"/>
-	<field name="proteinsComponent" class="java.lang.Double"/>
-	<field name="energyComponent" class="java.lang.Double"/>
+	<field name="nettoQuantityComponent" class="java.math.BigDecimal"/>
+	<field name="bruttoQuantityComponentDate" class="java.math.BigDecimal"/>
+	<field name="fatsComponent" class="java.math.BigDecimal"/>
+	<field name="carbohydratesComponent" class="java.math.BigDecimal"/>
+	<field name="proteinsComponent" class="java.math.BigDecimal"/>
+	<field name="energyComponent" class="java.math.BigDecimal"/>
 	<field name="recipesProduct" class="java.lang.String"/>
 	<group name="designGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{dt})]]></groupExpression>
@@ -318,7 +318,7 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{proteinsProduct}!=null?$F{proteinsProduct}:0.00)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{proteinsProduct}!=null?$F{proteinsProduct}:BigDecimal.valueOf(0.00))]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="443" y="0" width="55" height="10" backcolor="#FFFFFF"/>
@@ -331,7 +331,7 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{carbohydratesProduct}!=null?$F{carbohydratesProduct}:0.00)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{carbohydratesProduct}!=null?$F{carbohydratesProduct}:BigDecimal.valueOf(0.00))]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="498" y="0" width="55" height="10" backcolor="#FFFFFF"/>
@@ -344,7 +344,7 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{energyProduct}!=null?$F{energyProduct}:0.00)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{energyProduct}!=null?$F{energyProduct}:BigDecimal.valueOf(0.00))]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="388" y="0" width="55" height="10" backcolor="#FFFFFF"/>
@@ -357,7 +357,7 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{fastProduct}!=null?$F{fastProduct}:0.00)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{fastProduct}!=null?$F{fastProduct}:BigDecimal.valueOf(0.00))]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="27">

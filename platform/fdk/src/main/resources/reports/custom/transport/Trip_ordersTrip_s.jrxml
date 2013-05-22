@@ -20,8 +20,8 @@
 	<field name="idBarcodeSku" class="java.lang.String"/>
 	<field name="nameSku" class="java.lang.String"/>
 	<field name="shortNameUOMSku" class="java.lang.String"/>
-	<field name="quantityOrderedTripSku" class="java.lang.Double"/>
-	<field name="quantityOrderDetailSkuOrder" class="java.lang.Double"/>
+	<field name="quantityOrderedTripSku" class="java.math.BigDecimal"/>
+	<field name="quantityOrderDetailSkuOrder" class="java.math.BigDecimal"/>
 	<pageHeader>
 		<band height="18">
 			<textField isStretchWithOverflow="true">

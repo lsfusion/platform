@@ -175,6 +175,7 @@ FORM labelTypes 'Типы ценников'
     OBJECTS l = LabelType
     PROPERTIES(l) READONLY nameLabelType, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType, namePriceListTypeLabelType
     PROPERTIES(l)          ADDFORM, EDITFORM, DELETE
+    DIALOG LabelType OBJECT l
 ;
 
 //---------------------------- Документы для печати ценников ----------------------------------------//

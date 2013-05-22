@@ -40,8 +40,8 @@
 	<field name="fromDateOrder" class="java.util.Date"/>
 	<field name="toDateOrder" class="java.util.Date"/>
 	<field name="noteOrder" class="java.lang.String"/>
-	<field name="quantityProductDetailOrder" class="java.lang.Double"/>
-	<field name="quantityComponentDetailOrder" class="java.lang.Double"/>
+	<field name="quantityProductDetailOrder" class="java.math.BigDecimal"/>
+	<field name="quantityComponentDetailOrder" class="java.math.BigDecimal"/>
 	<field name="pd" class="java.lang.Integer"/>
 	<field name="indexProductDetail" class="java.lang.Integer"/>
 	<field name="nameSkuProductDetail" class="java.lang.String"/>
@@ -49,35 +49,35 @@
 	<field name="descriptionBOMProductDetail" class="java.lang.String"/>
 	<field name="nameProductProductDetail" class="java.lang.String"/>
 	<field name="shortNameUOMProductDetail" class="java.lang.String"/>
-	<field name="quantityProductDetail" class="java.lang.Double"/>
-	<field name="componentsPriceProductDetail" class="java.lang.Double"/>
-	<field name="markupProductDetail" class="java.lang.Double"/>
-	<field name="productsPriceProductDetail" class="java.lang.Double"/>
-	<field name="productsSumInBOMProductDetail" class="java.lang.Double"/>
-	<field name="valueVATProductDetail" class="java.lang.Double"/>
-	<field name="VATSumProductDetail" class="java.lang.Double"/>
-	<field name="calcPriceVATProductDetail" class="java.lang.Double"/>
-	<field name="premiumComponentsSumInBOMProductDetail" class="java.lang.Double"/>
+	<field name="quantityProductDetail" class="java.math.BigDecimal"/>
+	<field name="componentsPriceProductDetail" class="java.math.BigDecimal"/>
+	<field name="markupProductDetail" class="java.math.BigDecimal"/>
+	<field name="productsPriceProductDetail" class="java.math.BigDecimal"/>
+	<field name="productsSumInBOMProductDetail" class="java.math.BigDecimal"/>
+	<field name="valueVATProductDetail" class="java.math.BigDecimal"/>
+	<field name="VATSumProductDetail" class="java.math.BigDecimal"/>
+	<field name="calcPriceVATProductDetail" class="java.math.BigDecimal"/>
+	<field name="premiumComponentsSumInBOMProductDetail" class="java.math.BigDecimal"/>
 	<field name="recipesProductDetail" class="java.lang.String"/>
 	<field name="s" class="java.lang.Integer"/>
-	<field name="quantityProductDetailSku" class="java.lang.Double"/>
-	<field name="quantityProductProductDetailSku" class="java.lang.Double"/>
-	<field name="componentsSumProductDetailSku" class="java.lang.Double"/>
-	<field name="premiumComponentsSumProductDetailSku" class="java.lang.Double"/>
-	<field name="totalVATSumProductDetailSku" class="java.lang.Double"/>
+	<field name="quantityProductDetailSku" class="java.math.BigDecimal"/>
+	<field name="quantityProductProductDetailSku" class="java.math.BigDecimal"/>
+	<field name="componentsSumProductDetailSku" class="java.math.BigDecimal"/>
+	<field name="premiumComponentsSumProductDetailSku" class="java.math.BigDecimal"/>
+	<field name="totalVATSumProductDetailSku" class="java.math.BigDecimal"/>
 	<field name="nameSkuSkuOrder" class="java.lang.String"/>
 	<field name="idBarcodeSkuSkuOrder" class="java.lang.String"/>
 	<field name="shortNameUOMSkuSkuOrder" class="java.lang.String"/>
-	<field name="totalPriceSkuOrder" class="java.lang.Double"/>
-	<field name="valueVATSkuOrder" class="java.lang.Double"/>
-	<field name="markupSkuOrder" class="java.lang.Double"/>
-	<field name="retailMarkupPriceProductDetail" class="java.lang.Double"/>
-	<field name="retailMarkupSumInBOMProductDetail" class="java.lang.Double"/>
-	<field name="retailVATPriceProductDetail" class="java.lang.Double"/>
-	<field name="retailVATSumInBOMProductDetail" class="java.lang.Double"/>
-	<field name="totalPremiumPriceSkuOrder" class="java.lang.Double"/>
-	<field name="componentsSumInBOMProductDetail" class="java.lang.Double"/>
-	<field name="quantityInBOMProductDetail" class="java.lang.Double"/>
+	<field name="totalPriceSkuOrder" class="java.math.BigDecimal"/>
+	<field name="valueVATSkuOrder" class="java.math.BigDecimal"/>
+	<field name="markupSkuOrder" class="java.math.BigDecimal"/>
+	<field name="retailMarkupPriceProductDetail" class="java.math.BigDecimal"/>
+	<field name="retailMarkupSumInBOMProductDetail" class="java.math.BigDecimal"/>
+	<field name="retailVATPriceProductDetail" class="java.math.BigDecimal"/>
+	<field name="retailVATSumInBOMProductDetail" class="java.math.BigDecimal"/>
+	<field name="totalPremiumPriceSkuOrder" class="java.math.BigDecimal"/>
+	<field name="componentsSumInBOMProductDetail" class="java.math.BigDecimal"/>
+	<field name="quantityInBOMProductDetail" class="java.math.BigDecimal"/>
 	<field name="shortNameUOMProductProductDetail" class="java.lang.String"/>
 	<field name="seriesNumberObject" class="java.lang.String"/>
 	<group name="captionGroup10">

@@ -19,9 +19,9 @@
 	<field name="indexListInventorySku" class="java.lang.Integer"/>
 	<field name="idBarcodeSku" class="java.lang.String"/>
 	<field name="nameSku" class="java.lang.String"/>
-	<field name="quantityPageInventoryDetailListInventorySku" class="java.lang.Double"/>
-	<field name="pricePageInventoryDetailListInventorySku" class="java.lang.Double"/>
-	<field name="sumPageInventoryDetailListInventorySku" class="java.lang.Double"/>
+	<field name="quantityPageInventoryDetailListInventorySku" class="java.math.BigDecimal"/>
+	<field name="pricePageInventoryDetailListInventorySku" class="java.math.BigDecimal"/>
+	<field name="sumPageInventoryDetailListInventorySku" class="java.math.BigDecimal"/>
 	<detail>
 		<band height="12">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">

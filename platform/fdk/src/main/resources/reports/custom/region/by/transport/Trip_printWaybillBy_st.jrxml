@@ -22,7 +22,7 @@
 	<field name="nameStock" class="java.lang.String"/>
 	<field name="addressStock" class="java.lang.String"/>
 	<field name="nameLegalEntityStock" class="java.lang.String"/>
-	<field name="grossWeightTripToStock" class="java.lang.Double"/>
+	<field name="grossWeightTripToStock" class="java.math.BigDecimal"/>
 	<field name="addressStockPrevTripStock" class="java.lang.String"/>
 	<pageHeader>
 		<band height="72">

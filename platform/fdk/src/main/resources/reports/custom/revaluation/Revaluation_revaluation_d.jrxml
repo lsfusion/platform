@@ -20,12 +20,12 @@
 	<field name="idBarcodeSkuRevaluationDetail" class="java.lang.String"/>
 	<field name="nameSkuRevaluationDetail" class="java.lang.String"/>
 	<field name="shortNameUOMSkuRevaluationDetail" class="java.lang.String"/>
-	<field name="quantityRevaluationDetail" class="java.lang.Double"/>
-	<field name="curPriceRevaluationDetail" class="java.lang.Double"/>
-	<field name="curSumRevaluationDetail" class="java.lang.Double"/>
-	<field name="priceRevaluationDetail" class="java.lang.Double"/>
-	<field name="sumRevaluationDetail" class="java.lang.Double"/>
-	<field name="diffSumRevaluationDetail" class="java.lang.Double"/>
+	<field name="quantityRevaluationDetail" class="java.math.BigDecimal"/>
+	<field name="curPriceRevaluationDetail" class="java.math.BigDecimal"/>
+	<field name="curSumRevaluationDetail" class="java.math.BigDecimal"/>
+	<field name="priceRevaluationDetail" class="java.math.BigDecimal"/>
+	<field name="sumRevaluationDetail" class="java.math.BigDecimal"/>
+	<field name="diffSumRevaluationDetail" class="java.math.BigDecimal"/>
 	<pageHeader>
 		<band height="48">
 			<textField isStretchWithOverflow="true">

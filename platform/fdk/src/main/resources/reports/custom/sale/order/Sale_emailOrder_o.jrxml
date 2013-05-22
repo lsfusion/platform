@@ -42,14 +42,14 @@
 	<field name="shipmentDateOrder" class="java.util.Date"/>
 	<field name="nameSkuOrderDetail" class="java.lang.String"/>
 	<field name="idBarcodeSkuOrderDetail" class="java.lang.String"/>
-	<field name="quantityOrderDetail" class="java.lang.Double"/>
-	<field name="priceOrderDetail" class="java.lang.Double"/>
-	<field name="valueVATOrderDetail" class="java.lang.Double"/>
-	<field name="VATSumOrderDetail" class="java.lang.Double"/>
-	<field name="invoiceSumOrderDetail" class="java.lang.Double"/>
-	<field name="sumOrderDetailOrder" class="java.lang.Double"/>
-	<field name="VATSumOrderDetailOrder" class="java.lang.Double"/>
-	<field name="invoiceSumOrderDetailOrder" class="java.lang.Double"/>
+	<field name="quantityOrderDetail" class="java.math.BigDecimal"/>
+	<field name="priceOrderDetail" class="java.math.BigDecimal"/>
+	<field name="valueVATOrderDetail" class="java.math.BigDecimal"/>
+	<field name="VATSumOrderDetail" class="java.math.BigDecimal"/>
+	<field name="invoiceSumOrderDetail" class="java.math.BigDecimal"/>
+	<field name="sumOrderDetailOrder" class="java.math.BigDecimal"/>
+	<field name="VATSumOrderDetailOrder" class="java.math.BigDecimal"/>
+	<field name="invoiceSumOrderDetailOrder" class="java.math.BigDecimal"/>
 	<field name="dateOrder" class="java.util.Date"/>
 	<group name="designGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{o})]]></groupExpression>

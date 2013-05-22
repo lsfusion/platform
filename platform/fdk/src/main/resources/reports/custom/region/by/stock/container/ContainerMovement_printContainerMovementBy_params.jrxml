@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="params" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="233"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -35,20 +35,20 @@
 	<field name="nameDepartmentStore" class="java.lang.String"/>
 	<field name="nameStoreDepartmentStore" class="java.lang.String"/>
 	<field name="nameLegalEntityDepartmentStore" class="java.lang.String"/>
-	<field name="costSumContainerStockDateFrom" class="java.lang.Double"/>
-	<field name="costSumContainerStockDateTo" class="java.lang.Double"/>
+	<field name="costSumContainerStockDateFrom" class="java.math.BigDecimal"/>
+	<field name="costSumContainerStockDateTo" class="java.math.BigDecimal"/>
 	<field name="bt" class="java.lang.Integer"/>
 	<field name="idBarcodeSkuBatch" class="java.lang.String"/>
 	<field name="nameAttributeItemBatch" class="java.lang.String"/>
-	<field name="costBatch" class="java.lang.Double"/>
-	<field name="balanceBBatchStockDate" class="java.lang.Double"/>
-	<field name="costSumBatchStockDateFrom" class="java.lang.Double"/>
-	<field name="balanceABatchStockDate" class="java.lang.Double"/>
-	<field name="costSumBatchStockDateTo" class="java.lang.Double"/>
-	<field name="costInBalanceBatchStockDateFromTo" class="java.lang.Double"/>
-	<field name="costSumInBalanceBatchStockDateFromTo" class="java.lang.Double"/>
-	<field name="costOutBalanceBatchStockDateFromTo" class="java.lang.Double"/>
-	<field name="costSumOutBalanceBatchStockDateFromTo" class="java.lang.Double"/>
+	<field name="costBatch" class="java.math.BigDecimal"/>
+	<field name="balanceBBatchStockDate" class="java.math.BigDecimal"/>
+	<field name="costSumBatchStockDateFrom" class="java.math.BigDecimal"/>
+	<field name="balanceABatchStockDate" class="java.math.BigDecimal"/>
+	<field name="costSumBatchStockDateTo" class="java.math.BigDecimal"/>
+	<field name="costInBalanceBatchStockDateFromTo" class="java.math.BigDecimal"/>
+	<field name="costSumInBalanceBatchStockDateFromTo" class="java.math.BigDecimal"/>
+	<field name="costOutBalanceBatchStockDateFromTo" class="java.math.BigDecimal"/>
+	<field name="costSumOutBalanceBatchStockDateFromTo" class="java.math.BigDecimal"/>
 	<group name="designGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{dFrom})+" "+String.valueOf($F{dTo})]]></groupExpression>
 	</group>
@@ -101,7 +101,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Отдел: "+$F{name}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Отдел: "+$F{nameDepartmentStore}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="451" y="0" width="86" height="10"/>

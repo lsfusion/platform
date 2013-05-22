@@ -33,9 +33,9 @@
 	<field name="nameBOM" class="java.lang.String"/>
 	<field name="descriptionBOM" class="java.lang.String"/>
 	<field name="noteBOM" class="java.lang.String"/>
-	<field name="quantityProductBOM" class="java.lang.Double"/>
-	<field name="nettoQuantityComponentBOM" class="java.lang.Double"/>
-	<field name="pricePercentBOM" class="java.lang.Double"/>
+	<field name="quantityProductBOM" class="java.math.BigDecimal"/>
+	<field name="nettoQuantityComponentBOM" class="java.math.BigDecimal"/>
+	<field name="pricePercentBOM" class="java.math.BigDecimal"/>
 	<field name="nameActStudyOfCulinaryCommitteeBOM" class="java.lang.String"/>
 	<field name="nameCompanyBOM" class="java.lang.String"/>
 	<field name="nameEmployeeCommitteeBOM" class="java.lang.String"/>
