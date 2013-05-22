@@ -56,6 +56,29 @@ FORM chainStores 'Торговая сеть'
     EDIT ChainStores OBJECT n
 ;
 
+FORM dialogStoreTypes 'Форматы магазинов'
+    OBJECTS n=ChainStores FIXED PANEL
+    PROPERTIES(n) nameChainStores SELECTOR
+
+    OBJECTS s=StoreType
+    PROPERTIES(s) nameStoreType, DELETESESSION
+    PROPERTIES(s) ADDOBJ, EDITFORM
+    FILTERS inChainStoresStoreType(n, s)
+
+    DIALOG StoreType OBJECT s
+;
+
+FORM dialogChainStores 'Торговая сеть'
+    OBJECTS n=ChainStores
+    PROPERTIES(n) nameChainStores READONLY, DELETESESSION
+    PROPERTIES(n) ADDFORM, EDITFORM
+
+    OBJECTS s=StoreType
+    PROPERTIES(s) READONLY nameStoreType
+    FILTERS inChainStoresStoreType(n, s)
+
+    DIALOG ChainStores OBJECT n
+;
 // -------------------------------------- Магазин ------------------------------- //
 
 CLASS Store 'Магазин' : StockGroup, TaxUnit, POI;
