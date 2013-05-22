@@ -1446,8 +1446,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultProp;
     }
 
-    public LPWithParams addScriptedMaxProp(List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedUProp(Union.MAX, paramProps, "MAX");
+    public LPWithParams addScriptedMaxProp(List<LPWithParams> paramProps, boolean isMin) throws ScriptingErrorLog.SemanticErrorException {
+        if (isMin) {
+            return addScriptedUProp(Union.MIN, paramProps, "MIN");
+        } else {
+            return addScriptedUProp(Union.MAX, paramProps, "MAX");
+        }
     }
 
     public LPWithParams addScriptedUProp(Union unionType, List<LPWithParams> paramProps, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {

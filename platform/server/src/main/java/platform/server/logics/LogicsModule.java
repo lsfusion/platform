@@ -1146,7 +1146,8 @@ public abstract class LogicsModule {
         UnionProperty property = null;
         switch (unionType) {
             case MAX:
-                property = new MaxUnionProperty(name, caption, listInterfaces, listOperands.getCol());
+            case MIN:
+                property = new MaxUnionProperty(unionType == Union.MIN, name, caption, listInterfaces, listOperands.getCol());
                 break;
             case SUM:
                 MMap<CalcPropertyInterfaceImplement<UnionProperty.Interface>, Integer> mMapOperands = MapFact.mMap(MapFact.<CalcPropertyInterfaceImplement<UnionProperty.Interface>>addLinear());

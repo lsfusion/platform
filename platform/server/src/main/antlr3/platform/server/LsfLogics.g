@@ -1246,12 +1246,16 @@ ifElsePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithP
 
 
 maxPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	boolean isMin = true;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedMaxProp($exprList.props);
+		$property = self.addScriptedMaxProp($exprList.props, isMin);
 	}
 }
-	:	'MAX' exprList=nonEmptyPropertyExpressionList[context, dynamic]	
+	:	(('MAX') { isMin = false; } | ('MIN'))
+		exprList=nonEmptyPropertyExpressionList[context, dynamic]	
 	;
 
 

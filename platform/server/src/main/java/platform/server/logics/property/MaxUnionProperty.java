@@ -17,6 +17,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 public class MaxUnionProperty extends IncrementUnionProperty {
 
     private final ImCol<CalcPropertyInterfaceImplement<Interface>> operands;
+    private boolean isMin;
 
     @Override
     protected boolean useSimpleIncrement() {
@@ -44,6 +45,8 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         for(Expr operandExpr : operandExprs) {
             if(result==null)
                 result = operandExpr;
+            else if (isMin)
+                result = result.min(operandExpr);
             else
                 result = result.max(operandExpr);
         }
@@ -54,9 +57,10 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         return operands;
     }
 
-    public MaxUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands) {
+    public MaxUnionProperty(boolean isMin, String sID, String caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands) {
         super(sID, caption, interfaces);
         this.operands = operands;
+        this.isMin = isMin;
 
         finalizeInit();
     }
