@@ -93,8 +93,10 @@ nameBinBatch 'Ячейка' (batch) = nameBin(binBatch(batch)) MINCHARWIDTH 10 P
 binSkuLedger (ledger) = UNION CLASS binDataSkuLedger (ledger), binBatch (ledger) PERSISTENT INDEXED;
 nameBinSkuLedger 'Ячейка' (ledger) = nameBin(binSkuLedger(ledger)) MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
+TABLE skuBin(Sku, Bin);
 TABLE skuStockBin(Sku, Stock, Bin);
 TABLE skuStockBinDate(Sku, Stock, Bin, DATE);
+
 META defineBinSkuLedgerBalanceProperties(postfix, caption)
 
     currentBalance##postfix##SkuStockBin 'Текущий остаток'###caption (sku, stock, bin) =
@@ -315,15 +317,15 @@ nameDataBinStockGroup 'Ячейка' (stock,group) = nameBin(dataBinStockGroup(s
 dataBinStockSku = DATA Bin (Stock, Sku);
 nameDataBinStockSku 'Ячейка' (stock,sku) = nameBin(dataBinStockSku(stock,sku)) MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
-levelParentStockGroup (stock, group) = GROUP MIN levelGroupGroup(group, parent) IF dataBinStockGroup(stock, parent)
+levelParentBinStockGroup (stock, group) = GROUP MIN levelGroupGroup(group, parent) IF dataBinStockGroup(stock, parent)
                                                               BY stock, group PERSISTENT;
 
-nearestParentStockGroup (stock, group) = groupGroupLevel(group, levelParentStockGroup (stock, group));
-nearestInStockGroup  (stock, group) =
-    dataBinStockGroup(stock, nearestParentStockGroup (stock, group)) PERSISTENT;
+nearestParentBinStockGroup (stock, group) = groupGroupLevel(group, levelParentBinStockGroup (stock, group));
+nearestInBinStockGroup  (stock, group) =
+    dataBinStockGroup(stock, nearestParentBinStockGroup (stock, group)) PERSISTENT;
 
 binStockGroup (stock, group) =
-    nearestInStockGroup(stock, group) OVERRIDE dataBinStockGroup(stock, group) PERSISTENT;
+    nearestInBinStockGroup(stock, group) OVERRIDE dataBinStockGroup(stock, group) PERSISTENT;
 nameBinStockGroup 'Ячейка'= nameBin(binStockGroup(stock, group)) MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
 binStockSku (stock, sku) =

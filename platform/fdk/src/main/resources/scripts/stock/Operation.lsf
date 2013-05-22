@@ -183,6 +183,7 @@ END
 //Валюта
 
 META defineOperationCurrency(dumb)
+    TABLE currencyOperation(Currency, Operation);
     inCurrencyOperation 'Отм.' = DATA BOOLEAN (Currency, Operation);
 
     EXTEND FORM operation

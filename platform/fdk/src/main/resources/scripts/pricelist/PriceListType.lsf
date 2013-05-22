@@ -102,6 +102,7 @@ FORM priceListTypes 'Виды цен'
 
     OBJECTS s = Stock FIXED PANEL
     PROPERTIES(s) SELECTOR nameStock
+    FILTERS isCompanyStock(s)
 
     OBJECTS pt = PriceListType
     PROPERTIES(pt) READONLY namePriceListType, nameCurrencyPriceListType, nameRoundConditionPriceListType, objectClassName

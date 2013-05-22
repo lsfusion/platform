@@ -144,6 +144,7 @@ groupGroupTypeSku = ABSTRACT Group (GroupType, Sku) EXCLUSIVE PERSISTENT INDEXED
 nameGroupGroupTypeSku 'Имя' (type, sku) = nameGroup(groupGroupTypeSku(type, sku));
 canonicalNameGroupGroupTypeSku 'Каноническое имя' (type, sku) = canonicalNameGroup(groupGroupTypeSku(type, sku));
 
+TABLE groupStock(Group, Stock);
 TABLE groupSku(Group, Sku);
 isParentGroupSku(group, sku) = isParentGroupGroup(groupGroupTypeSku(groupTypeGroup(group), sku), group) PERSISTENT INDEXED;
 
@@ -263,7 +264,7 @@ nameSkuGroupStock 'Наименование (иностр.)' (skuGroup, stock) =
 
 // ----------------------------------- Sku Type ------------------------------------------ //
 
-CLASS SkuType {
+CLASS SkuType 'Тип SKU' {
     skuTypeItem 'Товар',
     skuTypeContainer 'Тара',
     skuTypeCharge 'Услуги'

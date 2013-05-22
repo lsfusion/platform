@@ -5,7 +5,7 @@ REQUIRE Certificate, Hierarchy, Utils, Historizable, Tax, Stock;
 CLASS CustomsZone 'Таможенная зона';
 TABLE customsZone(CustomsZone);
 
-nameCustomsZone 'Наименование' = DATA ISTRING[50](CustomsZone);
+nameCustomsZone 'Наименование' = DATA ISTRING[50](CustomsZone) IN recognize;
 
 customsZoneName (name) = GROUP AGGR customsZone BY nameCustomsZone(customsZone) WHERE customsZone IS CustomsZone;
 
@@ -157,7 +157,3 @@ NAVIGATOR {
         ADD customsGroups;
     }
 }
-
-
-
-
