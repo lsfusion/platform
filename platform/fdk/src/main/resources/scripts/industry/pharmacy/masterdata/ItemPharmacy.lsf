@@ -1,10 +1,10 @@
-MODULE ItemPharma;
+MODULE ItemPharmacy;
 
 REQUIRE Item;
 
 NAMESPACE Item;
 
-// Брэнд
+// Действующее вещество
 CLASS Substance 'Действующее вещество';
 TABLE substance(Substance);
 
