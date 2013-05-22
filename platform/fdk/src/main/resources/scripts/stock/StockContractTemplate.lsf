@@ -17,8 +17,8 @@ createStockContractTemplate 'Заполнить по шаблону' = ACTION (c
             SET valueTemplateEntry(detail) <- toText(nameCustomerContractSku(contract)) WHERE keyTemplateEntry(detail) == 'customer';
             SET valueTemplateEntry(detail) <- toText(shortNameOwnershipLegalEntity(supplierContractSku(contract))) WHERE keyTemplateEntry(detail) == 'shortOwnershipSupplier';
             SET valueTemplateEntry(detail) <- toText(shortNameOwnershipLegalEntity(customerContractSku(contract))) WHERE keyTemplateEntry(detail) == 'shortOwnershipCustomer';
-            SET valueTemplateEntry(detail) <- toText(addressLegalEntity(supplierContractSku(contract))) WHERE keyTemplateEntry(detail) == 'adressSupplier';
-            SET valueTemplateEntry(detail) <- toText(addressLegalEntity(customerContractSku(contract))) WHERE keyTemplateEntry(detail) == 'adressCustomer';
+            SET valueTemplateEntry(detail) <- toText(addressLegalEntity(supplierContractSku(contract))) WHERE keyTemplateEntry(detail) == 'addressSupplier';
+            SET valueTemplateEntry(detail) <- toText(addressLegalEntity(customerContractSku(contract))) WHERE keyTemplateEntry(detail) == 'addressCustomer';
             SET valueTemplateEntry(detail) <- toText(nameCountryLegalEntity(supplierContractSku(contract))) WHERE keyTemplateEntry(detail) == 'countrySupplier';
             SET valueTemplateEntry(detail) <- toText(nameCountryLegalEntity(customerContractSku(contract))) WHERE keyTemplateEntry(detail) == 'countryCustomer';
             SET valueTemplateEntry(detail) <- toText(phoneLegalEntity(supplierContractSku(contract))) WHERE keyTemplateEntry(detail) == 'phoneSupplier';
@@ -29,8 +29,8 @@ createStockContractTemplate 'Заполнить по шаблону' = ACTION (c
             SET valueTemplateEntry(detail) <- toText(numberAccountLegalEntity(customerContractSku(contract))) WHERE keyTemplateEntry(detail) == 'accountBankCustomer';
             SET valueTemplateEntry(detail) <- toText(nameBankAccount(accountLegalEntity(supplierContractSku(contract)))) WHERE keyTemplateEntry(detail) == 'bankSupplier';
             SET valueTemplateEntry(detail) <- toText(nameBankAccount(accountLegalEntity(customerContractSku(contract)))) WHERE keyTemplateEntry(detail) == 'bankCustomer';
-            SET valueTemplateEntry(detail) <- toText(addressBankAccount(accountLegalEntity(supplierContractSku(contract)))) WHERE keyTemplateEntry(detail) == 'adressBankSupplier';
-            SET valueTemplateEntry(detail) <- toText(addressBankAccount(accountLegalEntity(customerContractSku(contract)))) WHERE keyTemplateEntry(detail) == 'adressBankCustomer';
+            SET valueTemplateEntry(detail) <- toText(addressBankAccount(accountLegalEntity(supplierContractSku(contract)))) WHERE keyTemplateEntry(detail) == 'addressBankSupplier';
+            SET valueTemplateEntry(detail) <- toText(addressBankAccount(accountLegalEntity(customerContractSku(contract)))) WHERE keyTemplateEntry(detail) == 'addressBankCustomer';
             SET valueTemplateEntry(detail) <- toText(MFOBankAccount(accountLegalEntity(supplierContractSku(contract)))) WHERE keyTemplateEntry(detail) == 'MFOBankSupplier';
             SET valueTemplateEntry(detail) <- toText(MFOBankAccount(accountLegalEntity(customerContractSku(contract)))) WHERE keyTemplateEntry(detail) == 'MFOBankCustomer';
             SET valueTemplateEntry(detail) <- toText(departmentBankAccount(accountLegalEntity(supplierContractSku(contract)))) WHERE keyTemplateEntry(detail) == 'departmentBankSupplier';
@@ -83,8 +83,8 @@ loadDefaultTemplates 'Загрузить стандарные шаблоны' ()
     EXEC loadDefaultTemplateEntry('customer', '1');
     EXEC loadDefaultTemplateEntry('shortOwnershipSupplier', '1');
     EXEC loadDefaultTemplateEntry('shortOwnershipCustomer', '1');
-    EXEC loadDefaultTemplateEntry('adressSupplier', '1');
-    EXEC loadDefaultTemplateEntry('adressCustomer', '1');
+    EXEC loadDefaultTemplateEntry('addressSupplier', '1');
+    EXEC loadDefaultTemplateEntry('addressCustomer', '1');
     EXEC loadDefaultTemplateEntry('managerSupplier', '1');
     EXEC loadDefaultTemplateEntry('managerCustomer', '1');
     EXEC loadDefaultTemplateEntry('countrySupplier', '1');
@@ -97,8 +97,8 @@ loadDefaultTemplates 'Загрузить стандарные шаблоны' ()
     EXEC loadDefaultTemplateEntry('accountBankCustomer', '1');
     EXEC loadDefaultTemplateEntry('bankSupplier', '1');
     EXEC loadDefaultTemplateEntry('bankCustomer', '1');
-    EXEC loadDefaultTemplateEntry('adressBankSupplier', '1');
-    EXEC loadDefaultTemplateEntry('adressBankCustomer', '1');
+    EXEC loadDefaultTemplateEntry('addressBankSupplier', '1');
+    EXEC loadDefaultTemplateEntry('addressBankCustomer', '1');
     EXEC loadDefaultTemplateEntry('MFOBankSupplier', '1');
     EXEC loadDefaultTemplateEntry('MFOBankCustomer', '1');
     EXEC loadDefaultTemplateEntry('departmentBankSupplier', '1');
