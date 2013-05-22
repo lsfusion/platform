@@ -10,3 +10,12 @@ META defineExternalizable (object, type, prefix)
     prefix###id###object = DATA type (###object) INDEXED;
     prefix###object##Id (object) = GROUP AGGR object BY prefix###id###object (object);
 END
+
+META defineExternalizableAbstract (object, type)
+    @defineExternalizableAbstract(object, type, );
+END
+
+META defineExternalizableAbstract (object, type, prefix)
+    prefix###id###object = ABSTRACT type (###object) PERSISTENT INDEXED;
+    prefix###object##Id (object) = GROUP AGGR object BY prefix###id###object (object);
+END

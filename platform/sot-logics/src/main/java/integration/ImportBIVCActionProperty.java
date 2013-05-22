@@ -95,55 +95,55 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "windows-1251"));
         String line;
-        String itemID;
-        String group1ID = null;
+        String idItem;
+        String idGroup1 = null;
         String group1Name = null;
-        String group2ID = null;
+        String idGroup2 = null;
         String group2Name = null;
-        String group3ID = null;
+        String idGroup3 = null;
         String group3Name = null;
         String group4 = "ВСЕ";
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^stmc")) {
-                itemID = line.split("\\(|\\)|,")[1];
+                idItem = line.split("\\(|\\)|,")[1];
                 Integer field = Integer.parseInt(line.split("\\(|\\)|,")[2]);
                 switch (field) {
                     case 12:
                         String[] splittedLine = reader.readLine().split(":");
-                        group3ID = splittedLine.length > 0 ? splittedLine[0] : null;
-                        group3Name = splittedLine.length > 1 ? splittedLine[1] : group3ID;
+                        idGroup3 = splittedLine.length > 0 ? splittedLine[0] : null;
+                        group3Name = splittedLine.length > 1 ? splittedLine[1] : idGroup3;
                         break;
                     case 13:
                         splittedLine = reader.readLine().split(":");
-                        group2ID = splittedLine.length > 0 ? splittedLine[0] : null;
-                        group2Name = splittedLine.length > 1 ? splittedLine[1] : group2ID;
+                        idGroup2 = splittedLine.length > 0 ? splittedLine[0] : null;
+                        group2Name = splittedLine.length > 1 ? splittedLine[1] : idGroup2;
                         break;
                     case 14:
                         splittedLine = reader.readLine().split(":");
-                        group1ID = splittedLine.length > 0 ? splittedLine[0] : null;
-                        group1Name = splittedLine.length > 1 ? splittedLine[1] : group1ID;
+                        idGroup1 = splittedLine.length > 0 ? splittedLine[0] : null;
+                        group1Name = splittedLine.length > 1 ? splittedLine[1] : idGroup1;
                         break;
                     case 18:
                         String itemName = reader.readLine().trim();
 
                         if ((group2Name != null) && (group3Name != null)) {
                             if (!parents) {
-                                //sid - name - parentSID(null)
+                                //id - name - idParent(null)
                                 addIfNotContains(new ItemGroup(group4, group4, null));
-                                addIfNotContains(new ItemGroup((group3ID + "/" + group4), group3Name, null));
-                                addIfNotContains(new ItemGroup((group2ID + "/" + group3ID + "/" + group4), group2Name, null));
+                                addIfNotContains(new ItemGroup((idGroup3 + "/" + group4), group3Name, null));
+                                addIfNotContains(new ItemGroup((idGroup2 + "/" + idGroup3 + "/" + group4), group2Name, null));
                                 if (group1Name != null) {
-                                    addIfNotContains(new ItemGroup((group1ID + "/" + group2ID + "/" + group3ID + "/" + group4), group1Name, null));
-                                    addIfNotContains(new ItemGroup(itemID, itemName, null));
+                                    addIfNotContains(new ItemGroup((idGroup1 + "/" + idGroup2 + "/" + idGroup3 + "/" + group4), group1Name, null));
+                                    addIfNotContains(new ItemGroup(idItem, itemName, null));
                                 }
                             } else {
-                                //sid - name(null) - parentSID
+                                //id - name(null) - idParent
                                 addIfNotContains(new ItemGroup(group4, null, null));
-                                addIfNotContains(new ItemGroup((group3ID + "/" + group4), null, group4));
-                                addIfNotContains(new ItemGroup((group2ID + "/" + group3ID + "/" + group4), null, group3ID + "/" + group4));
-                                if (group1ID != null) {
-                                    addIfNotContains(new ItemGroup((group1ID + "/" + group2ID + "/" + group3ID + "/" + group4), null, group2ID + "/" + group3ID + "/" + group4));
-                                    addIfNotContains(new ItemGroup(itemID, null, group1ID + "/" + group2ID + "/" + group3ID + "/" + group4));
+                                addIfNotContains(new ItemGroup((idGroup3 + "/" + group4), null, group4));
+                                addIfNotContains(new ItemGroup((idGroup2 + "/" + idGroup3 + "/" + group4), null, idGroup3 + "/" + group4));
+                                if (idGroup1 != null) {
+                                    addIfNotContains(new ItemGroup((idGroup1 + "/" + idGroup2 + "/" + idGroup3 + "/" + group4), null, idGroup2 + "/" + idGroup3 + "/" + group4));
+                                    addIfNotContains(new ItemGroup(idItem, null, idGroup1 + "/" + idGroup2 + "/" + idGroup3 + "/" + group4));
                                 }
                             }
                         }
@@ -170,22 +170,22 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "windows-1251"));
         String line;
-        String itemID;
+        String idItem;
         BigDecimal baseMarkup = null;
         BigDecimal retailMarkup = null;
-        String uomID = null;
+        String idUOM = null;
         String uomName = null;
         String uomShortName = null;
-        String group1ID = null;
-        String group2ID = null;
-        String group3ID = null;
+        String idGroup1 = null;
+        String idGroup2 = null;
+        String idGroup3 = null;
         BigDecimal retailVAT = null;
         String itemName = null;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && itemsList.size() > numberOfItems)
                 break;
             if (line.startsWith("^stmc")) {
-                itemID = line.split("\\(|\\)|,")[1];
+                idItem = line.split("\\(|\\)|,")[1];
                 Integer field = Integer.parseInt(line.split("\\(|\\)|,")[2]);
                 switch (field) {
                     case 2:
@@ -198,21 +198,21 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         break;
                     case 11:
                         String[] splittedLine = reader.readLine().split(":");
-                        uomID = splittedLine.length > 0 ? splittedLine[0] : null;
+                        idUOM = splittedLine.length > 0 ? splittedLine[0] : null;
                         uomName = splittedLine.length > 1 ? splittedLine[1] : null;
                         uomShortName = uomName == null ? null : uomName.length() <= 5 ? uomName : uomName.substring(0, 5);
                         break;
                     case 12:
                         splittedLine = reader.readLine().split(":");
-                        group3ID = splittedLine.length > 0 ? splittedLine[0] : null;
+                        idGroup3 = splittedLine.length > 0 ? splittedLine[0] : null;
                         break;
                     case 13:
                         splittedLine = reader.readLine().split(":");
-                        group2ID = splittedLine.length > 0 ? splittedLine[0] : null;
+                        idGroup2 = splittedLine.length > 0 ? splittedLine[0] : null;
                         break;
                     case 14:
                         splittedLine = reader.readLine().split(":");
-                        group1ID = splittedLine.length > 0 ? splittedLine[0] : null;
+                        idGroup1 = splittedLine.length > 0 ? splittedLine[0] : null;
                         break;
                     case 15:
                         retailVAT = parseBigDecimal(reader.readLine().trim());
@@ -222,7 +222,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         break;
                     case 38:
                         if ((itemName != null) && (!"".equals(itemName))) {
-                            String groupID = (group1ID == null ? "" : (group1ID + "/")) + group2ID + "/" + group3ID + "/" + "ВСЕ";
+                            String idGroup = (idGroup1 == null ? "" : (idGroup1 + "/")) + idGroup2 + "/" + idGroup3 + "/" + "ВСЕ";
                             String d = reader.readLine().trim();
                             Date date;
                             try {
@@ -230,16 +230,16 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                             } catch (ParseException e) {
                                 date = null;
                             }
-                            itemsList.add(new Item(itemID, groupID, itemName, uomName, uomShortName, uomID, null, null,
+                            itemsList.add(new Item(idItem, idGroup, itemName, uomName, uomShortName, idUOM, null, null,
                                     nameCountry, null, null, date, null, null, null, null, retailVAT, null, null, null, null,
                                     baseMarkup, retailMarkup, null, null, null, null, null, null));
-                            group1ID = null;
-                            group2ID = null;
-                            group3ID = null;
+                            idGroup1 = null;
+                            idGroup2 = null;
+                            idGroup3 = null;
                             itemName = null;
                             uomName = null;
                             uomShortName = null;
-                            uomID = null;
+                            idUOM = null;
                             retailVAT = null;
                         }
                         break;
@@ -257,7 +257,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "windows-1251"));
         String line;
         String sid;
-        String itemID;
+        String idItem;
         BigDecimal baseMarkup = null;
         BigDecimal supplierMarkup = null;
         BigDecimal quantity = null;
@@ -265,15 +265,16 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         BigDecimal manufacturingPrice = null;
         BigDecimal chargePrice = null;
         BigDecimal wholesalePrice;
-        String customerWarehouseID = null;
-        String supplierWarehouseID = null;
-        String supplierID = null;
+        String idCustomerWarehouse = null;
+        String idSupplierWarehouse = null;
+        String idSupplier = null;
+        String series = "AA";
         String number = null;
         String textCompliance = null;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^stmc")) {
                 sid = line.split("\\(|\\)|,")[1];
-                itemID = line.split("\\(|\\)|,")[1];
+                idItem = line.split("\\(|\\)|,")[1];
                 Integer field = Integer.parseInt(line.split("\\(|\\)|,")[2]);
                 switch (field) {
                     case 0:
@@ -294,11 +295,11 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         manufacturingPrice = parseBigDecimal(reader.readLine().trim());
                         break;
                     case 27:
-                        customerWarehouseID = trimWarehouseSID(reader.readLine().trim());
+                        idCustomerWarehouse = trimIdWarehouses(reader.readLine().trim());
                         break;
                     case 30:
-                        supplierID = reader.readLine().trim();
-                        supplierWarehouseID = "S" + trimWarehouseSID(supplierID);
+                        idSupplier = reader.readLine().trim();
+                        idSupplierWarehouse = "S" + trimIdWarehouses(idSupplier);
                         break;
                     case 32:
                         String cp = reader.readLine().trim();
@@ -319,14 +320,14 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                             } catch (ParseException e) {
                                 date = null;
                             }
-                            userInvoiceDetailsList.add(new UserInvoiceDetail(number, "AA", null, true, sid,
-                                    date, itemID, false, quantity, supplierID, customerWarehouseID,
-                                    supplierWarehouseID, price, chargePrice, manufacturingPrice, wholesalePrice,
-                                    baseMarkup, null, null, textCompliance, null));
+                            userInvoiceDetailsList.add(new UserInvoiceDetail(series + number, series, number, null, true, sid,
+                                    date, idItem, false, quantity, idSupplier, idCustomerWarehouse,idSupplierWarehouse,
+                                    price, chargePrice, manufacturingPrice, wholesalePrice, baseMarkup, null, null,
+                                    textCompliance, null, null, null, null, null, null, null, null));
                             quantity = null;
-                            supplierID = null;
-                            customerWarehouseID = null;
-                            supplierWarehouseID = null;
+                            idSupplier = null;
+                            idCustomerWarehouse = null;
+                            idSupplierWarehouse = null;
                             baseMarkup = null;
                             supplierMarkup = null;
                             textCompliance = null;
@@ -339,10 +340,10 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         return userInvoiceDetailsList;
     }
 
-    private String trimWarehouseSID(String warehouseSID) {
-        while (warehouseSID.startsWith("0"))
-            warehouseSID = warehouseSID.substring(1);
-        return warehouseSID;
+    private String trimIdWarehouses(String idWarehouse) {
+        while (idWarehouse.startsWith("0"))
+            idWarehouse = idWarehouse.substring(1);
+        return idWarehouse;
     }
 
     private List<Warehouse> importWarehouses(String path, String path2) {
@@ -350,15 +351,15 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         List<Warehouse> warehousesList = new ArrayList<Warehouse>();
 
         try {
-            String defaultLegalEntitySID = "sle";
+            String idDefaultLegalEntity = "sle";
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "windows-1251"));
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("^SMOL")) {
-                    String warehouseID = line.split("\\(|\\)")[1];
+                    String idWarehouse = line.split("\\(|\\)")[1];
                     String[] dataWarehouse = reader.readLine().split(":");
                     String name = dataWarehouse.length > 0 ? dataWarehouse[0].trim() : null;
-                    warehousesList.add(new Warehouse(defaultLegalEntitySID, "own", trimWarehouseSID(warehouseID), name, null));
+                    warehousesList.add(new Warehouse(idDefaultLegalEntity, "own", trimIdWarehouses(idWarehouse), name, null));
                 }
             }
             reader.close();
@@ -366,12 +367,12 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
             reader = new BufferedReader(new InputStreamReader(new FileInputStream(path2), "windows-1251"));
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("^SWTP")) {
-                    String legalEntityID = line.split("\\(|\\)")[1];
+                    String idLegalEntity = line.split("\\(|\\)")[1];
                     String[] dataLegalEntity = reader.readLine().split(":");
                     String name = dataLegalEntity.length > 0 ? dataLegalEntity[0].trim() : null;
                     String warehouseAddress = dataLegalEntity.length > 13 ? dataLegalEntity[13].trim() : null;
                     if (name != null && !"".equals(name))
-                        warehousesList.add(new Warehouse(legalEntityID, "contractor", "S" + trimWarehouseSID(legalEntityID),
+                        warehousesList.add(new Warehouse(idLegalEntity, "contractor", "S" + trimIdWarehouses(idLegalEntity),
                                 name, warehouseAddress));
                 }
             }
@@ -397,7 +398,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("^SWTP")) {
-                    String legalEntityID = line.split("\\(|\\)")[1];
+                    String idLegalEntity = line.split("\\(|\\)")[1];
                     String[] dataLegalEntity = reader.readLine().split(":");
                     String name = dataLegalEntity.length > 0 ? dataLegalEntity[0].trim() : "";
                     String unp = dataLegalEntity.length > 4 ? dataLegalEntity[4].trim() : "";
@@ -405,7 +406,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                     String okpo = dataLegalEntity.length > 10 ? dataLegalEntity[10].trim() : "";
 
                     if (!name.isEmpty())
-                        legalEntitiesList.add(new LegalEntity(legalEntityID, name,
+                        legalEntitiesList.add(new LegalEntity(idLegalEntity, name,
                                 address.isEmpty() ? null : address, unp.isEmpty() ? null : unp,
                                 okpo.isEmpty() ? null : okpo, null, null, null, null, null, null, null, null,
                                 nameCountry, true, null, true));
@@ -442,10 +443,10 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
             if (line.startsWith("^SWTP")) {
                 String[] splittedLine = line.split("\\(|\\)|,");
                 if (splittedLine.length == 2) {
-                    String legalEntity1ID = splittedLine[1].replace("\"", "");
-                    String legalEntity2ID = "sle";
-                    String contractID1 = legalEntity1ID + "/" + legalEntity2ID;
-                    String contractID2 = legalEntity2ID + "/" + legalEntity1ID;
+                    String idLegalEntity1 = splittedLine[1].replace("\"", "");
+                    String idLegalEntity2 = "sle";
+                    String idContract1 = idLegalEntity1 + "/" + idLegalEntity2;
+                    String idContract2 = idLegalEntity2 + "/" + idLegalEntity1;
                     splittedLine = reader.readLine().split(":");
                     String contractString = splittedLine.length > 6 ? splittedLine[6].trim() : "";
                     if (!contractString.trim().isEmpty()) {
@@ -472,9 +473,9 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                             }
                         }
                         if (found) {
-                            contractsList.add(new Contract(contractID1, legalEntity1ID, legalEntity2ID,
+                            contractsList.add(new Contract(idContract1, idLegalEntity1, idLegalEntity2,
                                     number, dateFrom, dateTo, shortNameCurrency));
-                            contractsList.add(new Contract(contractID2, legalEntity2ID, legalEntity1ID,
+                            contractsList.add(new Contract(idContract2, idLegalEntity2, idLegalEntity1,
                                     number, dateFrom, null, shortNameCurrency));
                         }
                     }
@@ -526,13 +527,13 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(stmcPath), "windows-1251"));
         String line;
-        String itemID;
-        String uomID = null;
+        String idItem;
+        String idUOM = null;
         BigDecimal weight = null;
         String itemName = null;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^stmc")) {
-                itemID = line.split("\\(|\\)|,")[1];
+                idItem = line.split("\\(|\\)|,")[1];
                 Integer field = Integer.parseInt(line.split("\\(|\\)|,")[2]);
                 switch (field) {
                     case 11:
@@ -540,25 +541,25 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         Pattern r = Pattern.compile(pattern);
                         Matcher m = r.matcher(uomLine);
                         if (m.matches()) {
-                            uomID = m.group(1).trim();
+                            idUOM = m.group(1).trim();
                             weight = parseBigDecimal(m.group(2).trim());
                         } else {
                             String[] splittedLine = uomLine.split(":");
-                            uomID = splittedLine.length > 0 ? splittedLine[0] : null;
+                            idUOM = splittedLine.length > 0 ? splittedLine[0] : null;
                         }
-                        if (uomID != null)
-                            while (uomID.length() < 3)
-                                uomID = "0" + uomID;
+                        if (idUOM != null)
+                            while (idUOM.length() < 3)
+                                idUOM = "0" + idUOM;
                         break;
                     case 18:
                         itemName = reader.readLine().trim();
                         break;
                     case 38:
                         if ((itemName != null) && (!"".equals(itemName))) {
-                            data.add(Arrays.asList((Object) (uomID == null ? null : "S" + uomID),
-                                    itemID, weight));
+                            data.add(Arrays.asList((Object) (idUOM == null ? null : "S" + idUOM),
+                                    idItem, weight));
                         }
-                        uomID = null;
+                        idUOM = null;
                         weight = null;
                         itemName = null;
                         break;

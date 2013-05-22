@@ -6,8 +6,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 public class UserInvoiceDetail {
-    public String number;
+    public String idUserInvoice;
     public String series;
+    public String number;
     public Boolean createPricing;
     public Boolean createShipment;
     public String sid;
@@ -25,17 +26,28 @@ public class UserInvoiceDetail {
     public BigDecimal wholesaleMarkup;
     public BigDecimal retailPrice;
     public BigDecimal retailMarkup;
-    public String textCompliance;
+    public String certificateText;
     public String idContract;
+    public String numberDeclaration;
+    public Date dateDeclaration;
+    public String numberCompliance;
+    public Date fromDateCompliance;
+    public Date toDateCompliance;
+    public Date expiryDate;
+    public String bin;
 
 
-    public UserInvoiceDetail(String number, String series, Boolean createPricing, Boolean createShipment, String sid,
-                             Date date, String idItem, Boolean isWare, BigDecimal quantity, String supplier,
-                             String customerWarehouse, String supplierWarehouse, BigDecimal price, BigDecimal chargePrice,
-                             BigDecimal manufacturingPrice, BigDecimal wholesalePrice, BigDecimal wholesaleMarkup,
-                             BigDecimal retailPrice, BigDecimal retailMarkup, String textCompliance, String idContract) {
-        this.number = number;
+    public UserInvoiceDetail(String idUserInvoice, String series, String number, Boolean createPricing,
+                             Boolean createShipment, String sid, Date date, String idItem, Boolean isWare,
+                             BigDecimal quantity, String supplier, String customerWarehouse, String supplierWarehouse,
+                             BigDecimal price, BigDecimal chargePrice, BigDecimal manufacturingPrice,
+                             BigDecimal wholesalePrice, BigDecimal wholesaleMarkup, BigDecimal retailPrice,
+                             BigDecimal retailMarkup, String certificateText, String idContract, String numberDeclaration,
+                             Date dateDeclaration, String numberCompliance, Date fromDateCompliance, Date toDateCompliance,
+                             Date expiryDate, String bin) {
+        this.idUserInvoice = idUserInvoice;
         this.series = series;
+        this.number = number;
         this.createPricing = createPricing;
         this.createShipment = createShipment;
         this.sid = sid;
@@ -53,7 +65,14 @@ public class UserInvoiceDetail {
         this.wholesaleMarkup = wholesaleMarkup;
         this.retailPrice = retailPrice;
         this.retailMarkup = retailMarkup;
-        this.textCompliance = textCompliance;
+        this.certificateText = certificateText;
         this.idContract = idContract;
+        this.numberDeclaration = numberDeclaration;
+        this.dateDeclaration = dateDeclaration;
+        this.numberCompliance = numberCompliance;
+        this.fromDateCompliance = fromDateCompliance;
+        this.toDateCompliance = toDateCompliance;
+        this.expiryDate = expiryDate;
+        this.bin = bin;
     }
 }

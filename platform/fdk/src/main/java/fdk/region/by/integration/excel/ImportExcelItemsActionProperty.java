@@ -64,14 +64,14 @@ public class ImportExcelItemsActionProperty extends ImportExcelActionProperty {
 
         for (int i = 1; i < sheet.getRows(); i++) {
 
-            String itemID = parseString(sheet.getCell(0, i).getContents());
-            String groupID = parseString(sheet.getCell(1, i).getContents());
+            String idItem = parseString(sheet.getCell(0, i).getContents());
+            String idGroup = parseString(sheet.getCell(1, i).getContents());
             String name = parseString(sheet.getCell(2, i).getContents());
             String uomName = parseString(sheet.getCell(3, i).getContents());
             String uomShortName = parseString(sheet.getCell(4, i).getContents());
-            String uomID = parseString(sheet.getCell(5, i).getContents());
+            String idUOM = parseString(sheet.getCell(5, i).getContents());
             String brandName = parseString(sheet.getCell(6, i).getContents());
-            String brandID = parseString(sheet.getCell(7, i).getContents());
+            String idBrand = parseString(sheet.getCell(7, i).getContents());
             String country = parseString(sheet.getCell(8, i).getContents());
             String barcode = parseString(sheet.getCell(9, i).getContents());
             Date date = parseDate(sheet.getCell(10, i).getContents());
@@ -80,17 +80,17 @@ public class ImportExcelItemsActionProperty extends ImportExcelActionProperty {
             BigDecimal grossWeight = parseBigDecimal(sheet.getCell(13, i).getContents());
             String composition = parseString(sheet.getCell(14, i).getContents());
             BigDecimal retailVAT = parseBigDecimal(sheet.getCell(15, i).getContents());
-            String wareID = parseString(sheet.getCell(16, i).getContents());
+            String idWare = parseString(sheet.getCell(16, i).getContents());
             BigDecimal priceWare = parseBigDecimal(sheet.getCell(17, i).getContents());
             BigDecimal wareVAT = parseBigDecimal(sheet.getCell(18, i).getContents());
-            String writeOffRateID = parseString(sheet.getCell(19, i).getContents());
+            String idWriteOffRate = parseString(sheet.getCell(19, i).getContents());
             BigDecimal baseMarkup = parseBigDecimal(sheet.getCell(20, i).getContents());
             BigDecimal retailMarkup = parseBigDecimal(sheet.getCell(21, i).getContents());
             BigDecimal amountPack = parseBigDecimal(sheet.getCell(22, i).getContents());
 
-            data.add(new Item(itemID, groupID, name, uomName, uomShortName, uomID, brandName, brandID, country,
-                    barcode, barcode, date, isWeight, netWeight, grossWeight, composition, retailVAT, wareID,
-                    priceWare, wareVAT, writeOffRateID, baseMarkup, retailMarkup, itemID, amountPack, null, null,
+            data.add(new Item(idItem, idGroup, name, uomName, uomShortName, idUOM, brandName, idBrand, country,
+                    barcode, barcode, date, isWeight, netWeight, grossWeight, composition, retailVAT, idWare,
+                    priceWare, wareVAT, idWriteOffRate, baseMarkup, retailMarkup, idItem, amountPack, null, null,
                     null, null));
         }
 

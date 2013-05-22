@@ -2,11 +2,13 @@ MODULE Import;
 
 REQUIRE System,
         Barcode,
+        Bin,
         Compliance,
         Country,
         Currency,
         CustomsGroup,
         CustomsGroupItem,
+        Declaration,
         Employee,
         Integration,
         Item,
@@ -18,10 +20,13 @@ REQUIRE System,
         PriceListCalc,
         PriceList,
         PurchaseCompliance,
+        PurchaseDeclaration,
         PurchaseInvoice,
         PurchaseInvoiceCharge,
+        PurchaseInvoiceWholesalePrice,
         PurchaseManufacturingPrice,
         PurchaseShipment,
+        PurchaseShipmentBin,
         PurchaseWriteOff,
         PricingPurchase,
         SaleOrder,
@@ -34,16 +39,17 @@ REQUIRE System,
         WareInvoice,
         WareItem,
         WarePurchaseInvoice,
-        WriteOffItem,
-        PurchaseInvoiceWholesalePrice,
-        PurchaseManufacturingPrice;
+        WriteOffItem;
 
 @defineExternalizable(bank, STRING[100]);
 @defineExternalizable(barcode, STRING[100], ext);
+@defineExternalizable(bin, STRING[100]);
 @defineExternalizable(brand, STRING[100]);
 @defineExternalizable(calcPriceListType, STRING[100]);
+@defineExternalizable(compliance, STRING[100]);
 @defineExternalizable(dataPriceListType, STRING[100]);
 @defineExternalizable(chainStores, STRING[100]);
+@defineExternalizable(declaration, STRING[100]);
 @defineExternalizable(departmentStore, STRING[100]);
 @defineExternalizable(employee, STRING[100]);
 @defineExternalizable(item, STRING[100]);
@@ -63,9 +69,11 @@ REQUIRE System,
 @defineExternalizable(warehouseGroup, STRING[100]);
 @defineExternalizable(writeOffRate, STRING[100]);
 
-showIDs 'Показывать ID объектов' = DATA BOOLEAN ();
+@defineExternalizableAbstract(stock, STRING[100]);
+idStock (s) += idWarehouse(s);
+idStock (s) += idDepartmentStore(s);
 
-//numberSeriesToUserInvoice (number, series) = GROUP AGGR userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS UserInvoice;
+showIDs 'Показывать ID объектов' = DATA BOOLEAN ();
 
 userPriceListDetailIdSkuIdUserPriceList (sku, userPriceList) = GROUP AGGR userPriceListDetail BY idItem(skuUserPriceListDetail(userPriceListDetail)), idUserPriceList(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS UserPriceListDetail;
 

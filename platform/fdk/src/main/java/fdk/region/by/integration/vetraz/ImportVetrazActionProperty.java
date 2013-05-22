@@ -18,6 +18,8 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ImportVetrazActionProperty extends ScriptingActionProperty {
 
@@ -102,11 +104,13 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
             String country = "БЕЛАРУСЬ";
             String tnved = getFieldValue(itemsImportFile, "DPRM1", "Cp866", null);
             Date date = getDateFieldValue(itemsImportFile, "DATPR1", "Cp866", null);
+            BigDecimal amountInPack = getBigDecimalFieldValue(itemsImportFile, "N_PER2", "Cp866", null);
+            BigDecimal weight = getBigDecimalFieldValue(itemsImportFile, "N_PER3", "Cp866", null);
 
             if (!idItem.trim().isEmpty())
                 data.add(new Item(idItem, "ВСЕ", name, UOM, UOM, UOM, null, null, country, k_group,
-                        k_group, date, null, null, null, null, allowedVAT.contains(retailVAT.doubleValue()) ? retailVAT : null, null, null, null, null, null, null, null, null,
-                        manufacturer, manufacturer, tnved, country));
+                        k_group, date, null, weight, weight, null, allowedVAT.contains(retailVAT.doubleValue()) ? retailVAT : null,
+                        null, null, null, null, null, null, idItem, amountInPack, manufacturer, manufacturer, tnved, country));
         }
         return data;
     }
@@ -200,9 +204,14 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
             String idDocument = getFieldValue(importFile, "POST_DOK", "Cp866", "");
             String idSupplier = getFieldValue(importFile, "K_POST", "Cp866", null);
             Date date = getDateFieldValue(importFile, "D_PRIH", "Cp866", null);
-
+            String descriptionDeclaration = getFieldValue(importFile, "DPRM4", "Cp866", null);
+            String certificateText = getFieldValue(importFile, "DPRM6", "Cp866", null);
+            String descriptionCompliance = getFieldValue(importFile, "DPRM7", "Cp866", null);
+            Date expiryDate = getDateFieldValue(importFile, "D_GODN", "Cp866", null);
+            String bin = getFieldValue(importFile, "DPRM9", "Cp866", null);
             if (!k_mat.isEmpty())
-                sprmatMap.put(k_mat, new Object[]{idItem, idDocument, idSupplier, date});
+                sprmatMap.put(k_mat, new Object[]{idItem, idDocument, idSupplier, date, descriptionDeclaration,
+                        certificateText,descriptionCompliance, expiryDate, bin});
 
         }
 
@@ -222,25 +231,78 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
             String k_mat = getFieldValue(importFile, "K_MAT", "Cp866", null);
             BigDecimal quantity = getBigDecimalFieldValue(importFile, "N_MAT", "Cp866", null);
             String idWarehouse = getFieldValue(importFile, "K_SKL", "Cp866", "");
-            idWarehouse = idWarehouse.isEmpty() ? null : ("WH" + idWarehouse);
+            idWarehouse = idWarehouse.isEmpty() ? null : ("СК" + idWarehouse);
             Object[] sprmat = sprmatMap.get(k_mat);
 
             if (sprmat != null) {
 
                 String idItem = (String) sprmat[0];
                 String numberUserInvoice = (String) sprmat[1];
+                String seriesUserInvoice = "AA";
                 String idSupplier = (String) sprmat[2];
                 Date date = (Date) sprmat[3];
+                String descriptionDeclaration = (String) sprmat[4];
+                String certificateText = (String) sprmat[5];
+                String descriptionCompliance = (String) sprmat[6];
+                Date expiryDate = (Date) sprmat[7];
+                String bin = (String) sprmat[8];
+
+                String numberDeclaration = null;
+                Date dateDeclaration = null;
+                if (!descriptionDeclaration.isEmpty()) {
+                    for (String p : declarationPatterns) {
+                        Pattern r = Pattern.compile(p);
+                        Matcher m = r.matcher(descriptionDeclaration);
+                        if (m.find()) {
+                            numberDeclaration = m.group(1).trim();
+                            try {
+                                dateDeclaration = new Date(DateUtils.parseDate(m.group(2), datePatterns).getTime());
+                            } catch (ParseException ignored) {
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                String numberCompliance = null;
+                Date fromDateCompliance = null;
+                Date toDateCompliance = null;
+                if (!descriptionCompliance.isEmpty()) {
+                    for (String p : compliancePatterns) {
+                        Pattern r = Pattern.compile(p);
+                        Matcher m = r.matcher(descriptionCompliance);
+                        if (m.find()) {
+                            numberCompliance = m.group(1).trim();
+                            try {
+                                fromDateCompliance = (m.groupCount()>=2 && !m.group(2).isEmpty()) ? new Date(DateUtils.parseDate(m.group(2), datePatterns).getTime()) : null;
+                                toDateCompliance = (m.groupCount() >=3 && !m.group(3).isEmpty()) ? new Date(DateUtils.parseDate(m.group(3), datePatterns).getTime()) : null;
+                            } catch (ParseException ignored) {
+                            }
+                            break;
+                        }
+                    }
+                }
+
 
                 if (!numberUserInvoice.isEmpty())
-                    data.add(new UserInvoiceDetail(numberUserInvoice, "AA", true, true, k_mat, date, idItem, null,
-                            quantity, idSupplier, idWarehouse, idSupplier + "WH", null, null, null, null, null, null,
-                            null, null, null));
+                    data.add(new UserInvoiceDetail(seriesUserInvoice + numberUserInvoice + String.valueOf(date),
+                            seriesUserInvoice, numberUserInvoice, null, true, k_mat, date, idItem, null, quantity, idSupplier,
+                            idWarehouse, idSupplier + "WH", null, null, null, null, null, null, null, certificateText, null,
+                            numberDeclaration, dateDeclaration, numberCompliance, fromDateCompliance, toDateCompliance,
+                            expiryDate, bin));
             }
 
         }
         return data;
     }
+
+    String[] declarationPatterns = new String[]{"№?((?:\\d|\\/)*)от(\\d{2}\\.\\d{2}\\.\\d{2,4})"};
+    String[] compliancePatterns = new String[]{"(сертификат)","(#)",
+                                               "№?((?:\\p{L}|\\d|\\.)*)от(\\d{2}\\.\\d{2}\\.\\d{2})",
+                                               "№?\\s?((?:\\p{L}|-|\\d|\\.)*)()\\s?(?:до|по)\\s?(\\d{2}\\.\\d{2}\\.\\d{2,4})",
+                                                "№?((?:\\p{L}|\\d|\\.)*)(\\d{2}\\.\\d{2}\\.\\d{2})",
+                                               "(\\p{L}{2}-?\\s?(?:\\d|\\.)*)", "№?((?:\\p{L}|-|\\s|\\d|\\.)*)"};
+    String[] datePatterns = new String[]{"dd.MM.yy", "dd.MM.yyyy"};
 
 
     String[][] ownershipsList = new String[][]{
