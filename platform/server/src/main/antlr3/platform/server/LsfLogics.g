@@ -1255,7 +1255,7 @@ maxPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPara
 	}
 }
 	:	(('MAX') { isMin = false; } | ('MIN'))
-		exprList=nonEmptyPropertyExpressionList[context, dynamic]	
+		exprList=nonEmptyPropertyExpressionList[context, dynamic]
 	;
 
 
@@ -2735,7 +2735,8 @@ componentPropertyValue returns [Object value]
 	|	dim=dimensionLiteral { $value = $dim.val; }
 	|	b=booleanLiteral { $value = $b.val; }
 	|	cons=simplexConstraintLiteral { $value = $cons.val; }
-	|	ins=insetsLiteral { $value = $ins.val; }
+	|	intB=boundsIntLiteral { $value = $intB.val; }
+	|	doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   contType=containerTypeLiteral { $value = $contType.val; }
 	;
 
@@ -3004,9 +3005,13 @@ booleanLiteral returns [boolean val]
 dimensionLiteral returns [Dimension val]
 	:	'(' x=intLiteral ',' y=intLiteral ')' { $val = new Dimension($x.val, $y.val); }
 	;
-	
-insetsLiteral returns [Insets val]
+
+boundsIntLiteral returns [Insets val]
 	:	'(' top=intLiteral ',' left=intLiteral ',' bottom=intLiteral ',' right=intLiteral ')' { $val = new Insets($top.val, $left.val, $bottom.val, $right.val); }
+	;
+	
+boundsDoubleLiteral returns [Bounds val]
+	:	'(' top=doubleLiteral ',' left=doubleLiteral ',' bottom=doubleLiteral ',' right=doubleLiteral ')' { $val = new Bounds($top.val, $left.val, $bottom.val, $right.val); }
 	;
 	
 simplexConstraintLiteral returns [DoNotIntersectSimplexConstraint val]

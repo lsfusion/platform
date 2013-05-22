@@ -3,6 +3,7 @@ package platform.server.logics.scripted.proxy;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.server.form.view.ComponentView;
+import platform.server.logics.scripted.Bounds;
 
 import java.awt.*;
 
@@ -55,8 +56,8 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         target.constraints.insetsInside = insetsInside;
     }
 
-    public void setDirections(SimplexComponentDirections directions) {
-        target.constraints.directions = directions;
+    public void setDirections(Bounds directions) {
+        target.constraints.directions = new SimplexComponentDirections(directions.top, directions.left, directions.bottom, directions.right);
     }
 
     public void setChildConstraints(DoNotIntersectSimplexConstraint childConstraints) {
