@@ -7,9 +7,7 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
-import platform.server.caches.IdentityInstanceLazy;
 import platform.server.classes.CustomClass;
-import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.logics.property.*;
@@ -17,42 +15,35 @@ import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 
-public class ListActionProperty extends KeepContextActionProperty {
+public class ListActionProperty extends ListCaseActionProperty {
 
     private Object actions;
     public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action) {
         ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).add(action);
 
-        ((CaseUnionProperty) abstractWhere.property).addOperand(action.mapWhereProperty().map(abstractWhere.mapping.reverse()));
+        addWhereOperand(action);
     }
 
     private ImList<ActionPropertyMapImplement<?, PropertyInterface>> getActions() {
         return (ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions;
     }
 
-    private final CalcPropertyMapImplement<UnionProperty.Interface, PropertyInterface> abstractWhere;
-
     // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
     public <I extends PropertyInterface> ListActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ImList<ActionPropertyMapImplement<?, I>> actions)  {
-        super(sID, caption, innerInterfaces.size());
+        super(sID, caption, false, innerInterfaces);
 
         this.actions = DerivedProperty.mapActionImplements(getMapInterfaces(innerInterfaces).reverse(), actions);
-        this.abstractWhere = null;
 
         finalizeInit();
     }
 
     public <I extends PropertyInterface> ListActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
-        super(sID, caption, innerInterfaces.size());
+        super(sID, caption, false, innerInterfaces, mapClasses);
 
-        abstractWhere = DerivedProperty.createUnion(getSID() + "_case", interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
         actions = ListFact.mList();
     }
 
-    @IdentityInstanceLazy
-    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
-        if(isAbstract())
-            return abstractWhere;
+    public CalcPropertyMapImplement<?, PropertyInterface> calculateWhereProperty() {
 
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listWheres = getActions().mapListValues(new GetValue<CalcPropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
             public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
@@ -61,11 +52,8 @@ public class ListActionProperty extends KeepContextActionProperty {
         return DerivedProperty.createUnion(interfaces, listWheres);
     }
 
-    public ImSet<ActionProperty> getDependActions() {
-        return getActions().getCol().mapColValues(new GetValue<ActionProperty, ActionPropertyMapImplement<?, PropertyInterface>>() {
-            public ActionProperty getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
-                return value.property;
-            }}).toSet();
+    protected ImList<ActionPropertyMapImplement<?, PropertyInterface>> getListActions() {
+        return getActions();
     }
 
     @Override
@@ -84,9 +72,25 @@ public class ListActionProperty extends KeepContextActionProperty {
     }
 
     @Override
+    public void finalizeInit() {
+        super.finalizeInit();
+
+        if(isAbstract())
+            actions = ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).immutableList();
+    }
+
+    @Override
+    public ImList<ActionPropertyMapImplement<?, PropertyInterface>> getList() {
+        MList<ActionPropertyMapImplement<?, PropertyInterface>> mResult = ListFact.mList();
+        for(ActionPropertyMapImplement<?, PropertyInterface> action : getActions())
+            mResult.addAll(action.getList());
+        return mResult.immutableList();
+    }
+
+    @Override
     public Type getSimpleRequestInputType() {
         Type type = null;
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : getActions()) {
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
             Type actionRequestType = action.property.getSimpleRequestInputType();
             if (actionRequestType != null) {
                 if (type == null) {
@@ -105,7 +109,7 @@ public class ListActionProperty extends KeepContextActionProperty {
     @Override
     public CustomClass getSimpleAdd() {
         CustomClass result = null;
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : getActions()) {
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
             CustomClass simpleAdd = action.property.getSimpleAdd();
             if (simpleAdd != null) {
                 if (result == null) {
@@ -121,7 +125,7 @@ public class ListActionProperty extends KeepContextActionProperty {
     @Override
     public PropertyInterface getSimpleDelete() {
         PropertyInterface result = null;
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : getActions()) {
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
             PropertyInterface simpleDelete = action.mapSimpleDelete();
             if (simpleDelete != null) {
                 if (result == null) {
@@ -132,30 +136,5 @@ public class ListActionProperty extends KeepContextActionProperty {
             }
         }
         return result;
-    }
-
-    public boolean isAbstract() {
-        return abstractWhere != null;
-    }
-
-    @Override
-    public void finalizeInit() {
-        super.finalizeInit();
-
-        if(isAbstract()) {
-            actions = ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).immutableList();
-
-            CaseUnionProperty caseProp = (CaseUnionProperty) abstractWhere.property;
-            caseProp.finalizeInit();
-            caseProp.checkAbstract();
-        }
-    }
-
-    @Override
-    public ImList<ActionPropertyMapImplement<?, PropertyInterface>> getList() {
-        MList<ActionPropertyMapImplement<?, PropertyInterface>> mResult = ListFact.mList();
-        for(ActionPropertyMapImplement<?, PropertyInterface> action : getActions())
-            mResult.addAll(action.getList());
-        return mResult.immutableList();
     }
 }

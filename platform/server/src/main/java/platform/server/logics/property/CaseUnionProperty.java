@@ -37,6 +37,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         super(sID, caption, interfaces);
         this.cases = cases;
         this.isExclusive = isExclusive;
+        caseClasses = false;
 
         finalizeInit();
     }
@@ -67,8 +68,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     public static class Case {
-        public CalcPropertyInterfaceImplement<Interface> where;
-        public CalcPropertyInterfaceImplement<Interface> property;
+        public final CalcPropertyInterfaceImplement<Interface> where;
+        public final CalcPropertyInterfaceImplement<Interface> property;
 
         public Case(CalcPropertyInterfaceImplement<Interface> where, CalcPropertyInterfaceImplement<Interface> property) {
             this.where = where;
@@ -234,7 +235,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
 
     private Object cases;
-    private boolean caseClasses;
+    private final boolean caseClasses;
 
     private ClassWhere<Object> classValueWhere;
 
@@ -376,3 +377,90 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         );
     }
 }
+
+/*
+public class IfUnionProperty extends IncrementUnionProperty {
+
+    private CalcPropertyInterfaceImplement<Interface> ifProp;
+    private CalcPropertyInterfaceImplement<Interface> trueProp;
+    private CalcPropertyInterfaceImplement<Interface> falseProp;
+
+    public ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+        return SetFact.toSet(ifProp, trueProp, falseProp);
+    }
+
+    @Override
+    @IdentityInstanceLazy
+    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+        // нужно создать List - if(where[classes]) {getEditAction(); return;}
+        ActionPropertyMapImplement<?, Interface> result = falseProp.mapEditAction(editActionSID, filterProperty);
+        ActionPropertyMapImplement<?, Interface> trueAction = trueProp.mapEditAction(editActionSID, filterProperty);
+        if (trueAction != null) {
+            result = DerivedProperty.createIfAction(interfaces, (CalcPropertyMapImplement<?, Interface>) ifProp, trueAction, result);
+        }
+        return result;
+    }
+
+    @Override
+    @IdentityLazy
+    public ImSet<DataProperty> getChangeProps() {
+        MSet<DataProperty> result = SetFact.mSet();
+        result.addAll(trueProp.mapChangeProps());
+        result.addAll(falseProp.mapChangeProps());
+        return result.immutable();
+    }
+
+    public IfUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, CalcPropertyInterfaceImplement<Interface> ifProp, CalcPropertyInterfaceImplement<Interface> trueProp, CalcPropertyInterfaceImplement<Interface> falseProp) {
+        super(sID, caption, interfaces);
+        this.ifProp = ifProp;
+        this.trueProp = trueProp;
+        this.falseProp = falseProp;
+
+        finalizeInit();
+    }
+
+    protected Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        Expr trueExpr = trueProp.mapExpr(joinImplement, propClasses, propChanges, changedWhere); // до непосредственно вычисления, для хинтов
+        Expr falseExpr = falseProp.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
+        Where ifExpr = ifProp.mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere();
+        return trueExpr.ifElse(ifExpr, falseExpr);
+    }
+
+    protected Expr calculateIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
+        WhereBuilder changedTrue = new WhereBuilder();
+        Expr trueExpr = trueProp.mapExpr(joinImplement, propChanges, changedTrue);
+
+        WhereBuilder changedFalse = new WhereBuilder();
+        Expr falseExpr = falseProp.mapExpr(joinImplement, propChanges, changedFalse);
+
+        WhereBuilder changedIf = new WhereBuilder();
+        Where caseWhere = ifProp.mapExpr(joinImplement, propChanges, changedIf).getWhere();
+
+        Where changedIfTrue = caseWhere.and(changedIf.toWhere().or(changedTrue.toWhere()));
+
+        Where changedIfFalse = caseWhere.not().and(changedIf.toWhere().or(changedFalse.toWhere()));
+
+        Where changedOrWhere = changedIfTrue.exclOr(changedIfFalse);
+        if(changedWhere!=null) changedWhere.add(changedOrWhere);
+
+        CaseExprInterface exprCases = Expr.newCases(true);
+        exprCases.add(changedIfTrue, trueExpr);
+        exprCases.add(changedIfFalse, falseExpr);
+        exprCases.add(changedOrWhere, prevExpr);
+
+        return exprCases.getFinal();
+    }
+
+    protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+        MSet<CalcProperty> mPropValues = SetFact.mSet(); trueProp.mapFillDepends(mPropValues); falseProp.mapFillDepends(mPropValues);
+        MSet<CalcProperty> mPropWheres = SetFact.mSet(); ifProp.mapFillDepends(mPropWheres);
+        return SetFact.add(propChanges.getUsedDataChanges(mPropValues.immutable()), propChanges.getUsedChanges(mPropWheres.immutable()));
+    }
+
+    protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+        Where ifWhere = ifProp.mapExpr(change.getMapExprs(), propChanges).getWhere();
+        return trueProp.mapDataChanges(change.and(ifWhere), changedWhere, propChanges).add(
+                falseProp.mapDataChanges(change.and(ifWhere.not()), changedWhere, propChanges));
+    }
+}
+ */

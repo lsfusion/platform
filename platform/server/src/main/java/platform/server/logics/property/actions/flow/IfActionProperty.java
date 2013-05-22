@@ -1,7 +1,9 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.base.col.ListFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.IdentityInstanceLazy;
 import platform.server.classes.CustomClass;
@@ -19,7 +21,6 @@ public class IfActionProperty extends KeepContextActionProperty {
     private final ActionPropertyMapImplement<?, PropertyInterface> trueAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> falseAction;
 
-    // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
     public <I extends PropertyInterface> IfActionProperty(String sID, String caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
         super(sID, caption, innerInterfaces.size());
 

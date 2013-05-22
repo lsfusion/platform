@@ -172,6 +172,8 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
+        if(where!=null)
+            return where.property;
         return null;
     }
     @Override

@@ -742,4 +742,14 @@ public class Settings {
     public void setQueryPrepareRunTime(int queryPrepareRunTime) {
         this.queryPrepareRunTime = queryPrepareRunTime;
     }
+
+    private boolean disableSimpleAddRemoveInNonExclCase = true;
+
+    public boolean isDisableSimpleAddRemoveInNonExclCase() {
+        return disableSimpleAddRemoveInNonExclCase;
+    }
+
+    public void setDisableSimpleAddRemoveInNonExclCase(boolean disableSimpleAddRemoveInNonExclCase) {
+        this.disableSimpleAddRemoveInNonExclCase = disableSimpleAddRemoveInNonExclCase;
+    }
 }

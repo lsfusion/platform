@@ -1,6 +1,7 @@
 package platform.server.logics.property.derived;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.Result;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
@@ -262,10 +263,23 @@ public class DerivedProperty {
         return new CalcPropertyMapImplement<UnionProperty.Interface,T>(unionProperty, revMapInterfaces);
     }
 
-    public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<UnionProperty.Interface,T> createUnion(String sID, ImSet<T> interfaces, ValueClass valueClass, ImMap<T, ValueClass> interfaceClasses) {
+    public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<UnionProperty.Interface,T> createUnion(String sID, boolean exclusive, ImSet<T> interfaces, ValueClass valueClass, ImMap<T, ValueClass> interfaceClasses) {
         ImRevMap<T,UnionProperty.Interface> mapInterfaces = interfaces.mapRevValues(UnionProperty.genInterface);
         ImRevMap<UnionProperty.Interface, T> revMapInterfaces = mapInterfaces.reverse();
         CaseUnionProperty unionProperty = new CaseUnionProperty(sID, false, true, "sys", revMapInterfaces.keys().toOrderSet(), valueClass, revMapInterfaces.join(interfaceClasses));
+        return new CalcPropertyMapImplement<UnionProperty.Interface,T>(unionProperty, revMapInterfaces);
+    }
+
+    public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<?,T> createUnion(ImSet<T> interfaces, boolean isExclusive, ImList<Pair<CalcPropertyInterfaceImplement<T>, CalcPropertyInterfaceImplement<T>>> props) {
+        final ImRevMap<T,UnionProperty.Interface> mapInterfaces = interfaces.mapRevValues(UnionProperty.genInterface);
+        ImRevMap<UnionProperty.Interface, T> revMapInterfaces = mapInterfaces.reverse();
+
+        ImList<CaseUnionProperty.Case> cases = props.mapListValues(new GetValue<CaseUnionProperty.Case, Pair<CalcPropertyInterfaceImplement<T>, CalcPropertyInterfaceImplement<T>>>() {
+            public CaseUnionProperty.Case getMapValue(Pair<CalcPropertyInterfaceImplement<T>, CalcPropertyInterfaceImplement<T>> value) {
+                return new CaseUnionProperty.Case(value.first.map(mapInterfaces), value.second.map(mapInterfaces));
+            }
+        });
+        CaseUnionProperty unionProperty = new CaseUnionProperty(genID(),"sys", revMapInterfaces.keys().toOrderSet(), isExclusive, cases);
         return new CalcPropertyMapImplement<UnionProperty.Interface,T>(unionProperty, revMapInterfaces);
     }
 
@@ -751,7 +765,7 @@ public class DerivedProperty {
 
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createIfAction(ImSet<L> innerInterfaces, CalcPropertyMapImplement<?, L> where, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        IfActionProperty actionProperty = new IfActionProperty(genID(), "sys", false, listInterfaces, where, action, elseAction);
+        ActionProperty actionProperty = CaseActionProperty.createIf(genID(), "sys", false, listInterfaces, where, action, elseAction);
         return actionProperty.getImplement(listInterfaces);
     }
 

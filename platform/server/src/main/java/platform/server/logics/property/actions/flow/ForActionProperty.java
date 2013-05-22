@@ -324,7 +324,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     public static <T extends PropertyInterface, I extends PropertyInterface, W extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(
-            ImSet<I> innerInterfaces, CalcPropertyMapImplement<W, I> forProp, ImRevMap<PropertyInterface, I> mapInterfaces, ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push,
+            ImSet<I> innerInterfaces, CalcPropertyInterfaceImplement<I> forProp, ImRevMap<PropertyInterface, I> mapInterfaces, ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push,
             ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, PushFor<I, PropertyInterface> pushFor) {
         assert !ordersNotNull; // в противном случае придется еще с orders'ов собирать интерфейсы
         assert mapInterfaces.keys().equals(mapping.keys());

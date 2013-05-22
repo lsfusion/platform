@@ -448,7 +448,7 @@ testPush = ACTION(document) {
         testExec(document, article);
 
     FOR selCur(document, article) ORDER date(document) DO {  // to be pushed
-        quantity(document, article) <- 5;
+        quantity(document, article) <- 5.0d;
     }
 
     LOCAL i = INTEGER ();
@@ -474,7 +474,7 @@ testPush2 = ACTION(document) {
     }
 
     FOR quantity(document2, article) ORDER date(document2) DO { // to be pushed
-        quantity(document2, article) <- 6;
+        quantity(document2, article) <- 6.0d;
         name(article) <- 'Changed';
     }
 

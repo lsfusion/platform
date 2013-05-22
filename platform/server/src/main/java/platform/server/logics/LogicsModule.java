@@ -18,7 +18,6 @@ import platform.interop.Compare;
 import platform.interop.KeyStrokes;
 import platform.interop.ModalityType;
 import platform.interop.form.GlobalConstants;
-import platform.server.Settings;
 import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
@@ -587,7 +586,7 @@ public abstract class LogicsModule {
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         assert readImplements.size() >= 2 && readImplements.size() <= 3;
 
-        return addProperty(group, new LAP(new IfActionProperty(name, caption, not, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(0),
+        return addProperty(group, new LAP(CaseActionProperty.createIf(name, caption, not, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(0),
                 (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1), readImplements.size() == 3 ? (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(2) : null)));
     }
 

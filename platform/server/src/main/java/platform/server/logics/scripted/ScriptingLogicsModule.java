@@ -1294,18 +1294,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedIfAProp(LPWithParams condition, LPWithParams trueAction, LPWithParams falseAction) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedIfAProp(condition, trueAction, falseAction, false);
-    }
-
-    // временно после появления NOT в явную можно будет убрать
-    private LPWithParams addScriptedIfAProp(LPWithParams condition, LPWithParams trueAction, LPWithParams falseAction, boolean not) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedIfAProp(" + condition + ", " + trueAction + ", " + falseAction + ");");
         List<LPWithParams> propParams = toList(condition, trueAction);
         if (falseAction != null) {
             propParams.add(falseAction);
         }
         List<Integer> allParams = mergeAllParams(propParams);
-        LP result = addIfAProp(null, genSID(), "", not, getParamsPlainList(propParams).toArray());
+        LP result = addIfAProp(null, genSID(), "", false, getParamsPlainList(propParams).toArray());
         return new LPWithParams(result, allParams);
     }
 
