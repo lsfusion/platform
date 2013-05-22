@@ -14,7 +14,14 @@ NAMESPACE Consignment;
 CLASS WayOfLoading 'Способ ПРР';
 TABLE wayOfLoading (WayOfLoading);
 
-nameWayOfLoading 'Наименование' = DATA ISTRING[50](WayOfLoading);
+nameWayOfLoading 'Наименование' = DATA ISTRING[50](WayOfLoading) IN base;
+
+FORM wayOfLoading
+    OBJECTS w = WayOfLoading
+    PROPERTIES(w) nameWayOfLoading, DELETESESSION
+    PROPERTIES(w) ADDFORM, EDITFORM
+    DIALOG WayOfLoading OBJECT w
+;
 
 GROUP sumConsignmentGroup 'Суммы' : base;
 
