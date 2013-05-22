@@ -4,6 +4,8 @@ REQUIRE Order, Invoice;
 
 NAMESPACE Invoice;
 
+createdUserInvoiceOrder = DATA SESSION BOOLEAN (Invoice, Order);
+
 createUserInvoiceOrder 'Создать накладную' = ABSTRACT ACTION (Order);
 createUserInvoicePostedOrder 'Создать проведенную накладную' = ABSTRACT ACTION (Order);
 
@@ -210,7 +212,7 @@ META defineOrderInvoice(sign, stockProp)
         EXEC createDetailUserInvoiceOrder(userInvoice, order);
     }
 
-    userInvoiceOrder= DATA SESSION UserInvoice (Order);
+    userInvoiceOrder = DATA SESSION UserInvoice (Order);
     createUserInvoiceOrder 'Создать накладную' = ACTION (order) {
         IF order IS Order THEN {
             SET  userInvoiceOrder(order) <- NULL;
@@ -222,22 +224,22 @@ META defineOrderInvoice(sign, stockProp)
     }
     Invoice.createUserInvoiceOrder (order) += createUserInvoiceOrder(order);
 
+    //Invoice.createdUserInvoiceOrder(userInvoice, order) += createdUserInvoiceOrder(userInvoice, order);
+
     createUserInvoicePostedOrder 'Создать проведенную накладную' = ACTION (order) {
         IF order IS Order THEN {
             IF differentStocksInDetailsStock(customerStockOrder(order)) THEN {
                 FOR ADDOBJ i = UserInvoicePosted DO {
                     EXEC fillUserInvoiceOrder(i, order);
+                    SET createdUserInvoiceOrder(i, order) <- TRUE;
+                }
+            } ELSE {
+                FOR inOrderSupplierStock(order, stock) ADDOBJ i = UserInvoicePosted DO {
+                    EXEC fillSupplierStockUserInvoiceOrder(stock, i, order);
+                    SET createdUserInvoiceOrder(i, order) <- TRUE;
                 }
             }
-                ELSE {
-                FOR inOrderSupplierStock(order, supplierStock) DO {
-                        FOR ADDOBJ i = UserInvoicePosted DO {
-                            EXEC fillSupplierStockUserInvoiceOrder(supplierStock, i, order);
-                        }
-                    }
-
-                }
-            }
+        }
     }
     Invoice.createUserInvoicePostedOrder (order) += createUserInvoicePostedOrder(order);
 

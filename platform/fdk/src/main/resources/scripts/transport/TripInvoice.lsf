@@ -18,18 +18,21 @@ grossWeightInvoicedTrip 'Суммарный вес накладных' (trip) = 
 createConsignmentTrip 'Создать накладные по заказам' (trip) = ACTION (trip) {
     FOR tripOrder(order) == trip DO {
         EXEC createUserInvoicePostedOrder(order);
-        SET tripInvoice(invoice) <- trip IF quantityTripInvoice (trip, invoice);
+        FOR createdUserInvoiceOrder (invoice, order) DO {
+            SET tripInvoice(invoice) <- trip IF quantityTripInvoice (trip, invoice); //
+        }
 
         EXEC apply();
     };
     EXEC createShipmentsTrip(trip);
     EXEC apply();
+
 } TOOLBAR CONFIRM;
 
 
 EXTEND FORM trip
 
-    PROPERTIES (t) grossWeightInvoicedTrip BEFORE grossWeightShippedTrip(t)
+    PROPERTIES (t) READONLY grossWeightInvoicedTrip BEFORE grossWeightShippedTrip(t)
 
     OBJECTS i=Invoice
     PROPERTIES (t, i) inTripInvoice
