@@ -306,8 +306,6 @@ CLASS ABSTRACT ItemAttribute 'Атрибут товара';
 TABLE itemAttribute(ItemAttribute);
 TABLE itemItemAttribute(Item, ItemAttribute);
 
-nameItemAttribute 'Наименование' = ABSTRACT ISTRING[100](ItemAttribute);
-
 // Отображение
 META defineItemAttribute (attribute, caption, group)
     userShow###attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (ItemGroup) IN group;
@@ -361,7 +359,7 @@ END
 // Расширяем формы настройки
 EXTEND FORM options
     OBJECTS ia = ItemAttribute
-    PROPERTIES(ia) nameItemAttribute
+    PROPERTIES(ia) staticCaption
 ;
 
 EXTEND DESIGN options {
@@ -412,10 +410,6 @@ END
 // Строка
 CLASS StringItemAttribute 'Строковый атрибут' : ItemAttribute;
 
-nameStringItemAttribute 'Наименование' = DATA ISTRING[100](StringItemAttribute);
-
-nameItemAttribute(attribute) += nameStringItemAttribute(attribute) IF attribute IS StringItemAttribute;
-
 valueStringItemAttribute = ABSTRACT STRING[255] (Item, StringItemAttribute) EXCLUSIVE PERSISTENT;
 valueItemAttribute(item, attribute) += valueStringItemAttribute(item, attribute);
 
@@ -425,10 +419,6 @@ END
 
 // Целое число
 CLASS IntegerItemAttribute 'Целочисленный атрибут' : ItemAttribute;
-
-nameIntegerItemAttribute 'Наименование' = DATA ISTRING[100](IntegerItemAttribute);
-
-nameItemAttribute(attribute) += nameIntegerItemAttribute(attribute) IF attribute IS IntegerItemAttribute;
 
 valueIntegerItemAttribute = ABSTRACT INTEGER (Item, IntegerItemAttribute) EXCLUSIVE PERSISTENT;
 stringIntegerItemAttribute(item, attribute) = toString255(valueIntegerItemAttribute(item, attribute));
@@ -440,10 +430,6 @@ END
 
 // Дробное число
 CLASS DoubleItemAttribute 'Дробный атрибут' : ItemAttribute;
-
-nameDoubleItemAttribute 'Наименование' = DATA ISTRING[100](DoubleItemAttribute);
-
-nameItemAttribute(attribute) += nameDoubleItemAttribute(attribute) IF attribute IS DoubleItemAttribute;
 
 valueDoubleItemAttribute = ABSTRACT DOUBLE (Item, DoubleItemAttribute) EXCLUSIVE PERSISTENT;
 stringDoubleItemAttribute(item, attribute) = toString255(valueDoubleItemAttribute(item, attribute));
