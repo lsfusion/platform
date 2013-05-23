@@ -173,8 +173,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             if (line.startsWith("^SWTP")) {
                 String[] splittedLine = reader.readLine().split(":");
                 String mfo = splittedLine.length > 2 ? (splittedLine[2].length() > 3 ? splittedLine[2].substring(splittedLine[2].length() - 3) : splittedLine[2].trim()) : "";
-                String bankName = splittedLine.length > 6 ? splittedLine[6].trim() : "";
-                String bankAddress = splittedLine.length > 7 ? splittedLine[7].trim() : "";
+                String bankName = getSplittedValue(splittedLine, 6, "");
+                String bankAddress = getSplittedValue(splittedLine, 7, "");
                 String idBank = mfo + bankName;
                 if (!bankName.isEmpty() && !idBank.isEmpty())
                     banksList.add(new Bank(idBank, bankName, bankAddress.isEmpty() ? null : bankAddress,
@@ -202,13 +202,13 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^OST")) {
                 String[] splittedLine = line.split("\\(|\\)|,");
-                pnt13 = splittedLine.length > 2 ? splittedLine[2].trim().replace("\"", "") : null;
-                pnt48 = splittedLine.length > 3 ? splittedLine[3].trim().replace("\"", "") : null;
-                String extra = splittedLine.length > 4 ? splittedLine[4] : null;
+                pnt13 = getSplittedValue(splittedLine, 2, "\"", null);
+                pnt48 = getSplittedValue(splittedLine, 3, "\"", null);
+                String extra = getSplittedValue(splittedLine, 4, null);
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
-                    price = parseBigDecimal(splittedLine.length > 2 ? splittedLine[2] : null);
-                    name = splittedLine.length > 3 ? splittedLine[3] : null;
+                    price = parseBigDecimal(getSplittedValue(splittedLine, 2, null));
+                    name = getSplittedValue(splittedLine, 3, null);
                 } else if ("9".equals(extra)) {
                     String idGroup = reader.readLine();
                     if (idGroup.startsWith("929")) {
@@ -300,16 +300,16 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 break;
             if (line.startsWith("^OST")) {
                 String[] splittedLine = line.split("\\(|\\)|,");
-                pnt13 = splittedLine.length > 2 ? splittedLine[2] : null;
-                pnt48 = splittedLine.length > 3 ? splittedLine[3] : null;
-                String extra = splittedLine.length > 4 ? splittedLine[4] : null;
+                pnt13 = getSplittedValue(splittedLine, 2, null);
+                pnt48 = getSplittedValue(splittedLine, 3, null);
+                String extra = getSplittedValue(splittedLine, 4, null);
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
-                    idMarkup = splittedLine.length > 0 ? splittedLine[0].substring(0, 1) : null;
-                    idUOM = splittedLine.length > 0 ? splittedLine[0].substring(15, 18) : null;
-                    String dateField = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
+                    idMarkup = getSplittedValue(splittedLine, 0, 0, 1, null);
+                    idUOM = getSplittedValue(splittedLine, 0, 15, 18, null);
+                    String dateField = getSplittedValue(splittedLine, 0, 24, 30, null);
                     date = dateField == null ? null : new Date(DateUtils.parseDate(dateField, new String[]{"ddmmyy"}).getTime());
-                    name = splittedLine.length > 3 ? splittedLine[3] : null;
+                    name = getSplittedValue(splittedLine, 3, null);
                     idName = name;
                     packAmount = null;
                     Pattern rPack = Pattern.compile(".*(?:\\\\|\\/)(\\d+)(?:\\\\|\\/)?");
@@ -335,7 +335,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         baseMarkup = null;
                     }
 
-                    retailVAT = splittedLine.length > 18 ? parseBigDecimal(splittedLine[18]) : new BigDecimal(20);
+                    retailVAT = getBigDecimalSplittedValue(splittedLine, 18, "20");
                     //Так как ещё остались товары со старым НДС 18%
                     retailVAT = retailVAT.equals(new BigDecimal(18)) ? new BigDecimal(20) : retailVAT;
                 } else if ("9".equals(extra)) {
@@ -376,6 +376,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             "((К|У|R)(\\/|\\s)?(У|К|У|E))(\\s)?(\\p{L}{2})?(\\s)?(N|№)?(((\\d|\\/|\\\\)+\\s)|(Б\\/Н\\s))?(СМ|А)?(ОТ)?(\\s)?(\\d|\\.)+Г?");
 
     private String trimIdWarehouse(String idWarehouse) {
+        if(idWarehouse==null)
+            return null;
         while (idWarehouse.startsWith("0"))
             idWarehouse = idWarehouse.substring(1);
         return idWarehouse;
@@ -402,7 +404,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     else
                         warehouseLegalEntityMap.put(idWarehouse, idLegalEntity);
                     splittedLine = reader.readLine().split(":");
-                    String name = splittedLine.length > 0 ? splittedLine[0].trim().replace("\u007F", "") : "";
+                    String name = getSplittedValue(splittedLine, 0, "\u007F", "");
                     name = name.replaceAll("\"|\'", "").replaceAll("-|\\*", " ");
                     Boolean filtered = false;
                     for (String filter : employeeFilters) {
@@ -451,24 +453,24 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 break;
             if (line.startsWith("^OST")) {
                 String[] splittedLine = line.split("\\(|\\)|,");
-                String idCustomerWarehouse = splittedLine.length > 1 ? trimIdWarehouse(splittedLine[1].replace("\"", "")) : null;
-                String pnt13 = splittedLine.length > 2 ? splittedLine[2].replace("\"", "") : null;
-                String pnt48 = splittedLine.length > 3 ? splittedLine[3].replace("\"", "") : null;
-                String extra = splittedLine.length > 4 ? splittedLine[4] : null;
+                String idCustomerWarehouse = trimIdWarehouse(getSplittedValue(splittedLine, 1, "\"", null));
+                String pnt13 = getSplittedValue(splittedLine, 2, "\"", null);
+                String pnt48 = getSplittedValue(splittedLine, 3, "\"", null);
+                String extra = getSplittedValue(splittedLine, 4, null);
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
-                    idUOM = splittedLine.length > 0 ? splittedLine[0].substring(15, 18) : null;
-                    String date1Field = splittedLine.length > 0 ? splittedLine[0].substring(18, 24) : null;
+                    idUOM = getSplittedValue(splittedLine, 0, 15, 18, null);
+                    String date1Field = getSplittedValue(splittedLine, 0, 18, 24, null);
                     Date date1 = (date1Field == null || date1Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date1Field, new String[]{"ddMMyy"}).getTime());
-                    String date2Field = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
+                    String date2Field = getSplittedValue(splittedLine, 0, 24, 30, null);
                     Date date2 = (date2Field == null || date2Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
                     Date currentDate = new Date(System.currentTimeMillis());
                     String currentDateField = new SimpleDateFormat("dd/MM/yy").format(currentDate);
                     dateField = date1 == null ? (date2 == null ? currentDateField : date2Field) : (date2 == null ? date1Field : (date1.after(date2) ? date1Field : date2Field));
                     date = date1 == null ? (date2 == null ? currentDate : date2) : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
-                    name = splittedLine.length > 3 ? splittedLine[3] : null;
+                    name = getSplittedValue(splittedLine, 3, null);
 
-                    String supplierString = splittedLine.length > 5 ? splittedLine[5] : null;
+                    String supplierString = getSplittedValue(splittedLine, 5, null);
                     if (supplierString != null && !supplierString.isEmpty()) {
                         textCompliance = supplierString;
                         idSupplier = null;
@@ -509,11 +511,11 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         idSupplier = "ds";
                         idSupplierWarehouse = "dsw";
                     }
-                    quantity = splittedLine.length > 7 ? parseBigDecimal(splittedLine[7]) : null;
-                    BigDecimal sumPrice = parseBigDecimal(splittedLine.length > 2 ? splittedLine[2] : null);
+                    quantity = getBigDecimalSplittedValue(splittedLine, 7, null);
+                    BigDecimal sumPrice = getBigDecimalSplittedValue(splittedLine, 2, null);
                     sumPrice = sumPrice == null ? null : new BigDecimal((Math.round(sumPrice.doubleValue() * 100)) / 100);
 
-                    BigDecimal chargePricePercent = splittedLine.length > 19 ? readPercent(splittedLine[19]) : BigDecimal.ZERO;
+                    BigDecimal chargePricePercent = readPercent(getSplittedValue(splittedLine, 19, "0"));
                     try {
                         chargePrice = new BigDecimal(Math.round((sumPrice.doubleValue() * chargePricePercent.doubleValue()) / (100 + chargePricePercent.doubleValue()) * 100) / 100);
                     } catch (NumberFormatException e) {
@@ -521,10 +523,10 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     }
                     manufacturingPrice = new BigDecimal(sumPrice.doubleValue() - chargePrice.doubleValue());
 
-                    BigDecimal manufacturingPercent = splittedLine.length > 17 ? readPercent(splittedLine[17]) : BigDecimal.ZERO;
+                    BigDecimal manufacturingPercent = readPercent(getSplittedValue(splittedLine, 17, "0"));
                     price = new BigDecimal(manufacturingPrice.doubleValue() * (100 - manufacturingPercent.doubleValue()) / 100);
 
-                    wholesaleMarkup = splittedLine.length > 15 ? readPercent(splittedLine[15]) : BigDecimal.ZERO;
+                    wholesaleMarkup = readPercent(getSplittedValue(splittedLine, 15, "0"));
                     wholesalePrice = new BigDecimal(sumPrice.doubleValue() * (100 + wholesaleMarkup.doubleValue()) / 100);
                 } else if ("1".equals(extra)) {
                     String extraCompliance = reader.readLine();
@@ -611,16 +613,16 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^OST")) {
                 String[] splittedLine = line.split("\\(|\\)|,");
-                smol = splittedLine.length > 1 ? trimIdWarehouse(splittedLine[1].trim().replace("\"", "")) : null;
-                String extra = splittedLine.length > 4 ? splittedLine[4] : null;
+                smol = trimIdWarehouse(getSplittedValue(splittedLine, 1, "\"", null));
+                String extra = getSplittedValue(splittedLine, 4, null);
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
-                    String date1Field = splittedLine.length > 0 ? splittedLine[0].substring(18, 24) : null;
+                    String date1Field = getSplittedValue(splittedLine, 0, 18, 24, null);
                     Date date1 = date1Field == null ? null : new Date(DateUtils.parseDate(date1Field, new String[]{"ddMMyy"}).getTime());
-                    String date2Field = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
+                    String date2Field = getSplittedValue(splittedLine, 0, 24, 30, null);
                     Date date2 = date2Field == null ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
                     date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
-                    quantity = splittedLine.length > 7 ? parseBigDecimal(splittedLine[7]) : BigDecimal.ZERO;
+                    quantity = getBigDecimalSplittedValue(splittedLine, 7, "0");
                 }
                 if (smol != null && isCorrectUserInvoiceDetail(quantity, startDate, date, null))
                     warehousesOST.add(smol);
@@ -634,7 +636,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             if (line.startsWith("^SMOL")) {
                 String idWarehouse = trimIdWarehouse(line.split("\\(|\\)|,")[1].replace("\"", ""));
                 String[] dataWarehouse = reader.readLine().split(":");
-                String name = dataWarehouse.length > 0 ? dataWarehouse[0].trim() : null;
+                String name = getSplittedValue(dataWarehouse, 0, null);
                 if (name != null && !"".equals(name) && warehousesOST.contains(idWarehouse)) {
                     warehousesList.add(new Warehouse(idDefaultLegalEntity, "own", idWarehouse, name, null));
                 }
@@ -650,9 +652,13 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 String idLegalEntity = splittedLine[1].replace("\"", "");
                 String idWarehouse = trimIdWarehouse((splittedLine.length == 2 ? splittedLine[1] : splittedLine[2]).replace("\"", ""));
                 String[] dataLegalEntity = reader.readLine().split(":");
-                String name = dataLegalEntity.length > 0 ? dataLegalEntity[0].trim() : "";
-                String warehouseAddress1 = dataLegalEntity.length > 9 ? dataLegalEntity[9].trim() : "";
-                String warehouseAddress2 = dataLegalEntity.length > 10 ? dataLegalEntity[10].trim() : "";
+                String name = getSplittedValue(dataLegalEntity, 0, "");
+                if(splittedLine.length==3 && !getSplittedValue(dataLegalEntity, 3, "").isEmpty()) {
+                    String index = getSplittedValue(dataLegalEntity, 1, "");
+                    name += index.equals("0") ? "" : (" " + index);
+                }
+                String warehouseAddress1 = getSplittedValue(dataLegalEntity, 9, "");
+                String warehouseAddress2 = getSplittedValue(dataLegalEntity, 10, "");
                 String warehouseAddress = (warehouseAddress1 + " " + warehouseAddress2).trim();
                 Boolean filtered = false;
                 for (String filter : employeeFilters) {
@@ -690,14 +696,14 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 if (splittedLine.length == 2) {
                     String idLegalEntity = splittedLine[1].replace("\"", "");
                     splittedLine = reader.readLine().split(":");
-                    String name = splittedLine.length > 0 ? splittedLine[0].trim().replace("\u007F", "") : "";
+                    String name = getSplittedValue(splittedLine, 0, "\u007F", "");
                     String mfo = splittedLine.length > 2 ? (splittedLine[2].length() > 3 ? splittedLine[2].substring(splittedLine[2].length() - 3) : splittedLine[2].trim()) : "";
-                    String account = splittedLine.length > 3 ? splittedLine[3] : "";
-                    String okpo = splittedLine.length > 4 ? splittedLine[4].trim() : "";
-                    String unp = splittedLine.length > 5 ? splittedLine[5].trim() : "";
-                    String bankName = splittedLine.length > 6 ? splittedLine[6].trim() : "";
-                    String address1 = splittedLine.length > 9 ? splittedLine[9].trim() : "";
-                    String address2 = splittedLine.length > 10 ? splittedLine[10].trim() : "";
+                    String account = getSplittedValue(splittedLine, 3, "");
+                    String okpo = getSplittedValue(splittedLine, 4, "");
+                    String unp = getSplittedValue(splittedLine, 5, "");
+                    String bankName = getSplittedValue(splittedLine, 6, "");
+                    String address1 = getSplittedValue(splittedLine, 9, "");
+                    String address2 = getSplittedValue(splittedLine, 10, "");
                     String address = (address1 + " " + address2).trim();
                     String idBank = mfo + bankName;
                     Boolean filtered = false;
@@ -732,7 +738,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 if (splittedLine.length == 2) {
                     String idLegalEntity = splittedLine[1].replace("\"", "");
                     splittedLine = reader.readLine().split(":");
-                    String name = splittedLine.length > 0 ? splittedLine[0].trim() : "";
+                    String name = getSplittedValue(splittedLine, 0, "");
                     for (String filter : employeeFilters) {
                         if (name.startsWith(filter)) {
                             String[] fullName = name.replaceFirst(filter, "").trim().split(" ");
@@ -778,7 +784,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String idContract1 = idLegalEntity1 + "/" + idLegalEntity2;
                     String idContract2 = idLegalEntity2 + "/" + idLegalEntity1;
                     splittedLine = reader.readLine().split(":");
-                    String contractString = splittedLine.length > 11 ? splittedLine[11].trim() : "";
+                    String contractString = getSplittedValue(splittedLine, 11, "");
                     if (!contractString.trim().isEmpty()) {
                         String number = "";
                         Date dateFrom = null;
@@ -862,7 +868,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 String[] splittedLine = line.split("\\(|\\)|,");
                 String sid = (splittedLine.length == 2 ? splittedLine[1] : splittedLine[2]).replace("\"", "");
                 String[] dataLegalEntity = reader.readLine().split(":");
-                String name = dataLegalEntity.length > 0 ? dataLegalEntity[0].trim() : "";
+                String name = getSplittedValue(dataLegalEntity, 0, "");
                 Boolean filtered = false;
                 for (String filter : employeeFilters) {
                     if (name.startsWith(filter)) {
@@ -950,11 +956,11 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 break;
             if (line.startsWith("^OST")) {
                 String[] splittedLine = line.split("\\(|\\)|,");
-                String extra = splittedLine.length > 4 ? splittedLine[4] : null;
+                String extra = getSplittedValue(splittedLine, 4, null);
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
-                    idUOM = splittedLine.length > 0 ? splittedLine[0].substring(15, 18) : null;
-                    name = splittedLine.length > 3 ? splittedLine[3] : null;
+                    idUOM = getSplittedValue(splittedLine, 0, 15, 18, null);
+                    name = getSplittedValue(splittedLine, 3, null);
                 } else if ("9".equals(extra)) {
                     String idGroup = reader.readLine();
                     if (idGroup.split(":")[0].length() == 2)
@@ -1031,28 +1037,28 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             if (line.startsWith("^OST")) {
                 String[] splittedLine = line.split("\\(|\\)|,");
                 String idCustomerWarehouse = splittedLine.length > 1 ? trimIdWarehouse(splittedLine[1].replace("\"", "")) : null;
-                String pnt13 = splittedLine.length > 2 ? splittedLine[2].replace("\"", "") : null;
-                String pnt48 = splittedLine.length > 3 ? splittedLine[3].replace("\"", "") : null;
-                String extra = splittedLine.length > 4 ? splittedLine[4] : null;
+                String pnt13 = getSplittedValue(splittedLine, 2, "\"", null);
+                String pnt48 = getSplittedValue(splittedLine, 3, "\"", null);
+                String extra = getSplittedValue(splittedLine, 4, null);
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
-                    idUOM = splittedLine.length > 0 ? splittedLine[0].substring(15, 18) : null;
-                    String date1Field = splittedLine.length > 0 ? splittedLine[0].substring(18, 24) : null;
+                    idUOM = getSplittedValue(splittedLine, 0, 15, 18, null);
+                    String date1Field = getSplittedValue(splittedLine, 0, 18, 24, null);
                     Date date1 = (date1Field == null || date1Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date1Field, new String[]{"ddMMyy"}).getTime());
-                    String date2Field = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
+                    String date2Field = getSplittedValue(splittedLine, 0, 24, 30, null);
                     Date date2 = (date2Field == null || date2Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
                     Date currentDate = new Date(System.currentTimeMillis());
                     String currentDateField = new SimpleDateFormat("dd/MM/yy").format(currentDate);
                     dateField = date1 == null ? (date2 == null ? currentDateField : date2Field) : (date2 == null ? date1Field : (date1.after(date2) ? date1Field : date2Field));
                     date = date1 == null ? (date2 == null ? currentDate : date2) : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
-                    name = splittedLine.length > 3 ? splittedLine[3] : null;
-                    priceListText = splittedLine.length > 4 ? splittedLine[4] : null;
-                    String supplierString = splittedLine.length > 5 ? splittedLine[5] : null;
+                    name = getSplittedValue(splittedLine, 3, null);
+                    priceListText = getSplittedValue(splittedLine, 4, null);
+                    String supplierString = getSplittedValue(splittedLine, 5, null);
                     if (supplierString != null && !supplierString.isEmpty() && suppliersFastMap.containsKey(supplierString))
                         idSupplierWarehouse = suppliersFastMap.get(supplierString)[1];
                     else
                         idSupplierWarehouse = "dsw";
-                    quantity = splittedLine.length > 7 ? parseBigDecimal(splittedLine[7]) : null;
+                    quantity = getBigDecimalSplittedValue(splittedLine, 7, null);
                 } else if ("9".equals(extra)) {
                     String idGroup = reader.readLine();
                     if (idGroup.split(":")[0].length() == 2)
@@ -1073,5 +1079,23 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
     private BigDecimal parseBigDecimal(String value) {
         return BigDecimal.valueOf(Double.parseDouble(value));
+    }
+
+    private BigDecimal getBigDecimalSplittedValue(String[] splittedLine, int index, String defaultValue) {
+        return parseBigDecimal(getSplittedValue(splittedLine, index, defaultValue));
+    }
+
+    private String getSplittedValue(String[] splittedLine, int index, String defaultValue) {
+        return splittedLine.length > index ? splittedLine[index].trim() : defaultValue;
+    }
+
+    private String getSplittedValue(String[] splittedLine, int index, String remove, String defaultValue) {
+        String result = getSplittedValue(splittedLine, index, defaultValue);
+        return result==null ? null : result.replace(remove, "");
+    }
+
+    private String getSplittedValue(String[] splittedLine, int index, int from, int to, String defaultValue) {
+        String result = getSplittedValue(splittedLine, index, defaultValue);
+        return result==null ? null : result.substring(from, to);
     }
 }
