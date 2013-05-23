@@ -19,6 +19,7 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -72,8 +73,8 @@ public class ImportNBRBExchangeRateActionProperty extends ScriptingActionPropert
 
         if (exchangesList != null) {
 
-            ImportField typeExchangeBYRField = new ImportField(LM.findLCPByCompoundName("name"));
-            ImportField typeExchangeForeignField = new ImportField(LM.findLCPByCompoundName("name"));
+            ImportField typeExchangeBYRField = new ImportField(LM.findLCPByCompoundName("nameTypeExchange"));
+            ImportField typeExchangeForeignField = new ImportField(LM.findLCPByCompoundName("nameTypeExchange"));
             ImportField currencyField = new ImportField(LM.findLCPByCompoundName("shortNameCurrency"));
             ImportField homeCurrencyField = new ImportField(LM.findLCPByCompoundName("shortNameCurrency"));
             ImportField rateField = new ImportField(LM.findLCPByCompoundName("rateExchange"));
@@ -94,19 +95,19 @@ public class ImportNBRBExchangeRateActionProperty extends ScriptingActionPropert
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-            props.add(new ImportProperty(typeExchangeBYRField, LM.findLCPByCompoundName("name").getMapping(typeExchangeBYRKey)));
+            props.add(new ImportProperty(typeExchangeBYRField, LM.findLCPByCompoundName("nameTypeExchange").getMapping(typeExchangeBYRKey)));
             props.add(new ImportProperty(homeCurrencyField, LM.findLCPByCompoundName("currencyTypeExchange").getMapping(typeExchangeBYRKey),
                     LM.object(LM.findClassByCompoundName("Currency")).getMapping(homeCurrencyKey)));
             props.add(new ImportProperty(rateField, LM.findLCPByCompoundName("rateExchange").getMapping(typeExchangeBYRKey, currencyKey, dateField)));
 
-            props.add(new ImportProperty(typeExchangeForeignField, LM.findLCPByCompoundName("name").getMapping(typeExchangeForeignKey)));
+            props.add(new ImportProperty(typeExchangeForeignField, LM.findLCPByCompoundName("nameTypeExchange").getMapping(typeExchangeForeignKey)));
             props.add(new ImportProperty(currencyField, LM.findLCPByCompoundName("currencyTypeExchange").getMapping(typeExchangeForeignKey),
                     LM.object(LM.findClassByCompoundName("Currency")).getMapping(currencyKey)));
             props.add(new ImportProperty(foreignRateField, LM.findLCPByCompoundName("rateExchange").getMapping(typeExchangeForeignKey, homeCurrencyKey, dateField)));
 
             List<List<Object>> data = new ArrayList<List<Object>>();
             for (Exchange e : exchangesList) {
-                data.add(Arrays.asList((Object) "НБРБ (BYR)", "НБРБ (" + e.currencyID + ")", e.currencyID, e.homeCurrencyID, e.exchangeRate, 1/e.exchangeRate, e.date));
+                data.add(Arrays.asList((Object) "НБРБ (BYR)", "НБРБ (" + e.currencyID + ")", e.currencyID, e.homeCurrencyID, e.exchangeRate, new BigDecimal(1).divide(e.exchangeRate), e.date));
             }
             ImportTable table = new ImportTable(Arrays.asList(typeExchangeBYRField, typeExchangeForeignField, currencyField,
                     homeCurrencyField, rateField, foreignRateField, dateField), data);
@@ -148,7 +149,7 @@ public class ImportNBRBExchangeRateActionProperty extends ScriptingActionPropert
                     Element exchangeNode = (Element) exchangeList.get(j);
 
                     exchangesList.add(new Exchange(charCode, "BLR", new Date(DateUtils.parseDate(exchangeNode.getAttributeValue("Date"), new String[]{"MM/dd/yyyy"}).getTime()),
-                            Double.valueOf(exchangeNode.getChildText("Rate"))));
+                            new BigDecimal(exchangeNode.getChildText("Rate"))));
                 }
                 if (exchangesList.size() > 0)
                     return exchangesList;
