@@ -598,36 +598,45 @@ META defineInvoiceHomeCurrency(dumb)
 
     dateRateExchangeUserInvoice(i) <- dateInvoice(i) WHEN CHANGED (dateInvoice(i));
 
-    rateExchangeInvoice 'Курс' = ABSTRACT NUMERIC[14,3](Invoice);
-    rateExchangeUserInvoice 'Курс' = DATA NUMERIC[14,3](UserInvoice);
+    rateExchangeInvoice 'Курс' = ABSTRACT NUMERIC[14,6](Invoice) PERSISTENT;
+    rateExchangeUserInvoice 'Курс' = DATA NUMERIC[14,6](UserInvoice);
     rateExchangeInvoice(i) += rateExchangeUserInvoice(i);
 
-    rateExchangeUserInvoice(i) <- rateTypeExchangeCurrencyDate(typeExchangeUserInvoice(i),
-                                                               currencyUserInvoice(i),
-                                                               dateRateExchangeUserInvoice(i))
-                                        WHEN CHANGED (dateRateExchangeUserInvoice(i)) OR
-                                             CHANGED (typeExchangeUserInvoice(i)) OR
-                                             CHANGED (currencyUserInvoice(i));
+    WHEN SESSION FORMS userInvoice CHANGED (dateRateExchangeUserInvoice(i)) OR
+                                   CHANGED (typeExchangeUserInvoice(i)) OR
+                                   CHANGED (currencyUserInvoice(i)) DO {
+        rateExchangeUserInvoice(i) <- rateTypeExchangeCurrencyDate(typeExchangeUserInvoice(i),
+                                                                   currencyUserInvoice(i),
+                                                                   dateRateExchangeUserInvoice(i));
+    }
 
-    homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](InvoiceDetail);
+    rateExchangeInvoiceDetail 'Курс' = ABSTRACT NUMERIC[14,6](InvoiceDetail) PERSISTENT;
+
+    dataRateExchangeUserInvoiceDetail 'Курс' = DATA NUMERIC[14,6](UserInvoiceDetail);
+    rateExchangeUserInvoiceDetail 'Курс' (d) = rateExchangeUserInvoice(userInvoiceUserInvoiceDetail(d)) OVERRIDE dataRateExchangeUserInvoiceDetail(d);
+    rateExchangeInvoiceDetail(d) += rateExchangeUserInvoiceDetail(d);
+
+    homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](InvoiceDetail) PERSISTENT;
     homePriceUserInvoiceDetail 'Цена (пост.)' = DATA NUMERIC[14,3](UserInvoiceDetail);
     homePriceInvoiceDetail(d) += homePriceUserInvoiceDetail(d);
 
     homePriceUserInvoiceDetail(d) <- roundPriceCurrency(priceUserInvoiceDetail(d) *
-                                                        rateExchangeUserInvoice(userInvoiceUserInvoiceDetail(d)),
+                                                        rateExchangeUserInvoiceDetail(d),
                                                         homeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(d)))
                                                    WHEN CHANGED (dateUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
+                                                        CHANGED (rateExchangeUserInvoiceDetail(d)) OR
                                                         CHANGED (homeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
-                                                        CHANGED (rateExchangeUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
                                                         CHANGED (priceUserInvoiceDetail(d));
 
     sumHomeInvoiceDetail 'Сумма (пост.)' (d) = quantityInvoiceDetail(d) * homePriceInvoiceDetail(d);
 
     EXTEND FORM userInvoice
-        PROPERTIES(i) BACKGROUND backgroundHomeCurrencyInvoice(i) isHomeCurrencyUserInvoice BEFORE nameAgreementUserInvoice
-        PROPERTIES(i) BACKGROUND backgroundHomeCurrencyInvoice(i) SHOWIF isHomeCurrencyUserInvoice(i) nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
-        PROPERTIES(d) BACKGROUND backgroundHomeCurrencyInvoice(i) sumHomeInvoiceDetail AFTER sumUserInvoiceDetail SHOWIF isHomeCurrencyUserInvoice(i)
-        PROPERTIES(d) BACKGROUND backgroundHomeCurrencyInvoice(i) homePriceUserInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrencyUserInvoice(i)
+        PROPERTIES(i) BACKGROUND backgroundHomeCurrencyInvoice(i) BEFORE nameAgreementUserInvoice
+                                                                    isHomeCurrencyUserInvoice
+        PROPERTIES(i) BACKGROUND backgroundHomeCurrencyInvoice(i) SHOWIF isHomeCurrencyUserInvoice(i)
+                                                                    nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
+        PROPERTIES(d) BACKGROUND backgroundHomeCurrencyInvoice(i) SHOWIF isHomeCurrencyUserInvoice(i) AFTER sumUserInvoiceDetail
+                                                                    sumHomeInvoiceDetail, homePriceUserInvoiceDetail, rateExchangeUserInvoiceDetail
     ;
 
     EXTEND DESIGN userInvoice {

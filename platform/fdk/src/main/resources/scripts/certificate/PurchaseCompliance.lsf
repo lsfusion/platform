@@ -269,8 +269,8 @@ EXTEND FORM compliance
 
 EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundCompliancedInvoice(i) showComplianceUserInvoice
-    PROPERTIES(d) BACKGROUND backgroundCompliancedInvoice(i) isComplianceUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF showComplianceUserInvoice(i)
-    PROPERTIES(d) BACKGROUND backgroundCompliancedInvoice(i) priceComplianceUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF showComplianceUserInvoice(i)
+    PROPERTIES(d) BACKGROUND backgroundCompliancedInvoice(i) isComplianceUserInvoiceDetail BEFORE chargePercentUserInvoiceDetail SHOWIF showComplianceUserInvoice(i)
+    PROPERTIES(d) BACKGROUND backgroundCompliancedInvoice(i) priceComplianceUserInvoiceDetail BEFORE chargePercentUserInvoiceDetail SHOWIF showComplianceUserInvoice(i)
 ;
 EXTEND DESIGN userInvoice {
     headerExtraParams {

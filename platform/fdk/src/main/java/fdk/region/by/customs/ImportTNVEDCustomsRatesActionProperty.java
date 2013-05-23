@@ -113,7 +113,7 @@ public class ImportTNVEDCustomsRatesActionProperty extends ScriptingActionProper
         properties.add(new ImportProperty(dateToField, LM.findLCPByCompoundName("dateToCustomsGroup").getMapping(customsGroupKey)));
 
         ImportTable table = new ImportTable(Arrays.asList(groupIDField, registrationCustomsGroupDateField,
-                percentDutyCustomsGroupDateField, weightDutyCustomsGroupDateField, vatField, dateFromField, dateToField), data);
+                weightDutyCustomsGroupDateField, percentDutyCustomsGroupDateField, vatField, dateFromField, dateToField), data);
 
         DataSession session = context.createSession();
         IntegrationService service = new IntegrationService(session, table,

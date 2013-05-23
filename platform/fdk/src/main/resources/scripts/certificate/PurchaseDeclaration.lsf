@@ -371,9 +371,9 @@ setPriceInvoiceDetailes 'Рассчитать расходы (за ед.)' = ACT
 
 EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundCustomedInvoice(i) showDeclarationUserInvoice
-    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF showDeclarationUserInvoice(i),
-                                                          priceDutyUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF showDeclarationUserInvoice(i),
-                                                          priceRegistrationUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF showDeclarationUserInvoice(i)
+    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePercentUserInvoiceDetail SHOWIF showDeclarationUserInvoice(i),
+                                                          priceDutyUserInvoiceDetail BEFORE chargePercentUserInvoiceDetail SHOWIF showDeclarationUserInvoice(i),
+                                                          priceRegistrationUserInvoiceDetail BEFORE chargePercentUserInvoiceDetail SHOWIF showDeclarationUserInvoice(i)
 ;
 EXTEND DESIGN userInvoice {
     headerExtraParams {
