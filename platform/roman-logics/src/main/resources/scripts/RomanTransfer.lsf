@@ -297,7 +297,7 @@ FORM transferTables 'Трансферы'
     PROPERTIES (t) READONLY numberObject, seriesObject, dateTransferTable, timeTransferTable,
                             dateFromTransferTable, dateToTransferTable, noteTransferTable
 
-    PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
 
     PROPERTIES (t) ADDFORM, EDITFORM, deletet=DELETE
 

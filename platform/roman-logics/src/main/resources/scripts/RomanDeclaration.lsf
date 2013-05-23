@@ -921,7 +921,7 @@ sumRegistrationDataDeclaration 'Таможенный сбор' = DATA NUMERIC[14
 sumRegistrationUnionDeclaration 'Таможенный сбор' = rateSumRegistrationDeclaration(declaration) OVERRIDE sumRegistrationDataDeclaration(declaration) IN sumGroup;
 sumRegistrationDataDeclaration(declaration) <- rateSumRegistrationDeclaration(declaration) WHEN ASSIGNED (declaration IS PreparedDeclaration);
 
-totalCustomSum 'Сумма платежей' (declaration) = UNION SUM dutyReverseDeclaration(declaration), VATReverseDeclaration(declaration), sumRegistrationDataDeclaration(declaration) IN sumGroup MINCHARWIDTH 17;
+totalCustomSum 'Сумма платежей' (declaration) = dutyReverseDeclaration(declaration) (+) VATReverseDeclaration(declaration) (+) sumRegistrationDataDeclaration(declaration) IN sumGroup MINCHARWIDTH 17; //
 
 coeffDeclarationDetailDeclaration 'Удельный вес' (declarationDetail) = declarationSumRateDeclarationDetail(declarationDetail)/sumDeclaration(declarationDeclarationDetail(declarationDetail));
 
