@@ -1254,36 +1254,4 @@ public class ImportActionProperty {
             return defaultValue;
         else return prefix + value;
     }
-
-    String[][] ownershipsList = new String[][]{
-            {"ОАОТ", "Открытое акционерное общество торговое"},
-            {"ОАО", "Открытое акционерное общество"},
-            {"СООО", "Совместное общество с ограниченной ответственностью"},
-            {"ООО", "Общество с ограниченной ответственностью"},
-            {"ОДО", "Общество с дополнительной ответственностью"},
-            {"ЗАО", "Закрытое акционерное общество"},
-            {"ЧТУП", "Частное торговое унитарное предприятие"},
-            {"ЧУТП", "Частное унитарное торговое предприятие"},
-            {"ТЧУП", "Торговое частное унитарное предприятие"},
-            {"ЧУП", "Частное унитарное предприятие"},
-            {"РУП", "Республиканское унитарное предприятие"},
-            {"РДУП", "Республиканское дочернее унитарное предприятие"},
-            {"УП", "Унитарное предприятие"},
-            {"ИП", "Индивидуальный предприниматель"},
-            {"СПК", "Сельскохозяйственный производственный кооператив"},
-            {"СП", "Совместное предприятие"}};
-
-    private String[] getAndTrimOwnershipFromName(String name) {
-        name = name == null ? "" : name;
-        String ownershipName = "";
-        String ownershipShortName = "";
-        for (String[] ownership : ownershipsList) {
-            if (name.contains(ownership[0] + " ") || name.contains(" " + ownership[0])) {
-                ownershipName = ownership[1];
-                ownershipShortName = ownership[0];
-                name = name.replace(ownership[0], "");
-            }
-        }
-        return new String[]{ownershipShortName, ownershipName, name};
-    }
 }

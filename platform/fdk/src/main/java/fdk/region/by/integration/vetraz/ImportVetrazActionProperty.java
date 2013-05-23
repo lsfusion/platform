@@ -4,15 +4,16 @@ import fdk.integration.*;
 import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.integration.*;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
+import platform.server.session.DataSession;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -59,6 +60,10 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
                         importUserInvoicesFromDBF(path + "//sprmat.dbf", path + "//ostt.dbf", numberOfUserInvoices) : null);
 
                 new ImportActionProperty(LM, importData, context).makeImport();
+
+                if((getLCP("importItems").read(context) != null))
+                    importItemPharmacy(context, path + "//sprmat.dbf", numberOfItems);
+
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
@@ -181,6 +186,14 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
         return data;
     }
 
+    String[] declarationPatterns = new String[]{"№?((?:\\d|\\/)*)от(\\d{2}\\.\\d{2}\\.\\d{2,4})"};
+    String[] compliancePatterns = new String[]{"(сертификат)","(#)",
+            "№?((?:\\p{L}|\\d|\\.)*)от(\\d{2}\\.\\d{2}\\.\\d{2})",
+            "№?\\s?((?:\\p{L}|-|\\d|\\.)*)()\\s?(?:до|по)\\s?(\\d{2}\\.\\d{2}\\.\\d{2,4})",
+            "№?((?:\\p{L}|\\d|\\.)*)(\\d{2}\\.\\d{2}\\.\\d{2})",
+            "(\\p{L}{2}-?\\s?(?:\\d|\\.)*)", "№?((?:\\p{L}|-|\\s|\\d|\\.)*)"};
+    String[] datePatterns = new String[]{"dd.MM.yy", "dd.MM.yyyy"};
+
     private List<UserInvoiceDetail> importUserInvoicesFromDBF(String sprmatPath, String osttPath, Integer numberOfUserInvoices) throws IOException, xBaseJException, ParseException {
 
         if (!(new File(sprmatPath).exists()))
@@ -296,13 +309,72 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    String[] declarationPatterns = new String[]{"№?((?:\\d|\\/)*)от(\\d{2}\\.\\d{2}\\.\\d{2,4})"};
-    String[] compliancePatterns = new String[]{"(сертификат)","(#)",
-                                               "№?((?:\\p{L}|\\d|\\.)*)от(\\d{2}\\.\\d{2}\\.\\d{2})",
-                                               "№?\\s?((?:\\p{L}|-|\\d|\\.)*)()\\s?(?:до|по)\\s?(\\d{2}\\.\\d{2}\\.\\d{2,4})",
-                                                "№?((?:\\p{L}|\\d|\\.)*)(\\d{2}\\.\\d{2}\\.\\d{2})",
-                                               "(\\p{L}{2}-?\\s?(?:\\d|\\.)*)", "№?((?:\\p{L}|-|\\s|\\d|\\.)*)"};
-    String[] datePatterns = new String[]{"dd.MM.yy", "dd.MM.yyyy"};
+    private void importItemPharmacy(ExecutionContext context, String sprmatPath, Integer numberOfItems) throws ScriptingErrorLog.SemanticErrorException, SQLException, IOException, xBaseJException {
+
+        List<List<Object>> data = importItemPharmacyFromFile(sprmatPath, numberOfItems);
+
+        if (data != null) {
+            ImportField idItemField = new ImportField(LM.findLCPByCompoundName("idItem"));
+            ImportField idSubstanceField = new ImportField(LM.findLCPByCompoundName("idSubstance"));
+            ImportField idPharmacyPriceGroupField = new ImportField(LM.findLCPByCompoundName("idPharmacyPriceGroup"));
+
+            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Item"),
+                    LM.findLCPByCompoundName("itemId").getMapping(idItemField));
+
+            ImportKey<?> substanceKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Substance"),
+                    LM.findLCPByCompoundName("substanceId").getMapping(idSubstanceField));
+
+            ImportKey<?> pharmacyPriceGroupKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("PharmacyPriceGroup"),
+                    LM.findLCPByCompoundName("pharmacyPriceGroupId").getMapping(idPharmacyPriceGroupField));
+
+            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+
+            props.add(new ImportProperty(idSubstanceField, LM.findLCPByCompoundName("idSubstance").getMapping(substanceKey)));
+            props.add(new ImportProperty(idSubstanceField, LM.findLCPByCompoundName("nameSubstance").getMapping(substanceKey)));
+            props.add(new ImportProperty(idSubstanceField, LM.findLCPByCompoundName("substanceItem").getMapping(itemKey),
+                    LM.object(LM.findClassByCompoundName("Substance")).getMapping(substanceKey)));
+
+            props.add(new ImportProperty(idPharmacyPriceGroupField, LM.findLCPByCompoundName("idPharmacyPriceGroup").getMapping(pharmacyPriceGroupKey)));
+            props.add(new ImportProperty(idPharmacyPriceGroupField, LM.findLCPByCompoundName("namePharmacyPriceGroup").getMapping(pharmacyPriceGroupKey)));
+            props.add(new ImportProperty(idPharmacyPriceGroupField, LM.findLCPByCompoundName("pharmacyPriceGroupItem").getMapping(itemKey),
+                    LM.object(LM.findClassByCompoundName("PharmacyPriceGroup")).getMapping(pharmacyPriceGroupKey)));
+
+            ImportTable table = new ImportTable(Arrays.asList(idItemField, idSubstanceField, idPharmacyPriceGroupField), data);
+
+            DataSession session = context.createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, substanceKey, pharmacyPriceGroupKey), props);
+            service.synchronize(true, false);
+            session.apply(context.getBL());
+            session.close();
+        }
+    }
+
+    private List<List<Object>> importItemPharmacyFromFile(String sprmatPath, Integer numberOfItems) throws IOException, xBaseJException {
+
+        if (!(new File(sprmatPath).exists()))
+            throw new RuntimeException("Запрашиваемый файл " + sprmatPath + " не найден");
+
+        List<List<Object>> data = new ArrayList<List<Object>>();
+
+        DBF importFile = new DBF(sprmatPath);
+        int totalRecordCount = importFile.getRecordCount();
+        int recordCount = (numberOfItems != null && numberOfItems != 0 && numberOfItems < totalRecordCount) ? numberOfItems : totalRecordCount;
+
+
+        for (int i = 0; i < recordCount; i++) {
+            importFile.read();
+
+            String k_group = getFieldValue(importFile, "K_GRUP", "Cp866", null);
+            String name = getFieldValue(importFile, "POL_NAIM", "Cp866", null);
+            String idItem = k_group + name;
+            String idSubstance = getFieldValue(importFile, "DPRM8", "Cp866", null);
+            String idPriceGroup = getFieldValue(importFile, "DPRM14", "Cp866", null);
+
+            if (!idItem.isEmpty())
+                data.add(Arrays.asList((Object) idItem, idSubstance, idPriceGroup));
+        }
+        return data;
+    }
 
 
     String[][] ownershipsList = new String[][]{
@@ -349,7 +421,8 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
 
     private String getFieldValue(DBF importFile, String fieldName, String charset, String defaultValue) throws UnsupportedEncodingException {
         try {
-            return new String(importFile.getField(fieldName).getBytes(), charset).trim();
+            String result = new String(importFile.getField(fieldName).getBytes(), charset).trim();
+            return result.isEmpty() ? defaultValue : result;
         } catch (xBaseJException e) {
             return defaultValue;
         }

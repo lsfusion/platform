@@ -1,0 +1,13 @@
+MODULE ImportPharmacy;
+
+REQUIRE System,
+        Integration,
+        ItemPharmacy,
+        ItemPharmacyBy,
+        PharmacyPriceList;
+
+@defineExternalizable(substance, STRING[100]);
+@defineExternalizable(pharmacyPriceGroup, STRING[100]);
+
+EXTEND FORM substances PROPERTIES (t) READONLY idSubstance SHOWIF showIDs();
+EXTEND FORM pharmacyPriceGroups PROPERTIES (t) READONLY idPharmacyPriceGroup SHOWIF showIDs();

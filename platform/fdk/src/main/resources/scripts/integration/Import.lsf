@@ -73,8 +73,6 @@ REQUIRE System,
 idStock (s) += idWarehouse(s);
 idStock (s) += idDepartmentStore(s);
 
-showIDs 'Показывать ID объектов' = DATA BOOLEAN ();
-
 userPriceListDetailIdSkuIdUserPriceList (sku, userPriceList) = GROUP AGGR userPriceListDetail BY idItem(skuUserPriceListDetail(userPriceListDetail)), idUserPriceList(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS UserPriceListDetail;
 
 storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP AGGR storeType BY nameStoreType(storeType), idStoreType(storeType) WHERE storeType IS StoreType; ////

@@ -2,6 +2,8 @@ MODULE Integration;
 
 REQUIRE System;
 
+showIDs 'Показывать ID объектов' = DATA BOOLEAN ();
+
 META defineExternalizable (object, type)
     @defineExternalizable(object, type, );
 END

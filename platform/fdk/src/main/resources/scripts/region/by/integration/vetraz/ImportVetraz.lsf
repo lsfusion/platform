@@ -1,6 +1,7 @@
 MODULE ImportVetraz;
 
-REQUIRE Import;
+REQUIRE Import,
+        ImportPharmacy;
 
 
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
