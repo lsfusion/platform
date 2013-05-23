@@ -4,6 +4,8 @@ REQUIRE Item;
 
 NAMESPACE Item;
 
+GROUP itemPharmacyGroup 'Фармакологические свойства';
+
 // Действующее вещество
 CLASS Substance 'Действующее вещество';
 TABLE substance(Substance);
@@ -25,5 +27,7 @@ FORM substances 'Действующие вещества'
 ;
 DESIGN substances FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
-@defineObjectItemAttribute(substance, Substance, nameSubstance, 'Действующее вещество', itemBaseGroup);
+@defineObjectItemAttribute(substance, Substance, nameSubstance, 'Действующее вещество', itemPharmacyGroup);
 @defineObjectItemAttributeBatch (substance, nameSubstance, 'Действующее вещество');
+
+EXTEND DESIGN item { itemPrimaryColumn1 { ADD i.itemPharmacyGroup; } }
