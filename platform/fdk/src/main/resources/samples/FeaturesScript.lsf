@@ -1107,6 +1107,30 @@ DESIGN TestOperators FROM DEFAULT {
     }
 }
 
+FORM TestLayout 'Тест SimplexLayout'
+    OBJECTS s1=Store, s2=Store, a=Article
+    PROPERTIES(s1) OBJVALUE, name, storeSizeName, sdate, sinteger, slong, sdouble
+    PROPERTIES(s2) OBJVALUE, name, storeSizeName, sdate, sinteger, slong, sdouble
+    PROPERTIES(a) OBJVALUE, name
+    PROPERTIES(s2, a) incomeQuantity, outcomeQuantity, balanceQuantity
+;
+
+DESIGN TestLayout FROM DEFAULT {
+    NEW horzSplit BEFORE functions.box {
+        type = SPLITH;
+
+        NEW vertSplit {
+            type = SPLITV;
+
+            ADD s2.box;
+            ADD a.box;
+            POSITION a.box TO THE BOTTOM s2.box;
+        }
+
+        ADD s1.box;
+    }
+}
+
 //////////////// INDEX STATEMENT //////////////////
 // Syntax:
 // INDEX propertyName1 [, ..., propertyNameN];
@@ -1196,6 +1220,7 @@ NAVIGATOR {
         ADD TestReadOnlyIf;
         ADD TestOnActions;
         ADD TestOperators;
+        ADD TestLayout;
     }
 
     ADD storeArticle;

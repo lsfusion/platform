@@ -106,12 +106,15 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         private final static And empty = new And(MapFact.EMPTY());
         public static <K> And<K> EMPTY() {
             return empty;
-        } 
+        }
 
         public boolean compatible(And<K> and) {
-            for(int i=0,size=size();i<size;i++)
-                if(getValue(i).getType().getCompatible(and.get(getKey(i)).getType())==null)
+            for (int i = 0, size = size(); i < size; i++) {
+                AndClassSet andClassSet = and.get(getKey(i));
+                if (andClassSet == null || getValue(i).getType().getCompatible(andClassSet.getType()) == null) {
                     return false;
+                }
+            }
             return true;
         }
 

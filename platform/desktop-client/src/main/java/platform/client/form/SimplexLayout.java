@@ -4,6 +4,7 @@ import com.sun.java.swing.plaf.windows.WindowsSplitPaneUI;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 import org.apache.log4j.Logger;
+import platform.base.ReflectionUtils;
 import platform.base.SystemUtils;
 import platform.client.SwingUtils;
 import platform.client.logics.ClientComponent;
@@ -17,9 +18,11 @@ import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.List;
+
+import static java.lang.Math.max;
+import static platform.interop.form.layout.IsInsideSimplexConstraint.getContainerInsets;
 
 /**
  * @author NewUser
@@ -31,14 +34,17 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     public final static int MIN = 1;
     public final static int PREFERRED = 2;
 
-    Dimension layoutSize;
-    Dimension oldDimension;
-    Map<List<Component>, Map<Component, Rectangle>> cache = new HashMap<List<Component>, Map<Component, Rectangle>>();
-
-    List<Component> allComponents = new ArrayList<Component>();
-    Map<Component, ClientComponent> constraints = new HashMap<Component, ClientComponent>();
+    private Dimension layoutSize;
+    private Dimension oldDimension;
+    private Map<List<Component>, Map<Component, Rectangle>> cache = new HashMap<List<Component>, Map<Component, Rectangle>>();
 
     private Container mainContainer;
+
+    private List<Component> components;
+    private List<Component> allComponents = new ArrayList<Component>();
+    private Map<Component, ClientComponent> mapComponents = new HashMap<Component, ClientComponent>();
+
+    private boolean componentsChanged = true;
 
     public SimplexLayout(Container imainContainer) {
         mainContainer = imainContainer;
@@ -46,7 +52,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
     public SimplexLayout(Container imainContainer, ClientContainer clientComponent) {
         mainContainer = imainContainer;
-        constraints.put(mainContainer, clientComponent);
+        mapComponents.put(mainContainer, clientComponent);
     }
 
     public void addLayoutComponent(String name, Component comp) {
@@ -57,7 +63,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         addLayoutComponent(comp);
         if (constraint != null) {
             ClientComponent clientComponent = (ClientComponent) constraint;
-            constraints.put(comp, clientComponent);
+            mapComponents.put(comp, clientComponent);
         }
     }
 
@@ -74,7 +80,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     public void removeLayoutComponent(Component comp) {
 
         allComponents.remove(comp);
-        constraints.remove(comp);
+        mapComponents.remove(comp);
 
         componentsChanged = true;
         comp.removeComponentListener(this);
@@ -116,9 +122,6 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     public Dimension maximumLayoutSize(Container target) {
         return new Dimension(10000, 10000);
     }
-
-    private boolean componentsChanged = true;
-    private List<Component> components;
 
     boolean fillVisibleComponents() {
 
@@ -264,7 +267,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
         if (coords == null) {
             Dimension minSize = calculateMinimumSize(parent);
-            layoutSize = new Dimension((int) Math.max(parent.getWidth(), minSize.getWidth() * 1.5), (int) Math.max(parent.getHeight(), minSize.getHeight()));
+            layoutSize = new Dimension((int) max(parent.getWidth(), minSize.getWidth() * 1.5), (int) max(parent.getHeight(), minSize.getHeight()));
             parent.setPreferredSize(layoutSize);
             coords = runSimplexLayout(parent, SimplexLayout.DEFAULT);
         }
@@ -295,8 +298,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         if (coords != null) {
             for (Component comp : components) {
                 SimplexComponentInfo info = infos.get(comp);
-                maxw = Math.max(maxw, (int) coords[info.R - 1]);
-                maxh = Math.max(maxh, (int) coords[info.B - 1]);
+                maxw = max(maxw, (int) coords[info.R - 1]);
+                maxh = max(maxh, (int) coords[info.B - 1]);
             }
         } else {
             return SwingUtils.getUsableDeviceBounds();
@@ -304,10 +307,10 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
         logger.info("End calculatePreferredSize");
 
-        Dimension mainPrefSize = constraints.get(mainContainer).preferredSize;
+        Dimension mainPrefSize = mapComponents.get(mainContainer).preferredSize;
         if (mainPrefSize != null) {
-            maxw = Math.max(maxw, (int)mainPrefSize.getWidth());
-            maxh = Math.max(maxh, (int)mainPrefSize.getHeight());
+            maxw = max(maxw, (int) mainPrefSize.getWidth());
+            maxh = max(maxh, (int) mainPrefSize.getHeight());
         }
         
         return new Dimension(maxw, maxh);
@@ -321,8 +324,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         if (coords != null) {
             for (Component comp : components) {
                 SimplexComponentInfo info = infos.get(comp);
-                maxw = Math.max(maxw, (int) coords[info.R - 1]);
-                maxh = Math.max(maxh, (int) coords[info.B - 1]);
+                maxw = max(maxw, (int) coords[info.R - 1]);
+                maxh = max(maxh, (int) coords[info.B - 1]);
             }
         } else {
             return SwingUtils.getUsableDeviceBounds();
@@ -427,10 +430,10 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
             //приходится убирать ограничение на макс. размер, если растягивается объект, иначе ни один растягиваться не будет
             // upd : вилимо можно и не убирать
-//            if (constraints.get(component).fillHorizontal == 0)
+//            if (mapComponents.get(component).constraints.fillHorizontal == 0)
             solver.addConstraintex(2, new double[]{1, -1}, new int[]{info.R, info.L}, LpSolve.LE, max.width + 1.0);
 
-//            if (constraints.get(component).fillVertical == 0)
+//            if (mapComponents.get(component).constraints.fillVertical == 0)
             solver.addConstraintex(2, new double[]{1, -1}, new int[]{info.B, info.T}, LpSolve.LE, max.height + 1.0);
         }
 
@@ -457,14 +460,14 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     }
 
     private SimplexConstraints<ClientComponent> getConstraint(Component comp) {
-        ClientComponent component = constraints.get(comp);
+        ClientComponent component = mapComponents.get(comp);
         return component != null
                 ? component.constraints
                 : SimplexConstraints.DEFAULT_CONSTRAINT;
     }
 
-    private DoNotIntersectSimplexConstraint getChildConstraints(Component comp) {
-        ClientComponent component = constraints.get(comp);
+    private DoNotIntersectSimplexConstraint getChildConstraints(Component parent) {
+        ClientComponent component = mapComponents.get(parent);
         return component != null
                 ? component.getChildConstraints()
                 : SimplexConstraints.DEFAULT_CONSTRAINT.getChildConstraints();
@@ -473,37 +476,41 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     private void fillSiblingsConstraint(LpSolve solver, Component parent) throws LpSolveException {
 
         // здесь будут хранится Component в том же порядке, что и в ClientContainer children
-        List<Component> contComponents = new ArrayList<Component>();
+        List<Component> children = new ArrayList<Component>();
 
         // если для этого объекта есть свой ClientContainer
-        if (constraints.get(parent) instanceof ClientContainer) {
+        if (mapComponents.get(parent) instanceof ClientContainer) {
 
-            ClientContainer parentContainer = (ClientContainer) constraints.get(parent);
+            ClientContainer parentContainer = (ClientContainer) mapComponents.get(parent);
 
             Map<ClientComponent, Component> mapComp = new HashMap<ClientComponent, Component>();
 
             for (Component comp : components) {
-                if (comp.getParent() == parent && constraints.containsKey(comp) && parentContainer.children.contains(constraints.get(comp))) {
-                    mapComp.put(constraints.get(comp), comp);
+                if (comp.getParent() == parent) {
+                    ClientComponent clientComp = mapComponents.get(comp);
+                    if (clientComp != null && parentContainer.children.contains(clientComp)) {
+                        mapComp.put(clientComp, comp);
+                    }
                 }
             }
 
             for (ClientComponent comp : parentContainer.children) {
-                if (mapComp.containsKey(comp))
-                    contComponents.add(mapComp.get(comp));
+                if (mapComp.containsKey(comp)) {
+                    children.add(mapComp.get(comp));
+                }
             }
         }
 
         for (Component comp : components)
-            if (comp.getParent() == parent && !contComponents.contains(comp)) {
-                contComponents.add(comp);
+            if (comp.getParent() == parent && !children.contains(comp)) {
+                children.add(comp);
             }
 
-        int compCount = contComponents.size();
-        if (compCount < 2) return;
+        int childrenCnt = children.size();
+        if (childrenCnt < 2) return;
 
         SimplexConstraints parentConstraints = getConstraint(parent);
-        DoNotIntersectSimplexConstraint parentChildConstraints = getChildConstraints(parent);
+        DoNotIntersectSimplexConstraint childrenConstraints = getChildConstraints(parent);
 
         int maxVar = parentConstraints.maxVariables;
 
@@ -511,15 +518,15 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
         //бъем все компоненты на группы (maxVar - 1)
         //для каждой группы создаем одну переменную направлений curDir, и одна переменная направлений globalDir для всех групп
-        int maxCol = (maxVar < 3) ? 1 : ((compCount - 1) / (maxVar - 1) + 1);
+        int maxCol = (maxVar < 3) ? 1 : ((childrenCnt - 1) / (maxVar - 1) + 1);
 
         SimplexSolverDirections curDir = null;
         int curCol = 0;
         int curCount = 0;
-        for (Component comp : contComponents) {
+        for (Component comp : children) {
 
-            if (curCol == 0 && maxCol > 1 && compCount - curCount > 1)
-                curDir = new SimplexSolverDirections(solver, parentChildConstraints.forbDir);
+            if (curCol == 0 && maxCol > 1 && childrenCnt - curCount > 1)
+                curDir = new SimplexSolverDirections(solver, childrenConstraints.forbDir);
 
             vars.put(comp, curDir);
 
@@ -530,34 +537,34 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             }
         }
 
-        SimplexSolverDirections globalDir = new SimplexSolverDirections(solver, parentChildConstraints.forbDir);
+        SimplexSolverDirections globalDir = new SimplexSolverDirections(solver, childrenConstraints.forbDir);
 
         // замыкаем пересечения, чтобы посчитать заведомо верные условия
         Map<Component, Map<Component, DoNotIntersectSimplexConstraint>> intersects = new HashMap<Component, Map<Component, DoNotIntersectSimplexConstraint>>();
-        for (Component comp1 : contComponents) {
+        for (Component comp1 : children) {
             intersects.put(comp1, new HashMap<Component, DoNotIntersectSimplexConstraint>());
-            for (Component comp2 : contComponents) {
-                DoNotIntersectSimplexConstraint cons = getConstraint(comp1).intersects.get(constraints.get(comp2));
+            for (Component comp2 : children) {
+                DoNotIntersectSimplexConstraint cons = getConstraint(comp1).intersects.get(mapComponents.get(comp2));
                 if (comp1 != comp2 && cons != null && cons.isStraight()) {
                     intersects.get(comp1).put(comp2, cons);
                 }
             }
         }
 
-        for (Component comp3 : contComponents)
-            for (Component comp1 : contComponents) {
+        for (Component comp3 : children)
+            for (Component comp1 : children) {
                 DoNotIntersectSimplexConstraint inter13 = intersects.get(comp1).get(comp3);
                 if (comp1 != comp3 && inter13 != null)
-                    for (Component comp2 : contComponents) {
+                    for (Component comp2 : children) {
                         if (comp2 != comp1 && comp2 != comp3 && inter13.equals(intersects.get(comp3).get(comp2)))
                             intersects.get(comp1).put(comp2, inter13);
                     }
             }
 
 
-        for (Component comp1 : contComponents)
-            for (Component comp2 : contComponents)
-                if (comp1 != comp2 && !getConstraint(comp2).intersects.containsKey(constraints.get(comp1))) {
+        for (Component comp1 : children)
+            for (Component comp2 : children)
+                if (comp1 != comp2 && !getConstraint(comp2).intersects.containsKey(mapComponents.get(comp1))) {
 
                     if (parent instanceof ClientFormSplitPane) {
                         ClientFormSplitPane split = (ClientFormSplitPane) parent;
@@ -567,16 +574,16 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                         Component component1 = comp1.equals(split.getLeftComponent()) ? comp1 : comp2;
                         Component component2 = comp1.equals(split.getLeftComponent()) ? comp2 : comp1;
                         constraint.fillConstraint(solver, infos.get(component1), infos.get(component2), getConstraint(component1), getConstraint(component2), null);
-                    } else if (getConstraint(comp1).intersects.containsKey(constraints.get(comp2))) {
-                        getConstraint(comp1).intersects.get(constraints.get(comp2)).fillConstraint(solver, infos.get(comp1), infos.get(comp2), getConstraint(comp1), getConstraint(comp2), null);
+                    } else if (getConstraint(comp1).intersects.containsKey(mapComponents.get(comp2))) {
+                        getConstraint(comp1).intersects.get(mapComponents.get(comp2)).fillConstraint(solver, infos.get(comp1), infos.get(comp2), getConstraint(comp1), getConstraint(comp2), null);
                     } else {
 
                         // проверка на избыточные условия пересечения
                         if (intersects.get(comp1).get(comp2) != null || intersects.get(comp2).get(comp1) != null)
                             continue;
 
-                        int order1 = contComponents.indexOf(comp1);
-                        int order2 = contComponents.indexOf(comp2);
+                        int order1 = children.indexOf(comp1);
+                        int order2 = children.indexOf(comp2);
 
                         if (order1 > order2)
                             continue;
@@ -588,7 +595,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                         // для компонент из одной "группы" используем одни и те же переменные, из разных - globalDir
                         if (vars.get(comp1) == vars.get(comp2) && vars.get(comp1) != null) dir = vars.get(comp1);
 
-                        parentChildConstraints.fillConstraint(solver, info1, info2, getConstraint(comp1), getConstraint(comp2), (maxVar == 0 ? null : dir));
+                        childrenConstraints.fillConstraint(solver, info1, info2, getConstraint(comp1), getConstraint(comp2), (maxVar == 0 ? null : dir));
                     }
 
                 }
@@ -614,8 +621,9 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         boolean fillmaxh = false;
 
         List<Double> objFnc = new ArrayList<Double>();
-        for (int i = 0; i < solver.getNcolumns() + 1; i++)
+        for (int i = 0; i < solver.getNcolumns() + 1; i++) {
             objFnc.add(0.0);
+        }
 
         for (Component component : components) {
 
@@ -698,23 +706,30 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                     int var2 = solver.getNcolumns();
                     int[] leftIndexes, rightIndexes;
 
+                    int extraSpace = splitPane.getDividerSize();
+                    Insets splitInsets = getContainerInsets(splitPane, getConstraint(splitPane));
+
                     if (splitPane.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
-                        coef1 = (double) splitPane.getDividerLocation() / (double) splitPane.getHeight();
+                        extraSpace += splitInsets.top + splitInsets.bottom;
+                        coef1 = (double) splitPane.getDividerLocation() / (double) (splitPane.getHeight() - extraSpace);
+
                         leftIndexes = new int[]{info.B, info.T, leftInfo.B, leftInfo.T, var1};
                         rightIndexes = new int[]{info.B, info.T, rightInfo.B, rightInfo.T, var2};
                     } else {
-                        coef1 = (double) splitPane.getDividerLocation() / (double) splitPane.getWidth();
+                        extraSpace += splitInsets.left + splitInsets.right;
+                        coef1 = (double) splitPane.getDividerLocation() / (double) (splitPane.getWidth() - extraSpace);
+
                         leftIndexes = new int[]{info.R, info.L, leftInfo.R, leftInfo.L, var1};
                         rightIndexes = new int[]{info.R, info.L, rightInfo.R, rightInfo.L, var2};
                     }
 
                     solver.addConstraintex(1, new double[]{1}, new int[]{var1}, LpSolve.GE, 0);
-                    solver.addConstraintex(5, new double[]{coef1, -coef1, -1, 1, 1}, leftIndexes, LpSolve.GE, 0);
+                    solver.addConstraintex(5, new double[]{coef1, -coef1, -1, 1, 1}, leftIndexes, LpSolve.GE, coef1 * extraSpace);
                     objFnc.add(-10000.0);
 
                     solver.addConstraintex(1, new double[]{1}, new int[]{var2}, LpSolve.GE, 0);
                     double coef2 = 1 - coef1;
-                    solver.addConstraintex(5, new double[]{coef2, -coef2, -1, 1, 1}, rightIndexes, LpSolve.GE, 0);
+                    solver.addConstraintex(5, new double[]{coef2, -coef2, -1, 1, 1}, rightIndexes, LpSolve.GE, coef2 * extraSpace);
                     objFnc.add(-10000.0);
                 }
             }
@@ -744,58 +759,70 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
         Map<Component, Integer> heights = new HashMap<Component, Integer>();
         for (Component comp : components) {
+            Container parentComponent = comp.getParent();
 
             SimplexComponentInfo info = infos.get(comp);
 
             int LP = 0, TP = 0;
-            if (components.indexOf(comp.getParent()) != -1) {
-                SimplexComponentInfo infoP = infos.get(comp.getParent());
-                LP = (int) coords[infoP.L - 1];
-                TP = (int) coords[infoP.T - 1];
+            if (components.indexOf(parentComponent) != -1) {
+                SimplexComponentInfo infoP = infos.get(parentComponent);
+                LP = (int) Math.round(coords[infoP.L - 1]);
+                TP = (int) Math.round(coords[infoP.T - 1]);
             }
 
-            int height = (int) Math.round(coords[info.B - 1] - coords[info.T - 1]);
-            int width = (int) Math.round(coords[info.R - 1] - coords[info.L - 1]);
+            int L = (int) coords[info.L - 1];
+            int R = (int) coords[info.R - 1];
+            int T = (int) coords[info.T - 1];
+            int B = (int) coords[info.B - 1];
 
-            Integer parentHeight = null;
+            int height = B - T;
+            int width = R - L;
+
             int prefTabAreaHeight = 0;
-            if (comp.getParent() != null) {
-                parentHeight = heights.get(comp.getParent());
-                if (comp.getParent() instanceof ClientFormTabbedPane) {
-                    ClientFormTabbedPane parentContainer = (ClientFormTabbedPane) comp.getParent();
+            if (parentComponent != null) {
+                Integer parentHeight = heights.get(parentComponent);
+                if (parentComponent instanceof ClientFormTabbedPane) {
+                    ClientFormTabbedPane parentContainer = (ClientFormTabbedPane) parentComponent;
                     try {
                         if (parentContainer.getTabRunCount() > 1) {
-                            Method getHeightMethod = BasicTabbedPaneUI.TabbedPaneLayout.class.getDeclaredMethod("preferredTabAreaHeight", int.class, int.class);
-                            getHeightMethod.setAccessible(true);
-                            prefTabAreaHeight = (Integer) getHeightMethod.invoke(comp.getParent().getLayout(), SwingConstants.TOP, comp.getParent().getWidth());
+                            prefTabAreaHeight = ReflectionUtils.<Integer>getPrivateMethodValue(
+                                    BasicTabbedPaneUI.TabbedPaneLayout.class,
+                                    parentComponent.getLayout(),
+                                    "preferredTabAreaHeight",
+                                    new Class[]{int.class, int.class},
+                                    new Object[]{SwingConstants.TOP, parentComponent.getWidth()}
+                            );
 
-                            Method getTabAreaInsetsMethod = BasicTabbedPaneUI.class.getDeclaredMethod("getTabAreaInsets", int.class);
-                            getTabAreaInsetsMethod.setAccessible(true);
-                            Insets tabAreaInsets = (Insets) getTabAreaInsetsMethod.invoke(parentContainer.getUI(), SwingConstants.TOP);
+                            Insets tabAreaInsets = ReflectionUtils.getPrivateMethodValue(
+                                    BasicTabbedPaneUI.class,
+                                    parentContainer.getUI(),
+                                    "getTabAreaInsets",
+                                    new Class[]{int.class},
+                                    new Object[]{SwingConstants.TOP}
+                            );
 
-                            prefTabAreaHeight += 2 * (tabAreaInsets.top + tabAreaInsets.bottom);
-
-                            prefTabAreaHeight -= parentContainer.getTabInsets().height;
+                            parentHeight -= prefTabAreaHeight;
+                            parentHeight -= 2 * (tabAreaInsets.top + tabAreaInsets.bottom);
+                            parentHeight -= parentContainer.getTabInsets().height;
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                } else if (comp.getParent() instanceof ClientFormSplitPane) {
-                    ClientFormSplitPane split = (ClientFormSplitPane) comp.getParent();
+                } else if (parentComponent instanceof ClientFormSplitPane) {
+                    ClientFormSplitPane split = (ClientFormSplitPane) parentComponent;
                     if (split.areBothVisible() && comp == split.getLeftComponent()) {
-                        split.setDividerLocationSkipRelayout(split.getOrientation() == JSplitPane.VERTICAL_SPLIT ? height : width);
+                        Insets splitInsets = getContainerInsets(parentComponent, getConstraint(parentComponent));
+                        split.setDividerLocationSkipRelayout(split.getOrientation() == JSplitPane.VERTICAL_SPLIT ? height + splitInsets.top: width + splitInsets.left);
                     }
                 }
-            }
-            if (parentHeight != null) {
-                Insets parentInsets = IsInsideSimplexConstraint.getComponentInsets(comp.getParent());
-                parentHeight -= parentInsets.top + parentInsets.bottom;
-                height = Math.min(height, parentHeight - prefTabAreaHeight);
+                if (parentHeight != null) {
+                    Insets parentInsets = getContainerInsets(parentComponent, getConstraint(parentComponent));
+                    height = Math.min(height, parentHeight - parentInsets.top - parentInsets.bottom);
+                }
             }
             heights.put(comp, height);
-            comp.setBounds((int) Math.round(coords[info.L - 1] - LP), (int) Math.round(coords[info.T - 1] - TP), width, height);
+            comp.setBounds(max(0, L - LP), max(0, T - TP), width, height);
         }
-
     }
 
     public float getLayoutAlignmentX(Container target) {
@@ -813,7 +840,6 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     // в итоге invalidate срабатывает даже при добавлении / удалении объектов
 
     public void dropCaches() {
-
         oldDimension = null;
         cache.clear();
     }

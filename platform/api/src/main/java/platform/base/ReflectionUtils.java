@@ -1,5 +1,7 @@
 package platform.base;
 
+import com.google.common.base.Throwables;
+
 import java.lang.reflect.*;
 
 public class ReflectionUtils {
@@ -56,6 +58,16 @@ public class ReflectionUtils {
             field.set(target, value);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> T getPrivateMethodValue(Class clazz, Object target, String methodName, Class[] paramsClasses, Object[] params) {
+        try {
+            Method method = clazz.getDeclaredMethod(methodName, paramsClasses);
+            method.setAccessible(true);
+            return (T) method.invoke(target, params);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
     }
 
