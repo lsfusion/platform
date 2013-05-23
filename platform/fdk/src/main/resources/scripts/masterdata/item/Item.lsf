@@ -252,7 +252,8 @@ FORM items 'Товары'
 
     TREE groupTree g=Group PARENT parentGroup
     PROPERTIES READONLY nameGroup(g)
-    FILTERS groupTypeGroup(g) == gt
+    FILTERS groupTypeGroup(g) == gt, g IS Group AND NOT (g IS SkuGroup AND NOT g IS ItemGroup)
+
     ORDER BY nameGroup(g)
 
     OBJECTS i=Item
