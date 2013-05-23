@@ -32,7 +32,6 @@
 	<field name="t" class="java.lang.Integer"/>
 	<field name="b" class="java.lang.Integer"/>
 	<field name="inLabelTransactionLabelTypeBarcode" class="java.lang.Boolean"/>
-	<field name="name" class="java.lang.String"/>
 	<field name="sidLabelType" class="java.lang.String"/>
 	<field name="idBarcode" class="java.lang.String"/>
 	<field name="nameLabelTransactionBarcode" class="java.lang.String"/>

@@ -109,7 +109,7 @@ public class ImportXMLDeclarationActionProperty extends ScriptingActionProperty 
                     ImportField dateField = new ImportField(DateClass.instance);
                     ImportField codeCustomsGroupField = new ImportField(LM.findLCPByCompoundName("codeCustomsGroupDeclarationDetail"));
                     ImportField sidOrigin2CountryField = new ImportField(LM.findLCPByCompoundName("sidOrigin2CountryDeclarationDetail"));
-                    ImportField nameUOMField = new ImportField(LM.findLCPByCompoundName("name"));
+                    ImportField nameUOMField = new ImportField(LM.findLCPByCompoundName("nameUOM"));
                     ImportField UOMIDField = new ImportField(LM.findLCPByCompoundName("idUOM"));
 
                     List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
@@ -133,7 +133,7 @@ public class ImportXMLDeclarationActionProperty extends ScriptingActionProperty 
                     properties.add(new ImportProperty(sumVATDataField, LM.findLCPByCompoundName("sumVATDataDeclarationDetail").getMapping(declarationDetailKey)));
                     properties.add(new ImportProperty(declaration, LM.findLCPByCompoundName("declarationDeclarationDetail").getMapping(declarationDetailKey)));
 
-                    properties.add(new ImportProperty(nameUOMField, LM.findLCPByCompoundName("name").getMapping(UOMKey)));
+                    properties.add(new ImportProperty(nameUOMField, LM.findLCPByCompoundName("nameUOM").getMapping(UOMKey)));
                     properties.add(new ImportProperty(nameUOMField, LM.findLCPByCompoundName("shortName").getMapping(UOMKey)));
                     properties.add(new ImportProperty(UOMIDField, LM.findLCPByCompoundName("idUOM").getMapping(UOMKey)));
                     properties.add(new ImportProperty(UOMIDField, getLCP("UOMDeclarationDetail").getMapping(declarationDetailKey),

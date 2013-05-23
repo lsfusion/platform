@@ -56,13 +56,13 @@ public class ImportFormularActionProperty extends ScriptingActionProperty {
                 "SELECT num_class AS ext_id, name_u AS name, par AS par_id FROM klass");
 
         ImportField idItemGroup = new ImportField(getLCP("idItemGroup"));
-        ImportField itemGroupName = new ImportField(getLCP("name"));
+        ImportField itemGroupName = new ImportField(getLCP("nameItemGroup"));
         ImportField idParentGroup = new ImportField(getLCP("idItemGroup"));
 
         ImportKey<?> itemGroupKey = new ImportKey((ConcreteCustomClass) getClass("itemGroup"),
                 getLCP("itemGroupId").getMapping(idItemGroup));
         ImportProperty<?> itemGroupIDProperty = new ImportProperty(idItemGroup, getLCP("idItemGroup").getMapping(itemGroupKey));
-        ImportProperty<?> itemGroupNameProperty = new ImportProperty(itemGroupName, getLCP("name").getMapping(itemGroupKey));
+        ImportProperty<?> itemGroupNameProperty = new ImportProperty(itemGroupName, getLCP("nameItemGroup").getMapping(itemGroupKey));
 
         ImportKey<?> parentGroupKey = new ImportKey((ConcreteCustomClass) getClass("itemGroup"),
                 getLCP("itemGroupId").getMapping(idParentGroup));

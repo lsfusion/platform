@@ -84,9 +84,9 @@ public class ImportTNVEDClassifierActionProperty extends ScriptingActionProperty
             data.add(Arrays.asList((Object) groupID, name + extraName, i, "Таможенный союз", hasCode, defaultVAT, defaultDate));
         }
         ImportField codeCustomsGroupField = new ImportField(LM.findLCPByCompoundName("codeCustomsGroup"));
-        ImportField nameCustomsGroupField = new ImportField(LM.findLCPByCompoundName("name"));
+        ImportField nameCustomsGroupField = new ImportField(LM.findLCPByCompoundName("nameCustomsGroup"));
         ImportField numberCustomsGroupField = new ImportField(LM.findLCPByCompoundName("numberCustomsGroup"));
-        ImportField nameCustomsZoneField = new ImportField(LM.findLCPByCompoundName("name"));
+        ImportField nameCustomsZoneField = new ImportField(LM.findLCPByCompoundName("nameCustomsZone"));
         ImportField hasCodeCustomsGroupField = new ImportField(LM.findLCPByCompoundName("hasCodeCustomsGroup"));
         ImportField vatField = new ImportField(LM.findLCPByCompoundName("dataValueSupplierVATCustomsGroupDate"));
         ImportField dateField = new ImportField(DateClass.instance);
@@ -97,9 +97,9 @@ public class ImportTNVEDClassifierActionProperty extends ScriptingActionProperty
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
         properties.add(new ImportProperty(codeCustomsGroupField, LM.findLCPByCompoundName("codeCustomsGroup").getMapping(customsGroupKey)));
-        properties.add(new ImportProperty(nameCustomsGroupField, LM.findLCPByCompoundName("name").getMapping(customsGroupKey)));
+        properties.add(new ImportProperty(nameCustomsGroupField, LM.findLCPByCompoundName("nameCustomsGroup").getMapping(customsGroupKey)));
         properties.add(new ImportProperty(numberCustomsGroupField, LM.findLCPByCompoundName("numberCustomsGroup").getMapping(customsGroupKey)));
-        properties.add(new ImportProperty(nameCustomsZoneField, LM.findLCPByCompoundName("name").getMapping(customsZoneKey)));
+        properties.add(new ImportProperty(nameCustomsZoneField, LM.findLCPByCompoundName("nameCustomsZone").getMapping(customsZoneKey)));
         properties.add(new ImportProperty(nameCustomsZoneField, LM.findLCPByCompoundName("customsZoneCustomsGroup").getMapping(customsGroupKey),
                 LM.object(LM.findClassByCompoundName("CustomsZone")).getMapping(customsZoneKey)));
         properties.add(new ImportProperty(hasCodeCustomsGroupField, LM.findLCPByCompoundName("hasCodeCustomsGroup").getMapping(customsGroupKey)));
