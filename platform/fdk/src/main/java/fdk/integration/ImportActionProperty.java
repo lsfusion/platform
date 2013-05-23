@@ -604,13 +604,13 @@ public class ImportActionProperty {
                 DataSession session = context.createSession();
                 session.sql.pushVolatileStats(null);
 
-                ObjectValue dataPriceListTypeObject = LM.findLCPByCompoundName("calcPriceListTypeId").readClasses(session, new DataObject("Coordinated", StringClass.get(100)));
+                ObjectValue dataPriceListTypeObject = LM.findLCPByCompoundName("dataPriceListTypeId").readClasses(session, new DataObject("Coordinated", StringClass.get(100)));
                 if (dataPriceListTypeObject instanceof NullValue) {
                     dataPriceListTypeObject = session.addObject((ConcreteCustomClass) LM.findClassByCompoundName("DataPriceListType"));
                     Object defaultCurrency = LM.findLCPByCompoundName("currencyShortName").read(session, new DataObject("BLR", StringClass.get(3)));
                     LM.findLCPByCompoundName("namePriceListType").change("Поставщика (согласованная)", session, (DataObject) dataPriceListTypeObject);
                     LM.findLCPByCompoundName("currencyDataPriceListType").change(defaultCurrency, session, (DataObject) dataPriceListTypeObject);
-                    LM.findLCPByCompoundName("idCalcPriceListType").change("Coordinated", session, (DataObject) dataPriceListTypeObject);
+                    LM.findLCPByCompoundName("idDataPriceListType").change("Coordinated", session, (DataObject) dataPriceListTypeObject);
                 }
 
                 ImportField idItemField = new ImportField(LM.findLCPByCompoundName("idItem"));

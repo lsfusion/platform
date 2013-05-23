@@ -73,6 +73,10 @@ REQUIRE System,
 idStock (s) += idWarehouse(s);
 idStock (s) += idDepartmentStore(s);
 
+@defineExternalizableAbstract(priceListType, STRING[100]);
+idPriceListType (p) += idCalcPriceListType(p);
+idPriceListType (p) += idDataPriceListType(p);
+
 userPriceListDetailIdSkuIdUserPriceList (sku, userPriceList) = GROUP AGGR userPriceListDetail BY idItem(skuUserPriceListDetail(userPriceListDetail)), idUserPriceList(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS UserPriceListDetail;
 
 storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP AGGR storeType BY nameStoreType(storeType), idStoreType(storeType) WHERE storeType IS StoreType; ////
@@ -100,5 +104,6 @@ EXTEND FORM stores PROPERTIES (s) READONLY idStore SHOWIF showIDs();
 EXTEND FORM UOMs PROPERTIES (u) READONLY idUOM SHOWIF showIDs();
 EXTEND FORM positions PROPERTIES (of) READONLY idPosition SHOWIF showIDs();
 EXTEND FORM priceLists PROPERTIES (p) READONLY idUserPriceList SHOWIF showIDs();
+EXTEND FORM priceListTypes PROPERTIES (pt) READONLY idPriceListType SHOWIF showIDs();
 EXTEND FORM wares PROPERTIES (w) READONLY idWare BEFORE deletew SHOWIF showIDs();
 EXTEND FORM warehouses PROPERTIES (w) READONLY idWarehouse BEFORE deletew SHOWIF showIDs();
