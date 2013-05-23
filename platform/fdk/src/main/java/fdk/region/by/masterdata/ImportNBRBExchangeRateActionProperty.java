@@ -107,7 +107,7 @@ public class ImportNBRBExchangeRateActionProperty extends ScriptingActionPropert
 
             List<List<Object>> data = new ArrayList<List<Object>>();
             for (Exchange e : exchangesList) {
-                data.add(Arrays.asList((Object) "НБРБ (BYR)", "НБРБ (" + e.currencyID + ")", e.currencyID, e.homeCurrencyID, e.exchangeRate, new BigDecimal(1).divide(e.exchangeRate), e.date));
+                data.add(Arrays.asList((Object) "НБРБ (BYR)", "НБРБ (" + e.currencyID + ")", e.currencyID, e.homeCurrencyID, e.exchangeRate, new BigDecimal(1 / e.exchangeRate.doubleValue()), e.date));
             }
             ImportTable table = new ImportTable(Arrays.asList(typeExchangeBYRField, typeExchangeForeignField, currencyField,
                     homeCurrencyField, rateField, foreignRateField, dateField), data);
