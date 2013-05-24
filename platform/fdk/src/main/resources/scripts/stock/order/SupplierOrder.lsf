@@ -52,12 +52,13 @@ FORM SupplierOrder 'Заказы по потребностям'
 
     OBJECTS l = LegalEntity
     PROPERTIES(l) READONLY nameLegalEntity
-    PROPERTIES addReserveUserOrder(l, st, p) FORCE PANEL TODRAW l
+    PROPERTIES addReserveUserOrder(l, st, p) FORCE PANEL TODRAW l TOOLBAR
     ORDER BY nameLegalEntity
     FILTERS isSupplierLegalEntity(l)
 
     PROPERTIES numberSkuStockReserveSupplierStockPriceListTypeDateTime(l, st, p, dt)
-    FILTERS numberSkuStockReserveSupplierStockPriceListTypeDateTime(l, st, p, dt)>0
+    FILTERGROUP filtersLegalEntity
+        FILTER 'Необходим заказ' 'F10' numberSkuStockReserveSupplierStockPriceListTypeDateTime(l, st, p, dt)>0
 
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
     PROPERTIES skuTreeName = nameSkuGroup(sk) READONLY
