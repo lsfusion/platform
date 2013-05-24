@@ -9,5 +9,5 @@ nameGLDocument(document) += descriptionReceipt(document);
 
 //------------------- Розничная сумма --------------------//
 companyReceipt (receipt) = legalEntityStore(storeDepartmentStore(departmentStoreReceipt(receipt)));
-@defineGeneralLedgerAggregation (receipt, POS, company, sumReceiptDetailReceipt, date, descriptionReceipt, '90.1', '41.2', '1');
+@defineGeneralLedgerAggregation (receipt, POS, company, sumReceiptDetailReceipt, descriptionReceipt, '90.1', '41.2', '1');
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreReceipt(receiptPOSGeneralLedger(generalLedger)) WHEN CLASS(receiptPOSGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;

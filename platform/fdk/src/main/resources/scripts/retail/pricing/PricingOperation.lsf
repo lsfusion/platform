@@ -1,0 +1,25 @@
+MODULE PricingOperation;
+
+REQUIRE Operation, LegalEntity, PriceListCalc;
+
+NAMESPACE Pricing;
+
+@defineOperation(' (расценка)');
+
+@defineOperationRole();
+@extendFormFilterRole(o, dialogOperations);
+//@extendFormFilterRole(o, operations);     //-- пока не нужен
+
+
+EXTEND DESIGN operation{
+    tabContainer {
+        NEW createContainer {
+            caption = 'Производные документы';
+        }
+        NEW showContainer {
+            caption = 'Отображение свойств';
+        }
+    }
+}
+
+

@@ -59,7 +59,7 @@ EXTEND DESIGN Purchase.operation {
 @defineDocumentInterfaceHeaderSumPrefix (invoice, writeOff, ' (списания)');
 @defineDocumentInterfaceHeaderWriteOffCommittee(invoice, customerStock);
 
-@defineDocumentOperationPrefix(invoice, writeOff, WriteOff, ' (списания)');
+@defineDocumentInterfaceOperationPrefix(invoice, writeOff, WriteOff, ' (списания)');
 writeOffOperationUserInvoice (o) <- writeOffOperation(operationUserInvoice(o))
     WHEN CHANGED(operationUserInvoice(o)) AND createPurchaseWriteOffUserInvoice(o);
 
@@ -149,7 +149,7 @@ overCopyInvoice(s, d) += ACTION (s, d) {
 @defineDocumentInterfaceHeaderSumPrefix (shipment, writeOff, ' (списания)');
 @defineDocumentInterfaceHeaderWriteOffCommittee(shipment, customerStock);
 
-@defineDocumentOperationPrefix(shipment, writeOff, WriteOff, ' (списания)');
+@defineDocumentInterfaceOperationPrefix(shipment, writeOff, WriteOff, ' (списания)');
 writeOffOperationUserShipment (o) <- writeOffOperation(operationUserShipment(o))
     WHEN CHANGED(operationUserShipment(o)) AND createPurchaseWriteOffUserShipment(o);
 
@@ -349,7 +349,7 @@ EXTEND FORM userWriteOff
     PROPERTIES(w) fillShipmentUserWriteOff, shipmentsWriteOff READONLY
     PROPERTIES(d) READONLY descriptionIndexShipmentDetailUserWriteOffDetail BEFORE deletewd
 ;
-EXTEND DESIGN userWriteOff { headerRow1{ ADD w.shipmentGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
+EXTEND DESIGN userWriteOff { headerCreateDetail{ ADD w.shipmentGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
 
 EXTEND FORM writeOffs
     PROPERTIES(w) READONLY shipmentsWriteOff

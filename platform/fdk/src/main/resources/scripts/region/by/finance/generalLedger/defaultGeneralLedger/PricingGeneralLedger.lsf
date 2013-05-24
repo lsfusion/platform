@@ -1,0 +1,81 @@
+MODULE PricingGeneralLedger;
+
+REQUIRE GeneralLedger, Pricing, DimensionStock, DimensionLegalEntity;
+
+//------------------- Расценка --------------------//
+                                                                              //todo: добавить в аналитику по кредиту организацию
+EXTEND CLASS Pricing : GeneralLedger.GLDocument;
+nameGLDocument(document) += descriptionPricing(document);
+
+//------------------ Объявляем суммы с разбивкой по группам (тара, товар, услуги, не тара, не товар, не услуги) ---------//
+@defineDocumentHeaderItemSum (pricing, retailMarkup, retailMarkup);  //-- сумма торговой надбавки
+@defineDocumentHeaderItemSum (pricing, retailVAT, retailVAT);        //-- сумма розничного НДС
+@defineDocumentHeaderItemSum (pricing, , );                          //-- сумма поставщика
+
+////////////////////////////// Приход от поставщика //////////////////////////////////
+//-------------------------------- Торговая надбавка -------------------------------//
+//-- Тара
+@defineGeneralLedgerAggregationOperation (pricing, PrPurMarkC, legalEntityStock, retailMarkupSumContainerPricingDetailPricing, purchase, descriptionPricing, '41.3', '42.1', '1', 'purchase');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrPurMarkCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrPurMarkCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//-- Товар
+@defineGeneralLedgerAggregationOperation (pricing, PrPurMarkI, legalEntityStock, retailMarkupSumItemPricingDetailPricing, purchase, descriptionPricing, '41.2', '42.1', '1', 'purchase');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrPurMarkIGeneralLedger(generalLedger)) WHEN CLASS(pricingPrPurMarkIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+//-------------------------------- НДС розничный -------------------------------//
+//-- Тара
+@defineGeneralLedgerAggregationOperation (pricing, PrPurVATC, legalEntityStock, retailVATSumContainerPricingDetailPricing, purchase, descriptionPricing, '41.3', '42.2', '1', 'purchase');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrPurVATCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrPurVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+//-- Товар
+@defineGeneralLedgerAggregationOperation (pricing, PrPurVATI, legalEntityStock, retailVATSumItemPricingDetailPricing, purchase, descriptionPricing, '41.2', '42.2', '1', 'purchase');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrPurVATIGeneralLedger(generalLedger)) WHEN CLASS(pricingPrPurVATIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+////////////////////////////// Списание по нормам //////////////////////////////////
+//-------------------------------- Торговая надбавка -------------------------------//
+//-- Тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoNMarkC, legalEntityStock, retailMarkupSumContainerPricingDetailPricing, norm, descriptionPricing, '42.1', '41.3', '1', 'writeOffNorm');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNMarkCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNMarkCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//-- Не тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoNMarkNotC, legalEntityStock, retailMarkupSumNotContainerPricingDetailPricing, norm, descriptionPricing, '42.1', '41.2', '1', 'writeOffNorm');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNMarkNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNMarkNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+//-------------------------------- НДС розничный -------------------------------//
+//-- Тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoNVATC, legalEntityStock, retailVATSumContainerPricingDetailPricing, norm, descriptionPricing, '42.2', '41.3', '1', 'writeOffNorm');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNVATCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//-- Не тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoNVATNotC, legalEntityStock, retailVATSumNotContainerPricingDetailPricing, norm, descriptionPricing, '42.2', '41.2', '1', 'writeOffNorm');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNVATNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNVATNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+//-------------------------------- Сумма поставщика -------------------------------//
+//-- Тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoNSupC, legalEntityStock, sumContainerPricingDetailPricing, norm, descriptionPricing, '44.1', '41.3', '1', 'writeOffNorm');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNSupCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNSupCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//-- Не тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoNSupNotC, legalEntityStock, sumNotContainerPricingDetailPricing, norm, descriptionPricing, '44.1', '41.2', '1', 'writeOffNorm');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNSupNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNSupNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+////////////////////////////// Списание (веревки) //////////////////////////////////
+//-------------------------------- Торговая надбавка -------------------------------//
+//-- Тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoRMarkC, legalEntityStock, retailMarkupSumContainerPricingDetailPricing, rope, descriptionPricing, '42.1', '41.3', '1', 'writeOffRopes');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRMarkCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRMarkCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//-- Не тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoRMarkNotC, legalEntityStock, retailMarkupSumNotContainerPricingDetailPricing, rope, descriptionPricing, '42.1', '41.2', '1', 'writeOffRopes');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRMarkNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRMarkNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+//-------------------------------- НДС розничный -------------------------------//
+//-- Тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoRVATC, legalEntityStock, retailVATSumContainerPricingDetailPricing, rope, descriptionPricing, '42.2', '41.3', '1', 'writeOffRopes');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRVATCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//-- Не тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoRVATNotC, legalEntityStock, retailVATSumNotContainerPricingDetailPricing, rope, descriptionPricing, '42.2', '41.2', '1', 'writeOffRopes');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRVATNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRVATNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+//-------------------------------- Сумма поставщика -------------------------------//
+//-- Тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoRSupC, legalEntityStock, sumContainerPricingDetailPricing, rope, descriptionPricing, '44.7', '41.3', '1', 'writeOffRopes');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRSupCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRSupCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+//-- Не тара
+@defineGeneralLedgerAggregationOperation (pricing, PrWoRSupNotC, legalEntityStock, sumNotContainerPricingDetailPricing, rope, descriptionPricing, '44.7', '41.2', '1', 'writeOffRopes');
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRSupNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRSupNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;

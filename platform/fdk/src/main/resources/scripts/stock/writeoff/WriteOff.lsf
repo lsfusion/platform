@@ -134,6 +134,7 @@ FORM reasons 'Причины списания'
 
     DIALOG Reason OBJECT r
 ;
+DESIGN reasons FROM DEFAULT { main{ preferredSize = (600, 400); } }
 
 CLASS WriteOff 'Списание' : Document;
 CLASS WriteOffDetail 'Строка списания' : DocumentDetail;
@@ -208,14 +209,17 @@ sumContainerOutStockDocumentLedger (ledger) += sumContainerWriteOffDetailWriteOf
 @implementDocument(writeOff);
 supplierStockDocument(writeOff) += stockWriteOff(writeOff);
 
+isStockSkuWriteOffDetail (writeOffDetail) = isStockSku(skuWriteOffDetail(writeOffDetail));
+isStockSkuUserWriteOffDetail (userWriteOffDetail) = isStockSku(skuUserWriteOffDetail(userWriteOffDetail));
+
 // --------------------------- Формы списания ---------------------------------
 
 FORM userWriteOff 'Списание'
     OBJECTS w=UserWriteOff FIXED PANEL
     PROPERTIES (w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateUserWriteOff, timeUserWriteOff,
-                   nameStockUserWriteOff, nameCurrencyUserWriteOff, noteUserWriteOff, sumUserWriteOffDetailUserWriteOff,
-                   countUserWriteOffDetailUserWriteOff, quantityUserWriteOffDetailUserWriteOff, nameReasonUserWriteOff,
-                   nameWriteOffCommitteeUserWriteOff
+                   nameStockUserWriteOff, nameCurrencyUserWriteOff, noteUserWriteOff,
+                   countUserWriteOffDetailUserWriteOff, quantityUserWriteOffDetailUserWriteOff,
+                   sumUserWriteOffDetailUserWriteOff, nameReasonUserWriteOff, nameWriteOffCommitteeUserWriteOff
 
     OBJECTS d=UserWriteOffDetail
     PROPERTIES (d) indexUserWriteOffDetail, idBarcodeSkuUserWriteOffDetail, nameSkuUserWriteOffDetail, shortNameUOMSkuUserWriteOffDetail,
@@ -257,6 +261,27 @@ DESIGN userWriteOff FROM DEFAULT{
                 ADD w.documentPrmGroup {
                     childConstraints = TO THE RIGHT;
                 }
+                    NEW headerTabbedPane {
+                        type = TABBED;
+                        NEW headerMainParams {
+                            title = 'Основные параметры';
+                            childConstraints = TO THE BOTTOM;
+                            ADD w.documentPrmGroup {
+                                childConstraints = TO THE RIGHTBOTTOM;
+                            }
+                        }
+                        NEW headerExtraParams {
+                            title = 'Дополнительные параметры';
+                            minimumSize = (500, -1);
+                        }
+                        NEW headerCreateDetail {
+                            title = 'Основание';
+                        }
+                        NEW headerCreateDocuments {
+                            title = 'Производные документы';
+                            minimumSize = (500, -1);
+                        }
+                    }
             }
 
             ADD w.documentSumGroup {
@@ -337,6 +362,22 @@ DESIGN writeOffs FROM DEFAULT {
 EXTEND FORM  writeOffs
     PROPERTIES (w) READONLY nameOperationWriteOff BEFORE nameReasonWriteOff
 ;
+
+// Причина
+reasonOperation = DATA Reason (WriteOff.Operation);
+nameReasonOperation 'Причина списания' (operation) = nameReason(reasonOperation(operation));
+
+@deriveDocumentOperationProperty(userWriteOff, reason);
+
+EXTEND FORM WriteOff.operation
+    PROPERTIES(o) nameReasonOperation
+;
+
+EXTEND DESIGN operation {
+    showContainer {
+        ADD PROPERTY(nameReasonOperation);
+    }
+}
 
 NAVIGATOR {
     stockNavigator {

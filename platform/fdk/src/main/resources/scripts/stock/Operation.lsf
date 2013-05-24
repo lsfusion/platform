@@ -7,6 +7,8 @@ TABLE operation(Operation);
 
 nameOperation 'Наименование' = ABSTRACT ISTRING[100](Operation);
 
+idOperation 'ID' = ABSTRACT ISTRING[100](Operation);
+
 // -------------------------------------- Макросы по созданию операций ---------------------------------- //
 
 META defineOperation(postfix)
@@ -17,12 +19,15 @@ META defineOperation(postfix)
     nameOperation 'Наименование' = DATA ISTRING[100](Operation);
     Operation.nameOperation(operation) += nameOperation(operation);
 
+    idOperation 'ID' = DATA ISTRING[100](Operation);
+    Operation.idOperation(operation) += idOperation(operation);
+
     TABLE legalEntity###operation(LegalEntity, Operation);
     TABLE legalEntityGroup###operation(LegalEntityGroup, Operation);
 
     FORM operation 'Операция'##postfix
         OBJECTS o = Operation FIXED PANEL
-        PROPERTIES(o) nameOperation, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
+        PROPERTIES(o) nameOperation, idOperation, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
 
         EDIT Operation OBJECT o
     ;
@@ -35,9 +40,10 @@ META defineOperation(postfix)
                 NEW headContainer{
                     childConstraints = TO THE RIGHTBOTTOM;
                     NEW propertyContainer{
-                        childConstraints = TO THE BOTTOM;
+                        childConstraints = TO THE RIGHTBOTTOM;
                         caption = 'Параметры';
                         ADD PROPERTY(nameOperation);
+                        ADD PROPERTY(idOperation);
                     }
                     ADD o.historyGroup;
                 }
@@ -51,13 +57,13 @@ META defineOperation(postfix)
 
     FORM operations 'Операции' TITLE 'Операции'##postfix
         OBJECTS o = Operation
-        PROPERTIES(o) READONLY nameOperation, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
+        PROPERTIES(o) READONLY nameOperation, idOperation, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
         PROPERTIES(o) ADDFORM, EDITFORM, DELETE
     ;
 
     FORM dialogOperations 'Операции' TITLE 'Операции'##postfix
         OBJECTS o = Operation
-        PROPERTIES(o) READONLY nameOperation, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
+        PROPERTIES(o) READONLY nameOperation, idOperation, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
         PROPERTIES(o) ADDFORM, EDITFORM, DELETE
 
         DIALOG Operation OBJECT o
@@ -66,18 +72,36 @@ META defineOperation(postfix)
 END
 
 // -------------------------------------- Макросы по объявлению операций в документах ---------------------------------- //
-
-META defineDocumentOperationPrefix(object, prefix, NSR, caption)
-
+META defineDocumentOperationAbstractHeaderPrefix(object, prefix, NSR, caption)
     prefix###operation###object = ABSTRACT NSR.Operation (###object) PERSISTENT;
     name###prefix###operation###object 'Операция'###caption = NSR.nameOperation(prefix###operation###object(object));
-    prefix###operationUser###object = DATA NSR.Operation (User###object);
-    name###prefix###operationUser###object 'Операция'###caption = NSR.nameOperation(prefix###operationUser###object(user###object));
-    prefix###operation###object(object) += prefix###operationUser###object(object);
-
-    prefix###operation###object##Detail 'Операция'###caption (object##Detail) = prefix###operation###object(object###object##Detail(object##Detail));
-    prefix###operationUser###object##Detail 'Операция'###caption (user###object##Detail) = prefix###operationUser###object(user###object##User###object##Detail(user###object##Detail));
-
+    id###prefix###operation###object 'ID операции'###caption = NSR.idOperation(prefix###operation###object(object));
+END
+META defineDocumentOperationHeaderPrefix(object, prefix, NSR, caption)
+    prefix###operation###object = DATA NSR.Operation (###object);
+    name###prefix###operation###object 'Операция'###caption = NSR.nameOperation(prefix###operation###object(object));
+    id###prefix###operation###object 'ID операции'###caption = NSR.idOperation(prefix###operation###object(object));
+END
+META defineDocumentOperationInterfaceHeaderPrefix(object, prefix, NSR, caption)
+    @defineDocumentOperationAbstractHeaderPrefix(object, prefix, NSR, caption);
+    @defineDocumentOperationHeaderPrefix(user###object, prefix, NSR, caption);
+    prefix###operation###object(object) += prefix###operation###user###object(object);
+END
+META defineDocumentOperationDetailPrefix(object, detail, prefix, NSR, caption)
+    prefix###operation###detail (idetail) = prefix###operation###object(object###detail(idetail));
+    name###prefix###operation###detail 'Операция'###caption (idetail) = NSR.nameOperation(prefix###operation###detail(idetail));
+    id###prefix###operation###detail 'ID операции'###caption (idetail) = NSR.idOperation(prefix###operation###detail(idetail));
+END
+META defineDocumentOperationDetailPrefix(object, prefix, NSR, caption)
+    @defineDocumentOperationDetailPrefix(object, object##Detail, prefix, NSR, caption);
+END
+META defineDocumentInterfaceOperationPrefix (object, prefix, NSR, caption)
+    @defineDocumentOperationInterfaceHeaderPrefix(object, prefix, NSR, caption);
+    @defineDocumentOperationDetailPrefix(object, prefix, NSR, caption);
+    @defineDocumentOperationDetailPrefix(user###object, prefix, NSR, caption);
+END
+META defineDocumentInterfaceOperation (object, NSR, caption)
+    @defineDocumentInterfaceOperationPrefix(object, , NSR, caption);
 END
 
 META extendFormOperationPrefix(object, char, afterProp, prefix, containerProp)
@@ -88,7 +112,7 @@ META extendFormOperationPrefix(object, char, afterProp, prefix, containerProp)
 
     EXTEND DESIGN user###object{
         containerProp{
-            ADD PROPERTY name###prefix###operationUser###object) AFTER PROPERTY(afterProp###object);
+            ADD PROPERTY (name###prefix###operationUser###object) AFTER PROPERTY(afterProp###object);
         }
     }
 END
@@ -98,8 +122,10 @@ META defineDocumentOperation(object, char, befProp)
 
     operation###object = ABSTRACT Operation (###object) PERSISTENT;
     name###operation###object 'Операция' = nameOperation(operation###object(object));
+    id###operation###object 'ID операции' = idOperation(operation###object(object));
     operationUser###object = DATA Operation (User###object);
     name###operationUser###object 'Операция' = nameOperation(operationUser###object(user###object));
+    id###operationUser###object 'ID операции' = idOperation(operationUser###object(user###object));
     operation###object(object) += operationUser###object(object);
 
     operation###object##Detail 'Операция' (object##Detail) = operation###object(object###object##Detail(object##Detail));
@@ -258,6 +284,14 @@ END
 META defineDocumentOperationRole(object)
     @defineDocumentOperationRole(object, ###object);
 END
+META defineDocumentOperationRolePrefix(object, objectClass, prefix)
+    prefix###operation###object(o) <- defaultOperationUser(currentUser()) IF countOperationsUser(currentUser()) == 1
+        WHEN ASSIGNED(o IS objectClass);
+END
+META defineDocumentOperationRolePrefix(object, prefix)
+    @defineDocumentOperationRolePrefix(object, ###object, prefix);
+END
+
 
 META defineOperationProperty(property, caption, container)
     property###operation caption = DATA BOOLEAN (Operation);

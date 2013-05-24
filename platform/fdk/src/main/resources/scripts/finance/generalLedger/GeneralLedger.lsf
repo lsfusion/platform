@@ -27,10 +27,7 @@ CLASS UserGeneralLedger 'Проводка (польз.)': GeneralLedger, Histori
 CLASS UserGeneralLedgerPosted 'Проведенная проводка (польз.)': UserGeneralLedger, PostedObject;
 
 @defineDocumentInterfaceHeaderPosted (GeneralLedger);
-@defineDocumentInterfaceHeaderDatePrefix(GeneralLedger, , );
-WHEN SESSION ASSIGNED(userGeneralLedger AS UserGeneralLedger) DO {
-    IF userGeneralLedger IS UserGeneralLedger AND NOT dateUserGeneralLedger(userGeneralLedger) THEN SET dateUserGeneralLedger(userGeneralLedger) <- currentDate();
-};
+@defineDocumentInterfaceHeaderTimePrefix(GeneralLedger, , );
 
 GLDocumentGeneralLedger = ABSTRACT GLDocument (GeneralLedger) PERSISTENT;
 nameGLDocumentGeneralLedger 'Регистр-основание' (generalLedger) = nameGLDocument(GLDocumentGeneralLedger(generalLedger));
@@ -171,8 +168,8 @@ EXTEND DESIGN GLAccounts {
 
 FORM userGeneralLedger 'Проводка'
     OBJECTS g=UserGeneralLedger FIXED PANEL
-    PROPERTIES(g) nameLegalEntityUserGeneralLedger, nameGLDocumentUserGeneralLedger, descriptionUserGeneralLedger, dateUserGeneralLedger, idDebitUserGeneralLedger, idCreditUserGeneralLedger,
-                  sumUserGeneralLedger
+    PROPERTIES(g) nameLegalEntityUserGeneralLedger, nameGLDocumentUserGeneralLedger, descriptionUserGeneralLedger, dateUserGeneralLedger, timeUserGeneralLedger,
+                  idDebitUserGeneralLedger, idCreditUserGeneralLedger, sumUserGeneralLedger
 
     EVENTS
         ON OK prePostUserGeneralLedger(g)
@@ -189,11 +186,12 @@ DESIGN userGeneralLedger FROM DEFAULT{
             childConstraints = TO THE BOTTOM;
 
             ADD g.documentHeaderGroup {
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE RIGHTBOTTOM;
                 ADD PROPERTY(nameLegalEntityUserGeneralLedger);
                 ADD PROPERTY(nameGLDocumentUserGeneralLedger);
                 ADD PROPERTY(descriptionUserGeneralLedger);
                 ADD PROPERTY(dateUserGeneralLedger);
+                ADD PROPERTY(timeUserGeneralLedger);
             }
             NEW headerRow11 {
                 title = 'Корреспонденция';
@@ -232,9 +230,9 @@ copyGeneralLedger 'Копировать' = ACTION (generalLedger) NEWSESSION {
 
 FORM generalLedgers 'Проводки'
     OBJECTS g = GeneralLedger
-    PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, dateGeneralLedger, nameLegalEntityGeneralLedger, nameGLDocumentGeneralLedger, descriptionGeneralLedger, idDebitGeneralLedger,
+    PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, dateTimeGeneralLedger, nameLegalEntityGeneralLedger, nameGLDocumentGeneralLedger, descriptionGeneralLedger, idDebitGeneralLedger,
                    idCreditGeneralLedger, sumGeneralLedger
-    ORDER BY dateGeneralLedger, nameLegalEntityGeneralLedger, nameGLDocumentGeneralLedger
+    ORDER BY dateTimeGeneralLedger, nameGLDocumentGeneralLedger
 //    todo : не работает поскольку для абстрактного свойства не задано ни одной реализации
 //    PROPERTIES(g)  editGLDocumentGeneralLedger
 
@@ -263,11 +261,20 @@ DESIGN generalLedgers FROM DEFAULT {
 }
 
 //-- Для одного объекта
-META defineGeneralLedgerAggregation (object, prop, companyProp, property, dateProp, description, debit, credit, accountType)
-    @defineGeneralLedgerAggregationInner (object, prop, ###prop, companyProp, property, dateProp, description, debit, credit, accountType);
+META defineGeneralLedgerAggregation (object, prop, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
+    @defineGeneralLedgerAggregationInner (object, prop, ###prop, companyProp, property, dateProp, timeProp, description, debit, credit, accountType);
+END
+META defineGeneralLedgerAggregation (object, prop, companyProp, property, description, debit, credit, accountType)
+    @defineGeneralLedgerAggregation (object, prop, companyProp, property, date, time, description, debit, credit, accountType);
 END
 
-META defineGeneralLedgerAggregationInner (object, prop, propClass, companyProp, property, dateProp, description, debit, credit, accountType)
+//-- Для одного объекта с операцией
+META defineGeneralLedgerAggregationOperation (object, prop, companyProp, property, prefixProp, description, debit, credit, accountType, keyProp)
+    prefixProp###property(object) = property(object) IF id###operation###object(object) == keyProp;
+    @defineGeneralLedgerAggregation (object, prop, companyProp, prefixProp###property, description, debit, credit, accountType);
+END
+
+META defineGeneralLedgerAggregationInner (object, prop, propClass, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
 
     CLASS propClass###generalLedger : GeneralLedger;
 
@@ -281,6 +288,7 @@ META defineGeneralLedgerAggregationInner (object, prop, propClass, companyProp, 
     isPostedGeneralLedger(generalLedger) += isPosted###object(object###prop###generalLedger(generalLedger));
     descriptionGeneralLedger(generalLedger) += description(object###prop###generalLedger(generalLedger));
     dateGeneralLedger(generalLedger) += dateProp###object(object###prop###generalLedger(generalLedger));
+    timeGeneralLedger(generalLedger) += timeProp###object(object###prop###generalLedger(generalLedger));
     debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) IF generalLedger IS propClass###generalLedger;
     creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) IF generalLedger IS propClass###generalLedger;
     sumGeneralLedger(generalLedger) += property(object###prop###generalLedger(generalLedger));
@@ -288,11 +296,15 @@ META defineGeneralLedgerAggregationInner (object, prop, propClass, companyProp, 
 END
 
 //-- Для двух объектов
-META defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, companyProp, property, dateProp, description, debit, credit, accountType)   //  prim1Object - документ
-    @defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, ###prop, companyProp, property, dateProp, description, debit, credit, accountType);
+META defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, companyProp, property, description, debit, credit, accountType)   //  prim1Object - документ
+    @defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, companyProp, property, date, time, description, debit, credit, accountType);
 END
 
-META defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, propClass, companyProp, property, dateProp, description, debit, credit, accountType)
+META defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
+    @defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, ###prop, companyProp, property, dateProp, timeProp, description, debit, credit, accountType);
+END
+
+META defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, propClass, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
 
     CLASS propClass###generalLedger : GeneralLedger;
 
@@ -306,6 +318,7 @@ META defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, propCl
     isPostedGeneralLedger(generalLedger) += isPosted###prim1Object(prim1Object###prop###generalLedger(generalLedger));
     descriptionGeneralLedger(generalLedger) += description(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));
     dateGeneralLedger(generalLedger) += dateProp###prim1Object(prim1Object###prop###generalLedger(generalLedger));
+    timeGeneralLedger(generalLedger) += timeProp###prim1Object(prim1Object###prop###generalLedger(generalLedger));
     debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) IF generalLedger IS propClass###generalLedger;
     creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) IF generalLedger IS propClass###generalLedger;
     sumGeneralLedger(generalLedger) += property(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));

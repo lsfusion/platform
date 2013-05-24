@@ -1,6 +1,6 @@
 MODULE Pricing;
 
-REQUIRE Invoice, Employee, PriceRoundStore, Machinery, PriceListCalc, PriceListLedger;
+REQUIRE Invoice, Employee, PriceRoundStore, Machinery, PricingOperation, PriceListCalc, PriceListLedger;
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
 
@@ -524,9 +524,9 @@ FORM pricings 'Акты расценки' TITLE 'Акты расценки'
     OBJECTS d = PricingDetail
     PROPERTIES (d) READONLY indexPricingDetail, idBarcodeSkuPricingDetail, nameSkuPricingDetail, shortNameUOMSkuPricingDetail,
                    quantityPricingDetail, nameRetailPriceListTypePricingDetail, pricePricingDetail, sumPricingDetail
-    PROPERTIES (d) BACKGROUND backgroundRetailPricing(p) retailMarkupPricingDetail, retailMarkupSumPricingDetail, numberRetailVATPricingDetail, valueRetailVATPricingDetail, retailVATSumPricingDetail,
+    PROPERTIES (d) READONLY BACKGROUND backgroundRetailPricing(p) retailMarkupPricingDetail, retailMarkupSumPricingDetail, numberRetailVATPricingDetail, valueRetailVATPricingDetail, retailVATSumPricingDetail,
                    retailPricePricingDetail, retailSumPricingDetail
-    PROPERTIES (d) nameDepartmentStorePricingDetail
+    PROPERTIES (d) READONLY nameDepartmentStorePricingDetail
 
     FILTERS pricingPricingDetail(d) == p
 
@@ -586,12 +586,35 @@ NAVIGATOR {
         NEW pricingNavigator 'Учет в розничных ценах' {
             ADD pricings;
             ADD pricingCommitteeDialog;
+            ADD operations;
         }
     }
 }
 
 // Проставление надбавки и розничной цены при изменении sku, склада, времени, вида цен, цены расценки, НДС в форме userPricing
 @deriveDocumentDetailPriceOnSessionPriceListType (userPricingDetail, retail, pricing, departmentStore, userPricing);
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+@defineDocumentOperationAbstractHeaderPrefix(pricing, , Operation, );
+@defineDocumentOperationDetailPrefix(pricing, , Operation, );
+@defineDocumentOperationHeaderPrefix(userPricing, pricing, Pricing, );
+@defineDocumentOperationDetailPrefix(userPricing, pricing, Pricing, );
+operationPricing(pricing) += pricingOperationUserPricing(pricing);
+
+@defineDocumentOperationRolePrefix(userPricing, pricing);
+
+EXTEND FORM userPricing
+    PROPERTIES(p) READONLY namePricingOperationUserPricing
+;
+EXTEND DESIGN userPricing{
+    p.documentPrmGroup{
+        ADD PROPERTY (namePricingOperationUserPricing) BEFORE PROPERTY(nameCurrencyUserPricing);
+    }
+}
+
+EXTEND FORM pricings
+    PROPERTIES(p) READONLY nameOperationPricing BEFORE nameCurrencyPricing
+;
 
 // ---------------------------- Создание PriceList ----------------------------------- //
 
@@ -782,6 +805,7 @@ META defineInvoicePricingAggregation(concrete, concreteClass, sign, caption, cap
     currencyPricing (pricing) += currency###concrete###pricing(pricing);
 
     pricingCommitteePricing(pricing) += pricingCommitteeInvoice(invoice###concrete###pricing(pricing));
+    operationPricing(pricing) += operationInvoice(invoice###concrete###pricing(pricing));
 
     @defineDocumentDescription(concrete###pricing, ###concrete###pricingDetail, seriesNumber###concrete###pricing, caption###sign);
     descriptionPricing (pricing) += description###concrete###pricing(pricing);

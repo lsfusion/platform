@@ -1,0 +1,27 @@
+MODULE SalePurchaseShipmentGeneralLedger;
+
+REQUIRE GeneralLedger, SalePurchaseShipment, DimensionStock;
+PRIORITY Sale;
+
+//------------------- Внутреннее перемещение (расх.) между отделами, т.е. розница --------------------//
+
+EXTEND CLASS Shipment : GeneralLedger.GLDocument;
+nameGLDocument(document) += descriptionShipment(document);
+
+//-------------------------------- Розничная сумма ----------------------------------//
+
+retailSumShipmentDetail (detail) = sumShipmentDetail(detail) IF isCompanyLegalEntity(legalEntitySupplierStockShipmentDetail(detail))
+    IF isCompanyLegalEntity(legalEntityCustomerStockShipmentDetail(detail))
+    IF supplierStockShipmentDetail(detail) IS DepartmentStore
+    IF supplierStockShipmentDetail(detail) IS DepartmentStore;
+//    IF createPurchaseShipmentDetail(detail);
+//-- Тара
+@defineDocumentHeaderItemSum (shipment, retail, retail);
+@defineGeneralLedgerAggregation (shipment, InvRetC, supplier, retailSumContainerShipmentDetailShipment, descriptionShipment, '41.3', '41.3', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerStockShipment(shipmentInvRetCGeneralLedger(generalLedger)) WHEN CLASS(shipmentInvRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockShipment(shipmentInvRetCGeneralLedger(generalLedger)) WHEN CLASS(shipmentInvRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+//-- Не тара
+@defineGeneralLedgerAggregation (shipment, InvRetNotC, customer, retailSumNotContainerShipmentDetailShipment, descriptionShipment, '41.2', '41.2', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerStockShipment(shipmentInvRetNotCGeneralLedger(generalLedger)) WHEN CLASS(shipmentInvRetNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockShipment(shipmentInvRetNotCGeneralLedger(generalLedger)) WHEN CLASS(shipmentInvRetNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;

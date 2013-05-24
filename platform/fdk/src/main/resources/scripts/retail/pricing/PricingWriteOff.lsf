@@ -1,0 +1,228 @@
+MODULE PricingWriteOff;
+
+REQUIRE Pricing, WriteOff, WriteOffOperation;
+
+NAMESPACE WriteOff;
+
+// Создаем акт расценки
+roundConditionUserWriteOffDetail(userWriteOffDetail) = roundConditionDepartmentStore(stockUserWriteOffDetail(userWriteOffDetail));
+
+// Комиссия
+@defineDocumentInterfaceHeaderPricingCommittee(writeOff, stock);
+// Операция
+//@defineDocumentInterfaceOperationPrefix(writeOff, pricing, Pricing, ' (расценка)');
+
+// Добавляем цены поставщика
+@defineDocumentInterfaceDetailPricePrefix(writeOff, supplier, ' поставщика');
+@defineDocumentInterfaceDetailDataSumPrefix (writeOff, supplier, ' поставщика');
+@deriveDocumentDetailSumPrefix(userWriteOff, supplier, currency, quantity);
+
+// Надбавка
+@defineDocumentInterfaceDetailMarkupPrefix (writeOff, retail, );
+
+// НДС
+@defineDocumentInterfaceDetailVAT(writeOff, countryStock, retail, ' розничный');
+// Не проставляется НДС, поскольку для прихода он равен НДС поставщика
+@deriveDocumentDetailValueVAT(userWriteOff, retail);
+
+// Розничная
+@defineDocumentInterfaceDetailPricePrefix(writeOff, retail, ' розничная');
+
+// Объявление действий, которые будут срабатывать по изменению надбавки и розничной цены
+@changeDocumentDetailMarkupCustomPrefix(userWriteOffDetail, retail, , retail, retail);
+@changeDocumentDetailPriceCustomPrefix(userWriteOffDetail, retail, , retail, retail);
+
+// -- Суммы по строкам
+
+// Надбавка
+@defineDocumentInterfaceDetailMarkupSumPrefix (writeOff, retail);
+
+// НДС
+@defineDocumentInterfaceDetailVATDataSumPrefix (writeOff, retail, ' розничная');
+
+
+// Выходная
+@defineDocumentInterfaceDetailDataSumPrefix (writeOff, retail, ' розничная');
+
+// Расчет сумм обратным счетом
+@deriveDocumentDetailSumPrefix(userWriteOff, retail, currency, quantity);
+@deriveDocumentDetailReverseVATSumPrefix(userWriteOff, retail, retail);
+@deriveDocumentDetailMarkupSumPrefix(userWriteOff, retail, retail, supplier);
+
+// -- Суммы по документу
+@defineDocumentInterfaceHeaderSumPrefix (writeOff, supplier, ' поставщика');
+@defineDocumentInterfaceHeaderSumPrefix (writeOff, retailMarkup, ' надбавки розничная');
+@defineDocumentInterfaceHeaderSumPrefix (writeOff, retailVAT, ' НДС розничная');
+@defineDocumentInterfaceHeaderSumPrefix (writeOff, retail, ' розничная');
+
+// Создание акта расценки
+@defineDocumentInterfaceCreate (writeOff, createPricing, 'Создать акт расценки');
+
+showCreatePricingWriteOff (writeOff) = stockWriteOff(writeOff) IS DepartmentStore AND NOT costLedgerDepartmentStore(stockWriteOff(writeOff));
+showPricingWriteOff (writeOff) = showCreatePricingWriteOff (writeOff) AND NOT createPricingWriteOff(writeOff);
+toShowPricingWriteOff (writeOff) = showCreatePricingWriteOff (writeOff) AND createPricingWriteOff(writeOff);
+
+backgroundRetailWriteOff 'Цвет' (writeOff) = RGB(224, 255, 255) IF writeOff IS WriteOff;
+
+EXTEND FORM userWriteOff
+    PROPERTIES(w) SHOWIF showCreatePricingWriteOff(w) BACKGROUND backgroundRetailWriteOff(w) createPricingUserWriteOff
+    PROPERTIES(w) SHOWIF createPricingUserWriteOff(w) BACKGROUND backgroundRetailWriteOff(w) //namePricingOperationUserWriteOff,
+                  namePricingCommitteeUserWriteOff, retailSumUserWriteOffDetailUserWriteOff
+
+    PROPERTIES(d) BEFORE deletewd SHOWIF createPricingWriteOff(w) BACKGROUND backgroundRetailWriteOff(w)
+                  supplierPriceUserWriteOffDetail, supplierSumUserWriteOffDetail,
+                  retailMarkupUserWriteOffDetail ON CHANGE changeRetailMarkupUserWriteOffDetail(d), retailMarkupSumUserWriteOffDetail, numberRetailVATUserWriteOffDetail,
+                  valueRetailVATUserWriteOffDetail, retailVATSumUserWriteOffDetail,
+                  retailPriceUserWriteOffDetail ON CHANGE changeRetailPriceUserWriteOffDetail(d),
+                  retailSumUserWriteOffDetail
+;
+EXTEND DESIGN userWriteOff {
+    headerCreateDocuments {
+        NEW headerCreatePricing {
+            title = 'Расценка';
+            ADD PROPERTY(createPricingUserWriteOff);
+//            ADD PROPERTY(namePricingOperationUserWriteOff);
+            ADD PROPERTY(namePricingCommitteeUserWriteOff);
+        }
+    }
+}
+EXTEND FORM writeOffs
+    PROPERTIES(w) READONLY BACKGROUND backgroundRetailWriteOff(w) createPricingWriteOff, retailSumWriteOffDetailWriteOff
+    PROPERTIES(d) READONLY SHOWIF createPricingWriteOff(w) BACKGROUND backgroundRetailWriteOff(w)
+                  supplierPriceWriteOffDetail, supplierSumWriteOffDetail,
+                  retailMarkupWriteOffDetail, retailMarkupSumWriteOffDetail, numberRetailVATWriteOffDetail,
+                  valueRetailVATWriteOffDetail, retailVATSumWriteOffDetail,
+                  retailPriceWriteOffDetail, retailSumWriteOffDetail
+;
+
+CLASS WriteOffPricing 'Акт расценки при списании' : Pricing;
+CLASS WriteOffPricingPosted 'Проведенный акт расценки при списании' : WriteOffPricing, PostedObject;
+CLASS WriteOffPricingDetail 'Строка акта расценки при списании' : PricingDetail;
+
+@defineDocumentTables(WriteOffPricing);
+
+needToPricingWriteOffDetail (writeOffDetail) = createPricingWriteOffDetail(writeOffDetail) AND isStockSkuWriteOffDetail(writeOffDetail) PERSISTENT;
+
+needToPricingWriteOff (writeOff)= GROUP SUM 1 IF needToPricingWriteOffDetail(writeOffDetail)
+    BY writeOffWriteOffDetail(writeOffDetail) PERSISTENT;
+
+@defineDocumentAggregation(writeOff, writeOffPricing, needToPricingWriteOff);
+
+
+printPricingWriteOff 'Акт расценки' (writeOff) = printPricing(writeOffPricingWriteOff(writeOff)) IMAGE 'print.png' IN printGroup;
+EXTEND FORM writeOffs
+    PROPERTIES(w) FORCE PANEL printPricingWriteOff SHOWIF createPricingWriteOff(w)
+;
+EXTEND DESIGN writeOffs {printContainer { ADD w.printGroup;}}
+
+pricingPricingDetail(detail) += writeOffPricingWriteOffPricingDetail(detail);
+@defineDocumentDetailIndex(writeOffPricing);
+
+datePricing(pricing) += dateWriteOffPricing(pricing);
+timePricing(pricing) += timeWriteOffPricing(pricing);
+
+@defineDocumentAggregationStockPrefix(writeOff, writeOffPricing, stock, 'Склад', , );
+departmentStorePricing(pricing) += stockWriteOffPricing(pricing) IF stockWriteOffPricing(pricing) IS DepartmentStore;
+//    dataDepartmentStorePricingDetail(pricingDetail) += data###stockProp###writeOffDetail(writeOffDetailWriteOffPricingDetail(pricingDetail))
+//                                                       IF data###stockProp###writeOffDetail(writeOffDetailWriteOffPricingDetail(pricingDetail)) IS DepartmentStore;
+
+@defineDocumentAggregationPosted(writeOff, writeOffPricing);
+isPostedPricing(pricing) += isPostedWriteOffPricing(pricing);
+
+numberWriteOffPricing 'Номер документа' (writeOffPricing) = numberWriteOff(writeOffWriteOffPricing(writeOffPricing));
+numberPricing(pricing) += numberWriteOffPricing(pricing);
+
+seriesWriteOffPricing 'Серия документа' (writeOffPricing) = seriesWriteOff(writeOffWriteOffPricing(writeOffPricing));
+seriesPricing(pricing) += seriesWriteOffPricing(pricing);
+
+seriesNumberWriteOffPricing 'Серия/номер документа' (writeOffPricing) = seriesNumberWriteOff(writeOffWriteOffPricing(writeOffPricing));
+
+noteWriteOffWriteOffPricing 'Примечание' (writeOffPricing) = noteWriteOff(writeOffWriteOffPricing(writeOffPricing));
+notePricing(pricing) += noteWriteOffWriteOffPricing(pricing);
+
+currencyWriteOffPricing  (writeOffPricing) = currencyWriteOff(writeOffWriteOffPricing(writeOffPricing));
+currencyPricing (pricing) += currencyWriteOffPricing(pricing);
+
+pricingCommitteePricing(pricing) += pricingCommitteeWriteOff(writeOffWriteOffPricing(pricing));
+operationPricing(pricing) += operationWriteOff(writeOffWriteOffPricing(pricing));
+
+@defineDocumentDescription(writeOffPricing, WriteOffPricingDetail, seriesNumberWriteOffPricing, 'Акт расценки при списании');
+descriptionPricing (pricing) += descriptionWriteOffPricing(pricing);
+
+@defineDocumentAggregationDetailSku(writeOff, writeOffPricing, sku);
+skuPricingDetail(pricingDetail) +=  skuWriteOffPricingDetail(pricingDetail);
+
+@defineDocumentAggregationDetailProperty (writeOff, writeOffPricing, quantity, 'Кол-во');
+quantityPricingDetail(pricingDetail) += quantityWriteOffPricingDetail(pricingDetail);
+
+@defineDocumentAggregationDetailProperty (writeOff, writeOffPricing, supplierPrice, 'Цена поставщика');
+pricePricingDetail(pricingDetail) += supplierPriceWriteOffPricingDetail(pricingDetail);
+
+@defineDocumentAggregationDetailProperty (writeOff, writeOffPricing, retailMarkup, 'Надбавка');
+retailMarkupPricingDetail(pricingDetail) += retailMarkupWriteOffPricingDetail(pricingDetail);
+
+@defineDocumentAggregationDetailProperty (writeOff, writeOffPricing, retailVAT, 'НДС');
+retailVATPricingDetail(pricingDetail) += retailVATWriteOffPricingDetail(pricingDetail);
+@defineDocumentAggregationDetailProperty (writeOff, writeOffPricing, valueRetailVAT, 'НДС,%');
+valueRetailVATPricingDetail(pricingDetail) += valueRetailVATWriteOffPricingDetail(pricingDetail);
+
+@defineDocumentAggregationDetailProperty (writeOff, writeOffPricing, retailPrice, 'Розничная цена');
+retailPricePricingDetail(pricingDetail) += retailPriceWriteOffPricingDetail(pricingDetail);
+
+// -- Суммы по строкам
+
+@defineDocumentAggregationDetailProperty (writeOff, writeOffPricing, supplierSum, 'Сумма поставщика');
+sumPricingDetail(pricingDetail) += supplierSumWriteOffPricingDetail(pricingDetail);
+
+@defineDocumentAggregationDetailProperty (writeOff, writeOffPricing, retailMarkupSum, 'Сумма надбавки');
+retailMarkupSumPricingDetail(pricingDetail) += retailMarkupSumWriteOffPricingDetail(pricingDetail);
+
+@defineDocumentAggregationDetailProperty (writeOff, writeOffPricing, retailVATSum, 'Сумма НДС');
+retailVATSumPricingDetail(pricingDetail) += retailVATSumWriteOffPricingDetail(pricingDetail);
+
+@defineDocumentAggregationDetailProperty (writeOff, writeOffPricing, retailSum, 'Сумма розничная');
+retailSumPricingDetail(pricingDetail) += retailSumWriteOffPricingDetail(pricingDetail);
+
+//descriptionDocumentPricing(pricing) += writeOffsPricing(pricing);
+
+// Автоматически проставляем цены поставщика и розничные
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userWriteOff, supplierPricingPriceListType, supplier, sku, stock);
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userWriteOff, retailPricingPriceListType, retail, sku, stock);
+
+// Автоматический расчет розничной надбавки
+retailMarkupUserWriteOffDetail(userWriteOffDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+    retailPriceUserWriteOffDetail(userWriteOffDetail),
+    valueRetailVATUserWriteOffDetail(userWriteOffDetail),
+    supplierPriceUserWriteOffDetail(userWriteOffDetail))
+    WHEN CHANGED(retailPriceUserWriteOffDetail(userWriteOffDetail)) OR
+         CHANGED (valueRetailVATUserWriteOffDetail(userWriteOffDetail)) OR
+         CHANGED(supplierPriceUserWriteOffDetail(userWriteOffDetail));
+
+@deriveDocumentDetailVAT(userWriteOff, retail, date, sku, stock);
+
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+//// -- Операция
+//@defineOperationProperty(createPricing, 'Акт расценки', createContainer);
+//@deriveDocumentOperationProperty(UserWriteOff, createPricing);
+//
+//// Причина
+//pricingOperationOperation = DATA Pricing.Operation (WriteOff.Operation);
+//namePricingOperationOperation 'Операция расценка' (operation) = Pricing.nameOperation(pricingOperationOperation(operation));
+//
+//@deriveDocumentOperationProperty(userWriteOff, pricingOperation);
+//
+//EXTEND FORM WriteOff.operation
+//    PROPERTIES(o) namePricingOperationOperation
+//;
+//
+//EXTEND DESIGN operation {
+//    createContainer {
+//        ADD PROPERTY(namePricingOperationOperation);
+//    }
+//}
+
+// Помечаем, что этот акт расценки не меняет текущие цены и является обратным
+skipChangeLedgerPricing(pricing) += pricing IS WriteOffPricing;
+isReturnPricing(pricing) += pricing IS WriteOffPricing;
+

@@ -409,10 +409,22 @@ EXTEND FORM userRepricing
 ;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
+@defineDocumentOperationAbstractHeaderPrefix(repricing, , Operation, );
+@defineDocumentOperationDetailPrefix(repricing, , Operation, );
+@defineDocumentOperationHeaderPrefix(userRepricing, repricing, Repricing, );
+@defineDocumentOperationDetailPrefix(userRepricing, repricing, Repricing, );
+operationRepricing(repricing) += repricingOperationUserRepricing(repricing);
 
-@defineDocumentOperation(repricing, p, noteUser);
-//@defineDocumentOperationPriceListType(userRepricing, ' переоценки');
-@defineDocumentOperationRole(userRepricing);
+@defineDocumentOperationRolePrefix(userRepricing, repricing);
+
+EXTEND FORM userRepricing
+    PROPERTIES(p) READONLY nameRepricingOperationUserRepricing
+;
+EXTEND DESIGN userRepricing{
+    p.documentPrmGroup{
+        ADD PROPERTY (nameRepricingOperationUserRepricing) BEFORE PROPERTY(noteUserRepricing);
+    }
+}
 
 //------------------------ Управленческая переоценка ----------------------------//
 
@@ -420,14 +432,8 @@ FORM managementRepricing 'Управленческая переоценка'
     OBJECTS d = DepartmentStore FIXED PANEL
     PROPERTIES (d) SELECTOR nameDepartmentStore
 
-//    OBJECTS p = PriceListType FIXED PANEL
-//    PROPERTIES (p) SELECTOR namePriceListType
-//
-//    OBJECTS c = CalcPriceListType FIXED PANEL
-//    PROPERTIES (c) SELECTOR nameCalcPriceListType
-
-    OBJECTS o = Operation FIXED PANEL
-    PROPERTIES (o) SELECTOR nameOperation
+    OBJECTS o = Repricing.Operation FIXED PANEL
+    PROPERTIES (o) SELECTOR Repricing.nameOperation
     FILTERS inUserOperation(currentUser(), o)
 
     OBJECTS t=DATETIME FIXED PANEL
@@ -465,7 +471,7 @@ createManagementRepricing 'Создать управленческую пере�
         LOCAL priceList = PriceListType();
         LOCAL calcList = CalcPriceListType();
         LOCAL time =  DATETIME();
-        LOCAL oper = Operation();
+        LOCAL oper = Repricing.Operation();
 
         SET department() <- chosenObject('d');
         SET priceList() <- priceListTypeOperation(chosenObject('o'));
@@ -475,7 +481,7 @@ createManagementRepricing 'Создать управленческую пере�
 
         FOR ADDOBJ r = UserRepricing DO {
             SET departmentStoreUserRepricing(r) <-  department();
-            SET operationUserRepricing(r) <- oper();
+            SET repricingOperationUserRepricing(r) <- oper();
 
             FOR currentBalanceSkuStock(sku, department()) AND
                 prevPricePriceListCalcListSkuStockDateTime(priceList(), calcList(), sku, department(), time()) != prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.retailPricingPriceListType, sku, department(), time())
@@ -580,6 +586,10 @@ DESIGN repricings FROM DEFAULT {
         }
     }
 }
+
+EXTEND FORM repricings
+    PROPERTIES(p) READONLY nameOperationRepricing BEFORE countRepricingDetailRepricing
+;
 
 NAVIGATOR {
     pricingNavigator {
@@ -747,6 +757,8 @@ META defineRepricingAggregation(sign, stockProp)
 
     beforeDateRepricing(repricing) += beforeDateInvoiceRepricing(repricing);
     beforeTimeRepricing(repricing) += beforeTimeInvoiceRepricing(repricing);
+
+    operationRepricing(repricing) += operationInvoice(invoiceInvoiceRepricing(repricing));
 
     @defineDocumentAggregationStockPrefix(invoice, invoiceRepricing, stockProp, 'Склад', , );
     departmentStoreRepricing(repricing) += stockProp###invoiceRepricing(repricing) IF stockProp###invoiceRepricing(repricing) IS DepartmentStore;

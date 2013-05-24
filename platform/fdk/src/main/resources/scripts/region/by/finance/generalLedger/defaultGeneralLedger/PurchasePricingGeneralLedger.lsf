@@ -1,0 +1,17 @@
+MODULE PurchasePricingGeneralLedger;
+
+REQUIRE PricingGeneralLedger, PurchaseInvoiceGeneralLedger, PricingPurchase;
+PRIORITY Purchase;
+
+////-------------------------------- Торговая надбавка ----------------------------------//
+////-- Тара
+//creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceInvoicePricing(pricingPrMarkCGeneralLedger(generalLedger))) WHEN CLASS(pricingPrMarkCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+////-- Товар
+//creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceInvoicePricing(pricingPrMarkIGeneralLedger(generalLedger))) WHEN CLASS(pricingPrMarkIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+//
+////-------------------------------- НДС розничный ----------------------------------//
+////-- Тара
+//debitGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceInvoicePricing(pricingPrVATCGeneralLedger(generalLedger))) WHEN CLASS(pricingPrVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+//
+////-- Товар
+//debitGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceInvoicePricing(pricingPrVATIGeneralLedger(generalLedger))) WHEN CLASS(pricingPrVATIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
