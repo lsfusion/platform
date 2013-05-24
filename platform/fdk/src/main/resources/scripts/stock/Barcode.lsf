@@ -9,7 +9,7 @@ TABLE stringDate (STRING[15], DATE);
 idBarcode 'Штрих код' = DATA STRING[15] (Barcode) IN recognize FIXEDCHARWIDTH 15 AGGPROP INDEXED;
 
 dataDateBarcode 'Дата действия' = DATA DATE (Barcode);
-dateBarcode 'Дата действия' = (2001_01_01 IF barcode IS Barcode) OVERRIDE dataDateBarcode(barcode) IN base PERSISTENT;
+dateBarcode 'Дата действия' = OVERRIDE (2001_01_01 IF barcode IS Barcode), dataDateBarcode(barcode) IN base PERSISTENT;
 
 dataBarcodeIdDate (id, date) = GROUP AGGR barcode BY idBarcode(barcode), dateBarcode(barcode) WHERE barcode IS Barcode PERSISTENT;
 orderBarcodeIdDate 'Дата действия' (id, date) = GROUP MAX STRUCT(dateIn, dataBarcodeIdDate(id, dateIn)) IF dateIn <= (date AS DATE) BY id, date IN base;
@@ -19,7 +19,7 @@ barcodeId (id) = barcodeIdDate(id, currentDate());
 activeBarcode 'Активный' (barcode) = barcodeId(idBarcode(barcode)) == barcode;
 
 dataAmountBarcode 'Множитель' = DATA NUMERIC[14,3] (Barcode);
-amountBarcode 'Множитель' = (1.0 IF barcode IS Barcode) OVERRIDE dataAmountBarcode (barcode) PERSISTENT;
+amountBarcode 'Множитель' = OVERRIDE (1.0 IF barcode IS Barcode), dataAmountBarcode (barcode) PERSISTENT;
 
 completeBarcode = FORMULA STRING[13] 'completeBarcode($1)';
 
@@ -32,7 +32,7 @@ skuBarcodeIdDate (id, date) = skuBarcode(barcodeIdDate(id, date));
 dataBarcodeSku = DATA Barcode (Sku);
 CONSTRAINT skuBarcode(dataBarcodeSku(item)) != item CHECKED BY dataBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
 
-barcodeSku(sku) = [GROUP MIN barcode BY skuBarcode(barcode)](sku) OVERRIDE dataBarcodeSku(sku) PERSISTENT;
+barcodeSku(sku) = OVERRIDE [GROUP MIN barcode BY skuBarcode(barcode)](sku), dataBarcodeSku(sku) PERSISTENT;
 
 primaryBarcode 'Основной' (barcode) = barcodeSku(skuBarcode(barcode)) == barcode;
 changePrimaryBarcodeSku = ACTION (barcode, sku) {
@@ -47,7 +47,7 @@ idBarcodeSkuBatch 'Штрих-код' (batch) = idBarcodeSku(skuBatch(batch));
 idBarcodeSkuSkuLedger 'Штрих-код' (skuLedger) = idBarcodeSku(skuSkuLedger(skuLedger));
 
 dataUOMBarcode = DATA UOM (Barcode);
-UOMBarcode = UOMSku(skuBarcode(barcode)) OVERRIDE dataUOMBarcode(barcode) PERSISTENT;
+UOMBarcode = OVERRIDE UOMSku(skuBarcode(barcode)), dataUOMBarcode(barcode) PERSISTENT;
 shortNameUOMBarcode 'Единица измерения' (barcode) = shortNameUOM(UOMBarcode(barcode));
 
 // Атрибуты вытянутые от sku

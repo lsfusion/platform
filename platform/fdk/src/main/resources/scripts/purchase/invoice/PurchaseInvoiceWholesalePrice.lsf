@@ -40,8 +40,8 @@ overBasePriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
 overBasePriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
 overBasePriceInvoiceDetail (detail) += overBasePriceUserInvoiceDetail(detail);
 
-basePriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OVERRIDE overBasePriceInvoiceDetail(detail) PERSISTENT;
-basePriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OVERRIDE overBasePriceUserInvoiceDetail(detail) PERSISTENT;
+basePriceInvoiceDetail (detail) = OVERRIDE priceInvoiceDetail(detail), overBasePriceInvoiceDetail(detail) PERSISTENT;
+basePriceUserInvoiceDetail (detail) = OVERRIDE priceUserInvoiceDetail(detail), overBasePriceUserInvoiceDetail(detail) PERSISTENT;
 
 wholesaleMarkupUserInvoiceDetail(detail) <- markupCalcPriceListTypeSku(wholesaleCalcPriceListTypeUserInvoiceDetail(detail), skuUserInvoiceDetail(detail))
     WHEN CHANGED(wholesaleCalcPriceListTypeUserInvoiceDetail(detail)) OR

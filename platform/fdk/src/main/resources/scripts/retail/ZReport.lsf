@@ -123,7 +123,7 @@ departmentStoreReceiptDetail (receiptDetail) = UNION CLASS departmentStoreReceip
 
 @defineDocumentDetailSku(receiptSale, sku);
 @defineDocumentDetailSku(receiptReturn, sku);
-skuReceiptDetail (receiptDetail) = skuReceiptReturnDetail(receiptDetail) OVERRIDE skuReceiptSaleDetail(receiptDetail);
+skuReceiptDetail (receiptDetail) = OVERRIDE skuReceiptReturnDetail(receiptDetail), skuReceiptSaleDetail(receiptDetail);
 nameSkuReceiptDetail 'Товар' (receiptDetail) = nameSkuStock(skuReceiptDetail(receiptDetail), departmentStoreReceiptDetail(receiptDetail)) IN recognize;
 
 numberReceipt 'Номер чека' (receipt) = DATA INTEGER (Receipt) IN documentHeaderGroup;
@@ -240,8 +240,8 @@ discountSumReceipt 'Сумма скидки по чеку' (receipt) = discountS
 // -------------------------------------------------- НДС ------------------------------------------------ //
 
 overVATRetailSkuDepartmentStoreDateTime = ABSTRACT Range (Sku, DepartmentStore, DATETIME);
-VATRetailSkuDepartmentStoreDateTime (sku, departmentStore, dateTime) = VATSkuCountryDate(sku, countryStock(departmentStore AS DepartmentStore), toDate(dateTime)) OVERRIDE
-                                                                       overVATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime);
+VATRetailSkuDepartmentStoreDateTime (sku, departmentStore, dateTime) = OVERRIDE VATSkuCountryDate(sku, countryStock(departmentStore AS DepartmentStore), toDate(dateTime)),
+                                                                                overVATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime);
 
 VATReceiptSaleDetail = DATA Range (ReceiptSaleDetail);
 CONSTRAINT taxRange(VATReceiptSaleDetail(detail)) != Tax.taxVAT OR
@@ -277,7 +277,7 @@ descriptionReceiptSaleDetail (receiptDetail) = [FORMULA STRING[200] '\'Прод�
 descriptionReceiptReturnDetail (receiptDetail) = [FORMULA STRING[200] '\'Возврат № \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT) '] (
                                             numberReceipt(receiptReceiptReturnDetail(receiptDetail)), dateTimeReceipt(receiptReceiptReturnDetail(receiptDetail)));
 
-descriptionReceiptDetail (receiptDetail) = descriptionReceiptReturnDetail(receiptDetail) OVERRIDE descriptionReceiptSaleDetail(receiptDetail);
+descriptionReceiptDetail (receiptDetail) = OVERRIDE descriptionReceiptReturnDetail(receiptDetail), descriptionReceiptSaleDetail(receiptDetail);
 
 @defineAddDetailDialogSkuStockCustom(receipt, receiptSaleDetail, ' (продажа)', sku, departmentStore, dialogSku);
 @defineAddDetailDialogSkuStockCustom(receipt, receiptReturnDetail, ' (возврат)', sku, departmentStore, dialogSku);

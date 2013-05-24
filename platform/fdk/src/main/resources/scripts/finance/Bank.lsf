@@ -120,7 +120,7 @@ PaymentLedger.legalEntityAccount(account) += legalEntityAccount(account);
 userAccountLegalEntity = DATA Account (LegalEntity);
 CONSTRAINT legalEntityAccount(userAccountLegalEntity(legalEntity)) != legalEntity CHECKED MESSAGE 'ошибка: Р/сч. по умолчанию должен соответствовать р/сч. Ю.Л.';
 
-accountLegalEntity (legalEntity) = defaultAccountLegalEntity(legalEntity) OVERRIDE userAccountLegalEntity(legalEntity);
+accountLegalEntity (legalEntity) =  OVERRIDE defaultAccountLegalEntity(legalEntity), userAccountLegalEntity(legalEntity);
 numberAccountLegalEntity 'Основной р/сч.' (legalEntity) = numberAccount(accountLegalEntity(legalEntity)) IN lawGroup;
 
 equalsLegalEntityAccount 'Основной' (legalEntity, account) = userAccountLegalEntity(legalEntity) == account;

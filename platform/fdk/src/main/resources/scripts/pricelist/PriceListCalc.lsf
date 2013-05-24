@@ -39,10 +39,10 @@ nearestMarkupCalcPriceListTypeGroup 'Расчетная надбавка, %' (ca
     dataMarkupCalcPriceListTypeGroup(calcPriceListType, nearestParentGroup(calcPriceListType, group)) PERSISTENT;
 
 markupCalcPriceListTypeGroup 'Надбавка, %' (type, group) =
-    nearestMarkupCalcPriceListTypeGroup(type, group) OVERRIDE dataMarkupCalcPriceListTypeGroup(type, group) PERSISTENT;
+    OVERRIDE nearestMarkupCalcPriceListTypeGroup(type, group), dataMarkupCalcPriceListTypeGroup(type, group) PERSISTENT;
 
-markupCalcPriceListTypeSku 'Надбавка, %' (type, sku) =
-    markupCalcPriceListTypeGroup(type, groupGroupTypeSku(groupTypeCalcPriceListType(type), sku)) OVERRIDE
+markupCalcPriceListTypeSku 'Надбавка, %' (type, sku) = OVERRIDE
+    markupCalcPriceListTypeGroup(type, groupGroupTypeSku(groupTypeCalcPriceListType(type), sku)),
     dataMarkupCalcPriceListTypeSku(type, sku);
 
 multiplierCalcPriceListTypeSku (type, sku) = (100 + markupCalcPriceListTypeSku(type, sku)) / 100 PERSISTENT;

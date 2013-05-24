@@ -28,7 +28,7 @@ nameCountryRange 'Страна' (range) = nameCountry(countryRange(range)) IN re
 
 countRangeTaxCountry 'Кол-во шкал' (tax, country) = GROUP SUM 1 IF range IS Range BY taxRange(range), countryRange(range);
 
-maxDataRangeTax(tax, country) = 0 IF tax IS Tax AND country IS Country OVERRIDE [GROUP MAX numberRange(range) BY taxRange(range), countryRange(range)](tax, country);
+maxDataRangeTax(tax, country) = OVERRIDE 0 IF tax IS Tax AND country IS Country, [GROUP MAX numberRange(range) BY taxRange(range), countryRange(range)](tax, country);
 addNewRange 'Добавить шкалу' = ACTION (tax, country) {
     ADDOBJ Range;
     SET numberRange(r) <- maxDataRangeTax(tax, country) + 1 WHERE r == addedObject();
@@ -254,7 +254,7 @@ META defineDocumentDetailVATCustom(detail, countryProp, prefix, caption)
     value###prefix###VAT###detail 'НДС, %'###caption (detail) = DATA NUMERIC[10,5] (###detail);
 
     overValue###prefix###VAT###detail 'НДС (для расчета), %'###caption (detail) = ABSTRACT NUMERIC[10,5] (###detail);
-    calcValue###prefix###VAT###detail 'НДС (перегруженный), %'###caption (detail) = value###prefix###VAT###detail (detail) OVERRIDE overValue###prefix###VAT###detail (detail);
+    calcValue###prefix###VAT###detail 'НДС (перегруженный), %'###caption (detail) = OVERRIDE value###prefix###VAT###detail (detail), overValue###prefix###VAT###detail (detail);
 
     CONSTRAINT taxRange(prefix###VAT###detail(detail)) != Tax.taxVAT OR
                countryRange(prefix###VAT###detail(detail)) != countryProp###detail(detail)

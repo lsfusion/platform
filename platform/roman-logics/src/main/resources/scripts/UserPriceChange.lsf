@@ -54,7 +54,7 @@ newMarkupRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetai
     curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail),
     percMarkupUserPriceChange(userPriceChange),
     curValueRetailVATUserPriceChangeDetail(userPriceChangeDetail),
-    0.0 IF userPriceChangeDetail IS UserPriceChangeDetail OVERRIDE curWarePriceUserPriceChangeDetail(userPriceChangeDetail));
+    (OVERRIDE 0.0 IF userPriceChangeDetail IS UserPriceChangeDetail, curWarePriceUserPriceChangeDetail(userPriceChangeDetail)));
 
 
 

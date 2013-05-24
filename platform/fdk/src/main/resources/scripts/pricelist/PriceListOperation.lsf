@@ -31,8 +31,8 @@ userDefaultCurrencyOperation = DATA Currency (Operation);
 calcDefaultCurrencyOperation(operation) =
     GROUP MAX currency IF inCurrencyOperation(currency, operation)
     BY operation PERSISTENT;
-defaultCurrencyOperation(operation) = calcDefaultCurrencyOperation(operation) OVERRIDE
-                                      userDefaultCurrencyOperation(operation) PERSISTENT;
+defaultCurrencyOperation(operation) = OVERRIDE calcDefaultCurrencyOperation(operation),
+                                               userDefaultCurrencyOperation(operation) PERSISTENT;
 nameDefaultCurrencyOperation 'Валюта по умолчанию' (operation) = nameCurrency(defaultCurrencyOperation(operation));
 isDefaultCurrencyOperation 'Валюта по умолчанию' (currency, operation) =
     defaultCurrencyOperation(operation) == currency;

@@ -56,27 +56,27 @@ GROUP carConsignmentGroup 'Автомобиль' : base;
 
 truckConsignment = ABSTRACT Truck(Consignment);
 dataNameTruckConsignment = ABSTRACT STRING[70] (Consignment);
-nameTruckConsignment 'Автомобиль' (consignment) = nameTruck(truckConsignment(consignment)) OVERRIDE
-                                                  dataNameTruckConsignment(consignment) IN carConsignmentGroup;
+nameTruckConsignment 'Автомобиль' (consignment) = OVERRIDE nameTruck(truckConsignment(consignment)),
+                                                           dataNameTruckConsignment(consignment) IN carConsignmentGroup;
 
 dataOwnerConsignment = ABSTRACT STRING[100] (Consignment);
-ownerTruckConsignment 'Владелец автомобиля' (consignment) = ownerTruck(truckConsignment(consignment)) OVERRIDE
-                                                            dataOwnerConsignment(consignment) IN carConsignmentGroup;
+ownerTruckConsignment 'Владелец автомобиля' (consignment) = OVERRIDE ownerTruck(truckConsignment(consignment)),
+                                                                     dataOwnerConsignment(consignment) IN carConsignmentGroup;
 
 dataTrailerConsignment = ABSTRACT STRING[100] (Consignment);
-trailerConsignment 'Прицеп' (consignment) = trailerTruck(truckConsignment(consignment)) OVERRIDE
-                                            dataTrailerConsignment(consignment) IN carConsignmentGroup;
+trailerConsignment 'Прицеп' (consignment) = OVERRIDE trailerTruck(truckConsignment(consignment)),
+                                                     dataTrailerConsignment(consignment) IN carConsignmentGroup;
 
 driverConsignment = ABSTRACT Driver(Consignment);
 dataNameDriverConsignment 'Водитель' = ABSTRACT STRING[40] (Consignment);
-nameDriverConsignment 'Водитель' (consignment) = nameContact(driverConsignment(consignment)) OVERRIDE
-                                                 dataNameDriverConsignment(consignment) IN carConsignmentGroup;
+nameDriverConsignment 'Водитель' (consignment) = OVERRIDE nameContact(driverConsignment(consignment)),
+                                                          dataNameDriverConsignment(consignment) IN carConsignmentGroup;
 
 dataWaybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[20] (Consignment) IN carConsignmentGroup;
 
 waybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[200] (Consignment) IN carConsignmentGroup;
 
-overWaybillConsignment 'Путевой лист' (consignment) = waybillConsignment(consignment) OVERRIDE dataWaybillConsignment(consignment);
+overWaybillConsignment 'Путевой лист' (consignment) = OVERRIDE waybillConsignment(consignment), dataWaybillConsignment(consignment);
 
 
 // Склад погрузки
@@ -84,16 +84,16 @@ supplierStockConsignment (consignment) = ABSTRACT Stock (Consignment);
 nameSupplierStockConsignment 'Склад погрузки' (consignment) = nameStock(supplierStockConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
 dataAddressSupplierStockConsignment 'Пункт погрузки' (consignment) = ABSTRACT STRING[50] (Consignment);
-addressSupplierStockConsignment 'Пункт погрузки' (consignment) = addressStock(supplierStockConsignment(consignment)) OVERRIDE
-                                                                 dataAddressSupplierStockConsignment (consignment) IN carConsignmentGroup;
+addressSupplierStockConsignment 'Пункт погрузки' (consignment) = OVERRIDE addressStock(supplierStockConsignment(consignment)),
+                                                                          dataAddressSupplierStockConsignment (consignment) IN carConsignmentGroup;
 
 // Склад разгрузки
 customerStockConsignment (consignment) = ABSTRACT Stock (Consignment);
 nameCustomerStockConsignment 'Склад разгрузки' (consignment) = nameStock(customerStockConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
 dataAddressCustomerStockConsignment 'Пункт разгрузки' (consignment) = ABSTRACT STRING[50] (Consignment) IN carConsignmentGroup;
-addressCustomerStockConsignment 'Пункт разгрузки' (consignment) = addressStock(customerStockConsignment(consignment)) OVERRIDE
-                                                                  dataAddressCustomerStockConsignment (consignment) IN carConsignmentGroup;
+addressCustomerStockConsignment 'Пункт разгрузки' (consignment) = OVERRIDE addressStock(customerStockConsignment(consignment)),
+                                                                           dataAddressCustomerStockConsignment (consignment) IN carConsignmentGroup;
 
 readdressingConsignment 'Переадресовка' (consignment) = ABSTRACT STRING[50] (Consignment) IN carConsignmentGroup;
 

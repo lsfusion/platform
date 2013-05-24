@@ -58,7 +58,7 @@ countryCashRegister 'Страна кассы' (cashRegister) = countryStock(stoc
 
 userLegalEntityCashRegister (cashRegister) = DATA LegalEntity (CashRegister);
 legalEntityCashRegister (cashRegister) =
-    legalEntityDepartmentStore(departmentStoreCashRegister(cashRegister)) OVERRIDE userLegalEntityCashRegister(cashRegister);
+    OVERRIDE legalEntityDepartmentStore(departmentStoreCashRegister(cashRegister)), userLegalEntityCashRegister(cashRegister);
 
 nameLegalEntityCashRegister 'Владелец кассы' (cashRegister) = nameLegalEntity(legalEntityCashRegister(cashRegister));
 

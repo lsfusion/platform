@@ -139,7 +139,7 @@ nameToCountry(name) = GROUP AGGR country BY name(country);
 
 // Union property
 // Expression syntax:
-// UNION (SUM | MAX | OVERRIDE | XOR | EXCLUSIVE) propertyExpression1, ..., propertyExpressionN
+// UNION (CLASS | EXCLUSIVE) propertyExpression1, ..., propertyExpressionN
 testUnion(store, article) = incomeQuantity(store, article) (+) outcomeQuantity(store, article);
 
 // OR property
@@ -826,7 +826,7 @@ FORM TestDataPropForm 'Тест дат'
 
 colorizeMatchingStoreSize (s, ss) = scolor(s) IF storeSize(s) == ss;
 storeSizeString (s, ss) = DATA STRING[10] (Store, StoreSize);
-storeSizeHeader (s, ss) = name(ss) IF s IS Store AND ss IS StoreSize AND ss!=StoreSize.small OVERRIDE storeSizeString(s, ss);
+storeSizeHeader (s, ss) = OVERRIDE name(ss) IF s IS Store AND ss IS StoreSize AND ss!=StoreSize.small, storeSizeString(s, ss);
 
 FORM TestColumnGroupObjects 'Тест групп в колонках'
     OBJECTS ss=StoreSize, s=Store

@@ -89,7 +89,7 @@ EXTEND FORM userShipment
 
 // ------------------------------- Расчет учетной цены для поставки ------------------------ //
 overShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) EXCLUSIVE PERSISTENT;
-calcShipmentPriceUserInvoiceDetail (detail) = costPriceUserInvoiceDetail(detail) OVERRIDE overShipmentPriceUserInvoiceDetail(detail) PERSISTENT;
+calcShipmentPriceUserInvoiceDetail (detail) = OVERRIDE costPriceUserInvoiceDetail(detail), overShipmentPriceUserInvoiceDetail(detail) PERSISTENT;
 
 extraShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
 
@@ -119,10 +119,10 @@ quantityBatch (ledger) += quantityShipmentDetail(shipmentDetailShipmentBatch(led
 expiryDateBatch (ledger) += expiryDateShipmentDetail(shipmentDetailShipmentBatch(ledger));
 sumInSkuLedger (ledger) += sumShipmentDetail(shipmentDetailShipmentBatch(ledger));
 
-ledgerBatchShipmentDetail (detail) = shipmentBatchShipmentDetail(detail) OVERRIDE batchShipmentDetail(detail) PERSISTENT;
+ledgerBatchShipmentDetail (detail) = OVERRIDE shipmentBatchShipmentDetail(detail), batchShipmentDetail(detail) PERSISTENT;
 
-batchPriceListLedger(ledger) += ledgerBatchShipmentDetail(invoiceShipmentDetailInvoiceDetail(ledger)) OVERRIDE batchInvoiceDetail(ledger);
-batchPriceListLedger(ledger) += ledgerBatchShipmentDetail(invoiceShipmentDetailInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) OVERRIDE batchInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger));
+batchPriceListLedger(ledger) += OVERRIDE ledgerBatchShipmentDetail(invoiceShipmentDetailInvoiceDetail(ledger)), batchInvoiceDetail(ledger);
+batchPriceListLedger(ledger) += OVERRIDE ledgerBatchShipmentDetail(invoiceShipmentDetailInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))), batchInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger));
 
 nameBatch(batch) += ustring3(toString10(dateShipmentDetail(shipmentDetailShipmentBatch(batch))),
                              string2('/ ', seriesNumberShipment(shipmentShipmentDetail(shipmentDetailShipmentBatch(batch)))),

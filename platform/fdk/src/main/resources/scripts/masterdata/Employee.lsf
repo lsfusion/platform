@@ -70,14 +70,14 @@ nearestInEmployeeEmployeeDivisionGroup (employee, employeeDivisionGroup) =
     dataAccessEmployeeDivisionGroupEmployee(nearestParentEmployeeDivisionGroup (employee, employeeDivisionGroup), employee);
 
 
-accessEmployeeEmployeeDivisionGroup 'Доступ разрешен' (employee, employeeDivisionGroup) =
-    employee IS Employee AND employeeDivisionGroup IS EmployeeDivisionGroup AND NOT limitAccessEmployee(employee) OVERRIDE
-    nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroup) OVERRIDE
+accessEmployeeEmployeeDivisionGroup 'Доступ разрешен' (employee, employeeDivisionGroup) = OVERRIDE
+    employee IS Employee AND employeeDivisionGroup IS EmployeeDivisionGroup AND NOT limitAccessEmployee(employee),
+    nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroup),
     dataAccessEmployeeDivisionGroupEmployee(employeeDivisionGroup, employee); // PERSISTENT;
 
-accessEmployeeEmployeeDivision 'Доступ разрешен' (employee, employeeDivision) =
-    employee IS Employee AND employeeDivision IS EmployeeDivision AND NOT limitAccessEmployee(employee) OVERRIDE
-    nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroupEmployeeDivision(employeeDivision)) OVERRIDE
+accessEmployeeEmployeeDivision 'Доступ разрешен' (employee, employeeDivision) = OVERRIDE
+    employee IS Employee AND employeeDivision IS EmployeeDivision AND NOT limitAccessEmployee(employee),
+    nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroupEmployeeDivision(employeeDivision)),
     dataAccessEmployeeDivisionEmployee(employeeDivision, employee); // PERSISTENT;
 
 countAccessEmployeeEmployeeDivisionGroup 'Кол-во доступных подразделений' (employee, employeeDivisionGroup) =

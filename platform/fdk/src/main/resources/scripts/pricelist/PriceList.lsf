@@ -149,15 +149,16 @@ levelParentPriceListStockGroup (priceList, stockGroup) = GROUP MIN levelStockGro
 
 inParentPriceListStockGroup (priceList, stockGroup) = TRUE IF levelParentPriceListStockGroup (priceList, stockGroup) PERSISTENT;
 
-inPriceListStockGroup 'Отм' (priceList, stockGroup) =
-    allStocksPriceList(priceList) AND stockGroup IS StockGroup OVERRIDE
-    inParentPriceListStockGroup (priceList, stockGroup) OVERRIDE
+inPriceListStockGroup 'Отм' (priceList, stockGroup) = OVERRIDE
+    allStocksPriceList(priceList) AND stockGroup IS StockGroup,
+    inParentPriceListStockGroup (priceList, stockGroup),
     dataInPriceListStockGroup(priceList, stockGroup);
 
 inPriceListStock 'Отм' (priceList, stock) =
-    (allStocksPriceList(priceList) AND stock IS Stock OVERRIDE
-     inParentPriceListStockGroup(priceList, stockGroupStock(stock)) OVERRIDE
-     dataInPriceListStock(priceList, stock)) AND isCompanyStock(stock);
+    (OVERRIDE allStocksPriceList(priceList) AND stock IS Stock,
+              inParentPriceListStockGroup(priceList, stockGroupStock(stock)),
+              dataInPriceListStock(priceList, stock))
+    AND isCompanyStock(stock);
 
 stocksPriceList 'Склады' (priceList) = GROUP CONCAT nameStock(stock) IF inPriceListStock(priceList, stock) , ', '
                                        BY priceList

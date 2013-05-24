@@ -311,12 +311,12 @@ END
 
 META defineDocumentDetailDataLegalEntity (object, detail, contact, contactCaption)
     data###contact###detail (detail) = DATA LegalEntity (###detail);
-    contact###detail (idetail) = contact###object(object###detail(idetail)) OVERRIDE data###contact###detail(idetail) PERSISTENT;
+    contact###detail (idetail) = OVERRIDE contact###object(object###detail(idetail)), data###contact###detail(idetail) PERSISTENT;
     name###contact###detail contactCaption (idetail) = nameLegalEntity(contact###detail(idetail));
 END
 META defineDocumentAbstractDetailDataLegalEntity (object, detail, contact, contactCaption)
     data###contact###detail (detail) = ABSTRACT LegalEntity (###detail);
-    contact###detail (idetail) = contact###object(object###detail(idetail)) OVERRIDE data###contact###detail(idetail) PERSISTENT;
+    contact###detail (idetail) = OVERRIDE contact###object(object###detail(idetail)), data###contact###detail(idetail) PERSISTENT;
     name###contact###detail contactCaption (idetail) = nameLegalEntity(contact###detail(idetail));
 END
 META defineDocumentInterfaceDetailDataLegalEntity (object, detail, contact, contactCaption)

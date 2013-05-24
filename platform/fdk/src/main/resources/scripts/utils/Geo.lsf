@@ -18,7 +18,7 @@ FORM mapProviders
 ;
 
 userMapProvider = DATA MapProvider ();
-mapProvider = MapProvider.yandex OVERRIDE userMapProvider();
+mapProvider = OVERRIDE MapProvider.yandex, userMapProvider();
 
 nameUserMapProvider 'Использовать карты' () = staticCaption(userMapProvider());
 

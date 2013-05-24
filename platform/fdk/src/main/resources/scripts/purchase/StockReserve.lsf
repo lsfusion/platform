@@ -20,12 +20,12 @@ nearestParentStockSkuGroup (stock, skuGroup) = skuGroupSkuGroupLevel(skuGroup, l
 nearestStockReserveDaysStockSkuGroup (stock, skuGroup) =
     dataStockReserveDaysStockSkuGroup(stock, nearestParentStockSkuGroup(stock, skuGroup));
 
-stockReserveDaysStockSkuGroup 'Страховой запас (дн.)' (stock, skuGroup) =
-    nearestStockReserveDaysStockSkuGroup (stock, skuGroup) OVERRIDE
+stockReserveDaysStockSkuGroup 'Страховой запас (дн.)' (stock, skuGroup) = OVERRIDE
+    nearestStockReserveDaysStockSkuGroup (stock, skuGroup),
     dataStockReserveDaysStockSkuGroup(stock, skuGroup);
 
-stockReserveDaysStockSku 'Страховой запас (дн.)' (stock, sku) =
-    nearestStockReserveDaysStockSkuGroup(stock, skuGroupSku(sku)) OVERRIDE
+stockReserveDaysStockSku 'Страховой запас (дн.)' (stock, sku) = OVERRIDE
+    nearestStockReserveDaysStockSkuGroup(stock, skuGroupSku(sku)),
     dataStockReserveDaysStockSku(stock, sku);
 
 fillStockReserveDateDateFromTo 'Проставить кол-во исходя из продаж в день и запаса(дн.) ' = ACTION (stock, date, dFrom, dTo) {

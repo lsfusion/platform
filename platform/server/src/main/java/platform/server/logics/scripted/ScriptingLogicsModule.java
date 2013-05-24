@@ -764,12 +764,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(getRelationProp(op), asList(leftProp, rightProp));
     }
 
-    public LPWithParams addScriptedOverrideProp(List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
-        LPWithParams res = properties.get(0);
-        if (properties.size() > 1) {
-            res = addScriptedUProp(Union.OVERRIDE, properties, "OVERRIDE");
+    public LPWithParams addScriptedOverrideProp(List<LPWithParams> properties, boolean isExclusive) throws ScriptingErrorLog.SemanticErrorException {
+        if (isExclusive) {
+            return addScriptedUProp(Union.EXCLUSIVE, properties, "EXCLUSIVE");
+        } else {
+            return addScriptedUProp(Union.OVERRIDE, properties, "OVERRIDE");
         }
-        return res;
     }
 
     private boolean isLogical(LP property) {

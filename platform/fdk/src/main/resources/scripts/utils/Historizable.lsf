@@ -24,7 +24,7 @@ META defineHistorizable(property, caption, type, object, objectIdentity, group)
     date###property##Date (object, date) = GROUP MAX dateIn IF data###property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
 
     property##Date caption (object, date) = data###property##Date(object, date###property##Date(object, date)) IN group;
-    over###property##Date caption = property##Date(object, date) OVERRIDE data###property##Date(object, date) IN group;
+    over###property##Date caption = OVERRIDE property##Date(object, date), data###property##Date(object, date) IN group;
 
     property caption (object) = property##Date(object, currentDate()) IN group;
 
@@ -92,7 +92,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
     date###property##Date (object1, object2, date) = GROUP MAX dateIn IF data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
 
     property##Date caption (object1, object2, date) = data###property##Date(object1, object2, date###property##Date(object1, object2, date));
-    over###property##Date caption = property##Date(object1, object2, date) OVERRIDE data###property##Date(object1, object2, date);
+    over###property##Date caption = OVERRIDE property##Date(object1, object2, date), data###property##Date(object1, object2, date);
 
     property caption (object1, object2) = property##Date(object1, object2, currentDate()) IN group;
 
@@ -132,7 +132,7 @@ END
 META defineHistorizableFooter(property, caption, typeIdentity, typeName, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
     typeName###property##Date caption (object1, object2, date) = typeIdentity(property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
-    over###property##Date caption = property##Date(object1, object2, date) OVERRIDE data###property##Date(object1, object2, date);
+    over###property##Date caption = OVERRIDE property##Date(object1, object2, date), data###property##Date(object1, object2, date);
 
     over###typeName###property##Date caption (object1, object2, date) = typeIdentity(over###property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
@@ -176,7 +176,7 @@ END
 
 META defineHistorizableCustomDefault(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
     @defineHistorizableHeader(property, caption, type, typeIdentity, typeIdentity, object1, object2, fixedCharWidth, group);
-    property##Date caption (object1, object2, date) = (defaultProperty(object1, object2) IF date IS DATE) OVERRIDE data###property##Date(object1, object2, date###property##Date(object1, object2, date));
+    property##Date caption (object1, object2, date) = OVERRIDE (defaultProperty(object1, object2) IF date IS DATE), data###property##Date(object1, object2, date###property##Date(object1, object2, date));
     @defineHistorizableFooter(property, caption, typeIdentity, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group);
 END
 
@@ -187,7 +187,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
     date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn IF data###property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
 
     property##Date caption (object1, object2, object3, date) = data###property##Date(object1, object2, object3, date###property##Date(object1, object2, object3, date));
-    over###property##Date caption = property##Date(object1, object2, object3, date) OVERRIDE data###property##Date(object1, object2, object3, date);
+    over###property##Date caption = OVERRIDE property##Date(object1, object2, object3, date), data###property##Date(object1, object2, object3, date);
 
     property caption (object1, object2, object3) = property##Date(object1, object2, object3, currentDate()) IN group;
 
@@ -225,9 +225,10 @@ META defineHistorizableCustomDefault(property, defaultProperty, caption, type, t
 
     date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn IF data###property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
 
-    property##Date caption (object1, object2, object3, date) = defaultProperty(object1, object2, object3) IF date IS DATE OVERRIDE
-                                                               data###property##Date(object1, object2, object3, date###property##Date(object1, object2, object3, date));
-    over###property##Date caption = property##Date(object1, object2, object3, date) OVERRIDE data###property##Date(object1, object2, object3, date);
+    property##Date caption (object1, object2, object3, date) = OVERRIDE defaultProperty(object1, object2, object3) IF date IS DATE,
+                                                                        data###property##Date(object1, object2, object3, date###property##Date(object1, object2, object3, date));
+    over###property##Date caption = OVERRIDE property##Date(object1, object2, object3, date),
+                                             data###property##Date(object1, object2, object3, date);
     over###typeIdentity###property##Date caption (object1, object2, object3, date) = typeIdentity(over###property##Date(object1, object2, object3, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
     property caption (object1, object2, object3) = property##Date(object1, object2, object3, currentDate());

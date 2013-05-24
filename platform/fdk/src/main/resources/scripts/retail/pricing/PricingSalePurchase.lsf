@@ -56,8 +56,8 @@ overPurchasePricingPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) P
 overPurchasePricingPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
 overPurchasePricingPriceInvoiceDetail (detail) += overPurchasePricingPriceUserInvoiceDetail(detail);
 
-purchasePricingPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OVERRIDE overPurchasePricingPriceUserInvoiceDetail(detail) PERSISTENT;
-purchasePricingPriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OVERRIDE overPurchasePricingPriceInvoiceDetail(detail) PERSISTENT;
+purchasePricingPriceUserInvoiceDetail (detail) = OVERRIDE priceUserInvoiceDetail(detail), overPurchasePricingPriceUserInvoiceDetail(detail) PERSISTENT;
+purchasePricingPriceInvoiceDetail (detail) = OVERRIDE priceInvoiceDetail(detail), overPurchasePricingPriceInvoiceDetail(detail) PERSISTENT;
 
 @defineDocumentInterfaceDetailMarkupPrefix (invoice, purchaseRetail, ' (закупка)');
 

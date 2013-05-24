@@ -131,8 +131,8 @@ nameTypeOfAdditionInventory 'Тип инвентаризации' (inventory) = 
 userTypeOfAdditionStockInventory(stock, inventory) = DATA TypeOfAddition (Stock, Inventory);
 nameUserTypeOfAdditionStockInventory 'Тип инвентаризации' (stock, inventory) = staticCaption(userTypeOfAdditionStockInventory(stock, inventory));
 
-typeOfAdditionStockInventory(stock, inventory) = typeOfAdditionInventory(inventory) IF stock IS Stock OVERRIDE
-                                                 userTypeOfAdditionStockInventory(stock, inventory);
+typeOfAdditionStockInventory(stock, inventory) = OVERRIDE typeOfAdditionInventory(inventory) IF stock IS Stock,
+                                                          userTypeOfAdditionStockInventory(stock, inventory);
 
 CONSTRAINT includeStockInventory(stock, inventory) AND NOT typeOfAdditionStockInventory(stock, inventory) MESSAGE 'Ошибка: Не задан тип сличительной ведомости для выбранного отдела';
 userTypeOfAdditionStockInventory(stock, inventory) => includeStockInventory(stock, inventory) RESOLVE FALSE;
@@ -167,7 +167,7 @@ isSkuListInventory (listInventory) = isSkuInventory(inventoryListInventory(listI
 GROUP inventoryCommitteeGroup 'Комиссия' : public;
 
 userCommitteeListInventory(listInventory) = DATA InventoryCommittee (ListInventory);
-committeeListInventory(listInventory) = committeeInventory(inventoryListInventory(listInventory)) OVERRIDE userCommitteeListInventory(listInventory);
+committeeListInventory(listInventory) = OVERRIDE committeeInventory(inventoryListInventory(listInventory)), userCommitteeListInventory(listInventory);
 nameCommitteeListInventory 'Название комиссии' (listInventory) = nameInventoryCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = nameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 namePositionChairmanListInventory 'Должность председателя' (listInventory)  = namePositionChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -300,9 +300,9 @@ collationSheetPageInventoryDetail (pageInventoryDetail) = collationSheetListInve
 typeOfAdditionCollationSheet(collationSheet)= typeOfAdditionStockInventory(stockCollationSheet(collationSheet), inventoryCollationSheet(collationSheet));
 nameTypeOfAdditionCollationSheet 'Тип сличительной ведомости' (collationSheet) = staticCaption(typeOfAdditionCollationSheet(collationSheet)) IN base MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-inInventoryStockListInventoryPageInventoryPageInventoryDetail (inventory, stock, listInventory, pageInventory, pageInventoryDetail) =
-    pageInventoryPageInventoryDetail(pageInventoryDetail) == pageInventory AND listInventory AND stock AND inventory OVERRIDE
-    listInventoryPageInventoryDetail(pageInventoryDetail) == listInventory AND stock AND NOT pageInventory AND inventory OVERRIDE
+inInventoryStockListInventoryPageInventoryPageInventoryDetail (inventory, stock, listInventory, pageInventory, pageInventoryDetail) = OVERRIDE
+    pageInventoryPageInventoryDetail(pageInventoryDetail) == pageInventory AND listInventory AND stock AND inventory,
+    listInventoryPageInventoryDetail(pageInventoryDetail) == listInventory AND stock AND NOT pageInventory AND inventory,
     stockPageInventoryDetail(pageInventoryDetail) == stock AND inventory == inventoryPageInventoryDetail(pageInventoryDetail) AND NOT pageInventory AND NOT listInventory;
 
 descriptionCollationSheet 'Название документа' (collationSheet) =
@@ -317,7 +317,7 @@ inventoryPrevStockInventory (stock, inventory) = PARTITION PREV inventory IF inc
 calcPrevDateCollationSheet 'Дата предыдущей инвентаризации' (collationSheet) = PARTITION PREV dateCollationSheet(collationSheet)
     BY stockCollationSheet(collationSheet) ORDER dateCollationSheet(collationSheet);
 
-prevDateCollationSheet 'Дата предыдущей инвентаризации' (collationSheet) = calcPrevDateCollationSheet(collationSheet) OVERRIDE userPrevDateCollationSheet(collationSheet);
+prevDateCollationSheet 'Дата предыдущей инвентаризации' (collationSheet) = OVERRIDE calcPrevDateCollationSheet(collationSheet), userPrevDateCollationSheet(collationSheet);
 
 // Комиссии
 committeeCollationSheet = committeeInventory(inventoryCollationSheet(collationSheet));
@@ -461,7 +461,7 @@ sumBatchPageInventoryDetailCollationSheet 'Сумма по описям' (collat
 
 includeCollationSheetSku(collationSheet, sku) = UNION CLASS
     collationSheet IS RegisterCollationSheet IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku),
-    (inManyCollationSheetSku(collationSheet, sku) OVERRIDE collationSheet IS ManyCollationSheet IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku)),
+    (OVERRIDE inManyCollationSheetSku(collationSheet, sku), collationSheet IS ManyCollationSheet IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku)),
     (collationSheet IS RemainsCollationSheet IF (quantityBalanceCollationSheetSku(collationSheet, sku) != 0 OR quantityPageInventoryDetailCollationSheetSku(collationSheet, sku)));
 
 priceBalanceCollationSheetSku(collationSheet, sku) <- priceLedgerPriceListTypeSkuStockDateTime(SystemLedgerPriceListType.accountPriceListType,
@@ -667,7 +667,7 @@ descriptionInInventorySkuDetail 'Название документа' (inventory
     [FORMULA STRING[200] '\'Излишек по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
     nameCollationSheet(collationSheetInInventorySkuDetail(inventorySkuDetail)), dateCollationSheet(collationSheetInInventorySkuDetail(inventorySkuDetail)));
 
-descriptionInventorySkuDetail 'Название документа' (inventorySkuDetail) = descriptionOutInventorySkuDetail(inventorySkuDetail) OVERRIDE descriptionInInventorySkuDetail(inventorySkuDetail);
+descriptionInventorySkuDetail 'Название документа' (inventorySkuDetail) = OVERRIDE descriptionOutInventorySkuDetail(inventorySkuDetail), descriptionInInventorySkuDetail(inventorySkuDetail);
 
 @implementSkuLedger(inventorySkuDetail, sku, stock);
 
@@ -737,7 +737,7 @@ descriptionInInventoryBatchDetail 'Название документа' (invento
     [FORMULA STRING[200] '\'Излишек по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
     nameCollationSheet(collationSheetInInventoryBatchDetail(inventoryBatchDetail)), dateCollationSheet(collationSheetInInventoryBatchDetail(inventoryBatchDetail)));
 
-descriptionInventoryBatchDetail 'Название документа' (inventoryBatchDetail) = descriptionOutInventoryBatchDetail(inventoryBatchDetail) OVERRIDE descriptionInInventoryBatchDetail(inventoryBatchDetail);
+descriptionInventoryBatchDetail 'Название документа' (inventoryBatchDetail) = OVERRIDE descriptionOutInventoryBatchDetail(inventoryBatchDetail), descriptionInInventoryBatchDetail(inventoryBatchDetail);
 
 @implementSkuLedger(inventoryBatchDetail, sku, stock);
 changedDataSkuLedger(ledger) += CHANGED(batchInventoryBatchDetail(ledger));

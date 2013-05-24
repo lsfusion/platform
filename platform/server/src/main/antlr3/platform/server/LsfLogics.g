@@ -828,21 +828,9 @@ propertyDeclaration returns [String name, String caption, List<String> paramName
 
 
 propertyExpression[List<String> context, boolean dynamic] returns [LPWithParams property]
-	:	pe=overridePE[context, dynamic] { $property = $pe.property; }
+	:	pe=ifPE[context, dynamic] { $property = $pe.property; }
 	;
 
-overridePE[List<String> context, boolean dynamic] returns [LPWithParams property]
-@init {
-	List<LPWithParams> props = new ArrayList<LPWithParams>();
-}
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedOverrideProp(props);
-	}
-}
-	:	firstExpr=ifPE[context, dynamic] { props.add($firstExpr.property); }
-		('OVERRIDE' nextExpr=ifPE[context, dynamic] { props.add($nextExpr.property); })*
-	;
 
 ifPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -1056,6 +1044,7 @@ singleParameter[List<String> context, boolean dynamic] returns [LPWithParams pro
 expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; } 
 	|	unionDef=unionPropertyDefinition[context, dynamic] { $property = $unionDef.property;} 
+	|	overDef=overridePropertyDefinition[context, dynamic] { $property = $overDef.property; }
 	|	ifElseDef=ifElsePropertyDefinition[context, dynamic] { $property = $ifElseDef.property; }
 	|	maxDef=maxPropertyDefinition[context, dynamic] { $property = $maxDef.property; }
 	|	caseDef=casePropertyDefinition[context, dynamic] { $property = $caseDef.property; }
@@ -1230,6 +1219,19 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPa
 	:	'UNION'
 		(('EXCLUSIVE' {type = Union.EXCLUSIVE;}) | ('CLASS' {type = Union.CLASS;}))
 		exprList=nonEmptyPropertyExpressionList[context, dynamic]
+	;
+
+overridePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	boolean isExclusive = false;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedOverrideProp($exprList.props, isExclusive);
+	}
+}
+	:	(('OVERRIDE') | ('EXCLUSIVE' { isExclusive = true; })) 
+		exprList=nonEmptyPropertyExpressionList[context, dynamic] 
 	;
 
 

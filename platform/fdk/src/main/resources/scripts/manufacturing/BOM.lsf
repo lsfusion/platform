@@ -336,8 +336,8 @@ wastageComponentDate '% потерь' (component, date) = IF technologyComponent
 
 curWastageComponent '% потерь' (component) =  wastageComponentDate(component, currentDate());
 
-overCurWastageComponent '% потерь' (component) =  wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), currentDate()) OVERRIDE
-                                                  wastageComponent(component);
+overCurWastageComponent '% потерь' (component) =  OVERRIDE wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), currentDate()),
+                                                           wastageComponent(component);
 
 // Кол-во брутто
 
@@ -363,8 +363,8 @@ bruttoQuantityComponentDate(component, date) = IF technologyComponent(component)
 curBruttoQuantityComponent 'Кол-во (брутто)' (component) =  bruttoQuantityComponentDate(component, currentDate());
 
 overCurBruttoQuantityComponent 'Кол-во (брутто)' (component) =
-    (nettoQuantityComponent(component)/(1 - (wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), currentDate())/100))) OVERRIDE
-     bruttoQuantityComponent(component);
+    OVERRIDE (nettoQuantityComponent(component)/(1 - (wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), currentDate())/100))),
+             bruttoQuantityComponent(component);
 
 FORM components 'Компоненты'
     OBJECTS c=Component

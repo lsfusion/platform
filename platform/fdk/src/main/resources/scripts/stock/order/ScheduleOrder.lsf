@@ -82,7 +82,7 @@ META defineScheduleOrder(sign, stockProp)
 
     //свойства "Каждые N недель"
     periodScheduleOrder 'Кол-во недель между поставками' = DATA INTEGER (ScheduleOrder);
-    overPeriodScheduleOrder 'Кол-во недель между поставками' (scheduleOrder) = 1 IF scheduleOrder IS ScheduleOrder OVERRIDE periodScheduleOrder(scheduleOrder);
+    overPeriodScheduleOrder 'Кол-во недель между поставками' (scheduleOrder) = OVERRIDE 1 IF scheduleOrder IS ScheduleOrder, periodScheduleOrder(scheduleOrder);
 
     //свойства "Каждые N дней"
     dayAfterScheduleOrder 'Через сколько дней после последней поставки делать заказ' = DATA INTEGER (ScheduleOrder);

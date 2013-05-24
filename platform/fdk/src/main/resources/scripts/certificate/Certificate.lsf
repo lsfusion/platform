@@ -105,7 +105,7 @@ META defineDocumentCertificateObjectInner(prop, propClass, document, object, cap
 
     data###prop###user###document##Detail = DATA propClass (User###document##Detail);
     prop###user###document##Detail (detail) =
-        prop###user###document(user###document##User###document##Detail(detail)) OVERRIDE data###prop###user###document##Detail(detail);
+        OVERRIDE prop###user###document(user###document##User###document##Detail(detail)), data###prop###user###document##Detail(detail);
     prop###document##Detail(detail) += prop###user###document##Detail(detail);
 
     description###prop###user###document##Detail caption (detail) = description###prop(prop###user###document##Detail(detail));

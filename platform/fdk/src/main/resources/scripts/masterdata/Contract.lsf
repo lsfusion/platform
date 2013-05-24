@@ -76,9 +76,9 @@ META defineContractDefault (contract, contractClass, partyAClass, partyBClass, p
     CONSTRAINT pB != prefixB###contract(data###contract###prefixA###prefixB(pA, pB)) CHECKED BY data###contract###prefixA###prefixB
         MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
 
-    contract###prefixA###prefixB (pA, pB) = [GROUP MAX contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate()
-                                                         BY prefixA###contract(contract), prefixB###contract(contract)](pA, pB) OVERRIDE
-                                                  data###contract###prefixA###prefixB(pA, pB);
+    contract###prefixA###prefixB (pA, pB) = OVERRIDE [GROUP MAX contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate()
+                                                         BY prefixA###contract(contract), prefixB###contract(contract)](pA, pB),
+                                                     data###contract###prefixA###prefixB(pA, pB);
 
     number###contract###prefixA###prefixB 'Основной договор (номер)' (pA, pB) = numberContract(contract###prefixA###prefixB(pA, pB));
     seriesNumber###contract###prefixA###prefixB 'Основной договор (серия/номер)' (pA, pB) = seriesNumberContract(contract###prefixA###prefixB(pA, pB));

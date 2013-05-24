@@ -77,7 +77,7 @@ createShipmentsTrip 'Включить поставки' (trip) = ACTION (trip) {
 
 // отображение на карте
 showPointsTrip 'Показать путь на карте' (trip) = ACTION (trip) {
-    SET numberPathPOI(stock) <- 1 IF quantityTripStock(trip, stock) > 0 OVERRIDE numberStockTrip(stock, trip);
+    SET numberPathPOI(stock) <- OVERRIDE 1 IF quantityTripStock(trip, stock) > 0, numberStockTrip(stock, trip);
     EXEC showOnMapPath();
 
 } TOOLBAR;

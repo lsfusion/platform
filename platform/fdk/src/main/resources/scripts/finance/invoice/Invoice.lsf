@@ -613,7 +613,7 @@ META defineInvoiceHomeCurrency(dumb)
     rateExchangeInvoiceDetail 'Курс' = ABSTRACT NUMERIC[14,6](InvoiceDetail) PERSISTENT;
 
     dataRateExchangeUserInvoiceDetail 'Курс' = DATA NUMERIC[14,6](UserInvoiceDetail);
-    rateExchangeUserInvoiceDetail 'Курс' (d) = rateExchangeUserInvoice(userInvoiceUserInvoiceDetail(d)) OVERRIDE dataRateExchangeUserInvoiceDetail(d);
+    rateExchangeUserInvoiceDetail 'Курс' (d) = OVERRIDE rateExchangeUserInvoice(userInvoiceUserInvoiceDetail(d)),  dataRateExchangeUserInvoiceDetail(d);
     rateExchangeInvoiceDetail(d) += rateExchangeUserInvoiceDetail(d);
 
     homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](InvoiceDetail) PERSISTENT;

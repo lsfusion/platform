@@ -21,7 +21,7 @@ createRepricingDisparity (disparity) <- createRepricingOperation(operationDispar
 @deriveDocumentDetailSumPrefix(disparity, curInput, currency, inputQuantity);
 
 overCurInputRepricingPriceDisparityDetail = ABSTRACT NUMERIC[14,2] (DisparityDetail) PERSISTENT;
-curInputRepricingPriceDisparityDetail (detail) = curInputPriceDisparityDetail(detail) OVERRIDE overCurInputRepricingPriceDisparityDetail(detail) PERSISTENT;
+curInputRepricingPriceDisparityDetail (detail) = OVERRIDE curInputPriceDisparityDetail(detail), overCurInputRepricingPriceDisparityDetail(detail) PERSISTENT;
 
 @defineDocumentDetailPricePrefix(disparity, curInputRetail, ' розничная до');
 @defineDocumentDetailDataSumCustomPrefix (disparityDetail, curInputRetail, ' розничная до');
@@ -56,7 +56,7 @@ roundConditionDisparityDetail(disparityDetail) = roundConditionDepartmentStore(s
 @deriveDocumentDetailSumPrefix(disparity, afterInput, currency, inputQuantity);
 
 overAfterInputRepricingPriceDisparityDetail = ABSTRACT NUMERIC[14,2] (DisparityDetail) PERSISTENT;
-afterInputRepricingPriceDisparityDetail (detail) = afterInputPriceDisparityDetail(detail) OVERRIDE overAfterInputRepricingPriceDisparityDetail(detail) PERSISTENT;
+afterInputRepricingPriceDisparityDetail (detail) = OVERRIDE afterInputPriceDisparityDetail(detail), overAfterInputRepricingPriceDisparityDetail(detail) PERSISTENT;
 
 @defineDocumentDetailPricePrefix(disparity, afterInputRetail, ' розничная после');
 @defineDocumentDetailDataSumCustomPrefix (disparityDetail, afterInputRetail, ' розничная после');

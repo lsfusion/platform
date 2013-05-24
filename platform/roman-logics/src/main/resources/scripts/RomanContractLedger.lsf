@@ -14,7 +14,7 @@ numberUserContractInvoice 'Номер договора инвойса' (invoice)
 contractDirectInvoice 'Договор инвойса напрямую' = DATA ContractSku (DirectInvoice);
 numberContractDirectInvoice 'Номер договора инвойса напрямую' (directInvoice) = numberContract(contractDirectInvoice(directInvoice));
 
-contractInvoice 'Договор' (invoice) = userContractInvoice(invoice) OVERRIDE contractDirectInvoice(invoice);
+contractInvoice 'Договор' (invoice) = OVERRIDE userContractInvoice(invoice), contractDirectInvoice(invoice);
 numberContractInvoice 'Номер договора' (invoice) = numberContract(contractInvoice(invoice));
 
 CONSTRAINT partyAContract(userContractInvoice(invoice)) != supplierDocument(invoice)

@@ -15,7 +15,7 @@ TABLE supplier (Supplier);
 GROUP orderGroup 'Заказ' : public;
 
 dataSurePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = DATA INTEGER (Supplier) IN orderGroup;
-surePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = (0 IF supplier IS Supplier) OVERRIDE dataSurePercentSupplier(supplier) IN orderGroup;
+surePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = OVERRIDE 0 IF supplier IS Supplier, dataSurePercentSupplier(supplier) IN orderGroup;
 
 allowablePercentSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (Supplier) IN orderGroup;
 afterDaysSupplier 'Максимальное число дней до поставки после заказа' = DATA INTEGER (Supplier) IN orderGroup;
@@ -50,7 +50,8 @@ TABLE supplierGroupSupplierGroup(SupplierGroup, SupplierGroup);
 //legalEntityGroupLegalEntity(supplier) += supplierGroupSupplier(supplier);
 
 inSupplierGroupSupplier (supplierGroup, supplier) =
-    supplier IS Supplier AND NOT supplierGroup IS SupplierGroup OVERRIDE isParentSupplierGroupSupplierGroup(supplierGroupSupplier(supplier), supplierGroup);
+    OVERRIDE supplier IS Supplier AND NOT supplierGroup IS SupplierGroup,
+             isParentSupplierGroupSupplierGroup(supplierGroupSupplier(supplier), supplierGroup);
 
 FORM supplierGroup 'Группа поставщиков'
     OBJECTS s = SupplierGroup FIXED PANEL
@@ -299,7 +300,7 @@ META defineDocumentSupplier (object, detail)
 END
 META defineDocumentDetailDataSupplier (object, detail)
     dataSupplier###detail (detail) = DATA Supplier (detail);
-    supplier###detail (idetail) = supplier###object(object###detail(idetail)) OVERRIDE dataSupplier###detail(idetail) PERSISTENT;
+    supplier###detail (idetail) = OVERRIDE supplier###object(object###detail(idetail)), dataSupplier###detail(idetail) PERSISTENT;
     nameSupplier###detail 'Поставщик' (idetail) = nameLegalEntity(supplier###detail(idetail));
 END
 META defineDocumentDataSupplier (object, detail)

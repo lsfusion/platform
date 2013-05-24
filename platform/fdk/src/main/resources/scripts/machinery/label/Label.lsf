@@ -39,13 +39,13 @@ inLabelType(labelType) <- TRUE WHEN ASSIGNED(labelType IS LabelType);
 
 inDataLabelTypeStoreType 'Включен' (labelType, storeType) = DATA BOOLEAN (LabelType, StoreType);
 inLabelTypeStoreType 'Включен' (labelType, storeType) =
-    inLabelType(labelType) AND storeType IS StoreType OVERRIDE inDataLabelTypeStoreType(labelType, storeType);
+    OVERRIDE inLabelType(labelType) AND storeType IS StoreType, inDataLabelTypeStoreType(labelType, storeType);
 inDataLabelTypeStore 'Включен' (labelType, store) = DATA BOOLEAN (LabelType, Store);
 inLabelTypeStore 'Включен' (labelType, store) =
-    inLabelTypeStoreType(labelType, storeTypeStore(store)) OVERRIDE inDataLabelTypeStore(labelType, store);
+    OVERRIDE inLabelTypeStoreType(labelType, storeTypeStore(store)), inDataLabelTypeStore(labelType, store);
 inDataLabelTypeDepartmentStore 'Включен' (labelType, departmentStore) = DATA BOOLEAN (LabelType, DepartmentStore);
 inLabelTypeDepartmentStore 'Включен' (labelType, departmentStore) =
-    inLabelTypeStore(labelType, storeDepartmentStore(departmentStore)) OVERRIDE inDataLabelTypeDepartmentStore(labelType, departmentStore) PERSISTENT;
+    OVERRIDE inLabelTypeStore(labelType, storeDepartmentStore(departmentStore)), inDataLabelTypeDepartmentStore(labelType, departmentStore) PERSISTENT;
 
 groupTypeLabelType = DATA GroupType (LabelType);
 nameGroupTypeLabelType 'Тип классификатора' (labelType) = nameGroupType(groupTypeLabelType(labelType));
@@ -62,10 +62,10 @@ nearestInLabelTypeGroup 'Вкл.' (labelType, group) =
     dataInLabelTypeGroup(labelType, nearestParentLabelTypeGroup (labelType, group)) PERSISTENT;
 
 inLabelTypeGroup 'Вкл.' (labelType, group) =
-    nearestInLabelTypeGroup(labelType, group) OVERRIDE dataInLabelTypeGroup(labelType, group) PERSISTENT;
+    OVERRIDE nearestInLabelTypeGroup(labelType, group), dataInLabelTypeGroup(labelType, group) PERSISTENT;
 
 inLabelTypeSku 'Вкл.' (labelType, sku) =
-    inLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)) OVERRIDE dataInLabelTypeSku(labelType, sku);
+    OVERRIDE inLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)), dataInLabelTypeSku(labelType, sku);
 
 //-- Множитель
 dataCountLabelTypeGroup 'Множитель' = DATA INTEGER (LabelType, Group);
@@ -77,13 +77,13 @@ nearestParentCountLabelLabelTypeGroup (labelType, group) = groupGroupLevel(group
 nearestCountLabelLabelTypeGroup 'Множитель' (labelType, group) =
     dataCountLabelTypeGroup(labelType, nearestParentCountLabelLabelTypeGroup (labelType, group)) PERSISTENT;
 
-countLabelTypeGroup 'Множитель' (labelType, group) =
-    1 IF group IS Group IF labelType IS LabelType OVERRIDE
-    nearestCountLabelLabelTypeGroup(labelType, group) OVERRIDE
+countLabelTypeGroup 'Множитель' (labelType, group) = OVERRIDE
+    1 IF group IS Group IF labelType IS LabelType,
+    nearestCountLabelLabelTypeGroup(labelType, group),
     dataCountLabelTypeGroup(labelType, group) PERSISTENT;
 
 countLabelTypeSku 'Множитель' (labelType, sku) =
-    countLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)) OVERRIDE dataCountLabelTypeSku(labelType, sku);
+    OVERRIDE countLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)), dataCountLabelTypeSku(labelType, sku);
 
 //-- Количество для печати ценника брать множитель или из документа.
 includeLabelType 'Из документа'= DATA BOOLEAN (LabelType);
@@ -96,13 +96,13 @@ nearestParentIncludeLabelLabelTypeGroup (labelType, group) = groupGroupLevel(gro
 nearestIncludeLabelLabelTypeGroup 'Из документа' (labelType, group) =
     dataIncludeLabelTypeGroup(labelType, nearestParentIncludeLabelLabelTypeGroup (labelType, group)) PERSISTENT;
 
-includeLabelTypeGroup 'Из документа' (labelType, group) =
-    includeLabelType(labelType) AND group IS Group OVERRIDE
-    nearestIncludeLabelLabelTypeGroup(labelType, group) OVERRIDE
+includeLabelTypeGroup 'Из документа' (labelType, group) = OVERRIDE
+    includeLabelType(labelType) AND group IS Group,
+    nearestIncludeLabelLabelTypeGroup(labelType, group),
     dataIncludeLabelTypeGroup(labelType, group) PERSISTENT;
 
-includeLabelTypeSku 'Из документа' (labelType, sku) =
-    includeLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)) OVERRIDE
+includeLabelTypeSku 'Из документа' (labelType, sku) = OVERRIDE
+    includeLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)),
     dataIncludeLabelTypeSku(labelType, sku);
 
 FORM labelType 'Тип ценника'

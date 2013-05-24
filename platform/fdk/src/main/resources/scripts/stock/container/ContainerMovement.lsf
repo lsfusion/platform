@@ -16,10 +16,10 @@ costSumContainerStockDateTo 'Остаток на конец по складу' (
     IF isContainerBatch(batch) BY stock, dateTo;
 
 overMovementContainerBatchStockDateFromTo (batch, stock, dateFrom, dateTo) =
-    balanceBBatchStockDate(batch, stock, dateFrom) IF dateTo AS DATE OVERRIDE
-    balanceABatchStockDate(batch, stock, dateTo) IF dateFrom AS DATE OVERRIDE
-    costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo) OVERRIDE
-    costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
+    OVERRIDE balanceBBatchStockDate(batch, stock, dateFrom) IF dateTo AS DATE,
+             balanceABatchStockDate(batch, stock, dateTo) IF dateFrom AS DATE,
+             costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo),
+             costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
 
 FORM containerMovement 'Отчет по таре' PRINT
 

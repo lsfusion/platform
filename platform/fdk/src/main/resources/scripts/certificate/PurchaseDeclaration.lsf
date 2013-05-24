@@ -152,7 +152,7 @@ numberDefaultDeclarationDetail 'Номер' (declarationDetail) =
         ORDER declarationDetail;
 
 userNumberDeclarationDetail 'Пользовательский номер' (declarationDetail) = DATA INTEGER (DeclarationDetail);
-numberDeclarationDetail 'Номер' (declarationDetail) = numberDefaultDeclarationDetail(declarationDetail) OVERRIDE userNumberDeclarationDetail(declarationDetail);
+numberDeclarationDetail 'Номер' (declarationDetail) = OVERRIDE numberDefaultDeclarationDetail(declarationDetail), userNumberDeclarationDetail(declarationDetail);
 
 declarationDetailUserNumberNameCustoms (number, name) = GROUP AGGR declarationDetail BY
         userNumberDeclarationDetail(declarationDetail), nameCustomsDeclarationDetail(declarationDetail)
@@ -166,10 +166,10 @@ sumDataGrossWeightDeclarationDetail 'Вес брутто' = DATA NUMERIC[14,3](D
 
 // агрегированные свойства
 sumNetWeightDeclarationDetail 'Вес нетто' (declarationDetail) = GROUP SUM sumNetWeightInvoiceDetail(invoiceDetail) BY declarationDetailInvoiceDetail(invoiceDetail) PERSISTENT;
-overSumNetWeightDeclarationDetail 'Вес нетто' (declarationDetail) = sumNetWeightDeclarationDetail(declarationDetail) OVERRIDE sumDataNetWeightDeclarationDetail(declarationDetail);
+overSumNetWeightDeclarationDetail 'Вес нетто' (declarationDetail) = OVERRIDE sumNetWeightDeclarationDetail(declarationDetail), sumDataNetWeightDeclarationDetail(declarationDetail);
 
 sumGrossWeightDeclarationDetail 'Вес брутто' (declarationDetail) = GROUP SUM sumGrossWeightInvoiceDetail(invoiceDetail) BY declarationDetailInvoiceDetail(invoiceDetail) PERSISTENT;
-overSumGrossWeightDeclarationDetail 'Вес брутто' (declarationDetail) =  sumGrossWeightDeclarationDetail(declarationDetail) OVERRIDE sumDataGrossWeightDeclarationDetail(declarationDetail);
+overSumGrossWeightDeclarationDetail 'Вес брутто' (declarationDetail) = OVERRIDE sumGrossWeightDeclarationDetail(declarationDetail), sumDataGrossWeightDeclarationDetail(declarationDetail);
 
 quantityDeclarationDetail 'Кол-во' (declarationDetail) = GROUP SUM quantityUserInvoiceDetail(invoiceDetail) BY declarationDetailInvoiceDetail(invoiceDetail) PERSISTENT;
 
@@ -226,7 +226,7 @@ CONSTRAINT countryLegalEntity(legalEntityDeclaration(declarationDeclarationDetai
 numberVATRangeCustomGroupDeclarationDetail 'Шкала НДС (расч.)' (declarationDetail) = numberRange(supplierVATCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclarationDetail(declarationDetail)));
 percentVATCustomsGroupDeclarationDetail 'НДС, %' (declarationDetail) = dataValueSupplierVATCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclarationDetail(declarationDetail));
 
-percentVATDeclarationDetail 'НДС, %' (declarationDetail) = percentVATCustomsGroupDeclarationDetail(declarationDetail) OVERRIDE percentVATRangeDeclarationDetail(declarationDetail);
+percentVATDeclarationDetail 'НДС, %' (declarationDetail) = OVERRIDE percentVATCustomsGroupDeclarationDetail(declarationDetail), percentVATRangeDeclarationDetail(declarationDetail);
 
 sumRateVATDeclarationDetail 'НДС (расч.)' (declarationDetail) = roundCurrencyDeclarationDetail((sumRateDeclarationDetail(declarationDetail) + sumRateDutyDeclarationDetail(declarationDetail)) *
                                                                  (percentVATCustomsGroupDeclarationDetail(declarationDetail)/100), declarationDetail) MINCHARWIDTH 12;
@@ -248,7 +248,7 @@ sumRateRegistrationDeclaration 'Таможенный сбор' (declaration) = r
 
 sumRegistrationDataDeclaration 'Таможенный сбор' = DATA NUMERIC[14,3](Declaration);
 
-sumRegistrationDeclaration 'Таможенный сбор' (declaration) = sumRateRegistrationDeclaration(declaration) OVERRIDE sumRegistrationDataDeclaration(declaration);
+sumRegistrationDeclaration 'Таможенный сбор' (declaration) = OVERRIDE sumRateRegistrationDeclaration(declaration), sumRegistrationDataDeclaration(declaration);
 
 setSumDeclarationDetail 'Рассчитать суммы' = ACTION (declaration) {
    SET sumRegistrationDataDeclaration(declaration) <- sumRateRegistrationDeclaration(declaration);

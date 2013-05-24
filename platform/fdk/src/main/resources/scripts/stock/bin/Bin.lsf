@@ -222,13 +222,9 @@ nearestParentStockBinGroup (stock, binGroup) =
 nearestInStockBinGroup (stock, binGroup) =
     dataInStockBinGroup(stock, nearestParentStockBinGroup(stock, binGroup));
 
-inStockBinGroup 'Отм' (stock, binGroup) =
-    nearestInStockBinGroup (stock, binGroup) OVERRIDE
-    dataInStockBinGroup(stock, binGroup) PERSISTENT;
+inStockBinGroup 'Отм' (stock, binGroup) = OVERRIDE nearestInStockBinGroup (stock, binGroup), dataInStockBinGroup(stock, binGroup) PERSISTENT;
 
-inStockBin 'Отм' (stock, bin) =
-     inStockBinGroup(stock, binGroupBin(bin)) OVERRIDE
-     dataInStockBin(stock, bin) PERSISTENT;
+inStockBin 'Отм' (stock, bin) = OVERRIDE inStockBinGroup(stock, binGroupBin(bin)), dataInStockBin(stock, bin) PERSISTENT;
 
 binsStock 'Ячейки' (stock) = GROUP CONCAT nameBin(bin) IF inStockBin(stock, bin) , ', '
                                        BY stock
@@ -324,13 +320,10 @@ nearestParentBinStockGroup (stock, group) = groupGroupLevel(group, levelParentBi
 nearestInBinStockGroup  (stock, group) =
     dataBinStockGroup(stock, nearestParentBinStockGroup (stock, group)) PERSISTENT;
 
-binStockGroup (stock, group) =
-    nearestInBinStockGroup(stock, group) OVERRIDE dataBinStockGroup(stock, group) PERSISTENT;
+binStockGroup (stock, group) = OVERRIDE nearestInBinStockGroup(stock, group), dataBinStockGroup(stock, group) PERSISTENT;
 nameBinStockGroup 'Ячейка'= nameBin(binStockGroup(stock, group)) MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
-binStockSku (stock, sku) =
-    binStockGroup(stock, groupGroupTypeSku(groupTypeStock(stock), sku)) OVERRIDE
-    dataBinStockSku(stock, sku) PERSISTENT;
+binStockSku (stock, sku) = OVERRIDE binStockGroup(stock, groupGroupTypeSku(groupTypeStock(stock), sku)), dataBinStockSku(stock, sku) PERSISTENT;
 nameBinStockSku 'Ячейка'= nameBin(binStockSku(stock, sku)) MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
 CONSTRAINT dataBinStockGroup(stock,group) AND NOT inStockBin(stock,dataBinStockGroup(stock,group))

@@ -346,8 +346,8 @@ overPricingPricePricingDetail = ABSTRACT NUMERIC[14,2] (PricingDetail) PERSISTEN
 overPricingPriceUserPricingDetail = ABSTRACT NUMERIC[14,2] (UserPricingDetail) PERSISTENT;
 overPricingPricePricingDetail (detail) += overPricingPriceUserPricingDetail(detail);
 
-pricingPriceUserPricingDetail (detail) = priceUserPricingDetail(detail) OVERRIDE overPricingPriceUserPricingDetail(detail) PERSISTENT;
-pricingPricePricingDetail (detail) = pricePricingDetail(detail) OVERRIDE overPricingPricePricingDetail(detail) PERSISTENT;
+pricingPriceUserPricingDetail (detail) = OVERRIDE priceUserPricingDetail(detail), overPricingPriceUserPricingDetail(detail) PERSISTENT;
+pricingPricePricingDetail (detail) = OVERRIDE pricePricingDetail(detail), overPricingPricePricingDetail(detail) PERSISTENT;
 
 // Надбавка
 @defineDocumentInterfaceDetailMarkupPrefix (pricing, retail, );
@@ -675,8 +675,8 @@ META defineInvoicePricingAggregation(concrete, concreteClass, sign, caption, cap
     overPricingPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
     overPricingPriceInvoiceDetail (detail) += overPricingPriceUserInvoiceDetail(detail);
 
-    pricingPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OVERRIDE overPricingPriceUserInvoiceDetail(detail) PERSISTENT;
-    pricingPriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OVERRIDE overPricingPriceInvoiceDetail(detail) PERSISTENT;
+    pricingPriceUserInvoiceDetail (detail) = OVERRIDE priceUserInvoiceDetail(detail), overPricingPriceUserInvoiceDetail(detail) PERSISTENT;
+    pricingPriceInvoiceDetail (detail) = OVERRIDE priceInvoiceDetail(detail), overPricingPriceInvoiceDetail(detail) PERSISTENT;
 
     // Надбавка
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, retail, );

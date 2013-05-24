@@ -37,7 +37,7 @@ CLASS GameResult 'Р/И' {
 resultName 'Имя' (game) = staticCaption(game) IF game IS GameResult IN base;
 
 userResultGame = DATA GameResult (Game);
-gameResult (game) = (GameResult.win IF ((hostGoals(game) (-) guestGoals(game)) > 1 OR (guestGoals(game) (-) hostGoals(game)) > 1)) OVERRIDE userResultGame(game);
+gameResult (game) = OVERRIDE (GameResult.win IF ((hostGoals(game) (-) guestGoals(game)) > 1 OR (guestGoals(game) (-) hostGoals(game)) > 1)), userResultGame(game);
 gameResultName 'Р/И' (game) = resultName(gameResult(game));
 
 CONSTRAINT ((hostGoals(game) (-) guestGoals(game)) > 1 OR (hostGoals(game) (-) guestGoals(game)) < -1) AND userResultGame(game) MESSAGE 'Результат игры определен автоматически';
@@ -49,13 +49,13 @@ guestGamesPlayed(team) = GROUP SUM 1 BY guestTeam(game);
 gamesPlayed 'И' (team) = hostGamesPlayed(team) (+) guestGamesPlayed(team);
 
 zeroIfTeamResult(obj1, obj2) = 0 IF obj1 IS Team AND obj2 IS GameResult;
-gamesWonByResult(team, type) = zeroIfTeamResult(team, type) OVERRIDE [GROUP SUM 1 BY gameWinner(game), gameResult(game)](team, type);
+gamesWonByResult(team, type) = OVERRIDE zeroIfTeamResult(team, type), [GROUP SUM 1 BY gameWinner(game), gameResult(game)](team, type);
 
 gamesWon 'В' (team) = gamesWonByResult(team, GameResult.win);
 gamesWonOT 'ВО' (team) = gamesWonByResult(team, GameResult.winOT);
 gamesWonSO 'ВБ' (team) = gamesWonByResult(team, GameResult.winSO);
 
-gamesLostByResult(team, type) = zeroIfTeamResult(team, type) OVERRIDE [GROUP SUM 1 BY gameLooser(game), gameResult(game)](team, type);
+gamesLostByResult(team, type) = OVERRIDE zeroIfTeamResult(team, type), [GROUP SUM 1 BY gameLooser(game), gameResult(game)](team, type);
 
 gamesLost 'П' (team) = gamesLostByResult(team, GameResult.win);
 gamesLostOT 'ПО' (team) = gamesLostByResult(team, GameResult.winOT);
@@ -65,14 +65,14 @@ points 'Очки' (team) = gamesWon(team) * 3 + (gamesWonSO(team) + gamesWonOT(t
 
 hostGoalsScored(team) = GROUP SUM hostGoals(game) BY hostTeam(game);
 guestGoalsScored(team) = GROUP SUM guestGoals(game) BY guestTeam(game);
-goalsScored 'Кол-во забитых голов' (team) = (0 IF team IS Team) OVERRIDE (hostGoalsScored(team) (+) guestGoalsScored(team));
+goalsScored 'Кол-во забитых голов' (team) = OVERRIDE 0 IF team IS Team, hostGoalsScored(team) (+) guestGoalsScored(team);
 
 hostGoalsConceded(team) = GROUP SUM guestGoals(game) BY hostTeam(game);
 guestGoalsConceded(team) = GROUP SUM hostGoals(game) BY guestTeam(game);
-goalsConceded 'Кол-во пропущенных голов' (team) = (0 IF team IS Team) OVERRIDE (hostGoalsConceded(team) (+) guestGoalsConceded(team));
+goalsConceded 'Кол-во пропущенных голов' (team) = OVERRIDE 0 IF team IS Team, hostGoalsConceded(team) (+) guestGoalsConceded(team);
 
 place 'Место' (team) = PARTITION SUM 1 ORDER DESC points(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
-                                               (0 IF team IS Team) OVERRIDE (goalsScored(team) (-) goalsConceded(team)), (0 IF team IS Team) OVERRIDE goalsScored(team);
+                                               (OVERRIDE 0 IF team IS Team, goalsScored(team) (-) goalsConceded(team)), (OVERRIDE 0 IF team IS Team, goalsScored(team));
 
 FORM MainForm 'Турнирная таблица'
     OBJECTS game=Game
