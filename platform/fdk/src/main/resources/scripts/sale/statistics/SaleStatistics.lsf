@@ -328,8 +328,8 @@ valueByStatisticGroupDateFromTo 'Продано' (group, stock, dateFrom, dateTo
             THEN volumeSoldByStatisticGroupDateFromTo(group, stock, dateFrom, dateTo)
         WHEN unitMeasureStatisticGroup(group)==GroupStatic.statisticSum
             THEN retailSumSoldByStatisticGroupDateFromTo(group, stock, dateFrom, dateTo)
-        DEFAULT 0 IF group IS StatisticGroup AND stock IS Stock AND dateFrom IS DATE AND dateTo IS DATE
-    END;
+        ELSE 0 IF group IS StatisticGroup AND stock IS Stock AND dateFrom IS DATE AND dateTo IS DATE
+    ;
 valueResidentByStatisticGroupDateFromTo 'Продано, бел. пр-ва' (group, stock, dateFrom, dateTo) =
     CASE
         WHEN (unitMeasureStatisticGroup(group)==GroupStatic.statisticThing OR
@@ -345,8 +345,8 @@ valueResidentByStatisticGroupDateFromTo 'Продано, бел. пр-ва' (gro
             THEN volumeSoldResidentByStatisticGroupDateFromTo(group, stock, dateFrom, dateTo)
         WHEN unitMeasureStatisticGroup(group)==GroupStatic.statisticSum
             THEN retailSumSoldResidentByStatisticGroupDateFromTo(group, stock, dateFrom, dateTo)
-        DEFAULT 0 IF group IS StatisticGroup AND stock IS Stock AND dateFrom IS DATE AND dateTo IS DATE
-    END;
+        ELSE 0 IF group IS StatisticGroup AND stock IS Stock AND dateFrom IS DATE AND dateTo IS DATE
+    ;
 
 valueByStatisticGroupDateTo 'Остаток на конец' (group, stock, dateTo) =
     CASE
@@ -363,8 +363,8 @@ valueByStatisticGroupDateTo 'Остаток на конец' (group, stock, date
             THEN volumeByStatisticGroupDateTo(group, stock, dateTo)
         WHEN unitMeasureStatisticGroup(group)==GroupStatic.statisticSum
             THEN retailSumByStatisticGroupDateTo(group, stock, dateTo)
-        DEFAULT 0 IF group IS StatisticGroup AND stock IS Stock AND dateTo IS DATE
-    END;
+        ELSE 0 IF group IS StatisticGroup AND stock IS Stock AND dateTo IS DATE
+    ;
 valueResidentByStatisticGroupDateTo 'Остаток на конец, бел. пр-ва' (group, stock, dateTo) =
     CASE
         WHEN (unitMeasureStatisticGroup(group)==GroupStatic.statisticThing OR
@@ -380,8 +380,8 @@ valueResidentByStatisticGroupDateTo 'Остаток на конец, бел. п�
             THEN volumeResidentByStatisticGroupDateTo(group, stock, dateTo)
         WHEN unitMeasureStatisticGroup(group)==GroupStatic.statisticSum
             THEN retailSumResidentByStatisticGroupDateTo(group, stock, dateTo)
-        DEFAULT 0 IF group IS StatisticGroup AND stock IS Stock AND dateTo IS DATE
-    END;
+        ELSE 0 IF group IS StatisticGroup AND stock IS Stock AND dateTo IS DATE
+    ;
 
 FORM statisticalReport 'Статистика (продажи) склад/группа/sku'
 
@@ -582,8 +582,8 @@ valueByStatisticGroupLegalEntityRegionDateFromTo 'Продано всего' (gr
             THEN volumeSoldByStatisticGroupRegionDateFromTo(group, legalEntity, region, dateFrom, dateTo)
         WHEN unitMeasureStatisticGroup(group)==GroupStatic.statisticSum
             THEN retailSumSoldByStatisticGroupRegionDateFromTo(group, legalEntity, region, dateFrom, dateTo)
-        DEFAULT 0 IF group IS StatisticGroup AND legalEntity IS LegalEntity AND region IS Region AND dateFrom IS DATE AND dateTo IS DATE
-    END;
+        ELSE 0 IF group IS StatisticGroup AND legalEntity IS LegalEntity AND region IS Region AND dateFrom IS DATE AND dateTo IS DATE
+    ;
 
 valueByStatisticGroupLegalEntityRegionDateTo 'Остаток на конец всего' (group, legalEntity, region, dateTo) =
     CASE
@@ -600,8 +600,8 @@ valueByStatisticGroupLegalEntityRegionDateTo 'Остаток на конец в�
             THEN volumeByStatisticGroupRegionDateTo(group, legalEntity, region, dateTo)
         WHEN unitMeasureStatisticGroup(group)==GroupStatic.statisticSum
             THEN retailSumByStatisticGroupRegionDateTo(group, legalEntity, region, dateTo)
-        DEFAULT 0 IF group IS StatisticGroup AND legalEntity IS LegalEntity AND region IS Region AND dateTo IS DATE
-    END;
+        ELSE 0 IF group IS StatisticGroup AND legalEntity IS LegalEntity AND region IS Region AND dateTo IS DATE
+    ;
 
 valueResidentByStatisticGroupLegalEntityRegionDateFromTo 'Продано отеч. пр-ва' (group, legalEntity, region, dateFrom, dateTo) =
     CASE
@@ -618,8 +618,8 @@ valueResidentByStatisticGroupLegalEntityRegionDateFromTo 'Продано оте�
             THEN volumeSoldResidentByStatisticGroupRegionDateFromTo(group, legalEntity, region, dateFrom, dateTo)
         WHEN unitMeasureStatisticGroup(group)==GroupStatic.statisticSum
             THEN retailSumSoldResidentByStatisticGroupRegionDateFromTo(group, legalEntity, region, dateFrom, dateTo)
-        DEFAULT 0 IF group IS StatisticGroup AND legalEntity IS LegalEntity AND region IS Region AND dateFrom IS DATE AND dateTo IS DATE
-    END;
+        ELSE 0 IF group IS StatisticGroup AND legalEntity IS LegalEntity AND region IS Region AND dateFrom IS DATE AND dateTo IS DATE
+    ;
 
 valueResidentByStatisticGroupLegalEntityRegionDateTo 'Остаток на конец отеч. пр-ва' (group, legalEntity, region, dateTo) =
     CASE
@@ -636,8 +636,8 @@ valueResidentByStatisticGroupLegalEntityRegionDateTo 'Остаток на кон
             THEN volumeResidentByStatisticGroupRegionDateTo(group, legalEntity, region, dateTo)
         WHEN unitMeasureStatisticGroup(group)==GroupStatic.statisticSum
             THEN retailSumResidentByStatisticGroupRegionDateTo(group, legalEntity, region, dateTo)
-        DEFAULT 0 IF group IS StatisticGroup AND legalEntity IS LegalEntity AND region IS Region AND dateTo IS DATE
-    END;
+        ELSE 0 IF group IS StatisticGroup AND legalEntity IS LegalEntity AND region IS Region AND dateTo IS DATE
+    ;
 
 totalRetailSumSoldByStatisticGroupRegionDateFromTo 'Итого продано, руб.' (group, legalEntity, region, dateFrom, dateTo)=
     GROUP SUM sumSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) IF isParentStatisticGroupSku(group, sku)

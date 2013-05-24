@@ -227,8 +227,8 @@ statusMachineryPriceTransactionDocument 'Статус загрузки в обо
                                                             WHEN skipPriceTransactionDocument(document) THEN 'Загрузка не требуется' IF document IS PriceTransactionDocument
                                                             WHEN succeededPriceTransactionDocument(document) THEN 'Успешно загружен' IF document IS PriceTransactionDocument
                                                             WHEN sentPriceTransactionDocument(document) THEN 'Принят к загрузке' IF document IS PriceTransactionDocument
-                                                            DEFAULT 'Не загружен' IF document IS PriceTransactionDocument
-                                                        END;
+                                                            ELSE 'Не загружен' IF document IS PriceTransactionDocument
+                                                        ;
 
 // Загруженные штрих-коды
 TABLE machineryPriceTransactionBarcode (MachineryPriceTransaction, Barcode);

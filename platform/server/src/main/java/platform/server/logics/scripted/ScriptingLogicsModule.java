@@ -837,28 +837,30 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedIfElseUProp(LPWithParams ifProp, LPWithParams thenProp, LPWithParams elseProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedIfElseUProp(" + ifProp + ", " + thenProp + ", " + elseProp + ");");
-//        assert thenProp.property instanceof LCP && elseProp.property instanceof LCP; // assert что calculation'ы а не action'ы
-        return addScriptedUProp(Union.EXCLUSIVE,
-                                asList(addScriptedJProp(and(false), asList(thenProp, ifProp)),
-                                       addScriptedJProp(and(true), asList(elseProp, ifProp))),
-                                "IF");
+        assert !(thenProp.property instanceof LAP) && (elseProp == null || !(elseProp.property instanceof LAP));
+        List<LPWithParams> lpParams = new ArrayList<LPWithParams>();
+        lpParams.add(addScriptedJProp(and(false), asList(thenProp, ifProp)));
+        if (elseProp != null) {
+            lpParams.add(addScriptedJProp(and(true), asList(elseProp, ifProp)));
+        }
+        return addScriptedUProp(Union.EXCLUSIVE, lpParams, "IF");
     }
 
-    public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps, LPWithParams defaultProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps, LPWithParams elseProp, boolean isExclusive) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedCaseUProp(" + whenProps  + "->" + thenProps + ");");
 
         assert whenProps.size() > 0 && whenProps.size() == thenProps.size();
-
-        checkCasePropertyParams(whenProps, thenProps);
 
         List<LPWithParams> caseParamProps = new ArrayList<LPWithParams>();
         for (int i = 0; i < whenProps.size(); i++) {
             caseParamProps.add(whenProps.get(i));
             caseParamProps.add(thenProps.get(i));
         }
-        caseParamProps.add(defaultProp);
+        if (elseProp != null) {
+            caseParamProps.add(elseProp);
+        }
 
-        LP caseProp = addCaseUProp(null, genSID(), false, "", getParamsPlainList(caseParamProps).toArray());
+        LP caseProp = addCaseUProp(null, genSID(), false, "", isExclusive, getParamsPlainList(caseParamProps).toArray());
         return new LPWithParams(caseProp, mergeAllParams(caseParamProps));
     }
 
@@ -1301,6 +1303,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         List<Integer> allParams = mergeAllParams(propParams);
         LP result = addIfAProp(null, genSID(), "", false, getParamsPlainList(propParams).toArray());
+        return new LPWithParams(result, allParams);
+    }
+
+    public LPWithParams addScriptedCaseAProp(List<LPWithParams> whenProps, List<LPWithParams> thenActions, LPWithParams elseAction, boolean isExclusive) {
+        scriptLogger.info("addScriptedCaseAProp(" + whenProps + ", " + thenActions + ", " + elseAction + ", " + isExclusive + ");");
+        assert whenProps.size() > 0 && whenProps.size() == thenActions.size();
+
+        List<LPWithParams> caseParams = new ArrayList<LPWithParams>();
+        for (int i = 0; i < whenProps.size(); i++) {
+            caseParams.add(whenProps.get(i));
+            caseParams.add(thenActions.get(i));
+        }
+        if (elseAction != null) {
+            caseParams.add(elseAction);
+        }
+
+        List<Integer> allParams = mergeAllParams(caseParams);
+        LP result = addCaseAProp(isExclusive, getParamsPlainList(caseParams).toArray());
         return new LPWithParams(result, allParams);
     }
 
@@ -2279,26 +2299,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             Property prop2 = properties.get(i).property.property;
             if (prop1.getType() != null && prop2.getType() != null && prop1.getType().getCompatible(prop2.getType()) == null) {
                 errLog.emitIncompatibleTypes(parser, errMsgPropType);
-            }
-        }
-    }
-
-    private void checkCasePropertyParams(List<LPWithParams> whenProps, List<LPWithParams> thenProps) throws ScriptingErrorLog.SemanticErrorException {
-        int paramCnt = thenProps.get(0).property.property.interfaces.size();
-        for (int i = 1; i < thenProps.size(); i++) {
-            LPWithParams thenProp = thenProps.get(i);
-            if (thenProp.property.property.interfaces.size() != paramCnt) {
-                errLog.emitCasePropDiffThenParamsCountError(parser);
-            }
-        }
-
-        List<Integer> thenParams = mergeAllParams(thenProps);
-
-        for (LPWithParams whenProp : whenProps) {
-            for (int whenParam : whenProp.usedParams) {
-                if (!thenParams.contains(whenParam)) {
-                    errLog.emitCasePropWhenParamMissingInThenParams(parser);
-                }
             }
         }
     }

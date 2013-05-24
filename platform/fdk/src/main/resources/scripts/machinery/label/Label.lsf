@@ -228,8 +228,8 @@ statusLabelPriceTransactionDocument 'Статус печати ценника' (
                                                         CASE
                                                             WHEN skipPriceTransactionDocument(document) THEN 'Загрузка не требуется' IF document IS PriceTransactionDocument
                                                             WHEN printedPriceTransactionDocument(document) THEN 'Распечатан' IF document IS PriceTransactionDocument
-                                                            DEFAULT 'Не распечатан' IF document IS PriceTransactionDocument
-                                                        END;
+                                                            ELSE 'Не распечатан' IF document IS PriceTransactionDocument
+                                                        ;
 
 TABLE labelTransactionBarcode(LabelTransaction, Barcode);
 

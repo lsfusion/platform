@@ -1234,14 +1234,17 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPa
 
 
 ifElsePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	LPWithParams elseProp = null;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedIfElseUProp($ifExpr.property, $thenExpr.property, $elseExpr.property);
+		$property = self.addScriptedIfElseUProp($ifExpr.property, $thenExpr.property, elseProp);
 	}
 }
 	:	'IF' ifExpr=propertyExpression[context, dynamic]
 		'THEN' thenExpr=propertyExpression[context, dynamic]
-		'ELSE' elseExpr=propertyExpression[context, dynamic]
+		('ELSE' elseExpr=propertyExpression[context, dynamic] { elseProp = $elseExpr.property; })?
 	;
 
 
@@ -1255,7 +1258,7 @@ maxPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPara
 	}
 }
 	:	(('MAX') { isMin = false; } | ('MIN'))
-		exprList=nonEmptyPropertyExpressionList[context, dynamic]
+		exprList=nonEmptyPropertyExpressionList[context, dynamic]	
 	;
 
 
@@ -1263,17 +1266,17 @@ casePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPar
 @init {
 	List<LPWithParams> whenProps = new ArrayList<LPWithParams>();
 	List<LPWithParams> thenProps = new ArrayList<LPWithParams>();
-	LPWithParams defaultProp = null;
+	LPWithParams elseProp = null;
+	boolean isExclusive = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedCaseUProp(whenProps, thenProps, defaultProp);
+		$property = self.addScriptedCaseUProp(whenProps, thenProps, elseProp, isExclusive);
 	}
 }
-	:	'CASE'
+	:	'CASE' (('OVERRIDE') | ('EXCLUSIVE' { isExclusive = true; }))?
 			( branch=caseBranchBody[context, dynamic] { whenProps.add($branch.whenProperty); thenProps.add($branch.thenProperty); } )+
-			'DEFAULT' defaultExpr=propertyExpression[context, dynamic] { defaultProp = $defaultExpr.property; }
-		'END'
+			('ELSE' elseExpr=propertyExpression[context, dynamic] { elseProp = $elseExpr.property; })?
 	;
 	
 	
@@ -2051,6 +2054,28 @@ ifActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [L
 	:	'IF' expr=propertyExpression[context, dynamic] 
 		'THEN' thenPDB=actionPropertyDefinitionBody[context, dynamic]
 		('ELSE' elsePDB=actionPropertyDefinitionBody[context, dynamic])?
+	;
+
+caseActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property] 
+@init {
+	List<LPWithParams> whenProps = new ArrayList<LPWithParams>();
+	List<LPWithParams> thenActions = new ArrayList<LPWithParams>();
+	LPWithParams elseAction = null;
+	boolean isExclusive = false;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedCaseAProp(whenProps, thenActions, elseAction, isExclusive); 
+	}
+}
+	:	'CASE' (('OVERRIDE') | ('EXCLUSIVE' { isExclusive = true; }))?
+			( branch=actionCaseBranchBody[context, dynamic] { whenProps.add($branch.whenProperty); thenActions.add($branch.thenAction); } )+
+			('ELSE' elseAct=actionPropertyDefinitionBody[context, dynamic] { elseAction = $elseAct.property; })?
+	;
+
+actionCaseBranchBody[List<String> context, boolean dynamic] returns [LPWithParams whenProperty, LPWithParams thenAction]
+	:	'WHEN' whenExpr=propertyExpression[context, dynamic] { $whenProperty = $whenExpr.property; }
+		'THEN' thenAct=actionPropertyDefinitionBody[context, dynamic] { $thenAction = $thenAct.property; }
 	;
 
 forAddObjClause[List<String> context] returns [Integer paramCnt, String className]
@@ -3009,7 +3034,7 @@ dimensionLiteral returns [Dimension val]
 boundsIntLiteral returns [Insets val]
 	:	'(' top=intLiteral ',' left=intLiteral ',' bottom=intLiteral ',' right=intLiteral ')' { $val = new Insets($top.val, $left.val, $bottom.val, $right.val); }
 	;
-	
+
 boundsDoubleLiteral returns [Bounds val]
 	:	'(' top=doubleLiteral ',' left=doubleLiteral ',' bottom=doubleLiteral ',' right=doubleLiteral ')' { $val = new Bounds($top.val, $left.val, $bottom.val, $right.val); }
 	;

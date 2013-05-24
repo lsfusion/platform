@@ -68,17 +68,11 @@ public class ScriptParser {
 
         List<String> code = new ArrayList<String>();
         Parser curParser = getCurrentParser();
-        int nestedCaseCnt = 0;
-        while (!curParser.input.LT(1).getText().equals("END") || nestedCaseCnt > 0) {
+        while (!curParser.input.LT(1).getText().equals("END")) {
             if (curParser.input.LT(1).getType() == LsfLogicsParser.EOF) {
                 errLog.emitMetaCodeNotEndedError(this, metaCodeName);
             }
             String token = curParser.input.LT(1).getText();
-            if (token.equals("END")) {
-                --nestedCaseCnt;
-            } else if (token.equals("CASE")) {
-                ++nestedCaseCnt;
-            }
             code.add(token);
             curParser.input.consume();
         }

@@ -154,24 +154,25 @@ testUnion(store, article) = incomeQuantity(store, article) (+) outcomeQuantity(s
 
 // IF THEN ELSE property
 // Expression syntax:
-// IF propertyExpression0 THEN propertyExpression1 ELSE propertyExpression2
-documentTypeString 'Тип документа' (doc) = IF (doc IS IncomeDocument) THEN ('Приход' IF doc IS IncomeDocument) ELSE ('Расход' IF doc IS OutcomeDocument);
+// IF propertyExpression0 THEN propertyExpression1 [ELSE propertyExpression2]
+documentTypeString 'Тип документа' (doc) = IF doc IS IncomeDocument
+                                                THEN 'Приход'
+                                                ELSE 'Расход' IF doc IS OutcomeDocument;
 
 // Case property
 // Expression syntax:
-// CASE
+// CASE [OVERRIDE | EXCLUSIVE]
 //      WHEN whenPropertyExpression1 THEN thenPropertyExpression1
 //      ...
 //      WHEN whenPropertyExpressionN THEN thenPropertyExpressionN
-//      DEFAULT defaultPropertyExpression
-// END
+//      [ELSE defaultPropertyExpression]
 sizeCode 'Размер склада (код)' (ss) = CASE
-                                          WHEN ss == StoreSize.huge THEN ('HUGE' IF ss IS StoreSize)
-                                          WHEN ss == StoreSize.big THEN ('BIG' IF ss IS StoreSize)
-                                          WHEN ss == StoreSize.medium THEN ('MEDIUM' IF ss IS StoreSize)
-                                          WHEN ss == StoreSize.small THEN ('SMALL' IF ss IS StoreSize)
-                                          DEFAULT 'UNKNOWN' IF ss IS Store
-                                      END;
+                                          WHEN ss == StoreSize.huge THEN 'HUGE'
+                                          WHEN ss == StoreSize.big THEN 'BIG'
+                                          WHEN ss == StoreSize.medium THEN 'MEDIUM'
+                                          WHEN ss == StoreSize.small THEN 'SMALL'
+                                      ;
+
 storeSizeCode 'Размер склада (код)' (s) = sizeCode(storeSize(s));
 
 // Partition property

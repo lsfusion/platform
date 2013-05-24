@@ -590,6 +590,21 @@ public abstract class LogicsModule {
                 (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1), readImplements.size() == 3 ? (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(2) : null)));
     }
 
+    // ------------------- Case action ----------------- //
+    protected LAP addCaseAProp(boolean isExclusive, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+
+        MList<CaseActionProperty.Case<PropertyInterface>> mCases = ListFact.mList();
+        for (int i = 0; i+1 < readImplements.size(); i++) {
+            mCases.add(new CaseActionProperty.Case((CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2+1)));
+        }
+        if(readImplements.size() % 2 != 0) {
+            mCases.add(new CaseActionProperty.Case(DerivedProperty.createTrue(), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
+        }
+        return addProperty(null, new LAP(new CaseActionProperty(genSID(), "", isExclusive, listInterfaces, mCases.immutableList())));
+    }
+
     // ------------------- For action ----------------- //
 
     protected LAP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
@@ -1182,7 +1197,10 @@ public abstract class LogicsModule {
     }
 
     protected LCP addCaseUProp(AbstractGroup group, String name, boolean persistent, String caption, Object... params) {
+        return addCaseUProp(group, name, persistent, caption, false, params);
+    }
 
+    protected LCP addCaseUProp(AbstractGroup group, String name, boolean persistent, String caption, boolean isExclusive, Object... params) {
         ImOrderSet<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(getIntNum(params));
         MList<CaseUnionProperty.Case> mListCases = ListFact.mList();
         ImList<CalcPropertyMapImplement<?,UnionProperty.Interface>> mapImplements = (ImList<CalcPropertyMapImplement<?, UnionProperty.Interface>>) (ImList<?>) readCalcImplements(listInterfaces, params);
@@ -1191,7 +1209,7 @@ public abstract class LogicsModule {
         if (mapImplements.size() % 2 != 0)
             mListCases.add(new CaseUnionProperty.Case(new CalcPropertyMapImplement<PropertyInterface, UnionProperty.Interface>((CalcProperty<PropertyInterface>) baseLM.vtrue.property), mapImplements.get(mapImplements.size() - 1)));
 
-        return addProperty(group, persistent, new LCP<UnionProperty.Interface>(new CaseUnionProperty(name, caption, listInterfaces, false, mListCases.immutableList()), listInterfaces));
+        return addProperty(group, persistent, new LCP<UnionProperty.Interface>(new CaseUnionProperty(name, caption, listInterfaces, isExclusive, mListCases.immutableList()), listInterfaces));
     }
 
     // ------------------- Loggable ----------------- //

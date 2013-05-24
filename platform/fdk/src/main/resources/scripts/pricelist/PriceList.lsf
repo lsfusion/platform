@@ -269,8 +269,8 @@ headerNumericCaption(type) =
             THEN 'Множитель' IF type IS TypeMarkUpSkuUserPriceList
         WHEN type == TypeMarkUpSkuUserPriceList.division
             THEN 'Делитель' IF type IS TypeMarkUpSkuUserPriceList
-        DEFAULT '% наценки' IF type IS TypeMarkUpSkuUserPriceList
-    END;
+        ELSE '% наценки' IF type IS TypeMarkUpSkuUserPriceList
+    ;
 
 FORM chooseMarkUpSkuUserPriceList 'Наценка'
 
