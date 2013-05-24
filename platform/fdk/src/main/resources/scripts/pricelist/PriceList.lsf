@@ -382,64 +382,6 @@ filterPriceListTypeUserPriceListSkuStock (userPriceList, sku, stock) =
     (TRUE IF currentPriceSkuPriceListStock (sku, userPriceList, stock)) OR
     (sku IS Sku AND stock IS Stock AND NOT filterPriceListTypeUserPriceList(userPriceList));
 
-// сравнение прайсов
-
-countSkuPriceList (sku, priceList) = GROUP SUM 1 IF skuPriceListDetail(detail) == sku AND priceListPriceListDetail(detail) == priceList
-    BY sku, priceList;
-
-countSkusPriceList (priceList) = GROUP SUM 1 IF countSkuPriceList(sku, priceList)
-    BY priceList;
-
-countSkuPriceListPriceList (priceList1, priceList2) = GROUP SUM 1 IF countSkuPriceList(sku, priceList1) == countSkuPriceList(sku, priceList2)
-    BY priceList1, priceList2;
-
-equalsPriceListPriceList (priceList1, priceList2) = countSkuPriceListPriceList (priceList1, priceList2) == countSkusPriceList(priceList1) AND
-                                                    countSkuPriceListPriceList (priceList1, priceList2) == countSkusPriceList(priceList2) AND
-                                                    companyPriceList(priceList1) == companyPriceList(priceList2) AND
-                                                    currencyPriceList(priceList1) == currencyPriceList(priceList2) AND
-                                                    datePriceList(priceList1) == datePriceList(priceList2) AND
-                                                    priceList1 != priceList2;
-
-FORM test 'Test'
-    OBJECTS p1 = PriceList FIXED PANEL
-    PROPERTIES(p1) READONLY numberObject
-
-    OBJECTS d1 = PriceListDetail
-    PROPERTIES(d1) READONLY idBarcodeSkuPriceListDetail, nameSkuPriceListDetail
-    FILTERS priceListPriceListDetail(d1) == p1
-
-    OBJECTS p2 = PriceList FIXED PANEL
-    PROPERTIES(p2) READONLY numberObject
-
-    OBJECTS d2 = PriceListDetail
-    PROPERTIES(d2) READONLY idBarcodeSkuPriceListDetail, nameSkuPriceListDetail
-    FILTERS priceListPriceListDetail(d2) == p2
-;
-
-DESIGN test FROM DEFAULT{
-    NEW topContainer{
-        childConstraints = TO THE RIGHT;
-        NEW leftContainer{
-            childConstraints = TO THE BOTTOM;
-            ADD p1.box;
-            ADD d1.box;
-        }
-        NEW rightContainer{
-            childConstraints = TO THE BOTTOM;
-            ADD p2.box;
-            ADD d2.box;
-        }
-    }
-    ADD functions.box;
-}
-
-findEqualsPriceLists 'Найти дубликаты прайсов' = ACTION () {
-    FOR equalsPriceListPriceList (priceList1, priceList2) DO {
-        FORM test OBJECTS p1=priceList1, p2=priceList2;
-    }
-}
-
-
 FORM userPriceList 'Прайс'
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
@@ -727,7 +669,7 @@ FORM priceLists 'Прайсы'
            nameCurrencyPriceList, nameCompanyPriceList, priceListTypesPriceList, stocksPriceList,
            notePriceList, objectClassName
 
-    PROPERTIES ()  addUserPriceList TODRAW p, findEqualsPriceLists TODRAW p FORCE PANEL TOOLBAR
+    PROPERTIES ()  addUserPriceList TODRAW p
     PROPERTIES (p) editPriceList, copyPriceList FORCE PANEL TOOLBAR
     PROPERTIES (p) DELETE FORCE PANEL TOOLBAR SHOWIF isUserPriceList(p)
 
@@ -780,7 +722,6 @@ DESIGN priceLists FROM DEFAULT{
 NAVIGATOR {
     priceListDocuments 'Документы' {
         ADD priceLists;
-        ADD test;
     }
 }
 
@@ -833,3 +774,69 @@ EXTEND DESIGN legalEntity{
         ADD p.box{caption = 'Прайсы';}
     }
 }
+
+// ------------------------------------------------- Сравнение прайсов ---------------------------- //
+
+countSkuPriceList (sku, priceList) = GROUP SUM 1 IF skuPriceListDetail(detail) == sku AND priceListPriceListDetail(detail) == priceList
+    BY sku, priceList;
+
+countSkusPriceList (priceList) = GROUP SUM 1 IF countSkuPriceList(sku, priceList)
+    BY priceList;
+
+countSkuPriceListPriceList (priceList1, priceList2) = GROUP SUM 1 IF countSkuPriceList(sku, priceList1) == countSkuPriceList(sku, priceList2)
+    BY priceList1, priceList2;
+
+equalsPriceListPriceList (priceList1, priceList2) = companyPriceList(priceList1) == companyPriceList(priceList2) AND
+                                                    currencyPriceList(priceList1) == currencyPriceList(priceList2) AND
+                                                    datePriceList(priceList1) == datePriceList(priceList2) AND
+                                                    countSkuPriceListPriceList (priceList1, priceList2) == countSkusPriceList(priceList1) AND
+                                                    countSkuPriceListPriceList (priceList1, priceList2) == countSkusPriceList(priceList2) AND
+                                                    priceList1 != priceList2;
+
+//FORM test 'Test'
+//    OBJECTS p1 = PriceList FIXED PANEL
+//    PROPERTIES(p1) READONLY numberObject
+//
+//    OBJECTS d1 = PriceListDetail
+//    PROPERTIES(d1) READONLY idBarcodeSkuPriceListDetail, nameSkuPriceListDetail
+//    FILTERS priceListPriceListDetail(d1) == p1
+//
+//    OBJECTS p2 = PriceList FIXED PANEL
+//    PROPERTIES(p2) READONLY numberObject
+//
+//    OBJECTS d2 = PriceListDetail
+//    PROPERTIES(d2) READONLY idBarcodeSkuPriceListDetail, nameSkuPriceListDetail
+//    FILTERS priceListPriceListDetail(d2) == p2
+//;
+//
+//DESIGN test FROM DEFAULT{
+//    NEW topContainer{
+//        childConstraints = TO THE RIGHT;
+//        NEW leftContainer{
+//            childConstraints = TO THE BOTTOM;
+//            ADD p1.box;
+//            ADD d1.box;
+//        }
+//        NEW rightContainer{
+//            childConstraints = TO THE BOTTOM;
+//            ADD p2.box;
+//            ADD d2.box;
+//        }
+//    }
+//    ADD functions.box;
+//}
+
+findEqualsPriceLists 'Найти дубликаты прайсов' = ACTION () {
+    FOR p1 IS UserPriceList NOINLINE DO {
+        FOR equalsPriceListPriceList(p1, p2) DO {
+            SET dataInUserPriceListStock(p2, s) <- dataInUserPriceListStock(p1, s) WHERE dataInUserPriceListStock(p1, s);
+            DELETE p1;
+            apply();
+            BREAK;
+        }
+    }
+}
+
+EXTEND FORM migrationData
+    PROPERTIES() findEqualsPriceLists
+;

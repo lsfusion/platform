@@ -46,7 +46,7 @@ CLASS TypeExchange 'Тип обмена';
 TABLE typeExchange(TypeExchange);
 TABLE rateExchange (TypeExchange, Currency, DATE);
 
-nameTypeExchange 'Наименование' = DATA ISTRING[50](TypeExchange);
+nameTypeExchange 'Наименование' = DATA ISTRING[50](TypeExchange) IN recognize;
 
 currencyTypeExchange 'Валюта типа обмена (ИД)'= DATA Currency(TypeExchange);
 nameCurrencyTypeExchange 'Валюта типа обмена (наим.)' (typeExchange) = nameCurrency(currencyTypeExchange(typeExchange)) IN base;
