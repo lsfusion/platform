@@ -8,9 +8,6 @@ PRIORITY Sale;
 EXTEND CLASS Invoice : GeneralLedger.GLDocument;
 nameGLDocument(document) += descriptionInvoice(document);
 
-//------------------ Объявляем суммы с разбивкой по группам (тара, товар, услуги, не тара, не товар, не услуги) ---------//
-@defineDocumentHeaderItemSum (invoice, invoice, invoice);        //-- сумма с НДС
-
 ////////////////////////////// Отгрузка по безналу (из розницы) //////////////////////////////////
 //------------------- Розничная сумма --------------------//
 //-- Тара
@@ -22,14 +19,24 @@ nameGLDocument(document) += descriptionInvoice(document);
                                           descriptionInvoice,                      // описание документа
                                           '62.1',                                  // дебет счета
                                           '41.3',                                  // кредит счета
-                                          '1',                                     // идентификатор плана счетов
-                                          'saleRetail'                             // идентификатор операции
+                                          'by_default',                            // идентификатор плана счетов
+                                          'by_default_saleRetail'                  // идентификатор операции
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceInvRetCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockInvoice(invoiceInvRetCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
 //-- Товар
-@defineGeneralLedgerAggregationOperation (invoice, InvRetI, supplier, invoiceSumItemInvoiceDetailInvoice, saleRetail, descriptionInvoice, '62.1', '41.2', '1', 'saleRetail');
+@defineGeneralLedgerAggregationOperation (invoice,
+                                          InvRetI,
+                                          supplier,
+                                          invoiceSumItemInvoiceDetailInvoice,
+                                          saleRetail,
+                                          descriptionInvoice,
+                                          '62.1',
+                                          '41.2',
+                                          'by_default',
+                                          'by_default_saleRetail'
+                                          );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceInvRetIGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockInvoice(invoiceInvRetIGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 

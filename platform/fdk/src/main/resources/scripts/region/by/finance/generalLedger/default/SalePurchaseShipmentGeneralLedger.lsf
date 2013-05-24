@@ -9,9 +9,6 @@ EXTEND CLASS Shipment : GeneralLedger.GLDocument;
 nameGLDocument(document) += descriptionShipment(document);
 
 ////////////////////////////// Внутреннее перемещение (магазин-магазин) //////////////////////////////////
-//------------------ Объявляем суммы с разбивкой по группам (тара, товар, услуги, не тара, не товар, не услуги) ---------//
-@defineDocumentHeaderItemSum (shipment, , );        //-- сумма учетная
-
 //-------------------------------- Розничная сумма ----------------------------------//
 //-- Тара
 @defineGeneralLedgerAggregationOperation (shipment,                                // основание (объект, документ..)
@@ -22,13 +19,23 @@ nameGLDocument(document) += descriptionShipment(document);
                                           descriptionShipment,                     // описание документа
                                           '41.3',                                  // дебет счета
                                           '41.3',                                  // кредит счета
-                                          '1',                                     // идентификатор плана счетов
-                                          'internalRetail'                         // идентификатор операции
+                                          'by_default',                            // идентификатор плана счетов
+                                          'by_default_internalRetail'              // идентификатор операции
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerStockShipment(shipmentShipRetCGeneralLedger(generalLedger)) WHEN CLASS(shipmentShipRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockShipment(shipmentShipRetCGeneralLedger(generalLedger)) WHEN CLASS(shipmentShipRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
 //-- Не тара
-@defineGeneralLedgerAggregationOperation (shipment, ShipRetNotC, supplier, sumNotContainerShipmentDetailShipment, internalRetail, descriptionShipment, '41.2', '41.2', '1', 'internalRetail');
+@defineGeneralLedgerAggregationOperation (shipment,
+                                          ShipRetNotC,
+                                          supplier,
+                                          sumNotContainerShipmentDetailShipment,
+                                          internalRetail,
+                                          descriptionShipment,
+                                          '41.2',
+                                          '41.2',
+                                          'by_default',
+                                          'by_default_internalRetail'
+                                          );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerStockShipment(shipmentShipRetNotCGeneralLedger(generalLedger)) WHEN CLASS(shipmentShipRetNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockShipment(shipmentShipRetNotCGeneralLedger(generalLedger)) WHEN CLASS(shipmentShipRetNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
