@@ -1,0 +1,19 @@
+MODULE PurchaseInvoicePharmacy;
+
+REQUIRE PurchaseInvoice;
+
+NAMESPACE Purchase;
+
+seriesPharmacyInvoiceDetail 'Серия лекарственного средства' = ABSTRACT STRING[100] (InvoiceDetail) MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
+seriesPharmacyUserInvoiceDetail 'Серия лекарственного средства' = DATA STRING[100] (UserInvoiceDetail) MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
+seriesPharmacyInvoiceDetail(detail) += seriesPharmacyUserInvoiceDetail(detail);
+
+EXTEND FORM userInvoice
+    PROPERTIES(d) seriesPharmacyUserInvoiceDetail BEFORE nameBatchUserInvoiceDetail
+;
+
+EXTEND FORM invoices
+    PROPERTIES(d) READONLY seriesPharmacyInvoiceDetail BEFORE nameBatchInvoiceDetail
+;

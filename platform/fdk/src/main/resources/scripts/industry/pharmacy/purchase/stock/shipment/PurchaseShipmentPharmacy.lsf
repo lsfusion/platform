@@ -1,0 +1,22 @@
+MODULE PurchaseShipmentPharmacy;
+
+REQUIRE PurchaseShipment, PurchaseInvoicePharmacy;
+
+NAMESPACE Purchase;
+
+seriesPharmacyShipmentDetail 'Серия лекарственного средства' = ABSTRACT STRING[100] (ShipmentDetail) MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
+seriesPharmacyUserShipmentDetail 'Серия лекарственного средства' = DATA STRING[100] (UserShipmentDetail) MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
+@defineDocumentAggregationDetailProperty (invoice, invoiceShipment, seriesPharmacy, 'Серия лекарственного средства');
+
+seriesPharmacyShipmentDetail(detail) += seriesPharmacyUserShipmentDetail(detail);
+seriesPharmacyShipmentDetail(detail) += seriesPharmacyInvoiceShipmentDetail(detail);
+
+EXTEND FORM userShipment
+    PROPERTIES(d) seriesPharmacyShipmentDetail BEFORE nameBatchUserShipmentDetail
+;
+
+EXTEND FORM shipments
+    PROPERTIES(d) READONLY seriesPharmacyShipmentDetail BEFORE nameBatchShipmentDetail
+;

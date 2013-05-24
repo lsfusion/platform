@@ -7,7 +7,7 @@ NAMESPACE Currency;
 extraSIDCurrency 'Внешний код' = DATA STRING[6] (Currency);
 currencyExtraSID (string) = GROUP AGGR currency BY extraSIDCurrency(currency) WHERE currency IS Currency;
 
-EXTEND FORM currency PROPERTIES (c) READONLY extraSIDCurrency;
+EXTEND FORM currency PROPERTIES (c) extraSIDCurrency;
 
 EXTEND FORM currencies PROPERTIES(c) READONLY extraSIDCurrency;
 
