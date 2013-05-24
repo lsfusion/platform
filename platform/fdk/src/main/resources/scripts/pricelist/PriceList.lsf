@@ -828,10 +828,9 @@ equalsPriceListPriceList (priceList1, priceList2) = companyPriceList(priceList1)
 
 findEqualsPriceLists 'Найти дубликаты прайсов' = ACTION () {
     FOR p1 IS UserPriceList NOINLINE DO {
-        FOR equalsPriceListPriceList(p1, p2) DO {
+        FOR equalsPriceListPriceList(p1, p2) NOINLINE DO {
             SET dataInUserPriceListStock(p2, s) <- dataInUserPriceListStock(p1, s) WHERE dataInUserPriceListStock(p1, s);
             DELETE p1;
-            apply();
             BREAK;
         }
     }
