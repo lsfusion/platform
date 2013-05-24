@@ -195,6 +195,8 @@ sumWeightDutyDeclarationDetail 'Пошлина по весу (валют.)' (dec
 sumRateWeightDutyDeclarationDetail 'Пошлина по весу' (declarationDetail) = sumWeightDutyDeclarationDetail(declarationDetail) *
                                                                            rateExchangeCustomsZoneDeclaration(declarationDeclarationDetail(declarationDetail)) PERSISTENT;
 
+percentDutyCustomsGroupDeclarationDetail 'Пошлина, % (расч.)' (declarationDetail) = percentDutyCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclarationDetail(declarationDetail));
+
 sumPriceDutyDeclarationDetail 'Пошлина по стоимости (валют.)' (declarationDetail) = sumDeclarationDetail(declarationDetail) *
                                                                                     (percentDutyCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclarationDetail(declarationDetail))/100);
 
@@ -204,7 +206,12 @@ sumRatePriceDutyDeclarationDetail 'Пошлина по стоимости' (decl
 sumRateDutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = roundCurrencyDeclarationDetail((MAX sumRateWeightDutyDeclarationDetail(declarationDetail),
                                                                                                          sumRatePriceDutyDeclarationDetail(declarationDetail)), declarationDetail) PERSISTENT MINCHARWIDTH 12;
 
+percentDutyDataDeclarationDetail 'Пошлина, %' (declarationDetail) = DATA NUMERIC[14,3](DeclarationDetail) MINCHARWIDTH 6;
+
 sumDutyDataDeclarationDetail 'Пошлина' (declarationDetail) = DATA NUMERIC[14,3](DeclarationDetail) MINCHARWIDTH 12;
+
+sumDutyDataDeclarationDetail(declarationDetail) <- sumDataDeclarationDetail(declarationDetail) * percentDutyDataDeclarationDetail(declarationDetail)/100 WHEN CHANGED(percentDutyDataDeclarationDetail(declarationDetail)) OR
+                                                                                                                                                          CHANGED(sumDataDeclarationDetail(declarationDetail));
 
 sumRateDutyDeclaration 'Пошлина' (declaration) = GROUP SUM sumDutyDataDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) PERSISTENT MINCHARWIDTH 12;
 
@@ -213,15 +220,21 @@ VATRangeDataDeclarationDetail 'Шкала НДС (ИД)' = DATA Range(Declaratio
 numberVATRangeDataDeclarationDetail 'Шкала НДС' (declarationDetail) = numberRange(VATRangeDataDeclarationDetail(declarationDetail));
 percentVATRangeDeclarationDetail 'НДС, %' (declarationDetail) = valueRateRangeDate(VATRangeDataDeclarationDetail(declarationDetail), dateDeclarationDetail(declarationDetail));
 
+CONSTRAINT countryLegalEntity(legalEntityDeclaration(declarationDeclarationDetail(declarationDetail))) != countryRange(VATRangeDataDeclarationDetail(declarationDetail))
+    CHECKED BY VATRangeDataDeclarationDetail MESSAGE 'Страна шкалы налога должна соответствовать стране импортёра';
+
 numberVATRangeCustomGroupDeclarationDetail 'Шкала НДС (расч.)' (declarationDetail) = numberRange(supplierVATCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclarationDetail(declarationDetail)));
 percentVATCustomsGroupDeclarationDetail 'НДС, %' (declarationDetail) = dataValueSupplierVATCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclarationDetail(declarationDetail));
 
 percentVATDeclarationDetail 'НДС, %' (declarationDetail) = percentVATCustomsGroupDeclarationDetail(declarationDetail) OVERRIDE percentVATRangeDeclarationDetail(declarationDetail);
 
 sumRateVATDeclarationDetail 'НДС (расч.)' (declarationDetail) = roundCurrencyDeclarationDetail((sumRateDeclarationDetail(declarationDetail) + sumRateDutyDeclarationDetail(declarationDetail)) *
-                                                                 (percentVATDeclarationDetail(declarationDetail)/100), declarationDetail) MINCHARWIDTH 12;
+                                                                 (percentVATCustomsGroupDeclarationDetail(declarationDetail)/100), declarationDetail) MINCHARWIDTH 12;
 
 sumVATDataDeclarationDetail 'НДС' (declarationDetail) = DATA NUMERIC[14,3](DeclarationDetail) MINCHARWIDTH 12;
+
+sumVATDataDeclarationDetail(declarationDetail) <- (sumDataDeclarationDetail(declarationDetail) (+) sumDutyDataDeclarationDetail(declarationDetail)) * percentVATRangeDeclarationDetail(declarationDetail)/100
+                             WHEN CHANGED(VATRangeDataDeclarationDetail(declarationDetail)) OR CHANGED(sumDataDeclarationDetail(declarationDetail)) OR CHANGED(sumDutyDataDeclarationDetail(declarationDetail));
 
 sumRateVATDeclaration 'НДС' (declaration) = GROUP SUM sumVATDataDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) PERSISTENT MINCHARWIDTH 12;
 
@@ -241,8 +254,10 @@ setSumDeclarationDetail 'Рассчитать суммы' = ACTION (declaration)
    SET sumRegistrationDataDeclaration(declaration) <- sumRateRegistrationDeclaration(declaration);
    FOR declarationDeclarationDetail(declarationDetail) == declaration DO {
       SET sumDataDeclarationDetail(declarationDetail) <- sumRateDeclarationDetail(declarationDetail);
-      SET sumDutyDataDeclarationDetail(declarationDetail) <- sumRateDutyDeclarationDetail(declarationDetail);
-      SET sumVATDataDeclarationDetail(declarationDetail) <- sumRateVATDeclarationDetail(declarationDetail);
+      SET percentDutyDataDeclarationDetail(declarationDetail) <- percentDutyCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclarationDetail(declarationDetail));
+      SET VATRangeDataDeclarationDetail (declarationDetail) <- supplierVATCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclarationDetail(declarationDetail));
+      //SET sumDutyDataDeclarationDetail(declarationDetail) <- sumRateDutyDeclarationDetail(declarationDetail);
+      //SET sumVATDataDeclarationDetail(declarationDetail) <- sumRateVATDeclarationDetail(declarationDetail);
    };
 };
 
@@ -266,17 +281,17 @@ toCreateDeclarationDetails 'Создать позиции' = ACTION (declaration
 } TOOLBAR;
 
 EXTEND FORM declaration
-    PROPERTIES(d) sumRateDeclaration, sumRateRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
+    PROPERTIES(d) sumRateDeclaration, sumRegistrationDataDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
 
     OBJECTS dd=DeclarationDetail
     PROPERTIES(id, dd) inInvoiceDetailDeclarationDetail
     PROPERTIES(dd) numberDeclarationDetail, invoicesDeclarationDetail READONLY, nameCustomsDeclarationDetail, shortNameUOMDeclarationDetail, nameCountryDeclarationDetail
     PROPERTIES(dd) overSumNetWeightDeclarationDetail, overSumGrossWeightDeclarationDetail
     PROPERTIES(dd) codeCustomsGroupDeclarationDetail, quantityDeclarationDetail READONLY, priceDeclarationDetail
-    PROPERTIES(dd) READONLY sumDeclarationDetail, sumRateDeclarationDetail, sumRateDutyDeclarationDetail, numberVATRangeCustomGroupDeclarationDetail
-    PROPERTIES(dd) numberVATRangeDataDeclarationDetail
-    PROPERTIES(dd) READONLY percentVATDeclarationDetail, sumRateVATDeclarationDetail
-    PROPERTIES(dd) sumDataDeclarationDetail, sumDutyDataDeclarationDetail, sumVATDataDeclarationDetail, DELETESESSION
+    PROPERTIES(dd) READONLY sumDeclarationDetail, sumRateDeclarationDetail, percentDutyCustomsGroupDeclarationDetail, sumRateDutyDeclarationDetail,
+                   numberVATRangeCustomGroupDeclarationDetail, percentVATCustomsGroupDeclarationDetail, sumRateVATDeclarationDetail
+    PROPERTIES(dd) sumDataDeclarationDetail, percentDutyDataDeclarationDetail, sumDutyDataDeclarationDetail, numberVATRangeDataDeclarationDetail,
+                   percentVATRangeDeclarationDetail, sumVATDataDeclarationDetail, DELETESESSION
 
     PROPERTIES (d) toCreateDeclarationDetails TODRAW dd FORCE PANEL TOOLBAR
     PROPERTIES (d) setSumDeclarationDetail TODRAW dd FORCE PANEL TOOLBAR
@@ -293,7 +308,7 @@ EXTEND DESIGN declaration {
                 caption = 'Суммы документа';
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(sumRateDeclaration);
-                ADD PROPERTY(sumRateRegistrationDeclaration);
+                ADD PROPERTY(sumRegistrationDataDeclaration);
                 ADD PROPERTY(sumRateDutyDeclaration);
                 ADD PROPERTY(sumRateVATDeclaration);
             }
@@ -308,6 +323,20 @@ EXTEND DESIGN declaration {
         caption = 'Провести';
     }
 
+    PROPERTY(sumRateDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(percentDutyCustomsGroupDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(sumRateDutyDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(numberVATRangeCustomGroupDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(percentVATCustomsGroupDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(sumRateVATDeclarationDetail) { background = #AAFFCC; }
+
+    PROPERTY(sumDataDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(percentDutyDataDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(sumDutyDataDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(numberVATRangeDataDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(percentVATRangeDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(sumVATDataDeclarationDetail) { background = #AAFFFF; }
+
     ADD functions.box;
 }
 
@@ -317,11 +346,29 @@ EXTEND FORM declarations
     OBJECTS dd=DeclarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, nameCustomsDeclarationDetail, nameCountryDeclarationDetail, sumNetWeightDeclarationDetail,
                    codeCustomsGroupDeclarationDetail, quantityDeclarationDetail, priceDeclarationDetail, sumDeclarationDetail,
-                   sumRateDeclarationDetail, sumRateDutyDeclarationDetail, numberVATRangeCustomGroupDeclarationDetail,
-                   numberVATRangeDataDeclarationDetail, percentVATDeclarationDetail, sumRateVATDeclarationDetail,
-                   sumDataDeclarationDetail, sumDutyDataDeclarationDetail, sumVATDataDeclarationDetail
+                   sumRateDeclarationDetail, percentDutyCustomsGroupDeclarationDetail, sumRateDutyDeclarationDetail,
+                   numberVATRangeCustomGroupDeclarationDetail, percentVATCustomsGroupDeclarationDetail, sumRateVATDeclarationDetail,
+                   sumDataDeclarationDetail, percentDutyDataDeclarationDetail, sumDutyDataDeclarationDetail, numberVATRangeDataDeclarationDetail,
+                   percentVATRangeDeclarationDetail, sumVATDataDeclarationDetail
     FILTERS declarationDeclarationDetail(dd)==d
 ;
+
+EXTEND DESIGN declarations {
+
+    PROPERTY(sumRateDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(percentDutyCustomsGroupDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(sumRateDutyDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(numberVATRangeCustomGroupDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(percentVATCustomsGroupDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(sumRateVATDeclarationDetail) { background = #AAFFCC; }
+
+    PROPERTY(sumDataDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(percentDutyDataDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(sumDutyDataDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(numberVATRangeDataDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(percentVATRangeDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(sumVATDataDeclarationDetail) { background = #AAFFFF; }
+}
 
 //------------------------------------ определение себестоимости -----------------------------------------------------//
 // пошлина
@@ -329,12 +376,12 @@ coeffInvoiceDetailDeclarationDetail 'Удельный вес' (invoiceDetail) = 
                                                                             IF declarationDetailInvoiceDetail(invoiceDetail);
 
 calcDutyInvoiceDetail 'Пошлины' (invoiceDetail) = PARTITION UNGROUP sumDutyDataDeclarationDetail
-                                                 PROPORTION STRICT ROUND(0) coeffInvoiceDetailDeclarationDetail(invoiceDetail)
+                                                 PROPORTION ROUND(4) coeffInvoiceDetailDeclarationDetail(invoiceDetail)
                                                                 BY declarationDetailInvoiceDetail(invoiceDetail)
                                                              ORDER invoiceDetail PERSISTENT;
 
-priceDutyInvoiceDetail 'Пошлина (ед.)' = ABSTRACT NUMERIC[14,2](InvoiceDetail);
-priceDutyUserInvoiceDetail 'Пошлина (ед.)' = DATA NUMERIC[14,2](UserInvoiceDetail);
+priceDutyInvoiceDetail 'Пошлина (ед.)' = ABSTRACT NUMERIC[16,4](InvoiceDetail);
+priceDutyUserInvoiceDetail 'Пошлина (ед.)' = DATA NUMERIC[16,4](UserInvoiceDetail);
 priceDutyInvoiceDetail(detail) += priceDutyUserInvoiceDetail(detail);
 
 calcPriceDutyInvoiceDetail 'Пошлина (ед.)' (invoiceDetail) = roundCurrencyDeclaration(calcDutyInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail),
@@ -347,12 +394,12 @@ coeffInvoiceDetailDeclaration 'Удельный вес' (invoiceDetail) = sumHom
                                                                IF declarationInvoiceDetail(invoiceDetail);
 
 calcRegistrationInvoiceDetail 'Таможенный сбор' (invoiceDetail) = PARTITION UNGROUP sumRegistrationDataDeclaration
-                                                                  PROPORTION STRICT ROUND(0) coeffInvoiceDetailDeclaration(invoiceDetail)
+                                                                  PROPORTION ROUND(4) coeffInvoiceDetailDeclaration(invoiceDetail)
                                                                                  BY declarationInvoiceDetail(invoiceDetail)
                                                                               ORDER invoiceDetail PERSISTENT;
 
-priceRegistrationInvoiceDetail 'Таможенный сбор (ед.)' = ABSTRACT NUMERIC[14,2](InvoiceDetail);
-priceRegistrationUserInvoiceDetail 'Таможенный сбор (ед.)' = DATA NUMERIC[14,2](UserInvoiceDetail);
+priceRegistrationInvoiceDetail 'Таможенный сбор (ед.)' = ABSTRACT NUMERIC[16,4](InvoiceDetail);
+priceRegistrationUserInvoiceDetail 'Таможенный сбор (ед.)' = DATA NUMERIC[16,4](UserInvoiceDetail);
 priceRegistrationInvoiceDetail(detail) += priceRegistrationUserInvoiceDetail(detail);
 
 calcPriceRegistrationInvoiceDetail 'Таможенный сбор (ед.)' (invoiceDetail) = roundCurrencyDeclaration(calcRegistrationInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail),

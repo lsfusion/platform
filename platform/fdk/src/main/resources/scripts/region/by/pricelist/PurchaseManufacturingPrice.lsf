@@ -23,9 +23,15 @@ inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(man
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.manufacturingPricePriceListType;
 
 // Записываем по умолчанию цену себестоимости в цену изготовителя (а не последнюю)
+roundConditionUserInvoice = DATA RoundCondition(UserInvoice);
+nameRoundConditionUserInvoice 'Наименование' (userInvoice) = nameRoundCondition(roundConditionUserInvoice(userInvoice));
+
 WHEN SESSION FORMS userInvoice
     CHANGED(costPriceUserInvoiceDetail(d)) DO {
-    manufacturingPriceUserInvoiceDetail(d) <- costPriceUserInvoiceDetail(d);
+    IF roundConditionUserInvoice(invoiceInvoiceDetail(d)) THEN
+        manufacturingPriceUserInvoiceDetail(d) <- roundPriceRoundCondition(costPriceUserInvoiceDetail(d), roundConditionUserInvoice(invoiceInvoiceDetail(d)))
+    ELSE
+        manufacturingPriceUserInvoiceDetail(d) <- costPriceUserInvoiceDetail(d);
 }
 //@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, customerStock);
 
@@ -39,6 +45,7 @@ toShowRepricingPriceInvoice (invoice) = createRepricingInvoice(invoice) AND show
 
 EXTEND FORM userInvoice
     PROPERTIES(i) showManufacturingPriceUserInvoice
+    PROPERTIES(i) nameRoundConditionUserInvoice SHOWIF showManufacturingPriceUserInvoice(i)
     PROPERTIES(d) SHOWIF showManufacturingPriceUserInvoice(i) manufacturingPriceUserInvoiceDetail ON CHANGE changeManufacturingPriceUserInvoiceDetail(d)  AFTER invoiceSumUserInvoiceDetail
     PROPERTIES(d) BACKGROUND backgroundCurInvoice(i) SHOWIF toShowRepricingPriceInvoice(i) curManufacturingPriceUserInvoiceDetail ON CHANGE changeCurManufacturingPriceUserInvoiceDetail(d) BEFORE curPriceUserInvoiceDetail
 ;
@@ -47,6 +54,7 @@ EXTEND DESIGN userInvoice {
         NEW headerManufacturing {
             title = 'Цена изготовителя';
             ADD PROPERTY(showManufacturingPriceUserInvoice);
+            ADD PROPERTY(nameRoundConditionUserInvoice);
         }
     }
 }

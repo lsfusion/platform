@@ -125,6 +125,8 @@ FORM typeExchangeCurrencyDate 'Тип обмена / Курсы валют'
 
     FILTERS rateExchange(t, c, d)
 
+    DIALOG TypeExchange OBJECT t
+
 ;
 
 DESIGN typeExchangeCurrencyDate FROM DEFAULT{
