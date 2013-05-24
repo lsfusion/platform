@@ -9,5 +9,13 @@ nameGLDocument(document) += descriptionReceipt(document);
 
 //------------------- Розничная сумма --------------------//
 companyReceipt (receipt) = legalEntityStore(storeDepartmentStore(departmentStoreReceipt(receipt)));
-@defineGeneralLedgerAggregation (receipt, POS, company, sumReceiptDetailReceipt, descriptionReceipt, '90.1', '41.2', '1');
+@defineGeneralLedgerAggregation (receipt,                     // основание (объект, документ..)
+                                 POS,                         // префикс для проводки (для того, чтобы не пересекались по названию)
+                                 company,                     // копмания проводки
+                                 sumReceiptDetailReceipt,     // сумма проводки
+                                 descriptionReceipt,          // описание документа
+                                 '90.1',                      // дебет счета
+                                 '41.2',                      // кредит счета
+                                 '1'                          // идентификатор плана счетов
+                                 );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreReceipt(receiptPOSGeneralLedger(generalLedger)) WHEN CLASS(receiptPOSGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;

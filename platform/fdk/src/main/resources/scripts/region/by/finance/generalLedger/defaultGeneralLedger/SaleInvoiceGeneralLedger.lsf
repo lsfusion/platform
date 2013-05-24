@@ -14,16 +14,16 @@ nameGLDocument(document) += descriptionInvoice(document);
 ////////////////////////////// Отгрузка по безналу (из розницы) //////////////////////////////////
 //------------------- Розничная сумма --------------------//
 //-- Тара
-@defineGeneralLedgerAggregationOperation (invoice,
-                                          InvRetC,
-                                          supplier,
-                                          invoiceSumContainerInvoiceDetailInvoice,
-                                          saleRetail,
-                                          descriptionInvoice,
-                                          '62.1',
-                                          '41.3',
-                                          '1',
-                                          'saleRetail'
+@defineGeneralLedgerAggregationOperation (invoice,                                 // основание (объект, документ..)
+                                          InvRetC,                                 // префикс для проводки (для того, чтобы не пересекались по названию)
+                                          supplier,                                // копмания проводки
+                                          invoiceSumContainerInvoiceDetailInvoice, // сумма проводки
+                                          saleRetail,                              // префикс для суммы проводки (для того, чтобы не пересекались в разрезе операций)
+                                          descriptionInvoice,                      // описание документа
+                                          '62.1',                                  // дебет счета
+                                          '41.3',                                  // кредит счета
+                                          '1',                                     // идентификатор плана счетов
+                                          'saleRetail'                             // идентификатор операции
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceInvRetCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockInvoice(invoiceInvRetCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;

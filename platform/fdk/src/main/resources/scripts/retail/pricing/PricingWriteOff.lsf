@@ -9,8 +9,6 @@ roundConditionUserWriteOffDetail(userWriteOffDetail) = roundConditionDepartmentS
 
 // Комиссия
 @defineDocumentInterfaceHeaderPricingCommittee(writeOff, stock);
-// Операция
-//@defineDocumentInterfaceOperationPrefix(writeOff, pricing, Pricing, ' (расценка)');
 
 // Добавляем цены поставщика
 @defineDocumentInterfaceDetailPricePrefix(writeOff, supplier, ' поставщика');
@@ -66,7 +64,7 @@ backgroundRetailWriteOff 'Цвет' (writeOff) = RGB(224, 255, 255) IF writeOff 
 
 EXTEND FORM userWriteOff
     PROPERTIES(w) SHOWIF showCreatePricingWriteOff(w) BACKGROUND backgroundRetailWriteOff(w) createPricingUserWriteOff
-    PROPERTIES(w) SHOWIF createPricingUserWriteOff(w) BACKGROUND backgroundRetailWriteOff(w) //namePricingOperationUserWriteOff,
+    PROPERTIES(w) SHOWIF createPricingUserWriteOff(w) BACKGROUND backgroundRetailWriteOff(w)
                   namePricingCommitteeUserWriteOff, retailSumUserWriteOffDetailUserWriteOff
 
     PROPERTIES(d) BEFORE deletewd SHOWIF createPricingWriteOff(w) BACKGROUND backgroundRetailWriteOff(w)
@@ -81,7 +79,6 @@ EXTEND DESIGN userWriteOff {
         NEW headerCreatePricing {
             title = 'Расценка';
             ADD PROPERTY(createPricingUserWriteOff);
-//            ADD PROPERTY(namePricingOperationUserWriteOff);
             ADD PROPERTY(namePricingCommitteeUserWriteOff);
         }
     }
@@ -123,8 +120,6 @@ timePricing(pricing) += timeWriteOffPricing(pricing);
 
 @defineDocumentAggregationStockPrefix(writeOff, writeOffPricing, stock, 'Склад', , );
 departmentStorePricing(pricing) += stockWriteOffPricing(pricing) IF stockWriteOffPricing(pricing) IS DepartmentStore;
-//    dataDepartmentStorePricingDetail(pricingDetail) += data###stockProp###writeOffDetail(writeOffDetailWriteOffPricingDetail(pricingDetail))
-//                                                       IF data###stockProp###writeOffDetail(writeOffDetailWriteOffPricingDetail(pricingDetail)) IS DepartmentStore;
 
 @defineDocumentAggregationPosted(writeOff, writeOffPricing);
 isPostedPricing(pricing) += isPostedWriteOffPricing(pricing);
@@ -199,28 +194,6 @@ retailMarkupUserWriteOffDetail(userWriteOffDetail)  <- [round2((((X - X*Y/(100+Y
          CHANGED(supplierPriceUserWriteOffDetail(userWriteOffDetail));
 
 @deriveDocumentDetailVAT(userWriteOff, retail, date, sku, stock);
-
-//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
-
-//// -- Операция
-//@defineOperationProperty(createPricing, 'Акт расценки', createContainer);
-//@deriveDocumentOperationProperty(UserWriteOff, createPricing);
-//
-//// Причина
-//pricingOperationOperation = DATA Pricing.Operation (WriteOff.Operation);
-//namePricingOperationOperation 'Операция расценка' (operation) = Pricing.nameOperation(pricingOperationOperation(operation));
-//
-//@deriveDocumentOperationProperty(userWriteOff, pricingOperation);
-//
-//EXTEND FORM WriteOff.operation
-//    PROPERTIES(o) namePricingOperationOperation
-//;
-//
-//EXTEND DESIGN operation {
-//    createContainer {
-//        ADD PROPERTY(namePricingOperationOperation);
-//    }
-//}
 
 // Помечаем, что этот акт расценки не меняет текущие цены и является обратным
 skipChangeLedgerPricing(pricing) += pricing IS WriteOffPricing;

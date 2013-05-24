@@ -15,7 +15,17 @@ nameGLDocument(document) += descriptionRepricing(document);
 ////////////////////////////// Обычная переоценка //////////////////////////////////
 //-------------------------------- Торговая надбавка ----------------------------------//
 //-- Не услуги
-@defineGeneralLedgerAggregationOperation (repricing, RepMark, legalEntityStock, diffMarkupSumNotChargeRepricingDetailRepricing, repricing, descriptionRepricing, '41.2', '42.1', '1', 'repricing');
+@defineGeneralLedgerAggregationOperation (repricing,                                      // основание (объект, документ..)
+                                          RepMark,                                        // префикс для проводки (для того, чтобы не пересекались по названию)
+                                          legalEntityStock,                               // копмания проводки
+                                          diffMarkupSumNotChargeRepricingDetailRepricing, // сумма проводки
+                                          repricing,                                      // префикс для суммы проводки (для того, чтобы не пересекались в разрезе операций)
+                                          descriptionRepricing,                           // описание документа
+                                          '41.2',                                         // дебет счета
+                                          '42.1',                                         // кредит счета
+                                          '1',                                            // идентификатор плана счетов
+                                          'repricing'                                     // идентификатор операции
+                                          );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreRepricing(repricingRepMarkGeneralLedger(generalLedger)) WHEN CLASS(repricingRepMarkGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
 //-------------------------------- НДС розничный  ----------------------------------//

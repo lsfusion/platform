@@ -15,7 +15,17 @@ nameGLDocument(document) += descriptionPricing(document);
 ////////////////////////////// Приход от поставщика //////////////////////////////////
 //-------------------------------- Торговая надбавка -------------------------------//
 //-- Тара
-@defineGeneralLedgerAggregationOperation (pricing, PrPurMarkC, legalEntityStock, retailMarkupSumContainerPricingDetailPricing, purchase, descriptionPricing, '41.3', '42.1', '1', 'purchase');
+@defineGeneralLedgerAggregationOperation (pricing,                                      // основание (объект, документ..)
+                                          PrPurMarkC,                                   // префикс для проводки (для того, чтобы не пересекались по названию)
+                                          legalEntityStock,                             // копмания проводки
+                                          retailMarkupSumContainerPricingDetailPricing, // сумма проводки
+                                          purchase,                                     // префикс для суммы проводки (для того, чтобы не пересекались в разрезе операций)
+                                          descriptionPricing,                           // описание документа
+                                          '41.3',                                       // дебет счета
+                                          '42.1',                                       // кредит счета
+                                          '1',                                          // идентификатор плана счетов
+                                          'purchase'                                    // идентификатор операции
+                                          );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrPurMarkCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrPurMarkCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 //-- Товар
 @defineGeneralLedgerAggregationOperation (pricing, PrPurMarkI, legalEntityStock, retailMarkupSumItemPricingDetailPricing, purchase, descriptionPricing, '41.2', '42.1', '1', 'purchase');

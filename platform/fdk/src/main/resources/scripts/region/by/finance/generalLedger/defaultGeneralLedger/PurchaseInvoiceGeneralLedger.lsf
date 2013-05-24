@@ -14,7 +14,17 @@ nameGLDocument(document) += descriptionInvoice(document);
 
 //-------------------------------- НДС поставщика ----------------------------------//
 //-- Тара
-@defineGeneralLedgerAggregationOperation (invoice, InvSupVATC, customer, VATSumContainerInvoiceDetailInvoice, purchase, descriptionInvoice, '18.5', '60.1', '1', 'purchase');
+@defineGeneralLedgerAggregationOperation (invoice,                                      // основание (объект, документ..)
+                                          InvSupVATC,                                   // префикс для проводки (для того, чтобы не пересекались по названию)
+                                          customer,                                     // копмания проводки
+                                          VATSumContainerInvoiceDetailInvoice,          // сумма проводки
+                                          purchase,                                     // префикс для суммы проводки (для того, чтобы не пересекались в разрезе операций)
+                                          descriptionInvoice,                           // описание документа
+                                          '18.5',                                       // дебет счета
+                                          '60.1',                                       // кредит счета
+                                          '1',                                          // идентификатор плана счетов
+                                          'purchase'                                    // идентификатор операции
+                                          );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerStockInvoice(invoiceInvSupVATCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvSupVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceInvSupVATCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvSupVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
 //-- Услуги
