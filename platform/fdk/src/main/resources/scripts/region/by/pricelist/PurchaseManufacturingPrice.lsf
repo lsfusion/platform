@@ -22,7 +22,12 @@ batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.manufacturin
 inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.manufacturingPricePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.manufacturingPricePriceListType;
 
-@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, customerStock);
+// Записываем по умолчанию цену себестоимости в цену изготовителя (а не последнюю)
+WHEN SESSION FORMS userInvoice
+    CHANGED(costPriceUserInvoiceDetail(d)) DO {
+    manufacturingPriceUserInvoiceDetail(d) <- costPriceUserInvoiceDetail(d);
+}
+//@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, customerStock);
 
 @defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, curManufacturing, ' изготовителя до');
 @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, curManufacturing, sku, customerStock);
