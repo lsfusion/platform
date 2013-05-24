@@ -19,6 +19,7 @@ import platform.server.data.expr.KeyType;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.query.QueryBuilder;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
 import platform.server.form.view.report.ReportDrawField;
@@ -45,8 +46,8 @@ public class ObjectType extends AbstractType<Integer> {
     public static final ObjectType instance = new ObjectType();
     public static final IntegerClass idClass = IntegerClass.instance;
 
-    public String getDB(SQLSyntax syntax) {
-        return idClass.getDB(syntax);
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return idClass.getDB(syntax, typeEnv);
     }
     public int getSQL(SQLSyntax syntax) {
         return idClass.getSQL(syntax);
@@ -57,8 +58,8 @@ public class ObjectType extends AbstractType<Integer> {
         return ((Number)value).intValue();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        idClass.writeParam(statement, num, value, syntax);
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+        idClass.writeParam(statement, num, value, syntax, typeEnv);
     }
 
     public boolean isSafeString(Object value) {
@@ -100,18 +101,6 @@ public class ObjectType extends AbstractType<Integer> {
         return baseClass.findConcreteClassID((Integer)query.execute(session).singleValue().get("classid")); // тут можно было бы искать только среди ObjectValueClassSet сделать
     }
 
-    public ConcreteClass getBinaryClass(byte[] value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException {
-        int idobject;
-        if(session.syntax.isBinaryString()) {
-            idobject = Integer.parseInt(new String(value).trim());
-        } else {
-            idobject = 0;
-            for(int i=0;i<value.length;i++)
-                idobject = idobject * 8 + value[i];
-        }
-        return getDataClass(idobject, session, classSet, baseClass);
-    }
-
     public void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass) {
         exprs.add(expr);
     }
@@ -124,7 +113,7 @@ public class ObjectType extends AbstractType<Integer> {
         return SetFact.<AndClassSet>toOrderExclSet(baseClass.getUpSet(), baseClass.unknown);
     }
 
-    public int getBinaryLength(boolean charBinary) {
+    public int getCharLength() {
         return 8;
     }
 
@@ -140,4 +129,7 @@ public class ObjectType extends AbstractType<Integer> {
         return baseClass.getUpSet();
     }
 
+    public String getSID() {
+        return "ObjectType";
+    }
 }

@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
@@ -40,7 +41,7 @@ public class IntegerClass extends IntegralClass<Integer> {
         return 0;
     }
 
-    public String getDB(SQLSyntax syntax) {
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getIntegerType();
     }
     public int getSQL(SQLSyntax syntax) {
@@ -52,7 +53,7 @@ public class IntegerClass extends IntegralClass<Integer> {
         return ((Number)value).intValue();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
         statement.setInt(num, (Integer)value);
     }
 

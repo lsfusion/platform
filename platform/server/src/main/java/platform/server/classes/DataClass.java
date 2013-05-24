@@ -29,7 +29,6 @@ import platform.server.logics.property.group.AbstractGroup;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.text.Format;
 import java.util.Random;
 
@@ -175,10 +174,6 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return this;
     }
 
-    public ConcreteClass getBinaryClass(byte[] value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException {
-        return this;
-    }
-
     public void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass) {
     }
 
@@ -190,7 +185,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return ListFact.<AndClassSet>singleton(this);
     }
 
-    public int getBinaryLength(boolean charBinary) {
+    public int getCharLength() {
         return 8;
     }
 

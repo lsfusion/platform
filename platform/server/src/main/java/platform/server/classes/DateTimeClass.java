@@ -4,6 +4,7 @@ import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.base.DateConverter;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
@@ -63,7 +64,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
         return new Timestamp(System.currentTimeMillis());
     }
 
-    public String getDB(SQLSyntax syntax) {
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getDateTimeType();
     }
     public int getSQL(SQLSyntax syntax) {
@@ -75,7 +76,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
         return (Timestamp) value;
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
         statement.setTimestamp(num, (Timestamp) value);
     }
 
@@ -85,8 +86,8 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     @Override
-    public int getBinaryLength(boolean charBinary) {
-        return (charBinary ? 1 : 2) * 25;
+    public int getCharLength() {
+        return 25;
     }
 
     public boolean isSafeString(Object value) {

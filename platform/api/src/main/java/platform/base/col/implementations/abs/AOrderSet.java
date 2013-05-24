@@ -45,6 +45,12 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
         return mResult.immutableOrder();
     }
 
+    public ImOrderSet<K> mergeOrder(K element) {
+        MOrderSet<K> mResult = SetFact.mOrderSet(this);
+        mResult.add(element);
+        return mResult.immutableOrder();
+    }
+
     public <V> ImRevMap<K, V> mapSet(final ImOrderSet<? extends V> set) {
         return mapOrderRevValues(new GetIndex<V>() {
             public V getMapValue(int i) {

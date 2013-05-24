@@ -114,41 +114,6 @@ CREATE AGGREGATE DISTR_CUM_PROPORTION (double precision, double precision, doubl
     finalfunc = resultProp
 );
 
-CREATE OR REPLACE FUNCTION recursion(rectable text, initial text, step text, VARIADIC params char[]) RETURNS SETOF RECORD AS
-$$
-    DECLARE inserted INT;
-    DECLARE toggler BOOLEAN;
-    DECLARE stepnext TEXT;
-    DECLARE nextrectable TEXT;
-    BEGIN
-
-    nextrectable = 'nt' || rectable || 'it';
-	stepnext = replace(step, rectable, nextrectable);
-	EXECUTE 'CREATE TEMP TABLE ' || rectable || ' AS ' || initial USING params;
-	GET DIAGNOSTICS inserted = ROW_COUNT;
-	EXECUTE 'CREATE TEMP TABLE ' || nextrectable || ' AS SELECT * FROM ' || rectable || ' LIMIT 0';
-
-	WHILE inserted > 0 LOOP
-		IF toggler THEN
-			RETURN QUERY EXECUTE 'SELECT * FROM ' || nextrectable;
-			EXECUTE 'INSERT INTO ' || rectable || ' ' || stepnext USING params;
-			GET DIAGNOSTICS inserted = ROW_COUNT;
-			EXECUTE 'DELETE FROM ' || nextrectable;
-			toggler = FALSE;
-		ELSE
-			RETURN QUERY EXECUTE 'SELECT * FROM ' || rectable;
-			EXECUTE 'INSERT INTO ' || nextrectable || ' ' || step USING params;
-			GET DIAGNOSTICS inserted = ROW_COUNT;
-			EXECUTE 'DELETE FROM ' || rectable;
-			toggler = TRUE;
-		END IF;
-	END LOOP;
-
-	EXECUTE 'DROP TABLE ' || nextrectable;
-	EXECUTE 'DROP TABLE ' || rectable;
-    END
- $$ LANGUAGE 'plpgsql' VOLATILE COST 1000000;
-
 CREATE OR REPLACE FUNCTION array_setadd(anyarray, anyarray) RETURNS anyarray AS
 $$
 	DECLARE length1 int;
@@ -204,12 +169,12 @@ $$ LANGUAGE 'sql' IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION MIN(anyelement, anyelement) RETURNS anyelement AS
 $$
-    SELECT CASE WHEN $1 > $2 THEN $2 ELSE $1 END;
+    SELECT CASE WHEN $1 IS NULL OR $1 > $2 THEN $2 ELSE $1 END;
 $$ LANGUAGE 'sql' IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION MAX(anyelement, anyelement) RETURNS anyelement AS
 $$
-    SELECT CASE WHEN $1 < $2 THEN $2 ELSE $1 END;
+    SELECT CASE WHEN $1 IS NULL OR $1 < $2 THEN $2 ELSE $1 END;
 $$ LANGUAGE 'sql' IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION first_agg ( anyelement, anyelement )
@@ -234,6 +199,22 @@ DROP AGGREGATE IF EXISTS last(anyelement) CASCADE;
 
 CREATE AGGREGATE last (
         sfunc    = last_agg,
+        basetype = anyelement,
+        stype    = anyelement
+);
+
+DROP AGGREGATE IF EXISTS maxc(anyelement) CASCADE;
+
+CREATE AGGREGATE maxc (
+        sfunc    = MAX,
+        basetype = anyelement,
+        stype    = anyelement
+);
+
+DROP AGGREGATE IF EXISTS minc(anyelement) CASCADE;
+
+CREATE AGGREGATE minc (
+        sfunc    = MIN,
         basetype = anyelement,
         stype    = anyelement
 );

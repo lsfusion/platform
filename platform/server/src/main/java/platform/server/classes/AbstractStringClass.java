@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 
@@ -47,14 +48,14 @@ public abstract class AbstractStringClass extends DataClass<String> {
         return (String) value;
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
         statement.setString(num, (String) value);
     }
 
     public abstract boolean needRTrim();
 
     @Override
-    public int getBinaryLength(boolean charBinary) {
+    public int getCharLength() {
         throw new RuntimeException("not supported");
     }
 

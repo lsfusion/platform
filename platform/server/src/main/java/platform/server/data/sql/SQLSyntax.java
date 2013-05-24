@@ -1,5 +1,6 @@
 package platform.server.data.sql;
 
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.type.Type;
 
 import java.sql.Connection;
@@ -70,10 +71,8 @@ public interface SQLSyntax {
     String getTextType();
     int getTextSQL();
 
-    String getBinaryConcatenate();
-    boolean isBinaryString();
-    String getBinaryType(int length);
-    int getBinarySQL();
+    boolean hasDriverCompositeProblem();
+    int getCompositeSQL();
 
     String getByteArrayType();
     int getByteArraySQL();
@@ -95,7 +94,7 @@ public interface SQLSyntax {
     String getMinute();
     String getEpoch();
     String getDateTime();
-    String typeConvertSuffix(Type oldType, Type newType, String name);
+    String typeConvertSuffix(Type oldType, Type newType, String name, TypeEnvironment typeEnv);
 
     String getInsensitiveLike();
 

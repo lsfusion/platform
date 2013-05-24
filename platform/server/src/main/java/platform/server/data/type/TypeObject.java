@@ -1,12 +1,14 @@
 package platform.server.data.type;
 
+import platform.server.data.SQLSession;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class TypeObject implements ParseInterface {
+public class TypeObject extends AbstractParseInterface {
 
     private final Object object;
     private final Type type;
@@ -31,15 +33,25 @@ public class TypeObject implements ParseInterface {
         return type.isSafeType(object);
     }
 
-    public String getDBType(SQLSyntax syntax) {
-        return type.getDB(syntax);
+    public Type getType() {
+        return type;
     }
 
     public String getString(SQLSyntax syntax) {
         return type.getString(object, syntax);
     }
 
-    public void writeParam(PreparedStatement statement, int paramNum, SQLSyntax syntax) throws SQLException {
-        type.writeParam(statement, paramNum, object, syntax);
+    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) throws SQLException {
+        type.writeParam(statement, paramNum, object, syntax, env);
+    }
+
+    public void writeNullParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) throws SQLException {
+        type.writeParam(statement, paramNum, object, syntax, env);
+    }
+
+    public ConcatenateType getConcType() {
+        if(type instanceof ConcatenateType)
+            return (ConcatenateType) type;
+        return null;
     }
 }

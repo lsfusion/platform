@@ -207,6 +207,10 @@ testLimitPartition(store, article) = PARTITION UNGROUP testAmount LIMIT STRICT t
 ioQuantity(store, article) = STRUCT(incomeQuantity(store, article), outcomeQuantity(store, article)) PERSISTENT;
 onlyIncomeQuantity 'Test STRUCT' (store, article) = ioQuantity(store, article)[1];
 
+tstData = DATA INTEGER (Store);
+tstStruct(store) = STRUCT(tstData(store), 5) PERSISTENT;
+tstDestruct(store) = tstStruct(store)[1];
+
 // Abstract property
 // Expression syntax:
 // ABSTRACT returnClass (paramClass1, ..., paramClassN) [EXCLUSIVE]
@@ -755,7 +759,7 @@ FORM storeArticle 'По складам'
     PROPERTIES TODRAW s FORCE PANEL setDefaultNames(), copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm() TOOLBAR, testRequestInput(s) TOOLBAR
 //    PROPERTIES() countF, setNameX
     PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
-    PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, ssi=Features.simage, spdf, scustom, sexcel, testAbstractAction, editActionTest, loadf, savef
+    PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, ssi=Features.simage, spdf, scustom, sexcel, testAbstractAction, editActionTest, loadf, savef, tstData, tstDestruct
     PROPERTIES(s, a) incomeQuantity, onlyIncomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
     FILTERGROUP filters1
         FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)

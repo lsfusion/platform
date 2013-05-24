@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
@@ -43,7 +44,7 @@ public class ByteArrayClass extends DataClass<byte[]> {
         return Data.BYTEARRAY;
     }
 
-    public String getDB(SQLSyntax syntax) {
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getByteArrayType();
     }
     public int getSQL(SQLSyntax syntax) {
@@ -62,12 +63,12 @@ public class ByteArrayClass extends DataClass<byte[]> {
         return (byte[])value;
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
         statement.setBytes(num, (byte[]) value);
     }
 
     @Override
-    public int getBinaryLength(boolean charBinary) {
+    public int getCharLength() {
         throw new RuntimeException("not supported");
     }
 

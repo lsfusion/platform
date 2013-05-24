@@ -54,18 +54,18 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
             Type type = conversion.getType(type1, type2);
             if (type != null) {
                 if (!(type1 instanceof AbstractStringClass)) {
-                    src1 = type.getCast(src1, compile.syntax, false);
+                    src1 = type.getCast(src1, compile.syntax, compile.env, false);
                 } else if (((AbstractStringClass)type1).needRTrim()) {
                     src1 = "rtrim(" + src1 + ")";
                 }
 
                 if (!(type2 instanceof AbstractStringClass)) {
-                    src2 = type.getCast(src2, compile.syntax, false);
+                    src2 = type.getCast(src2, compile.syntax, compile.env, false);
                 } else if (((AbstractStringClass)type2).needRTrim()) {
                     src2 = "rtrim(" + src2 + ")";
                 }
 
-                return type.getCast("(" + src1 + " || " + src2 + ")", compile.syntax, false);
+                return type.getCast("(" + src1 + " || " + src2 + ")", compile.syntax, compile.env, false);
             }
             return null;
         }

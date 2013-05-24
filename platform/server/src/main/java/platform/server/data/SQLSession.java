@@ -21,13 +21,11 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.ExecuteEnvironment;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.type.ParseInterface;
-import platform.server.data.type.Reader;
-import platform.server.data.type.Type;
-import platform.server.data.type.TypeObject;
+import platform.server.data.type.*;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
@@ -50,15 +48,15 @@ public class SQLSession extends MutableObject {
 
     public SQLSyntax syntax;
     
-    private final GetValue<String, Field> getDeclare = new GetValue<String, Field>() {
-        public String getMapValue(Field value) {
-            return value.getDeclare(syntax);
-        }};
-    public <F extends Field> GetValue<String, F> getDeclare() {
-        return (GetValue<String, F>) getDeclare;
+    public <F extends Field> GetValue<String, F> getDeclare(final TypeEnvironment typeEnv) {
+        return new GetValue<String, F>() {
+            public String getMapValue(F value) {
+                return value.getDeclare(syntax, typeEnv);
+            }};
     }
 
     private final ConnectionPool connectionPool;
+    public final TypePool typePool;
 
     public Connection getConnection() throws SQLException {
         return privateConnection !=null ? privateConnection : connectionPool.getCommon(this);
@@ -87,6 +85,8 @@ public class SQLSession extends MutableObject {
     public SQLSession(DataAdapter adapter, int isolationLevel) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
         connectionPool = adapter;
+        typePool = adapter;
+
         this.isolationLevel = isolationLevel;
     }
 
@@ -210,13 +210,15 @@ public class SQLSession extends MutableObject {
     }
 
     public void createTable(String table, ImOrderSet<KeyField> keys) throws SQLException {
+        ExecuteEnvironment env = new ExecuteEnvironment();
+
         if (keys.size() == 0)
             keys = SetFact.singletonOrder(KeyField.dumb);
-        String createString = keys.toString(this.<KeyField>getDeclare(), ",");
+        String createString = keys.toString(this.<KeyField>getDeclare(env), ",");
         createString = createString + "," + getConstraintDeclare(table, keys);
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-        executeDDL("CREATE TABLE " + table + " (" + createString + ")");
+        executeDDL("CREATE TABLE " + table + " (" + createString + ")", env);
         addExtraIndices(table, keys);
     }
 
@@ -287,7 +289,8 @@ public class SQLSession extends MutableObject {
     }*/
 
     public void addColumn(String table, PropertyField field) throws SQLException {
-        executeDDL("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax)); //COLUMN
+        ExecuteEnvironment env = new ExecuteEnvironment();
+        executeDDL("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax, env), env); //COLUMN
     }
 
     public void dropColumn(String table, String field) throws SQLException {
@@ -299,8 +302,9 @@ public class SQLSession extends MutableObject {
     }
 
     public void modifyColumn(String table, Field field, Type oldType) throws SQLException {
+        ExecuteEnvironment env = new ExecuteEnvironment();
         executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.name + " TYPE " +
-                field.type.getDB(syntax) + " " + syntax.typeConvertSuffix(oldType, field.type, field.name));
+                field.type.getDB(syntax, env) + " " + syntax.typeConvertSuffix(oldType, field.type, field.name, env), env);
     }
 
     public void packTable(Table table) throws SQLException {
@@ -384,9 +388,11 @@ public class SQLSession extends MutableObject {
     }
 
     public void createTemporaryTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties) throws SQLException {
+        ExecuteEnvironment env = new ExecuteEnvironment();
+
         if(keys.size()==0)
             keys = SetFact.singletonOrder(KeyField.dumb);
-        String createString = SetFact.addExcl(keys.getSet(), properties).toString(this.<Field>getDeclare(), ",");
+        String createString = SetFact.addExcl(keys.getSet(), properties).toString(this.<Field>getDeclare(env), ",");
         createString = createString + "," + getConstraintDeclare(name, keys);
         executeDDL(syntax.getCreateSessionTable(name, createString), ExecuteEnvironment.NOREADONLY);
     }
@@ -438,18 +444,19 @@ public class SQLSession extends MutableObject {
     private void executeDDL(String DDL, ExecuteEnvironment env) throws SQLException {
         Connection connection = getConnection();
 
-        env.before(this, connection, DDL);
-
         Statement statement = createSingleStatement(connection);
         try {
+            env.before(this, connection, DDL);
+
             statement.execute(DDL);
+
         } catch (SQLException e) {
             logger.error(statement.toString());
             throw e;
         } finally {
-            statement.close();
-
             env.after(this, connection, DDL);
+
+            statement.close();
 
             returnConnection(connection);
         }
@@ -502,10 +509,8 @@ public class SQLSession extends MutableObject {
     private int executeDML(@ParamMessage String command, ImMap<String, ParseInterface> paramObjects, ExecuteEnvironment env) throws SQLException {
         Connection connection = getConnection();
 
-        env.before(this, connection, command);
-
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
-        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE) ":"") + command, paramObjects, connection, syntax, returnStatement, env.isNoPrepare());
+        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
 
         int result = 0;
         long runTime = 0;
@@ -515,14 +520,19 @@ public class SQLSession extends MutableObject {
                 Result<ReturnStatement> returnExplain = null; long explainStarted = 0;
                 if(explainNoAnalyze) {
                     returnExplain = new Result<ReturnStatement>();
-                    explainStatement = getStatement("EXPLAIN (VERBOSE, COSTS)" + command, paramObjects, connection, syntax, returnExplain, env.isNoPrepare());
+                    explainStatement = getStatement("EXPLAIN (VERBOSE, COSTS)" + command, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
                     explainStarted = System.currentTimeMillis();
                 }
                 systemLogger.info(explainStatement.toString());
+                env.before(this, connection, command);
                 result = executeExplain(explainStatement, explainNoAnalyze);
+                env.after(this, connection, command);
                 if(explainNoAnalyze)
                     returnExplain.result.proceed(explainStatement, System.currentTimeMillis() - explainStarted);
             }
+
+            env.before(this, connection, command);
+
             if(!(explainAnalyzeMode && !explainNoAnalyze)) {
                 long started = System.currentTimeMillis();
                 result = statement.executeUpdate();
@@ -532,9 +542,9 @@ public class SQLSession extends MutableObject {
             logger.error(statement.toString());
             throw e;
         } finally {
-            returnStatement.result.proceed(statement, runTime);
-
             env.after(this, connection, command);
+
+            returnStatement.result.proceed(statement, runTime);
 
             returnConnection(connection);
         }
@@ -561,26 +571,57 @@ public class SQLSession extends MutableObject {
         return result;
     }
 
-    @Message("message.sql.execute")
-    public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(@ParamMessage String select, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, ImMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException {
-        Connection connection = getConnection();
+    // оптимизация
+    private static <K> boolean hasConcColumns(ImMap<K, ? extends Reader> colReaders) {
+        for(int i=0,size= colReaders.size();i<size;i++)
+            if(colReaders.getValue(i) instanceof ConcatenateType)
+                return true;
+        return false;
+    }
 
-        env.before(this, connection, select);
+    private static <K, V> boolean hasConc(ImMap<K, ? extends Reader> keyReaders, ImMap<V, ? extends Reader> propertyReaders) {
+        return hasConcColumns(keyReaders) || hasConcColumns(propertyReaders);
+    }
+
+    private ImMap<String, String> fixConcColumns(ImMap<String, ? extends Reader> colReaders, TypeEnvironment env) {
+        MExclMap<String, String> mReadColumns = MapFact.mExclMap();
+        for(int i=0,size=colReaders.size();i<size;i++) {
+            String keyName = colReaders.getKey(i);
+            colReaders.getValue(i).readDeconc(keyName, keyName, mReadColumns, syntax, env);
+        }
+        return mReadColumns.immutable();
+    }
+
+    private String fixConcSelect(String select, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, TypeEnvironment env) {
+        return "SELECT " + SQLSession.stringExpr(fixConcColumns(keyReaders, env), fixConcColumns(propertyReaders, env)) + " FROM (" + select + ") s";
+    }
+
+    @Message("message.sql.execute")
+    public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(@ParamMessage String select, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException {
+        Connection connection = getConnection();
 
         if(explainAnalyzeMode) {
             systemLogger.info(select);
             Result<ReturnStatement> returnExplain = new Result<ReturnStatement>();
-            PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze ? "VERBOSE, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, returnExplain, env.isNoPrepare());
+            PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze ? "VERBOSE, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
             long started = System.currentTimeMillis();
+            env.before(this, connection, select);
             executeExplain(statement, explainNoAnalyze);
+            env.after(this, connection, select);
             returnExplain.result.proceed(statement, System.currentTimeMillis() - started);
         }
 
+        // по хорошему надо бы внутрь pool'инга вставить, но это не такой большой overhead
+        if(syntax.hasDriverCompositeProblem() && hasConc(keyReaders, propertyReaders))
+            select = fixConcSelect(select, keyNames.crossJoin(keyReaders), propertyNames.crossJoin(propertyReaders), env);
+
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
-        PreparedStatement statement = getStatement(select, paramObjects, connection, syntax, returnStatement, env.isNoPrepare());
+        PreparedStatement statement = getStatement(select, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
         MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = MapFact.mOrderExclMap();
         long runTime = 0;
         try {
+            env.before(this, connection, select);
+
             long started = System.currentTimeMillis();
             final ResultSet result = statement.executeQuery();
             runTime = System.currentTimeMillis() - started;
@@ -588,10 +629,10 @@ public class SQLSession extends MutableObject {
                 while(result.next()) {
                     ImValueMap<K, Object> rowKeys = keyNames.mapItValues(); // потому как exception есть
                     for(int i=0,size=keyNames.size();i<size;i++)
-                        rowKeys.mapValue(i, keyReaders.get(keyNames.getKey(i)).read(result.getObject(keyNames.getValue(i))));
+                        rowKeys.mapValue(i, keyReaders.get(keyNames.getKey(i)).read(result, syntax, keyNames.getValue(i)));
                     ImValueMap<V, Object> rowProperties = propertyNames.mapItValues(); // потому как exception есть
                     for(int i=0,size=propertyNames.size();i<size;i++)
-                        rowProperties.mapValue(i, propertyReaders.get(propertyNames.getKey(i)).read(result.getObject(propertyNames.getValue(i))));
+                        rowProperties.mapValue(i, propertyReaders.get(propertyNames.getKey(i)).read(result, syntax, propertyNames.getValue(i)));
                     mExecResult.exclAdd(rowKeys.immutableValue(), rowProperties.immutableValue());
                 }
             } finally {
@@ -601,9 +642,9 @@ public class SQLSession extends MutableObject {
             logger.error(statement.toString());
             throw e;
         } finally {
-            returnStatement.result.proceed(statement, runTime);
-
             env.after(this, connection, select);
+
+            returnStatement.result.proceed(statement, runTime);
 
             returnConnection(connection);
         }
@@ -617,10 +658,12 @@ public class SQLSession extends MutableObject {
         ImOrderSet<PropertyField> properties = rows.getValue(0).keys().toOrderSet();
         ImOrderSet<Field> fields = SetFact.addOrderExcl(keys, properties);
 
+        final ExecuteEnvironment env = new ExecuteEnvironment();
+
         String insertString = fields.toString(Field.nameGetter(), ",");
-        String valueString = fields.toString(new GetStaticValue<String>() {
-            public String getMapValue() {
-                return "?";
+        String valueString = fields.toString(new GetValue<String, Field>() {
+            public String getMapValue(Field value) {
+                return value.type.writeDeconc(syntax, env);
             }}, ",");
 
         if(insertString.length()==0) {
@@ -629,27 +672,34 @@ public class SQLSession extends MutableObject {
             valueString = "0";
         }
 
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO " + syntax.getSessionTableName(table) + " (" + insertString + ") VALUES (" + valueString + ")");
+        String command = "INSERT INTO " + syntax.getSessionTableName(table) + " (" + insertString + ") VALUES (" + valueString + ")";
+        PreparedStatement statement = connection.prepareStatement(command);
 
         try {
             for(int i=0,size=rows.size();i<size;i++) {
-                int p=1;
+                ParamNum paramNum = new ParamNum();
                 for(KeyField key : keys)
-                    new TypeObject(rows.getKey(i).get(key)).writeParam(statement, p++, syntax);
+                    new TypeObject(rows.getKey(i).get(key)).writeParam(statement, paramNum, syntax, env);
                 for(PropertyField property : properties) {
                     ObjectValue propValue = rows.getValue(i).get(property);
                     if(propValue instanceof NullValue)
-                        statement.setNull(p++, property.type.getSQL(syntax));
+                        property.type.writeNullParam(statement, paramNum, syntax, env);
                     else
-                        new TypeObject((DataObject) propValue).writeParam(statement, p++, syntax);
+                        new TypeObject((DataObject) propValue).writeParam(statement, paramNum, syntax, env);
                 }
                 statement.addBatch();
             }
+
+            env.before(this, connection, command);
+
             statement.executeBatch();
+
         } catch (SQLException e) {
             logger.error(statement.toString());
             throw e;
         } finally {
+            env.after(this, connection, command);
+
             statement.close();
 
             returnConnection(connection);
@@ -798,15 +848,25 @@ public class SQLSession extends MutableObject {
         return statement;
     }
 
+    private static String getCntDist(String name) {
+        return "cnd_" + name + "_cnd";
+    }
+
+    private static String getCnt(String name) {
+        return "cnt_" + name + "_cnt";
+    }
+
     // в явную без query так как часто выполняется
     public void readSingleValues(SessionTable table, Result<ImMap<KeyField, Object>> keyValues, Result<ImMap<PropertyField, Object>> propValues) throws SQLException {
         ImSet<KeyField> tableKeys = table.getTableKeys();
+        ExecuteEnvironment env = new ExecuteEnvironment();
 
-        String select = "SELECT COUNT(*) AS cnt";
+        MExclMap<String, String> mReadKeys = MapFact.mExclMap();
+        mReadKeys.exclAdd(getCnt(""), syntax.getCount("*"));
         if(tableKeys.size() > 1)
             for(KeyField field : tableKeys) {
-                select = select + ", " + syntax.getCountDistinct(field.name);
-                select = select + ", ANYVALUE(" + field.name + ")";
+                mReadKeys.exclAdd(getCntDist(field.name), syntax.getCountDistinct(field.name));
+                field.type.readDeconc("ANYVALUE(" + field.name + ")", field.name, mReadKeys, syntax, env);
             }
         else 
             if(table.properties.isEmpty()) {
@@ -814,12 +874,17 @@ public class SQLSession extends MutableObject {
                 propValues.set(MapFact.<PropertyField, Object>EMPTY());
                 return;
             }
+        ImMap<String, String> readKeys = mReadKeys.immutable();
+
+        MExclMap<String, String> mReadProps = MapFact.mExclMap();
         for(PropertyField field : table.properties) {
-            select = select + ", " + syntax.getCountDistinct(field.name);
-            select = select + ", " + syntax.getCount(field.name);
-            select = select + ", ANYVALUE(" + field.name + ")";
+            mReadProps.exclAdd(getCntDist(field.name), syntax.getCountDistinct(field.name));
+            mReadProps.exclAdd(getCnt(field.name), syntax.getCount(field.name));
+            field.type.readDeconc("ANYVALUE(" + field.name + ")", field.name, mReadProps, syntax, env);
         }
-        select = select + " FROM " + syntax.getSessionTableName(table.name);
+        ImMap<String, String> readProps = mReadProps.immutable();
+
+        String select = "SELECT " + SQLSession.stringExpr(readKeys, readProps) + " FROM " + syntax.getSessionTableName(table.name);
 
         Connection connection = getConnection();
 
@@ -830,27 +895,27 @@ public class SQLSession extends MutableObject {
                 boolean next = result.next();
                 assert next;
                 
-                int totalCnt = readInt(result.getObject(1));
-                int offs=2;
+                int totalCnt = readInt(result.getObject(getCnt("")));
                 if(tableKeys.size() > 1) {
                     ImFilterValueMap<KeyField, Object> mKeyValues = tableKeys.mapFilterValues();
                     for(int i=0,size=tableKeys.size();i<size;i++) {
-                        Integer cnt = readInt(result.getObject(2*i + offs));
+                        KeyField tableKey = tableKeys.get(i);
+                        Integer cnt = readInt(result.getObject(getCntDist(tableKey.name)));
                         if(cnt == 1)
-                            mKeyValues.mapValue(i, tableKeys.get(i).type.read(result.getObject(2*i + 1 + offs)));
+                            mKeyValues.mapValue(i, tableKey.type.read(result, syntax, tableKey.name));
                     }
                     keyValues.set(mKeyValues.immutableValue());
-                    offs += 2*tableKeys.size();
                 } else
                     keyValues.set(MapFact.<KeyField, Object>EMPTY());
 
                 ImFilterValueMap<PropertyField, Object> mvPropValues = table.properties.mapFilterValues();
                 for(int i=0,size=table.properties.size();i<size;i++) {
-                    Integer cntDistinct = readInt(result.getObject(3*i + offs));
+                    PropertyField tableProperty = table.properties.get(i);
+                    Integer cntDistinct = readInt(result.getObject(getCntDist(tableProperty.name)));
                     if(cntDistinct==0)
                         mvPropValues.mapValue(i, null);
-                    if(cntDistinct==1 && totalCnt==readInt(result.getObject(3*i + 1 + offs)))
-                        mvPropValues.mapValue(i, table.properties.get(i).type.read(result.getObject(3*i + 2 + offs)));
+                    if(cntDistinct==1 && totalCnt==readInt(result.getObject(getCnt(tableProperty.name))))
+                        mvPropValues.mapValue(i, tableProperty.type.read(result, syntax, tableProperty.name));
                 }
                 propValues.set(mvPropValues.immutableValue());
 
@@ -917,18 +982,22 @@ public class SQLSession extends MutableObject {
     private static class ParsedStatement {
         public final PreparedStatement statement;
         public final ImList<String> preparedParams;
+        public final ExecuteEnvironment env;
 
-        private ParsedStatement(PreparedStatement statement, ImList<String> preparedParams) {
+        private ParsedStatement(PreparedStatement statement, ImList<String> preparedParams, ExecuteEnvironment env) {
             this.statement = statement;
             this.preparedParams = preparedParams;
+            this.env = env;
         }
     }
 
     private static ParsedStatement parseStatement(ParseStatement parse, Connection connection, SQLSyntax syntax) throws SQLException {
+        ExecuteEnvironment env = new ExecuteEnvironment();
+
         char[][] paramArrays = new char[parse.params.size()][];
         String[] params = new String[parse.params.size()];
         String[] safeStrings = new String[paramArrays.length];
-        String[] notSafeTypes = new String[paramArrays.length];
+        Type[] notSafeTypes = new Type[paramArrays.length];
         int paramNum = 0;
         for (int i=0,size= parse.params.size();i<size;i++) {
             String param = parse.params.get(i);
@@ -948,24 +1017,40 @@ public class SQLSession extends MutableObject {
             int charParsed = 0;
             for (int p = 0; p < paramArrays.length; p++) {
                 if (BaseUtils.startsWith(toparse, i, paramArrays[p])) { // нашли
-                    if (safeStrings[p]!=null) { // если можно вручную пропарсить парсим
-                        parsedString = parsedString + new String(parsed, 0, num) + safeStrings[p];
-                        parsed = new char[toparse.length - i + (paramArrays.length - p) * 100];
-                        num = 0;
-                    } else {
-                        parsed[num++] = '?';
+                    String valueString;
+
+                    Type notSafeType = notSafeTypes[p];
+                    if (safeStrings[p] !=null) // если можно вручную пропарсить парсим
+                        valueString = safeStrings[p];
+                    else {
+                        if(notSafeType instanceof ConcatenateType)
+                            valueString = notSafeType.writeDeconc(syntax, env);
+                        else
+                            valueString = "?";
                         mPreparedParams.add(params[p]);
                     }
-                    if (notSafeTypes[p]!=null) {
-                        String castString = "::" + notSafeTypes[p];
-                        System.arraycopy(castString.toCharArray(), 0, parsed, num, castString.length());
-                        num += castString.length();
+                    if (notSafeType !=null)
+                        valueString = notSafeType.getCast(valueString, syntax, env, false);
+
+                    char[] valueArray = valueString.toCharArray();
+                    if(num + valueArray.length >= parsed.length) {
+                        parsedString = parsedString + new String(parsed, 0, num);
+                        parsed = new char[BaseUtils.max(toparse.length - i + paramArrays.length * 100, valueArray.length + 100)];
+                        num = 0;
                     }
+                    System.arraycopy(valueArray, 0, parsed, num, valueArray.length);
+                    num += valueArray.length;
                     charParsed = paramArrays[p].length;
+                    assert charParsed!=0;
                     break;
                 }
             }
             if (charParsed == 0) {
+                if(num + 1 >= parsed.length) {
+                    parsedString = parsedString + new String(parsed, 0, num);
+                    parsed = new char[toparse.length - i + paramArrays.length * 100 + 1];
+                    num = 0;
+                }
                 parsed[num++] = toparse[i];
                 charParsed = 1;
             }
@@ -973,16 +1058,16 @@ public class SQLSession extends MutableObject {
         }
         parsedString = parsedString + new String(parsed, 0, num);
 
-        return new ParsedStatement(connection.prepareStatement(parsedString), mPreparedParams.immutableList());
+        return new ParsedStatement(connection.prepareStatement(parsedString), mPreparedParams.immutableList(), env);
     }
 
     private static class ParseStatement extends TwinImmutableObject {
         public final String statement;
         public final ImSet<String> params;
         public final ImMap<String, String> safeStrings;
-        public final ImMap<String, String> notSafeTypes;
+        public final ImMap<String, Type> notSafeTypes;
 
-        private ParseStatement(String statement, ImSet<String> params, ImMap<String, String> safeStrings, ImMap<String, String> notSafeTypes) {
+        private ParseStatement(String statement, ImSet<String> params, ImMap<String, String> safeStrings, ImMap<String, Type> notSafeTypes) {
             this.statement = statement;
             this.params = params;
             this.safeStrings = safeStrings;
@@ -1013,7 +1098,15 @@ public class SQLSession extends MutableObject {
             statement.close();
         }};
 
-    private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, Connection connection, SQLSyntax syntax, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {
+    public static class ParamNum {
+        private int paramNum = 1;
+
+        public int get() {
+            return paramNum++;
+        }
+    }
+
+    private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, Connection connection, SQLSyntax syntax, ExecuteEnvironment env, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {
 
         boolean poolPrepared = !noPrepare && !Settings.get().isDisablePoolPreparedStatements() && command.length() > Settings.get().getQueryPrepareLength();
 
@@ -1039,22 +1132,23 @@ public class SQLSession extends MutableObject {
         } else
             returnStatement.set(keepStatement);
 
-        int paramNum = 1;
+        ParamNum paramNum = new ParamNum();
         for (String param : parsed.preparedParams)
-            paramObjects.get(param).writeParam(parsed.statement, paramNum++, syntax);
+            paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax, env);
+        env.add(parsed.env);
 
         return parsed.statement;
     }
 
     private ParseStatement preparseStatement(String command, boolean parseParams, ImMap<String, ParseInterface> paramObjects, SQLSyntax syntax) {
         ImFilterValueMap<String, String> mvSafeStrings = paramObjects.mapFilterValues();
-        ImFilterValueMap<String, String> mvNotSafeTypes = paramObjects.mapFilterValues();
+        ImFilterValueMap<String, Type> mvNotSafeTypes = paramObjects.mapFilterValues();
         for(int i=0,size=paramObjects.size();i<size;i++) {
             ParseInterface parseInterface = paramObjects.getValue(i);
             if(parseInterface.isSafeString() && !(parseParams && parseInterface instanceof TypeObject))
                 mvSafeStrings.mapValue(i, parseInterface.getString(syntax));
             if(!parseInterface.isSafeType())
-                mvNotSafeTypes.mapValue(i, parseInterface.getDBType(syntax));
+                mvNotSafeTypes.mapValue(i, parseInterface.getType());
         }
         return new ParseStatement(command, paramObjects.keys(), mvSafeStrings.immutableValue(), mvNotSafeTypes.immutableValue());
     }

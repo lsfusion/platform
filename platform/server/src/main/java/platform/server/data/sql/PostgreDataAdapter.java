@@ -6,6 +6,7 @@ import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
@@ -73,12 +74,13 @@ public class PostgreDataAdapter extends DataAdapter {
         }
         connect.close();
 
-        connect = startConnection();
-        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/getAnyNotNull.sc")));
-        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/jumpWorkdays.sc")));
-        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/completeBarcode.sc")));
-        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/aggf.sc")));
-        connect.close();
+        ensureConnection = startConnection();
+        ensureConnection.setAutoCommit(true);
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/getAnyNotNull.sc")));
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/jumpWorkdays.sc")));
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/completeBarcode.sc")));
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/aggf.sc")));
+        recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/recursion.sc"));
     }
 
     public void ensureDB() throws Exception, SQLException, InstantiationException, IllegalAccessException {
@@ -152,26 +154,13 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public boolean isBinaryString() {
-//        return false;
+    public boolean hasDriverCompositeProblem() {
         return true;
     }
 
     @Override
-    public String getBinaryType(int length) {
-//        return "bit(" + length * 8 + ")";
-        return getStringType(length);
-    }
-
-    @Override
-    public int getBinarySQL() {
-//        return Types.BINARY;
-        return getStringSQL();
-    }
-
-    @Override
-    public String getBinaryConcatenate() {
-        return "||";
+    public int getCompositeSQL() {
+        throw new RuntimeException("not supported");
     }
 
     @Override
@@ -195,8 +184,8 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String typeConvertSuffix(Type oldType, Type newType, String name) {
-        return "USING " + name + "::" + newType.getDB(this);
+    public String typeConvertSuffix(Type oldType, Type newType, String name, TypeEnvironment typeEnv) {
+        return "USING " + name + "::" + newType.getDB(this, typeEnv);
     }
 
     @Override

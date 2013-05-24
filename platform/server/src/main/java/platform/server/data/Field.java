@@ -3,6 +3,7 @@ package platform.server.data;
 import platform.base.TwinImmutableObject;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
@@ -39,15 +40,15 @@ public abstract class Field extends TwinImmutableObject {
         this.type = type;
     }
 
-    public static String getDeclare(ImOrderMap<String, Type> map, final SQLSyntax syntax) {
+    public static String getDeclare(ImOrderMap<String, Type> map, final SQLSyntax syntax, final TypeEnvironment typeEnv) {
         return map.mapOrderValues(new GetValue<String, Type>() {
             public String getMapValue(Type value) {
-                return value.getDB(syntax);
+                return value.getDB(syntax, typeEnv);
             }}).toString(" ", ",");
     }
     
-    public String getDeclare(SQLSyntax syntax) {
-        return name + " " + type.getDB(syntax);
+    public String getDeclare(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return name + " " + type.getDB(syntax, typeEnv);
     }
 
     public String toString() {

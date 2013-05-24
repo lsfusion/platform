@@ -262,14 +262,14 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
 
     // assert reversed, where не содержит groups
     public static ClassExprWhere mapBack(Where where, final ImRevMap<BaseExpr, Expr> outerInner) {
-        final Where outerWhere = where.and(Expr.getWhere(outerInner.keys()));
+        final Where outerWhere = Expr.andExprCheck(where, Expr.getWhere(outerInner.keys()));
         return new ExclPullWheres<ClassExprWhere, BaseExpr, Where>() {
             protected ClassExprWhere initEmpty() {
                 return ClassExprWhere.FALSE;
             }
             protected ClassExprWhere proceedBase(Where data, ImMap<BaseExpr, BaseExpr> outerInner) {
                 Result<ImRevMap<BaseExpr, BaseExpr>> innerOuter = new Result<ImRevMap<BaseExpr, BaseExpr>>();
-                Where where = outerWhere.and(GroupExpr.getEqualsWhere(GroupExpr.groupMap(outerInner, outerWhere.getExprValues(), innerOuter)));
+                Where where = Expr.andExprCheck(outerWhere, GroupExpr.getEqualsWhere(GroupExpr.groupMap(outerInner, outerWhere.getExprValues(), innerOuter)));
                 return where.getClassWhere().mapBack(innerOuter.result).and(data.getClassWhere());
             }
             protected ClassExprWhere add(ClassExprWhere op1, ClassExprWhere op2) {

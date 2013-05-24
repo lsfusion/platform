@@ -5,6 +5,7 @@ import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.view.report.ReportDrawField;
 
@@ -18,18 +19,18 @@ public interface Type<T> extends ClassReader<T> {
         Type getType(K key);
     }
 
-    String getCast(String value, SQLSyntax syntax, boolean needLength);
+    String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, boolean needLength);
     boolean needPadding(Object value);
-    String getBinaryCast(String value, SQLSyntax syntax, boolean needLength);
-    
-    String getDB(SQLSyntax syntax);
+
+    String getDB(SQLSyntax syntax, TypeEnvironment typeEnv);
     int getSQL(SQLSyntax syntax);
 
     boolean isSafeString(Object value);
     boolean isSafeType(Object value);
     String getString(Object value, SQLSyntax syntax);
 
-    void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException;
+    void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException;
+    void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException;
 
     Format getReportFormat();
     int getMinimumWidth();
@@ -43,11 +44,11 @@ public interface Type<T> extends ClassReader<T> {
 
     ImList<AndClassSet> getUniversal(BaseClass baseClass);
 
-    int getBinaryLength(boolean charBinary);
-    ConcreteClass getBinaryClass(byte[] value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException;
+    int getCharLength();
 
     T parseString(String s) throws ParseException;
     
     AndClassSet getBaseClassSet(BaseClass baseClass);
 
+    String getSID();
 }

@@ -25,10 +25,7 @@ import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.expr.where.pull.ExclExprPullWheres;
 import platform.server.data.expr.where.pull.ExclPullWheres;
 import platform.server.data.expr.where.pull.ExprPullWheres;
-import platform.server.data.query.AndContext;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.CompiledQuery;
-import platform.server.data.query.SubQueryContext;
+import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.GroupStatType;
 import platform.server.data.query.innerjoins.GroupStatWhere;
 import platform.server.data.query.innerjoins.KeyEqual;
@@ -103,12 +100,12 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             }), orders, ordersNotNull, type);
         }
 
-        public String getSource(ImMap<Expr, String> fromPropertySelect, SQLSyntax syntax, Type resultType) {
+        public String getSource(ImMap<Expr, String> fromPropertySelect, SQLSyntax syntax, TypeEnvironment typeEnv, Type resultType) {
             Result<ImSet<Expr>> orderExprsNotNull = new Result<ImSet<Expr>>();
             ImOrderMap<Expr, Boolean> packOrders = CompiledQuery.getOrdersNotNull(orders, orders.keys().toMap(), orderExprsNotNull);
             if(ordersNotNull) // если notNull, то все пометим
                 orderExprsNotNull.set(packOrders.keys());
-            return type.getSource(exprs.map(fromPropertySelect), packOrders.map(fromPropertySelect), orderExprsNotNull.result.map(fromPropertySelect).toSet(), resultType, syntax);
+            return type.getSource(exprs.map(fromPropertySelect), packOrders.map(fromPropertySelect), orderExprsNotNull.result.map(fromPropertySelect).toSet(), resultType, syntax, typeEnv);
         }
     }
 
@@ -233,7 +230,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 return fromPropertySelect.result.get(key)+"="+value.getSource(source);
             }}));
 
-        return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect.result, source.syntax, getType()),
+        return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect.result, source.syntax, source.env, getType()),
                 whereSelect.toString(" AND "), "", "", "", "") + ")";
     }
 

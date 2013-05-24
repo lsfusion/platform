@@ -8,7 +8,9 @@ import platform.server.Settings;
 import platform.server.classes.StringClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Query;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ConcatenateType;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.property.*;
@@ -103,16 +105,16 @@ public enum GroupType implements AggrType {
         return !isSelect();
     }
 
-    public String getSource(ImList<String> exprs, ImOrderMap<String, Boolean> orders, ImSet<String> ordersNotNull, Type type, SQLSyntax syntax) {
+    public String getSource(ImList<String> exprs, ImOrderMap<String, Boolean> orders, ImSet<String> ordersNotNull, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
         String orderClause = BaseUtils.clause("ORDER BY", Query.stringOrder(orders, ordersNotNull, syntax));
 
         switch (this) {
             case MAX:
                 assert exprs.size()==1 && orders.size()==0;
-                return "MAX(" + exprs.get(0) + ")";
+                return (type instanceof ConcatenateType ? "MAXC" : "MAX") + "(" + exprs.get(0) + ")";
             case MIN:
                 assert exprs.size()==1 && orders.size()==0;
-                return "MIN(" + exprs.get(0) + ")";
+                return (type instanceof ConcatenateType ? "MINC" : "MIN") + "(" + exprs.get(0) + ")";
             case ANY:
                 assert exprs.size()==1 && orders.size()==0;
                 return "ANYVALUE(" + exprs.get(0) + ")";
@@ -121,7 +123,7 @@ public enum GroupType implements AggrType {
                 return "notZero(SUM(" + exprs.get(0) + "))";
             case STRING_AGG:
                 assert exprs.size()==2;
-                return type.getCast("STRING_AGG(" + exprs.get(0) + "," + exprs.get(1) + orderClause + ")", syntax, false); // тут точная ширина не нужна главное чтобы не больше
+                return type.getCast("STRING_AGG(" + exprs.get(0) + "," + exprs.get(1) + orderClause + ")", syntax, typeEnv, false); // тут точная ширина не нужна главное чтобы не больше
             case AGGAR_SETADD:
                 assert exprs.size()==1;
                 return "AGGAR_SETADD(" + exprs.get(0) + orderClause + ")";

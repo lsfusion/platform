@@ -30,7 +30,7 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
             }, Where.FALSE, BaseUtils.<ImSet<ParseValue>>immutableCast(values).mapRevValues(new GetValue<String, ParseValue>() {
                 public String getMapValue(ParseValue value) {
                     return value.toString();
-                }}), PostgreDataAdapter.debugSyntax);
+                }}), PostgreDataAdapter.debugSyntax, new ExecuteEnvironment());
         }
 
         public String getSource(KeyExpr expr) {

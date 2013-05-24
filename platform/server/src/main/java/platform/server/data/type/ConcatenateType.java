@@ -4,8 +4,10 @@ import platform.base.ListCombinations;
 import platform.base.col.ListFact;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
 import platform.server.classes.ConcreteClass;
@@ -14,6 +16,8 @@ import platform.server.data.SQLSession;
 import platform.server.data.expr.DeconcatenateExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
+import platform.server.data.query.TypeEnvironment;
+import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
 import platform.server.form.view.report.ReportDrawField;
@@ -21,13 +25,14 @@ import platform.server.form.view.report.ReportDrawField;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Format;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class ConcatenateType extends AbstractType<byte[]> {
+public class ConcatenateType extends AbstractType<Object[]> {
 
     private Type[] types;
 
@@ -55,11 +60,10 @@ public class ConcatenateType extends AbstractType<byte[]> {
         return types.length;
     }
 
-    public String getDB(SQLSyntax syntax) {
-        return syntax.getBinaryType(getBinaryLength(syntax.isBinaryString()));
-    }
-    public int getSQL(SQLSyntax syntax) {
-        return syntax.getBinarySQL();
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        ImList<Type> types = getTypes();
+        typeEnv.addNeedType(types);
+        return DataAdapter.genConcTypeName(types);
     }
 
     public boolean isSafeString(Object value) {
@@ -70,18 +74,101 @@ public class ConcatenateType extends AbstractType<byte[]> {
         return value.toString();
     }
 
-    public byte[] read(Object value) {
-        if(value instanceof String)
-            return ((String)value).getBytes();
-        else
-            return (byte[])value;
+    public Object[] read(Object value) {
+        return (Object[])value;
     }
-    
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-         if(syntax.isBinaryString())
-            statement.setString(num,new String((byte[])value));
-         else
-            statement.setBytes(num,(byte[])value);
+
+    public int getSQL(SQLSyntax syntax) {
+        assert !syntax.hasDriverCompositeProblem();
+
+        throw new RuntimeException("not supported yet");
+//        return syntax.getCompositeSQL();
+    }
+
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+        assert !syntax.hasDriverCompositeProblem();
+
+        throw new RuntimeException("not supported yet");
+    }
+
+    public void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+        if(syntax.hasDriverCompositeProblem()) {
+            for (Type type : types)
+                type.writeNullParam(statement, num, syntax, typeEnv);
+            return;
+        }
+
+        super.writeNullParam(statement, num, syntax, typeEnv);
+    }
+
+    @Override
+    public void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+        if(syntax.hasDriverCompositeProblem()) {
+            for (int i=0,size=types.length;i<size;i++)
+                types[i].writeParam(statement, num, ((Object[])value)[i], syntax, typeEnv);
+            return;
+        }
+
+        super.writeParam(statement, num, value, syntax, typeEnv);
+    }
+
+    private static String getDeconcName(String name, int i) {
+        return "p" + i + "_" + name + "_p" + i;
+    }
+
+    @Override
+    public boolean isSafeType(Object value) { // важно что not safe иначе в parsing'е не будет этого типа
+        return false;
+    }
+
+    private ImList<Type> getTypes() {
+        return ListFact.toList(types);
+    }
+
+    @Override
+    public String writeDeconc(final SQLSyntax syntax, final TypeEnvironment env) { // дублирование getConcatenateSource, но по идее так тоже можно
+        if(syntax.hasDriverCompositeProblem())
+            return getNotSafeConcatenateSource(ListFact.toList(types).mapListValues(new GetValue<String, Type>() {
+                public String getMapValue(Type value) {
+                    return value.writeDeconc(syntax, env);
+                }
+            }), syntax, env);
+
+        return super.writeDeconc(syntax, env);
+    }
+
+    @Override
+    public void readDeconc(String source, String name, MExclMap<String, String> mResult, SQLSyntax syntax, TypeEnvironment typeEnv) {
+        if(syntax.hasDriverCompositeProblem()) {
+            for(int i=0;i<types.length;i++)
+                types[i].readDeconc(getDeconcatenateSource(source, i, syntax, typeEnv), getDeconcName(name, i), mResult, syntax, typeEnv);
+            return;
+        }
+
+        super.readDeconc(source, name, mResult, syntax, typeEnv);
+    }
+
+    private boolean allNulls(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        for(int i=1;i<types.length;i++)
+            if(types[i].read(set, syntax, getDeconcName(name, i))!=null)
+                return false;
+        return true;
+    }
+    @Override
+    public Object[] read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        if(syntax.hasDriverCompositeProblem()) {
+            Object[] result = new Object[types.length];
+            for(int i=0;i<types.length;i++) {
+                result[i] = types[i].read(set, syntax, getDeconcName(name, i));
+                if(i==0 && result[0]==null) {
+                    assert allNulls(set, syntax, name);
+                    return null;
+                }
+            }
+            return result;
+        }
+
+        return super.read(set, syntax, name);
     }
 
     public Format getReportFormat() {
@@ -125,38 +212,36 @@ public class ConcatenateType extends AbstractType<byte[]> {
     }
 
     public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException {
-        byte[] byteValue = read(value);
+        Object[] objects = read(value);
+        assert objects!=null;
 
-        int offset = 0;
         ConcreteClass[] classes = new ConcreteClass[types.length];
-        for(int i=0;i<types.length;i++) {
-            int blength = types[i].getBinaryLength(session.syntax.isBinaryString());
-            byte[] typeValue;
-            if(session.syntax.isBinaryString())
-                typeValue = new String(byteValue).substring(offset,offset+blength).getBytes();
-            else
-                typeValue = Arrays.copyOfRange(byteValue,offset,offset+blength);
-            classes[i] = types[i].getBinaryClass(typeValue,session, ((ConcatenateClassSet)classSet).get(i), baseClass);
-            offset += blength;
-        }
+        for(int i=0;i<types.length;i++)
+            classes[i] = types[i].getDataClass(objects[i],session, ((ConcatenateClassSet)classSet).get(i), baseClass);
 
         return createConcrete(classes);
     }
 
-    public String getConcatenateSource(ImList<String> exprs,SQLSyntax syntax) {
-        // сначала property и extra объединяем в одну строку
-        String source = "";
-        for(int i=0;i<types.length;i++)
-            source = (source.length() == 0 ? "" : source + syntax.getBinaryConcatenate()) + types[i].getBinaryCast(exprs.get(i), syntax, true);
-        return "(" + source + ")";
+    public String getNotSafeConcatenateSource(ImList<String> exprs, SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "ROW(" + exprs.toString(",") + ")";
     }
 
-    public String getDeconcatenateSource(String expr, int part, SQLSyntax syntax) {
+    public String getConcatenateSource(ImList<String> exprs, SQLSyntax syntax, TypeEnvironment typeEnv) {
+        String source = getCast(getNotSafeConcatenateSource(exprs, syntax, typeEnv), syntax, typeEnv, false);
 
-        int offset = 0;
-        for(int i=0;i<part;i++)
-            offset += types[i].getBinaryLength(syntax.isBinaryString());
-        return types[part].getCast("SUBSTRING(" + expr + "," + (offset + 1) + "," + types[part].getBinaryLength(syntax.isBinaryString()) + ")", syntax, false);
+        if(exprs.size()>0)
+            source =  "CASE WHEN " + exprs.toString(new GetValue<String, String>() {
+                public String getMapValue(String value) {
+                    return value + " IS NOT NULL";
+                }}, " AND ") + " THEN " + source + " ELSE NULL END";
+        return source;
+    }
+
+    public static String getFieldName(int part) {
+        return "f" + part;
+    }
+    public String getDeconcatenateSource(String expr, int part, SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "(" + expr + ")." + getFieldName(part);
     }
 
     public void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass) {
@@ -193,18 +278,14 @@ public class ConcatenateType extends AbstractType<byte[]> {
         return new ListCombinations<AndClassSet>(mClassSets.immutableList());
     }
 
-    public int getBinaryLength(boolean charBinary) {
+    public int getCharLength() {
         int length = 0;
         for(Type type : types)
-            length += type.getBinaryLength(charBinary);
+            length += type.getCharLength();
         return length;
     }
 
-    public ConcreteClass getBinaryClass(byte[] value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException {
-        return getDataClass(value, session, classSet, baseClass);
-    }
-
-    public byte[] parseString(String s) throws ParseException {
+    public Object[] parseString(String s) throws ParseException {
         throw new RuntimeException("Parsing values from string is not supported");
     }
 
@@ -213,5 +294,12 @@ public class ConcatenateType extends AbstractType<byte[]> {
         for (Type type : types) {
             TypeSerializer.serializeType(outStream, type);
         }
+    }
+
+    public String getSID() {
+        String result = "C";
+        for (Type type : types)
+            result = result + "_" + type.getSID() + "_C";
+        return result;
     }
 }

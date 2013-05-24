@@ -16,6 +16,7 @@ public interface ImOrderSet<K> extends ImList<K> {
     ImOrderSet<K> addOrderExcl(ImOrderSet<? extends K> map);
     ImOrderSet<K> addOrderExcl(K element);
     ImOrderSet<K> mergeOrder(ImOrderSet<? extends K> col);
+    ImOrderSet<K> mergeOrder(K element);
 
     <V> ImRevMap<K, V> mapSet(ImOrderSet<? extends V> set);
     <V> ImMap<K, V> mapList(ImList<? extends V> list);

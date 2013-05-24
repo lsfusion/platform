@@ -3,6 +3,7 @@ package platform.server.classes;
 import platform.base.BaseUtils;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.ServerResourceBundle;
 
@@ -56,7 +57,7 @@ public class StringClass extends AbstractStringClass {
         return get(caseInsensitive || stringClass.caseInsensitive, max(length, stringClass.length));
     }
 
-    public String getDB(SQLSyntax syntax) {
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getStringType(length);
     }
 
@@ -74,8 +75,8 @@ public class StringClass extends AbstractStringClass {
     }
 
     @Override
-    public int getBinaryLength(boolean charBinary) {
-        return length * (charBinary ? 1 : 2);
+    public int getCharLength() {
+        return length;
     }
 
     public String getSID() {
@@ -96,8 +97,8 @@ public class StringClass extends AbstractStringClass {
     }
 
     @Override
-    public String getCast(String value, SQLSyntax syntax, boolean needLength) {
-        String castString = "CAST(" + value + " AS " + (length == 0 ? syntax.getStringType(1) : getDB(syntax)) + ")";
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, boolean needLength) {
+        String castString = "CAST(" + value + " AS " + (length == 0 ? syntax.getStringType(1) : getDB(syntax, typeEnv)) + ")";
         if (needLength) {
             return "lpad(" + castString + "," + length + ")";
         } else if (length == 0) {

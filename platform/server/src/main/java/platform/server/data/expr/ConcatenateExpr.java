@@ -133,7 +133,7 @@ public class ConcatenateExpr extends VariableClassExpr {
             public String getMapValue(BaseExpr value) {
                 return value.getSource(compile);
             }});
-        return ((ConcatenateType)getType(compile.keyType)).getConcatenateSource(sources,compile.syntax);
+        return ((ConcatenateType)getType(compile.keyType)).getConcatenateSource(sources,compile.syntax,compile.env);
     }
 
     @Override

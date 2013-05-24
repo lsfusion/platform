@@ -1,6 +1,7 @@
 package platform.server.data;
 
 import platform.server.classes.IntegerClass;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 
@@ -12,8 +13,8 @@ public class KeyField extends Field implements Comparable<KeyField> {
 
     public static KeyField dumb = new KeyField("dumb", IntegerClass.instance) {
         @Override
-        public String getDeclare(SQLSyntax syntax) {
-            return super.getDeclare(syntax) + " default 0";
+        public String getDeclare(SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return super.getDeclare(syntax, typeEnv) + " default 0";
         }
     };
     public KeyField(DataInputStream inStream, int version) throws IOException {

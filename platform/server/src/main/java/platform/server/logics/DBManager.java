@@ -36,6 +36,7 @@ import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.query.QueryBuilder;
 import platform.server.data.sql.DataAdapter;
+import platform.server.data.type.ConcatenateType;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
@@ -953,6 +954,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
         }
 
+        List<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
+
         MExclSet<Pair<String, String>> mDropColumns = SetFact.mExclSet(); // вообще pend'ить нужно только classDataProperty, но их тогда надо будет отличать
 
         // бежим по свойствам
@@ -986,9 +989,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                             moved = true;
                         } else { // надо проверить что тип не изменился
                             Type oldType = oldTable.findProperty(oldProperty.sID).type;
-                            if (!oldType.equals(newProperty.property.field.type)) {
-                                systemLogger.info("Changing type of property column " + newProperty.property.field.name + " in table " + newProperty.property.mapTable.table.name + " from " + oldType + " to " + newProperty.property.field.type);
-                                sql.modifyColumn(newProperty.property.mapTable.table.name, newProperty.property.field, oldType);
+                            if(oldDBStructure.version < 8 && newProperty.property.field.type instanceof ConcatenateType) { // вряд ли сможем конвертить пересоздадим
+                                sql.dropColumn(newProperty.tableName, newProperty.property.field.name);
+                                sql.addColumn(newProperty.tableName, newProperty.property.field);
+                                recalculateProperties.add((AggregateProperty) newProperty.property);
+                            } else if (!oldType.equals(newProperty.property.field.type)) {
+                                systemLogger.info("Changing type of property column " + newProperty.property.field.name + " in table " + newProperty.tableName + " from " + oldType + " to " + newProperty.property.field.type);
+                                sql.modifyColumn(newProperty.tableName, newProperty.property.field, oldType);
                             }
                         }
                         is.remove();
@@ -1013,7 +1020,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
         }
 
-        List<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
         for (DBStoredProperty property : restNewDBStored) { // добавляем оставшиеся
             sql.addColumn(property.tableName, property.property.field);
             if (struct != null && property.property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
@@ -1508,7 +1514,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         public Set<DBConcreteClass> concreteClasses = new HashSet<DBConcreteClass>();
 
         public DBStructure(DBVersion dbVersion) {
-            version = 7;
+            version = 8;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {

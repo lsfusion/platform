@@ -1,26 +1,31 @@
 package platform.server.data.type;
 
+import platform.server.data.SQLSession;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 
-public abstract class AbstractType<T> implements Type<T> {
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public abstract class AbstractType<T> extends AbstractReader<T> implements Type<T> {
 
     public boolean isSafeType(Object value) {
         return true;
     }
 
-    public String getCast(String value, SQLSyntax syntax, boolean needLength) {
-        return "CAST(" + value + " AS " + getDB(syntax) + ")";
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, boolean needLength) {
+        return "CAST(" + value + " AS " + getDB(syntax, typeEnv) + ")";
     }
 
     public boolean needPadding(Object value) {
         return false;
     }
 
-    public String getBinaryCast(String value, SQLSyntax syntax, boolean needLength) {
-        int typeLength = getBinaryLength(syntax.isBinaryString());
-        String castString = "CAST(" + value + " AS " + syntax.getBinaryType(typeLength) + ")";
-        if(needLength && syntax.isBinaryString()) // потому как иначе СУБД зачем-то тримит строку
-            castString = "lpad(" + castString + "," + typeLength + ")";
-        return castString;
+    protected abstract void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException;
+    public void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+        writeParam(statement, num.get(), value, syntax, typeEnv);
+    }
+    public void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+        statement.setNull(num.get(), getSQL(syntax));
     }
 }

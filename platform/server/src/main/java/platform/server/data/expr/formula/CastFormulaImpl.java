@@ -16,7 +16,7 @@ public class CastFormulaImpl implements FormulaImpl {
     @Override
     public String getSource(CompileSource compile, ExprSource source) {
         assert source.getExprCount() == 1;
-        return castClass.getCast(source.getSource(0, compile), compile.syntax, false);
+        return castClass.getCast(source.getSource(0, compile), compile.syntax, compile.env, false);
     }
 
     @Override

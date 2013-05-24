@@ -9,10 +9,7 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.data.expr.Expr;
-import platform.server.data.query.CompiledQuery;
-import platform.server.data.query.IQuery;
-import platform.server.data.query.Query;
-import platform.server.data.query.QueryBuilder;
+import platform.server.data.query.*;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.NullReader;
@@ -149,7 +146,7 @@ public class ModifyQuery {
         return leftKeysQuery.getQuery();
     }
 
-    private static String getInsertCastSelect(final CompiledQuery<KeyField, PropertyField> changeCompile, SQLSyntax syntax) {
+    private static String getInsertCastSelect(final CompiledQuery<KeyField, PropertyField> changeCompile, SQLSyntax syntax, ExecuteEnvironment env) {
         if(changeCompile.union && syntax.nullUnionTrouble()) {
             final String alias = "castalias";
             boolean casted = false;
@@ -160,7 +157,7 @@ public class ModifyQuery {
             for(PropertyField propertyField : changeCompile.propertyOrder) { // последействие
                 String propertyExpr = alias + "." + changeCompile.propertyNames.get(propertyField);
                 if(changeCompile.propertyReaders.get(propertyField) instanceof NullReader) { // если null, вставляем явный cast
-                    propertyExpr = propertyField.type.getCast(propertyExpr,syntax, false);
+                    propertyExpr = propertyField.type.getCast(propertyExpr, syntax, env, false);
                     casted = true;
                 }
                 exprs = (exprs.length()==0?"":exprs+",") + propertyExpr;
@@ -176,7 +173,10 @@ public class ModifyQuery {
 
         String insertString = SetFact.addOrderExcl(changeCompile.keyOrder, changeCompile.propertyOrder).toString(Field.<Field>nameGetter(), ",");
 
-        return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax),changeCompile.getQueryParams(env), changeCompile.env);
+        ExecuteEnvironment execEnv = new ExecuteEnvironment();
+        execEnv.add(changeCompile.env);
+
+        return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax, execEnv),changeCompile.getQueryParams(env), execEnv);
     }
 
     public SQLExecute getInsertSelect(SQLSyntax syntax) {

@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
@@ -53,7 +54,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return precision;
     }
 
-    public String getDB(SQLSyntax syntax) {
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getNumericType(length,precision);
     }
     public int getSQL(SQLSyntax syntax) {
@@ -69,7 +70,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         }
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
         statement.setBigDecimal(num, (BigDecimal) value);
     }
 
@@ -91,8 +92,8 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
 
     @Override
-    public int getBinaryLength(boolean charBinary) {
-        return length * (charBinary?1:2);
+    public int getCharLength() {
+        return length;
     }
 
     public Object getDefaultValue() {

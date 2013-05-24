@@ -39,4 +39,8 @@ public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExp
     public InnerBaseJoin<?> getBaseJoin() {
         return ValueJoin.instance;
     }
+
+    public Type getType() {
+        return objectClass.getType();
+    }
 }

@@ -1,14 +1,25 @@
 package platform.server.data.sql;
 
 import org.apache.log4j.Logger;
+import org.springframework.util.PropertyPlaceholderHelper;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+import platform.base.col.lru.LRUCache;
+import platform.base.col.lru.MCacheMap;
 import platform.server.data.AbstractConnectionPool;
+import platform.server.data.TypePool;
+import platform.server.data.query.TypeEnvironment;
+import platform.server.data.type.ConcatenateType;
 import platform.server.data.type.Type;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
+import java.util.Properties;
 
-public abstract class DataAdapter extends AbstractConnectionPool implements SQLSyntax {
+public abstract class DataAdapter extends AbstractConnectionPool implements SQLSyntax, TypePool {
     protected final static Logger logger = Logger.getLogger(DataAdapter.class);
 
     public String server;
@@ -113,14 +124,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return Types.VARCHAR;
     }
 
-    public boolean isBinaryString() {
+    public boolean hasDriverCompositeProblem() {
         return false;
     }
 
-    public String getBinaryType(int length) {
-        return "binary(" + length + ")";
-    }
-    public int getBinarySQL() {
+    public int getCompositeSQL() {
         return Types.BINARY;
     }
 
@@ -189,10 +197,6 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return descending ? "DESC" : "ASC";
     }
 
-    public String getBinaryConcatenate() {
-        return "+";
-    }
-
     public boolean nullUnionTrouble() {
         return false;
     }
@@ -217,7 +221,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "CURRENT_TIMESTAMP";
     }
 
-    public String typeConvertSuffix(Type oldType, Type newType, String name) {
+    public String typeConvertSuffix(Type oldType, Type newType, String name, TypeEnvironment typeEnv) {
         return "";
     }
 
@@ -293,5 +297,101 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }*/
+    }
+
+    public static String genTypePostfix(ImList<Type> types) {
+        String result = "";
+        for(int i=0,size=types.size();i<size;i++)
+            result = (result.length()==0?"":result + "_") + types.get(i).getSID();
+        return result;
+    }
+
+    public static String genConcTypeName(ImList<Type> types) {
+        return "T" + genTypePostfix(types);
+    }
+
+    public static String genRecursionName(ImList<Type> types) {
+        return "recursion_" + genTypePostfix(types);
+    }
+
+    public static String genNRowName(ImList<Type> types) {
+        return "NROW" + types.size();
+    }
+
+    private final TypeEnvironment recTypes = new TypeEnvironment() {
+        public void addNeedRecursion(ImList<Type> types) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void addNeedType(ImList<Type> types) {
+            try {
+                ensureConcType(types);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    };
+
+    protected Connection ensureConnection;
+
+    protected void executeEnsure(String command) throws SQLException {
+        Statement statement = ensureConnection.createStatement();
+        try {
+            statement.execute(command);
+        } catch(SQLException e) {
+        } finally {
+            statement.close();
+        }
+    }
+
+    private MCacheMap<ImList<Type>, Boolean> ensuredConcTypes = LRUCache.mBig();
+
+    protected String notNullRowString;
+
+    public synchronized void ensureConcType(ImList<Type> types) throws SQLException {
+
+        Boolean ensured = ensuredConcTypes.get(types);
+        if(ensured != null)
+            return;
+
+        // ensuring types
+        String declare = "";
+        for (int i=0,size=types.size();i<size;i++)
+            declare = (declare.length() ==0 ? "" : declare + ",") + ConcatenateType.getFieldName(i) + " " + types.get(i).getDB(this, recTypes);
+
+        executeEnsure("CREATE TYPE " + genConcTypeName(types) + " AS (" + declare + ")");
+
+        ensuredConcTypes.exclAdd(types, true);
+    }
+
+    private static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
+
+    protected String recursionString;
+
+    private MCacheMap<ImList<Type>, Boolean> ensuredRecursion = LRUCache.mBig();
+
+    public synchronized void ensureRecursion(ImList<Type> types) throws SQLException {
+
+        Boolean ensured = ensuredRecursion.get(types);
+        if(ensured != null)
+            return;
+
+        String declare = "";
+        String using = "";
+        for (int i=0,size=types.size();i<size;i++) {
+            String paramName = "p" + i;
+            Type type = types.get(i);
+            declare = declare + ", " + paramName + " " + type.getDB(this, recTypes);
+            using = (using.length() == 0 ? "USING " : using + ",") + paramName;
+        }
+
+        Properties properties = new Properties();
+        properties.put("function.name", genRecursionName(types));
+        properties.put("params.declare", declare);
+        properties.put("params.usage", using);
+
+        executeEnsure(stringResolver.replacePlaceholders(recursionString, properties));
+
+        ensuredRecursion.exclAdd(types, true);
     }
 }

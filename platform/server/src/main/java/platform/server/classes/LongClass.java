@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
@@ -43,7 +44,7 @@ public class LongClass extends IntegralClass<Long> {
         return 0;
     }
 
-    public String getDB(SQLSyntax syntax) {
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getLongType();
     }
     public int getSQL(SQLSyntax syntax) {
@@ -55,7 +56,7 @@ public class LongClass extends IntegralClass<Long> {
         return ((Number)value).longValue();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
         statement.setLong(num, (Long)value);
     }
 

@@ -68,7 +68,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> implements ParseVal
             }
             if (!type.isSafeType(object)) {
                 // cast часто rtrim делает и глотает пробелы (важно если ' ' строка), с другой стороны lpad возвращает text и при join'е с char'ом не использует индексы
-                result = type.getCast(result, compile.syntax, type.needPadding(object));
+                result = type.getCast(result, compile.syntax, compile.env, type.needPadding(object));
             }
             return result;
         }

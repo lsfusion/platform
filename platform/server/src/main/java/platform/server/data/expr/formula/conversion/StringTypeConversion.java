@@ -16,8 +16,8 @@ public class StringTypeConversion implements TypeConversion {
             return TextClass.instance;
         }
         if (type1 instanceof StringClass || type2 instanceof StringClass) {
-            int length1 = type1 == null ? 0 : type1.getBinaryLength(true);
-            int length2 = type2 == null ? 0 : type2.getBinaryLength(true);
+            int length1 = type1 == null ? 0 : type1.getCharLength();
+            int length2 = type2 == null ? 0 : type2.getCharLength();
 
             boolean caseInsensitive =
                     (type1 instanceof StringClass && ((StringClass) type1).caseInsensitive) ||

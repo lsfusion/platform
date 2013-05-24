@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.base.BaseUtils;
 import platform.interop.Data;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.ServerResourceBundle;
 
@@ -27,7 +28,7 @@ public class VarStringClass extends StringClass {
         return getv(caseInsensitive || stringClass.caseInsensitive, max(length, stringClass.length));
     }
 
-    public String getDB(SQLSyntax syntax) {
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getVarStringType(length);
     }
 
@@ -55,8 +56,8 @@ public class VarStringClass extends StringClass {
     }
 
     @Override
-    public String getCast(String value, SQLSyntax syntax, boolean needLength) {
-        return "CAST(" + value + " AS " + getDB(syntax) + ")";
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, boolean needLength) {
+        return "CAST(" + value + " AS " + getDB(syntax, typeEnv) + ")";
     }
 
     public String toString() {

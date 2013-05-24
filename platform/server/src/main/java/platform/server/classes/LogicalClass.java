@@ -3,6 +3,7 @@ package platform.server.classes;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
@@ -56,7 +57,7 @@ public class LogicalClass extends DataClass<Boolean> {
         return true;
     }
 
-    public String getDB(SQLSyntax syntax) {
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getBitType();
     }
     public int getSQL(SQLSyntax syntax) {
@@ -76,7 +77,7 @@ public class LogicalClass extends DataClass<Boolean> {
         return syntax.getBitString(true);
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
         assert (Boolean)value;
         statement.setByte(num, (byte)1);
     }
@@ -94,7 +95,7 @@ public class LogicalClass extends DataClass<Boolean> {
   */
 
     @Override
-    public int getBinaryLength(boolean charBinary) {
+    public int getCharLength() {
         return 1;
     }
 

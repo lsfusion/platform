@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.ServerResourceBundle;
 
@@ -36,7 +37,7 @@ public class TextClass extends AbstractStringClass {
         return compClass instanceof AbstractStringClass ? this : null;
     }
 
-    public String getDB(SQLSyntax syntax) {
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getTextType();
     }
 

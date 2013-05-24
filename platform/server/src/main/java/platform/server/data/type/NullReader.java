@@ -8,7 +8,10 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.where.Where;
 
-public class NullReader implements ClassReader<Object> {
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class NullReader extends AbstractReader<Object> implements ClassReader<Object> {
 
     public static NullReader instance = new NullReader();
 

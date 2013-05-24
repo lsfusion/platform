@@ -27,15 +27,17 @@ public abstract class CompileSource {
 
     public final ImRevMap<ParseValue,String> params;
     public final SQLSyntax syntax;
+    public final ExecuteEnvironment env;
 
     public final KeyType keyType;
     public final Where fullWhere;
 
-    protected CompileSource(KeyType keyType, Where fullWhere, ImRevMap<ParseValue, String> params, SQLSyntax syntax) {
+    protected CompileSource(KeyType keyType, Where fullWhere, ImRevMap<ParseValue, String> params, SQLSyntax syntax, ExecuteEnvironment env) {
         this.keyType = keyType;
         this.fullWhere = fullWhere;
         this.params = params;
         this.syntax = syntax;
+        this.env = env;
     }
 
     public abstract String getSource(KeyExpr key);

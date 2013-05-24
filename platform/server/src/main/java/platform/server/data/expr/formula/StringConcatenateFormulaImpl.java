@@ -41,7 +41,7 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
         if (exprType instanceof StringClass && !(exprType instanceof VarStringClass)) {
             exprSource = "rtrim(" + exprSource + ")";
         } else {
-            exprSource = selfType.getCast(exprSource, compile.syntax, false);
+            exprSource = selfType.getCast(exprSource, compile.syntax, compile.env, false);
         }
         return exprSource;
     }
@@ -66,7 +66,7 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
                 isText = true;
                 break;
             } else {
-                length += exprType != null ? exprType.getBinaryLength(true) : 0;
+                length += exprType != null ? exprType.getCharLength() : 0;
                 if (exprType instanceof StringClass) {
                     caseInsensitive = caseInsensitive || ((StringClass) exprType).caseInsensitive;
                     if (exprType instanceof VarStringClass) {

@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
@@ -36,7 +37,7 @@ public class ColorClass extends DataClass {
     }
 
     @Override
-    public String getDB(SQLSyntax syntax) {
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getColorType();
     }
 
@@ -56,7 +57,7 @@ public class ColorClass extends DataClass {
     }
 
     @Override
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
         statement.setInt(num, ((Color) value).getRGB());
     }
 
