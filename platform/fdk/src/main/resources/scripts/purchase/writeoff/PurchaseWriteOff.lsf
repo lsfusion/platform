@@ -340,7 +340,7 @@ CLASS ShipmentWriteOffDetail 'Строка акта списания на осн
 @defineDocumentAggregation(shipment, shipmentWriteOff, needToWrittenShipment);
 writeOffWriteOffDetail(detail) += shipmentWriteOffShipmentWriteOffDetail(detail);
 
-operationWriteOff(writeOff) += operationShipment(shipmentShipmentWriteOff(writeOff));
+//operationWriteOff(writeOff) += operationShipment(shipmentShipmentWriteOff(writeOff));
 
 @defineDocumentDetailIndex(shipmentWriteOff);
 

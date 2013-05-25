@@ -28,7 +28,6 @@ showNameCompanyLedger() = TRUE AND NOT nameFilterLegalEntityRangeManagement();
 //Создание прайса через форму ассортимента
 
 inRangeManagement 'Отм.' = DATA SESSION BOOLEAN(Sku);
-inRangeManagement2 'Отм.' = DATA SESSION BOOLEAN(Sku);
 
 createPriceRangeManagement 'Создать прайс' = ACTION (dataPriceListType) NEWSESSION{
     FOR ADDOBJ u = UserPriceList DO {
@@ -102,7 +101,7 @@ FORM rangeManagement 'Управление ценами'
     ORDER BY skuTreeName2
 
     OBJECTS sk2 = Sku
-    PROPERTIES(sk2) inRangeManagement2
+    PROPERTIES(sk2) inRangeManagement
     PROPERTIES(sk2) READONLY nameSku, idBarcodeSku
     PROPERTIES createPriceRangeManagement(pt) TODRAW sk2 FORCE PANEL
     ORDER BY nameSku(sk2)

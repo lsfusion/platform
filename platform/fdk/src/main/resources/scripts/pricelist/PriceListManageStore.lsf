@@ -10,27 +10,27 @@ countStoresStoreType 'Кол-во магазинов' (storeType) =
     GROUP SUM 1 IF storeTypeStore(store) == storeType
     BY storeType;
 
-countDepartmentStoresPriceListTypeSkuChainStoresDateTime 'Кол-во отделов магазинов(в ассортименте)' (type, sku, store, dateTime) =
+countDepartmentStoresPriceListTypeSkuChainStoresDateTime 'В ассортименте' (type, sku, store, dateTime) =
     GROUP SUM 1 IF pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime)
     BY type, sku, storeDepartmentStore(stock), dateTime;
 
-countDepartmentStoresPriceListTypeSkuStoreTypeDateTime 'Кол-во отделов магазинов(в ассортименте)' (type, sku, store, dateTime) =
+countDepartmentStoresPriceListTypeSkuStoreTypeDateTime 'В ассортименте' (type, sku, store, dateTime) =
     GROUP SUM 1 IF pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime)
     BY type, sku, storeDepartmentStore(stock), dateTime;
 
-countStoresPriceListTypeSkuChainStoresDateTime 'Кол-во магазинов(в ассортименте)' (type, sku, chainStores, dateTime) =
+countStoresPriceListTypeSkuChainStoresDateTime 'В ассортименте' (type, sku, chainStores, dateTime) =
     GROUP SUM 1 IF countDepartmentStoresPriceListTypeSkuChainStoresDateTime(type, sku, store, dateTime)
     BY type, sku, chainStoresStore(store), dateTime;
 
-countStoresPriceListTypeSkuStoreTypeDateTime 'Кол-во магазинов(в ассортименте)' (type, sku, storeType, dateTime) =
+countStoresPriceListTypeSkuStoreTypeDateTime 'В ассортименте' (type, sku, storeType, dateTime) =
     GROUP SUM 1 IF countDepartmentStoresPriceListTypeSkuStoreTypeDateTime(type, sku, store, dateTime)
     BY type, sku, storeTypeStore(store), dateTime;
 
-countStoresSkuChainStoresDateTime 'Кол-во магазинов(в наличии)' (sku, chainStores, dateTime) =
+countStoresSkuChainStoresDateTime 'В наличии' (sku, chainStores, dateTime) =
     GROUP SUM 1 IF balanceASkuStoreDateTime(sku, store, dateTime)
     BY sku, chainStoresStore(store), dateTime;
 
-countStoresSkuStoreTypeDateTime 'Кол-во магазинов(в наличии)' (sku, storeType, dateTime) =
+countStoresSkuStoreTypeDateTime 'В наличии' (sku, storeType, dateTime) =
     GROUP SUM 1 IF balanceASkuStoreDateTime(sku, store, dateTime)
     BY sku, storeTypeStore(store), dateTime;
 

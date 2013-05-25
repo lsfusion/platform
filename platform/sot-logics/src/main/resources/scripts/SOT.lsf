@@ -38,7 +38,7 @@ sotSIDItem 'SOT SID'= DATA STRING[100] (Item);
 sotSIDUserInvoiceDetail 'SOT SID' = DATA STRING[100] (Purchase.UserInvoiceDetail) IN base;
 
 sotSIDBatch 'SOT SID' (batch) = ABSTRACT STRING[100] (Batch) PERSISTENT;
-sotSIDBatch (batch) += sotSIDUserInvoiceDetail(invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS ShipmentBatch;
+sotSIDBatch (batch) += sotSIDUserInvoiceDetail(invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch)));
 
 sotSIDOverrideUserInvoiceDetail (userInvoiceDetail) = OVERRIDE sotSIDItem (Sale.skuInvoiceDetail(userInvoiceDetail)), sotSIDBatch (Sale.batchInvoiceDetail(userInvoiceDetail));
 
@@ -50,7 +50,7 @@ mag2Stock 'Код MAG2' (stock) = mag2LegalEntityStock(legalEntityStock(stock), 
 codeOperation 'Код операции' = DATA STRING[2] (Sale.Operation);
 
 EXTEND FORM item PROPERTIES(i) BEFORE nameUOMItem(i) nameSotUOMItem SHOWIF showUOMItem(i);
-EXTEND FORM items PROPERTIES(i) dateTimeLastMovedSku, sotSIDItem, idItem;
+EXTEND FORM items PROPERTIES(i) dateTimeLastMovedSku, sotSIDItem;
 
 EXTEND FORM Sale.dialogOperations PROPERTIES(o) codeOperation;
 

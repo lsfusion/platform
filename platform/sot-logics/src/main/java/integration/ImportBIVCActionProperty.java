@@ -497,7 +497,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
             ImportField weightItemField = new ImportField(LM.findLCPByCompoundName("netWeightItem"));
 
             ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Item"),
-                    LM.findLCPByCompoundName("idItem").getMapping(itemField));
+                    LM.findLCPByCompoundName("itemId").getMapping(itemField));
 
             ImportKey<?> sotUOMKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("SotUOM"),
                     LM.findLCPByCompoundName("sotUOMId").getMapping(idSotUOMField));

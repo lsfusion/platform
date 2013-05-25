@@ -389,6 +389,11 @@ pricingPricePricingDetail (detail) = OVERRIDE pricePricingDetail(detail), overPr
 @defineDocumentInterfaceHeaderSumPrefix (pricing, retailVAT, ' НДС');
 @defineDocumentInterfaceHeaderSumPrefix (pricing, retail, ' розничная');
 
+// -- Суммы по таре/товарам
+@defineDocumentHeaderItemSum (pricing, , );                          //-- сумма поставщика
+@defineDocumentHeaderItemSum (pricing, retailMarkup, retailMarkup);  //-- сумма торговой надбавки
+@defineDocumentHeaderItemSum (pricing, retailVAT, retailVAT);        //-- сумма розничного НДС
+
 // Действия по добавлению строк
 @defineAddDetailDialogSkuStock(userPricing, sku, departmentStore, dialogSku);
 @defineAddDetailDialogBarcode(userPricing, sku);

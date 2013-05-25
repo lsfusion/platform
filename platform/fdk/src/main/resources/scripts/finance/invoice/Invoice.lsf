@@ -182,7 +182,10 @@ META defineInvoice(sign, stockProp)
 
     @defineDocumentInterfaceHeaderSum(invoice);
 
-    @defineDocumentHeaderItemSum(invoice, , );
+    @defineDocumentHeaderItemSum(invoice, , ); // ---- Сумма без НДС
+    @defineDocumentHeaderItemSum (invoice, VAT, VAT);        //-- сумма НДС поставщика
+    @defineDocumentHeaderItemSum (invoice, invoice, invoice);        //-- сумма с НДС
+
     @defineDocumentHeaderItemSum(userInvoice, , );
 
     @defineAddDetailDialogSkuStock(userInvoice, sku, stockProp, dialogSku);
