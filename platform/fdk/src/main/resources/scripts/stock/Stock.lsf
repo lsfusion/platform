@@ -774,8 +774,7 @@ END
 // ----------------------------- Автоматическое проставление организаций и складов --------------------------------------- //
 
 META defineDocumentLegalEntityStockAccess(objectClass, prefix, filter, form)
-    prefix###objectClass(o) <- default###filter##Employee(currentUser()) IF countAccess###filter##Employee (currentUser()) == 1
-        WHEN ASSIGNED(o IS objectClass);
+    @defineDocumentLegalEntityAccess(objectClass, prefix, filter);
 
     WHEN SESSION FORMS form CHANGED(prefix###objectClass(o)) DO
         prefix###stock###objectClass(o) <- defaultStockEmployeeLegalEntity(currentUser(), prefix###objectClass(o))

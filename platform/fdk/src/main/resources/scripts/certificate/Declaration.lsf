@@ -32,17 +32,24 @@ nameCurrencyCustomsZoneDeclaration 'Валюта платежей' (declaration)
 legalEntityDeclaration = DATA LegalEntity(Declaration);
 nameLegalEntityDeclaration 'Импортёр' (declaration) = nameLegalEntity(legalEntityDeclaration(declaration));
 
+@defineDocumentLegalEntityAccess(Declaration, legalEntity, company);
+
+CONSTRAINT legalEntityDeclaration(declaration) AND NOT isCompanyLegalEntity(legalEntityDeclaration(declaration))
+    CHECKED BY legalEntityDeclaration MESSAGE 'Импортёр должен быть компанией';
+
 currencyDeclaration = DATA Currency(Declaration);
 nameCurrencyDeclaration 'Валюта накладных' (declaration) = nameCurrency(currencyDeclaration(declaration));
 
 homeCurrencyDeclaration = DATA Currency(Declaration);
 nameHomeCurrencyDeclaration 'Валюта (расч.)' (declaration) = nameCurrency(homeCurrencyDeclaration(declaration));
 
+homeCurrencyDeclaration(declaration) <- currencyLegalEntity(legalEntityDeclaration(declaration)) WHEN CHANGED(legalEntityDeclaration(declaration));
+
 typeExchangeDeclaration = DATA TypeExchange(Declaration);
 nameTypeExchangeDeclaration 'Тип обмена' (declaration) = nameTypeExchange(typeExchangeDeclaration(declaration));
 
 CONSTRAINT currencyTypeExchange(typeExchangeDeclaration(declaration)) != homeCurrencyDeclaration(declaration)
-    CHECKED BY homeCurrencyDeclaration MESSAGE 'Тип обмена должен соответствовать расчётной валюте';
+    CHECKED BY typeExchangeDeclaration MESSAGE 'Тип обмена должен соответствовать расчётной валюте';
 
 rateExchangeDeclaration 'Курс для накладных' = DATA NUMERIC[14,3](Declaration);
 calcRateExchangeDeclaration 'Курс для накладных' (declaration) = rateTypeExchangeCurrencyDate(typeExchangeDeclaration(declaration), currencyDeclaration(declaration), dateDeclaration(declaration));

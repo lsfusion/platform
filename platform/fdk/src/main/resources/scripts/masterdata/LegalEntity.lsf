@@ -368,6 +368,12 @@ META defineDocumentPhone(object, contact, caption)
     phone###contact###object 'Телефон'###caption (object) = phoneLegalEntity(contact###object(object)) IN documentPrmGroup;
 END
 
+// ----------------------------- Автоматическое проставление организаций и складов --------------------------------------- //
+
+META defineDocumentLegalEntityAccess(objectClass, prefix, filter)
+    prefix###objectClass(o) <- default###filter##Employee(currentUser()) IF countAccess###filter##Employee (currentUser()) == 1
+        WHEN ASSIGNED(o IS objectClass);
+END
 
 // ----------------------------------- Стандартные данные ----------------------------------- //
 

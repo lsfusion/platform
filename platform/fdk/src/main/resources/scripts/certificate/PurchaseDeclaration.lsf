@@ -76,6 +76,7 @@ FORM declarationInvoices 'Накладные декларации'
 showFormDeclarationInvoices 'Накладные декларации' = ACTION (declaration) {
     FORM declarationInvoices OBJECTS d=declaration MODAL;
     EXEC apply();
+
 } TOOLBAR;
 
 EXTEND FORM declaration

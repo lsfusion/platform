@@ -587,6 +587,8 @@ META defineInvoiceHomeCurrency(dumb)
     homeCurrencyInvoice(i) += homeCurrencyUserInvoice(i);
     nameHomeCurrencyInvoice 'Валюта (пост.)' (i) = nameCurrency(homeCurrencyInvoice(i));
 
+    homeCurrencyUserInvoice(userInvoice) <- currencyLegalEntity(customerUserInvoice(userInvoice)) WHEN CHANGED(customerUserInvoice(userInvoice));
+
     typeExchangeInvoice = ABSTRACT TypeExchange(Invoice);
     typeExchangeUserInvoice = DATA TypeExchange(UserInvoice);
     typeExchangeInvoice(i) += typeExchangeUserInvoice(i);
