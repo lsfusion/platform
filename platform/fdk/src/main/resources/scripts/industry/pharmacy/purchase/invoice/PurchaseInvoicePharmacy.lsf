@@ -1,6 +1,6 @@
 MODULE PurchaseInvoicePharmacy;
 
-REQUIRE PurchaseInvoice;
+REQUIRE System, PurchaseInvoice;
 
 NAMESPACE Purchase;
 
@@ -8,12 +8,24 @@ seriesPharmacyInvoiceDetail 'Серия лекарственного средс�
 
 seriesPharmacyUserInvoiceDetail 'Серия лекарственного средства' = DATA STRING[100] (UserInvoiceDetail) MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
+showSeriesPharmacy 'Показывать серию лекарственного средства' = DATA BOOLEAN ();
+
+EXTEND FORM options
+    PROPERTIES() showSeriesPharmacy
+;
+
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(showSeriesPharmacy);
+    }
+}
+
 seriesPharmacyInvoiceDetail(detail) += seriesPharmacyUserInvoiceDetail(detail);
 
 EXTEND FORM userInvoice
-    PROPERTIES(d) seriesPharmacyUserInvoiceDetail BEFORE nameBatchUserInvoiceDetail
+    PROPERTIES(d) seriesPharmacyUserInvoiceDetail SHOWIF showSeriesPharmacy() BEFORE nameBatchUserInvoiceDetail
 ;
 
 EXTEND FORM invoices
-    PROPERTIES(d) READONLY seriesPharmacyInvoiceDetail BEFORE nameBatchInvoiceDetail
+    PROPERTIES(d) READONLY seriesPharmacyInvoiceDetail SHOWIF showSeriesPharmacy() BEFORE nameBatchInvoiceDetail
 ;

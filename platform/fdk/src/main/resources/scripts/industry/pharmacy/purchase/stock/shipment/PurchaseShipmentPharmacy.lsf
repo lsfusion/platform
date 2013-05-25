@@ -14,9 +14,9 @@ seriesPharmacyShipmentDetail(detail) += seriesPharmacyUserShipmentDetail(detail)
 seriesPharmacyShipmentDetail(detail) += seriesPharmacyInvoiceShipmentDetail(detail);
 
 EXTEND FORM userShipment
-    PROPERTIES(d) seriesPharmacyShipmentDetail BEFORE nameBatchUserShipmentDetail
+    PROPERTIES(d) seriesPharmacyShipmentDetail SHOWIF showSeriesPharmacy() BEFORE nameBatchUserShipmentDetail
 ;
 
 EXTEND FORM shipments
-    PROPERTIES(d) READONLY seriesPharmacyShipmentDetail BEFORE nameBatchShipmentDetail
+    PROPERTIES(d) READONLY seriesPharmacyShipmentDetail SHOWIF showSeriesPharmacy() BEFORE nameBatchShipmentDetail
 ;

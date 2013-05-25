@@ -9,15 +9,15 @@ seriesPharmacyBatch 'Серия лекарственного средства' =
 seriesPharmacyBatch (batch) += seriesPharmacyShipmentDetail(shipmentDetailShipmentBatch(batch));
 
 EXTEND FORM currentBalanceBatchStock
-    PROPERTIES READONLY seriesPharmacyBatch(bt) AFTER nameSkuBatch(bt)
+    PROPERTIES READONLY seriesPharmacyBatch(bt) SHOWIF showSeriesPharmacy() AFTER nameSkuBatch(bt)
 ;
 
 EXTEND FORM dialogBatch
-    PROPERTIES READONLY seriesPharmacyBatch(bt) AFTER nameSkuBatch(bt)
+    PROPERTIES READONLY seriesPharmacyBatch(bt) SHOWIF showSeriesPharmacy() AFTER nameSkuBatch(bt)
 ;
 
 EXTEND FORM batches
-    PROPERTIES READONLY seriesPharmacyBatch(bt) AFTER nameSkuBatch(bt)
+    PROPERTIES READONLY seriesPharmacyBatch(bt) SHOWIF showSeriesPharmacy() AFTER nameSkuBatch(bt)
 ;
 
 
