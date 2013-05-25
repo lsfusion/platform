@@ -10,14 +10,13 @@ nameGLDocument(document) += descriptionInvoice(document);
 
 //-------------------------------- НДС поставщика ----------------------------------//
 //-- Тара
-@defineGeneralLedgerAggregationOperation (invoice,                                      // основание (объект, документ..)
-                                          InvSupVATC,                                   // префикс для проводки (для того, чтобы не пересекались по названию)
-                                          customer,                                     // копмания проводки
-                                          VATSumContainerInvoiceDetailInvoice,          // сумма проводки
-                                          purchase,                                     // префикс для суммы проводки (для того, чтобы не пересекались в разрезе операций)
-                                          descriptionInvoice,                           // описание документа
-                                          '18.5',                                       // дебет счета
-                                          '60.1',                                       // кредит счета
+@defineGeneralLedgerAggregationOperation (invoice,                                      // основание
+                                          InvSupVATC,                                   // идентификатор
+                                          customer,                                     // компания
+                                          VATSumContainerInvoiceDetailInvoice,          // сумма
+                                          description,                                  // описание
+                                          '18.5',                                       // дебет
+                                          '60.1',                                       // кредит
                                           'by_default',                                 // идентификатор плана счетов
                                           'by_default_purchase'                         // идентификатор операции
                                           );
@@ -28,8 +27,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice
                                           InvSupVATCH,
                                           customer,
                                           VATSumChargeInvoiceDetailInvoice,
-                                          purchase,
-                                          descriptionInvoice,
+                                          description,
                                           '18.6',
                                           '60.1',
                                           'by_default',
@@ -42,8 +40,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice
                                           InvSupVATI,
                                           customer,
                                           VATSumItemInvoiceDetailInvoice,
-                                          purchase,
-                                          descriptionInvoice,
+                                          description,
                                           '18.1',
                                           '60.1',
                                           'by_default',
@@ -58,8 +55,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice
                                           InvSupC,
                                           customer,
                                           sumContainerInvoiceDetailInvoice,
-                                          purchase,
-                                          descriptionInvoice,
+                                          description,
                                           '41.3',
                                           '60.1',
                                           'by_default',
@@ -72,8 +68,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice
                                           InvSupIH,
                                           customer,
                                           sumItemInvoiceDetailInvoice,
-                                          purchase,
-                                          descriptionInvoice,
+                                          description,
                                           '41.2',
                                           '60.1',
                                           'by_default',
@@ -81,8 +76,4 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerStockInvoice(invoiceInvSupIHGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvSupIHGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceInvSupIHGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvSupIHGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
-////-- Тара                                               в примере две проводки, надо выбрать какая из них
-//@defineGeneralLedgerAggregation (invoice, InvSupC, customer, sumContainerInvoiceDetailInvoice, descriptionInvoice, '44.3', '60.1', '1');
-//debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerStockInvoice(invoiceInvSupCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvSupCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
-//creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceInvSupCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvSupCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
 

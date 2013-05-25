@@ -10,14 +10,13 @@ nameGLDocument(document) += descriptionPricing(document);
 ////////////////////////////// Приход от поставщика //////////////////////////////////
 //-------------------------------- Торговая надбавка -------------------------------//
 //-- Тара
-@defineGeneralLedgerAggregationOperation (pricing,                                      // основание (объект, документ..)
-                                          PrPurMarkC,                                   // префикс для проводки (для того, чтобы не пересекались по названию)
-                                          legalEntityStock,                             // копмания проводки
-                                          retailMarkupSumContainerPricingDetailPricing, // сумма проводки
-                                          purchase,                                     // префикс для суммы проводки (для того, чтобы не пересекались в разрезе операций)
-                                          descriptionPricing,                           // описание документа
-                                          '41.3',                                       // дебет счета
-                                          '42.1',                                       // кредит счета
+@defineGeneralLedgerAggregationOperation (pricing,                                      // основание
+                                          PrPurMarkC,                                   // идентификатор
+                                          legalEntityStock,                             // компания
+                                          retailMarkupSumContainerPricingDetailPricing, // сумма
+                                          description,                                  // описание
+                                          '41.3',                                       // дебет
+                                          '42.1',                                       // кредит
                                           'by_default',                                 // идентификатор плана счетов
                                           'by_default_purchase'                         // идентификатор операции
                                           );
@@ -27,8 +26,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreP
                                           PrPurMarkI,
                                           legalEntityStock,
                                           retailMarkupSumItemPricingDetailPricing,
-                                          purchase,
-                                          descriptionPricing,
+                                          description,
                                           '41.2',
                                           '42.1',
                                           'by_default',
@@ -42,8 +40,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreP
                                           PrPurVATC,
                                           legalEntityStock,
                                           retailVATSumContainerPricingDetailPricing,
-                                          purchase,
-                                          descriptionPricing,
+                                          description,
                                           '41.3',
                                           '42.2',
                                           'by_default',
@@ -56,7 +53,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreP
                                           PrPurVATI,
                                           legalEntityStock,
                                           retailVATSumItemPricingDetailPricing,
-                                          purchase, descriptionPricing,
+                                          description,
                                           '41.2',
                                           '42.2',
                                           'by_default',
@@ -71,8 +68,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreP
                                           PrWoNMarkC,
                                           legalEntityStock,
                                           retailMarkupSumContainerPricingDetailPricing,
-                                          norm,
-                                          descriptionPricing,
+                                          description,
                                           '42.1',
                                           '41.3',
                                           'by_default',
@@ -84,8 +80,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           PrWoNMarkNotC,
                                           legalEntityStock,
                                           retailMarkupSumNotContainerPricingDetailPricing,
-                                          norm,
-                                          descriptionPricing,
+                                          description,
                                           '42.1',
                                           '41.2',
                                           'by_default',
@@ -99,8 +94,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           PrWoNVATC,
                                           legalEntityStock,
                                           retailVATSumContainerPricingDetailPricing,
-                                          norm,
-                                          descriptionPricing,
+                                          description,
                                           '42.2',
                                           '41.3',
                                           'by_default',
@@ -112,8 +106,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           PrWoNVATNotC,
                                           legalEntityStock,
                                           retailVATSumNotContainerPricingDetailPricing,
-                                          norm,
-                                          descriptionPricing,
+                                          description,
                                           '42.2',
                                           '41.2',
                                           'by_default',
@@ -127,8 +120,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           PrWoNSupC,
                                           legalEntityStock,
                                           sumContainerPricingDetailPricing,
-                                          norm,
-                                          descriptionPricing,
+                                          description,
                                           '44.1',
                                           '41.3',
                                           'by_default',
@@ -140,8 +132,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           PrWoNSupNotC,
                                           legalEntityStock,
                                           sumNotContainerPricingDetailPricing,
-                                          norm,
-                                          descriptionPricing,
+                                          description,
                                           '44.1',
                                           '41.2',
                                           'by_default',
@@ -156,8 +147,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           PrWoRMarkC,
                                           legalEntityStock,
                                           retailMarkupSumContainerPricingDetailPricing,
-                                          rope,
-                                          descriptionPricing,
+                                          description,
                                           '42.1',
                                           '41.3',
                                           'by_default',
@@ -169,8 +159,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           PrWoRMarkNotC,
                                           legalEntityStock,
                                           retailMarkupSumNotContainerPricingDetailPricing,
-                                          rope,
-                                          descriptionPricing,
+                                          description,
                                           '42.1',
                                           '41.2',
                                           'by_default',
@@ -184,8 +173,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           PrWoRVATC,
                                           legalEntityStock,
                                           retailVATSumContainerPricingDetailPricing,
-                                          rope,
-                                          descriptionPricing,
+                                          description,
                                           '42.2',
                                           '41.3',
                                           'by_default',
@@ -197,8 +185,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           PrWoRVATNotC,
                                           legalEntityStock,
                                           retailVATSumNotContainerPricingDetailPricing,
-                                          rope,
-                                          descriptionPricing,
+                                          description,
                                           '42.2',
                                           '41.2',
                                           'by_default',
@@ -212,8 +199,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           PrWoRSupC,
                                           legalEntityStock,
                                           sumContainerPricingDetailPricing,
-                                          rope,
-                                          descriptionPricing,
+                                          description,
                                           '44.7',
                                           '41.3',
                                           'by_default',
@@ -225,8 +211,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           PrWoRSupNotC,
                                           legalEntityStock,
                                           sumNotContainerPricingDetailPricing,
-                                          rope,
-                                          descriptionPricing,
+                                          description,
                                           '44.7',
                                           '41.2',
                                           'by_default',

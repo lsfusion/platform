@@ -11,14 +11,13 @@ nameGLDocument(document) += descriptionShipment(document);
 ////////////////////////////// Внутреннее перемещение (магазин-магазин) //////////////////////////////////
 //-------------------------------- Розничная сумма ----------------------------------//
 //-- Тара
-@defineGeneralLedgerAggregationOperation (shipment,                                // основание (объект, документ..)
-                                          ShipRetC,                                // префикс для проводки (для того, чтобы не пересекались по названию)
-                                          supplier,                                // копмания проводки
-                                          sumContainerShipmentDetailShipment,      // сумма проводки
-                                          internalRetail,                          // префикс для суммы проводки (для того, чтобы не пересекались в разрезе операций)
-                                          descriptionShipment,                     // описание документа
-                                          '41.3',                                  // дебет счета
-                                          '41.3',                                  // кредит счета
+@defineGeneralLedgerAggregationOperation (shipment,                                // основание
+                                          ShipRetC,                                // идентификатор
+                                          supplier,                                // компания
+                                          sumContainerShipmentDetailShipment,      // сумма
+                                          description,                             // описание
+                                          '41.3',                                  // дебет
+                                          '41.3',                                  // кредит
                                           'by_default',                            // идентификатор плана счетов
                                           'by_default_internalRetail'              // идентификатор операции
                                           );
@@ -30,8 +29,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockSh
                                           ShipRetNotC,
                                           supplier,
                                           sumNotContainerShipmentDetailShipment,
-                                          internalRetail,
-                                          descriptionShipment,
+                                          description,
                                           '41.2',
                                           '41.2',
                                           'by_default',

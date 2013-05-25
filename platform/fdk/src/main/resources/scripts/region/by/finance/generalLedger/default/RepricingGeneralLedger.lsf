@@ -10,14 +10,13 @@ nameGLDocument(document) += descriptionRepricing(document);
 ////////////////////////////// Обычная переоценка //////////////////////////////////
 //-------------------------------- Торговая надбавка ----------------------------------//
 //-- Не услуги
-@defineGeneralLedgerAggregationOperation (repricing,                                      // основание (объект, документ..)
-                                          RepMark,                                        // префикс для проводки (для того, чтобы не пересекались по названию)
-                                          legalEntityStock,                               // копмания проводки
-                                          diffMarkupSumNotChargeRepricingDetailRepricing, // сумма проводки
-                                          repricing,                                      // префикс для суммы проводки (для того, чтобы не пересекались в разрезе операций)
-                                          descriptionRepricing,                           // описание документа
-                                          '41.2',                                         // дебет счета
-                                          '42.1',                                         // кредит счета
+@defineGeneralLedgerAggregationOperation (repricing,                                      // основание
+                                          RepMark,                                        // идентификатор
+                                          legalEntityStock,                               // компания
+                                          diffMarkupSumNotChargeRepricingDetailRepricing, // сумма
+                                          description,                                    // описание
+                                          '41.2',                                         // дебет
+                                          '42.1',                                         // кредит
                                           'by_default',                                   // идентификатор плана счетов
                                           'by_default_repricing'                          // идентификатор операции
                                           );
@@ -29,8 +28,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreR
                                           RepVATC,
                                           legalEntityStock,
                                           diffVATSumContainerRepricingDetailRepricing,
-                                          repricing,
-                                          descriptionRepricing,
+                                          description,
                                           '41.3',
                                           '42.2',
                                           'by_default',
@@ -42,8 +40,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreR
                                           RepVATNotC,
                                           legalEntityStock,
                                           diffVATSumNotContainerRepricingDetailRepricing,
-                                          repricing,
-                                          descriptionRepricing,
+                                          description,
                                           '41.2',
                                           '42.2',
                                           'by_default',
@@ -57,8 +54,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreR
                                           RepSupC,
                                           legalEntityStock,
                                           diffSumContainerRepricingDetailRepricing,
-                                          repricing,
-                                          descriptionRepricing,
+                                          description,
                                           '41.3',
                                           '92.2',
                                           'by_default',
@@ -70,8 +66,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreR
                                           RepSupNotC,
                                           legalEntityStock,
                                           diffSumNotContainerRepricingDetailRepricing,
-                                          repricing,
-                                          descriptionRepricing,
+                                          description,
                                           '41.2',
                                           '92.1',
                                           'by_default',

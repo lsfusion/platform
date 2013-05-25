@@ -11,14 +11,13 @@ nameGLDocument(document) += descriptionInvoice(document);
 ////////////////////////////// Отгрузка по безналу (из розницы) //////////////////////////////////
 //------------------- Розничная сумма --------------------//
 //-- Тара
-@defineGeneralLedgerAggregationOperation (invoice,                                 // основание (объект, документ..)
-                                          InvRetC,                                 // префикс для проводки (для того, чтобы не пересекались по названию)
-                                          supplier,                                // копмания проводки
-                                          invoiceSumContainerInvoiceDetailInvoice, // сумма проводки
-                                          saleRetail,                              // префикс для суммы проводки (для того, чтобы не пересекались в разрезе операций)
-                                          descriptionInvoice,                      // описание документа
-                                          '62.1',                                  // дебет счета
-                                          '41.3',                                  // кредит счета
+@defineGeneralLedgerAggregationOperation (invoice,                                 // основание
+                                          InvRetC,                                 // идентификатор
+                                          supplier,                                // компания
+                                          invoiceSumContainerInvoiceDetailInvoice, // сумма
+                                          description,                             // описание
+                                          '62.1',                                  // дебет
+                                          '41.3',                                  // кредит
                                           'by_default',                            // идентификатор плана счетов
                                           'by_default_saleRetail'                  // идентификатор операции
                                           );
@@ -30,8 +29,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockIn
                                           InvRetI,
                                           supplier,
                                           invoiceSumItemInvoiceDetailInvoice,
-                                          saleRetail,
-                                          descriptionInvoice,
+                                          description,
                                           '62.1',
                                           '41.2',
                                           'by_default',

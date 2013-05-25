@@ -9,13 +9,13 @@ TABLE GLDocument(GLDocument);
 nameGLDocument 'Регистр-основание' = ABSTRACT STRING[200] (GLDocument);
 editGLDocument 'Редактировать регистр' = ABSTRACT ACTION (GLDocument) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
-createPostings 'Создавать проводки онлайн' = DATA BOOLEAN ();
+onlineGeneralLedger 'Создавать проводки онлайн' = DATA BOOLEAN ();
 EXTEND FORM options
-    PROPERTIES() createPostings
+    PROPERTIES() onlineGeneralLedger
 ;
 EXTEND DESIGN options {
     commons {
-        ADD PROPERTY(createPostings);
+        ADD PROPERTY(onlineGeneralLedger);
     }
 }
 //-------------------------- Проводки -------------------------//
@@ -260,72 +260,80 @@ DESIGN generalLedgers FROM DEFAULT {
     ADD g.box BEFORE documentHistory;
 }
 
-//-- Для одного объекта
-META defineGeneralLedgerAggregation (object, prop, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
-    @defineGeneralLedgerAggregationInner (object, prop, ###prop, companyProp, property, dateProp, timeProp, description, debit, credit, accountType);
-END
-META defineGeneralLedgerAggregation (object, prop, companyProp, property, description, debit, credit, accountType)
-    @defineGeneralLedgerAggregation (object, prop, companyProp, property, date, time, description, debit, credit, accountType);
-END
-
-//-- Для одного объекта с операцией
-META defineGeneralLedgerAggregationOperation (object, prop, companyProp, property, prefixProp, description, debit, credit, accountType, keyProp)
-    prefixProp###property(object) = property(object) IF id###operation###object(object) == keyProp;
-    @defineGeneralLedgerAggregation (object, prop, companyProp, prefixProp###property, description, debit, credit, accountType);
-END
-
-META defineGeneralLedgerAggregationInner (object, prop, propClass, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
-
-    CLASS propClass###generalLedger : GeneralLedger;
-
-    TABLE prop###generalLedger (propClass###generalLedger);
-
-    needTo###property (object)=  property(object) IF createPostings(); //чтобы можно было не создавать проводки автоматом
-    @defineAggregation(object, prop###generalLedger, needTo###property);
-
-    GLDocumentGeneralLedger(generalLedger) += object###prop###generalLedger(generalLedger);
-    legalEntityGeneralLedger(generalLedger) += companyProp###object(object###prop###generalLedger(generalLedger));
-    isPostedGeneralLedger(generalLedger) += isPosted###object(object###prop###generalLedger(generalLedger));
-    descriptionGeneralLedger(generalLedger) += description(object###prop###generalLedger(generalLedger));
-    dateGeneralLedger(generalLedger) += dateProp###object(object###prop###generalLedger(generalLedger));
-    timeGeneralLedger(generalLedger) += timeProp###object(object###prop###generalLedger(generalLedger));
-    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) IF generalLedger IS propClass###generalLedger;
-    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) IF generalLedger IS propClass###generalLedger;
-    sumGeneralLedger(generalLedger) += property(object###prop###generalLedger(generalLedger));
-
-END
-
-//-- Для двух объектов
-META defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, companyProp, property, description, debit, credit, accountType)   //  prim1Object - документ
-    @defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, companyProp, property, date, time, description, debit, credit, accountType);
-END
-
-META defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
-    @defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, ###prop, companyProp, property, dateProp, timeProp, description, debit, credit, accountType);
-END
-
-META defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, propClass, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
-
-    CLASS propClass###generalLedger : GeneralLedger;
-
-    TABLE prop###generalLedger (propClass###generalLedger);
-
-    needTo###property (prim1Object, prim2Object)=  property(prim1Object, prim2Object) IF createPostings();     //чтобы можно было не создавать проводки автоматом
-    @defineAggregation (prim1Object, prim2Object, prop###generalLedger, needTo###property);
-
-    GLDocumentGeneralLedger(generalLedger) += prim1Object###prop###generalLedger(generalLedger);
-    legalEntityGeneralLedger(generalLedger) += companyProp###prim1Object(prim1Object###prop###generalLedger(generalLedger));
-    isPostedGeneralLedger(generalLedger) += isPosted###prim1Object(prim1Object###prop###generalLedger(generalLedger));
-    descriptionGeneralLedger(generalLedger) += description(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));
-    dateGeneralLedger(generalLedger) += dateProp###prim1Object(prim1Object###prop###generalLedger(generalLedger));
-    timeGeneralLedger(generalLedger) += timeProp###prim1Object(prim1Object###prop###generalLedger(generalLedger));
-    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) IF generalLedger IS propClass###generalLedger;
-    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) IF generalLedger IS propClass###generalLedger;
-    sumGeneralLedger(generalLedger) += property(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));
-END
-
 NAVIGATOR {
     accountType {
         ADD generalLedgers;
     }
 }
+
+// ----------------------------------------------- Метакод по созданию проводок -------------------------------------------- //
+
+//-- Для одного объекта
+META defineGeneralLedgerAggregation (object, prop, companyProp, property, description, debit, credit, accountType)
+    @defineGeneralLedgerAggregation (object, prop, companyProp, property, date, time, description, debit, credit, accountType);
+END
+
+META defineGeneralLedgerAggregation (object, idGL, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
+    @defineGeneralLedgerAggregation (object, idGL, ###idGL, companyProp, property, dateProp, timeProp, description, debit, credit, accountType);
+END
+
+META defineGeneralLedgerAggregation (object, idGL, classGL, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
+    CLASS classGL###generalLedger : GeneralLedger;
+
+    TABLE idGL###generalLedger (classGL###generalLedger);
+
+    needTo###property (object)=  property(object) IF onlineGeneralLedger();
+    @defineAggregation(object, idGL###generalLedger, needTo###property);
+
+    GLDocumentGeneralLedger(generalLedger) += object###idGL###generalLedger(generalLedger);
+    legalEntityGeneralLedger(generalLedger) += companyProp###object(object###idGL###generalLedger(generalLedger));
+    isPostedGeneralLedger(generalLedger) += isPosted###object(object###idGL###generalLedger(generalLedger));
+    descriptionGeneralLedger(generalLedger) += description###object(object###idGL###generalLedger(generalLedger));
+    dateGeneralLedger(generalLedger) += dateProp###object(object###idGL###generalLedger(generalLedger));
+    timeGeneralLedger(generalLedger) += timeProp###object(object###idGL###generalLedger(generalLedger));
+    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) IF generalLedger IS classGL###generalLedger;
+    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) IF generalLedger IS classGL###generalLedger;
+    sumGeneralLedger(generalLedger) += property(object###idGL###generalLedger(generalLedger));
+END
+
+//-- С операцией
+META defineGeneralLedgerAggregationOperation(object, idGL, companyProp, property, description, debit, credit, accountType, keyProp)
+    idGL###property(object) = property(object) IF id###operation###object(object) == keyProp;
+    @defineGeneralLedgerAggregation (object, idGL, companyProp, idGL###property, description, debit, credit, accountType);
+END
+
+// ----------------------------------- Для двух объектов --------------------------------------- //
+
+META defineGeneralLedgerDoubleAggregation (object1, object2, idGL, companyProp, property, description, debit, credit, accountType)   //  object1 - документ
+    @defineGeneralLedgerDoubleAggregation (object1, object2, idGL, companyProp, property, date, time, description, debit, credit, accountType);
+END
+
+META defineGeneralLedgerDoubleAggregation (object1, object2, idGL, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
+    @defineGeneralLedgerDoubleAggregation (object1, object2, idGL, ###idGL, companyProp, property, dateProp, timeProp, description, debit, credit, accountType);
+END
+
+META defineGeneralLedgerDoubleAggregation (object1, object2, idGL, classGL, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
+
+    CLASS classGL###generalLedger : GeneralLedger;
+
+    TABLE idGL###generalLedger (classGL###generalLedger);
+
+    needTo###property (object1, object2) = property(object1, object2) IF onlineGeneralLedger();
+    @defineAggregation (object1, object2, idGL###generalLedger, needTo###property);
+
+    GLDocumentGeneralLedger(generalLedger) += object1###idGL###generalLedger(generalLedger);
+    legalEntityGeneralLedger(generalLedger) += companyProp###object1(object1###idGL###generalLedger(generalLedger));
+    isPostedGeneralLedger(generalLedger) += isPosted###object1(object1###idGL###generalLedger(generalLedger));
+    descriptionGeneralLedger(generalLedger) += description###object1(object1###idGL###generalLedger(generalLedger), object2###idGL###generalLedger(generalLedger));
+    dateGeneralLedger(generalLedger) += dateProp###object1(object1###idGL###generalLedger(generalLedger));
+    timeGeneralLedger(generalLedger) += timeProp###object1(object1###idGL###generalLedger(generalLedger));
+    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) IF generalLedger IS classGL###generalLedger;
+    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) IF generalLedger IS classGL###generalLedger;
+    sumGeneralLedger(generalLedger) += property(object1###idGL###generalLedger(generalLedger), object2###idGL###generalLedger(generalLedger));
+END
+
+//-- С операцией
+META defineGeneralLedgerAggregationOperation(object1, object2, idGL, companyProp, property, description, debit, credit, accountType, keyProp)
+    idGL###property(o) = property(o) IF id###operation###object1(o) == keyProp;
+    @defineGeneralLedgerDoubleAggregation(object1, object2, idGL, companyProp, idGL###property, description, debit, credit, accountType);
+END
