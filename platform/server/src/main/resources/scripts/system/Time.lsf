@@ -12,6 +12,7 @@ currentMonth 'Тек. месяц' = numberMonthInDate (currentDate());
 currentYear 'Тек. год' = yearInDate (currentDate());
 
 toDate = FORMULA DATE '(CAST(($1) as date))';
+toTime = FORMULA TIME '(CAST(($1) as time))';
 toDateTime = FORMULA DATETIME '(CAST(($1) as timestamp))';
 
 sumDate = FORMULA DATE '(($1)+($2))';

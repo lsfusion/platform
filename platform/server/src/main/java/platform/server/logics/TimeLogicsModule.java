@@ -47,13 +47,6 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
     @Override
     public void initProperties() throws RecognitionException {
 
-        currentDateTime = addTProp("currentDateTime", getString("logics.date.current.datetime"), Time.DATETIME);
-        toTime = addSFProp("toTime", "(CAST((prm1) as time))", TimeClass.instance, 1);
-        currentTime = addJProp("currentTime", getString("logics.date.current.time"), toTime, currentDateTime);
-        currentMinute = addTProp("currentMinute", getString("logics.date.current.minute"), Time.MINUTE);
-        currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
-        currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
-
         super.initProperties();
 
         month = (ConcreteCustomClass) getClassByName("Month");
@@ -66,7 +59,14 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
         currentMonth = getLCPByName("currentMonth");
 
         toDate = getLCPByName("toDate");
+        toTime = getLCPByName("toTime");
         sumDate = getLCPByName("sumDate");
         subtractDate = getLCPByName("subtractDate");
+
+        currentDateTime = addTProp("currentDateTime", getString("logics.date.current.datetime"), Time.DATETIME);
+        currentTime = addJProp("currentTime", getString("logics.date.current.time"), toTime, currentDateTime);
+        currentMinute = addTProp("currentMinute", getString("logics.date.current.minute"), Time.MINUTE);
+        currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
+        currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
     }
 }

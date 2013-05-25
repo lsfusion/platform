@@ -29,23 +29,21 @@ showNameCompanyLedger() = TRUE AND NOT nameFilterLegalEntityRangeManagement();
 
 inRangeManagement 'Отм.' = DATA SESSION BOOLEAN(Sku);
 
-createPriceRangeManagement 'Создать прайс' = ACTION (dataPriceListType) NEWSESSION{
+createPriceRangeManagement 'Создать прайс' = ACTION (dateTime, dataPriceListType) {
     FOR ADDOBJ u = UserPriceList DO {
-        SET fromDateUserPriceList(u) <- currentDate();
-        SET fromTimeUserPriceList(u) <- currentTime();
+        SET fromDateUserPriceList(u) <- toDate(dateTime AS DATETIME);
+        SET fromTimeUserPriceList(u) <- toTime(dateTime AS DATETIME);
         SET companyUserPriceList(u) <- filterLegalEntityRangeManagement();
-        SET currencyUserPriceList(u) <- currencyLegalEntity(filterLegalEntityRangeManagement());
+        SET currencyUserPriceList(u) <- currencyDataPriceListType(dataPriceListType);
         SET inUserPriceListDataPriceListType(u, dataPriceListType) <- TRUE;
         SET showUserPriceListPriceListType(u, dataPriceListType) <- TRUE;
         FOR inRangeManagement(sku) ADDOBJ d = UserPriceListDetail DO {
-            SET skuUserPriceListDetail(d) <- sku AS Sku;
-            SET userPriceListUserPriceListDetail(d) <- u AS UserPriceList;
+            SET skuUserPriceListDetail(d) <- sku;
+            SET userPriceListUserPriceListDetail(d) <- u;
         }
         FORM userPriceList OBJECTS p = u DOCKEDMODAL;
-        IF TRUE IF NOT formResult() == FormResult.ok THEN {
-            //FOR userPriceListUserPriceListDetail(detail) == u DO {
+        IF NOT formResult() == FormResult.ok THEN {
             DELETE detail WHERE userPriceListUserPriceListDetail(detail) == u;
-            //}
             DELETE u;
         }
     }
@@ -84,7 +82,7 @@ FORM rangeManagement 'Управление ценами'
     PROPERTIES(s) READONLY nameStock
     PROPERTIES(sk) READONLY nameSku, idBarcodeSku
     PROPERTIES(sk, s, dt) READONLY balanceASkuStockDateTime
-    PROPERTIES createPriceRangeManagement(pt) TODRAW sk FORCE PANEL
+    PROPERTIES createPriceRangeManagement(dt, pt) TODRAW sk FORCE PANEL
     ORDER BY nameSku(sk)
     FILTERS isParentSkuGroupSku(sg, sk),
             s IS Stock AND NOT stg IS StockGroup OR isParentStockGroupStock(stg, s),
@@ -103,7 +101,7 @@ FORM rangeManagement 'Управление ценами'
     OBJECTS sk2 = Sku
     PROPERTIES(sk2) inRangeManagement
     PROPERTIES(sk2) READONLY nameSku, idBarcodeSku
-    PROPERTIES createPriceRangeManagement(pt) TODRAW sk2 FORCE PANEL
+    PROPERTIES createPriceRangeManagement(dt, pt) TODRAW sk2 FORCE PANEL
     ORDER BY nameSku(sk2)
     PROPERTIES(pt, sk2, dt) READONLY priceLedgerPriceListTypeSkuDateTime SHOWIF showNameCompanyLedger(),
                                      nameCompanyLedgerPriceListTypeSkuDateTime SHOWIF showNameCompanyLedger(),
