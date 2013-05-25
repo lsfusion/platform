@@ -662,6 +662,7 @@ DESIGN POS FROM DEFAULT {
                             ADD PROPERTY(postCashReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
                         }
                         ADD PROPERTY(cancelReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
+                        directions = (0.0, -0.1, 0.0, 0.1);
                     }
                 }
                 NEW secondEastContainer{
@@ -680,6 +681,7 @@ DESIGN POS FROM DEFAULT {
                                 ADD PROPERTY(inputDiscountCardNumberReceipt) { focusable = FALSE; font = 'Tahoma bold 14'; }
                                 ADD PROPERTY(clearDiscountCardReceipt) { focusable = FALSE; font = 'Tahoma bold 14'; }
                             }
+                            directions = ( -0.1, 0.0, 0.1, 0.0);
                         }
                     }
                     NEW sumContainer {
@@ -687,6 +689,7 @@ DESIGN POS FROM DEFAULT {
                         childConstraints = TO THE BOTTOM;
                         ADD PROPERTY(discountSumReceiptDetailReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 54'; }
                         ADD PROPERTY(sumReceiptDetailReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 54'; }
+                        directions = (0.0, -0.1, 0.0, 0.1);
                     }
                 }
             }
