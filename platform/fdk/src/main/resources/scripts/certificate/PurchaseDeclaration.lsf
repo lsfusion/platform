@@ -247,12 +247,12 @@ sumMaxRegistrationDeclaration 'Таможенный сбор (валют.)' (dec
 sumRateRegistrationDeclaration 'Таможенный сбор' (declaration) = roundCurrencyDeclaration(sumMaxRegistrationDeclaration(declaration) *
                                                                                           rateExchangeCustomsZoneDeclaration(declaration), declaration) MINCHARWIDTH 12;
 
-sumRegistrationDataDeclaration 'Таможенный сбор' = DATA NUMERIC[14,3](Declaration);
+sumRegistrationDeclaration 'Таможенный сбор' = DATA NUMERIC[14,3](Declaration);
 
-sumRegistrationDeclaration 'Таможенный сбор' (declaration) = OVERRIDE sumRateRegistrationDeclaration(declaration), sumRegistrationDataDeclaration(declaration);
+//sumRegistrationDeclaration 'Таможенный сбор' (declaration) = OVERRIDE sumRateRegistrationDeclaration(declaration), sumRegistrationDataDeclaration(declaration);
 
 setSumDeclarationDetail 'Рассчитать суммы' = ACTION (declaration) {
-   SET sumRegistrationDataDeclaration(declaration) <- sumRateRegistrationDeclaration(declaration);
+   SET sumRegistrationDeclaration(declaration) <- sumRateRegistrationDeclaration(declaration);
    FOR declarationDeclarationDetail(declarationDetail) == declaration DO {
       SET sumDataDeclarationDetail(declarationDetail) <- sumRateDeclarationDetail(declarationDetail);
       SET percentDutyDataDeclarationDetail(declarationDetail) <- percentDutyCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclarationDetail(declarationDetail));
@@ -282,7 +282,8 @@ toCreateDeclarationDetails 'Создать позиции' = ACTION (declaration
 } TOOLBAR;
 
 EXTEND FORM declaration
-    PROPERTIES(d) sumRateDeclaration, sumRegistrationDataDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
+    PROPERTIES(d) sumRateDeclaration READONLY, sumRegistrationDeclaration
+    PROPERTIES(d) READONLY sumRateDutyDeclaration, sumRateVATDeclaration
 
     OBJECTS dd=DeclarationDetail
     PROPERTIES(id, dd) inInvoiceDetailDeclarationDetail
@@ -309,7 +310,7 @@ EXTEND DESIGN declaration {
                 caption = 'Суммы документа';
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(sumRateDeclaration);
-                ADD PROPERTY(sumRegistrationDataDeclaration);
+                ADD PROPERTY(sumRegistrationDeclaration);
                 ADD PROPERTY(sumRateDutyDeclaration);
                 ADD PROPERTY(sumRateVATDeclaration);
             }
@@ -337,6 +338,8 @@ EXTEND DESIGN declaration {
     PROPERTY(numberVATRangeDataDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(percentVATRangeDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(sumVATDataDeclarationDetail) { background = #AAFFFF; }
+
+    PROPERTY(sumRegistrationDeclaration) { background = #CCFF55; }
 
     ADD functions.box;
 }
@@ -394,7 +397,7 @@ sumDutyCostDeclaration 'Пошлина (факт)' (declaration) = GROUP SUM pri
 coeffInvoiceDetailDeclaration 'Удельный вес' (invoiceDetail) = sumHomeInvoiceDetail(invoiceDetail)/sumRateDeclaration(declarationInvoiceDetail(invoiceDetail))
                                                                IF declarationInvoiceDetail(invoiceDetail);
 
-calcRegistrationInvoiceDetail 'Таможенный сбор' (invoiceDetail) = PARTITION UNGROUP sumRegistrationDataDeclaration
+calcRegistrationInvoiceDetail 'Таможенный сбор' (invoiceDetail) = PARTITION UNGROUP sumRegistrationDeclaration
                                                                   PROPORTION ROUND(4) coeffInvoiceDetailDeclaration(invoiceDetail)
                                                                                  BY declarationInvoiceDetail(invoiceDetail)
                                                                               ORDER invoiceDetail PERSISTENT;
@@ -441,7 +444,8 @@ EXTEND FORM invoices
 ;
 
 EXTEND FORM declaration
-    PROPERTIES(d) sumRegistrationCostDeclaration, sumDutyCostDeclaration, setPriceInvoiceDetailes TODRAW id
+    PROPERTIES(d) READONLY sumRegistrationCostDeclaration, sumDutyCostDeclaration
+    PROPERTIES(d) setPriceInvoiceDetailes TODRAW id
     PROPERTIES(id) priceDutyInvoiceDetail, priceRegistrationInvoiceDetail
 ;
 
@@ -452,6 +456,10 @@ EXTEND DESIGN declaration {
             ADD PROPERTY(sumDutyCostDeclaration);
         }
     }
+
+    PROPERTY(priceRegistrationInvoiceDetail) { background = #CCFF55; }
+    PROPERTY(priceDutyInvoiceDetail) { background = #AAFFFF; }
+
     ADD functions.box;
 }
 
