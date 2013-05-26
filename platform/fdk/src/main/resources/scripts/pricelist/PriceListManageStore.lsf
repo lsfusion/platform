@@ -2,51 +2,49 @@ MODULE PriceListManageStore;
 
 REQUIRE PriceListManage, Store;
 
-countStoresChainStores 'Кол-во магазинов' (chainStores) =
-    GROUP SUM 1 IF chainStoresStore(store) == chainStores
-    BY chainStores;
+// -------------------- В ассортименте ----------------- //
 
-countStoresStoreType 'Кол-во магазинов' (storeType) =
-    GROUP SUM 1 IF storeTypeStore(store) == storeType
-    BY storeType;
-
-countDepartmentStoresPriceListTypeSkuChainStoresDateTime 'В ассортименте' (type, sku, store, dateTime) =
+countDepartmentStorePriceListTypeSkuStoreDateTime 'В ассортименте' (type, sku, store, dateTime) =
     GROUP SUM 1 IF pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime)
     BY type, sku, storeDepartmentStore(stock), dateTime;
 
-countDepartmentStoresPriceListTypeSkuStoreTypeDateTime 'В ассортименте' (type, sku, store, dateTime) =
-    GROUP SUM 1 IF pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime)
-    BY type, sku, storeDepartmentStore(stock), dateTime;
-
-countStoresPriceListTypeSkuChainStoresDateTime 'В ассортименте' (type, sku, chainStores, dateTime) =
-    GROUP SUM 1 IF countDepartmentStoresPriceListTypeSkuChainStoresDateTime(type, sku, store, dateTime)
+countStorePriceListTypeSkuChainStoresDateTime 'В ассортименте' (type, sku, chainStores, dateTime) =
+    GROUP SUM 1 IF countDepartmentStorePriceListTypeSkuStoreDateTime(type, sku, store, dateTime)
     BY type, sku, chainStoresStore(store), dateTime;
 
-countStoresPriceListTypeSkuStoreTypeDateTime 'В ассортименте' (type, sku, storeType, dateTime) =
-    GROUP SUM 1 IF countDepartmentStoresPriceListTypeSkuStoreTypeDateTime(type, sku, store, dateTime)
+countStorePriceListTypeSkuStoreTypeDateTime 'В ассортименте' (type, sku, storeType, dateTime) =
+    GROUP SUM 1 IF countDepartmentStorePriceListTypeSkuStoreDateTime(type, sku, store, dateTime)
     BY type, sku, storeTypeStore(store), dateTime;
 
-countStoresSkuChainStoresDateTime 'В наличии' (sku, chainStores, dateTime) =
-    GROUP SUM 1 IF balanceASkuStoreDateTime(sku, store, dateTime)
-    BY sku, chainStoresStore(store), dateTime;
+countStorePriceListTypeSkuDateTime 'В ассортименте' (type, sku, dateTime) =
+    GROUP SUM 1 IF countDepartmentStorePriceListTypeSkuStoreDateTime(type, sku, store, dateTime)
+    BY type, sku, dateTime;
+
+// --------------------- В наличии ---------------- //
 
 countStoresSkuStoreTypeDateTime 'В наличии' (sku, storeType, dateTime) =
     GROUP SUM 1 IF balanceASkuStoreDateTime(sku, store, dateTime)
     BY sku, storeTypeStore(store), dateTime;
 
-EXTEND FORM rangeManagement
-    OBJECTS t=ChainStores
-    PROPERTIES READONLY nameChainStores(t), countStoresChainStores(t), countStoresPriceListTypeSkuChainStoresDateTime(pt, sk2, t, dt), countStoresSkuChainStoresDateTime(sk2, t, dt)
-    FILTERS countStoresPriceListTypeSkuChainStoresDateTime(pt, sk2, t, dt)
+countStoreSkuChainStoresDateTime 'В наличии' (sku, chainStores, dateTime) =
+    GROUP SUM 1 IF balanceASkuStoreDateTime(sku, store, dateTime)
+    BY sku, chainStoresStore(store), dateTime;
+
+EXTEND FORM priceListManage
+    PROPERTIES READONLY countStorePriceListTypeSkuDateTime(pt, csk, dt) AFTER idBarcodeSku(csk)
+
+    OBJECTS ccs = ChainStores
+    PROPERTIES READONLY nameChainStores(ccs), countStoreChainStores(ccs), countStorePriceListTypeSkuChainStoresDateTime(pt, csk, ccs, dt), countStoreSkuChainStoresDateTime(csk, ccs, dt)
+    FILTERS countStorePriceListTypeSkuChainStoresDateTime(pt, csk, ccs, dt)
 
     OBJECTS st=StoreType
-    PROPERTIES READONLY nameStoreType(st), countStoresStoreType(st), countStoresPriceListTypeSkuStoreTypeDateTime(pt, sk2, st, dt), countStoresSkuStoreTypeDateTime(sk2, st, dt)
-    FILTERS countStoresPriceListTypeSkuStoreTypeDateTime(pt, sk2, st, dt)
+    PROPERTIES READONLY nameStoreType(st), countStoreStoreType(st), countStorePriceListTypeSkuStoreTypeDateTime(pt, csk, st, dt), countStoresSkuStoreTypeDateTime(csk, st, dt)
+    FILTERS countStorePriceListTypeSkuStoreTypeDateTime(pt, csk, st, dt)
 ;
 
-EXTEND DESIGN rangeManagement{
-    secondSkuContainer{
-        ADD t.box BEFORE s2.box;
-        ADD st.box BEFORE s2.box;
+EXTEND DESIGN priceListManage {
+    c.stocks {
+        ADD ccs.box BEFORE cst.box;
+        ADD st.box BEFORE cst.box;
     }
 }

@@ -241,7 +241,7 @@ FORM binStocks 'Ячейки/склады'
 
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a)
-    FILTERS quantityStocksStockGroup(sg)
+    FILTERS countStockStockGroup(sg)
 
     OBJECTS ts = Stock
     PROPERTIES READONLY  nameStock(ts)

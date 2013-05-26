@@ -62,7 +62,7 @@ nameCompanyLedgerPriceListTypeSkuDateTime 'Компания прайса' (type,
 descriptionLedgerPriceListTypeSkuDateTime 'Описание' (type, sku,  dateTime) =
     descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeSkuDateTime(type, sku, dateTime));
 
-// ------------------ Расчет цен для company / sku ---------------- //
+// ------------------ Расчет цен для sku / company ---------------- //
 
 concatLedgerPriceListTypeSkuCompanyDateTime(type, sku, company, dateTime) =
     GROUP MAX orderPriceListLedgerLedgerPriceListType(ledger, type)
@@ -82,6 +82,22 @@ nameCompanyLedgerPriceListTypeSkuCompanyDateTime 'Компания прайса'
 
 descriptionLedgerPriceListTypeSkuCompanyDateTime 'Описание' (type, sku, company, dateTime) =
     descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeSkuCompanyDateTime(type, sku, company, dateTime));
+
+// Только с ценами
+
+activeConcatLedgerPriceListTypeSkuCompanyDateTime(type, sku, company, dateTime) =
+    GROUP MAX orderPriceListLedgerLedgerPriceListType(ledger, type) IF pricePriceListLedgerLedgerPriceListType(ledger, type)
+              AND fromDateTimePriceListLedger(ledger) < (dateTimeIn AS DATETIME) AND NOT toDateTimePriceListLedger(ledger) <= (dateTimeIn AS DATETIME)
+          BY type, skuPriceListLedger(ledger), companyPriceListLedger(ledger), dateTimeIn;
+
+activePriceListLedgerLedgerPriceListTypeSkuCompanyDateTime(type, sku, company, dateTime) =
+    activeConcatLedgerPriceListTypeSkuCompanyDateTime(type, sku, company, dateTime)[2];
+
+activePriceLedgerPriceListTypeSkuCompanyDateTime 'Цена' (type, sku, company, dateTime) =
+    pricePriceListLedgerLedgerPriceListType(activePriceListLedgerLedgerPriceListTypeSkuCompanyDateTime(type, sku, company, dateTime), type);
+
+activeDescriptionLedgerPriceListTypeSkuCompanyDateTime 'Описание' (type, sku, company, dateTime) =
+    descriptionPriceListLedger(activePriceListLedgerLedgerPriceListTypeSkuCompanyDateTime(type, sku, company, dateTime));
 
 // ------------------ Расчет цен для sku / stock / datetime
 
@@ -122,6 +138,22 @@ descriptionLedgerPriceListTypeSkuStockDateTime 'Описание' (type, sku, st
     descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
 descriptionLedgerPriceListTypeBatchStockDateTime 'Описание' (type, batch, stock, dateTime) =
     descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime));
+
+// ------------------ Расчет цен для sku / stock / company / datetime
+
+concatLedgerPriceListTypeSkuStockCompanyDateTime(type, sku, stock, company, dateTime) =
+    GROUP MAX orderPriceListLedgerLedgerPriceListTypeStock(ledger, type, stock)
+              IF fromDateTimePriceListLedger(ledger) < (dateTimeIn AS DATETIME) AND NOT toDateTimePriceListLedger(ledger) <= (dateTimeIn AS DATETIME)
+          BY type, skuPriceListLedger(ledger), stock, companyPriceListLedger(ledger), dateTimeIn;
+priceListLedgerLedgerPriceListTypeSkuStockCompanyDateTime(type, sku, stock, company, dateTime) =
+    concatLedgerPriceListTypeSkuStockCompanyDateTime(type, sku, stock, company, dateTime)[2];
+
+priceLedgerPriceListTypeSkuStockCompanyDateTime 'Цена' (type, sku, stock, company, dateTime) =
+    pricePriceListLedgerLedgerPriceListType(priceListLedgerLedgerPriceListTypeSkuStockCompanyDateTime(type, sku, stock, company, dateTime), type);
+
+countStockPriceListTypeSkuCompanyDateTime 'Кол-во складов' (type, sku, company, dateTime) =
+    GROUP SUM 1 IF priceLedgerPriceListTypeSkuStockCompanyDateTime(type, sku, stock, company, dateTime)
+    BY type, sku, company, dateTime;
 
 includeVATLedgerPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (LedgerPriceListType);
 

@@ -261,20 +261,23 @@ FORM legalEntities 'Организации'
 ;
 
 DESIGN legalEntities FROM DEFAULT{
-    NEW topContainer{
-        childConstraints = TO THE RIGHT;
-        type = SPLITH;
-        ADD legalEntityGroupTree.tree.box{
-            PROPERTY(deletelg){
-                askConfirm = TRUE;
+    main {
+        preferredSize = (1024, 768);
+        NEW topContainer{
+            childConstraints = TO THE RIGHT;
+            type = SPLITH;
+            ADD legalEntityGroupTree.tree.box{
+                PROPERTY(deletelg){
+                    askConfirm = TRUE;
+                }
+            }
+            ADD l.box {
+                fillHorizontal = 2.0;
+                l.grid { defaultComponent = TRUE; }
             }
         }
-        ADD l.box {
-            fillHorizontal = 2.0;
-            l.grid { defaultComponent = TRUE; }
-        }
+        ADD functions.box;
     }
-    ADD functions.box;
 }
 
 @extendFormEditable(legalEntities);

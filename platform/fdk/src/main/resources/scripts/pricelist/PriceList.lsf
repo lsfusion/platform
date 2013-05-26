@@ -405,7 +405,6 @@ FORM userPriceList 'Прайс'
                   shortNameUOMSkuUserPriceListDetail, fromDateUserPriceListDetail, fromTimeUserPriceListDetail,
                   toDateUserPriceListDetail, toTimeUserPriceListDetail, ADDOBJ, DELETESESSION
     PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER headerNameDataPriceListType(p, t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID
-    PROPERTIES(d) nameCompanyUserPriceListDetail
     PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR fillDocumentPriceList, addDetailInputBarcodeUserPriceListDetailUserPriceList
     FILTERS userPriceListUserPriceListDetail(d) == p,
             isParentSkuGroupSku(sk, skuPriceListDetail(d)) OR (sk IS SkuGroup AND d IS PriceListDetail AND NOT skuPriceListDetail(d))
@@ -421,13 +420,14 @@ FORM userPriceList 'Прайс'
     PROPERTIES(p, sg) inPriceListStockGroup
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a)
-    FILTERS quantityStocksStockGroup(sg)
+    FILTERS countStockStockGroup(sg)
 
     OBJECTS ts = Stock
     PROPERTIES READONLY  nameStock(ts)
     PROPERTIES(p, ts)    inPriceListStock
     PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER headerNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t)
     PROPERTIES(d, t, ts) changePricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER headerNameChangeDataPriceListType(p, t) BACKGROUND backgroundChangeDataPriceListType(t)
+    PROPERTIES(d)        nameCompanyUserPriceListDetail
     FILTERS ts IS Stock AND NOT sg IS StockGroup OR isParentStockGroupStock(sg, ts),
             isCompanyStock(ts)
     FILTERGROUP filters2
