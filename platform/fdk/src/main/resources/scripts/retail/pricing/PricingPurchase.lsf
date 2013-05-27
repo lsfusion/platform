@@ -70,41 +70,43 @@ retailPriceListTypePricingDetail(pricingDetail) += retailPriceListTypeInvoiceDet
 // -- Операция
 @defineOperationProperty(createPricing, 'Акт расценки', createContainer);
 @deriveDocumentOperationProperty(UserInvoice, createPricing);
+// Операция расценки
+@defineDocumentInterfaceOperationPrefix (invoice, pricing, Pricing, ' ( расценка)');
 
-// Вид цены для расценки
-pricingPriceListTypeOperation = DATA PriceListType (Operation);
-namePricingPriceListTypeOperation 'Вид цен акт расценки (управленческий)' (operation) = namePriceListType(pricingPriceListTypeOperation(operation));
+pricingOperationOperation  = DATA Pricing.Operation (Operation);
+namePricingOperationOperation 'Операция (расценка)' (operation)= Pricing.nameOperation(pricingOperationOperation(operation));
 
-pricingCalcPriceListTypeOperation = DATA CalcPriceListType (Operation);
-namePricingCalcPriceListTypeOperation 'Вид цен акт расценки (надбавка)' (operation) = namePriceListType(pricingCalcPriceListTypeOperation(operation));
+pricingOperationUserInvoice (invoice) <- pricingOperationOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+
+operationPricing(pricing) += pricingOperationInvoice(invoiceInvoicePricing(pricing));
+
+// Записываем тип цены по умолчанию из операции
+calcRetailPriceListTypeUserInvoice (invoice) <- pricingPriceListTypeOperation(pricingOperationUserInvoice(invoice))
+    WHEN CHANGED(pricingOperationUserInvoice(invoice));
+calcRetailCalcPriceListTypeUserInvoice (invoice) <- pricingCalcPriceListTypeOperation(pricingOperationUserInvoice(invoice))
+    WHEN CHANGED(pricingOperationUserInvoice(invoice));
 
 EXTEND FORM operation
-    PROPERTIES(o) namePricingPriceListTypeOperation, namePricingCalcPriceListTypeOperation
+    PROPERTIES(o) namePricingOperationOperation
 ;
-
 EXTEND DESIGN operation {
     createContainer {
-        ADD PROPERTY(namePricingPriceListTypeOperation);
-        ADD PROPERTY(namePricingCalcPriceListTypeOperation);
+        ADD PROPERTY(namePricingOperationOperation) AFTER PROPERTY(createPricingOperation);
     }
 }
 
-// Записываем тип цены по умолчанию из операции
-calcRetailPriceListTypeUserInvoice (invoice) <- pricingPriceListTypeOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
-calcRetailCalcPriceListTypeUserInvoice (invoice) <- pricingCalcPriceListTypeOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
-
 // Добавляем вид цены на форму
 EXTEND FORM userInvoice
-    PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameCalcRetailPriceListTypeUserInvoice,
-                  nameCalcRetailCalcPriceListTypeUserInvoice
+    PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i)
+                  namePricingOperationUserInvoice, nameCalcRetailPriceListTypeUserInvoice, nameCalcRetailCalcPriceListTypeUserInvoice
     PROPERTIES(d) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupUserInvoiceDetail
 ;
 EXTEND DESIGN userInvoice {
     headerCreatePricing {
-        ADD PROPERTY(nameCalcRetailPriceListTypeUserInvoice);
-        ADD PROPERTY(nameCalcRetailCalcPriceListTypeUserInvoice);
+        ADD PROPERTY(namePricingOperationUserInvoice) AFTER PROPERTY(createPricingUserInvoice);
+        ADD PROPERTY(nameCalcRetailPriceListTypeUserInvoice) AFTER PROPERTY(namePricingOperationUserInvoice);
+        ADD PROPERTY(nameCalcRetailCalcPriceListTypeUserInvoice) AFTER PROPERTY(nameCalcRetailPriceListTypeUserInvoice);
     }
 }
 
@@ -126,11 +128,43 @@ retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN CHANGED
 @defineOperationProperty(createRepricing, 'Акт дооценки', createContainer);
 @deriveDocumentOperationProperty(UserInvoice, createRepricing);
 
+repricingOperationOperation  = DATA Repricing.Operation (Operation);
+nameRepricingOperationOperation 'Операция (переоценки)' (operation)= Repricing.nameOperation(repricingOperationOperation(operation));
+
+
+EXTEND FORM operation
+    PROPERTIES(o) nameRepricingOperationOperation
+;
+EXTEND DESIGN operation {
+    createContainer {
+        ADD PROPERTY(nameRepricingOperationOperation) AFTER PROPERTY(createRepricingOperation);
+    }
+}
+
+// Операция переоценки
+@defineDocumentInterfaceOperationPrefix (invoice, repricing, Repricing, ' ( переоценка)');
+repricingOperationUserInvoice(i) <- repricingOperationOperation(operationUserInvoice(i))
+    WHEN CHANGED(operationUserInvoice(i));
+
+EXTEND FORM userInvoice
+    PROPERTIES(i) BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) nameRepricingOperationUserInvoice
+;
+EXTEND DESIGN userInvoice {
+    headerCreateRepricing {
+        ADD PROPERTY(nameRepricingOperationUserInvoice) BEFORE PROPERTY(nameRepricingCommitteeUserInvoice);
+    }
+}
+
+operationRepricing (repricing)+= repricingOperationInvoice(invoiceInvoiceRepricing(repricing));
 // Копирование документа
 overCopyInvoice(s, d) += ACTION (s, d) {
     SET createPricingUserInvoice(d) <- createPricingUserInvoice(s);
     SET pricingCommitteeUserInvoice(d) <- pricingCommitteeUserInvoice(s);
+    SET pricingOperationUserInvoice(d) <- pricingOperationUserInvoice(s);
     SET calcRetailPriceListTypeUserInvoice(d) <- calcRetailPriceListTypeUserInvoice(s);
     SET calcRetailCalcPriceListTypeUserInvoice(d) <- calcRetailCalcPriceListTypeUserInvoice(s);
+
+    SET createRepricingUserInvoice(d) <- createRepricingUserInvoice(s);
+    SET repricingOperationUserInvoice(d) <- repricingOperationUserInvoice(s);
 }
 

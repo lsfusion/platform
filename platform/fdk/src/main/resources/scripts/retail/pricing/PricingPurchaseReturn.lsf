@@ -28,3 +28,19 @@ isReturnPricing(pricing) +=  pricing IS InvoicePricing;
 
 // Автоматическое проставление галочки создания акта расценки
 @deriveDocumentOperationProperty(UserInvoice, createPricing);
+// Операция расценки
+@defineDocumentInterfaceOperationPrefix (invoice, pricing, Pricing, ' ( расценка)');
+pricingOperationUserInvoice (invoice) <- pricingOperationOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+operationPricing(pricing) += pricingOperationInvoice(invoiceInvoicePricing(pricing));
+
+// Добавляем операцию расценки на форму
+EXTEND FORM userInvoice
+    PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) namePricingOperationUserInvoice
+;
+EXTEND DESIGN userInvoice {
+    headerCreatePricing {
+        ADD PROPERTY(namePricingOperationUserInvoice) BEFORE PROPERTY(namePricingCommitteeUserInvoice);
+    }
+}
+

@@ -56,6 +56,26 @@ roundConditionUserWriteOffDetail(userWriteOffDetail) = roundConditionDepartmentS
 // Создание акта расценки
 @defineDocumentInterfaceCreate (writeOff, createPricing, 'Создать акт расценки');
 
+// Операция расценки
+@defineDocumentInterfaceOperationPrefix (writeOff, pricing, Pricing, ' (расценка)');
+
+pricingOperationOperation  = DATA Pricing.Operation (Operation);
+namePricingOperationOperation 'Операция (расценка)' (operation)= Pricing.nameOperation(pricingOperationOperation(operation));
+
+createPricingOperation 'Создать акт расценки' = DATA BOOLEAN (Operation);
+
+EXTEND FORM operation
+    PROPERTIES(o) createPricingOperation, namePricingOperationOperation
+;
+EXTEND DESIGN operation {
+    createContainer {
+        ADD PROPERTY(createPricingOperation);
+        ADD PROPERTY(namePricingOperationOperation);
+    }
+}
+@deriveDocumentOperationProperty(userWriteOff, createPricing);
+@deriveDocumentOperationProperty(userWriteOff, pricingOperation);
+
 showCreatePricingWriteOff (writeOff) = stockWriteOff(writeOff) IS DepartmentStore AND NOT costLedgerDepartmentStore(stockWriteOff(writeOff));
 showPricingWriteOff (writeOff) = showCreatePricingWriteOff (writeOff) AND NOT createPricingWriteOff(writeOff);
 toShowPricingWriteOff (writeOff) = showCreatePricingWriteOff (writeOff) AND createPricingWriteOff(writeOff);
@@ -65,7 +85,7 @@ backgroundRetailWriteOff 'Цвет' (writeOff) = RGB(224, 255, 255) IF writeOff 
 EXTEND FORM userWriteOff
     PROPERTIES(w) SHOWIF showCreatePricingWriteOff(w) BACKGROUND backgroundRetailWriteOff(w) createPricingUserWriteOff
     PROPERTIES(w) SHOWIF createPricingUserWriteOff(w) BACKGROUND backgroundRetailWriteOff(w)
-                  namePricingCommitteeUserWriteOff, retailSumUserWriteOffDetailUserWriteOff
+                  namePricingOperationUserWriteOff, namePricingCommitteeUserWriteOff, retailSumUserWriteOffDetailUserWriteOff
 
     PROPERTIES(d) BEFORE deletewd SHOWIF createPricingWriteOff(w) BACKGROUND backgroundRetailWriteOff(w)
                   supplierPriceUserWriteOffDetail, supplierSumUserWriteOffDetail,
@@ -79,6 +99,7 @@ EXTEND DESIGN userWriteOff {
         NEW headerCreatePricing {
             title = 'Расценка';
             ADD PROPERTY(createPricingUserWriteOff);
+            ADD PROPERTY(namePricingOperationUserWriteOff);
             ADD PROPERTY(namePricingCommitteeUserWriteOff);
         }
     }
@@ -138,8 +159,8 @@ notePricing(pricing) += noteWriteOffWriteOffPricing(pricing);
 currencyWriteOffPricing  (writeOffPricing) = currencyWriteOff(writeOffWriteOffPricing(writeOffPricing));
 currencyPricing (pricing) += currencyWriteOffPricing(pricing);
 
+operationPricing(pricing) += pricingOperationWriteOff(writeOffWriteOffPricing(pricing));
 pricingCommitteePricing(pricing) += pricingCommitteeWriteOff(writeOffWriteOffPricing(pricing));
-operationPricing(pricing) += operationWriteOff(writeOffWriteOffPricing(pricing));
 
 @defineDocumentDescription(writeOffPricing, WriteOffPricingDetail, seriesNumberWriteOffPricing, 'Акт расценки при списании');
 descriptionPricing (pricing) += descriptionWriteOffPricing(pricing);

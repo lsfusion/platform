@@ -52,3 +52,32 @@ EXTEND FORM invoices
 // Помечаем, что этот акт расценки не меняет текущие цены и является обратным
 skipChangeLedgerPricing(pricing) += pricing IS InvoicePricing;
 isReturnPricing(pricing) += pricing IS InvoicePricing;
+
+// Операция расценки
+
+pricingOperationOperation  = DATA Pricing.Operation (Operation);
+namePricingOperationOperation 'Операция (расценка)' (operation)= Pricing.nameOperation(pricingOperationOperation(operation));
+
+EXTEND FORM operation
+    PROPERTIES(o) namePricingOperationOperation
+;
+EXTEND DESIGN operation {
+    createContainer {
+        ADD PROPERTY(namePricingOperationOperation) AFTER PROPERTY(createPricingOperation);
+    }
+}
+
+@defineDocumentInterfaceOperationPrefix (invoice, pricing, Pricing, ' ( расценка)');
+pricingOperationUserInvoice (invoice) <- pricingOperationOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+operationPricing(pricing) += pricingOperationInvoice(invoiceInvoicePricing(pricing));
+
+// Добавляем операцию расценки на форму
+EXTEND FORM userInvoice
+    PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) namePricingOperationUserInvoice
+;
+EXTEND DESIGN userInvoice {
+    headerCreatePricing {
+        ADD PROPERTY(namePricingOperationUserInvoice) BEFORE PROPERTY(namePricingCommitteeUserInvoice);
+    }
+}

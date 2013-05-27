@@ -100,29 +100,53 @@ purchaseRoundConditionUserInvoiceDetail(userInvoiceDetail) =
 @defineOperationProperty(createPurchasePricing, 'Акт расценки (закупка)', createContainer);
 @deriveDocumentOperationProperty(UserInvoice, createPurchasePricing);
 
-// Вид цены для акта расценки (закупка)
-purchaseRetailPriceListTypeOperation = DATA PriceListType (Operation);
-namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки управленческий (закупка) ' (operation) = namePriceListType(purchaseRetailPriceListTypeOperation(operation));
+//// Вид цены для акта расценки (закупка)
+//purchaseRetailPriceListTypeOperation = DATA PriceListType (Operation);
+//namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки управленческий (закупка) ' (operation) = namePriceListType(purchaseRetailPriceListTypeOperation(operation));
+//
+//purchaseRetailCalcPriceListTypeOperation = DATA CalcPriceListType (Operation);
+//namePurchaseRetailCalcPriceListTypeOperation 'Вид цен акт расценки надбавка (закупка)' (operation) = namePriceListType(purchaseRetailCalcPriceListTypeOperation(operation));
+//
+//EXTEND FORM operation
+//    PROPERTIES(o) namePurchaseRetailPriceListTypeOperation, namePurchaseRetailCalcPriceListTypeOperation
+//;
+//
+//EXTEND DESIGN operation{
+//    createContainer {
+//        ADD PROPERTY(namePurchaseRetailPriceListTypeOperation);
+//        ADD PROPERTY(namePurchaseRetailCalcPriceListTypeOperation);
+//    }
+//}
+//
+//calcPurchaseRetailPriceListTypeUserInvoice (invoice) <- purchaseRetailPriceListTypeOperation(operationUserInvoice(invoice))
+//    WHEN CHANGED(operationUserInvoice(invoice));
+//
+//calcPurchaseRetailCalcPriceListTypeUserInvoice (invoice) <- purchaseRetailCalcPriceListTypeOperation(operationUserInvoice(invoice))
+//    WHEN CHANGED(operationUserInvoice(invoice));
 
-purchaseRetailCalcPriceListTypeOperation = DATA CalcPriceListType (Operation);
-namePurchaseRetailCalcPriceListTypeOperation 'Вид цен акт расценки надбавка (закупка)' (operation) = namePriceListType(purchaseRetailCalcPriceListTypeOperation(operation));
+// Операция расценки
+@defineDocumentInterfaceOperationPrefix (invoice, purchasePricing, Pricing, ' расценка (закупка)');
+
+purchasePricingOperationOperation  = DATA Pricing.Operation (Operation);
+namePurchasePricingOperationOperation 'Операция расценка (закупка)' (operation)= Pricing.nameOperation(purchasePricingOperationOperation(operation));
+
+purchasePricingOperationUserInvoice (invoice) <- purchasePricingOperationOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+
+// Записываем тип цены по умолчанию из операции
+calcPurchaseRetailPriceListTypeUserInvoice (invoice) <- pricingPriceListTypeOperation(purchasePricingOperationUserInvoice(invoice))
+    WHEN CHANGED(purchasePricingOperationUserInvoice(invoice));
+calcPurchaseRetailCalcPriceListTypeUserInvoice (invoice) <- pricingCalcPriceListTypeOperation(purchasePricingOperationUserInvoice(invoice))
+    WHEN CHANGED(purchasePricingOperationUserInvoice(invoice));
 
 EXTEND FORM operation
-    PROPERTIES(o) namePurchaseRetailPriceListTypeOperation, namePurchaseRetailCalcPriceListTypeOperation
+    PROPERTIES(o) namePurchasePricingOperationOperation
 ;
-
-EXTEND DESIGN operation{
+EXTEND DESIGN operation {
     createContainer {
-        ADD PROPERTY(namePurchaseRetailPriceListTypeOperation);
-        ADD PROPERTY(namePurchaseRetailCalcPriceListTypeOperation);
+        ADD PROPERTY(namePurchasePricingOperationOperation) AFTER PROPERTY(createPurchasePricingOperation);
     }
 }
-
-calcPurchaseRetailPriceListTypeUserInvoice (invoice) <- purchaseRetailPriceListTypeOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
-
-calcPurchaseRetailCalcPriceListTypeUserInvoice (invoice) <- purchaseRetailCalcPriceListTypeOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
 
 showCreatePurchasePricingInvoice (invoice) = customerStockInvoice(invoice) IS DepartmentStore AND createPurchaseInvoiceInvoice(invoice) AND NOT costLedgerDepartmentStore(customerStockInvoice(invoice));
 showPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND NOT createPurchasePricingInvoice(invoice);
@@ -134,7 +158,8 @@ printSalePurchasePricingInvoice 'Акт расценки (закупка)' (invo
 
 EXTEND FORM userInvoice
     PROPERTIES(i) SHOWIF showCreatePurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i) createPurchasePricingUserInvoice
-    PROPERTIES(i) SHOWIF createPurchasePricingUserInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i) namePurchasePricingCommitteeUserInvoice,
+    PROPERTIES(i) SHOWIF createPurchasePricingUserInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
+                  namePurchasePricingOperationUserInvoice, namePurchasePricingCommitteeUserInvoice,
                   nameCalcPurchaseRetailPriceListTypeInvoice, nameCalcPurchaseRetailCalcPriceListTypeInvoice, purchaseRetailSumUserInvoiceDetailUserInvoice
 
     PROPERTIES(d) BEFORE deleteid SHOWIF createPurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
@@ -152,6 +177,7 @@ EXTEND DESIGN userInvoice {
         NEW headerCreateSalePricing  {
             title = 'Расценка на закупке';
             ADD PROPERTY(createPurchasePricingUserInvoice);
+            ADD PROPERTY(namePurchasePricingOperationUserInvoice);
             ADD PROPERTY(namePurchasePricingCommitteeUserInvoice);
             ADD PROPERTY(nameCalcPurchaseRetailPriceListTypeInvoice);
             ADD PROPERTY(nameCalcPurchaseRetailCalcPriceListTypeInvoice);
@@ -175,6 +201,9 @@ EXTEND FORM invoices
 
 Purchase.createPricingInvoice(invoice) += createPurchasePricingInvoice(invoicePurchaseInvoice(invoice));
 Purchase.pricingCommitteeInvoice(invoice) += purchasePricingCommitteeInvoice(invoicePurchaseInvoice(invoice));
+
+// Операция расценки закупка
+Purchase.pricingOperationInvoice(invoice) += purchasePricingOperationInvoice(invoicePurchaseInvoice(invoice));
 
 // Вид цены
 Purchase.retailPriceListTypeInvoiceDetail(invoiceDetail) += purchaseRetailPriceListTypeInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));

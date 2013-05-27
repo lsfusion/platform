@@ -1,6 +1,7 @@
 MODULE RepricingGeneralLedger;
 
 REQUIRE GeneralLedger, Repricing, DimensionStock;
+NAMESPACE Repricing;
 
 //------------------- Переоценка --------------------//
 

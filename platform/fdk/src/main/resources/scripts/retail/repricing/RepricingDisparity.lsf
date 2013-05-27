@@ -5,6 +5,8 @@ REQUIRE Disparity,
         DisparityOperation,
         PriceListLedger;
 
+NAMESPACE Disparity;
+
 @defineDocumentHeaderCreate(disparity, createRepricing, 'Создать акт переоценки');
 @defineDocumentDetailCreateCustom(disparity, disparityDetail, createRepricing, 'Создать акт переоценки');
 
@@ -12,6 +14,26 @@ REQUIRE Disparity,
 
 createRepricingDisparity (disparity) <- createRepricingOperation(operationDisparity(disparity))
     WHEN CHANGED(operationDisparity(disparity));
+
+repricingOperationOperation  = DATA Repricing.Operation (Operation);
+nameRepricingOperationOperation 'Операция (переоценки)' (operation)= Repricing.nameOperation(repricingOperationOperation(operation));
+
+
+EXTEND FORM operation
+    PROPERTIES(o) nameRepricingOperationOperation
+;
+EXTEND DESIGN operation {
+    createContainer {
+        ADD PROPERTY(nameRepricingOperationOperation) AFTER PROPERTY(createRepricingOperation);
+    }
+}
+
+// Операция переоценки
+@defineDocumentOperationHeaderPrefix(disparity, repricing, Repricing, ' (переоценка)');
+@defineDocumentOperationDetailPrefix(disparity, disparityDetail, repricing, Repricing, 'переоценка');
+
+repricingOperationDisparity(o) <- repricingOperationOperation(operationDisparity(o))
+    WHEN CHANGED(operationDisparity(o));
 
 // До
 @defineDocumentTimePrefix(disparity, before, ' документа до');
@@ -117,6 +139,8 @@ timeRepricing(repricing) += timeDisparityRepricing(repricing);
 beforeDateRepricing(repricing) += beforeDateDisparityRepricing(repricing);
 beforeTimeRepricing(repricing) += beforeTimeDisparityRepricing(repricing);
 
+operationRepricing (repricing)+= repricingOperationDisparity(disparityDisparityRepricing(repricing));
+
 @defineDocumentAggregationStockPrefix(disparity, disparityRepricing, stock, 'Склад', , );
 departmentStoreRepricing(repricing) += stockDisparityRepricing(repricing) IF stockDisparityRepricing(repricing) IS DepartmentStore;
 
@@ -154,7 +178,8 @@ showCreateRepricingDisparity (disparity) = stockDisparity(disparity) IS Departme
 
 EXTEND FORM disparity
     PROPERTIES(dis)   SHOWIF showCreateRepricingDisparity(dis) BACKGROUND backgroundCurDisparity(dis) createRepricingDisparity
-    PROPERTIES(dis)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) nameRepricingCommitteeDisparity, numberDisposalDisparity, beforeDateDisparity
+    PROPERTIES(dis)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) nameRepricingOperationDisparity,
+                      nameRepricingCommitteeDisparity, numberDisposalDisparity, beforeDateDisparity
     PROPERTIES(dis)   BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) diffRetailSumDisparityDetailDisparity
 
     PROPERTIES(d)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE deletedd
@@ -169,11 +194,12 @@ EXTEND FORM disparity
                     afterInputRetailPriceDisparityDetail ON CHANGE changeAfterInputRetailPriceDisparityDetail(d), afterInputRetailSumDisparityDetail
 ;
 EXTEND DESIGN disparity {
-    headerRow1 {
-        NEW headerRow11 BEFORE dis.documentPrmGroup {
+    headerCreateDocuments {
+        NEW headerRepricing {
             title = 'Переоценка';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createRepricingDisparity);
+            ADD PROPERTY(nameRepricingOperationDisparity);
             ADD PROPERTY(nameRepricingCommitteeDisparity);
             ADD PROPERTY(numberDisposalDisparity);
             ADD PROPERTY(beforeDateDisparity);

@@ -2,6 +2,7 @@ MODULE PricingGeneralLedger;
 
 REQUIRE GeneralLedger, Pricing, DimensionStock, DimensionLegalEntity;
 
+NAMESPACE Pricing;
 //------------------- Расценка --------------------//
                                                                               //todo: добавить в аналитику по кредиту организацию
 EXTEND CLASS Pricing : GeneralLedger.GLDocument;

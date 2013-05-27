@@ -355,20 +355,16 @@ DESIGN writeOffs FROM DEFAULT {
 }
 
 //----------------------------------------------- Операции -----------------------------------------------------//
-@defineDocumentOperationAbstractHeaderPrefix(writeOff, , Operation, );
-@defineDocumentOperationDetailPrefix(writeOff, , Operation, );
-@defineDocumentOperationHeaderPrefix(userWriteOff, writeOff, WriteOff, );
-@defineDocumentOperationDetailPrefix(userWriteOff, writeOff, WriteOff, );
-operationWriteOff(writeOff) += writeOffOperationUserWriteOff(writeOff);
+@defineDocumentInterfaceOperation (writeOff, WriteOff, );
 
-@defineDocumentOperationRolePrefix(userWriteOff, writeOff);
+@defineDocumentOperationRolePrefix(userWriteOff, );
 
 EXTEND FORM userWriteOff
-    PROPERTIES(w) nameWriteOffOperationUserWriteOff
+    PROPERTIES(w) nameOperationUserWriteOff
 ;
 EXTEND DESIGN userWriteOff{
     w.documentPrmGroup{
-        ADD PROPERTY (nameWriteOffOperationUserWriteOff) BEFORE PROPERTY(nameCurrencyUserWriteOff);
+        ADD PROPERTY (nameOperationUserWriteOff) BEFORE PROPERTY(nameCurrencyUserWriteOff);
     }
 }
 EXTEND FORM writeOffs
@@ -379,8 +375,8 @@ EXTEND FORM writeOffs
 reasonOperation = DATA Reason (WriteOff.Operation);
 nameReasonOperation 'Причина списания' (operation) = nameReason(reasonOperation(operation));
 
-reasonUserWriteOff (w) <- reasonOperation(writeOffOperationUserWriteOff(w))
-    WHEN CHANGED(writeOffOperationUserWriteOff(w));
+reasonUserWriteOff (w) <- reasonOperation(operationUserWriteOff(w))
+    WHEN CHANGED(operationUserWriteOff(w));
 
 EXTEND FORM WriteOff.operation
     PROPERTIES(o) nameReasonOperation

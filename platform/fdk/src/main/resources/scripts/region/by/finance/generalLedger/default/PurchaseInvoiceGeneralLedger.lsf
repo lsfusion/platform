@@ -1,7 +1,8 @@
 MODULE PurchaseInvoiceGeneralLedger;
 
 REQUIRE GeneralLedger, PurchaseInvoice, DimensionLegalEntity, DimensionStock;
-PRIORITY Purchase;
+
+NAMESPACE Purchase;
 
 //------------------- Приход товара/тары от поставщ. --------------------//
 

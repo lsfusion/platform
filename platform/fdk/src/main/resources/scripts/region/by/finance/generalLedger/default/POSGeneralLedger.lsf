@@ -2,6 +2,7 @@ MODULE POSGeneralLedger;
 
 REQUIRE GeneralLedger, POS, DimensionStock;
 
+NAMESPACE POS;
 //------------------- Реализация через кассы --------------------//
 
 EXTEND CLASS Receipt : GeneralLedger.GLDocument;

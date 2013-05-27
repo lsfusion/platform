@@ -35,9 +35,25 @@ FORM writeOffRateDialog 'Нормы отходов'
 
 @defineOperationProperty(createPurchaseWriteOff, 'Акт списания', createContainer);
 
+writeOffOperationOperation  = DATA WriteOff.Operation (Operation);
+nameWriteOffOperationOperation 'Операция (списания)' (operation)= WriteOff.nameOperation(writeOffOperationOperation(operation));
+
+EXTEND FORM operation
+    PROPERTIES(o) nameWriteOffOperationOperation
+;
+EXTEND DESIGN operation {
+    createContainer {
+        ADD PROPERTY(nameWriteOffOperationOperation) AFTER PROPERTY(createPurchaseWriteOffOperation);
+    }
+}
+
 //---------------------------------- Extend Invoice ------------------------------------//
 @defineDocumentInterfaceCreate (invoice, createPurchaseWriteOff, 'Создать акт списания');
 @deriveDocumentOperationProperty(UserInvoice, createPurchaseWriteOff);
+
+@defineDocumentInterfaceOperationPrefix (invoice, writeOff, WriteOff, ' ( списания)');
+writeOffOperationUserInvoice (i) <- writeOffOperationOperation(operationUserInvoice(i))
+    WHEN CHANGED(operationUserInvoice(i));
 
 @defineDocumentInterfaceDetailQuantityPrefix (invoice, writeOff, ' (списания)');
 @defineDocumentInterfaceDetailPricePrefix(invoice, writeOff, ' (списания)');
@@ -49,8 +65,10 @@ FORM writeOffRateDialog 'Нормы отходов'
 reasonInvoice 'Причина списания (ИД)' = ABSTRACT Reason (Invoice);
 reasonUserInvoice 'Причина списания (ИД)' = DATA Reason (UserInvoice);
 reasonInvoice(invoice) += reasonUserInvoice(invoice);
-nameReasonInvoice 'Причина списания' (invoice) = nameReason(reasonInvoice (invoice)) IN documentPrmGroup;
+nameReasonInvoice 'Причина списания' (invoice) = nameReason(reasonInvoice(invoice)) IN documentPrmGroup;
 nameReasonUserInvoice 'Причина списания' (userInvoice) = nameReason(reasonUserInvoice (userInvoice)) IN documentPrmGroup;
+reasonUserInvoice (i) <- reasonOperation(writeOffOperationUserInvoice(i))
+    WHEN CHANGED(writeOffOperationUserInvoice(i));
 
 writeOffRateInvoiceDetail 'Норма отходов' (invoiceDetail) = ABSTRACT WriteOffRate (InvoiceDetail);
 nameWriteOffRateInvoiceDetail 'Норма отходов' (invoiceDetail) = nameWriteOffRate(writeOffRateInvoiceDetail(invoiceDetail));
@@ -80,7 +98,7 @@ toShowCreatePurchaseWriteOffInvoice (invoice) = ABSTRACT BOOLEAN (Invoice);
 EXTEND FORM userInvoice
     PROPERTIES (i) createPurchaseWriteOffUserInvoice BACKGROUND backgroundWrittenInvoice(i) SHOWIF toShowCreatePurchaseWriteOffInvoice(i)
     PROPERTIES (i) BACKGROUND backgroundWrittenInvoice(i) SHOWIF createPurchaseWriteOffUserInvoice(i)
-                   nameWriteOffCommitteeUserInvoice, nameReasonUserInvoice, writeOffSumUserInvoiceDetailUserInvoice
+                   nameWriteOffOperationUserInvoice, nameWriteOffCommitteeUserInvoice, nameReasonUserInvoice, writeOffSumUserInvoiceDetailUserInvoice
     PROPERTIES (d) SHOWIF createPurchaseWriteOffUserInvoice(i) BEFORE deleteid BACKGROUND backgroundWrittenInvoice(i)
                    nameWriteOffRateUserInvoiceDetail, percentWriteOffRateUserInvoiceDetail, writeOffQuantityUserInvoiceDetail,
                    writeOffPriceUserInvoiceDetail,  writeOffSumUserInvoiceDetail
@@ -90,6 +108,7 @@ EXTEND DESIGN userInvoice {
         NEW headerCreateWriteOff {
             title = 'Акт списания';
             ADD PROPERTY(createPurchaseWriteOffUserInvoice);
+            ADD PROPERTY(nameWriteOffOperationUserInvoice);
             ADD PROPERTY(nameWriteOffCommitteeUserInvoice);
             ADD PROPERTY(nameReasonUserInvoice);
         }
@@ -113,8 +132,13 @@ GROUP shipmentGroup 'Информация о поставке' : base;
 overCopyInvoice(s, d) += ACTION (s, d) {
     SET createPurchaseWriteOffUserInvoice(d) <- createPurchaseWriteOffUserInvoice(s);
     SET writeOffCommitteeUserInvoice(d) <- writeOffCommitteeUserInvoice(s);
+    SET writeOffOperationUserInvoice(d) <- writeOffOperationUserInvoice(s);
     SET reasonUserInvoice(d) <- reasonUserInvoice(s);
 }
+
+@defineDocumentInterfaceOperationPrefix (shipment, writeOff, WriteOff, ' ( списания)');
+writeOffOperationUserShipment(s) <- writeOffOperationOperation(operationUserShipment(s))
+    WHEN CHANGED(operationUserShipment(s));
 
 @defineDocumentInterfaceDetailQuantityPrefix (shipment, writeOff, ' (списания)');
 @defineDocumentInterfaceDetailPricePrefix(shipment, writeOff, ' (списания)');
@@ -130,6 +154,8 @@ reasonUserShipment 'Причина списания (ИД)' = DATA Reason (UserS
 reasonShipment(shipment) += reasonUserShipment(shipment);
 nameReasonShipment 'Причина списания' (shipment) = nameReason(reasonShipment (shipment)) IN documentPrmGroup;
 nameReasonUserShipment 'Причина списания' (userShipment) = nameReason(reasonUserShipment (userShipment)) IN documentPrmGroup;
+reasonUserShipment(s) <- reasonOperation(writeOffOperationUserShipment(s))
+    WHEN CHANGED(writeOffOperationUserShipment(s));
 
 writeOffRateShipmentDetail 'Норма отходов' (shipmentDetail) = ABSTRACT WriteOffRate (ShipmentDetail);
 nameWriteOffRateShipmentDetail 'Норма отходов' (shipmentDetail) = nameWriteOffRate(writeOffRateShipmentDetail(shipmentDetail));
@@ -159,6 +185,7 @@ percentWriteOffRateShipmentDetail (detail) += percentWriteOffRateUserShipmentDet
 createPurchaseWriteOffShipment(shipment) += createPurchaseWriteOffInvoice(invoiceInvoiceShipment(shipment));
 reasonShipment(shipment) += reasonInvoice(invoiceInvoiceShipment(shipment));
 writeOffCommitteeShipment(shipment) += writeOffCommitteeInvoice(invoiceInvoiceShipment(shipment));
+writeOffOperationShipment(shipment) += writeOffOperationInvoice(invoiceInvoiceShipment(shipment));
 
 writeOffQuantityShipmentDetail(detail) += writeOffQuantityInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
 writeOffPriceShipmentDetail(detail) += writeOffPriceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
@@ -199,7 +226,7 @@ backgroundWrittenShipment 'Цвет' (shipment) = RGB(212, 255, 212) IF shipment
 EXTEND FORM userShipment
     PROPERTIES (s) createPurchaseWriteOffUserShipment BACKGROUND backgroundWrittenShipment(s)
     PROPERTIES (s) BACKGROUND backgroundWrittenShipment(s) SHOWIF createPurchaseWriteOffUserShipment(s)
-                   nameWriteOffCommitteeUserShipment, nameReasonUserShipment, writeOffSumUserShipmentDetailUserShipment
+                   nameWriteOffOperationUserShipment, nameWriteOffCommitteeUserShipment, nameReasonUserShipment, writeOffSumUserShipmentDetailUserShipment
     PROPERTIES(d)  READONLY writtenOffShipmentDetail AFTER quantityUserShipmentDetail SHOWIF showWriteOffShipment(s) BACKGROUND backgroundWrittenShipment(s)
     PROPERTIES (d) SHOWIF createPurchaseWriteOffUserShipment(s) BEFORE deletesd BACKGROUND backgroundWrittenShipment(s)
                    nameWriteOffRateUserShipmentDetail, percentWriteOffRateUserShipmentDetail, writeOffQuantityUserShipmentDetail,
@@ -211,6 +238,7 @@ EXTEND DESIGN userShipment {
             title = 'Акт списания';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createPurchaseWriteOffUserShipment);
+            ADD PROPERTY(nameWriteOffOperationUserShipment);
             ADD PROPERTY(nameWriteOffCommitteeUserShipment);
             ADD PROPERTY(nameReasonUserShipment);
         }
@@ -373,6 +401,7 @@ descriptionWriteOff (writeOff) += descriptionShipmentWriteOff(writeOff);
 
 reasonWriteOff(writeOff) += reasonShipment(shipmentShipmentWriteOff(writeOff));
 writeOffCommitteeWriteOff(writeOff) += writeOffCommitteeShipment(shipmentShipmentWriteOff(writeOff));
+operationWriteOff(writeOff) += writeOffOperationShipment(shipmentShipmentWriteOff(writeOff));
 
 @defineDocumentAggregationDetailSku(shipment, shipmentWriteOff, sku);
 skuWriteOffDetail(writeOffDetail) +=  skuShipmentWriteOffDetail(writeOffDetail);

@@ -1,6 +1,8 @@
 MODULE Repricing;
 
-REQUIRE RepricingCommittee, Store, Pricing, StockDocument, PriceListCalc, RepricingOperation, PriceListLedger;  //Employee
+REQUIRE RepricingCommittee, Store, Pricing, StockDocument, PriceListCalc, RepricingOperation, PriceListLedger;
+
+NAMESPACE Repricing;
 
 //----------------------------------------------- Переоценка (розница) ---------------------------------------------------//
 
@@ -411,20 +413,17 @@ EXTEND FORM userRepricing
 ;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
-@defineDocumentOperationAbstractHeaderPrefix(repricing, , Operation, );
-@defineDocumentOperationDetailPrefix(repricing, , Operation, );
-@defineDocumentOperationHeaderPrefix(userRepricing, repricing, Repricing, );
-@defineDocumentOperationDetailPrefix(userRepricing, repricing, Repricing, );
-operationRepricing(repricing) += repricingOperationUserRepricing(repricing);
 
-@defineDocumentOperationRolePrefix(userRepricing, repricing);
+@defineDocumentInterfaceOperation (repricing, Repricing, );
+
+@defineDocumentOperationRolePrefix(userRepricing, );
 
 EXTEND FORM userRepricing
-    PROPERTIES(p) READONLY nameRepricingOperationUserRepricing
+    PROPERTIES(p) nameOperationUserRepricing
 ;
 EXTEND DESIGN userRepricing{
     p.documentPrmGroup{
-        ADD PROPERTY (nameRepricingOperationUserRepricing) BEFORE PROPERTY(noteUserRepricing);
+        ADD PROPERTY (nameOperationUserRepricing) BEFORE PROPERTY(noteUserRepricing);
     }
 }
 
@@ -483,7 +482,7 @@ createManagementRepricing 'Создать управленческую пере�
 
         FOR ADDOBJ r = UserRepricing DO {
             SET departmentStoreUserRepricing(r) <-  department();
-            SET repricingOperationUserRepricing(r) <- oper();
+            SET operationUserRepricing(r) <- oper();
 
             FOR currentBalanceSkuStock(sku, department()) AND
                 prevPricePriceListCalcListSkuStockDateTime(priceList(), calcList(), sku, department(), time()) != prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.retailPricingPriceListType, sku, department(), time())
@@ -596,7 +595,6 @@ EXTEND FORM repricings
 NAVIGATOR {
     pricingNavigator {
         ADD repricings;
-//        ADD repricingCommitteeDialog;
         ADD operations;
     }
 }
@@ -759,8 +757,6 @@ META defineRepricingAggregation(sign, stockProp)
 
     beforeDateRepricing(repricing) += beforeDateInvoiceRepricing(repricing);
     beforeTimeRepricing(repricing) += beforeTimeInvoiceRepricing(repricing);
-
-    operationRepricing(repricing) += operationInvoice(invoiceInvoiceRepricing(repricing));
 
     @defineDocumentAggregationStockPrefix(invoice, invoiceRepricing, stockProp, 'Склад', , );
     departmentStoreRepricing(repricing) += stockProp###invoiceRepricing(repricing) IF stockProp###invoiceRepricing(repricing) IS DepartmentStore;

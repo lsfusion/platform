@@ -1,7 +1,8 @@
 MODULE SalePurchaseShipmentGeneralLedger;
 
 REQUIRE GeneralLedger, SalePurchaseShipment, DimensionStock;
-PRIORITY Sale;
+
+NAMESPACE Sale;
 
 //------------------- Внутреннее перемещение  --------------------//
 

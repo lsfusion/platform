@@ -599,20 +599,40 @@ NAVIGATOR {
 @deriveDocumentDetailPriceOnSessionPriceListType (userPricingDetail, retail, pricing, departmentStore, userPricing);
 
 //----------------------------------------------- Операции -----------------------------------------------------//
-@defineDocumentOperationAbstractHeaderPrefix(pricing, , Operation, );
-@defineDocumentOperationDetailPrefix(pricing, , Operation, );
-@defineDocumentOperationHeaderPrefix(userPricing, pricing, Pricing, );
-@defineDocumentOperationDetailPrefix(userPricing, pricing, Pricing, );
-operationPricing(pricing) += pricingOperationUserPricing(pricing);
 
-@defineDocumentOperationRolePrefix(userPricing, pricing);
+// Вид цены для расценки для операции
+pricingPriceListTypeOperation = DATA PriceListType (Operation);
+namePricingPriceListTypeOperation 'Вид цен акт расценки (управленческий)' (operation) = namePriceListType(pricingPriceListTypeOperation(operation));
+
+pricingCalcPriceListTypeOperation = DATA CalcPriceListType (Operation);
+namePricingCalcPriceListTypeOperation 'Вид цен акт расценки (надбавка)' (operation) = namePriceListType(pricingCalcPriceListTypeOperation(operation));
+
+EXTEND FORM operation
+    PROPERTIES(o) namePricingPriceListTypeOperation, namePricingCalcPriceListTypeOperation
+;
+
+EXTEND DESIGN operation {
+    createContainer {
+        ADD PROPERTY(namePricingPriceListTypeOperation);
+        ADD PROPERTY(namePricingCalcPriceListTypeOperation);
+    }
+}
+
+@defineDocumentInterfaceOperation (pricing, Pricing, );
+@defineDocumentOperationRolePrefix(userPricing, );
+
+// Записываем тип цены по умолчанию из операции
+calcRetailPriceListTypeUserPricing (pricing) <- pricingPriceListTypeOperation(operationUserPricing(pricing))
+    WHEN CHANGED(operationUserPricing(pricing));
+calcRetailCalcPriceListTypeUserPricing (pricing) <- pricingCalcPriceListTypeOperation(operationUserPricing(pricing))
+    WHEN CHANGED(operationUserPricing(pricing));
 
 EXTEND FORM userPricing
-    PROPERTIES(p) READONLY namePricingOperationUserPricing
+    PROPERTIES(p) READONLY nameOperationUserPricing
 ;
 EXTEND DESIGN userPricing{
     p.documentPrmGroup{
-        ADD PROPERTY (namePricingOperationUserPricing) BEFORE PROPERTY(nameCurrencyUserPricing);
+        ADD PROPERTY (nameOperationUserPricing) BEFORE PROPERTY(nameCurrencyUserPricing);
     }
 }
 
@@ -809,7 +829,7 @@ META defineInvoicePricingAggregation(concrete, concreteClass, sign, caption, cap
     currencyPricing (pricing) += currency###concrete###pricing(pricing);
 
     pricingCommitteePricing(pricing) += pricingCommitteeInvoice(invoice###concrete###pricing(pricing));
-    operationPricing(pricing) += operationInvoice(invoice###concrete###pricing(pricing));
+//    operationPricing(pricing) += operationInvoice(invoice###concrete###pricing(pricing));
 
     @defineDocumentDescription(concrete###pricing, ###concrete###pricingDetail, seriesNumber###concrete###pricing, caption###sign);
     descriptionPricing (pricing) += description###concrete###pricing(pricing);

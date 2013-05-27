@@ -1,7 +1,8 @@
 MODULE SaleInvoiceGeneralLedger;
 
 REQUIRE GeneralLedger, SaleInvoice, DimensionLegalEntity, DimensionStock;
-PRIORITY Sale;
+
+NAMESPACE Sale;
 
 //------------------- Отгрузка по безналу --------------------//
 
