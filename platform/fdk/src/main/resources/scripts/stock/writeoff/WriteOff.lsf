@@ -179,8 +179,7 @@ skuUserWriteOffDetail (detail)  <- skuBatch(batchUserWriteOffDetail(detail)) IF 
 
 @defineDocumentInterfaceHeaderSum(writeOff);
 
-@defineDocumentHeaderItemSum(writeOff, , );
-@defineDocumentHeaderItemSum(userWriteOff, , );
+@defineDocumentInterfaceHeaderItemSum(writeOff, , );
 
 @defineAddDetailDialogSkuStock(userWriteOff, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(userWriteOff, sku);
@@ -356,18 +355,32 @@ DESIGN writeOffs FROM DEFAULT {
 }
 
 //----------------------------------------------- Операции -----------------------------------------------------//
+@defineDocumentOperationAbstractHeaderPrefix(writeOff, , Operation, );
+@defineDocumentOperationDetailPrefix(writeOff, , Operation, );
+@defineDocumentOperationHeaderPrefix(userWriteOff, writeOff, WriteOff, );
+@defineDocumentOperationDetailPrefix(userWriteOff, writeOff, WriteOff, );
+operationWriteOff(writeOff) += writeOffOperationUserWriteOff(writeOff);
 
-@defineDocumentOperation(writeOff, w);
-@defineDocumentOperationRole(userWriteOff);
-EXTEND FORM  writeOffs
-    PROPERTIES (w) READONLY nameOperationWriteOff BEFORE nameReasonWriteOff
+@defineDocumentOperationRolePrefix(userWriteOff, writeOff);
+
+EXTEND FORM userWriteOff
+    PROPERTIES(w) nameWriteOffOperationUserWriteOff
+;
+EXTEND DESIGN userWriteOff{
+    w.documentPrmGroup{
+        ADD PROPERTY (nameWriteOffOperationUserWriteOff) BEFORE PROPERTY(nameCurrencyUserWriteOff);
+    }
+}
+EXTEND FORM writeOffs
+    PROPERTIES(w) READONLY nameOperationWriteOff BEFORE nameReasonWriteOff
 ;
 
 // Причина
 reasonOperation = DATA Reason (WriteOff.Operation);
 nameReasonOperation 'Причина списания' (operation) = nameReason(reasonOperation(operation));
 
-@deriveDocumentOperationProperty(userWriteOff, reason);
+reasonUserWriteOff (w) <- reasonOperation(writeOffOperationUserWriteOff(w))
+    WHEN CHANGED(writeOffOperationUserWriteOff(w));
 
 EXTEND FORM WriteOff.operation
     PROPERTIES(o) nameReasonOperation

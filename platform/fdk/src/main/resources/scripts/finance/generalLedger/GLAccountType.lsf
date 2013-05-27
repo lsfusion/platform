@@ -20,7 +20,7 @@ nameGLAccountType 'Наименование' = DATA ISTRING[150](GLAccountType);
 
 currencyGLAccountType = DATA Currency (GLAccountType);
 nameCurrencyGLAccountType 'Валюта' (GLAccountType)= nameCurrency(currencyGLAccountType(GLAccountType));
-idGLAccountType 'Идентификатор' = DATA STRING[20] (GLAccountType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
+idGLAccountType 'Идентификатор' = DATA STRING[20] (GLAccountType) MINCHARWIDTH 15 PREFCHARWIDTH 20;
 
 GLAccountTypeIdGLAccountType (string1) = GROUP AGGR GLAccountType
     BY idGLAccountType(GLAccountType) WHERE GLAccountType IS GLAccountType;

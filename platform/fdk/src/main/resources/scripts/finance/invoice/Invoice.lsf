@@ -179,14 +179,11 @@ META defineInvoice(sign, stockProp)
     @defineDocumentInterfaceHeaderQuantity(invoice);
     @defineDocumentHeaderSkuQuantity(invoice, sku);
     @defineDocumentHeaderSkuQuantity(userInvoice, sku);
-
     @defineDocumentInterfaceHeaderSum(invoice);
 
-    @defineDocumentHeaderItemSum(invoice, , ); // ---- Сумма без НДС
-    @defineDocumentHeaderItemSum (invoice, VAT, VAT);        //-- сумма НДС поставщика
-    @defineDocumentHeaderItemSum (invoice, invoice, invoice);        //-- сумма с НДС
-
-    @defineDocumentHeaderItemSum(userInvoice, , );
+    @defineDocumentInterfaceHeaderItemSum (invoice, VAT, VAT);        //-- сумма НДС поставщика (с разбивкой по таре, товару...)
+    @defineDocumentInterfaceHeaderItemSum (invoice, , );              //-- сумма поставщика (с разбивкой по таре, товару...)
+    @defineDocumentInterfaceHeaderItemSum(invoice, invoice, invoice); //-- сумма поставщика с НДС (с разбивкой по таре, товару...)
 
     @defineAddDetailDialogSkuStock(userInvoice, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userInvoice, sku);

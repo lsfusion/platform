@@ -1355,6 +1355,10 @@ END
 META defineDocumentHeaderItemSum (object, prefixA, prefixB)
     @defineDocumentHeaderItemSumCustom(object, object##Detail, prefixA, prefixB);
 END
+META defineDocumentInterfaceHeaderItemSum (object, prefixA, prefixB)
+    @defineDocumentHeaderItemSum (object, prefixA, prefixB);
+    @defineDocumentHeaderItemSum (user###object, prefixA, prefixB);
+END
 
 // ------------------------------------------------- Вес нетто ----------------------------------- //
 

@@ -114,8 +114,7 @@ META defineShipment(captions, sign, stockProp)
     @defineDocumentHeaderSkuQuantity(userShipment, sku);
     @defineDocumentInterfaceHeaderSum(shipment);
 
-    @defineDocumentHeaderItemSum(shipment, , );
-    @defineDocumentHeaderItemSum(userShipment, , );
+    @defineDocumentInterfaceHeaderItemSum (shipment, , );
 
     @defineAddDetailDialogSkuStock(userShipment, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userShipment, sku);

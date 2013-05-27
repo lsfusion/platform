@@ -40,6 +40,7 @@ expiryDateUserShipmentDetail(detail) <- prevExpiryDateBatch(batchUserShipmentDet
 overFillInvoiceUserShipmentInvoice(s, i) += ACTION (s, i) {
     SET operationUserShipment(s) <- operationInvoice(i);
 }
+operationShipment(shipment) += operationInvoice(invoiceInvoiceShipment(shipment));
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

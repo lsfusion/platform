@@ -172,13 +172,11 @@ markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 @defineDocumentInterfaceHeaderSumPrefix (repricing, diffVAT, ' изменения НДС');
 @defineDocumentInterfaceHeaderSumPrefix (repricing, diffRetail, ' изменения розничной');
 
-// Изменение сумм по товару и таре
-@defineDocumentHeaderItemSum(repricing, diff, diff);                    //-- сумма поставщика
-@defineDocumentHeaderItemSum(repricing, diffMarkup, diffMarkup);        //-- сумма надбавки
-@defineDocumentHeaderItemSum(repricing, diffVAT, diffVAT);              //-- сумма ндс
-@defineDocumentHeaderItemSum(repricing, diffRetail, );                   //-- сумма розничная
-
-@defineDocumentHeaderItemSum(userRepricing, diffRetail, );
+// Изменение сумм по товару, таре...
+@defineDocumentInterfaceHeaderItemSum(repricing, diffRetail, );                   //-- сумма розничная
+@defineDocumentInterfaceHeaderItemSum (repricing, diffMarkup, diffMarkup);        //-- сумма надбавки
+@defineDocumentInterfaceHeaderItemSum (repricing, diffVAT, diffVAT);              //-- сумма ндс
+@defineDocumentInterfaceHeaderItemSum (repricing, diff, diff);                    //-- сумма поставщика
 
 // Действия по добавлению строк
 @defineAddDetailDialogSkuStock(userRepricing, sku, departmentStore, dialogSku);
