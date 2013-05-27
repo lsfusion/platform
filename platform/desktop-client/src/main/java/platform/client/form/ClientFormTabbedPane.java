@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static platform.client.ClientResourceBundle.getString;
+import static platform.client.SwingUtils.getNewBoundsIfNotAlmostEquals;
 
 public class ClientFormTabbedPane extends JTabbedPane implements AutoHideableContainer, InsetTabbedPane {
 
@@ -150,5 +151,12 @@ public class ClientFormTabbedPane extends JTabbedPane implements AutoHideableCon
 
     public Dimension getTabInsets() {
         return tabInsets;
+    }
+
+    //Чтобы лэйаут не прыгал игнорируем мелкие изменения координат
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        Rectangle newBounds = getNewBoundsIfNotAlmostEquals(this, x, y, width, height);
+        super.setBounds(newBounds.x, newBounds.y, newBounds.width,  newBounds.height);
     }
 }

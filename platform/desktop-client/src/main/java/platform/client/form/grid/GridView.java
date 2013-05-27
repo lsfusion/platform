@@ -5,6 +5,8 @@ import platform.client.form.ClientFormController;
 import javax.swing.*;
 import java.awt.*;
 
+import static platform.client.SwingUtils.getNewBoundsIfNotAlmostEquals;
+
 public class GridView extends JPanel {
     final JScrollPane pane;
 
@@ -47,5 +49,12 @@ public class GridView extends JPanel {
 
     public GridTable getTable() {
         return gridTable;
+    }
+
+    //Чтобы лэйаут не прыгал игнорируем мелкие изменения координат
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        Rectangle newBounds = getNewBoundsIfNotAlmostEquals(this, x, y, width, height);
+        super.setBounds(newBounds.x, newBounds.y, newBounds.width,  newBounds.height);
     }
 }

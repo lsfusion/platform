@@ -435,4 +435,23 @@ public class SwingUtils {
             return timer;
         }
     }
+
+    public static Rectangle getNewBoundsIfNotAlmostEquals(Component comp, int x, int y, int width, int height) {
+        Rectangle rect = comp.getBounds();
+
+        rect.x = changeIfNotAlmostEquals(rect.x, x);
+        rect.y = changeIfNotAlmostEquals(rect.y, y);
+        rect.width = changeIfNotAlmostEquals(rect.width, width);
+        rect.height = changeIfNotAlmostEquals(rect.height, height);
+
+        return rect;
+    }
+
+    private static int changeIfNotAlmostEquals(int currVal, int newVal) {
+        return almostEquals(currVal, newVal) ? currVal : newVal;
+    }
+
+    public static boolean almostEquals(int a, int b) {
+        return Math.abs(a - b) < 3;
+    }
 }

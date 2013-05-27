@@ -4,7 +4,7 @@
     <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
         <param name="target" value="System.out"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
         </layout>
         <filter class="org.apache.log4j.varia.LevelRangeFilter">
             <param name="LevelMin" value="ALL"/>
@@ -15,7 +15,7 @@
     <appender name="stderr" class="org.apache.log4j.ConsoleAppender">
         <param name="target" value="System.err"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
         </layout>
         <filter class="org.apache.log4j.varia.LevelRangeFilter">
             <param name="LevelMin" value="WARN"/>
@@ -33,7 +33,7 @@
             <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
         </triggeringPolicy>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
         </layout>
     </appender>
 
@@ -48,7 +48,7 @@
             <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
         </triggeringPolicy>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
         </layout>
         <filter class="org.apache.log4j.varia.LevelRangeFilter">
             <param name="LevelMin" value="WARN"/>
@@ -66,7 +66,7 @@
             <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
         </triggeringPolicy>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
         </layout>
     </appender>
 

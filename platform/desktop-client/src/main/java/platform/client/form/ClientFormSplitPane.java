@@ -11,6 +11,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
 
+import static platform.client.SwingUtils.getNewBoundsIfNotAlmostEquals;
+
 public class ClientFormSplitPane extends JSplitPane implements AutoHideableContainer {
     private LayoutManager2 layout;
     private boolean skipRelayout = false;
@@ -79,5 +81,12 @@ public class ClientFormSplitPane extends JSplitPane implements AutoHideableConta
         skipRelayout = true;
         setDividerLocation(dividerLocation);
         skipRelayout = false;
+    }
+
+    //Чтобы лэйаут не прыгал игнорируем мелкие изменения координат
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        Rectangle newBounds = getNewBoundsIfNotAlmostEquals(this, x, y, width, height);
+        super.setBounds(newBounds.x, newBounds.y, newBounds.width,  newBounds.height);
     }
 }

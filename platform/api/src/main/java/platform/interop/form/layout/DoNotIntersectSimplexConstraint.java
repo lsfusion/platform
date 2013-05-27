@@ -37,6 +37,22 @@ public class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
         forbDir = iforbDir;
     }
 
+    public void fillSplitConstraint(boolean isVertical, int dividerSize, LpSolve solver, SimplexComponentInfo comp1, SimplexComponentInfo comp2, SimplexConstraints cons1, SimplexConstraints cons2) throws LpSolveException {
+        SimplexSolverDirections vars = new SimplexSolverDirections(solver, forbDir);
+
+        if (isVertical) {
+            assert vars.B != null;
+            solver.addConstraintex(3, new double[] {MAXVALUE, -1, 1},
+                                   new int[] {vars.B, comp2.T, comp1.B},
+                                   LpSolve.LE, MAXVALUE - dividerSize);
+        } else {
+            assert vars.R != null;
+            solver.addConstraintex(3, new double[] {MAXVALUE, -1, 1},
+                                   new int[] {vars.R, comp2.L, comp1.R},
+                                   LpSolve.LE, MAXVALUE - dividerSize);
+        }
+    }
+
     public void fillConstraint(LpSolve solver, SimplexComponentInfo comp1, SimplexComponentInfo comp2, SimplexConstraints cons1, SimplexConstraints cons2, SimplexSolverDirections vars) throws LpSolveException {
 
         if (vars == null)

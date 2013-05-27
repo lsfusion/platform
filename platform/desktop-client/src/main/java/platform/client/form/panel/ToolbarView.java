@@ -7,6 +7,8 @@ import platform.client.form.queries.ToolbarGridButton;
 import javax.swing.*;
 import java.awt.*;
 
+import static platform.client.SwingUtils.getNewBoundsIfNotAlmostEquals;
+
 public class ToolbarView extends JPanel {
     private JPanel mainPanel;
 
@@ -49,5 +51,12 @@ public class ToolbarView extends JPanel {
             infoLabel.setVisible(!text.isEmpty());
             infoLabel.invalidate();
         }
+    }
+
+    //Чтобы лэйаут не прыгал игнорируем мелкие изменения координат
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        Rectangle newBounds = getNewBoundsIfNotAlmostEquals(this, x, y, width, height);
+        super.setBounds(newBounds.x, newBounds.y, newBounds.width,  newBounds.height);
     }
 }

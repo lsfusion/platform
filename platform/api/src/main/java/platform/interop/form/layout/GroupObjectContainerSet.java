@@ -94,21 +94,21 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.controlsContainer = factory.createContainer(); // контейнер всех управляющих объектов
         set.controlsContainer.setDescription(getString("form.layout.control.objects"));
         set.controlsContainer.setSID(group.getSID() + CONTROLS_CONTAINER);
-        set.controlsContainer.getConstraints().insetsInside = new Insets(2, 2, 2, 2);
+        set.controlsContainer.getConstraints().insetsInside = new Insets(2, 2, 0, 2);
         set.controlsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.controlsContainer.getConstraints().fillHorizontal = 1.0;
 
         set.toolbarPropsContainer = factory.createContainer(); // контейнер тулбара
         set.toolbarPropsContainer.setDescription(getString("form.layout.toolbar.props.container"));
         set.toolbarPropsContainer.setSID(group.getSID() + TOOLBAR_PROPS_CONTAINER);
-        set.toolbarPropsContainer.getConstraints().insetsInside = new Insets(0, 2, 2, 2);
+        set.toolbarPropsContainer.getConstraints().insetsInside = new Insets(0, 2, 0, 2);
         set.toolbarPropsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.toolbarPropsContainer.getConstraints().directions = new SimplexComponentDirections(0.01, 0.0, 0.0, 0.0);
 
         set.filtersContainer = factory.createContainer(); // контейнер фильтров
         set.filtersContainer.setDescription(getString("form.layout.filters.container"));
         set.filtersContainer.setSID(group.getSID() + FILTERS_CONTAINER);
-        set.filtersContainer.getConstraints().insetsInside = new Insets(0, 2, 1, 2);
+        set.filtersContainer.getConstraints().insetsInside = new Insets(0, 2, 0, 2);
         set.filtersContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.filtersContainer.getConstraints().directions = new SimplexComponentDirections(0.01, 0.0, 0.0, 0.0);
 
@@ -121,20 +121,20 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.filterContainer = factory.createContainer(); // контейнер всех управляющих объектов
         set.filterContainer.setDescription(getString("form.layout.filter.container"));
         set.filterContainer.setSID(group.getSID() + FILTER_CONTAINER);
-        set.filterContainer.getConstraints().insetsInside = new Insets(0, 1, 2, 1);
+        set.filterContainer.getConstraints().insetsInside = new Insets(1, 1, 1, 1);
         set.filterContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
         set.showTypeContainer = factory.createContainer(); // контейнер всех управляющих объектов
         set.showTypeContainer.setDescription(getString("form.layout.showtype.container"));
         set.showTypeContainer.setSID(group.getSID() + SHOWTYPE_CONTAINER);
-        set.showTypeContainer.getConstraints().insetsInside = new Insets(0, 2, 2, 2);
+        set.showTypeContainer.getConstraints().insetsInside = new Insets(0, 2, 0, 2);
         set.showTypeContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.showTypeContainer.getConstraints().directions = new SimplexComponentDirections(0.01, 0.0, 0.0, 0.0);
 
         set.toolbarContainer = factory.createContainer(); // контейнер всех управляющих объектов
         set.toolbarContainer.setDescription(getString("form.layout.toolbar.container"));
         set.toolbarContainer.setSID(group.getSID() + TOOLBAR_CONTAINER);
-        set.toolbarContainer.getConstraints().insetsInside = new Insets(1, 0, 2, 2);
+        set.toolbarContainer.getConstraints().insetsInside = new Insets(1, 0, 0, 2);
         set.toolbarContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.toolbarContainer.getConstraints().directions = new SimplexComponentDirections(0.01, 0.01, 0.0, 0.0);
 

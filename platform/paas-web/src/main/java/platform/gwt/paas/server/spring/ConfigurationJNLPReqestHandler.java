@@ -2,7 +2,6 @@ package platform.gwt.paas.server.spring;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.PropertyPlaceholderHelper;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
 import paas.api.remote.PaasRemoteInterface;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
@@ -19,7 +18,6 @@ public class ConfigurationJNLPReqestHandler extends ClientJNLPRequestHandler {
     protected final static Logger logger = Logger.getLogger(ConfigurationJNLPReqestHandler.class);
 
     private static final String CONFIGURATION_ID = "confId";
-    private static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
 
     @Autowired
     private BusinessLogicsProvider<PaasRemoteInterface> paasProvider;

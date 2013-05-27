@@ -14,6 +14,7 @@ import javax.swing.*;
 import java.awt.*;
 
 import static platform.base.BaseUtils.nullEquals;
+import static platform.client.SwingUtils.getNewBoundsIfNotAlmostEquals;
 
 public class DataPanelView extends JPanel implements PanelView {
     private final JLabel label;
@@ -171,5 +172,12 @@ public class DataPanelView extends JPanel implements PanelView {
 
     public void setIcon(Icon icon) {
         throw new RuntimeException("not supported");
+    }
+
+   //Чтобы лэйаут не прыгал игнорируем мелкие изменения координат
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        Rectangle newBounds = getNewBoundsIfNotAlmostEquals(this, x, y, width, height);
+        super.setBounds(newBounds.x, newBounds.y, newBounds.width,  newBounds.height);
     }
 }

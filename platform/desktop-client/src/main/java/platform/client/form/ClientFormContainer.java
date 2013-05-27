@@ -7,9 +7,11 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 
+import static platform.client.SwingUtils.getNewBoundsIfNotAlmostEquals;
+
 class ClientFormContainer extends JPanel implements AutoHideableContainer {
 
-    private final ClientContainer key;
+    public final ClientContainer key;
 
     public ClientFormContainer(ClientContainer key) {
 
@@ -52,5 +54,12 @@ class ClientFormContainer extends JPanel implements AutoHideableContainer {
             setPreferredSize(SwingUtils.getOverridedSize(getPreferredSize(), key.preferredSize));
         if (key.maximumSize != null)
             setMaximumSize(SwingUtils.getOverridedSize(getMaximumSize(), key.maximumSize));
+    }
+
+    //Чтобы лэйаут не прыгал игнорируем мелкие изменения координат
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        Rectangle newBounds = getNewBoundsIfNotAlmostEquals(this, x, y, width, height);
+        super.setBounds(newBounds.x, newBounds.y, newBounds.width,  newBounds.height);
     }
 }

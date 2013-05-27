@@ -398,7 +398,6 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         for (int i = 0; i < columnNumber; i++) {
             solver.addColumn(new double[0]);
         }
-
     }
 
     private void fillComponentConstraints(LpSolve solver, Container parent, int type) throws LpSolveException {
@@ -551,36 +550,38 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             }
         }
 
-        for (Component comp3 : children)
+        for (Component comp3 : children) {
             for (Component comp1 : children) {
                 DoNotIntersectSimplexConstraint inter13 = intersects.get(comp1).get(comp3);
-                if (comp1 != comp3 && inter13 != null)
+                if (comp1 != comp3 && inter13 != null) {
                     for (Component comp2 : children) {
-                        if (comp2 != comp1 && comp2 != comp3 && inter13.equals(intersects.get(comp3).get(comp2)))
+                        if (comp2 != comp1 && comp2 != comp3 && inter13.equals(intersects.get(comp3).get(comp2))) {
                             intersects.get(comp1).put(comp2, inter13);
+                        }
                     }
+                }
             }
+        }
 
-
-        for (Component comp1 : children)
-            for (Component comp2 : children)
+        for (Component comp1 : children) {
+            for (Component comp2 : children) {
                 if (comp1 != comp2 && !getConstraint(comp2).intersects.containsKey(mapComponents.get(comp1))) {
-
                     if (parent instanceof ClientFormSplitPane) {
                         ClientFormSplitPane split = (ClientFormSplitPane) parent;
                         DoNotIntersectSimplexConstraint constraint = split.getOrientation() == JSplitPane.HORIZONTAL_SPLIT
-                                ? DoNotIntersectSimplexConstraint.TOTHE_RIGHT
-                                : DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+                                                                     ? DoNotIntersectSimplexConstraint.TOTHE_RIGHT
+                                                                     : DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
                         Component component1 = comp1.equals(split.getLeftComponent()) ? comp1 : comp2;
                         Component component2 = comp1.equals(split.getLeftComponent()) ? comp2 : comp1;
-                        constraint.fillConstraint(solver, infos.get(component1), infos.get(component2), getConstraint(component1), getConstraint(component2), null);
+                        constraint.fillSplitConstraint(split.getOrientation() == JSplitPane.VERTICAL_SPLIT, split.getDividerSize(), solver, infos.get(component1), infos.get(component2), getConstraint(component1), getConstraint(component2));
                     } else if (getConstraint(comp1).intersects.containsKey(mapComponents.get(comp2))) {
                         getConstraint(comp1).intersects.get(mapComponents.get(comp2)).fillConstraint(solver, infos.get(comp1), infos.get(comp2), getConstraint(comp1), getConstraint(comp2), null);
                     } else {
 
                         // проверка на избыточные условия пересечения
-                        if (intersects.get(comp1).get(comp2) != null || intersects.get(comp2).get(comp1) != null)
+                        if (intersects.get(comp1).get(comp2) != null || intersects.get(comp2).get(comp1) != null) {
                             continue;
+                        }
 
                         int order1 = children.indexOf(comp1);
                         int order2 = children.indexOf(comp2);
@@ -597,9 +598,9 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
                         childrenConstraints.fillConstraint(solver, info1, info2, getConstraint(comp1), getConstraint(comp2), (maxVar == 0 ? null : dir));
                     }
-
                 }
-
+            }
+        }
     }
 
     // На текущей момент основными целевыми функциями являются :
@@ -821,7 +822,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 }
             }
             heights.put(comp, height);
-            comp.setBounds(max(0, L - LP), max(0, T - TP), width, height);
+
+            comp.setBounds(L - LP, T - TP, width, height);
         }
     }
 
