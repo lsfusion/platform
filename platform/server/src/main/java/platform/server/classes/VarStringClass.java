@@ -57,7 +57,7 @@ public class VarStringClass extends StringClass {
 
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, boolean needLength) {
-        return "CAST(" + value + " AS " + getDB(syntax, typeEnv) + ")";
+        return "CAST(" + value + " AS " + (length == 0 ? syntax.getVarStringType(1) : getDB(syntax, typeEnv)) + ")";
     }
 
     public String toString() {
