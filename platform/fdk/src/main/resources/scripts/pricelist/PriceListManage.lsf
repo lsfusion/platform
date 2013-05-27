@@ -63,6 +63,13 @@ EXTEND FORM priceListManage
     PROPERTIES               READONLY priceLedgerPriceListTypeSkuStockCompanyDateTime(pt, csk, cst, c, dt)
     ORDER BY nameStock(cst)
     FILTERS priceLedgerPriceListTypeSkuStockCompanyDateTime(pt, csk, cst, c, dt)
+
+    OBJECTS cpl = PriceListLedger
+    PROPERTIES(cpl) READONLY isPostedPriceListLedger, fromDateTimePriceListLedger, toDateTimePriceListLedger, descriptionPriceListLedger, stocksPriceListLedger
+    PROPERTIES      READONLY pricePriceListLedgerLedgerPriceListType(cpl, pt)
+    FILTERS inPriceListLedgerLedgerPriceListType(cpl, pt),
+            skuPriceListLedger(cpl) == csk,
+            companyPriceListLedger(cpl) == c
 ;
 
 EXTEND DESIGN priceListManage {
@@ -85,10 +92,17 @@ EXTEND DESIGN priceListManage {
                     fillHorizontal = 2.0;
                 }
             }
-            NEW c.stocks {
-                type = CONTAINERH;
-                ADD cst.box {
+            NEW c.detail {
+                type = TABBED;
+                NEW c.stocks {
                     caption = 'Склады';
+                    type = CONTAINERH;
+                    ADD cst.box {
+                        caption = 'Склады';
+                    }
+                }
+                ADD cpl.box {
+                    caption = 'История';
                 }
             }
         }
@@ -143,24 +157,57 @@ EXTEND FORM priceListManage
                                         nameCompanyLedgerPriceListTypeSkuStockDateTime,
                                         descriptionLedgerPriceListTypeSkuStockDateTime
     FILTERS pricePriceListTypeSkuStockDateTime(pt, ssk, s, dt)
+
+    OBJECTS sst = Stock
+    PROPERTIES(sst)          READONLY nameStock
+    PROPERTIES(ssk, sst, dt) READONLY balanceASkuStockDateTime
+    PROPERTIES(pt, ssk, sst, dt) READONLY pricePriceListTypeSkuStockDateTime,
+                                          nameCompanyLedgerPriceListTypeSkuStockDateTime,
+                                          descriptionLedgerPriceListTypeSkuStockDateTime
+
+    ORDER BY nameStock(cst)
+    FILTERS pricePriceListTypeSkuStockDateTime(pt, ssk, sst, dt)
+
+    OBJECTS spl = PriceListLedger
+    PROPERTIES(spl) READONLY isPostedPriceListLedger, fromDateTimePriceListLedger, toDateTimePriceListLedger, descriptionPriceListLedger, stocksPriceListLedger
+    PROPERTIES      READONLY pricePriceListLedgerLedgerPriceListType(spl, pt)
+    FILTERS inPriceListLedgerLedgerPriceListType(spl, pt),
+            skuPriceListLedger(spl) == ssk,
+            inPriceListLedgerStock(spl, s)
 ;
 
 EXTEND DESIGN priceListManage {
     detail {
         NEW s {
             caption = 'По складам';
-            type = SPLITH;
-            fillVertical = 2.0;
-            NEW s.skuFilters {
-                type = CONTAINERV;
-                ADD s.box;
-                ADD sskg.tree.box {
-                    caption = 'Товарные группы';
+            type = SPLITV;
+            NEW s.skus {
+                type = SPLITH;
+                fillVertical = 2.0;
+                NEW s.skuFilters {
+                    type = CONTAINERV;
+                    ADD s.box;
+                    ADD sskg.tree.box {
+                        caption = 'Товарные группы';
+                    }
+                }
+                ADD ssk.box {
+                    caption = 'Товары';
+                    fillHorizontal = 2.0;
                 }
             }
-            ADD ssk.box {
-                caption = 'Товары';
-                fillHorizontal = 2.0;
+            NEW s.detail {
+                type = TABBED;
+                NEW s.stocks {
+                    caption = 'Склады';
+                    type = CONTAINERH;
+                    ADD sst.box {
+                        caption = 'Склады';
+                    }
+                }
+                ADD spl.box {
+                    caption = 'История';
+                }
             }
         }
     }

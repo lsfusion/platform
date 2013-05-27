@@ -6,10 +6,12 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Акт расценки ---------------------------------------------------//
 
-// Объявляем вид цены, автоматически проставляем
+// Объявляем вид цены для надбавки, автоматически проставляем
 @defineDocumentInterfaceHeaderPriceListType (invoice, calcPriceListType, calcRetail, ' (надбавка)');
 @defineDocumentDetailPriceListTypePrefix (invoice, invoiceDetail, calcPriceListType, calcRetail, ' (надбавка)');
 @defineDocumentDetailPriceListTypePrefix (userInvoice, userInvoiceDetail, calcPriceListType, calcRetail, ' (надбавка)');
+
+// Объявляем вид цены управленческий
 @defineDocumentInterfaceHeaderPriceListType (invoice, priceListType, calcRetail, ' (управленческий)');
 @defineDocumentDetailPriceListTypePrefix (invoice, invoiceDetail, priceListType, calcRetail, ' (управленческий)');
 @defineDocumentDetailPriceListTypePrefix (userInvoice, userInvoiceDetail, priceListType, calcRetail, ' (управленческий)');
@@ -38,6 +40,22 @@ retailPriceListTypeUserInvoiceDetail(detail) <- IF prevPricePriceListTypeSkuStoc
                                                      CHANGED(skuUserInvoiceDetail(detail)) OR
                                                      CHANGED(customerStockUserInvoiceDetail(detail)) OR
                                                      CHANGED(dateTimeUserInvoiceDetail(detail));
+
+// Записываем в вид цены управленческий вид цены, если по нему есть цена, иначе - надбавку
+//WHEN SESSION FORMS userInvoice
+//     CHANGED(calcRetailPriceListTypeUserInvoiceDetail(detail)) OR
+//     CHANGED(calcRetailCalcPriceListTypeUserInvoiceDetail(detail)) OR
+//     CHANGED(skuUserInvoiceDetail(detail)) OR
+//     CHANGED(customerStockUserInvoiceDetail(detail)) OR
+//     CHANGED(dateTimeUserInvoiceDetail(detail)) NOINLINE DO {
+//
+//     retailPriceListTypeUserInvoiceDetail(detail) <- IF prevPricePriceListTypeSkuStockDateTime(calcRetailPriceListTypeUserInvoiceDetail(detail),
+//                                                                                               skuUserInvoiceDetail(detail),
+//                                                                                               customerStockUserInvoiceDetail(detail),
+//                                                                                               dateTimeUserInvoiceDetail(detail))
+//                                                        THEN calcRetailPriceListTypeUserInvoiceDetail(detail)
+//                                                        ELSE calcRetailCalcPriceListTypeUserInvoiceDetail(detail);
+//}
 
 // Округление розничной цен (если указан расчетный вид цены, то от него, иначе от склада)
 roundConditionUserInvoiceDetail(userInvoiceDetail) =

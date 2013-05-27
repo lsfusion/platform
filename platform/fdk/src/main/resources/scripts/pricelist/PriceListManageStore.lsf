@@ -31,20 +31,36 @@ countStoreSkuChainStoresDateTime 'В наличии' (sku, chainStores, dateTime
     BY sku, chainStoresStore(store), dateTime;
 
 EXTEND FORM priceListManage
+    // --- По организациям
     PROPERTIES READONLY countStorePriceListTypeSkuDateTime(pt, csk, dt) AFTER idBarcodeSku(csk)
 
     OBJECTS ccs = ChainStores
     PROPERTIES READONLY nameChainStores(ccs), countStoreChainStores(ccs), countStorePriceListTypeSkuChainStoresDateTime(pt, csk, ccs, dt), countStoreSkuChainStoresDateTime(csk, ccs, dt)
     FILTERS countStorePriceListTypeSkuChainStoresDateTime(pt, csk, ccs, dt)
 
-    OBJECTS st=StoreType
-    PROPERTIES READONLY nameStoreType(st), countStoreStoreType(st), countStorePriceListTypeSkuStoreTypeDateTime(pt, csk, st, dt), countStoresSkuStoreTypeDateTime(csk, st, dt)
-    FILTERS countStorePriceListTypeSkuStoreTypeDateTime(pt, csk, st, dt)
+    OBJECTS ctp=StoreType
+    PROPERTIES READONLY nameStoreType(ctp), countStoreStoreType(ctp), countStorePriceListTypeSkuStoreTypeDateTime(pt, csk, ctp, dt), countStoresSkuStoreTypeDateTime(csk, ctp, dt)
+    FILTERS countStorePriceListTypeSkuStoreTypeDateTime(pt, csk, ctp, dt)
+
+    // --- По складам
+    PROPERTIES READONLY countStorePriceListTypeSkuDateTime(pt, ssk, dt) AFTER idBarcodeSku(ssk)
+
+    OBJECTS scs = ChainStores
+    PROPERTIES READONLY nameChainStores(scs), countStoreChainStores(scs), countStorePriceListTypeSkuChainStoresDateTime(pt, ssk, scs, dt), countStoreSkuChainStoresDateTime(ssk, scs, dt)
+    FILTERS countStorePriceListTypeSkuChainStoresDateTime(pt, ssk, scs, dt)
+
+    OBJECTS stp=StoreType
+    PROPERTIES READONLY nameStoreType(stp), countStoreStoreType(stp), countStorePriceListTypeSkuStoreTypeDateTime(pt, ssk, stp, dt), countStoresSkuStoreTypeDateTime(ssk, stp, dt)
+    FILTERS countStorePriceListTypeSkuStoreTypeDateTime(pt, ssk, stp, dt)
 ;
 
 EXTEND DESIGN priceListManage {
     c.stocks {
         ADD ccs.box BEFORE cst.box;
-        ADD st.box BEFORE cst.box;
+        ADD ctp.box BEFORE cst.box;
+    }
+    s.stocks {
+        ADD scs.box BEFORE sst.box;
+        ADD stp.box BEFORE sst.box;
     }
 }

@@ -14,8 +14,8 @@ batchLedgerPriceListType 'Использовать для партий свои 
 CLASS ABSTRACT PriceListLedger 'Изменение цены';
 TABLE priceListLedger(PriceListLedger);
 
-fromDateTimePriceListLedger = ABSTRACT DATETIME (PriceListLedger) PERSISTENT INDEXED;
-toDateTimePriceListLedger = ABSTRACT DATETIME (PriceListLedger) PERSISTENT INDEXED;
+fromDateTimePriceListLedger 'Дата/время с' = ABSTRACT DATETIME (PriceListLedger) PERSISTENT INDEXED;
+toDateTimePriceListLedger 'Дата/время по' = ABSTRACT DATETIME (PriceListLedger) PERSISTENT INDEXED;
 
 isPostedPriceListLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (PriceListLedger) PERSISTENT;
 skipPriceListLedger 'Не изменять значение' (ledger) = ABSTRACT BOOLEAN (PriceListLedger) PERSISTENT;
@@ -25,16 +25,20 @@ activePriceListLedger 'Активен' (ledger) = isPostedPriceListLedger(ledger
 skuPriceListLedger = ABSTRACT Sku (PriceListLedger) PERSISTENT INDEXED;
 batchPriceListLedger = ABSTRACT Batch (PriceListLedger) PERSISTENT INDEXED;
 
-descriptionPriceListLedger = ABSTRACT STRING[200] (PriceListLedger) PERSISTENT;
+descriptionPriceListLedger 'Описание' = ABSTRACT STRING[200] (PriceListLedger) PERSISTENT;
 
 companyPriceListLedger = ABSTRACT LegalEntity (PriceListLedger) PERSISTENT;
 
 TABLE priceListLedgerLedgerPriceListType(PriceListLedger, LedgerPriceListType);
 inPriceListLedgerLedgerPriceListType = ABSTRACT BOOLEAN (PriceListLedger, LedgerPriceListType) PERSISTENT;
-pricePriceListLedgerLedgerPriceListType = ABSTRACT NUMERIC[14,2] (PriceListLedger, LedgerPriceListType) PERSISTENT;
+pricePriceListLedgerLedgerPriceListType 'Цена' = ABSTRACT NUMERIC[14,2] (PriceListLedger, LedgerPriceListType) PERSISTENT;
 
 TABLE priceListLedgerStock(PriceListLedger, Stock);
 inPriceListLedgerStock (ledger, stock) = ABSTRACT BOOLEAN (PriceListLedger, Stock);
+
+stocksPriceListLedger 'Склады' (priceList) = GROUP CONCAT nameStock(stock) IF inPriceListLedgerStock(priceList, stock) , ', '
+                                                   BY priceList
+                                                   ORDER stock MINCHARWIDTH 20 PREFCHARWIDTH 160;
 
 orderPriceListLedger(ledger) = STRUCT(fromDateTimePriceListLedger(ledger), ledger) IF activePriceListLedger(ledger) PERSISTENT;
 
