@@ -74,6 +74,7 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <module>platform.gwt.form.Form</module>
                             <force>true</force>
                             <draftCompile>true</draftCompile>
                             <optimizationLevel>1</optimizationLevel>

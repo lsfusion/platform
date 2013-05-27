@@ -1,5 +1,6 @@
 package platform.gwt.form.client.form.ui;
 
+import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -24,6 +25,8 @@ import static java.util.Collections.singleton;
 
 public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private boolean dataUpdated;
+
+    private GGroupObjectValue pathToSet;
 
     private ArrayList<GTreeGridRecord> currentRecords;
 
@@ -182,6 +185,26 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         updateHeader();
+
+        updateCurrentRecord();
+    }
+
+    public void updateCurrentRecord() {
+        if (pathToSet != null) {
+            GGroupObjectValue currentPath = pathToSet;
+            pathToSet = null;
+            if (currentRecords != null) {
+                int i = 0;
+                for (GTreeGridRecord record : currentRecords) {
+                    if (record.getKey().equals(currentPath)) {
+                        setCurrentRecord(record);
+                        setKeyboardSelectedRow(i, false);
+                        return;
+                    }
+                    i++;
+                }
+            }
+        }
     }
 
     protected void updatePropertyReaders() {
@@ -288,21 +311,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     private void setCurrentRecord(GTreeGridRecord record) {
+        Log.debug("Setting current record to: " + record);
         this.selectedRecord = record;
     }
 
-    public void setCurrentObjects(GGroupObjectValue objects) {
-        if (currentRecords != null) {
-            int i = 0;
-            for (GTreeGridRecord record : currentRecords) {
-                if (record.getKey().equals(objects)) {
-                    setCurrentRecord(record);
-                    setKeyboardSelectedRow(i, false);
-                    return;
-                }
-                i++;
-            }
-        }
+    public void setCurrentPath(GGroupObjectValue currentPath) {
+        Log.debug("Setting current path to: " + currentPath);
+        this.pathToSet = currentPath;
     }
 
     public GTreeGridRecord getSelectedRecord() {

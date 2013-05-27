@@ -10,7 +10,7 @@ GROUP printGroup 'Печатные формы' : public;
 
 // --------------------------------------------- Работа со строками --------------------------------- //
 
-stringEqualsAll(string) = string == 'Все';
+stringEqualsAll(string) = string == STRING[3]('Все');
 
 toText = FORMULA TEXT 'CAST($1 AS TEXT)';
 

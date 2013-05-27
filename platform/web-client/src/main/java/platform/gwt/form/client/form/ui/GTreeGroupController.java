@@ -50,7 +50,6 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
     }
 
     public void processFormChanges(GFormChanges fc) {
-        GGroupObjectValue currentObjects = null;
         for (GGroupObject group : treeGroup.groups) {
             if (fc.gridObjects.containsKey(group)) {
                 tree.setKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group));
@@ -84,13 +83,10 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
             }
 
             if (fc.objects.containsKey(group)) {
-                currentObjects = fc.objects.get(group);
+                tree.setCurrentPath(fc.objects.get(group));
             }
         }
         update();
-        if (currentObjects != null) {
-            tree.setCurrentObjects(currentObjects);
-        }
     }
 
     void restoreScrollPosition() {

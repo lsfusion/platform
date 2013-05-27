@@ -839,13 +839,26 @@ colorizeElementWithNumberGreaterFour(element) = #5555ff IF numberNavigatorElemen
 
 FORM TestTree 'Тест дерева (формы)'
     TREE forms e=NavigatorElement PARENT parentNavigatorElement
-    PROPERTIES(e) captionNavigatorElement, sidNavigatorElement, numberNavigatorElement BACKGROUND colorizeElementWithNumberGreaterFour(e), permitNavigatorElement, forbidNavigatorElement
+    PROPERTIES(e) OBJVALUE, captionNavigatorElement, sidNavigatorElement, numberNavigatorElement BACKGROUND colorizeElementWithNumberGreaterFour(e)
+
+    TREE forms2 a=STRING[3], e2=NavigatorElement PARENT parentNavigatorElement
+    PROPERTIES(a) OBJVALUE
+    PROPERTIES(e2) OBJVALUE, captionNavigatorElement, sidNavigatorElement
+
+    FILTERS stringEqualsAll(a)
 ;
 
 DESIGN TestTree FROM DEFAULT {
-    forms.tree.box {
-        fillHorizontal = 1;
-        fillVertical = 1;
+    NEW trees {
+        type = CONTAINERH;
+        ADD forms.tree.box {
+            fillHorizontal = 1;
+            fillVertical = 1;
+        }
+        ADD forms2.tree.box {
+            fillHorizontal = 1;
+            fillVertical = 1;
+        }
     }
 }
 
