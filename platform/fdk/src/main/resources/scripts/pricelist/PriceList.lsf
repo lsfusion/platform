@@ -307,7 +307,7 @@ DESIGN chooseMarkUpSkuUserPriceList FROM DEFAULT {
     ADD functions.box;
 }
 
-changeMarkUpChosenSkuUserPriceList 'Рассчитать цену для отмеченных строк' = ACTION (userPriceList, stock) {
+changeMarkUpChosenSkuUserPriceList 'Изменить цену для отмеченных строк' = ACTION (userPriceList, stock) {
     FORM chooseMarkUpSkuUserPriceList OBJECTS p = userPriceList MODAL;
     IF formResult() == FormResult.ok THEN {
         IF TRUE IF NOT sumSelectedPriceList(userPriceList) THEN MESSAGE 'Выберите хотя бы одну позицию' ELSE{
@@ -427,7 +427,6 @@ FORM userPriceList 'Прайс'
     PROPERTIES(p, ts)    inPriceListStock
     PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER headerNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t)
     PROPERTIES(d, t, ts) changePricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER headerNameChangeDataPriceListType(p, t) BACKGROUND backgroundChangeDataPriceListType(t)
-    PROPERTIES(d)        nameCompanyUserPriceListDetail
     FILTERS ts IS Stock AND NOT sg IS StockGroup OR isParentStockGroupStock(sg, ts),
             isCompanyStock(ts)
     FILTERGROUP filters2
@@ -439,6 +438,7 @@ FORM userPriceList 'Прайс'
     PROPERTIES(d, t, tt) changePricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER headerNameChangeDataPriceListType(p, t) BACKGROUND backgroundChangeDataPriceListType(t) TODRAW d FORCE GRID
     PROPERTIES(p, tt) TODRAW d FORCE PANEL TOOLBAR changeMarkUpChosenSkuUserPriceList
 
+    PROPERTIES(d)        nameCompanyUserPriceListDetail
     FILTERS isCompanyStock(tt)
 
     TREE skuTree2 sk2 = SkuGroup PARENT parentSkuGroup
@@ -562,7 +562,7 @@ DESIGN userPriceList FROM DEFAULT {
     ADD functions.box;
 }
 
-changeMarkUpSkuUserPriceList 'Рассчитать цену для всех строк' = ACTION (userPriceList, stock) {
+changeMarkUpSkuUserPriceList 'Изменить цену для всех строк' = ACTION (userPriceList, stock) {
     FORM chooseMarkUpSkuUserPriceList OBJECTS p = userPriceList MODAL;
     IF formResult() == FormResult.ok THEN {
         FOR [FILTER userPriceList.d](detail) DO {

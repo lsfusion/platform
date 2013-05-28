@@ -35,6 +35,9 @@ NAVIGATOR {
 
 inSku 'Отм.' = DATA SESSION BOOLEAN (Sku);
 
+TABLE skuCustomUser(Sku, CustomUser);
+inSkuCustomUser = DATA BOOLEAN (Sku, CustomUser);
+
 // ---------------------------- По организациям ----------------------- //
 // c
 
@@ -52,7 +55,7 @@ EXTEND FORM priceListManage
     ORDER BY nameSku(csk)
     FILTERS isParentSkuGroupSku(cskg, csk)
 
-    PROPERTIES READONLY activePriceLedgerPriceListTypeSkuCompanyDateTime(pt, csk, c, dt), // последний прайс, в котором есть цена
+    PROPERTIES READONLY cPrice = activePriceLedgerPriceListTypeSkuCompanyDateTime(pt, csk, c, dt), // последний прайс, в котором есть цена
                         activeDescriptionLedgerPriceListTypeSkuCompanyDateTime(pt, csk, c, dt)
     // на больших объемах возможно будет тормозить
     FILTERS countStockPriceListTypeSkuCompanyDateTime(pt, csk, c, dt) // фильтруем все товары, которые входят в ассортимент хотя бы одного склада
@@ -60,7 +63,7 @@ EXTEND FORM priceListManage
     OBJECTS cst = Stock
     PROPERTIES(cst)          READONLY nameStock
     PROPERTIES(csk, cst, dt) READONLY balanceASkuStockDateTime
-    PROPERTIES               READONLY priceLedgerPriceListTypeSkuStockCompanyDateTime(pt, csk, cst, c, dt)
+    PROPERTIES               READONLY cPriceStock = priceLedgerPriceListTypeSkuStockCompanyDateTime(pt, csk, cst, c, dt)
     ORDER BY nameStock(cst)
     FILTERS priceLedgerPriceListTypeSkuStockCompanyDateTime(pt, csk, cst, c, dt)
 
@@ -111,27 +114,39 @@ EXTEND DESIGN priceListManage {
 
 // Создание прайс-листов
 
-createCompanyPriceList 'Создать прайс' = ACTION (dateTime, dataPriceListType, company) {
-    FOR ADDOBJ u = UserPriceList DO {
-        SET fromDateUserPriceList(u) <- toDate(dateTime AS DATETIME);
-        SET fromTimeUserPriceList(u) <- toTime(dateTime AS DATETIME);
-        SET companyUserPriceList(u) <- company;
-        SET currencyUserPriceList(u) <- currencyDataPriceListType(dataPriceListType);
-        SET inUserPriceListDataPriceListType(u, dataPriceListType) <- TRUE;
-        SET showUserPriceListPriceListType(u, dataPriceListType) <- TRUE;
-        FOR inSku(sku) ADDOBJ d = UserPriceListDetail DO {
-            SET skuUserPriceListDetail(d) <- sku;
-            SET userPriceListUserPriceListDetail(d) <- u;
-        }
-        FORM userPriceList OBJECTS p = u DOCKEDMODAL;
-        IF NOT formResult() == FormResult.ok THEN {
-            DELETE detail WHERE userPriceListUserPriceListDetail(detail) == u;
-            DELETE u;
-        }
+fillCompanyPriceList = ACTION (userPriceList, dateTime, dataPriceListType, company) {
+    SET fromDateUserPriceList(userPriceList) <- toDate(dateTime AS DATETIME);
+    SET fromTimeUserPriceList(userPriceList) <- toTime(subtractDateTimeSeconds(dateTime AS DATETIME,1));
+    SET companyUserPriceList(userPriceList) <- company;
+    SET currencyUserPriceList(userPriceList) <- currencyDataPriceListType(dataPriceListType);
+    SET inUserPriceListDataPriceListType(userPriceList, dataPriceListType) <- TRUE;
+    SET showUserPriceListPriceListType(userPriceList, dataPriceListType) <- TRUE;
+    FOR inSkuCustomUser(sku, currentUser()) ADDOBJ d = UserPriceListDetail DO {
+        SET skuUserPriceListDetail(d) <- sku;
+        SET userPriceListUserPriceListDetail(d) <- userPriceList;
     }
+
+    // Выставляем все склады, которые есть хотя бы один раз для товаров
+    FOR [GROUP SUM 1 IF inSkuCustomUser(sku, currentUser()) AND priceLedgerPriceListTypeSkuStockCompanyDateTime(t, sku, st, c, d) BY t, st, c, d] (dataPriceListType, stock, company, dateTime) DO {
+        dataInUserPriceListStock(userPriceList, stock) <- TRUE;
+    }
+}
+
+createCompanyPriceList 'Создать прайс' = ACTION (dateTime, dataPriceListType, company) NEWSESSION {
+    FOR ADDOBJ u = UserPriceList DO {
+        fillCompanyPriceList(u, dateTime, dataPriceListType, company);
+        FORM userPriceList OBJECTS p = u MANAGESESSION DOCKEDMODAL;
+    }
+}
+
+createNewCompanyPriceList 'Создать прайс' = ACTION (dateTime, dataPriceListType, company) {
+    inSkuCustomUser(s, u) <- inSku(s) WHERE u == currentUser();
+    apply();
+    createCompanyPriceList(dateTime, dataPriceListType, company);
 } TOOLBAR;
+
 EXTEND FORM priceListManage
-    PROPERTIES createCompanyPriceList(dt, pt, c) TODRAW csk FORCE PANEL
+    PROPERTIES createNewCompanyPriceList(dt, pt, c) TODRAW csk FORCE PANEL
 ;
 
 // ---------------------------- По складам ---------------------------- //
@@ -153,7 +168,7 @@ EXTEND FORM priceListManage
     ORDER BY nameSku(ssk)
     FILTERS isParentSkuGroupSku(sskg, ssk)
 
-    PROPERTIES(pt, ssk, s, dt) READONLY pricePriceListTypeSkuStockDateTime,
+    PROPERTIES(pt, ssk, s, dt) READONLY sPrice = pricePriceListTypeSkuStockDateTime,
                                         nameCompanyLedgerPriceListTypeSkuStockDateTime,
                                         descriptionLedgerPriceListTypeSkuStockDateTime
     FILTERS pricePriceListTypeSkuStockDateTime(pt, ssk, s, dt)
@@ -161,7 +176,7 @@ EXTEND FORM priceListManage
     OBJECTS sst = Stock
     PROPERTIES(sst)          READONLY nameStock
     PROPERTIES(ssk, sst, dt) READONLY balanceASkuStockDateTime
-    PROPERTIES(pt, ssk, sst, dt) READONLY pricePriceListTypeSkuStockDateTime,
+    PROPERTIES(pt, ssk, sst, dt) READONLY sPriceStock = pricePriceListTypeSkuStockDateTime,
                                           nameCompanyLedgerPriceListTypeSkuStockDateTime,
                                           descriptionLedgerPriceListTypeSkuStockDateTime
 
@@ -213,32 +228,38 @@ EXTEND DESIGN priceListManage {
     }
 }
 
-// Создание прайс-листов
-createStockPriceList 'Создать прайсы' = ACTION (dateTime, dataPriceListType, stock) {
-    FOR [GROUP SUM 1 IF inSku(s) BY companyLedgerPriceListTypeSkuStockDateTime(t, s, st, d), t, st, d] (company, dataPriceListType, stock, dateTime)
-        ADDOBJ u = UserPriceList DO {
+createCompanyStockPriceList = ACTION (company, dateTime, dataPriceListType, stock) NEWSESSION {
+    FOR ADDOBJ u = UserPriceList DO {
         SET fromDateUserPriceList(u) <- toDate(dateTime AS DATETIME);
-        SET fromTimeUserPriceList(u) <- toTime(dateTime AS DATETIME);
+        SET fromTimeUserPriceList(u) <- toTime(subtractDateTimeSeconds(dateTime AS DATETIME,1));
         SET companyUserPriceList(u) <- company;
         SET currencyUserPriceList(u) <- currencyDataPriceListType(dataPriceListType);
         SET inUserPriceListDataPriceListType(u, dataPriceListType) <- TRUE;
         SET showUserPriceListPriceListType(u, dataPriceListType) <- TRUE;
         SET dataInUserPriceListStock(u, stock) <- TRUE;
-        FOR inSku(sku) AND companyLedgerPriceListTypeSkuStockDateTime(dataPriceListType, sku, stock, dateTime) == company
+        FOR inSkuCustomUser(sku, currentUser()) AND companyLedgerPriceListTypeSkuStockDateTime(dataPriceListType, sku, stock, dateTime) == company
             ADDOBJ d = UserPriceListDetail DO {
             SET skuUserPriceListDetail(d) <- sku;
             SET userPriceListUserPriceListDetail(d) <- u;
         }
-        FORM userPriceList OBJECTS p = u DOCKEDMODAL;
-        IF NOT formResult() == FormResult.ok THEN {
-            DELETE detail WHERE userPriceListUserPriceListDetail(detail) == u;
-            DELETE u;
-        }
+        FORM userPriceList OBJECTS p = u MANAGESESSION DOCKEDMODAL;
+    }
+}
+// Создание прайс-листов
+createStockPriceList 'Создать прайсы' = ACTION (dateTime, dataPriceListType, stock) {
+    FOR [GROUP SUM 1 IF inSkuCustomUser(s, currentUser()) BY companyLedgerPriceListTypeSkuStockDateTime(t, s, st, d), t, st, d] (company, dataPriceListType, stock, dateTime) DO {
+        createCompanyStockPriceList(company, dateTime, dataPriceListType, stock);
     }
 } TOOLBAR;
 
+createNewStockPriceList 'Создать прайс' = ACTION (dateTime, dataPriceListType, company) {
+    inSkuCustomUser(s, u) <- inSku(s) WHERE u == currentUser();
+    apply();
+    createStockPriceList(dateTime, dataPriceListType, company);
+} TOOLBAR;
+
 EXTEND FORM priceListManage
-    PROPERTIES createStockPriceList(dt, pt, s) TODRAW ssk FORCE PANEL
+    PROPERTIES createNewStockPriceList(dt, pt, s) TODRAW ssk FORCE PANEL
 ;
 
 // ----------------------------------- Список прайсов ---------------------------- //
