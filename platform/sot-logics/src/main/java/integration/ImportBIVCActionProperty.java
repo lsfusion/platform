@@ -162,12 +162,12 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private List<Item> importItems(String path, Integer numberOfItems) throws IOException, xBaseJException {
+    private List<Item> importItems(String stmcPath, Integer numberOfItems) throws IOException, xBaseJException {
 
         List<Item> itemsList = new ArrayList<Item>();
         String nameCountry = "БЕЛАРУСЬ";
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "windows-1251"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(stmcPath), "windows-1251"));
         String line;
         String idItem;
         BigDecimal baseMarkup = null;
@@ -556,8 +556,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         break;
                     case 38:
                         if ((itemName != null) && (!"".equals(itemName))) {
-                            data.add(Arrays.asList((Object) (idUOM == null ? null : "S" + idUOM),
-                                    idItem, weight));
+                            data.add(Arrays.asList((Object) idUOM, idItem, weight));
                         }
                         idUOM = null;
                         weight = null;

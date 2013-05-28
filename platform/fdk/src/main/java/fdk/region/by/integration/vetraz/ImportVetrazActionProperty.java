@@ -293,7 +293,7 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
             String k_group = getFieldValue(sprmatImportFile, "K_GRUP", "Cp866", null);
             String name = getFieldValue(sprmatImportFile, "POL_NAIM", "Cp866", null);
             String idItem = k_group + name;
-            String numberUserInvoice = getFieldValue(sprmatImportFile, "POST_DOK", "Cp866", "");
+            String numberUserInvoice = getFieldValue(sprmatImportFile, "POST_DOK", "Cp866", "Б\\Н");
             String seriesUserInvoice = getFieldValue(sprmatImportFile, "PRIM", "Cp866", null);
             String idSupplier = getFieldValue(sprmatImportFile, "K_POST", "Cp866", null);
             Date date = getDateFieldValue(sprmatImportFile, "D_PRIH", "Cp866", null);
@@ -323,63 +323,59 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
             BigDecimal price = isForeign ? n_zps : n_cenu;
             BigDecimal manufacturingPrice = getBigDecimalFieldValue(sprmatImportFile, "NUMPR1", "Cp866", null);
             BigDecimal homePrice = isForeign ? n_cenu : null;
+            BigDecimal dprm11 = getBigDecimalFieldValue(sprmatImportFile, "DPRM11", "Cp866", "0");
             BigDecimal rateExchange = isForeign ? getBigDecimalFieldValue(sprmatImportFile, "DPRM12", "Cp866", null) : null;
-            BigDecimal priceDuty = isForeign ? manufacturingPrice.subtract(rateExchange == null ? price : price.multiply(rateExchange)) : null;
+            BigDecimal priceDuty = isForeign ? dprm11.subtract(rateExchange==null ? price : price.multiply(rateExchange)) : null;
             Boolean isHomeCurrency = isForeign ? true : null;
             Boolean showDeclaration = isForeign ? true : null;
 
             Object[] ostt = osttMap.get(k_mat);
-            if (ostt != null) {
-                BigDecimal quantity = (BigDecimal) ostt[0];
-                String idWarehouse = (String) ostt[1];
+            BigDecimal quantity = ostt == null ? null : (BigDecimal) ostt[0];
+            String idWarehouse = ostt == null ? null : (String) ostt[1];
 
-                String numberDeclaration = null;
-                Date dateDeclaration = null;
-                if (!descriptionDeclaration.isEmpty()) {
-                    for (String p : declarationPatterns) {
-                        Pattern r = Pattern.compile(p);
-                        Matcher m = r.matcher(descriptionDeclaration);
-                        if (m.find()) {
-                            numberDeclaration = m.group(1).trim();
-                            try {
-                                dateDeclaration = new Date(DateUtils.parseDate(m.group(2), datePatterns).getTime());
-                            } catch (ParseException ignored) {
-                            }
-                            break;
+            String numberDeclaration = null;
+            Date dateDeclaration = null;
+            if (!descriptionDeclaration.isEmpty()) {
+                for (String p : declarationPatterns) {
+                    Pattern r = Pattern.compile(p);
+                    Matcher m = r.matcher(descriptionDeclaration);
+                    if (m.find()) {
+                        numberDeclaration = m.group(1).trim();
+                        try {
+                            dateDeclaration = new Date(DateUtils.parseDate(m.group(2), datePatterns).getTime());
+                        } catch (ParseException ignored) {
                         }
+                        break;
                     }
                 }
-
-                String numberCompliance = null;
-                Date fromDateCompliance = null;
-                Date toDateCompliance = null;
-                if (!descriptionCompliance.isEmpty()) {
-                    for (String p : compliancePatterns) {
-                        Pattern r = Pattern.compile(p);
-                        Matcher m = r.matcher(descriptionCompliance);
-                        if (m.find()) {
-                            numberCompliance = m.group(1).trim();
-                            try {
-                                fromDateCompliance = (m.groupCount() >= 2 && !m.group(2).isEmpty()) ? new Date(DateUtils.parseDate(m.group(2), datePatterns).getTime()) : null;
-                                toDateCompliance = (m.groupCount() >= 3 && !m.group(3).isEmpty()) ? new Date(DateUtils.parseDate(m.group(3), datePatterns).getTime()) : null;
-                            } catch (ParseException ignored) {
-                            }
-                            break;
-                        }
-                    }
-                }
-
-
-                if (!numberUserInvoice.isEmpty())
-                    data.add(new UserInvoiceDetail(seriesUserInvoice + numberUserInvoice + String.valueOf(date) + shortNameCurrency,
-                            seriesUserInvoice, numberUserInvoice, null, true, k_mat, date, idItem, null, quantity, idSupplier,
-                            idWarehouse, idSupplier + "WH", price.doubleValue() == 0 ? null : price, null, manufacturingPrice, null,
-                            null, null, null, certificateText, null, numberDeclaration, dateDeclaration, numberCompliance,
-                            fromDateCompliance, toDateCompliance, expiryDate, bin, rateExchange, homePrice, priceDuty,
-                            isHomeCurrency, showDeclaration, true, shortNameCurrency, codeCustomsGroup,
-                            allowedVAT.contains(retailVAT.doubleValue()) ? retailVAT : null));
             }
 
+            String numberCompliance = null;
+            Date fromDateCompliance = null;
+            Date toDateCompliance = null;
+            if (!descriptionCompliance.isEmpty()) {
+                for (String p : compliancePatterns) {
+                    Pattern r = Pattern.compile(p);
+                    Matcher m = r.matcher(descriptionCompliance);
+                    if (m.find()) {
+                        numberCompliance = m.group(1).trim();
+                        try {
+                            fromDateCompliance = (m.groupCount() >= 2 && !m.group(2).isEmpty()) ? new Date(DateUtils.parseDate(m.group(2), datePatterns).getTime()) : null;
+                            toDateCompliance = (m.groupCount() >= 3 && !m.group(3).isEmpty()) ? new Date(DateUtils.parseDate(m.group(3), datePatterns).getTime()) : null;
+                        } catch (ParseException ignored) {
+                        }
+                        break;
+                    }
+                }
+            }
+
+            data.add(new UserInvoiceDetail(seriesUserInvoice + numberUserInvoice + String.valueOf(date) + shortNameCurrency,
+                    seriesUserInvoice, numberUserInvoice, null, true, k_mat, date, idItem, null, quantity, idSupplier,
+                    idWarehouse, idSupplier + "WH", (price==null || price.doubleValue() == 0) ? null : price, null,
+                    manufacturingPrice, null, null, null, null, certificateText, null, numberDeclaration, dateDeclaration,
+                    numberCompliance, fromDateCompliance, toDateCompliance, expiryDate, bin, rateExchange, homePrice,
+                    priceDuty, isHomeCurrency, showDeclaration, true, shortNameCurrency, codeCustomsGroup,
+                    allowedVAT.contains(retailVAT.doubleValue()) ? retailVAT : null));
         }
         return data;
     }

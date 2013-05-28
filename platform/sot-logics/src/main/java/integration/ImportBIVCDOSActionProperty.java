@@ -968,7 +968,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String uomName = uomObject == null ? null : uomObject.uomName;
                     String uomFullName = uomObject == null ? "" : uomObject.uomFullName;
                     String idItem = /*pnt13 + pnt48*/idGroup + ":" + name + uomFullName;
-                    data.add(Arrays.asList((Object) (idUOM == null ? null : "S" + idUOM), uomName,
+                    data.add(Arrays.asList((Object) idUOM, uomName,
                             uomObject == null ? null : uomObject.netWeight,
                             uomObject == null ? null : uomObject.uomFullName, idItem));
                 }

@@ -436,7 +436,6 @@ public class ImportActionProperty {
                 ImportField homePriceUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("homePriceUserInvoiceDetail"));
                 ImportField priceDutyUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("priceDutyUserInvoiceDetail"));
                 ImportField binUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("idBin"));
-                ImportField manufacturingPriceInvoiceDetail = new ImportField(LM.findLCPByCompoundName("Purchase.manufacturingPriceInvoiceDetail"));
                 ImportField chargePriceUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("Purchase.chargePriceUserInvoiceDetail"));
                 ImportField manufacturingPriceUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("Purchase.manufacturingPriceUserInvoiceDetail"));
                 ImportField wholesalePriceUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("Purchase.wholesalePriceUserInvoiceDetail"));
@@ -527,7 +526,7 @@ public class ImportActionProperty {
                 props.add(new ImportProperty(homePriceUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.homePriceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
                 props.add(new ImportProperty(priceDutyUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.priceDutyUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
                 props.add(new ImportProperty(showManufacturingPriceUserInvoiceField, LM.findLCPByCompoundName("Purchase.showManufacturingPriceUserInvoice").getMapping(userInvoiceKey)));
-                props.add(new ImportProperty(manufacturingPriceInvoiceDetail, LM.findLCPByCompoundName("Purchase.manufacturingPriceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
+                props.add(new ImportProperty(manufacturingPriceUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.manufacturingPriceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
                 props.add(new ImportProperty(chargePriceUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.chargePriceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
 
                 props.add(new ImportProperty(showWholesalePriceUserInvoiceField, LM.findLCPByCompoundName("Purchase.showWholesalePriceUserInvoice").getMapping(userInvoiceKey)));
@@ -587,7 +586,7 @@ public class ImportActionProperty {
                     data.add(Arrays.asList((Object) u.idUserInvoice, u.series, u.number, u.createPricing, u.createShipment,
                             u.showManufacturingPrice, showWholesalePrice, u.isHomeCurrency, u.showDeclaration,
                             u.date, new Time(12, 0, 0), u.sid, u.idItem, u.quantity, u.supplier, u.customerWarehouse,
-                            u.supplierWarehouse, u.price, u.price, u.chargePrice, u.manufacturingPrice,
+                            u.supplierWarehouse, u.price, u.chargePrice, u.manufacturingPrice,
                             u.wholesalePrice, u.rateExchange, u.homePrice, u.priceDuty, u.wholesaleMarkup, u.retailPrice,
                             u.retailMarkup, u.certificateText, true, u.idContract, u.numberDeclaration, u.dateDeclaration,
                             u.numberCompliance, u.fromDateCompliance, u.toDateCompliance, u.expiryDate, u.bin,
@@ -599,8 +598,7 @@ public class ImportActionProperty {
                         isHomeCurrencyUserInvoiceField, showDeclarationUserInvoiceField, dateUserInvoiceField,
                         timeUserInvoiceField, idUserInvoiceDetailField, idItemField, quantityUserInvoiceDetailField,
                         idSupplierField, idCustomerStockField, idSupplierWarehouseField, priceUserInvoiceDetail,
-                        manufacturingPriceInvoiceDetail, chargePriceUserInvoiceDetailField,
-                        manufacturingPriceUserInvoiceDetailField, wholesalePriceUserInvoiceDetailField,
+                        chargePriceUserInvoiceDetailField, manufacturingPriceUserInvoiceDetailField, wholesalePriceUserInvoiceDetailField,
                         dataRateExchangeUserInvoiceDetailField, homePriceUserInvoiceDetailField,
                         priceDutyUserInvoiceDetailField, wholesaleMarkupUserInvoiceDetailField,
                         retailPriceUserInvoiceDetailField, retailMarkupUserInvoiceDetailField,
