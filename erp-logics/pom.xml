@@ -10,9 +10,9 @@
         <version>1.0-SNAPSHOT</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
-    <artifactId>fdk</artifactId>
+    <artifactId>erp-logics</artifactId>
     <packaging>jar</packaging>
-    <name>FDK</name>
+    <name>ERP Logics</name>
 
     <dependencies>
         <dependency>
@@ -44,6 +44,18 @@
         <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>equ-srv</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.sevenzipjbinding</groupId>
+            <artifactId>SevenZip</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.sevenzipjbinding</groupId>
+            <artifactId>SevenZipNativeInitializationException</artifactId>
         </dependency>
     </dependencies>
 </project>

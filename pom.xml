@@ -11,8 +11,7 @@
         <module>equ-api</module>
         <module>equ-clt</module>
         <module>equ-srv</module>
-        <module>fdk</module>
-        <module>retail-logics</module>
+        <module>erp-logics</module>
     </modules>
 
 </project>
