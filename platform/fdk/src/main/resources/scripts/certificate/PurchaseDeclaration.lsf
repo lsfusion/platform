@@ -325,21 +325,21 @@ EXTEND DESIGN declaration {
         caption = 'Провести';
     }
 
-    PROPERTY(sumRateDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(percentDutyCustomsGroupDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(sumRateDutyDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(numberVATRangeCustomGroupDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(percentVATCustomsGroupDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(sumRateVATDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(sumRateDeclarationDetail) { background = RGB(255, 224, 224); }
+    PROPERTY(percentDutyCustomsGroupDeclarationDetail) { background = RGB(255, 224, 224); }
+    PROPERTY(sumRateDutyDeclarationDetail) { background = RGB(255, 224, 224); }
+    PROPERTY(numberVATRangeCustomGroupDeclarationDetail) { background = RGB(255, 224, 224); }
+    PROPERTY(percentVATCustomsGroupDeclarationDetail) { background = RGB(255, 224, 224); }
+    PROPERTY(sumRateVATDeclarationDetail) { background = RGB(255, 224, 224); }
 
-    PROPERTY(sumDataDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(percentDutyDataDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(sumDutyDataDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(numberVATRangeDataDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(percentVATRangeDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(sumVATDataDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(sumDataDeclarationDetail) { background = RGB (224, 255, 255); }
+    PROPERTY(percentDutyDataDeclarationDetail) { background = RGB (224, 255, 255); }
+    PROPERTY(sumDutyDataDeclarationDetail) { background = RGB (224, 255, 255); }
+    PROPERTY(numberVATRangeDataDeclarationDetail) { background = RGB (224, 255, 255); }
+    PROPERTY(percentVATRangeDeclarationDetail) { background = RGB (224, 255, 255); }
+    PROPERTY(sumVATDataDeclarationDetail) { background = RGB (224, 255, 255); }
 
-    PROPERTY(sumRegistrationDeclaration) { background = #CCFF55; }
+    PROPERTY(sumRegistrationDeclaration) { background = RGB(212,255,212); }
 
     ADD functions.box;
 }
@@ -359,19 +359,19 @@ EXTEND FORM declarations
 
 EXTEND DESIGN declarations {
 
-    PROPERTY(sumRateDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(percentDutyCustomsGroupDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(sumRateDutyDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(numberVATRangeCustomGroupDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(percentVATCustomsGroupDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(sumRateVATDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(sumRateDeclarationDetail) { background = RGB (255, 224, 224); }
+    PROPERTY(percentDutyCustomsGroupDeclarationDetail) { background = RGB (255, 224, 224); }
+    PROPERTY(sumRateDutyDeclarationDetail) { background = RGB (255, 224, 224); }
+    PROPERTY(numberVATRangeCustomGroupDeclarationDetail) { background = RGB (255, 224, 224); }
+    PROPERTY(percentVATCustomsGroupDeclarationDetail) { background = RGB (255, 224, 224); }
+    PROPERTY(sumRateVATDeclarationDetail) { background = RGB (255, 224, 224); }
 
-    PROPERTY(sumDataDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(percentDutyDataDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(sumDutyDataDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(numberVATRangeDataDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(percentVATRangeDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(sumVATDataDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(sumDataDeclarationDetail) { background = RGB (224, 255, 255); }
+    PROPERTY(percentDutyDataDeclarationDetail) { background = RGB (224, 255, 255); }
+    PROPERTY(sumDutyDataDeclarationDetail) { background = RGB (224, 255, 255); }
+    PROPERTY(numberVATRangeDataDeclarationDetail) { background = RGB (224, 255, 255); }
+    PROPERTY(percentVATRangeDeclarationDetail) { background = RGB (224, 255, 255); }
+    PROPERTY(sumVATDataDeclarationDetail) { background = RGB (224, 255, 255); }
 }
 
 //------------------------------------ определение себестоимости -----------------------------------------------------//
@@ -457,8 +457,8 @@ EXTEND DESIGN declaration {
         }
     }
 
-    PROPERTY(priceRegistrationInvoiceDetail) { background = #CCFF55; }
-    PROPERTY(priceDutyInvoiceDetail) { background = #AAFFFF; }
+    PROPERTY(priceRegistrationInvoiceDetail) { background = RGB (212,255,212); }
+    PROPERTY(priceDutyInvoiceDetail) { background = RGB (255, 224, 224); }
 
     ADD functions.box;
 }
