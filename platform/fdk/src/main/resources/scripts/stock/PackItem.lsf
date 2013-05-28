@@ -1,0 +1,21 @@
+MODULE PackItem;
+
+REQUIRE Item,
+        PurchasePack,
+        SalePack;
+
+EXTEND DESIGN item {
+    itemPrimaryColumn2 {
+        ADD i.itemPackGroup;
+    }
+}
+
+overCopyItemBarcode(d, s, i) += ACTION (d, s, i) {
+    IF Purchase.packBarcode(s) THEN {
+        SET Purchase.packBarcodeSku(i) <- d;
+    }
+    IF Sale.packBarcode(s) THEN{
+        SET Sale.packBarcodeSku(i) <- d;
+    }
+}
+

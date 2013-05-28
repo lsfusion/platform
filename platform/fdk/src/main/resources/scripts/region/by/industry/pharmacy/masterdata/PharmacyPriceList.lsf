@@ -1,0 +1,23 @@
+MODULE PharmacyPriceList;
+
+NAMESPACE PriceList;
+
+CLASS PharmacyPriceGroup 'Тип лекарственного средства';
+TABLE pharmacyPriceGroup(PharmacyPriceGroup);
+
+namePharmacyPriceGroup 'Наименование' = DATA ISTRING[50](PharmacyPriceGroup);
+
+FORM pharmacyPriceGroup 'Типы лекарственных средств'
+    OBJECTS t=PharmacyPriceGroup FIXED PANEL
+    PROPERTIES(t) namePharmacyPriceGroup
+    EDIT PharmacyPriceGroup OBJECT t
+;
+
+FORM pharmacyPriceGroups 'Типы лекарственных средств'
+    OBJECTS t=PharmacyPriceGroup
+    PROPERTIES(t) namePharmacyPriceGroup READONLY, DELETE
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY namePharmacyPriceGroup
+    DIALOG PharmacyPriceGroup OBJECT t
+;
+DESIGN pharmacyPriceGroups FROM DEFAULT { main{ preferredSize = (600, 400); } }

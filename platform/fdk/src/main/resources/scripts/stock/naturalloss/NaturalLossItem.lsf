@@ -1,0 +1,19 @@
+MODULE NaturalLossItem;
+
+REQUIRE NaturalLoss, Item;
+
+subNaturalLossGroupCountryItem = DATA SubNaturalLossGroup (Country, Item);
+nameSubNaturalLossGroupCountryItem 'Группа естественной убыли' = nameSubNaturalLossGroup(subNaturalLossGroupCountryItem(country, item));
+
+CONSTRAINT countrySubNaturalLossGroup(subNaturalLossGroupCountryItem(country, item)) != country
+    CHECKED BY subNaturalLossGroupCountryItem MESSAGE 'Страна группы естественной убыли не совпадает со страной';
+
+subNaturalLossGroupCountrySku (country, sku) += subNaturalLossGroupCountryItem (country, sku);
+
+overCopyItem(s, d) += ACTION (s, d) {
+    SET subNaturalLossGroupCountryItem(country, d) <- subNaturalLossGroupCountryItem(country, s);
+}
+
+EXTEND FORM item
+    PROPERTIES(c,i) nameSubNaturalLossGroupCountryItem
+;

@@ -1,0 +1,181 @@
+MODULE SystemEvents;
+
+REQUIRE System, Reflection, Time;
+
+CLASS ABSTRACT Exception 'Исключение';
+CLASS ClientException 'Исключение на клиенте' : Exception;
+CLASS ServerException 'Исключение на сервере' : Exception;
+TABLE exception (Exception);
+
+messageException 'Сообщение исключения' = DATA STRING[250] (Exception);
+dateException 'Время возникновения' = DATA DATETIME (Exception);
+erTraceException 'След исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;
+typeException 'Тип исключения' = DATA STRING[250] (Exception);
+clientClientException 'Клиент' = DATA STRING[100] (ClientException);
+loginClientException 'Логин' = DATA STRING[100] (ClientException);
+
+CLASS Launch 'Запуск';
+TABLE launch (Launch);
+
+computerLaunch 'Компьютер' = DATA Computer (Launch);
+hostnameLaunch 'Имя компьютера' (launch) = hostnameComputer(computerLaunch(launch));
+timeLaunch 'Время запуска'= DATA DATETIME (Launch);
+revisionLaunch 'Версия'= DATA STRING[10] (Launch);
+
+CLASS Connection 'Подключение';
+
+CLASS ConnectionStatus 'Статус подключения' {
+    connectedConnection 'Подключён',
+    disconnectedConnection 'Отключён'
+}
+FORM connectionStatuses
+    OBJECTS s = ConnectionStatus
+    PROPERTIES(s) staticCaption
+    DIALOG ConnectionStatus OBJECT s
+;
+
+TABLE connection (Connection);
+TABLE connectionNavigatorElement (Connection, NavigatorElement);
+
+computerConnection 'Компьютер' = DATA Computer (Connection);
+hostnameComputerConnection 'Имя компьютера'(connection) = hostnameComputer(computerConnection(connection));
+
+remoteAddressConnection 'IP пользователя' = DATA STRING[40] (Connection);
+
+userConnection 'Пользователь' = DATA CustomUser (Connection);
+userLoginConnection 'Логин пользователя' (connection) = loginCustomUser(userConnection(connection));
+
+connectionStatusConnection 'Статус подключения' =  DATA ConnectionStatus (Connection);
+nameConnectionStatusConnection 'Статус подключения' (connection) = staticCaption(connectionStatusConnection(connection));
+
+connectTimeConnection 'Время подключения' = DATA DATETIME (Connection);
+disconnectTimeConnection 'Время отключения' = DATA DATETIME (Connection);
+disconnectTimeConnection (connection) <- currentDateTime() WHEN ASSIGNED(connectionStatusConnection(connection) == ConnectionStatus.disconnectedConnection);
+
+//заменили user на customUser
+userSession 'Пользователь сессии' = DATA CustomUser (Session);
+nameUserSession (session) = nameContact(userSession(session));
+userSession (session) <- currentUser() WHEN ASSIGNED(session IS Session);
+
+connectionFormCount 'Количество открытых форм' = DATA INTEGER (Connection, NavigatorElement);
+
+CLASS Session 'Сессия';
+TABLE session(Session);
+TABLE sessionObject(Session, Object);
+
+currentSession = DATA SESSION Session();
+
+quantityAddedClassesSession 'Количество добавленных классов' = DATA INTEGER (Session);
+quantityRemovedClassesSession 'Количество удалённых классов' = DATA INTEGER (Session);
+quantityChangedClassesSession 'Количество изменённых классов' = DATA INTEGER (Session);
+changesSession 'Изменения' = DATA TEXT (Session);
+
+dateTimeSession 'Время' = DATA DATETIME (Session) IN recognize;
+dateTimeSession(session) <- currentDateTime() WHEN ASSIGNED (session IS Session);
+
+navigatorElementSession 'Элемент навигатора сессии' = DATA NavigatorElement (Session);
+captionNavigatorElementSession 'Название формы' (session) = captionNavigatorElement(navigatorElementSession(session));
+
+connectionSession 'Подключение сессии' = DATA Connection(Session);
+hostnameComputerConnectionSession 'Имя компьютера' = hostnameComputerConnection(connectionSession(session))IN recognize;
+userLoginConnectionSession 'Логин пользователя' = userLoginConnection(connectionSession(session)) IN recognize;
+
+FORM connections 'Журнал подключений'
+
+    OBJECTS c=Connection
+    PROPERTIES (c) hostnameComputerConnection, remoteAddressConnection, userLoginConnection, nameConnectionStatusConnection,
+                   connectTimeConnection, disconnectTimeConnection
+
+    OBJECTS n=NavigatorElement
+    PROPERTIES (n) captionNavigatorElement, sidNavigatorElement
+
+    PROPERTIES (c, n) connectionFormCount
+
+    OBJECTS s=Session
+    PROPERTIES (s) READONLY captionNavigatorElementSession, nameUserSession, dateTimeSession
+
+    FILTERS connectionFormCount(c, n)>0
+    FILTERS connectionSession(s)==c
+    FILTERGROUP filtersConnection
+                FILTER 'Активные подключения' 'F8' connectionStatusConnection(c) == ConnectionStatus.connectedConnection
+    FILTERGROUP filtersNavigatorElement
+                FILTER 'Только выбранной формы' 'F9' navigatorElementSession(s)==n
+;
+
+EXTEND DESIGN connections{
+    POSITION n.box TO THE LEFT s.box;
+}
+
+FORM  exceptions 'Журнал ошибок'
+
+    OBJECTS e=Exception
+    PROPERTIES(e) READONLY messageException, clientClientException, loginClientException, typeException, dateException
+    PROPERTIES(e) READONLY erTraceException FORCE PANEL
+;
+
+EXTEND DESIGN exceptions {
+    main {
+        NEW specContainer {
+            ADD e.box;
+            NEW textContainer {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(erTraceException(e));
+                fillHorizontal = 1;
+                fillVertical = 1;
+                PROPERTY (erTraceException(e)) {
+                    fillHorizontal = 1;
+                    fillVertical = 0.5;
+                    preferredSize = ( -1, 200);
+                    panelLabelAbove = TRUE;
+                }
+            }
+            ADD functions.box;
+        }
+    }
+}
+
+FORM launches 'Журнал запусков'
+
+   OBJECTS l=Launch
+   PROPERTIES(l) READONLY hostnameLaunch, timeLaunch, revisionLaunch
+;
+
+FORM changes 'Журнал изменений'
+
+    OBJECTS s=Session
+    PROPERTIES (s) READONLY captionNavigatorElementSession, hostnameComputerConnectionSession,
+    userLoginConnectionSession, quantityAddedClassesSession, quantityRemovedClassesSession,
+    quantityChangedClassesSession, changesSession FORCE PANEL, dateTimeSession
+    FILTERGROUP filtersChange
+                    FILTER 'Только изменения пользователей' 'F8' userLoginConnectionSession(s) DEFAULT
+;
+
+EXTEND DESIGN changes {
+    main {
+        NEW specContainer {
+            ADD s.box;
+            NEW textContainer {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(changesSession(s));
+                fillHorizontal = 1;
+                fillVertical = 1;
+                PROPERTY (changesSession(s)) {
+                    fillHorizontal = 1;
+                    fillVertical = 0.5;
+                    preferredSize = ( -1, 200);
+                    panelLabelAbove = TRUE;
+                }
+            }
+            ADD functions.box;
+        }
+    }
+}
+
+NAVIGATOR {
+    systemEvents {
+        ADD SystemEvents.exceptions;
+        ADD SystemEvents.connections;
+        ADD SystemEvents.launches;
+        ADD SystemEvents.changes;
+    }
+}

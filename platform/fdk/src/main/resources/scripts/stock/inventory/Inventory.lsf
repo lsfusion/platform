@@ -1,0 +1,1312 @@
+MODULE Inventory;
+
+REQUIRE System,
+        Stock,
+        Store,
+        Numerator,
+        Terminal,
+        Barcode,
+        Document,
+        Employee,
+        StockDocument,
+        Utils;
+
+// -------------------------------- Комиссия для инвентаризации ----------------------------------//
+CLASS InventoryCommittee 'Комиссия для инвентаризации' : Committee;
+
+nameInventoryCommittee 'Наименование' = DATA ISTRING[150](InventoryCommittee);
+
+nameCommittee(committee) += nameInventoryCommittee(committee) IF committee IS InventoryCommittee;
+
+committeeInventory(inventory) = DATA InventoryCommittee (Inventory);
+nameCommitteeInventory 'Название комиссии' (inventory) = nameInventoryCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameChairmanCommitteeInventory 'Председатель комиссии' (inventory) = nameChairmanCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+namePositionChairmanInventory 'Должность председателя' (inventory)  = namePositionChairmanCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameEmployeeInventory 'Члены комиссии' (inventory) = nameEmployeeCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+inInventoryEmployee 'Является членом комиссии' (inventory, employee) = inCommitteeEmployee(committeeInventory(inventory), employee);
+
+FORM inventoryCommittee 'Комиссия для инвентаризации'
+    OBJECTS c=InventoryCommittee FIXED PANEL
+    PROPERTIES(c)      nameInventoryCommittee, nameChairmanCommittee
+
+    TREE stockTree sg = StockGroup PARENT parentStockGroup
+    PROPERTIES READONLY sgTreeName = nameStockGroup(sg)
+
+    OBJECTS ts=Stock
+    PROPERTIES    READONLY tsTreeName = nameStock(ts)
+    PROPERTIES(c, ts) inCommitteeEmployeeDivision FORCE GRID
+
+    FILTERS isParentStockGroupStock(sg, ts)
+    ORDER BY tsTreeName
+
+
+    OBJECTS e=Employee
+    PROPERTIES(e)      READONLY nameContact, firstNameContact, lastNameContact, namePositionEmployee
+    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
+
+    PROPERTIES(c, e)   inCommitteeEmployee
+    FILTERS            countDivisionEmployeeCommittee (e, c)
+    FILTERGROUP filters6
+        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
+
+    FILTERGROUP filters5
+        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, ts)
+
+    EDIT InventoryCommittee OBJECT c
+;
+@extendFormFilterStockAccess(Stock, ts, inventoryCommittee);
+@extendFormFilterStockGroupAccess(StockGroup, sg, inventoryCommittee, countAccessEmployeeEmployeeDivisionGroup);
+
+DESIGN inventoryCommittee FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW caseOne BEFORE e.box {
+            childConstraints = TO THE RIGHT;
+            title = 'Отделы, для которых действуют комиссии';
+
+            ADD stockTree.tree.box;
+
+            ADD ts.box {
+                fillHorizontal = 2;
+            }
+        };
+    }
+}
+
+FORM inventoryCommittees 'Комиссии для инвентаризации'
+    OBJECTS w=InventoryCommittee
+    PROPERTIES(w)      READONLY nameInventoryCommittee, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
+    PROPERTIES(w)      ADDFORM, EDITFORM
+
+    DIALOG InventoryCommittee OBJECT w
+;
+
+// ------------------------------- Инвентаризация --------------------------------------------- //
+
+CLASS TypeOfAddition 'Тип инвентаризации' {
+    register 'Товары из описей',
+    remains 'Товары по остаткам',
+    many    'Множество товаров'
+}
+FORM typeOfAdditions
+    OBJECTS t = TypeOfAddition
+    PROPERTIES(t) staticCaption
+    DIALOG TypeOfAddition OBJECT t
+;
+
+CLASS Inventory 'Инвентаризация' : Historizable, NumeratedDocument;
+CLASS InventoryPosted 'Проведенная инвентаризация' : Inventory, PostedObject;
+
+TABLE inventory (Inventory);
+
+@defineDocumentHeaderPosted (Inventory) ;
+
+@defineDocumentHeaderTime(Inventory);
+@defineDocumentHeaderNote(Inventory);
+
+isBatchInventory 'По партиям' (inventory) = DATA BOOLEAN (Inventory);
+isSkuInventory (inventory) = inventory IS Inventory AND NOT isBatchInventory(inventory);
+
+nameInventory 'Название инвентаризации' = DATA STRING[100] (Inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+infoInventory 'Дополнительная информация по инвентаризации' = DATA STRING[500] (Inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+
+timeFromInventory 'Начато' (inventory) = DATA DATETIME (Inventory) IN documentPrmGroup;
+timeToInventory 'Закончено' (inventory) = DATA DATETIME (Inventory) IN documentPrmGroup;
+
+headManInventory (inventory) = DATA Employee (Inventory);
+nameHeadManInventory  'Зав. складом' (inventory) = nameContact(headManInventory(inventory)) IN documentPrmGroup;
+
+TABLE stockInventory (Stock, Inventory);
+includeStockInventory 'Вкл' = DATA BOOLEAN (Stock, Inventory);
+nameStockInventory 'Отделы документа' (inventory) =
+    GROUP CONCAT nameStock(stock) IF includeStockInventory(stock, inventory), ', '
+          BY inventory
+          ORDER stock MINCHARWIDTH 50 PREFCHARWIDTH 150;
+
+// Тип инвентаризации
+typeOfAdditionInventory(inventory) = DATA TypeOfAddition (Inventory);
+nameTypeOfAdditionInventory 'Тип инвентаризации' (inventory) = staticCaption(typeOfAdditionInventory(inventory)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+userTypeOfAdditionStockInventory(stock, inventory) = DATA TypeOfAddition (Stock, Inventory);
+nameUserTypeOfAdditionStockInventory 'Тип инвентаризации' (stock, inventory) = staticCaption(userTypeOfAdditionStockInventory(stock, inventory));
+
+typeOfAdditionStockInventory(stock, inventory) = OVERRIDE typeOfAdditionInventory(inventory) IF stock IS Stock,
+                                                          userTypeOfAdditionStockInventory(stock, inventory);
+
+CONSTRAINT includeStockInventory(stock, inventory) AND NOT typeOfAdditionStockInventory(stock, inventory) MESSAGE 'Ошибка: Не задан тип сличительной ведомости для выбранного отдела';
+userTypeOfAdditionStockInventory(stock, inventory) => includeStockInventory(stock, inventory) RESOLVE FALSE;
+
+// ---------------------------------------------- Описи -------------------------------------- //
+
+CLASS ListInventory 'Опись (открытая)';
+CLASS ListInventoryPosted 'Опись (проведенная)' : ListInventory, PostedObject;
+
+TABLE listInventory (ListInventory);
+
+@defineDocumentHeaderPosted(ListInventory);
+@defineDocumentHeaderStock(listInventory, stock, 'Склад');
+@defineDocumentHeaderNote(ListInventory);
+
+@defineDocumentHeaderCurrency(listInventory);
+@deriveDocumentCurrency(listInventory, stock);
+
+inventoryListInventory = DATA Inventory (ListInventory);
+nameInventoryListInventory 'Название инвентаризации' (listInventory) = nameInventory(inventoryListInventory(listInventory));
+
+@defineDocumentDetailTime(inventory, ListInventory);
+
+@defineDocumentDetailIndex(inventory, ListInventory);
+nameListInventory 'Номер описи' (listInventory) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
+                                                  ('Опись ', indexListInventory(listInventory));
+
+isBatchListInventory (listInventory) = isBatchInventory(inventoryListInventory(listInventory));
+isSkuListInventory (listInventory) = isSkuInventory(inventoryListInventory(listInventory));
+
+// Комиссия инвентаризации
+GROUP inventoryCommitteeGroup 'Комиссия' : public;
+
+userCommitteeListInventory(listInventory) = DATA InventoryCommittee (ListInventory);
+committeeListInventory(listInventory) = OVERRIDE committeeInventory(inventoryListInventory(listInventory)), userCommitteeListInventory(listInventory);
+nameCommitteeListInventory 'Название комиссии' (listInventory) = nameInventoryCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = nameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+namePositionChairmanListInventory 'Должность председателя' (listInventory)  = namePositionChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameEmployeeListInventory 'Члены комиссии' (listInventory) = nameEmployeeCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+inListInventoryEmployee 'Является членом комиссии' (listInventory, employee) = inCommitteeEmployee(committeeListInventory(listInventory), employee);
+
+// --------------------------------------------- Страницы описи ------------------------------------------ //
+
+CLASS PageInventory 'Страница описи';
+TABLE pageInventory (PageInventory);
+
+@defineDocumentHeaderNote(PageInventory);
+
+@defineDocumentRelation(listInventory, PageInventory);
+@defineDocumentDetailIndex(listInventory, PageInventory);
+
+namePageInventory 'Номер страницы' (pageInventory) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
+                                                              ('Страница ', indexPageInventory(pageInventory)) IN base;
+
+// --------------------------------------------- Строки описи -------------------------------------------- //
+
+CLASS PageInventoryDetail 'Строка';
+TABLE pageInventoryDetail (PageInventoryDetail);
+
+@defineDocumentRelation(pageInventory);
+
+listInventoryPageInventoryDetail(pageInventoryDetail) = listInventoryPageInventory(pageInventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
+inventoryPageInventoryDetail(pageInventoryDetail) = inventoryListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
+
+@defineDocumentDetailStock(listInventory, pageInventoryDetail, stock, 'Склад');
+@defineDocumentDetailTime(inventory, PageInventoryDetail);
+
+@defineDocumentDetailCurrency(listInventory, pageInventoryDetail);
+
+
+@defineDocumentDetailIndex(pageInventory);
+@defineDocumentDetailSku(pageInventory, sku);
+
+// Для инвентаризации по партиям
+@defineDocumentDetailBatchCustom(pageInventoryDetail, batch);
+
+@defineDocumentDetailQuantity(pageInventory);
+@defineDocumentDetailPrice(pageInventory);
+@defineDocumentDetailSum(pageInventory);
+
+@defineDocumentHeaderQuantity(pageInventory);
+@defineDocumentHeaderSum(pageInventory);
+
+pricePageInventoryDetail (detail)  <- IF isBatchInventory(inventoryPageInventoryDetail(detail))
+                THEN priceLedgerPriceListTypeBatchStockDateTime(SystemLedgerPriceListType.accountPriceListType, batchPageInventoryDetail(detail), stockPageInventoryDetail(detail), dateTimePageInventoryDetail(detail))
+                ELSE priceLedgerPriceListTypeSkuStockDateTime(SystemLedgerPriceListType.accountPriceListType, skuPageInventoryDetail(detail), stockPageInventoryDetail(detail), dateTimePageInventoryDetail(detail))
+                WHEN CHANGED(skuPageInventoryDetail(detail)) OR CHANGED(batchPageInventoryDetail(detail)) OR CHANGED (dateTimePageInventoryDetail(detail));
+
+//------------------------------------ Заполнение описи из ТСД ------------------------------------------ //
+
+addDetailDialogTerminalListInventory 'Заполнить из документа ТСД' (listInventory) = ACTION (listInventory) {
+    FORM terminalDocuments MODAL;
+    IF formResult() == FormResult.ok THEN {
+        LOCAL document = TerminalDocument ();
+        SET document() <- chosenObject('td');
+        SET usedTerminalDocument(terminalDocument) <- TRUE WHERE terminalDocument == document();
+
+        LOCAL page = PageInventory ();
+        LOCAL detailCount = INTEGER();
+        SET detailCount() <- 0;
+
+        FOR terminalDocumentTerminalDocumentDetail(tdd) == document() DO {
+            IF detailCount() == 0 THEN {
+                ADDOBJ PageInventory;
+                FOR pi == addedObject() DO {
+                    SET listInventoryPageInventory(pi) <- listInventory AS ListInventory;
+                    SET page() <- pi AS PageInventory;
+                }
+            }
+
+            ADDOBJ PageInventoryDetail;
+            FOR pid == addedObject() DO {
+                SET pageInventoryPageInventoryDetail(pid) <- page();
+                SET skuPageInventoryDetail(pid) <- skuBarcodeIdDate(barcodeTerminalDocumentDetail(tdd), dateListInventory(listInventory));
+                SET quantityPageInventoryDetail(pid) <- quantityTerminalDocumentDetail(tdd);
+
+                SET detailCount() <- detailCount() + 1;
+
+                IF detailCount() >= 20 THEN {
+                    SET detailCount() <- 0;
+                }
+            }
+        }
+
+    }
+} TOOLBAR;
+
+// -------------------------------------------- Сличительная ведомость ----------------------------------------------- //
+
+CLASS ABSTRACT CollationSheet 'Сличительная ведомость';
+
+CLASS RegisterCollationSheet 'Сличительная ведомость по описи' : CollationSheet;
+CLASS RemainsCollationSheet 'Сличительная ведомость по остаткам' : CollationSheet;
+CLASS ManyCollationSheet 'Сличительная ведомость по множеству товаров' : CollationSheet;
+
+TABLE collationSheet (CollationSheet);
+
+@defineDocumentRelation(inventory, CollationSheet);
+
+@defineDocumentHeaderStock(collationSheet, stock, 'Склад');
+@defineDocumentDetailTime(inventory, CollationSheet);
+@defineDocumentDetailPosted(inventory, CollationSheet);
+@defineDocumentDetailIndex(inventory, CollationSheet);
+
+isBatchCollationSheet (collationSheet) = isBatchInventory(inventoryCollationSheet(collationSheet));
+isSkuCollationSheet (collationSheet) = isSkuInventory(inventoryCollationSheet(collationSheet));
+
+nameInventoryCollationSheet 'Название инвентаризации' (collationSheet) = nameInventory(inventoryCollationSheet(collationSheet));
+
+timeFromCollationSheet 'Снятие остатков начато' (collationSheet) = timeFromInventory(inventoryCollationSheet(collationSheet));
+timeToCollationSheet 'Снятие остатков закончено' (collationSheet) = timeToInventory(inventoryCollationSheet(collationSheet));
+nameHeadManCollationSheet  'Зав. складом' (collationSheet) = nameHeadManInventory(inventoryCollationSheet(collationSheet));
+
+nameCollationSheet 'Внутренний номер' (collationSheet) = [FORMULA STRING[30] '$1 || \'-\' || CAST ($2 AS character(20))'](
+        seriesNumberObject(inventoryCollationSheet(collationSheet)),
+        indexCollationSheet(collationSheet));
+
+collationSheetStockInventory 'Сличительная ведомость по складу и инвентаризации' (stock, inventory) =
+    GROUP AGGR collationSheet BY stockCollationSheet(collationSheet), inventoryCollationSheet(collationSheet);
+collationSheetListInventory(listInventory) = collationSheetStockInventory(stockListInventory(listInventory), inventoryListInventory(listInventory));
+nameCollationSheetListInventory 'Название сл. ведомости' (listInventory) = nameCollationSheet(collationSheetListInventory(listInventory));
+
+collationSheetPageInventoryDetail (pageInventoryDetail) = collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
+
+typeOfAdditionCollationSheet(collationSheet)= typeOfAdditionStockInventory(stockCollationSheet(collationSheet), inventoryCollationSheet(collationSheet));
+nameTypeOfAdditionCollationSheet 'Тип сличительной ведомости' (collationSheet) = staticCaption(typeOfAdditionCollationSheet(collationSheet)) IN base MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+inInventoryStockListInventoryPageInventoryPageInventoryDetail (inventory, stock, listInventory, pageInventory, pageInventoryDetail) = OVERRIDE
+    pageInventoryPageInventoryDetail(pageInventoryDetail) == pageInventory AND listInventory AND stock AND inventory,
+    listInventoryPageInventoryDetail(pageInventoryDetail) == listInventory AND stock AND NOT pageInventory AND inventory,
+    stockPageInventoryDetail(pageInventoryDetail) == stock AND inventory == inventoryPageInventoryDetail(pageInventoryDetail) AND NOT pageInventory AND NOT listInventory;
+
+descriptionCollationSheet 'Название документа' (collationSheet) =
+    [FORMULA STRING[200] '\'Сличительная ведомость \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
+    nameCollationSheet(collationSheet), dateCollationSheet(collationSheet));
+
+userPrevDateCollationSheet 'Дата предыдущей инвентаризации' (collationSheet) = DATA DATE (CollationSheet) IN base;
+
+inventoryPrevStockInventory (stock, inventory) = PARTITION PREV inventory IF includeStockInventory(stock, inventory) AND isPostedInventory(inventory)
+    BY stock ORDER DESC dateInventory(inventory);
+
+calcPrevDateCollationSheet 'Дата предыдущей инвентаризации' (collationSheet) = PARTITION PREV dateCollationSheet(collationSheet)
+    BY stockCollationSheet(collationSheet) ORDER dateCollationSheet(collationSheet);
+
+prevDateCollationSheet 'Дата предыдущей инвентаризации' (collationSheet) = OVERRIDE calcPrevDateCollationSheet(collationSheet), userPrevDateCollationSheet(collationSheet);
+
+// Комиссии
+committeeCollationSheet = committeeInventory(inventoryCollationSheet(collationSheet));
+nameCommitteeCollationSheet 'Название комиссии' (collationSheet) = nameInventoryCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameChairmanCommitteeCollationSheet 'Председатель комиссии' (collationSheet) = nameChairmanCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+namePositionChairmanCollationSheet 'Должность председателя' (collationSheet)  = namePositionChairmanCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameEmployeeCollationSheet 'Члены комиссии' (collationSheet) = nameEmployeeCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+inCollationSheetEmployee 'Является членом комиссии' (collationSheet, employee) = inCommitteeEmployee(committeeCollationSheet(collationSheet), employee);
+
+//---------------------------- Состав сличительной ведомости (Sku) ----------------------------//
+
+TABLE collationSheetSku (CollationSheet, Sku);
+
+inManyCollationSheetSku 'Вкл в ведомость' = DATA BOOLEAN (ManyCollationSheet, Sku) IN base;
+quantityBalanceCollationSheetSku 'Кол-во по остаткам' (collationSheet, sku) = DATA NUMERIC[14,3] (CollationSheet, Sku);
+priceBalanceCollationSheetSku 'Цена по остаткам' (collationSheet, sku) = DATA NUMERIC[14,2] (CollationSheet, Sku);
+
+//---------------------------- Состав сличительной ведомости (Партия) ----------------------------//
+
+TABLE collationSheetBatch (CollationSheet, Batch);
+
+quantityBalanceCollationSheetBatch 'Кол-во по остаткам' (collationSheet, batch) = DATA NUMERIC[14,3] (CollationSheet, Batch);
+
+priceBalanceCollationSheetBatch 'Цена по остаткам' (collationSheet, batch) = DATA NUMERIC[14,2] (CollationSheet, Batch);
+
+// ------------------------------------- Действия по заполнению сличительной ведомости --------------------------------------- //
+
+GROUP inventoryActionGroup 'Действия' : public;
+
+recalculateBalanceInventory 'Заполнить остатки' (inventory) = ACTION (inventory) {
+    SET quantityBalanceCollationSheetSku(collationSheet, sku)
+        <- balanceBSkuStockDateTime(sku, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
+        WHERE inventoryCollationSheet(collationSheet) == inventory;
+
+    IF isBatchInventory (inventory) THEN {
+        SET quantityBalanceCollationSheetBatch(collationSheet, batch)
+            <- balanceBBatchStockDateTime(batch, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
+            WHERE inventoryCollationSheet(collationSheet) == inventory;
+    }
+} CONFIRM IN inventoryActionGroup;
+
+recalculatePriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION (collationSheet) {
+    IF isBatchCollationSheet (collationSheet) THEN {
+        SET pricePageInventoryDetail(pageInventoryDetail)
+            <- priceLedgerPriceListTypeBatchStockDateTime(SystemLedgerPriceListType.accountPriceListType, batchPageInventoryDetail(pageInventoryDetail), stockPageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+            WHERE collationSheetPageInventoryDetail(pageInventoryDetail) == collationSheet;
+    } ELSE {
+        SET pricePageInventoryDetail(pageInventoryDetail)
+            <- priceLedgerPriceListTypeSkuStockDateTime(SystemLedgerPriceListType.accountPriceListType, skuPageInventoryDetail(pageInventoryDetail), stockPageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+            WHERE collationSheetPageInventoryDetail(pageInventoryDetail) == collationSheet;
+    }
+
+    SET priceBalanceCollationSheetSku(collationSheet, sku)
+        <- priceLedgerPriceListTypeSkuStockDateTime(SystemLedgerPriceListType.accountPriceListType, sku, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
+    IF isBatchCollationSheet (collationSheet) THEN {
+        SET priceBalanceCollationSheetBatch(collationSheet, batch)
+            <- priceLedgerPriceListTypeBatchStockDateTime(SystemLedgerPriceListType.accountPriceListType, batch, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
+    }
+} CONFIRM IN inventoryActionGroup;
+
+recalculatePriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION (inventory) {
+    FOR inventoryCollationSheet(collationSheet) == inventory DO {
+        EXEC recalculatePriceCollationSheet(collationSheet);
+    }
+} CONFIRM IN inventoryActionGroup;
+
+//----------------------------------------------------- Итоги -------------------------------------------------------- //
+
+//---------------------------- Итоги по описям (Sku) ----------------------------//
+
+countListInventoryCollationSheet 'К-во описей' (collationSheet) =
+    GROUP SUM 1 IF listInventory IS ListInventory BY collationSheetListInventory(listInventory);
+countPageInventoryCollationSheet 'К-во страниц' (collationSheet) =
+    GROUP SUM 1 IF pageInventory IS PageInventory BY collationSheetListInventory(listInventoryPageInventory(pageInventory));
+
+countPageInventoryDetailListInventory 'Кол-во строк' (listInventory) = GROUP SUM countPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN documentSumGroup;
+quantityPageInventoryDetailListInventory 'Кол-во товара' (listInventory) = GROUP SUM quantityPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN documentSumGroup;
+sumPageInventoryDetailListInventory 'Сумма товара' (listInventory) = GROUP SUM sumPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN documentSumGroup;
+
+countPageInventoryDetailStockInventory 'Кол-во строк' (stock, inventory) =
+    GROUP SUM countPageInventoryDetailListInventory(listInventory) BY stockListInventory(listInventory), inventoryListInventory(listInventory) IN documentSumGroup;
+quantityPageInventoryDetailStockInventory 'Кол-во по описям' (stock, inventory) =
+    GROUP SUM quantityPageInventoryDetailListInventory(listInventory) BY stockListInventory(listInventory), inventoryListInventory(listInventory) IN documentSumGroup;
+sumPageInventoryDetailStockInventory 'Сумма по описям' (stock, inventory) =
+    GROUP SUM sumPageInventoryDetailListInventory(listInventory) BY stockListInventory(listInventory), inventoryListInventory(listInventory) IN documentSumGroup;
+
+quantityPageInventoryDetailCollationSheetSku 'Кол-во по описям' (collationSheet, sku) = GROUP SUM quantityPageInventoryDetail(pageInventoryDetail)
+    BY collationSheetPageInventoryDetail(pageInventoryDetail), skuPageInventoryDetail(pageInventoryDetail);
+pricePageInventoryDetailCollationSheetSku 'Цена по описям' (collationSheet, sku) = GROUP EQUAL pricePageInventoryDetail(pageInventoryDetail) // ??????? может нодо  priceSkuStockDateTime
+    BY collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)), skuPageInventoryDetail(pageInventoryDetail);
+sumPageInventoryDetailCollationSheetSku 'Сумма по описям' (collationSheet, sku) = GROUP SUM sumPageInventoryDetail(pageInventoryDetail)
+    BY collationSheetPageInventoryDetail(pageInventoryDetail), skuPageInventoryDetail(pageInventoryDetail);
+
+quantityPageInventoryDetailListInventorySku 'Кол-во в описи' (listInventory, sku) = GROUP SUM quantityPageInventoryDetail(pageInventoryDetail)
+    BY listInventoryPageInventoryDetail(pageInventoryDetail), skuPageInventoryDetail(pageInventoryDetail);
+pricePageInventoryDetailListInventorySku 'Цена в описи' (listInventory, sku) = GROUP EQUAL pricePageInventoryDetail(pageInventoryDetail)
+    BY listInventoryPageInventoryDetail(pageInventoryDetail), skuPageInventoryDetail(pageInventoryDetail);
+sumPageInventoryDetailListInventorySku 'Сумма в описи' (listInventory, sku) = GROUP SUM sumPageInventoryDetail(pageInventoryDetail)
+    BY listInventoryPageInventoryDetail(pageInventoryDetail), skuPageInventoryDetail(pageInventoryDetail);
+
+differentPriceCollationSheetSku(collationSheet, sku) = pricePageInventoryDetailCollationSheetSku(collationSheet, sku) != priceBalanceCollationSheetSku(collationSheet, sku);
+
+indexListInventorySku 'Номер строки' (listInventory, sku) = PARTITION SUM 1 IF  quantityPageInventoryDetailListInventorySku(listInventory, sku) > 0 BY listInventory ORDER nameSku(sku);
+countIndexListInventory 'Количество наименований товара'(listInventory) = GROUP SUM 1 IF quantityPageInventoryDetailListInventorySku(listInventory, sku) > 0
+    BY listInventory IN documentSumGroup;
+
+quantityPageInventoryDetailCollationSheet 'Кол-во по описям' (collationSheet) =
+    GROUP SUM quantityPageInventoryDetail(pageInventoryDetail) BY collationSheetPageInventoryDetail(pageInventoryDetail);
+sumPageInventoryDetailCollationSheet 'Сумма по описям' (collationSheet) =
+    GROUP SUM sumPageInventoryDetail(pageInventoryDetail) BY collationSheetPageInventoryDetail(pageInventoryDetail);
+
+//---------------------------- Итоги по описям (Batch) ----------------------------//
+
+quantityPageInventoryDetailCollationSheetBatch 'Кол-во по описям' (collationSheet, batch) = GROUP SUM quantityPageInventoryDetail(pageInventoryDetail)
+    BY collationSheetPageInventoryDetail(pageInventoryDetail), batchPageInventoryDetail(pageInventoryDetail);
+pricePageInventoryDetailCollationSheetBatch 'Цена по описям' (collationSheet, batch) = GROUP EQUAL pricePageInventoryDetail(pageInventoryDetail)
+    BY collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)), batchPageInventoryDetail(pageInventoryDetail);
+sumPageInventoryDetailCollationSheetBatch 'Сумма по описям' (collationSheet, batch) = GROUP SUM sumPageInventoryDetail(pageInventoryDetail)
+    BY collationSheetPageInventoryDetail(pageInventoryDetail), batchPageInventoryDetail(pageInventoryDetail);
+
+
+quantityPageInventoryDetailListInventoryBatch 'Кол-во в описи' (listInventory, batch) = GROUP SUM quantityPageInventoryDetail(pageInventoryDetail)
+    BY listInventoryPageInventoryDetail(pageInventoryDetail), batchPageInventoryDetail(pageInventoryDetail);
+pricePageInventoryDetailListInventoryBatch 'Цена в описи' (listInventory, batch) = GROUP EQUAL pricePageInventoryDetail(pageInventoryDetail)
+    BY listInventoryPageInventoryDetail(pageInventoryDetail), batchPageInventoryDetail(pageInventoryDetail);
+sumPageInventoryDetailListInventoryBatch 'Сумма в описи' (listInventory, batch) = GROUP SUM sumPageInventoryDetail(pageInventoryDetail)
+    BY listInventoryPageInventoryDetail(pageInventoryDetail), batchPageInventoryDetail(pageInventoryDetail);
+
+differentPriceCollationSheetBatch(collationSheet, batch) = pricePageInventoryDetailCollationSheetBatch(collationSheet, batch) != priceBalanceCollationSheetBatch(collationSheet, batch);
+
+indexListInventoryBatch 'Номер строки' (listInventory, batch) = PARTITION SUM 1 IF  quantityPageInventoryDetailListInventoryBatch(listInventory, batch) > 0 BY listInventory ORDER nameSku(skuBatch(batch));
+countIndexBatchListInventory 'Количество партий' (listInventory) = GROUP SUM 1 IF quantityPageInventoryDetailListInventoryBatch(listInventory, batch) > 0
+    BY listInventory IN documentSumGroup;
+
+quantityBatchPageInventoryDetailCollationSheet 'Кол-во по описям' (collationSheet) =
+    GROUP SUM quantityPageInventoryDetailCollationSheetBatch(collationSheet, batch) BY collationSheet;
+sumBatchPageInventoryDetailCollationSheet 'Сумма по описям' (collationSheet) =
+    GROUP SUM sumPageInventoryDetailCollationSheetBatch(collationSheet, batch) BY collationSheet;
+
+// ------------------------------ Определение состава сличительной ведомости (Sku) ------------------------------------ //
+
+includeCollationSheetSku(collationSheet, sku) = UNION CLASS
+    collationSheet IS RegisterCollationSheet IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku),
+    (OVERRIDE inManyCollationSheetSku(collationSheet, sku), collationSheet IS ManyCollationSheet IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku)),
+    (collationSheet IS RemainsCollationSheet IF (quantityBalanceCollationSheetSku(collationSheet, sku) != 0 OR quantityPageInventoryDetailCollationSheetSku(collationSheet, sku)));
+
+priceBalanceCollationSheetSku(collationSheet, sku) <- priceLedgerPriceListTypeSkuStockDateTime(SystemLedgerPriceListType.accountPriceListType,
+                sku, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
+                WHEN ASSIGNED(includeCollationSheetSku(collationSheet, sku));
+
+// ------------------------------ Определение состава сличительной ведомости (Batch) ------------------------------------ //
+
+includeCollationSheetBatch(collationSheet, batch) = DATA BOOLEAN (CollationSheet, Batch);
+includeCollationSheetBatch(collationSheet, batch) <- includeCollationSheetSku(collationSheet, PREV(skuBatch(batch)))
+                        WHEN [CHANGED(includeCollationSheetSku(collationSheet, sku))](collationSheet, PREV(skuBatch(batch)));
+
+priceBalanceCollationSheetBatch(collationSheet, batch) <- priceLedgerPriceListTypeBatchStockDateTime(SystemLedgerPriceListType.accountPriceListType,
+                batch, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
+                WHEN ASSIGNED(includeCollationSheetBatch(collationSheet, batch));
+
+// ------------------------------------ Итоги по сличительной ведомости (Sku) ------------------------------------ //
+
+sumBalanceCollationSheetSku 'Сумма по остаткам' (collationSheet, sku) =
+    toNumeric16p2(quantityBalanceCollationSheetSku(collationSheet, sku) * priceBalanceCollationSheetSku(collationSheet, sku));
+
+quantitySkuBalanceCollationSheet 'Кол-во по остаткам' (collationSheet) =
+    GROUP SUM quantityBalanceCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) BY collationSheet PERSISTENT;
+sumSkuBalanceCollationSheet 'Сумма по остаткам' (collationSheet) =  round0(
+    [GROUP SUM sumBalanceCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) BY collationSheet](collationSheet)) PERSISTENT;
+
+quantityShortageCollationSheetSku 'Кол-во недостачи' (collationSheet, sku) =
+    quantityBalanceCollationSheetSku(collationSheet, sku) (-) quantityPageInventoryDetailCollationSheetSku(collationSheet, sku) PERSISTENT;
+sumShortageCollationSheetSku 'Сумма недостачи' (collationSheet, sku) =
+    sumBalanceCollationSheetSku(collationSheet, sku) (-) sumPageInventoryDetailCollationSheetSku(collationSheet, sku) PERSISTENT;
+
+quantitySkuShortageCollationSheet 'Кол-во недостачи' (collationSheet) =
+    GROUP SUM quantityShortageCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) BY collationSheet PERSISTENT;
+sumShortageSkuCollationSheet 'Сумма недостачи' (collationSheet) = round0(
+    [GROUP SUM sumShortageCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) BY collationSheet](collationSheet)) PERSISTENT;
+
+
+sumItemSkuBalanceCollationSheet 'Сумма по остаткам, товар' (collationSheet) = round0(
+    [GROUP SUM sumBalanceCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isItemSku(sku) BY collationSheet](collationSheet)) PERSISTENT;
+sumContainerSkuBalanceCollationSheet 'Сумма по остаткам, тара' (collationSheet) = round0(
+    [GROUP SUM sumBalanceCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isContainerSku(sku) BY collationSheet](collationSheet)) PERSISTENT;
+
+sumItemSkuPageInventoryDetailCollationSheet 'Сумма по факту, товар' (collationSheet) = round0(
+    [GROUP SUM sumPageInventoryDetailCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isItemSku(sku) BY collationSheet](collationSheet));
+sumContainerSkuPageInventoryDetailCollationSheet 'Сумма по факту, тара' (collationSheet) = round0(
+    [GROUP SUM sumPageInventoryDetailCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isContainerSku(sku) BY collationSheet](collationSheet));
+
+sumItemSkuShortageCollationSheet 'Сумма недостачи, товар' (collationSheet) = round0(
+    [GROUP SUM sumShortageCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isItemSku(sku) BY collationSheet](collationSheet));
+sumContainerSkuShortageCollationSheet 'Сумма недостачи, тара' (collationSheet) = round0(
+    [GROUP SUM sumShortageCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isContainerSku(sku) BY collationSheet](collationSheet));
+
+// ------------------------------------ Итоги по сличительной ведомости (Batch) ------------------------------------ //
+
+sumBalanceCollationSheetBatch 'Сумма по остаткам' (collationSheet, batch) =
+    toNumeric16p2(quantityBalanceCollationSheetBatch(collationSheet, batch) * priceBalanceCollationSheetBatch(collationSheet, batch));
+
+quantityBatchBalanceCollationSheet 'Кол-во по остаткам' (collationSheet) =
+    GROUP SUM quantityBalanceCollationSheetBatch(collationSheet, batch) IF includeCollationSheetBatch(collationSheet, batch) BY collationSheet PERSISTENT;
+sumBatchBalanceCollationSheet 'Сумма по остаткам' (collationSheet) =  round0(
+    [GROUP SUM sumBalanceCollationSheetBatch(collationSheet, batch) IF includeCollationSheetBatch(collationSheet, batch) BY collationSheet](collationSheet)) PERSISTENT;
+
+
+quantityShortageCollationSheetBatch 'Кол-во недостачи' (collationSheet, batch) =
+    quantityBalanceCollationSheetBatch(collationSheet, batch) (-) quantityPageInventoryDetailCollationSheetBatch(collationSheet, batch) PERSISTENT;
+sumShortageCollationSheetBatch 'Сумма недостачи' (collationSheet, batch) =
+    sumBalanceCollationSheetBatch(collationSheet, batch) (-) sumPageInventoryDetailCollationSheetBatch(collationSheet, batch) PERSISTENT;
+
+quantityBatchShortageCollationSheet 'Кол-во недостачи' (collationSheet) =
+    GROUP SUM quantityShortageCollationSheetBatch(collationSheet, batch) IF includeCollationSheetBatch(collationSheet, batch) BY collationSheet PERSISTENT;
+sumBatchShortageCollationSheet 'Сумма недостачи' (collationSheet) = round0(
+    [GROUP SUM sumShortageCollationSheetBatch(collationSheet, batch) IF includeCollationSheetBatch(collationSheet, batch) BY collationSheet](collationSheet)) PERSISTENT;
+
+sumItemBatchBalanceCollationSheet 'Сумма по остаткам, товар' (collationSheet) = round0(
+    [GROUP SUM sumBalanceCollationSheetBatch(collationSheet, batch) IF includeCollationSheetBatch(collationSheet, batch) IF NOT isContainerBatch(batch) BY collationSheet](collationSheet)) PERSISTENT;
+sumContainerBatchBalanceCollationSheet 'Сумма по остаткам, тара' (collationSheet) = round0(
+    [GROUP SUM sumBalanceCollationSheetBatch(collationSheet, batch) IF includeCollationSheetBatch(collationSheet, batch) IF isContainerBatch(batch) BY collationSheet](collationSheet)) PERSISTENT;
+
+sumItemBatchPageInventoryDetailCollationSheet 'Сумма по факту, товар' (collationSheet) = round0(
+    [GROUP SUM sumPageInventoryDetailCollationSheetBatch(collationSheet, batch) IF includeCollationSheetBatch(collationSheet, batch) IF NOT isContainerBatch(batch) BY collationSheet](collationSheet));
+sumContainerBatchPageInventoryDetailCollationSheet 'Сумма по факту, тара' (collationSheet) = round0(
+    [GROUP SUM sumPageInventoryDetailCollationSheetBatch(collationSheet, batch) IF includeCollationSheetBatch(collationSheet, batch) IF isContainerBatch(batch) BY collationSheet](collationSheet));
+
+sumItemBatchShortageCollationSheet 'Сумма недостачи, товар' (collationSheet) = round0(
+    [GROUP SUM sumShortageCollationSheetBatch(collationSheet, batch) IF includeCollationSheetBatch(collationSheet, batch) IF NOT isContainerBatch(batch) BY collationSheet](collationSheet));
+sumContainerBatchShortageCollationSheet 'Сумма недостачи, тара' (collationSheet) = round0(
+    [GROUP SUM sumShortageCollationSheetBatch(collationSheet, batch) IF includeCollationSheetBatch(collationSheet, batch) IF isContainerBatch(batch) BY collationSheet](collationSheet));
+
+
+//---------------------------------- Итоги сличительной ведомости с учетом типа инвентаризации ----------------------------//
+
+quantityBalanceCollationSheet 'Кол-во по остаткам' (collationSheet) = IF isBatchCollationSheet(collationSheet)
+                                                                        THEN quantityBatchBalanceCollationSheet(collationSheet)
+                                                                        ELSE quantitySkuBalanceCollationSheet(collationSheet);
+sumBalanceCollationSheet 'Сумма по остаткам' (collationSheet) = IF isBatchCollationSheet(collationSheet)
+                                                                    THEN sumBatchBalanceCollationSheet(collationSheet)
+                                                                    ELSE sumSkuBalanceCollationSheet(collationSheet);
+
+quantityShortageCollationSheet 'Кол-во недостачи' (collationSheet) = IF isBatchCollationSheet(collationSheet)
+                                                                        THEN quantityBatchShortageCollationSheet(collationSheet)
+                                                                        ELSE quantitySkuShortageCollationSheet(collationSheet);
+sumShortageCollationSheet 'Сумма недостачи' (collationSheet) = IF isBatchCollationSheet(collationSheet)
+                                                                    THEN sumBatchShortageCollationSheet(collationSheet)
+                                                                    ELSE sumShortageSkuCollationSheet(collationSheet);
+
+
+sumItemBalanceCollationSheet 'Сумма по остаткам, товар' (collationSheet) = IF isBatchCollationSheet(collationSheet)
+                                                                            THEN sumItemBatchBalanceCollationSheet(collationSheet)
+                                                                            ELSE sumItemSkuBalanceCollationSheet(collationSheet);
+sumContainerBalanceCollationSheet 'Сумма по остаткам, тара' (collationSheet) = IF isBatchCollationSheet(collationSheet)
+                                                                                THEN sumContainerBatchBalanceCollationSheet(collationSheet)
+                                                                                ELSE sumContainerSkuBalanceCollationSheet(collationSheet);
+
+sumItemPageInventoryDetailCollationSheet 'Сумма по факту, товар' (collationSheet) = IF isBatchCollationSheet(collationSheet)
+                                                                                        THEN sumItemBatchPageInventoryDetailCollationSheet(collationSheet)
+                                                                                        ELSE sumItemSkuPageInventoryDetailCollationSheet(collationSheet);
+sumContainerPageInventoryDetailCollationSheet 'Сумма по факту, тара' (collationSheet) = IF isBatchCollationSheet(collationSheet)
+                                                                                            THEN sumContainerBatchPageInventoryDetailCollationSheet(collationSheet)
+                                                                                            ELSE sumContainerSkuPageInventoryDetailCollationSheet(collationSheet);
+
+sumItemShortageCollationSheet 'Сумма недостачи, товар' (collationSheet) = IF isBatchCollationSheet(collationSheet)
+                                                                            THEN sumItemBatchShortageCollationSheet(collationSheet)
+                                                                            ELSE sumItemSkuShortageCollationSheet(collationSheet);
+sumContainerShortageCollationSheet 'Сумма недостачи, тара' (collationSheet) = IF isBatchCollationSheet(collationSheet)
+                                                                                THEN sumContainerBatchShortageCollationSheet(collationSheet)
+                                                                                ELSE sumContainerSkuShortageCollationSheet(collationSheet);
+
+//-------------------------------------- Проведение по товарному отчету ----------------------------------------------------//
+
+@implementStockDocumentLedgerOut(CollationSheet, stock);
+sumOutStockDocumentLedger (ledger) += sumShortageCollationSheet(ledger);
+sumItemOutStockDocumentLedger (ledger) += sumItemShortageCollationSheet(ledger);
+sumContainerOutStockDocumentLedger (ledger) += sumContainerShortageCollationSheet(ledger);
+
+//---------------------------- Генерация сличительных ведомостей ----------------------------//
+
+// автоматическое создание сличительной ведомости (товары из описей) //
+includeRegisterStockInventory(stock, inventory) =
+    includeStockInventory(stock, inventory) AND typeOfAdditionStockInventory(stock, inventory) == TypeOfAddition.register;
+
+@defineAggregationCustom(stockCollationSheet, inventoryCollationSheet, stock, inventory, registerCollationSheet, includeRegisterStockInventory);
+
+// автоматическое создание сличительной ведомости (по остаткам) //
+includeRemainsStockInventory(stock, inventory) =
+    includeStockInventory(stock, inventory) AND typeOfAdditionStockInventory(stock, inventory) == TypeOfAddition.remains;
+
+@defineAggregationCustom(stockCollationSheet, inventoryCollationSheet, stock, inventory, remainsCollationSheet, includeRemainsStockInventory);
+
+// автоматическое создание сличительной ведомости (по множеству товаров) //
+includeManyStockInventory(stock, inventory) =
+    includeStockInventory(stock, inventory) AND typeOfAdditionStockInventory(stock, inventory) == TypeOfAddition.many;
+
+@defineAggregationCustom(stockCollationSheet, inventoryCollationSheet, stock, inventory, manyCollationSheet, includeManyStockInventory);
+
+//---------------------------- Изменение остатка инвентаризации sku----------------------------//
+
+CLASS ABSTRACT InventorySkuDetail 'Изменение остатка инвентаризации' : SkuLedger;
+TABLE inventorySkuDetail (InventorySkuDetail);
+
+CLASS OutInventorySkuDetail 'Недостача инвентаризации' : InventorySkuDetail;
+CLASS InInventorySkuDetail 'Излишки инвентаризации' : InventorySkuDetail;
+
+needToOutLedgerCollationSheetSku (collationSheet, sku) = quantityShortageCollationSheetSku(collationSheet, sku) > 0
+    AND includeCollationSheetSku(collationSheet, sku) AND isPostedCollationSheet(collationSheet) AND NOT isBatchCollationSheet(collationSheet);
+
+needToInLedgerCollationSheetSku (collationSheet, sku) = quantityShortageCollationSheetSku(collationSheet, sku) < 0
+    AND includeCollationSheetSku(collationSheet, sku) AND isPostedCollationSheet(collationSheet) AND NOT isBatchCollationSheet(collationSheet);
+
+@defineAggregation(collationSheet, sku, outInventorySkuDetail, needToOutLedgerCollationSheetSku);
+@defineAggregation(collationSheet, sku, inInventorySkuDetail, needToInLedgerCollationSheetSku);
+
+collationSheetInventorySkuDetail(inventorySkuDetail) = UNION CLASS collationSheetOutInventorySkuDetail(inventorySkuDetail),
+                                                                       collationSheetInInventorySkuDetail(inventorySkuDetail);
+
+inventoryInventorySkuDetail(inventorySkuDetail) = inventoryCollationSheet(collationSheetInventorySkuDetail(inventorySkuDetail)) PERSISTENT;
+
+@defineDocumentDetailTime(inventory, InventorySkuDetail);
+@defineDocumentDetailPosted(inventory, InventorySkuDetail);
+
+@defineDocumentDetailStock(collationSheet, inventorySkuDetail, stock, 'Склад');
+stockInInventorySkuDetail(detail) = stockInventorySkuDetail(detail) IF detail IS InInventorySkuDetail;
+stockOutInventorySkuDetail(detail) = stockInventorySkuDetail(detail) IF detail IS OutInventorySkuDetail;
+
+quantityOutInventorySkuDetail (inventorySkuDetail) = quantityShortageCollationSheetSku(collationSheetOutInventorySkuDetail(inventorySkuDetail), skuOutInventorySkuDetail(inventorySkuDetail));
+quantityInInventorySkuDetail (inventorySkuDetail) = -quantityShortageCollationSheetSku(collationSheetInInventorySkuDetail(inventorySkuDetail), skuInInventorySkuDetail(inventorySkuDetail));
+
+sumOutInventorySkuDetail (inventorySkuDetail) = sumShortageCollationSheetSku(collationSheetOutInventorySkuDetail(inventorySkuDetail), skuOutInventorySkuDetail(inventorySkuDetail));
+sumInInventorySkuDetail (inventorySkuDetail) = -sumShortageCollationSheetSku(collationSheetInInventorySkuDetail(inventorySkuDetail), skuInInventorySkuDetail(inventorySkuDetail));
+
+skuInventorySkuDetail(inventorySkuDetail) = UNION CLASS skuOutInventorySkuDetail(inventorySkuDetail),
+                                                            skuInInventorySkuDetail(inventorySkuDetail) PERSISTENT;
+nameSkuInventorySkuDetail 'Товар' (inventorySkuDetail) = nameSku(skuInventorySkuDetail(inventorySkuDetail)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
+idBarcodeInventorySkuDetail 'Штрих-код' (inventorySkuDetail) =  idBarcodeSku(skuInventorySkuDetail(inventorySkuDetail));
+
+quantityInventorySkuDetail 'Кол-во недостачи' (inventorySkuDetail) = quantityShortageCollationSheetSku(collationSheetInventorySkuDetail(inventorySkuDetail), skuInventorySkuDetail(inventorySkuDetail)) PERSISTENT;
+sumInventorySkuDetail 'Сумма недостачи' (inventorySkuDetail) = sumShortageCollationSheetSku(collationSheetInventorySkuDetail(inventorySkuDetail), skuInventorySkuDetail(inventorySkuDetail)) PERSISTENT;
+
+descriptionOutInventorySkuDetail 'Название документа' (inventorySkuDetail) =
+    [FORMULA STRING[200] '\'Недостача по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
+    nameCollationSheet(collationSheetOutInventorySkuDetail(inventorySkuDetail)), dateCollationSheet(collationSheetOutInventorySkuDetail(inventorySkuDetail)));
+
+descriptionInInventorySkuDetail 'Название документа' (inventorySkuDetail) =
+    [FORMULA STRING[200] '\'Излишек по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
+    nameCollationSheet(collationSheetInInventorySkuDetail(inventorySkuDetail)), dateCollationSheet(collationSheetInInventorySkuDetail(inventorySkuDetail)));
+
+descriptionInventorySkuDetail 'Название документа' (inventorySkuDetail) = OVERRIDE descriptionOutInventorySkuDetail(inventorySkuDetail), descriptionInInventorySkuDetail(inventorySkuDetail);
+
+@implementSkuLedger(inventorySkuDetail, sku, stock);
+
+EXTEND CLASS OutInventorySkuDetail : OutFIFOSkuLedger;
+quantityOutFIFOSkuLedger (ledger) += quantityOutInventorySkuDetail(ledger);
+@implementSkuLedgerOutFIFOBalance(outInventorySkuDetail, stock);
+sumOutSkuLedger (ledger) += sumOutInventorySkuDetail(ledger);
+
+EXTEND CLASS InInventorySkuDetail : InLIFOSkuLedger;
+quantityInLIFOSkuLedger (ledger) += quantityInInventorySkuDetail(ledger);
+@implementSkuLedgerInLIFOBalance(inInventorySkuDetail, stock);
+sumInSkuLedger (ledger) += sumInInventorySkuDetail(ledger);
+
+//---------------------------- Изменение остатка инвентаризации batch----------------------------//
+
+CLASS ABSTRACT InventoryBatchDetail 'Изменение остатка инвентаризации' : SkuLedger;
+TABLE inventoryBatchDetail (InventoryBatchDetail);
+
+CLASS OutInventoryBatchDetail 'Недостача инвентаризации' : InventoryBatchDetail;
+CLASS InInventoryBatchDetail 'Излишки инвентаризации' : InventoryBatchDetail;
+
+needToOutLedgerCollationSheetBatch (collationSheet, batch) = quantityShortageCollationSheetBatch(collationSheet, batch) > 0
+    AND includeCollationSheetBatch(collationSheet, batch) AND isPostedCollationSheet(collationSheet) AND isBatchCollationSheet(collationSheet);
+
+needToInLedgerCollationSheetBatch (collationSheet, batch) = quantityShortageCollationSheetBatch(collationSheet, batch) < 0
+    AND includeCollationSheetBatch(collationSheet, batch) AND isPostedCollationSheet(collationSheet) AND isBatchCollationSheet(collationSheet);
+
+@defineAggregation(collationSheet, batch, outInventoryBatchDetail, needToOutLedgerCollationSheetBatch);
+@defineAggregation(collationSheet, batch, inInventoryBatchDetail, needToInLedgerCollationSheetBatch);
+
+collationSheetInventoryBatchDetail(inventoryBatchDetail) = UNION CLASS collationSheetOutInventoryBatchDetail(inventoryBatchDetail),
+                                                                           collationSheetInInventoryBatchDetail(inventoryBatchDetail);
+
+inventoryInventoryBatchDetail(inventoryBatchDetail) = inventoryCollationSheet(collationSheetInventoryBatchDetail(inventoryBatchDetail)) PERSISTENT;
+
+@defineDocumentDetailTime(inventory, InventoryBatchDetail);
+@defineDocumentDetailPosted(inventory, InventoryBatchDetail);
+
+@defineDocumentDetailStock(collationSheet, inventoryBatchDetail, stock, 'Склад');
+stockInInventoryBatchDetail(detail) = stockInventoryBatchDetail(detail) IF detail IS InInventoryBatchDetail;
+stockOutInventoryBatchDetail(detail) = stockInventoryBatchDetail(detail) IF detail IS OutInventoryBatchDetail;
+
+quantityOutInventoryBatchDetail (inventoryBatchDetail) = quantityShortageCollationSheetBatch(collationSheetOutInventoryBatchDetail(inventoryBatchDetail), batchOutInventoryBatchDetail(inventoryBatchDetail));
+quantityInInventoryBatchDetail (inventoryBatchDetail) = -quantityShortageCollationSheetBatch(collationSheetInInventoryBatchDetail(inventoryBatchDetail), batchInInventoryBatchDetail(inventoryBatchDetail));
+
+sumOutInventoryBatchDetail (inventoryBatchDetail) = sumShortageCollationSheetBatch(collationSheetOutInventoryBatchDetail(inventoryBatchDetail), batchOutInventoryBatchDetail(inventoryBatchDetail));
+sumInInventoryBatchDetail (inventoryBatchDetail) = -sumShortageCollationSheetBatch(collationSheetInInventoryBatchDetail(inventoryBatchDetail), batchInInventoryBatchDetail(inventoryBatchDetail));
+
+batchInventoryBatchDetail(inventoryBatchDetail) = UNION CLASS batchOutInventoryBatchDetail(inventoryBatchDetail),
+                                                                  batchInInventoryBatchDetail(inventoryBatchDetail) PERSISTENT;
+nameBatchInventoryBatchDetail 'Партия' (inventoryBatchDetail) = nameBatch(batchInventoryBatchDetail(inventoryBatchDetail)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
+
+skuInventoryBatchDetail (inventoryBatchDetail) = skuBatch(batchInventoryBatchDetail(inventoryBatchDetail));
+nameSkuInventoryBatchDetail 'Товар' (inventoryBatchDetail) = nameSkuBatch(batchInventoryBatchDetail(inventoryBatchDetail)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
+idBarcodeInventoryBatchDetail 'Штрих-код' (inventoryBatchDetail) =  idBarcodeSku(skuInventoryBatchDetail(inventoryBatchDetail));
+
+quantityInventoryBatchDetail 'Кол-во недостачи' (inventoryBatchDetail) = quantityShortageCollationSheetBatch(collationSheetInventoryBatchDetail(inventoryBatchDetail), batchInventoryBatchDetail(inventoryBatchDetail)) PERSISTENT;
+sumInventoryBatchDetail 'Сумма недостачи' (inventoryBatchDetail) = sumShortageCollationSheetBatch(collationSheetInventoryBatchDetail(inventoryBatchDetail), batchInventoryBatchDetail(inventoryBatchDetail)) PERSISTENT;
+
+includeBatchInventoryBatchDetail(inventoryBatchDetail) = includeCollationSheetBatch(collationSheetInventoryBatchDetail(inventoryBatchDetail), batchInventoryBatchDetail(inventoryBatchDetail)) PERSISTENT;
+
+descriptionOutInventoryBatchDetail 'Название документа' (inventoryBatchDetail) =
+    [FORMULA STRING[200] '\'Недостача по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
+    nameCollationSheet(collationSheetOutInventoryBatchDetail(inventoryBatchDetail)), dateCollationSheet(collationSheetOutInventoryBatchDetail(inventoryBatchDetail)));
+
+descriptionInInventoryBatchDetail 'Название документа' (inventoryBatchDetail) =
+    [FORMULA STRING[200] '\'Излишек по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
+    nameCollationSheet(collationSheetInInventoryBatchDetail(inventoryBatchDetail)), dateCollationSheet(collationSheetInInventoryBatchDetail(inventoryBatchDetail)));
+
+descriptionInventoryBatchDetail 'Название документа' (inventoryBatchDetail) = OVERRIDE descriptionOutInventoryBatchDetail(inventoryBatchDetail), descriptionInInventoryBatchDetail(inventoryBatchDetail);
+
+@implementSkuLedger(inventoryBatchDetail, sku, stock);
+changedDataSkuLedger(ledger) += CHANGED(batchInventoryBatchDetail(ledger));
+
+EXTEND CLASS OutInventoryBatchDetail : OutFIFOSkuLedger;
+quantityOutFIFOSkuLedger (ledger) += quantityOutInventoryBatchDetail(ledger);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += quantityOutInventoryBatchDetail(ledger) IF batchInventoryBatchDetail(ledger) == batch;
+sumOutSkuLedger (ledger) += sumOutInventoryBatchDetail(ledger);
+
+EXTEND CLASS InInventoryBatchDetail : InLIFOSkuLedger;
+quantityInLIFOSkuLedger (ledger) += quantityInInventoryBatchDetail(ledger);
+limitInLIFOSkuLedgerBatch (ledger, batch) += quantityInInventoryBatchDetail(ledger) IF batchInventoryBatchDetail(ledger) == batch;
+sumInSkuLedger (ledger) += sumInInventoryBatchDetail(ledger);
+
+//------------------------------------ Выбор складов для инвентаризации------------------------------------------//
+
+FORM dialogStockInventory 'Выбор складов для инвентаризации'
+    OBJECTS in=Inventory FIXED PANEL
+    PROPERTIES (in) READONLY seriesObject, numberObject, nameInventory, dateInventory
+
+    TREE stockTree sg = StockGroup PARENT parentStockGroup
+    PROPERTIES READONLY sgTreeName = nameStockGroup(sg)
+
+    OBJECTS ts=Stock
+    PROPERTIES (ts) READONLY tsTreeName = nameStock
+    PROPERTIES (ts, in)      includeStockInventory, nameUserTypeOfAdditionStockInventory
+    FILTERS isParentStockGroupStock(sg, ts)
+    FILTERGROUP filters
+        FILTER 'Только склады компании' 'F10' isCompanyStock(ts) DEFAULT
+
+    ORDER BY tsTreeName
+;
+@extendFormFilterStockAccess(Stock, ts, dialogStockInventory);
+@extendFormFilterStockGroupAccess(StockGroup, sg, dialogStockInventory, countAccessEmployeeEmployeeDivisionGroup);
+
+DESIGN dialogStockInventory FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        childConstraints = TO THE BOTTOM;
+        ADD in.box;
+        NEW stockCase {
+            childConstraints = TO THE RIGHT;
+            ADD stockTree.tree.box;
+            ADD ts.box {
+                fillHorizontal = 2;
+            }
+        }
+        ADD functions.box;
+    }
+}
+
+dialogStockInventory 'Выбрать склады для инвентаризации' (inventory) =
+    ACTION FORM dialogStockInventory OBJECTS in = inventory DOCKEDMODAL;
+
+//------------------------------------ Выбор SKU для сличительной ведомости ------------------------------------------//
+
+FORM dialogSkuCollationSheet 'Выбор SKU для сличительной ведомости'
+    OBJECTS cs=ManyCollationSheet FIXED PANEL
+    PROPERTIES (cs) READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameStockCollationSheet
+
+    TREE treeGroup g=SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY nameSkuGroup(g)
+    ORDER BY nameSkuGroup
+
+    OBJECTS i=Sku
+    PROPERTIES(i) READONLY idBarcodeSku, nameSku, shortNameUOMSku
+
+    PROPERTIES(cs, i) inManyCollationSheetSku
+
+    FILTERS isParentSkuGroupSku(g, i)
+    ORDER BY nameSku
+;
+
+DESIGN dialogSkuCollationSheet FROM DEFAULT {
+    POSITION treeGroup.tree.box TO THE LEFT i.box;
+        treeGroup.tree.box { fillHorizontal = 1.5; }
+        i.box { fillHorizontal = 3.5; }
+
+}
+
+dialogSkuCollationSheet 'Добавить товар' (collationSheet) = ACTION IF collationSheet IS ManyCollationSheet THEN FORM dialogSkuCollationSheet OBJECTS cs = collationSheet MODAL;
+
+//------------------------------------ Формы редактирования описей ------------------------------------------//
+
+FORM listInventory 'Опись'
+    OBJECTS         li=ListInventory FIXED PANEL
+    PROPERTIES (li) nameStockListInventory, nameInventoryListInventory, nameListInventory, noteListInventory,
+                    nameCommitteeListInventory, nameChairmanCommitteeListInventory, nameEmployeeListInventory,
+                    countPageInventoryListInventory, countPageInventoryDetailListInventory, quantityPageInventoryDetailListInventory,
+                    sumPageInventoryDetailListInventory
+
+    OBJECTS         pl=PageInventory
+    PROPERTIES(pl)  namePageInventory, notePageInventory FORCE PANEL, countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, sumPageInventoryDetailPageInventory, ADDOBJ, DELETESESSION
+    FILTERS         listInventoryPageInventory(pl) == li
+
+    OBJECTS         dp=PageInventoryDetail
+    PROPERTIES (dp) indexPageInventoryDetail, idBarcodeSkuPageInventoryDetail, nameSkuPageInventoryDetail, nameBatchPageInventoryDetail SHOWIF isBatchListInventory(li), quantityPageInventoryDetail, pricePageInventoryDetail,
+                    sumPageInventoryDetail, ADDOBJ, DELETESESSION
+    FILTERS         pageInventoryPageInventoryDetail(dp) == pl
+
+    OBJECTS         i=Sku
+    PROPERTIES (li,i)  indexListInventorySku
+    PROPERTIES (i)     idBarcodeSku, nameSku
+    PROPERTIES (li,i)  quantityPageInventoryDetailListInventorySku, pricePageInventoryDetailListInventorySku SHOWIF isSkuListInventory(li),
+                       sumPageInventoryDetailListInventorySku SHOWIF isSkuListInventory(li)
+    PROPERTIES         SHOWIF isSkuListInventory(li) addDetailDialogTerminalListInventory(li) TODRAW dp
+    FILTERS            quantityPageInventoryDetailListInventorySku(li,i) > 0
+
+    OBJECTS         bt=Batch
+    PROPERTIES (li,bt) SHOWIF isBatchListInventory(li) indexListInventoryBatch
+    PROPERTIES (bt)    SHOWIF isBatchListInventory(li) idBarcodeSkuBatch, nameSkuBatch, descriptionBatch, nameBatch
+    PROPERTIES (li,bt) SHOWIF isBatchListInventory(li) quantityPageInventoryDetailListInventoryBatch, pricePageInventoryDetailListInventoryBatch, sumPageInventoryDetailListInventoryBatch
+    FILTERS                                            quantityPageInventoryDetailListInventoryBatch(li,bt) > 0
+
+    EDIT ListInventory OBJECT li
+;
+
+DESIGN listInventory FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        childConstraints = TO THE BOTTOM;
+        ADD li.box {
+            childConstraints = TO THE RIGHT;
+            NEW row {
+                childConstraints = TO THE BOTTOM;
+                ADD li.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameInventoryListInventory);
+                    ADD PROPERTY(nameListInventory);
+                }
+                ADD li.inventoryCommitteeGroup {
+                    childConstraints = TO THE RIGHT;
+                }
+                ADD li.documentPrmGroup;
+
+
+            }
+            ADD li.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+                PROPERTY(countPageInventoryListInventory) {
+                    caption = 'Количество страниц';
+                }
+            }
+        }
+        NEW wor {
+            childConstraints = TO THE RIGHT;
+            ADD pl.box {
+                fillHorizontal = 1;
+            }
+            NEW case1 {
+                fillHorizontal = 2;
+                type = TABBED;
+
+                ADD dp.box;
+                ADD i.box {
+                    title = 'Опись-товар';
+                }
+                ADD bt.box {
+                    title = 'Опись-партия';
+                }
+            }
+        }
+        ADD functions.box;
+    }
+}
+
+addListInventoryStockInventory 'Добавить' = ACTION (stock, inventory) NEWSESSION {
+
+    FOR ADDOBJ g = ListInventory DO {
+        SET stockListInventory(g) <- stock;
+        SET inventoryListInventory(g) <- inventory;
+        FORM listInventory OBJECTS li = g MODAL;
+        IF formResult() == FormResult.ok THEN
+            EXEC apply();
+    };
+} TOOLBAR IMAGE 'add.png';
+
+// --------------------------------------------- Формы инвентаризаций ------------------------------------- //
+
+dumbPageInventory (p) = ' ' IF p IS PageInventory;
+
+FORM inventory 'Инвентаризация'
+    OBJECTS          in=Inventory FIXED PANEL
+    PROPERTIES (in)  isBatchInventory, nameNumeratorObject, numberObject, seriesObject,
+                     nameInventory, nameTypeOfAdditionInventory, dateInventory, timeInventory,
+                     noteInventory, infoInventory, nameStockInventory ON CHANGE dialogStockInventory(in),
+                     recalculatePriceInventory, recalculateBalanceInventory,
+                     timeFromInventory, timeToInventory, nameHeadManInventory,
+                     nameCommitteeInventory, nameChairmanCommitteeInventory, nameEmployeeInventory
+
+    TREE treeStock ds=Stock, li=ListInventory, pl=PageInventory
+    PROPERTIES       READONLY nameStock(ds),  nameListInventory(li), namePageInventory(pl)
+    FILTERS                   includeStockInventory(ds, in),
+                              stockListInventory(li) == ds,
+                              inventoryListInventory(li) == in,
+                              listInventoryPageInventory(pl) == li
+
+    PROPERTIES(ds, in) READONLY countPageInventoryDetailStockInventory, quantityPageInventoryDetailStockInventory, sumPageInventoryDetailStockInventory
+    PROPERTIES(ds, in) addListInventoryStockInventory
+
+    PROPERTIES(li)   READONLY countPageInventoryDetailListInventory, quantityPageInventoryDetailListInventory, sumPageInventoryDetailListInventory, objectClassName
+
+    PROPERTIES(li)   editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), deleteli=DELETE FORCE PANEL TOOLBAR SHOWIF isDraftListInventory(li),
+                     postListInventory FORCE PANEL SHOWIF isDraftListInventory(li), unpostListInventory FORCE PANEL SHOWIF isPostedListInventory(li)
+
+    PROPERTIES(pl)   READONLY countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, sumPageInventoryDetailPageInventory, dumbPageInventory
+
+    OBJECTS          dp=PageInventoryDetail
+    PROPERTIES (dp)  READONLY indexPageInventoryDetail, idBarcodeSkuPageInventoryDetail, nameSkuPageInventoryDetail, nameBatchPageInventoryDetail  SHOWIF isBatchListInventory(li),
+                              quantityPageInventoryDetail, pricePageInventoryDetail, sumPageInventoryDetail
+    FILTERS                   inInventoryStockListInventoryPageInventoryPageInventoryDetail(in, ds, li, pl, dp)
+
+    OBJECTS         it=Sku
+    PROPERTIES (li,it) indexListInventorySku
+    PROPERTIES (it)    idBarcodeSku, itNameSku = nameSku
+    PROPERTIES (li,it) quantityPageInventoryDetailListInventorySku, pricePageInventoryDetailListInventorySku SHOWIF isSkuListInventory(li),
+                       sumPageInventoryDetailListInventorySku SHOWIF isSkuListInventory(li)
+    FILTERS            quantityPageInventoryDetailListInventorySku(li,it)
+    ORDER BY           itNameSku
+
+    OBJECTS         bt=Batch
+    PROPERTIES (li,bt) SHOWIF isBatchListInventory(li) indexListInventoryBatch
+    PROPERTIES (bt)    SHOWIF isBatchListInventory(li) idBarcodeSkuBatch, nameSkuBatch, descriptionBatch, nameBatch
+    PROPERTIES (li,bt) SHOWIF isBatchListInventory(li) quantityPageInventoryDetailListInventoryBatch, pricePageInventoryDetailListInventoryBatch, sumPageInventoryDetailListInventoryBatch
+    FILTERS            quantityPageInventoryDetailListInventoryBatch(li,bt)
+
+    OBJECTS          cs=CollationSheet
+    PROPERTIES (cs)              nameCollationSheet, nameTypeOfAdditionCollationSheet, nameStockCollationSheet,
+                                 quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
+                                 sumPageInventoryDetailCollationSheet, sumBalanceCollationSheet, sumShortageCollationSheet,
+                                 countListInventoryCollationSheet, countPageInventoryCollationSheet
+    PROPERTIES (cs)              dialogSkuCollationSheet, prevDateCollationSheet, recalculatePriceCollationSheet, deletecs=DELETE
+    PROPERTIES (cs)  FORCE PANEL sumItemPageInventoryDetailCollationSheet, sumContainerPageInventoryDetailCollationSheet,
+                                 sumItemBalanceCollationSheet, sumContainerBalanceCollationSheet,
+                                 sumItemShortageCollationSheet, sumContainerShortageCollationSheet
+    FILTERS                      inventoryCollationSheet(cs) == in
+
+
+    TREE treeGroup g=SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY nameSkuGroup(g)
+    ORDER BY nameSkuGroup
+
+    OBJECTS          i=Sku
+    PROPERTIES(i) READONLY                      idBarcodeSku, iNameSku = nameSku
+    PROPERTIES(cs, i)                           quantityPageInventoryDetailCollationSheetSku, quantityBalanceCollationSheetSku, quantityShortageCollationSheetSku
+    PROPERTIES(cs, i) SHOWIF isSkuInventory(in) pricePageInventoryDetailCollationSheetSku BACKGROUND differentPriceCollationSheetSku(cs, i),
+                                                priceBalanceCollationSheetSku BACKGROUND differentPriceCollationSheetSku(cs, i)
+    PROPERTIES(cs, i) SHOWIF isSkuInventory(in) sumPageInventoryDetailCollationSheetSku, sumBalanceCollationSheetSku, sumShortageCollationSheetSku
+    FILTERS                                     includeCollationSheetSku(cs, i),
+                                                isParentSkuGroupSku(g, i)
+    FILTERGROUP notEqualsPriceSkuFilters
+            FILTER 'Товар с разными ценами' 'F10' differentPriceCollationSheetSku(cs, i)
+    ORDER BY                                    iNameSku
+
+    OBJECTS         b=Batch
+    PROPERTIES(b) READONLY SHOWIF isBatchCollationSheet(cs) idBarcodeSkuBatch, nameSkuBatch, descriptionBatch, nameBatch
+    PROPERTIES(cs,b) SHOWIF isBatchCollationSheet(cs)       quantityPageInventoryDetailCollationSheetBatch, quantityBalanceCollationSheetBatch,
+                                                            quantityShortageCollationSheetBatch
+    PROPERTIES(cs,b) SHOWIF isBatchCollationSheet(cs)       pricePageInventoryDetailCollationSheetBatch BACKGROUND differentPriceCollationSheetBatch(cs, b),
+                                                            priceBalanceCollationSheetBatch BACKGROUND differentPriceCollationSheetBatch(cs, b)
+    PROPERTIES(cs,b) SHOWIF isBatchCollationSheet(cs)       sumPageInventoryDetailCollationSheetBatch, sumBalanceCollationSheetBatch, sumShortageCollationSheetBatch
+    FILTERS                                                 includeCollationSheetBatch(cs, b),
+                                                            isParentSkuGroupBatch(g, b)
+    FILTERGROUP notEqualsPriceBatchFilters
+            FILTER 'Партии с разными ценами' 'F9' differentPriceCollationSheetBatch(cs, b)
+    FILTERGROUP notEqualsPriceBatchFilters
+            FILTER 'Партии с остатками' 'F8' quantityPageInventoryDetailCollationSheetBatch(cs,b) OR quantityBalanceCollationSheetBatch(cs,b) DEFAULT
+
+    EDIT Inventory OBJECT in
+;
+
+DESIGN inventory FROM DEFAULT {
+    main {
+        NEW header.box BEFORE in.box {
+            childConstraints = TO THE BOTTOM;
+
+            ADD in.documentHeaderGroup {
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(nameStockInventory);
+                ADD PROPERTY(nameNumeratorObject);
+                ADD PROPERTY(numberObject);
+                ADD PROPERTY(seriesObject);
+                ADD PROPERTY(dateInventory);
+                ADD PROPERTY(timeInventory);
+            }
+
+            NEW headerRow2 {
+                childConstraints = TO THE RIGHT;
+                ADD in.documentPrmGroup {
+                    childConstraints = TO THE BOTTOM;
+                    NEW headerRow2Col1Row1 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameTypeOfAdditionInventory);
+                        ADD PROPERTY(nameInventory);
+                    }
+                    NEW headerRow2Col1Row2 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(noteInventory);
+                        ADD PROPERTY(infoInventory);
+                    }
+                    NEW headerRow2Col1Row3 {
+                        ADD in.inventoryCommitteeGroup {
+                            childConstraints = TO THE RIGHT;
+                        }
+                    }
+
+                    NEW headerRow2Col1Row4 {
+                        childConstraints = TO THE RIGHT;
+
+                        NEW headerRow2Col1Row41 {
+                            title = 'Снятие остатков';
+                            childConstraints = TO THE RIGHT;
+                            ADD PROPERTY(timeFromInventory);
+                            ADD PROPERTY(timeToInventory);
+                        }
+                        NEW headerRow2Col1Row42 {
+                            title = 'Руководство';
+                            ADD PROPERTY(nameHeadManInventory);
+                        }
+                    }
+                }
+                NEW actionContainer {
+                    childConstraints = TO THE BOTTOM;
+                    ADD in.inventoryActionGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    NEW actionContainer2 {
+                        ADD PROPERTY(isBatchInventory);
+                    }
+                }
+            }
+        }
+
+        NEW secondCase BEFORE functions.box {
+            type = TABBED;
+            NEW z.box { title = 'Описи';
+                fillVertical = 5;
+                childConstraints = TO THE RIGHT;
+                ADD treeStock.tree.box {
+                    fillHorizontal = 2;
+
+                    PROPERTY(objectClassName) {
+                            preferredCharWidth = 15;
+                    }
+                    PROPERTY (dumbPageInventory) {
+                        caption = 'Статус';
+                        minimumCharWidth = 15;
+                    }
+                    PROPERTY (postListInventory) {
+                        caption = 'Закрыть';
+                    }
+                    PROPERTY (unpostListInventory) {
+                        caption = 'Открыть';
+                    }
+                    PROPERTY (editLI) {
+                        caption = 'Редактировать';
+                    }
+                    PROPERTY (deleteli) {
+                        caption = 'Удалить';
+                        askConfirm = TRUE;
+                    }
+                }
+                NEW case1  {
+                    type = TABBED;
+                    fillHorizontal = 3;
+                    ADD dp.box;
+                    ADD it.box {
+                        title = 'Опись-товар';
+                    }
+                    ADD bt.box {
+                        title = 'Опись-партия';
+                    }
+                }
+            }
+
+            NEW x.box { title = 'Сличительные ведомости';
+                fillVertical = 5;
+                NEW pop1 {
+                    childConstraints = TO THE RIGHT;
+                    ADD cs.box  {
+                        fillVertical = 1;
+                        fillHorizontal = 4;
+                    }
+                    ADD cs.panel {
+                        title = 'Суммы товар/тара';
+                        childConstraints = TO THE BOTTOM;
+                        fillHorizontal = 1;
+                    }
+                }
+                NEW firstCase { title = 'Пересчитанный товар';
+                    childConstraints = TO THE BOTTOM;
+                    fillVertical = 3.8;
+                    NEW wor1 {
+                        childConstraints = TO THE RIGHT;
+                        fillVertical = 4;
+                        ADD treeGroup.tree.box {
+                            title = 'Товарные группы';
+                            fillHorizontal = 1.5;
+                        }
+                        NEW wor11 {
+                            title = 'Результат';
+                            fillHorizontal = 3.5;
+                            type = TABBED;
+                            ADD i.box;
+                            ADD b.box;
+
+                        }
+                    }
+                    NEW wor2 {
+                        fillVertical = 0.2;
+                        ADD PROPERTY(dialogSkuCollationSheet(cs));
+                    }
+
+                }
+            }
+
+        }
+    }
+}
+
+FORM inventories 'Инвентаризации'
+    OBJECTS in=Inventory
+    PROPERTIES(in) READONLY             isPostedInventory FORCE GRID, isBatchInventory, numberObject, seriesObject, dateInventory, timeInventory,
+                                        nameStockInventory, nameInventory, noteInventory, objectClassName
+    PROPERTIES(in) FORCE PANEL READONLY nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES(in)                      ADDFORM, EDITFORM SHOWIF isDraftInventory(in), deletein=DELETE FORCE PANEL TOOLBAR SHOWIF isDraftInventory(in),
+                                        postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)
+
+    OBJECTS il=InventorySkuDetail
+    PROPERTIES(il) READONLY SHOWIF isSkuInventory(in) nameStockInventorySkuDetail, idBarcodeInventorySkuDetail, nameSkuInventorySkuDetail, quantityInventorySkuDetail, sumInventorySkuDetail
+    FILTERS                                           inventoryInventorySkuDetail(il) == in
+    ORDER BY                                          nameStockInventorySkuDetail, nameSkuInventorySkuDetail
+
+    OBJECTS ib=InventoryBatchDetail
+    PROPERTIES(ib) READONLY SHOWIF isBatchInventory(in) nameStockInventoryBatchDetail, idBarcodeInventoryBatchDetail, nameSkuInventoryBatchDetail,
+                                                        nameBatchInventoryBatchDetail, quantityInventoryBatchDetail, sumInventoryBatchDetail
+    FILTERS                                             inventoryInventoryBatchDetail(ib) == in
+
+    OBJECTS li=ListInventory
+    PROPERTIES(li) READONLY nameListInventory, nameStockListInventory, countIndexListInventory SHOWIF isSkuListInventory(li), countIndexBatchListInventory SHOWIF isBatchListInventory(li),
+                            quantityPageInventoryDetailListInventory, sumPageInventoryDetailListInventory
+    FILTERS                 inventoryListInventory(li) == in
+    ORDER BY                nameStockListInventory
+
+    OBJECTS         i=Sku
+    PROPERTIES(li,i) READONLY indexListInventorySku
+    PROPERTIES(i)    READONLY idBarcodeSku, nameSku
+    PROPERTIES(li,i) READONLY quantityPageInventoryDetailListInventorySku,
+                              pricePageInventoryDetailListInventorySku SHOWIF isSkuListInventory(li),
+                              sumPageInventoryDetailListInventorySku SHOWIF isSkuListInventory(li)
+    FILTERS                   quantityPageInventoryDetailListInventorySku(li,i)
+    ORDER BY                  indexListInventorySku
+
+    OBJECTS         b=Batch
+    PROPERTIES(li,b) READONLY SHOWIF isBatchListInventory(li) indexListInventoryBatch
+    PROPERTIES(b)    READONLY SHOWIF isBatchListInventory(li) idBarcodeSkuBatch, nameSkuBatch, descriptionBatch, nameBatch
+    PROPERTIES(li,b) READONLY SHOWIF isBatchListInventory(li) quantityPageInventoryDetailListInventoryBatch,
+                                                              pricePageInventoryDetailListInventoryBatch,
+                                                              sumPageInventoryDetailListInventoryBatch
+    FILTERS                                                   quantityPageInventoryDetailListInventoryBatch(li,b)
+
+    OBJECTS         cs=CollationSheet
+    PROPERTIES(cs)  READONLY             nameCollationSheet, nameTypeOfAdditionCollationSheet, nameStockCollationSheet,
+                                         quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
+                                         sumPageInventoryDetailCollationSheet, sumBalanceCollationSheet, sumShortageCollationSheet
+    PROPERTIES(cs)  FORCE PANEL READONLY sumItemPageInventoryDetailCollationSheet, sumContainerPageInventoryDetailCollationSheet,
+                                         sumItemBalanceCollationSheet, sumContainerBalanceCollationSheet,
+                                         sumItemShortageCollationSheet, sumContainerShortageCollationSheet
+    FILTERS                              inventoryCollationSheet(cs) == in
+    ORDER BY                             nameStockCollationSheet
+
+    OBJECTS          it=Sku
+    PROPERTIES(it) READONLY                                   nASku=nameSku, idBarcodeSku
+    PROPERTIES(cs,it) READONLY                                quantityPageInventoryDetailCollationSheetSku, quantityBalanceCollationSheetSku, quantityShortageCollationSheetSku
+    PROPERTIES(cs,it) READONLY SHOWIF isSkuCollationSheet(cs) pricePageInventoryDetailCollationSheetSku BACKGROUND differentPriceCollationSheetSku(cs, it),
+                                                              priceBalanceCollationSheetSku BACKGROUND differentPriceCollationSheetSku(cs, it)
+    PROPERTIES(cs,it) READONLY SHOWIF isSkuCollationSheet(cs) sumPageInventoryDetailCollationSheetSku, sumBalanceCollationSheetSku, sumShortageCollationSheetSku
+    FILTERS                                                   includeCollationSheetSku(cs, it)
+    ORDER BY                                                  nASku
+
+    OBJECTS         bt=Batch
+    PROPERTIES(bt)    READONLY SHOWIF isBatchCollationSheet(cs) nameSkuBatch, idBarcodeSkuBatch, descriptionBatch, nameBatch
+    PROPERTIES(cs,bt) READONLY SHOWIF isBatchCollationSheet(cs) quantityPageInventoryDetailCollationSheetBatch, quantityBalanceCollationSheetBatch,
+                                                                quantityShortageCollationSheetBatch
+    PROPERTIES(cs,bt) READONLY SHOWIF isBatchCollationSheet(cs) pricePageInventoryDetailCollationSheetBatch BACKGROUND differentPriceCollationSheetBatch(cs, bt),
+                                                                priceBalanceCollationSheetBatch BACKGROUND differentPriceCollationSheetBatch(cs, bt)
+    PROPERTIES(cs,bt) READONLY SHOWIF isBatchCollationSheet(cs) sumPageInventoryDetailCollationSheetBatch, sumBalanceCollationSheetBatch, sumShortageCollationSheetBatch
+    FILTERS                                                     includeCollationSheetBatch(cs, bt),
+                                                                quantityPageInventoryDetailCollationSheetBatch(cs,bt) OR quantityBalanceCollationSheetBatch(cs,bt)
+;
+
+DESIGN inventories FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+
+        NEW topContainer{
+
+            type = SPLITV;
+
+            ADD in.box {
+                fillVertical = 1;
+                PROPERTY(objectClassName) {
+                    preferredCharWidth = 25;
+                }
+                PROPERTY (deletein) {
+                    askConfirm = TRUE;
+                }
+            }
+
+            NEW wor {
+                fillVertical = 2;
+                type = TABBED;
+
+                NEW wor1 {
+                    title = 'Товары';
+                    ADD il.box {
+                        title = 'Товары с недостачей (излишком)';
+                    }
+                }
+                NEW wor2 {
+                    title = 'Партии';
+                    ADD ib.box {
+                        title = 'Партии с недостачей (излишком)';
+                    }
+                }
+                NEW wor3 {
+                    title = 'Описи';
+                    childConstraints = TO THE RIGHT;
+                    ADD li.box;
+                    NEW wor31 {
+                        type = TABBED;
+                        ADD i.box;
+                        ADD b.box;
+                    }
+                }
+                NEW wor4 {
+                    title = 'Ведомости';
+                    childConstraints = TO THE RIGHT;
+                    ADD cs.box;
+                    NEW wor41 {
+                        type = TABBED;
+                        ADD it.box;
+                        ADD bt.box;
+                    }
+                }
+
+                NEW documentHistory {
+                    childConstraints = TO THE RIGHT;
+                    title = 'История';
+                    ADD in.historyGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    ADD in.postedGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                }
+
+            }
+        }
+
+        ADD functions.box;
+    }
+}
+
+NAVIGATOR {
+    stockNavigator {
+        NEW inventoryNavigator 'Инвентаризация' BEFORE balanceSku {
+            ADD inventories;
+            ADD inventoryCommittees;
+        }
+    }
+}

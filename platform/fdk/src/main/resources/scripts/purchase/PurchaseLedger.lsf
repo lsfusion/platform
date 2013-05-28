@@ -1,0 +1,311 @@
+MODULE PurchaseLedger;
+
+REQUIRE System, Stock, Tax, Employee, Purchase, PriceRound;
+
+CLASS ABSTRACT PurchaseLedger 'Покупка товара';
+TABLE purchaseLedger(PurchaseLedger);
+
+dateTimePurchaseLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (PurchaseLedger) PERSISTENT INDEXED;
+datePurchaseLedger 'Дата' (ledger) = toDate(dateTimePurchaseLedger(ledger)) PERSISTENT INDEXED;
+
+isPostedPurchaseLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (PurchaseLedger) PERSISTENT;
+
+skuPurchaseLedger (ledger) = ABSTRACT Sku (PurchaseLedger) PERSISTENT INDEXED;
+nameSkuPurchaseLedger 'SKU' (ledger) = nameSku(skuPurchaseLedger(ledger));
+
+stockPurchaseLedger (ledger) = ABSTRACT Stock (PurchaseLedger) PERSISTENT INDEXED;
+nameStockPurchaseLedger 'Склад' (ledger) = nameStock(stockPurchaseLedger(ledger));
+
+descriptionPurchaseLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (PurchaseLedger) PERSISTENT;
+
+quantityPurchaseLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (PurchaseLedger) PERSISTENT;
+
+sumPurchaseLedger 'Сумма покупки' (ledger) = ABSTRACT NUMERIC[16,2] (PurchaseLedger) PERSISTENT;
+
+supplierPurchaseLedger  (ledger) = ABSTRACT LegalEntity (PurchaseLedger) PERSISTENT;
+nameSupplierPurchaseLedger 'Поставщик' (ledger) = nameLegalEntity(supplierPurchaseLedger (ledger));
+
+quantityPurchaseSupplierSku 'Кол-во закуплено' = GROUP SUM quantityPurchaseLedger(ledger) IF isPostedPurchaseLedger(ledger)
+    BY supplierPurchaseLedger(ledger), skuPurchaseLedger(ledger) PERSISTENT;
+
+inSupplierSku 'Были поставки' (legalEntity, sku) = TRUE IF quantityPurchaseSupplierSku(legalEntity, sku) PERSISTENT;
+prevInSupplierSku 'Были поставки (пред.)' (legalEntity, sku) = PREV(inSupplierSku(legalEntity, sku));
+
+sumPurchaseTypeExchangePurchaseLedger 'Сумма покупки валюта' (typeExchange, purchaseLedger)= roundPriceCurrency((sumPurchaseLedger (purchaseLedger)/
+    rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stockPurchaseLedger(purchaseLedger)), datePurchaseLedger(purchaseLedger))), currencyTypeExchange(typeExchange));
+
+//CONSTRAINT quantityPurchaseLedger(purchaseLedger) == 0 MESSAGE 'ошибка: Количество покупки не должно быть равно нулю';
+
+averagePricePurchaseLedger 'Цена покупки (средняя)' (purchaseLedger) = sumPurchaseLedger(purchaseLedger)/quantityPurchaseLedger(purchaseLedger) IF quantityPurchaseLedger(purchaseLedger) != 0;
+
+VATPurchaseLedger (ledger) = ABSTRACT Range (PurchaseLedger) PERSISTENT;
+valueVATPurchaseLedger 'НДС, %' (ledger) = valueRateRangeDate(VATPurchaseLedger(ledger), datePurchaseLedger(ledger));
+
+sumVATPurchaseLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
+        sumPurchaseLedger(ledger), valueVATPurchaseLedger(ledger));
+
+quantityPurchaseSkuStockDate (sku, stock, date) = GROUP SUM quantityPurchaseLedger(ledger) IF isPostedPurchaseLedger(ledger)
+    BY skuPurchaseLedger(ledger), stockPurchaseLedger(ledger), datePurchaseLedger(ledger) PERSISTENT;
+
+sumPurchaseSkuStockDate (sku, stock, date) = GROUP SUM sumPurchaseLedger(ledger) IF isPostedPurchaseLedger(ledger)
+    BY skuPurchaseLedger(ledger), stockPurchaseLedger(ledger), datePurchaseLedger(ledger) PERSISTENT;
+
+quantityPurchaseSkuStockSupplierDate (sku, stock, supplier, date) = GROUP SUM quantityPurchaseLedger(ledger) IF isPostedPurchaseLedger(ledger)
+    BY skuPurchaseLedger(ledger), stockPurchaseLedger(ledger), supplierPurchaseLedger(ledger), datePurchaseLedger(ledger);  // PERSISTENT
+
+sumPurchaseSkuStockSupplierDate (sku, stock, supplier, date) = GROUP SUM sumPurchaseLedger(ledger) IF isPostedPurchaseLedger(ledger)
+    BY skuPurchaseLedger(ledger), stockPurchaseLedger(ledger), supplierPurchaseLedger(ledger), datePurchaseLedger(ledger);   // PERSISTENT
+
+quantityPurchaseSkuStockWeekDateFromTo 'Закуплено за неделю (кол-во)' (sku, stock, week, dateFrom, dateTo) = GROUP SUM
+        quantityPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, stock, weekInDate(date), dateFrom, dateTo;
+
+sumPurchaseSkuStockWeekDateFromTo 'Закуплено за неделю (сумма)' (sku, stock, week, dateFrom, dateTo) = GROUP SUM
+        sumPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, stock, weekInDate(date), dateFrom, dateTo;
+
+averagePricePurchaseSkuStockWeekDateFromTo 'Средняя цена за неделю' (sku, stock, week, dateFrom, dateTo)=  round2(sumPurchaseSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) /
+        quantityPurchaseSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo));
+
+averagePurchaseSkuStockWeekDateFromTo 'Закуплено за неделю кол-во/цена' (sku, stock, week, dateFrom, dateTo)= [FORMULA STRING[30] 'CAST($1 AS TEXT) || \'(\' || CAST($2 AS TEXT) || \')\'']
+        (quantityPurchaseSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo), averagePricePurchaseSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo)) MINCHARWIDTH 10 PREFCHARWIDTH 15;
+
+quantitySkuPurchaseWeekDateFromTo 'Закуплено за неделю (кол-во)' (week, dateFrom, dateTo) = GROUP SUM
+        quantityPurchaseSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) BY  week, dateFrom, dateTo;
+
+sumPurchaseWeekDateFromTo 'Закуплено за неделю (сумма)' (week, dateFrom, dateTo) = GROUP SUM
+        sumPurchaseSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) BY  week, dateFrom, dateTo;
+
+quantityPurchaseSkuStockDateFromTo 'Закуплено за интервал (кол-во)' (sku, stock, dateFrom, dateTo) = GROUP SUM
+        quantityPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, stock, dateFrom, dateTo;
+
+sumPurchaseSkuStockDateFromTo 'Закуплено за интервал (сумма)' (sku, stock, dateFrom, dateTo) = GROUP SUM
+        sumPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, stock, dateFrom, dateTo;
+
+quantityPurchaseSkuDateFromTo 'Закуплено за интервал (кол-во)' (sku, dateFrom, dateTo) = GROUP SUM
+        quantityPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, dateFrom, dateTo;
+
+sumPurchaseSkuDateFromTo 'Закуплено за интервал (сумма)' (sku, dateFrom, dateTo) = GROUP SUM
+        sumPurchaseSkuStockDate(sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, dateFrom, dateTo;
+//-- Поставщик
+
+quantityPurchaseSkuStockSupplierDateFromTo 'Закуплено за интервал у поставщика (кол-во)' (sku, stock, supplier, dateFrom, dateTo) = GROUP SUM
+        quantityPurchaseSkuStockSupplierDate(sku, stock, supplier, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, stock, supplier, dateFrom, dateTo;
+
+
+//---------------------------------Тип обмена---------------------------------------//
+
+sumPurchaseTypeExchangeSkuStockDate (typeExchange, sku, stock, date)= roundPriceCurrency((sumPurchaseSkuStockDate (sku, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
+
+sumPurchaseTypeExchangeSkuStockDateFromTo 'Закуплено за интервал (сумма-валюта)' (typeExchange, sku, stock, dateFrom, dateTo) = GROUP SUM
+        sumPurchaseTypeExchangeSkuStockDate (typeExchange, sku, stock, date) IF date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY typeExchange, sku, stock, dateFrom, dateTo;
+
+sumPurchaseTypeExchangeSkuDateFromTo 'Закуплено за интервал (сумма-валюта)' (typeExchange, sku, dateFrom, dateTo) = GROUP SUM
+        sumPurchaseTypeExchangeSkuStockDateFromTo(typeExchange, sku, stock, dateFrom, dateTo) BY typeExchange, sku, dateFrom, dateTo;
+
+
+skuStockAveragePurchaseInterval 'Интервал расчета закупок в день' = DATA INTEGER ();
+
+averagePurchaseSkuStock 'Закупок в день' = DATA NUMERIC[14,3] (Sku, Stock);
+
+calcQuantityPurchaseInterval = ACTION (dateFrom, dateTo) {
+    LOCAL balance = NUMERIC[14,3] (Sku, Stock);
+    LOCAL days = INTEGER (Sku, Stock);
+    LOCAL dateCur = DATE();
+
+    SET dateCur() <- (dateFrom AS DATE);
+    SET balance(sku, stock) <- balanceBSkuStockDate(sku, stock, dateFrom);
+
+    WHILE dateCur() <= (dateTo AS DATE) DO {
+        SET days(sku, stock) <- days(sku, stock) (+)
+                   (1 IF ((balance(sku, stock) > 0) OR (quantitySkuStockDate(sku, stock, dateCur()) > 0)));
+        SET balance(sku, stock) <- balance(sku, stock) (+)
+                   signedQuantitySkuStockDate(sku, stock, dateCur());
+        SET dateCur() <- sumDate(dateCur(), 1);
+    }
+
+    SET averagePurchaseSkuStock(sku, stock) <- quantityPurchaseSkuStockDateFromTo (sku, stock, dateFrom, dateTo) / days(sku, stock);
+}
+calcCurrentQuantityPurchaseInterval 'Пересчитать однодневные закупки' = ACTION () NEWSESSION AUTOAPPLY {
+    EXEC calcQuantityPurchaseInterval(subtractDate(currentDate(), skuStockAveragePurchaseInterval()), subtractDate(currentDate(), 1));
+}
+
+EXTEND FORM options
+    PROPERTIES() skuStockAveragePurchaseInterval, calcCurrentQuantityPurchaseInterval
+;
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(skuStockAveragePurchaseInterval);
+        ADD PROPERTY(calcCurrentQuantityPurchaseInterval);
+    }
+}
+
+//---------------------------------------------- Формы закупки -------------------------------------//
+
+FORM purchaseLedger 'Поступления по позициям'
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
+
+    OBJECTS te = TypeExchange FIXED PANEL
+    PROPERTIES nameType = nameTypeExchange(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+
+    OBJECTS s = PurchaseLedger
+    PROPERTIES(s) READONLY datePurchaseLedger, dateTimePurchaseLedger, nameStockPurchaseLedger, nameSupplierPurchaseLedger, nameSkuPurchaseLedger, descriptionPurchaseLedger,
+                           quantityPurchaseLedger, sumVATPurchaseLedger, sumPurchaseLedger, averagePricePurchaseLedger
+    PROPERTIES    READONLY sumPurchaseTypeExchangePurchaseLedger (te, s)
+    FILTERS isPostedPurchaseLedger(s)
+
+    FILTERS datePurchaseLedger(s) >= dFrom, datePurchaseLedger(s) <= dTo
+;
+@extendFormFilterAccess(PurchaseLedger, s, purchaseLedger, stock);
+
+DESIGN purchaseLedger FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        ADD dates.box {
+            childConstraints = TO THE RIGHT;
+            PROPERTY(nameCurrencyTypeExchange(te)) { caption = 'Валюта'; preferredCharWidth = 20;}
+            PROPERTY(nameType) { caption = 'Тип обмена'; preferredCharWidth = 20;}
+        }
+        ADD te.box {
+            childConstraints = TO THE RIGHT;
+            PROPERTY(nameCurrencyTypeExchange(te)) { caption = 'Валюта'; preferredCharWidth = 20;}
+            PROPERTY(nameType) { caption = 'Тип обмена'; preferredCharWidth = 20;}
+        }
+        ADD s.box{
+            childConstraints = TO THE BOTTOM;
+        }
+    }
+    ADD functions.box;
+}
+
+FORM purchaseSkuStock 'Поступления по SKU'
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
+
+    OBJECTS te = TypeExchange FIXED PANEL
+    PROPERTIES nameType = nameTypeExchange(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+
+    OBJECTS w = INTEGER
+    FILTERS quantitySkuPurchaseWeekDateFromTo(w, dFrom, dTo)
+
+    TREE stockTree sg = StockGroup PARENT parentStockGroup, ts = Stock
+    PROPERTIES READONLY sgTreeName = nameStockGroup(sg), tsTreeName = nameStock(ts)
+    FILTERS stockGroupStock(ts) == sg
+
+    TREE skuTree sk = SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = nameSkuGroup(sk)
+    ORDER BY skuTreeName
+
+    OBJECTS           sts=(st=Stock, s=Sku)
+    PROPERTIES        READONLY nameSku(s), stockName = nameStock(st)
+
+    FILTERS           isParentSkuGroupSku(sk, s),
+                      (st == ts AND sg IS StockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
+
+    ORDER BY          nameSku
+
+    PROPERTIES        balanceBSkuStockDate(s, st, dFrom), quantityPurchaseSkuStockWeekDateFromTo(s, st, w, dFrom, dTo)  COLUMNS (w) HEADER toString4 (w),
+                      quantityPurchaseSkuStockDateFromTo(s, st, dFrom, dTo),
+                      balanceASkuStockDate(s, st, dTo), sumPurchaseSkuStockDateFromTo (s, st, dFrom, dTo),  sumPurchaseTypeExchangeSkuStockDateFromTo(te,s, st, dFrom, dTo)
+
+    FILTERGROUP filtersPurchase
+        FILTER 'Показывать поступившие за интервал' 'F11' quantityPurchaseSkuStockDateFromTo(s, st, dFrom, dTo)
+
+    FILTERGROUP filtersPurchase
+        FILTER 'Показывать с остатками' 'F10' balanceASkuStockDate(s, st, dTo)
+
+;
+@extendFormFilterStockAccess(Stock, st, purchaseSkuStock);
+@extendFormFilterStockGroupAccess(Stock, ts, purchaseSkuStock, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(StockGroup, sg, purchaseSkuStock, countAccessEmployeeEmployeeDivisionGroup);
+
+DESIGN purchaseSkuStock FROM DEFAULT {
+
+    main {
+        NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            NEW firstCase {
+                type = SPLITV;
+                childConstraints = TO THE BOTTOM;
+
+                ADD stockTree.tree.box {title = 'Магазины'; }
+                ADD skuTree.tree.box { title = 'Товарные группы'; }
+            }
+
+            NEW secondCase {
+                fillHorizontal = 2;
+                childConstraints = TO THE BOTTOM;
+
+                ADD dates.box { childConstraints = TO THE RIGHT; }
+                ADD te.box {
+                    childConstraints = TO THE RIGHT;
+                    PROPERTY(nameCurrencyTypeExchange(te)) { caption = 'Валюта'; preferredCharWidth = 20;}
+                    PROPERTY(nameType) { caption = 'Тип обмена'; preferredCharWidth = 20;}
+                }
+
+                REMOVE w.box;
+                ADD sts.box { fillVertical = 2; }
+
+            }
+        }
+        ADD functions.box;
+    }
+}
+
+NAVIGATOR {
+    purchaseNavigator {
+        NEW purchaseLedgerNavigator 'Поступления' BEFORE purchaseMasterData {
+            ADD purchaseLedger;
+            ADD purchaseSkuStock;
+        }
+    }
+}
+
+//---------------------------------------------- Макросы для имплементаций -------------------------------------//
+
+META implementPurchaseLedgerCustom(concrete, skuProp, stockProp)
+    dateTimePurchaseLedger (ledger) += dateTime###concrete##Detail(ledger);
+    isPostedPurchaseLedger (ledger) += isPosted###concrete##Detail(ledger);
+    skuPurchaseLedger (ledger) += skuProp###concrete##Detail(ledger);
+    stockPurchaseLedger (ledger) += stockProp###concrete##Detail(ledger);
+    descriptionPurchaseLedger (ledger) += description###concrete##Detail(ledger);
+END
+META implementPurchaseLedger(concrete, skuProp, stockProp)
+    EXTEND CLASS concrete##Detail : PurchaseLedger;
+    @implementPurchaseLedgerCustom(concrete, skuProp, stockProp);
+END
+
+EXTEND FORM currentBalanceSkuStock PROPERTIES(s, st) averagePurchaseSkuStock READONLY;
+
+//---------------------------------------------- Расширение формы подбор товаров -------------------------------------//
+META defineSupplierDialogStockSku (form)
+
+    form###supplier = DATA SESSION LegalEntity ();
+    form###nameSupplier 'Поставщик' () = nameLegalEntity(form###supplier()) PREFCHARWIDTH 30;
+    form###suppliersFilter (sku) =  inSupplierSku(form###supplier(), sku) OR
+                                    (sku IS Sku AND NOT form###supplier());
+
+    EXTEND FORM form
+        PROPERTIES() form###nameSupplier
+        FILTERS form###suppliersFilter(s)
+
+    ;
+    EXTEND DESIGN form {
+        filterContainer {
+            ADD PROPERTY(form###nameSupplier());
+        }
+    }
+END
+@defineSupplierDialogStockSku(dialogSku);
+

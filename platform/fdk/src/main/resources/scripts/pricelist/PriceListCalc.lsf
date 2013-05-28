@@ -1,0 +1,119 @@
+MODULE PriceListCalc;
+
+REQUIRE PriceListLedger;
+
+NAMESPACE PriceList;
+
+CLASS CalcPriceListType 'Расчетный вид цены' : PriceListType;
+TABLE calcPriceListType (CalcPriceListType);
+
+nameCalcPriceListType 'Наименование' = DATA ISTRING[50](CalcPriceListType);
+namePriceListType(type) += nameCalcPriceListType(type) IF type IS CalcPriceListType;
+
+basePriceListTypeCalcPriceListType(type) = DATA BasePriceListType (CalcPriceListType);
+nameBasePriceListTypeCalcPriceListType 'Базовый вид цены' (type) = nameBasePriceListType(basePriceListTypeCalcPriceListType(type));
+
+ledgerPriceListTypePriceListType(type) += basePriceListTypeCalcPriceListType(type) AS LedgerPriceListType;
+
+includeVATCalcPriceListType 'Цена с НДС' = DATA BOOLEAN (CalcPriceListType);
+includeVATPriceListType(type) += includeVATCalcPriceListType(type);
+
+@defineDocumentHeaderCurrency(calcPriceListType);
+currencyPriceListType(calcPriceListType) += currencyCalcPriceListType(calcPriceListType);
+
+// ---------------- Надбавка по классификатору ------------------- //
+
+groupTypeCalcPriceListType = DATA GroupType (CalcPriceListType);
+nameGroupTypeCalcPriceListType 'Тип классификатора' (type) = nameGroupType(groupTypeCalcPriceListType(type));
+
+TABLE calcPriceListTypeGroup (CalcPriceListType, Group);
+dataMarkupCalcPriceListTypeGroup 'Надбавка, %' = DATA NUMERIC[8,2] (CalcPriceListType, Group);
+
+TABLE calcPriceListTypeSku (CalcPriceListType, Sku);
+dataMarkupCalcPriceListTypeSku 'Надбавка, % (перегруженная)' = DATA NUMERIC[8,2] (CalcPriceListType, Sku);
+
+levelParentMarkupGroup (calcPriceListType, group) = GROUP MIN levelGroupGroup(group, parent) IF dataMarkupCalcPriceListTypeGroup(calcPriceListType, parent)
+                                                              BY calcPriceListType, group PERSISTENT;
+nearestParentGroup (calcPriceListType, group) = groupGroupLevel(group, levelParentMarkupGroup(calcPriceListType, group));
+nearestMarkupCalcPriceListTypeGroup 'Расчетная надбавка, %' (calcPriceListType, group) =
+    dataMarkupCalcPriceListTypeGroup(calcPriceListType, nearestParentGroup(calcPriceListType, group)) PERSISTENT;
+
+markupCalcPriceListTypeGroup 'Надбавка, %' (type, group) =
+    OVERRIDE nearestMarkupCalcPriceListTypeGroup(type, group), dataMarkupCalcPriceListTypeGroup(type, group) PERSISTENT;
+
+markupCalcPriceListTypeSku 'Надбавка, %' (type, sku) = OVERRIDE
+    markupCalcPriceListTypeGroup(type, groupGroupTypeSku(groupTypeCalcPriceListType(type), sku)),
+    dataMarkupCalcPriceListTypeSku(type, sku);
+
+multiplierCalcPriceListTypeSku (type, sku) = (100 + markupCalcPriceListTypeSku(type, sku)) / 100 PERSISTENT;
+
+// --------------- Расчет значения цены --------------- //
+
+priceCalcPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
+    roundPriceRoundCondition(priceBasePriceListTypeSkuStockDateTime(basePriceListTypeCalcPriceListType(type), sku, stock, dateTime) * multiplierCalcPriceListTypeSku(type, sku), roundConditionPriceListType(type));
+priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
+    roundPriceRoundCondition(priceBasePriceListTypeBatchStockDateTime(basePriceListTypeCalcPriceListType(type), batch, stock, dateTime) * multiplierCalcPriceListTypeSku(type, skuBatch(batch)), roundConditionPriceListType(type));
+
+pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceCalcPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
+pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
+// ------------------------------------- Формы ---------------------------------- //
+
+backgroundMarkup 'Цвет' (calcPriceListType, group) = RGB(255,160,160) IF dataMarkupCalcPriceListTypeGroup(calcPriceListType, group);
+
+FORM calcPriceListType 'Расчетный вид цен'
+    OBJECTS c = CalcPriceListType FIXED PANEL
+    PROPERTIES(c) nameCalcPriceListType, includeVATPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType,
+                  nameRoundConditionPriceListType, nameGroupTypeCalcPriceListType
+
+    TREE treeGroup g=Group PARENT parentGroup
+    PROPERTIES READONLY nameGroup(g)
+    FILTERS groupTypeGroup(g) == groupTypeCalcPriceListType(c)
+    ORDER BY nameGroup(g)
+    PROPERTIES(c, g) dataMarkupCalcPriceListTypeGroup , nearestMarkupCalcPriceListTypeGroup
+
+    OBJECTS s = Sku
+    PROPERTIES(s) READONLY nameSku, idBarcodeSku
+    FILTERS isParentGroupSku(g, s) OR s IS Sku AND NOT g
+    PROPERTIES(c, s) dataMarkupCalcPriceListTypeSku, markupCalcPriceListTypeSku
+
+    EDIT CalcPriceListType OBJECT c
+;
+
+DESIGN calcPriceListType FROM DEFAULT{
+    NEW mainContainer{
+        childConstraints = TO THE BOTTOM;
+        ADD c.box{
+            fillHorizontal = 3.0;
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(nameCurrencyCalcPriceListType);
+        }
+        NEW groupContainer {
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY(nameGroupTypeCalcPriceListType);
+            NEW treeContainer{
+                type = SPLITH;
+                childConstraints = TO THE RIGHT;
+                ADD treeGroup.tree.box { fillHorizontal = 2.0; }
+                ADD s.box { fillHorizontal = 2.0; }
+            }
+        }
+    }
+    ADD functions.box;
+}
+
+FORM calcPriceListTypes 'Расчетный вид цены'
+    OBJECTS p = CalcPriceListType
+    PROPERTIES(p) READONLY nameCalcPriceListType, nameCurrencyCalcPriceListType, nameRoundConditionPriceListType
+    PROPERTIES(p) READONLY includeVATCalcPriceListType
+
+    DIALOG CalcPriceListType OBJECT p
+;
+
+addCalcPriceListType 'Добавить расчетную цену' = ACTION ADDFORM CalcPriceListType;
+editCalcPriceListType 'Редактировать' = ACTION EDITFORM CalcPriceListType;
+editPriceListType(priceListType) += editCalcPriceListType(priceListType);
+
+EXTEND FORM priceListTypes
+    PROPERTIES() TODRAW pt FORCE PANEL addCalcPriceListType
+;

@@ -1,0 +1,50 @@
+MODULE Shipment;
+
+REQUIRE Stock, Item, LegalEntity;
+
+CLASS Shipment 'Расходная накладная';
+CLASS ShipmentDetail 'Строка расходной накладной';
+
+shipmentShipmentDetail 'Документ строки' (shipmentDetail) = DATA Shipment(ShipmentDetail);
+indexShipmentDetail 'Номер строки' (shipmentDetail) =
+        PARTITION SUM 1 IF shipmentDetail IS ShipmentDetail BY shipmentShipmentDetail(shipmentDetail)
+        ORDER shipmentDetail;
+
+numberShipment 'Номер накладной' (shipment) = DATA STRING[10](Shipment);
+dateShipment 'Дата накладной' (shipment) = DATA DATE(Shipment);
+
+customerShipment 'Покупатель' (shipment) = DATA LegalEntity(Shipment);
+nameCustomerShipment 'Наименование покупателя' (shipment) = nameLegalEntity(customerShipment(shipment));
+
+stockShipment 'Склад' (shipment) = DATA Stock(Shipment);
+nameStockShipment 'Наименование склада' (shipment) = nameStock(stockShipment(shipment));
+
+itemShipmentDetail 'Товар' (shipmentDetail) = DATA Item(ShipmentDetail);
+nameItemShipmentDetail 'Наименование товара' (shipmentDetail) = nameItem(itemShipmentDetail(shipmentDetail));
+
+quantityShipmentDetail 'Количество' (shipmentDetail) = DATA NUMERIC[14,2](ShipmentDetail);
+priceShipmentDetail 'Цена продажи' (shipmentDetail) = DATA NUMERIC[17,2](ShipmentDetail);
+sumShipmentDetail 'Сумма продажи' (shipmentDetail) = quantityShipmentDetail(shipmentDetail)*priceShipmentDetail(shipmentDetail);
+
+priceShipmentDetail(shipmentDetail) <- salePriceItem(itemShipmentDetail(shipmentDetail)) WHEN CHANGED(itemShipmentDetail(shipmentDetail));
+
+FORM shipment 'Расходная накладная'
+	OBJECTS s=Shipment FIXED PANEL
+	PROPERTIES(s) numberShipment, dateShipment, nameCustomerShipment, nameStockShipment
+
+	OBJECTS d=ShipmentDetail
+	PROPERTIES(d) nameItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail READONLY, ADDOBJ, DELETESESSION
+	FILTERS shipmentShipmentDetail(d) == s
+
+	EDIT Shipment OBJECT s
+;
+
+FORM shipments 'Расходные накладные'
+	OBJECTS s=Shipment
+	PROPERTIES(s) READONLY numberShipment, dateShipment, nameCustomerShipment, nameStockShipment
+	PROPERTIES(s) ADDFORM, EDITFORM, DELETE
+
+	OBJECTS d=ShipmentDetail
+	PROPERTIES(d) READONLY nameItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail
+	FILTERS shipmentShipmentDetail(d) == s
+ ;

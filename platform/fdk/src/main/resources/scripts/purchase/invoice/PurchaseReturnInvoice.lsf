@@ -1,0 +1,113 @@
+MODULE PurchaseReturnInvoice;
+
+REQUIRE OrderInvoice,PurchaseReturnOrder, PurchaseOperation;
+
+PRIORITY Purchase, Operation;
+
+NAMESPACE PurchaseReturn;
+
+//----------------------------------------------- Накладная ---------------------------------------------------//
+
+@defineInvoice(' (закупка-возврат)', customerStock);
+@defineOrderInvoice(' (закупка-возврат)', customerStock);
+@defineOrderInvoiceAction (' (закупка-возврат)');
+
+@defineInvoiceBatch(customerStock);
+@defineInvoiceReturn(Purchase, PurchaseReturn, customerStock);
+
+@defineDocumentBatchPriceListType(userInvoice, customerStock);
+@extendFormDocumentBatch(userInvoice, userInvoice, i);
+@extendFormDocumentBatchAll(userInvoice, userInvoice, i);
+
+@defineInvoiceDestination(customer, supplier);
+@defineInvoiceStockDestination(customerStock, supplierStock);
+
+// вторая валюта
+@defineInvoiceHomeCurrency();
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineDocumentOperation(invoice, i);
+
+@defineDocumentOperationPriceListType(userInvoice, 'накладной (закупка-возврат)');
+
+@defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
+
+@defineDocumentOperationRole(userInvoice);
+
+@deriveDocumentOperationProperty(UserInvoice, isHomeCurrency);
+
+//------------------------------ Ограничение на выбор поставщиков -----------------------------//
+
+CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isSupplierLegalEntity(supplierUserInvoice(userInvoice))
+    CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся поставщиком';
+CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(customerUserInvoice(userInvoice))
+    CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя организация, не являющаяся компанией';
+
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+@defineDocumentSupplierCustomerStockAccess(UserInvoice, supplier, company, userInvoice);
+
+//------------------------------ Ввод в упаковках -----------------------------//
+
+@defineDocumentPack(invoice, i);
+Invoice.packQuantityInvoiceDetail(detail) += packQuantityInvoiceDetail(detail);
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerPack {
+            title = 'Упаковка';
+            ADD PROPERTY(showPackUserInvoice);
+        }
+    }
+}
+
+@defineOrderInvoicePack(showPack);
+
+@defineDocumentPackSku(userInvoice, sku, customerStock);
+@extendFormDocumentPackSku(userInvoice, userInvoice, i);
+
+overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
+    IF packBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
+        SET packQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+    }
+}
+overChangeQuantityValueBatchUserInvoiceDetail(detail) += ACTION (detail) {
+    IF packBarcodeSku(skuBatch(batchUserInvoiceDetail(detail))) THEN {
+        SET packQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+    }
+}
+
+// -- Операция
+@deriveDocumentOperationProperty(UserInvoice, showPack);
+
+//------------------------------ Расширение формы -----------------------------//
+
+EXTEND FORM userInvoice
+
+    FILTERGROUP filter
+        FILTER 'С остатком ' 'F10' prevCurrentBalanceSkuUserInvoice(ks, i) DEFAULT
+        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailSkuUserInvoice(ks, i)
+    FILTERGROUP filter2
+        FILTER 'С поступлением ' 'F8' quantityPurchaseSupplierSku(supplierUserInvoice(i), ks)
+        FILTER 'В ассортименте ' 'F7' companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(i, ks), ks, customerStockUserInvoice(i), dateTimeUserInvoice(i)) == supplierUserInvoice(i)
+;
+EXTEND FORM userInvoice
+
+    FILTERGROUP filter3
+        FILTER 'С остатком ' 'F10' prevCurrentBalanceBatchUserInvoice(b, i) DEFAULT
+        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailBatchUserInvoice(b, i)
+    FILTERGROUP filter4
+        FILTER 'С поступлением ' 'F8' quantityPurchaseSupplierSku(supplierUserInvoice(i), skuBatch(b))
+        FILTER 'В ассортименте ' 'F7' companyLedgerPriceListTypeBatchStockDateTime(priceListTypeUserInvoiceBatch(i, b), b, customerStockUserInvoice(i), dateTimeUserInvoice(i)) == supplierUserInvoice(i)
+;
+
+// Резервы
+@extendFormDocumentOrderLedger(userInvoice, userInvoice, customerStock, i);
+@extendFormDocumentOrderLedgerAll(userInvoice, userInvoice, i);
+
+NAVIGATOR {
+    purchaseReturnNavigator {
+        ADD invoices;
+    }
+}

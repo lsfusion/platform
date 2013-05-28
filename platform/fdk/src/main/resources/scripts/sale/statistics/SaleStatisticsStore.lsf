@@ -1,0 +1,41 @@
+MODULE SaleStatisticsStore;
+
+REQUIRE SaleStatistics, POS;
+
+NAMESPACE Sale;
+
+EXTEND FORM statisticalReport
+
+    PROPERTIES  FORCE PANEL sumCardDepartmentStoreDateFromTo(ts, dFrom, dTo), sumSaleDepartmentStoreDateFromTo(ts, dFrom, dTo)
+;
+EXTEND DESIGN statisticalReport {
+    row {
+        NEW row2 {
+        title = 'По отделу, cум..';
+        ADD PROPERTY(sumCardDepartmentStoreDateFromTo);
+        ADD PROPERTY(sumSaleDepartmentStoreDateFromTo);
+        }
+    }
+}
+
+retailSumCardLegalEntityRegionDateFromTo 'Продано с использованием банк. карточек' (legalEntity, region, dateFrom, dateTo) =
+    GROUP SUM  sumCardDepartmentStoreDateFromTo(stock, dateFrom, dateTo)
+        BY legalEntityStock(stock), regionStock(stock), dateFrom, dateTo;
+
+retailSumSaleLegalEntityRegionDateFromTo 'Продано по кассе' (legalEntity, region, dateFrom, dateTo) =
+    GROUP SUM  sumSaleDepartmentStoreDateFromTo(stock, dateFrom, dateTo)
+        BY legalEntityStock(stock), regionStock(stock), dateFrom, dateTo;
+
+EXTEND FORM torgSales
+    PROPERTIES(l, r, dFrom, dTo) retailSumSaleLegalEntityRegionDateFromTo, retailSumCardLegalEntityRegionDateFromTo
+;
+EXTEND DESIGN torgSales {
+    main {
+        NEW secondCase BEFORE functions.box {
+            childConstraints = TO THE RIGHT;
+            title = 'Суммы, руб.';
+            ADD PROPERTY(retailSumSaleLegalEntityRegionDateFromTo);
+            ADD PROPERTY(retailSumCardLegalEntityRegionDateFromTo);
+        }
+    }
+}

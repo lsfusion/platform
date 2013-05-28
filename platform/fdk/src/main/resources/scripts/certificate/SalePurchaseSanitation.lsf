@@ -1,0 +1,8 @@
+MODULE SalePurchaseSanitation;
+
+REQUIRE SaleSanitation, PurchaseSanitation, SalePurchaseInvoice;
+
+NAMESPACE Sale;
+
+Purchase.sanitationInvoiceDetail(detail) += sanitationInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));
+overFillInvoiceUserInvoiceDetailInvoiceDetail (sd, id) += ACTION SET Purchase.dataSanitationUserInvoiceDetail (sd) <- sanitationInvoiceDetail(id);

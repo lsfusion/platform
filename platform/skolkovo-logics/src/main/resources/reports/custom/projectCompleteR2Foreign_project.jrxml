@@ -1,0 +1,1050 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="project" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10"/>
+	<style name="BoldStyle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="true">
+		<paragraph rightIndent="3"/>
+	</style>
+	<style name="BoldStyle2" fontName="lsf.TimesNewRoman" fontSize="14" isBold="true"/>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Arial" fontSize="10" pdfFontName="lsf.TimesBD" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<parameter name="research_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="research_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="research_params" class="java.util.Map"/>
+	<parameter name="publications_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="publications_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="publications_params" class="java.util.Map"/>
+	<parameter name="cluster_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="cluster_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="cluster_params" class="java.util.Map"/>
+	<parameter name="patent_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="patent_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="patent_params" class="java.util.Map"/>
+	<parameter name="commercialization_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="commercialization_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="commercialization_params" class="java.util.Map"/>
+	<parameter name="analogues_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="analogues_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="analogues_params" class="java.util.Map"/>
+	<parameter name="specialist_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="specialist_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="specialist_params" class="java.util.Map"/>
+	<parameter name="objectives_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="objectives_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="objectives_params" class="java.util.Map"/>
+	<parameter name="mileStoneYear_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="mileStoneYear_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="mileStoneYear_params" class="java.util.Map"/>
+	<field name="project" class="java.lang.Integer"/>
+	<field name="nameProjectMissionProject" class="java.lang.String"/>
+	<field name="nativeCommentMissionProject" class="java.lang.String"/>
+	<field name="foreignCommentMissionProject" class="java.lang.String"/>
+	<field name="nativeResumeProject" class="java.lang.String"/>
+	<field name="foreignResumeProject" class="java.lang.String"/>
+	<field name="nameNativeContactProject" class="java.lang.String"/>
+	<field name="nameForeignContactProject" class="java.lang.String"/>
+	<field name="phoneContactProject" class="java.lang.String"/>
+	<field name="emailContactProject" class="java.lang.String"/>
+	<field name="nameNativeProject" class="java.lang.String"/>
+	<field name="nameForeignProject" class="java.lang.String"/>
+	<field name="nameNativeClaimerProject" class="java.lang.String"/>
+	<field name="nameForeignClaimerProject" class="java.lang.String"/>
+	<field name="nameNativeFinalClusterProject" class="java.lang.String"/>
+	<field name="nameForeignFinalClusterProject" class="java.lang.String"/>
+	<field name="nativeProblemProject" class="java.lang.String"/>
+	<field name="foreignProblemProject" class="java.lang.String"/>
+	<field name="nativeInnovativeProject" class="java.lang.String"/>
+	<field name="foreignInnovativeProject" class="java.lang.String"/>
+	<field name="nativeMarketTrendsProject" class="java.lang.String"/>
+	<field name="foreignMarketTrendsProject" class="java.lang.String"/>
+	<field name="linksMarketTrendsProject" class="java.lang.String"/>
+	<field name="linksAnalogProject" class="java.lang.String"/>
+	<field name="nativeRelevanceProject" class="java.lang.String"/>
+	<field name="foreignRelevanceProject" class="java.lang.String"/>
+	<field name="nativeBasicTechnologyProject" class="java.lang.String"/>
+	<field name="foreignBasicTechnologyProject" class="java.lang.String"/>
+	<field name="nativeCharacteristicsAnaloguesProject" class="java.lang.String"/>
+	<field name="foreignCharacteristicsAnaloguesProject" class="java.lang.String"/>
+	<field name="nativeCompaniesAnaloguesProject" class="java.lang.String"/>
+	<field name="foreignCompaniesAnaloguesProjec" class="java.lang.String"/>
+	<field name="nativeMarketIntroductionProject" class="java.lang.String"/>
+	<field name="foreignMarketIntroductionProject" class="java.lang.String"/>
+	<field name="linksMarketIntroductionProject" class="java.lang.String"/>
+	<field name="nativeCaseStudiesProject" class="java.lang.String"/>
+	<field name="foreignCaseStudiesProject" class="java.lang.String"/>
+	<field name="nativeHistoryProject" class="java.lang.String"/>
+	<field name="foreignHistoryProject" class="java.lang.String"/>
+	<field name="nativeDynamicsProject" class="java.lang.String"/>
+	<field name="foreignDynamicsProject" class="java.lang.String"/>
+	<field name="nativeGrantsProject" class="java.lang.String"/>
+	<field name="foreignGrantsProject" class="java.lang.String"/>
+	<field name="nativeLaboratoryProject" class="java.lang.String"/>
+	<field name="foreignLaboratoryProject" class="java.lang.String"/>
+	<field name="nativeInvestmentProject" class="java.lang.String"/>
+	<field name="foreignInvestmentProject" class="java.lang.String"/>
+	<field name="nativeGeneralizedPlanProject" class="java.lang.String"/>
+	<field name="foreignGeneralizedPlanProject" class="java.lang.String"/>
+	<field name="nativeResultsProject" class="java.lang.String"/>
+	<field name="foreignResultsProject" class="java.lang.String"/>
+	<field name="foreignProjectMissionProject" class="java.lang.String"/>
+	<field name="linksForeignMarketIntroductionProject" class="java.lang.String"/>
+	<field name="isFileForeignTechnicalDescriptionProject" class="java.lang.Boolean"/>
+	<field name="emailClaimerProject" class="java.lang.String"/>
+	<field name="firmNameForeignClaime" class="java.lang.String"/>
+	<field name="phoneClaimerProject" class="java.lang.String"/>
+	<field name="addressClaimerProject" class="java.lang.String"/>
+	<field name="postAddressClaimerProject" class="java.lang.String"/>
+	<field name="siteClaimerProject" class="java.lang.String"/>
+	<field name="emailFirmClaimerProject" class="java.lang.String"/>
+	<field name="OGRNClaimerProject" class="java.lang.String"/>
+	<field name="INNClaimerProject" class="java.lang.String"/>
+	<field name="isStatusProject" class="java.lang.Boolean"/>
+	<field name="nameForeignJoinClaimerProject" class="java.lang.String"/>
+	<field name="webHost" class="java.lang.String"/>
+	<variable name="npp" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[0]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
+	</variable>
+	<group name="captionGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{project})]]></groupExpression>
+		<groupHeader>
+			<band height="28" splitType="Prevent">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle2" positionType="Float" x="10" y="0" width="194" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["GENERAL INFORMATION"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				</line>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="textGroup1" isStartNewPage="true">
+		<groupExpression><![CDATA[String.valueOf($F{project})]]></groupExpression>
+		<groupHeader>
+			<band height="23">
+				<printWhenExpression><![CDATA[($F{isStatusProject}!=null && $F{firmNameForeignClaime}!=null)]]></printWhenExpression>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Name of applicant:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nameForeignJoinClaimerProject}]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="23">
+				<printWhenExpression><![CDATA[($F{isStatusProject}!=null && $F{firmNameForeignClaime}!=null)]]></printWhenExpression>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Brand name:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{firmNameForeignClaime}]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="23">
+				<printWhenExpression><![CDATA[$F{isStatusProject}!=null && $F{phoneClaimerProject}!=null]]></printWhenExpression>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{phoneClaimerProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Phone of applicant:"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="23">
+				<printWhenExpression><![CDATA[$F{isStatusProject}!=null && $F{addressClaimerProject}!=null]]></printWhenExpression>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{addressClaimerProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Address of applicant:"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="23">
+				<printWhenExpression><![CDATA[$F{isStatusProject}!=null && $F{postAddressClaimerProject}!=null]]></printWhenExpression>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{postAddressClaimerProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Mailing address of applicant:"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="23">
+				<printWhenExpression><![CDATA[$F{isStatusProject}!=null && $F{siteClaimerProject}!=null]]></printWhenExpression>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{siteClaimerProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Website of applicant:"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="23">
+				<printWhenExpression><![CDATA[$F{isStatusProject}!=null && $F{emailClaimerProject}!=null]]></printWhenExpression>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{emailClaimerProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["E-mail of applicant:"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="23">
+				<printWhenExpression><![CDATA[$F{isStatusProject}!=null && $F{emailFirmClaimerProject}!=null]]></printWhenExpression>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{emailFirmClaimerProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["E-mail organization:"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="23">
+				<printWhenExpression><![CDATA[$F{isStatusProject}!=null && $F{OGRNClaimerProject}!=null]]></printWhenExpression>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{OGRNClaimerProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["BIN applicant:"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="23">
+				<printWhenExpression><![CDATA[$F{isStatusProject}!=null && $F{INNClaimerProject}!=null]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["INN applicant"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{INNClaimerProject}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="55">
+				<printWhenExpression><![CDATA[$F{isStatusProject}!=null]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="378" y="0" width="170" height="18" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Link to extract"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=extractClaimerProject&params="+$F{project}]]></hyperlinkReferenceExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="165" y="0" width="213" height="18" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Link to constituent documents"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=constituentClaimerProject&params="+$F{project}]]></hyperlinkReferenceExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="150" height="18" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Link to file statements"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=statementClaimerProject&params="+$F{project}]]></hyperlinkReferenceExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="49" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="165" y="23" width="213" height="25" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Link to file the written consent of the applicant"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=fileWrittenConsentClaimerProject&params="+$F{project}]]></hyperlinkReferenceExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="23" width="150" height="25" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["The link to the protocol of the meeting of the expert collegium"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=fileMinutesOfMeetingExpertCollegiumProject&params="+$F{project}]]></hyperlinkReferenceExpression>
+				</textField>
+			</band>
+			<band height="69" splitType="Prevent">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="24" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Specify what is the purpose of your project:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="24" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignProjectMissionProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="46" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignCommentMissionProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="46" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Comment to the goal of your project"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="65" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="42" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nameForeignProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Name of project"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Name of Applicant (Applicant for Preliminary Examination)"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nameForeignClaimerProject}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band>
+				<subreport>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+					<parametersMapExpression><![CDATA[$P{cluster_params}]]></parametersMapExpression>
+					<dataSourceExpression><![CDATA[$P{cluster_source}]]></dataSourceExpression>
+					<subreportExpression><![CDATA[$P{cluster_report}]]></subreportExpression>
+				</subreport>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignResumeProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["A brief summary of the project (5 offers) with the existing developments and the main objectives of the project."]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="80">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="52" width="217" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nameForeignContactProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Contact person for the project (the person who fills in the questionnaire):"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="227" y="52" width="151" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{phoneContactProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="378" y="52" width="170" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{emailContactProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="26" width="217" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Name"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="227" y="26" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Telephone"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="378" y="26" width="170" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["e-mail"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="78">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle2" positionType="Float" x="10" y="0" width="217" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["PROBLEMS AND SOLUTIONS"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="52" width="538" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignProblemProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Describe the problem addressed by the project:"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="20" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="71" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
+			</band>
+			<band>
+				<subreport>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+					<parametersMapExpression><![CDATA[$P{research_params}]]></parametersMapExpression>
+					<dataSourceExpression><![CDATA[$P{research_source}]]></dataSourceExpression>
+					<subreportExpression><![CDATA[$P{research_report}]]></subreportExpression>
+				</subreport>
+			</band>
+			<band height="48">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["As the project addresses the problem and what is the innovative approach:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignInnovativeProject}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="41" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Describe the main technological and market trends in this sector"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignMarketTrendsProject}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="48">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{linksMarketTrendsProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Give reference to relevant studies and materials:"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="41" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="48">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{linksAnalogProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["If, for links to directly related to the project, Russian and (or) foreign patents, the owner of which are third parties, as well as links to directly related to the project developed algorithms, protocols, software and (or) database exclusive rights that belong to third parties. Under the direct relevance to the project of intellectual property here and below refers to the intellectual property that provide similar or identical technical effect "]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="41" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="50">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignRelevanceProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Give a rationale for the project's relevance:"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="78">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle2" positionType="Float" x="10" y="0" width="538" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["TECHNOLOGY AND (OR) APPLIED RESEARCH"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Describe the basic technology and (or) Applied research"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="52" width="538" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignBasicTechnologyProject}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="20" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="71" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
+			</band>
+			<band>
+				<subreport>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+					<parametersMapExpression><![CDATA[$P{publications_params}]]></parametersMapExpression>
+					<dataSourceExpression><![CDATA[$P{publications_source}]]></dataSourceExpression>
+					<subreportExpression><![CDATA[$P{publications_report}]]></subreportExpression>
+				</subreport>
+			</band>
+			<band>
+				<subreport>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+					<parametersMapExpression><![CDATA[$P{patent_params}]]></parametersMapExpression>
+					<dataSourceExpression><![CDATA[$P{patent_source}]]></dataSourceExpression>
+					<subreportExpression><![CDATA[$P{patent_report}]]></subreportExpression>
+				</subreport>
+			</band>
+			<band height="22">
+				<printWhenExpression><![CDATA[$F{isFileForeignTechnicalDescriptionProject}!=null]]></printWhenExpression>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["See Annex 1"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="30">
+				<subreport>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="25" width="0" height="0"/>
+					<parametersMapExpression><![CDATA[$P{commercialization_params}]]></parametersMapExpression>
+					<dataSourceExpression><![CDATA[$P{commercialization_source}]]></dataSourceExpression>
+					<subreportExpression><![CDATA[$P{commercialization_report}]]></subreportExpression>
+				</subreport>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle2" positionType="Float" x="10" y="0" width="538" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["MAP COMMERCIALIZATION (INCLUDING APPLIEDRESEARCH)"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
+			</band>
+			<band height="50">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Give, if any, examples of successful companies, transactions involving the sale of these companies, examples of investments by venture capital funds and strategic investors in similar projects / companies, or if you are engaged in applied research, provide case studies of similar research and development into production: "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignCaseStudiesProject}]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="30">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle2" positionType="Float" x="10" y="0" width="538" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["COMPETITIVE SOLUTIONS"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="20" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
+			</band>
+			<band>
+				<subreport>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+					<parametersMapExpression><![CDATA[$P{analogues_params}]]></parametersMapExpression>
+					<dataSourceExpression><![CDATA[$P{analogues_source}]]></dataSourceExpression>
+					<subreportExpression><![CDATA[$P{analogues_report}]]></subreportExpression>
+				</subreport>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Describe the characteristics of the market these similar solutions"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignCharacteristicsAnaloguesProject}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="50">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["List the research groups, institutions, companies engaged in similar or close to design and describe what is to your advantage, or if you are engaged in applied research, provide examples of such applied research in leading universities and, if available, tentative agreement with them on collaborative research:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignCompaniesAnaloguesProjec}]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="78">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Specify the markets in which potentially can be implemented by the project (list the countries, regions, indicate the main consumers, evaluate the approximate amount of the market, its dynamics, positioning your future on it)"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle2" positionType="Float" x="10" y="0" width="538" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["OPTIONS MARKET"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="52" width="538" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignMarketIntroductionProject}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="71" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
+			</band>
+			<band height="50">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Give reference to relevant market research (in Russian or English)"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{linksForeignMarketIntroductionProject}]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="30">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle2" positionType="Float" x="10" y="0" width="538" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["TEAM"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
+			</band>
+			<band>
+				<subreport>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+					<parametersMapExpression><![CDATA[$P{specialist_params}]]></parametersMapExpression>
+					<dataSourceExpression><![CDATA[$P{specialist_source}]]></dataSourceExpression>
+					<subreportExpression><![CDATA[$P{specialist_report}]]></subreportExpression>
+				</subreport>
+			</band>
+			<band height="56">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle2" positionType="Float" x="10" y="0" width="538" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["RESOURCES"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="30" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignHistoryProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["The history of the project:"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="20" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="49" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["The dynamics of the project:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignDynamicsProject}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Have you and (or) the project team grants for this or similar subjects? (Date, amount, nature of projects, results):"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignGrantsProject}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignLaboratoryProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Laboratory (Describe laboratory infrastructure platform, which is / will the project)"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="30">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignInvestmentProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Attention was whether the venture capital and (or) other funding? (Investors, the sum of the results):"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="56">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle2" positionType="Float" x="10" y="0" width="538" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["OBJECTIVES"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="30" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignResultsProject}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Enter the current status of the project (what the results have been achieved and what they are confirmed):"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="20" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="10" y="49" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
+			</band>
+			<band>
+				<subreport>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+					<parametersMapExpression><![CDATA[$P{objectives_params}]]></parametersMapExpression>
+					<dataSourceExpression><![CDATA[$P{objectives_source}]]></dataSourceExpression>
+					<subreportExpression><![CDATA[$P{objectives_report}]]></subreportExpression>
+				</subreport>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["The plan of the project"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band>
+				<subreport>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+					<parametersMapExpression><![CDATA[$P{mileStoneYear_params}]]></parametersMapExpression>
+					<dataSourceExpression><![CDATA[$P{mileStoneYear_source}]]></dataSourceExpression>
+					<subreportExpression><![CDATA[$P{mileStoneYear_report}]]></subreportExpression>
+				</subreport>
+			</band>
+			<band height="30">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="5" width="151" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["A generalized plan of future development (up to achieving commercial results):"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="5" width="383" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{foreignGeneralizedPlanProject}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="10" y="24" width="538" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.25" lineStyle="Dotted"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="22">
+				<printWhenExpression><![CDATA[$F{isFileForeignTechnicalDescriptionProject}!=null && false]]></printWhenExpression>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement textAlignment="Right" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Annex 1, paragraph \n" +
+"«Technology and (or) the direction of applied research»"]]></textFieldExpression>
+				</textField>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
+			</band>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="50">
+			<textField>
+				<reportElement x="10" y="0" width="313" height="35"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="lsf.TimesNewRoman" size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Project Summary"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+</jasperReport>

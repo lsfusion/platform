@@ -1,0 +1,33 @@
+MODULE ItemPharmacy;
+
+REQUIRE Item;
+
+NAMESPACE Item;
+
+GROUP itemPharmacyGroup 'Фармакологические свойства';
+
+// Действующее вещество
+CLASS Substance 'Действующее вещество';
+TABLE substance(Substance);
+
+nameSubstance 'Наименование' = DATA ISTRING[50](Substance);
+
+FORM substance 'Действующие вещества'
+    OBJECTS t=Substance FIXED PANEL
+    PROPERTIES(t) nameSubstance
+    EDIT Substance OBJECT t
+;
+
+FORM substances 'Действующие вещества'
+    OBJECTS t=Substance
+    PROPERTIES(t) nameSubstance READONLY, DELETE
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameSubstance
+    DIALOG Substance OBJECT t
+;
+DESIGN substances FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
+@defineObjectItemAttribute(substance, Substance, nameSubstance, 'Действующее вещество', itemPharmacyGroup);
+@defineObjectItemAttributeBatch (substance, nameSubstance, 'Действующее вещество');
+
+EXTEND DESIGN item { itemPrimaryColumn1 { ADD i.itemPharmacyGroup; } }

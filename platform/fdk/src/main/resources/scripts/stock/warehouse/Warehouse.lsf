@@ -1,0 +1,142 @@
+MODULE Warehouse;
+
+REQUIRE System,
+        Stock,
+        Hierarchy,
+        WriteOff,
+        LegalEntity;
+
+// ----------------------------------------- Группы складов ------------------------------ //
+CLASS WarehouseGroup 'Группа складов' : StockGroup;
+TABLE warehouseGroup (WarehouseGroup);
+
+nameWarehouseGroup 'Наименование' = DATA ISTRING[150](WarehouseGroup);
+
+nameStockGroup(group) += nameWarehouseGroup(group) IF group IS WarehouseGroup;
+
+TABLE warehouseGroupWarehouseGroup(WarehouseGroup, WarehouseGroup);
+@defineHierarchy(warehouseGroup);
+parentStockGroup (stockGroup) += parentWarehouseGroup (stockGroup);
+
+// ----------------------------------------- Склады ------------------------------ //
+
+CLASS Warehouse 'Склад' : Stock;
+TABLE warehouse(Warehouse);
+
+nameWarehouse 'Наименование' = DATA ISTRING[150](Warehouse) INDEXED;
+
+nameStock(stock) += nameWarehouse(stock) IF stock IS Warehouse;
+
+warehouseGroupWarehouse (warehouse) = DATA WarehouseGroup (Warehouse) INDEXED AUTOSET;
+nameWarehouseGroupWarehouse 'Группа складов' (warehouse) = nameWarehouseGroup(warehouseGroupWarehouse(warehouse)) IN base;
+isParentWarehouseGroupWarehouse (warehouseGroup, warehouse) =
+    isParentWarehouseGroupWarehouseGroup(warehouseGroupWarehouse(warehouse), warehouseGroup) PERSISTENT;
+stockGroupStock (stock) += warehouseGroupWarehouse (stock);
+
+legalEntityWarehouse (warehouse) = DATA LegalEntity (Warehouse) INDEXED NOT NULL;
+nameLegalEntityWarehouse 'Организация' (warehouse) = nameLegalEntity(legalEntityWarehouse(warehouse)) IN base;
+legalEntityStock (stock) += legalEntityWarehouse(stock);
+
+userLegalEntityWarehouse 'Отм.' = DATA BOOLEAN (LegalEntity, Warehouse);
+userLegalEntityStock(legalEntity, stock) += userLegalEntityWarehouse(legalEntity, stock);
+
+addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (Warehouse);
+addressStock(stock) += addressWarehouse(stock);
+
+latitudeWarehouse 'Координата X' = DATA NUMERIC[10,5](Warehouse);
+longitudeWarehouse 'Координата Y' = DATA NUMERIC[10,5](Warehouse);
+
+latitudePOI (warehouse) += latitudeWarehouse(warehouse);
+longitudePOI (warehouse) += longitudeWarehouse(warehouse);
+
+explicitBatchLedgerWarehouse 'Партионный учет' = DATA BOOLEAN (Warehouse);
+explicitBatchLedgerStock(stock) += explicitBatchLedgerWarehouse(stock);
+
+quantityDaysCloseWarehouse 'Срок автоматического закрытия заказов' = DATA INTEGER(Warehouse);
+quantityDaysCloseOrdersStock(stock) += quantityDaysCloseWarehouse(stock);
+
+// -------------------------------------------------- Формы ----------------------------------------- //
+
+FORM warehouseGroup 'Группа складов'
+
+    OBJECTS           w=WarehouseGroup FIXED PANEL
+    PROPERTIES(w)     nameWarehouseGroup, nameParentWarehouseGroup
+    ORDER BY          nameWarehouseGroup
+
+    EDIT WarehouseGroup OBJECT w
+;
+
+FORM warehouse 'Склад'
+
+    OBJECTS           w=Warehouse FIXED PANEL
+    PROPERTIES(w)     nameWarehouse, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock,
+                      explicitBatchLedgerWarehouse, latitudeWarehouse, longitudeWarehouse, showOnMapPOI, quantityDaysCloseWarehouse
+    ORDER BY          nameWarehouse
+
+    OBJECTS           e = Employee
+    PROPERTIES(e)     READONLY firstNameContact, lastNameContact
+    PROPERTIES(e)     ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
+    FILTERS           inEmployeeDivisionEmployee(w, e)
+
+    EDIT Warehouse OBJECT w
+;
+DESIGN warehouse FROM DEFAULT{
+    main {
+        ADD w.box;
+        ADD e.box;
+        ADD functions.box;
+    }
+}
+
+editWarehouse 'Редактировать' = ACTION EDITFORM Warehouse;
+editStock(stock) += editWarehouse(stock);
+
+editSessionWarehouse 'Редактировать' = ACTION EDITFORM SESSION Warehouse;
+editSessionStock(stock) += editSessionWarehouse(stock);
+
+FORM warehouses 'Склады'
+
+    TREE warehouseTree b=STRING[3], wg = WarehouseGroup PARENT parentWarehouseGroup
+    PROPERTIES READONLY OBJVALUE(b), wgTreeName = nameWarehouseGroup(wg)
+    PROPERTIES(wg) ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
+    ORDER BY wgTreeName
+    FILTERS stringEqualsAll(b)
+
+    OBJECTS w=Warehouse
+    PROPERTIES(w) READONLY nameWarehouse, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, latitudePOI, longitudePOI
+    PROPERTIES(w) ADDFORM, EDITFORM, deletew=DELETE
+    ORDER BY nameWarehouse
+    FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS Warehouse AND wg IS WarehouseGroup AND NOT warehouseGroupWarehouse(w)) OR (w IS Warehouse AND NOT wg)
+;
+@extendFormFilterStockAccess(Warehouse, w, warehouses);
+@extendFormFilterStockGroupAccess(WarehouseGroup, wg, warehouses, countAccessEmployeeEmployeeDivisionGroup);
+
+DESIGN warehouses FROM DEFAULT{
+
+    NEW mainContainer{
+        type = SPLITH;
+        childConstraints = TO THE RIGHT;
+        ADD warehouseTree.tree.box;
+        ADD w.box{fillHorizontal = 2.0;}
+    }
+    ADD functions.box;
+}
+
+addWarehouseLegalEntity 'Добавить склад' = ACTION (legalEntity) {
+
+    FOR ADDOBJ wr = Warehouse DO {
+        SET legalEntityWarehouse(wr) <- legalEntity;
+        FORM warehouse OBJECTS w = wr DOCKEDMODAL;
+    }
+}
+
+EXTEND FORM legalEntity
+
+    PROPERTIES addWarehouseLegalEntity(l) TODRAW st FORCE PANEL TOOLBAR
+;
+
+NAVIGATOR {
+    stockMasterData {
+        ADD warehouses;
+    }
+}

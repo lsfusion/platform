@@ -1,0 +1,419 @@
+body, textarea, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
+.messageBox-messageContainer, .ResizableWindow-header, .captionPanelLegend, .checkBoxFilter, .comboBoxFilter,
+.filterDialogHeader, .customFontPresenter {
+    font-size: 8pt;
+}
+
+body, html {
+    margin: 0;
+}
+
+button::-moz-focus-inner {  /*Remove button padding in FF*/
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+/* ------------ Default gwt overrides ------------ */
+.gwt-Button {
+    margin: 2px;
+    height: 30px;
+    white-space: nowrap;
+}
+
+.gwt-TextBox {
+    margin: 2px;
+    height: 15px;
+}
+
+input[type=checkbox] {
+    vertical-align: middle;
+    position: relative;
+    bottom: 2px;
+}
+
+textarea {
+    font-family: Arial Unicode MS, Arial, sans-serif;
+}
+
+/* ------------ Tab panel ------------ */
+.gwt-TabLayoutPanel .gwt-TabLayoutPanelTabs {
+    padding-top: 0;
+    top: 0;
+}
+
+.gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
+    padding: 2px;
+    border-top: 1px solid white;
+}
+
+.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
+    padding: 2px 3px 4px 5px;
+}
+
+.gwt-TabPanel {
+    padding-bottom: 0.4em;
+}
+
+.gwt-TabPanelBottom {
+    padding: 1px;
+    overflow: visible; /* вероятно помогает избежать непрерывной перерисовки в FF */
+}
+
+.gwt-DecoratorPanel .middleCenter {
+    height: 100%;
+    width: 100%;
+}
+
+.closeTabButton {
+    height: 17px;
+    width: 17px;
+    padding: 0 0 2px 0;
+    margin-left: 2px;
+    border: 0;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    background: transparent;
+    color: #000000;
+    font-size: 8pt;
+    font-family: tahoma;
+    font-weight: bold;
+    cursor: pointer;
+    cursor: hand;
+}
+
+.closeTabButton:hover {
+    background: #CCCCCC;
+}
+
+.closeTabButton[disabled] {
+    cursor: default;
+    color: #a9a9a9;
+}
+
+/* ------------ Message box styles ------------ */
+.messageBox-button {
+    width: 90px;
+}
+
+.messageBox-messageContainer {
+    height: auto;
+    overflow: auto;
+    margin-bottom: 10px;
+}
+
+/* ------------ Resizable window ------------ */
+.dragdrop-boundary {
+    /*background-color: #F8F8F8; *//* light gray */
+    /*border: 1px solid black;*/
+}
+
+.dragdrop-selected, .dragdrop-dragging {
+    filter: none;
+    opacity: 1;
+}
+
+.ResizableWindow {
+    position: absolute;
+    background-color: #FFFFFF; /* prevent transparency */
+}
+
+.ResizableWindow .ResizableWindow-header {
+    background: #F1F1F1;
+    padding: 2px 0px 2px 0px;
+    cursor: default;
+    font-family: Arial Unicode MS, Arial, sans-serif;
+    font-weight: bold;
+    border-bottom: 1px solid #bbbbbb;
+    overflow: hidden;
+}
+
+@sprite .ResizableWindow .resize-edge {
+    gwt-image: "dragger";
+    background-repeat: repeat;
+    line-height: 1px;
+    width: auto;
+    height: auto;
+}
+
+.ResizableWindow .resize-edge-nw .dragdrop-handle {
+    cursor: nw-resize;
+}
+
+.ResizableWindow .resize-edge-n .dragdrop-handle {
+    cursor: n-resize;
+}
+
+.ResizableWindow .resize-edge-ne .dragdrop-handle {
+    cursor: ne-resize;
+}
+
+.ResizableWindow .resize-edge-w .dragdrop-handle {
+    cursor: w-resize;
+}
+
+.ResizableWindow .resize-edge-e .dragdrop-handle {
+    cursor: e-resize;
+}
+
+.ResizableWindow .resize-edge-sw .dragdrop-handle {
+    cursor: sw-resize;
+}
+
+.ResizableWindow .resize-edge-s .dragdrop-handle {
+    cursor: s-resize;
+}
+
+.ResizableWindow .resize-edge-se .dragdrop-handle {
+    cursor: se-resize;
+}
+
+/* ------------ Panel Renderer related styles ------------ */
+.labelBasedPanelRendererValueLabel {
+    border: 1px solid #808080;
+    margin: 2px;
+}
+
+.dataPanelRendererGridPanel {
+    border: 1px solid #808080;
+    margin: 2px;
+    min-height: 1px !important;
+}
+
+.dataPanelRendererPanel {
+    padding: 0 2px;
+    white-space: nowrap;
+}
+
+.panelActionProperty {
+    padding: 1px 5px;
+    display: block; /*убираем лишние пикселы снизу при нахождении в ячейке таблицы*/
+}
+
+/* ------------ Caption panel ------------ */
+.captionPanel {
+    padding-top: 0.75em;
+    padding-bottom: 0.15em;
+}
+
+.captionPanelContainer {
+    border: 2px groove threedface;
+    position: relative;
+    padding: 0.5em 0 0.1em 0;
+    border-radius: 5px;
+}
+
+.captionPanelLegend {
+    white-space: nowrap;
+    left: 0.5em;
+    top: -0.9em;
+    position: absolute;
+    padding: 0 0.25em;
+    background-color: white;
+}
+
+/* ------------ Form containers ------------ */
+.hSplitPanelContents {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.vSplitPanelContents {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.flowPanelChildLeftAlign {
+    float: left;
+}
+
+.flowPanelChildRightAlign {
+    float: right;
+}
+
+/* ------------ Navigator windows  ------------ */
+
+.verticaToolbar {
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.horizontalToolbar {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.toolbarNavigatorButton {
+    border: solid 1px transparent;
+    background: transparent;
+    display: block;
+}
+
+.toolbarSelectedNavigatorButton {
+    border-color: #dcdcdc;
+    background-color: #F9F9FF;
+}
+
+.toolbarNavigatorButton:hover {
+    border: solid 1px #CECECE;
+    background: #D0DFED;
+}
+
+.panelNavigatorView {
+    display: block;
+}
+
+/* ------------ Form "dockables"  ------------ */
+.dockableBlockingMask {
+    background: black;
+    opacity: 0.3;
+}
+
+/* ------------ Filters ------------ */
+.checkBoxFilter {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.comboBoxFilter {
+    margin-top: 2px;
+}
+
+.dataFilterValueTablePanel {
+    border: 1px solid black;
+    margin: 2px;
+    min-height: 16px !important;
+}
+
+.filterDialogHeader {
+    height: 18px;
+    padding: 4px 5px 4px 4px !important;
+}
+
+.filterDialogHeaderButton {
+    margin: 0;
+}
+
+/* ------------ Popups  ------------ */
+.popup {
+    background-color: #F0F0FF;
+    border: 1px outset;
+    padding: 2px;
+}
+
+.popup-sumBox {
+    padding: 2px;
+    text-align: right;
+    width: 8em;
+}
+
+/* ------------ File upload dialog  ------------ */
+.dropFilesLabel {
+    margin-top: 6px;
+    padding-top: 28px;
+    padding-bottom: 28px;
+    font-family: verdana, arial, sans-serif;
+    font-size: 12px;
+    color: #2d4b6d;
+    font-weight: bold;
+    text-align: center;
+    display: block;
+    border: 2px dashed #888888;
+    border-radius: 7px;
+}
+
+.dropFilesLabelHover {
+    border: 2px solid #444444;
+    color: #7c9647;
+}
+
+.gwt-ProgressBar-shell {
+    border: 1px solid #faf9f7;
+    border-right: 1px solid #848280;
+    border-bottom: 1px solid #848280;
+    background-color: #AAAAAA;
+    width: 50%;
+    height: 12pt;
+}
+
+.gwt-ProgressBar-shell .gwt-ProgressBar-bar {
+    background-color: #67A7E3;
+}
+
+.gwt-ProgressBar-shell .gwt-ProgressBar-text {
+    padding: 0px;
+    margin: 0px;
+    color: white;
+    font-size: 8pt;
+}
+
+.upFileNameLabel {
+    white-space: nowrap;
+}
+
+.uploadDialogContainer {
+    outline: none;
+    height: 100%;
+}
+
+/* ------------ Loading blocker  ------------ */
+.messageCanvas {
+    position: absolute;
+    background-color: rgba(226, 226, 226, 0.74);
+    padding: 8px;
+    overflow: hidden;
+}
+
+.messageLabel {
+    word-wrap: break-word;
+}
+
+/* ------------ Other components  ------------ */
+.formController {
+    overflow: auto !important;
+}
+
+.gridResizePanel{
+    min-height: 130px !important;
+}
+
+.toolbarButton {
+    height: 20px;
+    width: 20px;
+    padding: 1px;
+    display: block;
+}
+
+.logPanel {
+    white-space: nowrap;
+}
+
+.errorLogMessage {
+    color: #ff4500;
+}
+
+.dateTimeEditorBox {
+    width: 11em;
+    padding: 2px;
+    text-align: right;
+    float: right;
+}
+
+.boxSized {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.displayBlock {
+    display: block;
+}
+
+.noOutline {
+    outline: none;
+}
+
+.nullValueString {
+    color: #A7A7A7;
+}

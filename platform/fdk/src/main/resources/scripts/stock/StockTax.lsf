@@ -1,0 +1,60 @@
+MODULE StockTax;
+
+REQUIRE System, Stock, Tax, Country;
+
+NAMESPACE Stock;
+
+//------------------------- НДС -------------------------//
+
+VATSkuCountryDate = ABSTRACT Range (Sku, Country, DATE) COMPLEX;
+
+META deriveDocumentDetailVAT (concrete, prefixP, dateProp,  skuProp, stockProp)
+    prefixP###VAT###concrete##Detail(detail) <- VATSkuCountryDate (skuProp###concrete##Detail(detail), countryStock(stockProp###concrete##Detail(detail)), dateProp###concrete##Detail(detail))
+        WHEN DO CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED (stockProp###concrete##Detail(detail)) OR CHANGED (dateProp###concrete##Detail(detail));
+END
+META deriveDocumentDetailVAT (concrete, prefixP, dateProp)
+    @deriveDocumentDetailVAT (concrete, prefixP, dateProp,  sku, departmentStore);
+END
+META deriveDocumentDetailVAT (concrete, prefixP)
+    @deriveDocumentDetailVAT (concrete, prefixP, date);
+END
+
+//НДС расчетный
+META defineDocumentHeaderTax (object, taxSID, taxCaption, prefix)
+    prefix###taxSID###object = DATA Range(###object);
+    number###prefix###taxSID###object taxCaption (object) = numberRange(prefix###taxSID###object(object)) IN documentPrmGroup;
+    value###prefix###taxSID###object taxCaption (object) = valueRateRangeDate (prefix###taxSID###object(object),  date###object(object)) IN documentPrmGroup;
+END
+META defineDocumentAbstractHeaderTax (object, taxSID, taxCaption, prefix)
+    prefix###taxSID###object = ABSTRACT Range(###object);
+    number###prefix###taxSID###object taxCaption (object) = numberRange(prefix###taxSID###object(object)) IN documentPrmGroup;
+    value###prefix###taxSID###object taxCaption (object) = valueRateRangeDate(prefix###taxSID###object(object), date###object(object)) IN documentPrmGroup;
+END
+META defineDocumentInterfaceHeaderTAX (object, taxSID, taxCaption, prefix)
+    @defineDocumentAbstractHeaderTax (object, taxSID, taxCaption, prefix);
+    @defineDocumentHeaderTax (user###object, taxSID, taxCaption, prefix);
+    prefix###taxSID###object (object) += prefix###taxSID###user###object(object);
+END
+
+META defineDocumentHeaderTAX(object, taxSID, taxCaption)
+    @defineDocumentHeaderTAX(object, taxSID, taxCaption, );
+END
+META defineDocumentAbstractHeaderTAX(object, taxSID, taxCaption)
+    @defineDocumentAbstractHeaderTAX(object, taxSID, taxCaption, );
+END
+META defineDocumentInterfaceHeaderTAX(object, taxSID, taxCaption)
+    @defineDocumentInterfaceHeaderTAX(object, taxSID, taxCaption, );
+END
+META deriveDocumentDetailVATHeader(object, taxSID, stockProp, skuProp, dateProp)
+    taxSID###object###Detail (object###Detail) <-
+        IF taxSID###object(object###object###Detail(object###Detail))
+            THEN taxSID###object(object###object###Detail(object###Detail))
+            ELSE VATSkuCountryDate (skuProp###object##Detail(object###detail), countryStock(stockProp###object##Detail(object###detail)), dateProp###object##Detail(object###detail))
+        WHEN DO CHANGED(taxSID###object(object###object###Detail(object###Detail))) OR
+             CHANGED(dateProp###object##Detail(object###detail)) OR
+             CHANGED(stockProp###object##Detail(object###detail)) OR
+             CHANGED(skuProp###object##Detail(object###detail));
+END
+META deriveDocumentDetailVATHeader(object, taxSID, stockProp)
+    @deriveDocumentDetailVATHeader(object, taxSID, stockProp, sku, date);
+END

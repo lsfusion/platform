@@ -1,0 +1,31 @@
+* {
+    font-size: 13px !important;
+}
+
+/* StretchImgButton */
+.confirmButton,
+.confirmButtonSelected,
+.confirmButtonSelectedOver,
+.confirmButtonOver,
+.confirmButtonDown,
+.confirmButtonSelectedDown,
+.confirmButtonSelectedDisabled,
+.confirmButtonDisabled {
+    font-family:Arial,Verdana,sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+
+    background: #bcd85f url(images/button_green_bg.png) repeat-x;
+    height: 25px;
+}
+.confirmButtonOver {
+/*    font-weight:normal; */
+    background-position: 0 -25px;
+    background-color: white;
+}
+
+.confirmButtonSelectedDisabled,
+.confirmButtonDisabled {
+    background: #d7d7d7 url(images/button_gray_bg.png) repeat-x;
+	color:#AAAAAA;
+}

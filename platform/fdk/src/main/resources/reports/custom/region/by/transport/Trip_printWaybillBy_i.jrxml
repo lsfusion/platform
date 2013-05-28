@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="s" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="5" bottomMargin="0">
+	<property name="ireport.zoom" value="1.2100000000000006"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="i" class="java.lang.Integer"/>
+	<field name="seriesNumberObject" class="java.lang.String"/>
+	<field name="addressSupplierStockInvoice" class="java.lang.String"/>
+	<field name="addressCustomerStockInvoice" class="java.lang.String"/>
+	<field name="dateInvoice" class="java.util.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<title>
+		<band height="18">
+			<textField>
+				<reportElement style="DefaultStyle" x="1" y="0" width="797" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Выполнение задания"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="36">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="106" y="0" width="213" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Номер и дата ТТН"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" x="1" y="0" width="105" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Дата (число, месяц), время (ч, мин) прибытия автомобиля"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" x="419" y="18" width="141" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["откуда"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" x="560" y="18" width="138" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["куда"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" x="698" y="0" width="100" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Отметки перевозчика"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" x="419" y="0" width="279" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Маршрут"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" x="319" y="0" width="100" height="36"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Подпись и печать"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="18">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="106" y="0" width="213" height="18"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{seriesNumberObject}!=null?$F{seriesNumberObject}:" ") + " от " + ($F{dateInvoice}!=null?$F{dateInvoice}:" ")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="419" y="0" width="141" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressSupplierStockInvoice}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="1" y="0" width="105" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="319" y="0" width="100" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="560" y="0" width="138" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressCustomerStockInvoice}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="698" y="0" width="100" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

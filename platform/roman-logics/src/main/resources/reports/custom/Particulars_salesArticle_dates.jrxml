@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="dates" pageWidth="595" pageHeight="842" columnWidth="565" leftMargin="20" rightMargin="10" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="2.1435888100000016"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#C9C9C9" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle1" mode="Opaque" backcolor="#D4D4D4" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle2" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle3" mode="Opaque" backcolor="#E9E9E9" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle4" mode="Opaque" backcolor="#F4F4F4" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle5" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="dFrom" class="java.util.Date"/>
+	<field name="dTo" class="java.util.Date"/>
+	<field name="valFrom" class="java.util.Date"/>
+	<field name="valTo" class="java.util.Date"/>
+	<field name="s" class="java.lang.Integer"/>
+	<field name="nameSup" class="java.lang.String"/>
+	<field name="balanceBSupplierDate" class="java.lang.Double"/>
+	<field name="quantityReceivedSupplierDateFromTo" class="java.lang.Double"/>
+	<field name="quantitySoldSupplierDateFromTo" class="java.lang.Double"/>
+	<field name="balanceASupplierDate" class="java.lang.Double"/>
+	<field name="percentBalanceReceivedSupplierDateFromTo" class="java.lang.Double"/>
+	<field name="b" class="java.lang.Integer"/>
+	<field name="nameBr" class="java.lang.String"/>
+	<field name="balanceBBrandSupplierDate" class="java.lang.Double"/>
+	<field name="quantityReceivedBrandSupplierDateFromTo" class="java.lang.Double"/>
+	<field name="quantitySoldBrandSupplierDateFromTo" class="java.lang.Double"/>
+	<field name="balanceABrandSupplierDate" class="java.lang.Double"/>
+	<field name="percentBalanceReceivedBrandSupplierDateFromTo" class="java.lang.Double"/>
+	<field name="c" class="java.lang.Integer"/>
+	<field name="nameCat" class="java.lang.String"/>
+	<field name="balanceBBrandSupplierCategorySupplierDate" class="java.lang.Double"/>
+	<field name="quantityReceivedBrandSupplierCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="quantitySoldBrandSupplierCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="balanceABrandSupplierCategorySupplierDate" class="java.lang.Double"/>
+	<field name="percentBalanceReceivedBrandSupplierCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="sc" class="java.lang.Integer"/>
+	<field name="nameSubCat" class="java.lang.String"/>
+	<field name="balanceBBrandSupplierSubCategorySupplierDate" class="java.lang.Double"/>
+	<field name="sidSubCategorySupplier" class="java.lang.String"/>
+	<field name="quantityReceivedBrandSupplierSubCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="quantitySoldBrandSupplierSubCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="balanceABrandSupplierSubCategorySupplierDate" class="java.lang.Double"/>
+	<field name="percentBalanceReceivedBrandSupplierSubCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="aa" class="java.lang.Integer"/>
+	<field name="sidArticle" class="java.lang.String"/>
+	<field name="nameSupplierArticle" class="java.lang.String"/>
+	<field name="nameBrandSupplierArticle" class="java.lang.String"/>
+	<field name="nameCategorySupplierArticle" class="java.lang.String"/>
+	<field name="nameSubCategorySupplierArticle" class="java.lang.String"/>
+	<field name="balanceBArticleDate" class="java.lang.Double"/>
+	<field name="quantityReceivedArticleDateFromTo" class="java.lang.Double"/>
+	<field name="quantitySoldArticleDateFromTo" class="java.lang.Double"/>
+	<field name="balanceAArticleDate" class="java.lang.Double"/>
+	<field name="percentBalanceReceivedArticleDateFromTo" class="java.lang.Double"/>
+	<group name="designGroup10">
+		<groupExpression><![CDATA[String.valueOf($F{dFrom})+" "+String.valueOf($F{dTo})]]></groupExpression>
+		<groupHeader>
+			<band splitType="Prevent"/>
+		</groupHeader>
+	</group>
+	<group name="captionGroup16">
+		<groupExpression><![CDATA[String.valueOf($F{s})]]></groupExpression>
+	</group>
+	<group name="textGroup16">
+		<groupExpression><![CDATA[String.valueOf($F{s})]]></groupExpression>
+		<groupHeader>
+			<band height="10" splitType="Prevent">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="180" height="10" backcolor="#CCCCFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{nameSup}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="75" height="10" backcolor="#CCCCFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{quantityReceivedSupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="330" y="0" width="75" height="10" backcolor="#CCCCFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{quantitySoldSupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="405" y="0" width="75" height="10" backcolor="#CCCCFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{balanceASupplierDate}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="480" y="0" width="56" height="10" backcolor="#CCCCFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{percentBalanceReceivedSupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="180" y="0" width="75" height="10" backcolor="#CCCCFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{balanceBSupplierDate}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="captionGroup24">
+		<groupExpression><![CDATA[String.valueOf($F{b})]]></groupExpression>
+	</group>
+	<group name="textGroup24">
+		<groupExpression><![CDATA[String.valueOf($F{b})]]></groupExpression>
+		<groupHeader>
+			<band height="10" splitType="Prevent">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="180" height="10" backcolor="#FFCCCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{nameBr}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="75" height="10" backcolor="#FFCCCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{quantityReceivedBrandSupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="330" y="0" width="75" height="10" backcolor="#FFCCCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{quantitySoldBrandSupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="405" y="0" width="75" height="10" backcolor="#FFCCCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{balanceABrandSupplierDate}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="480" y="0" width="56" height="10" backcolor="#FFCCCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{percentBalanceReceivedBrandSupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="180" y="0" width="75" height="10" backcolor="#FFCCCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{balanceBBrandSupplierDate}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="captionGroup32">
+		<groupExpression><![CDATA[String.valueOf($F{c})]]></groupExpression>
+	</group>
+	<group name="textGroup32">
+		<groupExpression><![CDATA[String.valueOf($F{c})]]></groupExpression>
+		<groupHeader>
+			<band height="10" splitType="Prevent">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="180" height="10" backcolor="#CCFFCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{nameCat}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="75" height="10" backcolor="#CCFFCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{quantityReceivedBrandSupplierCategorySupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" x="330" y="0" width="75" height="10" backcolor="#CCFFCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{quantitySoldBrandSupplierCategorySupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" x="405" y="0" width="75" height="10" backcolor="#CCFFCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{balanceABrandSupplierCategorySupplierDate}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" x="480" y="0" width="56" height="10" backcolor="#CCFFCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{percentBalanceReceivedBrandSupplierCategorySupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" x="180" y="0" width="75" height="10" backcolor="#CCFFCC"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{balanceBBrandSupplierCategorySupplierDate}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="captionGroup40">
+		<groupExpression><![CDATA[String.valueOf($F{sc})]]></groupExpression>
+	</group>
+	<group name="textGroup40">
+		<groupExpression><![CDATA[String.valueOf($F{sc})]]></groupExpression>
+		<groupHeader>
+			<band height="10" splitType="Prevent">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle4" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="180" height="10" backcolor="#CCFFFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{nameSubCat}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle4" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="75" height="10" backcolor="#CCFFFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{quantityReceivedBrandSupplierSubCategorySupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle4" positionType="Float" stretchType="RelativeToBandHeight" x="330" y="0" width="75" height="10" backcolor="#CCFFFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{quantitySoldBrandSupplierSubCategorySupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle4" positionType="Float" stretchType="RelativeToBandHeight" x="405" y="0" width="75" height="10" backcolor="#CCFFFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{balanceABrandSupplierSubCategorySupplierDate}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle4" positionType="Float" stretchType="RelativeToBandHeight" x="480" y="0" width="56" height="10" backcolor="#CCFFFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{percentBalanceReceivedBrandSupplierSubCategorySupplierDateFromTo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle4" positionType="Float" stretchType="RelativeToBandHeight" x="180" y="0" width="75" height="10" backcolor="#CCFFFF"/>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{balanceBBrandSupplierSubCategorySupplierDate}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="27">
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" x="0" y="0" width="537" height="18" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA["Отчет о продажах по поставщику: "+$F{nameSup}+" за период с "  +platform.base.BaseUtils.formatRussian($F{valFrom})+" по " +platform.base.BaseUtils.formatRussian($F{valTo})]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="18">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle5" stretchType="RelativeToBandHeight" x="0" y="0" width="180" height="18"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Наименование"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle5" stretchType="RelativeToBandHeight" x="255" y="0" width="75" height="18"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Поступило за интервал"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle5" stretchType="RelativeToBandHeight" x="330" y="0" width="75" height="18"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Продано за интервал (кол-во)"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle5" stretchType="RelativeToBandHeight" x="405" y="0" width="75" height="18"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Остаток на конец периода"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle5" stretchType="RelativeToBandHeight" x="480" y="0" width="56" height="18"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%, остатка"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle5" stretchType="RelativeToBandHeight" x="180" y="0" width="75" height="18"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Остаток на начало периода"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="10">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle5" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="180" height="10"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sidArticle}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle5" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="75" height="10"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{quantityReceivedArticleDateFromTo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle5" positionType="Float" stretchType="RelativeToBandHeight" x="330" y="0" width="75" height="10"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{quantitySoldArticleDateFromTo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle5" positionType="Float" stretchType="RelativeToBandHeight" x="405" y="0" width="75" height="10"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{balanceAArticleDate}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle5" positionType="Float" stretchType="RelativeToBandHeight" x="480" y="0" width="56" height="10"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{percentBalanceReceivedArticleDateFromTo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle5" positionType="Float" stretchType="RelativeToBandHeight" x="180" y="0" width="75" height="10"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{balanceBArticleDate}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

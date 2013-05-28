@@ -1,0 +1,261 @@
+MODULE RepricingDisparity;
+
+REQUIRE Disparity,
+        Repricing,
+        DisparityOperation,
+        PriceListLedger;
+
+NAMESPACE Disparity;
+
+@defineDocumentHeaderCreate(disparity, createRepricing, 'Создать акт переоценки');
+@defineDocumentDetailCreateCustom(disparity, disparityDetail, createRepricing, 'Создать акт переоценки');
+
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+createRepricingDisparity (disparity) <- createRepricingOperation(operationDisparity(disparity))
+    WHEN CHANGED(operationDisparity(disparity));
+
+repricingOperationOperation  = DATA Repricing.Operation (Operation);
+nameRepricingOperationOperation 'Операция (переоценки)' (operation)= Repricing.nameOperation(repricingOperationOperation(operation));
+
+
+EXTEND FORM operation
+    PROPERTIES(o) nameRepricingOperationOperation
+;
+EXTEND DESIGN operation {
+    createContainer {
+        ADD PROPERTY(nameRepricingOperationOperation) AFTER PROPERTY(createRepricingOperation);
+    }
+}
+
+// Операция переоценки
+@defineDocumentOperationHeaderPrefix(disparity, repricing, Repricing, ' (переоценка)');
+@defineDocumentOperationDetailPrefix(disparity, disparityDetail, repricing, Repricing, 'переоценка');
+
+repricingOperationDisparity(o) <- repricingOperationOperation(operationDisparity(o))
+    WHEN CHANGED(operationDisparity(o));
+
+// До
+@defineDocumentTimePrefix(disparity, before, ' документа до');
+
+@defineDocumentDetailPricePrefix(disparity, curInput, ' поставщика до');
+@defineDocumentDetailDataSumCustomPrefix (disparityDetail, curInput, ' поставщика до');
+@deriveDocumentDetailSumPrefix(disparity, curInput, currency, inputQuantity);
+
+overCurInputRepricingPriceDisparityDetail = ABSTRACT NUMERIC[14,2] (DisparityDetail) PERSISTENT;
+curInputRepricingPriceDisparityDetail (detail) = OVERRIDE curInputPriceDisparityDetail(detail), overCurInputRepricingPriceDisparityDetail(detail) PERSISTENT;
+
+@defineDocumentDetailPricePrefix(disparity, curInputRetail, ' розничная до');
+@defineDocumentDetailDataSumCustomPrefix (disparityDetail, curInputRetail, ' розничная до');
+@deriveDocumentDetailSumPrefix(disparity, curInputRetail, currency, inputQuantity);
+
+@defineDocumentDetailVAT(disparity, countryStock, curInput, ' до');
+@deriveDocumentDetailValueVAT(disparity, curInput);
+
+@defineDocumentDetailMarkupPrefix (disparity, curInput, ' до');
+curInputMarkupDisparityDetail(disparityDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+    curInputRetailPriceDisparityDetail(disparityDetail),
+    valueCurInputVATDisparityDetail(disparityDetail),
+    curInputRepricingPriceDisparityDetail(disparityDetail))
+    WHEN CHANGED(curInputRetailPriceDisparityDetail(disparityDetail)) OR CHANGED (valueCurInputVATDisparityDetail(disparityDetail)) OR CHANGED(curInputRepricingPriceDisparityDetail(disparityDetail));
+
+@defineDocumentDetailVATDataSumCustomPrefix (disparityDetail, curInput, ' до');
+@deriveDocumentDetailReverseVATSumPrefix(disparity, curInput, curInputRetail);
+@defineDocumentDetailMarkupSumCustomPrefix (disparityDetail, curInput, ' до');
+@deriveDocumentDetailMarkupSumPrefix(disparity, curInput, curInputRetail, curInput);
+
+@deriveDocumentDetailPriceSystemLedgerPriceListType(disparity, supplierPricingPriceListType, curInput, sku, stock);
+@deriveDocumentDetailVAT (disparity, curInput, beforeDate, sku, stock);
+@deriveDocumentDetailPriceSystemLedgerPriceListType(disparity, retailPricingPriceListType, curInputRetail, sku, stock);
+
+@changeDocumentDetailMarkupCustomPrefix(disparityDetail, curInputRetail, curInput, curInput, curInput);
+roundConditionDisparityDetail(disparityDetail) = roundConditionDepartmentStore(stockDisparityDetail(disparityDetail));
+@changeDocumentDetailPriceCustomPrefix(disparityDetail, curInputRetail, curInputRepricing, curInput, curInput);
+
+// После
+@defineDocumentDetailPricePrefix (disparity, afterInput, ' поставщика после');
+@defineDocumentDetailDataSumCustomPrefix (disparityDetail, afterInput, ' поставщика после');
+@deriveDocumentDetailSumPrefix(disparity, afterInput, currency, inputQuantity);
+
+overAfterInputRepricingPriceDisparityDetail = ABSTRACT NUMERIC[14,2] (DisparityDetail) PERSISTENT;
+afterInputRepricingPriceDisparityDetail (detail) = OVERRIDE afterInputPriceDisparityDetail(detail), overAfterInputRepricingPriceDisparityDetail(detail) PERSISTENT;
+
+@defineDocumentDetailPricePrefix(disparity, afterInputRetail, ' розничная после');
+@defineDocumentDetailDataSumCustomPrefix (disparityDetail, afterInputRetail, ' розничная после');
+@deriveDocumentDetailSumPrefix(disparity, afterInputRetail, currency, inputQuantity);
+
+@defineDocumentDetailVAT(disparity, countryStock, afterInput, ' после');
+@deriveDocumentDetailValueVAT(disparity, afterInput);
+
+@defineDocumentDetailVATDataSumCustomPrefix (disparityDetail, afterInput, ' после');
+@deriveDocumentDetailReverseVATSumPrefix(disparity, afterInput, afterInputRetail);
+@defineDocumentDetailMarkupPrefix (disparity, afterInput, ' после');
+afterInputMarkupDisparityDetail(disparityDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+    afterInputRetailPriceDisparityDetail(disparityDetail),
+    valueAfterInputVATDisparityDetail(disparityDetail),
+    afterInputRepricingPriceDisparityDetail(disparityDetail))
+    WHEN CHANGED(afterInputPriceDisparityDetail(disparityDetail)) OR CHANGED (valueAfterInputVATDisparityDetail(disparityDetail)) OR CHANGED(afterInputRepricingPriceDisparityDetail(disparityDetail));
+
+@defineDocumentDetailMarkupSumCustomPrefix (disparityDetail, afterInput, ' после');
+@deriveDocumentDetailMarkupSumPrefix(disparity, afterInput, afterInputRetail, afterInput);
+
+afterInputPriceDisparityDetail(detail) <- curInputPriceDisparityDetail(detail) WHEN CHANGED (curInputPriceDisparityDetail(detail));
+afterInputVATDisparityDetail(detail) <- curInputVATDisparityDetail(detail) WHEN CHANGED (curInputPriceDisparityDetail(detail));
+afterInputRetailPriceDisparityDetail(detail) <- curInputRetailPriceDisparityDetail(detail) WHEN CHANGED (curInputPriceDisparityDetail(detail));
+
+@changeDocumentDetailMarkupCustomPrefix(disparityDetail, afterInputRetail, afterInput, afterInput, afterInput);
+@changeDocumentDetailPriceCustomPrefix(disparityDetail, afterInputRetail, afterInputRepricing, afterInput, afterInput);
+
+@defineDocumentDetailDiffSumCustomPrefix (disparityDetail, retailSum, afterInput, curInput, ' переоценки');
+@defineDocumentHeaderSumPrefix(disparity, diffRetail, ' переоценки');
+
+needToRepricingDisparityDetail (disparityDetail) = curInputRetailPriceDisparityDetail(disparityDetail) != afterInputRetailPriceDisparityDetail(disparityDetail)
+                                               AND inputQuantityDisparityDetail(disparityDetail) != 0 AND stockDisparityDetail(disparityDetail) IS DepartmentStore
+                                               AND NOT costLedgerDepartmentStore(stockDisparityDetail(disparityDetail))
+                                               AND createRepricingDisparityDetail(disparityDetail) PERSISTENT;// AND isPostedDisparityDetail(disparityDetail) ;
+
+needToRepricingDisparity (disparity)= GROUP SUM 1 IF needToRepricingDisparityDetail(disparityDetail)
+    BY disparityDisparityDetail(disparityDetail) PERSISTENT;
+
+@defineDocumentHeaderRepricingCommittee(disparity, stock);
+
+CLASS DisparityRepricing 'Акт переоценки (сортность)': Repricing;
+CLASS DisparityRepricingPosted 'Проведенный акт дооценки на основе инвойса': DisparityRepricing, PostedObject;
+CLASS DisparityRepricingDetail 'Строка акта дооценки на основе инвойса': RepricingDetail;
+
+@defineDocumentTables(disparityRepricing);
+
+@defineDocumentAggregation(disparity, disparityRepricing, needToRepricingDisparity);
+@defineDocumentAggregationTimePrefix(disparity, disparityRepricing, before);
+
+repricingRepricingDetail(detail) += disparityRepricingDisparityRepricingDetail(detail);
+
+printRepricingDisparity 'Акт переоценки' (disparity) = printRepricing(disparityRepricingDisparity(disparity)) IMAGE 'print.png' IN printGroup;
+@defineDocumentDetailIndex(disparityRepricing);
+
+dateRepricing(repricing) += dateDisparityRepricing(repricing);
+timeRepricing(repricing) += timeDisparityRepricing(repricing);
+
+beforeDateRepricing(repricing) += beforeDateDisparityRepricing(repricing);
+beforeTimeRepricing(repricing) += beforeTimeDisparityRepricing(repricing);
+
+operationRepricing (repricing)+= repricingOperationDisparity(disparityDisparityRepricing(repricing));
+
+@defineDocumentAggregationStockPrefix(disparity, disparityRepricing, stock, 'Склад', , );
+departmentStoreRepricing(repricing) += stockDisparityRepricing(repricing) IF stockDisparityRepricing(repricing) IS DepartmentStore;
+
+@defineDocumentAggregationPosted(disparity, disparityRepricing);
+isPostedRepricing(repricing) += isPostedDisparityRepricing(repricing);
+
+numberDisparityRepricing 'Номер документа' (disparityRepricing) = numberObject(disparityDisparityRepricing(disparityRepricing));
+numberRepricing(repricing) += numberDisparityRepricing(repricing);
+
+seriesDisparityRepricing 'Серия документа' (disparityRepricing) = seriesObject(disparityDisparityRepricing(disparityRepricing));
+seriesRepricing(repricing) += seriesDisparityRepricing(repricing);
+
+seriesNumberDisparityRepricing 'Серия/номер документа' (disparityRepricing) = seriesNumberObject(disparityDisparityRepricing(disparityRepricing));
+
+noteDisparityDisparityRepricing 'Примечание' (disparityRepricing) = noteDisparity(disparityDisparityRepricing(disparityRepricing));
+noteRepricing(repricing) += noteDisparityDisparityRepricing(repricing);
+
+currencyDisparityRepricing  (disparityRepricing) = currencyDisparity(disparityDisparityRepricing(disparityRepricing));
+currencyRepricing (repricing) += currencyDisparityRepricing(repricing);
+repricingCommitteeRepricing(repricing) += repricingCommitteeDisparity(disparityDisparityRepricing(repricing));
+numberDisposalRepricing(repricing) += numberDisposalDisparity(disparityDisparityRepricing(repricing));
+
+@defineDocumentDescription(disparityRepricing, DisparityRepricingDetail, seriesNumberDisparityRepricing, 'Акт переоценки (сортность)');
+descriptionRepricing (repricing) += descriptionDisparityRepricing(repricing);
+
+//skipChangeLedgerRepricing(repricing) += repricing IS DisparityRepricing;
+skuDisparityRepricingDetail (repricingDetail) = inputSkuDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+
+skuRepricingDetail(repricingDetail) +=  skuDisparityRepricingDetail(repricingDetail);
+
+backgroundCurDisparity 'Цвет' (disparity) = RGB(255, 255, 224) IF disparity IS Disparity;
+backgroundAfterDisparity 'Цвет' (disparity) = RGB(255, 255, 200) IF disparity IS Disparity;
+
+showCreateRepricingDisparity (disparity) = stockDisparity(disparity) IS DepartmentStore AND NOT costLedgerDepartmentStore(stockDisparity(disparity));
+
+EXTEND FORM disparity
+    PROPERTIES(dis)   SHOWIF showCreateRepricingDisparity(dis) BACKGROUND backgroundCurDisparity(dis) createRepricingDisparity
+    PROPERTIES(dis)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) nameRepricingOperationDisparity,
+                      nameRepricingCommitteeDisparity, numberDisposalDisparity, beforeDateDisparity
+    PROPERTIES(dis)   BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) diffRetailSumDisparityDetailDisparity
+
+    PROPERTIES(d)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE deletedd
+                    curInputPriceDisparityDetail, curInputSumDisparityDetail,
+                    curInputMarkupDisparityDetail ON CHANGE changeCurInputMarkupDisparityDetail(d), curInputMarkupSumDisparityDetail,
+                    numberCurInputVATDisparityDetail, valueCurInputVATDisparityDetail, curInputVATSumDisparityDetail,
+                    curInputRetailPriceDisparityDetail ON CHANGE changeCurInputRetailPriceDisparityDetail(d), curInputRetailSumDisparityDetail
+    PROPERTIES(d)   BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE deletedd
+                    afterInputPriceDisparityDetail, afterInputSumDisparityDetail,
+                    afterInputMarkupDisparityDetail ON CHANGE changeAfterInputMarkupDisparityDetail(d), afterInputMarkupSumDisparityDetail,
+                    numberAfterInputVATDisparityDetail, valueAfterInputVATDisparityDetail, afterInputVATSumDisparityDetail,
+                    afterInputRetailPriceDisparityDetail ON CHANGE changeAfterInputRetailPriceDisparityDetail(d), afterInputRetailSumDisparityDetail
+;
+EXTEND DESIGN disparity {
+    headerCreateDocuments {
+        NEW headerRepricing {
+            title = 'Переоценка';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(createRepricingDisparity);
+            ADD PROPERTY(nameRepricingOperationDisparity);
+            ADD PROPERTY(nameRepricingCommitteeDisparity);
+            ADD PROPERTY(numberDisposalDisparity);
+            ADD PROPERTY(beforeDateDisparity);
+        }
+    }
+}
+
+EXTEND FORM disparities
+    PROPERTIES(dis) READONLY BACKGROUND backgroundCurDisparity(dis) createRepricingDisparity, diffRetailSumDisparityDetailDisparity AFTER inputSumDisparityDetailDisparity
+    PROPERTIES(dis) FORCE PANEL  printRepricingDisparity SHOWIF createRepricingDisparity(dis)
+
+    PROPERTIES(d)   READONLY BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis)
+                    curInputPriceDisparityDetail, curInputSumDisparityDetail,
+                    curInputMarkupDisparityDetail, curInputMarkupSumDisparityDetail,
+                    numberCurInputVATDisparityDetail, valueCurInputVATDisparityDetail, curInputVATSumDisparityDetail,
+                    curInputRetailPriceDisparityDetail, curInputRetailSumDisparityDetail
+    PROPERTIES(d)   READONLY BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis)
+                    afterInputPriceDisparityDetail, afterInputSumDisparityDetail,
+                    afterInputMarkupDisparityDetail, afterInputMarkupSumDisparityDetail,
+                    numberAfterInputVATDisparityDetail, valueAfterInputVATDisparityDetail, afterInputVATSumDisparityDetail,
+                    afterInputRetailPriceDisparityDetail, afterInputRetailSumDisparityDetail
+
+;
+EXTEND DESIGN disparities {
+    printContainer {
+        ADD dis.printGroup;
+    }
+}
+
+//----------------------------------------------------------------------------------------------------------
+quantityRepricingDetail(repricingDetail) += inputQuantityDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+
+priceRepricingDetail(repricingDetail) += afterInputPriceDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+curPriceRepricingDetail(repricingDetail) += curInputPriceDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+
+retailPriceRepricingDetail(repricingDetail) += afterInputRetailPriceDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+curRetailPriceRepricingDetail(repricingDetail) += curInputRetailPriceDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+
+retailSumRepricingDetail(repricingDetail) += afterInputRetailSumDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+curRetailSumRepricingDetail(repricingDetail) += curInputRetailSumDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+
+markupRepricingDetail(repricingDetail) += afterInputMarkupDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+curMarkupRepricingDetail(repricingDetail) += curInputMarkupDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+
+VATRepricingDetail(repricingDetail) += afterInputVATDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+curVATRepricingDetail(repricingDetail) += curInputVATDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+
+valueVATRepricingDetail(repricingDetail) += valueAfterInputVATDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+valueCurVATRepricingDetail(repricingDetail) += valueCurInputVATDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+
+sumRepricingDetail(repricingDetail) += afterInputSumDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+curSumRepricingDetail(repricingDetail) += curInputSumDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+
+VATSumRepricingDetail(repricingDetail) += afterInputVATSumDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+curVATSumRepricingDetail(repricingDetail) += curInputVATSumDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+
+markupSumRepricingDetail(repricingDetail) += afterInputMarkupSumDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+curMarkupSumRepricingDetail(repricingDetail) += curInputMarkupSumDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+

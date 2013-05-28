@@ -1,0 +1,396 @@
+MODULE Supplier;
+
+REQUIRE System,
+        Historizable,
+        Utils,
+        LegalEntity,
+        Stock,
+        StockContract,
+        Agreement,
+        Bank;
+
+CLASS Supplier 'Поставщик' : LegalEntity;
+TABLE supplier (Supplier);
+
+GROUP orderGroup 'Заказ' : public;
+
+dataSurePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = DATA INTEGER (Supplier) IN orderGroup;
+surePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = OVERRIDE 0 IF supplier IS Supplier, dataSurePercentSupplier(supplier) IN orderGroup;
+
+allowablePercentSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (Supplier) IN orderGroup;
+afterDaysSupplier 'Максимальное число дней до поставки после заказа' = DATA INTEGER (Supplier) IN orderGroup;
+
+periodicitySupply 'Переодичность поставок, дней (при поставках не по графику)' = DATA INTEGER (Supplier) IN orderGroup;
+
+returnLossSupplier '% потерь при возврате' (supplier) = DATA NUMERIC[8,3] (Supplier) IN orderGroup;
+
+TABLE supplierStock(Supplier, Stock);
+emailOrderSupplierStock 'e-mail для передачи заказа' = DATA STRING[100] (Supplier, Stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+contactSupplierStock 'Контактная информация' = DATA STRING[500] (Supplier, Stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+
+defaultControlSupplierStock (supplier, stock) = YesNo.no IF supplier IS Supplier AND stock IS Stock;
+@defineHistorizableYesNo(controlSupplierStock, defaultControlSupplierStock, 'Контролировать ассортимент поставщика', supplier, nameLegalEntity, stock, nameStock, orderGroup);
+
+defaultSureSupplierStock (supplier, stock) = YesNo.no IF supplier IS Supplier AND stock IS Stock;
+@defineHistorizableYesNo(sureSupplierStock, defaultSureSupplierStock, 'Обязателен заказ поставщику', supplier, nameLegalEntity, stock, nameStock, orderGroup);
+
+// ---------------------------------------- Группы поставщиков -------------------------------- //
+
+CLASS SupplierGroup 'Группа поставщиков' : LegalEntityGroup;
+TABLE supplierGroup (SupplierGroup);
+
+nameSupplierGroup 'Наименование' = DATA ISTRING[100](SupplierGroup);
+
+supplierGroupSupplier (supplier) = DATA SupplierGroup (Supplier) AUTOSET NOT NULL;
+nameSupplierGroupSupplier 'Группа поставщиков' (supplier) = nameSupplierGroup(supplierGroupSupplier(supplier));
+
+TABLE supplierGroupSupplierGroup(SupplierGroup, SupplierGroup);
+@defineHierarchy(supplierGroup);
+//parentLegalEntityGroup(supplierGroup) += parentSupplierGroup(supplierGroup);
+//legalEntityGroupLegalEntity(supplier) += supplierGroupSupplier(supplier);
+
+inSupplierGroupSupplier (supplierGroup, supplier) =
+    OVERRIDE supplier IS Supplier AND NOT supplierGroup IS SupplierGroup,
+             isParentSupplierGroupSupplierGroup(supplierGroupSupplier(supplier), supplierGroup);
+
+FORM supplierGroup 'Группа поставщиков'
+    OBJECTS s = SupplierGroup FIXED PANEL
+    PROPERTIES(s) nameSupplierGroup, nameParentLegalEntityGroup
+
+    EDIT SupplierGroup OBJECT s
+;
+
+FORM supplierGroups 'Группы поставщиков'
+    TREE supplierGroupTree sg = SupplierGroup PARENT parentSupplierGroup
+    PROPERTIES READONLY sgTreeName = nameSupplierGroup(sg)
+    ORDER BY nameSupplierGroup(sg)
+
+    DIALOG SupplierGroup OBJECT sg
+;
+
+// ---------------------------------------- Договора ------------------------------------ //
+
+//CLASS contractSkuSupplier 'Договор с поставщиком' : contractSku;
+//
+//supplierContractSkuSupplier = DATA LegalEntity (ContractSkuSupplier) AUTOSET;
+//nameSupplierContractSkuSupplier 'Поставщик' (contract) = name(supplierContractSkuSupplier(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//partyAContract (contract) += supplierContractSkuSupplier(contract);
+//
+//legalEntityContractSkuSupplier = DATA LegalEntity (ContractSkuSupplier) AUTOSET;
+//nameLegalEntityContractSkuSupplier 'Компания' (contract) = name(legalEntityContractSkuSupplier(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//partyBContract (contract) += legalEntityContractSkuSupplier(contract);
+//
+//TABLE supplierLegalEntity(supplier, legalEntity);
+//@defineContractDefault(contractSkuSupplier, supplier, legalEntity);
+
+// Формы
+//FORM contractSkuSupplier 'Договор'
+//    OBJECTS c=ContractSku FIXED PANEL
+//    PROPERTIES(c) nameLegalEntityContractSkuSupplier, nameSupplierContractSkuSupplier,
+//                  numberContract, dateFromContract, dateToContract,
+//                  nameCurrencyContract, noteContract
+//
+//    OBJECTS pc = PaymentCondition
+//    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition,
+//                            nameFormPaymentCondition
+//    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, DELETESESSION
+//    ORDER BY datePaymentCondition
+//
+//    FILTERS contractPaymentCondition(pc) == c
+//
+//    EDIT contractSkuSupplier OBJECT c
+//;
+//
+//FORM contractsSkuSupplier 'Договора'
+//    OBJECTS c=ContractSkuSupplier
+//    PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
+//                           nameLegalEntityContractSkuSupplier, nameSupplierContractSkuSupplier
+//
+//    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
+//    ORDER BY dateFromContract
+//
+//    DIALOG contractSkuSupplier OBJECT c
+//;
+
+// ------------------------------------------ Формы для поставщика --------------------------------------- //
+
+FORM supplier 'Поставщик'
+    OBJECTS s=Supplier FIXED PANEL
+    PROPERTIES(s) nameLegalEntity, fullNameLegalEntity, nameSupplierGroupSupplier, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+                  emailLegalEntity, siteLegalEntity,
+                  addressLegalEntity ON CHANGE dialogAddressLegalEntity(s),
+                  postAddressLegalEntity ON CHANGE dialogPostAddressLegalEntity(s),
+                  managerLegalEntity ON CHANGE dialogManagerLegalEntity(s),
+                  accountantLegalEntity ON CHANGE dialogAccountantLegalEntity(s),
+                  phoneLegalEntity ON CHANGE dialogPhoneLegalEntity(s),
+                  surePercentSupplier, allowablePercentSupplier,
+                  afterDaysSupplier, periodicitySupply,
+                  returnLossSupplier
+
+    OBJECTS a=Bank.Account
+    PROPERTIES(a) numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount,
+                  ADDOBJ, DELETESESSION
+    FILTERS Bank.legalEntityAccount(a) == s
+
+    OBJECTS co=LegalEntity
+    PROPERTIES(co) READONLY nameLegalEntity
+    FILTERGROUP filtersLegalEntity
+        FILTER 'Есть договор' 'F5' countContractPartyAPartyB(s, co)
+
+    OBJECTS c=ContractSku
+    PROPERTIES isSupplierCustomerContractSku(s, co, c)
+    PROPERTIES(c)  READONLY numberContract, dateFromContract, dateToContract,
+                            nameTypeContractSku,
+                            nameCurrencyContract, noteContract
+    PROPERTIES(c)  ADDFORM, EDITFORM, DELETE
+    FILTERS supplierContractSku(c) == s,
+            customerContractSku(c) == co
+
+    OBJECTS co2=LegalEntity
+    PROPERTIES(co2) READONLY nameLegalEntity
+
+    OBJECTS ag=Agreement
+    PROPERTIES(ag, s, co2) isDefaultAgreementSupplierCustomer
+    PROPERTIES(ag, s) inAgreementCustomer
+    PROPERTIES(ag) READONLY nameAgreement, numberObject, seriesObject, dateAgreement, timeAgreement,
+                            fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
+                            nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+    PROPERTIES createAgreementSupplierCustomer(s, co2) TODRAW ag FORCE PANEL TOOLBAR, addAgreementsSupplierCustomer(s, co2) TODRAW ag FORCE PANEL TOOLBAR
+    FILTERS inAgreementCustomer(ag, s),
+            inAgreementSupplier(ag,co2)
+
+    OBJECTS l=License
+    PROPERTIES(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, DELETESESSION
+    FILTERS legalEntityLicense(l) == s
+
+    OBJECTS dt=DATE FIXED PANEL
+    PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
+
+    TREE stockTree sg = StockGroup PARENT parentStockGroup
+    PROPERTIES READONLY nameStockGroup(sg)
+
+    OBJECTS st=Stock
+    PROPERTIES(st) READONLY nameStock, addressStock
+    FILTERS stockGroupStock(st) == sg
+
+    PROPERTIES(s, st) emailOrderSupplierStock, contactSupplierStock
+    //PROPERTIES       overNameControlSupplierStockDate(s, st, dt) BACKGROUND dataControlSupplierStockDate(s, st, dt) ON CHANGE overDialogControlSupplierStockDate(s, st),
+    //                 overNameSureSupplierStockDate(s, st, dt) BACKGROUND dataSureSupplierStockDate(s, st, dt) ON CHANGE overDialogSureSupplierStockDate(s, st)
+
+    EDIT Supplier OBJECT s
+;
+
+DESIGN supplier FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        s.box {
+            childConstraints = TO THE BOTTOM;
+
+            NEW row1 {
+                childConstraints = TO THE RIGHT;
+                ADD s.lawGroup{
+                    childConstraints = TO THE BOTTOM;
+                }
+                ADD s.orderGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+            NEW row2{
+                childConstraints = TO THE RIGHT;
+                ADD s.contactGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+                ADD s.managementGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
+
+        NEW prop.box BEFORE functions.box{
+            type = TABBED;
+            ADD a.box;
+            NEW firstCase {
+                title = 'Договоры';
+                type = SPLITH;
+                childConstraints = TO THE RIGHT;
+
+                ADD co.box;
+                ADD c.box {
+                    fillHorizontal = 3;
+                }
+            }
+            NEW agreementContainer{
+                caption = 'Соглашения';
+                type = SPLITH;
+                ADD co2.box;
+                ADD ag.box{fillHorizontal = 3;}
+            }
+
+            ADD l.box;
+
+            ADD st.box {
+
+                ADD dt.box BEFORE st.grid.box;
+                ADD stockTree.tree.box BEFORE st.grid.box;
+                POSITION stockTree.tree.box TO THE LEFT st.grid.box;
+                st.grid.box {
+                    fillHorizontal = 3;
+                };
+            }
+
+        }
+    }
+}
+
+FORM suppliers 'Поставщики'
+    TREE supplierGroupTree sg = SupplierGroup PARENT parentSupplierGroup
+    PROPERTIES READONLY sgTreeName = nameSupplierGroup(sg)
+    PROPERTIES(sg) ADDFORM, EDITFORM, deletesg=DELETE FORCE PANEL TOOLBAR
+
+    OBJECTS s=Supplier
+    PROPERTIES(s) READONLY nameLegalEntity, fullNameLegalEntity, nameSupplierGroupSupplier, shortNameOwnershipLegalEntity,
+                           numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(s) ADDFORM, EDITFORM, deletes=DELETE
+
+    FILTERS inSupplierGroupSupplier(sg, s)
+
+    DIALOG Supplier OBJECT s
+;
+
+DESIGN suppliers FROM DEFAULT{
+    NEW topContainer{
+        childConstraints = TO THE RIGHT;
+        type = SPLITH;
+        ADD supplierGroupTree.tree.box{
+            PROPERTY(deletesg){
+                askConfirm = TRUE;
+            }
+        }
+        ADD s.box {
+            fillHorizontal = 2.0;
+            s.grid { defaultComponent = TRUE; }
+        }
+    }
+    ADD functions.box;
+}
+
+// -------------------------------------------- Макросы --------------------------------------------- //
+META defineDocumentHeaderSupplier (object)
+    supplier###object (object) = DATA LegalEntity (object);
+    nameSupplier###object 'Поставщик' (object)= nameLegalEntity(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+META defineDocumentAbstractHeaderSupplier (object)
+    supplier###object (object) = ABSTRACT LegalEntity (object) PERSISTENT;
+    nameSupplier###object 'Поставщик' (object)= nameLegalEntity(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+META defineDocumentInterfaceHeaderSupplier (object)
+    @defineDocumentAbstractHeaderSupplier(object);
+    @defineDocumentHeaderSupplier(user###object);
+    supplier###object (object) += supplier###user###object(object);
+END
+
+META defineDocumentDetailSupplier (object, detail)
+    supplier###detail (idetail) = supplier###object(object###detail(idetail));
+    nameSupplier###detail 'Поставщик' (idetail) = nameSupplier###object(object###detail(idetail));
+END
+
+META defineDocumentSupplier (object, detail)
+    @defineDocumentHeaderSupplier(object);
+    @defineDocumentDetailSupplier(object, detail);
+END
+META defineDocumentDetailDataSupplier (object, detail)
+    dataSupplier###detail (detail) = DATA Supplier (detail);
+    supplier###detail (idetail) = OVERRIDE supplier###object(object###detail(idetail)), dataSupplier###detail(idetail) PERSISTENT;
+    nameSupplier###detail 'Поставщик' (idetail) = nameLegalEntity(supplier###detail(idetail));
+END
+META defineDocumentDataSupplier (object, detail)
+    @defineDocumentHeaderSupplier(object);
+    @defineDocumentDetailDataSupplier(object, detail);
+END
+META defineDocumentDataSupplier (object)
+    @defineDocumentDataSupplier(object, object##Detail);
+END
+META defineDocumentDetailSupplier(detail)
+    supplier###detail (detail) = DATA Supplier (detail);
+    nameSupplier###detail 'Поставщик' (detail) = nameLegalEntity(supplier###detail (detail));
+END
+
+META defineDocumentAbstractSupplier (object, detail)
+    @defineDocumentAbstractHeaderSupplier(object);
+    @defineDocumentDetailSupplier(object, detail);
+END
+META defineDocumentInterfaceSupplier (object, detail)
+    @defineDocumentInterfaceHeaderSupplier(object);
+    @defineDocumentDetailSupplier(object, detail);
+    @defineDocumentDetailSupplier(user###object, user###detail);
+END
+
+META defineDocumentSupplier (object)
+    @defineDocumentSupplier(object, object##Detail);
+END
+META defineDocumentAbstractSupplier (object)
+    @defineDocumentAbstractSupplier(object, object##Detail);
+END
+META defineDocumentInterfaceSupplier (object)
+    @defineDocumentInterfaceSupplier(object, object##Detail);
+END
+
+META defineDocumentHeaderSupplierContract(object)
+    supplier###object (object) = DATA Supplier (object);
+    nameSupplier###object 'Поставщик' (object) = nameLegalEntity(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 30 PREFCHARWIDTH 40;
+
+    supplier###object##Detail (detail) = supplier###object(object###object##Detail(detail));
+
+    contract###object (object) = DATA ContractSku (object);
+    numberContract###object 'Договор' (object) = numberContract(contract###object(object)) IN documentPrmGroup;
+
+    dateFromContract###object 'Договор от' (object) = dateFromContract(contract###object(object)) IN documentPrmGroup;
+
+    CONSTRAINT contract###object(object) AND NOT supplier###object(object) == supplierContractSku(contract###object(object))
+        CHECKED BY contract###object MESSAGE 'Выберите договор данного поставщика';
+    CONSTRAINT contract###object(object) AND NOT activeContract(contract###object(object), date###object(object))
+        CHECKED BY contract###object MESSAGE 'Выберите действующий договор';
+END
+
+
+// -------------------------------------------- Sku ------------------------------------------------- //
+
+supplierBatch(batch) = ABSTRACT Supplier (Batch) PERSISTENT INDEXED;
+nameSupplierBatch 'Поставщик' (batch) = nameLegalEntity(supplierBatch(batch));
+
+countSupplierSku 'Кол-во партий' (supplier, sku) = GROUP SUM 1 BY supplierBatch(batch), skuBatch(batch);
+
+// --------------------------------- Добавляем фильтр в подбор товаров -------------------------------------------- //
+
+META defineDialogSkuSupplier (form)
+    form###supplier = DATA SESSION Supplier ();
+    form###nameSupplier 'Поставщик' () = nameLegalEntity(form###supplier()) PREFCHARWIDTH 30;
+    form###supplierFilter = (TRUE IF countSupplierSku(form###supplier(), sku)) OR (sku IS Sku AND NOT form###supplier());
+
+    EXTEND FORM form
+        PROPERTIES form###nameSupplier()
+        FILTERS form###supplierFilter(s)
+    ;
+
+    EXTEND DESIGN form {
+        filterContainer { ADD PROPERTY(form###nameSupplier()); }
+    }
+END
+
+META defineAddDetailDialogSkuStockSupplier (object, skuProp, stockProp, form)
+    @defineAddDetailDialogSkuStockSupplierCustom (object, object##Detail, , skuProp, stockProp, form);
+END
+
+META defineAddDetailDialogSkuStockSupplierCustom (object, detail, caption, skuProp, stockProp, form)
+    @defineAddDetailDialogSkuStockCustom(object, detail, caption, skuProp, stockProp, form);
+    addDetailDialogSkuStockSupplier###detail###object 'Подбор товаров'###caption = ACTION (object) {
+        SET form###supplier() <- supplier###object(object);
+        EXEC addDetailDialogSkuStock###detail###object(object AS object);
+    } TOOLBAR;
+END
+
+@defineDialogSkuSupplier(dialogSku);
+
+EXTEND FORM batches
+    PROPERTIES(bt) READONLY nameSupplierBatch AFTER nameSkuBatch
+;

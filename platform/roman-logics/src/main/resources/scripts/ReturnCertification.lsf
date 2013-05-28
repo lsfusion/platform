@@ -1,0 +1,239 @@
+MODULE ReturnCertification;
+
+REQUIRE System,
+
+        Utils,
+        Stock,
+        Country,
+        Numerator,
+        Document,
+        RomanDocument,
+        ConsignmentBy,
+        RomanStock,
+        RetailPrice,
+        Barcode,
+        RomanMasterData,
+        Declaration,
+        RomanLogicsModule;
+
+PRIORITY Stock, RomanLogicsModule;
+
+CLASS ReturnCertification 'Возврат из сертификации' : Historizable, NumeratedObject;
+CLASS ReturnCertificationPosted 'Проведенный возврат из сертификации' : ReturnCertification, PostedObject;
+CLASS ReturnCertificationDetail 'Строка возврата из сертификации' : BatchB;
+
+@defineDocumentTables(returnCertification);
+
+@defineNumeratedObjectDefault(ReturnCertification, 'Нумератор для возвратов из сертификации', 'СЕ');
+
+@defineDocumentRelation(returnCertification);
+@defineDocumentPosted(returnCertification);
+@defineDocumentDetailIndex(returnCertification);
+@defineDocumentTime(returnCertification);
+@defineDocumentHeaderNote(ReturnCertification);
+@defineDocumentDetailActions(returnCertification);
+@defineDocumentStock(returnCertification, stock, 'Склад');
+@defineDocumentDetailSku(returnCertification, sku);
+@defineDocumentDetailQuantity(returnCertification);
+@defineDocumentDescription(returnCertification, 'Возврат товара из сертификации');
+
+@defineDocumentHeaderQuantity(returnCertification);
+@defineDocumentHeaderSkuQuantity(returnCertification, sku);
+
+@defineDocumentDetailSkuArticle(returnCertification);
+
+@defineDialogSku(dialogCertificatedSku);
+//@defineAddDetailDialogSkuStock(returnCertification, sku, stock, dialogCertificatedSku);
+@defineAddDetailDialogSku(returnCertification, sku, dialogCertificatedSku);
+@defineAddDetailDialogBarcode(returnCertification, sku);
+
+// Проводим по регистру
+
+dateTimeBatch (batch) += dateTimeReturnCertificationDetail(batch);
+isPostedBatch (batch) += isPostedReturnCertificationDetail(batch);
+skuBatch (batch) += skuReturnCertificationDetail(batch);
+stockBatch (batch) += stockReturnCertificationDetail(batch);
+descriptionBatch (batch) += descriptionReturnCertificationDetail(batch);
+costBatch (batch) += 0.0 IF batch IS ReturnCertificationDetail;
+
+quantityBatch (batch) += quantityReturnCertificationDetail(batch);
+sumInSkuLedger(batch) += 0.0 IF batch IS ReturnCertificationDetail;
+skipASkuLedger (ledger) += ledger IS ReturnCertificationDetail;
+
+customStoreReturnCertification = DATA CustomStore(ReturnCertification);
+nameCustomStoreReturnCertification 'СВХ' (returnCertification) = name(customStoreReturnCertification(returnCertification));
+
+customStoreReturnCertificationDetail (returnCertificationDetail) = customStoreReturnCertification(returnCertificationReturnCertificationDetail(returnCertificationDetail));
+
+quantityReturnCertificationStoreSku 'Кол-во возвращёное' (store, sku) = GROUP SUM quantityReturnCertificationDetail(returnCertificationDetail)
+                                                                               IF isPostedReturnCertificationDetail(returnCertificationDetail)
+                                                                               BY customStoreReturnCertificationDetail(returnCertificationDetail),
+                                                                                  skuReturnCertificationDetail(returnCertificationDetail);
+
+quantityForReturnCertificationStoreSku 'Остаток' (store, sku) = quantityCertificatedCustomStoreSku(store, sku) (-) quantityReturnCertificationStoreSku(store, sku);
+
+dialogCertificatedSkuCustomStore = DATA SESSION CustomStore();
+dialogCertificatedSkuNameCustomStore 'Склад' () = name(dialogCertificatedSkuCustomStore());
+
+addDetailDialogSkuReturnCertification 'Подбор товаров' = ACTION (returnCertification) {
+    SET dialogCertificatedSkuCustomStore() <- customStoreReturnCertification(returnCertification);
+    EXEC addDetailDialogSkuReturnCertificationDetailReturnCertification(returnCertification);
+} TOOLBAR;
+
+
+balanceDialogCertificatedSku 'Остаток на экспертизе' (sku) = quantityForReturnCertificationStoreSku(dialogCertificatedSkuCustomStore(), sku);
+
+EXTEND FORM dialogCertificatedSku
+
+    PROPERTIES(s) FORCE GRID balanceDialogCertificatedSku AFTER dialogCertificatedSkuQuantity, idBarcodeSku, nameCategoryArticleSku,
+                  nameBrandSupplierArticleSku, sidArticleSku, sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem
+    FILTERS balanceDialogCertificatedSku(s)>0
+;
+
+
+//returnCertificationQuantity 'Кол-во' = DATA SESSION NUMERIC[14,3] (Sku);
+//
+//returnCertificationStock = DATA SESSION stock ();
+//returnCertificationNameStock 'Склад' () = name(returnCertificationStock()) PREFCHARWIDTH 30;
+//
+//returnCertificationBalance 'Остаток' (sku) = quantityForReturnCertificationStoreSku(returnCertificationStock(), sku);
+//returnCertificationBalanceFilter (sku) = (TRUE AND returnCertificationBalance(sku)) OR (sku IS Sku AND NOT returnCertificationStock());
+//
+//FORM dialogCertificatedSku 'Подбор SKU'
+//    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+//    PROPERTIES READONLY skuTreeName = name(sk)
+//    ORDER BY skuTreeName
+//
+//    PROPERTIES returnCertificationNameStock()
+//
+//    OBJECTS s=Sku
+//    PROPERTIES READONLY    inputName = nameSku(s)
+//    PROPERTIES(s)          returnCertificationQuantity
+//    PROPERTIES(s) READONLY returnCertificationBalance SHOWIF returnCertificationStock()
+//    FILTERS                isParentSkuGroupSku(sk, s)
+//    FILTERS                returnCertificationBalanceFilter(s)
+//    ORDER BY inputName
+//
+//    OBJECTS si=Sku
+//    PROPERTIES READONLY     selectedName = nameSku(si)
+//    PROPERTIES              returnCertificationQuantity(si)
+//    PROPERTIES(si) READONLY returnCertificationBalance SHOWIF returnCertificationStock()
+//    FILTERS                 returnCertificationQuantity(si)
+//    ORDER BY selectedName
+//;
+
+FORM returnCertification 'Возврат из сертификации'
+
+    OBJECTS w = ReturnCertification FIXED PANEL, d = ReturnCertificationDetail
+    PROPERTIES(w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateReturnCertification, timeReturnCertification, //nameCompanyReturnCertification,
+                  nameCustomStoreReturnCertification, nameStockReturnCertification
+
+    PROPERTIES(d) indexReturnCertificationDetail, barcodeReturnCertificationDetail, nameCategoryReturnCertificationDetail,
+                  nameBrandReturnCertificationDetail, sidArticleReturnCertificationDetail, sidSizeReturnCertificationDetail,
+                  sidColorReturnCertificationDetail, nameColorReturnCertificationDetail, shortNameUOMReturnCertificationDetail
+
+    PROPERTIES(d) quantityReturnCertificationDetail
+
+    PROPERTIES(d) ADDOBJ, DELETESESSION
+
+    PROPERTIES(w) TODRAW d addDetailDialogSkuReturnCertification, addDetailInputBarcodeReturnCertificationDetailReturnCertification,
+                           deleteReturnCertificationDetailReturnCertification
+
+
+    FILTERS returnCertificationReturnCertificationDetail(d)==w
+
+
+    EVENTS
+        ON OK prePostReturnCertification(w)
+
+    EDIT ReturnCertification OBJECT w
+;
+
+DESIGN returnCertification FROM DEFAULT {
+
+    main {
+        preferredSize = (1024, 768);
+        NEW top {
+            childConstraints =  TO THE BOTTOM;
+
+            w.box{
+                NEW head{
+                    caption = 'Шапка документа';
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName){preferredCharWidth = 15;}
+                    ADD PROPERTY(nameCustomStoreReturnCertification);
+                    ADD PROPERTY(nameStockReturnCertification);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateReturnCertification);
+                    ADD PROPERTY(timeReturnCertification);
+                }
+//                ADD w.documentPrmGroup {
+//                    childConstraints = TO THE RIGHTBOTTOM;
+//                }
+            }
+        }
+        ADD d.box;
+
+        PROPERTY(formOk) {
+            caption = 'Провести';
+        }
+        ADD functions.box;
+    }
+}
+
+
+FORM returnCertifications 'Возвраты из сертификации'
+
+    OBJECTS w = ReturnCertification
+
+    PROPERTIES(w) READONLY isPostedReturnCertification FORCE GRID, objectClassName, numberObject, seriesObject, dateReturnCertification,
+                  timeReturnCertification, nameCustomStoreReturnCertification, nameStockReturnCertification,
+                  countReturnCertificationDetailReturnCertification, quantityReturnCertificationDetailReturnCertification
+
+    PROPERTIES(w) ADDFORM, EDITFORM, deletew=DELETE FORCE PANEL TOOLBAR
+
+    PROPERTIES (w) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed,
+                                        hostnameComputerClosed
+
+    OBJECTS d = ReturnCertificationDetail
+    PROPERTIES(d) READONLY indexReturnCertificationDetail, barcodeReturnCertificationDetail, nameCategoryReturnCertificationDetail,
+                           nameBrandReturnCertificationDetail, sidArticleReturnCertificationDetail, sidSizeReturnCertificationDetail,
+                           sidColorReturnCertificationDetail, nameColorReturnCertificationDetail,
+                           quantityReturnCertificationDetail, shortNameUOMReturnCertificationDetail
+
+
+    FILTERS returnCertificationReturnCertificationDetail(d)==w;
+
+DESIGN returnCertifications FROM DEFAULT{
+
+    NEW topContainer {
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD w.box;
+        NEW docDetail{
+
+            type = TABBED;
+            ADD d.box{
+                title = 'Спецификация';
+            };
+            NEW documentHistory {
+
+                title = 'История';
+                ADD w.historyGroup;
+                ADD w.postedGroup;
+            }
+
+        }
+    }
+    ADD functions.box;
+
+    PROPERTY (deletew) {
+        caption = 'Удалить';
+        askConfirm = TRUE;
+    }
+}
+

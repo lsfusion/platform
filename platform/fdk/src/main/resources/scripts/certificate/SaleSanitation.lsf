@@ -1,0 +1,18 @@
+MODULE SaleSanitation;
+
+REQUIRE Sanitation, SaleCertificate;
+
+NAMESPACE Sale;
+
+@defineDocumentCertificateObject(sanitation, invoice, i, 'ГГР');
+@defineDocumentCertificateConstraint(sanitation, invoice, 'ГГР');
+@deriveDocumentCertificate(sanitation, invoice, supplierStock, data);
+
+@defineDocumentCertificateObject(sanitation, shipment, s, 'ГГР');
+sanitationShipmentDetail(detail) += sanitationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+
+overFillInvoiceUserShipmentDetailInvoiceDetail(s, i) += ACTION (s, i) {
+    SET dataSanitationUserShipmentDetail(s) <- sanitationInvoiceDetail(i);
+}
+@defineDocumentCertificateConstraint(sanitation, shipment, 'ГГР');
+@deriveDocumentCertificate(sanitation, shipment, supplierStock, data);

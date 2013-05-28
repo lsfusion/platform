@@ -1,0 +1,34 @@
+MODULE TaxItem;
+
+REQUIRE System, Historizable, Item, StockTax;
+
+NAMESPACE Item;
+
+//------------------------- НДС -------------------------//
+
+@defineHistorizableCustom (VATItemCountry, 'НДС', Range, numberRange, number, item, nameAttributeItem, country, nameCountry, 15, base);
+                        //(property,            caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
+VATSkuCountryDate (item, country, date) += VATItemCountryDate (item, country, date);
+
+CONSTRAINT taxRange(dataVATItemCountryDate(item, country, date)) != Tax.taxVAT OR
+           countryRange(dataVATItemCountryDate(item, country, date)) != country AS Country
+           CHECKED BY dataVATItemCountryDate
+           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС : TaxItem';
+
+valueVATItemCountryDate 'НДС, %' (item, country, date) = valueRateRangeDate(VATItemCountryDate(item, country, date), date);
+valueCurrentRateVATItemCountry 'НДС, %' (item, country) = valueCurrentRateRange(VATItemCountry(item, country));
+
+overCopyItem(s, d) += ACTION (s, d) {
+    FOR dataVATItemCountryDate(s, country, date) DO {
+        SET dataVATItemCountryDate(d, country, date) <- dataVATItemCountryDate(s, country, date);
+    }
+}
+
+
+EXTEND FORM item
+    PROPERTIES (i, c, dtr) overNumberVATItemCountryDate, valueVATItemCountryDate
+    FILTERGROUP filters1
+            FILTER 'Страну, у которых есть НДС' 'F11' countRangeTaxCountry (Tax.taxVAT, c) DEFAULT
+
+;
+

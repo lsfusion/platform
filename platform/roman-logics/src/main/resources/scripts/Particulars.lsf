@@ -1,0 +1,444 @@
+MODULE Particulars;
+
+REQUIRE System,
+        RomanMasterData,
+        POS,
+        RomanStock,
+        PriceRound,
+        UserPriceChange,
+        RetailPrice,
+        Currency,
+        RomanSales,
+        RomanLogicsModule;
+
+PRIORITY MasterData, Stock, RomanLogicsModule;
+
+GROUP totalGroupSupplier 'Итого (поставщик)' : public;
+
+
+balanceBSupplierDate 'Остаток на начало' (supplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY supplierArticle(article), dateFrom;
+balanceBBrandSupplierDate 'Остаток на начало' (brandSupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY brandSupplierArticle(article), dateFrom;
+balanceBBrandSupplierCategorySupplierDate 'Остаток на начало' (brandSupplier, categorySupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY brandSupplierArticle(article), categorySupplierArticle(article), dateFrom;
+balanceBBrandSupplierSubCategorySupplierDate 'Остаток на начало' (brandSupplier, subCategorySupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateFrom;
+balanceBBrandSupplierThemeSupplierDate 'Остаток на начало' (brandSupplier, themeSupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY brandSupplierArticle(article), themeSupplierArticle(article), dateFrom;
+
+
+quantityReceivedArticleDateFromTo 'Поступило за интервал' (article, dateFrom, dateTo) = (balanceAArticleDate(article, dateTo) IF dateFrom AS DATE) (-)
+    (balanceBArticleDate(article, dateFrom) IF dateTo AS DATE) (+) quantitySoldArticleDateFromTo(article, dateFrom, dateTo);
+
+quantityReceivedSupplierDateFromTo 'Поступило' (supplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
+    BY supplierArticle(article), dateFrom, dateTo;
+quantityReceivedBrandSupplierDateFromTo 'Поступило' (brandSupplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
+    BY brandSupplierArticle(article), dateFrom, dateTo;
+quantityReceivedBrandSupplierCategorySupplierDateFromTo 'Поступило' (brandSupplier, categorySupplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
+    BY brandSupplierArticle(article), categorySupplierArticle(article), dateFrom, dateTo;
+quantityReceivedBrandSupplierSubCategorySupplierDateFromTo 'Поступило' (brandSupplier, subCategorySupplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
+    BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateFrom, dateTo;
+quantityReceivedBrandSupplierThemeSupplierDateFromTo 'Поступило' (brandSupplier, themeSupplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
+    BY brandSupplierArticle(article), themeSupplierArticle(article), dateFrom, dateTo;
+
+quantitySoldSupplierDateFromTo 'Продано за интервал (кол-во)' (supplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY supplierArticle(article), dateFrom, dateTo;
+quantitySoldBrandSupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), dateFrom, dateTo;
+quantitySoldBrandSupplierCategorySupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, categorySupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), categorySupplierArticle(article), dateFrom, dateTo;
+quantitySoldBrandSupplierSubCategorySupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, subCategorySupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateFrom, dateTo;
+quantitySoldBrandSupplierThemeSupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, themeSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), themeSupplierArticle(article), dateFrom, dateTo;
+
+
+sumSoldSupplierDateFromTo 'Продано за интервал (сумма)' (supplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY supplierArticle(article), dateFrom, dateTo;
+sumSoldBrandSupplierDateFromTo 'Продано за интервал (сумма)' (brandSupplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), dateFrom, dateTo;
+sumSoldBrandSupplierCategorySupplierDateFromTo 'Продано за интервал (сумма)' (brandSupplier, categorySupplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), categorySupplierArticle(article), dateFrom, dateTo;
+sumSoldBrandSupplierSubCategorySupplierDateFromTo 'Продано за интервал (сумма)' (brandSupplier, subCategorySupplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateFrom, dateTo;
+sumSoldBrandSupplierThemeSupplierDateFromTo 'Продано за интервал (сумма)' (brandSupplier, themeSupplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), themeSupplierArticle(article), dateFrom, dateTo;
+
+balanceASupplierDate 'Остаток на конец' (supplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
+    BY supplierArticle(article), dateTo;
+balanceABrandSupplierDate 'Остаток на конец' (brandSupplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
+    BY brandSupplierArticle(article), dateTo;
+balanceABrandSupplierCategorySupplierDate 'Остаток на конец' (brandSupplier, categorySupplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
+    BY brandSupplierArticle(article), categorySupplierArticle(article), dateTo;
+balanceABrandSupplierSubCategorySupplierDate 'Остаток на конец' (brandSupplier, subCategorySupplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
+    BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateTo;
+balanceABrandSupplierThemeSupplierDate 'Остаток на конец' (brandSupplier, themeSupplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
+    BY brandSupplierArticle(article), themeSupplierArticle(article), dateTo;
+
+percentBalanceReceivedArticleDateFromTo '%, остатка' (article, dateFrom, dateTo) = round2([X*100/Y](
+    balanceAArticleDate(article, dateTo), quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)));
+
+percentBalanceReceivedSupplierDateFromTo '%, остатка' (supplier, dateFrom, dateTo) = round2([X*100/Y](
+    balanceASupplierDate(supplier, dateTo), quantityReceivedSupplierDateFromTo(supplier, dateFrom, dateTo)));
+percentBalanceReceivedBrandSupplierDateFromTo '%, остатка' (brandSupplier, dateFrom, dateTo) = round2([X*100/Y](
+    balanceABrandSupplierDate(brandSupplier, dateTo), quantityReceivedBrandSupplierDateFromTo(brandSupplier, dateFrom, dateTo)));
+percentBalanceReceivedBrandSupplierCategorySupplierDateFromTo '%, остатка' (brandSupplier, categorySupplier, dateFrom, dateTo) = round2([X*100/Y](
+    balanceABrandSupplierCategorySupplierDate(brandSupplier, categorySupplier, dateTo), quantityReceivedBrandSupplierCategorySupplierDateFromTo(brandSupplier, categorySupplier, dateFrom, dateTo)));
+percentBalanceReceivedBrandSupplierSubCategorySupplierDateFromTo '%, остатка' (brandSupplier, subCategorySupplier, dateFrom, dateTo) = round2([X*100/Y](
+    balanceABrandSupplierSubCategorySupplierDate(brandSupplier, subCategorySupplier, dateTo), quantityReceivedBrandSupplierSubCategorySupplierDateFromTo(brandSupplier, subCategorySupplier, dateFrom, dateTo)));
+percentBalanceReceivedBrandSupplierThemeSupplierDateFromTo '%, остатка' (brandSupplier, themeSupplier, dateFrom, dateTo) = round2([X*100/Y](
+    balanceABrandSupplierThemeSupplierDate(brandSupplier, themeSupplier, dateTo), quantityReceivedBrandSupplierThemeSupplierDateFromTo(brandSupplier, themeSupplier, dateFrom, dateTo)));
+
+//---------------------------------Тип обмена---------------------------------------//
+
+sumSoldTypeExchangeSupplierDateFromTo 'Продано за интервал (сумма)' (typeExchange, supplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldTypeExchangeArticleDateFromTo(typeExchange, article, dateFrom, dateTo) BY typeExchange, supplierArticle(article), dateFrom, dateTo;
+
+sumSoldTypeExchangeBrandSupplierDateFromTo 'Продано за интервал (сумма)' (typeExchange, brandSupplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldTypeExchangeArticleDateFromTo(typeExchange, article, dateFrom, dateTo) BY typeExchange, brandSupplierArticle(article), dateFrom, dateTo;
+
+sumSoldTypeExchangeBrandSupplierCategorySupplierDateFromTo 'Продано за интервал (сумма)' (typeExchange, brandSupplier, categorySupplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldTypeExchangeArticleDateFromTo(typeExchange, article, dateFrom, dateTo) BY typeExchange, brandSupplierArticle(article), categorySupplierArticle(article), dateFrom, dateTo;
+
+sumSoldTypeExchangeBrandSupplierSubCategorySupplierDateFromTo 'Продано за интервал (сумма)' (typeExchange, brandSupplier, subCategorySupplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldTypeExchangeArticleDateFromTo(typeExchange, article, dateFrom, dateTo) BY typeExchange, brandSupplierArticle(article), subCategorySupplierArticle(article), dateFrom, dateTo;
+
+sumSoldTypeExchangeBrandSupplierThemeSupplierDateFromTo 'Продано за интервал (сумма)' (typeExchange, brandSupplier, themeSupplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldTypeExchangeArticleDateFromTo(typeExchange, article, dateFrom, dateTo) BY typeExchange, brandSupplierArticle(article), themeSupplierArticle(article), dateFrom, dateTo;
+
+//---------------------------------Размер---------------------------------------//
+
+quantitySkuSoldSupplierDateFromTo 'Продано за интервал (кол-во)' (supplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY supplierArticleSku(sku), dateFrom, dateTo;
+quantitySkuSoldBrandDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY brandSupplierArticleSku(sku), dateFrom, dateTo;
+
+quantitySoldBrandSizeSkuDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, sizeSupplier, sku, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY brandSupplierArticleSku(sku), sizeSupplierItem(sku), sku, dateFrom, dateTo;
+
+quantitySoldBrandSizeDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, sizeSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldBrandSizeSkuDateFromTo(brandSupplier, sizeSupplier, sku, dateFrom, dateTo) BY brandSupplier, sizeSupplier, dateFrom, dateTo;
+
+quantitySoldSizeDateFromTo 'Продано за интервал (кол-во)' (sizeSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY sizeSupplierItem(sku), dateFrom, dateTo;
+
+
+quantitySoldBrandCategorySizeDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, categorySupplier, sizeSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY brandSupplierArticleSku(sku), categorySupplierArticleSku(sku), sizeSupplierItem(sku), dateFrom, dateTo;
+quantitySoldBrandSubCategorySizeDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, subCategorySupplier, sizeSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY brandSupplierArticleSku(sku), subCategorySupplierArticleSku(sku), sizeSupplierItem(sku), dateFrom, dateTo;
+
+
+quantitySkuSoldSupplierGroupSizeDateFromTo 'Продано за интервал (кол-во)' (supplier, sizeGroupSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY supplierArticleSku(sku), groupSizeSupplier(sizeSupplierItem(sku)), dateFrom, dateTo;
+
+quantitySoldBrandGroupSizeDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, sizeGroupSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldBrandSizeDateFromTo(brandSupplier, sizeSupplier, dateFrom, dateTo) BY brandSupplier, groupSizeSupplier(sizeSupplier), dateFrom, dateTo;
+
+quantitySoldBrandGroupSizeCategoryDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, sizeGroupSupplier, categorySupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldBrandCategorySizeDateFromTo(brandSupplier, categorySupplier, sizeSupplier, dateFrom, dateTo)
+    BY brandSupplier, groupSizeSupplier(sizeSupplier), categorySupplier, dateFrom, dateTo;
+quantitySoldBrandGroupSizeSubCategoryDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, sizeGroupSupplier, subCategorySupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldBrandSubCategorySizeDateFromTo(brandSupplier, subCategorySupplier, sizeSupplier, dateFrom, dateTo)
+    BY brandSupplier, groupSizeSupplier(sizeSupplier), subCategorySupplier, dateFrom, dateTo;
+
+//quantitySoldBrandSupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, dateFrom, dateTo) = GROUP SUM
+//    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), dateFrom, dateTo;
+//quantitySoldBrandSupplierCategorySupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, categorySupplier, dateFrom, dateTo) = GROUP SUM
+//    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), categorySupplierArticle(article), dateFrom, dateTo;
+//quantitySoldBrandSupplierSubCategorySupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, subCategorySupplier, dateFrom, dateTo) = GROUP SUM
+//    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateFrom, dateTo;
+
+FORM salesArticle 'Продажи по группам'
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE, te=TypeExchange) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = nameTypeExchange(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+
+    OBJECTS s=Supplier FIXED PANEL
+    PROPERTIES     SELECTOR nameSup = nameLegalEntity(s)
+    PROPERTIES     READONLY balanceBSupplierDate(s,dFrom), quantityReceivedSupplierDateFromTo(s,dFrom,dTo), quantitySoldSupplierDateFromTo(s,dFrom,dTo),
+                   balanceASupplierDate(s,dTo), percentBalanceReceivedSupplierDateFromTo(s,dFrom,dTo),
+                   sumSoldSupplierDateFromTo(s,dFrom,dTo), sumSoldTypeExchangeSupplierDateFromTo(te,s,dFrom,dTo)
+
+    OBJECTS b=BrandSupplier
+    PROPERTIES     READONLY nameBr = name(b), balanceBBrandSupplierDate(b,dFrom), quantityReceivedBrandSupplierDateFromTo(b,dFrom,dTo),
+                   quantitySoldBrandSupplierDateFromTo(b,dFrom,dTo), balanceABrandSupplierDate(b,dTo), percentBalanceReceivedBrandSupplierDateFromTo(b,dFrom,dTo),
+                   sumSoldBrandSupplierDateFromTo(b,dFrom,dTo), sumSoldTypeExchangeBrandSupplierDateFromTo(te,b,dFrom,dTo)
+
+    OBJECTS c=CategorySupplier
+    PROPERTIES     READONLY nameCat = name(c), balanceBBrandSupplierCategorySupplierDate(b,c,dFrom), quantityReceivedBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo),
+                   quantitySoldBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo), balanceABrandSupplierCategorySupplierDate(b,c,dTo),
+                   percentBalanceReceivedBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo), sumSoldBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo),
+                   sumSoldTypeExchangeBrandSupplierCategorySupplierDateFromTo(te,b,c,dFrom,dTo)
+
+    OBJECTS sc=SubCategorySupplier
+    PROPERTIES     READONLY nameSubCat = name(sc), sidSubCategorySupplier(sc), balanceBBrandSupplierSubCategorySupplierDate(b,sc,dFrom),
+                   quantityReceivedBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo), quantitySoldBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo),
+                   balanceABrandSupplierSubCategorySupplierDate(b,sc,dTo), percentBalanceReceivedBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo),
+                   sumSoldBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo), sumSoldTypeExchangeBrandSupplierSubCategorySupplierDateFromTo(te,b,sc,dFrom,dTo)
+
+    OBJECTS aa=Article
+    PROPERTIES (aa)READONLY sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameCategorySupplierArticle, nameSubCategorySupplierArticle
+
+    PROPERTIES  READONLY balanceBArticleDate(aa,dFrom), quantityReceivedArticleDateFromTo(aa,dFrom,dTo), quantitySoldArticleDateFromTo(aa,dFrom,dTo),
+                balanceAArticleDate(aa,dTo), percentBalanceReceivedArticleDateFromTo(aa,dFrom,dTo), sumSoldArticleDateFromTo(aa,dFrom,dTo),
+                sumSoldTypeExchangeArticleDateFromTo(te,aa,dFrom,dTo)
+
+    FILTERS  supplierBrandSupplier(b) == s,
+             supplierCategorySupplier(c) == s,
+             categorySupplierSubCategorySupplier(sc) == c
+
+    FILTERGROUP filtersSold
+        FILTER 'Артикул поставщика' 'F10' supplierArticle(aa) == s
+        FILTER 'Артикул бренда' 'F9' brandSupplierArticle(aa) ==b
+
+
+    FILTERGROUP filtersSold1
+        FILTER 'Артикул группы' 'F8' categorySupplierArticle(aa) == c
+        FILTER 'Артикул подгруппы' 'F7' subCategorySupplierArticle(aa) == sc
+
+    FILTERGROUP filtersSoldArticle
+        FILTER 'Артикул с движением' 'F11' OVERRIDE (balanceAArticleDate(aa, dTo) IF dFrom AS DATE), quantitySoldArticleDateFromTo(aa, dFrom, dTo) DEFAULT
+        FILTER 'Артикул с продажей' 'F6' quantitySoldArticleDateFromTo(aa, dFrom, dTo)
+        FILTER 'Артикул с поступлением' 'F5' quantityReceivedArticleDateFromTo(aa, dFrom, dTo)
+;
+
+DESIGN salesArticle FROM DEFAULT {
+
+    main {
+        NEW topContainer {
+            childConstraints = TO THE BOTTOM;
+            NEW wor {
+                childConstraints = TO THE BOTTOM;
+                ADD dates.box {
+                    childConstraints = TO THE RIGHT;
+                    PROPERTY(nameCurrencyTypeExchange(te)) { caption = 'Валюта'; preferredCharWidth = 20;}
+                    PROPERTY(nameType) { caption = 'Тип обмена'; preferredCharWidth = 20;}
+                }
+                ADD s.box {
+                    childConstraints = TO THE RIGHT;
+                    PROPERTY (nameSup){preferredCharWidth = 25;}
+                }
+            }
+            NEW row {
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+                NEW row1 {
+                    fillHorizontal = 1;
+                    childConstraints = TO THE BOTTOM;
+
+                    ADD b.box;
+                    ADD c.box;
+                    ADD sc.box;
+                }
+
+                ADD aa.box {
+                    fillHorizontal = 2.5;
+                }
+            }
+        }
+        ADD functions.box;
+    }
+    PROPERTY(balanceBArticleDate) {
+        caption = 'Остаток на начало';
+    }
+    PROPERTY(balanceAArticleDate) {
+        caption = 'Остаток на конец';
+    }
+}
+
+FORM salesArticleTheme 'Продажи по темам'
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE, te=TypeExchange) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = nameTypeExchange(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+
+    OBJECTS s=Supplier FIXED PANEL
+    PROPERTIES     SELECTOR nameSup = name(s)
+    PROPERTIES     READONLY balanceBSupplierDate(s,dFrom), quantityReceivedSupplierDateFromTo(s,dFrom,dTo), quantitySoldSupplierDateFromTo(s,dFrom,dTo),
+                   balanceASupplierDate(s,dTo), percentBalanceReceivedSupplierDateFromTo(s,dFrom,dTo),
+                   sumSoldSupplierDateFromTo(s,dFrom,dTo), sumSoldTypeExchangeSupplierDateFromTo(te,s,dFrom,dTo)
+
+    OBJECTS b=BrandSupplier
+    PROPERTIES     READONLY nameBr = name(b), balanceBBrandSupplierDate(b,dFrom), quantityReceivedBrandSupplierDateFromTo(b,dFrom,dTo),
+                   quantitySoldBrandSupplierDateFromTo(b,dFrom,dTo), balanceABrandSupplierDate(b,dTo),
+                   percentBalanceReceivedBrandSupplierDateFromTo(b,dFrom,dTo), sumSoldBrandSupplierDateFromTo(b,dFrom,dTo),
+                   sumSoldTypeExchangeBrandSupplierDateFromTo(te,b,dFrom,dTo)
+    OBJECTS t=ThemeSupplier
+    PROPERTIES     READONLY nameTh = name(t), balanceBBrandSupplierThemeSupplierDate(b,t,dFrom), quantityReceivedBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo),
+                   quantitySoldBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo), balanceABrandSupplierThemeSupplierDate(b,t,dTo),
+                   percentBalanceReceivedBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo), sumSoldBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo),
+                   sumSoldTypeExchangeBrandSupplierThemeSupplierDateFromTo(te,b,t,dFrom,dTo)
+
+    OBJECTS aa=Article
+    PROPERTIES (aa)READONLY sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameCategorySupplierArticle, nameSubCategorySupplierArticle, nameThemeSupplierArticle
+
+    PROPERTIES  READONLY balanceBArticleDate(aa,dFrom), quantityReceivedArticleDateFromTo(aa, dFrom, dTo), quantitySoldArticleDateFromTo(aa, dFrom, dTo),
+                balanceAArticleDate(aa, dTo), percentBalanceReceivedArticleDateFromTo(aa, dFrom, dTo), sumSoldArticleDateFromTo(aa, dFrom, dTo),
+                sumSoldTypeExchangeArticleDateFromTo(te,aa, dFrom, dTo)
+
+    FILTERS  supplierBrandSupplier(b) == s,
+             supplierThemeSupplier(t) == s
+
+    FILTERGROUP filtersSold
+        FILTER 'Артикул поставщика' 'F10' supplierArticle(aa) == s
+        FILTER 'Артикул бренда' 'F9' brandSupplierArticle(aa) ==b
+
+
+    FILTERGROUP filtersSold1
+        FILTER 'Артикул темы' 'F8' themeSupplierArticle(aa) == t DEFAULT
+
+    FILTERGROUP filtersSoldArticle
+        FILTER 'Артикул с движением' 'F11' OVERRIDE (balanceAArticleDate(aa, dTo) IF dFrom AS DATE), quantitySoldArticleDateFromTo(aa, dFrom, dTo) DEFAULT
+        FILTER 'Артикул с продажей' 'F6' quantitySoldArticleDateFromTo(aa, dFrom, dTo)
+        FILTER 'Артикул с поступлением' 'F5' quantityReceivedArticleDateFromTo(aa, dFrom, dTo)
+;
+
+DESIGN salesArticleTheme FROM DEFAULT {
+
+    main {
+        NEW topContainer {
+            childConstraints = TO THE BOTTOM;
+            NEW wor {
+                childConstraints = TO THE BOTTOM;
+                ADD dates.box {
+                    childConstraints = TO THE RIGHT;
+                    PROPERTY(nameCurrencyTypeExchange(te)) { caption = 'Валюта'; preferredCharWidth = 20;}
+                    PROPERTY(nameType) { caption = 'Тип обмена'; preferredCharWidth = 20;}
+                }
+                ADD s.box {
+                    childConstraints = TO THE RIGHT;
+                    PROPERTY (nameSup){preferredCharWidth = 25;}
+                }
+            }
+            NEW row {
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+                NEW row1 {
+                    fillHorizontal = 1;
+                    childConstraints = TO THE BOTTOM;
+
+                    ADD b.box;
+                    ADD t.box;
+                }
+
+                ADD aa.box {
+                    fillHorizontal = 2.5;
+                }
+            }
+        }
+        ADD functions.box;
+    }
+    PROPERTY(balanceBArticleDate) {
+        caption = 'Остаток на начало';
+    }
+    PROPERTY(balanceAArticleDate) {
+        caption = 'Остаток на конец';
+    }
+}
+
+FORM salesSizeSupplierItem 'Продажи по размерам'
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
+
+    OBJECTS s=Supplier FIXED PANEL
+    PROPERTIES     SELECTOR nameSup = nameLegalEntity(s)
+    PROPERTIES     READONLY quantitySkuSoldSupplierDateFromTo(s,dFrom,dTo)
+
+    OBJECTS g=SizeGroupSupplier FIXED PANEL
+    PROPERTIES  nameGr = name(g) SELECTOR, quantitySkuSoldSupplierGroupSizeDateFromTo(s,g,dFrom,dTo)  READONLY
+
+    OBJECTS ss = SizeSupplier
+    PROPERTIES     READONLY sidSizeSupplier(ss), orderSizeSupplier(ss), nameGroupSizeSupplier(ss)
+    ORDER BY       orderSizeSupplier
+
+    OBJECTS b=BrandSupplier
+    PROPERTIES     READONLY nameBr = name(b)
+    FILTERGROUP filtersSold3
+        FILTER 'Бренд с продажей' 'F11' quantitySoldBrandGroupSizeDateFromTo(b,g,dFrom, dTo) DEFAULT
+
+
+
+    PROPERTIES     READONLY quantitySoldBrandSizeDateFromTo(b,ss,dFrom,dTo)  COLUMNS (ss) HEADER sidSizeSupplier (ss)
+
+    FILTERGROUP filtersSold
+        FILTER 'Размеры с продажей' 'F10' quantitySoldSizeDateFromTo(ss, dFrom, dTo) DEFAULT
+
+    OBJECTS c=CategorySupplier
+    PROPERTIES     READONLY nameCat = name(c)
+    PROPERTIES     READONLY quantitySoldBrandCategorySizeDateFromTo(b,c,ss,dFrom, dTo) COLUMNS (ss) HEADER sidSizeSupplier (ss)
+    FILTERGROUP filtersSold1
+        FILTER 'Группы с продажей' 'F11' quantitySoldBrandGroupSizeCategoryDateFromTo(b,g,c,dFrom, dTo) DEFAULT
+
+    OBJECTS sc=SubCategorySupplier
+    PROPERTIES     READONLY nameSubCat = name(sc)
+    PROPERTIES     READONLY quantitySoldBrandSubCategorySizeDateFromTo(b,sc,ss,dFrom, dTo) COLUMNS (ss) HEADER sidSizeSupplier (ss)
+
+    FILTERS  supplierBrandSupplier(b) == s,
+             supplierSizeGroup(g) ==s,
+             supplierCategorySupplier(c) == s,
+             categorySupplierSubCategorySupplier(sc) == c
+
+
+    FILTERGROUP filtersSold
+        FILTER 'Размеры поставщика' 'F8' supplierSizeSupplier(ss) == s
+        FILTER 'Размеры размерной сетки' 'F9' groupSizeSupplier(ss) ==g DEFAULT
+
+    FILTERGROUP filtersSold2
+        FILTER 'Подгруппы с продажей' 'F7' quantitySoldBrandGroupSizeSubCategoryDateFromTo(b,g,sc,dFrom, dTo) DEFAULT
+
+;
+
+DESIGN salesSizeSupplierItem FROM DEFAULT {
+
+    main {
+        NEW topContainer {
+            childConstraints = TO THE BOTTOM;
+
+            type = SPLITV;
+            NEW wor {
+                childConstraints = TO THE RIGHT;
+
+                ADD dates.box {
+                    childConstraints = TO THE RIGHT;
+                }
+                ADD s.box {
+                    childConstraints = TO THE RIGHT;
+                    PROPERTY (nameSup){preferredCharWidth = 25;}
+                }
+                ADD g.box {
+                    childConstraints = TO THE RIGHT;
+                    PROPERTY (nameGr){preferredCharWidth = 25;}
+                }
+            }
+
+            NEW row {
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+                NEW row1 {
+                    fillHorizontal = 1;
+                    childConstraints = TO THE BOTTOM;
+                    ADD ss.box;
+                }
+                NEW row2 {
+                    childConstraints = TO THE BOTTOM;
+                    fillHorizontal = 3.5;
+                    ADD b.box {fillVertical = 1;};
+                    ADD c.box {fillVertical = 2;};
+                    ADD sc.box {fillVertical = 2;};
+                }
+            }
+        }
+        ADD functions.box;
+    }
+}
+
+
+NAVIGATOR {
+    saleLedgerNavigator 'Продажи' {
+        ADD salesArticle;
+        ADD salesArticleTheme;
+        ADD salesSizeSupplierItem;
+    }
+}

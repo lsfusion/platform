@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="specialist" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="5" bottomMargin="0">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10"/>
+	<style name="BoldStyle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="true">
+		<paragraph rightIndent="3"/>
+	</style>
+	<style name="BoldStyle2" fontName="lsf.TimesNewRoman" fontSize="14" isBold="true"/>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Arial" fontSize="10" pdfFontName="lsf.TimesBD" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<field name="specialist" class="java.lang.Integer"/>
+	<field name="nameNativeSpecialist" class="java.lang.String"/>
+	<field name="nameForeignSpecialist" class="java.lang.String"/>
+	<field name="nativePostSpecialist" class="java.lang.String"/>
+	<field name="foreignPostSpecialist" class="java.lang.String"/>
+	<field name="nativeFunctionSpecialist" class="java.lang.String"/>
+	<field name="foreignFunctionSpecialist" class="java.lang.String"/>
+	<field name="nativeScopeSpecialist" class="java.lang.String"/>
+	<field name="foreignScopeSpecialist" class="java.lang.String"/>
+	<field name="nativeExperienceSpecialist" class="java.lang.String"/>
+	<field name="foreignExperienceSpecialist" class="java.lang.String"/>
+	<field name="nativeTitleSpecialist" class="java.lang.String"/>
+	<field name="foreignTitleSpecialist" class="java.lang.String"/>
+	<field name="nativeWorkSpecialist" class="java.lang.String"/>
+	<field name="foreignWorkSpecialist" class="java.lang.String"/>
+	<field name="nativePublicationsSpecialist" class="java.lang.String"/>
+	<field name="foreignPublicationsSpecialist" class="java.lang.String"/>
+	<field name="nativeCitationSpecialist" class="java.lang.String"/>
+	<field name="foreignCitationSpecialist" class="java.lang.String"/>
+	<field name="nativeIntellectualPropertySpecialist" class="java.lang.String"/>
+	<field name="foreignIntellectualPropertySpecialist" class="java.lang.String"/>
+	<field name="webHost" class="java.lang.String"/>
+	<field name="fileStatementSpecialist" class="java.lang.String"/>
+	<field name="filePassportSpecialist" class="java.lang.String"/>
+	<variable name="npp" class="java.lang.Integer" incrementType="Group" incrementGroup="textGroup">
+		<variableExpression><![CDATA[$V{npp}+1]]></variableExpression>
+		<initialValueExpression><![CDATA[1]]></initialValueExpression>
+	</variable>
+	<group name="textGroup">
+		<groupExpression><![CDATA[$F{specialist}]]></groupExpression>
+		<groupHeader>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nameNativeSpecialist}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="31" y="0" width="150" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["ФИО"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="20" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA[$V{npp}]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nativePostSpecialist}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="31" y="0" width="150" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Роль в проекте, должность в компании"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nativeFunctionSpecialist}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="31" y="0" width="150" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Описание функций и задач в рамках проекта"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nativeScopeSpecialist}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="31" y="0" width="150" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Сфера деятельности и профессиональные достижения"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nativeExperienceSpecialist}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="31" y="0" width="150" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Ключевой опыт, имеющий отношение к области данного проекта"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nativeTitleSpecialist}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="31" y="0" width="150" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Образование (ВУЗ, специальность и т.д.), ученая степень, звание"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nativeWorkSpecialist}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="31" y="0" width="150" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Места работы, должности за последние 5 лет"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nativePublicationsSpecialist}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="31" y="0" width="150" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Научные публикации"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nativeCitationSpecialist}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="31" y="0" width="150" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Цитируемость, доклады на международных научных конференциях"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{nativeIntellectualPropertySpecialist}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="31" y="0" width="150" height="18"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Сведения об объектах интеллектуальной собственности"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="26">
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="31" y="0" width="150" height="18" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Ссылка на файл заявления"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=fileStatementSpecialist&params="+$F{specialist}]]></hyperlinkReferenceExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement style="BoldStyle" positionType="Float" x="188" y="0" width="151" height="18" forecolor="#0099FF"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Ссылка на файл паспорта"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/readFile?sid=filePassportSpecialist&params="+$F{specialist}]]></hyperlinkReferenceExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="26">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
+				<textElement/>
+				<textFieldExpression><![CDATA["Ключевые члены команды проекта (не менее 2-х, не более 4-х)"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<summary>
+		<band height="2"/>
+	</summary>
+</jasperReport>

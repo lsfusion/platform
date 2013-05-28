@@ -1,0 +1,78 @@
+MODULE PurchaseManufacturingPrice;
+
+REQUIRE PurchaseInvoice, PricingPurchase, PricingManufacturingPrice, RepricingManufacturingPrice, PriceListLedger;
+
+NAMESPACE Purchase;
+
+@defineDocumentInterfaceCreate (invoice, showManufacturingPrice, 'Цена изготовителя');
+
+// -- Операция
+@defineOperationProperty(showManufacturingPrice, 'Цена изготовителя', showContainer);
+@deriveDocumentOperationProperty(UserInvoice, showManufacturingPrice);
+
+@defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, manufacturing, ' изготовителя');
+
+EXTEND CLASS SystemLedgerPriceListType { manufacturingPriceStockPriceListType 'Изготовителя (последняя по складу)' }
+batchLedgerPriceListType(type) += type == SystemLedgerPriceListType. manufacturingPriceStockPriceListType;
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(manufacturingPriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.manufacturingPriceStockPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(ledger) WHEN CLASS(manufacturingPriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.manufacturingPriceStockPriceListType;
+
+EXTEND CLASS SystemLedgerPriceListType { manufacturingPricePriceListType 'Изготовителя (последняя по ценовой группе)' }
+batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.manufacturingPricePriceListType;
+inPriceListLedgerSystemLedgerPriceListType (ledger, type) += TRUE WHEN CLASS(manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.manufacturingPricePriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.manufacturingPricePriceListType;
+
+// Записываем по умолчанию цену себестоимости в цену изготовителя (а не последнюю)
+manufacturingRoundConditionUserInvoice = DATA RoundCondition(UserInvoice);
+nameManufacturingRoundConditionUserInvoice 'Округление' (userInvoice) = nameRoundCondition(manufacturingRoundConditionUserInvoice(userInvoice));
+
+WHEN SESSION FORMS userInvoice
+    CHANGED(costPriceUserInvoiceDetail(d)) OR CHANGED(manufacturingRoundConditionUserInvoice(invoiceInvoiceDetail(d))) DO {
+    IF manufacturingRoundConditionUserInvoice(invoiceInvoiceDetail(d)) THEN
+        manufacturingPriceUserInvoiceDetail(d) <- roundPriceRoundCondition(costPriceUserInvoiceDetail(d), manufacturingRoundConditionUserInvoice(invoiceInvoiceDetail(d)))
+    ELSE
+        manufacturingPriceUserInvoiceDetail(d) <- costPriceUserInvoiceDetail(d);
+}
+//@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, customerStock);
+
+@defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, curManufacturing, ' изготовителя до');
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, curManufacturing, sku, customerStock);
+
+@changeDocumentDetailPricePrefix(userInvoiceDetail, manufacturing, manRetail, retail, manufacturing, retail, retail);
+@changeDocumentDetailPricePrefix(userInvoiceDetail, curManufacturing, newManRetail, cur, curManufacturing, cur, curRetail);
+
+toShowRepricingPriceInvoice (invoice) = createRepricingInvoice(invoice) AND showManufacturingPriceInvoice(invoice);
+
+EXTEND FORM userInvoice
+    PROPERTIES(i) showManufacturingPriceUserInvoice
+    PROPERTIES(i) nameManufacturingRoundConditionUserInvoice SHOWIF showManufacturingPriceUserInvoice(i)
+    PROPERTIES(d) SHOWIF showManufacturingPriceUserInvoice(i) manufacturingPriceUserInvoiceDetail ON CHANGE changeManufacturingPriceUserInvoiceDetail(d)  AFTER invoiceSumUserInvoiceDetail
+    PROPERTIES(d) BACKGROUND backgroundCurInvoice(i) SHOWIF toShowRepricingPriceInvoice(i) curManufacturingPriceUserInvoiceDetail ON CHANGE changeCurManufacturingPriceUserInvoiceDetail(d) BEFORE curPriceUserInvoiceDetail
+;
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerManufacturing {
+            title = 'Цена изготовителя';
+            ADD PROPERTY(showManufacturingPriceUserInvoice);
+            ADD PROPERTY(nameManufacturingRoundConditionUserInvoice);
+        }
+    }
+}
+
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY showManufacturingPriceInvoice
+    PROPERTIES(d) READONLY manufacturingPriceInvoiceDetail SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail
+;
+//--
+overPricingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));
+overPricingPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail);
+
+manufacturingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));
+//--
+overRepricingPriceRepricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoiceRepricingDetail(detail));
+overRepricingPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail);
+manufacturingPriceRepricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoiceRepricingDetail(detail));
+
+overCurRepricingPriceRepricingDetail(detail) += curManufacturingPriceInvoiceDetail(invoiceDetailInvoiceRepricingDetail(detail));
+overCurRepricingPriceUserInvoiceDetail(detail) += curManufacturingPriceUserInvoiceDetail(detail);
+curManufacturingPriceRepricingDetail(detail) += curManufacturingPriceInvoiceDetail(invoiceDetailInvoiceRepricingDetail(detail));

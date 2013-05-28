@@ -1,0 +1,94 @@
+MODULE Scheduler;
+
+REQUIRE System, Reflection;
+
+
+CLASS ScheduledTask 'Задание планировщика';
+TABLE scheduledTask (ScheduledTask);
+TABLE scheduledTaskProperty (ScheduledTask, Property);
+
+nameScheduledTask 'Имя' = DATA STRING[100] (ScheduledTask);
+runAtStartScheduledTask 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
+startDateScheduledTask 'Дата начала' = DATA DATETIME (ScheduledTask);
+periodScheduledTask 'Повторять каждые (секунд)' = DATA INTEGER (ScheduledTask);
+activeScheduledTask 'Активно' = DATA BOOLEAN (ScheduledTask);
+inScheduledTaskProperty 'Вкл.' = DATA BOOLEAN (ScheduledTask, Property);
+activeScheduledTaskProperty 'Активно' = DATA BOOLEAN (ScheduledTask, Property);
+orderScheduledTaskProperty 'Порядок' = DATA INTEGER (ScheduledTask, Property);
+
+CLASS ScheduledTaskLog 'Лог планировщика';
+TABLE scheduledTaskLog (ScheduledTaskLog);
+TABLE scheduledTaskScheduledTaskLog (ScheduledTask, ScheduledTaskLog);
+
+resultScheduledTaskLog 'Результат' = DATA STRING[200] (ScheduledTaskLog);
+propertyScheduledTaskLog 'Свойство' = DATA STRING[200] (ScheduledTaskLog);
+dateStartScheduledTaskLog 'Начало' = DATA DATETIME (ScheduledTaskLog);
+dateFinishScheduledTaskLog 'Конец' = DATA DATETIME (ScheduledTaskLog);
+scheduledTaskScheduledTaskLog 'Задание планировщика' = DATA ScheduledTask (ScheduledTaskLog);
+
+
+CLASS ScheduledClientTaskLog 'Сообщения клиента';
+TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
+
+scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog);
+messageScheduledClientTaskLog 'Сообщение'= DATA STRING[200] (ScheduledClientTaskLog);
+
+runSetupScheduler 'Планировщик' = ACTION CUSTOM 'platform.server.SetupSchedulerActionProperty';
+
+WHEN [GROUP SUM 1 IF
+    (CHANGED (runAtStartScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (startDateScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (periodScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (activeScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (inScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (activeScheduledTaskProperty(scheduledTask, property)) OR
+    CHANGED (orderScheduledTaskProperty(scheduledTask, property)))] ()
+        DO EXEC runSetupScheduler();
+
+FORM scheduledTask 'Планировщик'
+
+    OBJECTS st=ScheduledTask
+    PROPERTIES (st) activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask, runAtStartScheduledTask
+
+    OBJECTS p=Property
+    PROPERTIES (st, p) inScheduledTaskProperty, activeScheduledTaskProperty, orderScheduledTaskProperty
+    PROPERTIES (st) ADDOBJ, DELETESESSION
+    PROPERTIES (p) READONLY captionProperty, SIDProperty, classProperty, returnProperty
+
+    OBJECTS stl=ScheduledTaskLog
+    PROPERTIES (stl) READONLY propertyScheduledTaskLog, resultScheduledTaskLog, dateStartScheduledTaskLog, dateFinishScheduledTaskLog
+
+    OBJECTS sctl=ScheduledClientTaskLog
+    PROPERTIES (sctl) READONLY messageScheduledClientTaskLog
+
+    FILTERS scheduledTaskScheduledTaskLog(stl) == st,
+            scheduledTaskLogScheduledClientTaskLog(sctl) == stl
+
+    FILTERGROUP filtersScheduler
+            FILTER 'Только отмеченные' 'F9' inScheduledTaskProperty(st, p)
+;
+
+EXTEND DESIGN scheduledTask {
+    main {
+       NEW specContainer {
+            type = SPLITV;
+            ADD st.box;
+            NEW bottomContainer {
+                type = TABBED;
+                ADD p.box;
+                NEW logContainer {
+                    title = 'Лог';
+                    ADD stl.box;
+                    ADD sctl.box;
+                }
+            }
+       }
+       ADD functions.box;
+    }
+}
+
+NAVIGATOR {
+    configuration {
+        ADD Scheduler.scheduledTask;
+    }
+}

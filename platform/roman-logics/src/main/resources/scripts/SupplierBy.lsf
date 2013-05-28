@@ -1,0 +1,24 @@
+MODULE SupplierBy;
+
+REQUIRE Supplier, LegalEntityBy;
+
+NAMESPACE Supplier;
+
+EXTEND FORM supplier
+
+    PROPERTIES(s) UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity
+;
+
+EXTEND DESIGN supplier{
+
+    row2{
+        ADD s.docGroup {
+            childConstraints = TO THE BOTTOM;
+        }
+    }
+}
+
+EXTEND FORM suppliers
+
+    PROPERTIES(s) READONLY UNPLegalEntity
+;

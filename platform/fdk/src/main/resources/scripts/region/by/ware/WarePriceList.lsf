@@ -1,0 +1,57 @@
+MODULE WarePriceList;
+
+REQUIRE PriceListType, Ware, WareItem;
+
+NAMESPACE PriceList;
+
+CLASS WarePriceListType 'Цена cо стеклопосудой' : PriceListType;
+
+nameWarePriceListType 'Наименование' = DATA ISTRING[50](WarePriceListType);
+namePriceListType(type) += nameWarePriceListType(type) IF type IS WarePriceListType;
+
+basePriceListTypeWarePriceListType(type) = DATA BasePriceListType (WarePriceListType);
+nameBasePriceListTypeWarePriceListType 'Базовый вид цены' (type) = nameBasePriceListType(basePriceListTypeWarePriceListType(type));
+
+ledgerPriceListTypePriceListType(type) += basePriceListTypeWarePriceListType(type) AS LedgerPriceListType;
+
+includeVATPriceListType(type) += TRUE IF type IS WarePriceListType;
+
+@defineDocumentHeaderCurrency(warePriceListType);
+currencyPriceListType(warePriceListType) += currencyWarePriceListType(warePriceListType);
+
+wareSku (sku) = ABSTRACT Ware (Sku);
+wareSku (sku) += wareItem(sku);
+
+priceWarePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
+    priceBasePriceListTypeSkuStockDateTime(basePriceListTypeWarePriceListType(type), sku, stock, dateTime) (+)
+    (warePriceDate(wareSku(sku), toDate(dateTime)) IF dateTime IS DATETIME AND type IS WarePriceListType AND stock IS Stock);
+priceWarePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
+    priceBasePriceListTypeBatchStockDateTime(basePriceListTypeWarePriceListType(type), batch, stock, dateTime) (+)
+    (warePriceDate(wareSku(skuBatch(batch)), toDate(dateTime)) IF dateTime IS DATETIME AND type IS WarePriceListType AND stock IS Stock);
+
+pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceWarePriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
+pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceWarePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
+FORM warePriceListType 'Цена cо стеклопосудой'
+    OBJECTS w = WarePriceListType FIXED PANEL
+    PROPERTIES(w) nameWarePriceListType, includeVATPriceListType, nameCurrencyWarePriceListType, nameBasePriceListTypeWarePriceListType
+
+    EDIT WarePriceListType OBJECT w
+;
+
+DESIGN warePriceListType FROM DEFAULT {
+    w.box{
+        ADD PROPERTY(nameWarePriceListType);
+        ADD PROPERTY(includeVATPriceListType);
+        ADD PROPERTY(nameCurrencyWarePriceListType);
+        ADD PROPERTY(nameBasePriceListTypeWarePriceListType);
+    }
+}
+
+addWarePriceListType 'Добавить цену cо стеклопосудой' = ACTION ADDFORM WarePriceListType;
+editWarePriceListType 'Редактировать' = ACTION EDITFORM WarePriceListType;
+editPriceListType(priceListType) += editWarePriceListType(priceListType);
+
+EXTEND FORM priceListTypes
+    PROPERTIES() addWarePriceListType TODRAW pt FORCE PANEL
+;

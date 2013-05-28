@@ -1,0 +1,14 @@
+MODULE PriceListWarehouse;
+
+REQUIRE PriceListType, Warehouse, PriceListStock;
+
+//------------------------- Расширяем форму склада -------------------------//
+
+priceStockGroupWarehouse = DATA PriceStockGroup (Warehouse);
+namePriceStockGroupWarehouse 'Ценовая группа' (warehouse)= namePriceStockGroup(priceStockGroupWarehouse(warehouse));
+
+priceStockGroupStock(stock) += priceStockGroupWarehouse(stock);
+
+EXTEND FORM warehouse
+    PROPERTIES(w)   namePriceStockGroupWarehouse
+;

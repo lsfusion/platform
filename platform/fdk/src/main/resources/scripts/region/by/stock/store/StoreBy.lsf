@@ -1,0 +1,8 @@
+MODULE StoreBy;
+
+REQUIRE Store, LegalEntityBy;
+
+NAMESPACE Store;
+
+UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(legalEntityDepartmentStore(departmentStore));
+

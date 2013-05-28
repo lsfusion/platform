@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.1000000000000025"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<parameter name="expert_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="expert_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="expert_params" class="java.util.Map"/>
+	<parameter name="oldexpert_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="oldexpert_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="oldexpert_params" class="java.util.Map"/>
+	<parameter name="prevVote_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="prevVote_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="prevVote_params" class="java.util.Map"/>
+	<field name="vote" class="java.lang.Integer"/>
+	<field name="date" class="java.util.Date"/>
+	<field name="dateProjectVote" class="java.util.Date"/>
+	<field name="nameNativeClaimerVote" class="java.lang.String"/>
+	<field name="nameNativeProjectVote" class="java.lang.String"/>
+	<field name="prevDateVote" class="java.util.Date"/>
+	<field name="prevDateStartVote" class="java.util.Date"/>
+	<field name="nameAblateClaimerVote" class="java.lang.String"/>
+	<field name="quantityInVote" class="java.lang.Integer"/>
+	<field name="quantityInOldVote" class="java.lang.Integer"/>
+	<field name="dateEndVote" class="java.util.Date"/>
+	<field name="isStatusVote" class="java.lang.Boolean"/>
+	<field name="isR1ProjectVote" class="java.lang.Boolean"/>
+	<field name="nameNativeClusterVote" class="java.lang.String"/>
+	<field name="nameMaxForesightVote" class="java.lang.String"/>
+	<variable name="statusPrev" class="java.lang.String">
+		<variableExpression><![CDATA[($F{isStatusVote}==null?"Заявителя по предварительной экспертизе":"Соискателя")]]></variableExpression>
+		<initialValueExpression><![CDATA[($F{isStatusVote}==null?"Заявителя по предварительной экспертизе":"Соискателя")]]></initialValueExpression>
+	</variable>
+	<variable name="statusPrev_1" class="java.lang.String">
+		<variableExpression><![CDATA[]]></variableExpression>
+		<initialValueExpression><![CDATA[($F{isStatusVote}==null?"Заявителем по предварительной экспертизе":"Соискателем")]]></initialValueExpression>
+	</variable>
+	<group name="captionGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
+	</group>
+	<group name="textGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
+		<groupHeader>
+			<band height="280" splitType="Prevent">
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="175" width="489" height="45"/>
+					<textElement textAlignment="Justified" verticalAlignment="Top">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, "+
+"рассмотрев поданную "+($F{isR1ProjectVote}==null?"":" Соискателем - ") + $F{nameNativeClaimerVote} + " заявку на " + ($F{isStatusVote}==null?"проведение предварительной экспертизы проекта":"присвоение статуса участника проекта") + " от "
++ platform.base.BaseUtils.formatRussian($F{dateProjectVote}) + " года (проект «" + $F{nameNativeProjectVote} + "»),"+($F{prevDateVote}==null?
+" в соответствии с пунктом " + ($F{isStatusVote}==null?($F{isR1ProjectVote}==null?"14 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково»":"8 Положения о проведении предварительной экспертизы проектов"):($F{isR1ProjectVote}==null?"19":"9")+
+" Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково»")+" и пунктами "+($F{isR1ProjectVote}==null?"4-10":"4-7"):
+" учитывая, что заседание предыдущей Экспертной коллегии было признано несостоявшимся (протокол заседания Экспертной коллегии по вопросу о соответствии проекта, представленного "+($F{isR1ProjectVote}==null?$V{statusPrev_1}:
+"Соискателем")+", критериям, указанным в подпункте "+($F{isR1ProjectVote}==null?"2.6":"E")+" пункта 2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», от "+platform.base.BaseUtils.formatRussian($F{prevDateVote})+" года), в соответствии с пунктом "+($F{isR1ProjectVote}==null?"17":"14"))+
+" Положения об Экспертных коллегиях Фонда"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="50" y="11" width="489" height="48"/>
+					<textElement textAlignment="Center">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Некоммерческая организация
+Фонд развития Центра разработки и
+коммерциализации новых технологий
+
+]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="250" y="89" width="78" height="30"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[Москва]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="250" y="59" width="78" height="30"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[РЕШЕНИЕ]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement mode="Transparent" x="50" y="119" width="489" height="42"/>
+					<textElement textAlignment="Center">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{prevDateVote}==null? "О направлении заявки "+($F{isR1ProjectVote}==null?$V{statusPrev}:" Соискателя")+" \n"+
+"на рассмотрение в Экспертную коллегию \n"+
+"для проведения экспертизы заявки по существу и о созыве заседания \n"+
+"Экспертной коллегии":"О созыве заседания новой Экспертной коллегии")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="50" y="78" width="200" height="25"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.formatRussian($F{date}) + " года"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="220" width="489" height="15"/>
+					<textElement textAlignment="Justified" verticalAlignment="Top">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression><![CDATA["р е ш и л а"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="235" width="489" height="15"/>
+					<textElement textAlignment="Justified" verticalAlignment="Top">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression><![CDATA["1. "+($F{prevDateVote}==null?"Направить указанную заявку "+($F{isR1ProjectVote}==null?$V{statusPrev}:" Соискателя")+" на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу.":"Созвать заседание новой Экспертной коллегии для проведения экспертизы указанной заявки по существу.")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="250" width="489" height="15"/>
+					<textElement textAlignment="Justified" verticalAlignment="Top">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression><![CDATA["2. "+($F{prevDateVote}==null?"Созвать заседание Экспертной коллегии для проведения экспертизы указанной заявки по существу.":($F{isR1ProjectVote}!=null?"Путем случайной выборки из числа экспертов по Направлению деятельности, указанному Соискателем в заявке, определить следующий состав Экспертной коллегии:":"Путем случайной выборки из числа экспертов по Инновационному приоритету «"+$F{nameMaxForesightVote}+"» в рамках Направления деятельности «"+$F{nameNativeClusterVote}+"» определить следующий состав Экспертной коллегии:"))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="265" width="489" height="15" isRemoveLineWhenBlank="true">
+						<printWhenExpression><![CDATA[$F{prevDateVote}==null]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Justified" verticalAlignment="Top">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression><![CDATA["3. "+($F{isR1ProjectVote}!=null?"Путем случайной выборки из числа экспертов по Направлению деятельности, указанному Соискателем в заявке, определить следующий состав Экспертной коллегии:":"Путем случайной выборки из числа экспертов по Инновационному приоритету «"+$F{nameMaxForesightVote}+"» в рамках Направления деятельности «"+$F{nameNativeClusterVote}+"» определить следующий состав Экспертной коллегии:")]]></textFieldExpression>
+				</textField>
+				<break>
+					<reportElement x="0" y="0" width="100" height="1"/>
+				</break>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="84">
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="0" width="489" height="37"/>
+					<textElement textAlignment="Justified" verticalAlignment="Top">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression><![CDATA["4. Направить членам Экспертной коллегии" +($F{prevDateVote}==null?"":", указанным в пункте 2 настоящего Решения,") + ($F{isR1ProjectVote}==null?($F{prevDateVote}==null?" Анкету "+$V{statusPrev}+" (в электронном виде) и Бюллетень оценки.":" материалы заявки "+$V{statusPrev}+" (в электронном виде) и Бюллетень оценки."):" материалы заявки Соискателя (в электронном виде) и Бюллетень оценки.")]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement positionType="Float" x="435" y="63" width="104" height="16"/>
+					<textElement verticalAlignment="Bottom"/>
+					<text><![CDATA[Д.В. Дудина]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="63" width="359" height="16"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{isR1ProjectVote}==null?"Ответственный секретарь Экспертных коллегий":"Ответственный секретарь Совета")]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<detail>
+		<band>
+			<subreport>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{expert_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{expert_source}]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{expert_report}]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="1">
+			<printWhenExpression><![CDATA[$F{prevDateVote}!=null]]></printWhenExpression>
+			<subreport>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{prevVote_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{prevVote_source}]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{prevVote_report}]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="2">
+			<subreport>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{oldexpert_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{oldexpert_source}]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{oldexpert_report}]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

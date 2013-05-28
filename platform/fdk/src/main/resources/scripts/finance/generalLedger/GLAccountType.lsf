@@ -1,0 +1,188 @@
+MODULE GLAccountType;
+
+REQUIRE System,
+        Utils,
+        Document,
+        LegalEntity,
+        Historizable,
+        Hierarchy,
+        Currency,
+        Finance;
+
+PRIORITY Utils;
+
+//------------------------- План счетов -------------------------------//
+
+CLASS GLAccountType 'План счетов';
+TABLE GLAccountType(GLAccountType);
+
+nameGLAccountType 'Наименование' = DATA ISTRING[150](GLAccountType);
+
+currencyGLAccountType = DATA Currency (GLAccountType);
+nameCurrencyGLAccountType 'Валюта' (GLAccountType)= nameCurrency(currencyGLAccountType(GLAccountType));
+idGLAccountType 'Идентификатор' = DATA STRING[20] (GLAccountType) MINCHARWIDTH 15 PREFCHARWIDTH 20;
+
+GLAccountTypeIdGLAccountType (string1) = GROUP AGGR GLAccountType
+    BY idGLAccountType(GLAccountType) WHERE GLAccountType IS GLAccountType;
+
+FORM GLAccountType 'План счетов'
+    OBJECTS g = GLAccountType FIXED PANEL
+    PROPERTIES(g) nameGLAccountType, idGLAccountType, nameCurrencyGLAccountType
+    EDIT GLAccountType OBJECT g
+;
+
+FORM GLAccountTypes 'Планы счетов'
+    OBJECTS g = GLAccountType
+    PROPERTIES(g) READONLY nameGLAccountType, idGLAccountType, nameCurrencyGLAccountType
+    PROPERTIES(g) ADDFORM, EDITFORM, DELETE
+    DIALOG GLAccountType OBJECT g
+;
+
+//-------------------------- Счета -------------------------//
+
+CLASS GLAccount 'Счет';
+TABLE GLAccount(GLAccount);
+
+nameGLAccount 'Наименование' = DATA STRING[255] (GLAccount) MINCHARWIDTH 40 MAXCHARWIDTH 80 PREFCHARWIDTH 80;
+GLAccountTypeGLAccount = DATA GLAccountType (GLAccount) AUTOSET;
+nameGLAccountTypeGLAccount 'План счетов' (GLAccount)= nameGLAccountType(GLAccountTypeGLAccount(GLAccount));
+nameCurrencyGLAccount 'Валюта' (GLAccount) = nameCurrencyGLAccountType(GLAccountTypeGLAccount(GLAccount));
+
+idGLAccount 'Идентификатор' = DATA STRING[20] (GLAccount) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
+
+TABLE GLAccountGLAccount(GLAccount, GLAccount);
+@defineHierarchy(GLAccount);
+
+canonicalIdGLAccount 'Канонический код' (GLAccount) = toString255(
+                           [GROUP CONCAT idGLAccount(parent), ' / ' BY child ORDER DESC levelGLAccountGLAccount(child, parent)](GLAccount))
+                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+canonicalNamesGLAccount 'Каноническое имя' (GLAccount) = toString255(
+                           [GROUP CONCAT nameGLAccount(parent), ' / ' BY child ORDER DESC levelGLAccountGLAccount(child, parent)](GLAccount))
+                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+
+nameAccountParentGLAccount 'Родительский объект' (GLAccount)= nameGLAccount(parentGLAccount(GLAccount));
+
+CONSTRAINT GLAccountTypeGLAccount(parentGLAccount(GLAccount)) != GLAccountTypeGLAccount(GLAccount)
+           CHECKED BY parentGLAccount MESSAGE 'План счетов родительской объекта должна совпадать с планом счетов объекта';
+
+GLAccountIdTypeIdGLAccount (string1, string2) = GROUP AGGR GLAccount
+    BY idGLAccountType(GLAccountTypeGLAccount(GLAccount)), idGLAccount(GLAccount) WHERE GLAccount IS GLAccount;
+
+FORM GLAccount 'Счет'
+    OBJECTS g=GLAccount FIXED PANEL
+    PROPERTIES(g) nameGLAccountTypeGLAccount, nameGLAccount, idGLAccount, nameAccountParentGLAccount
+    EDIT GLAccount OBJECT g
+;
+
+FORM GLAccounts 'Счета'
+    OBJECTS t = GLAccountType FIXED PANEL
+    PROPERTIES(t) SELECTOR nameGLAccountType
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
+
+    OBJECTS l = LegalEntity FIXED PANEL
+    PROPERTIES(l) SELECTOR nameLegalEntity
+
+    TREE treeGroups g=GLAccount PARENT parentGLAccount
+    PROPERTIES(g) READONLY nameGLAccount, idGLAccount
+    PROPERTIES(g) READONLY canonicalIdGLAccount
+    PROPERTIES(g) ADDFORM, EDITFORM, deletea=DELETE
+    FILTERS GLAccountTypeGLAccount(g) == t
+    ORDER BY canonicalIdGLAccount
+;
+
+DESIGN GLAccounts FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        NEW primary {
+            childConstraints = TO THE BOTTOM;
+            type = SPLITV;
+            NEW row {
+                childConstraints = TO THE BOTTOM;
+                NEW row1 {
+                    childConstraints = TO THE RIGHT;
+                    ADD t.box;
+                    ADD l.box;
+                }
+                ADD dates.box {
+                    childConstraints = TO THE RIGHT;
+                }
+                ADD treeGroups.tree.box{ title = 'Счет';}
+            }
+            NEW wor {
+                type = TABBED;
+            }
+        }
+    }
+    ADD functions.box;
+}
+
+FORM GLAccountDialog 'Счета'
+    OBJECTS t = GLAccountType FIXED PANEL
+    PROPERTIES(t) SELECTOR nameGLAccountType
+
+    TREE treeGroups g=GLAccount PARENT parentGLAccount
+    PROPERTIES(g) READONLY nameGLAccount, idGLAccount
+    PROPERTIES(g) READONLY canonicalIdGLAccount
+    PROPERTIES(g) ADDFORM, EDITFORM, deletea=DELETE
+    FILTERS GLAccountTypeGLAccount(g) == t
+    ORDER BY canonicalIdGLAccount
+    DIALOG GLAccount OBJECT g
+;
+
+overCopyGLAccount = ABSTRACT ACTION (GLAccount, GLAccount);
+copyGLAccountType 'Копировать' = ACTION (GLAccountType) NEWSESSION {
+    LOCAL mapping = GLAccount (GLAccount);
+
+    FOR ADDOBJ t = GLAccountType DO {
+        SET currencyGLAccountType(t) <- currencyGLAccountType(GLAccountType);
+
+        FOR GLAccountTypeGLAccount(GLAccount) == GLAccountType DO {
+            FOR ADDOBJ d=GLAccount DO {
+                SET GLAccountTypeGLAccount(d) <- t;
+                SET nameGLAccount(d) <- nameGLAccount(GLAccount);
+                SET idGLAccount(d) <- idGLAccount(GLAccount);
+                SET parentGLAccount(d) <- mapping(parentGLAccount(GLAccount));
+                SET mapping(GLAccount) <- d;
+                EXEC overCopyGLAccount(GLAccount, d);
+            }
+        }
+
+        FORM GLAccountType OBJECTS g = t MANAGESESSION DOCKEDMODAL;
+    }
+} TOOLBAR;
+
+EXTEND FORM GLAccountTypes
+    PROPERTIES(g) copyGLAccountType
+;
+
+NAVIGATOR {
+    financeNavigator {
+        NEW accountType 'Бухгалтерский учет' {
+            ADD GLAccountTypes;
+            ADD GLAccounts;
+        }
+    }
+}
+
+// ----------------------------------- Стандартные данные ----------------------------------- //
+
+loadDefaultGLAccountType 'Добавить значение плана счетов' = ACTION (iname, isid, isidCurrency) {
+    FOR ADDOBJ t = GLAccountType DO {
+        SET nameGLAccountType(t) <- iname;
+        SET idGLAccountType (t) <- isid;
+        SET currencyGLAccountType(t) <- currencyShortName(isidCurrency);
+    }
+}
+loadDefaultGLAccount 'Добавить значение счета' = ACTION (iname, isid, sidType, sidParent) {
+    FOR ADDOBJ g = GLAccount DO {
+        SET nameGLAccount(g) <- iname;
+        SET idGLAccount(g) <- isid;
+        SET GLAccountTypeGLAccount(g) <- GLAccountTypeIdGLAccountType(sidType);
+        SET parentGLAccount (g) <- GLAccountIdTypeIdGLAccount(sidType, sidParent);
+    }
+}
+loadDefaultGLAccounts 'Загрузить стандарный план счетов и счета' () = ABSTRACT ACTION ()  IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultGLAccounts);

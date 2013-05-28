@@ -1,0 +1,26 @@
+MODULE SalePurchaseInvoiceShipmentBin;
+
+REQUIRE PurchaseShipmentBin, SalePurchaseInvoiceShipment, SaleShipmentBin;
+
+PRIORITY Sale;
+//---------------------------------Ячейка ----------------------------------//
+
+@defineDocumentInterfaceDetailBinCustomPrefix(invoiceDetail, purchase, ' (закупка)');
+
+Purchase.binInvoiceDetail(detail) += purchaseBinInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));
+showBinCreateUserInvoice (invoice) = showBinUserInvoice(invoice) AND createPurchaseShipmentUserInvoice(invoice);
+showBinCreateInvoice (invoice) = showBinInvoice(invoice) AND createPurchaseShipmentInvoice(invoice);
+
+purchaseBinUserInvoiceDetail(detail) <- binStockSku(customerStockUserInvoiceDetail(detail), skuUserInvoiceDetail(detail))
+    WHEN CHANGED(customerStockUserInvoiceDetail(detail)) OR
+         CHANGED(skuUserInvoiceDetail(detail));
+
+EXTEND FORM userInvoice
+    PROPERTIES(d) BEFORE purchaseExpiryDateUserInvoiceDetail SHOWIF showBinCreateUserInvoice(i) BACKGROUND backgroundPurchaseShipmentInvoice(i)
+                  purchaseNameBinUserInvoiceDetail
+;
+
+EXTEND FORM invoices
+    PROPERTIES(d) READONLY BEFORE purchaseExpiryDateInvoiceDetail SHOWIF showBinCreateInvoice(i) BACKGROUND backgroundPurchaseShipmentInvoice(i)
+                  purchaseNameBinInvoiceDetail
+;

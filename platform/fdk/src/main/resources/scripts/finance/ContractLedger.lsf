@@ -1,0 +1,702 @@
+MODULE ContractLedger;
+
+REQUIRE StockContract,
+        Document,
+        LegalEntity,
+        Numerator,
+        Currency,
+        Finance;
+
+PRIORITY Contract;
+
+META defineContractLedgerPrefix (caption, prefix)
+
+    CLASS ABSTRACT Contract###prefix##Ledger caption;
+    TABLE contract###prefix##Ledger(Contract###prefix##Ledger);
+
+    isPostedContract###prefix##Ledger 'Закрыт' (contract###prefix##Ledger) = ABSTRACT BOOLEAN (Contract###prefix##Ledger) PERSISTENT;
+
+    dateTimeContract###prefix##Ledger 'Дата/время' (contract###prefix##Ledger) = ABSTRACT DATETIME (Contract###prefix##Ledger) PERSISTENT;
+    dateContract###prefix##Ledger 'Дата' (contract###prefix##Ledger) = toDate(dateTimeContract###prefix##Ledger(contract###prefix##Ledger));
+    timeContract###prefix##Ledger 'Время' (contract###prefix##Ledger) = toTime(dateTimeContract###prefix##Ledger(contract###prefix##Ledger));
+
+    contractContract###prefix##Ledger 'Договор' (contract###prefix##Ledger) = ABSTRACT Contract (Contract###prefix##Ledger) PERSISTENT;
+
+    descriptionContract###prefix##Ledger 'Название документа' (contract###prefix##Ledger) = ABSTRACT STRING[200] (Contract###prefix##Ledger) PERSISTENT;
+
+    sumContract###prefix##Ledger 'Сумма' (contract###prefix##Ledger) = ABSTRACT NUMERIC[16,2] (Contract###prefix##Ledger) PERSISTENT;
+
+    currentBalance###prefix##Contract 'Текущая сумма задолженности по договору' (contract)=
+        GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger) IF isPostedContract###prefix##Ledger(contract###prefix##Ledger)
+              BY contractContract###prefix##Ledger(contract###prefix##Ledger) PERSISTENT;
+
+    balanceB###prefix##ContractDate 'Сумма задолженности по договору на дату (до)' (contract, date) =
+        (currentBalance###prefix##Contract(contract) IF date AS DATE) (-)
+        [GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger) IF isPostedContract###prefix##Ledger(contract###prefix##Ledger)
+                  AND dateContract###prefix##Ledger(contract###prefix##Ledger) >= (date AS DATE)
+              BY contractContract###prefix##Ledger(contract###prefix##Ledger), date](contract, date);
+
+    balanceA###prefix##ContractDate 'Сумма задолженности по договору на дату (после)' (contract, date) =
+        (currentBalance###prefix##Contract(contract) IF date AS DATE) (-)
+        [GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger) IF isPostedContract###prefix##Ledger(contract###prefix##Ledger)
+                  AND dateContract###prefix##Ledger(contract###prefix##Ledger) > (date AS DATE)
+              BY contractContract###prefix##Ledger(contract###prefix##Ledger), date](contract, date);
+
+END
+
+@defineContractLedgerPrefix('Изменение управленческого долга по контракту', );
+@defineContractLedgerPrefix('Изменение бухгалтерского долга по контракту', a);
+
+META implementContractLedger(prefix, object, contractProp)
+
+    isPostedContract###prefix##Ledger(contract###prefix##Ledger) += isPosted###object(contract###prefix##Ledger);
+    dateTimeContract###prefix##Ledger(contract###prefix##Ledger) += dateTime###object(contract###prefix##Ledger);
+    contractContract###prefix##Ledger(contract###prefix##Ledger) += contractProp###object(contract###prefix##Ledger);
+    descriptionContract###prefix##Ledger(contract###prefix##Ledger) += description###object(contract###prefix##Ledger);
+
+END
+
+META implementContractPrepaymentLedger(object, sumProp, contractProp)
+    @implementContractPrepaymentLedgerInner(object, ###object, sumProp, contractProp);
+END
+
+META implementContractPrepaymentLedgerInner(object, classPrefix, sumProp, contractProp)
+
+    CLASS classPrefix##ContractLedger : ContractLedger;
+    //TABLE object##ContractLedger(object##ContractLedger);
+
+    needToCreate###object##ContractLedger (object, paymentPeriod) =
+        isSaleTypeContract(contractProp###object(object)) AND
+        isPrepaymentTypePaymentCondition(paymentCondition###object(object)) AND
+        paymentCondition###object(object) == paymentConditionPaymentPeriod(paymentPeriod) AND
+        isPosted###object(object);
+
+    @defineAggregation(object, paymentPeriod, object##ContractLedger, needToCreate###object##ContractLedger);
+
+    isPostedContractLedger(object##ContractLedger) += isPosted###object(object###object##ContractLedger(object##ContractLedger));
+    dateTimeContractLedger(object##ContractLedger) += sumDateTimeDay(dateTime###object(object###object##ContractLedger(object##ContractLedger)),
+                                                                     countDaysPaymentPeriod(paymentPeriod###object##ContractLedger(object##ContractLedger)));
+    contractContractLedger(object##ContractLedger) += contractProp###object(object###object##ContractLedger(object##ContractLedger));
+    descriptionContractLedger(object##ContractLedger) += description###object(object###object##ContractLedger(object##ContractLedger));
+    sumContractLedger(object##ContractLedger) +=
+        toNumeric16p2(sumProp(object###object##ContractLedger(object##ContractLedger)) * percentPaymentPeriod(paymentPeriod###object##ContractLedger(object##ContractLedger)) / 100.0);
+
+END
+
+//--------------------------------------------- Логика приходов и расходов ------------------------------------------------------//
+
+META defineOutContractLedgerInContractLedgerPrefix(caption, prefix, classPrefix)
+
+    CLASS ABSTRACT classPrefix##ContractLedger caption;
+    TABLE prefix##ContractLedger(classPrefix##ContractLedger);
+
+    isPosted###prefix##ContractLedger 'Закрыт' (prefix##ContractLedger) = ABSTRACT BOOLEAN (classPrefix##ContractLedger) PERSISTENT;
+
+    dateTime###prefix##ContractLedger 'Дата/время' (prefix##ContractLedger) = ABSTRACT DATETIME (classPrefix##ContractLedger) PERSISTENT;
+    date###prefix##ContractLedger 'Дата' (prefix##ContractLedger) = toDate(dateTime###prefix##ContractLedger(prefix##ContractLedger));
+    time###prefix##ContractLedger 'Время' (prefix##ContractLedger) = toTime(dateTime###prefix##ContractLedger(prefix##ContractLedger));
+
+    contract###prefix##ContractLedger 'Договор' (prefix##ContractLedger) = ABSTRACT Contract (classPrefix##ContractLedger) PERSISTENT;
+
+    description###prefix##ContractLedger 'Название документа' (prefix##ContractLedger) = ABSTRACT STRING[200] (classPrefix##ContractLedger) PERSISTENT;
+    sum###prefix##ContractLedger 'Сумма' = ABSTRACT NUMERIC[22,8] (classPrefix##ContractLedger) PERSISTENT;
+
+    is###prefix##ContractLedger (prefix##ContractLedger) = prefix##ContractLedger IS classPrefix##ContractLedger;
+
+END
+
+@defineOutContractLedgerInContractLedgerPrefix('Приход', in, In);
+paymentConditionInContractLedger 'Условия оплаты'  = ABSTRACT PaymentCondition (InContractLedger);
+@defineOutContractLedgerInContractLedgerPrefix('Расход', out, Out);
+
+TABLE outContractLedgerInContractLedger (OutContractLedger, InContractLedger);
+costOutContractLedgerInContractLedger 'Оплачено из документа' (outContractLedger, inContractLedger) = DATA NUMERIC[16,2] (OutContractLedger, InContractLedger) PERSISTENT;
+costedOutContractLedgerInContractLedger 'Оплачено по документу' (inContractLedger) =
+    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) IF
+    isPostedInContractLedger(inContractLedger) AND isPostedOutContractLedger(outContractLedger)
+    BY inContractLedger PERSISTENT;
+costedOutContractLedgerInContractLedgerDate 'Оплачено по документу на дату' (inContractLedger, date) =
+    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) IF
+              isPostedInContractLedger(inContractLedger) AND isPostedOutContractLedger(outContractLedger) AND
+              dateOutContractLedger(outContractLedger) <= (date AS DATE)
+    BY inContractLedger, date;
+costedInContractLedgerOutContractLedger 'Расписано из документа' (outContractLedger) =
+    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) IF
+    isPostedInContractLedger(inContractLedger) //AND isPostedOutContractLedger(outContractLedger)
+    BY outContractLedger PERSISTENT;
+costedInContractLedgerOutContractLedgerDate 'Расписано из документа на дату' (outContractLedger, date) =
+    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) IF
+              isPostedInContractLedger(inContractLedger) AND //isPostedOutContractLedger(outContractLedger) AND
+              dateInContractLedger(inContractLedger) <= (date AS DATE)
+    BY outContractLedger, date;
+
+debtInContractLedger 'Долг по документу' (inContractLedger) =
+    sumInContractLedger(inContractLedger) (-) costedOutContractLedgerInContractLedger(inContractLedger);
+
+debtInContractLedgerDate 'Долг по документу на дату' (inContractLedger, date) =
+    sumInContractLedger(inContractLedger) (-) costedOutContractLedgerInContractLedgerDate(inContractLedger, date);
+
+appliedInContractLedgerBonusPeriod(inContractLedger, bonusPeriod) =
+    debtInContractLedgerDate(inContractLedger, sumDate(dateInContractLedger(inContractLedger), countDaysBonusPeriod(bonusPeriod))) <= 0.0
+    AND paymentConditionInContractLedger(inContractLedger) == paymentConditionBonusPeriod(bonusPeriod);
+
+daysBonusPeriodInContractLedger(inContractLedger, date) =
+    GROUP MIN countDaysBonusPeriod(bonusPeriod) IF
+              paymentConditionInContractLedger(inContractLedger) == paymentConditionBonusPeriod(bonusPeriod) AND
+              sumDate(dateInContractLedger(inContractLedger), countDaysBonusPeriod(bonusPeriod)) >= (date AS DATE)
+              //appliedInContractLedgerBonusPeriod(inContractLedger, bonusPeriod)
+    BY inContractLedger, date;
+
+bonusPeriodInContractLedger(inContractLedger, date) =
+    bonusPeriodPaymentConditionDays(paymentConditionInContractLedger(inContractLedger), daysBonusPeriodInContractLedger(inContractLedger, date));
+
+bonusSumInContractLedger 'Сумма бонуса' (inContractLedger, date) =
+    sumInContractLedger(inContractLedger) * percentBonusPeriod(bonusPeriodInContractLedger(inContractLedger, date))/100
+    IF debtInContractLedger(inContractLedger) > 0.0;
+
+bonusDebtSumInContractLedgerDate 'Сумма долга по документу с учетом бонуса' (inContractLedger, date) =
+    debtInContractLedgerDate(inContractLedger, date) (-) bonusSumInContractLedger(inContractLedger, date);
+
+CONSTRAINT costedInContractLedgerOutContractLedger(outContractLedger) > sumOutContractLedger(outContractLedger)
+    MESSAGE 'Расписанная сумма должна быть равна сумме платежа';
+
+orderInContractLedger(inContractLedger) = STRUCT(dateTimeInContractLedger(inContractLedger), inContractLedger);
+
+sumInFIFOOutContractLedgerInContractLedger (outContractLedger, inContractLedger) =
+    PARTITION UNGROUP sumOutContractLedger
+              LIMIT debtInContractLedger(inContractLedger) IF
+                    contractOutContractLedger(outContractLedger) == contractInContractLedger(inContractLedger) AND
+                    isPostedInContractLedger(inContractLedger)
+              BY outContractLedger
+              ORDER orderInContractLedger(inContractLedger);
+
+sumInLIFOOutContractLedgerInContractLedger (outContractLedger, inContractLedger) =
+    PARTITION UNGROUP sumOutContractLedger
+              LIMIT debtInContractLedger(inContractLedger) IF
+                    contractOutContractLedger(outContractLedger) == contractInContractLedger(inContractLedger) AND
+                    isPostedInContractLedger(inContractLedger)
+              BY outContractLedger
+              ORDER DESC orderInContractLedger(inContractLedger);
+
+writeOutContractLedgerFIFO 'Расписать по FIFO' = ACTION (outContractLedger) {
+
+    SET costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) <- NULL;
+    SET costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) <- sumInFIFOOutContractLedgerInContractLedger(outContractLedger, inContractLedger);
+}
+
+writeOutContractLedgerLIFO 'Расписать по LIFO' = ACTION (outContractLedger) {
+
+    SET costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) <- NULL;
+    SET costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) <- sumInLIFOOutContractLedgerInContractLedger(outContractLedger, inContractLedger);
+}
+
+META implementOutContractLedgerInContractLedgerPrefix(prefix, object, contractProp)
+
+    isPosted###prefix##ContractLedger(prefix##ContractLedger) += isPosted###object(prefix##ContractLedger);
+    dateTime###prefix##ContractLedger(prefix##ContractLedger) += dateTime###object(prefix##ContractLedger);
+    contract###prefix##ContractLedger(prefix##ContractLedger) += contractProp###object(prefix##ContractLedger);
+    description###prefix##ContractLedger(prefix##ContractLedger) += description###object(prefix##ContractLedger);
+
+END
+
+//--------------------------------------------- Платежное требование ------------------------------------------------------//
+
+CLASS PaymentRequest 'Платежное требование' : NumeratedObject, ContractLedger, InContractLedger;
+CLASS PaymentRequestPosted 'Проведенное платежное требование' : PaymentRequest, PostedObject;
+TABLE paymentRequest(PaymentRequest);
+
+@defineDocumentHeaderPosted(PaymentRequest);
+@defineNumeratedObjectDefault(PaymentRequest, 'Нумератор для платежных требований', 'ПТ');
+
+datePaymentRequest 'Дата' (paymentRequest) = DATA DATE (PaymentRequest);
+datePaymentRequest(paymentRequest) <- currentDate() WHEN ASSIGNED(paymentRequest IS PaymentRequest);
+timePaymentRequest 'Время' (paymentRequest) = DATA TIME (PaymentRequest);
+timePaymentRequest(paymentRequest) <- currentTime() WHEN ASSIGNED(paymentRequest IS PaymentRequest);
+dateTimePaymentRequest 'Дата время' (paymentRequest) = dateTimeToDateTime(datePaymentRequest(paymentRequest), timePaymentRequest(paymentRequest));
+
+contractPaymentRequest 'Контракт' (paymentRequest) = DATA Contract (PaymentRequest) AUTOSET;
+seriesNumberContractPaymentRequest 'Номер контракта' (paymentRequest) = seriesNumberContract(contractPaymentRequest(paymentRequest));
+
+notePaymentRequest 'Примечание' (paymentRequest) = DATA STRING[200] (PaymentRequest);
+
+payerPaymentRequest(paymentRequest) = DATA LegalEntity (PaymentRequest);
+payerPaymentRequest(paymentRequest) <- partyBContract(contractPaymentRequest(paymentRequest)) WHEN ASSIGNED (contractPaymentRequest(paymentRequest));
+namePayerPaymentRequest 'Организация (покупатель)' (paymentRequest) = nameLegalEntity(payerPaymentRequest(paymentRequest));
+lenderPaymentRequest(paymentRequest) = DATA LegalEntity (PaymentRequest);
+lenderPaymentRequest(paymentRequest) <- partyAContract(contractPaymentRequest(paymentRequest)) WHEN ASSIGNED (contractPaymentRequest(paymentRequest));
+nameLenderPaymentRequest 'Организация (поставщик)' (paymentRequest) = nameLegalEntity(lenderPaymentRequest(paymentRequest));
+
+sumPaymentRequest 'Сумма' (paymentRequest) = DATA NUMERIC[16,2] (PaymentRequest);
+
+descriptionPaymentRequest 'Название документа' =
+    [FORMULA STRING[200] '\'Платежное требование \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+    seriesNumberObject(paymentRequest), datePaymentRequest(paymentRequest), nameLenderPaymentRequest(paymentRequest)) PERSISTENT;
+
+@implementContractLedger( ,paymentRequest, contract);
+sumContractLedger(contractLedger) += sumPaymentRequest(contractLedger);
+
+FORM paymentRequest 'Платежное требование'
+
+    OBJECTS p = PaymentRequest FIXED PANEL
+    PROPERTIES(p) objectClassName, nameNumeratorObject, numberObject, seriesObject, datePaymentRequest, timePaymentRequest,
+                  seriesNumberContractPaymentRequest, notePaymentRequest
+    PROPERTIES(p) READONLY namePayerPaymentRequest, nameLenderPaymentRequest
+    PROPERTIES(p) sumPaymentRequest
+
+    EVENTS
+        ON OK prePostPaymentRequest(p)
+
+    EDIT PaymentRequest OBJECT p
+;
+
+DESIGN paymentRequest FROM DEFAULT{
+
+    main{
+
+        NEW headerContainer{
+
+            caption = 'Шапка документа';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(objectClassName);
+            ADD PROPERTY(namePayerPaymentRequest);
+            ADD PROPERTY(nameNumeratorObject);
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(seriesObject);
+            ADD PROPERTY(datePaymentRequest);
+            ADD PROPERTY(timePaymentRequest);
+        }
+
+        NEW paramContainer {
+
+            caption = 'Параметры документа';
+            ADD PROPERTY(seriesNumberContractPaymentRequest);
+            ADD PROPERTY(nameLenderPaymentRequest);
+            ADD PROPERTY(notePaymentRequest);
+        }
+
+        NEW sumContainer{
+
+            caption = 'Суммы документа';
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY(sumPaymentRequest);
+        }
+        POSITION sumContainer TO THE RIGHT headerContainer;
+        POSITION sumContainer TO THE RIGHT paramContainer;
+    }
+
+    PROPERTY(formOk) {
+        caption = 'Провести';
+    }
+
+    ADD functions.box;
+}
+
+//-------------------------------------------- Кредитная нота --------------------------------------------------------//
+
+CLASS ABSTRACT CreditMemo 'Кредитная нота' : NumeratedObject;
+TABLE creditMemo(CreditMemo);
+
+META defineCreditMemoPrefix(prefix, caption, captionPost)
+
+    CLASS CreditMemo###prefix caption : CreditMemo, ContractLedger, ContractALedger, prefix##ContractLedger;
+    CLASS CreditMemo###prefix##Posted  captionPost : CreditMemo###prefix, PostedObject;
+
+    @defineDocumentHeaderPosted(CreditMemo###prefix);
+    @defineNumeratedObjectDefault(CreditMemo###prefix, 'Нумератор для кредитных нот', 'КН');
+
+    dateCreditMemo###prefix 'Дата' (creditMemo###prefix) = DATA DATE (CreditMemo###prefix);
+    dateCreditMemo###prefix(creditMemo###prefix) <- currentDate() WHEN ASSIGNED(creditMemo###prefix IS CreditMemo###prefix);
+    timeCreditMemo###prefix 'Время' (creditMemo###prefix) = DATA TIME (CreditMemo###prefix);
+    timeCreditMemo###prefix(creditMemo###prefix) <- currentTime() WHEN ASSIGNED(creditMemo###prefix IS CreditMemo###prefix);
+    dateTimeCreditMemo###prefix 'Дата время' (creditMemo###prefix) = dateTimeToDateTime(dateCreditMemo###prefix(creditMemo###prefix), timeCreditMemo###prefix(creditMemo###prefix));
+
+    contractCreditMemo###prefix 'Контракт' (creditMemo###prefix) = DATA Contract (CreditMemo###prefix) AUTOSET;
+    seriesNumberContractCreditMemo###prefix 'Номер контракта' (creditMemo###prefix) = seriesNumberContract(contractCreditMemo###prefix(creditMemo###prefix));
+
+    noteCreditMemo###prefix 'Примечание' (creditMemo###prefix) = DATA STRING[200] (CreditMemo###prefix);
+
+    partyBCreditMemo###prefix(creditMemo###prefix) = DATA LegalEntity (CreditMemo###prefix);
+    partyBCreditMemo###prefix(creditMemo###prefix) <- partyBContract(contractCreditMemo###prefix(creditMemo###prefix))
+        WHEN ASSIGNED (contractCreditMemo###prefix(creditMemo###prefix));
+    namePartyBCreditMemo###prefix 'Организация (покупатель)' (creditMemo###prefix) = nameLegalEntity(partyBCreditMemo###prefix(creditMemo###prefix));
+    partyACreditMemo###prefix(creditMemo###prefix) = DATA LegalEntity (CreditMemo###prefix);
+    partyACreditMemo###prefix(creditMemo###prefix) <- partyAContract(contractCreditMemo###prefix(creditMemo###prefix))
+        WHEN ASSIGNED (contractCreditMemo###prefix(creditMemo###prefix));
+    namePartyACreditMemo###prefix 'Организация (поставщик)' (creditMemo###prefix) = nameLegalEntity(partyACreditMemo###prefix(creditMemo###prefix));
+
+    sumCreditMemo###prefix 'Сумма' (creditMemo###prefix) = DATA NUMERIC[16,2] (CreditMemo###prefix);
+
+    descriptionCreditMemo###prefix 'Название документа' =
+        [FORMULA STRING[200] '\''###caption###' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+        seriesNumberObject(creditMemo###prefix), dateCreditMemo###prefix(creditMemo###prefix), namePartyACreditMemo###prefix(creditMemo###prefix)) PERSISTENT;
+
+END
+
+META defineCreditMemoUnion (prop, caption)
+
+    prop##CreditMemo caption (creditMemo) = UNION CLASS prop##CreditMemoIn(creditMemo), prop##CreditMemoOut(creditMemo);
+
+END
+
+@defineCreditMemoPrefix(In, 'Кредитная нота', 'Проведенная кредитная нота');
+@defineCreditMemoPrefix(Out, 'Дебетная нота', 'Проведенная дебетовая нота');
+
+prePostCreditMemo 'Провести' (creditMemo) = ABSTRACT ACTION (CreditMemo);
+prePostCreditMemo(creditMemo) += prePostCreditMemoIn(creditMemo);
+prePostCreditMemo(creditMemo) += prePostCreditMemoOut(creditMemo);
+
+@defineCreditMemoUnion(date, 'Дата');
+@defineCreditMemoUnion(time, 'Время');
+dateTimeCreditMemo 'Дата/время' (creditMemo) = dateTimeToDateTime(dateCreditMemo(creditMemo), timeCreditMemo(creditMemo));
+@defineCreditMemoUnion(contract, 'Контракт');
+seriesNumberContractCreditMemo 'Номер контракта' (creditMemo) = seriesNumberContract(contractCreditMemo(creditMemo));
+@defineCreditMemoUnion(partyB, );
+namePartyBCreditMemo 'Организация (покупатель)' (creditMemo) = nameLegalEntity(partyBCreditMemo(creditMemo));
+@defineCreditMemoUnion(partyA, );
+namePartyACreditMemo 'Организация (поставщик)' (creditMemo) = nameLegalEntity(partyACreditMemo(creditMemo));
+@defineCreditMemoUnion(sum, 'Сумма');
+@defineCreditMemoUnion(description, 'Название документа');
+@defineCreditMemoUnion(note, 'Примечание');
+
+@implementContractLedger( ,creditMemoIn, contract);
+sumContractLedger(contractLedger) += sumCreditMemoIn(contractLedger);
+
+@implementContractLedger(a ,creditMemoIn, contract);
+sumContractALedger(contractALedger) += sumCreditMemoIn(contractALedger);
+
+@implementOutContractLedgerInContractLedgerPrefix(in, creditMemoIn, contract);
+sumInContractLedger(inContractLedger) += sumCreditMemoIn(inContractLedger);
+
+@implementContractLedger( ,creditMemoOut, contract);
+sumContractLedger(contractLedger) += -sumCreditMemoOut(contractLedger);
+
+@implementContractLedger(a ,creditMemoOut,contract);
+sumContractALedger(contractALedger) += -sumCreditMemoOut(contractALedger);
+
+@implementOutContractLedgerInContractLedgerPrefix(out, creditMemoOut, contract);
+sumOutContractLedger(outContractLedger) += sumCreditMemoOut(outContractLedger);
+
+FORM creditMemo 'Кредитная нота'
+
+    OBJECTS c = CreditMemo FIXED PANEL, i = InContractLedger
+    PROPERTIES(c) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateCreditMemo, timeCreditMemo,
+                  seriesNumberContractCreditMemo, noteCreditMemo
+    PROPERTIES(c) READONLY namePartyBCreditMemo, namePartyACreditMemo
+    PROPERTIES(c) sumCreditMemo,
+                  costedInContractLedgerOutContractLedger SHOWIF isOutContractLedger(c),
+                  writeOutContractLedgerFIFO TODRAW i FORCE PANEL TOOLBAR SHOWIF isOutContractLedger(c),
+                  writeOutContractLedgerLIFO TODRAW i FORCE PANEL TOOLBAR SHOWIF isOutContractLedger(c)
+
+    PROPERTIES(i) READONLY descriptionInContractLedger SHOWIF isOutContractLedger(c), debtInContractLedger SHOWIF isOutContractLedger(c)
+    PROPERTIES(c, i) costOutContractLedgerInContractLedger SHOWIF isOutContractLedger(c)
+
+    FILTERS contractCreditMemo(c) == contractInContractLedger(i)
+
+    EVENTS
+        ON OK prePostCreditMemo(c)
+
+    EDIT CreditMemo OBJECT c
+;
+
+DESIGN creditMemo FROM DEFAULT{
+
+    main{
+
+        NEW headerContainer{
+
+            caption = 'Шапка документа';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(objectClassName);
+            ADD PROPERTY(namePartyBCreditMemo);
+            ADD PROPERTY(nameNumeratorObject);
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(seriesObject);
+            ADD PROPERTY(dateCreditMemo);
+            ADD PROPERTY(timeCreditMemo);
+        }
+
+        NEW paramContainer {
+
+            caption = 'Параметры документа';
+            ADD PROPERTY(seriesNumberContractCreditMemo);
+            ADD PROPERTY(namePartyACreditMemo);
+            ADD PROPERTY(noteCreditMemo);
+        }
+
+        NEW sumContainer{
+
+            caption = 'Суммы документа';
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY(sumCreditMemo);
+            ADD PROPERTY(costedInContractLedgerOutContractLedger);
+        }
+        POSITION sumContainer TO THE RIGHT headerContainer;
+        POSITION sumContainer TO THE RIGHT paramContainer;
+
+        ADD i.box;
+    }
+
+    POSITION PROPERTY(writeOutContractLedgerLIFO) TO THE RIGHT PROPERTY(writeOutContractLedgerFIFO);
+
+    PROPERTY(formOk) {
+        caption = 'Провести';
+    }
+
+    ADD functions.box;
+}
+
+//------------------------------------------- Платеж по договору -----------------------------------------------------//
+
+debtSumContractDate 'Долг по договору на дату' (contract, date) = GROUP SUM debtInContractLedgerDate(inContractLedger, date) IF
+                                                                            dateInContractLedger(inContractLedger) <= (date AS DATE)
+                                                                  BY contractInContractLedger(inContractLedger), date;
+
+bonusSumContractDate 'Сумма бонуса на дату' (contract, date) = GROUP SUM bonusSumInContractLedger(inContractLedger, date) IF
+                                                                         dateInContractLedger(inContractLedger) <= (date AS DATE)
+                                                               BY contractInContractLedger(inContractLedger), date;
+
+bonusDebtSumContractDate 'Сумма долга с учетом бонуса' (contract, date) =
+    debtSumContractDate(contract, date) (-) bonusSumContractDate(contract, date);
+
+//----------------------------------------------- Цвета --------------------------------------------------------------//
+
+backgroundSumContractLedgerDate 'Цвет' (contractLedger, date) = OVERRIDE RGB(255,238,165) IF dateContractLedger(contractLedger) <= (date AS DATE),
+                                                                         RGB(255,160,160) IF dateContractLedger(contractLedger) > (date AS DATE);
+backgroundContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,160,160) IF dateContractLedger(contractLedger) > (date AS DATE);
+backgroundSumContract 'Цвет' (contract) = RGB(255,238,165) IF contract IS Contract;
+backgroundSumContractALedgerDate 'Цвет' (contractALedger, date) = OVERRIDE RGB(232,184,146) IF dateContractALedger(contractALedger) <= (date AS DATE),
+                                                                           RGB(255,160,160) IF dateContractALedger(contractALedger) > (date AS DATE);
+backgroundContractALedgerDate 'Цвет' (contractALedger, date) = RGB(255,160,160) IF dateContractALedger(contractALedger) > (date AS DATE);
+backgroundSumContractA 'Цвет' (contract) = RGB(232,184,146) IF contract IS Contract;
+backgroundBonusSumInContractLedger 'Цвет' (inContractLedger) = RGB(213,249,185) IF inContractLedger IS InContractLedger;
+backgroundBonusSumContract 'Цвет' (contract) = RGB(213,249,185) IF contract IS Contract;
+backgroundPaymentRequestDate 'Цвет' (paymentRequest, date) = RGB(255,160,160) IF datePaymentRequest(paymentRequest) > (date AS DATE);
+backgroundOutContractLedgerDate 'Цвет' (outContractLedger, date) = RGB(255,160,160) IF dateOutContractLedger(outContractLedger) > (date AS DATE);
+backgroundInContractLedgerDate 'Цвет' (inContractLedger, date) = RGB(255,160,160) IF dateInContractLedger(inContractLedger) > (date AS DATE);
+
+//-------------------------------------------- Разнесение по документам -----------------------------------------------//
+
+partyA = DATA SESSION LegalEntity();
+namePartyA 'Организация (поставщик)' = nameLegalEntity(partyA());
+partyB = DATA SESSION LegalEntity();
+namePartyB 'Организация (покупатель)' = nameLegalEntity(partyB());
+
+isCostedOutContractLedger 'Расписан' (outContractLedger) = sumOutContractLedger(outContractLedger) (-) costedInContractLedgerOutContractLedger(outContractLedger);
+
+FORM costContractLedger 'Разнесение документов'
+
+    OBJECTS d = DATE FIXED PANEL
+    PROPERTIES(d) date = OBJVALUE
+
+    PROPERTIES() namePartyA, namePartyB
+
+    OBJECTS o = OutContractLedger, i = InContractLedger
+    PROPERTIES(o) READONLY dateOutContractLedger BACKGROUND backgroundOutContractLedgerDate(o, d),
+                           descriptionOutContractLedger BACKGROUND backgroundOutContractLedgerDate(o, d),
+                           sumOutContractLedger BACKGROUND backgroundOutContractLedgerDate(o, d),
+                           costedInContractLedgerOutContractLedger BACKGROUND backgroundOutContractLedgerDate(o, d)
+    PROPERTIES(o) writeOutContractLedgerFIFO TODRAW i FORCE PANEL TOOLBAR,
+                  writeOutContractLedgerLIFO TODRAW i FORCE PANEL TOOLBAR
+    ORDER BY dateOutContractLedger
+
+    PROPERTIES(i) READONLY dateInContractLedger BACKGROUND backgroundInContractLedgerDate(i, d),
+                           descriptionInContractLedger BACKGROUND backgroundInContractLedgerDate(i, d),
+                           debtInContractLedger BACKGROUND backgroundInContractLedgerDate(i, d)
+    PROPERTIES(o, i) costOutContractLedgerInContractLedger BACKGROUND backgroundInContractLedgerDate(i, d)
+    ORDER BY dateInContractLedger
+
+    FILTERGROUP filters1
+        FILTER 'Неразнесенные' 'F9' isCostedOutContractLedger(o) DEFAULT
+
+    FILTERGROUP filters2
+        FILTER 'Неоплаченные' 'F10' debtInContractLedger(i) DEFAULT
+
+    FILTERS partyBContract(contractOutContractLedger(o)) == partyB() OR (o IS OutContractLedger AND NOT partyB()),
+            partyAContract(contractOutContractLedger(o)) == partyA() OR (o IS OutContractLedger AND NOT partyA()),
+            contractOutContractLedger(o) == contractInContractLedger(i)
+
+;
+
+DESIGN costContractLedger FROM DEFAULT {
+
+    NEW topContainer {
+
+        childConstraints = TO THE BOTTOM;
+        NEW headerContainer {
+            childConstraints = TO THE RIGHT;
+            caption = 'Шапка';
+            ADD PROPERTY(date);
+            ADD PROPERTY(namePartyA);
+            ADD PROPERTY(namePartyB);
+        }
+        NEW firstContainer {
+
+            type = SPLITV;
+            ADD o.box;
+            ADD i.box;
+        }
+   }
+
+ADD functions.box;
+}
+
+//-------------------------------------------- Сводная форма ---------------------------------------------------------//
+
+FORM contractLedger 'Управление задолженностями'
+
+    OBJECTS d = DATE FIXED PANEL
+    PROPERTIES(d) date = OBJVALUE
+
+    PROPERTIES() namePartyA, namePartyB
+
+    OBJECTS c = Contract
+    PROPERTIES(c) READONLY seriesNumberContract, namePartyAContract, namePartyBContract, nameCurrencyContract
+    PROPERTIES(c, d) READONLY balanceAContractDate BACKGROUND backgroundSumContract(c),
+                              balanceAAContractDate BACKGROUND backgroundSumContractA(c),
+                              debtSumContractDate BACKGROUND backgroundBonusSumContract(c),
+                              bonusSumContractDate BACKGROUND backgroundBonusSumContract(c),
+                              bonusDebtSumContractDate BACKGROUND backgroundBonusSumContract(c)
+    ORDER BY seriesNumberContract
+
+    OBJECTS cl = ContractLedger
+    PROPERTIES(cl) READONLY dateContractLedger BACKGROUND backgroundContractLedgerDate(cl, d),
+                            sumContractLedger BACKGROUND backgroundSumContractLedgerDate(cl, d),
+                            descriptionContractLedger BACKGROUND backgroundContractLedgerDate(cl, d)
+    ORDER BY dateContractLedger
+    FILTERS isPostedContractLedger(cl)
+
+    OBJECTS cal = ContractALedger
+    PROPERTIES(cal) READONLY dateContractALedger BACKGROUND backgroundContractALedgerDate(cal, d),
+                             sumContractALedger BACKGROUND backgroundSumContractALedgerDate(cal, d),
+                             descriptionContractALedger BACKGROUND backgroundContractALedgerDate(cal, d)
+    ORDER BY dateContractALedger
+    FILTERS isPostedContractALedger(cal)
+
+    OBJECTS pr = PaymentRequest
+    PROPERTIES(pr) READONLY numberObject BACKGROUND backgroundPaymentRequestDate(pr, d),
+                            seriesObject BACKGROUND backgroundPaymentRequestDate(pr, d),
+                            datePaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d),
+                            timePaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d),
+                            sumPaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d),
+                            notePaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d),
+                            objectClassName BACKGROUND backgroundPaymentRequestDate(pr, d)
+    PROPERTIES(pr) ADDFORM, EDITFORM, DELETE
+    ORDER BY datePaymentRequest, timePaymentRequest
+
+    OBJECTS cm = CreditMemo
+    PROPERTIES(cm) READONLY numberObject BACKGROUND backgroundOutContractLedgerDate(cm, d),
+                            seriesObject BACKGROUND backgroundOutContractLedgerDate(cm, d),
+                            dateCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d),
+                            timeCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d),
+                            sumCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d),
+                            noteCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d),
+                            objectClassName BACKGROUND backgroundOutContractLedgerDate(cm, d)
+
+    PROPERTIES(cm) FORCE GRID READONLY costedInContractLedgerOutContractLedger BACKGROUND backgroundOutContractLedgerDate(cm, d) SHOWIF isOutContractLedger(cm)
+    PROPERTIES(cm) FORCE PANEL TOOLBAR writeOutContractLedgerFIFO SHOWIF isOutContractLedger(cm),
+                                             writeOutContractLedgerLIFO SHOWIF isOutContractLedger(cm)
+    PROPERTIES(cm) ADDFORM, EDITFORM, DELETE
+    ORDER BY dateCreditMemo, timeCreditMemo
+
+
+    OBJECTS ic = InContractLedger
+    PROPERTIES(ic) READONLY dateInContractLedger, descriptionInContractLedger, sumInContractLedger
+    PROPERTIES(ic, d) READONLY debtInContractLedgerDate BACKGROUND backgroundBonusSumInContractLedger(ic),
+                               bonusSumInContractLedger BACKGROUND backgroundBonusSumInContractLedger(ic),
+                               bonusDebtSumInContractLedgerDate BACKGROUND backgroundBonusSumInContractLedger(ic)
+    ORDER BY dateInContractLedger
+
+    OBJECTS icoc = OutContractLedger
+    PROPERTIES(icoc) READONLY dateOutContractLedger, descriptionOutContractLedger, sumOutContractLedger
+    PROPERTIES(icoc, d) READONLY costedInContractLedgerOutContractLedgerDate
+    PROPERTIES READONLY costOutContractLedgerInContractLedger(icoc, ic)
+    ORDER BY dateOutContractLedger
+
+    OBJECTS oc = OutContractLedger
+    PROPERTIES(oc) READONLY dateOutContractLedger, descriptionOutContractLedger, sumOutContractLedger
+    PROPERTIES(oc, d) READONLY costedInContractLedgerOutContractLedgerDate
+    PROPERTIES(oc) FORCE PANEL TOOLBAR writeOutContractLedgerFIFO SHOWIF isOutContractLedger(oc),
+                                       writeOutContractLedgerLIFO SHOWIF isOutContractLedger(oc)
+    ORDER BY dateOutContractLedger
+
+    OBJECTS ocic = InContractLedger
+    PROPERTIES(ocic) READONLY dateInContractLedger, descriptionInContractLedger, sumInContractLedger
+    PROPERTIES(ocic, d) READONLY debtInContractLedgerDate
+    PROPERTIES READONLY costOutContractLedgerInContractLedger(oc, ocic)
+    ORDER BY dateInContractLedger
+
+    FILTERS contractContractLedger(cl) == c,
+            contractContractALedger(cal) == c,
+            contractPaymentRequest(pr) == c,
+            contractCreditMemo(cm) == c,
+            contractInContractLedger(ic) == c,
+            contractOutContractLedger(oc) == c,
+            partyBContract(c) == partyB() OR (c IS Contract AND NOT partyB()),
+            partyAContract(c) == partyA() OR (c IS Contract AND NOT partyA()),
+            costOutContractLedgerInContractLedger(icoc, ic) > 0,
+            costOutContractLedgerInContractLedger(oc, ocic) > 0
+
+;
+
+DESIGN contractLedger FROM DEFAULT{
+
+    NEW topContainer {
+
+        childConstraints = TO THE BOTTOM;
+        NEW headerContainer {
+            childConstraints = TO THE RIGHT;
+            caption = 'Шапка';
+            ADD PROPERTY(date);
+            ADD PROPERTY(namePartyA);
+            ADD PROPERTY(namePartyB);
+        }
+        NEW firstContainer {
+
+            type = SPLITV;
+            ADD c.box;
+            NEW firstSecondContainer {
+
+                type = SPLITV;
+                NEW firstThirdContainer {
+
+                    type = SPLITH;
+                    childConstraints = TO THE RIGHT;
+                    ADD cl.box;
+                    ADD cal.box;
+                }
+                NEW secondContainer {
+                    type = TABBED;
+
+                    ADD pr.box;
+                    ADD cm.box;
+
+                    NEW debt.box {
+                        childConstraints = TO THE RIGHT;
+                        caption = 'Долг по документу';
+                        ADD ic.box;
+                        ADD icoc.box;
+                    }
+
+                    NEW cost.box {
+                        childConstraints = TO THE RIGHT;
+                        caption = 'Расписано по документу';
+                        ADD oc.box;
+                        ADD ocic.box;
+                    }
+                }
+            }
+        }
+    }
+
+    ADD functions.box;
+}
+
+NAVIGATOR {
+    financeNavigator {
+        NEW contractNavigator 'Задолженности' BEFORE financeMasterData {
+            ADD contractLedger;
+            ADD costContractLedger;
+            ADD paymentConditions;
+        }
+    }
+}

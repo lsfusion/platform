@@ -1,0 +1,90 @@
+MODULE ItemArticle;
+
+REQUIRE System, Item;
+
+NAMESPACE Item;
+
+GROUP itemArticleGroup 'Артикул' : public;
+
+// Артикул
+CLASS Article 'Артикул';
+TABLE article(Article);
+
+nameArticle 'Наименование' = DATA ISTRING[100](Article);
+
+FORM article 'Артикул'
+    OBJECTS t=Article FIXED PANEL
+    PROPERTIES(t) nameArticle
+    EDIT Article OBJECT t
+;
+
+FORM articles 'Артикулы'
+    OBJECTS t=Article
+    PROPERTIES(t) nameArticle READONLY, DELETE
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameArticle
+    DIALOG Article OBJECT t
+;
+DESIGN articles FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
+@defineObjectItemAttribute(article, Article, nameArticle, 'Артикул', itemArticleGroup);
+@defineObjectItemAttributeBatch (article, nameArticle, 'Артикул');
+
+// Цвет
+CLASS Color 'Цвет товара';
+TABLE color (Color);
+
+nameColor 'Наименование' = DATA ISTRING[50](Color);
+
+FORM color 'Цвет товара'
+    OBJECTS t=Color FIXED PANEL
+    PROPERTIES(t) nameColor
+    EDIT Color OBJECT t
+;
+
+FORM colors 'Цвета товара'
+    OBJECTS t=Color
+    PROPERTIES(t) nameColor READONLY, DELETE
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameColor
+    DIALOG Color OBJECT t
+;
+DESIGN colors FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
+@defineObjectItemAttribute(color, Color, nameColor, 'Цвет', itemArticleGroup);
+@defineObjectItemAttributeBatch (color, nameColor, 'Цвет');
+
+// Размер
+CLASS Size 'Размер товара';
+TABLE size(Size);
+
+nameSize 'Наименование' = DATA ISTRING[50](Size);
+shortNameSize 'Краткое наименование' = DATA ISTRING[10](Size);
+
+FORM size 'Размер товара'
+    OBJECTS t=Size FIXED PANEL
+    PROPERTIES(t) nameSize, shortNameSize
+    EDIT Size OBJECT t
+;
+
+FORM sizes 'Размеры товара'
+    OBJECTS t=Size
+    PROPERTIES(t) nameSize READONLY, shortNameSize READONLY, DELETE
+    PROPERTIES(t) ADDFORM, EDITFORM
+    ORDER BY nameSize
+    DIALOG Size OBJECT t
+;
+DESIGN sizes FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
+@defineObjectItemAttribute(size, Size, nameSize, 'Размер', itemArticleGroup);
+@defineObjectItemAttributeBatch (size, nameSize, 'Размер');
+//@implementObjectShortItemAttribute(size, 'Размер (сокр.)');
+
+
+overCopyItem(s, d) += ACTION (s, d) {
+    SET articleItem(d) <- articleItem(s);
+    SET colorItem(d) <- colorItem(s);
+    SET sizeItem(d) <- sizeItem(s);
+}
+
+EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemArticleGroup; } }

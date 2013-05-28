@@ -1,0 +1,165 @@
+MODULE SalePurchaseOrder;
+
+REQUIRE SaleOrder, PurchaseOrder;
+
+PRIORITY Sale;
+
+//----------------------------------------------------------------------------//
+
+GROUP orderSaleGroup 'Информация о заказе' : public;
+
+createPurchaseOrder 'Создать заказ (закупка)' = ABSTRACT BOOLEAN (Order) PERSISTENT;
+createPurchaseUserOrder 'Создать заказ (закупка)' = DATA BOOLEAN (UserOrder) PERSISTENT;
+createPurchaseOrder(order) += createPurchaseUserOrder(order);
+
+createPurchaseOrderDetail 'Создать заказ (закупка)' (orderDetail) = createPurchaseOrder(orderOrderDetail(orderDetail))PERSISTENT;
+createPurchaseUserOrderDetail 'Создать заказ (закупка)' (userOrderDetail) = createPurchaseUserOrder(userOrderUserOrderDetail(userOrderDetail));
+backgroundPurchaseOrder 'Цвет' (order) = RGB(255, 214, 214) IF order IS Order;
+EXTEND FORM userOrder
+    PROPERTIES(o) BACKGROUND backgroundPurchaseOrder(o) createPurchaseUserOrder
+;
+EXTEND DESIGN userOrder {
+    headerCreateDocuments{
+        NEW headerOrder{
+            title = 'Заказ';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(createPurchaseUserOrder);
+        }
+    }
+}
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY BACKGROUND backgroundPurchaseOrder(o) createPurchaseOrder
+;
+
+CLASS PurchaseOrder 'Заказ на основе заказа': Purchase.Order;
+CLASS PurchaseOrderPosted 'Проведенный заказ на основе заказа' : PurchaseOrder, PostedObject;
+CLASS PurchaseOrderDetail 'Строка заказа на основе заказа' : Purchase.OrderDetail;
+
+@defineDocumentTables(purchaseOrder);
+
+@defineDocumentAggregation(order, purchaseOrder, createPurchaseOrder);
+Purchase.orderOrderDetail(detail) += purchaseOrderPurchaseOrderDetail(detail);
+
+@defineDocumentDetailIndex(purchaseOrder);
+
+Purchase.dateOrder(order) += datePurchaseOrder(order);
+Purchase.timeOrder(order) += timePurchaseOrder(order);
+
+Purchase.shipmentDateOrder(order) += shipmentDateOrder(orderPurchaseOrder(order));
+Purchase.shipmentDataDateOrderDetail(detail) += shipmentDataDateOrderDetail(orderDetailPurchaseOrderDetail(detail));
+
+Purchase.shipmentTimeOrder(order) += shipmentTimeOrder(orderPurchaseOrder(order));
+Purchase.shipmentDataTimeOrderDetail(detail) += shipmentDataTimeOrderDetail(orderDetailPurchaseOrderDetail(detail));
+
+Purchase.agreementOrder(order) += agreementOrder(orderPurchaseOrder(order));
+Purchase.priceListTypeOrder(order) += priceListTypeOrder(orderPurchaseOrder(order));
+Purchase.priceListTypeOrderDetail(detail) += priceListTypeOrderDetail(orderDetailPurchaseOrderDetail(detail));
+
+@defineDocumentAggregationStockPrefix(order, purchaseOrder, supplierStock, 'Склад поставщика', , );
+Purchase.supplierStockOrder(order) += supplierStockPurchaseOrder(order);
+Purchase.dataSupplierStockOrderDetail(orderDetail) += dataSupplierStockOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+@defineDocumentAggregationStockPrefix(order, purchaseOrder, customerStock, 'Склад покупателя', , );
+Purchase.customerStockOrder(order) += customerStockPurchaseOrder(order);
+Purchase.dataCustomerStockOrderDetail(orderDetail) += dataCustomerStockOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+
+@defineDocumentAggregationStockPrefix(order, purchaseOrder, supplier, 'Поставщик', , );
+Purchase.supplierOrder(order) += supplierPurchaseOrder(order);
+@defineDocumentAggregationStockPrefix(order, purchaseOrder, customer, 'Покупатель', , );
+Purchase.customerOrder(order) += customerPurchaseOrder(order);
+
+@defineDocumentAggregationPosted(order, purchaseOrder);
+Purchase.isPostedOrder(order) += isPostedPurchaseOrder(order);
+
+Purchase.numberOrder(order) += numberOrder(orderPurchaseOrder(order));
+Purchase.seriesOrder(order) += seriesOrder(orderPurchaseOrder(order));
+seriesNumberPurchaseOrder 'Серия/номер документа' (purchaseOrder) = seriesNumberOrder(orderPurchaseOrder(purchaseOrder));
+
+noteOrderPurchaseOrder 'Примечание' (purchaseOrder) = noteOrder(orderPurchaseOrder(purchaseOrder));
+Purchase.noteOrder(order) += noteOrderPurchaseOrder(order);
+
+currencyPurchaseOrder  (purchaseOrder) = currencyOrder(orderPurchaseOrder(purchaseOrder));
+Purchase.currencyOrder (order) += currencyPurchaseOrder(order);
+
+@defineDocumentDescription(purchaseOrder, PurchaseOrderDetail, seriesNumberPurchaseOrder, 'Заказ (закупка) на основе заказа (продажа)');
+Purchase.descriptionOrder (order) += descriptionPurchaseOrder(order);
+
+@defineDocumentAggregationDetailSku(order, purchaseOrder, sku);
+Purchase.skuOrderDetail(orderDetail) +=  skuPurchaseOrderDetail(orderDetail);
+
+Purchase.quantityOrderDetail(orderDetail) += quantityOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.priceOrderDetail(orderDetail) += priceOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.sumOrderDetail(orderDetail) += sumOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+
+Purchase.VATOrderDetail(orderDetail) +=VATOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.valueVATOrderDetail(orderDetail) += valueVATOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.VATSumOrderDetail(orderDetail) += VATSumOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.invoiceSumOrderDetail(orderDetail) += invoiceSumOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+
+Purchase.showPackOrder(order) +=  showPackOrder(orderPurchaseOrder(order));
+Purchase.barcodePackOrderDetail(orderDetail) +=  barcodePackOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.amountPackOrderDetail(orderDetail) +=  amountPackOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.packQuantityOrderDetail(orderDetail) +=  packQuantityOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+
+Purchase.editOrder(order) += ACTION EXEC editOrder(orderPurchaseOrder(order));
+
+//-- Действие
+
+moveUserOrderOrder 'Заказ (закупка)' =  ACTION (order) NEWSESSION{
+    FOR ADDOBJ o = Purchase.UserOrder DO {
+
+        SET Purchase.shipmentDateUserOrder(o) <- shipmentDateOrder(order);
+        SET Purchase.shipmentTimeUserOrder(o) <- shipmentTimeOrder(order);
+        SET Purchase.agreementUserOrder(o) <- agreementOrder(order);
+        SET Purchase.priceListTypeUserOrder(o) <- priceListTypeOrder(order);
+        SET Purchase.supplierUserOrder(o) <- supplierOrder(order);
+        SET Purchase.customerUserOrder(o) <- customerOrder(order);
+        SET Purchase.supplierStockUserOrder(o) <- supplierStockOrder(order);
+        SET Purchase.customerStockUserOrder(o) <- customerStockOrder(order);
+        SET numberObject(o) <- numberOrder(order);
+        SET seriesObject(o) <- seriesOrder(order);
+        SET Purchase.noteUserOrder(o) <- noteOrder(order);
+        SET Purchase.currencyUserOrder(o) <- currencyOrder(order);
+        SET Purchase.showPackUserOrder(o) <- showPackOrder(order);
+        SET Purchase.closeDateUserOrder(o) <- closeDateOrder(order);
+        SET Purchase.isDataClosedUserOrder(o) <- isDataClosedOrder(order);
+        SET Purchase.operationUserOrder(o) <- operationOrder(order);
+
+        FOR orderOrderDetail(detail)==order ADDOBJ d = Purchase.UserOrderDetail DO {
+
+            SET Purchase.userOrderUserOrderDetail(d) <- o;
+            SET Purchase.shipmentDataDateUserOrderDetail(d) <- shipmentDataDateOrderDetail(detail);
+            SET Purchase.shipmentDataTimeUserOrderDetail(d) <- shipmentDataTimeOrderDetail(detail);
+            SET Purchase.priceListTypeUserOrderDetail(d) <- priceListTypeOrderDetail(detail);
+            SET Purchase.dataSupplierStockUserOrderDetail(d) <- dataSupplierStockOrderDetail(detail);
+            SET Purchase.dataCustomerStockUserOrderDetail(d) <- dataCustomerStockOrderDetail(detail);
+
+            SET Purchase.skuUserOrderDetail(d) <- skuOrderDetail(detail);
+            SET Purchase.quantityUserOrderDetail (d) <- quantityOrderDetail(detail);
+            SET Purchase.VATUserOrderDetail (d) <- VATOrderDetail(detail);
+            SET Purchase.valueVATUserOrderDetail (d) <- valueVATOrderDetail(detail);
+            SET Purchase.priceUserOrderDetail (d) <- priceOrderDetail(detail);
+            SET Purchase.invoicePriceUserOrderDetail (d) <- invoicePriceOrderDetail(detail);
+
+            SET Purchase.barcodePackUserOrderDetail (d) <- barcodePackOrderDetail(detail);
+            SET Purchase.amountPackUserOrderDetail (d) <- amountPackOrderDetail(detail);
+            SET Purchase.packQuantityUserOrderDetail (d) <- packQuantityOrderDetail(detail);
+            SET Purchase.closeDataDateUserOrderDetail (d) <- closeDataDateOrderDetail(detail);
+            SET Purchase.isDataClosedUserOrderDetail (d) <- isDataClosedOrderDetail(detail);
+
+        }
+
+    FORM Purchase.userOrder OBJECTS o = o MANAGESESSION DOCKEDMODAL;
+    }
+} TOOLBAR;
+
+EXTEND FORM orders
+    PROPERTIES(o) moveUserOrderOrder
+;
+EXTEND DESIGN orders {
+    createdContainer{
+        ADD PROPERTY(moveUserOrderOrder);
+    }
+}
+
+

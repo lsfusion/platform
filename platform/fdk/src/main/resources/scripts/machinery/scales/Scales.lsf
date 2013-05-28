@@ -1,0 +1,260 @@
+MODULE Scales;
+
+REQUIRE System, Machinery;
+
+// Группы
+CLASS GroupScales 'Группы весов' : GroupMachinery;
+
+stockGroupScales = DATA Stock (GroupScales);
+stockGroupMachinery (groupMachinery) += stockGroupScales(groupMachinery);
+
+directoryGroupScales 'Каталог обмена' = DATA STRING[200] (GroupScales) IN base;
+pieceCodeGroupScales 'Код для штучных товаров' = DATA STRING[2] (GroupScales) IN base;
+weightCodeGroupScales 'Код для весовых товаров' = DATA STRING[2] (GroupScales) IN base;
+
+// Модели
+CLASS ScalesModel 'Модель весов' : Model;
+
+nameScalesModel 'Наименование' = DATA ISTRING[110](ScalesModel);
+
+scalesModelName (scalesModel) = GROUP AGGR scalesModel BY nameScalesModel (scalesModel) WHERE scalesModel IS ScalesModel;
+
+nameModel(model) += nameScalesModel(model) IF model IS ScalesModel;
+
+maxTextScalesModel 'MAX допустимое колич. дополнительных текстов' = DATA INTEGER (ScalesModel) IN base;
+compositionScalesModel 'Число знаков в доп.тексте (составе товара)' = DATA INTEGER (ScalesModel) IN base;
+
+FORM scalesModel 'Модель весов'
+    OBJECTS s=ScalesModel FIXED PANEL
+    PROPERTIES(s) nameScalesModel, noteModel, handlerModel, maxProductModel, maxTextScalesModel,
+                  compositionScalesModel
+    EDIT ScalesModel OBJECT s
+;
+
+FORM scalesModels 'Модели весов'
+    OBJECTS m=ScalesModel
+    PROPERTIES(m) READONLY objectClassName, nameScalesModel, maxProductModel, noteModel, handlerModel
+    PROPERTIES(m) ADDFORM, EDITFORM, DELETE
+;
+
+// Весы
+CLASS Scales 'Весы' : Machinery;
+isGroupScales (machinery) = machinery IS GroupScales;
+
+groupScalesScales = DATA GroupScales (Scales);
+groupMachineryMachinery(machinery) += groupScalesScales(machinery);
+
+scalesModelScales = DATA ScalesModel (Scales);
+modelMachinery(machinery) += scalesModelScales(machinery);
+
+numberScales 'Заводской(серийный) номер' = DATA STRING[100] (Scales) IN base;
+dateScales 'Дата следующей обязательной поверки' = DATA DATE (Scales) IN base;
+
+FORM scales 'Весы'
+    OBJECTS s=Scales FIXED PANEL
+    PROPERTIES(s) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,
+                  dateScales
+    EDIT Scales OBJECT s
+;
+
+FORM groupScales 'Группа весов'
+    OBJECTS grs=GroupScales FIXED PANEL
+    PROPERTIES(grs) nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                    directoryGroupScales,
+                    pieceCodeGroupScales, weightCodeGroupScales,
+                    filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grs),
+                    namePriceListTypeGroupMachinery
+
+    OBJECTS s=Scales
+    PROPERTIES(s)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,
+                    dateScales, ADDOBJ, DELETESESSION
+    FILTERGROUP filters1
+        FILTER 'Показывать только для данной группы' 'F10' groupScalesScales(s) == grs DEFAULT
+    EDIT GroupScales OBJECT grs
+;
+
+FORM groupsScales 'Группы весов'
+    OBJECTS grs=GroupScales
+    PROPERTIES(grs) READONLY nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                         filterSkuGroupMachinery, directoryGroupScales,
+                         pieceCodeGroupScales, weightCodeGroupScales
+    PROPERTIES(grs) ADDFORM, EDITFORM, DELETE
+
+    OBJECTS s=Scales
+    PROPERTIES(s)   READONLY nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,
+                             dateScales
+    FILTERS groupScalesScales(s) == grs
+;
+
+DESIGN groupsScales FROM DEFAULT {
+    NEW topContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD grs.box;
+        ADD s.box;
+    }
+}
+
+// Ячейки
+CLASS CellScales 'Ячейка весов';
+TABLE cellScales(CellScales);
+
+groupScalesCellScales = DATA GroupScales (CellScales);
+
+compositionCellScales 'Ячейка' = DATA TEXT (CellScales);
+numberCellScales 'Номер' = PARTITION SUM 1 IF c IS CellScales BY groupScalesCellScales (c) ORDER c;
+
+cellScalesGroupScalesComposition (groupScales, composition) = GROUP AGGR cellScales
+            BY groupScalesCellScales (cellScales), compositionCellScales (cellScales) WHERE cellScales IS CellScales;
+
+FORM cellScales 'Ячейки весов'
+    OBJECTS grs=GroupScales
+        PROPERTIES(grs) READONLY nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                             filterSkuGroupMachinery, directoryGroupScales,
+                             pieceCodeGroupScales, weightCodeGroupScales
+
+    OBJECTS cs=CellScales
+    PROPERTIES(cs)  numberCellScales, compositionCellScales, DELETESESSION
+
+    FILTERS groupScalesCellScales(cs) == grs
+;
+
+DESIGN cellScales FROM DEFAULT {
+    NEW topContainer{
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD grs.box;
+        ADD cs.box;
+    }
+    ADD functions.box;
+}
+
+//---------------------------- Этикетки в весы ----------------------------------------//
+
+CLASS LabelFormat 'Формат этикетки';
+TABLE labelFormat (LabelFormat);
+
+nameLabelFormat 'Наименование' = DATA ISTRING[50](LabelFormat);
+
+idLabelFormat 'Код формата этикетки' = DATA INTEGER (LabelFormat) IN base;
+idToLabelFormat (labelFormat) = GROUP AGGR labelFormat BY idLabelFormat(labelFormat) WHERE labelFormat IS LabelFormat;
+
+fileLabelFormat = DATA CUSTOMFILE (LabelFormat);
+loadFileLabelFormat 'Загрузить файл этикетки' (labelFormat) = ACTION LOADFILE fileLabelFormat(labelFormat) IN base;
+
+fileMessageLabelFormat = DATA CUSTOMFILE (LabelFormat);
+loadFileMessageLabelFormat 'Загрузить файл спец.сообщений' (labelFormat) = ACTION LOADFILE fileMessageLabelFormat(labelFormat) IN base;
+
+scalesModelLabelFormat 'Модель весов'= DATA ScalesModel (LabelFormat);
+nameScalesModelLabelFormat 'Модель весов' (labelFormat) = nameScalesModel(scalesModelLabelFormat(labelFormat));
+
+FORM labelFormat 'Формат этикеток весов'
+    OBJECTS c=LabelFormat
+    PROPERTIES(c) idLabelFormat, nameLabelFormat, nameScalesModelLabelFormat, loadFileLabelFormat, loadFileMessageLabelFormat
+
+    EDIT LabelFormat OBJECT c
+;
+
+FORM labelFormats 'Форматы этикеток весов'
+    OBJECTS c=LabelFormat
+    PROPERTIES(c) READONLY idLabelFormat, nameLabelFormat, nameScalesModelLabelFormat
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
+
+    DIALOG LabelFormat OBJECT c
+;
+
+// ----------------------------------------- Загрузка в ВУ -------------------------------------- //
+
+CLASS ScalesPriceTransaction 'Загрузка прайса в весы' : MachineryPriceTransaction;
+groupScalesScalesPriceTransaction 'Группа весов' = DATA GroupScales (ScalesPriceTransaction);
+groupMachineryMachineryPriceTransaction (transaction) += groupScalesScalesPriceTransaction(transaction);
+
+EXTEND FORM groupMachineryInput
+    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupScales(g)       numberScales, nameModelMachinery
+;
+
+createMachineryPriceTransactionGroupMachinery (groupMachinery) += ACTION (groupMachinery) {
+    IF groupMachinery IS GroupScales THEN
+        ADDOBJ ScalesPriceTransaction;
+}
+
+// ------------------------------------------------ Стандартные значения ------------------------------------ //
+
+loadDefaultScalesModel 'Добавить модель весов' = ACTION (stringOne, stringTwo)  {
+    ADDOBJ ScalesModel;
+    FOR sm == addedObject() DO {
+         SET nameScalesModel(sm) <- stringOne AS STRING[110];
+         SET handlerModel(sm) <- stringTwo AS STRING[200];
+    }
+}
+
+loadDefaultScalesModels 'Загрузить стандартные модели весов' = ACTION () {
+    EXEC loadDefaultScalesModel('Весы Digi', 'equ.clt.handler.digi.DigiHandler');
+    EXEC loadDefaultScalesModel('Весы EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+    EXEC loadDefaultScalesModel('Весы Штрих-Принт', 'equ.clt.handler.shtrihPrint.ShtrihPrintHandler');
+} IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultScalesModels);
+
+// --------------------------------------- Генерация групп весов -------------------------------- //
+loadDefaultGroupScales 'Сгенерировать группу весов' = ACTION(equipmentServer, priceListType, stock, model, num) {
+    ADDOBJ GroupScales;
+    FOR g == addedObject() DO {
+        SET stockGroupScales(g) <- stock AS Stock;
+        SET equipmentServerGroupMachinery(g) <- equipmentServer AS EquipmentServer;
+        SET priceListTypeGroupMachinery(g) <- priceListType AS PriceListType;
+        SET nameGroupMachinery(g) <- 'Группа весов по умолчанию' AS STRING[110];
+
+        LOCAL numScales = INTEGER();
+        SET numScales() <- 0;
+        WHILE numScales() < (num AS INTEGER) DO {
+            ADDOBJ Scales;
+            FOR s == addedObject() DO {
+                SET groupScalesScales(s) <- g AS GroupScales;
+                SET numScales() <- numScales() + 1;
+                SET nppMachinery(s) <- numScales();
+                SET scalesModelScales(s) <- model AS ScalesModel;
+                SET descriptionMachinery(s) <- string5CM('Весы', toString255(numScales()), '(', nameStock(stock), ')');
+            }
+        }
+    }
+};
+
+EXTEND FORM defaultData
+    OBJECTS         sm=ScalesModel FIXED PANEL
+    PROPERTIES(sm)  SELECTOR nameScalesModel
+
+    OBJECTS         cScales=INTEGER FIXED PANEL
+    PROPERTIES(cScales)   intValueScales = OBJVALUE
+    PROPERTIES(es, pt, s, sm, cScales)  loadDefaultGroupScales
+;
+
+EXTEND DESIGN defaultData {
+    PROPERTY(nameScalesModel(sm)) {
+        caption = 'Модель весов';
+    }
+    PROPERTY(intValueScales) {
+        caption = 'Количество весов';
+    }
+    machinery {
+        NEW scales {
+            title = 'Весы';
+            ADD PROPERTY(nameScalesModel(sm));
+            ADD PROPERTY(intValueScales);
+            ADD PROPERTY(loadDefaultGroupScales);
+        }
+    }
+}
+
+NAVIGATOR {
+    machineryNavigator {
+        NEW scalesNavigator 'Весы'{
+            ADD groupsScales;
+            ADD scalesModels;
+            ADD labelFormats;
+            ADD cellScales;
+        }
+    }
+}

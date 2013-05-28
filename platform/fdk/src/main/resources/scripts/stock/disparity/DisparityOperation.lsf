@@ -1,0 +1,48 @@
+MODULE DisparityOperation;
+
+REQUIRE Operation, Disparity;
+
+NAMESPACE Disparity;
+
+@defineOperation('(изменение сортности)');
+@defineOperationRole();
+@extendFormFilterRole(o, dialogOperations);
+//@extendFormFilterRole(o, operations);     //-- пока не нужен
+
+createRepricingOperation 'Создать акт переоценки' = DATA BOOLEAN (Operation);
+
+EXTEND FORM operation
+    PROPERTIES(o) createRepricingOperation
+;
+
+EXTEND DESIGN operation {
+    tabContainer{
+        NEW createContainer {
+            caption = 'Производные документы';
+            ADD PROPERTY(createRepricingOperation);
+        }
+    }
+}
+
+NAVIGATOR {
+    disparityNavigator {
+        ADD operations;
+    }
+}
+
+//------------------------------------------ Опеределение операции для disparity ------------------------------------//
+
+operationDisparity = DATA Operation (Disparity) PERSISTENT;
+nameOperationDisparity 'Операция' = nameOperation(operationDisparity(disparity));
+
+operationDisparityDetail 'Операция' (disparityDetail) = operationDisparity(disparityDisparityDetail(disparityDetail));
+
+EXTEND FORM disparity
+    PROPERTIES(dis) nameOperationDisparity
+;
+
+EXTEND DESIGN disparity{
+    dis.documentPrmGroup{
+        ADD PROPERTY(nameOperationDisparity) BEFORE PROPERTY(noteDisparity);
+    }
+}

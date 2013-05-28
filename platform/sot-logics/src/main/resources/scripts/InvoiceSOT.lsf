@@ -1,0 +1,65 @@
+MODULE InvoiceSOT;
+
+REQUIRE System, Integration, Import, PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation, Warehouse,
+        PurchaseManufacturingPrice, PurchaseCertificateSOT, PurchaseInvoiceCharge, PurchaseInvoiceWholesalePrice;
+
+NAMESPACE PurchaseInvoice;
+
+certificateTextNotNullBatch(batch) = OVERRIDE toText('') IF batch IS Batch, certificateTextBatch(batch);
+
+necessaryBatchPriceCertificateText = GROUP MAX batch BY skuBatch(batch), costBatch (batch), certificateTextNotNullBatch(batch);
+prevNecessaryBatchPriceCertificateText = PREV(necessaryBatchPriceCertificateText(sku, cost, certificate));
+//necessaryBatchUserInvoiceDetail = necessaryBatch (priceUserInvoiceDetail(userInvoiceDetail), toText('    ') IF userInvoiceDetail IS UserInvoiceDetail OVERRIDE certificateTextUserInvoiceDetail(userInvoiceDetail));
+//descriptionNecessaryBatchUserInvoiceDetail = descriptionBatch(necessaryBatchUserInvoiceDetail(userInvoiceDetail));
+
+usePurchaseBatchAutoSet 'Автоматически определять партии на приходе' = DATA BOOLEAN ();
+
+prevNecessaryBatchUserInvoiceDetail (detail) = prevNecessaryBatchPriceCertificateText (skuUserInvoiceDetail(detail),
+                                                                                       shipmentPriceUserInvoiceDetail(detail),
+                                                                                       (OVERRIDE toText('') IF detail IS UserInvoiceDetail, certificateTextUserInvoiceDetail(detail)));
+ON SESSION FORMS userInvoice {
+    IF usePurchaseBatchAutoSet() THEN 
+        FOR CHANGED(skuUserInvoiceDetail(detail)) OR
+            CHANGED(shipmentPriceUserInvoiceDetail(detail)) OR
+            CHANGED(certificateTextUserInvoiceDetail(detail)) INLINE DO
+                SET batchUserInvoiceDetail (detail) <-
+                    prevNecessaryBatchUserInvoiceDetail(detail) IF detail != prevNecessaryBatchUserInvoiceDetail(detail);
+                   // necessaryBatchPriceCertificateText (skuUserInvoiceDetail(detail), shipmentPriceUserInvoiceDetail(detail), toText('') IF detail IS UserInvoiceDetail OVERRIDE certificateTextUserInvoiceDetail(detail));
+};
+
+EXTEND FORM dialogBatch
+    PROPERTIES (bt) READONLY certificateTextBatch, priceListTextBatch
+;
+
+EXTEND FORM options
+    PROPERTIES() usePurchaseBatchAutoSet
+;
+
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(usePurchaseBatchAutoSet);
+    }
+}
+
+// Проведение по ценам изготвителя
+overShipmentPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail) (+) chargePriceUserInvoiceDetail(detail)
+    WHEN customerStockUserInvoiceDetail(detail) IS Warehouse;
+
+//Задание торговой надбавки в документе
+retailMarkupSkuUserInvoiceDetail 'Надбавка,% (розничная)' (detail) = markupCalcPriceListTypeSku (calcPriceListTypeId('retail'), Purchase.skuUserInvoiceDetail(detail));
+toShowRetailMarkupSkuUserInvoice 'Розничная надбавка' (invoice) = DATA BOOLEAN (Purchase.UserInvoice) IN documentPrmGroup;
+
+changeRetailMarkupSkuUserInvoiceDetail = ACTION(detail) {
+    REQUEST NUMERIC[8,2] INPUT;
+    IF requestedNumeric() THEN {
+        SET dataMarkupCalcPriceListTypeSku(t, s) <- requestedNumeric() WHERE idCalcPriceListType(t) == 'retail' AND s == Purchase.skuUserInvoiceDetail(detail);
+    }
+}
+
+EXTEND FORM Purchase.userInvoice
+    PROPERTIES (i) AFTER showWholesalePriceUserInvoice toShowRetailMarkupSkuUserInvoice
+    PROPERTIES(d) BEFORE wholesaleMarkupUserInvoiceDetail retailMarkupSkuUserInvoiceDetail SHOWIF toShowRetailMarkupSkuUserInvoice(i) ON CHANGE changeRetailMarkupSkuUserInvoiceDetail(d)
+;
+
+//-- Оптовая цена берется от цены изг. + трансп. расходы
+overBasePriceUserInvoiceDetail(detail) +=  manufacturingPriceUserInvoiceDetail(detail) (+) chargePriceUserInvoiceDetail(detail);

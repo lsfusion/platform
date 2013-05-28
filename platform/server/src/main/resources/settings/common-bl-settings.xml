@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+       default-lazy-init="true">
+
+    <bean id="settings" class="platform.server.Settings"/>
+
+    <bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
+        <constructor-arg value="${db.name}"/>
+        <constructor-arg value="${db.server}"/>
+        <constructor-arg value="${db.user}"/>
+        <constructor-arg value="${db.password}"/>
+        <constructor-arg value="${backup.binPath:}"/>
+        <constructor-arg value="${backup.dumpDir:}"/>
+    </bean>
+
+    <bean id="dbManager" class="platform.server.logics.DBManager">
+        <property name="adapter" ref="dataAdapter"/>
+        <property name="businessLogics" ref="businessLogics"/>
+        <property name="restartManager" ref="restartManager"/>
+    </bean>
+
+    <bean id="restartManager" class="platform.server.logics.RestartManager">
+        <property name="businessLogics" ref="businessLogics"/>
+        <property name="navigatorsManager" ref="navigatorsManager"/>
+    </bean>
+
+    <bean id="navigatorsManager" class="platform.server.logics.NavigatorsManager">
+        <property name="businessLogics" ref="businessLogics"/>
+        <property name="logicsInstance" ref="logicsInstance"/>
+        <property name="restartManager" ref="restartManager"/>
+        <property name="securityManager" ref="securityManager"/>
+        <property name="rmiManager" ref="rmiManager"/>
+        <property name="dbManager" ref="dbManager"/>
+    </bean>
+
+    <bean id="securityManager" class="platform.server.logics.SecurityManager">
+        <property name="businessLogics" ref="businessLogics"/>
+        <property name="dbManager" ref="dbManager"/>
+    </bean>
+
+    <bean id="logicsInstance" class="platform.server.logics.LogicsInstance">
+        <property name="lifecycle" ref="lifecycleManager"/>
+        <property name="businessLogics" ref="businessLogics"/>
+        <property name="navigatorsManager" ref="navigatorsManager"/>
+        <property name="restartManager" ref="restartManager"/>
+        <property name="securityManager" ref="securityManager"/>
+        <property name="dbManager" ref="dbManager"/>
+        <property name="settings" ref="settings"/>
+        <property name="customObjects" ref="instanceCustomObjects"/>
+    </bean>
+
+    <!-- Список для переопределения custom-объектов -->
+    <bean id="instanceCustomObjects" class="platform.spring.SpringListsMergerFactory">
+        <property name="listsToMerge">
+            <list>
+                <ref bean="coreCustomObjects"/>
+                <ref bean="customObjects"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Список базовых custom-объектов -->
+    <util:list id="coreCustomObjects">
+        <ref bean="scheduler"/>
+    </util:list>
+
+    <!-- Список для задания дополнительных custom-объектов -->
+    <util:list id="customObjects"/>
+
+    <!-- Remoting -->
+    <bean id="rmiManager" class="platform.server.logics.RMIManager">
+        <property name="registryPort" value="${rmi.registryPort}"/>
+        <property name="exportPort" value="${rmi.exportPort?:0}"/>
+        <property name="exportName" value="${rmi.exportName:}"/>
+    </bean>
+
+    <bean id="remoteLogics" class="platform.server.remote.RemoteLogics">
+        <property name="businessLogics" ref="businessLogics"/>
+        <property name="logicsInstance" ref="logicsInstance"/>
+        <property name="navigatorsManager" ref="navigatorsManager"/>
+        <property name="restartManager" ref="restartManager"/>
+        <property name="securityManager" ref="securityManager"/>
+        <property name="dbManager" ref="dbManager"/>
+    </bean>
+
+    <bean id="remoteLogicsLoader" class="platform.server.remote.RemoteLogicsLoader">
+        <property name="rmiManager" ref="rmiManager"/>
+        <property name="remoteLogics" ref="remoteLogics"/>
+    </bean>
+
+    <!-- Other services -->
+    <bean id="scheduler" class="platform.server.logics.Scheduler">
+        <property name="businessLogics" ref="businessLogics"/>
+        <property name="logicsInstance" ref="logicsInstance"/>
+        <property name="dbManager" ref="dbManager"/>
+    </bean>
+
+    <!-- Lifecycle Manager setup -->
+    <bean id="lifecycleManager" class="platform.server.lifecycle.LifecycleManager">
+        <constructor-arg ref="lifecycleListeners"/>
+    </bean>
+
+    <bean id="lifecycleListeners" class="platform.spring.SpringListsMergerFactory">
+        <property name="listsToMerge">
+            <list>
+                <ref bean="coreLifecycleListeners"/>
+                <ref bean="customLifecycleListeners"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Список базовых LifecycleListener'ов -->
+    <util:list id="coreLifecycleListeners">
+        <ref bean="rmiManager"/>
+        <ref bean="remoteLogics"/>
+        <ref bean="remoteLogicsLoader"/>
+        <ref bean="scheduler"/>
+    </util:list>
+
+    <!-- Список для задания дополнительных LifecycleListener'ов -->
+    <util:list id="customLifecycleListeners"/>
+
+    <!-- businessLogics bean должен быть определён во включающем файле -->
+    <!--<bean id="businessLogics" class="some.package.SomeBusinessLogics">-->
+    <!--...-->
+    <!--</bean>-->
+</beans>

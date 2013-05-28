@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.1000000000000008"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12"/>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<field name="prevDateVote" class="java.util.Date"/>
+	<field name="nameNativeClusterVote" class="java.lang.String"/>
+	<field name="nameNativePrevClusterVote" class="java.lang.String"/>
+	<detail>
+		<band height="178">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="32" width="525" height="40"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(($F{prevDateVote}==null)? (($F{nameNativePrevClusterVote}==null)? "Ваша заявка прошла формальную проверку и направлена 10 членам Независимой экспертной коллегии сформированной по Направлению деятельности " + $F{nameNativeClusterVote} + " для прохождения экспертизы по существу.":"Заседание Независимой экспертной коллегии кластера " + $F{nameNativePrevClusterVote} + " по Вашей заявке постановило, что проект не соответствует критериям Фонда. Ваша заявка направлена на заседание Экспертной коллегии по кластеру " + $F{nameNativeClusterVote} +"."):"Заседание Независимой экспертной коллегии по Вашей заявке было признано несостоявшимся, по причине отсутствия кворума экспертных оценок. Ваша заявка направлена на повторное заседание Экспертной коллегии по кластеру " + $F{nameNativeClusterVote} + ".")+ " Срок проведения заседания 10 дней. Вы получите уведомление о результатах в течение 5 дней с момента окончания заседания."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" x="20" y="0" width="160" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Уважаемый заявитель!"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="125" width="320" height="27"/>
+				<textElement verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["С уважением,\n" + "Команда поддержки проектов Сколково"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="92" width="160" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Пожалуйста, ожидайте."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="152" width="525" height="17" forecolor="#666666"/>
+				<box leftPadding="0" rightPadding="0"/>
+				<textElement>
+					<font size="14" isUnderline="false"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["\n"+
+"****************************DISCLAIMER******************************** \n"+
+"This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
+"\n"+
+"Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
+"************************************************************************* \n"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

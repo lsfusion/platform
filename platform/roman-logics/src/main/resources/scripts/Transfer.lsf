@@ -1,0 +1,277 @@
+MODULE Transfer;
+
+REQUIRE System,
+        Document,
+        RomanDocument,
+        Stock,
+        RomanStock,
+        DocumentTransfer,
+        ListRegister,
+        RetailPrice,
+        Employee,
+        StorePriceTransfer,
+        ConsignmentBy,
+        StockDocument,
+        ContractCompany,
+        RomanLogicsModule;
+
+PRIORITY Stock, RomanLogicsModule;
+
+// ---------------------------------------- Перемещение ------------------------------------ //
+
+CLASS TransferOut 'Перемещение товаров по накладным' : Historizable, NumberedObject, InnerDocument, OutStockDocumentLedger;
+CLASS TransferOutPosted 'Проведенное перемещение товаров по накладным' : TransferOut, PostedObject;
+CLASS TransferOutDetail 'Строка перемещения товаров по накладным';
+CLASS TransferOutBatchDetail 'Строка перемещения товаров по накладным (по партиям)';
+
+@defineDocumentTransferOut(transfer, 'Перемещение товаров по накладным', sku, stock);
+@defineDocumentFormTransferOut(transfer, 'Перемещение товаров по накладным');
+
+@defineDocumentCurrency(transferOut);
+@deriveDocumentCurrency(transferOut, stock);
+
+CONSTRAINT legalEntityStockTransferOut(transferOut) != destinationLegalEntityStockTransferOut(transferOut) CHECKED BY destinationStockTransferOut
+    MESSAGE 'Перемещение товаров должно идти между складами одной компании';
+
+@defineDocumentDetailSkuArticle(transferOut);
+@extendFormDocumentDetailSkuArticle(transferOut, d, transferOut);
+@extendFormDocumentDetailSkuArticleReadonly(transferOuts, d, transferOut);
+
+// Перемещение по договорам комиссии
+commissionContractSkuTransferOut = DATA ContractSku (TransferOut);
+numberCommissionContractSkuTransferOut 'Номер договора комиссии' (transferOut) = numberContract(commissionContractSkuTransferOut(transferOut)) IN documentPrmGroup;
+
+isCommissionTransferOut 'Продажа на комиссию' (transferOut) = TRUE IF commissionContractSkuTransferOut(transferOut);
+
+CONSTRAINT typeContractSku(commissionContractSkuTransferOut(transferOut)) != ContractSkuType.commission
+    CHECKED BY commissionContractSkuTransferOut MESSAGE 'Для перемещения выбран договор, который не является договором комиссии';
+
+CONSTRAINT partyBContract(commissionContractSkuTransferOut(transferOut)) != legalEntityStockTransferOut(transferOut)
+    CHECKED BY commissionContractSkuTransferOut MESSAGE 'Для перемещения выбран договор комиссии, у которого покупатель не совпадает с компанией склада';
+
+EXTEND FORM transferOut
+    PROPERTIES(t) numberCommissionContractSkuTransferOut
+;
+
+EXTEND FORM transferOuts
+    PROPERTIES(t) READONLY numberCommissionContractSkuTransferOut
+;
+
+commissionContractSkuTransferOutDetail (detail) = commissionContractSkuTransferOut(transferOutTransferOutDetail(detail)) PERSISTENT;
+
+@defineDocumentTransferOutBatch(transfer, sku);
+@defineDocumentFormTransferOutBatch(transfer);
+
+@extendFormDocumentDetailSkuArticleReadonly(transferOuts, o, transferOutBatch);
+
+@defineDocumentRetailPrice(transferOut, d);
+
+useRetailPriceTransferOutDetail(detail) = [stockTransferOutDetail(detail) IS DepartmentStore
+    AND NOT costLedgerDepartmentStore(stockTransferOutDetail(detail))](detail)
+    OR commissionContractSkuTransferOutDetail(detail) IS ContractSku;
+@defineDocumentTransferAccount(transferOut, useRetailPriceTransferOutDetail);
+
+importerPriceTransferOutBatchDetail 'Цена импортера' (detail) = importerPriceBatchA(batchTransferOutBatchDetail(detail));
+supplierPriceTransferOutBatchDetail 'Цена поставщика' (detail) = supplierPriceBatchA(batchTransferOutBatchDetail(detail));
+EXTEND FORM transferOuts
+    PROPERTIES(o) READONLY importerPriceTransferOutBatchDetail, supplierPriceTransferOutBatchDetail
+;
+
+@defineDocumentSkipSkuLedgerCustom(transferOut, transferOutDetail);
+@extendFormDocumentSkipSkuLedgerCustom(transferOut, t, transferOut);
+@extendFormDocumentSkipSkuLedgerCustomReadonly(transferOuts, t, transferOut);
+
+// Проводим по регистру
+@implementSkuLedgerOutFIFO(TransferOutDetail, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityTransferOutDetail (ledger);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += IF commissionContractSkuTransferOutDetail(ledger)
+                                                THEN currentBalanceABatchStock(batch, stockTransferOutDetail(ledger)) IF commissionContractSkuBatchA(batch) == commissionContractSkuTransferOutDetail(ledger)
+                                                ELSE currentBalanceABatchStock(batch, stockTransferOutDetail(ledger)) IF NOT commissionContractSkuBatchA(batch)
+                                             IF batch IS BatchA;
+sumOutSkuLedger(ledger) += accountSumTransferOutDetail(ledger);
+skipSkuLedger (ledger) += skipSkuLedgerTransferOutDetail(ledger);
+
+// Запрет на не полностью расписанные партии
+@defineConstraintSkuLedgerCosted(transferOut, 'Не хватает остатков по партиям для перемещения товаров');
+
+// Товарные накладные
+@defineDocumentDetailGrossWeight(transferOutBatch, sku);
+@defineDocumentDetailPackQuantity(transferOutBatch, sku);
+
+@defineConsignmentHeader(transferOut);
+@implementConsignmentHeader(TransferOut);
+
+supplierConsignment (consignment) += legalEntityStock(stockTransferOut(consignment));
+supplierStockConsignment (consignment) += stockTransferOut(consignment);
+customerConsignment (consignment) += legalEntityStock(destinationStockTransferOut(consignment));
+customerStockConsignment (consignment) += destinationStockTransferOut(consignment);
+
+EXTEND CLASS TransferOutBatchDetail : ConsignmentDetail;
+consignmentConsignmentDetail (consignmentDetail) += transferOutTransferOutBatchDetail (consignmentDetail);
+skuConsignmentDetail (consignmentDetail) += skuTransferOutBatchDetail (consignmentDetail);
+quantityConsignmentDetail (consignmentDetail) += quantityTransferOutBatchDetail (consignmentDetail);
+
+isStockToStockTransferOut 'Перемещение м/у складами' (transferOut) =  GROUP SUM 1
+    IF stockTransferOut(transferOut) == warehouse AS Warehouse AND destinationStockTransferOut(transferOut) == warehouse AS Warehouse
+    BY transferOut;
+
+isStockToStockTransferOutBatchDetail 'Перемещение м/у складами' (transferOutBatchDetail) = isStockToStockTransferOut(transferOutTransferOutBatchDetail(transferOutBatchDetail));
+isCommissionTransferOutBatchDetail 'Продажа на комиссию' (transferOutBatchDetail) = isCommissionTransferOut(transferOutTransferOutBatchDetail(transferOutBatchDetail));
+
+supplierSumTransferOutBatchDetail (transferOutBatchDetail) =  supplierPriceBatchA(batchTransferOutBatchDetail(transferOutBatchDetail)) * quantityTransferOutBatchDetail (transferOutBatchDetail);
+sumVatTransferOutBatchDetail (transferOutBatchDetail) = [round0(X*Y/100)](
+    valueSupplierVATBatchA(batchTransferOutBatchDetail(transferOutBatchDetail)), supplierSumTransferOutBatchDetail(transferOutBatchDetail));
+sumInvoiceTransferOutBatchDetail (transferOutBatchDetail) = supplierSumTransferOutBatchDetail(transferOutBatchDetail) (+) sumVatTransferOutBatchDetail(transferOutBatchDetail);
+
+priceConsignmentDetail (consignmentDetail) += IF isStockToStockTransferOutBatchDetail(consignmentDetail) AND NOT isCommissionTransferOutBatchDetail(consignmentDetail)
+    THEN supplierPriceBatchA(batchTransferOutBatchDetail(consignmentDetail))
+    ELSE retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail));
+
+sumConsignmentDetail (consignmentDetail) += IF isStockToStockTransferOutBatchDetail(consignmentDetail) AND NOT isCommissionTransferOutBatchDetail(consignmentDetail)
+    THEN supplierSumTransferOutBatchDetail(consignmentDetail)
+    ELSE retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail))* quantityTransferOutBatchDetail (consignmentDetail);
+
+vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(batchTransferOutBatchDetail(consignmentDetail)) IF isStockToStockTransferOutBatchDetail(consignmentDetail) AND NOT isCommissionTransferOutBatchDetail(consignmentDetail);
+
+sumVATConsignmentDetail (consignmentDetail) += sumVatTransferOutBatchDetail(consignmentDetail) IF isStockToStockTransferOutBatchDetail(consignmentDetail) AND NOT isCommissionTransferOutBatchDetail(consignmentDetail);
+
+sumInvoiceConsignmentDetail (consignmentDetail) += IF isStockToStockTransferOutBatchDetail(consignmentDetail) AND NOT isCommissionTransferOutBatchDetail(consignmentDetail)
+    THEN sumInvoiceTransferOutBatchDetail(consignmentDetail)
+    ELSE retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail)) * quantityTransferOutBatchDetail (consignmentDetail);
+
+grossWeightConsignmentDetail (consignmentDetail) += grossWeightTransferOutBatchDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantityTransferOutBatchDetail (consignmentDetail);
+//shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMTransferOutBatchDetail (consignmentDetail);
+
+@defineDocumentFormTransferOutConsignment(transfer, t);
+// todo: заполнить необходимыми данными
+
+EXTEND FORM transferOut
+    PROPERTIES(t) nameCurrencyTransferOut
+;
+EXTEND FORM transferOuts
+    PROPERTIES(t) READONLY nameCurrencyTransferOut
+;
+// ---------------------------------------- Поступление ------------------------------------ //
+
+CLASS TransferIn 'Поступление товаров по накладным' : Historizable, IncStockDocumentLedger;
+CLASS TransferInDetail 'Строка поступления товаров по накладным';
+
+@defineDocumentTransferIn(transfer, 'Поступление товаров по накладным', sku, stock);
+@defineDocumentFormTransferIn(transfer, 'Поступление товаров по накладным');
+
+costTransferInBatch(transferIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY transferInTransferInDetail(ledger), batch PERSISTENT;
+
+retailPriceTransferInDetail 'Цена розничная' (detail) = retailPriceTransferOutDetail(transferOutDetailTransferInDetail(detail));
+retailSumTransferInDetail 'Сумма розничная' (detail) = quantityTransferInDetail(detail) * retailPriceTransferInDetail(detail);
+
+skipSkuLedgerTransferIn 'Не проводить по учету' (transferIn) = skipSkuLedgerTransferOut(transferOutTransferIn(transferIn));
+skipSkuLedgerTransferInDetail (detail) = skipSkuLedgerTransferOutDetail(transferOutDetailTransferInDetail(detail));
+
+commissionContractSkuTransferInDetail (detail) = commissionContractSkuTransferOutDetail(transferOutDetailTransferInDetail(detail));
+
+@defineDocumentDetailSkuArticle(transferIn);
+@extendFormDocumentDetailSkuArticleReadonly(transferIns, d, transferIn);
+@extendFormDocumentSkipSkuLedgerCustomReadonly(transferIns, t, transferIn);
+
+useRetailPriceTransferInDetail(detail) = [stockTransferInDetail(detail) IS DepartmentStore
+    AND NOT costLedgerDepartmentStore(stockTransferInDetail(detail))](detail)
+    OR commissionContractSkuTransferInDetail(detail) IS ContractSku;
+@defineDocumentTransferAccount(transferIn, useRetailPriceTransferInDetail);
+
+@implementSkuLedgerInLIFO(TransferInDetail, sku, stock);
+quantityInLIFOSkuLedger (ledger) += quantityTransferInDetail(ledger);
+limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(transferOutDetailTransferInDetail(ledger), batch);
+sumInSkuLedger(ledger) += accountSumTransferInDetail(ledger);
+skipSkuLedger (ledger) += skipSkuLedgerTransferInDetail(ledger);
+
+nameCurrencyTransferIn 'Валюта' (transferIn) = nameCurrencyTransferOut(transferOutTransferIn(transferIn)) MINCHARWIDTH 10 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
+
+// ---------------------------------------- Приемка ------------------------------------ //
+
+CLASS TransferRec 'Приемка товаров по накладной (перемещение)' : Historizable;
+CLASS TransferRecPosted 'Проведенная приемка товаров по накладной (перемещение)' : TransferRec, PostedObject;
+
+CLASS TransferRecDetail 'Строка приемки товаров по накладной (перемещение)';
+
+@defineDocumentTransferRec(transfer, 'Приемка товаров по накладным (перемещение)', sku, stock);
+@defineDocumentFormTransferRec(transfer, 'Приемка товаров по накладным (перемещение)');
+
+@defineDocumentDetailSkuArticle(transferRec);
+@extendFormDocumentDetailSkuArticle(transferRec, d, transferRec);
+
+@extendFormDocumentDetailSkuArticleReadonly(transferIns, r, transferRec);
+
+// ---------------------------------------- Акт расхождений ------------------------------------ //
+CLASS TransferDiff 'Акт расхождений приемки товаров по накладной (перемещение)' : Historizable;
+
+CLASS ABSTRACT TransferDiffDetail 'Строка расхождений акта приемки товаров по накладной (перемещение)';
+CLASS TransferDiffEDetail 'Строка расхождений акта приемки товаров по накладной (перемещение, излишек)' : TransferDiffDetail;
+CLASS TransferDiffSDetail 'Строка расхождений акта приемки товаров по накладной (перемещение, недостача)' : TransferDiffDetail;
+
+@defineDocumentTransferDiff(transfer, 'Акт расхождений приемки товаров по накладной (перемещение)', sku, stock);
+@defineDocumentFormTransferDiff(transfer);
+
+@defineDocumentDetailSkuArticle(transferDiff);
+@extendFormDocumentDetailSkuArticleReadonlyQuantity(transferIns, f, transferDiff, signedQuantityTransferDiffDetail);
+
+costTransferDiffEDetail(detail) = 0.0 IF detail IS TransferDiffEDetail;
+EXTEND CLASS TransferDiffEDetail : BatchB;
+@implementBatchCustom(transferDiffEDetail, sku, stock, cost);
+quantityBatch (batch) += quantityTransferDiffEDetail(batch);
+skipASkuLedger (ledger) += ledger IS TransferDiffEDetail;
+
+@implementSkuLedgerOutFIFO(TransferDiffSDetail, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityTransferDiffSDetail(ledger);
+limitOutFIFOSkuLedgerBatch (ledger, batch) += costTransferInBatch(transferInTransferDiffSDetail(ledger), batch);
+orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS TransferDiffSDetail;
+
+accountPriceTransferRecBatchA (transferRec, batchA) = GROUP MAX accountPriceTransferInDetailBatchA(detail, batchA) BY transferRecTransferInDetail(detail), batchA;
+accountSumTransferDiffSDetail (detail) = GROUP SUM costDataSkuLedgerBatch(detail, batch) * accountPriceTransferRecBatchA(transferRecTransferDiffSDetail(detail), batch) BY detail PERSISTENT;
+sumOutSkuLedger(ledger) += accountSumTransferDiffSDetail(ledger);
+
+skipASkuLedger (ledger) += ledger IS TransferDiffSDetail;
+
+// ---------------------------------------- Акт расценки ------------------------------------ //
+CLASS TransferPriceActTransfer 'Акт расценки (внутр.)' : InputTransferPriceAct;
+CLASS TransferPriceActTransferDetail 'Строка акта расценки': InputTransferPriceActDetail;
+
+prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) IF batch IS Batch;
+prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) IF batch IS Batch;
+prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) IF batch IS Batch;
+
+@defineDocumentTransferPriceAct (transfer, 'Акт расценки (перемещение)', 'Строка акта расценки (перемещение)', sku, stock, prevImporterPriceBatch, prevSupplierPriceBatch, prevRangeVATBatch);
+
+notPassToBookkeepingListRegister (inputListRegister) += destinationStockTransferOut(transferOutTransferPriceActTransfer(inputListRegister)) IS DepartmentStore
+    AND stockTransferOut(transferOutTransferPriceActTransfer(inputListRegister)) IS DepartmentStore
+    OR  isCommissionTransferOut(transferOutTransferPriceActTransfer(inputListRegister));
+
+printInputListRegisterTransferIn 'Реестр цен' (transferIn) = printInputListRegister(transferPriceActTransferTransferOut(transferOutTransferIn(transferIn))) TOOLBAR;
+
+
+EXTEND FORM transferIns
+    PROPERTIES(t) READONLY nameCurrencyTransferIn
+    PROPERTIES (t) printInputListRegisterTransferIn
+;
+
+//---------------------------------------- Товарный отчет ------------------------- //
+
+// расход
+dateTimeStockDocumentLedger (ledger) += dateTimeTransferOut(ledger);
+isPostedStockDocumentLedger (ledger) += isPostedTransferOut(ledger);
+stockStockDocumentLedger (ledger) += stockTransferOut(ledger);
+descriptionStockDocumentLedger (ledger) += descriptionTransferOut(ledger);
+
+sumOutStockDocumentLedger (ledger) += accountSumTransferOut(ledger);
+sumItemOutStockDocumentLedger (ledger) += accountSumTransferOut(ledger);
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS TransferOut;
+
+// приход
+dateTimeStockDocumentLedger (ledger) += dateTimeTransferIn(ledger);
+isPostedStockDocumentLedger (ledger) += isPostedTransferIn(ledger);
+stockStockDocumentLedger (ledger) += stockTransferIn(ledger);
+descriptionStockDocumentLedger (ledger) += descriptionTransferIn(ledger);
+
+sumIncStockDocumentLedger (ledger) += accountSumTransferIn(ledger);
+sumItemIncStockDocumentLedger (ledger) += accountSumTransferIn(ledger);
+sumContainerIncStockDocumentLedger (ledger) += 0.0 IF ledger IS TransferIn;

@@ -1,0 +1,12 @@
+MODULE ExportDeclaration;
+
+REQUIRE System,
+        Item,
+        PurchaseDeclaration
+        ;
+
+exportDeclaration 'Экспортировать' = ACTION CUSTOM 'fdk.region.by.declaration.ExportDeclarationActionProperty';
+
+EXTEND FORM declaration
+    PROPERTIES (d) exportDeclaration TODRAW dd FORCE PANEL TOOLBAR
+;

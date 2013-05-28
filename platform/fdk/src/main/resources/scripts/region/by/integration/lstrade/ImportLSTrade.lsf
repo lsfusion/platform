@@ -1,0 +1,47 @@
+MODULE ImportLSTrade;
+
+REQUIRE Import;
+
+
+//---------------------------------------------- Импорт данных -----------------------------------------------------//
+
+GROUP lstradeGroup 'LS Trade' : public;
+
+importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'fdk.region.by.integration.lstrade.ImportLSTradeActionProperty' IN lstradeGroup;
+importLSTDirectory 'Папка' = DATA STRING[200] () IN lstradeGroup;
+importInactive 'Импортировать в том числе неактивные' = DATA BOOLEAN () IN lstradeGroup;
+importGroupItems 'Импортировать группы товаров' = DATA BOOLEAN () IN lstradeGroup;
+importWares 'Импортировать посуду' = DATA BOOLEAN () IN lstradeGroup;
+importItems 'Импортировать товары' = DATA BOOLEAN () IN lstradeGroup;
+importNumberItems 'Кол-во' = DATA INTEGER () IN lstradeGroup;
+importNumberItemsAtATime 'Разбивать на пакеты по' = DATA INTEGER () IN lstradeGroup;
+importPriceListStores 'Импортировать ассортимент магазина' = DATA BOOLEAN() IN lstradeGroup;
+importPriceListSuppliers 'Импортировать ассортимент поставщика' = DATA BOOLEAN() IN lstradeGroup;
+importNumberPriceLists 'Кол-во' = DATA INTEGER () IN lstradeGroup;
+importNumberPriceListsAtATime 'Разбивать на пакеты по' = DATA INTEGER () IN lstradeGroup;
+importUserInvoices 'Импортировать документы прихода' = DATA BOOLEAN() IN lstradeGroup;
+importLegalEntities 'Импортировать организации' = DATA BOOLEAN() IN lstradeGroup;
+importWarehouses 'Импортировать склады' = DATA BOOLEAN() IN lstradeGroup;
+importStores 'Импортировать магазины' = DATA BOOLEAN () IN lstradeGroup;
+importDepartmentStores 'Импортировать отделы магазина' = DATA BOOLEAN() IN lstradeGroup;
+prefixStore 'Префикс магазина' = DATA STRING[5]() IN lstradeGroup;
+importBanks 'Импортировать банки' = DATA BOOLEAN() IN lstradeGroup;
+importRateWastes 'Импортировать нормы отходов' = DATA BOOLEAN() IN lstradeGroup;
+importContracts 'Импортировать договоры' = DATA BOOLEAN() IN lstradeGroup;
+
+
+
+EXTEND FORM integrationData
+    PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importWares, importItems,
+    importNumberItems, importNumberItemsAtATime, importPriceListStores, importPriceListSuppliers,
+    importNumberPriceLists, importNumberPriceListsAtATime, importUserInvoices, importLegalEntities,
+    importWarehouses, importStores, importDepartmentStores, prefixStore, importBanks, importRateWastes, importContracts
+;
+EXTEND DESIGN integrationData {
+    pane {
+        NEW lstrade {
+            title = 'LS Trade';
+            ADD NOGROUP.lstradeGroup;
+        }
+    }
+}

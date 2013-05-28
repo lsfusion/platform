@@ -1,0 +1,320 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:pui='urn:import:skolkovo.gwt.expert.client.ui'>
+    <ui:style src="ExpertMainWidget.ui.css"/>
+
+    <g:VerticalPanel width="100%">
+        <g:cell horizontalAlignment="center">
+            <g:VerticalPanel width="1100" styleName="{style.mainPane}" spacing="5">
+                <g:HTMLPanel ui:field="dataHtmlPanel">
+                    <table border="0" cellspacing="10" width="100%">
+                        <tbody>
+                            <tr>
+                                <th width="5pt"/>
+                                <th width="15%"/>
+                                <th width="15"/>
+                                <th/>
+                                <th width="200"/>
+                                <th width="20"/>
+                            </tr>
+                            <tr>
+                                <td rowspan="2" colspan="2"><g:Image ui:field="imgLogo" styleName="{style.floatRight}" altText="Logo"/></td>
+                                <td rowspan="32"/>
+                                <td colspan="2">
+                                    <pui:BallotToolbar />
+                                    <hr/>
+                                </td>
+                                <td rowspan="32"/>
+                            </tr>
+                            <tr>
+                                <td colspan="2"><left><h1><span style="font-size: 30px;" ui:field="titleSpan"/></h1></left></td>
+                            </tr>
+                            <tr>
+                                <td rowspan="32"/>
+                                <td><hr/></td>
+                                <td colspan="2"><hr/></td>
+                            </tr>
+                            <tr>
+                                <td align="right"><b><span ui:field="projectLabelSpan" /></b></td>
+                                <td align="left" colspan="2"><span ui:field="projectSpan"/></td>
+                            </tr>
+                            <tr>
+                                <td align="right"><b><span ui:field="claimerLabelSpan"/></b></td>
+                                <td align="left" colspan="2"><span ui:field="claimerSpan"/></td>
+                            </tr>
+                            <tr>
+                                <td align="right"><b><span ui:field="expertLabelSpan"/></b></td>
+                                <td align="left" colspan="2"><span ui:field="expertSpan"/></td>
+                            </tr>
+                            <tr>
+                                <td/>
+                                <td colspan="2" align="left">
+                                    <g:HorizontalPanel spacing="5">
+                                        <g:Label ui:field="logoutNotice" styleName="{style.logoutNotice}"/>
+                                        <g:Anchor href="javascript:;" ui:field="logoutLink" styleName="{style.logoutNotice}"/>
+                                    </g:HorizontalPanel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right"><b><span ui:field="dateLabelSpan"/></b></td>
+                                <td align="left" colspan="2"><span ui:field="dateSpan"/></td>
+                            </tr>
+                            <tr>
+                                <td><hr/></td>
+                                <td colspan="2"><hr/></td>
+                            </tr>
+                            <tr>
+                                <td/>
+                                <td colspan="2">
+                                    <g:HorizontalPanel ui:field="voteButtonsPanel">
+                                        <g:Button width="280" ui:field="bRefused" styleName="{style.refuse}"/>
+                                        <g:Label width="20" />
+                                        <g:VerticalPanel>
+                                            <g:Button width="280" ui:field="bConnected" styleName="{style.connected}"/>
+                                            <g:Anchor href="javascript:;" ui:field="connectedQuestionLink" styleName="{style.connectedQuestion}"/>
+                                        </g:VerticalPanel>
+                                    </g:HorizontalPanel>
+                                    <br/>
+                                    <span ui:field="voteResultSpan"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td/>
+                                <td colspan="2">
+                                    <g:HorizontalPanel width="100%" ui:field="loadingPanel" visible="false">
+                                        <g:Label ui:field="loadingSpan">Запрос обрабатывается....</g:Label>
+                                        <g:Image url="images/loading.gif" altText="loading..." />
+                                    </g:HorizontalPanel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td/>
+                                <td colspan="2">
+                                    <g:HorizontalPanel width="100%" ui:field="noRevisionPanel" visible="false">
+                                        <g:Label ui:field="noRevisionSpan"/>
+                                    </g:HorizontalPanel>
+                                </td>
+                            </tr>
+                            <tr id="dataRow1">
+                                <td align="right" class="{style.numberLabel}">1.</td>
+                                <td><g:Label ui:field="lbInCluster" styleName="{style.questionCaption}"/></td>
+                                <td><g:ListBox ui:field="bxInCluster" styleName="{style.questionComboBox}"/></td>
+                            </tr>
+                            <tr id="dataRow2">
+                                <td align="right" valign="top" rowspan="2" class="{style.numberLabel}">2.</td>
+                                <td><g:Label ui:field="lbInnovative" styleName="{style.questionCaption}"/></td>
+                                <td><g:ListBox ui:field="bxInnovative" styleName="{style.questionComboBox}"/></td>
+                            </tr>
+                            <tr id="dataRow3">
+                                <td>
+                                    <div class="{style.commentBox}">
+                                        <g:Label ui:field="lbInnovativeComment" styleName="{style.commentLabel}"/>
+                                        <g:TextArea visibleLines="8" ui:field="taInnovativeComment" styleName="{style.commentTextArea}"/>
+                                    </div>
+                                </td>
+                                <td style="padding-right:5px;">
+                                    <g:Label visible="false" ui:field="lbInnovativeCounter" styleName="{style.commentBox}"/>
+                                    <g:Label visible="false" ui:field="lbInnovativeCounterCaption"/>
+                                </td>
+                            </tr>
+                            <tr id="dataRow4">
+                                <td align="right" class="{style.numberLabel}">3.</td>
+                                <td><g:Label ui:field="lbForeign" styleName="{style.questionCaption}"/></td>
+                                <td><g:ListBox ui:field="bxForeign" styleName="{style.questionComboBox}"/></td>
+                            </tr>
+                            <tr id="dataRow5">
+                                <td align="right" class="{style.numberLabel}">4.</td>
+                                <td><g:Label ui:field="lbCompetent" styleName="{style.questionCaption}"/></td>
+                                <td><g:ListBox ui:field="bxCompetent" styleName="{style.questionComboBox}"/></td>
+                            </tr>
+                            <tr id="dataRow6">
+                                <td align="right" rowspan="2" class="{style.numberLabel}">5.</td>
+                                <td><g:Label ui:field="lbComplete" styleName="{style.questionCaption}"/></td>
+                                <td>
+                                    <g:ListBox ui:field="bxComplete" styleName="{style.questionComboBox}"/>
+                                </td>
+                            </tr>
+                            <tr id="dataRow7">
+                                <td>
+                                    <div class="{style.commentBox}">
+                                        <g:Label ui:field="lbCompleteComment" styleName="{style.commentLabel}"/>
+                                        <g:TextArea visibleLines="8" ui:field="taCompleteComment" styleName="{style.commentTextArea}"/>
+                                    </div>
+                                </td>
+                                <td style="padding-right:5px;">
+                                    <g:Label visible="false" ui:field="lbCompleteCounter" styleName="{style.commentBox}"/>
+                                    <g:Label visible="false" ui:field="lbCompleteCounterCaption"/>
+                                </td>
+                            </tr>
+                            <tr id="r2DataRow1">
+                                <td align="right" valign="top" rowspan="2" class="{style.numberLabel}">1.</td>
+                                <td><g:Label ui:field="lbCompetitive" styleName="{style.questionCaption}"/></td>
+                                <td><g:ListBox ui:field="bxCompetitive" styleName="{style.questionComboBox}"/></td>
+                            </tr>
+                            <tr id="r2DataRow2">
+                                <td>
+                                    <div class="{style.commentBox}">
+                                        <g:Label ui:field="lbCompetitiveComment" styleName="{style.commentLabel}"/>
+                                        <g:TextArea visibleLines="8" ui:field="taCompetitiveComment" styleName="{style.commentTextArea}"/>
+                                    </div>
+                                </td>
+                                <td style="padding-right:5px;">
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbCompetitiveCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbCompetitiveMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbCompetitiveMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbCompetitiveMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbCompetitiveMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
+                                </td>
+                            </tr>
+                            <tr id="r2DataRow3">
+                                <td align="right" valign="top" rowspan="2" class="{style.numberLabel}">2.</td>
+                                <td><g:Label ui:field="lbCommercePotential" styleName="{style.questionCaption}"/></td>
+                                <td><g:ListBox ui:field="bxCommercePotential" styleName="{style.questionComboBox}"/></td>
+                            </tr>
+                            <tr id="r2DataRow4">
+                                <td>
+                                    <div class="{style.commentBox}">
+                                        <g:Label ui:field="lbCommercePotentialComment" styleName="{style.commentLabel}"/>
+                                        <g:TextArea visibleLines="8" ui:field="taCommercePotentialComment" styleName="{style.commentTextArea}"/>
+                                    </div>
+                                </td>
+                                <td style="padding-right:5px;">
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbCommercePotentialCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbCommercePotentialMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbCommercePotentialMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbCommercePotentialMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbCommercePotentialMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
+                                </td>
+                            </tr>
+                            <tr id="r2DataRow5">
+                                <td align="right" valign="top" rowspan="2" class="{style.numberLabel}">3.</td>
+                                <td><g:Label ui:field="lbImplement" styleName="{style.questionCaption}"/></td>
+                                <td><g:ListBox ui:field="bxImplement" styleName="{style.questionComboBox}"/></td>
+                            </tr>
+                            <tr id="r2DataRow6">
+                                <td>
+                                    <div class="{style.commentBox}">
+                                        <g:Label ui:field="lbImplementComment" styleName="{style.commentLabel}"/>
+                                        <g:TextArea visibleLines="8" ui:field="taImplementComment" styleName="{style.commentTextArea}"/>
+                                    </div>
+                                </td>
+                                <td style="padding-right:5px;">
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbImplementCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbImplementMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbImplementMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbImplementMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbImplementMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
+                                </td>
+                            </tr>
+                            <tr id="r2DataRow7">
+                                <td align="right" valign="top" rowspan="2" class="{style.numberLabel}">4.</td>
+                                <td><g:Label ui:field="lbExpertise" styleName="{style.questionCaption}"/></td>
+                                <td><g:ListBox ui:field="bxExpertise" styleName="{style.questionComboBox}"/></td>
+                            </tr>
+                            <tr id="r2DataRow8">
+                                <td>
+                                    <div class="{style.commentBox}">
+                                        <g:Label ui:field="lbExpertiseComment" styleName="{style.commentLabel}"/>
+                                        <g:TextArea visibleLines="8" ui:field="taExpertiseComment" styleName="{style.commentTextArea}"/>
+                                    </div>
+                                </td>
+                                <td style="padding-right:5px;">
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbExpertiseCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbExpertiseMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbExpertiseMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbExpertiseMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbExpertiseMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
+                                </td>
+                            </tr>
+                            <tr id="r2DataRow9">
+                                <td align="right" valign="top" rowspan="2" class="{style.numberLabel}">5.</td>
+                                <td><g:Label ui:field="lbInternationalExperience" styleName="{style.questionCaption}"/></td>
+                                <td><g:ListBox ui:field="bxInternationalExperience" styleName="{style.questionComboBox}"/></td>
+                            </tr>
+                            <tr id="r2DataRow10">
+                                <td>
+                                    <div class="{style.commentBox}">
+                                        <g:Label ui:field="lbInternationalExperienceComment" styleName="{style.commentLabel}"/>
+                                        <g:TextArea visibleLines="8" ui:field="taInternationalExperienceComment" styleName="{style.commentTextArea}"/>
+                                    </div>
+                                </td>
+                                <td style="padding-right:5px;">
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbInternationalExperienceCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbInternationalExperienceMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbInternationalExperienceMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbInternationalExperienceMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbInternationalExperienceMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
+                                </td>
+                            </tr>
+                            <tr id="r2DataRow11">
+                                <td align="right" valign="top" rowspan="2" class="{style.numberLabel}">6.</td>
+                                <td><g:Label ui:field="lbEnoughDocuments" styleName="{style.questionCaption}"/></td>
+                                <td><g:ListBox ui:field="bxEnoughDocuments" styleName="{style.questionComboBox}"/></td>
+                            </tr>
+                            <tr id="r2DataRow12">
+                                <td>
+                                    <div class="{style.commentBox}">
+                                        <g:Label ui:field="lbEnoughDocumentsComment" styleName="{style.commentLabel}"/>
+                                        <g:TextArea visibleLines="8" ui:field="taEnoughDocumentsComment" styleName="{style.commentTextArea}"/>
+                                    </div>
+                                </td>
+                                <td style="padding-right:5px;">
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbEnoughDocumentsCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbEnoughDocumentsMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbEnoughDocumentsMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbEnoughDocumentsMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbEnoughDocumentsMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
+                                </td>
+                            </tr>
+                            <tr id="resultDataRow">
+                                <td></td>
+                                <td>
+                                    <g:VerticalPanel width="100%">
+                                        <g:HTMLPanel><span ui:field="footerSpan" /></g:HTMLPanel>
+                                        <g:Button width="280" ui:field="bVote"/>
+                                    </g:VerticalPanel>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </g:HTMLPanel>
+            </g:VerticalPanel>
+        </g:cell>
+    </g:VerticalPanel>
+</ui:UiBinder>

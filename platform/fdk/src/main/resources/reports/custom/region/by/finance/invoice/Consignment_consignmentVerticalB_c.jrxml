@@ -1,0 +1,1484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="c" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10" />
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10" >
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<field name="c" class="java.lang.Integer"/>
+	<field name="dateConsignment" class="java.util.Date"/>
+	<field name="nameTruckConsignment" class="java.lang.String"/>
+	<field name="ownerTruckConsignment" class="java.lang.String"/>
+	<field name="trailerConsignment" class="java.lang.String"/>
+	<field name="nameDriverConsignment" class="java.lang.String"/>
+	<field name="overWaybillConsignment" class="java.lang.String"/>
+	<field name="namePayerConsignment" class="java.lang.String"/>
+	<field name="shipmentBaseConsignment" class="java.lang.String"/>
+	<field name="addressSupplierStockConsignment" class="java.lang.String"/>
+	<field name="addressCustomerStockConsignment" class="java.lang.String"/>
+	<field name="readdressingConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceAllowedConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceExecutedConsignment" class="java.lang.String"/>
+	<field name="forwarderConsignment" class="java.lang.String"/>
+	<field name="warrantConsignment" class="java.lang.String"/>
+	<field name="warrantHolderConsignment" class="java.lang.String"/>
+	<field name="goodsAcceptedConsignment" class="java.lang.String"/>
+	<field name="nameLoadingExecuterConsignment" class="java.lang.String"/>
+	<field name="nameWayOfLoadingConsignment" class="java.lang.String"/>
+	<field name="codeLoadingConsignment" class="java.lang.String"/>
+	<field name="arrivalTimeConsignment" class="java.util.Date"/>
+	<field name="departureTimeConsignment" class="java.util.Date"/>
+	<field name="downtimeConsignment" class="java.lang.String"/>
+	<field name="raceQuantityConsignment" class="java.lang.Integer"/>
+	<field name="quantityConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="packQuantityConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="grossWeightTonConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="sumConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="sumVATConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="sumInvoiceConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="UNPCustomerConsignment" class="java.lang.String"/>
+	<field name="UNPSupplierConsignment" class="java.lang.String"/>
+	<field name="UNPPayerConsignment" class="java.lang.String"/>
+	<field name="addressSupplierConsignment" class="java.lang.String"/>
+	<field name="addressCustomerConsignment" class="java.lang.String"/>
+	<field name="addressPayerConsignment" class="java.lang.String"/>
+	<field name="fullNameSupplierConsignment" class="java.lang.String"/>
+	<field name="fullNameCustomerConsignment" class="java.lang.String"/>
+	<field name="fullNamePayerConsignment" class="java.lang.String"/>
+	<field name="documentNameCurrencyConsignment" class="java.lang.String"/>
+	<field name="isCustomsFlowConsignment" class="java.lang.Boolean"/>
+	<field name="noteConsignment" class="java.lang.String"/>
+	<field name="d" class="java.lang.Integer"/>
+	<field name="nameSkuConsignmentDetail" class="java.lang.String"/>
+	<field name="shortNameUOMConsignmentDetail" class="java.lang.String"/>
+	<field name="quantityConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="priceConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="vatConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumVATConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumInvoiceConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="packQuantityConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="grossWeightTonConsignmentDetail" class="java.math.BigDecimal"/>
+	<summary>
+		<band height="534">
+			<textField>
+				<reportElement x="333" y="59" width="222" height="24"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{packQuantityConsignmentDetailConsignment}!=null?platform.base.Words.toString($F{packQuantityConsignmentDetailConsignment}) + " мест":"")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="90" y="83" width="155" height="24"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{nameIssuanceAllowedConsignment}==null?"":$F{nameIssuanceAllowedConsignment})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="1" y="216" width="554" height="1"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="333" y="131" width="222" height="24"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{goodsAcceptedConsignment}!=null?$F{goodsAcceptedConsignment}:"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="202" width="141" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Штамп (печать) грузоотправителя"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="256" y="83" width="77" height="24"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Товар к перевозке принял"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="17" width="100" height="20"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Всего сумма НДС"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="101" y="17" width="454" height="20"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{sumVATConsignmentDetailConsignment}!=null ? platform.base.Words.toString($F{sumVATConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="256" y="202" width="141" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Штамп (печать) грузополучателя"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="256" y="131" width="77" height="24"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Принял грузополучатель"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="256" y="59" width="77" height="24"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Всего количество грузовых мест"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="90" y="107" width="155" height="24"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{nameIssuanceExecutedConsignment}!=null?$F{nameIssuanceExecutedConsignment}:"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="181" width="130" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["№ пломбы________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="256" y="181" width="130" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["№ пломбы________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="83" width="90" height="12"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Отпуск разрешил"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="90" y="59" width="155" height="24"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{grossWeightTonConsignmentDetailConsignment}!=null?platform.base.Words.toString($F{grossWeightTonConsignmentDetailConsignment}) + " т":"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="107" width="90" height="12"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Сдал грузоотправтель"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="37" width="115" height="20"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Всего стоимость с НДС"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="59" width="90" height="12"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Всего масса груза"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="333" y="107" width="222" height="24"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{warrantConsignment}!=null?$F{warrantConsignment}+" выданной "+$F{warrantHolderConsignment}:"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="256" y="107" width="77" height="12"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["по доверенности"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="333" y="83" width="222" height="24"/>
+				<textElement verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{forwarderConsignment}!=null?$F{forwarderConsignment}:"")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="247" y="59" width="1" height="157"/>
+			</line>
+			<textField>
+				<reportElement x="116" y="37" width="439" height="20"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{sumInvoiceConsignmentDetailConsignment}!=null?platform.base.Words.toString($F{sumInvoiceConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="375" width="17" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="236" y="258" width="36" height="10"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["убытия"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="321" width="135" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Расстояние перевозки по группам дорог,км"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="35" y="341" width="49" height="22"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["в городе"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="421" y="280" width="40" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="35" y="363" width="49" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["22"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="118" y="406" width="42" height="49"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["За спе-циальный транспорт"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="464" y="295" width="91" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["____________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="192" y="246" width="118" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Дата,время (ч,мин)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="250" y="430" width="35" height="25"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["погруз-ка"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="387" width="17" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="317" y="387" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="341" y="268" width="80" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["19"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="230" y="363" width="42" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["28"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="341" width="17" height="22"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["I"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="464" y="246" width="91" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Транспортные услуги ___"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="182" y="375" width="48" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" x="272" y="280" width="38" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{downtimeConsignment}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="317" y="363" width="35" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["30"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="230" y="321" width="87" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Поправочный коэффициент"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="310" y="246" width="111" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Дополнительные операции"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="182" y="363" width="48" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["27"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="464" y="260" width="91" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["____________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="395" y="337" width="160" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["____________________________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="268" width="46" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="272" y="341" width="45" height="22"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["основной тариф"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="280" width="46" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Погрузка"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="35" y="375" width="49" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="310" y="292" width="31" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="246" width="80" height="22"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Способ (ручной, механизированный)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="464" y="285" width="91" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["____________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="46" y="292" width="38" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="352" y="363" width="37" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["31"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="317" y="321" width="35" height="42"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Штраф"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="46" y="268" width="38" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["12"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="292" width="80" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="230" y="375" width="42" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="323" y="406" width="35" height="49"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Прочие до-платы"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="250" y="467" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="358" y="503" width="43" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="160" y="455" width="40" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["35"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="430" y="479" width="47" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="118" y="467" width="42" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="285" y="503" width="38" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="118" y="479" width="42" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="200" y="467" width="50" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="358" y="455" width="43" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["40"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="481" y="458" width="74" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="503" width="52" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["К оплате"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="118" y="455" width="42" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["34"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="160" y="503" width="40" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="285" y="467" width="38" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="323" y="503" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="358" y="491" width="43" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="285" y="455" width="38" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["38"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="358" y="479" width="43" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="503" width="34" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="200" y="455" width="50" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["36"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="401" y="479" width="29" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="52" y="503" width="32" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="200" y="491" width="50" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="430" y="491" width="47" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="160" y="491" width="40" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="401" y="503" width="29" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="250" y="491" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="455" width="52" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="200" y="503" width="50" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="0" y="515" width="555" height="15"/>
+				<textElement textAlignment="Left"/>
+				<text><![CDATA[С товаром переданы документы ___________________________________________________________________________________________________________________]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="491" width="34" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="200" y="479" width="50" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="250" y="455" width="35" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["37"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="467" width="52" height="12"/>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["По заказу"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="160" y="479" width="40" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="430" y="467" width="47" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="479" width="52" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Выполнено"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="481" y="448" width="74" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="160" y="467" width="40" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="323" y="491" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="401" y="491" width="29" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="118" y="503" width="42" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="52" y="455" width="32" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["32"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="430" y="503" width="47" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="491" width="52" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Расценка"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="358" y="467" width="43" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="401" y="455" width="29" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["41"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="250" y="503" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="118" y="491" width="42" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="455" width="34" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["33"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="52" y="491" width="32" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="285" y="491" width="38" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="467" width="34" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="323" y="479" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="430" y="455" width="47" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["42"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="52" y="479" width="32" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="401" y="467" width="29" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="285" y="479" width="38" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="323" y="455" width="35" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["39"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="479" width="34" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="323" y="467" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="52" y="467" width="32" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="250" y="479" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="118" y="375" width="17" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="236" y="268" width="36" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["16"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="101" y="387" width="17" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="160" y="406" width="40" height="49"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["За транс-портные услуги"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="341" y="292" width="80" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="164" y="246" width="28" height="22"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Код"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="387" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="272" y="292" width="38" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="481" y="436" width="74" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="101" y="341" width="17" height="22"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["II"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="236" y="292" width="36" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="401" y="430" width="29" height="25"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["итого"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" x="164" y="280" width="28" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{codeLoadingConsignment}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="135" y="363" width="47" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["26"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="352" y="321" width="37" height="42"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="118" y="341" width="17" height="22"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["III"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="481" y="423" width="74" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="135" y="387" width="47" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="118" y="387" width="17" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="401" y="406" width="76" height="24"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["К оплате"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="192" y="258" width="44" height="10"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["прибытия"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="250" y="406" width="73" height="24"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Сверхнорматив-ный простой"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="406" width="52" height="49"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Расчет стоимости"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="317" y="375" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" x="46" y="280" width="38" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLoadingExecuterConsignment}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="272" y="387" width="45" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="285" y="430" width="38" height="25"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["разгрузка"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="421" y="292" width="40" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="395" y="323" width="160" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Отметка о составленных актах __________________________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="272" y="375" width="45" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="0" y="231" width="555" height="15"/>
+				<textElement textAlignment="Left"/>
+				<text><![CDATA[II ПОГРУЗОЧНО-РАЗГРУЗОЧНЫЕ ОПЕРАЦИИ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" x="192" y="280" width="44" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{arrivalTimeConsignment}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="192" y="292" width="44" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="464" y="273" width="91" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["____________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="268" width="80" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["13"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="363" width="17" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["23"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="35" y="387" width="49" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="0" y="306" width="555" height="15"/>
+				<textElement textAlignment="Left"/>
+				<text><![CDATA[III ПРОЧИЕ СВЕДЕНИЯ (заполняются перевозчиком)]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="352" y="387" width="37" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="341" width="35" height="22"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["всего"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="310" y="280" width="31" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="395" y="350" width="160" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["____________________________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="272" y="268" width="38" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["17"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="84" y="406" width="34" height="49"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["За рас-стояние пере-возки"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="363" width="35" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["21"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="182" y="387" width="48" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="352" y="375" width="37" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="192" y="268" width="44" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["15"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="292" width="46" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Разгрузка"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="341" y="280" width="80" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="421" y="246" width="40" height="22"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Подпись"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="246" width="46" height="22"/>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Операция"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="135" y="321" width="47" height="42"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Код экспе-дирования"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="421" y="268" width="40" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["20"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="310" y="258" width="31" height="10"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["время"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="101" y="375" width="17" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="101" y="363" width="17" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["24"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="481" y="409" width="74" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Таксировка ______"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="0" y="375" width="35" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="358" y="406" width="43" height="49"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Дополнительные услуги(экспедирование)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="341" y="258" width="80" height="10"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["наименование"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="182" y="321" width="48" height="42"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["За транспорт-ные услуги"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="46" y="246" width="38" height="22"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Испол-нитель"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="118" y="363" width="17" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["25"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="135" y="375" width="47" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="430" y="430" width="47" height="25"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["в том числе ТЭП"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" x="236" y="280" width="36" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{departureTimeConsignment}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="164" y="292" width="28" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="272" y="363" width="45" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["29"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="310" y="268" width="31" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["18"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="272" y="258" width="38" height="10"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["простоя"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" x="84" y="280" width="80" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameWayOfLoadingConsignment}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="52" y="406" width="32" height="49"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["За тонны"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="164" y="268" width="28" height="12"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["14"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="395" y="362" width="160" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["____________________________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="200" y="406" width="50" height="49"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Погрузочно-разгрузоч-ные работы,т"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="395" y="372" width="160" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["____________________________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="230" y="341" width="42" height="22"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["расценки водителю"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="230" y="387" width="42" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,576 @@
+MODULE StorePrice;
+
+REQUIRE System, Historizable, Tax, Stock, Barcode, Store, Ware, PriceListType;
+
+GROUP priceDetailGroup 'Цены' : public;
+
+META defineDocumentDetailInPricePrefix (object, prefix, caption)
+    prefix###importerPrice###object##Detail 'Цена изготовителя/импортера'###caption = DATA NUMERIC[14,2] (###object##Detail) IN priceDetailGroup;
+    prefix###supplierPrice###object##Detail 'Цена поставщика без НДС'###caption = DATA NUMERIC[14,2] (###object##Detail) IN priceDetailGroup;
+END
+META defineDocumentDetailInPrice (object)
+    @defineDocumentDetailInPricePrefix(object,,);
+END
+
+META defineDocumentDetailInvoicePrice (object, stockProp)
+    supplierMarkup###object##Detail 'Оптовая надбавка/торговая скидка, %' (detail) = DATA NUMERIC[6,2] (object##Detail) IN priceDetailGroup;
+    overSupplierMarkup###object##Detail 'Оптовая надбавка/торговая скидка, %' (detail) =
+            OVERRIDE 0 IF detail IS object##Detail, supplierMarkup###object##Detail(detail);
+
+    supplierVAT###object##Detail(detail) = DATA Range (object##Detail);
+    numberSupplierVAT###object##Detail 'НДС поставщика, номер' (detail) = numberRange(supplierVAT###object##Detail(detail)) IN priceDetailGroup;
+    valueSupplierVAT###object##Detail 'НДС поставщика,%' (detail) = valueRateRangeDate
+        (supplierVAT###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
+
+    CONSTRAINT taxRange(supplierVAT###object##Detail(detail)) != Tax.taxVAT OR
+               countryRange(supplierVAT###object##Detail(detail)) != countryStock(stockProp###object##Detail(detail))
+               CHECKED BY supplierVAT###object##Detail
+               MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+END
+
+META defineDocumentDetailWareRangePrefix (object, prefix, caption)
+    prefix###wareRange###object##Detail (detail) = rangeWareDate(prefix###ware###object##Detail(detail), date###object##Detail(detail));
+    prefix###numberWareRange###object##Detail 'НДС посуды, номер'###caption (detail) = numberRange(prefix###wareRange###object##Detail(detail)) IN priceDetailGroup;
+    prefix###valueWareRange###object##Detail 'НДС посуды, %'###caption (detail) = valueRateRangeDate(prefix###wareRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
+END
+META defineDocumentDetailWareRange (object)
+    @defineDocumentDetailWareRangePrefix(object,,);
+END
+
+META defineDocumentDetailWarePrefix (object, prefix, caption)
+    prefix###ware###object##Detail = DATA Ware(###object##Detail);
+    prefix###nameWare###object##Detail 'Посуда'###caption (detail) = nameWare(prefix###ware###object##Detail(detail)) IN priceDetailGroup;
+
+    prefix###warePrice###object##Detail 'Цена посуды с НДС'###caption = DATA NUMERIC[14,2] (###object##Detail) IN priceDetailGroup;
+
+    @defineDocumentDetailWareRangePrefix(object, prefix, caption);
+END
+META defineDocumentDetailWare (object)
+    @defineDocumentDetailWarePrefix(object,,);
+END
+
+META defineDocumentDetailRetailPricePrefix (object, prefix, caption)
+    prefix###retailPrice###object##Detail 'Розничная цена'###caption = DATA NUMERIC[14,2] (###object##Detail) IN priceDetailGroup;
+END
+META defineDocumentDetailRetailPrice (object)
+    @defineDocumentDetailRetailPricePrefix(object,,);
+END
+
+META defineDocumentDetailOutPricePrefix (object, stockProp, prefix, caption)
+    prefix###retailVAT###object##Detail = DATA Range (###object##Detail);
+    prefix###numberRetailVAT###object##Detail 'НДС розничный, номер'###caption (detail) = numberRange(prefix###retailVAT###object##Detail(detail)) IN priceDetailGroup;
+    prefix###valueRetailVAT###object##Detail 'НДС розничный, %'###caption (detail) =
+       valueRateRangeDate(prefix###retailVAT###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
+
+    CONSTRAINT taxRange(prefix###retailVAT###object##Detail(detail)) != Tax.taxVAT OR
+               countryRange(prefix###retailVAT###object##Detail(detail)) != countryStock(stockProp###object##Detail(detail))
+               CHECKED BY prefix###retailVAT###object##Detail
+               MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+    @defineDocumentDetailRetailPricePrefix(object, prefix, caption);
+    @defineDocumentDetailOutPriceAggregationPrefix (object, prefix, caption);
+END
+META defineDocumentDetailOutPrice (object, stockProp)
+    @defineDocumentDetailOutPricePrefix(object, stockProp, ,);
+END
+
+META defineDocumentDetailOutPriceAggregationPrefix (object, prefix, caption)
+    prefix###retailIPrice###object##Detail 'Цена розничная (без посуды)'###caption (detail) =
+        prefix###retailPrice###object##Detail(detail) (-) prefix###warePrice###object##Detail(detail);
+
+    prefix###retailVATIPrice###object##Detail 'Цена НДС (без посуды)'###caption (detail) = [round0(X*Y/(100+Y))](
+                prefix###retailIPrice###object##Detail(detail), prefix###valueRetailVAT###object##Detail(detail));
+
+    prefix###markupPrice###object##Detail 'Цена надбавки'###caption (detail) =
+        prefix###retailIPrice###object##Detail(detail) (-) prefix###retailVATIPrice###object##Detail(detail) (-) prefix###supplierPrice###object##Detail(detail);
+
+    prefix###calcRetailMarkup###object##Detail 'Наценка, %'###caption (detail) = [round2(X*100/Y)](
+        prefix###markupPrice###object##Detail(detail), prefix###supplierPrice###object##Detail(detail));
+END
+META defineDocumentDetailOutPriceAggregation (object)
+    @defineDocumentDetailOutPriceAggregationPrefix(object, ,);
+END
+
+META defineDocumentDetailBasePricePrefix (object, stockProp, prefix, caption)
+    @defineDocumentDetailWarePrefix(object, prefix, caption);
+    @defineDocumentDetailInPricePrefix(object, prefix, caption);
+    @defineDocumentDetailOutPricePrefix(object, stockProp, prefix, caption);
+END
+META defineDocumentDetailBasePrice (object, stockProp)
+    @defineDocumentDetailBasePricePrefix(object, stockProp, ,);
+END
+
+META defineDocumentDetailCalcRange (object, stockProp)
+    calcRange###object##Detail = DATA Range (object##Detail);
+    calcRange###object##Detail (detail) <- rangeTaxTaxUnit(Tax.taxVAT,
+                                storeDepartmentStore(departmentStore###object##Detail(detail))) WHEN detail IS object##Detail;
+
+    numberCalcRange###object##Detail 'НДС расчетный, номер' (detail) = numberRange(calcRange###object##Detail(detail));
+    dataCalcRange###object##Detail 'НДС расчетный, %' (detail) =
+       valueRateRangeDate(calcRange###object##Detail(detail), date###object##Detail(detail));
+
+    CONSTRAINT taxRange(calcRange###object##Detail(detail)) != Tax.taxVAT OR
+               countryRange(calcRange###object##Detail(detail)) != countryStock(stockProp###object##Detail(detail))
+               CHECKED BY calcRange###object##Detail
+               MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране склада';
+END
+
+// ----------------------------------- Объявление сумм для detail -------------------------- //
+
+META defineDocumentDetailInSumPrefix (object, prefix, caption)
+    prefix###supplierISum###object##Detail 'Сумма поставщика без НДС'###caption (detail) = round0(quantity###object##Detail(detail) * prefix###supplierPrice###object##Detail(detail));
+END
+META defineDocumentDetailInSum (object)
+    @defineDocumentDetailInSumPrefix(object,,);
+END
+
+META defineDocumentDetailInvoiceSum (object)
+    supplierVATIPrice###object##Detail 'Цена НДС поставщика (без посуды)' (detail) = [X*Y/100](
+        supplierPrice###object##Detail(detail), valueSupplierVAT###object##Detail(detail));
+
+    calcSupplierVATISum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(
+        quantity###object##Detail(detail) * supplierVATIPrice###object##Detail(detail));
+
+    supplierVATISum###object##Detail 'Сумма НДС поставщика (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN base;
+    supplierVATISum###object##Detail(detail) <- calcSupplierVATISum###object##Detail(detail)
+                                                       WHEN CHANGED(calcSupplierVATISum###object##Detail(detail));
+
+    supplierVATSum###object##Detail 'Сумма НДС поставщика' (detail) =
+        supplierVATISum###object##Detail(detail) (+) wareVATSum###object##Detail(detail);
+
+    calcInvoiceISum###object##Detail 'Сумма поставщика с НДС (расч.)' (detail) =
+        supplierISum###object##Detail(detail) (+) supplierVATISum###object##Detail(detail);
+
+    invoiceISum###object##Detail 'Сумма поставщика с НДС (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN base;
+    invoiceISum###object##Detail(detail) <- calcInvoiceISum###object##Detail(detail)
+                                          WHEN CHANGED(calcInvoiceISum###object##Detail(detail));
+
+    invoiceSum###object##Detail 'Сумма поставщика с НДС' (detail) =
+        invoiceISum###object##Detail(detail) (+) wareSum###object##Detail(detail);
+
+    supplierSum###object##Detail 'Сумма поставщика без НДС' (detail) =
+        invoiceISum###object##Detail (detail) (-) supplierVATISum###object##Detail (detail) (+) wareSupplierSum###object##Detail(detail);
+END
+
+META defineDocumentDetailWareSumPrefix (object, prefix, caption)
+    prefix###wareSum###object##Detail 'Сумма посуды с НДС'###caption (detail) = quantity###object##Detail(detail) * prefix###warePrice###object##Detail(detail);
+
+    prefix###wareVATPrice###object##Detail 'Цена НДС посуды'###caption (object##Detail) = [round1(X*Y/(100+Y))](
+        prefix###warePrice###object##Detail (object##Detail), prefix###valueWareRange###object##Detail(object##Detail));
+
+    prefix###wareVATSum###object##Detail 'Сумма НДС по посуде'###caption (object##Detail) = round0(
+        quantity###object##Detail(object##Detail) * prefix###wareVATPrice###object##Detail(object##Detail));
+
+    prefix###wareSupplierPrice###object##Detail 'Цена посуды без НДС'###caption (object##Detail) =
+        prefix###warePrice###object##Detail (object##Detail) (-) prefix###wareVATPrice###object##Detail(object##Detail);
+
+    prefix###wareSupplierSum###object##Detail 'Сумма посуды без НДС'###caption (object##Detail) =
+        prefix###wareSum###object##Detail(object##Detail) (-) prefix###wareVATSum###object##Detail(object##Detail);
+END
+META defineDocumentDetailWareSum (object)
+    @defineDocumentDetailWareSumPrefix(object,,);
+END
+
+META defineDocumentDetailRetailSumPrefix (object, prefix, caption)
+    prefix###retailSum###object##Detail 'Розничная сумма'###caption (detail) = round0(quantity###object##Detail(detail) * prefix###retailPrice###object##Detail(detail));
+END
+META defineDocumentDetailRetailSum (object)
+    @defineDocumentDetailRetailSumPrefix(object,,);
+END
+
+META defineDocumentDetailOutSumPrefix (object, prefix, caption)
+    @defineDocumentDetailRetailSumPrefix(object, prefix, caption);
+
+    prefix###retailISum###object##Detail 'Розничная сумма (без посуды)'###caption (detail) = prefix###retailSum###object##Detail(detail) (-) prefix###wareSum###object##Detail(detail);
+
+    prefix###retailVATISum###object##Detail 'Сумма НДС (без посуды)'###caption (detail) = [round0(X*Y/(100+Y))](
+                prefix###retailISum###object##Detail(detail), prefix###valueRetailVAT###object##Detail(detail));
+
+    prefix###retailVATSum###object##Detail 'Сумма НДС'###caption (detail) = prefix###retailVATISum###object##Detail(detail) (+) prefix###wareVATSum###object##Detail(detail);
+
+    prefix###markupSum###object##Detail 'Сумма надбавки'###caption (detail) =
+        prefix###retailISum###object##Detail(detail) (-) prefix###retailVATISum###object##Detail(detail) (-) prefix###supplierISum###object##Detail(detail);
+END
+META defineDocumentDetailOutSum (object)
+    @defineDocumentDetailOutSumPrefix(object,,);
+END
+
+META defineDocumentDetailBaseSumPrefix (object, prefix, caption)
+    @defineDocumentDetailWareSumPrefix(object, prefix, caption);
+    @defineDocumentDetailInSumPrefix(object, prefix, caption);
+    @defineDocumentDetailOutSumPrefix(object, prefix, caption);
+END
+META defineDocumentDetailBaseSum (object)
+    @defineDocumentDetailBaseSumPrefix(object,,);
+END
+
+META defineDocumentDetailCalcVATSum (object)
+    calcVATSum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(retailSum###object##Detail(detail) * dataCalcRange###object##Detail(detail) / 100);
+
+    calcSaleSum###object##Detail 'Сумма без НДС (расч.)' (detail) = retailSum###object##Detail(detail) (-) calcVATSum###object##Detail(detail);
+END
+
+// ----------------------------------- Объявление сумм для header -------------------------- //
+
+META defineDocumentHeaderInSumCustomPrefix (object, detail, prefix, caption)
+    prefix###supplierISum###detail###object 'Сумма поставщика без НДС (без посуды)'###caption (object) =
+        GROUP SUM prefix###supplierISum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
+META defineDocumentHeaderInSumCustom (object, detail)
+    @defineDocumentHeaderInSumCustomPrefix(object, detail, , )
+END
+META defineDocumentHeaderInSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderInSumCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentHeaderInSum (object)
+    @defineDocumentHeaderInSumCustomPrefix(object, object##Detail, , );
+END
+
+META defineDocumentHeaderInvoiceSum (object)
+    supplierVATISum###object##Detail###object 'Сумма НДС поставщика (без посуды)' (object) =
+        GROUP SUM supplierVATISum###object##Detail(detail) BY object###object##Detail(detail);
+
+    invoiceISum###object##Detail###object 'Сумма поставщика с НДС (без посуды)' (object) =
+        GROUP SUM invoiceISum###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
+
+    invoiceVATSum###object##Detail###object 'Сумма НДС поставщика' (object) =
+        supplierVATISum###object##Detail###object(object) (+) wareVATSum###object##Detail###object(object) IN documentSumGroup PERSISTENT;
+
+    invoiceSum###object##Detail###object 'Сумма поставщика с НДС' (object) =
+        invoiceISum###object##Detail###object(object) (+) wareSum###object##Detail###object(object) IN documentSumGroup PERSISTENT;
+
+    supplierSum###object##Detail###object 'Сумма поставщика без НДС' (object) =
+        invoiceSum###object##Detail###object (object) (-) invoiceVATSum###object##Detail###object (object) IN documentSumGroup PERSISTENT;
+END
+
+META defineDocumentHeaderWareSumCustomPrefix (object, detail, prefix, caption)
+    prefix###wareSum###detail###object 'Сумма посуды с НДС'###caption (object) =
+        GROUP SUM prefix###wareSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+
+    prefix###wareVATSum###detail###object 'Сумма НДС по посуде'###caption (object) =
+        GROUP SUM prefix###wareVATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
+META defineDocumentHeaderWareSumCustom (object, detail)
+    @defineDocumentHeaderWareSumCustomPrefix(object, detail, , );
+END
+META defineDocumentHeaderWareSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderWareSumCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentHeaderWareSum (object)
+    @defineDocumentHeaderWareSumCustomPrefix(object, object##Detail, , );
+END
+
+META defineDocumentHeaderRetailSumCustomPrefix (object, detail, prefix, caption)
+    prefix###retailSum###detail###object 'Розничная сумма'###caption (object) =
+        GROUP SUM prefix###retailSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
+META defineDocumentHeaderRetailSumCustom (object, detail)
+    @defineDocumentHeaderRetailSumCustomPrefix(object, detail, , );
+END
+META defineDocumentHeaderRetailSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderRetailSumCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentHeaderRetailSum (object)
+    @defineDocumentHeaderRetailSumCustomPrefix(object, object##Detail, , );
+END
+
+META defineDocumentHeaderOutSumCustomPrefix (object, detail, prefix, caption)
+    @defineDocumentHeaderRetailSumCustomPrefix(object, detail, prefix, caption);
+
+    prefix###retailVATISum###detail###object 'Сумма НДС (без посуды)'###caption (object) =
+        GROUP SUM prefix###retailVATISum###detail(idetail) BY object###detail(idetail);
+
+    prefix###retailVATSum###detail###object 'Сумма НДС'###caption (object) = prefix###retailVATISum###detail###object(object) (+) prefix###wareVATSum###detail###object(object);
+
+    prefix###markupSum###detail###object 'Сумма надбавки'###caption (object) =
+        GROUP SUM prefix###markupSum###detail(idetail) BY object###detail(idetail);
+END
+META defineDocumentHeaderOutSumCustom (object, detail)
+    @defineDocumentHeaderOutSumCustomPrefix(object, detail, , );
+END
+META defineDocumentHeaderOutSumPrefix (object)
+    @defineDocumentHeaderOutSumCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentHeaderOutSum (object)
+    @defineDocumentHeaderOutSumCustomPrefix(object, object##Detail, , );
+END
+
+META defineDocumentHeaderBaseSumCustomPrefix (object, detail, prefix, caption)
+    @defineDocumentHeaderWareSumCustomPrefix(object, detail, prefix, caption);
+    @defineDocumentHeaderInSumCustomPrefix(object, detail, prefix, caption);
+    @defineDocumentHeaderOutSumCustomPrefix(object, detail, prefix, caption);
+END
+META defineDocumentHeaderBaseSumCustom (object, detail)
+    @defineDocumentHeaderBaseSumCustomPrefix(object, detail, , );
+END
+META defineDocumentHeaderBaseSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderBaseSumCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentHeaderBaseSum (object)
+    @defineDocumentHeaderBaseSumCustomPrefix(object, object##Detail, , );
+END
+
+META defineDocumentHeaderCalcVATSumCustom (object, detail)
+    calcVATSum###detail###object 'Сумма НДС (расч., окр.)' (iobject) = GROUP SUM calcVATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+
+    calcSaleSum###detail###object 'Сумма без НДС (расч., окр.)' (iobject) = retailSum###detail###object(iobject) (-) calcVATSum###detail###object(iobject) IN documentSumGroup;
+END
+
+META defineDocumentHeaderCalcVATSum (object)
+    @defineDocumentHeaderCalcVATSumCustom(object, object##Detail);
+END
+
+// ------------------------- Агрегации ---------------------------------- //
+
+META defineDocumentAggregationDetailPricePrefix (primObject, aggrObject, prefixP, prefixA, caption)
+    prefixA###importerPrice###aggrObject##Detail 'Цена изготовителя'###caption (detail) = prefixP###importerPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    prefixA###supplierPrice###aggrObject##Detail 'Цена поставщика'###caption (detail) = prefixP###supplierPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+
+    prefixA###retailVAT###aggrObject##Detail (detail) = prefixP###retailVAT###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    prefixA###valueRetailVAT###aggrObject##Detail 'НДС, %'###caption (detail) = prefixP###valueRetailVAT###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+
+    prefixA###ware###aggrObject##Detail (detail) = prefixP###ware###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    prefixA###valueWareRange###aggrObject##Detail 'НДС посуды, %'###caption (detail) =
+          valueRateRangeDate(rangeWareDate(prefixA###ware###aggrObject##Detail(detail), date###aggrObject##Detail(detail)),
+                                                                       date###aggrObject##Detail(detail));
+
+    prefixA###warePrice###aggrObject##Detail 'Цена посуды'###caption (detail) = prefixP###warePrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+
+    prefixA###retailPrice###aggrObject##Detail 'Розничная цена'###caption (detail) = prefixP###retailPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END
+META defineDocumentAggregationDetailPrice (primObject, aggrObject)
+    @defineDocumentAggregationDetailPricePrefix(primObject, aggrObject, , , );
+END
+
+//---------------------------- Ценовые регистры ----------------------------------------//
+
+META defineSkuDepartmentStoreLedger(property, caption, type)
+    @defineHistorizableLedger(property, caption, type, sku, departmentStore);
+
+    nameSku###property##Ledger 'SKU' (ledger) = nameSku(sku###property##Ledger(ledger));
+    nameDepartmentStore###property##Ledger 'Отдел магазина' (ledger) = nameDepartmentStore(departmentStore###property##Ledger(ledger));
+END
+
+META defineSkuDepartmentStoreLedgerPrice(property, caption, type)
+    @defineSkuDepartmentStoreLedger(property, caption, type);
+END
+
+META implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, stockProp, propertyProp)
+    @implementHistorizableLedger(property, sku, departmentStore, concrete, skuProp, stockProp, propertyProp);
+END
+
+META implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, propertyProp)
+    @implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, departmentStore, propertyProp);
+END
+
+META implementSkuDepartmentStoreLedger(property, concrete, skuProp, stockProp)
+    @implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, stockProp, property);
+END
+
+META implementSkuDepartmentStoreLedger(property, concrete, skuProp)
+    @implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, property);
+END
+
+META implementBaseISkuDepartmentStoreLedger(concrete, skuProp)
+    @implementSkuDepartmentStoreLedger(importerPrice, concrete, skuProp);
+    @implementSkuDepartmentStoreLedger(supplierPrice, concrete, skuProp);
+    @implementSkuDepartmentStoreLedger(retailVAT, concrete, skuProp);
+    @implementSkuDepartmentStoreLedger(retailPrice, concrete, skuProp);
+END
+
+META implementBaseSkuDepartmentStoreLedger(concrete, skuProp)
+    @implementSkuDepartmentStoreLedger(warePrice, concrete, skuProp);
+    wareWarePriceLedger(ledger) += ware###concrete##Detail(ledger);
+    @implementBaseISkuDepartmentStoreLedger(concrete, skuProp);
+END
+
+CLASS ABSTRACT WarePriceLedger 'Изменение цены посуды';
+TABLE warePriceLedger (WarePriceLedger);
+
+@defineSkuDepartmentStoreLedger(warePrice, 'Цена посуды', NUMERIC[14,2]);
+wareWarePriceLedger(ledger) = ABSTRACT Ware (WarePriceLedger) PERSISTENT;
+nameWareWarePriceLedger 'Посуда' (ledger) = nameWare(wareWarePriceLedger(ledger));
+currentWareLedger 'Посуда' (sku, departmentStore) = wareWarePriceLedger(currentLedgerWarePriceSkuDepartmentStore(sku, departmentStore));
+wareBSkuDepartmentStoreDateTime (sku, departmentStore, dateTime) = wareWarePriceLedger(ledgerBWarePriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime));
+
+CLASS ABSTRACT ImporterPriceLedger 'Изменение цены изготовителя/импортера';
+TABLE importerPriceLedger (ImporterPriceLedger);
+@defineSkuDepartmentStoreLedger(importerPrice, 'Цена изготовителя', NUMERIC[14,2]);
+
+CLASS ABSTRACT SupplierPriceLedger 'Изменение цены поставщика';
+TABLE supplierPriceLedger (SupplierPriceLedger);
+@defineSkuDepartmentStoreLedgerPrice(supplierPrice, 'Поставщика', NUMERIC[14,2]);
+
+CLASS ABSTRACT RetailVATLedger 'Изменение НДС';
+TABLE retailVATLedger (RetailVATLedger);
+@defineSkuDepartmentStoreLedger(retailVAT, 'НДС', Range);
+valueRetailVATRetailVATLedger 'НДС, %' (ledger) = valueRateRangeDate(retailVATRetailVATLedger(ledger), toDate(dateTimeRetailVATLedger(ledger))) PERSISTENT;
+valueRetailVATBSkuDepartmentStoreDateTime 'НДС, % (до)' (sku, departmentStore, dateTime) =
+            valueRateRangeDate(retailVATBSkuDepartmentStoreDateTime(sku, departmentStore, dateTime), toDate(dateTime));
+valueRetailVATASkuDepartmentStoreDateTime 'НДС, % (после)' (sku, departmentStore, dateTime) =
+            valueRateRangeDate(retailVATASkuDepartmentStoreDateTime(sku, departmentStore, dateTime), toDate(dateTime));
+currentValueRetailVATSkuDepartmentStore 'НДС, %' (sku, departmentStore) =
+            valueCurrentRateRange(currentRetailVATSkuDepartmentStore(sku, departmentStore));
+
+CLASS ABSTRACT RetailPriceLedger 'Изменение розничной цены';
+TABLE retailPriceLedger (RetailPriceLedger);
+@defineSkuDepartmentStoreLedgerPrice(retailPrice, 'Розничная', NUMERIC[14,2]);
+
+costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (DepartmentStore) IN bookkeepingGroup;
+EXTEND FORM departmentStore PROPERTIES(d) costLedgerDepartmentStore;
+
+// ------------------------------------- Заполнение текущих параметров --------------------------------- //
+
+META derivePriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp, stockProp)
+    prefixP###concrete##Detail (detail)  <- ledger##BSkuDepartmentStoreDateTime(
+                    skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
+                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(stockProp###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
+END
+META derivePriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp)
+    prefixP###concrete##Detail (detail)  <- ledger##BSkuDepartmentStoreDateTime(
+                    skuProp###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
+                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(departmentStore###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
+END
+
+META derivePriceLedgerOnSkuChange (ledger, concrete, skuProp)
+    @derivePriceLedgerOnSkuChangePrefix(ledger, concrete, ledger, skuProp);
+END
+
+META deriveBasePriceLedgerOnSkuChangePrefix (concrete, prefixP, skuProp)
+    @derivePriceLedgerOnSkuChangePrefix(ware, concrete, prefixP###ware, skuProp);
+    @derivePriceLedgerOnSkuChangePrefix(warePrice, concrete, prefixP###warePrice, skuProp);
+    @derivePriceLedgerOnSkuChangePrefix(importerPrice, concrete, prefixP###importerPrice, skuProp);
+    @derivePriceLedgerOnSkuChangePrefix(supplierPrice, concrete, prefixP###supplierPrice, skuProp);
+    @derivePriceLedgerOnSkuChangePrefix(retailVAT, concrete, prefixP###retailVAT, skuProp);
+    @derivePriceLedgerOnSkuChangePrefix(retailPrice, concrete, prefixP###retailPrice, skuProp);
+END
+
+META deriveBasePriceLedgerOnSkuChange (concrete, skuProp)
+    @deriveBasePriceLedgerOnSkuChangePrefix(concrete, , skuProp);
+END
+
+META derivePrevPriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp, stockProp)
+    prefixP###concrete##Detail (detail)  <- [PREV(ledger##BSkuDepartmentStoreDateTime(sku, stockProp, dateTime))](
+                    skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
+                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(stockProp###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
+END
+
+META derivePrevPriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp)
+    prefixP###concrete##Detail (detail)  <- [PREV(ledger##BSkuDepartmentStoreDateTime(sku, departmentStore, dateTime))](
+                    skuProp###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
+                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(departmentStore###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
+END
+
+META derivePrevBasePriceLedgerOnSkuChangePrefix (concrete, prefixP, skuProp)
+    @derivePrevPriceLedgerOnSkuChangePrefix(ware, concrete, prefixP###ware, skuProp);
+    @derivePrevPriceLedgerOnSkuChangePrefix(warePrice, concrete, prefixP###warePrice, skuProp);
+    @derivePrevPriceLedgerOnSkuChangePrefix(importerPrice, concrete, prefixP###importerPrice, skuProp);
+    @derivePrevPriceLedgerOnSkuChangePrefix(supplierPrice, concrete, prefixP###supplierPrice, skuProp);
+    @derivePrevPriceLedgerOnSkuChangePrefix(retailVAT, concrete, prefixP###retailVAT, skuProp);
+    @derivePrevPriceLedgerOnSkuChangePrefix(retailPrice, concrete, prefixP###retailPrice, skuProp);
+END
+
+META derivePrevBasePriceLedgerOnSkuChange (concrete, skuProp)
+    @derivePrevBasePriceLedgerOnSkuChangePrefix (concrete, , skuProp);
+END
+
+// ----------------------------------------- Расширяем формы остатков ценами ----------------------------------- //
+
+EXTEND FORM currentBalanceSkuStock
+    PROPERTIES(s, st)   currentImporterPriceSkuDepartmentStore, currentSupplierPriceSkuDepartmentStore,
+                        currentValueRetailVATSkuDepartmentStore, currentRetailPriceSkuDepartmentStore,
+                        currentWarePriceSkuDepartmentStore SHOWIF showWare()
+
+    OBJECTS rpl=RetailPriceLedger
+    PROPERTIES (rpl) READONLY descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
+    FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==s AND departmentStoreRetailPriceLedger(rpl)==st
+    ORDER BY dateTimeRetailPriceLedger DESC
+
+
+    OBJECTS ipl=ImporterPriceLedger
+    PROPERTIES(ipl) READONLY descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
+    FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==s AND departmentStoreImporterPriceLedger(ipl)==st
+    ORDER BY dateTimeImporterPriceLedger DESC
+
+    OBJECTS spl=SupplierPriceLedger
+    PROPERTIES(spl) READONLY descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
+    FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==s AND departmentStoreSupplierPriceLedger(spl)==st
+    ORDER BY dateTimeSupplierPriceLedger DESC
+
+    OBJECTS rvl=RetailVATLedger
+    PROPERTIES(rvl) READONLY descriptionRetailVATLedger, dateTimeRetailVATLedger, valueRetailVATRetailVATLedger
+    FILTERS isPostedRetailVATLedger(rvl) AND skuRetailVATLedger(rvl)==s AND departmentStoreRetailVATLedger(rvl)==st
+    ORDER BY dateTimeRetailVATLedger DESC
+
+    OBJECTS wpl=WarePriceLedger
+    PROPERTIES(wpl) READONLY descriptionWarePriceLedger SHOWIF showWare(), dateTimeWarePriceLedger SHOWIF showWare(), nameWareWarePriceLedger SHOWIF showWare(), warePriceWarePriceLedger SHOWIF showWare()
+    FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==s AND departmentStoreWarePriceLedger(wpl)==st
+    ORDER BY dateTimeWarePriceLedger DESC
+;
+
+EXTEND DESIGN currentBalanceSkuStock {
+    ledger.box {
+        ADD rpl.box;
+        ADD ipl.box;
+        ADD spl.box;
+        ADD rvl.box;
+        ADD wpl.box;
+    }
+}
+
+EXTEND FORM balanceSkuStock
+    PROPERTIES (s, st, t) READONLY importerPriceASkuDepartmentStoreDateTime, supplierPriceASkuDepartmentStoreDateTime,
+                                   valueRetailVATASkuDepartmentStoreDateTime,
+                                   retailPriceASkuDepartmentStoreDateTime, warePriceASkuDepartmentStoreDateTime SHOWIF showWare()
+
+    OBJECTS rpl=RetailPriceLedger
+    PROPERTIES (rpl) READONLY descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
+    FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==s AND departmentStoreRetailPriceLedger(rpl)==st
+    ORDER BY dateTimeRetailPriceLedger DESC
+
+    OBJECTS ipl=ImporterPriceLedger
+    PROPERTIES(ipl) READONLY descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
+    FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==s AND departmentStoreImporterPriceLedger(ipl)==st
+    ORDER BY dateTimeImporterPriceLedger DESC
+
+    OBJECTS spl=SupplierPriceLedger
+    PROPERTIES(spl) READONLY descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
+    FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==s AND departmentStoreSupplierPriceLedger(spl)==st
+    ORDER BY dateTimeSupplierPriceLedger DESC
+
+    OBJECTS rvl=RetailVATLedger
+    PROPERTIES(rvl) READONLY descriptionRetailVATLedger, dateTimeRetailVATLedger, valueRetailVATRetailVATLedger
+    FILTERS isPostedRetailVATLedger(rvl) AND skuRetailVATLedger(rvl)==s AND departmentStoreRetailVATLedger(rvl)==st
+    ORDER BY dateTimeRetailVATLedger DESC
+
+    OBJECTS wpl= WarePriceLedger
+    PROPERTIES(wpl) READONLY descriptionWarePriceLedger SHOWIF showWare(), dateTimeWarePriceLedger SHOWIF showWare(), nameWareWarePriceLedger SHOWIF showWare(), warePriceWarePriceLedger SHOWIF showWare()
+    FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==s AND departmentStoreWarePriceLedger(wpl)==st
+    ORDER BY dateTimeWarePriceLedger DESC
+;
+
+EXTEND DESIGN balanceSkuStock {
+    ledger.box {
+        ADD rpl.box;
+        ADD ipl.box;
+        ADD spl.box;
+        ADD rvl.box;
+        ADD wpl.box;
+    }
+}
+
+// ----------------------------------------- Расширяем формы подбора товаров ----------------------------------- //
+
+META defineDialogSkuStorePrice (form)
+
+    form###supplierPrice 'Цена поставщика' (sku) = currentSupplierPriceSkuDepartmentStore(sku, form###stock());
+    form###valueRetailVAT 'НДС, %' (sku) = currentValueRetailVATSkuDepartmentStore(sku, form###stock());
+    form###retailPrice 'Розничная цена' (sku) = currentRetailPriceSkuDepartmentStore(sku, form###stock());
+
+    EXTEND FORM form
+        PROPERTIES(s) READONLY SHOWIF form###stock() form###supplierPrice, form###valueRetailVAT, form###retailPrice
+        PROPERTIES(si) READONLY SHOWIF form###stock() form###supplierPrice, form###valueRetailVAT, form###retailPrice
+    ;
+END
+
+@defineDialogSkuStorePrice(dialogSku);

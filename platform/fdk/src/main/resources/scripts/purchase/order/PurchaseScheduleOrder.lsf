@@ -1,0 +1,32 @@
+MODULE PurchaseScheduleOrder;
+
+REQUIRE PurchaseOrder,
+        ScheduleOrder,
+        StockReserve;
+
+NAMESPACE Purchase;
+
+@defineScheduleOrder(' (закупка)', purchase);
+
+CONSTRAINT supplierScheduleOrder(scheduleOrder) AND NOT isSupplierLegalEntity(supplierScheduleOrder(scheduleOrder))
+    CHECKED BY supplierScheduleOrder MESSAGE 'Для заказа выбрано в качестве поставщика организация, не являющаяся поставщиком';
+CONSTRAINT customerScheduleOrder(scheduleOrder) AND NOT isCompanyLegalEntity(customerScheduleOrder(scheduleOrder))
+    CHECKED BY customerScheduleOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся компанией';
+
+CONSTRAINT supplier() AND NOT isSupplierLegalEntity(supplier())
+    CHECKED BY supplier MESSAGE 'Выбрана в качестве поставщика организация, не являющаяся поставщиком';
+CONSTRAINT customer() AND NOT isCompanyLegalEntity(customer())
+    CHECKED BY customer MESSAGE 'Выбрана в качестве покупателя организация, не являющаяся компанией';
+
+isCompanySupplier(l, s) = isCompanyLegalEntity(l) AND isSupplierLegalEntity(s);
+
+EXTEND FORM legalEntity
+    PROPERTIES(s, l) addSaleSchedulerOrder = addScheduleOrderSupplierCustomer TODRAW ss SHOWIF isCompanySupplier(l, s) //isCompanyLegalEntity(l) AND isSupplierLegalEntity(s)
+    PROPERTIES(l, c) addPurchaseSchedulerOrder = addScheduleOrderSupplierCustomer TODRAW sc SHOWIF isCompanySupplier(c, l) //isCompanyLegalEntity(c) AND isSupplierLegalEntity(l)
+;
+
+NAVIGATOR {
+    stockReserveNavigator {
+        ADD scheduleOrderDetails;
+    }
+}

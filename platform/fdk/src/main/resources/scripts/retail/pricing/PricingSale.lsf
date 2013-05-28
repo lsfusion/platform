@@ -1,0 +1,83 @@
+MODULE PricingSale;
+
+REQUIRE Pricing, SaleInvoice, SaleShipment, SaleOperation, PriceListLedger;
+
+NAMESPACE Sale;
+
+// Добавляем цены поставщика
+@defineDocumentInterfaceDetailPricePrefix(invoice, supplier, ' поставщика');
+@defineDocumentInterfaceDetailDataSumPrefix (invoice, supplier, ' поставщика');
+@deriveDocumentDetailSumPrefix(userInvoice, supplier, currency, quantity);
+@defineDocumentInterfaceHeaderSumPrefix (invoice, supplier, ' поставщика');
+
+// Создаем акт расценки
+roundConditionUserInvoiceDetail(userInvoiceDetail) = roundConditionDepartmentStore(supplierStockUserInvoiceDetail(userInvoiceDetail));
+@defineInvoicePricingAggregation(invoice, Invoice, ' (продажа)', 'Акт расценки при продаже', 'Проведенный акт расценки при продаже', supplierStock, supplier);
+
+// Автоматически проставляем цены поставщика и розничные
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, supplierPricingPriceListType, supplier, sku, supplierStock);
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, retail, sku, supplierStock);
+
+// Автоматический расчет розничной надбавки
+retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+    retailPriceUserInvoiceDetail(userInvoiceDetail),
+    valueRetailVATUserInvoiceDetail(userInvoiceDetail),
+    supplierPriceUserInvoiceDetail(userInvoiceDetail))
+    WHEN CHANGED(retailPriceUserInvoiceDetail(userInvoiceDetail)) OR
+         CHANGED (valueRetailVATUserInvoiceDetail(userInvoiceDetail)) OR
+         CHANGED(supplierPriceUserInvoiceDetail(userInvoiceDetail));
+
+@deriveDocumentDetailVAT(userInvoice, retail, date, sku, supplierStock);
+
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+// -- Операция
+@defineOperationProperty(createPricing, 'Акт расценки', createContainer);
+@deriveDocumentOperationProperty(UserInvoice, createPricing);
+
+// Добавление цены поставщика на форму
+EXTEND FORM userInvoice
+    PROPERTIES(i) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
+                     supplierSumUserInvoiceDetailUserInvoice
+    PROPERTIES(d) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i) BEFORE retailMarkupUserInvoiceDetail(d)
+                     supplierPriceUserInvoiceDetail, supplierSumUserInvoiceDetail
+;
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY BACKGROUND backgroundRetailInvoice(i) BEFORE retailSumInvoiceDetailInvoice(i)
+                           supplierSumInvoiceDetailInvoice
+    PROPERTIES(d) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i) BEFORE retailMarkupInvoiceDetail(d)
+                           supplierPriceInvoiceDetail, supplierSumInvoiceDetail
+;
+
+// Помечаем, что этот акт расценки не меняет текущие цены и является обратным
+skipChangeLedgerPricing(pricing) += pricing IS InvoicePricing;
+isReturnPricing(pricing) += pricing IS InvoicePricing;
+
+// Операция расценки
+
+pricingOperationOperation  = DATA Pricing.Operation (Operation);
+namePricingOperationOperation 'Операция (расценка)' (operation)= Pricing.nameOperation(pricingOperationOperation(operation));
+
+EXTEND FORM operation
+    PROPERTIES(o) namePricingOperationOperation
+;
+EXTEND DESIGN operation {
+    createContainer {
+        ADD PROPERTY(namePricingOperationOperation) AFTER PROPERTY(createPricingOperation);
+    }
+}
+
+@defineDocumentInterfaceOperationPrefix (invoice, pricing, Pricing, ' ( расценка)');
+pricingOperationUserInvoice (invoice) <- pricingOperationOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+operationPricing(pricing) += pricingOperationInvoice(invoiceInvoicePricing(pricing));
+
+// Добавляем операцию расценки на форму
+EXTEND FORM userInvoice
+    PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) namePricingOperationUserInvoice
+;
+EXTEND DESIGN userInvoice {
+    headerCreatePricing {
+        ADD PROPERTY(namePricingOperationUserInvoice) BEFORE PROPERTY(namePricingCommitteeUserInvoice);
+    }
+}

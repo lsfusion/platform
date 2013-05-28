@@ -1,0 +1,826 @@
+MODULE Defect;
+
+REQUIRE System,
+        Document,
+        RomanDocument,
+        Stock,
+        RomanStock,
+        DocumentTransfer,
+        RetailPrice,
+        WriteOff,
+        StorePriceTransfer,
+        WholesalePrice,
+        ConsignmentBy;
+
+PRIORITY Stock;
+
+// ----------------------------------------- Группы складов ------------------------------ //
+CLASS GroupDefectStock 'Группа складов брака' : StockGroup, EmployeeDivisionGroup;
+TABLE groupDefectStock (GroupDefectStock);
+
+nameGroupDefectStock 'Наименование' = DATA ISTRING[50](GroupDefectStock);
+nameStockGroup(group) += nameGroupDefectStock(group) IF group IS GroupDefectStock;
+
+TABLE groupDefectStockGroupDefectStock(GroupDefectStock, GroupDefectStock);
+@defineHierarchy(groupDefectStock);
+
+parentStockGroup (stockGroup) += parentGroupDefectStock (stockGroup);
+
+// ----------------------------------------- Склады ------------------------------ //
+
+CLASS DefectStock 'Склад брака' : Stock, EmployeeDivision;
+TABLE defectStock (DefectStock);
+
+groupDefectStockDefectStock (defectStock) = DATA GroupDefectStock (DefectStock);
+nameGroupDefectStockDefectStock 'Группа складов' (defectStock) = nameStockGroup(groupDefectStockDefectStock(defectStock)) IN base;
+stockGroupStock (stock) += groupDefectStockDefectStock (stock);
+
+companyDefectStock (defectStock) = DATA Company (DefectStock);
+nameCompanyDefectStock 'Компания' (defectStock) = nameLegalEntity(companyDefectStock(defectStock)) IN base;
+legalEntityStock (stock) += companyDefectStock(stock);
+
+addressDefectStock 'Адрес' (defectStock) = DATA STRING[100] (DefectStock);
+addressStock(stock) += addressDefectStock(stock);
+
+// -------------------------------------------------- Формы ----------------------------------------- //
+FORM defectStock 'Склад брака'
+    OBJECTS           d=DefectStock FIXED PANEL
+    PROPERTIES(d)     nameStock, nameGroupDefectStockDefectStock, addressDefectStock, nameCompanyDefectStock, nameWriteOffCommitteeStock
+
+    ORDER BY          nameStock
+    EDIT DefectStock OBJECT d
+;
+
+FORM defectStocks 'Склады брака'
+    OBJECTS           d=DefectStock
+    PROPERTIES(d)     READONLY nameStock, addressDefectStock, nameCompanyDefectStock
+    PROPERTIES(d)     ADDFORM, EDITFORM, DELETE
+
+    ORDER BY          nameStock
+;
+
+// -------------------------------------- Внешние склады ------------------------------- //
+
+CLASS ABSTRACT ExternalStock 'Внешний склад';
+TABLE externalStock(ExternalStock);
+
+nameExternalStock 'Наименование' = ABSTRACT ISTRING[150](ExternalStock);
+
+CLASS RepairShop 'Ремонтная мастерская' : ExternalStock;
+TABLE repairShop(RepairShop);
+
+nameRepairShop 'Наименование' = DATA ISTRING[150](RepairShop);
+nameExternalStock(stock) += nameRepairShop(stock) IF stock IS RepairShop;
+
+CLASS CleaningStock 'Химчистка' : ExternalStock;
+TABLE cleaningStock(CleaningStock);
+
+nameCleaningStock 'Наименование' = DATA ISTRING[150](CleaningStock);
+nameExternalStock(stock) += nameCleaningStock(stock) IF stock IS CleaningStock;
+
+addressExternalStock 'Адрес' = DATA STRING[100] (ExternalStock) IN lawGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+phoneExternalStock 'Телефон' = DATA STRING[100] (ExternalStock) IN lawGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+siteExternalStock 'Сайт' = DATA STRING[100] (ExternalStock) IN lawGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+workingTimeExternalStock 'Время работы' = DATA STRING[100] (ExternalStock) IN contactGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+contactNameExternalStock 'Контактное лицо' = DATA STRING[100] (ExternalStock) IN contactGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+infoExternalStock 'Дополнительная информация' = DATA STRING[300] (ExternalStock) IN contactGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+// -------------------------------------- Ремонт ------------------------------- //
+
+CLASS Repair 'Передача в ремонт' : Historizable, NumberedObject, Consignment, OutStockDocumentLedger;
+CLASS RepairPosted 'Проведенная передача в ремонт' : Repair, PostedObject;
+CLASS RepairDetail 'Строка передачи в ремонт' : ConsignmentDetail;
+
+@defineDocument(repair);
+
+@defineDocumentDetailNote(RepairDetail);
+
+@defineDocumentStock(repair, stock, 'Склад-отправитель');
+
+repairShopRepair = DATA RepairShop (Repair);
+nameRepairShopRepair 'Ремонтная мастерская' (repair) = nameRepairShop(repairShopRepair(repair));
+repairShopRepairDetail (detail) = repairShopRepair(repairRepairDetail(detail));
+
+@defineDocumentPosted(repair);
+
+@defineDocumentCurrency(repair);
+@deriveDocumentCurrency(repair, stock);
+
+@defineDocumentDescription (repair, 'Передача в ремонт');
+
+@defineDocumentDetailNumber(repair);
+
+@defineDocumentDetailSku(repair, sku);
+
+@defineDocumentDetailQuantity(repair);
+
+@defineDocumentDetailGrossWeight(repair, sku);
+@defineDocumentDetailPackQuantity(repair, sku);
+
+@defineDocumentDetailSkuBalance(repair, sku, stock);
+
+@defineDocumentHeaderQuantity(repair);
+@defineDocumentHeaderSkuQuantity(repair, sku);
+
+// Кнопки подбора
+@defineAddDetailDialogSkuStock(repair, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(repair, sku);
+
+META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption, formsCaption)
+    @defineDocumentFormDefectProcessInner(object, ###object, stockProp1, stockProp2, formCaption, formsCaption);
+END
+
+META defineDocumentFormDefectProcessInner(object, class, stockProp1, stockProp2, formCaption, formsCaption)
+
+    FORM object formCaption
+        OBJECTS t = class FIXED PANEL
+
+        PROPERTIES (t) objectClassName, numberObject, seriesObject, date###object, time###object,
+                       name###stockProp1###object, name###stockProp2###object, note###object,
+                       count###object##Detail###object, quantity###object##Detail###object
+
+        OBJECTS d = class##Detail
+
+//        PROPERTIES(t) TODRAW d addDetailDialogSkuStock###object##Detail###object, addDetailInputBarcode###object##Detail###object,
+//                               delete###object##Detail###object
+
+        FILTERS object###object##Detail(d) == t
+
+        EVENTS
+            ON OK prePost###object(t)
+
+        EDIT class OBJECT t
+    ;
+
+    DESIGN object FROM DEFAULT {
+        main {
+            preferredSize = (1024, 768);
+            t.box {
+                childConstraints = TO THE RIGHT;
+                NEW columnHeaderPrm {
+                    childConstraints = TO THE BOTTOM;
+                    ADD t.documentHeaderGroup {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY (objectClassName);
+                        ADD PROPERTY (name###stockProp1###object);
+                        ADD PROPERTY (name###stockProp2###object);
+                        ADD PROPERTY (numberObject);
+                        ADD PROPERTY (seriesObject);
+                        ADD PROPERTY (date###object);
+                        ADD PROPERTY (time###object);
+                    }
+                    ADD t.documentPrmGroup {
+                        childConstraints = TO THE RIGHT;
+                    }
+                }
+                NEW columnHeaderSum {
+                    ADD t.documentSumGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                }
+            }
+
+            PROPERTY(formOk) {
+                caption = 'Провести';
+            }
+        }
+    }
+
+    FORM object##s formsCaption
+        OBJECTS t = class
+        PROPERTIES (t) READONLY isPosted###object FORCE GRID, numberObject, seriesObject, date###object, time###object,
+                                name###stockProp1###object, name###stockProp2###object, note###object,
+                                count###object##Detail###object, quantity###object##Detail###object
+
+        PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+
+        PROPERTIES (t) ADDFORM, EDITFORM, deletet=DELETE FORCE PANEL TOOLBAR
+
+        OBJECTS d = class##Detail
+
+        FILTERS object###object##Detail(d) == t
+    ;
+
+    DESIGN object##s FROM DEFAULT {
+        PROPERTY (deletet) {
+            askConfirm = TRUE;
+        }
+
+        NEW documentContainer BEFORE functions.box {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD t.box;
+
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW documentHistory {
+                    childConstraints = TO THE RIGHT;
+                    title = 'История';
+
+                    ADD t.historyGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    ADD t.postedGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                }
+            }
+        }
+    }
+
+    
+
+    @defineDocumentDetailSkuArticle(object);
+    @extendFormDocumentDetailSkuArticle(object, d, object);
+    @extendFormDocumentDetailSkuArticleReadonly(object##s, d, object);
+
+    @defineDocumentRetailPrice(object, d);
+    useRetailPrice###object##Detail(detail) = stock###object##Detail(detail) IS DepartmentStore
+        AND NOT costLedgerDepartmentStore(stock###object##Detail(detail));
+    @defineDocumentTransferAccount(object, useRetailPrice###object##Detail);
+
+
+    @defineDocumentSkipSkuLedgerCustom(object, object##Detail);
+    @extendFormDocumentSkipSkuLedgerCustom(object, t, object);
+    @extendFormDocumentSkipSkuLedgerCustomReadonly(object##s, t, object);
+    
+END
+META extendFormDefectProcessButtonSelection (object)
+
+    EXTEND FORM object
+        PROPERTIES(t) TODRAW d addDetailDialogSkuStock###object##Detail###object, addDetailInputBarcode###object##Detail###object,
+                               delete###object##Detail###object
+    ;
+END
+META defineDocumentHeaderDescriptionRowCustom(object, caption)
+    descriptionRow###object##Detail caption (object##Detail) =
+        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \', \' || \' \' || CAST($2 AS TEXT)'](
+        description###object##Detail(object##Detail), nameSku(sku###object##Detail(object##Detail))) MINCHARWIDTH 40 PREFCHARWIDTH 50;
+END
+
+META defineDocumentCourierAndDateTo(object)
+
+    courier###object = DATA CustomUser (###object);
+    nameCourier###object 'Курьер' (object) = nameContact(courier###object(object)) IN documentPrmGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+    dateTo###object##Detail 'Дата исполнения' = DATA DATE (###object##Detail);
+END
+META extendFormDocumentCourierAndDateTo (object)
+
+    EXTEND FORM object
+        PROPERTIES(t) nameCourier###object BEFORE skipSkuLedger###object
+        PROPERTIES(d) dateTo###object##Detail
+    ;
+    EXTEND DESIGN object {
+        t.documentPrmGroup {
+            POSITION PROPERTY(nameCourier###object) TO THE LEFT PROPERTY(skipSkuLedger###object);
+        }
+    }
+
+    EXTEND FORM object##s
+        PROPERTIES(t) READONLY nameCourier###object BEFORE skipSkuLedger###object
+        PROPERTIES(d) READONLY dateTo###object##Detail
+    ;
+END
+
+
+
+
+@defineDocumentFormDefectProcess(repair, stock, repairShop, 'Передача в ремонт', 'Передачи в ремонт');
+@extendFormDefectProcessButtonSelection(repair);
+@defineDocumentHeaderDescriptionRowCustom(repair, 'Строка передачи в ремонт');
+@defineDocumentCourierAndDateTo(repair);
+@extendFormDocumentCourierAndDateTo(repair);
+
+
+
+// Проводим по регистру
+@implementSkuLedgerOutFIFO(RepairDetail, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityRepairDetail (ledger);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockRepairDetail(ledger));
+
+sumOutSkuLedger(ledger) += accountSumRepairDetail(ledger);
+
+skipASkuLedger (ledger) += skipSkuLedgerRepairDetail(ledger);
+
+// -------------------------------------- Возврат из ремонта ------------------------------- //
+
+CLASS ReturnRepair 'Возврат из ремонта' : Historizable, NumberedObject, OutStockDocumentLedger;
+CLASS ReturnRepairPosted 'Проведенный возврат из ремонта' : ReturnRepair, PostedObject;
+CLASS ReturnRepairDetail 'Строка возврата из ремонта';
+
+@defineDocument(returnRepair);
+
+@defineDocumentDetailNote(ReturnRepairDetail);
+
+@defineDocumentStock(returnRepair, stock, 'Склад-получатель');
+
+repairShopReturnRepair = DATA RepairShop (ReturnRepair);
+nameRepairShopReturnRepair 'Ремонтная мастерская' (returnRepair) = nameRepairShop(repairShopReturnRepair(returnRepair));
+repairShopReturnRepairDetail (detail) = repairShopReturnRepair(returnRepairReturnRepairDetail(detail));
+
+@defineDocumentPosted(returnRepair);
+
+@defineDocumentCurrency(returnRepair);
+@deriveDocumentCurrency(returnRepair, stock);
+
+@defineDocumentDescription (returnRepair, 'Возврат из ремонта');
+
+@defineDocumentDetailNumber(returnRepair);
+
+@defineDocumentDetailSku(returnRepair, sku);
+
+@defineDocumentDetailQuantity(returnRepair);
+
+@defineDocumentDetailSkuBalance(returnRepair, sku, stock);
+
+@defineDocumentHeaderQuantity(returnRepair);
+@defineDocumentHeaderSkuQuantity(returnRepair, sku);
+
+// Кнопки подбора
+@defineAddDetailDialogSkuStock(returnRepair, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(returnRepair, sku);
+
+@defineDocumentFormDefectProcess(returnRepair, stock, repairShop, 'Возврат из ремонта', 'Возвраты из ремонта');
+@extendFormDefectProcessButtonSelection(returnRepair);
+
+repairDetailReturnRepairDetail = DATA RepairDetail (ReturnRepairDetail);
+descriptionRowRepairDetailReturnRepairDetail 'Строка передачи в ремонт' (returnRepairDetail) = descriptionRowRepairDetail(repairDetailReturnRepairDetail(returnRepairDetail));
+
+CONSTRAINT detail IS ReturnRepairDetail AND NOT repairDetailReturnRepairDetail(detail) CHECKED BY repairDetailReturnRepairDetail
+    MESSAGE 'Для строки возврата из ремонта не задана строка передачи в ремонт';
+
+CONSTRAINT skuRepairDetail(repairDetailReturnRepairDetail(detail)) != skuReturnRepairDetail(detail) CHECKED BY repairDetailReturnRepairDetail
+    MESSAGE 'Товар передачи и возврата из ремонта не соответствуют друд другу';
+
+CONSTRAINT repairShopRepairDetail(repairDetailReturnRepairDetail(detail)) != repairShopReturnRepairDetail(detail) CHECKED BY repairDetailReturnRepairDetail
+    MESSAGE 'Ремонтная мастерская передачи и возврата не соответствуют друд другу';
+
+CONSTRAINT stockRepairDetail(repairDetailReturnRepairDetail(detail)) != stockReturnRepairDetail(detail) CHECKED BY repairDetailReturnRepairDetail
+    MESSAGE 'Склад передачи и возврата из ремонта не соответствуют друд другу';
+
+quantityReturnQuantityRepairDetail 'К-во (возврат)' (repairDetail) = GROUP SUM  quantityReturnRepairDetail(detail) IF repairDetailReturnRepairDetail(detail)
+    AND  isPostedRepairDetail(repairDetailReturnRepairDetail(detail)) AND isPostedReturnRepairDetail(detail)
+    BY repairDetailReturnRepairDetail(detail) PERSISTENT;
+
+diffQuantityRepairDetail 'К-во (в ремонте)' (repairDetail) = (quantityRepairDetail(repairDetail) (-) quantityReturnQuantityRepairDetail(repairDetail)) IF isPostedRepairDetail(repairDetail);
+quantityOverdueRepairDetail 'К-во (просрочено)' (repairDetail) = diffQuantityRepairDetail(repairDetail) IF diffQuantityRepairDetail(repairDetail) > 0 AND dateToRepairDetail(repairDetail) < currentDate();
+
+TABLE repairShopSku(RepairShop, Sku);
+quantityOverdueRepairShopSku 'К-во (просрочено)' (repairShop, sku)= GROUP SUM  quantityOverdueRepairDetail(detail) BY repairShopRepairDetail(detail), skuRepairDetail(detail) PERSISTENT;
+quantityOverdueRepairShop 'К-во (просрочено)' (repairShop) = GROUP SUM  quantityOverdueRepairShopSku(repairShop, sku) BY repairShop;
+
+usefulRepair 'Был товар в отгрузке' (repair) = GROUP SUM 1 IF skuRepairDetail(idetail) == skuReturnRepairDetail(detail) AND
+    stockRepairDetail(idetail) == stockReturnRepairDetail(detail) AND
+    repairShopRepairDetail(idetail) == repairShopReturnRepairDetail(detail) AND
+    diffQuantityRepairDetail(idetail) >0
+        BY repairRepairDetail(idetail) PERSISTENT;
+
+FORM repairDetailReturnRepairDetail 'Передачи в ремонт'
+
+    OBJECTS rd = ReturnRepairDetail FIXED PANEL
+
+    OBJECTS dc = Repair
+    PROPERTIES (dc) READONLY isPostedRepair FORCE GRID, numberObject, seriesObject, dateRepair, timeRepair,
+                            nameStockRepair, nameRepairShopRepair, noteRepair
+
+
+    OBJECTS dd = RepairDetail
+
+    FILTERGROUP skuFilters
+            FILTER 'Документ с этим товаром' 'F10' usefulRepair(dc) DEFAULT
+
+    FILTERGROUP rowFilters
+            FILTER 'Пригодные строки' 'F9' diffQuantityRepairDetail(dd) >0 DEFAULT
+
+    FILTERS skuRepairDetail(dd) == skuReturnRepairDetail(rd),
+            repairRepairDetail(dd) == dc
+
+;
+
+DESIGN repairDetailReturnRepairDetail FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+    }
+}
+
+@extendFormDocumentDetailSkuArticleReadonly(repairDetailReturnRepairDetail, dd, repair);
+
+EXTEND FORM repairDetailReturnRepairDetail
+    PROPERTIES(dd) READONLY quantityReturnQuantityRepairDetail, diffQuantityRepairDetail
+;
+
+dialogRowReturnRepairDetail 'Строка передачи в ремонт' (returnRepairDetail) = ACTION (returnRepairDetail) {
+    FORM repairDetailReturnRepairDetail OBJECTS rd = returnRepairDetail MODAL;
+    IF formResult() == FormResult.ok THEN {
+        SET repairDetailReturnRepairDetail(returnRepairDetail) <- chosenObject('dd');
+    }
+}
+
+
+EXTEND FORM returnRepair
+    PROPERTIES(d) descriptionRowRepairDetailReturnRepairDetail ON CHANGE dialogRowReturnRepairDetail(d)//, currentBalanceReturnOutDetail READONLY
+
+;
+
+EXTEND FORM returnRepairs
+    PROPERTIES(d) READONLY descriptionRowRepairDetailReturnRepairDetail
+;
+
+// Проводим по регистру
+
+@implementSkuLedgerInLIFO(ReturnRepairDetail, sku, stock);
+quantityInLIFOSkuLedger (ledger) += quantityReturnRepairDetail(ledger);
+limitInLIFOSkuLedgerBatch (ledger, batch) += costDataSkuLedgerBatch(repairDetailReturnRepairDetail(ledger), batch);
+
+sumInSkuLedger(ledger) += accountSumReturnRepairDetail(ledger);
+skipASkuLedger (ledger) += skipSkuLedgerReturnRepairDetail(ledger);
+
+// Подсчет текущего остатка  Рем.мастерская
+
+expenseRepairShopSku 'Расход' (repairShop, sku) = GROUP SUM quantityReturnRepairDetail(detail) IF isPostedReturnRepairDetail(detail)
+    BY repairShopReturnRepairDetail(detail), skuReturnRepairDetail(detail);
+
+parishRepairShopSku 'Приход' (repairShop, sku) = GROUP SUM quantityRepairDetail(detail) IF isPostedRepairDetail(detail)
+    BY repairShopRepairDetail(detail), skuRepairDetail(detail);
+
+currentBalanceRepairShopSku 'Текущий остаток' (repairShop, sku) =
+    parishRepairShopSku(repairShop, sku) (-)
+    expenseRepairShopSku(repairShop, sku);
+
+currentBalanceRepairShop 'Текущий остаток' (repairShop) =  GROUP SUM currentBalanceRepairShopSku(repairShop, sku) BY repairShop;
+
+FORM repairShop 'Ремонтная мастерская'
+
+    OBJECTS s=RepairShop FIXED PANEL
+    PROPERTIES(s)  nameRepairShop, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock, contactNameExternalStock, infoExternalStock
+    EDIT RepairShop OBJECT s
+;
+DESIGN repairShop FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        s.box {
+            childConstraints = TO THE BOTTOM;
+            ADD s.lawGroup;
+            ADD s.contactGroup;
+
+        }
+        ADD functions.box;
+    }
+}
+
+FORM repairShops 'Ремонтные мастерские'
+
+    OBJECTS s=RepairShop
+    PROPERTIES(s)  READONLY nameRepairShop, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock,
+                   contactNameExternalStock, infoExternalStock, currentBalanceRepairShop, quantityOverdueRepairShop
+    PROPERTIES(s)  ADDFORM, EDITFORM, DELETE
+
+    OBJECTS sk=Sku
+    PROPERTIES(sk)  READONLY nameSku, idBarcodeSku
+
+    PROPERTIES(s, sk)  READONLY currentBalanceRepairShopSku, parishRepairShopSku, expenseRepairShopSku, quantityOverdueRepairShopSku
+
+    OBJECTS d=RepairDetail
+    PROPERTIES(d)  READONLY descriptionRepairDetail, dateTimeRepairDetail, quantityRepairDetail, diffQuantityRepairDetail,
+                   dateToRepairDetail, quantityOverdueRepairDetail
+
+    OBJECTS dd=ReturnRepairDetail
+    PROPERTIES(dd)  READONLY descriptionReturnRepairDetail, dateTimeReturnRepairDetail, quantityReturnRepairDetail
+
+
+    FILTERS  skuRepairDetail(d) == sk,
+             repairShopRepairDetail(d) == s,
+             isPostedRepairDetail(d),
+             skuReturnRepairDetail(dd) == sk,
+             repairShopReturnRepairDetail(dd)==s,
+             isPostedReturnRepairDetail(dd)
+
+    FILTERGROUP filters
+        FILTER 'Товары с остатком' 'F10' currentBalanceRepairShopSku(s, sk) DEFAULT
+        FILTER 'Товары просроченные' 'F9'quantityOverdueRepairShopSku(s, sk)
+        FILTER 'Товары с приходом' 'F8' parishRepairShopSku(s, sk)
+        FILTER 'Товары с расходом' 'F7' expenseRepairShopSku(s, sk)
+
+;
+DESIGN repairShops FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        ADD s.box {fillVertical = 1;}
+        NEW wor {
+            title = 'Остатки';
+            fillVertical = 2;
+            childConstraints = TO THE RIGHT;
+            type = SPLITH;
+            ADD sk.box {fillHorizontal = 2;}
+
+            NEW row1 {
+                title = 'Движение';
+                childConstraints = TO THE BOTTOM;
+                ADD d.box {
+                    title = 'Приход';
+                    fillVertical = 1;
+                    fillHorizontal = 3;
+                }
+                ADD dd.box {
+                    title = 'Расход';
+                    fillVertical = 1;
+                    fillHorizontal = 3;
+                }
+            }
+        }
+    }
+    ADD functions.box;
+}
+
+// -------------------------------------- Химчистка ------------------------------- //
+
+CLASS DryCleaning 'Передача в химчистку' : Historizable, NumberedObject, Consignment, OutStockDocumentLedger;
+CLASS DryCleaningPosted 'Проведенная передача в химчистку' : DryCleaning, PostedObject;
+CLASS DryCleaningDetail 'Строка передачи в химчистку' : ConsignmentDetail;
+
+@defineDocument(dryCleaning);
+
+@defineDocumentDetailNote(DryCleaningDetail);
+
+@defineDocumentStock(dryCleaning, stock, 'Склад-отправитель');
+
+cleaningStockDryCleaning = DATA CleaningStock (DryCleaning);
+nameCleaningStockDryCleaning 'Химчистка' (dryCleaning) = nameCleaningStock(cleaningStockDryCleaning(dryCleaning));
+cleaningStockDryCleaningDetail (detail) = cleaningStockDryCleaning(dryCleaningDryCleaningDetail(detail));
+
+@defineDocumentPosted(dryCleaning);
+
+@defineDocumentCurrency(dryCleaning);
+@deriveDocumentCurrency(dryCleaning, stock);
+
+@defineDocumentDescription (dryCleaning, 'Передача в химчистку');
+
+@defineDocumentDetailNumber(dryCleaning);
+
+@defineDocumentDetailSku(dryCleaning, sku);
+
+@defineDocumentDetailQuantity(dryCleaning);
+
+@defineDocumentDetailGrossWeight(dryCleaning, sku);
+@defineDocumentDetailPackQuantity(dryCleaning, sku);
+
+@defineDocumentDetailSkuBalance(dryCleaning, sku, stock);
+
+@defineDocumentHeaderQuantity(dryCleaning);
+@defineDocumentHeaderSkuQuantity(dryCleaning, sku);
+
+// Кнопки подбора
+@defineAddDetailDialogSkuStock(dryCleaning, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(dryCleaning, sku);
+
+@defineDocumentFormDefectProcess(dryCleaning, stock, cleaningStock, 'Передача в химчистку', 'Передачи в химчистку');
+@extendFormDefectProcessButtonSelection(dryCleaning);
+@defineDocumentHeaderDescriptionRowCustom(dryCleaning, 'Строка передачи в ремонт');
+
+@defineDocumentCourierAndDateTo(dryCleaning);
+@extendFormDocumentCourierAndDateTo(dryCleaning);
+
+// Проводим по регистру
+@implementSkuLedgerOutFIFO(DryCleaningDetail, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityDryCleaningDetail (ledger);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockDryCleaningDetail(ledger));
+
+sumOutSkuLedger(ledger) += accountSumDryCleaningDetail(ledger);
+
+skipASkuLedger (ledger) += skipSkuLedgerDryCleaningDetail(ledger);
+
+// -------------------------------------- Возврат из химчистки ------------------------------- //
+
+CLASS ReturnDryCleaning 'Возврат из химчистки' : Historizable, NumberedObject, OutStockDocumentLedger;
+CLASS ReturnDryCleaningPosted 'Проведенный возврат из химчистки' : ReturnDryCleaning, PostedObject;
+CLASS ReturnDryCleaningDetail 'Строка возврата из химчистки';
+
+@defineDocument(returnDryCleaning);
+
+@defineDocumentDetailNote(ReturnDryCleaningDetail);
+
+@defineDocumentStock(returnDryCleaning, stock, 'Склад-получатель');
+
+cleaningStockReturnDryCleaning = DATA CleaningStock (ReturnDryCleaning);
+nameCleaningStockReturnDryCleaning 'Химчистка' (returnDryCleaning) = nameCleaningStock(cleaningStockReturnDryCleaning(returnDryCleaning));
+cleaningStockReturnDryCleaningDetail (detail) = cleaningStockReturnDryCleaning(returnDryCleaningReturnDryCleaningDetail(detail));
+
+@defineDocumentPosted(returnDryCleaning);
+
+@defineDocumentCurrency(returnDryCleaning);
+@deriveDocumentCurrency(returnDryCleaning, stock);
+
+@defineDocumentDescription (returnDryCleaning, 'Возврат из химчистки');
+
+@defineDocumentDetailNumber(returnDryCleaning);
+
+@defineDocumentDetailSku(returnDryCleaning, sku);
+
+@defineDocumentDetailQuantity(returnDryCleaning);
+
+@defineDocumentDetailSkuBalance(returnDryCleaning, sku, stock);
+
+@defineDocumentHeaderQuantity(returnDryCleaning);
+@defineDocumentHeaderSkuQuantity(returnDryCleaning, sku);
+
+// Кнопки подбора
+@defineAddDetailDialogSkuStock(returnDryCleaning, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(returnDryCleaning, sku);
+
+@defineDocumentFormDefectProcess(returnDryCleaning, stock, cleaningStock, 'Возврат из химчистки', 'Возвраты из химчистки');
+@extendFormDefectProcessButtonSelection(returnDryCleaning);
+
+dryCleaningDetailReturnDryCleaningDetail = DATA DryCleaningDetail (ReturnDryCleaningDetail);
+descriptionRowDryCleaningDetailReturnDryCleaningDetail 'Строка передачи в химчистку' (returnDryCleaningDetail) = descriptionRowDryCleaningDetail(dryCleaningDetailReturnDryCleaningDetail(returnDryCleaningDetail));
+
+CONSTRAINT detail IS ReturnDryCleaningDetail AND NOT dryCleaningDetailReturnDryCleaningDetail(detail) CHECKED BY dryCleaningDetailReturnDryCleaningDetail
+    MESSAGE 'Для строки возврата из химчистки не задана строка передачи в химчистку';
+
+CONSTRAINT skuDryCleaningDetail(dryCleaningDetailReturnDryCleaningDetail(detail)) != skuReturnDryCleaningDetail(detail) CHECKED BY dryCleaningDetailReturnDryCleaningDetail
+    MESSAGE 'Товар передачи и возврата из химчистки не соответствуют друд другу';
+
+CONSTRAINT cleaningStockDryCleaningDetail(dryCleaningDetailReturnDryCleaningDetail(detail)) != cleaningStockReturnDryCleaningDetail(detail) CHECKED BY dryCleaningDetailReturnDryCleaningDetail
+    MESSAGE 'Химчистка передачи и возврата не соответствуют друд другу';
+
+CONSTRAINT stockDryCleaningDetail(dryCleaningDetailReturnDryCleaningDetail(detail)) != stockReturnDryCleaningDetail(detail) CHECKED BY dryCleaningDetailReturnDryCleaningDetail
+    MESSAGE 'Склад передачи и возврата из химчистки не соответствуют друд другу';
+
+quantityReturnQuantityDryCleaningDetail 'К-во (возврат)' (dryCleaningDetail) = GROUP SUM  quantityReturnDryCleaningDetail(detail) IF dryCleaningDetailReturnDryCleaningDetail(detail)
+    AND  isPostedDryCleaningDetail(dryCleaningDetailReturnDryCleaningDetail(detail)) AND isPostedReturnDryCleaningDetail(detail)
+    BY dryCleaningDetailReturnDryCleaningDetail(detail) PERSISTENT;
+
+diffQuantityDryCleaningDetail 'К-во в химчистке' (dryCleaningDetail) =  (quantityDryCleaningDetail(dryCleaningDetail) (-) quantityReturnQuantityDryCleaningDetail(dryCleaningDetail)) IF isPostedDryCleaningDetail(dryCleaningDetail);
+quantityOverdueDryCleaningDetail 'К-во (просрочено)' (dryCleaningDetail) = diffQuantityDryCleaningDetail(dryCleaningDetail) IF diffQuantityDryCleaningDetail(dryCleaningDetail) >0 AND dateToDryCleaningDetail(dryCleaningDetail) < currentDate();
+
+TABLE cleaningStockSku(CleaningStock, Sku);
+quantityOverdueCleaningStockSku 'К-во (просрочено)' (cleaningStock, sku)= GROUP SUM  quantityOverdueDryCleaningDetail(detail) BY cleaningStockDryCleaningDetail(detail), skuDryCleaningDetail(detail) PERSISTENT;
+quantityOverdueCleaningStock 'К-во (просрочено)' (cleaningStock) = GROUP SUM  quantityOverdueCleaningStockSku(cleaningStock, sku) BY cleaningStock;
+
+usefulDryCleaning 'Был товар в отгрузке' (dryCleaning) = GROUP SUM 1 IF skuDryCleaningDetail(idetail) == skuReturnDryCleaningDetail(detail) AND
+    stockDryCleaningDetail(idetail) == stockReturnDryCleaningDetail(detail) AND
+    cleaningStockDryCleaningDetail(idetail) == cleaningStockReturnDryCleaningDetail(detail) AND
+    diffQuantityDryCleaningDetail(idetail) >0
+        BY dryCleaningDryCleaningDetail(idetail) PERSISTENT;
+
+FORM dryCleaningDetailReturnDryCleaningDetail 'Передачи в химчистку'
+
+    OBJECTS rd = ReturnDryCleaningDetail FIXED PANEL
+
+    OBJECTS dc = DryCleaning
+    PROPERTIES (dc) READONLY isPostedDryCleaning FORCE GRID, numberObject, seriesObject, dateDryCleaning, timeDryCleaning,
+                            nameStockDryCleaning, nameCleaningStockDryCleaning, noteDryCleaning
+
+
+    OBJECTS dd = DryCleaningDetail
+
+    FILTERGROUP skuFilters
+            FILTER 'Документ с этим товаром' 'F10' usefulDryCleaning(dc) DEFAULT
+
+    FILTERGROUP rowFilters
+            FILTER 'Пригодные строки' 'F9' diffQuantityDryCleaningDetail(dd) >0 DEFAULT
+
+    FILTERS skuDryCleaningDetail(dd) == skuReturnDryCleaningDetail(rd),
+            dryCleaningDryCleaningDetail(dd) == dc
+;
+
+DESIGN dryCleaningDetailReturnDryCleaningDetail FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+    }
+}
+
+@extendFormDocumentDetailSkuArticleReadonly(dryCleaningDetailReturnDryCleaningDetail, dd, dryCleaning);
+
+EXTEND FORM dryCleaningDetailReturnDryCleaningDetail
+    PROPERTIES(dd) READONLY quantityReturnQuantityDryCleaningDetail, diffQuantityDryCleaningDetail
+;
+
+dialogRowReturnDryCleaningDetail 'Строка передачи в химчистку' (returnDryCleaningDetail) = ACTION (returnDryCleaningDetail) {
+    FORM dryCleaningDetailReturnDryCleaningDetail OBJECTS rd = returnDryCleaningDetail MODAL;
+    IF formResult() == FormResult.ok THEN {
+        SET dryCleaningDetailReturnDryCleaningDetail(returnDryCleaningDetail) <- chosenObject('dd');
+    }
+}
+
+
+EXTEND FORM returnDryCleaning
+    PROPERTIES(d) descriptionRowDryCleaningDetailReturnDryCleaningDetail ON CHANGE dialogRowReturnDryCleaningDetail(d)
+;
+
+EXTEND FORM returnDryCleanings
+    PROPERTIES(d) READONLY descriptionRowDryCleaningDetailReturnDryCleaningDetail
+;
+
+// Проводим по регистру
+
+@implementSkuLedgerInLIFO(ReturnDryCleaningDetail, sku, stock);
+quantityInLIFOSkuLedger (ledger) += quantityReturnDryCleaningDetail(ledger);
+limitInLIFOSkuLedgerBatch (ledger, batch) += costDataSkuLedgerBatch(dryCleaningDetailReturnDryCleaningDetail(ledger), batch);
+
+sumInSkuLedger(ledger) += accountSumReturnDryCleaningDetail(ledger);
+skipASkuLedger (ledger) += skipSkuLedgerReturnDryCleaningDetail(ledger);
+
+// Подсчет текущего остатка  Химчистка
+
+expenseCleaningStockSku 'Расход' (cleaningStock, sku) = GROUP SUM quantityReturnDryCleaningDetail(detail) IF isPostedReturnDryCleaningDetail(detail)
+    BY cleaningStockReturnDryCleaningDetail(detail), skuReturnDryCleaningDetail(detail);
+
+parishCleaningStockSku 'Приход' (cleaningStock, sku) = GROUP SUM quantityDryCleaningDetail(detail) IF isPostedDryCleaningDetail(detail)
+    BY cleaningStockDryCleaningDetail(detail), skuDryCleaningDetail(detail);
+
+currentBalanceCleaningStockSku 'Текущий остаток' (cleaningStock, sku) =
+    parishCleaningStockSku(cleaningStock, sku) (-)
+    expenseCleaningStockSku(cleaningStock, sku);
+
+currentBalanceCleaningStock 'Текущий остаток' (cleaningStock) =  GROUP SUM currentBalanceCleaningStockSku(cleaningStock, sku) BY cleaningStock;
+
+FORM cleaningStock 'Химчистка'
+
+    OBJECTS s=CleaningStock FIXED PANEL
+    PROPERTIES(s)  nameCleaningStock, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock, contactNameExternalStock, infoExternalStock
+    EDIT CleaningStock OBJECT s
+;
+DESIGN cleaningStock FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        s.box {
+            childConstraints = TO THE BOTTOM;
+            ADD s.lawGroup;
+            ADD s.contactGroup;
+
+        }
+        ADD functions.box;
+    }
+}
+
+FORM cleaningStocks 'Химчистки'
+
+    OBJECTS s=CleaningStock
+    PROPERTIES(s)  READONLY nameCleaningStock, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock,
+                   contactNameExternalStock, infoExternalStock, currentBalanceCleaningStock, quantityOverdueCleaningStock
+    PROPERTIES(s)  ADDFORM, EDITFORM, DELETE
+
+    OBJECTS sk=Sku
+    PROPERTIES(sk)  READONLY nameSku, idBarcodeSku
+
+    PROPERTIES(s, sk)  READONLY currentBalanceCleaningStockSku, parishCleaningStockSku, expenseCleaningStockSku, quantityOverdueCleaningStockSku
+
+    OBJECTS d=DryCleaningDetail
+    PROPERTIES(d)  READONLY descriptionDryCleaningDetail, dateTimeDryCleaningDetail, quantityDryCleaningDetail, diffQuantityDryCleaningDetail,
+                   dateToDryCleaningDetail, quantityOverdueDryCleaningDetail
+
+    OBJECTS dd=ReturnDryCleaningDetail
+    PROPERTIES(dd)  READONLY descriptionReturnDryCleaningDetail, dateTimeReturnDryCleaningDetail, quantityReturnDryCleaningDetail
+
+
+    FILTERS  skuDryCleaningDetail(d) == sk,
+             cleaningStockDryCleaningDetail(d) == s,
+             isPostedDryCleaningDetail(d),
+             skuReturnDryCleaningDetail(dd) == sk,
+             cleaningStockReturnDryCleaningDetail(dd)==s,
+             isPostedReturnDryCleaningDetail(dd)
+
+    FILTERGROUP filters
+        FILTER 'Товары с остатком' 'F10' currentBalanceCleaningStockSku(s, sk) DEFAULT
+        FILTER 'Товары просроченные' 'F9'quantityOverdueCleaningStockSku(s, sk)
+        FILTER 'Товары с приходом' 'F8' parishCleaningStockSku(s, sk)
+        FILTER 'Товары с расходом' 'F7' expenseCleaningStockSku(s, sk)
+
+
+;
+DESIGN cleaningStocks FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        ADD s.box {fillVertical = 1;}
+        NEW wor {
+            title = 'Остатки';
+            fillVertical = 2;
+            childConstraints = TO THE RIGHT;
+            type = SPLITH;
+            ADD sk.box {fillHorizontal = 2;}
+
+            NEW row1 {
+                title = 'Движение';
+                childConstraints = TO THE BOTTOM;
+                ADD d.box {
+                    title = 'Приход';
+                    fillVertical = 1;
+                    fillHorizontal = 3;
+                }
+                ADD dd.box {
+                    title = 'Расход';
+                    fillVertical = 1;
+                    fillHorizontal = 3;
+                }
+            }
+        }
+    }
+    ADD functions.box;
+}

@@ -1,0 +1,246 @@
+MODULE RB;
+
+REQUIRE System,
+
+        Utils,
+        StockBy,
+        Barcode,
+        Numerator,
+        Document,
+        Historizable,
+        ConsignmentBy,
+        Declaration,
+        WHfromCS,
+        WHfromRF,
+        Contract,
+        Transfer,
+        Sale,
+        Return,
+        Move,
+        WholesalePrice,
+        RetailPrice,
+        RetailCRM,
+        POS,
+        PriceChange,
+        Terminal,
+        UserPriceChange,
+        WHtoLegalEntity,
+        InnerOrder,
+        PriceRound,
+        WriteOff,
+        RomanWriteOff,
+        CustomerBy,
+        Inventory,
+        Surplus,
+        Particulars,
+        DisparityBatch,
+        RomanTransfer,
+        RomanContractLedger,
+        PriceChangeDiscount,
+        ReturnCertification,
+        Defect,
+        CustomCategory,
+        RomanPOS,
+        RomanSales,
+        RomanCashOperation,
+        RomanLogicsModule,
+        Purchase;
+
+PRIORITY RomanLogicsModule, Utils, Stock, Store;
+
+EXTEND FORM stores
+
+    PROPERTIES(s) READONLY sidDestination FORCE GRID
+
+    OBJECTS su=Supplier
+    PROPERTIES(su)    READONLY nameLegalEntity
+    PROPERTIES(s, su) READONLY sidDestinationSupplier, relationStoreSupplier
+    FILTERGROUP filtersDocument
+        FILTER 'Связь маг./пост.' 'F11' relationStoreSupplier(s, su) DEFAULT
+;
+
+EXTEND DESIGN stores {
+    main {
+        preferredSize = (1024, 768);
+
+        firstCase {
+            NEW supDep {
+                type = TABBED;
+                ADD d.box;
+                ADD su.box;
+            }
+        }
+    }
+}
+
+EXTEND FORM store
+
+    PROPERTIES(s) sidDestination
+
+    OBJECTS su=Supplier
+    PROPERTIES(su)    READONLY nameLegalEntity
+    PROPERTIES(s, su) sidDestinationSupplier, relationStoreSupplier
+    FILTERGROUP filtersDocument
+        FILTER 'Связь маг./пост.' 'F11' relationStoreSupplier(s, su) DEFAULT
+;
+
+DESIGN store FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        childConstraints = TO THE BOTTOM;
+        ADD s.box {
+            childConstraints = TO THE RIGHTBOTTOM;
+        }
+        NEW row1 {
+            childConstraints = TO THE RIGHT;
+            ADD d.box;
+            ADD su.box;
+        }
+        ADD functions.box;
+    }
+}
+
+skipAReceiptSaleDetailPriceChangeZReportDetail (priceChangeZReportDetail) =
+    skipAReceiptSaleDetail(receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
+
+skipASkuLedger (ledger) += skipAReceiptSaleDetailPriceChangeZReportDetail (ledger);
+
+NAVIGATOR {
+
+    ADD masterData {
+        skuNavigator {
+            ADD skus BEFORE wares;
+            ADD categories AFTER skus;
+            ADD seasonYears AFTER categories;
+            ADD UOMs AFTER seasonYears;
+        }
+        NEW legalEntityNavigator 'Компании' {
+            ADD companies;
+            ADD colorSizeSupplierForm;
+            ADD customers;
+            ADD banks;
+        }
+    }
+
+    ADD purchaseNavigator {
+        ADD orders;
+        ADD invoices;
+        ADD shipments;
+    }
+
+    ADD distribution;
+
+    ADD transportNavigator {
+        transportDocuments {
+            ADD freightListForm;
+        }
+        NEW transportReports 'Отчеты' AFTER transportDocuments {
+            ADD freightReportForm;
+            ADD freightBoxContentForm;
+        }
+    }
+
+    ADD customs {
+        customClassifier {
+            ADD customStores;
+            ADD certificates;
+            ADD customsZones;
+            ADD customCategoryZones;
+            ADD customCategoryOrigins;
+        }
+
+        NEW customDocument 'Документы' {
+            ADD declarations;
+            ADD CStoWHs;
+        }
+
+        NEW customReport 'Сводная информация' {
+            ADD innerInvoices;
+        }
+    }
+
+    ADD priceListNavigator {
+        NEW retailPriceBase 'Розничное ценообразование' BEFORE priceListDocuments {
+            ADD coefficientRetails;
+            ADD priceIntervals;
+            ADD priceSetDocuments;
+            ADD freights;
+        }
+        NEW wholesalePrice 'Оптовое ценообразование' AFTER retailPriceBase{
+            ADD wholesalePriceDocuments;
+            ADD priceDeclaration;
+        }
+    }
+
+    ADD stockNavigator {
+        NEW defectDocuments 'Брак' {
+            ADD defectStocks;
+            NEW repair  'Ремонт'{
+                ADD repairShops;
+                ADD repairs;
+                ADD returnRepairs;
+            }
+            NEW dry  'Химчистка'{
+                ADD cleaningStocks;
+                ADD dryCleanings;
+                ADD returnDryCleanings;
+            }
+        }
+        NEW disparityDocument 'Пересорт' {
+            ADD disparityBatches;
+            ADD disparityBatchAs;
+            ADD surplusOuts;
+        }
+    }
+
+    ADD logistics {
+        NEW transfersDocument 'Трансферы' {
+            ADD transferTables;
+            ADD innerOrders;
+            ADD orderPickings;
+            ADD innerOrderRecs;
+        }
+
+        NEW logisticsIncome 'Приходы' {
+            ADD WHfromCSIs;
+            ADD WHfromRFs;
+            ADD transferIns;
+            ADD saleIns;
+            ADD returnIns;
+            ADD moveIns;
+            ADD returnCertifications;
+        }
+
+        NEW logisticsOutcome 'Расходы' {
+            ADD transferOuts;
+            ADD saleOuts;
+            ADD returnOuts;
+            ADD moveOuts;
+            ADD invoiceWHOuts;
+        }
+    }
+
+    ADD retailNavigator {
+        NEW retailPriceDocument 'Документы расценки' {
+            ADD userPriceChanges;
+            ADD inputListRegisters;
+            ADD priceChangeDocuments;
+        }
+        retailMasterData {
+            ADD gendersDialog;
+            ADD typeLabels;
+            ADD commonSizeForm;
+            ADD commonEditSizeForm;
+            ADD commonImportSizeForm;
+        }
+    }
+
+    ADD saleNavigator {
+        ADD invoiceWHOuts BEFORE saleLedgerNavigator;
+    }
+
+    ADD financeNavigator;
+    ADD machineryNavigator;
+    ADD administration;
+    //ADD Cash.account;
+}

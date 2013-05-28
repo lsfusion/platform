@@ -1,0 +1,61 @@
+MODULE ExportSOT;
+
+REQUIRE System,
+        Integration,
+        Invoice,
+        Import,
+        Item,
+        LegalEntity,
+        LegalEntityBy,
+        PricingSalePurchase,
+        SaleInvoice,
+        SaleReturnInvoice,
+        SaleInvoiceRRP,
+        Shipment,
+        SOT,
+        Warehouse;
+
+//---------------------------------------------- Экспорт данных -----------------------------------------------------//
+
+GROUP sotGroup 'SOT' : public;
+GROUP sotReepGroup 'REEP' : sotGroup;
+GROUP sotFtxpGroup 'FTXP' : sotGroup;
+GROUP sotFtxdGroup 'FTXD' : sotGroup;
+
+exportSOTDataAction 'Экспортировать данные (SOT)' = ACTION CUSTOM 'integration.ExportSOTActionProperty' IN sotGroup;
+exportSOTDirectory 'Папка' = DATA STRING[200] () IN sotGroup;
+exportSOTReep 'Массив Reep' = DATA BOOLEAN () IN sotReepGroup;
+
+exportSOTReepDateFrom 'Дата с' = DATA DATE () IN sotReepGroup;
+exportSOTReepDateTo 'Дата по' = DATA DATE () IN sotReepGroup;
+exportSOTSupplier 'Поставщик' = DATA LegalEntity () IN sotReepGroup;
+nameExportSOTSupplier 'Поставщик' () = nameLegalEntity(exportSOTSupplier()) IN sotReepGroup;
+exportSOTSupplierStock 'Склад поставщика' = DATA Warehouse () IN sotReepGroup;
+nameExportSOTSupplierStock 'Склад поставщика' () = nameStock(exportSOTSupplierStock()) IN sotReepGroup;
+exportSOTCustomer 'Покупатель' = DATA LegalEntity () IN sotReepGroup;
+nameExportSOTCustomer 'Покупатель' () = nameLegalEntity(exportSOTCustomer()) IN sotReepGroup;
+exportSOTCustomerStock 'Склад покупателя' = DATA Warehouse () IN sotReepGroup;
+nameExportSOTCustomerStock 'Склад покупателя' () = nameStock(exportSOTCustomerStock()) IN sotReepGroup;
+
+exportSOTFtxpDateFrom 'Дата с' = DATA DATE () IN sotFtxpGroup;
+exportSOTFtxpDateTo 'Дата по' = DATA DATE () IN sotFtxpGroup;
+exportSOTFtxp 'Массив Ftxp' = DATA BOOLEAN () IN sotFtxpGroup;
+
+exportSOTFtxdDateFrom 'Дата с' = DATA DATE () IN sotFtxdGroup;
+exportSOTFtxdDateTo 'Дата по' = DATA DATE () IN sotFtxdGroup;
+exportSOTFtxd 'Массив Ftxd' = DATA BOOLEAN () IN sotFtxdGroup;
+
+EXTEND FORM integrationData
+    PROPERTIES() exportSOTDataAction, exportSOTDirectory, exportSOTReep, exportSOTReepDateFrom, exportSOTReepDateTo,
+                 nameExportSOTSupplier, nameExportSOTSupplierStock, nameExportSOTCustomer, nameExportSOTCustomerStock,
+                 exportSOTFtxp, exportSOTFtxpDateFrom, exportSOTFtxpDateTo,
+                 exportSOTFtxd, exportSOTFtxdDateFrom, exportSOTFtxdDateTo
+;
+EXTEND DESIGN integrationData {
+    pane {
+        NEW sot {
+            title = 'Экспорт SOT';
+            ADD NOGROUP.sotGroup;
+        }
+    }
+}

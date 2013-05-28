@@ -1,0 +1,65 @@
+MODULE ContainerMovement;
+
+REQUIRE System,
+        Utils,
+        Stock,
+        Store;
+
+
+//------------------------------------Отчет по таре-------------------------------------------//
+
+
+costSumContainerStockDateFrom 'Остаток на начало по складу' (stock, dateFrom) = GROUP SUM costSumBatchStockDateFrom(batch, stock, dateFrom)
+    IF isContainerBatch(batch) BY stock, dateFrom;
+
+costSumContainerStockDateTo 'Остаток на конец по складу' (stock, dateTo) = GROUP SUM costSumBatchStockDateTo(batch, stock, dateTo)
+    IF isContainerBatch(batch) BY stock, dateTo;
+
+overMovementContainerBatchStockDateFromTo (batch, stock, dateFrom, dateTo) =
+    OVERRIDE balanceBBatchStockDate(batch, stock, dateFrom) IF dateTo AS DATE,
+             balanceABatchStockDate(batch, stock, dateTo) IF dateFrom AS DATE,
+             costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo),
+             costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
+
+FORM containerMovement 'Отчет по таре' PRINT
+
+    OBJECTS params = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
+
+    OBJECTS dep = DepartmentStore  FIXED PANEL
+    PROPERTIES(dep) SELECTOR nameDepartmentStore, nameStoreDepartmentStore, nameLegalEntityDepartmentStore
+
+    OBJECTS bt=Batch
+
+    PROPERTIES READONLY costSumContainerStockDateFrom(dep, dFrom), costSumContainerStockDateTo(dep, dTo)
+    PROPERTIES(bt) READONLY idBarcodeSkuBatch, nameSkuBatch, costBatch
+    PROPERTIES(bt, dep, dFrom) READONLY balanceBBatchStockDate, costSumBatchStockDateFrom
+    PROPERTIES(bt, dep, dTo) READONLY balanceABatchStockDate, costSumBatchStockDateTo
+    PROPERTIES(bt, dep, dFrom, dTo) READONLY costInBalanceBatchStockDateFromTo, costSumInBalanceBatchStockDateFromTo,
+               costOutBalanceBatchStockDateFromTo, costSumOutBalanceBatchStockDateFromTo
+
+    FILTERS isPostedBatch(bt),
+            isContainerBatch(bt),
+            overMovementContainerBatchStockDateFromTo(bt, dep, dFrom, dTo)!=0
+;
+
+DESIGN containerMovement FROM DEFAULT{
+    NEW mainContainer{
+        childConstraints = TO THE BOTTOM;
+        NEW topContainer{
+            childConstraints = TO THE RIGHT;
+            ADD params.box;
+        }
+        ADD dep.box{childConstraints = TO THE RIGHTBOTTOM;}
+        ADD bt.box;
+    }
+    ADD functions.box;
+}
+
+@extendFormFilterStockAccess(DepartmentStore, dep, containerMovement);
+
+NAVIGATOR {
+    stockReports {
+        ADD containerMovement;
+    }
+}

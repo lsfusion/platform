@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration>
+    <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+        <param name="target" value="System.out"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="serverlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="12"/>
+            <param name="activeFileName" value="logs/server.log"/>
+            <param name="fileNamePattern" value="logs/server-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="104857600"/> <!-- 100MB -->
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="servererr" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="12"/>
+            <param name="activeFileName" value="logs/server-err.log"/>
+            <param name="fileNamePattern" value="logs/server-err-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="WARN"/>
+        </filter>
+    </appender>
+
+    <appender name="sqllog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="12"/>
+            <param name="activeFileName" value="logs/sql.log"/>
+            <param name="fileNamePattern" value="logs/sql-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="remotelog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="12"/>
+            <param name="activeFileName" value="logs/server-remote.log"/>
+            <param name="fileNamePattern" value="logs/server-remote-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="100485760"/>
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="maillog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="12"/>
+            <param name="activeFileName" value="logs/mail.log"/>
+            <param name="fileNamePattern" value="logs/mail-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="100485760"/>
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="scriptlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="12"/>
+            <param name="activeFileName" value="logs/script.log"/>
+            <param name="fileNamePattern" value="logs/script-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="100485760"/>
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="importlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="12"/>
+            <param name="activeFileName" value="logs/import.log"/>
+            <param name="fileNamePattern" value="logs/import-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="10485760"/>
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="invocationlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="12"/>
+            <param name="activeFileName" value="logs/invocation.log"/>
+            <param name="fileNamePattern" value="logs/invocation-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="10485760"/>
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <category name="SystemLogger">
+        <priority value="ALL"/>
+    </category>
+
+    <category name="RemoteLogger" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="remotelog"/>
+    </category>
+
+    <category name="MailLogger" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="maillog"/>
+    </category>
+
+    <category name="SQLLogger">
+        <priority value="INFO"/>
+        <appender-ref ref="sqllog"/>
+    </category>
+
+    <category name="PausableInvocationsLogger" additivity="false">
+        <priority value="ALL"/>
+        <appender-ref ref="invocationlog"/>
+    </category>
+
+    <category name="ScriptLogger" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="scriptlog"/>
+    </category>
+
+    <root>
+        <priority value="ERROR"/>
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="serverlog"/>
+        <appender-ref ref="servererr"/>
+    </root>
+</log4j:configuration>

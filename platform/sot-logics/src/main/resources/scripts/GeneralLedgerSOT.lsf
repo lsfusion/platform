@@ -1,0 +1,32 @@
+MODULE GeneralLedgerSOT;
+
+REQUIRE SaleInvoice, DimensionStock, DimensionLegalEntity, DimensionTax;
+
+NAMESPACE Sale;
+
+//---------------------------- Для примера ------------------------//
+
+EXTEND CLASS Sale.Invoice : GeneralLedger.GLDocument;
+
+nameGLDocument(GLDocument) += descriptionInvoice(GLDocument);
+editGLDocument (GLDocument)+= editInvoice(GLDocument);
+
+//-- Tара
+//@defineGeneralLedgerAggregation (invoice, supplierContainer, supplier, sumContainerInvoiceDetailInvoice, date, descriptionInvoice, '62.1', '41.1', '1');
+//debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceSupplierContainerGeneralLedger(generalLedger)) WHEN CLASS(invoiceSupplierContainerGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+//creditGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceSupplierContainerGeneralLedger(generalLedger)) WHEN CLASS(invoiceSupplierContainerGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+////-- Товар
+//@defineGeneralLedgerAggregation (invoice, supplierItem, supplier, sumItemInvoiceDetailInvoice, date, descriptionInvoice, '90.1', '41.1', '1');
+//debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceSupplierItemGeneralLedger(generalLedger)) WHEN CLASS(invoiceSupplierItemGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+//creditGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceSupplierItemGeneralLedger(generalLedger)) WHEN CLASS(invoiceSupplierItemGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+//
+////-- НДС
+//
+//VATSumInvoiceRange (invoice, range)= GROUP SUM VATSumInvoiceDetail(detail) BY invoiceInvoiceDetail(detail), VATInvoiceDetail(detail);
+//descriptionInvoiceRange (invoice, range) = [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \'/ \' || CAST($2 AS TEXT) || \', шкала № \' || CAST($3 AS TEXT) || \' тек.ставка\' || \' ( \' || CAST($4 AS TEXT)|| \')\''](
+//    descriptionInvoice(invoice), staticCaption(taxRange(range)), numberRange(range), valueRateRangeDate(range, dateInvoice(invoice)));
+//
+//@defineGeneralLedgerAggregation (invoice, range, VAT, supplier, VATSumInvoiceRange, date, descriptionInvoiceRange, '90.1', '68.2', '1');
+//debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceVATGeneralLedger(generalLedger)) WHEN CLASS(invoiceVATGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+//creditGeneralLedgerDimensionType(generalLedger,dimensionType) += rangeVATGeneralLedger(generalLedger) WHEN CLASS(rangeVATGeneralLedger(generalLedger)) AND dimensionType == DimensionType.range;
+//creditGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceVATGeneralLedger(generalLedger)) WHEN CLASS(invoiceVATGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;

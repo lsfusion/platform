@@ -1,0 +1,18 @@
+MODULE StockAccounting;
+
+REQUIRE Stock, Item, LegalEntity, Receipt, Shipment, StockItem;
+
+NAVIGATOR {
+    root {
+        NEW masterData 'Справочники' FIRST TO toolbar {
+            ADD items;
+            ADD stocks;
+            ADD legalEntities;
+        }
+        NEW documents 'Документы' AFTER masterData TO toolbar {
+            ADD receipts;
+            ADD shipments;
+         }
+        ADD currentBalanceItemStock AFTER documents;
+    }
+}

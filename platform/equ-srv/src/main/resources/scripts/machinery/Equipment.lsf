@@ -1,0 +1,42 @@
+MODULE Equipment;
+
+REQUIRE Terminal, CashRegister, Scales, PriceChecker, POS;
+
+//---------------------------------------------- Генерация Z-отчета -------------------------------------------------//
+
+generateZReport 'Сгенерировать Z-отчёт' = ACTION CUSTOM 'equ.srv.actions.GenerateZReport';
+averageZReportCountGenerateZReport 'Среднее число Z-отчётов' = DATA INTEGER ();
+averageReceiptCountGenerateZReport 'Среднее число чеков' = DATA INTEGER ();
+averageReceiptDetailCountGenerateZReport 'Среднее число строк в чеке' = DATA INTEGER ();
+priceListTypeGenerateZReport 'Вид цен' = DATA PriceListType ();
+namePriceListTypeGenerateZReport 'Вид цен' () = namePriceListType(priceListTypeGenerateZReport());
+dateFromGenerateZReport 'Дата (с)' = DATA DATETIME ();
+dateToGenerateZReport 'Дата (по)' = DATA DATETIME ();
+
+maxNumberZReport(cashRegister) = GROUP MAX numberZReport(zReport)  BY cashRegisterZReport (zReport);
+priceSkuStock 'Цена' (sku, departmentStore) = pricePriceListTypeSkuStockDateTime(priceListTypeGenerateZReport(),
+                                                                                                 sku,
+                                                                                                 departmentStore,
+                                                                                                 dateFromGenerateZReport());
+
+EXTEND FORM defaultData
+    PROPERTIES()    generateZReport, averageZReportCountGenerateZReport, averageReceiptCountGenerateZReport, averageReceiptDetailCountGenerateZReport,
+                    namePriceListTypeGenerateZReport, dateFromGenerateZReport, dateToGenerateZReport
+
+;
+
+EXTEND DESIGN defaultData {
+    pane {
+        NEW ZReport {
+            title = 'Z-отчёт';
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY(averageZReportCountGenerateZReport());
+            ADD PROPERTY(averageReceiptCountGenerateZReport());
+            ADD PROPERTY(averageReceiptDetailCountGenerateZReport());
+            ADD PROPERTY(namePriceListTypeGenerateZReport());
+            ADD PROPERTY(dateFromGenerateZReport());
+            ADD PROPERTY(dateToGenerateZReport());
+            ADD PROPERTY(generateZReport());
+        }
+    }
+}

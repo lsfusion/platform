@@ -1,0 +1,134 @@
+MODULE Contract;
+
+REQUIRE System, Historizable, LegalEntity, Numerator, Document;
+
+// ---------------------------------------- Договора ------------------------------------ //
+
+CLASS ABSTRACT Contract 'Договор';
+TABLE contract (Contract);
+TABLE contractDate (Contract, DATE);
+
+GROUP contractGroup 'Реквизиты' : recognize;
+
+@defineDocumentAbstractHeaderNumber(Contract);
+
+wordContract 'Файл договора'  = ABSTRACT WORDFILE (Contract);
+saveWordContract 'Загрузить файл договора' (contract) = ACTION LOADFILE wordContract(contract);
+openWordContract 'Просмотреть файл договора' (contract) = ACTION OPENFILE wordContract(contract);
+
+
+//numberContract 'Номер договора' = DATA STRING[30] (Contract) IN contractGroup;
+dateFromContract 'Дата начала договора' = DATA DATE (Contract) IN contractGroup;
+dateToContract 'Дата окончания договора' = DATA DATE (Contract) IN contractGroup;
+activeContract 'Действуюший' (contract, date) =
+    (dateFromContract(contract) <= (date AS DATE)) AND NOT (dateToContract(contract) < (date AS DATE));
+
+//descriptionContract 'Описание' (contract) = ustring3SP(string2SP('№ ', seriesNumberContract(contract)),
+//                                                 string2SP('от ', dateFromContract(contract)),
+//                                                 string2SP('по ', dateToContract(contract)));
+
+GROUP partyGroup 'Контрагенты' : recognize;
+
+partyAContract = ABSTRACT LegalEntity (Contract) PERSISTENT INDEXED;
+namePartyAContract 'Организация (поставщик)' (contract) = nameLegalEntity(partyAContract(contract)) IN partyGroup;
+
+partyBContract = ABSTRACT LegalEntity (Contract) PERSISTENT INDEXED;
+namePartyBContract 'Организация (покупатель)' (contract) = nameLegalEntity(partyBContract(contract)) IN partyGroup;
+
+countContractPartyAPartyB 'Кол-во договоров' (partyA, partyB) =
+    GROUP SUM 1 IF partyAContract(contract) == partyA AND partyBContract(contract) == partyB BY partyA, partyB;
+
+GROUP attributeGroup 'Атрибуты' : public;
+
+currencyContract = DATA Currency (Contract);
+nameCurrencyContract 'Валюта взаиморасчетов' (contract) = nameCurrency(currencyContract(contract)) IN attributeGroup;
+shortNameCurrencyContract 'Валюта взаиморасчетов' (contract) = shortNameCurrency(currencyContract(contract)) IN attributeGroup;
+symbolCurrencyContract 'Символ' (contract) = symbolCurrency(currencyContract(contract)) IN attributeGroup;
+
+noteContract 'Примечание' = DATA TEXT (Contract) MINCHARWIDTH 50 PREFCHARWIDTH 50 IN attributeGroup;
+
+editContract 'Редактировать' (contract) = ABSTRACT ACTION (Contract) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+FORM contracts 'Договоры'
+    OBJECTS c = Contract
+    PROPERTIES(c) READONLY namePartyAContract, namePartyBContract, seriesNumberContract, dateFromContract,
+                           dateToContract, nameCurrencyContract, noteContract
+    PROPERTIES(c) editContract, DELETE
+
+    DIALOG Contract OBJECT c
+;
+
+// ------------------------------------ Макрос для создания договоров по умолчанию ----------------------------- //
+
+META defineContractDefault (contract, partyA, partyB)
+    @defineContractDefault (contract, ###partyA, ###partyB, partyA, partyB);
+END
+
+META defineContractDefault (contract, partyAClass, partyBClass, prefixA, prefixB)
+    @defineContractDefault(contract, ###contract, partyAClass, partyBClass, prefixA, prefixB);
+END
+
+META defineContractDefault (contract, contractClass, partyAClass, partyBClass, prefixA, prefixB)
+    data###contract###prefixA###prefixB = DATA contractClass (partyAClass, partyBClass);
+
+    CONSTRAINT pA != prefixA###contract(data###contract###prefixA###prefixB(pA, pB)) CHECKED BY data###contract###prefixA###prefixB
+        MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
+    CONSTRAINT pB != prefixB###contract(data###contract###prefixA###prefixB(pA, pB)) CHECKED BY data###contract###prefixA###prefixB
+        MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
+
+    contract###prefixA###prefixB (pA, pB) = OVERRIDE [GROUP MAX contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate()
+                                                         BY prefixA###contract(contract), prefixB###contract(contract)](pA, pB),
+                                                     data###contract###prefixA###prefixB(pA, pB);
+
+    number###contract###prefixA###prefixB 'Основной договор (номер)' (pA, pB) = numberContract(contract###prefixA###prefixB(pA, pB));
+    seriesNumber###contract###prefixA###prefixB 'Основной договор (серия/номер)' (pA, pB) = seriesNumberContract(contract###prefixA###prefixB(pA, pB));
+
+    single###contract###prefixA###prefixB (pA, pB) = contract###prefixA###prefixB(pA, pB) IF countContractPartyAPartyB(pA, pB);
+
+    is###prefixA###prefixB###contract 'Основной' (pA, pB, contract) = contract###prefixA###prefixB (pA, pB) == contract;
+END
+
+META defineDocumentContract (objectClass, contractType, prefixA, prefixB, partyAMessage, partyBMessage)
+    @defineDocumentContract (objectClass, contractType, prefixA, prefixB, single###contractType###prefixA###prefixB, partyAMessage, partyBMessage);
+END
+
+META defineDocumentContract (objectClass, contractType, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage)
+    @defineDocumentContract (objectClass, contractType, ###contractType, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage);
+END
+
+META defineDocumentContract (objectClass, contractType, contractTypeClass, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage)
+    contractType##objectClass = DATA contractTypeClass (objectClass);
+    number###contractType##objectClass 'Договор (номер)' (o) = numberContract(contractType##objectClass(o)) IN documentPrmGroup;
+    seriesNumber###contractType##objectClass 'Договор (серия/номер)' (o) = seriesNumberContract(contractType##objectClass(o)) IN documentPrmGroup;
+
+    isCommission###objectClass 'Продажа на комиссию' = DATA BOOLEAN (objectClass) IN documentPrmGroup;
+    isCommission###objectClass(o) <- typeContractSku(contractType###objectClass(o)) == ContractSkuType.commission
+        WHEN CHANGED(contractType##objectClass(o));
+
+
+    contractType##objectClass(o) <- singleContractProp(prefixA##objectClass(o), prefixB###objectClass(o))
+                                          WHEN CHANGED(prefixA##objectClass(o)) OR CHANGED(prefixB###objectClass(o));
+
+    CONSTRAINT contractType##objectClass(o) AND NOT prefixA##objectClass(o) == partyAContract(contractType##objectClass(o))
+        CHECKED BY contractType##objectClass MESSAGE partyAMessage;
+
+    CONSTRAINT contractType##objectClass(o) AND NOT prefixB##objectClass(o) == partyBContract(contractType##objectClass(o))
+        CHECKED BY contractType##objectClass MESSAGE partyBMessage;
+END
+
+META defineDocumentAbstractContract (objectClass, contractType)
+    @defineDocumentAbstractContract(objectClass, contractType, ###contractType);
+END
+
+META defineDocumentAbstractContract (objectClass, contractType, contractTypeClass)
+    contractType##objectClass = ABSTRACT contractTypeClass (objectClass) PERSISTENT;
+    seriesNumber###contractType##objectClass 'Номер договора' (o) = seriesNumberContract(contractType##objectClass(o)) IN documentPrmGroup;
+
+    isCommission##objectClass 'Продажа на комиссию' = ABSTRACT BOOLEAN (objectClass) PERSISTENT IN documentPrmGroup;
+END
+META defineDocumentInterfaceContract (objectClass, contractType, prefixA, prefixB, partyAMessage, partyBMessage)
+    @defineDocumentAbstractContract(objectClass, contractType);
+    @defineDocumentContract(User###objectClass, contractType, prefixA, prefixB, partyAMessage, partyBMessage);
+    contractType###objectClass(o) += contractType###user###objectClass(o);
+    isCommission###objectClass(o) += isCommissionUser###objectClass(o);
+END

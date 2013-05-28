@@ -1,0 +1,468 @@
+MODULE CustomCategory;
+
+REQUIRE System,
+        Declaration,
+        RomanLogicsModule;
+
+PRIORITY RomanLogicsModule, Utils;
+
+// ----------------------------------- ТН ВЭД  ------------------------------------------ //
+
+FORM customsZones 'Таможенные зоны'
+
+    OBJECTS cz = CustomsZone
+
+    PROPERTIES(cz) READONLY name, sidTypeDutyDutyCustomsZone, nameTypeDutyDutyCustomsZone, sidTypeDutyNDSCustomsZone, nameTypeDutyNDSCustomsZone, sidTypeDutyRegistrationCustomsZone, nameTypeDutyRegistrationCustomsZone
+    PROPERTIES(cz) ADDFORM, EDITFORM, DELETE
+;
+
+
+inCategory4Category6Category9Category10 (category4, category6, category9, category10) =
+    (customCategory9CustomCategory10(category10) == category9 AND category4 AND category6) OR
+    (customCategory6CustomCategory10(category10) == category6 AND category4 AND NOT category9) OR
+    (customCategory4CustomCategory10(category10) == category4 AND NOT category6 AND NOT category9) OR
+    (category10 IS CustomCategory10 AND NOT category4 AND NOT category6 AND NOT category9);
+
+FORM customCategory6 'Второй уровень'
+
+    OBJECTS g = CustomCategory6 FIXED PANEL
+    PROPERTIES(g) sidCustomCategory6, nameCustomCategory, sidCustomCategory4CustomCategory6, nameTypeFabricCustomCategory6
+
+    EDIT CustomCategory6 OBJECT g
+;
+
+FORM customCategory9 'Третий уровень'
+
+    OBJECTS g = CustomCategory9 FIXED PANEL
+    PROPERTIES(g) sidCustomCategory9, nameCustomCategory, sidCustomCategory6CustomCategory9,
+                  nameCustomsZoneCustomCategory9
+
+    EDIT CustomCategory9 OBJECT g
+;
+
+addCategory6Category4 'Добавить 6' = ACTION (customCategory4) NEWSESSION {
+    ADDOBJ CustomCategory6;
+    FOR g == addedObject() DO {
+        SET customCategory4CustomCategory6(g) <- customCategory4;
+        FORM customCategory6 OBJECTS g=addedObject() MODAL;
+        IF formResult() == FormResult.ok THEN
+            EXEC apply();
+    };
+} TOOLBAR IMAGE 'add.png';
+
+addCategory9Category6CustomsZone 'Добавить 9' = ACTION (customCategory6, customsZone) NEWSESSION {
+    ADDOBJ CustomCategory9;
+    FOR g == addedObject() DO {
+        SET customCategory6CustomCategory9(g) <- customCategory6;
+        SET customsZoneCustomCategory9(g) <- customsZone;
+        FORM customCategory9 OBJECTS g=addedObject() MODAL;
+        IF formResult() == FormResult.ok THEN
+            EXEC apply();
+    };
+} TOOLBAR IMAGE 'add.png';
+
+FORM customCategory10 'Четвертый уровень'
+
+    OBJECTS g = CustomCategory10 FIXED PANEL
+    PROPERTIES(g) sidCustomCategory10, nameCustomCategory, nameCustomsZoneCustomCategory10,
+                  sidCustomCategory9CustomCategory10, sidCustomCategory6CustomCategory10, sidCustomCategory4CustomCategory10,
+                  nameCustomCategory9CustomCategory10, nameCustomCategory6CustomCategory10, nameCustomCategory4CustomCategory10,
+                  certificatedCustomCategory10, nameSpecUnitOfMeasureCustomCategory10, nameAdditionalUnitOfMeasureCustomCategory10,
+                  subCategoryCustomCategory10, numberRangeSupplierVATCustomCategory10, dialogSupplierVATCustomCategory10, valueCurrentRateSupplierVATCustomCategory10
+    OBJECTS s = SubCategory
+    PROPERTIES(s) READONLY nameSubCategory
+
+    OBJECTS c = Country
+    PROPERTIES(c) READONLY name
+
+    OBJECTS t = TypeDuty
+    PROPERTIES(t) READONLY sidTypeDuty, nameTypeDuty
+
+    PROPERTIES(g, s) relationCustomCategory10SubCategory, minPriceCustomCategory10SubCategory
+    PROPERTIES(g, s, c) minPriceCustomCategory10SubCategoryCountry
+    PROPERTIES(g, t) dutyPercentCustomCategory10TypeDuty, dutySumCustomCategory10TypeDuty
+
+    FILTERS customsZoneSubCategory (s) == customsZoneCustomCategory10(g),
+            customsZoneTypeDuty (t) == customsZoneCustomCategory10(g)
+
+    EDIT CustomCategory10 OBJECT g
+;
+
+DESIGN customCategory10 FROM DEFAULT {
+
+    main{
+        childConstraints = TO THE BOTTOM;
+        ADD g.box {
+            childConstraints = TO THE BOTTOM;
+            NEW row1 {
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(nameCustomsZoneCustomCategory10);
+                ADD PROPERTY(sidCustomCategory10);
+                ADD PROPERTY(nameCustomCategory);
+            }
+            NEW row2 {
+
+                childConstraints = TO THE RIGHT;
+                NEW row21 {
+                    childConstraints = TO THE RIGHT;
+                    title = 'Иерархия';
+                    NEW row211 {
+                        childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY(sidCustomCategory4CustomCategory10);
+                        ADD PROPERTY(sidCustomCategory6CustomCategory10);
+                        ADD PROPERTY(sidCustomCategory9CustomCategory10);
+                    }
+                    NEW row212 {
+                        childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY(nameCustomCategory4CustomCategory10);
+                        ADD PROPERTY(nameCustomCategory6CustomCategory10);
+                        ADD PROPERTY(nameCustomCategory9CustomCategory10);
+                    }
+                }
+                NEW row23 {
+                    title = 'НДС';
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(numberRangeSupplierVATCustomCategory10);
+                    ADD PROPERTY(valueCurrentRateSupplierVATCustomCategory10);
+
+                }
+                NEW row22 {
+                    title = 'Информация';
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(certificatedCustomCategory10);
+                    ADD PROPERTY(subCategoryCustomCategory10);
+                }
+            }
+
+        };
+        NEW topContainer{
+
+            childConstraints = TO THE RIGHT;
+            ADD s.box;
+            ADD c.box;
+            ADD t.box;
+        }
+    }
+    ADD functions.box;
+}
+
+addCategory10Category9CustomsZone 'Добавить' = ACTION (customCategory9, customsZone) NEWSESSION {
+    ADDOBJ CustomCategory10;
+    FOR g == addedObject() DO {
+        SET customCategory9CustomCategory10(g) <- customCategory9;
+        SET customsZoneCustomCategory10(g) <- customsZone;
+        FORM customCategory10 OBJECTS g=addedObject() MODAL;
+        IF formResult() == FormResult.ok THEN
+            EXEC apply();
+    };
+} TOOLBAR IMAGE 'add.png';
+
+
+createCustomsZone 'Задать таможенную зону и связать ее с ТН ВЭД' = ACTION ()  {
+
+    FOR ADDOBJ g = CustomsZone DO {
+        SET name(g) <- 'Таможенный Союз';
+        SET customsZoneCountry(country) <- g WHERE country IS Country;
+        SET customsZoneCustomCategory10(customCategory10) <- g WHERE customCategory10 IS CustomCategory10;
+        SET customsZoneCustomCategory9(customCategory9) <- g WHERE customCategory9 IS CustomCategory9;
+        SET customsZoneSubCategory(subCategory) <- g WHERE subCategory IS SubCategory;
+        SET customsZoneTypeDuty(typeDuty) <- g WHERE typeDuty IS TypeDuty;
+        SET customCategory10DataSkuCustomsZone(s, g) <- customCategory10DataSku(s);
+        SET subCategoryDataSkuCustomsZone(sku, customsZone) <- subCategoryDataSku(sku) WHERE customsZone IS CustomsZone;
+        SET customCategory10CategoryGenderCompositionTypeFabricCustomsZone(a, b, c, d, g) <- customCategory10FreightCategoryGenderCompositionTypeFabric(a, b, c, d);
+        SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, g) <- customCategory10CustomCategoryOrigin(customCategoryOrigin);
+    }
+} CONFIRM;
+
+EXTEND FORM migrationData
+    PROPERTIES() toSetRangeCustomCategories10, createCustomsZone
+;
+EXTEND DESIGN migrationData {
+    commons {
+        ADD PROPERTY(toSetRangeCustomCategories10);
+        ADD PROPERTY(createCustomsZone);
+    }
+}
+
+FORM customCategoryZones 'ТН ВЭД (зональный)'
+
+    OBJECTS cz = CustomsZone FIXED PANEL
+    PROPERTIES(cz) SELECTOR name, sidTypeDutyDutyCustomsZone, nameTypeDutyDutyCustomsZone, sidTypeDutyNDSCustomsZone, nameTypeDutyNDSCustomsZone,
+                   sidTypeDutyRegistrationCustomsZone, nameTypeDutyRegistrationCustomsZone, nameTypeExchangePayCustomCustomsZone, nameTypeExchangePayManagerialCustomsZone
+    PROPERTIES(cz) importUATnved
+    OBJECTS s = SubCategory
+    PROPERTIES(s) READONLY nameSubCategory
+    PROPERTIES(s) ADDFORM, EDITFORM, DELETE
+
+    OBJECTS t = TypeDuty
+    PROPERTIES(t) READONLY sidTypeDuty, nameTypeDuty
+    PROPERTIES(t) ADDFORM, EDITFORM, DELETE
+
+    FILTERS  customsZoneSubCategory(s) == cz,
+             customsZoneTypeDuty(t) == cz
+
+
+    TREE treeCategory ca=CustomCategory4, cb=CustomCategory6, cc=CustomCategory9
+    PROPERTIES READONLY sidCustomCategory4(ca), sidCustomCategory6(cb), sidCustomCategory9(cc), nameCustomCategory(ca), nameCustomCategory(cb), nameCustomCategory(cc)
+    FILTERS customCategory4CustomCategory6 (cb)==ca,
+            customCategory6CustomCategory9 (cc)==cb
+
+    PROPERTIES(ca) addCA = ADDFORM
+    PROPERTIES(cb, cz) addCategory9Category6CustomsZone
+    PROPERTIES(ca) addCategory6Category4
+
+    OBJECTS cd = CustomCategory10
+
+    PROPERTIES(cd) READONLY sidCustomCategory10, nameCustomCategory, certificatedCustomCategory10, nameSpecUnitOfMeasureCustomCategory10,
+                   nameAdditionalUnitOfMeasureCustomCategory10, valueCurrentRateSupplierVATCustomCategory10
+    PROPERTIES(cd) EDITFORM, DELETE
+    PROPERTIES(cc,cz) addCategory10Category9CustomsZone TODRAW cd
+
+    FILTERS  inCategory4Category6Category9Category10(ca, cb, cc, cd),
+             customsZoneCustomCategory9 (cc)==cz,
+             customsZoneCustomCategory10 (cd)==cz
+
+    ORDER BY sidCustomCategory4, sidCustomCategory6, sidCustomCategory9, sidCustomCategory10
+;
+
+DESIGN customCategoryZones FROM DEFAULT {
+
+    main{
+        ADD cz.box;
+        NEW topContainer {
+
+            type = TABBED;
+            NEW row1{
+                title = 'Классификатор';
+                type = SPLITH;
+                childConstraints = TO THE RIGHT;
+
+                ADD treeCategory.tree.box {
+                    title = 'Дерево классификатора';
+                    PROPERTY (addCA) {
+                        caption = 'Добавить 4';
+                    }
+                };
+                ADD cd.box {fillHorizontal = 2;};
+            }
+            NEW row2{
+                title = 'Таможенные пошлины, акцизы, минимальные цены';
+                type = SPLITH;
+                childConstraints = TO THE RIGHT;
+
+                ADD s.box { fillHorizontal = 1.5;}
+                ADD t.box {fillHorizontal = 1.5;}
+            }
+        }
+    }
+    ADD functions.box;
+}
+
+//--------------------------------------- ТН ВЭД Оригинальный -------------------------------------//
+
+FORM customCategory10Dialog 'Четвертый уровень'
+
+    OBJECTS cz = CustomsZone FIXED PANEL
+    PROPERTIES(cz) READONLY name
+
+    TREE treeCategory ca=CustomCategory4, cb=CustomCategory6, cc=CustomCategory9
+    PROPERTIES READONLY sidCustomCategory4(ca), sidCustomCategory6(cb), sidCustomCategory9(cc), nameCustomCategory(ca), nameCustomCategory(cb), nameCustomCategory(cc)
+    FILTERS customCategory4CustomCategory6 (cb)==ca,
+            customCategory6CustomCategory9 (cc)==cb
+
+    OBJECTS cd = CustomCategory10
+
+    PROPERTIES(cd) READONLY sidCustomCategory10, nameCustomCategory
+
+    FILTERS  inCategory4Category6Category9Category10(ca, cb, cc, cd),
+             customsZoneCustomCategory9 (cc)==cz,
+             customsZoneCustomCategory10 (cd)==cz
+
+    ORDER BY sidCustomCategory4, sidCustomCategory6, sidCustomCategory9, sidCustomCategory10
+
+;
+
+DESIGN customCategory10Dialog FROM DEFAULT {
+
+    main{
+        preferredSize = (1024, 768);
+        NEW topContainer {
+            childConstraints = TO THE RIGHT;
+            type = SPLITH;
+            ADD treeCategory.tree.box {
+                title = 'Дерево классификатора';
+            }
+
+            ADD cd.box{ fillHorizontal = 2;}
+        }
+    }
+    ADD functions.box;
+}
+
+addCategory10CustomCategoryOriginCustomsZone 'Четвертый уровень' = ACTION (customCategoryOrigin, customsZone) {
+
+    FORM customCategory10Dialog OBJECTS cz = customsZone MODAL;
+    IF formResult() == FormResult.ok THEN {
+        SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, customsZone) <- chosenObject('cd');
+    }
+};
+
+CONSTRAINT customsZoneCustomCategory9(customCategory9CustomCategory10(customCategory10)) != customsZoneCustomCategory10(customCategory10)
+        CHECKED BY customCategory9CustomCategory10 MESSAGE 'Не совпадают таможенные зоны у четвертого и третьего уровня';
+
+CONSTRAINT customsZoneCustomCategory10(customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, customsZone)) != customsZone
+        CHECKED BY customCategory10CustomCategoryOriginCustomsZone MESSAGE 'У четвертого уровня и уровня ЕС не совпадают таможенные зоны';
+
+
+FORM customCategoryOrigin 'ЕС уровень'
+
+    OBJECTS g = CustomCategoryOrigin FIXED PANEL
+    PROPERTIES(g) sidCustomCategoryOrigin, nameCustomCategory, sidCustomCategory4CustomCategoryOrigin, sidCustomCategory6CustomCategoryOrigin,
+                  nameCustomCategory4CustomCategoryOrigin, nameCustomCategory6CustomCategoryOrigin
+
+
+    OBJECTS cz = CustomsZone
+    PROPERTIES(cz) READONLY name
+    PROPERTIES(g, cz)  sidCustomCategory10CustomCategoryOriginCustomsZone ON CHANGE addCategory10CustomCategoryOriginCustomsZone(g, cz)
+    PROPERTIES(g, cz) READONLY nameCustomCategory10CustomCategoryOriginCustomsZone
+
+    EDIT CustomCategoryOrigin OBJECT g
+;
+
+DESIGN customCategoryOrigin FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        ADD g.box {
+            childConstraints = TO THE BOTTOM;
+            NEW row1{
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY (sidCustomCategoryOrigin);
+                ADD PROPERTY (nameCustomCategory);
+            }
+            NEW row2 {
+                title = 'Иерархия';
+                childConstraints = TO THE RIGHT;
+                NEW row211 {
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(sidCustomCategory4CustomCategoryOrigin);
+                    ADD PROPERTY(sidCustomCategory6CustomCategoryOrigin);
+                }
+                NEW row212 {
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(nameCustomCategory4CustomCategoryOrigin);
+                    ADD PROPERTY(nameCustomCategory6CustomCategoryOrigin);
+                }
+            }
+        }
+        ADD cz.box;
+    }
+    ADD functions.box;
+}
+
+inCategory4Category6Origin (category4, category6, origin) =
+    (customCategory6CustomCategoryOrigin(origin) == category6 AND category4 ) OR
+    (customCategory4CustomCategoryOrigin(origin) == category4 AND NOT category6) OR
+    (origin IS CustomCategoryOrigin AND NOT category4 AND NOT category6);
+
+
+addCategoryOriginCategory6 'Добавить' = ACTION (customCategory6) NEWSESSION {
+    ADDOBJ CustomCategoryOrigin;
+    FOR g == addedObject() DO {
+        SET customCategory6CustomCategoryOrigin(g) <- customCategory6;
+        FORM customCategoryOrigin OBJECTS g=addedObject() MODAL;
+        IF formResult() == FormResult.ok THEN
+            EXEC apply();
+    };
+} TOOLBAR IMAGE 'add.png';
+
+FORM customCategoryOrigins 'ТН ВЭД (ориг.)'
+
+    TREE treeCategory ca=CustomCategory4, cb=CustomCategory6
+    PROPERTIES READONLY sidCustomCategory4(ca), sidCustomCategory6(cb), nameCustomCategory(ca), nameCustomCategory(cb)
+    FILTERS customCategory4CustomCategory6 (cb)==ca
+
+    PROPERTIES(ca) addCA = ADDFORM
+    PROPERTIES(ca) addCategory6Category4
+
+    OBJECTS cd = CustomCategoryOrigin
+
+    PROPERTIES(cd) READONLY sidCustomCategoryOrigin, nameCustomCategory
+    PROPERTIES(cd) EDITFORM, DELETE
+
+    PROPERTIES(ca) editCA = EDITFORM, DELETE
+    PROPERTIES(cb) editCB = EDITFORM, DELETE
+
+    PROPERTIES(cb) addCategoryOriginCategory6 TODRAW cd
+
+    FILTERS  inCategory4Category6Origin(ca, cb, cd)
+
+    ORDER BY sidCustomCategory4, sidCustomCategory6, sidCustomCategoryOrigin
+;
+
+DESIGN customCategoryOrigins FROM DEFAULT {
+
+    main{
+
+        NEW topContainer {
+            childConstraints = TO THE RIGHT;
+            type = SPLITH;
+            ADD treeCategory.tree.box {
+                title = 'Дерево классификатора';
+                PROPERTY (addCA) {
+                    caption = 'Добавить 4';
+                }
+
+                PROPERTY (editCA) {
+                    caption = 'Редактировать 4';
+                }
+
+                PROPERTY (editCB) {
+                    caption = 'Редактировать 6';
+                }
+            }
+
+            ADD cd.box {
+                fillHorizontal = 2;
+            }
+        }
+    }
+    ADD functions.box;
+}
+
+EXTEND FORM country
+    PROPERTIES(c) nameCustomsZoneCountry
+;
+EXTEND FORM countries
+    PROPERTIES(c) READONLY nameCustomsZoneCountry
+;
+
+//FORM Test 'Тест'
+//
+//    OBJECTS c = CustomCategory10
+//    PROPERTIES(c) READONLY nameCustomCategory, sidCustomCategory10
+//
+//    OBJECTS cz = CustomsZone
+//    PROPERTIES(cz) READONLY name
+//
+//    OBJECTS s = CustomCategoryOrigin
+//    PROPERTIES(s) READONLY nameCustomCategory, sidCustomCategoryOrigin
+//
+//    FILTERS customCategory10CustomCategoryOriginCustomsZone(s, cz) == c
+//;
+//
+//
+//DESIGN Test FROM DEFAULT {
+//
+//    main{
+//        ADD c.box;
+//        NEW topContainer {
+//            childConstraints = TO THE RIGHT;
+//
+//
+//            ADD cz.box;
+//            ADD s.box;
+//
+//        }
+//    }
+//    ADD functions.box;
+//}

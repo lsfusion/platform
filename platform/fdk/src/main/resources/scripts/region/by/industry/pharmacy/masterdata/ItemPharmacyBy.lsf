@@ -1,0 +1,8 @@
+MODULE ItemPharmacyBy;
+
+REQUIRE ItemPharmacy, PharmacyPriceList;
+
+NAMESPACE Item;
+
+@defineObjectItemAttribute(pharmacyPriceGroup, PharmacyPriceGroup, namePharmacyPriceGroup, 'Тип лекарственного средства', itemPharmacyGroup);
+@defineObjectItemAttributeBatch (pharmacyPriceGroup, namePharmacyPriceGroup, 'Тип лекарственного средства');

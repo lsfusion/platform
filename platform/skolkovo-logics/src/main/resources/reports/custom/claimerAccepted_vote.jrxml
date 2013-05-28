@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.2100000000000017"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<field name="vote" class="java.lang.Integer"/>
+	<field name="dateEndVote" class="java.util.Date"/>
+	<field name="nameNativeProjectVote" class="java.lang.String"/>
+	<field name="dateProjectVote" class="java.util.Date"/>
+	<field name="nameNativeClaimerVote" class="java.lang.String"/>
+	<field name="nameAblateClaimerVote" class="java.lang.String"/>
+	<field name="isStatusVote" class="java.lang.Boolean"/>
+	<field name="nameNativeClusterVote" class="java.lang.String"/>
+	<detail>
+		<band height="339">
+			<textField>
+				<reportElement style="DefaultStyle" x="50" y="78" width="200" height="25"/>
+				<textElement>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.formatRussian($F{dateEndVote}) + " года"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="DefaultStyle" x="50" y="11" width="489" height="48"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Некоммерческая организация
+Фонд развития Центра разработки и
+коммерциализации новых технологий]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="DefaultStyle" x="250" y="59" width="78" height="30"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[РЕШЕНИЕ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="DefaultStyle" x="250" y="89" width="78" height="30"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Москва]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="50" y="192" width="489" height="66"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную Соискателем - " + $F{nameNativeClaimerVote} + " " +
+"заявку на "+($F{isStatusVote}==null?"проведение предварительной экспертизы проекта":"присвоение статуса участника проекта")+" от " +
+platform.base.BaseUtils.formatRussian($F{dateProjectVote}) + " года (" + $F{nameNativeProjectVote} +
+"), на основании протокола заседания Экспертной коллегии, сформированной по Направлению «"+$F{nameNativeClusterVote}+
+"», по вопросу о соответствии проекта, представленного Соискателем, критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», от " + platform.base.BaseUtils.formatRussian($F{dateEndVote}) + " года, в соответствии с пунктом"+($F{isStatusVote}==null?" 12 Положения о проведении предварительной экспертизы проектов":" 14 указанного Положения")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="50" y="268" width="489" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression><![CDATA["признать проект, представленный Соискателем, соответствующим критериям, указанным в подпункте Е пункта 2 указанного Положения."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="50" y="258" width="489" height="10"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression><![CDATA["р е ш и л"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" x="50" y="119" width="489" height="63"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="lsf.TimesNewRoman" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["О соответствии проекта, представленного Соискателем, критериям, указанным\n" +
+"в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника\n" +
+"проекта создания и обеспечения функционирования инновационного центра\n" +
+"«Сколково»"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="50" y="320" width="247" height="16"/>
+				<textElement verticalAlignment="Bottom"/>
+				<text><![CDATA[Ответственный секретарь Совета]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="435" y="320" width="104" height="16"/>
+				<textElement verticalAlignment="Bottom"/>
+				<text><![CDATA[Д.В. Дудина]]></text>
+			</staticText>
+		</band>
+	</detail>
+</jasperReport>

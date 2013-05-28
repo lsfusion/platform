@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="conferenceExpert" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="expert" class="java.lang.Integer"/>
+	<field name="conference" class="java.lang.Integer"/>
+	<field name="textConference" class="java.lang.String"/>
+	<field name="webHost" class="java.lang.String"/>
+	<field name="nameContact" class="java.lang.String"/>
+	<detail>
+		<band height="285">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="19" y="62" width="547" height="29"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{textConference}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="17" y="203" width="551" height="36"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ПОЖАЛУЙСТА, ВЫБЕРИТЕ ОДИН ИЗ ВАРИАНТОВ ОТВЕТА НА ДАННОЕ ПРИГЛАШЕНИЕ:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="356" y="103" width="208" height="26"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[С уважением,]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="196" y="129" width="368" height="26"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Ответственный Секретарь Экспертных Коллегий]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="289" y="155" width="275" height="26"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Диана В. Дудина]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="Float" x="19" y="192" width="547" height="1"/>
+			</line>
+			<textField>
+				<reportElement x="19" y="19" width="545" height="33"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Уважаемый " + $F{nameContact}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="Reference" hyperlinkTarget="Blank">
+				<reportElement positionType="Float" x="19" y="250" width="263" height="25" forecolor="#00FF00"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="Serif" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Я ПОДТВЕРЖДАЮ СВОЕ УЧАСТИЕ"]]></textFieldExpression>
+				<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/votes/conference.do?conf="+platform.base.BaseUtils.encode($F{conference}, $F{expert})+"&result=yes"]]></hyperlinkReferenceExpression>
+			</textField>
+			<textField hyperlinkType="Reference" hyperlinkTarget="Blank">
+				<reportElement positionType="Float" x="303" y="250" width="263" height="25" forecolor="#FF0000"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="Serif" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Я ОТКАЗЫВАЮСЬ  ОТ УЧАСТИЯ"]]></textFieldExpression>
+				<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/votes/conference.do?conf="+platform.base.BaseUtils.encode($F{conference}, $F{expert})+"&result=no"]]></hyperlinkReferenceExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

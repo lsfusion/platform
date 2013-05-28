@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="date" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<parameter name="cluster_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="cluster_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="cluster_params" class="java.util.Map"/>
+	<parameter name="projectAction_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="projectAction_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="projectAction_params" class="java.util.Map"/>
+	<parameter name="projectStatus_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="projectStatus_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="projectStatus_params" class="java.util.Map"/>
+	<field name="dateFrom" class="java.util.Date"/>
+	<field name="dateTo" class="java.util.Date"/>
+	<field name="objectValueProperty_DateClass" class="java.util.Date"/>
+	<field name="objectValueProperty_DateClass2" class="java.util.Date"/>
+	<field name="nonClusterApplicationsSubmitDateDate" class="java.lang.Integer"/>
+	<group name="designGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{dateFrom})+" "+String.valueOf($F{dateTo})]]></groupExpression>
+	</group>
+	<pageHeader>
+		<band height="45">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" x="15" y="0" width="11" height="37" forecolor="#FFFFFF" backcolor="#CCFF66"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" x="30" y="0" width="11" height="37" forecolor="#FFFFFF" backcolor="#CCFF66"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" x="45" y="0" width="757" height="37" forecolor="#FFFFFF" backcolor="#666666"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Статистика заявок, поступивших в отчетный период"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" x="0" y="0" width="11" height="37" forecolor="#FFFFFF" backcolor="#CCFF66"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band>
+			<subreport>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{cluster_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{cluster_source}]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{cluster_report}]]></subreportExpression>
+			</subreport>
+		</band>
+		<band>
+			<subreport>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{projectAction_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{projectAction_source}]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{projectAction_report}]]></subreportExpression>
+			</subreport>
+		</band>
+		<band>
+			<subreport>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{projectStatus_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{projectStatus_source}]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{projectStatus_report}]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

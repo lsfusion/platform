@@ -1,0 +1,719 @@
+MODULE Document;
+
+REQUIRE System, Numerator, Authentication, Time;
+
+// Логика проведения документов
+
+CLASS ABSTRACT PostedObject 'Объект с возможностью закрытия';
+TABLE postedObject (PostedObject);
+
+GROUP postedGroup 'Информация о закрытии' : base;
+
+timeClosed 'Время закрытия' = DATA DATETIME (PostedObject) IN postedGroup;
+userClosed 'Проведен пользователем' = DATA CustomUser (PostedObject);
+computerClosed 'Проведен на компьютере' = DATA Computer (PostedObject);
+
+nameUserClosed 'Проведен пользователем' (postedObject) = nameContact(userClosed(postedObject)) IN postedGroup;
+hostnameComputerClosed 'Проведен на компьютере' (postedObject) = hostnameComputer(computerClosed(postedObject)) IN postedGroup;
+
+timeClosed(postedObject) <- currentDateTime() WHEN ASSIGNED(postedObject IS PostedObject);
+userClosed(postedObject) <- currentUser() WHEN ASSIGNED(postedObject IS PostedObject);
+computerClosed(postedObject) <- currentComputer() WHEN ASSIGNED(postedObject IS PostedObject);
+
+// Логика нумерирования документов
+
+CLASS ABSTRACT NumeratedDocument 'Нумерируемый документ' : NumeratedObject;
+@defineNumeratedObjectDefault(NumeratedDocument, 'Нумератор для документов', 'ДК');
+
+// Стандартные группы
+GROUP documentHeaderGroup 'Шапка документа' : base;
+GROUP documentSumGroup 'Суммы документа': public;
+GROUP documentPrmGroup 'Параметры документа': public;
+
+// Макросы по созданию документов
+
+// ----- Tables ----- //
+
+META defineDocumentTables (object)
+    TABLE object (###object);
+    TABLE object##Detail (###object##Detail);
+END
+META defineDocumentInterfaceTables (object)
+    @defineDocumentTables(object);
+    @defineDocumentTables(user###object);
+END
+
+// ----- Relation ----- //
+META defineDocumentRelation (object, detailClass, caption)
+    @defineDocumentRelation(object, ###object, detailClass, caption);
+END
+
+META defineDocumentRelation(object, objectClass, detailClass, caption)
+    object##detailClass = DATA objectClass (detailClass) NOT NULL DELETE;
+    in###object##detailClass(o, d) = object##detailClass(d) == o;
+
+    @defineDocumentHeaderCount(object, detailClass);
+END
+
+META defineDocumentAbstractRelation(object, detailClass, caption)
+    @defineDocumentAbstractRelation(object, ###object, detailClass, caption);
+END
+
+META defineDocumentAbstractRelation(object, objectClass, detailClass, caption)
+    object##detailClass = ABSTRACT objectClass (detailClass) PERSISTENT;
+    in###object##detailClass(o, d) = object##detailClass(d) == o;
+
+    @defineDocumentHeaderCount(object, detailClass);
+END
+
+META defineDocumentInterfaceRelation(object, detailClass, caption)
+    @defineDocumentAbstractRelation(object, detailClass, caption);
+    @defineDocumentRelation(user###object, User##detailClass, caption);
+    object##detailClass(d) += user###object##User##detailClass(d);
+END
+
+META defineDocumentRelation (object, detailClass)
+    @defineDocumentRelation(object, detailClass, );
+END
+META defineDocumentAbstractRelation (object, detailClass)
+    @defineDocumentAbstractRelation(object, detailClass, );
+END
+META defineDocumentInterfaceRelation (object, detailClass)
+    @defineDocumentInterfaceRelation(object, detailClass, );
+END
+
+META defineDocumentRelation (object)
+    @defineDocumentRelation(object, ###object##Detail);
+END
+META defineDocumentAbstractRelation (object)
+    @defineDocumentAbstractRelation(object, ###object##Detail);
+END
+META defineDocumentInterfaceRelation (object)
+    @defineDocumentInterfaceRelation(object, ###object##Detail);
+END
+
+// Header
+META defineDocumentHeaderCount (object, detailClass, caption)
+    count##detailClass###object 'Количество строк в документе'###caption (o) =
+        GROUP SUM 1 BY object##detailClass(d) PERSISTENT IN documentSumGroup;
+END
+
+META defineDocumentHeaderCount (object, detailClass)
+    @defineDocumentHeaderCount(object, detailClass, );
+END
+
+META defineDocumentHeaderCount (object)
+    @defineDocumentHeaderCount(object, ###object##Detail);
+END
+
+// ----- Time ----- //
+
+META defineDocumentHeaderTimePrefix (objectClass, prefix, caption)
+    prefix###date##objectClass 'Дата'##caption = DATA DATE (objectClass) IN documentHeaderGroup;
+    prefix###time##objectClass 'Время'##caption = DATA TIME (objectClass) IN documentHeaderGroup;
+    prefix###dateTime##objectClass 'Дата/время'##caption (o) = dateTimeToDateTime(prefix###date##objectClass(o), prefix###time##objectClass(o)) PERSISTENT;
+END
+
+META deriveDocumentHeaderTimePrefix (objectClass, prefix)
+    WHEN SESSION ASSIGNED(o AS objectClass) DO {
+        IF o IS objectClass AND NOT prefix###date##objectClass(o) THEN SET prefix###date##objectClass(o) <- currentDate();
+        IF o IS objectClass AND NOT prefix###time##objectClass(o) THEN SET prefix###time##objectClass(o) <- currentTime();
+    };
+END
+
+META defineDocumentAbstractHeaderTimePrefix (objectClass, prefix, caption)
+    prefix###date##objectClass 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeaderGroup PERSISTENT;
+    prefix###time##objectClass 'Время'##caption = ABSTRACT TIME (objectClass) IN documentHeaderGroup PERSISTENT;
+    prefix###dateTime##objectClass 'Дата/время'##caption (o) = dateTimeToDateTime(prefix###date##objectClass(o), prefix###time##objectClass(o)) PERSISTENT;
+END
+
+META defineDocumentInterfaceHeaderTimePrefix(objectClass, prefix, caption)
+    @defineDocumentAbstractHeaderTimePrefix(objectClass, prefix, caption);
+    @defineDocumentHeaderTimePrefix(User##objectClass, prefix, caption);
+    @deriveDocumentHeaderTimePrefix(User##objectClass, prefix);
+    prefix###date##objectClass(o) += prefix###dateUser##objectClass(o);
+    prefix###time##objectClass(o) += prefix###timeUser##objectClass(o);
+END
+
+META defineDocumentHeaderTime (objectClass)
+    @defineDocumentHeaderTimePrefix(objectClass, ,' документа');
+    @deriveDocumentHeaderTimePrefix(objectClass, );
+END
+META defineDocumentAbstractHeaderTime (objectClass)
+    @defineDocumentAbstractHeaderTimePrefix(objectClass, ,' документа');
+END
+META defineDocumentInterfaceHeaderTime(objectClass)
+    @defineDocumentInterfaceHeaderTimePrefix(objectClass, ,' документа');
+END
+
+META defineDocumentDetailTimePrefix (object, detailClass, prefix, caption)
+    prefix###dateTime##detailClass 'Дата/время'##caption (d) = prefix###dateTime###object(object##detailClass(d)) PERSISTENT;
+    prefix###date##detailClass 'Дата'##caption (d) = prefix###date###object(object##detailClass(d));
+    prefix###time##detailClass 'Время'##caption (d) = prefix###time###object(object##detailClass(d));
+END
+META defineDocumentInterfaceDetailTimePrefix (object, detailClass, prefix, caption)
+    @defineDocumentDetailTimePrefix(object, detailClass, prefix, caption);
+    @defineDocumentDetailTimePrefix(user###object, ###user##detailClass, prefix, caption);
+END
+
+META defineDocumentDetailTimePrefix (object, prefix, caption)
+    @defineDocumentDetailTimePrefix(object, ###object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailTimePrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailTimePrefix(object, ###object##Detail, prefix, caption);
+END
+
+META defineDocumentDetailTime (object, detailClass)
+    @defineDocumentDetailTimePrefix(object, detailClass, ,' документа');
+END
+META defineDocumentInterfaceDetailTime (object, detailClass)
+    @defineDocumentInterfaceDetailTimePrefix(object, detailClass, ,' документа');
+END
+
+META defineDocumentDetailTime (object)
+    @defineDocumentDetailTime(object, ###object##Detail);
+END
+META defineDocumentInterfaceDetailTime (object)
+    @defineDocumentInterfaceDetailTime(object, ###object##Detail);
+END
+
+META defineDocumentTimePrefix (object, prefix, caption)
+    @defineDocumentHeaderTimePrefix(###object, prefix, caption);
+    @deriveDocumentHeaderTimePrefix(###object, prefix);
+    @defineDocumentDetailTimePrefix(object, prefix, caption);
+END
+META defineDocumentAbstractTimePrefix (object, prefix, caption)
+    @defineDocumentAbstractHeaderTimePrefix(###object, prefix, caption);
+    @defineDocumentDetailTimePrefix(object, prefix, caption);
+END
+META defineDocumentInterfaceTimePrefix (object, prefix, caption)
+    @defineDocumentInterfaceHeaderTimePrefix(###object, prefix, caption);
+    @defineDocumentInterfaceDetailTimePrefix(object, prefix, caption);
+END
+
+META defineDocumentTime (object)
+    @defineDocumentHeaderTime(###object);
+    @defineDocumentDetailTime(object);
+END
+META defineDocumentAbstractTime (object)
+    @defineDocumentAbstractHeaderTime(###object);
+    @defineDocumentDetailTime(object);
+END
+META defineDocumentInterfaceTime (object)
+    @defineDocumentInterfaceHeaderTime(###object);
+    @defineDocumentInterfaceDetailTime(object);
+END
+
+// ----- Data time ----- //
+
+META defineDocumentDetailDataTimePrefix (object, detailClass, prefix, caption)
+    prefix###dataDate##detailClass =  DATA DATE (detailClass);
+    prefix###date##detailClass 'Дата'##caption (d) = OVERRIDE prefix###date###object(object##detailClass(d)), prefix###dataDate##detailClass(d) PERSISTENT;
+    prefix###dataTime##detailClass =  DATA TIME (detailClass);
+    prefix###time##detailClass 'Время'##caption (d) = OVERRIDE prefix###time###object(object##detailClass(d)), prefix###dataTime##detailClass(d) PERSISTENT;
+    prefix###dateTime##detailClass 'Дата/время'##caption (d) = dateTimeToDateTime(prefix###date##detailClass(d), prefix###time##detailClass(d)) PERSISTENT;
+END
+
+META defineDocumentAbstractDetailDataTimePrefix (object, detailClass, prefix, caption)
+    prefix###dataDate##detailClass =  ABSTRACT DATE (detailClass);
+    prefix###date##detailClass 'Дата'##caption (d) = OVERRIDE prefix###date###object(object##detailClass(d)), prefix###dataDate##detailClass(d) PERSISTENT;
+    prefix###dataTime##detailClass =  ABSTRACT TIME (detailClass);
+    prefix###time##detailClass 'Время'##caption (d) = OVERRIDE prefix###time###object(object##detailClass(d)), prefix###dataTime##detailClass(d) PERSISTENT;
+    prefix###dateTime##detailClass 'Дата/время'##caption (d) = dateTimeToDateTime(prefix###date##detailClass(d), prefix###time##detailClass(d)) PERSISTENT;
+END
+
+META defineDocumentInterfaceDetailDataTimePrefix (object, detailClass, prefix, caption)
+    @defineDocumentAbstractDetailDataTimePrefix(object, detailClass, prefix, caption);
+    @defineDocumentDetailDataTimePrefix(user###object, User##detailClass, prefix, caption);
+    prefix###dataDate##detailClass (d) += prefix###dataDate###user##detailClass (d);
+    prefix###dataTime##detailClass (d) += prefix###dataTime###user##detailClass (d);
+END
+
+META defineDocumentInterfaceDetailDataTimePrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailDataTimePrefix(object, ###object##Detail, prefix, caption);
+END
+
+META defineDocumentInterfaceDataTimePrefix (object, prefix, caption)
+    @defineDocumentInterfaceHeaderTimePrefix(###object, prefix, caption);
+    @defineDocumentInterfaceDetailDataTimePrefix(object, prefix, caption);
+END
+
+META defineDocumentDataTimePrefix (object, detailClass, prefix, caption)
+    @defineDocumentHeaderTimePrefix(###object, prefix, caption);
+    @defineDocumentDetailDataTimePrefix (object, detailClass, prefix, caption);
+END
+
+META defineDocumentDataTimePrefix (object, prefix, caption)
+    @defineDocumentDataTimePrefix (object, ###object##Detail, prefix, caption);
+END
+
+//-- Дата
+META defineDocumentHeaderDatePrefix (objectClass, prefix, caption)
+    prefix###date##objectClass 'Дата'##caption = DATA DATE (objectClass) IN documentHeaderGroup;
+END
+META defineDocumentAbstractHeaderDatePrefix (objectClass, prefix, caption)
+    prefix###date##objectClass 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeaderGroup PERSISTENT;
+END
+META defineDocumentInterfaceHeaderDatePrefix(objectClass, prefix, caption)
+    @defineDocumentAbstractHeaderDatePrefix(objectClass, prefix, caption);
+    @defineDocumentHeaderDatePrefix(User##objectClass, prefix, caption);
+    prefix###date##objectClass(o) += prefix###date###user##objectClass(o);
+END
+META defineDocumentDetailDatePrefix (object, detailClass, prefix, caption)
+    prefix###date##detailClass 'Дата'##caption (d) = prefix###date###object(object##detailClass(d)) PERSISTENT;
+END
+META defineDocumentInterfaceDetailDatePrefix (object, detailClass, prefix, caption)
+    @defineDocumentDetailDatePrefix(object, detailClass, prefix, caption);
+    @defineDocumentDetailDatePrefix(user###object, User##detailClass, prefix, caption);
+END
+META defineDocumentInterfaceDetailDatePrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailDatePrefix(object, ###object##Detail, prefix, caption);
+END
+
+META defineDocumentInterfaceDatePrefix (object, prefix, caption)
+    @defineDocumentInterfaceHeaderDatePrefix(###object, prefix, caption);
+    @defineDocumentInterfaceDetailDatePrefix(object, prefix, caption);
+END
+
+// Примечание
+META defineDocumentHeaderNote (objectClass)
+    note##objectClass 'Примечание' = DATA STRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup PERSISTENT;
+END
+META defineDocumentAbstractHeaderNote (objectClass)
+    note##objectClass 'Примечание' = ABSTRACT STRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup PERSISTENT;
+END
+META defineDocumentInterfaceHeaderNote(objectClass)
+    @defineDocumentAbstractHeaderNote(objectClass);
+    @defineDocumentHeaderNote(User##objectClass);
+    note##objectClass(o) += note##User##objectClass(o);
+END
+
+META defineDocumentDetailNote (detailClass)
+    note##detailClass 'Примечание' = DATA STRING[100] (detailClass) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+END
+META defineDocumentAbstractDetailNote (detailClass)
+    note##detailClass 'Примечание' = ABSTRACT STRING[100] (detailClass) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+END
+META defineDocumentInterfaceDetailNote(detailClass)
+    @defineDocumentAbstractDetailNote(detailClass);
+    @defineDocumentDetailNote(User##detailClass);
+    note##detailClass(d) += note##User##detailClass(d);
+END
+
+// Posted
+META defineDocumentHeaderPosted(objectClass)
+    isDraft##objectClass 'Не проведен' (o) = o IS objectClass AND NOT o IS objectClass##Posted PERSISTENT;
+    isPosted##objectClass 'Проведен' (o) = o IS objectClass##Posted PERSISTENT;
+
+    prePost##objectClass 'Провести' (o) = ACTION IF o IS objectClass AND NOT o IS objectClass##Posted
+                                                    THEN CHANGECLASS o TO objectClass##Posted;
+
+
+    post##objectClass 'Провести' (o) = ACTION NEWSESSION AUTOAPPLY {
+                                            IF o IS objectClass AND NOT o IS objectClass##Posted THEN CHANGECLASS o TO objectClass##Posted;
+                                       } TOOLBAR CONFIRM;
+
+    unpost##objectClass 'Распровести' (o) = ACTION NEWSESSION AUTOAPPLY {
+                                                IF o IS objectClass##Posted THEN CHANGECLASS o TO objectClass;
+                                            } TOOLBAR CONFIRM;
+END
+
+META defineDocumentAbstractHeaderPosted (objectClass)
+    isPosted##objectClass 'Проведен' (o) = ABSTRACT BOOLEAN(objectClass) PERSISTENT;
+    isDraft##objectClass 'Не проведен' (o) = o IS objectClass AND NOT isPosted##objectClass(o) PERSISTENT;
+END
+META defineDocumentInterfaceHeaderPosted (objectClass)
+    @defineDocumentAbstractHeaderPosted(objectClass);
+    @defineDocumentHeaderPosted(User##objectClass);
+    isPosted##objectClass(o) += isPostedUser##objectClass(o);
+END
+
+META defineDocumentDetailPosted (object, detailClass)
+    isPosted##detailClass 'Проведен' (d) = isPosted###object(object##detailClass(d));
+    isNotPosted##detailClass 'Не проведен' (d) = d IS detailClass AND NOT isPosted##detailClass(d);
+END
+
+META defineDocumentDetailPosted (object)
+    @defineDocumentDetailPosted(object, ###object##Detail);
+END
+
+META defineDocumentPosted (object)
+    @defineDocumentHeaderPosted(###object);
+    @defineDocumentDetailPosted(object);
+END
+META defineDocumentAbstractPosted (object)
+    @defineDocumentAbstractHeaderPosted(###object);
+    @defineDocumentDetailPosted(object);
+END
+META defineDocumentInterfacePosted (object)
+    @defineDocumentInterfaceHeaderPosted(###object);
+    @defineDocumentDetailPosted(object);
+    @defineDocumentDetailPosted(user###object);
+END
+
+// Closed
+META defineDocumentHeaderClosed (objectClass)
+    isClosed##objectClass 'Закрыт' = DATA BOOLEAN (objectClass);
+    isOpened##objectClass 'Не закрыт' (o) = isPosted##objectClass(o) AND NOT isClosed##objectClass(o) PERSISTENT;
+
+    close##objectClass 'Закрыть' (o) = ACTION NEWSESSION AUTOAPPLY {
+                                            IF isPosted##objectClass(o) AND NOT isClosed##objectClass(o) THEN SET isClosed##objectClass(o) <- TRUE;
+                                       } TOOLBAR CONFIRM;
+
+    open##objectClass 'Открыть' (o) = ACTION NEWSESSION AUTOAPPLY {
+                                            IF isClosed##objectClass(o) THEN SET isClosed##objectClass(o) <- NULL;
+                                      } TOOLBAR CONFIRM;
+END
+
+META defineDocumentAbstractHeaderClosed (objectClass)
+    isClosed##objectClass 'Закрыт' = ABSTRACT BOOLEAN(objectClass) PERSISTENT;
+    isOpened##objectClass 'Не закрыт' (o) = o IS objectClass AND NOT isClosed##objectClass(o) PERSISTENT;
+END
+
+META defineDocumentInterfaceHeaderClosed (objectClass)
+    @defineDocumentAbstractHeaderClosed(objectClass);
+    @defineDocumentHeaderClosed(User##objectClass);
+    isClosed##objectClass(o) += isClosedUser##objectClass(o);
+END
+
+META defineDocumentDetailClosed (object, detailClass)
+    isClosed##detailClass 'Закрыт' (d) = isClosed###object(object##detailClass(d));
+    isOpened##detailClass 'Не закрыт' (d) = isPosted##detailClass(d) AND NOT isClosed##detailClass(d);
+END
+
+META defineDocumentDetailClosed (object)
+    @defineDocumentDetailClosed(object, ###object##Detail);
+END
+
+META defineDocumentClosed (object)
+    @defineDocumentHeaderClosed(###object);
+    @defineDocumentDetailClosed(object);
+END
+META defineDocumentAbstractClosed (object)
+    @defineDocumentAbstractHeaderClosed(###object);
+    @defineDocumentDetailClosed(object);
+END
+META defineDocumentInterfaceClosed (object)
+    @defineDocumentInterfaceHeaderClosed(###object);
+    @defineDocumentDetailClosed(object);
+END
+
+
+// Index
+META defineDocumentDetailIndex (object, detailClass, group)
+    index##detailClass 'Номер строки' (d) =
+        PARTITION SUM 1 BY object##detailClass(d)
+        ORDER d IN group MINCHARWIDTH 4 PREFCHARWIDTH 4;
+END
+
+META defineDocumentDetailIndex (object, detailClass)
+    @defineDocumentDetailIndex(object, detailClass, base);
+END
+META defineDocumentInterfaceDetailIndex (object, detailClass)
+    @defineDocumentDetailIndex(object, detailClass);
+    @defineDocumentDetailIndex(user###object, User##detailClass, recognize);
+END
+
+META defineDocumentDetailIndex (object)
+    @defineDocumentDetailIndex(object, ###object##Detail);
+END
+META defineDocumentInterfaceDetailIndex (object)
+    @defineDocumentInterfaceDetailIndex(object, ###object##Detail);
+END
+
+// Action'ы
+META defineDocumentDetailActionsCustom (object, detailClass)
+    delete##detailClass###object 'Очистить' = ACTION (o) {
+        //FOR object##detailClass (d) == o DO {
+        DELETE d WHERE object##detailClass (d) == o;
+        //}
+    } IN documentPrmGroup TOOLBAR CONFIRM;
+END
+
+META defineDocumentDetailActions (object, detailClass)
+    delete##detailClass###object 'Очистить' = ACTION (o) {
+        //FOR object##detailClass (d) == o DO {
+        DELETE d WHERE object##detailClass (d) == o;
+        //}
+    } IN documentPrmGroup TOOLBAR CONFIRM;
+END
+
+META defineDocumentDetailActions (object)
+    @defineDocumentDetailActions(object, ###object##Detail);
+END
+
+// ------- Number ----- //
+
+META defineDocumentAbstractHeaderNumber(objectClass)
+    number##objectClass 'Номер' = ABSTRACT STRING[18] (objectClass) IN base MINCHARWIDTH 7 PERSISTENT;
+    series##objectClass 'Серия' = ABSTRACT STRING[2] (objectClass) IN base FIXEDCHARWIDTH 3 PERSISTENT;
+    seriesNumber##objectClass 'Серия/Номер' (o) = ustring2(series##objectClass(o), number##objectClass(o)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+END
+META defineDocumentInterfaceHeaderNumber(objectClass)
+    @defineDocumentAbstractHeaderNumber(objectClass);
+    number##objectClass(o) += numberObject(o) IF o IS User##objectClass;
+    series##objectClass(o) += seriesObject(o) IF o IS User##objectClass;
+END
+
+META defineDocumentDetailNumber (object, detailClass, group)
+    number##detailClass 'Номер' (d) = numberObject(object##detailClass(d)) IN group;
+    series##detailClass 'Серия' (d) = seriesObject(object##detailClass(d)) IN group;
+    seriesNumber##detailClass 'Серия/номер' (d) = seriesNumberObject(object##detailClass(d));
+END
+
+META defineDocumentDetailNumber (object, detailClass)
+    number##detailClass 'Номер' (d) = numberObject(object##detailClass(d));
+    series##detailClass 'Серия' (d) = seriesObject(object##detailClass(d));
+    seriesNumber##detailClass 'Серия/номер' (d) = seriesNumberObject(object##detailClass(d));
+END
+
+META defineDocumentDetailNumber (object)
+    @defineDocumentDetailNumber(object, ###object##Detail);
+END
+
+META defineDocumentAbstractNumber(object, detailClass)
+    @defineDocumentAbstractHeaderNumber(###object);
+    @defineDocumentDetailNumber(object, detailClass);
+END
+META defineDocumentInterfaceNumber(object, detailClass)
+    @defineDocumentInterfaceHeaderNumber(###object);
+    @defineDocumentDetailNumber(object, detailClass);
+    @defineDocumentDetailNumber(user###object, User##detailClass, recognize);
+END
+
+META defineDocumentAbstractNumber(object)
+    @defineDocumentAbstractNumber(object, ###object##Detail);
+END
+META defineDocumentInterfaceNumber(object)
+    @defineDocumentInterfaceNumber(object, ###object##Detail);
+END
+
+// -- Skip -- //
+META defineDocumentHeaderSkip(objectClass, postfix, caption)
+    skip###postfix##objectClass caption = DATA BOOLEAN(objectClass) IN documentPrmGroup;
+END
+META defineDocumentAbstractHeaderSkip(objectClass, postfix, caption)
+    skip###postfix##objectClass caption = ABSTRACT BOOLEAN(objectClass);
+END
+
+META defineDocumentInterfaceHeaderSkip(objectClass, postfix, caption)
+    @defineDocumentAbstractHeaderSkip (objectClass, postfix, caption);
+    @defineDocumentHeaderSkip (User##objectClass, postfix, caption);
+    skip###postfix##objectClass (o) += skip###postfix###user##objectClass(o);
+END
+
+META defineDocumentDetailSkip(object, detailClass, postfix, caption)
+    skip###postfix##detailClass caption (d) = skip###postfix###object(object##detailClass(d));
+END
+META defineDocumentDetailSkip(object, postfix, caption)
+    @defineDocumentDetailSkip(object, ###object##Detail, postfix, caption);
+END
+META defineDocumentInterfaceDetailSkip (object, detailClass, postfix, caption)
+    @defineDocumentDetailSkip(object, detailClass, postfix, caption);
+    @defineDocumentDetailSkip(user###object, User##detailClass, postfix, caption);
+END
+META defineDocumentInterfaceDetailSkip(object, postfix, caption)
+    @defineDocumentInterfaceDetailSkip(object, ###object##Detail, postfix, caption);
+END
+
+// ----- Description ----- //
+META defineDocumentHeaderDescription(objectClass, numberProp, caption)
+    description##objectClass 'Название документа' (o) =
+        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
+        caption, numberProp(o), date##objectClass(o)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+END
+META defineDocumentAbstractHeaderDescription(objectClass)
+    description##objectClass 'Название документа' = ABSTRACT STRING[200] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+END
+META defineDocumentInterfaceHeaderDescription(objectClass, numberProp, caption)
+    @defineDocumentAbstractHeaderDescription(objectClass);
+    @defineDocumentHeaderDescription(User##objectClass, numberProp, caption);
+    description##objectClass (o) += descriptionUser##objectClass(o);
+END
+
+META defineDocumentHeaderDescription(objectClass, caption)
+    @defineDocumentHeaderDescription(objectClass, seriesNumberObject, caption);
+END
+META defineDocumentInterfaceHeaderDescription(objectClass, caption)
+    @defineDocumentInterfaceHeaderDescription(objectClass, seriesNumberObject, caption);
+END
+
+META defineDocumentDetailDescription(object, detailClass)
+    description##detailClass 'Название документа' (d) = description###object(object##detailClass(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+    descriptionIndex##detailClass 'Название документа' (d) =
+        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
+            description##detailClass(d),
+            index##detailClass(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+END
+
+META defineDocumentDescription(object, detailClass, numberProp, caption)
+    @defineDocumentHeaderDescription(###object, numberProp, caption);
+    @defineDocumentDetailDescription(object, detailClass);
+END
+META defineDocumentAbstractDescription(object, detailClass)
+    @defineDocumentAbstractHeaderDescription(###object);
+    @defineDocumentDetailDescription(object, detailClass);
+END
+META defineDocumentInterfaceDescription(object, detailClass, numberProp, caption)
+    @defineDocumentInterfaceHeaderDescription(###object, numberProp, caption);
+    @defineDocumentDetailDescription(object, detailClass);
+    @defineDocumentDetailDescription(user###object, User##detailClass);
+END
+
+META defineDocumentDescription (object, caption)
+    @defineDocumentDescription(object, ###object##Detail, seriesNumberObject, caption);
+END
+META defineDocumentAbstractDescription (object)
+    @defineDocumentAbstractDescription(object, ###object##Detail);
+END
+META defineDocumentInterfaceDescription (object, caption)
+    @defineDocumentInterfaceDescription(object, ###object##Detail, seriesNumberObject, caption);
+END
+
+// ----- Is ----- //
+META defineDocumentIs(objectClass, detailClass)
+    is##objectClass (o) = o IS objectClass;
+    is##detailClass (i) = i IS detailClass;
+END
+META defineDocumentInterfaceIs(objectClass, detailClass)
+    @defineDocumentIs(objectClass, detailClass);
+    @defineDocumentIs(User##objectClass, User##detailClass);
+END
+
+META defineDocumentIs(objectClass)
+    @defineDocumentIs(objectClass, objectClass##Detail);
+END
+META defineDocumentInterfaceIs(objectClass)
+    @defineDocumentInterfaceIs(objectClass, objectClass##Detail);
+END
+
+META defineDocument (object)
+    @defineDocumentTables(object);
+
+    @defineDocumentRelation(object);
+    @defineDocumentDetailIndex(object);
+
+    @defineDocumentTime(object);
+    @defineDocumentHeaderNote(###object);
+
+    @defineDocumentIs(###object);
+
+    @defineDocumentDetailActions(object);
+END
+META defineDocumentAbstract (object)
+    @defineDocumentTables(object);
+
+    @defineDocumentAbstractRelation(object);
+    @defineDocumentDetailIndex(object);
+
+    @defineDocumentAbstractTime(object);
+    @defineDocumentAbstractHeaderNote(###object);
+
+    @defineDocumentIs(###object);
+END
+META defineDocumentInterface (object)
+    @defineDocumentInterfaceTables(object);
+
+    @defineDocumentInterfaceRelation(object);
+    @defineDocumentInterfaceDetailIndex(object);
+
+    @defineDocumentInterfaceTime(object);
+    @defineDocumentInterfaceHeaderNote(###object);
+
+    @defineDocumentInterfaceIs(###object);
+
+    @defineDocumentDetailActions(user###object);
+END
+
+// ------------------------- Основной - агрегированный документы ---------------------------------- //
+
+META defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty)
+    @defineAggregation (primObject, aggrObject, aggrProperty);
+    @defineDocumentAggregationHeaderNote(primObject, aggrObject);
+    @defineDocumentAggregationHeaderTime(primObject, aggrObject);
+END
+
+META defineDocumentAggregationDetail (primObject, aggrObject, aggrProperty)
+    @defineAggregation(primObject##Detail, aggrObject##Detail, aggrProperty##Detail);
+    aggrObject###aggrObject##Detail (detail) = aggrObject###primObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
+
+    @defineDocumentAggregationDetailTime(primObject, aggrObject);
+END
+
+META defineDocumentAggregation (primObject, aggrObject, aggrProperty)
+    @defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty);
+    @defineDocumentAggregationDetail(primObject, aggrObject, aggrProperty);
+    @defineDocumentHeaderCount(aggrObject);
+END
+
+// Time
+META defineDocumentAggregationHeaderTimePrefix (primObject, aggrObject, prefix)
+    prefix###date###aggrObject 'Дата' (o) = prefix###date###primObject(primObject###aggrObject(o));
+    prefix###time###aggrObject 'Время' (o) = prefix###time###primObject(primObject###aggrObject(o));
+    prefix###dateTime###aggrObject 'Дата/время' (o) = prefix###dateTime###primObject(primObject###aggrObject(o));
+END
+
+META defineDocumentAggregationDetailTimePrefix (primObject, aggrObject, prefix)
+    prefix###date###aggrObject##Detail 'Дата' (d) = prefix###date###primObject##Detail(primObject##Detail###aggrObject##Detail(d));
+    prefix###time###aggrObject##Detail 'Время' (d) = prefix###time###primObject##Detail(primObject##Detail###aggrObject##Detail(d));
+    prefix###dateTime###aggrObject##Detail 'Дата/время' (d) = prefix###dateTime###primObject##Detail(primObject##Detail###aggrObject##Detail(d));
+END
+
+META defineDocumentAggregationTimePrefix (primObject, aggrObject, prefix)
+    @defineDocumentAggregationHeaderTimePrefix(primObject, aggrObject, prefix);
+    @defineDocumentAggregationDetailTimePrefix(primObject, aggrObject, prefix);
+END
+
+META defineDocumentAggregationHeaderTime (primObject, aggrObject)
+    @defineDocumentAggregationHeaderTimePrefix(primObject, aggrObject, );
+END
+
+META defineDocumentAggregationDetailTime (primObject, aggrObject)
+    @defineDocumentAggregationDetailTimePrefix(primObject, aggrObject, );
+END
+
+META defineDocumentAggregationTime (primObject, aggrObject)
+    @defineDocumentAggregationTimePrefix(primObject, aggrObject, );
+END
+
+// Posted
+META defineDocumentAggregationHeaderPosted (primObject, aggrObject)
+    isPosted###aggrObject 'Проведен' (o) = isPosted###primObject(primObject###aggrObject(o));
+END
+
+META defineDocumentAggregationDetailPosted (primObject, aggrObject)
+    isPosted###aggrObject##Detail 'Проведен' (o) = isPosted###primObject##Detail(primObject##Detail###aggrObject##Detail(o));
+END
+
+META defineDocumentAggregationPosted (primObject, aggrObject)
+    @defineDocumentAggregationHeaderPosted(primObject, aggrObject);
+    @defineDocumentAggregationDetailPosted(primObject, aggrObject);
+END
+
+// Note
+META defineDocumentAggregationHeaderNote (primObject, aggrObject)
+    note###aggrObject 'Примечание' (o) = note###primObject(primObject###aggrObject(o));
+END
+
+// Number
+META defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, suffix)
+    number###aggrObject 'Номер документа' (o) = number###suffix(primObject###aggrObject(o)) IN recognize;
+    series###aggrObject 'Серия документа' (o) = series###suffix(primObject###aggrObject(o)) IN recognize;
+    seriesNumber###aggrObject 'Серия/номер документ' (o) = seriesNumber###suffix(primObject###aggrObject(o));
+END
+
+META defineDocumentAggregationHeaderNumber (primObject, aggrObject)
+    @defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, Object);
+END
+
+META deriveDocumentAggregationHeaderNumber (primObject, aggrObject)
+    initValueNumberObject (o) += [PREV(numberObject(o))](primObject###aggrObject(o));
+    initValueSeriesObject (o) += [PREV(seriesObject(o))](primObject###aggrObject(o));
+
+    initWhenNumberedObject(o) += CHANGED(primObject###aggrObject(o));
+END
+
+// Description
+META defineDocumentAggregationHeaderDescription (primObject, aggrObject)
+    description###aggrObject 'Название документа' (o) = description###primObject(primObject###aggrObject(o));
+END

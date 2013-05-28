@@ -1,0 +1,7 @@
+platform\gwt\cellview package contains patched version of com\google\gwt\user\cellview package from GWT-2.5.0.
+
+Patched files:
+    com\google\gwt\user\cellview\client\AbstractCellTable.java
+    com\google\gwt\user\cellview\client\AbstractHasData.java
+    com\google\gwt\user\cellview\client\DataGrid.java
+    com\google\gwt\user\cellview\client\HasDataPresenter.java

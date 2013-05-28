@@ -1,0 +1,23 @@
+MODULE WriteOffOperation;
+
+REQUIRE Operation, LegalEntity;
+
+NAMESPACE WriteOff;
+
+@defineOperation(' (списание)');
+
+@defineOperationRole();
+@extendFormFilterRole(o, dialogOperations);
+//@extendFormFilterRole(o, operations);     //-- пока не нужен
+
+EXTEND DESIGN operation{
+    tabContainer {
+        NEW createContainer {
+            caption = 'Производные документы';
+        }
+        NEW showContainer {
+            caption = 'Отображение свойств';
+        }
+    }
+}
+

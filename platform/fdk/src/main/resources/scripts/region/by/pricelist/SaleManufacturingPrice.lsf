@@ -1,0 +1,41 @@
+MODULE SaleManufacturingPrice;
+
+REQUIRE SaleInvoice, PricingSale, PricingManufacturingPrice, PriceListLedger;
+
+NAMESPACE Sale;
+
+@defineDocumentInterfaceCreate (invoice, showManufacturingPrice, 'Цена изготовителя');
+
+// -- Операция
+@defineOperationProperty(showManufacturingPrice, 'Цена изготовителя', showContainer);
+@deriveDocumentOperationProperty(UserInvoice, showManufacturingPrice);
+
+@defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, manufacturing, ' изготовителя');
+
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, supplierStock);
+
+wholesaleMarkupInvoiceDetail 'Оптовая надбавка' (detail) = round2([(X/Y-1)*100](priceInvoiceDetail(detail),manufacturingPriceInvoiceDetail(detail)));
+wholesaleMarkupUserInvoiceDetail 'Оптовая надбавка' (detail) = round2([(X/Y-1)*100](priceUserInvoiceDetail(detail),manufacturingPriceUserInvoiceDetail(detail)));
+
+EXTEND FORM userInvoice
+    PROPERTIES(i)  showManufacturingPriceUserInvoice
+    PROPERTIES(d)  SHOWIF showManufacturingPriceUserInvoice(i) AFTER invoiceSumUserInvoiceDetail  wholesaleMarkupUserInvoiceDetail READONLY, manufacturingPriceUserInvoiceDetail
+;
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerManufacturing {
+            title = 'Цена изготовителя';
+            ADD PROPERTY(showManufacturingPriceUserInvoice);
+        }
+    }
+}
+
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY showManufacturingPriceInvoice
+    PROPERTIES(d) READONLY  SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail wholesaleMarkupInvoiceDetail, manufacturingPriceInvoiceDetail
+;
+
+overPricingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));
+overPricingPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail);
+
+manufacturingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));

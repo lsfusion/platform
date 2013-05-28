@@ -1,0 +1,112 @@
+MODULE SaleReturnInvoice;
+
+REQUIRE OrderInvoice, SaleReturnOrder, SaleInvoice, SaleOperation;
+
+PRIORITY Sale, Operation;
+
+NAMESPACE SaleReturn;
+
+//----------------------------------------------- Накладная ---------------------------------------------------//
+@defineInvoice(' (продажа-возврат)', supplierStock);
+@defineOrderInvoice(' (продажа-возврат)', supplierStock);
+@defineOrderInvoiceAction (' (продажа-возврат)');
+@defineInvoiceBatch(supplierStock);
+
+@defineDocumentBatchPriceListType(userInvoice, supplierStock);
+@extendFormDocumentBatch(userInvoice, userInvoice, i);
+@extendFormDocumentBatchAll(userInvoice, userInvoice, i);
+
+@defineInvoiceReturn(Sale, SaleReturn, supplierStock);
+@defineInvoiceDestination(customer, supplier);
+@defineInvoiceStockDestination(customerStock, supplierStock);
+
+@defineDocumentSkuStockSupplier (userInvoice, userInvoice, i, row1);
+@defineDocumentBatchStockSupplier(userInvoice, userInvoice, i);
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineDocumentOperation(invoice, i);
+@defineDocumentOperationPriceListType(userInvoice, 'накладной (продажа-возврат)');
+@defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
+@defineDocumentOperationRole(userInvoice);
+
+//------------------------------ Ограничение на выбор контрагентов -----------------------------//
+
+CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(supplierUserInvoice(userInvoice))
+    CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся компанией: возврат';
+CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCustomerLegalEntity(customerUserInvoice(userInvoice))
+    CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя организация, не являющаяся покупателем: возврат';
+
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+@defineDocumentSupplierCustomerStockAccess(UserInvoice, company, customer, userInvoice);
+
+//------------------------------ Ввод в упаковках -----------------------------//
+
+@defineDocumentPack(invoice, i);
+Invoice.packQuantityInvoiceDetail(detail) += packQuantityInvoiceDetail(detail);
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerPack {
+            title = 'Упаковка';
+            ADD PROPERTY(showPackUserInvoice);
+        }
+    }
+}
+
+@defineOrderInvoicePack(showPack);
+
+@defineDocumentPackSku(userInvoice, sku, supplierStock);
+@extendFormDocumentPackSku(userInvoice, userInvoice, i);
+
+overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
+    IF  packBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
+        SET packQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+    }
+}
+overChangeQuantityValueBatchUserInvoiceDetail(detail) += ACTION (detail) {
+    IF packBarcodeSku(skuBatch(batchUserInvoiceDetail(detail))) THEN {
+        SET packQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+    }
+}
+
+// -- Операция
+@deriveDocumentOperationProperty(UserInvoice, showPack);
+
+//------------------------------ Расширение формы -----------------------------//
+
+// Фильтры
+inUserInvoiceSku (userInvoice, sku)= inCustomerSku(customerUserInvoice(userInvoice), sku);
+EXTEND FORM userInvoice
+
+    FILTERGROUP filter
+        FILTER 'С остатком ' 'F10' prevCurrentBalanceSkuUserInvoice(ks, i)
+        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailSkuUserInvoice(ks, i)
+
+    FILTERGROUP filter2
+        FILTER 'С продажей ' 'F8' inUserInvoiceSku(i, ks)
+        FILTER 'В ассортименте' 'F7' ledgerPriceSkuUserInvoice(ks, i)
+;
+inUserInvoiceBatch (userInvoice, batch)= inCustomerSku(customerUserInvoice(userInvoice), skuBatch(batch));
+EXTEND FORM userInvoice
+
+    FILTERGROUP filter3
+        FILTER 'С остатком ' 'F10' prevCurrentBalanceBatchUserInvoice(b,i)
+        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailBatchUserInvoice(b,i)
+
+    FILTERGROUP filter4
+        FILTER 'С продажей ' 'F8' inUserInvoiceBatch(i,b)
+        FILTER 'В ассортименте' 'F7' ledgerPriceBatchUserInvoice(b, i)
+
+;
+
+// Резервы
+@extendFormDocumentOrderLedger(userInvoice, userInvoice, supplierStock, i);
+@extendFormDocumentOrderLedgerAll(userInvoice, userInvoice, i);
+
+NAVIGATOR {
+    saleReturnNavigator {
+        ADD invoices;
+    }
+}

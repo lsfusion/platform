@@ -1,0 +1,34 @@
+MODULE CurrencyRu;
+
+REQUIRE System, Currency;
+
+NAMESPACE Currency;
+
+extraSIDCurrency 'Внешний код' = DATA STRING[6] (Currency);
+currencyExtraSID (string) = GROUP AGGR currency BY extraSIDCurrency(currency) WHERE currency IS Currency;
+
+EXTEND FORM currency PROPERTIES (c) extraSIDCurrency;
+
+EXTEND FORM currencies PROPERTIES(c) READONLY extraSIDCurrency;
+
+// --------------------------------------------------- Стандартные значения ------------------------------------ //
+
+loadDefaultCurrencyRu 'Добавить код' = ACTION (iShortName, iExtraSID) {
+    FOR c == currencyShortName(iShortName) DO {
+       SET extraSIDCurrency(c) <- iExtraSID;
+    }
+}
+
+loadDefaultCurrenciesRu 'Загрузить коды валют' = ACTION () {
+    EXEC loadDefaultCurrencyRu('UAH', 'R01720');
+    EXEC loadDefaultCurrencyRu('USD', 'R01235');
+    EXEC loadDefaultCurrencyRu('EUR', 'R01239');
+    EXEC loadDefaultCurrencyRu('PLN', 'R01565');
+    EXEC loadDefaultCurrencyRu('LVL', 'R01405');
+    EXEC loadDefaultCurrencyRu('LTL', 'R01435');
+    EXEC loadDefaultCurrencyRu('BLR', 'R01090');
+    EXEC loadDefaultCurrencyRu('GBP', 'R01035');
+    EXEC loadDefaultCurrencyRu('CHF', 'R01775');
+} IN loadDefaultGroup;
+
+overLoadDefaultCurrencies() += loadDefaultCurrenciesRu();

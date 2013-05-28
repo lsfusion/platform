@@ -1,0 +1,16 @@
+MODULE ImportTNVED;
+
+REQUIRE Import;
+
+
+//---------------------------------------------- Импорт ТНВЭД -----------------------------------------------------//
+
+GROUP tnvedGroup 'ТНВЭД' : public;
+
+importTNVEDClassifierAction 'Импортировать справочник' = ACTION CUSTOM 'fdk.region.by.customs.ImportTNVEDClassifierActionProperty' IN tnvedGroup;
+importTNVEDCustomsRatesAction 'Импортировать платежи' = ACTION CUSTOM 'fdk.region.by.customs.ImportTNVEDCustomsRatesActionProperty' IN tnvedGroup;
+
+EXTEND FORM customsGroups
+    PROPERTIES() importTNVEDClassifierAction TODRAW gcg TOOLBAR,
+                 importTNVEDCustomsRatesAction TODRAW cg TOOLBAR
+;

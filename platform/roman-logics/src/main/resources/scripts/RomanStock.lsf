@@ -1,0 +1,193 @@
+MODULE RomanStock;
+
+REQUIRE StockBy, Warehouse, Barcode, RomanLogicsModule, Contract, RomanMasterData, I18n;
+
+PRIORITY Stock, RomanLogicsModule;
+
+EXTEND FORM dialogSku
+    PROPERTIES(s) READONLY FORCE GRID nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
+                             sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem
+;
+
+nameCategoryArticleSkuLanguage 'Наименование (иностр.)' (sku, language) =
+    languageName(categoryArticleSku(sku), language);
+
+// implement абстрактных свойств
+descriptionItem 'Наименование' (item) =
+        [FORMULA STRING[200] ' CAST($1 AS TEXT) || \'/\' || CAST($2 AS TEXT) || \'/\' || CAST($3 AS TEXT) || \' (\' || CAST($4 AS TEXT) || \', \' || CAST($5 AS TEXT) || \')\''](
+        sidArticleSku(item), sidColorSupplierItem(item), sidSizeSupplierItem(item), nameCategoryArticleSku(item), nameBrandSupplierArticleSku(item));
+
+descriptionItemLanguage 'Наименование (иностр.)' (item, language) =
+        [FORMULA STRING[200] ' CAST($1 AS TEXT) || \'/\' || CAST($2 AS TEXT) || \'/\' || CAST($3 AS TEXT) || \' (\' || CAST($4 AS TEXT) || \', \' || CAST($5 AS TEXT) || \')\''](
+        sidArticleSku(item), sidColorSupplierItem(item), sidSizeSupplierItem(item) , nameCategoryArticleSkuLanguage(item, language), nameBrandSupplierArticleSku(item));
+
+nameSku(sku) += descriptionItem (sku);
+nameSkuLanguage(sku, language) += descriptionItemLanguage(sku, language);
+
+// Единицы измерения
+UOMSku (sku) += unitOfMeasureArticleSku (sku);
+
+EXTEND FORM UOM
+    PROPERTIES(u) nameOrigin, sidUnitOfMeasure
+;
+
+EXTEND FORM UOMs
+    PROPERTIES(u) READONLY FORCE GRID nameOrigin, sidUnitOfMeasure
+;
+
+// объявляем группы sku
+parentSkuGroup (skuGroup) += parentCategory(skuGroup);
+nameSkuGroupLanguage(skuGroup, language) += languageName(skuGroup, language) IF skuGroup IS Category;
+
+skuGroupSku (sku) += categoryArticleSku(sku);
+
+// добавляем еще один регистр (бухгалтерский)
+@defineSkuLedgerBalanceProperties(A, ' (бухг.)');
+
+EXTEND FORM currentBalanceSkuStock
+    PROPERTIES(s, st) READONLY currentBalanceASkuStock AFTER currentBalanceSkuStock, averagePriceASkuStock AFTER averagePriceSkuStock, currentSumASkuStock AFTER currentSumSkuStock
+    PROPERTIES(bil) READONLY skipASkuLedger AFTER skipSkuLedger
+    PROPERTIES(bt, st) READONLY currentBalanceABatchStock AFTER currentBalanceBatchStock
+;
+
+EXTEND FORM currentBalanceBatchStock
+    PROPERTIES(bil) READONLY skipASkuLedger AFTER skipSkuLedger
+    PROPERTIES(bt, st) READONLY currentBalanceABatchStock AFTER currentBalanceBatchStock
+;
+
+TABLE articleStock (Article, Stock);
+TABLE articleStockDate(Article, Stock, DATE);
+TABLE articleDate(Article, DATE);
+
+currentBalanceArticleStock 'Тек. остаток' = GROUP SUM currentBalanceSkuStock(sku, stock) BY articleSku(sku), stock PERSISTENT;
+currentBalanceArticle 'Тек. остаток' = GROUP SUM currentBalanceArticleStock(article, stock) BY article PERSISTENT;
+
+balanceBArticleDate 'Остаток на начало дня' (article, date) = GROUP SUM balanceBSkuStockDate(sku, stock, date) BY articleSku(sku), date;
+balanceAArticleDate 'Остаток на конец дня' (article, date) = GROUP SUM balanceASkuStockDate(sku, stock, date) BY articleSku(sku), date;
+
+// создаем разные типы партий (бухгалтерские, управленческие)
+//CLASS batchType {
+//    batchTypeA 'Бухгалтерская',
+//    batchTypeB 'Управленческая'
+//} : Named;
+
+//orderABatchType (type) = IF type == batchType.batchTypeA THEN 0 IF type == batchType.batchTypeA ELSE 1 IF type IS BatchType PERSISTENT;
+//orderBBatchType (type) = IF type == batchType.batchTypeB THEN 0 IF type == batchType.batchTypeB ELSE 1 IF type IS BatchType PERSISTENT;
+//
+//batchTypeBatch = ABSTRACT BatchType (Batch) PERSISTENT;
+//nameBatchTypeBatch 'Тип партии' (batch) = name(batchTypeBatch(batch)) IN base;
+
+//orderABatch (batch) = orderABatchType(batchTypeBatch(batch)) PERSISTENT;
+//orderBBatch (batch) = orderBBatchType(batchTypeBatch(batch)) PERSISTENT;
+
+//META implementABatch (concrete, skuProp)
+//    @implementBatch(concrete, skuProp);
+//    batchTypeBatch (batch) += batchType.batchTypeA IF batch IS Concrete##Detail;
+//END
+//
+//META implementBBatch (concrete, skuProp)
+//    @implementBatch(concrete, skuProp);
+//    batchTypeBatch (batch) += batchType.batchTypeB IF batch IS Concrete##Detail;
+//END
+
+CLASS ABSTRACT BatchA 'Бухгалтерская партия' : Batch;
+CLASS ABSTRACT BatchB 'Управленческая партия' : Batch;
+
+typeBatch 'Тип партии' (batch) = IF batch IS BatchA THEN 'А' IF batch IS BatchA
+                                                    ELSE 'Б' IF batch IS BatchB FIXEDCHARWIDTH 2;
+
+orderABatch (batch) = IF batch IS BatchA THEN 0 IF batch IS BatchA ELSE 1 IF batch IS BatchB PERSISTENT;
+orderBBatch (batch) = IF batch IS BatchB THEN 0 IF batch IS BatchB ELSE 1 IF batch IS BatchA PERSISTENT;
+
+META implementSkuLedgerOutFIFOBalanceA (object, stockProp)
+    @implementSkuLedgerOutFIFOBalance (object, stockProp);
+    orderOutFIFOSkuLedgerBatch (ledger, batch) += orderABatch(batch) IF ledger IS object;
+END
+
+META implementSkuLedgerOutFIFOBalanceB (object, stockProp)
+    @implementSkuLedgerOutFIFOBalance (object, stockProp);
+    orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS object;
+END
+
+// ------------------------------------------------- Внутренние партии ----------------------------------------- //
+ownerBatchA = ABSTRACT LegalEntity(BatchA) PERSISTENT;
+nameOwnerBatchA 'Собственник' (batch) = nameLegalEntity(ownerBatchA(batch)) IN base;
+
+commissionContractSkuBatchA = ABSTRACT ContractSku (BatchA) PERSISTENT INDEXED;
+numberCommissionContractSkuBatchA 'Номер договора комиссии' (batch) = numberContract(commissionContractSkuBatchA(batch)) IN base;
+
+importerPriceBatchA 'Цена импортера' (batchA) = ABSTRACT NUMERIC[14,2] (BatchA) PERSISTENT;
+
+supplierPriceBatchA 'Цена поставщика' (batchA) = ABSTRACT NUMERIC[14,2] (BatchA) PERSISTENT;
+supplierSumSkuLedger 'Сумма поставщика' (ledger) = GROUP SUM costSkuLedgerBatch(ledger, batch) * supplierPriceBatchA(batch) BY ledger;
+
+rangeVATBatchA (batchA) = ABSTRACT Range (BatchA) PERSISTENT;
+numberSupplierVATBatchA 'НДС, номер' (batchA) = numberRange(rangeVATBatchA(batchA));
+valueSupplierVATBatchA 'НДС,%' (batchA) = valueRateRangeDate
+    (rangeVATBatchA(batchA), dateBatch(batchA));
+
+CONSTRAINT taxRange(rangeVATBatchA(batchA)) != Tax.taxVAT OR
+           countryRange(rangeVATBatchA(batchA)) != countryLegalEntity(ownerBatchA(batchA))
+           CHECKED BY rangeVATBatchA
+           MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране собственника партии';
+
+EXTEND FORM currentBalanceBatchStock
+    PROPERTIES(bt) READONLY FORCE GRID typeBatch, importerPriceBatchA, supplierPriceBatchA, numberSupplierVATBatchA, valueSupplierVATBatchA, nameOwnerBatchA
+;
+
+EXTEND FORM currentBalanceSkuStock
+    PROPERTIES(bt) READONLY FORCE GRID typeBatch, nameOwnerBatchA, importerPriceBatchA, supplierPriceBatchA
+;
+
+EXTEND FORM costSkuLedger
+    PROPERTIES(bt) READONLY importerPriceBatchA, supplierPriceBatchA, numberSupplierVATBatchA, valueSupplierVATBatchA
+;
+
+// ------------------------------------------------- Кол-во в грузовом месте ----------------------------------- //
+
+META defineDocumentDetailPackQuantityCustomPrefix (detail, skuProp, prefix, caption)
+    prefix###packQuantity###detail 'Кол-во грузовых мест'###caption (detail) = round0(quantity###detail(detail) / packQuantitySku(skuProp###detail(detail))) PERSISTENT;
+END
+META defineDocumentInterfaceDetailPackQuantityCustomPrefix (detail, skuProp, prefix, caption)
+    @defineDocumentDetailPackQuantityCustomPrefix(detail, skuProp, prefix, caption);
+    @defineDocumentDetailPackQuantityCustomPrefix (user###detail, skuProp, prefix, caption);
+    prefix###packQuantity###detail (detail) += prefix###packQuantity###user###detail(detail);
+END
+
+META defineDocumentDetailPackQuantityCustom (detail, skuProp)
+    @defineDocumentDetailPackQuantityCustomPrefix(detail, skuProp, , );
+END
+META defineDocumentInterfaceDetailPackQuantityCustom (detail, skuProp)
+    @defineDocumentInterfaceDetailPackQuantityCustomPrefix(detail, skuProp, , );
+END
+
+META defineDocumentDetailPackQuantityPrefix (object, skuProp, prefix, caption)
+    @defineDocumentDetailPackQuantityCustomPrefix(object##Detail, skuProp, prefix, caption);
+END
+META defineDocumentInterfaceDetailPackQuantityPrefix (object, skuProp, prefix, caption)
+    @defineDocumentInterfaceDetailPackQuantityCustomPrefix(object##Detail, skuProp, prefix, caption);
+END
+
+META defineDocumentDetailPackQuantity (object, skuProp)
+    @defineDocumentDetailPackQuantityPrefix(object, skuProp, , );
+END
+META defineDocumentInterfaceDetailPackQuantity (object, skuProp)
+    @defineDocumentInterfaceDetailPackQuantityPrefix(object, skuProp, , );
+END
+
+packQuantitySku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (Sku);
+Stock.netWeightSku(sku) += RomanLogicsModule.netWeightSku(sku);
+
+FORM batchADialogForm 'Партия'
+    OBJECTS ba = BatchA
+    PROPERTIES (ba) READONLY nameSkuBatch, descriptionBatch, nameOwnerBatchA, importerPriceBatchA, supplierPriceBatchA,
+                   numberSupplierVATBatchA, valueSupplierVATBatchA, currentBalanceBatch
+
+    DIALOG BatchA OBJECT ba
+;
+
+priceSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (Sku, Stock, DATETIME);
+priceBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (Batch, Stock, DATETIME);
+
+priceBatchStockDateTime(batch, stock, dateTime) += supplierPriceBatchA(batch) IF stock IS Warehouse AND dateTime IS DATETIME;
+//priceSkuStockDateTime(sku, stock, dateTime) += 155.2 IF sku IS Sku IF stock IS Warehouse AND dateTime IS DATETIME;

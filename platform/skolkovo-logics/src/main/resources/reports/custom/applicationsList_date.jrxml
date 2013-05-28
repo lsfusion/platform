@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="date" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" forecolor="#999999" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box topPadding="0" leftPadding="0" rightPadding="0">
+			<pen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<topPen lineWidth="0.0"/>
+			<leftPen lineWidth="0.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="0.0"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle1" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" markup="none" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box bottomPadding="0">
+			<topPen lineWidth="0.5" lineStyle="Solid"/>
+			<leftPen lineWidth="0.0"/>
+			<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2" spacingBefore="2" spacingAfter="2"/>
+	</style>
+	<style name="Ya" style="GroupCellStyle0" forecolor="#000000" backcolor="#FFFFFF" vAlign="Middle" markup="none" fontName="lsf.TimesNewRoman">
+		<box>
+			<topPen lineWidth="0.5" lineStyle="Solid"/>
+			<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+		</box>
+		<paragraph lineSpacing="Single" spacingBefore="2" spacingAfter="2"/>
+	</style>
+	<style name="style1" style="GroupCellStyle1" markup="styled">
+		<box>
+			<topPen lineWidth="0.5"/>
+			<leftPen lineWidth="0.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="0.0"/>
+		</box>
+	</style>
+	<field name="dateFrom" class="java.util.Date"/>
+	<field name="dateTo" class="java.util.Date"/>
+	<field name="objectValueProperty_DateClass" class="java.util.Date"/>
+	<field name="objectValueProperty_DateClass2" class="java.util.Date"/>
+	<field name="applicationsSubmitDateDate" class="java.lang.Integer"/>
+	<field name="application" class="java.lang.Integer"/>
+	<field name="dateApplication" class="java.util.Date"/>
+	<field name="nameNativeClaimerApplication" class="java.lang.String"/>
+	<field name="nameProjectActionApplication" class="java.lang.String"/>
+	<field name="nameNativeProjectApplication" class="java.lang.String"/>
+	<field name="nameStatusApplication" class="java.lang.String"/>
+	<field name="nameNativeShortAggregateClusterApplication" class="java.lang.String"/>
+	<variable name="npp" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[0]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
+	</variable>
+	<group name="designGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{dateFrom})+" "+String.valueOf($F{dateTo})]]></groupExpression>
+	</group>
+	<pageHeader>
+		<band height="63">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="33" y="45" width="45" height="18" forecolor="#FFFFFF" backcolor="#333333"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Дата"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="78" y="45" width="179" height="18" forecolor="#FFFFFF" backcolor="#333333"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Заявитель"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="257" y="45" width="72" height="18" forecolor="#FFFFFF" backcolor="#333333"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Тип заявки"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" mode="Opaque" x="329" y="45" width="247" height="18" forecolor="#FFFFFF" backcolor="#333333"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Проект"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="576" y="45" width="179" height="18" forecolor="#FFFFFF" backcolor="#333333"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Статус заявки (по регламенту)"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="755" y="45" width="47" height="18" forecolor="#FFFFFF" backcolor="#333333"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Кластер"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="45" width="33" height="18" forecolor="#FFFFFF" backcolor="#333333"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["№ п/п"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="45" y="0" width="757" height="37" forecolor="#FFFFFF" backcolor="#333333"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Приложение. Заявки, поступившие в отчетный период"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" x="15" y="0" width="11" height="37" forecolor="#FFFFFF" backcolor="#CCFF66"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" x="0" y="0" width="11" height="37" forecolor="#FFFFFF" backcolor="#CCFF66"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" x="30" y="0" width="11" height="37" forecolor="#FFFFFF" backcolor="#CCFF66"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="20" splitType="Prevent">
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
+				<reportElement style="Ya" positionType="Float" stretchType="RelativeToBandHeight" x="33" y="0" width="45" height="20"/>
+				<box bottomPadding="3">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{dateApplication}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="Ya" positionType="Float" stretchType="RelativeToBandHeight" x="78" y="0" width="179" height="20"/>
+				<box bottomPadding="3">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeClaimerApplication}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="Ya" positionType="Float" stretchType="RelativeToBandHeight" x="257" y="0" width="72" height="20"/>
+				<box bottomPadding="3">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameProjectActionApplication}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="Ya" positionType="Float" stretchType="RelativeToBandHeight" x="329" y="0" width="247" height="20"/>
+				<box bottomPadding="3">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<paragraph spacingBefore="2" spacingAfter="2"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeProjectApplication}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="Ya" positionType="Float" stretchType="RelativeToBandHeight" x="576" y="0" width="179" height="20"/>
+				<box bottomPadding="3">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameStatusApplication}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="Ya" positionType="Float" stretchType="RelativeToBandHeight" x="755" y="0" width="47" height="20"/>
+				<box bottomPadding="3">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeShortAggregateClusterApplication}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="Ya" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="33" height="20"/>
+				<box bottomPadding="3">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{npp}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

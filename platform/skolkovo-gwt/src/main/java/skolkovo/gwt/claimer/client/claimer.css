@@ -1,0 +1,29 @@
+.logoTitle {
+    font-family:Arial,Verdana,tahoma,serif;
+    color:#454545;
+    font-size:18px;
+}
+
+.hint {
+    background-color: #EEEEFF;
+    color: #505050;
+    font-style: italic;
+    padding: 0.5em;
+}
+
+.label {
+    color: #003168;
+    font-weight: bolder;
+}
+
+.constraintHint {
+    color: #77AA00;
+    font-style: italic;
+}
+
+.uploadStatusLabel {
+    /*background-color: #EEEEFF;*/
+    color: #505050;
+    font-style: italic;
+    padding: 0.5em;
+}

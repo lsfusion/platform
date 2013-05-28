@@ -1,0 +1,10 @@
+MODULE Manufacturing;
+
+REQUIRE System;
+
+NAVIGATOR {
+    NEW manufacturingNavigator 'Производство' BEFORE administration TO toolbar IMAGE '/images/plant.png' {
+        NEW manufacturingDocuments 'Документы';
+        NEW manufacturingMasterData 'Справочники';
+    }
+}

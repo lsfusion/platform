@@ -1,0 +1,270 @@
+MODULE Authentication;
+
+REQUIRE System, Contact;
+
+CLASS Computer 'Рабочее место';
+TABLE computer (Computer);
+
+hostnameComputer 'Имя хоста' = DATA ISTRING[100] (Computer) IN recognize;
+
+CLASS ABSTRACT User 'Пользователь';
+TABLE user (User);
+
+CLASS SystemUser 'Системный пользователь' : User;
+
+CLASS CustomUser 'Обычный пользователь' : User, Contact;
+TABLE customUser (CustomUser);
+TABLE loginSID (STRING[30], STRING[30]);
+
+loginCustomUser 'Логин' = DATA STRING[30] (CustomUser);
+customUserLogin 'Обычный пользователь' (login) = GROUP AGGR customUser BY loginCustomUser(customUser) WHERE customUser IS CustomUser;
+passwordCustomUser 'Пароль' = DATA STRING[30] (CustomUser) ECHO;
+sha256PasswordCustomUser 'Хэш пароля' = DATA STRING[100] (CustomUser) ECHO;
+calculatedHash 'Значение хэш' = DATA SESSION STRING[100] ();
+forbidChangePasswordCustomUser 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
+forbidEditProfileCustomUser 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);
+
+calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'platform.server.logics.authentication.CalculateBase64HashActionProperty';
+logOut 'Выйти' = ACTION CUSTOM 'platform.server.logics.authentication.LogOutActionProperty';
+reloginUser 'Сменить пользователя' = ACTION CUSTOM 'platform.server.logics.authentication.ReloginUserActionProperty';
+
+useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
+serverLDAP 'Сервер' = DATA STRING[100] ();
+portLDAP 'Порт' = DATA INTEGER ();
+
+changeSHA256PasswordCustomUser = ACTION(customUser) {
+    REQUEST STRING[30] INPUT;
+    EXEC calculateBase64Hash('SHA-256', requestedString());
+    SET sha256PasswordCustomUser(customUser) <- calculatedHash();
+}
+
+FORM customUser 'Пользователь'
+    OBJECTS u=CustomUser FIXED PANEL
+    PROPERTIES(u) firstNameContact, lastNameContact, loginCustomUser,
+    sha256PasswordCustomUser ON CHANGE changeSHA256PasswordCustomUser(u), emailContact,
+    forbidChangePasswordCustomUser, forbidEditProfileCustomUser
+
+    EDIT CustomUser OBJECT u
+;
+
+EXTEND DESIGN customUser {
+    NEW container BEFORE functions.box {
+        type = SPLITH;
+        childConstraints = TO THE RIGHT;
+        ADD u.box;
+    }
+}
+
+FORM customUsers 'Пользователи'
+    OBJECTS u=CustomUser
+    PROPERTIES(u) READONLY nameContact, loginCustomUser, emailContact
+    PROPERTIES(u) forbidChangePasswordCustomUser, forbidEditProfileCustomUser,
+                  ADDFORM, EDITFORM FORCE PANEL, DELETE
+
+    PROPERTIES() useLDAP, serverLDAP, portLDAP
+
+    DIALOG CustomUser OBJECT u
+;
+
+FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
+    OBJECTS u=CustomUser FIXED PANEL
+    PROPERTIES(u) loginCustomUser READONLY
+    PROPERTIES(u) READONLYIF forbidEditProfileCustomUser(u) firstNameContact, lastNameContact, emailContact
+
+    FILTERS u==currentUser()
+;
+
+EXTEND DESIGN editProfile {
+    main{
+        childConstraints = TO THE RIGHT;
+    }
+}
+
+// ---------------- Действия по изменению пользователя ------------------- //
+
+// Смена пользователя по логину и паролю
+FORM reloginLoginUser 'Сменить пользователя'
+    OBJECTS data = (login = STRING[30], password = STRING[30]) FIXED PANEL
+    PROPERTIES valueLogin = OBJVALUE(login), valuePassword = OBJVALUE(password)
+;
+
+EXTEND DESIGN reloginLoginUser {
+    main{
+        data.box {
+            title = 'Смена пользователя';
+            PROPERTY(valueLogin){
+                caption = 'Логин';
+                font = 'Tahoma 36';
+            }
+            PROPERTY(valuePassword){
+                caption = 'Пароль';
+                echoSymbols = TRUE;
+                font = 'Tahoma 36';
+            }
+        }
+        REMOVE leftControls;
+        REMOVE PROPERTY(formRefresh);
+    }
+}
+
+reloginLoginUser = ACTION () {
+    FORM reloginLoginUser MODAL;
+    IF formResult() == FormResult.ok THEN {
+        LOCAL user = CustomUser();
+        SET user() <- customUserLogin(chosenString('login'));
+        IF user() THEN {
+            IF TRUE IF NOT sha256PasswordCustomUser(user()) THEN {
+                IF passwordCustomUser(user())==chosenString('password') THEN {
+                    EXEC reloginUser(user());
+                    MESSAGE 'Пользователь изменён';
+                } ELSE {
+                    MESSAGE 'Неверный пароль';
+                }
+            }
+            ELSE {
+                EXEC calculateBase64Hash('SHA-256', chosenString('password'));
+                IF sha256PasswordCustomUser(user()) == calculatedHash() THEN {
+                    EXEC reloginUser(user());
+                    MESSAGE 'Пользователь изменён (хэш)';
+                } ELSE {
+                    MESSAGE 'Неверный пароль (хэш)';
+                }
+            }
+        } ELSE {
+            MESSAGE 'Пользователь не найден';
+        }
+    }
+}
+
+// Смена пользователя по паролю
+FORM reloginPasswordUser 'Сменить пользователя'
+    OBJECTS password = STRING[30] FIXED PANEL
+    PROPERTIES valuePassword = OBJVALUE(password)
+;
+
+EXTEND DESIGN reloginPasswordUser {
+    main{
+        password.box {
+            title = 'Смена пользователя';
+            PROPERTY(valuePassword){
+                caption = 'Пароль';
+                font = 'Tahoma 36';
+            }
+        }
+        REMOVE leftControls;
+        REMOVE PROPERTY(formRefresh);
+    }
+}
+
+reloginPasswordUser = ACTION (customUser) {
+    FORM reloginPasswordUser MODAL;
+    IF formResult() == FormResult.ok THEN {
+        IF TRUE IF NOT sha256PasswordCustomUser(customUser) THEN {
+            IF passwordCustomUser(customUser)==chosenString('password') THEN {
+                EXEC reloginUser(customUser);
+                MESSAGE 'Пользователь изменён';
+            } ELSE {
+                MESSAGE 'Неверный пароль';
+            }
+        }
+        ELSE {
+            EXEC calculateBase64Hash('SHA-256', chosenString('password'));
+            IF sha256PasswordCustomUser(customUser)==calculatedHash() THEN {
+                EXEC reloginUser(customUser);
+                MESSAGE 'Пользователь изменён (хэш)';
+            } ELSE {
+                MESSAGE 'Неверный пароль (хэш)';
+            }
+        }
+    }
+}
+
+// ---------------- Действия по изменению даннных пользователя ------------------- //
+
+FORM changePasswordUser 'Сменить пароль'
+    OBJECTS u=CustomUser FIXED PANEL
+    PROPERTIES(u) READONLY loginCustomUser
+
+    OBJECTS passwords = (old = STRING[30], new1 = STRING[30], new2 = STRING[30]) FIXED PANEL
+    PROPERTIES valueOld = OBJVALUE(old), valueNew1 = OBJVALUE(new1), valueNew2 = OBJVALUE(new2)
+
+    FILTERS u==currentUser()
+;
+
+EXTEND DESIGN changePasswordUser {
+    main{
+        passwords.box {
+            ADD PROPERTY(loginCustomUser(u)) FIRST {
+               font = 'Tahoma 36';
+            };
+            PROPERTY(valueOld){
+                caption = 'Старый пароль';
+                echoSymbols = TRUE;
+                font = 'Tahoma 36';
+            }
+            PROPERTY(valueNew1){
+                caption = 'Новый пароль';
+                echoSymbols = TRUE;
+                font = 'Tahoma 36';
+            }
+            PROPERTY(valueNew2){
+                caption = 'Повторите новый пароль';
+                echoSymbols = TRUE;
+                font = 'Tahoma 36';
+            }
+        }
+        REMOVE leftControls;
+        REMOVE PROPERTY(formRefresh);
+    }
+}
+
+changePasswordUser = ACTION (customUser) {
+    FORM changePasswordUser MODAL;
+    IF formResult() == FormResult.ok THEN {
+        IF TRUE IF NOT sha256PasswordCustomUser(customUser) THEN {
+            IF  chosenString('old') != passwordCustomUser(customUser) THEN {
+                MESSAGE 'Неверный старый пароль';
+                BREAK;
+            }
+        }
+        ELSE {
+            EXEC calculateBase64Hash('SHA-256', chosenString('old'));
+            IF  calculatedHash() != sha256PasswordCustomUser(customUser) THEN {
+                MESSAGE 'Неверный старый пароль (хэш)';
+                BREAK;
+            }
+        }
+
+        IF chosenString('new1') != chosenString('new2') THEN {
+            MESSAGE 'Введённые пароли не совпадают';
+            BREAK;
+        }
+        //SET passwordCustomUser(customUser) <- chosenString('new1');
+        EXEC calculateBase64Hash('SHA-256', chosenString('new1'));
+        SET sha256PasswordCustomUser(customUser) <- calculatedHash();
+        MESSAGE 'Пароль изменён';
+        }
+}
+
+changePassword = ACTION () {
+      IF forbidChangePasswordCustomUser(currentUser()) THEN {
+        MESSAGE 'Вы не можете изменить свой пароль';
+      }
+      ELSE {
+            EXEC changePasswordUser(currentUser());
+      }
+}
+
+NAVIGATOR {
+    administration {
+        NEW security 'Управление доступом' AFTER application {
+            ADD customUsers;
+        }
+    }
+    NEW account 'Учётная запись' TO toolbar IMAGE '/images/lock.png' {
+        NEW reloginLoginUserAction ACTION reloginLoginUser 'Сменить пользователя' IMAGE '/images/relogin.png';
+        ADD editProfile;
+        NEW changePasswordAction ACTION changePassword 'Сменить пароль' IMAGE '/images/change_password.png';
+        NEW logOutAction ACTION logOut 'Выйти' IMAGE '/images/logout.png';
+    }
+}

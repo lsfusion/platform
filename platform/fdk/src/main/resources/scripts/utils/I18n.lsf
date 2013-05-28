@@ -1,0 +1,192 @@
+MODULE I18n;
+
+REQUIRE System, MasterData, Utils;
+
+// ------------------------------------------------ Язык ---------------------------------------------- //
+
+CLASS Dictionary 'Словарь';
+TABLE dictionary (Dictionary);
+
+nameDictionary 'Наименование' = DATA ISTRING[50](Dictionary);
+
+insensitiveDictionary 'Нечувствительный к регистру' = DATA BOOLEAN (Dictionary);
+
+CLASS DictionaryEntry 'Слова';
+TABLE dictionaryEntry (DictionaryEntry);
+
+dictionaryDictionaryEntry 'Словарь' = DATA Dictionary (DictionaryEntry);
+termDictionaryEntry 'Термин' = DATA STRING[50] (DictionaryEntry);
+insensitiveTermDictionaryEntry(dictionaryEntry) = upper (termDictionaryEntry(dictionaryEntry));
+translationDictionaryEntry 'Перевод' = DATA STRING[50] (DictionaryEntry);
+
+dictionaryEntryDictionaryTerm = GROUP AGGR dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), termDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS DictionaryEntry;
+translationDictionaryEntryDictionaryTerm 'Перевод' (dictionary, term) = translationDictionaryEntry(dictionaryEntryDictionaryTerm(dictionary, term));
+nameDictionaryDictionaryEntry 'Словарь' (dictionaryEntry) = nameDictionary(dictionaryDictionaryEntry(dictionaryEntry));
+insensitiveDictionaryEntryDictionaryTerm = GROUP MAX dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), insensitiveTermDictionaryEntry(dictionaryEntry);
+insensitiveTranslationDictionaryEntryDictionaryTerm 'Нечувствительный к регистру перевод' = translationDictionaryEntry (dictionaryEntryDictionaryTerm(dictionary, term));
+
+CLASS Language 'Язык';
+TABLE language(Language);
+
+nameLanguage 'Наименование' = DATA ISTRING[50](Language);
+
+localeLanguage 'Locale' = DATA STRING[5] (Language);
+
+FORM language 'Язык'
+    OBJECTS l = Language FIXED PANEL
+    PROPERTIES(l) nameLanguage, localeLanguage
+
+    EDIT Language OBJECT l
+;
+
+FORM languages 'Языки'
+    OBJECTS l = Language
+    PROPERTIES(l) READONLY nameLanguage, localeLanguage
+    PROPERTIES(l)          ADDFORM, EDITFORM, DELETE
+
+    DIALOG Language OBJECT l
+;
+
+NAVIGATOR {
+    regionalData {
+        ADD languages;
+    }
+}
+
+languageFromDictionary = DATA Language (Dictionary);
+nameLanguageFromDictionary 'С языка'(dictionary) = nameLanguage(languageFromDictionary(dictionary));
+languageToDictionary = DATA Language (Dictionary);
+nameLanguageToDictionary 'На язык'(dictionary) = nameLanguage(languageToDictionary(dictionary));
+
+// ------------------------------------ Перевод через Google Translate -------------------------------- //
+
+translationOriginal 'Текст для перевода' = DATA SESSION TEXT ();
+translationResult 'Переведённый текст' = DATA SESSION TEXT ();      //STRING[50]
+
+languageFromTranslation = DATA Language ();
+nameLanguageFromTranslation 'С языка'() = nameLanguage(languageFromTranslation());
+languageToTranslation = DATA Language ();
+nameLanguageToTranslation 'На язык'() = nameLanguage(languageToTranslation());
+
+translate  = ACTION CUSTOM 'fdk.utils.i18n.TranslateActionProperty';
+
+translateTermDictionaryEntry 'Перевести' = ACTION (dictionaryEntry) {
+
+    EXEC translate (toText(termDictionaryEntry(dictionaryEntry)),
+            languageFromDictionary(dictionaryDictionaryEntry(dictionaryEntry)),
+            languageToDictionary(dictionaryDictionaryEntry(dictionaryEntry)));
+    SET translationDictionaryEntry(dictionaryEntry) <- toString50(translationResult());
+}
+
+translateText 'Перевести' = ACTION () {
+    EXEC translate (translationOriginal(), languageFromTranslation(), languageToTranslation());
+}
+
+// ------------------------------------ Перевод через словарь -------------------------------- //
+
+translationOriginalString 'Фраза' = DATA SESSION STRING[50] ();
+translationResultString 'Перевод' = DATA SESSION STRING[50] ();
+
+translateDictionary  = ACTION CUSTOM 'fdk.utils.i18n.TranslateDictionaryActionProperty';
+
+WHEN SESSION CHANGED (translationOriginalString()) AND dictionary IS Dictionary DO EXEC translateDictionary(dictionary, translationOriginalString());
+
+FORM translation 'Перевод'
+    PROPERTIES() translationOriginal, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,
+                 translateText
+;
+
+EXTEND DESIGN translation {
+    main {
+        NEW specContainer {
+            NEW textContainer {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(nameLanguageFromTranslation());
+                ADD PROPERTY(nameLanguageToTranslation());
+                ADD PROPERTY(translationOriginal());
+                ADD PROPERTY(translationResult());
+                ADD PROPERTY(translateText());
+                fillHorizontal = 1;
+                fillVertical = 1;
+                PROPERTY (translationOriginal()) {
+                    fillHorizontal = 1;
+                    fillVertical = 0.5;
+                    preferredSize = ( -1, 200);
+                    panelLabelAbove = TRUE;
+                }
+                PROPERTY (translationResult()) {
+                    fillHorizontal = 1;
+                    fillVertical = 0.5;
+                    preferredSize = ( -1, 200);
+                    panelLabelAbove = TRUE;
+                }
+            }
+            ADD functions.box;
+        }
+    }
+}
+
+NAVIGATOR {
+    regionalData {
+        ADD translation;
+    }
+}
+
+// ---------------------------------------------- Мультиязычный объект -------------------------------- //
+
+CLASS MultiLanguageNamed 'Мультиязычный объект';
+
+TABLE multiLanguageNamedLanguage(MultiLanguageNamed, Language);
+languageName 'Название (иностр.)' = DATA ISTRING[110] (MultiLanguageNamed, Language);
+
+// ---------------------------------------------- Словари --------------------------------------------- //
+
+FORM dictionary 'Словарь'
+    OBJECTS d = Dictionary FIXED PANEL
+    PROPERTIES(d) nameDictionary, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
+
+    OBJECTS e = DictionaryEntry
+    PROPERTIES(e) termDictionaryEntry, translationDictionaryEntry, translateTermDictionaryEntry, ADDOBJ, DELETESESSION
+    FILTERS       dictionaryDictionaryEntry(e) == d
+
+    EDIT Dictionary OBJECT d
+
+    PROPERTIES() translationOriginalString, translationResultString
+;
+
+DESIGN dictionary FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        ADD d.box;
+        ADD e.box;
+        NEW test {
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(translationOriginalString) {
+                caption = 'Фраза для перевода';
+                panelLabelAbove = TRUE;
+                font = 'Tahoma bold 24';
+            };
+            ADD PROPERTY(translationResultString){
+                caption = 'Перевод';
+                panelLabelAbove = TRUE;
+                font = 'Tahoma bold 24';
+            };
+        }
+        ADD functions.box;
+    }
+}
+
+FORM dictionaries 'Словари'
+    OBJECTS d = Dictionary
+    PROPERTIES(d) READONLY nameDictionary, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
+
+    PROPERTIES(d) ADDFORM, EDITFORM, DELETE
+
+    DIALOG Dictionary OBJECT d
+;
+
+NAVIGATOR {
+    regionalData {
+        ADD dictionaries;
+    }
+}

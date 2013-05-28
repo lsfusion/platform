@@ -1,0 +1,163 @@
+MODULE PriceChecker;
+
+REQUIRE System, Machinery;
+
+// Группы
+CLASS GroupPriceChecker 'Группы прайс чекеров' : GroupMachinery;
+
+stockGroupPriceChecker = DATA Stock (GroupPriceChecker);
+stockGroupMachinery (groupMachinery) += stockGroupPriceChecker(groupMachinery);
+
+// Модели
+CLASS PriceCheckerModel 'Модель прайс чекеров' : Model;
+
+namePriceCheckerModel 'Наименование' = DATA ISTRING[110](PriceCheckerModel);
+
+nameModel(model) += namePriceCheckerModel(model) IF model IS PriceCheckerModel;
+
+FORM priceCheckerModel 'Модель прайс чекера'
+    OBJECTS ch=PriceCheckerModel FIXED PANEL
+    PROPERTIES(ch) namePriceCheckerModel, noteModel, handlerModel, maxProductModel
+    EDIT PriceCheckerModel OBJECT ch
+;
+
+FORM priceCheckerModels 'Модели прайс чекеров'
+    OBJECTS m=PriceCheckerModel
+    PROPERTIES(m) READONLY namePriceCheckerModel, maxProductModel, handlerModel, noteModel, objectClassName
+    PROPERTIES(m) ADDFORM, EDITFORM, DELETE
+;
+
+// Прайс-чекеры
+CLASS PriceChecker 'Прайс чекер' : Machinery;
+isGroupPriceChecker (machinery) = machinery IS GroupPriceChecker;
+
+groupPriceCheckerPriceChecker = DATA GroupPriceChecker (PriceChecker);
+groupMachineryMachinery(machinery) += groupPriceCheckerPriceChecker(machinery);
+
+priceCheckerModelPriceChecker = DATA PriceCheckerModel (PriceChecker);
+modelMachinery(machinery) += priceCheckerModelPriceChecker(machinery);
+
+FORM priceChecker 'Прайс чекер'
+    OBJECTS ch=PriceChecker FIXED PANEL
+    PROPERTIES(ch) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery
+    EDIT PriceChecker OBJECT ch
+;
+
+FORM groupPriceChecker 'Группа прайс чекеров'
+    OBJECTS grch=GroupPriceChecker FIXED PANEL
+    PROPERTIES(grch) nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                     filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grch),
+                     namePriceListTypeGroupMachinery
+
+    OBJECTS ch=PriceChecker
+    PROPERTIES(ch)  nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, ADDOBJ, DELETESESSION
+    FILTERGROUP filters3
+        FILTER 'Показывать только для данной группы' 'F10' groupPriceCheckerPriceChecker(ch) == grch DEFAULT
+    EDIT GroupPriceChecker OBJECT grch
+;
+
+FORM groupsPriceChecker 'Группы прайс чекеров'
+    OBJECTS grch=GroupPriceChecker
+    PROPERTIES(grch) READONLY nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                              filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grch)
+    PROPERTIES(grch)          ADDFORM, EDITFORM, DELETE
+
+    OBJECTS ch=PriceChecker
+    PROPERTIES(ch)   READONLY nppMachinery, descriptionMachinery, portMachinery
+    FILTERS groupPriceCheckerPriceChecker(ch) == grch
+;
+
+DESIGN groupsPriceChecker FROM DEFAULT {
+    NEW topContainer{
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD grch.box;
+        ADD ch.box;
+    }
+    ADD functions.box;
+}
+
+// ----------------------------------------- Загрузка в ВУ -------------------------------------- //
+
+CLASS PriceCheckerPriceTransaction 'Загрузка прайса в прайс чекеры' : MachineryPriceTransaction;
+groupPriceCheckerPriceCheckerPriceTransaction 'Группа прайс чекеров' = DATA GroupPriceChecker (PriceCheckerPriceTransaction);
+groupMachineryMachineryPriceTransaction (transaction) += groupPriceCheckerPriceCheckerPriceTransaction(transaction);
+
+createMachineryPriceTransactionGroupMachinery (groupMachinery) += ACTION (groupMachinery) {
+    IF groupMachinery IS GroupPriceChecker THEN
+        ADDOBJ PriceCheckerPriceTransaction;
+}
+
+// ------------------------------------------------ Стандартные значения ------------------------------------ //
+
+loadDefaultPriceCheckerModel 'Добавить модель прайс-чекера' = ACTION (stringOne, stringTwo)  {
+    ADDOBJ PriceCheckerModel;
+    FOR pcm == addedObject() DO {
+         SET namePriceCheckerModel(pcm) <- stringOne AS STRING[110];
+         SET handlerModel(pcm) <- stringTwo AS STRING[200];
+    }
+}
+
+loadDefaultPriceCheckerModels 'Загрузить стандартные модели прайс-чекеров' = ACTION () {
+    EXEC loadDefaultPriceCheckerModel('Прайс-чекеры EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+} IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultPriceCheckerModels);
+
+// --------------------------------------- Генерация групп прайс-чекеров -------------------------------- //
+loadDefaultGroupPriceChecker 'Сгенерировать группу прайс-чекеров' = ACTION(equipmentServer, stock, model, num) {
+    ADDOBJ GroupPriceChecker;
+    FOR g == addedObject() DO {
+        SET stockGroupPriceChecker(g) <- stock AS Stock;
+        SET equipmentServerGroupMachinery(g) <- equipmentServer AS EquipmentServer;
+        SET nameGroupMachinery(g) <- 'Группа прайс-чекеров по умолчанию' AS STRING[110];
+
+        LOCAL numPriceChecker = INTEGER();
+        SET numPriceChecker() <- 0;
+        WHILE numPriceChecker() < (num AS INTEGER) DO {
+            ADDOBJ PriceChecker;
+            FOR pc == addedObject() DO {
+                SET groupPriceCheckerPriceChecker(pc) <- g AS GroupPriceChecker;
+                SET numPriceChecker() <- numPriceChecker() + 1;
+                SET nppMachinery(pc) <- numPriceChecker();
+                SET priceCheckerModelPriceChecker(pc) <- model AS PriceCheckerModel;
+            }
+        }
+    }
+} IN loadDefaultGroup;
+
+EXTEND FORM defaultData
+    OBJECTS         pm=PriceCheckerModel FIXED PANEL
+    PROPERTIES(pm)  SELECTOR namePriceCheckerModel
+
+    OBJECTS         cPriceChecker=INTEGER FIXED PANEL
+    PROPERTIES(cPriceChecker)   intValuePriceChecker = OBJVALUE
+    PROPERTIES (es, s, pm, cPriceChecker)  loadDefaultGroupPriceChecker
+;
+
+EXTEND DESIGN defaultData {
+    PROPERTY(namePriceCheckerModel(pm)) {
+        caption = 'Модель прайс-чекеров';
+    }
+    PROPERTY(intValuePriceChecker) {
+        caption = 'Количество прайс-чекеров';
+    }
+    machinery {
+        NEW priceChecker {
+            title = 'Прайс-чекеры';
+            ADD PROPERTY(namePriceCheckerModel(pm));
+            ADD PROPERTY(intValuePriceChecker);
+            ADD PROPERTY(loadDefaultGroupPriceChecker);
+        }
+    }
+}
+
+NAVIGATOR {
+    machineryNavigator {
+        NEW priceCheckerNavigator 'Прайс-чекеры' {
+            ADD groupsPriceChecker;
+            ADD priceCheckerModels;
+        }
+    }
+}

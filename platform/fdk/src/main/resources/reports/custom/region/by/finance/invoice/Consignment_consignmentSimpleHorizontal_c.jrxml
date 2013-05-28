@@ -1,0 +1,1218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="c" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="47"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle1" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle1_a" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+			<topPen lineWidth="0.5"/>
+			<leftPen lineWidth="0.5"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="0.5"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle1_b" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+			<topPen lineWidth="0.0"/>
+			<bottomPen lineWidth="0.0"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="c" class="java.lang.Integer"/>
+	<field name="shipmentBaseConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceAllowedConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceExecutedConsignment" class="java.lang.String"/>
+	<field name="forwarderConsignment" class="java.lang.String"/>
+	<field name="warrantConsignment" class="java.lang.String"/>
+	<field name="warrantHolderConsignment" class="java.lang.String"/>
+	<field name="goodsAcceptedConsignment" class="java.lang.String"/>
+	<field name="quantityConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="sumConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="sumVATConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="documentNameCurrencyConsignment" class="java.lang.String"/>
+	<field name="isCustomsFlowConsignment" class="java.lang.Boolean"/>
+	<field name="noteConsignment" class="java.lang.String"/>
+	<field name="d" class="java.lang.Integer"/>
+	<field name="nameSkuConsignmentDetail" class="java.lang.String"/>
+	<field name="shortNameUOMConsignmentDetail" class="java.lang.String"/>
+	<field name="quantityConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="priceConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="vatConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumVATConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="sumInvoiceConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="noteConsignmentDetail" class="java.lang.String"/>
+	<field name="UNPCustomerConsignment" class="java.lang.String"/>
+	<field name="UNPSupplierConsignment" class="java.lang.String"/>
+	<field name="dateConsignment" class="java.util.Date"/>
+	<field name="addressSupplierConsignment" class="java.lang.String"/>
+	<field name="addressCustomerConsignment" class="java.lang.String"/>
+	<field name="fullNameSupplierConsignment" class="java.lang.String"/>
+	<field name="fullNameCustomerConsignment" class="java.lang.String"/>
+	<field name="countConsignmentDetailConsignment" class="java.lang.Integer"/>
+	<field name="sumInvoiceConsignmentDetailConsignment" class="java.math.BigDecimal"/>
+	<field name="warePriceConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="nameWareConsignmentDetail" class="java.lang.String"/>
+	<field name="valueWareRangeConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="wareSumConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="isWareConsignment" class="java.lang.Boolean"/>
+	<field name="wareVATSumConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="wareSupplierPriceConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="wareSupplierSumConsignmentDetail" class="java.math.BigDecimal"/>
+	<field name="extraDescriptionConsignmentDetail" class="java.lang.String"/>
+	<variable name="npp" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[0]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
+	</variable>
+	<group name="captionGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{c})]]></groupExpression>
+		<groupHeader>
+			<band splitType="Prevent"/>
+		</groupHeader>
+	</group>
+	<group name="textGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{c})]]></groupExpression>
+		<groupHeader>
+			<band height="21" splitType="Prevent">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="125" y="0" width="685" height="12"/>
+					<box bottomPadding="2">
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression><![CDATA[($F{fullNameSupplierConsignment}!=null?$F{fullNameSupplierConsignment}:"")+" "+($F{addressSupplierConsignment}!=null?$F{addressSupplierConsignment}:"")]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="109" y="13" width="701" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+				<staticText>
+					<reportElement x="25" y="0" width="100" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Грузоотправитель:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="125" y="14" width="685" height="7"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+					<text><![CDATA[(наименование, адрес) ]]></text>
+				</staticText>
+			</band>
+			<band height="21">
+				<staticText>
+					<reportElement x="25" y="0" width="100" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Грузополучатель:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="125" y="0" width="685" height="12"/>
+					<box bottomPadding="2">
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression><![CDATA[($F{fullNameCustomerConsignment}!=null?$F{fullNameCustomerConsignment}:"")+" "+($F{addressCustomerConsignment}!=null?$F{addressCustomerConsignment}:"")]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="109" y="13" width="701" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+				<staticText>
+					<reportElement positionType="Float" x="125" y="14" width="685" height="7"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+					<text><![CDATA[(наименование, адрес) ]]></text>
+				</staticText>
+			</band>
+			<band height="21">
+				<staticText>
+					<reportElement x="25" y="0" width="100" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Основание отпуска:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="125" y="0" width="685" height="12"/>
+					<box bottomPadding="2">
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression><![CDATA[($F{shipmentBaseConsignment}!=null?$F{shipmentBaseConsignment}:"")]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement positionType="Float" x="125" y="14" width="685" height="7"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+					<text><![CDATA[(дата и номер договора или другого документа)]]></text>
+				</staticText>
+				<line>
+					<reportElement positionType="Float" mode="Opaque" x="109" y="13" width="701" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="68">
+				<textField pattern="" isBlankWhenNull="false">
+					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="390" y="15" width="56" height="40"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font fontName="lsf.TimesNewRoman" size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Цена, "+($F{isCustomsFlowConsignment}==null?"руб.":$F{documentNameCurrencyConsignment})]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="49" y="15" width="260" height="40" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[Наименование товара]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="341" y="15" width="49" height="40" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[Коли-чество]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="341" y="55" width="49" height="13" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[3]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="628" y="55" width="82" height="13" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[8]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="446" y="55" width="71" height="13" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[5]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="517" y="55" width="42" height="13" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[6]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="309" y="55" width="32" height="13" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[2]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="25" y="15" width="24" height="40" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[№ п/п]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="49" y="55" width="260" height="13" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[1]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="710" y="55" width="100" height="13" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[9]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="25" y="55" width="24" height="13" backcolor="#FFFFFF"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="517" y="15" width="42" height="40" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[Ставка НДС, %]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="559" y="55" width="69" height="13" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[7]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="25" y="0" width="785" height="15" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[I ТОВАРНЫЙ РАЗДЕЛ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="710" y="15" width="100" height="40" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[Примечание]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="390" y="55" width="56" height="13" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[4]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="GroupCellStyle0" positionType="Float" x="309" y="15" width="32" height="40" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[Еди-ница изм.]]></text>
+				</staticText>
+				<textField pattern="" isBlankWhenNull="false">
+					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="446" y="15" width="71" height="40"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font fontName="lsf.TimesNewRoman" size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Стоимость, "+($F{isCustomsFlowConsignment}==null?"руб.":$F{documentNameCurrencyConsignment})]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="false">
+					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="559" y="15" width="69" height="40"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font fontName="lsf.TimesNewRoman" size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Сумма НДС, "+($F{isCustomsFlowConsignment}==null?"руб.":$F{documentNameCurrencyConsignment})]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="false">
+					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="628" y="15" width="82" height="40"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font fontName="lsf.TimesNewRoman" size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Стоимость с  НДС, "+($F{isCustomsFlowConsignment}==null?"руб.":$F{documentNameCurrencyConsignment})]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="12">
+				<printWhenExpression><![CDATA[$F{countConsignmentDetailConsignment}>5 && $F{isCustomsFlowConsignment}==null]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="785" height="12"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+						<paragraph firstLineIndent="25"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Ассортимент товара в соответствии с приложением на ________листах"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="12">
+				<printWhenExpression><![CDATA[$F{isCustomsFlowConsignment}!=null]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="785" height="12"/>
+					<textElement textAlignment="Left">
+						<font size="9"/>
+						<paragraph firstLineIndent="25"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Товар по инвойсам "+($F{noteConsignment}!=null?$F{noteConsignment}:"")]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="14">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="517" y="0" width="42" height="14" backcolor="#FFFFFF"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="390" y="0" width="56" height="14" backcolor="#FFFFFF"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="710" y="0" width="100" height="14" backcolor="#FFFFFF"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="309" y="0" width="32" height="14" backcolor="#FFFFFF"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="628" y="0" width="82" height="14" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumInvoiceConsignmentDetailConsignment},0)]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="341" y="0" width="49" height="14" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityConsignmentDetailConsignment},0.0)]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="25" y="0" width="24" height="14" backcolor="#FFFFFF"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="559" y="0" width="69" height="14" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumVATConsignmentDetailConsignment},0)]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="14" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumConsignmentDetailConsignment},0)]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="49" y="0" width="260" height="14" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Center">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ИТОГО "]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="23">
+				<textField>
+					<reportElement x="25" y="2" width="84" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Всего сумма НДС"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="109" y="2" width="701" height="12"/>
+					<box bottomPadding="1">
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{sumVATConsignmentDetailConsignment}!=null ? platform.base.Words.toString($F{sumVATConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="109" y="15" width="701" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+				<staticText>
+					<reportElement positionType="Float" x="109" y="16" width="701" height="7"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+					<text><![CDATA[(прописью) ]]></text>
+				</staticText>
+			</band>
+			<band height="21">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="130" y="0" width="680" height="12"/>
+					<box bottomPadding="1">
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{sumInvoiceConsignmentDetailConsignment}!=null?platform.base.Words.toString($F{sumInvoiceConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="25" y="0" width="105" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Всего стоимость с НДС"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement positionType="Float" x="130" y="14" width="680" height="7"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+					<text><![CDATA[(прописью) ]]></text>
+				</staticText>
+				<line>
+					<reportElement positionType="Float" x="130" y="13" width="680" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="21">
+				<textField>
+					<reportElement x="25" y="0" width="84" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Отпуск разрешил"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="109" y="0" width="701" height="12"/>
+					<box bottomPadding="1">
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{nameIssuanceAllowedConsignment}!=null?$F{nameIssuanceAllowedConsignment}:"")]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement positionType="Float" x="109" y="14" width="701" height="7"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+					<text><![CDATA[(должность, фамилия, инициалы, подпись) ]]></text>
+				</staticText>
+				<line>
+					<reportElement positionType="Float" x="109" y="13" width="701" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="21">
+				<textField>
+					<reportElement x="25" y="0" width="105" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Сдал грузоотправитель"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="130" y="0" width="680" height="12"/>
+					<box bottomPadding="1">
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{nameIssuanceExecutedConsignment}!=null?$F{nameIssuanceExecutedConsignment}:"")]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="130" y="13" width="680" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+				<staticText>
+					<reportElement positionType="Float" x="130" y="14" width="680" height="7"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+					<text><![CDATA[(должность, фамилия и инициалы, подпись; штамп, печать грузоотправителя) ]]></text>
+				</staticText>
+			</band>
+			<band height="21">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="135" y="0" width="675" height="12"/>
+					<box bottomPadding="1">
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{forwarderConsignment}!=null?$F{forwarderConsignment}:"")]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="25" y="0" width="110" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Товар к доставке принял"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="135" y="13" width="675" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+				<staticText>
+					<reportElement positionType="Float" x="135" y="14" width="675" height="7"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+					<text><![CDATA[(должность, фамилия, инициалы, подпись) ]]></text>
+				</staticText>
+			</band>
+			<band height="21">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="105" y="0" width="172" height="12"/>
+					<box bottomPadding="1">
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{warrantConsignment}!=null?$F{warrantConsignment}:"")]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="25" y="0" width="80" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA["по доверенности"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="277" y="0" width="51" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA["выданной"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="328" y="0" width="482" height="12"/>
+					<box bottomPadding="1">
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{warrantHolderConsignment}!=null?$F{warrantHolderConsignment}:"")]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="328" y="13" width="482" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="105" y="13" width="172" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+				<staticText>
+					<reportElement positionType="Float" x="105" y="14" width="172" height="7"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="6"/>
+					</textElement>
+					<text><![CDATA[(номер, дата)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="328" y="14" width="482" height="7"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+					<text><![CDATA[(наименование организации)]]></text>
+				</staticText>
+			</band>
+			<band height="21">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="135" y="0" width="675" height="12"/>
+					<box bottomPadding="1">
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{goodsAcceptedConsignment}!=null?$F{goodsAcceptedConsignment}:"")]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="25" y="0" width="110" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Принял грузополучатель"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="135" y="13" width="675" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+				<staticText>
+					<reportElement positionType="Float" x="134" y="14" width="675" height="7"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="6"/>
+					</textElement>
+					<text><![CDATA[(должность, фамилия и инициалы, подпись; штамп, печать грузополучателя) ]]></text>
+				</staticText>
+			</band>
+			<band height="13">
+				<textField>
+					<reportElement x="25" y="0" width="140" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA["С товаром переданы документы:"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="165" y="12" width="645" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<title>
+		<band height="173">
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="25" y="135" width="141" height="18"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.formatRussian($F{dateConsignment})+" года"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="GroupCellStyle0" x="373" y="50" width="97" height="20" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Грузоотправитель]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" x="373" y="70" width="97" height="20" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[($F{UNPSupplierConsignment}!=null?$F{UNPSupplierConsignment}:"")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" x="470" y="70" width="101" height="20" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[($F{UNPCustomerConsignment}!=null?$F{UNPCustomerConsignment}:"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="GroupCellStyle0" x="470" y="50" width="101" height="20" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Грузополучатель]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="342" y="70" width="31" height="20"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[УНП]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="694" y="0" width="126" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Лист: 1"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="10">
+			<printWhenExpression><![CDATA[$V{PAGE_NUMBER} > 1]]></printWhenExpression>
+			<textField>
+				<reportElement positionType="Float" x="684" y="0" width="126" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Лист: "+$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="12">
+			<printWhenExpression><![CDATA[$F{countConsignmentDetailConsignment}<6 && $F{isCustomsFlowConsignment}==null]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="49" y="0" width="260" height="12"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="7"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nameSkuConsignmentDetail}+($F{extraDescriptionConsignmentDetail}!=null?("\n"+$F{extraDescriptionConsignmentDetail}):"")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="309" y="0" width="32" height="12"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{shortNameUOMConsignmentDetail}!=null?$F{shortNameUOMConsignmentDetail}:"")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="341" y="0" width="49" height="12"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityConsignmentDetail},0.0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="390" y="0" width="56" height="12"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{priceConsignmentDetail},0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="12"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumConsignmentDetail},0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="517" y="0" width="42" height="12"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{vatConsignmentDetail},0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="559" y="0" width="69" height="12"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumVATConsignmentDetail},0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="628" y="0" width="82" height="12"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumInvoiceConsignmentDetail},0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="710" y="0" width="100" height="12"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{noteConsignmentDetail}!=null?$F{noteConsignmentDetail}:"")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="24" height="12" backcolor="#FFFFFF"/>
+				<box>
+					<bottomPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{npp}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="12">
+			<printWhenExpression><![CDATA[$F{countConsignmentDetailConsignment}<6 && $F{warePriceConsignmentDetail}.compareTo(BigDecimal.ZERO)>0 && $F{isCustomsFlowConsignment}==null]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="24" height="12" backcolor="#FFFFFF">
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="49" y="0" width="260" height="12">
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.25" lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9" isItalic="true"/>
+					<paragraph firstLineIndent="10" leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nameWareConsignmentDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="309" y="0" width="32" height="12"/>
+				<box>
+					<topPen lineWidth="0.25" lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="341" y="0" width="49" height="12">
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.25" lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityConsignmentDetail},0.0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="390" y="0" width="56" height="12">
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.25" lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{wareSupplierPriceConsignmentDetail},0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="12">
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.25" lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{wareSupplierSumConsignmentDetail},0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="517" y="0" width="42" height="12">
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.25" lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{valueWareRangeConsignmentDetail},0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="559" y="0" width="69" height="12">
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.25" lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{wareVATSumConsignmentDetail},0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="628" y="0" width="82" height="12">
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.25" lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{wareSumConsignmentDetail},0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="710" y="0" width="100" height="12">
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.25" lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" "]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

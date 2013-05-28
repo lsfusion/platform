@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5">
+
+    <session-config>
+        <!-- timeout = 1 day -->
+        <session-timeout>1440</session-timeout>
+    </session-config>
+
+    <context-param>
+        <description>Сервер, на котором работает реестр приложений.</description>
+        <param-name>registryHost</param-name>
+        <param-value>localhost</param-value>
+    </context-param>
+    <context-param>
+        <description>Порт, на котором работает реестр приложений.</description>
+        <param-name>registryPort</param-name>
+        <param-value>7652</param-value>
+    </context-param>
+
+    <servlet>
+        <servlet-name>expertPageDispatch</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>expertPageDispatch</servlet-name>
+        <url-pattern>/skolkovo.gwt.expert.Expert/dispatch</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>expertProfilePageDispatch</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>expertProfilePageDispatch</servlet-name>
+        <url-pattern>/skolkovo.gwt.expertprofile.ExpertProfile/dispatch</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>claimerPageDispatch</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>claimerPageDispatch</servlet-name>
+        <url-pattern>/skolkovo.gwt.claimer.Claimer/dispatch</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>loginPageDispatch</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>loginPageDispatch</servlet-name>
+        <url-pattern>/skolkovo.gwt.login.Login/dispatch</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>confVoteHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>confVoteHandler</servlet-name>
+        <url-pattern>/votes/conference.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>readFileHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>readFileHandler</servlet-name>
+        <url-pattern>/readFile</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>captchaHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>captchaHandler</servlet-name>
+        <url-pattern>/jcaptcha</url-pattern>
+    </servlet-mapping>
+
+    <!--<servlet>-->
+        <!--<servlet-name>applicantFormUploadHandler</servlet-name>-->
+        <!--<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>-->
+    <!--</servlet>-->
+    <!--<servlet-mapping>-->
+        <!--<servlet-name>applicantFormUploadHandler</servlet-name>-->
+        <!--<url-pattern>/upload/applicantForm.do</url-pattern>-->
+    <!--</servlet-mapping>-->
+
+    <!--<servlet>-->
+        <!--<servlet-name>uploadServlet</servlet-name>-->
+        <!--<servlet-class>skolkovo.server.UploadHandlerServlet</servlet-class>-->
+    <!--</servlet>-->
+    <!--<servlet-mapping>-->
+        <!--<servlet-name>uploadServlet</servlet-name>-->
+        <!--<url-pattern>*.gupld</url-pattern>-->
+    <!--</servlet-mapping>-->
+
+    <!-- Init RMI Listener -->
+    <listener>
+        <listener-class>platform.gwt.base.server.spring.InitRMIContextListener</listener-class>
+    </listener>
+
+    <!-- Spring security configuration -->
+    <context-param>
+        <param-name>log4jConfigLocation</param-name>
+        <param-value>/WEB-INF/classes/log4j.xml</param-value>
+    </context-param>
+    <context-param>
+        <param-name>log4jExposeWebAppRoot</param-name>
+        <param-value>false</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+    </listener>
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>/WEB-INF/spring/applicationContext-security.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <filter>
+        <filter-name>springRequestContextFilter</filter-name>
+        <filter-class>platform.gwt.base.server.spring.RequestContextFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>springRequestContextFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+</web-app>

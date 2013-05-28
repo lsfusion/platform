@@ -1,0 +1,73 @@
+@def fontSize 8pt;
+
+.dataGridWidget {
+    border: 1px solid lightGrey;
+    margin: 2px;
+    cursor: default;
+}
+
+.dataGridHeader {
+    border-bottom: 2px solid #6f7277;
+}
+
+.dataGridHeaderCell {
+    height: 30px;
+    border-left: 1px solid #CCCCCC;
+    padding: 2px;
+    color: #4b4a4a;
+}
+
+.dataGridFirstHeaderCell {}
+
+.dataGridLastHeaderCell {
+    border-right: 1px solid #CCCCCC;
+}
+
+.dataGridFooter {}
+.dataGridFooterCell {}
+.dataGridFirstFooterCell {}
+.dataGridLastFooterCell {}
+
+.dataGridRow {
+    background: #ffffff;
+}
+
+.dataGridCell {
+    border-bottom: 1px solid #CCCCCC;
+    border-left: 1px solid #CCCCCC;
+
+    padding: 0;
+
+    overflow: hidden;
+}
+
+.dataGridFirstCell {}
+
+.dataGridLastCell {
+    border-right: 1px solid #CCCCCC;
+}
+
+.dataGridKeyboardSelectedRow {
+    background: #F0F0FF;
+}
+
+.dataGridKeyboardSelectedRowCell {}
+
+.dataGridFocusedCell {
+    border-bottom: 1px solid #6262FF;
+    border-left: 1px solid #6262FF;
+}
+
+.dataGridFocusedCellLastInRow {
+    border-bottom: 1px solid #6262FF;
+    border-left: 1px solid #6262FF;
+    border-right: 1px solid #6262FF;
+}
+
+.dataGridRightOfFocusedCell {
+    border-left: 1px solid #6262FF;
+}
+
+.dataGridTopOfFocusedCell {
+    border-bottom: 1px solid #6262FF;
+}

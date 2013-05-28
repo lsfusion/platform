@@ -1,0 +1,184 @@
+MODULE Certificate;
+
+REQUIRE Document, Stock;
+
+CLASS ABSTRACT Certificate 'Документ качества';
+TABLE certificate(Certificate);
+
+@defineDocumentAbstractHeaderTimePrefix(Certificate, ,' документа');
+@defineDocumentAbstractHeaderTimePrefix(Certificate, from, ' с');
+@defineDocumentAbstractHeaderTimePrefix(Certificate, to, ' по');
+
+numberCertificate 'Номер' = ABSTRACT STRING[18] (Certificate) IN base PERSISTENT MINCHARWIDTH 7;
+seriesCertificate 'Серия' = ABSTRACT STRING[2] (Certificate) IN base PERSISTENT FIXEDCHARWIDTH 3;
+seriesNumberCertificate 'Серия/Номер' (certificate) = ustring2(seriesCertificate(certificate), numberCertificate(certificate)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+
+descriptionCertificate 'Документ качества' (certificate) = ustring3SP(string2SP('№ ', seriesNumberCertificate(certificate)),
+                                                 string2SP('от ', fromDateCertificate(certificate)),
+                                                 string2SP('действует по ', toDateCertificate(certificate)));
+
+// -------------------------- Подготовка документов под расширение сертификатами -------------------- //
+
+META defineDocumentCertificate(document, object)
+
+    EXTEND FORM user###document
+        OBJECTS dc = User###document##Detail
+        PROPERTIES (dc) indexUser###document##Detail, idBarcodeSkuUser###document##Detail, nameSkuUser###document##Detail,
+                        nameBatchUser###document##Detail ON CHANGE changeBatchUser###document##Detail(dc)
+        FILTERS user###document##User###document##Detail(dc) == object
+    ;
+
+    EXTEND DESIGN user###document{
+        specification.box{
+            NEW certificateContainer AFTER d.box {
+                caption = 'Сертификаты';
+                NEW headerCertificateContainer;
+                ADD dc.box;
+            }
+        }
+    }
+
+    EXTEND FORM document##s
+        OBJECTS dc = ###document##Detail
+        PROPERTIES(dc) READONLY index###document##Detail, idBarcodeSku###document##Detail, nameSku###document##Detail,
+                                nameBatch###document##Detail
+        FILTERS document###document##Detail(dc) == object
+    ;
+
+    EXTEND DESIGN document##s{
+        documentDetail{
+            NEW certificateContainer AFTER d.box {
+                caption = 'Сертификаты';
+                NEW headerCertificateContainer;
+                ADD dc.box;
+            }
+        }
+    }
+
+END
+
+// ------------------------------------ Добавление сертификатов к документам ----------------------------------- //
+
+META defineDocumentTextBatchPrefix(prefix, caption)
+
+    prefix###text###batch  caption = ABSTRACT TEXT (Batch) PERSISTENT;
+    prev###prefix###text###batch (batch) = PREV(prefix###text###batch(batch));
+END
+
+META defineDocumentCertificateTextPrefix(document, prefix, caption)
+
+    prefix###text###document##Detail caption = ABSTRACT TEXT (###document##Detail);
+    prefix###textUser###document##Detail caption = DATA TEXT (User###document##Detail);
+    prefix###text###document##Detail(detail) += prefix###textUser###document##Detail(detail);
+
+    EXTEND FORM user###document PROPERTIES(dc) prefix###textUser###document##Detail;
+    EXTEND DESIGN user###document {
+        PROPERTY(prefix###textUser###document##Detail){
+            minimumSize = (200, 36);
+            preferredSize = (300, 36);
+            maximumSize = (300, 36);
+        }
+    }
+
+    EXTEND FORM document##s PROPERTIES(dc) READONLY prefix###text###document##Detail;
+    EXTEND DESIGN document##s {
+        PROPERTY(prefix###text###document##Detail){
+            minimumSize = (200, 36);
+            preferredSize = (300, 36);
+            maximumSize = (300, 36);
+        }
+    }
+
+END
+
+META defineDocumentCertificateObject(prop, document, object, caption)
+    @defineDocumentCertificateObjectInner(prop, ###prop, document, object, caption);
+END
+
+META defineDocumentCertificateObjectInner(prop, propClass, document, object, caption)
+
+    prop###document##Detail = ABSTRACT propClass (###document##Detail);
+    description###prop###document##Detail caption (detail) = description###prop(prop###document##Detail(detail));
+
+    prop###user###document = DATA propClass (User###document);
+    description###prop###user###document caption (document) = description###prop(prop###user###document(document));
+
+    data###prop###user###document##Detail = DATA propClass (User###document##Detail);
+    prop###user###document##Detail (detail) =
+        OVERRIDE prop###user###document(user###document##User###document##Detail(detail)), data###prop###user###document##Detail(detail);
+    prop###document##Detail(detail) += prop###user###document##Detail(detail);
+
+    description###prop###user###document##Detail caption (detail) = description###prop(prop###user###document##Detail(detail));
+
+
+    EXTEND FORM user###document
+        PROPERTIES(object) description###prop###user###document
+        PROPERTIES(dc) description###prop###user###document##Detail
+    ;
+
+    EXTEND DESIGN user###document {
+        headerCertificateContainer {
+            ADD PROPERTY(description###prop###user###document);
+        }
+    }
+
+    EXTEND FORM document##s
+        PROPERTIES(dc) READONLY description###prop###document##Detail
+    ;
+END
+
+// ------------------------------------ Сертификаты для партий ----------------------------------- //
+
+META defineCertificateObjectBatch(prop, caption)
+    @defineCertificateObjectBatchInner(prop, ###prop, caption);
+END
+
+META defineCertificateObjectBatchInner(prop, propClass, caption)
+    prop###batch = ABSTRACT propClass (Batch) PERSISTENT;
+    prev###prop###batch (batch) = PREV(prop###batch(batch));
+    description###prop###batch caption (batch) = description###prop(prop###batch(batch));
+    batchCount###prop##Sku(prop, sku) = GROUP SUM 1 BY prop##Batch(batch), skuBatch(batch);
+
+    EXTEND FORM currentBalanceSkuStock PROPERTIES READONLY description###prop###batch(bt);
+    EXTEND FORM balanceSkuStock PROPERTIES READONLY description###prop###batch(bt);
+    EXTEND FORM currentBalanceBatchStock PROPERTIES READONLY description###prop###batch(bt);
+    EXTEND FORM balanceBatchStock PROPERTIES READONLY description###prop###batch(bt);
+END
+
+@defineDocumentTextBatchPrefix(certificate, 'Дополнительные сертификаты');
+
+EXTEND FORM currentBalanceSkuStock PROPERTIES READONLY certificateTextBatch(bt);
+EXTEND FORM balanceSkuStock PROPERTIES READONLY certificateTextBatch(bt);
+EXTEND FORM currentBalanceBatchStock PROPERTIES READONLY certificateTextBatch(bt);
+EXTEND FORM balanceBatchStock PROPERTIES READONLY certificateTextBatch(bt);
+
+// ------------------------------------ Ограничение на выбор объектов ----------------------------------- //
+
+META defineDocumentCertificateConstraint(prop, document, caption)
+    CONSTRAINT prop###user###document##Detail(detail) AND NOT batchCount###prop##Sku(prop###user###document##Detail(detail), skuUser###document##Detail(detail))
+        CHECKED BY description###prop###user###document##Detail
+        MESSAGE 'Выберите '##caption##', по которой есть поставка';
+END
+
+// ------------------------------------ Автоматическое проставление ----------------------------------- //
+
+META deriveDocumentCertificate(prop, document, stockProp, prefix)
+    prefix###prop###user###document##Detail(detail)  <- IF batchUser###document##Detail(detail)
+                                                            THEN prev###prop###batch(batchUser###document##Detail(detail))
+                                                            ELSE prev###prop###batch(lastOrderBatchSkuStock(skuUser###document##Detail(detail), stockProp##User###document##Detail(detail)))
+        WHEN CHANGED (batchUser###document##Detail(detail)) OR
+             CHANGED (skuUser###document##Detail(detail)) OR
+             CHANGED (stockProp##User###document##Detail(detail));
+END
+
+META deriveDocumentCertificate(prop, document, prefix)
+    prefix###prop###user###document##Detail(detail)  <-  prev###prop###batch(batchUser###document##Detail(detail))
+        WHEN CHANGED (batchUser###document##Detail(detail));
+END
+
+NAVIGATOR {
+    NEW customsNavigator 'ВЭД' BEFORE administration TO toolbar IMAGE '/images/cop.png' {
+        NEW customsDocuments 'Документы';
+        NEW customsMasterData 'Справочники';
+    }
+}

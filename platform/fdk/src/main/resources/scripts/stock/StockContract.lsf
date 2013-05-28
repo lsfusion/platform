@@ -1,0 +1,276 @@
+MODULE StockContract;
+
+REQUIRE Contract, Stock, Agreement;
+
+NAMESPACE Contract;
+
+// ------------------------------------ Договора на перемещение товаров ---------------- //
+
+
+CLASS ABSTRACT ContractSku 'Договор на поставку' : Contract;
+TABLE contractSku(ContractSku);
+
+GROUP paymentGroup 'Взаиморасчеты' : public;
+
+CLASS ContractSkuType 'Тип договора на поставку' {
+    sale 'Договор купли-продажи',
+    commission 'Договор комиссии'
+}
+FORM contractSkuTypes
+    OBJECTS t = ContractSkuType
+    PROPERTIES(t) staticCaption
+    DIALOG ContractSkuType OBJECT t
+;
+
+CLASS AgreementPaymentType 'Порядок оплаты' {
+    prepayment 'С отсрочкой платежа',
+    implement 'По факту реализации',
+    requirement 'Платежное требование'
+}
+FORM agreementPaymentTypes
+    OBJECTS t = AgreementPaymentType
+    PROPERTIES(t) staticCaption
+    DIALOG AgreementPaymentType OBJECT t
+;
+
+wordContractSku 'Файл договора'  = ABSTRACT WORDFILE (ContractSku);
+saveWordContractSku 'Загрузить файл договора' (contractSku) = ACTION LOADFILE wordContractSku(contractSku);
+openWordContractSku 'Просмотреть файл договора' (contractSku) = ACTION OPENFILE wordContractSku(contractSku);
+wordContract(contract) += wordContractSku(contract);
+
+CLASS UserContractSku 'Договор на поставку (польз.)' : ContractSku, NumeratedObject;
+
+@defineDocumentInterfaceHeaderNumber(ContractSku);
+
+numberContract (contract) += numberContractSku(contract);
+seriesContract (contract) += seriesContractSku(contract);
+
+@defineNumeratedObjectDefault(UserContractSku, 'Нумератор для договоров', 'ДП');
+
+wordUserContractSku 'Файл договора' (UserContractSku) = DATA WORDFILE (UserContractSku);
+saveWordUserContractSku 'Загрузить файл договора' (userContractSku) = ACTION LOADFILE wordUserContractSku(userContractSku);
+openWordUserContractSku 'Просмотреть файл договора' (userContractSku) = ACTION OPENFILE wordUserContractSku(userContractSku);
+wordContractSku(contract) += wordUserContractSku(contract);
+
+supplierContractSku = DATA LegalEntity (ContractSku);
+nameSupplierContractSku 'Поставщик' (contract) = nameLegalEntity(supplierContractSku(contract)) IN recognize MINCHARWIDTH 20 PREFCHARWIDTH 40;
+partyAContract (contract) += supplierContractSku(contract);
+
+customerContractSku = DATA LegalEntity (ContractSku);
+nameCustomerContractSku 'Покупатель' (contract) = nameLegalEntity(customerContractSku(contract)) IN recognize MINCHARWIDTH 20 PREFCHARWIDTH 40;
+partyBContract (contract) += customerContractSku(contract);
+
+TABLE supplierCustomer(LegalEntity, LegalEntity);
+@defineContractDefault(contractSku, LegalEntity, LegalEntity, supplier, customer);
+
+CLASS PaymentCondition 'Условия оплаты';
+TABLE paymentCondition(PaymentCondition);
+
+typePaymentCondition = DATA AgreementPaymentType (PaymentCondition);
+nameTypePaymentCondition 'Тип оплаты' (paymentCondition) = staticCaption(typePaymentCondition(paymentCondition));
+
+isPrepaymentTypePaymentCondition(paymentCondition) = typePaymentCondition(paymentCondition) == AgreementPaymentType.prepayment;
+
+paymentConditionAgreement 'Условия оплаты' =  DATA PaymentCondition (Agreement);
+typePaymentAgreement 'Тип оплаты' (agreement) = typePaymentCondition(paymentConditionAgreement(agreement));
+
+//для договора
+
+typeContractSku = DATA ContractSkuType (ContractSku);
+nameTypeContractSku 'Тип договора' (contract) = staticCaption(typeContractSku(contract));
+isSaleTypeContract(contract) = typeContractSku(contract) == ContractSkuType.sale;
+
+CLASS PaymentPeriod 'Период рассрочки';
+TABLE paymentPeriod(PaymentPeriod);
+
+countDaysPaymentPeriod 'Кол-во дней' = DATA INTEGER (PaymentPeriod);
+percentPaymentPeriod 'Процент' = DATA NUMERIC[8,3] (PaymentPeriod);
+descriptionPaymentPeriod(paymentPeriod) =
+    [FORMULA STRING[10] 'CAST($1 AS TEXT) ||  \' (\' || CAST($2 AS TEXT) ||  \'%)\''](countDaysPaymentPeriod(paymentPeriod), percentPaymentPeriod(paymentPeriod));
+paymentConditionPaymentPeriod 'Условия оплаты периода рассрочки' = DATA PaymentCondition(PaymentPeriod);
+
+descriptionPaymentCondition 'Условия оплаты' (paymentCondition) =
+    GROUP CONCAT descriptionPaymentPeriod(paymentPeriod) IF paymentConditionPaymentPeriod(paymentPeriod) == paymentCondition, ', '
+                BY paymentCondition
+                ORDER paymentPeriod;
+
+descriptionPaymentConditionAgreement 'Условия оплаты' (agreement) = descriptionPaymentCondition(paymentConditionAgreement(agreement));
+
+CLASS BonusPeriod 'Период бонуса';
+TABLE bonusPeriod(BonusPeriod);
+
+countDaysBonusPeriod 'Кол-во дней' = DATA INTEGER (BonusPeriod);
+percentBonusPeriod 'Процент' = DATA NUMERIC[8,3] (BonusPeriod);
+paymentConditionBonusPeriod 'Условия оплаты периода бонуса' = DATA PaymentCondition (BonusPeriod);
+
+bonusPeriodPaymentConditionDays(paymentCondition, days) = GROUP AGGR bonusPeriod BY paymentConditionBonusPeriod(bonusPeriod),
+                                                                                      countDaysBonusPeriod(bonusPeriod)
+                                                                                   WHERE bonusPeriod IS BonusPeriod;
+
+sumPercentPaymentCondition(paymentCondition) = GROUP SUM percentPaymentPeriod(paymentPeriod) BY paymentConditionPaymentPeriod(paymentPeriod);
+CONSTRAINT sumPercentPaymentCondition(paymentCondition) != 100.0 CHECKED BY sumPercentPaymentCondition
+    MESSAGE 'Сумма процентов рассрочки должна быть равна 100';
+
+FORM paymentCondition 'Условие оплаты'
+
+    OBJECTS pc = PaymentCondition FIXED PANEL
+    PROPERTIES(pc) nameTypePaymentCondition
+
+    OBJECTS pp = PaymentPeriod FIXED GRID
+    PROPERTIES(pp) countDaysPaymentPeriod SHOWIF isPrepaymentTypePaymentCondition(pc),
+                   percentPaymentPeriod SHOWIF isPrepaymentTypePaymentCondition(pc)
+    PROPERTIES(pp) ADDOBJ SHOWIF isPrepaymentTypePaymentCondition(pc),
+                   DELETESESSION SHOWIF isPrepaymentTypePaymentCondition(pc)
+
+    OBJECTS bp = BonusPeriod
+    PROPERTIES(bp) countDaysBonusPeriod, percentBonusPeriod
+    PROPERTIES(bp) ADDOBJ, DELETESESSION
+
+    FILTERS paymentConditionPaymentPeriod(pp) == pc,
+            paymentConditionBonusPeriod(bp) == pc
+
+    EDIT PaymentCondition OBJECT pc
+;
+
+DESIGN paymentCondition FROM DEFAULT{
+    main{
+        preferredSize = (1024, 768);
+    }
+}
+
+FORM paymentConditions 'Условия оплаты'
+
+    OBJECTS pc = PaymentCondition
+    PROPERTIES(pc) READONLY descriptionPaymentCondition, nameTypePaymentCondition
+    PROPERTIES(pc) ADDFORM, EDITFORM, DELETE
+
+    DIALOG PaymentCondition OBJECT pc
+;
+
+
+// Формы
+FORM userContractSku 'Договор на поставку товаров'
+    OBJECTS c = UserContractSku FIXED PANEL
+    PROPERTIES(c) nameSupplierContractSku, nameCustomerContractSku, nameTypeContractSku,
+                  nameNumeratorObject, numberObject, seriesObject, dateFromContract, dateToContract,
+                  nameCurrencyContract, noteContract, saveWordUserContractSku, openWordUserContractSku
+
+    EDIT UserContractSku OBJECT c
+;
+
+DESIGN userContractSku FROM DEFAULT{
+    NEW row {
+        childConstraints = TO THE RIGHT;
+        ADD c.numberedGroup {
+            childConstraints = TO THE RIGHTBOTTOM;
+        }
+        NEW text {
+            title = 'Содержание';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(saveWordUserContractSku);
+            ADD PROPERTY(openWordUserContractSku);
+        }
+    }
+    NEW topContainer{
+        childConstraints = TO THE RIGHT;
+        NEW prmContainer{
+            childConstraints = TO THE BOTTOM;
+            caption = 'Параметры документа';
+            ADD PROPERTY(nameSupplierContractSku);
+            ADD PROPERTY(nameCustomerContractSku);
+            ADD PROPERTY(nameTypeContractSku);
+        }
+        ADD c.contractGroup;
+        ADD c.attributeGroup;
+    }
+    ADD functions.box;
+}
+
+editUserContractSku 'Редактировать' = ACTION EDITFORM UserContractSku;
+editContract(userContractSku) += editUserContractSku(userContractSku);
+
+addUserContractSkuSupplierCustomer 'Добавить' = ACTION (supplier, customer) {
+
+    FOR ADDOBJ uc = UserContractSku DO {
+        SET supplierContractSku(uc) <- (supplier AS LegalEntity);
+        SET customerContractSku(uc) <- (customer AS LegalEntity);
+        FORM userContractSku OBJECTS c = uc DOCKEDMODAL;
+        IF TRUE IF NOT formResult() == FormResult.ok THEN {
+            DELETE uc;
+        }
+    }
+} IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
+
+isUserContractSku (contractSku) = TRUE IF contractSku IS UserContractSku;
+
+addUserContractSku 'Добавить' = ACTION ADDFORM UserContractSku;
+
+EXTEND FORM contracts
+    PROPERTIES(c) nameTypeContractSku
+    PROPERTIES() addUserContractSku TODRAW c FORCE PANEL
+;
+
+FORM contractSkus 'Договоры на поставку'
+    OBJECTS c = ContractSku
+    PROPERTIES(c) READONLY nameSupplierContractSku, nameCustomerContractSku, nameTypeContractSku,
+                  seriesNumberObject, dateFromContract, dateToContract,
+                  nameCurrencyContract, noteContract
+    PROPERTIES  addUserContractSku() TODRAW c FORCE PANEL, editContract(c)
+
+    DIALOG ContractSku OBJECT c
+;
+
+NAVIGATOR {
+    stockMasterData {
+        ADD contracts;
+    }
+}
+
+EXTEND FORM agreement
+    PROPERTIES(a) descriptionPaymentConditionAgreement
+;
+
+EXTEND DESIGN agreement{
+    propContainer{
+        ADD PROPERTY(descriptionPaymentConditionAgreement);
+    }
+}
+
+// ----------------------------- Расширяем форму организаций ------------------------------------------- //
+
+EXTEND FORM legalEntity
+
+    OBJECTS css = UserContractSku
+    PROPERTIES(css) READONLY seriesNumberObject, nameTypeContractSku, dateFromContract,
+                    dateToContract, nameCurrencyContract, noteContract
+    PROPERTIES addUserContractSkuSupplierCustomer(s, l) TODRAW css FORCE PANEL TOOLBAR
+    PROPERTIES(css)  EDITSESSIONFORM, DELETESESSION SHOWIF isUserContractSku(css)
+    FILTERS customerContractSku(css) == l,
+            supplierContractSku(css) == s
+
+    FILTERGROUP filters
+        FILTER 'Есть договор' 'F10' countContractPartyAPartyB(s, l)
+
+    OBJECTS csc = UserContractSku
+    PROPERTIES(csc) READONLY seriesNumberObject, nameTypeContractSku, dateFromContract,
+                    dateToContract, nameCurrencyContract, noteContract
+    PROPERTIES addUserContractSkuSupplierCustomer(l, c) TODRAW csc FORCE PANEL TOOLBAR
+    PROPERTIES(csc) EDITSESSIONFORM, DELETESESSION SHOWIF isUserContractSku(csc)
+    FILTERS customerContractSku(csc) == c,
+            supplierContractSku(csc) == l
+
+    FILTERGROUP filters
+        FILTER 'Есть договор' 'F8' countContractPartyAPartyB(l, c)
+;
+
+EXTEND DESIGN legalEntity {
+
+    docContainer{
+        type = TABBED;
+        ADD css.box;
+    }
+    docContainer2{
+        type = TABBED;
+        ADD csc.box;
+    }
+}

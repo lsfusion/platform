@@ -1,0 +1,712 @@
+MODULE Invoice;
+
+REQUIRE System,
+        Utils,
+        Historizable,
+        Stock,
+        Numerator,
+        Document,
+        Currency,
+        PriceRound,
+        Barcode,
+        PriceListType,
+        Agreement,
+        PurchaseLedger,
+        SaleLedger,
+        StockReserve,
+        Employee,
+        ContractPayment,
+        StockTax;
+
+CLASS ABSTRACT Invoice 'Накладная' : ContractLedger, ContractALedger, InContractLedger, OutContractLedger, Document;
+CLASS ABSTRACT InvoiceDetail 'Строка накладной' : DocumentDetail;
+
+@defineDocumentAbstract(invoice);
+@defineDocumentAbstractNumber(invoice);
+
+@defineDocumentAbstractLegalEntity(invoice, supplier, 'Поставщик');
+@defineDocumentAbstractLegalEntity(invoice, customer, 'Покупатель');
+
+@defineDocumentAbstractLegalEntity(invoice, fromLegalEntity, 'Отправитель');
+@defineDocumentAbstractLegalEntity(invoice, toLegalEntity, 'Получатель');
+
+@defineDocumentAbstractDataStock(invoice, stock, 'Склад поставщика', supplier);
+@defineDocumentAbstractDataStock(invoice, stock, 'Склад покупателя', customer);
+
+@defineDocumentAbstractDataStock(invoice, stock, 'Склад (отправитель)', from);
+@defineDocumentAbstractDataStock(invoice, stock, 'Склад (получатель)', to);
+
+@defineDocumentAbstractPosted(invoice);
+
+@defineDocumentAbstractDetailSku(invoice, sku);
+
+@defineDocumentAbstractDetailQuantity(invoice);
+@defineDocumentDetailGrossWeight(invoice, sku);
+@defineDocumentAbstractDetailQuantityPrefix(invoice, pack, ' (упаковок)');
+@defineDocumentHeaderSkuQuantity(invoice, sku);
+
+@defineDocumentHeaderGrossWeight(invoice);
+
+@defineDocumentAbstractHeaderCurrency (invoice);
+
+@defineDocumentAbstractDetailPrice(invoice);
+@defineDocumentAbstractDetailDataSumCustomPrefix (invoiceDetail, , );
+@defineDocumentAbstractDetailVAT(invoice, , );
+@defineDocumentAbstractDetailVATDataSumCustom (invoiceDetail, invoice);
+
+@defineDocumentAbstractDetailNote (InvoiceDetail);
+
+shortDescriptionInvoice (invoice) = [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
+                                               seriesNumberObject(invoice), dateInvoice(invoice));
+
+extraDescriptionInvoiceDetail 'Доп. наименование' (invoiceDetail) = ABSTRACT STRING[255] (InvoiceDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+
+editInvoice 'Редактировать' = ABSTRACT ACTION (Invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+countryInvoiceDetail(invoiceDetail) = countryStock(customerStockInvoice(invoiceInvoiceDetail(invoiceDetail)));
+
+//----------------------------------------------- Накладная ---------------------------------------------------//
+
+META defineInvoice(sign, stockProp)
+
+    CLASS ABSTRACT Invoice 'Накладная'###sign : Invoice.Invoice;
+    CLASS ABSTRACT InvoiceDetail 'Строка накладной'###sign : Invoice.InvoiceDetail;
+
+    CLASS UserInvoice 'Накладная (польз.)'###sign : Invoice, Historizable, NumeratedDocument;
+    CLASS UserInvoiceDetail 'Строка накладной (польз.)'###sign : InvoiceDetail;
+    CLASS UserInvoicePosted 'Проведенная накладная (польз.)'###sign : UserInvoice, PostedObject;
+
+    GROUP invoiceGroup 'Информация о накладной' : base;
+
+    @defineDocumentInterface(invoice);
+    Invoice.invoiceInvoiceDetail (detail) += invoiceInvoiceDetail(detail);
+    Invoice.dateInvoice (invoice) += dateInvoice(invoice);
+    Invoice.timeInvoice (invoice) += timeInvoice(invoice);
+
+    @defineDocumentInterfaceTimePrefix(invoice, before, ' документа (до)');
+
+    @defineDocumentInterfaceNumber(invoice);
+    Invoice.numberInvoice (invoice) += numberInvoice(invoice);
+    Invoice.seriesInvoice (invoice) += seriesInvoice(invoice);
+
+    @defineDocumentInterfaceLegalEntity (invoice, supplier, 'Поставщик');
+    @defineDocumentInterfaceLegalEntity (invoice, customer, 'Покупатель');
+    Invoice.supplierInvoice(invoice) += supplierInvoice(invoice);
+    Invoice.customerInvoice(invoice) += customerInvoice(invoice);
+
+    @defineDocumentInterfaceDataStock(invoice, stock, 'Склад поставщика', supplier);
+    @defineDocumentInterfaceDataStock(invoice, stock, 'Склад покупателя', customer);
+    Invoice.supplierStockInvoice(invoice) += supplierStockInvoice(invoice);
+    Invoice.customerStockInvoice(invoice) += customerStockInvoice(invoice);
+    Invoice.dataSupplierStockInvoiceDetail(detail) += dataSupplierStockInvoiceDetail(detail);
+    Invoice.dataCustomerStockInvoiceDetail(detail) += dataCustomerStockInvoiceDetail(detail);
+
+    CONSTRAINT supplierUserInvoice(userInvoice) AND supplierStockUserInvoice(userInvoice) AND NOT
+    inLegalEntityStock(supplierUserInvoice(userInvoice), supplierStockUserInvoice(userInvoice))
+        CHECKED BY supplierStockUserInvoice
+            MESSAGE 'Поставщик и склад поставщика для накладной не имеют связи';
+    CONSTRAINT customerUserInvoice(userInvoice) AND customerStockUserInvoice(userInvoice) AND NOT
+    inLegalEntityStock(customerUserInvoice(userInvoice), customerStockUserInvoice(userInvoice))
+        CHECKED BY customerStockUserInvoice
+            MESSAGE 'Покупатель и склад покупателя для накладной не имеют связи';
+
+    @defineDocumentInterfacePosted(invoice);
+    Invoice.isPostedInvoice (invoice) += isPostedInvoice(invoice);
+
+    @defineDocumentInterfaceDescription(invoice, 'Накладная'###sign);
+
+    @defineDocumentInterfaceCurrency(invoice);
+    @deriveDocumentCurrency(userInvoice, supplier, currencyLegalEntity);
+    Invoice.currencyInvoice(invoice) += currencyInvoice(invoice);
+
+    @defineDocumentInterfaceContract(Invoice, contractSku, supplier, customer,
+                                     'Организация (поставщик) договора накладной не соответствует организация (поставщик) накладной',
+                                     'Организация (покупатель) договора накладной не соответствует организация (покупатель) накладной');
+
+    @defineDocumentInterfaceHeaderAgreement(invoice);
+    @deriveDocumentHeaderAgreement (userInvoice, supplierUserInvoice, customerUserInvoice);
+    noAgreementUserInvoice (invoice) = invoice IS UserInvoice AND NOT agreementUserInvoice(invoice);
+
+    @defineDocumentInterfaceDetailSku(invoice, sku);
+    Invoice.skuInvoiceDetail(detail) += skuInvoiceDetail(detail);
+
+    isStockSkuInvoiceDetail (invoiceDetail) = isStockSku(skuInvoiceDetail(invoiceDetail));
+    isStockSkuUserInvoiceDetail (userInvoiceDetail) = isStockSku(skuUserInvoiceDetail(userInvoiceDetail));
+
+    isChargeSkuInvoiceDetail (invoiceDetail) = isChargeSku(skuInvoiceDetail(invoiceDetail));
+    isChargeSkuUserInvoiceDetail (userInvoiceDetail) = isChargeSku(skuUserInvoiceDetail(userInvoiceDetail));
+
+    @defineDocumentInterfaceDetailQuantity(invoice);
+    Invoice.quantityInvoiceDetail(detail) += quantityInvoiceDetail(detail);
+
+    @defineDocumentDetailGrossWeight(invoice, sku);
+
+    @defineDocumentInterfaceDetailPrice(invoice); // объявляем цену без НДС
+    Invoice.priceInvoiceDetail(detail) += priceInvoiceDetail(detail);
+
+    @defineDocumentInterfaceDetailVAT(invoice, country###stockProp, , ); // объявляем шкалу
+    // саму шкалу не записываем, поскольку на продаже может быть расчетный НДС
+    @deriveDocumentDetailValueVAT(userInvoice); // записываем значение ставки
+
+    Invoice.VATInvoiceDetail(detail) += VATInvoiceDetail(detail);
+    Invoice.valueVATInvoiceDetail(detail) += valueVATInvoiceDetail(detail);
+
+    @defineDocumentInterfaceDetailPricePrefix (invoice, invoice, ' с НДС'); // объявляем цену с НДС
+
+    // объявляем Action'ы для ON CHANGE по изменению цен
+    @defineDocumentDetailPriceVATOnChange(userInvoice);
+    @defineDocumentDetailNumberVATOnChange(userInvoice, stockProp);
+    @defineDocumentDetailValueVATOnChange(userInvoice);
+    @defineDocumentDetailInvoicePriceVATOnChange(userInvoice);
+
+    @defineDocumentInterfacePriceListType(invoice); // объявляем вид цены
+    @deriveDocumentDetailPriceListTypeAgreement(userInvoice); // записываем вид цены из соглашения
+//    @deriveDocumentDetailPricePriceListTypeVAT (userInvoice, stockProp); // записываем цены с НДС и без НДС на основе priceListType
+
+    @defineDocumentInterfaceDetailDataSum(invoice); // объявляем сумму без НДС
+    @deriveDocumentDetailSum(userInvoice, quantity);
+    Invoice.sumInvoiceDetail(detail) += sumInvoiceDetail(detail);
+
+    @defineDocumentInterfaceDetailVATDataSum (invoice, invoice); // объявляем свойства суммы НДС и суммы с НДС
+    @deriveDocumentDetailVATDataSum(userInvoice); // записываем сумму НДС
+    @deriveDocumentDetailVATPrefixSum(userInvoice, invoice); // записываем сумму с НДС
+
+    Invoice.VATSumInvoiceDetail(detail) += VATSumInvoiceDetail(detail);
+    Invoice.invoiceSumInvoiceDetail(detail) += invoiceSumInvoiceDetail(detail);
+
+    @defineDocumentInterfaceHeaderVATSum(invoice);
+
+    @defineDocumentInterfaceHeaderQuantity(invoice);
+    @defineDocumentHeaderSkuQuantity(invoice, sku);
+    @defineDocumentHeaderSkuQuantity(userInvoice, sku);
+    @defineDocumentInterfaceHeaderSum(invoice);
+
+    @defineDocumentInterfaceHeaderItemSum (invoice, VAT, VAT);        //-- сумма НДС поставщика (с разбивкой по таре, товару...)
+    @defineDocumentInterfaceHeaderItemSum (invoice, , );              //-- сумма поставщика (с разбивкой по таре, товару...)
+    @defineDocumentInterfaceHeaderItemSum(invoice, invoice, invoice); //-- сумма поставщика с НДС (с разбивкой по таре, товару...)
+
+    @defineAddDetailDialogSkuStock(userInvoice, sku, stockProp, dialogSku);
+    @defineAddDetailDialogBarcode(userInvoice, sku);
+
+    countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockProp###invoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
+
+    @implementDocumentSupplierCustomer(invoice);
+
+//    fillDocumentInvoice 'Подбор документа' = ACTION (userInvoice) {
+//        FORM documents MODAL;
+//        IF formResult() == FormResult.ok THEN {
+//            LOCAL chosenDocument = Document();
+//            SET chosenDocument() <- chosenObject('d');
+//            FOR documentDocumentDetail(documentDetail) == chosenDocument() ADDOBJ i = UserInvoiceDetail DO {
+//                SET userInvoiceUserInvoiceDetail(i) <- userInvoice;
+//                SET skuInvoiceDetail(i) <- skuDocumentDetail(documentDetail);
+//                SET quantityInvoiceDetail(i) <- quantityDocumentDetail(documentDetail);
+//                SET priceInvoiceDetail(i) <- priceDocumentDetail(documentDetail);
+//            }
+//        }
+//    } TOOLBAR;
+
+// --------------------------- Формы ---------------------------------- //
+
+    editInvoice 'Редактировать' = ABSTRACT ACTION (Invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+    Invoice.editInvoice (invoice) += editInvoice(invoice);
+
+    FORM userInvoice 'Накладная'###sign
+        OBJECTS i = UserInvoice FIXED PANEL
+        PROPERTIES (i) objectClassName, nameSupplierUserInvoice, nameSupplierStockUserInvoice, nameCustomerUserInvoice, nameCustomerStockUserInvoice,
+                       nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
+                       nameCurrencyUserInvoice, nameAgreementUserInvoice, namePriceListTypeUserInvoice SHOWIF noAgreementUserInvoice(i), noteUserInvoice,
+                       seriesNumberContractSkuUserInvoice, isCommissionUserInvoice
+        PROPERTIES (i) countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
+                       VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
+
+        OBJECTS d = UserInvoiceDetail
+        PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail
+        PROPERTIES (d) quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail,
+                       priceUserInvoiceDetail ON CHANGE changePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
+                       numberVATUserInvoiceDetail ON CHANGE changeNumberVATUserInvoiceDetail(d),
+                       valueVATUserInvoiceDetail ON CHANGE changeValueVATUserInvoiceDetail(d),
+                       invoicePriceUserInvoiceDetail ON CHANGE changeInvoicePriceUserInvoiceDetail(d),
+                       VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail, ADDOBJ, deleteid=DELETESESSION
+
+        PROPERTIES(i) TODRAW d fillDocumentInvoice, addDetailDialogSkuStockUserInvoiceDetailUserInvoice,
+                               addDetailInputBarcodeUserInvoiceDetailUserInvoice, deleteUserInvoiceDetailUserInvoice
+        FILTERS userInvoiceUserInvoiceDetail(d) == i
+
+        EVENTS
+            ON OK prePostUserInvoice(i)
+
+//        HINTTABLE LIST dateTimeUserInvoiceDetail, skuUserInvoiceDetail, supplierStockUserInvoiceDetail, customerStockUserInvoiceDetail,
+//                       priceListTypeUserInvoiceDetail, currencyUserInvoiceDetail,
+//                       priceUserInvoiceDetail, VATUserInvoiceDetail, valueVATUserInvoiceDetail, invoicePriceUserInvoiceDetail
+
+        EDIT UserInvoice OBJECT i
+    ;
+
+    DESIGN userInvoice FROM DEFAULT{
+        main {
+            preferredSize = (1024, 768);
+            NEW specification.box BEFORE functions.box{
+
+                ADD d.box {
+                    title = 'Спецификация';
+                    d.panel {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                    }
+                }
+            }
+            NEW header.box BEFORE specification.box {
+                childConstraints = TO THE RIGHT;
+
+                NEW headerParams {
+                    childConstraints = TO THE BOTTOM;
+
+                    ADD i.documentHeaderGroup {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                        ADD PROPERTY(nameNumeratorObject);
+                        ADD PROPERTY(numberObject);
+                        ADD PROPERTY(seriesObject);
+                        ADD PROPERTY(dateUserInvoice);
+                        ADD PROPERTY(timeUserInvoice);
+                    }
+                    NEW headerLegalEntity {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        NEW headerSupplier {
+                            title = 'Поставщик';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(nameSupplierUserInvoice);
+                            ADD PROPERTY(nameSupplierStockUserInvoice);
+                        }
+                        NEW headerCustomer {
+                            title = 'Покупатель';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(nameCustomerUserInvoice);
+                            ADD PROPERTY(nameCustomerStockUserInvoice);
+                        }
+                        NEW headerContract {
+                            title = 'Договор';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(seriesNumberContractSkuUserInvoice);
+                            ADD PROPERTY(isCommissionUserInvoice);
+                        }
+                    }
+                    NEW headerTabbedPane {
+                        type = TABBED;
+                        NEW headerMainParams {
+                            title = 'Основные параметры';
+                            childConstraints = TO THE BOTTOM;
+                            ADD i.documentPrmGroup {
+                                childConstraints = TO THE RIGHTBOTTOM;
+                            }
+                        }
+                        NEW headerExtraParams {
+                            title = 'Дополнительные параметры';
+                            minimumSize = (500, -1);
+                        }
+                        NEW headerCreateDetail {
+                            title = 'Основание';
+                        }
+                        NEW headerCreateDocuments {
+                            title = 'Производные документы';
+                            minimumSize = (500, -1);
+                        }
+                    }
+                }
+                ADD i.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+            PROPERTY(formOk) {
+                caption = 'Провести';
+            }
+        }
+    }
+
+//-- SKU
+    @defineDocumentSkuPriceListType(userInvoice, stockProp);
+    @extendFormDocumentSku(userInvoice, userInvoice, i);
+    @extendFormDocumentSkuAll(userInvoice, userInvoice, i);
+
+    addUserInvoice 'Добавить' = ACTION ADDFORM UserInvoice;
+    editUserInvoice 'Редактировать' (userInvoice) = ACTION EDITFORM UserInvoice;
+    editInvoice (invoice) += editUserInvoice(invoice);
+
+    overCopyInvoice = ABSTRACT ACTION (Invoice, Invoice);
+
+    copyInvoice 'Копировать' = ACTION (invoice) NEWSESSION {
+        FOR ADDOBJ i = UserInvoice DO {
+            SET supplierUserInvoice(i) <- supplierInvoice(invoice);
+            SET supplierStockUserInvoice(i) <- supplierStockInvoice(invoice);
+            SET customerUserInvoice(i) <- customerInvoice(invoice);
+            SET customerStockUserInvoice(i) <- customerStockInvoice(invoice);
+            SET contractSkuUserInvoice(i) <- contractSkuInvoice(invoice);
+            SET isCommissionUserInvoice(i) <- isCommissionInvoice(invoice);
+            SET currencyUserInvoice(i) <- currencyInvoice(invoice);
+            SET agreementUserInvoice(i) <- agreementInvoice(invoice);
+            SET priceListTypeUserInvoice(i) <- priceListTypeInvoice(invoice);
+            SET noteUserInvoice(i) <- noteInvoice(invoice);
+            //SET createShipmentUserInvoice(i) <- createShipmentUserInvoice(invoice);
+
+            EXEC overCopyInvoice(invoice, i);
+
+            FOR invoiceInvoiceDetail(invoiceDetail) == invoice DO {
+                FOR ADDOBJ d=UserInvoiceDetail DO {
+                    SET userInvoiceUserInvoiceDetail(d) <- i;
+                    SET skuUserInvoiceDetail(d) <- skuInvoiceDetail(invoiceDetail);
+                    SET quantityUserInvoiceDetail(d) <- quantityInvoiceDetail(invoiceDetail);
+                    SET priceUserInvoiceDetail(d) <- priceInvoiceDetail(invoiceDetail);
+                    SET data###stockProp###userInvoiceDetail(d) <- data###stockProp###invoiceDetail(invoiceDetail);
+                }
+            }
+
+            FORM userInvoice OBJECTS i = i MANAGESESSION DOCKEDMODAL;
+        }
+    } TOOLBAR;
+
+
+
+    FORM invoices 'Накладные' TITLE 'Накладные'###sign
+        OBJECTS i = Invoice
+        PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
+                                nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice,
+                                nameCurrencyInvoice, nameAgreementInvoice,
+                                seriesNumberContractSkuInvoice, isCommissionInvoice,
+                                countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
+                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice,
+                                noteInvoice, objectClassName
+        PROPERTIES (i) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+
+        PROPERTIES ()  addUserInvoice TODRAW i
+        PROPERTIES (i) editInvoice, copyInvoice
+        PROPERTIES (i) deletei=DELETE FORCE PANEL TOOLBAR  SHOWIF isUserInvoice(i)
+
+        OBJECTS d = InvoiceDetail
+        PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
+        PROPERTIES (d) READONLY quantityInvoiceDetail, namePriceListTypeInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
+                       numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail
+
+        FILTERS invoiceInvoiceDetail(d) == i
+
+        DIALOG Invoice OBJECT i
+    ;
+    @extendFormFilterAccess(Invoice, i, invoices, stockProp);
+
+    DESIGN invoices FROM DEFAULT {
+        main {
+            preferredSize = (1024, 768);
+            PROPERTY (deletei) {
+                askConfirm = TRUE;
+            }
+
+            NEW documentContainer BEFORE functions.box {
+                type = SPLITV;
+                childConstraints = TO THE BOTTOM;
+
+                ADD i.box { fillVertical = 2.0; }
+
+                NEW documentDetail {
+                    type = TABBED;
+
+                    ADD d.box {
+                        title = 'Спецификация';
+                    }
+                    NEW documentHistory {
+                        title = 'История';
+
+                        ADD i.historyGroup;
+                        ADD i.postedGroup;
+                    }
+                    NEW printTab {
+                        title = 'Печатные формы';
+                        NEW printContainer {
+                            title = 'Печать';
+                            childConstraints = TO THE BOTTOM;
+                        }
+                    }
+                    NEW actionContainer {
+                        title = 'Действия';
+                        childConstraints = TO THE RIGHT;
+                        NEW createdContainer {
+                            title = 'Создание на основе';
+                            childConstraints = TO THE BOTTOM;
+                            ADD PROPERTY(copyInvoice) { caption = 'Накладная'###sign;}
+                        }
+                        NEW machineryContainer {
+                            title = 'Загрузка';
+                            childConstraints = TO THE BOTTOM;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    FORM invoiceDetails 'Продажа'
+        OBJECTS d = InvoiceDetail
+        PROPERTIES(d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
+                               descriptionInvoiceDetail,
+                               quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
+                               numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
+                               name###stockProp###invoiceDetail
+
+        DIALOG InvoiceDetail OBJECT d
+    ;
+
+END
+
+// Партии
+META defineInvoiceBatch(stockProp)
+    @defineDocumentInterfaceDetailBatch(invoice, batch);
+    //@deriveDocumentDetailPriceBatchPriceListType(userInvoice, stockProp);
+    @deriveDocumentDetailPricePriceListTypeVATBatch(userInvoice, stockProp);
+
+    changeBatchUserInvoiceDetail = ACTION (userInvoiceDetail) {
+        FORM dialogBatch OBJECTS st = stockProp###userInvoiceDetail(userInvoiceDetail),
+                                 t = dateTimeUserInvoiceDetail(userInvoiceDetail),
+                                 sk = skuUserInvoiceDetail(userInvoiceDetail) MODAL SHOWDROP;
+
+        IF formResult() == FormResult.ok THEN {
+            SET batchUserInvoiceDetail(userInvoiceDetail) <- chosenObject('bt');
+        } ELSE IF formResult() == FormResult.drop THEN {
+            SET batchUserInvoiceDetail(userInvoiceDetail) <- NULL;
+        }
+
+    };
+
+    EXTEND FORM userInvoice
+        PROPERTIES (d) nameBatchUserInvoiceDetail ON CHANGE changeBatchUserInvoiceDetail(d) AFTER shortNameUOMSkuUserInvoiceDetail
+//        HINTTABLE LIST batchUserInvoiceDetail
+    ;
+    EXTEND FORM invoices PROPERTIES (d) READONLY nameBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
+END
+
+META defineInvoiceReturn(NS, NSR, stockProp)
+    invoiceDetailInvoiceDetail (invoiceDetail) = ABSTRACT NS.InvoiceDetail (NSR.InvoiceDetail) PERSISTENT;
+    invoiceDetailUserInvoiceDetail (userInvoiceDetail) = DATA NS.InvoiceDetail (NSR.UserInvoiceDetail);
+    invoiceDetailInvoiceDetail(detail) += invoiceDetailUserInvoiceDetail(detail);
+
+    returnQuantityInvoiceDetail 'Кол-во (возвращено)' (invoiceDetail)= GROUP SUM NSR.quantityInvoiceDetail(invoiceDetail) BY invoiceDetailInvoiceDetail(invoiceDetail) PERSISTENT;
+    returnQuantityInvoiceDetailInvoice 'Кол-во (возвращено)' (invoice) =  GROUP SUM returnQuantityInvoiceDetail(invoiceDetail) BY NS.invoiceInvoiceDetail(invoiceDetail) PERSISTENT;
+
+    CONSTRAINT returnQuantityInvoiceDetail(detail) > NS.quantityInvoiceDetail(detail)
+        MESSAGE 'Количество строки возврата больше чем количество строки основания';
+
+    CONSTRAINT NS.skuInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != NSR.skuUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
+        MESSAGE 'SKU строки основания должен соответствовать SKU строки возврата';
+
+    CONSTRAINT NS.supplierInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != NSR.supplierUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
+        MESSAGE 'Поставщик строки основания должен соответствовать Поставщик строки возврата';
+
+    CONSTRAINT NS.customerInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != NSR.customerUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
+        MESSAGE 'Покупатель строки основания должен соответствовать Покупатель строки возврата';
+
+    descriptionInvoiceDetailInvoiceDetail 'Основание' (invoiceDetail) = NS.descriptionInvoiceDetail(invoiceDetailInvoiceDetail(invoiceDetail));
+    descriptionInvoiceDetailUserInvoiceDetail 'Основание' (userInvoiceDetail) = NS.descriptionInvoiceDetail(invoiceDetailUserInvoiceDetail(userInvoiceDetail));
+
+//    NSR.priceUserInvoiceDetail(detail) <- IF invoiceDetailUserInvoiceDetail(detail) THEN
+//                                                    NS.priceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail))
+//                                                 ELSE IF batchUserInvoiceDetail(detail) THEN
+//                                                    prevPricePriceListTypeBatchStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
+//                                                                                             NSR.batchInvoiceDetail(detail),
+//                                                                                             NSR.stockProp###invoiceDetail(detail),
+//                                                                                             NSR.dateTimeInvoiceDetail(detail))
+//                                                 ELSE
+//                                                    prevPricePriceListTypeSkuStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
+//                                                                                           NSR.skuInvoiceDetail(detail),
+//                                                                                           NSR.stockProp###invoiceDetail(detail),
+//                                                                                           NSR.dateTimeInvoiceDetail(detail))
+//                                        WHEN CHANGED(invoiceDetailUserInvoiceDetail(detail)) OR
+//                                             CHANGED(NSR.batchInvoiceDetail(detail)) OR
+//                                             CHANGED(NSR.priceListTypeInvoiceDetail(detail)) OR
+//                                             CHANGED(NSR.skuInvoiceDetail(detail)) OR
+//                                             CHANGED(NSR.stockProp###invoiceDetail(detail)) OR
+//                                             CHANGED(NSR.dateTimeInvoiceDetail(detail));
+
+    recalculatedPriceUserInvoiceDetail(detail) = ACTION (detail) {    //todo: необходимо сделать, чтобы ACTION вызывался после пересчета цены от партии
+        IF invoiceDetailUserInvoiceDetail(detail) THEN {
+            SET NSR.priceUserInvoiceDetail(detail) <-  NS.priceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
+            SET NSR.invoicePriceUserInvoiceDetail(detail) <-  NS.invoicePriceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
+            SET NSR.VATUserInvoiceDetail(detail) <- NS.VATInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
+        }
+    }
+        WHEN SESSION FORMS userInvoice
+            CHANGED(invoiceDetailUserInvoiceDetail(detail)) OR
+            CHANGED(NSR.batchInvoiceDetail(detail)) OR
+            CHANGED(NSR.priceListTypeInvoiceDetail(detail)) OR
+            CHANGED(NSR.skuInvoiceDetail(detail)) OR
+            CHANGED(NSR.stockProp###invoiceDetail(detail)) OR
+            CHANGED(NSR.dateTimeInvoiceDetail(detail))
+                DO EXEC recalculatedPriceUserInvoiceDetail(detail);
+
+
+    EXTEND FORM userInvoice PROPERTIES (d) descriptionInvoiceDetailUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;
+    EXTEND FORM NS.userInvoice PROPERTIES (d) READONLY returnQuantityInvoiceDetail BEFORE namePriceListTypeUserInvoiceDetail;
+
+    EXTEND FORM invoices PROPERTIES (d) READONLY descriptionInvoiceDetailInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
+    EXTEND FORM NS.invoices PROPERTIES (d) READONLY returnQuantityInvoiceDetail BEFORE namePriceListTypeInvoiceDetail;
+
+    NSR.batchUserInvoiceDetail(detail) <- NS.maxBatchInvoiceDetail(invoiceDetailUserInvoiceDetail(detail))
+        WHEN CHANGED(invoiceDetailUserInvoiceDetail(detail)) AND NS.countBatchInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) == 1;
+
+    CONSTRAINT batchUserInvoiceDetail(detail) AND invoiceDetailUserInvoiceDetail(detail) AND
+               NOT costInvoiceDetailBatch(invoiceDetailUserInvoiceDetail(detail), batchUserInvoiceDetail(detail))
+               CHECKED BY batchUserInvoiceDetail, invoiceDetailUserInvoiceDetail
+               MESSAGE 'Выбрана партия, которая не была списана в соответствующей строке продажи';
+END
+
+META defineInvoiceDestination(fromLegalEntity, toLegalEntity)
+    Invoice.fromLegalEntityInvoice(invoice) += fromLegalEntity##Invoice(invoice);
+    Invoice.toLegalEntityInvoice(invoice) += toLegalEntity##Invoice(invoice);
+    //Invoice.dataFromLegalEntityInvoiceDetail(detail) += data###fromLegalEntity##InvoiceDetail(detail);
+    //Invoice.dataToLegalEntityInvoiceDetail(detail) += data###toLegalEntity##InvoiceDetail(detail);
+END
+
+
+META defineInvoiceStockDestination(fromStock, toStock)
+    Invoice.fromStockInvoice(invoice) += fromStock##Invoice(invoice);
+    Invoice.toStockInvoice(invoice) += toStock##Invoice(invoice);
+    Invoice.dataFromStockInvoiceDetail(detail) += data###fromStock##InvoiceDetail(detail);
+    Invoice.dataToStockInvoiceDetail(detail) += data###toStock##InvoiceDetail(detail);
+END
+
+// вторая валюта
+META defineInvoiceHomeCurrency(dumb)
+
+    backgroundHomeCurrencyInvoice 'Цвет' (invoice) = RGB(255, 224, 128) IF invoice IS Invoice;
+
+    isHomeCurrencyInvoice 'Конвертация' = ABSTRACT BOOLEAN(Invoice) IN documentPrmGroup;
+    isHomeCurrencyUserInvoice 'Конвертация' = DATA BOOLEAN(UserInvoice) IN documentPrmGroup;
+    isHomeCurrencyInvoice(i) += isHomeCurrencyUserInvoice(i);
+
+    homeCurrencyInvoice = ABSTRACT Currency(Invoice);
+    homeCurrencyUserInvoice = DATA Currency(UserInvoice);
+    homeCurrencyInvoice(i) += homeCurrencyUserInvoice(i);
+    nameHomeCurrencyInvoice 'Валюта (пост.)' (i) = nameCurrency(homeCurrencyInvoice(i));
+
+    homeCurrencyUserInvoice(userInvoice) <- currencyLegalEntity(customerUserInvoice(userInvoice)) WHEN CHANGED(customerUserInvoice(userInvoice));
+
+    typeExchangeInvoice = ABSTRACT TypeExchange(Invoice);
+    typeExchangeUserInvoice = DATA TypeExchange(UserInvoice);
+    typeExchangeInvoice(i) += typeExchangeUserInvoice(i);
+    nameTypeExchangeInvoice 'Тип обмена' (i) = nameTypeExchange(typeExchangeInvoice(i));
+
+    CONSTRAINT currencyTypeExchange(typeExchangeUserInvoice(invoice)) != homeCurrencyUserInvoice(invoice)
+        CHECKED BY typeExchangeUserInvoice MESSAGE 'Тип обмена должен соответствовать валюте (пост.)';
+
+    dateRateExchangeInvoice 'Дата конвертации' = ABSTRACT DATE(Invoice);
+    dateRateExchangeUserInvoice 'Дата конвертации' = DATA DATE(UserInvoice);
+    dateRateExchangeInvoice(i) += dateRateExchangeUserInvoice(i);
+
+    dateRateExchangeUserInvoice(i) <- dateInvoice(i) WHEN CHANGED (dateInvoice(i));
+
+    rateExchangeInvoice 'Курс' = ABSTRACT NUMERIC[14,6](Invoice) PERSISTENT;
+    rateExchangeUserInvoice 'Курс' = DATA NUMERIC[14,6](UserInvoice);
+    rateExchangeInvoice(i) += rateExchangeUserInvoice(i);
+
+    WHEN SESSION FORMS userInvoice CHANGED (dateRateExchangeUserInvoice(i)) OR
+                                   CHANGED (typeExchangeUserInvoice(i)) OR
+                                   CHANGED (currencyUserInvoice(i)) DO {
+        rateExchangeUserInvoice(i) <- rateTypeExchangeCurrencyDate(typeExchangeUserInvoice(i),
+                                                                   currencyUserInvoice(i),
+                                                                   dateRateExchangeUserInvoice(i));
+    }
+
+    rateExchangeInvoiceDetail 'Курс' = ABSTRACT NUMERIC[14,6](InvoiceDetail) PERSISTENT;
+
+    dataRateExchangeUserInvoiceDetail 'Курс' = DATA NUMERIC[14,6](UserInvoiceDetail);
+    rateExchangeUserInvoiceDetail 'Курс' (d) = OVERRIDE rateExchangeUserInvoice(userInvoiceUserInvoiceDetail(d)),  dataRateExchangeUserInvoiceDetail(d);
+    rateExchangeInvoiceDetail(d) += rateExchangeUserInvoiceDetail(d);
+
+    homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](InvoiceDetail) PERSISTENT;
+    homePriceUserInvoiceDetail 'Цена (пост.)' = DATA NUMERIC[14,3](UserInvoiceDetail);
+    homePriceInvoiceDetail(d) += homePriceUserInvoiceDetail(d);
+
+    homePriceUserInvoiceDetail(d) <- roundPriceCurrency(priceUserInvoiceDetail(d) *
+                                                        rateExchangeUserInvoiceDetail(d),
+                                                        homeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(d)))
+                                                   WHEN CHANGED (dateUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
+                                                        CHANGED (rateExchangeUserInvoiceDetail(d)) OR
+                                                        CHANGED (homeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(d))) OR
+                                                        CHANGED (priceUserInvoiceDetail(d));
+
+    sumHomeInvoiceDetail 'Сумма (пост.)' (d) = quantityInvoiceDetail(d) * homePriceInvoiceDetail(d);
+
+    EXTEND FORM userInvoice
+        PROPERTIES(i) BACKGROUND backgroundHomeCurrencyInvoice(i) BEFORE nameAgreementUserInvoice
+                                                                    isHomeCurrencyUserInvoice
+        PROPERTIES(i) BACKGROUND backgroundHomeCurrencyInvoice(i) SHOWIF isHomeCurrencyUserInvoice(i)
+                                                                    nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
+        PROPERTIES(d) BACKGROUND backgroundHomeCurrencyInvoice(i) SHOWIF isHomeCurrencyUserInvoice(i) AFTER sumUserInvoiceDetail
+                                                                    sumHomeInvoiceDetail, homePriceUserInvoiceDetail, rateExchangeUserInvoiceDetail
+    ;
+
+    EXTEND DESIGN userInvoice {
+        headerExtraParams {
+            NEW headerHomeCurrency {
+                title = 'Конвертация';
+                ADD PROPERTY(isHomeCurrencyUserInvoice);
+                ADD PROPERTY(nameHomeCurrencyInvoice);
+                ADD PROPERTY(nameTypeExchangeInvoice);
+                ADD PROPERTY(dateRateExchangeInvoice);
+                ADD PROPERTY(rateExchangeInvoice);
+            }
+        }
+    }
+
+    EXTEND FORM invoices
+        PROPERTIES(i) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) isHomeCurrencyInvoice
+        //PROPERTIES(i) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) SHOWIF isHomeCurrencyInvoice(i) nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
+        //PROPERTIES(d) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) sumHomeInvoiceDetail AFTER sumInvoiceDetail SHOWIF isHomeCurrencyInvoice(i)
+        //PROPERTIES(d) READONLY BACKGROUND backgroundHomeCurrencyInvoice(i) homePriceInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrencyInvoice(i)
+    ;
+END
+
+META defineInvoicePayment(dumb)
+
+    addPaymentInvoice 'Оплатить' = ACTION (invoice) {
+        SET currentInContractLedger() <- invoice;
+        FOR ADDOBJ p = Payment DO{
+            SET contractPayment(p) <- contractSkuUserInvoice(invoice);
+            SET datePayment(p) <- currentDate();
+            SET timePayment(p) <- currentTime();
+            SET payerPayment(p) <- customerUserInvoice(invoice);
+            SET beneficiaryPayment(p) <- supplierUserInvoice(invoice);
+            SET sumFromPayment(p) <- invoiceSumUserInvoiceDetailUserInvoice(invoice);
+            SET costOutContractLedgerInContractLedger(p, invoice) <- sumContractPayment(p);
+            FORM payment OBJECTS p=p MODAL;
+            IF NOT formResult() == FormResult.ok THEN {
+                DELETE p;
+            }
+        }
+    }
+
+    editPaymentInvoice 'Редактировать' = ACTION (payment, invoice) {
+        SET currentInContractLedger() <- invoice;
+        FORM payment OBJECTS p=payment MODAL;
+    }
+
+    EXTEND FORM userInvoice
+        OBJECTS pm = Payment
+        PROPERTIES(pm) READONLY seriesNumberObject, dateTimePayment, namePayerPayment, nameBeneficiaryPayment,
+                                notePayment, objectClassName
+        ORDER BY dateTimePayment
+        PROPERTIES(pm, i) costOutContractLedgerInContractLedger
+        PROPERTIES TODRAW pm FORCE PANEL TOOLBAR addPaymentInvoice(i), editPaymentInvoice(pm, i)
+        PROPERTIES(pm) DELETESESSION
+
+        FILTERGROUP filters
+            FILTER 'Платежи по инвойсу' 'F10' costOutContractLedgerInContractLedger(pm, i) DEFAULT
+        FILTERS contractPayment(pm) == contractInContractLedger(i)
+    ;
+
+    EXTEND DESIGN userInvoice{
+        specification.box{
+            NEW paymentContainer{
+                caption = 'Платежи';
+                ADD pm.box;
+            }
+        }
+    }
+END
+

@@ -1,0 +1,19 @@
+MODULE PurchaseCertificate;
+
+REQUIRE Certificate, PurchaseInvoice, PurchaseShipment;
+
+NAMESPACE Purchase;
+
+@defineDocumentCertificate(invoice, i);
+@defineDocumentCertificateTextPrefix(invoice, certificate, 'Дополнительные сертификаты');
+@deriveDocumentCertificate(certificateText, invoice, customerStock, );
+
+@defineDocumentCertificate(shipment, s);
+@defineDocumentCertificateTextPrefix(shipment, certificate, 'Дополнительные сертификаты');
+@deriveDocumentCertificate(certificateText, shipment, customerStock, );
+certificateTextShipmentDetail(detail) += certificateTextInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+overFillInvoiceUserShipmentDetailInvoiceDetail(s, i) += ACTION (s, i) {
+    SET certificateTextUserShipmentDetail(s) <- certificateTextInvoiceDetail(i);
+}
+
+certificateTextBatch (batch) += certificateTextShipmentDetail(shipmentDetailShipmentBatch(batch));

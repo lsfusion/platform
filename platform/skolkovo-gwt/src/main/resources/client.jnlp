@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.5+" codebase="http://10.245.181.31/res/" href="client.jnlp">
+    <information>
+        <title>Skolkovo</title>
+        <vendor>Nomosoft Ltd.</vendor>
+        <description>Skolkovo</description>
+        <icon href="logo.png" kind="default"/>
+        <icon href="splash.png" kind="splash"/>
+        <shortcut online="true">
+            <desktop/>
+        </shortcut>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <j2se version="1.6+" initial-heap-size="32m" max-heap-size="1024m"/>
+        <property name="platform.client.hostname" value="10.245.181.31"/>
+        <property name="platform.client.hostport" value="7652"/>
+        <property name="platform.client.exportname" value="default"/>
+        <property name="platform.client.logo" value="http://10.245.181.31/res/splash.png"/>
+        <jar href="client.jar"/>
+    </resources>
+    <application-desc>
+    </application-desc>
+</jnlp>

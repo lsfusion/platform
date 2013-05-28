@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration>
+    <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+        <param name="target" value="System.out"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="ALL"/>
+            <param name="LevelMax" value="INFO"/>
+        </filter>
+    </appender>
+
+    <appender name="stderr" class="org.apache.log4j.ConsoleAppender">
+        <param name="target" value="System.err"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="WARN"/>
+        </filter>
+    </appender>
+
+    <appender name="gwtlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="5"/>
+            <param name="activeFileName" value="${catalina.base}/logs/gwtlog.log"/>
+            <param name="fileNamePattern" value="${catalina.base}/logs/gwtlog-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <!-- 10MB -->
+            <param name="maxFileSize" value="10485760"/>
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="errorlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="5"/>
+            <param name="activeFileName" value="${catalina.base}/logs/gwtlog-err.log"/>
+            <param name="fileNamePattern" value="${catalina.base}/logs/gwtlog-err-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <!-- 10MB -->
+            <param name="maxFileSize" value="10485760"/>
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="WARN"/>
+        </filter>
+    </appender>
+
+    <category name="org.springframework" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="stderr"/>
+    </category>
+
+    <root>
+        <priority value="DEBUG"/>
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="stderr"/>
+        <appender-ref ref="gwtlog"/>
+        <appender-ref ref="errorlog"/>
+    </root>
+</log4j:configuration>

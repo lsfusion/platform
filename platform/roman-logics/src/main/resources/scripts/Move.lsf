@@ -1,0 +1,121 @@
+MODULE Move;
+
+REQUIRE System,
+        Document,
+        RomanDocument,
+        Stock,
+        RomanStock,
+        DocumentTransfer,
+        ListRegister,
+        RetailPrice,
+        RomanLogicsModule;
+
+PRIORITY Stock, RomanLogicsModule;
+
+// ---------------------------------------- Перемещение ------------------------------------ //
+
+CLASS MoveOut 'Перемещение товаров' : Historizable, NumeratedObject, InnerDocument;
+CLASS MoveOutPosted 'Проведенное перемещение товаров' : MoveOut, PostedObject;
+CLASS MoveOutDetail 'Строка перемещения товаров';
+
+@defineNumeratedObjectDefault(MoveOut, 'Нумератор для перемещения товаров', 'ПБ');
+
+@defineDocumentTransferOut(move, 'Перемещение товаров', sku, stock);
+@defineDocumentFormTransferOut(move, 'Перемещение товаров');
+
+@defineDocumentCurrency(moveOut);
+@deriveDocumentCurrency(moveOut, stock);
+
+@defineDocumentDetailSkuArticle(moveOut);
+@extendFormDocumentDetailSkuArticle(moveOut, d, moveOut);
+@extendFormDocumentDetailSkuArticleReadonly(moveOuts, d, moveOut);
+
+EXTEND FORM moveOut
+    PROPERTIES (t) nameNumeratorObject
+;
+EXTEND DESIGN moveOut {
+    t.documentHeaderGroup {
+        ADD PROPERTY (nameNumeratorObject) BEFORE PROPERTY(numberObject);
+    }
+}
+
+// Проводим по регистру
+@implementSkuLedgerOutFIFO(MoveOutDetail, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityMoveOutDetail (ledger);
+@implementSkuLedgerOutFIFOBalanceB(MoveOutDetail, stock);
+sumOutSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS MoveOutDetail;
+skipASkuLedger (ledger) += ledger IS MoveOutDetail;
+
+
+EXTEND FORM moveOut
+    PROPERTIES(t) nameCurrencyMoveOut
+;
+EXTEND FORM moveOuts
+    PROPERTIES(t) READONLY nameCurrencyMoveOut
+;
+// ---------------------------------------- Поступление ------------------------------------ //
+
+CLASS MoveIn 'Поступление товаров' : Historizable;
+CLASS MoveInDetail 'Строка поступления товаров';
+
+@defineDocumentTransferIn(move, 'Поступление товаров', sku, stock);
+@defineDocumentFormTransferIn(move, 'Поступление товаров');
+
+@defineDocumentDetailSkuArticle(moveIn);
+@extendFormDocumentDetailSkuArticleReadonly(moveIns, d, moveIn);
+
+costMoveInBatch(moveIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY moveInMoveInDetail(ledger), batch PERSISTENT;
+
+@implementSkuLedgerInLIFO(MoveInDetail, sku, stock);
+quantityInLIFOSkuLedger (ledger) += quantityMoveInDetail(ledger);
+limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(moveOutDetailMoveInDetail(ledger), batch);
+sumInSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS MoveInDetail;
+skipASkuLedger (ledger) += ledger IS MoveInDetail;
+
+nameCurrencyMoveIn 'Валюта' (moveIn) = nameCurrencyMoveOut(moveOutMoveIn(moveIn)) MINCHARWIDTH 10 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
+
+// ---------------------------------------- Приемка ------------------------------------ //
+
+CLASS MoveRec 'Приемка товаров (перемещение)' : Historizable;
+CLASS MoveRecPosted 'Проведенная приемка товаров (перемещение)' : MoveRec, PostedObject;
+
+CLASS MoveRecDetail 'Строка приемки товаров (перемещение)';
+
+@defineDocumentTransferRec(move, 'Приемка товаров (перемещение)', sku, stock);
+@defineDocumentFormTransferRec(move, 'Приемка товаров (перемещение)');
+
+@defineDocumentDetailSkuArticle(moveRec);
+@extendFormDocumentDetailSkuArticle(moveRec, d, moveRec);
+
+@extendFormDocumentDetailSkuArticleReadonly(moveIns, r, moveRec);
+
+// ---------------------------------------- Акт расхождений ------------------------------------ //
+CLASS MoveDiff 'Акт расхождений приемки товаров (перемещение)' : Historizable;
+
+CLASS ABSTRACT MoveDiffDetail 'Строка расхождений акта приемки товаров (перемещение)';
+CLASS MoveDiffEDetail 'Строка расхождений акта приемки товаров (перемещение, излишек)' : MoveDiffDetail;
+CLASS MoveDiffSDetail 'Строка расхождений акта приемки товаров (перемещение, недостача)' : MoveDiffDetail;
+
+@defineDocumentTransferDiff(move, 'Акт расхождений приемки товаров (перемещение)', sku, stock);
+@defineDocumentFormTransferDiff(move);
+
+@defineDocumentDetailSkuArticle(moveDiff);
+@extendFormDocumentDetailSkuArticleReadonlyQuantity(moveIns, f, moveDiff, signedQuantityMoveDiffDetail);
+
+costMoveDiffEDetail(detail) = 0.0 IF detail IS MoveDiffEDetail;
+
+EXTEND CLASS MoveDiffEDetail : BatchB;
+@implementBatchCustom(moveDiffEDetail, sku, stock, cost);
+quantityBatch (batch) += quantityMoveDiffEDetail(batch);
+skipASkuLedger (ledger) += ledger IS MoveDiffEDetail;
+
+@implementSkuLedgerOutFIFO(MoveDiffSDetail, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityMoveDiffSDetail(ledger);
+limitOutFIFOSkuLedgerBatch (ledger, batch) += costMoveInBatch(moveInMoveDiffSDetail(ledger), batch);
+orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS MoveDiffSDetail;
+sumOutSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS MoveDiffSDetail;
+skipASkuLedger (ledger) += ledger IS MoveDiffSDetail;
+
+EXTEND FORM moveIns
+    PROPERTIES(t) READONLY nameCurrencyMoveIn
+;

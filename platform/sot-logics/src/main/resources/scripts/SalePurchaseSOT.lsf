@@ -1,0 +1,8 @@
+MODULE SalePurchaseSOT;
+
+REQUIRE SaleCertificateSOT, PurchaseCertificateSOT, SalePurchaseInvoice, PricingPurchase;
+
+NAMESPACE Sale;
+
+Purchase.priceListTextInvoiceDetail(detail) += priceListTextInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));
+extraDescriptionPricingDetail(detail) += toString255(Purchase.priceListTextInvoiceDetail(Purchase.invoiceDetailInvoicePricingDetail(detail)));

@@ -1,0 +1,92 @@
+MODULE TripInvoiceConsignmentBy;
+
+REQUIRE Shipment, Invoice, TripInvoiceBy, InvoiceConsignmentBy;
+
+truckConsignment(invoice) += truckTrip(tripInvoice(invoice));
+driverConsignment(invoice) += driverTrip(tripInvoice(invoice));
+waybillConsignment(invoice) += seriesNumberObject(tripInvoice(invoice));
+
+META setTripPropTrip(prop)
+    setTrip###prop##Trip = ACTION (invoice) {
+        SET prop##Invoice(invoice) <- prop##Trip(tripInvoice(invoice));
+    }
+    WHEN CHANGED(prop##Trip(tripInvoice(invoice))) DO EXEC setTrip###prop##Trip(invoice);
+END
+
+issuanceAllowedTrip = DATA Employee(Trip);
+nameIssuanceAllowedTrip 'Отпуск разрешил' (trip) = nameContact(issuanceAllowedTrip(trip));
+@setTripPropTrip(issuanceAllowed);
+
+issuanceExecutedTrip = DATA Employee(Trip);
+nameIssuanceExecutedTrip 'Отпуск произвел' (trip) = nameContact(issuanceExecutedTrip(trip));
+@setTripPropTrip(issuanceExecuted);
+
+forwarderTrip 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы'= DATA STRING[40](Trip);
+@setTripPropTrip(forwarder);
+
+loadingExecuterTrip = DATA Employee(Trip);
+nameLoadingExecuterTrip 'Исполнитель ПРР' (trip) = nameContact(loadingExecuterTrip(trip));
+@setTripPropTrip(loadingExecuter);
+
+wayOfLoadingTrip = DATA WayOfLoading(Trip);
+nameWayOfLoadingTrip 'Способ ПРР' (trip) = nameWayOfLoading(wayOfLoadingTrip(trip));
+@setTripPropTrip(wayOfLoading);
+
+codeLoadingTrip 'Код ПРР' = DATA STRING[3] (Trip);
+@setTripPropTrip(codeLoading);
+
+currencyTrip 'Валюта (ИД)' = DATA Currency(Trip);
+shortNameCurrencyTrip 'Валюта' (trip) = shortNameCurrency(currencyTrip(trip));
+documentNameCurrencyTrip 'Валюта в накладной сокр.' (trip) = documentNameCurrency(currencyTrip(trip));
+@setTripPropTrip(currency);
+
+printHorizontalConsignmentTrip 'Печать ТТН-1 (гор.)' (trip) = ACTION (trip) {
+    FOR inTripInvoice(trip, invoice) DO {
+        EXEC printConsignmentHorizontalA(invoice);
+        EXEC printConsignmentHorizontalB(invoice);
+        EXEC printConsignmentAttach(invoice);
+    };
+} TOOLBAR;
+
+printVerticalConsignmentTrip 'Печать ТТН-1 (верт.)' (trip) = ACTION (trip) {
+    FOR inTripInvoice(trip, invoice) DO {
+        EXEC printConsignmentVerticalA(invoice);
+        EXEC printConsignmentVerticalB(invoice);
+        EXEC printConsignmentAttach(invoice);
+    };
+} TOOLBAR;
+
+EXTEND FORM trip
+    PROPERTIES (t) nameIssuanceAllowedTrip, nameIssuanceExecutedTrip, forwarderTrip, nameLoadingExecuterTrip, nameWayOfLoadingTrip, codeLoadingTrip, documentNameCurrencyTrip
+    PROPERTIES createConsignmentTrip(t) TODRAW i
+    PROPERTIES printHorizontalConsignmentTrip(t) TODRAW i
+    PROPERTIES printVerticalConsignmentTrip(t) TODRAW i
+
+;
+
+EXTEND DESIGN trip {
+
+    bottomContainer {
+        NEW consignmentContainer AFTER invoiceContainer{
+            caption = 'Атрибуты накладных';
+            childConstraints = TO THE BOTTOM;
+            NEW issuanceContainer {
+                caption = 'Отпуск';
+                ADD PROPERTY(nameIssuanceAllowedTrip);
+                ADD PROPERTY(nameIssuanceExecutedTrip);
+                ADD PROPERTY(forwarderTrip);
+            }
+            NEW loadingContainer {
+                caption = 'ППР';
+                ADD PROPERTY(nameLoadingExecuterTrip);
+                ADD PROPERTY(nameWayOfLoadingTrip);
+                ADD PROPERTY(codeLoadingTrip);
+            }
+            NEW dopContainer {
+                caption = 'Дополнительно';
+                ADD PROPERTY(documentNameCurrencyTrip);
+            }
+
+        };
+    }
+}

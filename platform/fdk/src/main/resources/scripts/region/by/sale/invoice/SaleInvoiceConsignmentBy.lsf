@@ -1,0 +1,12 @@
+MODULE SaleInvoiceConsignmentBy;
+
+REQUIRE SaleInvoice,
+        InvoiceConsignmentBy;
+
+NAMESPACE Sale;
+
+@defineInvoiceConsignment(supplier, customer);
+
+@implementConsignmentDocumentHeaderPrefix (invoice, invoice, Invoice);
+
+

@@ -1,0 +1,191 @@
+body {
+	background: #C1C1C1;
+	background-image:url(background.png)
+}
+
+#site-header h1
+{
+display:block;
+float:left;
+line-height:70px;
+margin-left:17px;
+margin-top:0px;
+width:230px;
+color:#FFFFAA;
+text-align:left;
+font-size:23px;
+font-weight:bold;
+font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+float:left;
+
+}
+
+
+#site-header ul {
+	padding: 0px;
+	list-style-type: none;
+	height:21px;
+	text-align:center;
+	height:85px;
+	overflow:hidden;
+}
+#site-header ul li , #site-header ul li a, #site-header ul li a:visited{
+	display:block;
+	float:left;
+	margin: 0px;
+	text-align:center;
+	line-height:72px;
+	width:133px;
+	color:#FFFFAA;
+
+	font-size:16px;
+	font-weight:bold;
+	text-decoration:none;
+	font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+#site-header ul li a:hover{
+color:#CCCCCC;
+}
+
+#site-main 
+{
+margin-top:10px;
+margin-bottom:10px;
+}
+
+
+#site-main .main_top
+{
+height:85px;
+width:921px;
+background-image:url(main_top.png);
+background-repeat:no-repeat;
+}
+
+#site-main .main_body
+{
+position:relative;
+min-height:500px;
+height:100%;
+width:921px;
+margin-top:-1em;
+background-image:url(main_body.png);
+background-repeat:repeat-y;
+color:#000000;
+}
+
+#site-main .main_tree
+{
+position:absolute;
+left:2px;
+width:250px;
+height:100%;
+overflow:auto;
+}
+
+#site-main .main_content
+{
+margin-left:262px;
+margin-right:10px;
+}
+
+#site-main .main_content_no_tree
+{
+margin-left:10px;
+margin-right:10px;
+}
+
+#site-main .main_top h1
+{
+font-size:24px;
+line-height:85px;
+color:#000000;
+padding-left:25px;
+margin-right:25px;
+}
+
+#site-main h1
+{
+font-size:18pt;
+}
+
+#site-main h2
+{
+font-size:16pt;
+}
+
+#site-main h3
+{
+font-size:14pt;
+}
+
+#site-main h4
+{
+font-size:12pt;
+}
+
+#site-main h5
+{
+font-size:11pt;
+}
+
+#site-main h6
+{
+font-size:10pt;
+}
+
+#site-main .main_bottom
+{
+height:8px;
+width:921px;
+background-image:url(main_bottom.png);
+background-repeat:no-repeat;
+}
+
+
+#page
+{
+  margin: 0 auto 0 auto; 
+  margin-top:25px;
+  display: block; 
+  height:auto;
+  position: relative; 
+  overflow: hidden; 
+  width: 921px;
+}
+
+#site-header
+{
+background-image:url(header.png);
+background-repeat:no-repeat;
+width:921px;
+height:72px;
+}
+
+
+
+#site-footer {
+display:block;
+width: 921px;
+height:74px;
+background: url(footer.png) no-repeat;
+text-align:right;
+font-size:9px;
+line-height:75px;
+}
+
+#site-footer p{
+padding-right:20px;
+text-align:right;
+}
+
+#site-footer, #site-footer a, #site-footer a:visited{
+color:#FFFFFF;
+}
+
+#site-footer a:hover{
+text-decoration:none;
+color:#CCCCCC;
+}
+

@@ -1,0 +1,33 @@
+MODULE MenuOperation;
+
+REQUIRE Operation, PriceListType;
+
+NAMESPACE Menu;
+
+@defineOperation(' (меню)');
+
+@defineOperationPriceListType();
+
+@defineOperationRole();
+@extendFormFilterRole(o, dialogOperations);
+//@extendFormFilterRole(o, operations);     //-- пока не нужен
+
+groupTypeOperation = DATA GroupType (Operation);
+nameGroupTypeOperation 'Тип классификатора' (operation) = nameGroupType(groupTypeOperation(operation));
+
+EXTEND FORM operation
+    PROPERTIES(o) nameGroupTypeOperation
+;
+EXTEND DESIGN operation{
+    tabContainer {
+        NEW createContainer {
+            caption = 'Производные документы';
+        }
+        NEW showContainer {
+            caption = 'Отображение свойств';
+            ADD PROPERTY(nameGroupTypeOperation);
+        }
+    }
+}
+
+

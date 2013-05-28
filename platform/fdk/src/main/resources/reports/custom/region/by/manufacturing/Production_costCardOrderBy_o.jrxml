@@ -1,0 +1,881 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="o" pageWidth="595" pageHeight="842" columnWidth="565" leftMargin="20" rightMargin="10" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.9487171000000019"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#D4D4D4" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle1" mode="Opaque" backcolor="#E9E9E9" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle2" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="o" class="java.lang.Integer"/>
+	<field name="objectClassName" class="java.lang.String"/>
+	<field name="nameProductsLegalEntityStockOrder" class="java.lang.String"/>
+	<field name="nameComponentsStockOrder" class="java.lang.String"/>
+	<field name="nameProductsStockOrder" class="java.lang.String"/>
+	<field name="nameNumeratorObject" class="java.lang.String"/>
+	<field name="numberObject" class="java.lang.String"/>
+	<field name="seriesObject" class="java.lang.String"/>
+	<field name="dateOrder" class="java.util.Date"/>
+	<field name="timeOrder" class="java.sql.Time"/>
+	<field name="fromDateOrder" class="java.util.Date"/>
+	<field name="toDateOrder" class="java.util.Date"/>
+	<field name="noteOrder" class="java.lang.String"/>
+	<field name="quantityProductDetailOrder" class="java.math.BigDecimal"/>
+	<field name="quantityComponentDetailOrder" class="java.math.BigDecimal"/>
+	<field name="pd" class="java.lang.Integer"/>
+	<field name="indexProductDetail" class="java.lang.Integer"/>
+	<field name="nameSkuProductDetail" class="java.lang.String"/>
+	<field name="idBarcodeSkuProductDetail" class="java.lang.String"/>
+	<field name="descriptionBOMProductDetail" class="java.lang.String"/>
+	<field name="nameProductProductDetail" class="java.lang.String"/>
+	<field name="shortNameUOMProductDetail" class="java.lang.String"/>
+	<field name="quantityProductDetail" class="java.math.BigDecimal"/>
+	<field name="componentsPriceProductDetail" class="java.math.BigDecimal"/>
+	<field name="markupProductDetail" class="java.math.BigDecimal"/>
+	<field name="productsPriceProductDetail" class="java.math.BigDecimal"/>
+	<field name="productsSumInBOMProductDetail" class="java.math.BigDecimal"/>
+	<field name="valueVATProductDetail" class="java.math.BigDecimal"/>
+	<field name="VATSumProductDetail" class="java.math.BigDecimal"/>
+	<field name="calcPriceVATProductDetail" class="java.math.BigDecimal"/>
+	<field name="premiumComponentsSumInBOMProductDetail" class="java.math.BigDecimal"/>
+	<field name="recipesProductDetail" class="java.lang.String"/>
+	<field name="s" class="java.lang.Integer"/>
+	<field name="quantityProductDetailSku" class="java.math.BigDecimal"/>
+	<field name="quantityProductProductDetailSku" class="java.math.BigDecimal"/>
+	<field name="componentsSumProductDetailSku" class="java.math.BigDecimal"/>
+	<field name="premiumComponentsSumProductDetailSku" class="java.math.BigDecimal"/>
+	<field name="totalVATSumProductDetailSku" class="java.math.BigDecimal"/>
+	<field name="nameSkuSkuOrder" class="java.lang.String"/>
+	<field name="idBarcodeSkuSkuOrder" class="java.lang.String"/>
+	<field name="shortNameUOMSkuSkuOrder" class="java.lang.String"/>
+	<field name="totalPriceSkuOrder" class="java.math.BigDecimal"/>
+	<field name="valueVATSkuOrder" class="java.math.BigDecimal"/>
+	<field name="markupSkuOrder" class="java.math.BigDecimal"/>
+	<field name="retailMarkupPriceProductDetail" class="java.math.BigDecimal"/>
+	<field name="retailMarkupSumInBOMProductDetail" class="java.math.BigDecimal"/>
+	<field name="retailVATPriceProductDetail" class="java.math.BigDecimal"/>
+	<field name="retailVATSumInBOMProductDetail" class="java.math.BigDecimal"/>
+	<field name="totalPremiumPriceSkuOrder" class="java.math.BigDecimal"/>
+	<field name="componentsSumInBOMProductDetail" class="java.math.BigDecimal"/>
+	<field name="quantityInBOMProductDetail" class="java.math.BigDecimal"/>
+	<field name="shortNameUOMProductProductDetail" class="java.lang.String"/>
+	<field name="seriesNumberObject" class="java.lang.String"/>
+	<group name="captionGroup10">
+		<groupExpression><![CDATA[String.valueOf($F{o})]]></groupExpression>
+	</group>
+	<group name="textGroup10">
+		<groupExpression><![CDATA[String.valueOf($F{pd})]]></groupExpression>
+		<groupHeader>
+			<band height="27">
+				<textField>
+					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="15" width="255" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Калькуляционная карта N " +($F{seriesNumberObject}!=null?$F{seriesNumberObject}:"")+($F{indexProductDetail}!=null?("/"+$F{indexProductDetail}):"")]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="255" y="15" width="296" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["от "+platform.base.BaseUtils.formatRussian($F{dateOrder})+" года"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="12">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="70" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Штрих-код"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="310" y="0" width="241" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Себестоимость (цена компонентов)"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="55" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Количество"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="70" y="0" width="138" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Наименование"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="208" y="0" width="47" height="12"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Ед.изм."]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="13">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="70" y="0" width="138" height="12"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{nameSkuProductDetail}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="208" y="0" width="47" height="12"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{shortNameUOMProductDetail}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="310" y="0" width="241" height="12"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{componentsPriceProductDetail}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.####">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="55" height="12"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{quantityInBOMProductDetail}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="70" height="12"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{idBarcodeSkuProductDetail}!=null?$F{idBarcodeSkuProductDetail}:"")]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="15">
+				<textField>
+					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="373" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Номер по сборнику рецептуры:" +"   "+($F{recipesProductDetail}!=null?$F{recipesProductDetail}:"")]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="386" y="0" width="165" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Выход готового изделия: "+($F{quantityInBOMProductDetail}!=null?$F{quantityInBOMProductDetail}:"")+" "+($F{shortNameUOMProductProductDetail}!=null?$F{shortNameUOMProductProductDetail}:"")]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="19">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="55" height="18"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Норма"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="310" y="0" width="63" height="18"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Цена комп./ \n"+
+"Сумма комп."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="70" height="18"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Штрих-код"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="208" y="0" width="47" height="18"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Ед.изм."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="70" y="0" width="138" height="18"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Наименование"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="492" y="0" width="59" height="18"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["НДС, % /\n"+
+"сумма НДС"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="373" y="0" width="50" height="18"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Надбавка, %"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="423" y="0" width="69" height="18"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Цена комп. с над./ сумма с над."]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="13">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="255" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Итого:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="492" y="0" width="59" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{VATSumProductDetail}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="0" y="12" width="551" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.5"/>
+					</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="373" y="0" width="119" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{premiumComponentsSumInBOMProductDetail}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="118" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{componentsSumInBOMProductDetail}]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="12">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="50" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["% наценки = "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="155" y="0" width="65" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{productsPriceProductDetail}!=null?$F{productsPriceProductDetail}:"")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="220" y="0" width="37" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["% НДС ="]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.####">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="257" y="0" width="40" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{valueVATProductDetail}!=null?$F{valueVATProductDetail}:"")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="297" y="0" width="70" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Надбавка за ед. = "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.####">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="50" y="0" width="27" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{markupProductDetail}!=null?$F{markupProductDetail}:"")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="367" y="0" width="65" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{retailMarkupPriceProductDetail}!=null?$F{retailMarkupPriceProductDetail}:"")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="486" y="0" width="65" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{retailVATPriceProductDetail}!=null?$F{retailVATPriceProductDetail}:"")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="432" y="0" width="54" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Цена НДС = "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="77" y="0" width="78" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Цена с надбавкой = "]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="16">
+				<textField isStretchWithOverflow="true" pattern="#,##0.##">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="155" y="0" width="65" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{productsSumInBOMProductDetail}!=null?$F{productsSumInBOMProductDetail}:"")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="77" y="0" width="78" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Сумма с надбавкой = "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="367" y="0" width="65" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{retailMarkupSumInBOMProductDetail}!=null?$F{retailMarkupSumInBOMProductDetail}:"")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="297" y="0" width="70" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Сумма надбавки = "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="432" y="0" width="54" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Сумма НДС = "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="486" y="0" width="65" height="12"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{retailVATSumInBOMProductDetail}!=null?$F{retailVATSumInBOMProductDetail}:"")]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="0" y="12" width="551" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.5"/>
+					</graphicElement>
+				</line>
+			</band>
+			<band height="28">
+				<textField>
+					<reportElement x="396" y="10" width="155" height="10"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["_______________________________"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="351" y="10" width="45" height="10"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Бухгалтер"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="10" width="70" height="10"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Зав.производством"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="70" y="10" width="150" height="10"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["_______________________________"]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="0" y="27" width="551" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</graphicElement>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="captionGroup28">
+		<groupExpression><![CDATA[String.valueOf($F{pd})]]></groupExpression>
+	</group>
+	<group name="textGroup28">
+		<groupExpression><![CDATA[String.valueOf($F{pd})]]></groupExpression>
+	</group>
+	<title>
+		<band height="22">
+			<textField>
+				<reportElement x="0" y="0" width="165" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Компания: "+($F{nameProductsLegalEntityStockOrder}!=null?$F{nameProductsLegalEntityStockOrder}:"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="10" width="165" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Отдел: "+($F{nameProductsStockOrder}!=null?$F{nameProductsStockOrder}:"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="331" y="10" width="55" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Утверждаю"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="386" y="0" width="165" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["_______________________________"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="386" y="10" width="165" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["_______________________________"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="10">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="70" y="0" width="138" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nameSkuSkuOrder}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="208" y="0" width="47" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{shortNameUOMSkuSkuOrder}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.####" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="55" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{quantityProductProductDetailSku}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="373" y="0" width="50" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{markupSkuOrder}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="70" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{idBarcodeSkuSkuOrder}!=null?$F{idBarcodeSkuSkuOrder}:"")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="310" y="0" width="63" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalPriceSkuOrder}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="423" y="0" width="69" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalPremiumPriceSkuOrder}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="492" y="0" width="59" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{valueVATSkuOrder}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="13">
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="492" y="0" width="59" height="10" isRemoveLineWhenBlank="true"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalVATSumProductDetailSku}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement positionType="Float" x="0" y="10" width="551" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="423" y="0" width="69" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{premiumComponentsSumProductDetailSku}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="310" y="0" width="63" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{componentsSumProductDetailSku}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

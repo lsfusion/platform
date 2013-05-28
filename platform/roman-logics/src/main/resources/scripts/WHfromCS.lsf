@@ -1,0 +1,1111 @@
+MODULE WHfromCS;
+
+REQUIRE System,
+
+        Utils,
+        Stock,
+        Country,
+        Numerator,
+        Document,
+        RomanDocument,
+        ConsignmentBy,
+        CStoWH,
+        StorePriceTransfer,
+        InnerOrder,
+        Barcode,
+        RomanMasterData,
+        RetailPrice,
+        RomanLogicsModule;
+
+PRIORITY RomanLogicsModule, Stock;
+
+//--------------------------------------------- Поступление ---------------------------------------------------------- //
+
+CLASS WHfromCSI 'Приход на склад с СВХ' : Historizable;
+CLASS WHfromCSIDetail 'Строка прихода на склад';
+
+@defineDocumentTables(WHfromCSI);
+
+@defineDocumentAggregation(CStoWH, WHfromCSI, isCStoWH);
+
+@defineDocumentDetailIndex(WHfromCSI);
+
+@defineDocumentAggregationStock(CStoWH, WHfromCSI, customStore, 'СВХ');
+@defineDocumentAggregationStockPrefix(CStoWH, WHfromCSI, stock, 'Склад-получатель', destination, );
+
+@defineDocumentAggregationPosted(CStoWH, WHfromCSI);
+
+@defineDocumentAggregationHeaderNumber(CStoWH, WHfromCSI);
+
+@defineDocumentDescription(WHfromCSI, WHfromCSIDetail, seriesNumberWHfromCSI, 'Поступление товара с СВХ');
+
+@defineDocumentAggregationDetailSku(CStoWH, WHfromCSI, sku);
+@defineDocumentAggregationDetailQuantity(CStoWH, WHfromCSI);
+
+@defineDocumentHeaderQuantity(WHfromCSI);
+@defineDocumentHeaderSkuQuantity(WHfromCSI, sku);
+
+@defineDocumentDetailSkuArticle(WHfromCSI);
+
+costWHfromCSIBatch(WHfromCSI, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY WHfromCSIWHfromCSIDetail(ledger), batch;
+
+sumWHfromCSIDetail 'Сумма' (detail) = sumCStoWHDetail(CStoWHDetailWHfromCSIDetail(detail)) PERSISTENT;
+
+destinationWHfromCSIDetail(WHfromCSIDetail) = destinationCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail));
+nameDestinationWHfromCSIDetail 'Пункт назначения' (WHfromCSIDetail) = nameDestinationCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail));
+
+nameCategoryArticleSkuWHfromCSIDetail 'Номенклатурная группа' (WHfromCSIDetail) = nameCategoryArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
+nameUnitOfMeasureArticleSkuWHfromCSIDetail 'Ед. измерения товара' (WHfromCSIDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
+barcodeFreightUnitWHfromCSIDetail 'Штрих-код короба' (WHfromCSIDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail)));
+
+CLASS WHfromCSR 'Приемка на склад с СВХ' : Historizable;
+CLASS WHfromCSRPosted 'Проведенная приемка на склад с СВХ' : WHfromCSR, PostedObject;
+CLASS WHfromCSRDetail 'Строка приемки на склад с СВХ';
+
+@defineDocument(WHfromCSR);
+
+WHfromCSIWHfromCSR = DATA WHfromCSI (WHfromCSR);
+WHfromCSRWHfromCSI(WHfrom) = GROUP AGGR WHfromCSR BY WHfromCSIWHfromCSR(WHfromCSR) WHERE WHfromCSR IS WHfromCSR;
+
+WHfromCSIWHfromCSRDetail (WHfromCSRDetail) = WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+
+@defineDocumentAggregationHeaderStock(WHfromCSI, WHfromCSR, stock, 'Склад');
+
+@defineDocumentPosted(WHfromCSR);
+
+@defineDocumentAggregationHeaderNumberCustom(WHfromCSI, WHfromCSR, WHfromCSI);
+
+@defineDocumentDetailSku(WHfromCSR, sku);
+
+@defineDocumentDetailQuantity(WHfromCSR);
+
+@defineAddDetailDialogSkuStock(WHfromCSR, sku, stock, dialogSku);
+
+@defineDocumentHeaderQuantity(WHfromCSR);
+@defineDocumentHeaderSkuQuantity(WHfromCSR, sku);
+
+@defineDocumentDetailSkuArticle(WHfromCSR);
+
+//для учета по коробам
+freightUnitWHfromCSRDetail 'Короб (ИД)' (WHfromCSRDetail) = DATA FreightUnit(WHfromCSRDetail);
+barcodeFreightUnitWHfromCSRDetail 'Короб' (WHfromCSRDetail) = barcode (freightUnitWHfromCSRDetail(WHfromCSRDetail));
+
+quantityWHfromCSRDetailsSkuFreightUnit 'Количество принятое (в коробе)' (sku, freightUnit, WHfromCSR) =
+    GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+    BY skuWHfromCSRDetail(WHfromCSRDetail), freightUnitWHfromCSRDetail(WHfromCSRDetail), WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
+
+isNotShippedSkuFreightUnitWHfromCSR (sku, freightUnit, WHfromCSR) = quantitySkuFreightUnitCStoWH (sku, freightUnit, CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)))
+    IF NOT quantityWHfromCSRDetailsSkuFreightUnit(sku, freightUnit, WHfromCSR);
+
+//приемка по коробам
+
+currentFreightUnit 'Тек. короб (ИД)' (WHfromCSR) = DATA SESSION FreightUnit (WHfromCSR);
+barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' (WHfromCSR) = barcode(currentFreightUnit(WHfromCSR));
+
+withOutBarcodeSku (sku) = sku IS RomanLogicsModule.Item AND NOT barcode(sku);
+
+destinationWHfromCSRDetail (WHfromCSRDetail) = destinationFreightUnit(freightUnitWHfromCSRDetail(WHfromCSRDetail));
+nameDestinationWHfromCSRDetail 'Пункт назначения' (WHfromCSRDetail) = nameDestinationFreightUnit(freightUnitWHfromCSRDetail(WHfromCSRDetail));
+
+quantitySkuStoreWHfromCSI (store, WHfromCSI) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+                                               BY destinationWHfromCSRDetail(WHfromCSRDetail),
+                                                  WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+
+TABLE storeWHfromCSI (RomanLogicsModule.Store, WHfromCSI);
+innerOrderStoreWHfromCSI (store, WHfromCSI) = DATA InnerOrder (RomanLogicsModule.Store, WHfromCSI);
+
+createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' = ACTION (store, WHfromCSI) NEWSESSION {
+    IF NOT innerOrderStoreWHfromCSI(store, WHfromCSI) THEN {
+
+        LOCAL picking = OrderPickingPosted();
+
+        ADDOBJ InnerOrder;
+        FOR i == addedObject() DO {
+            SET innerOrderStoreWHfromCSI(store, WHfromCSI) <- i AS InnerOrder;
+            SET stockInnerOrder(i) <- stockWHfromCSI(WHfromCSI);
+            SET destinationStockInnerOrder(i) <- primaryDepartmentStoreStore(store AS RomanLogicsModule.Store);
+
+                FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI AND destinationWHfromCSRDetail(WHfromCSRDetail) == store DO {
+                    ADDOBJ InnerOrderDetail;
+                    FOR d == addedObject() DO {
+                        SET skuInnerOrderDetail(d) <- skuWHfromCSRDetail(WHfromCSRDetail);
+                        SET innerOrderInnerOrderDetail(d) <- i AS InnerOrder;
+                        SET quantityInnerOrderDetail(d) <- quantityWHfromCSRDetail(WHfromCSRDetail);
+                    }
+                }
+        }
+        FORM innerOrder OBJECTS o = innerOrderStoreWHfromCSI (store, WHfromCSI)  MODAL;
+        IF formResult() == FormResult.ok THEN {
+            EXEC apply();
+
+            ADDOBJ OrderPickingPosted;
+            FOR p == addedObject() DO {
+                SET picking() <- p AS OrderPickingPosted;
+                SET innerOrderOrderPicking (p) <- innerOrderStoreWHfromCSI(store, WHfromCSI);
+                FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI AND destinationWHfromCSRDetail(WHfromCSRDetail) == store DO {
+                    ADDOBJ OrderPickingDetail;
+                    FOR pd == addedObject() DO {
+                        SET skuOrderPickingDetail(pd) <- skuWHfromCSRDetail(WHfromCSRDetail);
+                        SET orderPickingOrderPickingDetail(pd) <- p AS OrderPickingPosted;
+                        SET quantityOrderPickingDetail(pd) <- quantityWHfromCSRDetail(WHfromCSRDetail);
+                    }
+                }
+            }
+            FORM orderPicking OBJECTS p = picking()  MODAL;
+            IF formResult() == FormResult.ok THEN {
+                EXEC apply();
+            }
+        }
+    }
+} CONFIRM;
+
+FORM addBarcodeWHfromCSRFreightUnitSku 'Поиск товара(с коробами и выбором шрих-кода)'
+
+    OBJECTS w = WHfromCSR
+
+    OBJECTS f = FreightUnit FIXED PANEL
+    PROPERTIES(f) READONLY sidSupplierBox, barcode
+
+    OBJECTS s = RomanLogicsModule.Item
+    PROPERTIES(s) READONLY sidArticleSku, barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem
+
+    FILTERS quantitySkuCStoWH (s, CStoWHWHfromCSI(WHfromCSIWHfromCSR(w))) > 0
+
+    FILTERGROUP filters1
+        FILTER 'Товар без шрих-кода' 'F9' withOutBarcodeSku(s) DEFAULT
+
+    FILTERGROUP filters2
+        FILTER 'Только из текущего короба' 'F10' quantitySkuFreightUnitCStoWH(s, f, CStoWHWHfromCSI(WHfromCSIWHfromCSR(w))) > 0
+
+;
+
+DESIGN addBarcodeWHfromCSRFreightUnitSku FROM DEFAULT {
+
+    f.box{
+        caption = 'Короб';
+    }
+}
+
+FORM addBarcodeWHfromCSRSku 'Поиск товара(с выбором шрих-кода)'
+
+    OBJECTS w = WHfromCSR
+
+    OBJECTS s = RomanLogicsModule.Item
+    PROPERTIES(s) READONLY sidArticleSku, barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem
+
+    FILTERS quantitySkuCStoWH (s, CStoWHWHfromCSI(WHfromCSIWHfromCSR(w))) > 0
+
+    FILTERGROUP filters1
+        FILTER 'Товар без шрих-кода' 'F9' withOutBarcodeSku(s) DEFAULT
+
+;
+
+FORM addSkuWHfromCSR 'Ввод товара'
+
+    OBJECTS i = RomanLogicsModule.Item FIXED PANEL
+    PROPERTIES(i) READONLY barcode
+    PROPERTIES(i) sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem
+
+;
+
+DESIGN addSkuWHfromCSR FROM DEFAULT {
+
+    i.box{
+        caption = 'Свойства нового товара';
+        childConstraints = TO THE BOTTOM;
+        ADD PROPERTY(sidArticleSku);
+        ADD PROPERTY(sidColorSupplierItem);
+        ADD PROPERTY(nameColorSupplierItem);
+        ADD PROPERTY(sidSizeSupplierItem);
+    }
+}
+
+createSkuWHfromCSR = ACTION (barcode) NEWSESSION {
+
+    ADDOBJ RomanLogicsModule.Item;
+    FOR s == addedObject() DO {
+        SET barcode(s) <- (barcode AS STRING[15]);
+        FORM addSkuWHfromCSR OBJECTS i = s MODAL;
+        IF formResult() == FormResult.ok THEN {
+            EXEC apply();
+        }
+    }
+}
+
+detailWHfromCSRFreightUnitSku (WHfromCSR, freightUnit, sku) = GROUP MAX WHfromCSRDetail BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), freightUnitWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail);
+
+addDialogSkuFreightUnitWHfromCSRBarcode 'Ввод штрих-кода' = ACTION (WHfromCSR, barcode) {
+
+    LOCAL dialogBarcodeSku = Sku();
+    LOCAL dialogBarcodeDetail = WHfromCSRDetail();
+
+
+    IF barcodeToObject(barcode) IS FreightUnit THEN {
+        SET currentFreightUnit (WHfromCSR) <- barcodeToObject(barcode);
+    } ELSE {
+
+        SET dialogBarcodeSku() <- skuBarcodeIdDate(barcode, dateWHfromCSR (WHfromCSR));
+        SET dialogBarcodeDetail() <- detailWHfromCSRFreightUnitSku(WHfromCSR, currentFreightUnit(WHfromCSR), dialogBarcodeSku());
+
+        IF barcode IS STRING[15] AND NOT dialogBarcodeSku() IS Sku THEN {
+
+            IF currentFreightUnit(WHfromCSR) THEN {
+                FORM addBarcodeWHfromCSRFreightUnitSku OBJECTS f = currentFreightUnit(WHfromCSR), w = WHfromCSR MODAL;
+            } ELSE {
+                FORM addBarcodeWHfromCSRSku OBJECTS w = WHfromCSR MODAL;
+            }
+            IF formResult() == FormResult.ok THEN {
+                SET barcode(sku) <- barcode WHERE sku == chosenObject('s') ;
+                SET dialogBarcodeSku() <- chosenObject('s');
+            } ELSE {
+                EXEC createSkuWHfromCSR(barcode);
+                SET dialogBarcodeSku() <- skuBarcodeIdDate(barcode, dateWHfromCSR (WHfromCSR));
+            }
+        }
+
+        IF dialogBarcodeSku() IS Sku THEN {
+
+            IF dialogBarcodeDetail() IS WHfromCSRDetail  THEN {
+                SET quantityWHfromCSRDetail(detail) <-
+                    quantityWHfromCSRDetail(detail) (+) (1.0 IF detail IS WHfromCSRDetail)
+                    WHERE detail == dialogBarcodeDetail();
+                } ELSE {
+
+                ADDOBJ WHfromCSRDetail;
+                FOR w == addedObject() DO {
+                    SET WHfromCSRWHfromCSRDetail(w) <- WHfromCSR AS WHfromCSR;
+                    SET skuWHfromCSRDetail(w) <- dialogBarcodeSku();
+                    SET freightUnitWHfromCSRDetail(w) <- currentFreightUnit(WHfromCSR);
+                    SET quantityWHfromCSRDetail(w) <- 1.0;
+                }
+            }
+        }
+    }
+
+};
+
+changeAddDetailInputBarcodeWHfromCSRDetailWHfromCSR = ACTION (WHfromCSR) {
+    REQUEST STRING[15] INPUT;
+    EXEC addDialogSkuFreightUnitWHfromCSRBarcode(WHfromCSR, requestedString());
+};
+addDetailInputBarcodeWHfromCSRDetailWHfromCSR 'Ввод штрих-кода :' (WHfromCSR) = DATA SESSION STRING[15] (WHfromCSR) TOOLBAR EDITKEY 'F4'
+                                                                        ON CHANGE changeAddDetailInputBarcodeWHfromCSRDetailWHfromCSR(WHfromCSR) EVENTID 'SCANNER';
+
+
+
+fillWHfromCSRDetailsSkuFreightUnit 'Заполнить строки из короба' (WHfromCSR) = ACTION (WHfromCSR) {
+    FOR isNotShippedSkuFreightUnitWHfromCSR (sku AS Sku, currentFreightUnit(WHfromCSR), WHfromCSR AS WHfromCSR) DO {
+        ADDOBJ WHfromCSRDetail;
+        FOR w == addedObject() DO {
+            SET WHfromCSRWHfromCSRDetail(w) <- WHfromCSR AS WHfromCSR;
+            SET skuWHfromCSRDetail (w) <- sku AS Sku;
+            SET quantityWHfromCSRDetail (w) <- quantitySkuFreightUnitCStoWH (sku AS Sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)));
+            SET freightUnitWHfromCSRDetail(w) <- currentFreightUnit(WHfromCSR);
+        }
+    }
+} EDITKEY 'F5' CONFIRM;
+
+quantityWHfromCSRFreightUnitSku (WHfromCSR, freightUnit, sku) = quantityCStoWHFreightUnitSku(CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)), freightUnit, sku);
+quantityOriginWHfromCSRSku (WHfromCSR, sku) = GROUP SUM quantityWHfromCSRFreightUnitSku(WHfromCSR, freightUnit, sku) BY WHfromCSR, sku;
+
+quantityOriginCurrentBoxWHfromCSRSku 'Ожидаемое к-во (тек. короб)' (WHfromCSR, sku) = quantityWHfromCSRFreightUnitSku(WHfromCSR, currentFreightUnit(WHfromCSR), sku);
+
+quantityWHfromCSRSku 'Принятое к-во (тек. короб)' (WHfromCSR, sku)=
+    [GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail) BY freightUnitWHfromCSRDetail(WHfromCSRDetail), WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail)]
+        (currentFreightUnit(WHfromCSR), WHfromCSR, sku);
+
+diffQuantityWHfromCSRSku 'Расхождение (тек. короб)' (WHfromCSR, sku)= quantityWHfromCSRSku(WHfromCSR, sku) (-) quantityOriginCurrentBoxWHfromCSRSku(WHfromCSR, sku);
+
+quantityOriginWHfromCSRDetail 'Ожидаемое к-во (тек. короб)' (WHfromCSRDetail) = quantityOriginCurrentBoxWHfromCSRSku(WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail));
+
+backgroundSkuWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 255, 0) IF quantityWHfromCSRDetail(WHfromCSRDetail) > quantityOriginWHfromCSRDetail(WHfromCSRDetail);
+
+quantityPositionsSkuInWHFromCSRFreightUnit 'Кол-во позиций в коробе' (WHfromCSR, freightUnit) =
+    GROUP SUM 1 IF quantityWHfromCSRFreightUnitSku(WHfromCSR, freightUnit, sku) BY WHfromCSR, freightUnit;
+quantityPositionsSkuInFreightUnitWHfromCSR 'Кол-во позиций в коробе' (WHfromCSR) = quantityPositionsSkuInWHFromCSRFreightUnit(WHfromCSR, currentFreightUnit(WHfromCSR));
+
+quantitySkuInWHFromCSRFreightUnit 'Кол-во товара в коробе' (WHfromCSR, freightUnit) =
+    GROUP SUM quantityWHfromCSRFreightUnitSku(WHfromCSR, freightUnit, sku) BY WHfromCSR, freightUnit;
+quantitySkuInFreightUnitWHfromCSR 'Кол-во товара в коробе' (WHfromCSR) = quantitySkuInWHFromCSRFreightUnit(WHfromCSR, currentFreightUnit(WHfromCSR));
+
+quantityPositionsSkuWHfromCSRFreightUnit 'Кол-во позиций в документе' (WHfromCSR, freightUnit) =
+    GROUP SUM 1 IF quantityWHfromCSRDetail(WHfromCSRDetail) BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), freightUnitWHfromCSRDetail(WHfromCSRDetail);
+quantityPositionsSkuWHfromCSR 'Кол-во позиций в документе' (WHfromCSR) =
+    quantityPositionsSkuWHfromCSRFreightUnit(WHfromCSR, currentFreightUnit(WHfromCSR));
+
+quantitySkuWHfromCSRFreightUnit 'Кол-во товара в документе' (WHfromCSR, freightUnit) =
+    GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail) BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), freightUnitWHfromCSRDetail(WHfromCSRDetail);
+quantitySkuWHfromCSR 'Кол-во товара в документе' (WHfromCSR) =
+    quantitySkuWHfromCSRFreightUnit(WHfromCSR, currentFreightUnit(WHfromCSR));
+
+quantityRemainedPositionSkuWHfromCSR 'Кол-во оставшихся позиций в коробе' (WHfromCSR) =
+    OVERRIDE 0 IF WHfromCSR, quantityPositionsSkuInFreightUnitWHfromCSR(WHfromCSR) (-) quantityPositionsSkuWHfromCSR(WHfromCSR);
+
+quantityRemainedSkuWHfromCSR 'Кол-во оставшегося товара в коробе' (WHfromCSR) =
+    OVERRIDE 0 IF WHfromCSR, quantitySkuInFreightUnitWHfromCSR(WHfromCSR) (-) quantitySkuWHfromCSR(WHfromCSR);
+
+quantitySkuInWHfromCSR 'Кол-во товара' (WHfromCSR, sku) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+    BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail);
+
+quantityOriginSkuWHfromCSRWHfromCSRDetail 'Кол-во ожидаемое' (WHfromCSRDetail) = quantityOriginWHfromCSRSku(WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail));
+quantitySkuWHfromCSRWHfromCSRDetail 'Кол-во принятое' (WHfromCSRDetail) = quantitySkuInWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail));
+
+
+CONSTRAINT currentFreightUnit(WHfromCSR) IS FreightUnit AND NOT quantitySkuInFreightUnitWHfromCSR(WHfromCSR) CHECKED BY currentFreightUnit MESSAGE 'Короб должен быть из текущей поставки';
+
+printMarksSkuFreightUnit 'Печать маркировок товаров' (WHfromCSR) = ACTION (WHfromCSR) {
+
+    SET shouldBePrintSku(sku) <- NULL;
+    SET countSku(sku) <- NULL;
+    SET shouldBePrintSku(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)));
+    SET countSku(sku) <- toInteger(quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR))));
+    FORM printMarksDocument OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = legalEntityStock(stockWHfromCSR(WHfromCSR)), c = currencyStock(stockWHfromCSR(WHfromCSR)) MODAL;
+
+} CONFIRM;
+
+selectWHfromCSRDetail 'Отметить для маркировки' = DATA BOOLEAN (WHfromCSRDetail);
+selectWHfromCSR (WHfromCSR) = GROUP SUM 1 IF selectWHfromCSRDetail(WHfromCSRDetail) BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
+selectQuantitySkuInWHfromCSR (WHfromCSR, sku) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail) IF selectWHfromCSRDetail(WHfromCSRDetail)
+    BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail);
+
+printMarksSkuWHfromCSR 'Печать маркировок товаров' (WHfromCSR) = ACTION (WHfromCSR) {
+
+    SET shouldBePrintSku(sku) <- NULL;
+    SET countSku(sku) <- NULL;
+
+    IF selectWHfromCSR (WHfromCSR) THEN {
+        SET shouldBePrintSku(sku) <- TRUE IF selectQuantitySkuInWHfromCSR(WHfromCSR, sku);
+        SET countSku(sku) <- toInteger(selectQuantitySkuInWHfromCSR(WHfromCSR, sku));
+    } ELSE {
+        SET shouldBePrintSku(sku) <- TRUE IF quantitySkuInWHfromCSR(WHfromCSR, sku);
+        SET countSku(sku) <- toInteger(quantitySkuInWHfromCSR(WHfromCSR, sku));
+    }
+    FORM printMarksDocument OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = legalEntityStock(stockWHfromCSR(WHfromCSR)), c = currencyStock(stockWHfromCSR(WHfromCSR)) MODAL;
+
+} CONFIRM TOOLBAR;
+
+// Атрибуты поставщика
+
+originalNameArticleSkuWHfromCSRDetail 'Наименование(ориг.)' (WHfromCSRDetail) = originalNameArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+nameCountryOfOriginArticleSkuWHfromCSRDetail 'Страна происхождения' (WHfromCSRDetail) = nameCountryOfOriginArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+nameBrandSupplierArticleSkuWHfromCSRDetail 'Бренд' (WHfromCSRDetail) = nameBrandSupplierArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+netWeightArticleSkuWHfromCSRDetail 'Вес нетто(ориг.)' (WHfromCSRDetail) = netWeightArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+mainCompositionOriginArticleSkuWHfromCSRDetail 'Состав(ориг.)' (WHfromCSRDetail) = mainCompositionOriginArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+
+// Внутренние атрибуты
+
+languageWHfromCSR (WHfromCSR) = languageStock(stockWHfromCSR(WHfromCSR));
+languageWHfromCSRDetail (WHfromCSRDetail) = languageWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+stockWHfromCSRDetail (WHfromCSRDetail) = stockWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+@defineCompositionSkuLanguageDetailCustom (WHfromCSRDetail, stock);
+
+sidGenderArticleSkuWHfromCSRDetail 'Пол товара' (WHfromCSRDetail) = sidGenderArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+changeGenderArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST OBJECT g FORM gendersDialog MODAL;
+    IF formResult() == FormResult.ok THEN {
+        SET genderArticle(article) <- chosenObject('g') WHERE article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) ;
+    }
+}
+
+nameCategoryArticleSkuWHfromCSRDetail 'Номенклатурная группа' (WHfromCSRDetail) = nameCategoryArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+changeCategoryArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST OBJECT c FORM categories MODAL;
+    IF formResult() == FormResult.ok THEN {
+        SET categoryArticle(article) <- chosenObject('c') WHERE article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+    }
+}
+
+nameTypeFabricArticleSkuWHfromCSRDetail 'Тип одежды' (WHfromCSRDetail) = nameTypeFabricArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+changeTypeFabricArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST OBJECT t FORM typeFabrics MODAL;
+    IF formResult() == FormResult.ok THEN {
+        SET typeFabricArticle(article) <- chosenObject('t') WHERE article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+    }
+}
+
+nameUnitOfMeasureArticleSkuWHfromCSRDetail 'Ед. измерения товара' (WHfromCSRDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 15 MINCHARWIDTH 10;
+changeUnitOfMeasureArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST OBJECT u FORM unitOfMeasures MODAL;
+    IF formResult() == FormResult.ok THEN {
+        SET unitOfMeasureArticle(article) <- chosenObject('u') WHERE article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+    }
+}
+
+netWeightSkuWHfromCSRDetail 'Вес нетто(ед.)' (WHfromCSRDetail) = netWeightSku(skuWHfromCSRDetail(WHfromCSRDetail));
+changeNetWeightSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST NUMERIC[14,6] INPUT;
+    SET netWeightSku(sku) <- requestedNumeric() WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
+}
+
+nameCountryOfOriginSkuWHfromCSRDetail 'Страна происхождения' (WHfromCSRDetail) = nameCountryOfOriginSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+changeCountryOfOriginSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST OBJECT c FORM countries MODAL;
+    IF formResult() == FormResult.ok THEN {
+        SET countryOfOriginSku(sku) <- chosenObject('c') WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
+    }
+}
+
+mainCompositionOriginSkuWHfromCSRDetail 'Состав (ориг.)' (WHfromCSRDetail) = mainCompositionOriginSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+changeMainCompositionOriginSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST STRING[200] INPUT;
+    SET mainCompositionOriginSku(sku) <- requestedString() WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
+    EXEC translationMainCompositionSkuLanguage(skuWHfromCSRDetail(WHfromCSRDetail), languageWHfromCSRDetail(WHfromCSRDetail));
+    EXEC translationMainCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail));
+}
+
+additionalCompositionOriginSkuWHfromCSRDetail 'Дополнительный состав (ориг.)' (WHfromCSRDetail) = additionalCompositionOriginSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+changeAdditionalCompositionOriginSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST STRING[200] INPUT;
+    SET additionalCompositionOriginSku(sku) <- requestedString() WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
+    EXEC translationAdditionalCompositionSkuLanguage(skuWHfromCSRDetail(WHfromCSRDetail), languageWHfromCSRDetail(WHfromCSRDetail));
+    EXEC translationAdditionalCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail));
+}
+
+coefficientArticleSkuWHfromCSRDetail 'Кол-во в комплекте' (WHfromCSRDetail) = coefficientArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+changeCoefficientArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST INTEGER INPUT;
+    SET coefficientArticle(article) <- requestedInteger() WHERE article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+}
+
+mainCompositionSkuWHfromCSRDetail 'Состав' (WHfromCSRDetail) = mainCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail))  PREFCHARWIDTH 30 MINCHARWIDTH 20;
+changeMainCompositionSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST STRING[200] INPUT;
+    SET mainCompositionSku(sku) <- requestedString() WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
+}
+
+additionalCompositionSkuWHfromCSRDetail 'Дополнительный состав' (WHfromCSRDetail) = additionalCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+changeAdditionalCompositionSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST STRING[200] INPUT;
+    SET additionalCompositionSku(sku) <- requestedString() WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
+}
+
+quantityArticleWHfromCSR (article, WHfromCSR) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+    BY articleSku(skuWHfromCSRDetail(WHfromCSRDetail)), WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
+
+quantityArticleWHfromCSRDetail (WHfromCSRDetail) =
+    quantityArticleWHfromCSR(articleSku(skuWHfromCSRDetail(WHfromCSRDetail)), WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+
+backgroundArticleWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityArticleWHfromCSRDetail(WHfromCSRDetail) == 1;
+
+quantityArticleSizeWHfromCSR (article, sizeSupplier, WHfromCSR) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+    BY articleSku(skuWHfromCSRDetail(WHfromCSRDetail)), sizeSupplierItem(skuWHfromCSRDetail(WHfromCSRDetail)), WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
+
+quantityArticleSizeWHfromCSRDetail (WHfromCSRDetail) =
+    quantityArticleSizeWHfromCSR(articleSku(skuWHfromCSRDetail(WHfromCSRDetail)),
+                                sizeSupplierItem(skuWHfromCSRDetail(WHfromCSRDetail)),
+                                WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+
+backgroundArticleSizeWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityArticleSizeWHfromCSRDetail(WHfromCSRDetail) == 1;
+
+quantityArticleColorWHfromCSR (article, colorSupplier, WHfromCSR) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+    BY articleSku(skuWHfromCSRDetail(WHfromCSRDetail)), colorSupplierItem(skuWHfromCSRDetail(WHfromCSRDetail)), WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
+
+quantityArticleColorWHfromCSRDetail (WHfromCSRDetail) =
+    quantityArticleColorWHfromCSR(articleSku(skuWHfromCSRDetail(WHfromCSRDetail)),
+                                colorSupplierItem(skuWHfromCSRDetail(WHfromCSRDetail)),
+                                WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+
+backgroundArticleColorWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityArticleColorWHfromCSRDetail(WHfromCSRDetail) == 1;
+
+nameCompanyWHfromCSR 'компания'(WHfromCSR) = nameLegalEntity(legalEntityStock(stockWHfromCSR(WHfromCSR)));
+
+FORM WHfromCSR 'Приемка на оптовый склад'
+
+    OBJECTS w = WHfromCSR FIXED PANEL, d = WHfromCSRDetail
+
+    PROPERTIES(w)          objectClassName, dateWHfromCSR, timeWHfromCSR, nameStockWHfromCSR READONLY,
+                           barcodeCurrentFreightUnit, fillWHfromCSRDetailsSkuFreightUnit, printMarksSkuFreightUnit,
+                           printMarksSkuWHfromCSR TODRAW d FORCE PANEL
+    PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w),
+                           quantityRemainedSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w)
+
+    PROPERTIES(d) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameCategoryArticleSkuWHfromCSRDetail,
+                           nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail, sidSizeWHfromCSRDetail,
+                           sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
+                           nameDestinationWHfromCSRDetail
+
+    PROPERTIES(d) quantityWHfromCSRDetail BACKGROUND backgroundSkuWHfromCSRDetail(d), quantityOriginSkuWHfromCSRWHfromCSRDetail, quantitySkuWHfromCSRWHfromCSRDetail
+
+    PROPERTIES(d) nameUnitOfMeasureArticleSkuWHfromCSRDetail READONLY, selectWHfromCSRDetail
+
+    PROPERTIES(d) DELETESESSION
+
+    PROPERTIES(w) TODRAW d addDetailInputBarcodeWHfromCSRDetailWHfromCSR, deleteWHfromCSRDetailWHfromCSR
+
+    PROPERTIES(d) READONLY FORCE PANEL originalNameArticleSkuWHfromCSRDetail, nameCountryOfOriginArticleSkuWHfromCSRDetail,
+                                       nameBrandSupplierArticleSkuWHfromCSRDetail, netWeightArticleSkuWHfromCSRDetail,
+                                       mainCompositionOriginArticleSkuWHfromCSRDetail
+
+    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail ON CHANGE changeGenderArticleSkuWHfromCSRDetail(d),
+                              c = nameCategoryArticleSkuWHfromCSRDetail ON CHANGE changeCategoryArticleSkuWHfromCSRDetail(d),
+                              nameTypeFabricArticleSkuWHfromCSRDetail ON CHANGE changeTypeFabricArticleSkuWHfromCSRDetail(d),
+                              u = nameUnitOfMeasureArticleSkuWHfromCSRDetail ON CHANGE changeUnitOfMeasureArticleSkuWHfromCSRDetail(d),
+                              netWeightSkuWHfromCSRDetail ON CHANGE changeNetWeightSkuWHfromCSRDetail(d),
+                              nameCountryOfOriginSkuWHfromCSRDetail ON CHANGE changeCountryOfOriginSkuWHfromCSRDetail(d),
+                              mainCompositionOriginSkuWHfromCSRDetail ON CHANGE changeMainCompositionOriginSkuWHfromCSRDetail(d),
+                              mainCompositionSkuWHfromCSRDetail ON CHANGE changeMainCompositionSkuWHfromCSRDetail(d),
+                              additionalCompositionOriginSkuWHfromCSRDetail ON CHANGE changeAdditionalCompositionOriginSkuWHfromCSRDetail(d),
+                              additionalCompositionSkuWHfromCSRDetail ON CHANGE changeAdditionalCompositionSkuWHfromCSRDetail(d),
+                              coefficientArticleSkuWHfromCSRDetail ON CHANGE changeCoefficientArticleSkuWHfromCSRDetail(d)
+    PROPERTIES(d) FORCE GRID   nameTypeLabelWHfromCSRDetail ON CHANGE changeTypeLabelWHfromCSRDetail(d)
+
+    PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromCSR(w) mainCompositionWHfromCSRDetail, additionalCompositionWHfromCSRDetail
+
+    OBJECTS s = Sku
+    PROPERTIES(s) READONLY barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
+                           sidSizeSupplierItem FORCE GRID, sidColorSupplierItem FORCE GRID, nameColorSupplierItem FORCE GRID, shortNameUOMSku
+    PROPERTIES(w, s) quantityWHfromCSRSku, quantityOriginCurrentBoxWHfromCSRSku, diffQuantityWHfromCSRSku
+
+    FILTERGROUP filtersQuantityOrigin
+        FILTER 'Показывать с расхождением' 'F8' diffQuantityWHfromCSRSku(w, s) DEFAULT
+        FILTER 'Показывать ожидаемые/принятые' 'F7' quantityOriginCurrentBoxWHfromCSRSku(w, s) OR quantityWHfromCSRSku(w, s)
+
+    FILTERS inWHfromCSRWHfromCSRDetail(w, d)
+
+    FILTERGROUP filtersQuantity
+        FILTER 'Показывать принятые' 'F9' quantityWHfromCSRDetail(d) DEFAULT
+
+//    FILTERGROUP filtersDiff
+//        FILTER 'Показывать отличающиеся' 'F10' diffQuantityWHfromCSRDetail(d)
+
+    EDIT WHfromCSR OBJECT w
+;
+
+DESIGN WHfromCSR FROM DEFAULT {
+
+    main {
+        preferredSize = (1024, 768);
+        NEW top {
+            childConstraints =  TO THE BOTTOM;
+
+            w.box{
+                NEW head{
+                    caption = 'Шапка документа';
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName){preferredCharWidth = 15;}
+                    ADD PROPERTY(nameStockWHfromCSR);
+                    ADD PROPERTY(dateWHfromCSR);
+                    ADD PROPERTY(timeWHfromCSR);
+                }
+
+                NEW freightUnit{
+                    caption = 'Короб';
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(quantityRemainedPositionSkuWHfromCSR);
+                    ADD PROPERTY(quantityRemainedSkuWHfromCSR);
+                    ADD PROPERTY(barcodeCurrentFreightUnit);
+                    ADD PROPERTY(fillWHfromCSRDetailsSkuFreightUnit);
+                    ADD PROPERTY(printMarksSkuFreightUnit);
+                }
+            }
+        }
+        NEW wor {
+            type = TABBED;
+            ADD d.box {
+                NEW firstCase {
+                    caption = 'Атрибуты поставщика';
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(originalNameArticleSkuWHfromCSRDetail);
+                    ADD PROPERTY(nameCountryOfOriginArticleSkuWHfromCSRDetail);
+                    ADD PROPERTY(nameBrandSupplierArticleSkuWHfromCSRDetail);
+                    ADD PROPERTY(netWeightArticleSkuWHfromCSRDetail);
+                    ADD PROPERTY(mainCompositionOriginArticleSkuWHfromCSRDetail);
+                }
+
+                NEW row {
+                    title = 'Внутренние атрибуты';
+                    childConstraints =  TO THE BOTTOM;
+                    NEW row1 {
+                        caption = 'Общие';
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(sidGenderArticleSkuWHfromCSRDetail);
+                        ADD PROPERTY(c);
+                        ADD PROPERTY(nameTypeFabricArticleSkuWHfromCSRDetail);
+                        ADD PROPERTY(u);
+                        ADD PROPERTY(netWeightSkuWHfromCSRDetail);
+                        ADD PROPERTY(nameCountryOfOriginSkuWHfromCSRDetail);
+                        ADD PROPERTY(coefficientArticleSkuWHfromCSRDetail);
+                    }
+                    NEW row2 {
+                        caption = 'Состав';
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(mainCompositionOriginSkuWHfromCSRDetail);
+                        ADD PROPERTY(mainCompositionSkuWHfromCSRDetail);
+                        ADD PROPERTY(mainCompositionWHfromCSRDetail);
+                    }
+                    NEW row3 {
+                        caption = 'Доп. состав';
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(additionalCompositionOriginSkuWHfromCSRDetail);
+                        ADD PROPERTY(additionalCompositionSkuWHfromCSRDetail);
+                        ADD PROPERTY(additionalCompositionWHfromCSRDetail);
+                    }
+                }
+            }
+            ADD s.box {title = 'Содержимое короба';}
+        }
+
+        PROPERTY(barcodeCurrentFreightUnit) { background = #FFEEEE; }
+
+        ADD functions.box;
+    }
+}
+
+// прием приемки)
+
+receiveWHfromCSI 'Принять' (WHfromCSI) = ACTION (WHfromCSI) NEWSESSION {
+    IF WHfromCSRWHfromCSI(WHfromCSI) IS WHfromCSR THEN {
+        FOR r == WHfromCSRWHfromCSI(WHfromCSI) DO {
+            IF r IS WHfromCSRPosted THEN {
+                CHANGECLASS r TO WHfromCSR;
+            }
+            FORM WHfromCSR OBJECTS w = r MANAGESESSION DOCKEDMODAL;
+        }
+    } ELSE {
+        ADDOBJ WHfromCSR;
+        FOR t == addedObject() DO {
+            SET WHfromCSIWHfromCSR (t) <- WHfromCSI AS WHfromCSI;
+            FORM WHfromCSR OBJECTS w = t MANAGESESSION DOCKEDMODAL;
+        }
+    }
+} TOOLBAR;
+
+postRecWHfromCSI 'Пометить как принятое' (WHfromCSI) = postWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI)) TOOLBAR;
+isDraftRecWHfromCSI (WHfromCSI) = isDraftWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
+
+statusRecWHfromCSI 'Статус приемки' (WHfromCSI) =
+    IF WHfromCSRWHfromCSI(WHfromCSI) IS WHfromCSRPosted THEN 'Принят' IF WHfromCSI IS WHfromCSI ELSE
+    IF WHfromCSRWHfromCSI(WHfromCSI) IS WHfromCSR THEN 'Принимается' IF WHfromCSI IS WHfromCSI ELSE
+    'Не принят' IF WHfromCSI IS WHfromCSI PREFCHARWIDTH 15 MINCHARWIDTH 15;
+
+quantityWHfromCSRDetailWHfromCSI 'Кол-во принятое' (WHfromCSI) = quantityWHfromCSRDetailWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
+
+// Излишки / Недостачи
+
+CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : Historizable, NumberedObject;
+CLASS ABSTRACT WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ';
+
+CLASS WHfromCSDEDetail 'Строка акта расхождений на приемке на склад с СВХ (излишек)' : WHfromCSDDetail;
+CLASS WHfromCSDSDetail 'Строка акта расхождений на приемке на склад с СВХ (недостача)' : WHfromCSDDetail;
+TABLE WHfromCSDEDetail (WHfromCSDEDetail);
+TABLE WHfromCSDSDetail (WHfromCSDSDetail);
+
+diffSkuWHfromCSR(sku, WHfromCSR) = (quantityWHfromCSRDetailSkuWHfromCSR(sku, WHfromCSR) (-)
+                                            quantityWHfromCSIDetailSkuWHfromCSI(sku, WHfromCSIWHfromCSR(WHfromCSR)))
+                                            IF isPostedWHfromCSR(WHfromCSR);
+
+hasDiffSkuWHfromCSR(sku, WHfromCSR) = diffSkuWHfromCSR(sku, WHfromCSR) != 0;
+
+countDiffWHfromCSR 'Расхождение (позиции)' (WHfromCSR) = GROUP SUM 1 IF hasDiffSkuWHfromCSR(sku, WHfromCSR) BY WHfromCSR;
+quantityDiffWHfromCSR 'Расхождение (кол-во)' (WHfromCSR) = GROUP SUM diffSkuWHfromCSR(sku, WHfromCSR) BY WHfromCSR;
+
+countDiffWHfromCSI 'Расхождение (позиции)' (WHfromCSI) = countDiffWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
+quantityDiffWHfromCSI 'Расхождение (кол-во)' (WHfromCSI) = quantityDiffWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
+
+hasShortageSkuWHfromCSR(sku, WHfromCSR) = diffSkuWHfromCSR(sku, WHfromCSR) < 0;
+hasExcessSkuWHfromCSR(sku, WHfromCSR) = diffSkuWHfromCSR(sku, WHfromCSR) > 0;
+
+// Непосредственное определение самого документа
+
+@defineDocumentTables(WHfromCSD);
+
+@defineAggregation(WHfromCSR, WHfromCSD, countDiffWHfromCSR);
+
+@defineAggregation(sku, WHfromCSR, WHfromCSDEDetail, hasExcessSkuWHfromCSR);
+quantityWHfromCSDEDetail 'Кол-во' (WHfromCSDDetail) = diffSkuWHfromCSR(skuWHfromCSDEDetail(WHfromCSDDetail),
+                                                                       WHfromCSRWHfromCSDEDetail(WHfromCSDDetail)) PERSISTENT;
+
+@defineAggregation(sku, WHfromCSR, WHfromCSDSDetail, hasShortageSkuWHfromCSR);
+quantityWHfromCSDSDetail 'Кол-во' (WHfromCSDDetail) = -diffSkuWHfromCSR(skuWHfromCSDSDetail(WHfromCSDDetail),
+                                                                       WHfromCSRWHfromCSDSDetail(WHfromCSDDetail)) PERSISTENT;
+
+WHfromCSRWHfromCSDDetail (WHfromCSDDetail) = UNION EXCLUSIVE WHfromCSRWHfromCSDEDetail(WHfromCSDDetail), WHfromCSRWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
+WHfromCSIWHfromCSDDetail (WHfromCSDDetail) = WHfromCSIWHfromCSR(WHfromCSRWHfromCSDDetail(WHfromCSDDetail));
+WHfromCSDWHfromCSDDetail (WHfromCSDDetail) = WHfromCSDWHfromCSR(WHfromCSRWHfromCSDDetail(WHfromCSDDetail));
+
+WHfromCSIWHfromCSDSDetail (WHfromCSDDetail) = WHfromCSIWHfromCSR(WHfromCSRWHfromCSDSDetail(WHfromCSDDetail));
+
+WHfromCSDWHfromCSDEDetail (WHfromCSDDetail) = WHfromCSDWHfromCSR(WHfromCSRWHfromCSDEDetail(WHfromCSDDetail));
+WHfromCSDWHfromCSDSDetail (WHfromCSDDetail) = WHfromCSDWHfromCSR(WHfromCSRWHfromCSDSDetail(WHfromCSDDetail));
+
+@defineDocumentDetailIndex(WHfromCSD);
+@defineDocumentDetailIndex(WHfromCSD, WHfromCSDEDetail);
+@defineDocumentDetailIndex(WHfromCSD, WHfromCSDSDetail);
+
+@defineDocumentAggregationHeaderTime(WHfromCSR, WHfromCSD);
+@defineDocumentDetailTime(WHfromCSD, WHfromCSDEDetail);
+@defineDocumentDetailTime(WHfromCSD, WHfromCSDSDetail);
+
+@defineDocumentAggregationHeaderNumberCustom(WHfromCSR, WHfromCSD, WHfromCSR);
+
+@defineDocumentHeaderDescription(WHfromCSD, seriesNumberWHfromCSD, 'Акт расхождений на приемке на склад с СВХ');
+@defineDocumentDetailDescription(WHfromCSD, WHfromCSDEDetail);
+@defineDocumentDetailDescription(WHfromCSD, WHfromCSDSDetail);
+
+@defineDocumentAggregationHeaderStock(WHfromCSR, WHfromCSD, stock, 'Склад');
+@defineDocumentDetailStock(WHfromCSD, WHfromCSDEDetail, stock, 'Склад');
+@defineDocumentDetailStock(WHfromCSD, WHfromCSDSDetail, stock, 'Склад');
+
+@defineDocumentAggregationHeaderPosted(WHfromCSR, WHfromCSD);
+@defineDocumentDetailPosted(WHfromCSD, WHfromCSDEDetail);
+@defineDocumentDetailPosted(WHfromCSD, WHfromCSDSDetail);
+
+skuWHfromCSDDetail (WHfromCSDDetail) = UNION EXCLUSIVE skuWHfromCSDEDetail(WHfromCSDDetail), skuWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
+quantityWHfromCSDDetail 'Кол-во' (WHfromCSDDetail) = UNION EXCLUSIVE quantityWHfromCSDEDetail(WHfromCSDDetail), quantityWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
+signedQuantityWHfromCSDDetail 'Кол-во' (WHfromCSDDetail) = UNION EXCLUSIVE quantityWHfromCSDEDetail(WHfromCSDDetail), -quantityWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
+
+@defineDocumentDetailSkuArticle(WHfromCSD);
+
+costWHfromCSDEDetail(WHfromCSDDetail) = 0.0 IF WHfromCSDDetail IS WHfromCSDEDetail;
+EXTEND CLASS WHfromCSDEDetail : BatchB;
+@implementBatchCustom(WHfromCSDEDetail, sku, stock, cost);
+quantityBatch (batch) += quantityWHfromCSDEDetail(batch);
+skipASkuLedger (ledger) += ledger IS WHfromCSDEDetail;
+
+@implementSkuLedgerOutFIFO(WHfromCSDSDetail, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityWHfromCSDSDetail(ledger);
+limitOutFIFOSkuLedgerBatch (ledger, batch) += costWHfromCSIBatch(WHfromCSIWHfromCSDSDetail(ledger), batch);
+orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS WHfromCSDSDetail;
+
+skipASkuLedger (ledger) += ledger IS WHfromCSDSDetail;
+
+// Внутренние аттрибуты
+
+nameCategoryArticleSkuWHfromCSDDetail 'Номенклатурная группа' (WHfromCSDDetail) = nameCategoryArticleSku(skuWHfromCSDDetail(WHfromCSDDetail));
+nameUnitOfMeasureArticleSkuWHfromCSDDetail 'Ед. измерения товара' (WHfromCSDDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSDDetail(WHfromCSDDetail));
+
+editInnerOrder 'Редактировать' (innerOrder) = ACTION (innerOrder) {
+    IF innerOrder IS InnerOrder  THEN {
+        FORM innerOrder OBJECTS o = innerOrder MODAL;
+    }
+
+} IMAGE 'edit.png' IN documentPrmGroup;
+
+
+// ---------------------------------------- Акт расценки ------------------------------------ //
+CLASS TransferPriceActWHfromCSI 'Акт расценки (СВХ)' : TransferPriceAct;
+CLASS TransferPriceActWHfromCSIDetail 'Строка акта расценки': TransferPriceActDetail;
+
+
+isStoreDestinationStockCStoWH 'Перемещение на магазин' (CStoWH) = destinationStockCStoWH(CStoWH) IS DepartmentStore;
+
+needTransferPriceActDetailCStoWHDetail (CStoWHDetail) = destinationStockCStoWH(CStoWHCStoWHDetail(CStoWHDetail)) IS DepartmentStore;
+
+
+@defineDocumentTables (transferPriceActWHfromCSI);
+
+@defineAggregation (CStoWH, transferPriceActWHfromCSI, isStoreDestinationStockCStoWH);
+
+@defineAggregation (CStoWHDetail, transferPriceActWHfromCSIDetail, needTransferPriceActDetailCStoWHDetail);
+
+transferPriceActWHfromCSITransferPriceActWHfromCSIDetail (transferPriceActWHfromCSIDetail) =
+    transferPriceActWHfromCSICStoWH(CStoWHCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail)));
+
+@defineDocumentDetailIndex(transferPriceActWHfromCSI);
+
+@defineDocumentAggregationTime(CStoWH, transferPriceActWHfromCSI);
+@defineDocumentAggregationPosted(CStoWH, transferPriceActWHfromCSI);
+
+@defineDocumentAggregationHeaderNumber(CStoWH, transferPriceActWHfromCSI);
+@defineDocumentAggregationHeaderNote(CStoWH, transferPriceActWHfromCSI);
+
+@defineDocumentDescription(transferPriceActWHfromCSI, TransferPriceActWHfromCSIDetail, seriesNumberTransferPriceActWHfromCSI, 'Акт расценки (поставка)');
+
+@defineDocumentAggregationDetailSku(CStoWH, transferPriceActWHfromCSI, sku);
+
+quantityTransferPriceActWHfromCSIDetail 'Количество' (transferPriceActWHfromCSIDetail) =
+    quantityCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail));
+
+@defineDocumentHeaderQuantity(transferPriceActWHfromCSI);
+@defineDocumentHeaderSkuQuantity(transferPriceActWHfromCSI, sku);
+
+departmentStoreTransferPriceActWHfromCSI (transferPriceActWHfromCSI) = destinationStockCStoWH(CStoWHTransferPriceActWHfromCSI (transferPriceActWHfromCSI)) AS DepartmentStore;
+
+departmentStoreTransferPriceActWHfromCSIDetail (transferPriceActWHfromCSIDetail) =
+    destinationStockCStoWH(CStoWHCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail))) AS DepartmentStore;
+
+@defineDocumentDetailSkuArticle(transferPriceActWHfromCSI);
+
+importerPriceTransferPriceActWHfromCSIDetail 'Цена импортера' (transferPriceActWHfromCSIDetail) = DATA NUMERIC[14,2] (TransferPriceActWHfromCSIDetail);
+importerPriceTransferPriceActWHfromCSIDetail (detail) <- importerPriceBatchA(declarationDetailCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(detail)))
+    WHEN ASSIGNED(isPostedTransferPriceActWHfromCSIDetail(detail));
+
+supplierPriceTransferPriceActWHfromCSIDetail 'Цена поставщика' (transferPriceActWHfromCSIDetail) = DATA NUMERIC[14,2] (TransferPriceActWHfromCSIDetail);
+supplierPriceTransferPriceActWHfromCSIDetail (detail) <- supplierPriceBatchA(declarationDetailCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(detail)))
+    WHEN ASSIGNED(isPostedTransferPriceActWHfromCSIDetail(detail));
+
+retailVATTransferPriceActWHfromCSIDetail (transferPriceActWHfromCSIDetail) = DATA Range (TransferPriceActWHfromCSIDetail);
+retailVATTransferPriceActWHfromCSIDetail (detail) <- rangeVATBatchA(declarationDetailCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(detail)))
+    WHEN ASSIGNED(isPostedTransferPriceActWHfromCSIDetail(detail));
+
+numberRetailVATTransferPriceActWHfromCSIDetail 'НДС, номер' (transferPriceActWHfromCSIDetail) = numberRange(retailVATTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail));
+valueRetailVATTransferPriceActWHfromCSIDetail 'НДС,%' (transferPriceActWHfromCSIDetail) = valueRateRangeDate
+    (retailVATTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail), dateTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail));
+
+retailPriceTransferPriceActWHfromCSIDetail 'Цена розничная' (transferPriceActWHfromCSIDetail) = retailPriceCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail));
+
+
+@implementBaseISkuDepartmentStoreLedger(TransferPriceActWHfromCSI, sku);
+
+// Расчет сумм и показателей для реестра цен
+importerSumTransferPriceActWHfromCSIDetail (transferPriceActWHfromCSIDetail) =
+    importerPriceTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail) * quantityTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail);
+
+supplierSumTransferPriceActWHfromCSIDetail (detail) =
+    supplierPriceTransferPriceActWHfromCSIDetail(detail) * quantityTransferPriceActWHfromCSIDetail(detail);
+
+retailSumTransferPriceActWHfromCSIDetail (transferPriceActWHfromCSIDetail) =
+    retailPriceTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail) * quantityTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail);
+
+retailVATSumTransferPriceActWHfromCSIDetail (transferPriceActWHfromCSIDetail) =
+    [X*Y/(100+Y)] (retailSumTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail), valueRetailVATTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail));
+
+markupSumTransferPriceActWHfromCSIDetail (transferPriceActWHfromCSIDetail) =
+    retailSumTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail) (-) importerSumTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail)
+    (-) retailVATSumTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail);
+
+markupSumTransferPriceActWHfromCSIDetailPriceActWHfromCSI (transferPriceActWHfromCSI) =
+    GROUP SUM markupSumTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail)
+    BY transferPriceActWHfromCSITransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail);
+
+retailVATSumTransferPriceActWHfromCSIDetailTransferPriceActWHfromCSI (transferPriceActWHfromCSI) =
+    GROUP SUM retailVATSumTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail)
+    BY transferPriceActWHfromCSITransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail);
+
+retailSumTransferPriceActWHfromCSIDetailTransferPriceActWHfromCSI (transferPriceActWHfromCSI) =
+    GROUP SUM retailSumTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail)
+    BY transferPriceActWHfromCSITransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail);
+
+importerMarkupTransferPriceActWHfromCSIDetail (transferPriceActWHfromCSIDetail) =
+    round2 (markupSumTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail)*100/
+                                                   retailSumTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail));
+
+// Свойства реестра цен
+@defineDocumentHeaderListRegister (transferPriceActWHfromCSI);
+registerCommitteeWHfromCSI (WHfromCSI) = registerCommitteeTransferPriceActWHfromCSI(transferPriceActWHfromCSICStoWH(CStoWHWHfromCSI(WHfromCSI)));
+registerCommitteeListRegister (inputListRegister) += registerCommitteeTransferPriceActWHfromCSI(inputListRegister);
+
+dateListRegister (inputListRegister) += dateTransferPriceActWHfromCSI (inputListRegister);
+departmentStoreListRegister (inputListRegister) += departmentStoreTransferPriceActWHfromCSI (inputListRegister);
+senderListRegister (inputListRegister) += legalEntityStock(customStoreCStoWH(CStoWHTransferPriceActWHfromCSI(inputListRegister)));
+isCustomStoreListRegister(inputListRegister) += senderListRegister(inputListRegister) IS CustomStore;
+shipperListRegister (inputListRegister) += nameCustomStoreCStoWH(CStoWHTransferPriceActWHfromCSI(inputListRegister));
+
+quantityListRegisterDetailListRegister (inputListRegister) += quantityTransferPriceActWHfromCSIDetailTransferPriceActWHfromCSI (inputListRegister);
+wareSumListRegisterDetailListRegister (inputListRegister) += 0.0 IF inputListRegister IS TransferPriceActWHfromCSI;
+wareVATSumListRegisterDetailListRegister (inputListRegister) += 0.0 IF inputListRegister IS TransferPriceActWHfromCSI;
+markupSumListRegisterDetailListRegister (inputListRegister) +=  markupSumTransferPriceActWHfromCSIDetailPriceActWHfromCSI (inputListRegister);
+retailVATSumListRegisterDetailListRegister (inputListRegister) += retailVATSumTransferPriceActWHfromCSIDetailTransferPriceActWHfromCSI (inputListRegister);
+retailSumListRegisterDetailListRegister (inputListRegister) += retailSumTransferPriceActWHfromCSIDetailTransferPriceActWHfromCSI (inputListRegister);
+
+numberListRegister (inputListRegister) += numberObject (CStoWHTransferPriceActWHfromCSI(inputListRegister));
+seriesListRegister (inputListRegister) += seriesObject (CStoWHTransferPriceActWHfromCSI(inputListRegister));
+
+listRegisterListRegisterDetail(inputListRegisterDetail) += transferPriceActWHfromCSITransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+indexListRegisterDetail (inputListRegisterDetail) += indexTransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+skuListRegisterDetail  (inputListRegisterDetail) += skuTransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+quantityListRegisterDetail (inputListRegisterDetail) += quantityTransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+importerPriceListRegisterDetail (inputListRegisterDetail) += importerPriceTransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+supplierSumListRegisterDetail (inputListRegisterDetail) += supplierSumTransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+supplierMarkupListRegisterDetail (inputListRegisterDetail) +=  (supplierPriceTransferPriceActWHfromCSIDetail(inputListRegisterDetail)/
+    importerPriceTransferPriceActWHfromCSIDetail(inputListRegisterDetail) - 1)*100;
+wareSumListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS TransferPriceActWHfromCSIDetail;
+warePriceListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS TransferPriceActWHfromCSIDetail;
+wareVATSumListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS TransferPriceActWHfromCSIDetail;
+valueWareRangeListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS TransferPriceActWHfromCSIDetail;
+importerMarkupListRegisterDetail (inputListRegisterDetail) += importerMarkupTransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+markupSumListRegisterDetail (inputListRegisterDetail) += markupSumTransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+valueRetailVATListRegisterDetail (inputListRegisterDetail) += valueRetailVATTransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+retailVATSumListRegisterDetail (inputListRegisterDetail) += retailVATSumTransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+retailPriceListRegisterDetail (inputListRegisterDetail) += retailPriceTransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+retailSumListRegisterDetail (inputListRegisterDetail) += retailSumTransferPriceActWHfromCSIDetail (inputListRegisterDetail);
+
+supplierVATTransferPriceActWHfromCSIDetail (transferPriceActWHfromCSIDetail) = DATA Range (TransferPriceActWHfromCSIDetail);
+supplierVATTransferPriceActWHfromCSIDetail (detail) <- rangeVATBatchA(declarationDetailCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(detail)))
+    WHEN ASSIGNED(isPostedTransferPriceActWHfromCSIDetail(detail));
+valueSupplierVATTransferPriceActWHfromCSIDetail 'НДС поставщика, %' (transferPriceActWHfromCSIDetail) = valueRateRangeDate
+    (supplierVATTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail), dateTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail));
+
+ // Расчет сумм и показателей для реестра цен дополнительные (listRegister)
+
+supplierVATISumTransferPriceActWHfromCSIDetail 'Сумма НДС поставщика (без посуды)' (detail) =     [X*Y/100]
+    (supplierSumTransferPriceActWHfromCSIDetail(detail), valueSupplierVATTransferPriceActWHfromCSIDetail(detail));
+
+numberSupplierVATTransferPriceActWHfromCSIDetail 'НДС поставщика, номер' (transferPriceActWHfromCSIDetail) = numberRange(supplierVATTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail));
+
+
+invoiceSumTransferPriceActWHfromCSIDetail 'Сумма поставщика с НДС' (detail) = supplierSumTransferPriceActWHfromCSIDetail (detail) (+)
+    supplierVATISumTransferPriceActWHfromCSIDetail(detail);
+
+supplierVATISumTransferPriceActWHfromCSI 'Сумма НДС поставщика (без посуды)' (transferPriceActWHfromCSI) = GROUP SUM
+    supplierVATISumTransferPriceActWHfromCSIDetail(detail) BY transferPriceActWHfromCSITransferPriceActWHfromCSIDetail(detail);
+
+invoiceSumTransferPriceActWHfromCSI 'Сумма поставщика с НДС' (transferPriceActWHfromCSI) = GROUP SUM
+    invoiceSumTransferPriceActWHfromCSIDetail(detail) BY transferPriceActWHfromCSITransferPriceActWHfromCSIDetail(detail);
+
+// Свойства реестра цен
+supplierVATISumListRegisterDetailListRegister (listRegister) += supplierVATISumTransferPriceActWHfromCSI(listRegister);
+invoiceSumListRegisterDetailListRegister (listRegister) += invoiceSumTransferPriceActWHfromCSI(listRegister);
+supplierVATISumListRegisterDetail (listRegisterDetail) += supplierVATISumTransferPriceActWHfromCSIDetail (listRegisterDetail);
+valueSupplierVATListRegisterDetail (listRegisterDetail) += valueSupplierVATTransferPriceActWHfromCSIDetail (listRegisterDetail);
+invoiceSumListRegisterDetail (listRegisterDetail) += invoiceSumTransferPriceActWHfromCSIDetail (listRegisterDetail);
+
+notPassToBookkeepingListRegister (inputListRegister) += inputListRegister IS TransferPriceActWHfromCSI AND NOT
+    destinationStockCStoWH(CStoWHTransferPriceActWHfromCSI(inputListRegister)) IS DepartmentStore;
+
+//contractSkuCompanyTransferPriceActSale(transferPriceActSale) = contractSkuCompanySaleOut(saleOutTransferPriceActSale(transferPriceActSale));
+//
+//dataFromContractListRegister (listRegister) += dateFromContract(contractSkuCompanyTransferPriceActSale (listRegister));
+//numberContractListRegister (listRegister) += numberContract(contractSkuCompanyTransferPriceActSale (listRegister));
+fullInputListRegister (inputListRegister) +=  inputListRegister IS TransferPriceActWHfromCSI;
+
+printInputListRegisterWHfromCSI 'Реестр цен' (WHfromCSI) = printListRegister(transferPriceActWHfromCSICStoWH(CStoWHWHfromCSI(WHfromCSI))) TOOLBAR;
+
+FORM WHfromCSIs 'Поступления товара с СВХ'
+    OBJECTS t = WHfromCSI
+    PROPERTIES (t) READONLY isPostedWHfromCSI FORCE GRID, numberWHfromCSI, seriesWHfromCSI, dateWHfromCSI, timeWHfromCSI,
+                            nameStockWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI,
+                            quantityWHfromCSIDetailWHfromCSI, quantityWHfromCSRDetailWHfromCSI,
+                            statusRecWHfromCSI, countDiffWHfromCSI, quantityDiffWHfromCSI
+
+    PROPERTIES(t) FORCE PANEL receiveWHfromCSI, postRecWHfromCSI SHOWIF isDraftRecWHfromCSI(t)
+
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
+
+    OBJECTS d = WHfromCSIDetail
+    PROPERTIES(d) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameCategoryArticleSkuWHfromCSIDetail,
+                            nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail, sidSizeWHfromCSIDetail,
+                            sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, barcodeFreightUnitWHfromCSIDetail,
+                            nameDestinationWHfromCSIDetail, quantityWHfromCSIDetail, nameUnitOfMeasureArticleSkuWHfromCSIDetail
+
+    FILTERS WHfromCSIWHfromCSIDetail(d) == t
+
+    OBJECTS dr = WHfromCSRDetail
+    PROPERTIES(dr) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameCategoryArticleSkuWHfromCSRDetail,
+                            nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail, sidSizeWHfromCSRDetail,
+                            sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
+                            nameDestinationWHfromCSRDetail, quantityWHfromCSRDetail, nameUnitOfMeasureArticleSkuWHfromCSRDetail
+
+    FILTERS WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(dr)) == t
+
+    OBJECTS df = WHfromCSDDetail
+    PROPERTIES (df) READONLY indexWHfromCSDDetail, barcodeWHfromCSDDetail, nameCategoryArticleSkuWHfromCSDDetail,
+                             nameBrandWHfromCSDDetail, sidArticleWHfromCSDDetail, sidSizeWHfromCSDDetail,
+                             sidColorWHfromCSDDetail, nameColorWHfromCSDDetail, //barcodeFreightUnitWHfromCSDDetail,
+                             signedQuantityWHfromCSDDetail, nameUnitOfMeasureArticleSkuWHfromCSDDetail
+
+    FILTERS WHfromCSIWHfromCSDDetail(df)==t
+
+    OBJECTS s = RomanLogicsModule.Store
+    PROPERTIES(s) READONLY name
+    PROPERTIES createInnerOrderStoreWHfromCSI(s, t) READONLYIF innerOrderStoreWHfromCSI(s, t)
+
+    FILTERS quantitySkuStoreWHfromCSI(s, t) > 0
+
+    OBJECTS o = InnerOrder FIXED PANEL
+    PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
+                            nameStockInnerOrder, nameDestinationStockInnerOrder, noteInnerOrder,
+                            countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder, statusInnerOrder
+    PROPERTIES (o) editInnerOrder
+
+    FILTERS innerOrderStoreWHfromCSI (s, t) ==o
+
+    OBJECTS pd=TransferPriceActWHfromCSIDetail
+    PROPERTIES (pd) READONLY indexTransferPriceActWHfromCSIDetail, barcodeTransferPriceActWHfromCSIDetail,
+                    nameCategoryTransferPriceActWHfromCSIDetail, nameBrandTransferPriceActWHfromCSIDetail,
+                    sidArticleTransferPriceActWHfromCSIDetail, sidSizeTransferPriceActWHfromCSIDetail,
+                    sidColorTransferPriceActWHfromCSIDetail, nameColorTransferPriceActWHfromCSIDetail,
+                    quantityTransferPriceActWHfromCSIDetail, shortNameUOMTransferPriceActWHfromCSIDetail,
+                    importerPriceTransferPriceActWHfromCSIDetail, numberRetailVATTransferPriceActWHfromCSIDetail,
+                    valueRetailVATTransferPriceActWHfromCSIDetail, retailPriceTransferPriceActWHfromCSIDetail,
+                    supplierVATISumTransferPriceActWHfromCSIDetail, numberSupplierVATTransferPriceActWHfromCSIDetail,
+                    valueSupplierVATTransferPriceActWHfromCSIDetail, invoiceSumTransferPriceActWHfromCSIDetail
+
+    FILTERS WHfromCSICStoWH(CStoWHCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(pd)))==t
+
+    PROPERTIES (t) printInputListRegisterWHfromCSI
+
+;
+
+DESIGN WHfromCSIs FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD t.box {
+            fillVertical = 1;
+        }
+        NEW docDetail{
+            fillVertical = 2;
+            type = TABBED;
+            ADD d.box {
+               title = 'Спецификация';
+            }
+
+            NEW documentHistory {
+
+                title = 'История';
+                ADD t.historyGroup;
+            }
+
+            ADD dr.box {
+                title = 'Приемка';
+            }
+
+            ADD df.box {
+                 title = 'Акт расхождений';
+            }
+            ADD pd.box {
+                title = 'Расценка';
+            }
+
+            NEW wor {
+                title = 'Внутренние заказы';
+                childConstraints = TO THE BOTTOM;
+                ADD s.box{
+                }
+                ADD o.box {
+                    title = 'Заказы';
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD o.numberedGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    ADD o.documentHeaderGroup {
+                        childConstraints = TO THE BOTTOM;
+                        NEW www {
+                            childConstraints = TO THE RIGHT;
+                            ADD PROPERTY (dateInnerOrder);
+                            ADD PROPERTY (timeInnerOrder);
+                        }
+                    }
+                    ADD o.documentPrmGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    ADD o.documentSumGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    NEW vvv {
+                        title = 'Редактирование';
+                        ADD PROPERTY(editInnerOrder);
+                    }
+                }
+            }
+        }
+    }
+
+    ADD functions.box;
+}
+
+retailPriceWHfromCSIDetail 'Цена розничная' (detail) = retailPriceCStoWHDetail(CStoWHDetailWHfromCSIDetail(detail));
+retailSumWHfromCSIDetail 'Сумма розничная' (detail) = quantityWHfromCSIDetail(detail) * retailPriceWHfromCSIDetail(detail);
+useRetailPriceWHfromCSIDetail(WHfromCSIDetail) = stockWHfromCSIDetail(WHfromCSIDetail)
+    IS DepartmentStore AND NOT costLedgerDepartmentStore(stockWHfromCSIDetail(WHfromCSIDetail));
+@defineDocumentTransferAccount(WHfromCSI, useRetailPriceWHfromCSIDetail);
+
+//--Проводим по регистру
+@implementSkuLedgerInLIFO(WHfromCSIDetail, sku, stock);
+quantityInLIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
+limitInLIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) IF batch == declarationDetailCStoWHDetail(CStoWHDetailWHfromCSIDetail(ledger));
+sumInSkuLedger(ledger) += accountSumWHfromCSIDetail(ledger);

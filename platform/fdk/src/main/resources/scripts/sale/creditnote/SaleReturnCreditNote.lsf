@@ -1,0 +1,31 @@
+MODULE SaleReturnCreditNote;
+
+REQUIRE CreditNote, SaleReturnShipment, SaleCreditNote;
+
+NAMESPACE SaleReturn;
+
+
+//----------------------------------------------- Акт ---------------------------------------------------//
+
+@defineCreditNote(' (продажа-возврат)', supplierStock);
+@defineCreditNoteBatch();
+
+//------------------------------ Ограничение на выбор контрагентов -----------------------------//
+
+CONSTRAINT supplierUserCreditNote(userCreditNote) AND NOT isCompanyLegalEntity(supplierUserCreditNote(userCreditNote))
+    CHECKED BY supplierUserCreditNote MESSAGE 'Для акта расхождения выбрано в качестве поставщика организация, не являющаяся компанией';
+CONSTRAINT customerUserCreditNote(userCreditNote) AND NOT isCustomerLegalEntity(customerUserCreditNote(userCreditNote))
+    CHECKED BY customerUserCreditNote MESSAGE 'Для акта расхождения выбрано в качестве покупателя организация, не являющаяся покупателем';
+
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+@defineDocumentSupplierCustomerStockAccess(UserCreditNote, company, customer, userCreditNote);
+
+// -- Операция
+@deriveDocumentOperationProperty(UserInvoice, createCreditNote);
+
+NAVIGATOR {
+    saleReturnNavigator {
+        ADD creditNotes;
+    }
+}

@@ -1,0 +1,54 @@
+MODULE  MenuBy;
+
+REQUIRE Menu;
+
+//-----------------Печатные формы (выводятся на печать только два уровня групп)-----------------//
+
+FORM menuPrint 'Меню' PRINT
+    OBJECTS m = Menu FIXED PANEL
+    PROPERTIES (m) objectClassName, nameStockMenu, nameNumeratorObject, numberObject, seriesObject, dateMenu, timeMenu,
+                   nameCurrencyMenu, namePriceListTypeMenu, noteMenu, countMenuDetailMenu,
+                   nameGroupTypeMenu
+
+    OBJECTS g1=Group
+    PROPERTIES READONLY nameG = nameGroup(g1)
+    PROPERTIES(m,g1) positionNumberMenuGroup
+    FILTERS groupTypeGroup(g1) == groupTypeMenu(m),
+            g1 IS Group AND NOT parentGroup(g1)
+    ORDER BY positionNumberMenuGroup(m,g1)
+
+    OBJECTS g2=Group
+    PROPERTIES READONLY nameGr = nameGroup(g2)
+    PROPERTIES(m,g2) positionNumberMenuGroup
+    FILTERS groupTypeGroup(g2) == groupTypeMenu(m),
+            parentGroup(g2) == g1
+    ORDER BY positionNumberMenuGroup(m,g2)
+
+
+    OBJECTS d = MenuDetail
+    PROPERTIES (d) READONLY idBarcodeSkuMenuDetail, nameSkuMenuDetail,
+                   priceMenuDetail, compositionMenuDetail, productYieldMenuDetail
+    PROPERTIES (d,g2) positionNumberMenuDetailGroup
+    FILTERS hasParentDetailGroup(d,g2),
+            menuMenuDetail(d) == m
+
+    ORDER BY positionNumberMenuDetailGroup(d,g2)
+;
+printMenu 'Меню' (menu) = ACTION FORM menuPrint OBJECTS m = menu IMAGE 'print.png' IN printGroup;
+
+EXTEND FORM menus
+    PROPERTIES(m) FORCE PANEL printMenu
+;
+EXTEND DESIGN menus {
+    printTab {
+        ADD m.printGroup;
+    }
+}
+
+
+
+
+
+
+
+

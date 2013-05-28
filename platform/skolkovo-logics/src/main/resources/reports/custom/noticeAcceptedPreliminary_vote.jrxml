@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<topPen lineWidth="0.0"/>
+			<leftPen lineWidth="0.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="0.0"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="vote" class="java.lang.Integer"/>
+	<field name="nameNativeProjectVote" class="java.lang.String"/>
+	<field name="fileDecisionVote" class="java.lang.String"/>
+	<detail>
+		<band height="171">
+			<textField>
+				<reportElement style="DefaultStyle" x="20" y="0" width="160" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Уважаемый заявитель!"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="31" width="525" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Ваш проект был направлен на предварительную экспертизу 10 независимым экспертам. Мы рады сообщить Вам, что эксперты оценили проект положительно (проект соответствует установленным критериям*). Копию решения Фонда Вы найдете в приложении к данному письму."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="61" width="525" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Результаты предварительной экспертизы действительны в течение 6 месяцев и будут зачтены Фондом при подаче Вами заявки на статус участника."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="91" width="525" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Вы можете подать заявку на статус участника, заполнив форму “Юридическое лицо” в личном кабинете."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="111" width="525" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["* критериям, указанным в пункте 26 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково»."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="150" width="525" height="17" forecolor="#666666"/>
+				<box leftPadding="0" rightPadding="0"/>
+				<textElement>
+					<font size="14" isUnderline="false"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["\n"+
+"****************************DISCLAIMER******************************** \n"+
+"This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
+"\n"+
+"Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
+"************************************************************************* \n"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="131" width="525" height="19"/>
+				<textElement>
+					<font size="14" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["\n \n"+
+"С уважением, \n"+
+"Команда сопровождения проектов \n"+
+"Фонд «Сколково» \n"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

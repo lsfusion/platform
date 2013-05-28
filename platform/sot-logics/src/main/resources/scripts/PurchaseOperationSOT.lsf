@@ -1,0 +1,22 @@
+MODULE PurchaseOperationSOT;
+
+REQUIRE PurchaseOperation, InvoiceSOT;
+
+NAMESPACE PurchaseOperation;
+
+toShowRetailMarkupSkuOperation 'Показывать розничную надбавку' = DATA BOOLEAN (Purchase.Operation);
+
+EXTEND FORM Purchase.operation
+    PROPERTIES(o) toShowRetailMarkupSkuOperation
+;
+
+EXTEND DESIGN Purchase.operation{
+    tabContainer{
+        showContainer{
+            ADD PROPERTY(toShowRetailMarkupSkuOperation);
+        }
+    }
+}
+
+toShowRetailMarkupSkuUserInvoice (invoice) <- toShowRetailMarkupSkuOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));

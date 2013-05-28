@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
+       default-lazy-init="true">
+
+    <bean id="registryPort" class="java.lang.Integer">
+        <constructor-arg type="int" value="7652"/>
+    </bean>
+
+    <bean id="serverAgent" class="platform.agent.ServerAgent">
+        <constructor-arg ref="registryPort"/>
+    </bean>
+
+    <bean id="serverAgentLocator" class="platform.agent.ServerAgentLocator">
+        <constructor-arg value="6667"/>
+        <constructor-arg ref="registryPort"/>
+    </bean>
+
+</beans>

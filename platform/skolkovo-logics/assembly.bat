@@ -1,0 +1,1 @@
+mvn svn-revision-number:revision assembly:assembly

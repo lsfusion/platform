@@ -1,0 +1,20 @@
+MODULE TaxReverse;
+
+REQUIRE System, Tax;
+
+NAMESPACE Tax;
+
+reverseRange 'Реверсивный расчет' = DATA BOOLEAN (Range);
+
+EXTEND FORM tax
+    PROPERTIES(ra) reverseRange BEFORE dateFromActingRateRange
+;
+
+EXTEND FORM range
+    PROPERTIES(r) reverseRange
+;
+
+EXTEND FORM rangeDialog
+    PROPERTIES(r) READONLY reverseRange
+;
+

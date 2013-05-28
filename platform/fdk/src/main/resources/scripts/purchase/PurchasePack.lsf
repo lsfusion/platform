@@ -1,0 +1,10 @@
+MODULE PurchasePack;
+
+REQUIRE Pack;
+
+NAMESPACE Purchase;
+
+// Упаковка
+
+@definePackSku ('закупки', Purchase);
+

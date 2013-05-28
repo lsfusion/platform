@@ -1,0 +1,270 @@
+MODULE Currency;
+
+REQUIRE System, Time, MasterData, DefaultData;
+
+CLASS Currency 'Валюта';
+TABLE currency(Currency);
+
+nameCurrency 'Наименование' = DATA ISTRING[50](Currency);
+
+symbolCurrency 'Символ' = DATA STRING[5] (Currency);
+shortNameCurrency 'Валюта сокр.' = DATA STRING[3] (Currency);
+documentNameCurrency 'Валюта в накладной сокр.' = DATA STRING[10] (Currency);
+currencyShortName (string) = GROUP AGGR currency BY shortNameCurrency(currency) WHERE currency IS Currency;
+
+GROUP nbrbGroup 'Курсы НБРБ' : public;
+
+importNBRBExchangeRateDateFrom 'Дата с' = DATA DATE () IN nbrbGroup;
+importNBRBExchangeRateDateTo 'Дата по' = DATA DATE () IN nbrbGroup;
+
+GROUP cbrfGroup 'Курсы ЦБРФ' : public;
+
+importCBRFExchangeRateDateFrom 'Дата с' = DATA DATE () IN cbrfGroup;
+importCBRFExchangeRateDateTo 'Дата по' = DATA DATE () IN cbrfGroup;
+
+// Формы
+
+FORM currency 'Валюта'
+    OBJECTS c = Currency FIXED PANEL
+    PROPERTIES (c)  nameCurrency, shortNameCurrency, symbolCurrency, documentNameCurrency
+
+    EDIT Currency OBJECT c
+;
+
+FORM currencies 'Валюты'
+    OBJECTS c = Currency
+    PROPERTIES(c) READONLY nameCurrency, shortNameCurrency, symbolCurrency, documentNameCurrency
+
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
+
+    DIALOG Currency OBJECT c
+;
+
+// ---------------------------------- Типы обмена ---------------------------- //
+
+CLASS TypeExchange 'Тип обмена';
+TABLE typeExchange(TypeExchange);
+TABLE rateExchange (TypeExchange, Currency, DATE);
+
+nameTypeExchange 'Наименование' = DATA ISTRING[50](TypeExchange) IN recognize;
+
+currencyTypeExchange 'Валюта типа обмена (ИД)'= DATA Currency(TypeExchange);
+nameCurrencyTypeExchange 'Валюта типа обмена (наим.)' (typeExchange) = nameCurrency(currencyTypeExchange(typeExchange)) IN base;
+rateExchange 'Курс обмена' = DATA NUMERIC[15,8] (TypeExchange, Currency, DATE);
+typeExchangeName (name) = GROUP AGGR typeExchange BY nameTypeExchange(typeExchange) WHERE typeExchange IS TypeExchange;
+
+dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =
+    GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn <= date AND date IS DATE
+    BY typeExchange, currency, date;
+
+rateTypeExchangeCurrencyDate 'Курс обмена' (typeExchange, currency, date) =
+    rateExchange(typeExchange, currency, dateTypeExchangeCurrencyDate(typeExchange, currency, date));
+
+curRateTypeExchangeCurrency 'Текущий курс обмена' (typeExchange, currency) =
+    rateExchange(typeExchange, currency, dateTypeExchangeCurrencyDate(typeExchange, currency, currentDate()));
+
+// -------------------------------------------- Курсы валют --------------------------------- //
+
+FORM dialogTypeExchangeCurrency 'Курс обмена на дату'
+    OBJECTS t=TypeExchange FIXED PANEL
+    OBJECTS c=Currency FIXED PANEL
+    OBJECTS d=DATE FIXED PANEL
+    PROPERTIES READONLY nameTypeExchange(t),  nameCurrencyTypeExchange(t), nameCurrency(c)
+    PROPERTIES val=OBJVALUE(d), rateExchange(t,c,d)
+
+;
+DESIGN dialogTypeExchangeCurrency FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        ADD t.box {
+            ADD PROPERTY(nameTypeExchange(t)) { focusable = FALSE; preferredCharWidth = 40;}
+        }
+        ADD c.box{
+            childConstraints = TO THE BOTTOM;
+            ADD d.box {
+                childConstraints = TO THE RIGHT;
+
+                ADD PROPERTY(rateExchange(t,c,d));
+            };
+            NEW row {
+                title = 'Валюты обмена';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(nameCurrency(c)) { caption = 'Валюта (из)'; preferredCharWidth = 20;}
+                ADD PROPERTY(nameCurrencyTypeExchange(t)) { caption = 'Валюта (в)'; preferredCharWidth = 20;}
+            }
+        }
+    }
+    ADD functions.box;
+}
+
+dialogTypeExchangeCurrency 'Добавить' (typeExchange, currency) = ACTION FORM dialogTypeExchangeCurrency OBJECTS t = typeExchange, c = currency MODAL TOOLBAR;
+deleteTypeExchangeCurrencyDate 'Удалить' (typeExchange, currency, date) = ACTION SET rateExchange(typeExchange, currency, date) <- NULL IMAGE 'delete.png';
+
+FORM typeExchangeCurrencyDate 'Тип обмена / Курсы валют'
+
+    OBJECTS t = TypeExchange
+    PROPERTIES(t) READONLY nameTypeExchange, nameCurrencyTypeExchange
+    PROPERTIES(t) ADDFORM, EDITFORM, DELETE
+
+    PROPERTIES() importNBRBExchangeRateDateFrom, importNBRBExchangeRateDateTo
+    PROPERTIES() importCBRFExchangeRateDateFrom, importCBRFExchangeRateDateTo
+
+    OBJECTS c = Currency
+    PROPERTIES(c) READONLY nameCurrency
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
+    PROPERTIES(t, c) READONLY curRateTypeExchangeCurrency
+
+    FILTERS curRateTypeExchangeCurrency(t, c)
+
+    OBJECTS d = DATE
+    PROPERTIES(d) READONLY OBJVALUE
+
+    PROPERTIES(t, c, d) rateExchange
+    PROPERTIES(t, c) dialogTypeExchangeCurrency TODRAW d FORCE PANEL
+    PROPERTIES(t, c, d) deleteTypeExchangeCurrencyDate
+
+    FILTERS rateExchange(t, c, d)
+
+    DIALOG TypeExchange OBJECT t
+
+;
+
+DESIGN typeExchangeCurrencyDate FROM DEFAULT{
+    main {
+        childConstraints = TO THE BOTTOM;
+        NEW split {
+            type = SPLITV;
+            ADD t.box;
+            NEW topContainer{
+                type = TABBED;
+                NEW currentExchangeRates {
+                    title = 'Текущие курсы';
+                    childConstraints = TO THE RIGHT;
+                    ADD c.box;
+                    ADD d.box;
+                }
+                NEW importExchangeRates {
+                    title = 'Импорт курсов';
+                    ADD NOGROUP.nbrbGroup;
+                    ADD NOGROUP.cbrfGroup;
+                }
+            }
+        }
+        ADD functions.box;
+    }
+}
+
+NAVIGATOR {
+    masterData {
+        NEW currencyNavigator 'Валюты и курсы' {
+            ADD currencies;
+            ADD typeExchangeCurrencyDate;
+        }
+    }
+}
+
+// --------------------------------------------------- Макросы по добавлению валюты в документы ------------------------------------ //
+META defineDocumentHeaderCurrency (object)
+    currency###object (object) = DATA Currency (###object);
+    nameCurrency###object 'Валюта' (object)= nameCurrency(currency###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+META defineDocumentAbstractHeaderCurrency (object)
+    currency###object (object) = ABSTRACT Currency (###object) PERSISTENT;
+    nameCurrency###object 'Валюта' (object)= nameCurrency(currency###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+META defineDocumentInterfaceHeaderCurrency (object)
+    @defineDocumentAbstractHeaderCurrency(object);
+    @defineDocumentHeaderCurrency(user###object);
+    currency###object (object) += currency###user###object(object);
+END
+
+META defineDocumentDetailCurrency (object, detail)
+    currency###detail (idetail) = currency###object(object###detail(idetail)) PERSISTENT;
+    nameCurrency###detail 'Валюта' (idetail) = nameCurrency###object(object###detail(idetail));
+END
+META defineDocumentInterfaceDetailCurrency (object, detail)
+    @defineDocumentDetailCurrency(object, detail);
+    @defineDocumentDetailCurrency(user###object, user###detail);
+END
+
+META defineDocumentCurrency (object, detail)
+    @defineDocumentHeaderCurrency(object);
+    @defineDocumentDetailCurrency(object, detail);
+END
+META defineDocumentAbstractCurrency (object, detail)
+    @defineDocumentAbstractHeaderCurrency(object);
+    @defineDocumentDetailCurrency(object, detail);
+END
+META defineDocumentInterfaceCurrency (object, detail)
+    @defineDocumentInterfaceHeaderCurrency(object);
+    @defineDocumentInterfaceDetailCurrency(object, detail);
+END
+
+META defineDocumentCurrency (object)
+    @defineDocumentCurrency(object, object##Detail);
+END
+META defineDocumentAbstractCurrency (object)
+    @defineDocumentAbstractCurrency(object, object##Detail);
+END
+META defineDocumentInterfaceCurrency (object)
+    @defineDocumentInterfaceCurrency(object, object##Detail);
+END
+
+META deriveDocumentCurrency (object, stockProp)
+    @deriveDocumentCurrency(object, stockProp, currencyStock);
+END
+
+META deriveDocumentCurrency (object, objectProp, currencyProp)
+    currency###object (object) <- currencyProp(objectProp###object(object)) WHEN CHANGED(objectProp###object(object));
+END
+
+// --------------------------------------------------- Стандартные значения ------------------------------------ //
+
+loadDefaultCurrency 'Добавить валюты' = ACTION (ishortName, iname, isymbol) {
+    ADDOBJ Currency;
+    FOR c == addedObject() DO {
+       SET shortNameCurrency(c) <- ishortName;
+       SET nameCurrency(c) <- iname;
+       SET symbolCurrency(c) <- isymbol;
+    }
+}
+
+overLoadDefaultCurrencies = ABSTRACT ACTION ();
+
+loadDefaultCurrencies 'Загрузить стандартные валюты' = ACTION () {
+    EXEC loadDefaultCurrency('AUD', 'Австралийский доллар', ' ');
+    EXEC loadDefaultCurrency('BGN', 'Болгарский лев', ' ');
+    EXEC loadDefaultCurrency('HUF', 'Венгерский форинт', ' ');
+    EXEC loadDefaultCurrency('UAH', 'Гривна', ' ');
+    EXEC loadDefaultCurrency('DKK', 'Датская крона', ' ');
+    EXEC loadDefaultCurrency('USD', 'Доллар США', '$');
+    EXEC loadDefaultCurrency('EUR', 'Евро', '€');
+    EXEC loadDefaultCurrency('PLN', 'Злотый', ' ');
+    EXEC loadDefaultCurrency('INR', 'Индийская рупия', ' ');
+    EXEC loadDefaultCurrency('ISK', 'Исландская крона', ' ');
+    EXEC loadDefaultCurrency('CAD', 'Канадский доллар', ' ');
+    EXEC loadDefaultCurrency('CNY', 'Китайский юань', ' ');
+    EXEC loadDefaultCurrency('KWD', 'Кувейтский динар', ' ');
+    EXEC loadDefaultCurrency('LVL', 'Латвийский лат', ' ');
+    EXEC loadDefaultCurrency('LTL', 'Литовский лит', ' ');
+    EXEC loadDefaultCurrency('MDL', 'Молдавский лей', ' ');
+    EXEC loadDefaultCurrency('NOK', 'Норвежская крона', ' ');
+    EXEC loadDefaultCurrency('RUB', 'Российский рубль', ' ');
+    EXEC loadDefaultCurrency('RON', 'Румынский лей', ' ');
+    EXEC loadDefaultCurrency('XDR', 'СДР', ' ');
+    EXEC loadDefaultCurrency('SGD', 'Сингапурский доллар', ' ');
+    EXEC loadDefaultCurrency('KGS', 'Сом', ' ');
+    EXEC loadDefaultCurrency('KZT', 'Тенге', ' ');
+    EXEC loadDefaultCurrency('TRY', 'Турецкая лира', ' ');
+    EXEC loadDefaultCurrency('GBP', 'Фунт стерлингов', ' ');
+    EXEC loadDefaultCurrency('CZK', 'Чешская крона', ' ');
+    EXEC loadDefaultCurrency('SEK', 'Шведская крона', ' ');
+    EXEC loadDefaultCurrency('CHF', 'Швейцарский франк', ' ');
+    EXEC loadDefaultCurrency('JPY', 'Иена', ' ');
+    EXEC loadDefaultCurrency('IRR', 'Иранский риал', ' ');
+    EXEC loadDefaultCurrency('BLR', 'Белорусский рубль', ' ');
+
+    EXEC overLoadDefaultCurrencies();
+} IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultCurrencies);

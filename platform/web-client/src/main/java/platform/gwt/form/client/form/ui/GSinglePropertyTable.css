@@ -1,0 +1,61 @@
+/* modified copy com/google/gwt/user/cellview/client/DataGrid.css */
+
+@def selectionBorderWidth 0px;
+@def fontSize 8pt;
+
+.dataGridWidget {}
+
+.dataGridHeader {}
+.dataGridHeaderCell {}
+.dataGridFirstHeaderCell {}
+.dataGridLastHeaderCell {}
+
+.dataGridFooter {}
+.dataGridFooterCell {}
+.dataGridFirstFooterCell {}
+.dataGridLastFooterCell {}
+
+.dataGridRow {
+    background: #ffffff;
+}
+
+.dataGridCell {
+    font-size: fontSize;
+
+    border: selectionBorderWidth solid #ffffff;
+
+    padding: 0;
+
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: default;
+}
+
+.dataGridFirstCell {}
+.dataGridLastCell {}
+
+.dataGridKeyboardSelectedRow {
+    background: #F0F0FF;
+}
+
+.dataGridKeyboardSelectedRowCell {
+    border: selectionBorderWidth solid #F0F0FF;
+}
+
+.dataGridFocusedCell {
+    /*border: 1px solid #6262FF;*/
+    outline: 1px solid #6262FF;
+    outline-offset: -1px;
+}
+
+.dataGridFocusedCellLastInRow {
+    /*border: 1px solid #6262FF;*/
+    outline: 1px solid #6262FF;
+    outline-offset: -1px;
+}
+
+.dataGridRightOfFocusedCell {
+}
+
+.dataGridTopOfFocusedCell {
+}

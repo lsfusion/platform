@@ -1,0 +1,7 @@
+MODULE WarePurchaseReturnInvoice;
+
+REQUIRE WareInvoice, PurchaseReturnInvoice, PurchaseReturnShipment;
+
+NAMESPACE PurchaseReturn;
+
+@defineInvoiceWare(PurchaseReturn);

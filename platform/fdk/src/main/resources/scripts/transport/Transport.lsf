@@ -1,0 +1,90 @@
+MODULE Transport;
+
+REQUIRE System,
+        Utils,
+        Employee,
+        LegalEntity,
+        Stock;
+
+// Модели машины
+CLASS TruckModel 'Модель';
+TABLE truckModel (TruckModel);
+
+nameTruckModel 'Наименование' = DATA ISTRING[50](TruckModel);
+
+FORM truckModel 'Модель машины'
+    OBJECTS m=TruckModel FIXED PANEL
+    PROPERTIES (m) nameTruckModel
+
+    EDIT TruckModel OBJECT m
+;
+
+FORM truckModels 'Модели машин'
+    OBJECTS m=TruckModel
+    PROPERTIES(m) READONLY nameTruckModel
+    PROPERTIES(m) ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
+
+    DIALOG TruckModel OBJECT m
+;
+
+// Машины
+CLASS Truck 'Машина';
+TABLE truck(Truck);
+
+sidTruck 'Номер' = DATA STRING[20](Truck);
+truckModelTruck = DATA TruckModel(Truck);
+nameTruckModelTruck 'Марка' (truck) = nameTruckModel(truckModelTruck(truck));
+
+nameTruck 'Наименование' (truck) = [FORMULA STRING[70] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)'](nameTruckModelTruck(truck), sidTruck(truck));
+
+trailerTruck 'Прицеп' = DATA STRING[100](Truck);
+weightTruck 'Грузоподъёмность (кг)' = DATA NUMERIC[14,2](Truck);
+ownerTruck 'Владелец' = DATA STRING[100](Truck);
+
+FORM truck 'Машина'
+    OBJECTS t=Truck FIXED PANEL
+    PROPERTIES (t) sidTruck, nameTruckModelTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
+
+    EDIT Truck OBJECT t
+;
+
+FORM trucks 'Машины'
+    OBJECTS t=Truck
+    PROPERTIES(t) READONLY sidTruck, nameTruckModelTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
+    PROPERTIES(t) ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
+
+    DIALOG Truck OBJECT t
+;
+
+// Водители
+
+CLASS Driver 'Водитель': Employee;
+
+sidDriver 'Табельный номер' = DATA STRING[10](Driver);
+typeDriver 'Класс' = DATA STRING[10](Driver);
+
+FORM driver 'Водитель'
+    OBJECTS d=Driver FIXED PANEL
+    PROPERTIES (d) firstNameContact, lastNameContact, nameContact, sidDriver, typeDriver
+
+    EDIT Driver OBJECT d
+;
+
+FORM drivers 'Водители'
+    OBJECTS d=Driver
+    PROPERTIES(d) READONLY firstNameContact, lastNameContact, nameContact, sidDriver, typeDriver
+    PROPERTIES(d) ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
+
+    DIALOG Driver OBJECT d
+;
+
+NAVIGATOR {
+    NEW transportNavigator 'Транспорт' BEFORE administration TO toolbar IMAGE '/images/truck.png' {
+        NEW transportDocuments 'Документы';
+        NEW transportMasterData 'Справочники' {
+            ADD drivers;
+            ADD trucks;
+            ADD truckModels;
+        }
+    }
+}

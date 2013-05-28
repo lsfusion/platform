@@ -1,0 +1,13 @@
+MODULE ImportXMLDeclaration;
+
+REQUIRE System,
+        Integration,
+        Item,
+        PurchaseDeclaration
+        ;
+
+importXMLDeclaration 'Импортировать' = ACTION CUSTOM 'fdk.region.by.declaration.ImportXMLDeclarationActionProperty';
+
+EXTEND FORM declaration
+    PROPERTIES (d) importXMLDeclaration TODRAW dd FORCE PANEL TOOLBAR
+;

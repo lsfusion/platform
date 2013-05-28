@@ -1,0 +1,156 @@
+MODULE Bank;
+
+REQUIRE System, LegalEntity, Finance, PaymentLedger;
+
+CLASS Bank 'Банк';
+TABLE bank (Bank);
+TABLE bankDate (Bank, DATE);
+
+GROUP bank 'Информация о банке' : base;
+
+nameBank 'Наименование' = DATA ISTRING[100](Bank);
+
+MFOBank 'Код МФО' = DATA STRING[9] (Bank) IN bank;
+departmentBank 'Отдел банка' = DATA STRING[100] (Bank) IN bank;
+CBUBank 'ЦБУ' = DATA STRING[3] (Bank) IN bank;
+infoBank 'Дополнительные сведения' = DATA STRING[100] (Bank) IN bank;
+
+countryBank = DATA Country (Bank);
+nameCountryBank 'Страна' (bank) = nameCountry(countryBank(bank)) IN bank MINCHARWIDTH 10 PREFCHARWIDTH 15 MAXCHARWIDTH 20;
+
+@defineHistorizable(addressBank, 'Адрес банка', STRING[150], bank, nameBank, bank);
+
+FORM bank 'Банк'
+    OBJECTS b=Bank FIXED PANEL
+    PROPERTIES(b)  nameBank, addressBank, MFOBank, departmentBank, CBUBank, nameCountryBank, infoBank
+    EDIT Bank OBJECT b
+;
+
+FORM banks 'Банки'
+    OBJECTS b=Bank
+    PROPERTIES(b) READONLY nameBank, addressBank, MFOBank, departmentBank, CBUBank, nameCountryBank, infoBank
+    PROPERTIES(b) ADDFORM, EDITFORM, deleteb=DELETE
+
+    DIALOG Bank OBJECT b
+;
+
+NAVIGATOR {
+    financeMasterData {
+        ADD banks;
+    }
+}
+
+// ----------------------------------- Расчетный счет ------------------------------------------ //
+
+CLASS Account 'Расчетный счет';
+TABLE account (Account);
+
+bankAccount = DATA Bank (Account);
+
+GROUP accountGroup 'Банковская информация' : base;
+
+currencyAccount = DATA Currency (Account) NOT NULL;
+currencyAccount(account) <- currencyLegalEntity(legalEntityAccount(account))
+    WHEN ASSIGNED(legalEntityAccount(account));
+nameCurrencyAccount 'Валюта счета' = nameCurrency(currencyAccount(account)) IN accountGroup;
+
+numberAccount 'Номер расчетного счета'  = DATA STRING[13] (Account) IN accountGroup FIXEDCHARWIDTH 13;
+accountNumber 'Расчетный счет по номеру' (string) = GROUP AGGR account BY numberAccount (account) WHERE account IS Account;
+
+nameBankAccount 'Наименование банка' (account) = nameBank(bankAccount(account)) IN accountGroup;
+addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(account)) IN accountGroup;
+MFOBankAccount 'Код МФО банка' (account) = MFOBank(bankAccount(account)) IN accountGroup;
+departmentBankAccount 'Отдел банка' (account) = departmentBank(bankAccount(account)) IN accountGroup;
+CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN accountGroup;
+noteAccount 'Примечание'  = DATA STRING[50] (Account) IN accountGroup;
+
+EXTEND CLASS Account : PaymentLedger.Account;
+nameAccount(account) += numberAccount(account);
+PaymentLedger.currencyAccount(account) += currencyAccount(account);
+
+FORM account 'Расчетный счет'
+    OBJECTS a = Account FIXED PANEL
+    PROPERTIES(a) numberAccount, nameCurrencyAccount, nameLegalEntityAccount, nameBankAccount, addressBankAccount,
+                  MFOBankAccount, departmentBankAccount, CBUBankAccount, noteAccount
+
+    EDIT Account OBJECT a
+;
+
+DESIGN account FROM DEFAULT{
+    main{
+        ADD PROPERTY(numberAccount);
+        ADD PROPERTY(nameCurrencyAccount);
+        ADD PROPERTY(nameLegalEntityAccount);
+        ADD PROPERTY(nameBankAccount);
+        ADD PROPERTY(addressBankAccount);
+        ADD PROPERTY(MFOBankAccount);
+        ADD PROPERTY(departmentBankAccount);
+        ADD PROPERTY(CBUBankAccount);
+        ADD PROPERTY(noteAccount);
+
+        ADD functions.box;
+    }
+}
+
+addAccount 'Добавить расчетный счет' = ACTION ADDFORM Bank.Account;
+editAccount 'Редактировать' (account) = ACTION EDITFORM Bank.Account;
+PaymentLedger.editAccount(account) += editAccount(account);
+
+EXTEND FORM accounts
+    PROPERTIES(a) READONLY nameBankAccount, addressBankAccount, MFOBankAccount, departmentBankAccount, CBUBankAccount, noteAccount
+    PROPERTIES() addAccount TODRAW a FORCE PANEL
+;
+
+FORM accounts 'Счета'
+    OBJECTS a = Account
+    PROPERTIES(a) READONLY numberAccount, nameCurrencyAccount, nameLegalEntityAccount, nameBankAccount, addressBankAccount,
+                           MFOBankAccount, departmentBankAccount, CBUBankAccount, noteAccount
+    PROPERTIES(a) editAccount FORCE PANEL TOOLBAR, DELETE
+    PROPERTIES() addAccount TODRAW a FORCE PANEL
+
+    DIALOG Account OBJECT a
+;
+
+// ------------------------ Привязка банков к юрлицам ------------------------ //
+
+legalEntityAccount = DATA LegalEntity (Account) NOT NULL DELETE;
+defaultAccountLegalEntity(legalEntity) = GROUP MAX account BY legalEntityAccount(account);
+PaymentLedger.legalEntityAccount(account) += legalEntityAccount(account);
+
+userAccountLegalEntity = DATA Account (LegalEntity);
+CONSTRAINT legalEntityAccount(userAccountLegalEntity(legalEntity)) != legalEntity CHECKED MESSAGE 'ошибка: Р/сч. по умолчанию должен соответствовать р/сч. Ю.Л.';
+
+accountLegalEntity (legalEntity) =  OVERRIDE defaultAccountLegalEntity(legalEntity), userAccountLegalEntity(legalEntity);
+numberAccountLegalEntity 'Основной р/сч.' (legalEntity) = numberAccount(accountLegalEntity(legalEntity)) IN lawGroup;
+
+equalsLegalEntityAccount 'Основной' (legalEntity, account) = userAccountLegalEntity(legalEntity) == account;
+
+EXTEND FORM legalEntity
+    PROPERTIES(l)  SHOWIF toShowLegalEntity(l) numberAccountLegalEntity
+
+    OBJECTS a=Account
+    PROPERTIES(a)  numberAccount, nameCurrencyAccount, nameBankAccount, addressBankAccount, departmentBankAccount,
+                   CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, DELETESESSION
+    FILTERS legalEntityAccount(a) == l
+    PROPERTIES equalsLegalEntityAccount(l, a)
+;
+
+EXTEND DESIGN legalEntity {
+    accountContainer {
+        ADD a.box{
+            caption = 'Расчетные счета';
+            fillHorizontal = 2.0;
+        }
+    }
+}
+
+// ------------------------ Макросы ------------------------ //
+
+META defineDocumentAccount(object, contact, caption)
+    numberAccount###contact###object 'Расчетный счет'###caption (object) = numberAccountLegalEntity(contact###object(object)) IN documentPrmGroup;
+    nameBank###contact###object 'Банк'###caption (object) = nameBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
+    addressBank###contact###object 'Адрес банка'###caption (object) = addressBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
+    departmentBank###contact###object 'Отдел банка'###caption (object) = departmentBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
+    CBUBank###contact###object 'ЦБУ банка'###caption (object) = CBUBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
+    MFOBank###contact###object 'Код МФО банка'###caption (object) = MFOBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
+END

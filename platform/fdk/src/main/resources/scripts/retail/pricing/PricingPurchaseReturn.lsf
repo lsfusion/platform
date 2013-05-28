@@ -1,0 +1,46 @@
+MODULE PricingPurchaseReturn;
+
+REQUIRE Pricing, PurchaseReturnInvoice, PurchaseReturnShipment, PricingPurchase, PriceListLedger;
+
+NAMESPACE PurchaseReturn;
+
+// ------------------------------------- Автоматическое создание расценки для документа -------------------- //
+
+roundConditionUserInvoiceDetail(userInvoiceDetail) = roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
+@defineInvoicePricingAggregation(invoice, Invoice, ' (закупка-возврат)', 'Акт расценки при возврате', 'Проведенный акт расценки при возврате', customerStock, );
+
+// Автоматическое проставление свойств
+retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+    retailPriceUserInvoiceDetail(userInvoiceDetail),
+    valueRetailVATUserInvoiceDetail(userInvoiceDetail),
+    pricingPriceUserInvoiceDetail(userInvoiceDetail))
+    WHEN CHANGED(retailPriceUserInvoiceDetail(userInvoiceDetail)) OR
+         CHANGED(retailVATUserInvoiceDetail(userInvoiceDetail)) OR
+         CHANGED(pricingPriceUserInvoiceDetail(userInvoiceDetail));
+
+@deriveDocumentDetailVAT(userInvoice, retail, date, sku, customerStock);
+
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, retail, sku, customerStock);
+
+// Не изменять цену и является обратным
+skipChangeLedgerPricing(pricing) += pricing IS InvoicePricing;
+isReturnPricing(pricing) +=  pricing IS InvoicePricing;
+
+// Автоматическое проставление галочки создания акта расценки
+@deriveDocumentOperationProperty(UserInvoice, createPricing);
+// Операция расценки
+@defineDocumentInterfaceOperationPrefix (invoice, pricing, Pricing, ' ( расценка)');
+pricingOperationUserInvoice (invoice) <- pricingOperationOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+operationPricing(pricing) += pricingOperationInvoice(invoiceInvoicePricing(pricing));
+
+// Добавляем операцию расценки на форму
+EXTEND FORM userInvoice
+    PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) namePricingOperationUserInvoice
+;
+EXTEND DESIGN userInvoice {
+    headerCreatePricing {
+        ADD PROPERTY(namePricingOperationUserInvoice) BEFORE PROPERTY(namePricingCommitteeUserInvoice);
+    }
+}
+

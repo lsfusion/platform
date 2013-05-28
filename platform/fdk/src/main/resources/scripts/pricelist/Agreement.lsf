@@ -1,0 +1,556 @@
+MODULE Agreement;
+
+REQUIRE Currency,
+        Document,
+        LegalEntity,
+        Numerator,
+        PriceListType;
+
+CLASS Agreement 'Соглашение' : NumeratedObject;
+TABLE agreement (Agreement);
+
+nameAgreement 'Наименование' = DATA ISTRING[50](Agreement);
+
+@defineNumeratedObjectDefault(Agreement, 'Нумератор для соглашений', 'ТД');
+
+@defineDocumentHeaderTime(Agreement);
+@defineDocumentHeaderTimePrefix(Agreement, from, ' с');
+@deriveDocumentHeaderTimePrefix(Agreement, from);
+
+@defineDocumentHeaderTimePrefix(Agreement, to, ' по');
+//toDateAgreement 'Дата по' = DATA DATE(Agreement);
+//toTimeAgreement 'Время по' = DATA TIME(Agreement);
+//toDateTimeAgreement 'Дата/время по'(agreement) = dateTimeToDateTime(toDateAgreement(agreement), toTimeAgreement(agreement));
+
+@defineDocumentHeaderNote(Agreement);
+@defineDocumentHeaderCurrency(agreement);
+@defineDocumentHeaderDescription(Agreement, seriesNumberObject, 'Соглашение');
+
+// -------------------------------------- Поставщики -------------------------------- //
+
+// Группы поставщиков
+TABLE agreementLegalEntityGroup (Agreement, LegalEntityGroup);
+dataInAgreementSupplierGroup 'Отм' = DATA BOOLEAN (Agreement, LegalEntityGroup);
+
+levelParentAgreementSupplierGroup (agreement, legalEntityGroup) =
+    GROUP MIN levelLegalEntityGroupLegalEntityGroup(legalEntityGroup, parent) IF dataInAgreementSupplierGroup(agreement, parent)
+          BY agreement, legalEntityGroup PERSISTENT;
+nearestParentLegalEntitySupplierGroup (agreement, legalEntityGroup) =
+    legalEntityGroupLegalEntityGroupLevel(legalEntityGroup, levelParentAgreementSupplierGroup(agreement, legalEntityGroup));
+nearestInAgreementSupplierGroup (agreement, legalEntityGroup) =
+    dataInAgreementSupplierGroup(agreement, nearestParentLegalEntitySupplierGroup(agreement, legalEntityGroup)) PERSISTENT;
+
+inAgreementSupplierGroup 'Отм' (agreement, legalEntityGroup) = OVERRIDE nearestInAgreementSupplierGroup(agreement, legalEntityGroup),
+                                                                        dataInAgreementSupplierGroup(agreement, legalEntityGroup);
+
+// Поставщики
+TABLE agreementLegalEntity(Agreement, LegalEntity);
+dataInAgreementSupplier 'Отм.' (agreement, legalEntity) = DATA BOOLEAN (Agreement, LegalEntity);
+
+inAgreementSupplier 'Отм' (agreement, supplier) = OVERRIDE nearestInAgreementSupplierGroup(agreement, legalEntityGroupLegalEntity(supplier)),
+                                                           dataInAgreementSupplier(agreement, supplier);
+
+supplierAgreement 'Поставщики' (agreement) = GROUP CONCAT nameLegalEntity(supplier) IF inAgreementSupplier(agreement, supplier) , ', '
+                                                 BY agreement
+                                                 ORDER supplier MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+
+CONSTRAINT inAgreementSupplier(agreement, supplier) AND NOT isSellerLegalEntity(supplier)
+    MESSAGE 'Для соглашения выбрано в качестве поставщика организация, не являющеяся поставщиком или компанией';
+
+// -------------------------------------- Покупатели -------------------------------- //
+
+// Группы покупателей
+dataInAgreementCustomerGroup 'Отм' = DATA BOOLEAN (Agreement, LegalEntityGroup);
+
+levelParentAgreementCustomerGroup (agreement, legalEntityGroup) =
+    GROUP MIN levelLegalEntityGroupLegalEntityGroup(legalEntityGroup, parent) IF dataInAgreementCustomerGroup(agreement, parent)
+          BY agreement, legalEntityGroup PERSISTENT;
+nearestParentLegalEntityCustomerGroup (agreement, legalEntityGroup) =
+    legalEntityGroupLegalEntityGroupLevel(legalEntityGroup, levelParentAgreementCustomerGroup(agreement, legalEntityGroup));
+nearestInAgreementCustomerGroup (agreement, legalEntityGroup) =
+    dataInAgreementCustomerGroup(agreement, nearestParentLegalEntityCustomerGroup(agreement, legalEntityGroup));
+
+inAgreementCustomerGroup 'Отм' (agreement, legalEntityGroup) = OVERRIDE nearestInAgreementCustomerGroup(agreement, legalEntityGroup),
+                                                                        dataInAgreementCustomerGroup(agreement, legalEntityGroup);
+
+// Покупатели
+dataInAgreementCustomer 'Отм.' (agreement, legalEntity) = DATA BOOLEAN (Agreement, LegalEntity);
+
+inAgreementCustomer 'Отм' (agreement, customer) = OVERRIDE nearestInAgreementCustomerGroup(agreement, legalEntityGroupLegalEntity(customer)),
+                                                           dataInAgreementCustomer(agreement, customer)
+                                                  PERSISTENT;
+
+customerAgreement 'Покупатели' (agreement) = GROUP CONCAT nameLegalEntity(customer) IF inAgreementCustomer(agreement, customer) , ', '
+                                                 BY agreement
+                                                 ORDER customer MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+
+CONSTRAINT inAgreementCustomer(agreement, customer) AND NOT isBuyerLegalEntity(customer)
+    MESSAGE 'Для соглашения выбрано в качестве покупателя организация, не являющеяся покупателем или компанией';
+
+// ----------------------------------------------- Соглашение по умолчанию --------------------------- //
+
+countAgreementSupplierCustomer 'Кол-во соглашений' (supplier, customer)= GROUP SUM 1 IF inAgreementCustomer(agreement, customer) AND inAgreementSupplier(agreement, supplier)
+    BY supplier, customer;
+
+userDefaultAgreementSupplierCustomer = DATA Agreement (LegalEntity, LegalEntity);
+userDefaultAgreementSupplierCustomer(supplier, customer) => inAgreementCustomer(userDefaultAgreementSupplierCustomer(supplier, customer), customer) RESOLVE FALSE;
+
+calcDefaultAgreementSupplierCustomer(supplier, customer) =
+    GROUP MAX agreement IF inAgreementCustomer(agreement, customer) AND inAgreementSupplier(agreement, supplier)
+    BY supplier, customer PERSISTENT;
+
+defaultAgreementSupplierCustomer(supplier, customer) =  OVERRIDE calcDefaultAgreementSupplierCustomer(supplier, customer),
+                                                                 userDefaultAgreementSupplierCustomer(supplier, customer)
+                                                        PERSISTENT;
+nameDefaultAgreementSupplierCustomer 'Соглашение по умолчанию' (supplier, customer) = nameAgreement(defaultAgreementSupplierCustomer(supplier, customer));
+
+isDefaultAgreementSupplierCustomer 'Соглашение по умолчанию' (agreement, supplier, customer) = defaultAgreementSupplierCustomer(supplier, customer) == agreement;
+
+// ----------------------------------------------- Виды цен --------------------------------- //
+
+// -- Вид цены (RRP)
+RRPPriceListTypeAgreement 'Вид цены (RRP)' (agreement) = DATA PriceListType (Agreement);
+nameRRPPriceListTypeAgreement 'Вид цены (RRP)' (agreement) = namePriceListType(RRPPriceListTypeAgreement(agreement));
+currencyRRPPriceListTypeAgreement (agreement) = currencyPriceListType(RRPPriceListTypeAgreement(agreement));
+nameCurrencyRRPPriceListTypeAgreement 'Валюта (RRP)' (agreement)= nameCurrency(currencyPriceListType(RRPPriceListTypeAgreement(agreement))) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+// -- Основной вид цены
+priceListTypeAgreement 'Вид цены' (agreement) = DATA PriceListType (Agreement) NOT NULL;
+namePriceListTypeAgreement 'Вид цены' (agreement) = namePriceListType(priceListTypeAgreement(agreement));
+
+CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreement(agreement))
+           CHECKED BY priceListTypeAgreement
+           MESSAGE 'Валюта соглашения должна совпадать с валютой вида цены';
+
+// Уточнение по группам
+groupTypeAgreement = DATA GroupType (Agreement);
+nameGroupTypeAgreement 'Тип классификатора' (agreement) = nameGroupType(groupTypeAgreement(agreement));
+
+TABLE agreementGroup(Agreement, Group);
+dataPriceListTypeAgreementGroup (agreement, group) = DATA PriceListType (Agreement, Group);
+nameDataPriceListTypeAgreementGroup 'Вид цены (перегруженный)' (agreement, group) = namePriceListType(dataPriceListTypeAgreementGroup(agreement, group));
+
+CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(dataPriceListTypeAgreementGroup(agreement, group))
+           CHECKED BY dataPriceListTypeAgreementGroup
+           MESSAGE 'Валюта соглашения должна совпадать с валютой вида цены';
+
+levelParentPriceListTypeAgreementGroup (agreement, group) =
+    GROUP MIN levelGroupGroup(group, parent) IF dataPriceListTypeAgreementGroup(agreement, parent)
+    BY agreement, group PERSISTENT;
+nearestParentGroup (agreement, group) = groupGroupLevel(group, levelParentPriceListTypeAgreementGroup (agreement, group));
+nearestPriceListTypeAgreementGroup (agreement, group) =
+   dataPriceListTypeAgreementGroup(agreement, nearestParentGroup(agreement, group)) PERSISTENT;
+
+priceListTypeAgreementGroup 'Вид цены' (agreement, group) =  OVERRIDE nearestPriceListTypeAgreementGroup(agreement, group), dataPriceListTypeAgreementGroup(agreement, group) PERSISTENT;
+namePriceListTypeAgreementGroup 'Вид цены' (agreement, group) =
+    namePriceListType(priceListTypeAgreementGroup (agreement, group));
+
+// Уточнение по sku
+TABLE agreementSku(Agreement, Sku);
+dataPriceListTypeAgreementSku (agreement, sku) = DATA PriceListType (Agreement, Sku);
+nameDataPriceListTypeAgreementSku 'Вид цены (перегруженный)' (agreement, sku) = namePriceListType(dataPriceListTypeAgreementSku(agreement, sku));
+
+CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(dataPriceListTypeAgreementSku(agreement, sku))
+           CHECKED BY dataPriceListTypeAgreementSku
+           MESSAGE 'Валюта соглашения должна совпадать с валютой вида цены';
+
+priceListTypeAgreementSku (agreement, sku) = OVERRIDE priceListTypeAgreement(agreement) IF sku IS Sku,
+                                                      priceListTypeAgreementGroup(agreement, groupGroupTypeSku(groupTypeAgreement(agreement),sku)),
+                                                      dataPriceListTypeAgreementSku(agreement, sku);
+
+namePriceListTypeAgreementSku 'Вид цены' = namePriceListType(priceListTypeAgreementSku(agreement, sku));
+
+// ------------------------------------------- Формы ---------------------------------------------- //
+
+FORM agreement 'Соглашение'
+
+    OBJECTS a = Agreement FIXED PANEL
+    PROPERTIES(a) nameAgreement, nameNumeratorObject, numberObject, seriesObject, dateAgreement, timeAgreement,
+                  fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
+                  nameCurrencyAgreement, namePriceListTypeAgreement, nameGroupTypeAgreement, noteAgreement,
+                  nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
+
+    TREE supplierGroupTree f = LegalEntityGroup PARENT parentLegalEntityGroup
+    PROPERTIES READONLY fTreeName = nameLegalEntityGroup(f)
+    PROPERTIES(a, f) inAgreementSupplierGroup
+
+    OBJECTS cc = LegalEntity
+    PROPERTIES(cc) READONLY nameLegalEntity
+    PROPERTIES(a, cc) inAgreementSupplier
+    FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(cc), f)
+
+    FILTERGROUP filters
+        FILTER 'Только отмеченные' 'F9' inAgreementSupplier (a, cc)
+
+    TREE customerGroupTree lg = LegalEntityGroup PARENT parentLegalEntityGroup
+    PROPERTIES READONLY lgTreeName = nameLegalEntityGroup(lg)
+    PROPERTIES(a, lg) inAgreementCustomerGroup
+
+    OBJECTS c = LegalEntity
+    PROPERTIES(c) READONLY nameLegalEntity
+    PROPERTIES(a, c) inAgreementCustomer
+    FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(c), lg)
+
+    FILTERGROUP filters
+        FILTER 'Только отмеченные' 'F10' inAgreementCustomer (a, c)
+    TREE groupTree g=Group PARENT parentGroup
+    PROPERTIES READONLY nameGroup(g)
+    FILTERS groupTypeGroup(g) == groupTypeAgreement(a)
+    ORDER BY nameGroup(g)
+    PROPERTIES(a, g) nameDataPriceListTypeAgreementGroup, namePriceListTypeAgreementGroup
+
+    TREE skuGroupTree sg=SkuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY nameSkuGroup(sg)
+    ORDER BY nameSkuGroup(sg)
+
+    OBJECTS s = Sku
+    PROPERTIES(s) READONLY nameSku
+    PROPERTIES(a, s) nameDataPriceListTypeAgreementSku, namePriceListTypeAgreementSku
+    FILTERS isParentSkuGroupSku(sg, s)
+
+    EDIT Agreement OBJECT a
+;
+
+DESIGN agreement FROM DEFAULT {
+
+    NEW topContainer{
+        childConstraints = TO THE BOTTOM;
+        NEW headContainer {
+            caption = 'Шапка документа';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY (nameAgreement);
+            ADD PROPERTY (nameNumeratorObject);
+            ADD PROPERTY (numberObject);
+            ADD PROPERTY (seriesObject);
+            ADD PROPERTY (dateAgreement);
+            ADD PROPERTY (timeAgreement);
+
+        }
+        NEW firstContainer{
+            childConstraints = TO THE BOTTOM;
+            NEW timeContainer{
+                caption = 'Период действия';
+                childConstraints = TO THE RIGHTBOTTOM;
+                ADD PROPERTY (fromDateAgreement);
+                ADD PROPERTY (fromTimeAgreement);
+                ADD PROPERTY (toDateAgreement);
+                ADD PROPERTY (toTimeAgreement);
+            }
+            NEW propContainer{
+                caption = 'Параметры документа';
+                childConstraints = TO THE RIGHTBOTTOM;
+                ADD PROPERTY(nameCurrencyAgreement);
+                ADD PROPERTY(namePriceListTypeAgreement);
+                ADD PROPERTY(noteAgreement);
+            }
+            NEW rrpContainer{
+                caption = 'RRP';
+                childConstraints = TO THE RIGHTBOTTOM;
+                ADD PROPERTY(nameRRPPriceListTypeAgreement);
+                ADD PROPERTY(nameCurrencyRRPPriceListTypeAgreement);
+            }
+        }
+            NEW tabContainer{
+                type = TABBED;
+                NEW supplierBox{
+                    caption = 'Поставщики';
+                    childConstraints = TO THE RIGHT;
+                    type = SPLITH;
+                    ADD supplierGroupTree.tree.box;
+                    ADD cc.box{
+                        fillHorizontal = 2.0;
+                    }
+                }
+                NEW customerBox{
+                    caption = 'Покупатели';
+                    childConstraints = TO THE RIGHT;
+                    type = SPLITH;
+                    ADD customerGroupTree.tree.box;
+                    ADD c.box{
+                        fillHorizontal = 2.0;
+                    }
+                }
+                NEW groupPane {
+                    childConstraints = TO THE BOTTOM;
+                    caption = 'Уточнение цен по ценовым группам';
+                    ADD PROPERTY(nameGroupTypeAgreement);
+                    ADD groupTree.tree.box;
+                }
+                NEW skuContainer{
+                    childConstraints = TO THE RIGHT;
+                    caption = 'Уточнение цен по товарам';
+                    type = SPLITH;
+                    ADD skuGroupTree.tree.box;
+                    ADD s.box{fillHorizontal = 3.0;}
+                }
+            }
+    }
+    ADD functions.box;
+}
+
+FORM agreements 'Соглашения'
+
+    OBJECTS a = Agreement
+    PROPERTIES(a) READONLY nameAgreement, seriesNumberObject, dateTimeAgreement,
+                           fromDateTimeAgreement, toDateTimeAgreement,
+                           nameCurrencyAgreement, namePriceListTypeAgreement, customerAgreement, supplierAgreement, noteAgreement,
+                           nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
+
+    PROPERTIES(a) ADDFORM, EDITFORM, DELETE
+;
+
+NAVIGATOR {
+    priceListDocuments {
+        ADD agreements;
+    }
+}
+
+// ---------------------------------------------- Копирование соглащений --------------------------------------- //
+
+copyPropertiesAgreement = ACTION (s, d) {
+    SET dateAgreement(d) <- dateAgreement(s);
+    SET timeAgreement(d) <- timeAgreement(s);
+    SET fromDateAgreement(d) <- fromDateAgreement(s);
+    SET fromTimeAgreement(d) <- fromTimeAgreement(s);
+    SET toDateAgreement(d) <- toDateAgreement(s);
+    SET toTimeAgreement(d) <- toTimeAgreement(s);
+
+    SET currencyAgreement(d) <- currencyAgreement(s);
+    SET priceListTypeAgreement(d) <- priceListTypeAgreement(s);
+    SET RRPPriceListTypeAgreement(d) <- RRPPriceListTypeAgreement(s);
+    SET noteAgreement(d) <- noteAgreement(s);
+    SET groupTypeAgreement(d) <- groupTypeAgreement(s);
+
+    SET dataInAgreementCustomer(d, customer) <- dataInAgreementCustomer (s, customer);
+    SET dataInAgreementCustomerGroup(d, legalEntityGroup) <- dataInAgreementCustomerGroup(s, legalEntityGroup);
+
+    SET dataInAgreementSupplier(d, customer) <- dataInAgreementSupplier (s, customer);
+    SET dataInAgreementSupplierGroup(d, legalEntityGroup) <- dataInAgreementSupplierGroup(s, legalEntityGroup);
+
+    SET dataPriceListTypeAgreementGroup(d, group) <- dataPriceListTypeAgreementGroup(s, group);
+    SET dataPriceListTypeAgreementSku(d, sku) <- dataPriceListTypeAgreementSku(s, sku);
+}
+
+copyAgreement 'Копировать' = ACTION (agreement) NEWSESSION {
+    FOR ADDOBJ a = Agreement DO {
+        EXEC copyPropertiesAgreement(agreement, a);
+
+        FORM agreement OBJECTS a = a MANAGESESSION DOCKEDMODAL;
+    };
+} TOOLBAR;
+
+copySessionAgreement 'Копировать' = ACTION (agreement) {
+    FOR ADDOBJ a = Agreement DO {
+        EXEC copyPropertiesAgreement(agreement, a);
+
+        FORM agreement OBJECTS a = a DOCKEDMODAL;
+
+        IF TRUE IF NOT formResult() == FormResult.ok THEN {
+            DELETE a;
+        }
+    };
+} TOOLBAR;
+
+EXTEND FORM agreements
+    PROPERTIES(a) copyAgreement
+;
+
+// ---------------------------------------------- Расширение формы организации --------------------------------- //
+
+inAgreement 'Присоединить' = DATA SESSION BOOLEAN (Agreement);
+
+FORM agreementsCustomer 'Соглашения'
+
+    OBJECTS s=LegalEntity FIXED PANEL
+    PROPERTIES(s) nameLegalEntity
+
+    OBJECTS c=LegalEntity FIXED PANEL
+    PROPERTIES(c) nameLegalEntity
+
+    OBJECTS ag=Agreement
+    PROPERTIES(ag) READONLY nameAgreement, numberObject, seriesObject, dateAgreement, timeAgreement,
+                            fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
+                            nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement,
+                            nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
+
+    PROPERTIES inAgreement(ag)
+;
+
+DESIGN agreementsCustomer FROM DEFAULT{
+    NEW mainContainer{
+        REMOVE s.box;
+        REMOVE c.box;
+        ADD ag.box;
+    }
+    ADD functions.box;
+}
+
+addAgreementsSupplierCustomer 'Присоединить' = ACTION (supplier, customer) {
+
+    FORM agreementsCustomer OBJECTS s=supplier, c=customer MODAL;
+    IF formResult() == FormResult.ok THEN {
+        FOR inAgreement(agreement) DO {
+            SET dataInAgreementSupplier(agreement,supplier) <- TRUE;
+            SET dataInAgreementCustomer(agreement,customer) <- TRUE;
+        }
+    }
+} TOOLBAR;
+
+
+addAgreementsCustomerSupplier 'Присоединить' = ACTION (customer, supplier) {
+
+    FORM agreementsCustomer OBJECTS s=supplier, c=customer MODAL;
+    IF formResult() == FormResult.ok THEN {
+        FOR inAgreement(agreement) DO {
+            SET dataInAgreementSupplier(agreement,supplier) <- TRUE;
+            SET dataInAgreementCustomer(agreement,customer) <- TRUE;
+        }
+    }
+} TOOLBAR;
+
+
+createAgreementSupplierCustomer 'Добавить' = ACTION (supplier, customer) {
+
+    FOR ADDOBJ ag = Agreement DO {
+        SET dataInAgreementCustomer(ag, customer) <- TRUE;
+        SET dataInAgreementSupplier(ag, supplier) <- TRUE;
+        FORM agreement OBJECTS a = ag DOCKEDMODAL;
+        IF TRUE IF NOT formResult() == FormResult.ok THEN {
+            DELETE ag;
+        }
+    }
+} IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
+
+EXTEND FORM legalEntity
+
+    OBJECTS ags=Agreement
+    PROPERTIES(ags, s, l) isDefaultAgreementSupplierCustomer
+    PROPERTIES(ags, l) inAgreementCustomer
+    PROPERTIES(ags) READONLY nameAgreement, numberObject, seriesObject, dateAgreement, timeAgreement,
+                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
+                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement,
+                             nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
+
+    PROPERTIES(ags) DELETESESSION, EDITSESSIONFORM, copySessionAgreement
+    PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ags FORCE PANEL TOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ags FORCE PANEL TOOLBAR
+    FILTERS inAgreementCustomer(ags, l) AND inAgreementSupplier(ags, s),
+            isSellerLegalEntity(s),
+            l != s
+
+    FILTERGROUP filtersSupplier
+        FILTER 'Есть соглашение' 'F11' countAgreementSupplierCustomer(s, l)
+
+    OBJECTS agc=Agreement
+    PROPERTIES(agc, c) READONLY inAgreementCustomer
+    PROPERTIES(agc, l, c) isDefaultAgreementSupplierCustomer
+    PROPERTIES(agc) READONLY nameAgreement, numberObject, seriesObject, dateAgreement, timeAgreement,
+                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
+                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement,
+                             nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
+    PROPERTIES(agc) DELETESESSION, EDITSESSIONFORM, copySessionAgreement
+
+    PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW agc FORCE PANEL TOOLBAR, addAgreementsCustomerSupplier (c,l) TODRAW agc FORCE PANEL TOOLBAR
+    FILTERS inAgreementCustomer(agc, c) AND inAgreementSupplier(agc, l),
+            isBuyerLegalEntity(c),
+            c != l
+
+    FILTERGROUP filters3
+        FILTER 'Есть соглашение' 'F9' countAgreementSupplierCustomer(l, c)
+
+;
+
+EXTEND DESIGN legalEntity {
+    extendContainer {
+        docContainer{
+            ADD ags.box;
+        }
+
+        docContainer2{
+            ADD agc.box;
+        }
+    }
+}
+
+// ----------------------------------------- Метакод по добавлению соглашений в документы -------------------------------------- //
+
+META defineDocumentAbstractHeaderAgreement (object)
+    agreement###object (object) = ABSTRACT Agreement (###object) PERSISTENT;
+    nameAgreement###object 'Соглашение' (object)= nameAgreement(agreement###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentHeaderAgreement (object)
+    agreement###object (object) = DATA Agreement (###object);
+    nameAgreement###object 'Соглашение' (object)= nameAgreement(agreement###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentInterfaceHeaderAgreement (object)
+    @defineDocumentAbstractHeaderAgreement(object);
+    @defineDocumentHeaderAgreement(user###object);
+    agreement###object(object) += agreement###user###object(object);
+
+END
+
+META deriveDocumentHeaderAgreement (object, supplier, customer)
+
+    agreement###object (o) <- defaultAgreementSupplierCustomer(supplier(o), customer(o))
+        IF currency###object(o) == currencyAgreement(defaultAgreementSupplierCustomer(supplier(o), customer(o)))
+    WHEN CHANGED(currency###object(o)) OR
+         CHANGED(customer(o)) OR
+         CHANGED(supplier(o));
+
+    CONSTRAINT currency###object(o) != currencyAgreement(agreement###object(o))
+               CHECKED BY agreement###object
+               MESSAGE 'Валюта документа должны совпадать с валютой соглашения';
+
+    CONSTRAINT agreement###object(o) AND NOT inAgreementSupplier(agreement###object(o), supplier(o))
+               CHECKED BY agreement###object
+               MESSAGE 'Соглашение должно быть между заданными организациями (поставщик)';
+
+    CONSTRAINT agreement###object(object)
+               AND NOT inAgreementCustomer(agreement###object(object), customer(object))
+               CHECKED BY agreement###object
+               MESSAGE 'Соглашение должно быть между заданными организациями (покупатель)';
+END
+
+
+
+META deriveDocumentDetailPriceListTypeAgreementCustom (object, detail)
+    priceListType###detail(d) <- IF agreement###object(object###detail(d))
+                                 THEN priceListTypeAgreementSku(agreement###object(object###detail(d)), sku###detail(d))
+                                 ELSE priceListType###object(object###detail(d))
+    WHEN DO CHANGED(agreement###object(object###detail(d))) OR
+         CHANGED(priceListType###object(object###detail(d))) OR
+         CHANGED(sku###detail(d));
+END
+META deriveDocumentDetailPriceListTypeAgreement (object)
+    @deriveDocumentDetailPriceListTypeAgreementCustom(object, object###detail);
+END
+
+//--------------------------------------- Для двух объектов (object1 - документ)----------------------------------------------------------//
+META defineDocumentHeaderAgreement (object1, object2)
+    agreement###object1###object2 (object1, object2) = DATA Agreement (###object1, ###object2);
+    nameAgreement###object1###object2 'Соглашение' (object1, object2)= nameAgreement(agreement###object1###object2 (object1, object2)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+    defaultPriceListType###object1###object2 (object1, object2) = priceListTypeAgreement(agreement###object1###object2 (object1, object2));
+END
+
+META defineDocumentInterfaceHeaderAgreement(object1Class, object2Class, supplierProp, customerProp)
+    @defineDocumentHeaderAgreement(object1Class, object2Class);
+    agreement###object1Class###object2Class (o1, o2) <- agreement###object1Class(o1)
+        IF currency###object1Class(o1) == currencyAgreement(agreement###object1Class(o1))
+        AND in###object1Class###object2Class(o1, o2)
+    WHEN CHANGED(currency###object1Class(o1)) AND o2 IS object2Class OR
+         CHANGED(agreement###object1Class(o1)) AND o2 IS object2Class OR
+         CHANGED(in###object1Class###object2Class(o1, o2));
+
+    CONSTRAINT currency###object1Class(o1) != currencyAgreement(agreement###object1Class###object2Class(o1, o2))
+               CHECKED BY agreement###object1Class###object2Class
+               MESSAGE 'Валюта документа должны совпадать с валютой соглашения';
+
+    CONSTRAINT agreement###object1Class###object2Class(o1, o2)
+               AND NOT inAgreementSupplier(agreement###object1Class###object2Class(o1, o2), supplierProp###object1Class(o1))
+               CHECKED BY agreement###object1Class###object2Class
+               MESSAGE 'Соглашение должно быть между заданными организациями (поставщик)';
+
+    CONSTRAINT agreement###object1Class###object2Class(o1, o2)
+               AND NOT inAgreementCustomer(agreement###object1Class###object2Class(o1, o2), customerProp###object1Class(o1))
+               CHECKED BY agreement###object1Class###object2Class
+               MESSAGE 'Соглашение должно быть между заданными организациями (покупатель)';
+END

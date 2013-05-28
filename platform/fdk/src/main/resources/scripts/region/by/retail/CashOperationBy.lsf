@@ -1,0 +1,69 @@
+MODULE CashOperationBy;
+
+REQUIRE CashOperation;
+
+NAMESPACE CashOperation;
+
+FORM printIncomeCashOrderBy 'ПКО' PRINT
+
+    OBJECTS i = IncomeCashOrder FIXED PANEL
+    PROPERTIES(i) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameLegalEntityCashDocument,
+                           nameDepartmentStoreCashDocument, sumCashIncomeCashOrder, basisCashDocument
+
+;
+
+FORM printOutcomeCashOrderBy 'РКО' PRINT
+
+    OBJECTS o = OutcomeCashOrder FIXED PANEL
+    PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameLegalEntityCashDocument,
+                           nameDepartmentStoreCashDocument, sumCashOutcomeCashOrder, basisCashDocument
+
+;
+
+printIncomeCashOrderBy 'Распечатать' (incomeCashOrder) = [ACTION (incomeCashOrder) {
+
+    FORM printIncomeCashOrderBy OBJECTS i = incomeCashOrder;
+    SET isPrintedIncomeCashOrder(incomeCashOrder) <- TRUE;
+    EXEC apply();
+
+}](incomeCashOrder) CONFIRM;
+
+printAllIncomeCashOrderBy 'Распечатать все непечатанные' = ACTION(date1, date2) {
+
+    FOR isNotPrintedIncomeCashOrder(incomeCashOrder) AND
+        dateCashDocument(incomeCashOrder) >= (date1 AS DATE) AND
+        dateCashDocument(incomeCashOrder) <= (date2 AS DATE) DO {
+        FORM printIncomeCashOrderBy OBJECTS i = incomeCashOrder;
+        SET isPrintedIncomeCashOrder(incomeCashOrder) <- TRUE;
+        EXEC apply();
+    }
+
+} CONFIRM TOOLBAR;
+
+printOutcomeCashOrderBy 'Распечатать' (outcomeCashOrder) = [ACTION (outcomeCashOrder) {
+
+    FORM printOutcomeCashOrderBy OBJECTS o = outcomeCashOrder;
+    SET isPrintedOutcomeCashOrder(outcomeCashOrder) <- TRUE;
+    EXEC apply();
+
+}](outcomeCashOrder) CONFIRM;
+
+printAllOutcomeCashOrderBy 'Распечатать все непечатанные' = ACTION(date1, date2) {
+
+    FOR isNotPrintedOutcomeCashOrder(outcomeCashOrder) AND
+        dateCashDocument(outcomeCashOrder) >= (date1 AS DATE) AND
+        dateCashDocument(outcomeCashOrder) <= (date2 AS DATE) DO {
+        FORM printOutcomeCashOrderBy OBJECTS o = outcomeCashOrder;
+        SET isPrintedOutcomeCashOrder(outcomeCashOrder) <- TRUE;
+        EXEC apply();
+    }
+
+} CONFIRM TOOLBAR;
+
+EXTEND FORM centralCashRegister
+
+    PROPERTIES(i) printIncomeCashOrderBy
+    PROPERTIES printAllIncomeCashOrderBy(dFrom, dTo) TODRAW i
+    PROPERTIES(o) printOutcomeCashOrderBy, isCompleteCashOperation FORCE GRID
+    PROPERTIES printAllOutcomeCashOrderBy(dFrom, dTo) TODRAW o
+;

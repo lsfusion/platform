@@ -1,0 +1,16 @@
+MODULE PriceRoundStore;
+
+REQUIRE PriceRound, Store;
+
+//------------------------- Расширяем форму Отдела -------------------------//
+
+roundConditionDepartmentStore = DATA RoundCondition (DepartmentStore);
+nameRoundConditionDepartmentStore 'Условие округления розничной цены' (departmentStore)= nameRoundCondition(roundConditionDepartmentStore(departmentStore)) IN bookkeepingGroup;
+
+CONSTRAINT currencyStock(departmentStore) != currencyRoundCondition(roundConditionDepartmentStore(departmentStore))
+           CHECKED BY roundConditionDepartmentStore
+           MESSAGE 'Валюта склада должна совпадать с валютой округления';
+
+EXTEND FORM departmentStore
+    PROPERTIES(d) nameRoundConditionDepartmentStore
+;

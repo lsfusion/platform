@@ -1,0 +1,14 @@
+MODULE PurchaseCertificateSOT;
+
+REQUIRE PurchaseCertificate, CertificateSOT;
+
+NAMESPACE Purchase;
+
+@defineDocumentCertificateTextPrefix(invoice, priceList, 'Прейскурант цен');
+@deriveDocumentCertificate(priceListText, invoice, customerStock, );
+
+@defineDocumentCertificateTextPrefix(shipment, priceList, 'Прейскурант цен');
+@deriveDocumentCertificate(priceListText, shipment, customerStock, );
+
+priceListTextShipmentDetail(detail) += priceListTextInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+priceListTextBatch (batch) += priceListTextShipmentDetail(shipmentDetailShipmentBatch(batch));

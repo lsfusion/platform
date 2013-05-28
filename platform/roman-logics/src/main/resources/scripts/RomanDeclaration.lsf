@@ -1,0 +1,1497 @@
+MODULE Declaration;
+
+REQUIRE System,
+        Utils,
+        Historizable,
+        Tax,
+        Stock,
+        Numerator,
+        Document,
+        RomanDocument,
+        Historizable,
+        RetailPrice,
+        RomanMasterData,
+        Freight,
+        RomanStock,
+        RomanContractLedger,
+        RomanLogicsModule;
+
+PRIORITY Utils, Stock, RomanContractLedger, RomanLogicsModule;
+
+NAMESPACE RB;
+
+//---------------------------------- НДС для ТН ВЭД ---------------------------------------------------------------//
+TABLE customCategory10Data(CustomCategory10, DATE);
+@defineHistorizableCustom(supplierVATCustomCategory10, 'НДС таможни', Range, numberRange, customCategory10, sidCustomCategory10, base);
+
+CONSTRAINT taxRange(dataSupplierVATCustomCategory10Date(customCategory10, date)) != Tax.taxVAT CHECKED BY dataSupplierVATCustomCategory10Date MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+dataValueSupplierVATCustomCategory10Date 'НДС поставщика, %' (customCategory10, date) = valueRateRangeDate(dataSupplierVATCustomCategory10Date(customCategory10, date), date);
+valueCurrentRateSupplierVATCustomCategory10 'НДС поставщика, %' (customCategory10) = valueCurrentRateRange(supplierVATCustomCategory10(customCategory10));
+
+EXTEND FORM addSupplierVATCustomCategory10
+    PROPERTIES READONLY FORCE GRID dataValueSupplierVATCustomCategory10Date(a, d)
+;
+EXTEND FORM dialogSupplierVATCustomCategory10
+    PROPERTIES dataValueSupplierVATCustomCategory10Date(a, d)
+;
+
+toSetRangeCustomCategories10 'Взять шкалы' = ACTION () NEWSESSION AUTOAPPLY {
+    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentVATCountryValue(countrySID('112'), dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS())) WHERE d == 2011_01_01;
+    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentVATCountryValue(countrySID('112'), NDSPercentCustom()) WHERE d == 2011_01_01 AND NOT dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS());
+};
+
+
+
+//--------------------------------- Инвойсы -------------------------------------------------------------------------//
+CLASS FormedInvoice 'Инвойс от STX' : InnerInvoice;
+
+TABLE innerInvoice (InnerInvoice);
+TABLE innerInvoiceSku (InnerInvoice, Sku);
+
+includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importer, freight) AND freight IS FreightArrived AND routeFreight(freight) == Route.rb;
+
+@defineAggregation(importer, freight, formedInvoice, includeImporterFreight);
+
+freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE freightFormedInvoice(innerInvoice),
+                                                                          freightDirectInvoice(innerInvoice) PERSISTENT;
+
+dateFreightInnerInvoice 'Дата прихода' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN base PERSISTENT;
+
+languageInnerInvoice 'Язык инвойса (ИД)' (innerInvoice) = languageFreight(freightInnerInvoice(innerInvoice)) PERSISTENT;
+nameLanguageInnerInvoice 'Язык инвойса' (innerInvoice) = nameLanguage(languageInnerInvoice(innerInvoice));
+
+currencyFormedInvoice 'Валюта инвойса (ИД)' (formedInvoice) = currencyFreight(freightInnerInvoice(formedInvoice)) IF formedInvoice IS FormedInvoice PERSISTENT;
+currencyInnerInvoice 'Валюта инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE currencyDocument(innerInvoice) IF innerInvoice IS DirectInvoice, currencyFormedInvoice(innerInvoice) PERSISTENT;
+nameCurrencyInnerInvoice 'Валюта инвойса' (innerInvoice) = nameCurrency(currencyInnerInvoice(innerInvoice)) IN base;
+
+freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoice) = freightInnerInvoice(innerInvoice) IS FreightArrived PERSISTENT;
+
+importerInnerInvoice 'Импортер инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE importerFormedInvoice(innerInvoice),
+                                                                              importerDirectInvoice(innerInvoice) PERSISTENT;
+nameImporterInnerInvoice 'Импортер инвойса' (innerInvoice) = nameLegalEntity(importerInnerInvoice(innerInvoice)) IN base;
+
+sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreight(importerFormedInvoice(formedInvoice),
+                                                                      freightFormedInvoice(formedInvoice)) IN base;
+
+sidDirectInvoice = sidDocument(innerInvoice) IF innerInvoice IS DirectInvoice;
+
+sidInnerInvoice 'Номер инвойса' (innerInvoice) = OVERRIDE sidDirectInvoice(innerInvoice), sidFormedInvoice(innerInvoice) IN base PERSISTENT;
+
+dateFormedInvoice 'Дата инвойса' (formedInvoice) = dateImporterFreight(importerInnerInvoice(formedInvoice),
+                                                                       freightInnerInvoice(formedInvoice)) IN base;
+
+dateDirectInvoice = date(innerInvoice) IF innerInvoice IS DirectInvoice;
+
+dateInnerInvoice 'Дата инвойса' (innerInvoice) = OVERRIDE dateDirectInvoice(innerInvoice), dateFormedInvoice(innerInvoice) IN base PERSISTENT;
+
+contractFormedInvoice 'Договор инвойса (ИД)' (formedInvoice) = contractImporterFreight(importerFormedInvoice(formedInvoice),
+                                                                                       freightFormedInvoice(formedInvoice));
+
+contractDirectInvoice 'Договор инвойса (ИД)' (directInvoice) = contractDirectInvoice(directInvoice) IF directInvoice IS DirectInvoice;
+
+contractInnerInvoice 'Договор инвойса (ИД)' (innerInvoice) = OVERRIDE contractDirectInvoice(innerInvoice), contractFormedInvoice(innerInvoice) IN base PERSISTENT;
+numberContractInnerInvoice 'Договор' (innerInvoice) = numberContract(contractInnerInvoice(innerInvoice));
+
+quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice),
+                                                                                                   freightFormedInvoice(formedInvoice),
+                                                                                                   sku) PERSISTENT;
+
+quantityDirectInvoiceSku = quantityDocumentSku(innerInvoice, sku) IF innerInvoice IS DirectInvoice;
+
+quantityInnerInvoiceSku 'Кол-во в инвойсе' (innerInvoice, sku) = UNION EXCLUSIVE quantityDirectInvoiceSku(innerInvoice, sku),
+                                                                                 quantityFormedInvoiceSku(innerInvoice, sku) PERSISTENT;
+
+quantityFormedInvoice 'Кол-во в инвойсе' (innerInvoice) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
+                                                                 BY innerInvoice IN base PERSISTENT;
+
+typeExchangeExpensesDirectInvoice 'Тип обмена (ИД)' (directInvoice) = typeExchangeSTX() IF directInvoice IS DirectInvoice;
+currencyDirectInvoice '' (directInvoice) = currencyInnerInvoice(directInvoice) IF directInvoice IS DirectInvoice;
+@defineNearestRateExchangeObject(directInvoice, expenses, , date, base);
+
+priceFormedInvoiceSku 'Цена в инвойсе' (formedInvoice, sku) = priceFullImporterFreightSku(importerFormedInvoice(formedInvoice),
+                                                                                          freightFormedInvoice(formedInvoice),
+                                                                                          sku) PERSISTENT;
+
+priceContractFormedInvoiceSku 'Цена контракта' (formedInvoice, sku) = priceInvoiceImporterFreightSku(importerFormedInvoice(formedInvoice),
+                                                                                                     freightFormedInvoice(formedInvoice),
+                                                                                                     sku) PERSISTENT;
+
+priceManagerialFormedInvoiceSku 'Цена (УУ)' (formedInvoice, sku) = priceInFullImporterFreightSku(importerFormedInvoice(formedInvoice),
+                                                                                                 freightFormedInvoice(formedInvoice),
+                                                                                                 sku) PERSISTENT;
+
+expensesDirectInvoiceSku 'Расходы' (directInvoice, sku) = priceFreightInsuranceImporterFreightSku(importerDirectInvoice(directInvoice),
+                                                                                                  freightDirectInvoice(directInvoice),
+                                                                                                  sku)/rateExchangeExpensesDirectInvoice(directInvoice) PERSISTENT;
+
+priceDirectInvoiceSku 'Цена в инвойсе' (directInvoice, sku) = priceDocumentSku(directInvoice, sku) (+) expensesDirectInvoiceSku(directInvoice, sku);
+
+priceInnerInvoiceSku 'Цена в инвойсе' (innerInvoice, sku) = UNION EXCLUSIVE priceFormedInvoiceSku(innerInvoice, sku),
+                                                                            priceDirectInvoiceSku(innerInvoice, sku) IF innerInvoice IS DirectInvoice PERSISTENT;
+
+priceContractInnerInvoiceSku 'Цена контракта' (innerInvoice, sku) = UNION EXCLUSIVE priceContractFormedInvoiceSku(innerInvoice, sku),
+                                                                                    priceDocumentSku(innerInvoice, sku) IF innerInvoice IS DirectInvoice PERSISTENT;
+
+priceManagerialInnerInvoiceSku 'Цена (УУ)' (innerInvoice, sku) = UNION EXCLUSIVE priceManagerialFormedInvoiceSku(innerInvoice, sku),
+                                                                                 priceDirectInvoiceSku(innerInvoice, sku) IF innerInvoice IS DirectInvoice PERSISTENT;
+
+//--------------------------------- Декларации ----------------------------------------------------------------------//
+CLASS Declaration 'Таможенная декларация';
+CLASS PreparedDeclaration 'Подготовленная декларация' : Declaration;
+CLASS RegisteredDeclaration 'Зарегистрованная декларация' : PreparedDeclaration;
+
+CLASS DeclarationDetail 'Позиция декларации';
+
+@defineDocumentTables(declaration);
+
+TABLE declarationSku (Declaration, Sku);
+TABLE declarationInnerInvoiceSku (Declaration, InnerInvoice, Sku);
+TABLE declarationDetailInnerInvoice (DeclarationDetail, InnerInvoice);
+
+TABLE declarationArticle (Declaration, Article);
+
+CLASS Correction 'КТС' : Transaction;
+TABLE correction (Correction);
+
+GROUP sumGroup 'Итого' : public;
+GROUP corrGroup 'Доплата' : public;
+GROUP docGroup 'Описание' : public;
+GROUP freightGroup '' : public;
+GROUP datetimeGroup 'Даты' : public;
+GROUP exchangeGroup 'Курсы обмена' : public;
+
+customStoreDeclaration 'СВХ (ИД)' = DATA CustomStore(Declaration);
+nameCustomStoreDeclaration 'СВХ' (declaration) = name(customStoreDeclaration(declaration)) IN docGroup;
+
+sidDeclaration 'Номер' = DATA STRING[10] (Declaration) IN docGroup MINCHARWIDTH 10;
+beginTimeDeclaration 'Начало обработки' = DATA DATETIME (Declaration) IN datetimeGroup;
+endTimeDeclaration 'Конец обработки' = DATA DATETIME (Declaration) IN datetimeGroup;
+
+executerDeclaration 'Исполнитель' = DATA CustomUser (Declaration);
+nameExecuterDeclaration 'Исполнитель' (declaration) = nameContact(executerDeclaration(declaration)) MINCHARWIDTH 20;
+executerDeclaration(declaration) <- currentUser() WHEN ASSIGNED(declaration IS Declaration);
+
+allowImportExportXLSDeclarationUA(declaration) = allowImportExportXLSLegalEntityUA(legalEntityStock(customStoreDeclaration(declaration)));
+allowImportExportXMLDeclarationBY(declaration) = allowImportExportXMLLegalEntityBY(legalEntityStock(customStoreDeclaration(declaration)));
+
+exportDeclaration 'Выгрузить декларацию (РБ)' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN docGroup;
+
+importerDeclaration 'Импортер (ИД)' = DATA Importer (Declaration);
+nameImporterDeclaration 'Импортёр' = nameLegalEntity(importerDeclaration(declaration)) IN docGroup;
+
+languageDeclaration 'Язык декларации (ИД)' (declaration) = languageLegalEntity(importerDeclaration(declaration));
+nameLanguageDeclaration 'Язык декларации' (declaration) = nameLanguage(languageDeclaration(declaration)) IN docGroup;
+
+customsZoneDeclaration (declaration) = customsZoneCountry(countryLegalEntity(importerDeclaration(declaration)));
+
+currencyDeclaration 'Валюта декларации (ИД)' = DATA Currency(Declaration);
+nameCurrencyDeclaration 'Валюта декларации' = nameCurrency(currencyDeclaration(declaration)) IN exchangeGroup;
+
+dateCorrectionDeclaration 'Дата оплаты КТС' = DATA DATE (Declaration) IN base;
+
+declarationInnerInvoice 'Декларация инвойса (ИД)' = DATA Declaration(InnerInvoice);
+sidDeclarationInnerInvoice 'Декларация инвойса' (innerInvoice) = sidDeclaration(declarationInnerInvoice(innerInvoice)) IN base;
+
+contractDeclaration = DATA ContractSku (Declaration);
+contractInvoicesDeclaration = GROUP MAX contractInnerInvoice(innerInvoice) BY declarationInnerInvoice(innerInvoice);
+
+numberContractDeclaration 'Договор' (declaration) = numberContract(contractInvoicesDeclaration(declaration));
+dateFromContractDeclaration 'Дата договора (с)' (declaration) = dateFromContract(contractInvoicesDeclaration(declaration)) IN freightGroup;
+
+palletNumberFormedInvoice (formedInvoice) = palletNumberProxyFreight(freightFormedInvoice(formedInvoice));
+palletNumberInnerInvoice (innerInvoice) = UNION EXCLUSIVE palletNumberFormedInvoice(innerInvoice),
+                                                          palletNumberDirectInvoice(innerInvoice) IF innerInvoice IS DirectInvoice;
+
+palletNumberDeclaration 'Кол-во паллет' (declaration) = GROUP SUM palletNumberInnerInvoice(innerInvoice) BY declarationInnerInvoice(innerInvoice) IN freightGroup;
+
+typeContainerDeclaration = DATA TypeContainer(Declaration);
+nameTypeContainerDeclaration 'Вид грузовых мест'(declaration) = name(typeContainerDeclaration(declaration)) IN freightGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+containerNumberDeclaration 'Кол-во грузовых мест' = DATA NUMERIC[14,3](Declaration) IN freightGroup;
+
+typeContainerDeclaration(declaration) <- IF partyAContract(contractInvoicesDeclaration(declaration)) IS Exporter
+                                            THEN TypeContainer.palleta
+                                            ELSE NULL
+                                         WHEN CHANGED(contractInvoicesDeclaration(declaration));
+
+containerNumberDeclaration(declaration) <- IF partyAContract(contractInvoicesDeclaration(declaration)) IS Exporter
+                                              THEN palletNumberDeclaration(declaration)
+                                              ELSE NULL
+                                           WHEN CHANGED(contractInvoicesDeclaration(declaration));
+
+CRMDeclaration 'Документ по транспорту' = DATA STRING[30](Declaration) IN freightGroup;
+
+inDeclarationInnerInvoice 'Инвойс в декларации' (declaration, innerInvoice) = declarationInnerInvoice(innerInvoice) == declaration;
+
+CONSTRAINT declarationInnerInvoice(innerInvoice) AND NOT(freightInnerInvoice(innerInvoice) IS FreightArrived)
+    MESSAGE 'Инвойс используется в декларации';
+
+forDeclaration(declaration, innerInvoice) = inDeclarationInnerInvoice(declaration, innerInvoice) OR declaration IS Declaration AND NOT declarationInnerInvoice(innerInvoice);
+
+CONSTRAINT declarationInnerInvoice(innerInvoice1) == declarationInnerInvoice(innerInvoice2) AND
+           contractInnerInvoice(innerInvoice1) != contractInnerInvoice(innerInvoice2) CHECKED
+    MESSAGE 'Инвойс для другого договора';
+
+CONSTRAINT importerDeclaration(declarationInnerInvoice(innerInvoice)) != importerInnerInvoice(innerInvoice) CHECKED
+    MESSAGE 'Инвойс для другого импортёра';
+
+importerDeclarationInnerInvoice (declaration, innerInvoice) = importerDeclaration(declaration) == importerInnerInvoice(innerInvoice);
+
+CONSTRAINT currencyDeclaration(declarationInnerInvoice(innerInvoice)) != currencyInnerInvoice(innerInvoice) CHECKED
+    MESSAGE 'Инвойс с другой валютой';
+
+currencyDeclarationInnerInvoice (declaration, innerInvoice) = currencyDeclaration(declaration) == currencyInnerInvoice(innerInvoice);
+
+CONSTRAINT languageDeclaration(declarationInnerInvoice(innerInvoice)) != languageInnerInvoice(innerInvoice) CHECKED
+    MESSAGE 'Инвойс с другим языком';
+
+languageDeclarationInnerInvoice (declaration, innerInvoice) = languageDeclaration(declaration) == languageInnerInvoice(innerInvoice) OR
+                                                              (declaration IS Declaration AND innerInvoice IS InnerInvoice AND NOT languageDeclaration(declaration) AND NOT languageInnerInvoice(innerInvoice));
+
+// определение инвойса
+directInvoiceFreightUnit(freightUnit) = UNION EXCLUSIVE freightUnit IF freightUnit IS DirectSimpleInvoice,
+                                                        boxInvoiceSupplierBox(freightUnit);
+
+formedInvoiceFreightUnit(declaration, freightUnit) = formedInvoiceImporterFreight(importerDeclaration(declaration), freightFreightUnit(freightUnit));
+
+innerInvoiceFreightUnit(declaration, freightUnit) = OVERRIDE formedInvoiceFreightUnit(declaration, freightUnit),
+                                                             directInvoiceFreightUnit(freightUnit) IF declaration IS Declaration;
+
+quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
+                                                                         BY declarationInnerInvoice(innerInvoice), sku IN base PERSISTENT;
+
+quantityDeclarationInvoiceSku 'Кол-во в декларации' (declaration, innerInvoice, sku) = quantityInnerInvoiceSku(innerInvoice, sku) IF declarationInnerInvoice(innerInvoice) == declaration;
+
+@defineAggregation(declaration, innerInvoice, sku, declarationDetail, quantityDeclarationInvoiceSku);
+
+@defineDocumentDetailIndex(declaration);
+@defineDocumentTime(declaration);
+
+beginTimeDeclaration(declaration) <- dateTimeDeclaration(declaration) WHEN ASSIGNED (declaration IS Declaration);
+
+customStoreDeclarationDetail 'СВХ (ИД)' (declarationDetail) = customStoreDeclaration(declarationDeclarationDetail(declarationDetail));
+nameCustomStoreDeclarationDetail 'СВХ' (declarationDetail) = name(customStoreDeclarationDetail(declarationDetail)) IN base;
+
+descriptionDeclaration 'Название документа' (declaration) =
+    [FORMULA STRING[200] '\'Декларация \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+    sidDeclaration(declaration), dateDeclaration(declaration), nameCustomStoreDeclaration(declaration));
+
+declarationCorrection 'Декларация КТС (ИД)' = DATA Declaration(Correction);
+inDeclarationCorrection (declaration, correction) = declarationCorrection(correction)==declaration;
+
+dateTimePayCorrection 'Дата/время оплаты' = DATA DATETIME(Correction) IN base;
+
+numberDeclarationDetail 'Номер строки' (declarationDetail) =
+        PARTITION SUM 1 IF declarationDetail IS DeclarationDetail BY declarationDeclarationDetail(declarationDetail)
+        ORDER declarationDetail;
+
+@defineDocumentDetailSkuArticle (declaration);
+
+quantityDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclarationInvoiceSku(declarationDeclarationDetail(declarationDetail),
+                                                                                       innerInvoiceDeclarationDetail(declarationDetail),
+                                                                                       skuDeclarationDetail(declarationDetail)
+                                                                                      ) IN base;
+
+freightDeclarationDetail 'Фрахт позиции (ИД)' (declarationDetail) = freightInnerInvoice(innerInvoiceDeclarationDetail(declarationDetail));
+
+importerDeclarationDetail 'Импортёр позиции (ИД)' (declarationDetail) = importerDeclaration(declarationDeclarationDetail(declarationDetail));
+
+sidInnerInvoiceDeclarationDetail 'Инвойс' (declarationDetail) = sidInnerInvoice(innerInvoiceDeclarationDetail(declarationDetail));
+
+//--------------------------------------- Свойства товаров ---------------------------------------------------------//
+languageDeclarationDetail (declarationDetail) = languageDeclaration(declarationDeclarationDetail(declarationDetail));
+
+translateNameDeclarationDetail 'Наименование' (declarationDetail) = translateNameArticle(articleDeclarationDetail(declarationDetail));
+translateNameDeclarationDetailLanguage 'Наименование' (declarationDetail) = translateNameSkuLanguage(skuDeclarationDetail(declarationDetail),
+                                                                                            languageDeclarationDetail(declarationDetail));
+
+nameInvoiceDeclarationDetail 'Наименование' (declarationDetail) = OVERRIDE translateNameDeclarationDetail(declarationDetail),
+                                                                           nameCategoryDeclarationDetail(declarationDetail);
+
+nameCategoryDeclarationDetailLanguage 'Наименование' (declarationDetail) = languageName(categoryDeclarationDetail(declarationDetail),
+                                                                                        languageDeclarationDetail(declarationDetail));
+
+nameInvoiceDeclarationDetailLanguage 'Наименование'(declarationDetail) = OVERRIDE translateNameDeclarationDetailLanguage(declarationDetail),
+                                                                                  nameCategoryDeclarationDetailLanguage(declarationDetail);
+
+
+netWeightDeclarationDetail 'Вес нетто товара' (declarationDetail) = netWeightFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                        skuDeclarationDetail(declarationDetail));
+
+sumNetWeightDeclarationDetail 'Суммарный вес нетто' (declarationDetail) = netWeightDeclarationDetail(declarationDetail) *
+                                                                          quantityDeclarationDetail(declarationDetail) IN base;
+
+grossWeightDeclarationDetail 'Вес брутто товара' (declarationDetail) = grossWeightFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                             skuDeclarationDetail(declarationDetail));
+
+sumGrossWeightDeclarationDetail 'Суммарный вес брутто' (declarationDetail) = grossWeightDeclarationDetail(declarationDetail) *
+                                                                             quantityDeclarationDetail(declarationDetail) IN base;
+
+mainCompositionDeclarationDetail 'Состав товара' (declarationDetail) = mainCompositionFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                                 skuDeclarationDetail(declarationDetail)) MINCHARWIDTH 20;
+
+mainCompositionLanguageDeclarationDetail 'Состав товара (иностр.)' (declarationDetail) = mainCompositionLanguageFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                                                 skuDeclarationDetail(declarationDetail)) MINCHARWIDTH 20;
+
+userNumberDeclarationDetail 'Пользовательский номер' (declarationDetail) = userNumberFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                                 skuDeclarationDetail(declarationDetail)) MINCHARWIDTH 20;
+
+countryDeclarationDetail 'Страна товара (ИД)' (declarationDetail) = countryOfOriginFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                              skuDeclarationDetail(declarationDetail));
+
+nameCountryDeclarationDetail 'Страна товара' (declarationDetail) = nameCountry(countryDeclarationDetail(declarationDetail)) MINCHARWIDTH 15;
+
+nameCountryLanguageDeclarationDetail 'Страна товара (иностр.)' (declarationDetail) = languageName(countryDeclarationDetail(declarationDetail), languageDeclaration(declarationDeclarationDetail(declarationDetail))) MINCHARWIDTH 15;
+
+customCategory10InvoicedDeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = customCategory10FreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                                                skuDeclarationDetail(declarationDetail));
+
+customCategory10DataDeclarationDetail 'ТН ВЭД товара (ИД)' = DATA CustomCategory10(DeclarationDetail);
+
+customCategory10DeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = OVERRIDE customCategory10InvoicedDeclarationDetail(declarationDetail),
+                                                                                      customCategory10DataDeclarationDetail(declarationDetail) PERSISTENT;
+
+customsZoneDeclarationDetail(declarationDetail) = customsZoneDeclaration(declarationDeclarationDetail(declarationDetail));
+nameCustomsZoneDeclarationDetail 'Зона' (declarationDetail) = name(customsZoneDeclarationDetail(declarationDetail));
+nameCustomsZoneCategoryDeclarationDetail 'Зона' (declarationDetail) = name(customsZoneCustomCategory10(customCategory10DeclarationDetail(declarationDetail)));
+
+CONSTRAINT customsZoneCustomCategory10(customCategory10DataDeclarationDetail(declarationDetail)) != customsZoneDeclaration(declarationDeclarationDetail(declarationDetail))
+    CHECKED BY customCategory10DataDeclarationDetail
+    MESSAGE 'ТН ВЭД для другой таможенной зоны';
+
+sidCustomCategory10DeclarationDetail 'ТН ВЭД товара' (declarationDetail) = sidCustomCategory10(customCategory10DeclarationDetail(declarationDetail));
+
+customCategoryOriginInvoicedDeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = customCategoryOriginFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                                                        skuDeclarationDetail(declarationDetail));
+
+customCategoryOriginDataDeclarationDetail 'ТН ВЭД товара (ИД)' = DATA CustomCategoryOrigin(DeclarationDetail);
+
+customCategoryOriginDeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = OVERRIDE customCategoryOriginInvoicedDeclarationDetail(declarationDetail),
+                                                                                          customCategoryOriginDataDeclarationDetail(declarationDetail) PERSISTENT;
+
+sidCustomCategoryOriginDeclarationDetail 'ТН ВЭД товара (иностр.)' (declarationDetail) = sidCustomCategoryOrigin(customCategoryOriginDeclarationDetail(declarationDetail));
+
+//nameSupplierDeclarationDetail 'Поставщик' (declarationDetail) = nameSupplierArticleSku(skuDeclarationDetail(declarationDetail));
+
+//--------------------------------- Сертификаты и сертификация -------------------------------------------------------//
+CLASS ABSTRACT Certificate 'Сертификат';
+CLASS TemporalCertificate 'Временный сертификат' : Certificate;
+CLASS PermanentCertificate 'Постоянный сертификат' : Certificate;
+
+TABLE certificate (Certificate);
+
+sidCertificate 'Номер' = DATA STRING[30] (Certificate) IN base AGGPROP;
+dateIssueCertificate 'Дата выдачи' = DATA DATE (Certificate) IN base;
+dateValidityCertificate 'Действует до' = DATA DATE (Certificate) IN base;
+
+FORM certificate 'Сертификат'
+    OBJECTS c=Certificate FIXED PANEL
+    PROPERTIES(c) sidCertificate, objectClassName, dateIssueCertificate, dateValidityCertificate
+    EDIT Certificate OBJECT c
+;
+
+FORM certificates 'Сертификаты'
+    OBJECTS c=Certificate
+    PROPERTIES(c) READONLY sidCertificate, objectClassName, dateIssueCertificate, dateValidityCertificate
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
+;
+
+certificatedCategoryDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) IN base;
+certificatedDataDeclarationDetail 'Необходимость сертификации' = DATA BOOLEAN(DeclarationDetail);
+
+//certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedCategoryDeclarationDetail(declarationDetail) OVERRIDE
+//                                                                                 certificatedDataDeclarationDetail(declarationDetail);
+
+//certificatedDeclarationSku 'Необходимость сертификации' (declaration, innerInvoice, sku) = certificatedDeclarationDetail(declarationDetailDeclarationInnerInvoiceSku(declaration, innerInvoice, sku));
+certificatedDeclarationSku 'Необходимость сертификации' = DATA BOOLEAN(Declaration, Sku);
+
+changeCertificatedDeclarationSku = ACTION (declarationDetail) {
+    REQUEST BOOLEAN INPUT;
+    SET certificatedDeclarationSku(declaration, sku) <- requestedLogical() WHERE declaration == declarationDeclarationDetail(declarationDetail) AND sku == skuDeclarationDetail(declarationDetail);
+}
+
+certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedDeclarationSku(declarationDeclarationDetail(declarationDetail),
+                                                                                                            skuDeclarationDetail(declarationDetail));
+
+quantityCertificatedDeclarationFreightUnitSku 'Кол-во для экспертизы' = DATA NUMERIC[14,3] (Declaration, FreightUnit, Sku);
+
+quantityCertificatedInnerInvoiceSku 'Кол-во для экспертизы' (innerInvoice, sku) = GROUP SUM quantityCertificatedDeclarationFreightUnitSku(declaration, freightUnit, sku)
+                                                                                         BY innerInvoiceFreightUnit(declaration, freightUnit), sku;
+
+quantityCertificatedFreightUnitDeclarationDetail 'Кол-во для экспертизы' (freightUnit, declarationDetail) = quantityCertificatedDeclarationFreightUnitSku(declarationDeclarationDetail(declarationDetail), freightUnit, skuDeclarationDetail(declarationDetail))
+                                                                                                            IF innerInvoiceDeclarationDetail(declarationDetail) == innerInvoiceFreightUnit(declarationDeclarationDetail(declarationDetail), freightUnit);
+
+quantityCertificatedDeclarationDetail 'Кол-во для экспертизы' (declarationDetail) = quantityCertificatedInnerInvoiceSku(innerInvoiceDeclarationDetail(declarationDetail),
+                                                                                                                        skuDeclarationDetail(declarationDetail));
+
+quantityCertificatedDeclarationFreightUnit 'Кол-во для экспертизы' (declaration, freightUnit) = GROUP SUM quantityCertificatedDeclarationFreightUnitSku(declaration, freightUnit, sku)
+                                                                                                       BY declaration, freightUnit;
+
+quantityCertificatedDeclarationSku 'Кол-во для экспертизы' (declaration, sku) = GROUP SUM quantityCertificatedDeclarationFreightUnitSku(declaration, freightUnit, sku)
+                                                                                       BY declaration, sku;
+
+quantityCertificatedCustomStoreSku 'Кол-во для экспертизы' (customStore, sku) = GROUP SUM quantityCertificatedDeclarationSku(declaration, sku)
+                                                                                       BY customStoreDeclaration(declaration), sku;
+
+certificateDeclarationDetail 'Сертификат партии (ИД)' = DATA Certificate(DeclarationDetail);
+temporalCertificateDeclarationDetail 'Временный сертификат партии (ИД)' = DATA TemporalCertificate(DeclarationDetail);
+permanentCertificateDeclarationDetail 'Постоянный сертификат партии (ИД)' = DATA PermanentCertificate(DeclarationDetail);
+
+certificatePreparedDeclarationDetail 'Сертификат партии (ИД)' (declarationDetail) = OVERRIDE temporalCertificateDeclarationDetail(declarationDetail),
+                                                                                             permanentCertificateDeclarationDetail(declarationDetail) PERSISTENT;
+
+sidTemporalCertificateDeclarationDetail 'Временный сертификат партии' (declarationDetail) = sidCertificate(temporalCertificateDeclarationDetail(declarationDetail)) IN base;
+sidPermanentCertificateDeclarationDetail 'Постоянный сертификат партии' (declarationDetail) = sidCertificate(permanentCertificateDeclarationDetail(declarationDetail)) IN base;
+
+sidCertificateDeclarationDetail 'Сертификат партии' (declarationDetail) = sidCertificate(certificateDeclarationDetail(declarationDetail)) IN base;
+
+isCertificatePreparedDeclarationDetail 'Отсутствие сертификата' (declarationDetail) = certificatedDeclarationDetail(declarationDetail) IF
+                                                                                      NOT certificatePreparedDeclarationDetail(declarationDetail);
+
+quantityNoCertificateDeclaration 'Кол-во без сертификатов' (declaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
+                                                                                  IF isCertificatePreparedDeclarationDetail(declarationDetail)
+                                                                                  BY declarationDeclarationDetail(declarationDetail) PERSISTENT;
+
+//CONSTRAINT quantityNoCertificateDeclaration(declaration)>0 AND declaration IS PreparedDeclaration
+//   MESSAGE 'Не у всех товаров требующих сертификации заданы сертификаты';
+
+//--------------------------------------- Курсы валют и цены --------------------------------------------------------//
+rateExchangeCustomDataDeclaration 'Курс (БУ)' = DATA NUMERIC[14,3] (Declaration) IN exchangeGroup;
+rateExchangeManagerialDataDeclaration 'Курс (УУ)' = DATA NUMERIC[14,3] (Declaration) IN exchangeGroup;
+
+typeExchangeCustomDeclaration 'Тип обмена (ИД)' = DATA TypeExchange(Declaration);
+typeExchangeManagerialDeclaration 'Тип обмена (ИД)' = DATA TypeExchange(Declaration);
+typeExchangeDutyDeclaration 'Тип обмена (ИД)' = typeExchangeSTX() IF declaration IS Declaration;
+
+nameTypeExchangeCustomDeclaration 'Тип обмена (БУ)' (declaration) = nameTypeExchange(typeExchangeCustomDeclaration(declaration)) IN exchangeGroup;
+nameTypeExchangeManagerialDeclaration 'Тип обмена (УУ)' (declaration) = nameTypeExchange(typeExchangeManagerialDeclaration(declaration)) IN exchangeGroup;
+
+roundCurrencyDeclaration '' (number, declaration) = roundPriceCurrency(number, currencyDeclaration(declaration));
+roundCurrencyDeclarationDetail(number, declarationDetail) = roundCurrencyDeclaration(number, declarationDeclarationDetail(declarationDetail));
+
+currencyToDeclaration 'Валюта страны назначения' (declaration) = currencyTypeExchange(typeExchangeCustomDeclaration(declaration));
+
+roundTypeExchangeDeclaration '' (number, declaration) = roundPriceCurrency(number, currencyToDeclaration(declaration));
+roundTypeExchangeDeclarationDetail '' (number, declarationDetail) = roundTypeExchangeDeclaration(number, declarationDeclarationDetail(declarationDetail));
+
+typeExchangeCustomDeclaration(declaration) <- typeExchangePayCustomCustomsZone(customsZoneDeclaration(declaration)) WHEN CHANGED (importerDeclaration(declaration));
+typeExchangeManagerialDeclaration(declaration) <- typeExchangePayManagerialCustomsZone(customsZoneDeclaration(declaration)) WHEN CHANGED (importerDeclaration(declaration));
+
+@defineNearestRateExchangeObject(declaration, custom, , dateDeclaration, base);
+@defineNearestRateExchangeObject(declaration, managerial, , dateDeclaration, base);
+@defineNearestRateExchangeObject(declaration, duty, , dateDeclaration, base);
+
+rateExchangeCustomDataDeclaration(declaration) <- rateExchangeCustomDeclaration(declaration)
+    WHEN CHANGED (dateDeclaration(declaration)) OR CHANGED (currencyDeclaration(declaration)) OR CHANGED(typeExchangeCustomDeclaration(declaration));
+rateExchangeManagerialDataDeclaration(declaration) <- rateExchangeManagerialDeclaration(declaration)
+    WHEN CHANGED (dateDeclaration(declaration)) OR CHANGED (currencyDeclaration(declaration)) OR CHANGED(typeExchangeManagerialDeclaration(declaration));
+
+rateExchangeCustomDeclarationDetail 'Курс обмена (БУ)' (declarationDetail) = rateExchangeCustomDataDeclaration(declarationDeclarationDetail(declarationDetail)) IN base;
+rateExchangeManagerialDeclarationDetail 'Курс обмена (УУ)' (declarationDetail) = rateExchangeManagerialDataDeclaration(declarationDeclarationDetail(declarationDetail)) IN base;
+
+coeffRateDeclaration '' (declaration) = rateExchangeCustomDeclaration(declaration)/rateExchangeDutyDeclaration(declaration);
+
+priceContractDeclarationDetail 'Цена контракта' (declarationDetail) = priceContractInnerInvoiceSku(innerInvoiceDeclarationDetail(declarationDetail),
+                                                                                                   skuDeclarationDetail(declarationDetail));
+
+priceContractDeclarationArticle 'Цена поставщика' (declaration, article) = GROUP MAX priceContractDeclarationDetail(declarationDetail)
+                                                                                  BY declarationDeclarationDetail(declarationDetail), articleDeclarationDetail(declarationDetail) PERSISTENT;
+
+RRPDeclarationArticle 'Рекомендованная цена' (declaration, article) = GROUP MAX RRPFreightArticle(freightDeclarationDetail(declarationDetail), articleDeclarationDetail(declarationDetail))
+                                                                             BY declarationDeclarationDetail(declarationDetail), articleDeclarationDetail(declarationDetail) PERSISTENT;
+
+priceContractRateDeclarationDetail 'Цена контракта (руб.)' (declarationDetail) = priceContractDeclarationDetail(declarationDetail) *
+                                                                                 rateExchangeCustomDeclarationDetail(declarationDetail);
+
+declarationPriceDeclarationDetail 'Цена товара (БУ)' (declarationDetail) = priceInnerInvoiceSku(innerInvoiceDeclarationDetail(declarationDetail),
+                                                                                                skuDeclarationDetail(declarationDetail));
+
+priceManagerialDeclarationDetail 'Цена товара (УУ)' (declarationDetail) = priceManagerialInnerInvoiceSku(innerInvoiceDeclarationDetail(declarationDetail),
+                                                                                                         skuDeclarationDetail(declarationDetail));
+
+priceManagerialRateDeclarationDetail 'Цена товара (конверт.)' (declarationDetail) = priceManagerialDeclarationDetail(declarationDetail) *
+                                                                                    rateExchangeManagerialDeclarationDetail(declarationDetail);
+
+declarationSumDeclarationDetail 'Стоимость товара' (declarationDetail) = declarationPriceDeclarationDetail(declarationDetail) *
+                                                                         quantityDeclarationDetail(declarationDetail);
+
+contractSumDeclarationDetail 'Стоимость товара' (declarationDetail) = priceContractDeclarationDetail(declarationDetail) *
+                                                                      quantityDeclarationDetail(declarationDetail);
+
+declarationSumRateDeclarationDetail 'Стоимость товара (расч.)' (declarationDetail) = roundTypeExchangeDeclarationDetail(declarationSumDeclarationDetail(declarationDetail) *
+                                                                                            rateExchangeCustomDeclarationDetail(declarationDetail), declarationDetail);
+
+priceRateDeclarationDetail 'Цена товара (конверт.)' (declarationDetail) = roundTypeExchangeDeclarationDetail(declarationSumRateDeclarationDetail(declarationDetail)/
+                                                                                 quantityDeclarationDetail(declarationDetail), declarationDetail) IN base PERSISTENT;
+
+isPostedDeclarationDetail (declarationDetail) = TRUE IF declarationDetail IS DeclarationDetail;
+
+
+descriptionDeclarationDetail = descriptionDeclaration(declarationDeclarationDetail(declarationDetail));
+
+// для экспорта в Декларант
+TABLE groupDeclaration(GroupDeclaration);
+TABLE groupDeclarationInnerInvoice(GroupDeclaration, InnerInvoice);
+TABLE groupDeclarationDeclarationDetail(GroupDeclaration, DeclarationDetail);
+TABLE correctionGroupDeclaration(Correction, GroupDeclaration);
+TABLE declarationArtCatCompCountry(Declaration, Article, CustomCategory10, STRING[200], Country);
+TABLE declarationArtCatCompCountryPrice(Declaration, Article, CustomCategory10, STRING[200], Country, NUMERIC[14,2]);
+
+quantityDeclarationGrouping 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
+                                              BY declarationDeclarationDetail(declarationDetail),
+                                                 articleDeclarationDetail(declarationDetail),
+                                                 customCategory10DeclarationDetail(declarationDetail),
+                                                 mainCompositionDeclarationDetail(declarationDetail),
+                                                 countryDeclarationDetail(declarationDetail),
+                                                 declarationPriceDeclarationDetail(declarationDetail) IN base PERSISTENT;
+
+CLASS GroupDeclaration 'Строка декларации';
+
+declarationGroupDeclaration 'Декларация (ИД)' = DATA Declaration(GroupDeclaration) NOT NULL DELETE;
+
+typeContainerGroupDeclaration (groupDeclaration) = typeContainerDeclaration(declarationGroupDeclaration(groupDeclaration));
+nameTypeContainerGroupDeclaration 'Вид грузовых мест' (groupDeclaration) = name(typeContainerGroupDeclaration(groupDeclaration));
+
+articleGroupDeclaration 'Артикул (ИД)' = DATA Article(GroupDeclaration);
+customCategory10GroupDeclaration 'ТН ВЭД (ИД)' = DATA CustomCategory10(GroupDeclaration);
+mainCompositionGroupDeclaration 'Состав' = DATA STRING[200](GroupDeclaration) IN base;
+countryGroupDeclaration 'Страна (ИД)' = DATA Country(GroupDeclaration);
+priceGroupDeclaration 'Цена' = DATA NUMERIC[14,2](GroupDeclaration);
+
+certificatedGroupDeclaration 'Необходимость сертификации' (groupDeclaration) = certificatedCustomCategory10(customCategory10GroupDeclaration(groupDeclaration)) IN base;
+roundTypeExchangeGroupDeclaration '' (number, groupDeclaration) = roundTypeExchangeDeclaration(number, declarationGroupDeclaration(groupDeclaration));
+
+sidArticleGroupDeclaration 'Артикул' (groupDeclaration) = sidArticle(articleGroupDeclaration(groupDeclaration)) IN base;
+coefficientArticleGroupDeclaration 'Кол-во в комплекте' (groupDeclaration) = coefficientArticle(articleGroupDeclaration(groupDeclaration));
+sidCustomCategory10GroupDeclaration 'ТН ВЭД' (groupDeclaration) = sidCustomCategory10(customCategory10GroupDeclaration(groupDeclaration)) IN base;
+nameCountryGroupDeclaration 'Страна' (groupDeclaration) = nameCountry(countryGroupDeclaration(groupDeclaration)) IN base MINCHARWIDTH 10;
+sidCountryGroupDeclaration 'Цифровой код страны' (groupDeclaration) = sidCountry(countryGroupDeclaration(groupDeclaration)) IN base;
+sidOrigin2CountryGroupDeclaration 'Буквенный код страны' (groupDeclaration) = sidOrigin2Country(countryGroupDeclaration(groupDeclaration)) IN base MINCHARWIDTH 3;
+
+customsZoneGroupDeclaration(groupDeclaration) = customsZoneDeclaration(declarationGroupDeclaration(groupDeclaration));
+
+numberGroupDeclaration 'Номер' (groupDeclaration) =
+        PARTITION SUM 1 IF groupDeclaration IS GroupDeclaration BY declarationGroupDeclaration(groupDeclaration)
+        ORDER groupDeclaration;
+
+userNumberGroupDeclaration 'Пользовательский номер' (groupDeclaration) = DATA INTEGER (GroupDeclaration);
+overNumberGroupDeclaration 'Номер' (groupDeclaration) = OVERRIDE numberGroupDeclaration(groupDeclaration), userNumberGroupDeclaration(groupDeclaration);
+
+uniqueGroupDeclaration = GROUP AGGR groupDeclaration BY overNumberGroupDeclaration (groupDeclaration),
+                                                          declarationGroupDeclaration (groupDeclaration)
+                                                          WHERE groupDeclaration IS GroupDeclaration;
+
+inDeclarationGroupDeclaration (declaration, groupDeclaration) = declarationGroupDeclaration(groupDeclaration)==declaration;
+
+// todo надо будет удалить таблицу
+TABLE groupstring (Object, Object, Object, Object, STRING[200]);
+
+//quantityGroupDeclaration(declaration, article, customCategory10, STRING, country) => uniqueGroupDeclaration(declaration, article, customCategory10, STRING, country) RESOLVE TRUE;
+//isGroupDeclaration(group) = group IS GroupDeclaration;
+//isGroupDeclaration(group) => quantityGroupDeclaration(declarationGroupDeclaration(group),
+//                                                      articleGroupDeclaration(group),
+//                                                      customCategory10GroupDeclaration(group),
+//                                                      mainCompositionGroupDeclaration(group),
+//                                                      countryGroupDeclaration(group)) RESOLVE FALSE;
+
+// свойства от артикула
+nameBrandGroupDeclaration 'Бренд' (groupDeclaration) = nameBrandSupplierArticle(articleGroupDeclaration(groupDeclaration));
+nameCategoryGroupDeclaration 'Ном. группа' (groupDeclaration) = nameCategoryArticle(articleGroupDeclaration(groupDeclaration));
+translateNameGroupDeclaration 'Наименование' (groupDeclaration) = translateNameArticle(articleGroupDeclaration(groupDeclaration));
+
+nameInvoiceGroupDeclaration 'Наименование' (groupDeclaration) = OVERRIDE translateNameGroupDeclaration(groupDeclaration),
+                                                                         nameCategoryGroupDeclaration(groupDeclaration);
+
+genderArticleGroupDeclaration 'Пол (ИД)' (groupDeclaration) = genderArticle(articleGroupDeclaration(groupDeclaration));
+genderDataGroupDeclaration 'Пол (ИД)' = DATA Gender(GroupDeclaration);
+genderGroupDeclaration'Пол (ИД)' (groupDeclaration) = OVERRIDE genderArticleGroupDeclaration(groupDeclaration),
+                                                               genderDataGroupDeclaration(groupDeclaration);
+sidGenderGroupDeclaration 'Пол' (groupDeclaration) = sidGender(genderGroupDeclaration(groupDeclaration)) MINCHARWIDTH 3;
+
+typeFabricArticleGroupDeclaration 'Тип одежды (ИД)' (groupDeclaration) = typeFabricArticle(articleGroupDeclaration(groupDeclaration));
+typeFabricDataGroupDeclaration 'Тип одежды (ИД)' = DATA TypeFabric(GroupDeclaration);
+typeFabricGroupDeclaration 'Тип одежды (ИД)' (groupDeclaration) = OVERRIDE typeFabricArticleGroupDeclaration(groupDeclaration),
+                                                                           typeFabricDataGroupDeclaration(groupDeclaration);
+nameTypeFabricGroupDeclaration 'Тип одежды' (groupDeclaration) = name(typeFabricGroupDeclaration(groupDeclaration)) MINCHARWIDTH 10;
+
+unitOfMeasureArticleGroupDeclaration 'Ед. изм.(ИД)' (groupDeclaration) = unitOfMeasureArticle(articleGroupDeclaration(groupDeclaration));
+unitOfMeasureDataGroupDeclaration 'Ед. изм.(ИД)' = DATA UnitOfMeasure(GroupDeclaration);
+unitOfMeasureGroupDeclaration 'Ед. изм.(ИД)' = OVERRIDE unitOfMeasureArticleGroupDeclaration(groupDeclaration),
+                                                        unitOfMeasureDataGroupDeclaration(groupDeclaration);
+
+sidUnitOfMeasureGroupDeclaration 'Ед. изм.(код)' (groupDeclaration) = sidUnitOfMeasure(unitOfMeasureGroupDeclaration(groupDeclaration));
+nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = nameUOM(unitOfMeasureGroupDeclaration(groupDeclaration)) MINCHARWIDTH 5;
+genitiveNameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = genitiveNameUOM(unitOfMeasureGroupDeclaration(groupDeclaration));
+
+specUnitOfMeasureGroupDeclaration 'Ед. изм.(код)' (groupDeclaration) = specUnitOfMeasureCustomCategory10(customCategory10GroupDeclaration(groupDeclaration));
+sidSpecUnitOfMeasureGroupDeclaration (groupDeclaration) = sidUnitOfMeasure(specUnitOfMeasureGroupDeclaration(groupDeclaration));
+nameSpecUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = nameUOM(specUnitOfMeasureGroupDeclaration(groupDeclaration));
+genitiveNameSpecUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = genitiveNameUOM(specUnitOfMeasureGroupDeclaration(groupDeclaration));
+
+additionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = additionalUnitOfMeasureCustomCategory10(customCategory10GroupDeclaration(groupDeclaration));
+sidAdditionalUnitOfMeasureGroupDeclaration (groupDeclaration) = sidUnitOfMeasure(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
+nameAdditionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = nameUOM(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
+genitiveNameAdditionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = genitiveNameUOM(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
+
+stringGroupDeclaration 'Наименование' (groupDeclaration) = ustring5CM(string2(nameInvoiceGroupDeclaration(groupDeclaration), ''),
+                                                                      string2(sidGenderGroupDeclaration(groupDeclaration), ''),
+                                                                      string2(nameTypeFabricGroupDeclaration(groupDeclaration), ''),
+                                                                      string2('Состав:', mainCompositionGroupDeclaration(groupDeclaration)),
+                                                                      string2('Торговая марка: ', nameBrandGroupDeclaration(groupDeclaration))
+                                                                      ) PERSISTENT;
+
+
+nameDataGroupDeclaration 'Наименование' = DATA STRING[200] (GroupDeclaration);
+nameGroupDeclaration 'Наименование' (groupDeclaration) = OVERRIDE stringGroupDeclaration(groupDeclaration),
+                                                                  nameDataGroupDeclaration(groupDeclaration);
+
+inDeclarationDeclarationDetail (declaration, declarationDetail) = declarationDeclarationDetail(declarationDetail)==declaration;
+
+inGroupDeclarationDeclarationDetail 'Связь' = DATA BOOLEAN (GroupDeclaration, DeclarationDetail);
+inDeclarationDetailGroupDeclaration 'Связь' (declarationDetail, groupDeclaration) = inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+// todo определение основной строки для позиции декларации
+primaryGroupDeclarationDeclarationDetail 'Главная строка для позиции (ИД)' (declarationDetail) = GROUP MAX groupDeclaration IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                                                        BY declarationDetail;
+
+percentDataGroupDeclarationDeclarationDetail '%' = DATA NUMERIC[14,2] (GroupDeclaration, DeclarationDetail);
+percentGroupDeclarationDeclarationDetail '%' (groupDeclaration, declarationDetail) =
+                         (OVERRIDE 100.0 IF (groupDeclaration IS GroupDeclaration AND declarationDetail IS DeclarationDetail),
+                          percentDataGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)) IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+groupDeclarationDeclarationDetail 'Группа строки декларации (ИД)'(declarationDetail) = uniqueGroupDeclaration(
+                                                                                       userNumberDeclarationDetail(declarationDetail),
+                                                                                       declarationDeclarationDetail(declarationDetail));
+
+numberGroupDeclarationDeclarationDetail 'Группа строки декларации'(declarationDetail) = numberGroupDeclaration(groupDeclarationDeclarationDetail(declarationDetail)) IN base;
+
+quantityGroupDeclarationInnerInvoice(groupDeclaration, innerInvoice) = GROUP SUM 1 IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                               BY groupDeclaration, innerInvoiceDeclarationDetail(declarationDetail);
+
+TABLE freightDeclarationSku(Freight, Declaration, Sku);
+TABLE declarationFreightUnitSku(Declaration, FreightUnit, Sku);
+
+quantityFreightDeclarationSku 'Кол-во' (freight, declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku) BY freightInnerInvoice(innerInvoice),
+                                                                                                                             declarationInnerInvoice(innerInvoice),
+                                                                                                                             sku PERSISTENT;
+
+quantityFreightDeclaration 'Кол-во' (freight, declaration) = GROUP SUM quantityFreightDeclarationSku (freight, declaration, sku) BY freight, declaration;
+
+sumFreightsDeclaration 'Транспортные расходы' (declaration) = GROUP SUM sumFreightFreight(freight) IF quantityFreightDeclaration (freight, declaration)
+                                                                     BY declaration IN freightGroup;
+
+sidFreightDeclaration 'Номер' (freight, declaration) = sidImporterFreight(importerDeclaration(declaration), freight);
+
+quantityImporterFreightUnitSku 'Кол-во' (importer, freightUnit, sku) = UNION EXCLUSIVE quantityImporterStockSku(importer, freightUnit, sku),
+                                                                                       quantityImporterDirectSupplierBoxSku(importer, freightUnit, sku);
+
+inFreightUnitDeclarationDetail 'Кол-во' (freightUnit, declarationDetail) = quantityImporterFreightUnitSku(importerDeclarationDetail(declarationDetail),
+                                                                                                          freightUnit AS FreightUnit,
+                                                                                                          skuDeclarationDetail(declarationDetail)) IF
+                                                                                             innerInvoiceDeclarationDetail(declarationDetail) == innerInvoiceFreightUnit(declarationDeclarationDetail(declarationDetail), freightUnit);
+                                                                                             //quantityFreightDeclarationSku(freightFreightUnit(freightUnit),
+                                                                                             //                              declarationDeclarationDetail(declarationDetail),
+                                                                                             //                              skuDeclarationDetail(declarationDetail));
+
+inFreightUnitDeclaration 'Кол-во' (freightUnit, declaration) = GROUP SUM inFreightUnitDeclarationDetail(freightUnit, declarationDetail)
+                                                                      BY freightUnit, declarationDeclarationDetail(declarationDetail);
+
+quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail) IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                              BY groupDeclaration PERSISTENT;
+
+quantityCoefficientGroupDeclaration (groupDeclaration) = IF coefficientArticleGroupDeclaration(groupDeclaration)
+                                                            THEN coefficientArticleGroupDeclaration(groupDeclaration) * quantityGroupDeclaration(groupDeclaration)
+                                                            ELSE quantityGroupDeclaration(groupDeclaration);
+
+netWeightGroupDeclarationDeclarationDetail 'Доля' (groupDeclaration, declarationDetail) = (sumNetWeightDeclarationDetail(declarationDetail) *
+                                                                                           percentGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail))/100
+                                                                                          IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+netWeightGroupDeclaration 'Вес нетто' (groupDeclaration) = GROUP SUM netWeightGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                  BY groupDeclaration IN base PERSISTENT;
+
+quantitySpecGroupDeclaration 'Кол-во' (groupDeclaration) = IF specUnitOfMeasureGroupDeclaration(groupDeclaration)
+                                                              THEN quantityGroupDeclaration(groupDeclaration)
+                                                              ELSE netWeightGroupDeclaration(groupDeclaration);
+
+grossWeightGroupDeclarationDeclarationDetail 'Доля' (groupDeclaration, declarationDetail) = (sumGrossWeightDeclarationDetail(declarationDetail) *
+                                                                                           percentGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail))/100
+                                                                                          IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+grossWeightGroupDeclaration 'Вес брутто' (groupDeclaration) = GROUP SUM grossWeightGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                     BY groupDeclaration IN base PERSISTENT;
+
+
+sumPercentDeclarationDetail 'Сумма процентов' (declarationDetail) = GROUP SUM percentGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail;
+CONSTRAINT sumPercentDeclarationDetail(declarationDetail) != 100 CHECKED MESSAGE 'ошибка: сумма процентов по позиции не равна 100';
+
+sumGroupDeclarationDeclarationDetail 'Доля' (groupDeclaration, declarationDetail) = (declarationSumRateDeclarationDetail(declarationDetail) *
+                                                                                     percentGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail))/100
+                                                                                  IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+sumContractGroupDeclarationDeclarationDetail 'Доля' (groupDeclaration, declarationDetail) = (contractSumDeclarationDetail(declarationDetail) *
+                                                                                             percentGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail))/100
+                                                                                             IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+sumGroupDeclaration 'Стоимость (расч.)' (groupDeclaration) = GROUP SUM sumGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                    BY groupDeclaration IN base PERSISTENT MINCHARWIDTH 15;
+
+sumContractGroupDeclaration 'Стоимость (в валюте)' (groupDeclaration) = GROUP SUM sumContractGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                               BY groupDeclaration PERSISTENT MINCHARWIDTH 10; ;
+
+dutyWeightSpecGroupDeclaration (groupDeclaration) = IF specUnitOfMeasureCustomCategory10(customCategory10GroupDeclaration(groupDeclaration))
+                                                       THEN quantityGroupDeclaration(groupDeclaration) *
+                                                            dutySumCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration),
+                                                                                            typeDutyDutyCustomsZone(customsZoneGroupDeclaration(groupDeclaration)))
+                                                       ELSE netWeightGroupDeclaration(groupDeclaration) *
+                                                            dutySumCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration),
+                                                                                            typeDutyDutyCustomsZone(customsZoneGroupDeclaration(groupDeclaration))) PERSISTENT;
+
+
+dutyWeightGroupDeclaration (groupDeclaration) = coeffRateDeclaration(declarationGroupDeclaration(groupDeclaration)) *
+                                                dutyWeightSpecGroupDeclaration (groupDeclaration) PERSISTENT;
+
+dutyPriceGroupDeclaration (groupDeclaration) = sumGroupDeclaration(groupDeclaration) *
+                                               (dutyPercentCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration),
+                                                                                    typeDutyDutyCustomsZone(customsZoneGroupDeclaration(groupDeclaration)))/100) PERSISTENT;
+
+dutyGroupDeclaration 'Пошлина (расч.)' (groupDeclaration) = MAX dutyWeightGroupDeclaration(groupDeclaration), dutyPriceGroupDeclaration(groupDeclaration);
+
+//--------------------------------------- импорт из Декларанта ------------------------------------------------------//
+// стоимости и пошлины
+sumDataGroupDeclaration 'Стоимость' = DATA NUMERIC[14,2](GroupDeclaration) MINCHARWIDTH 15;
+
+sumCorrectionGroupDeclaration 'Скорректированная стоимость' = DATA NUMERIC[14,2](Correction, GroupDeclaration) MINCHARWIDTH 15;
+correctionSumGroupDeclaration 'Скорректированная стоимость' (groupDeclaration) = GROUP MAX sumCorrectionGroupDeclaration(correction, groupDeclaration) BY groupDeclaration PERSISTENT;
+
+dutyDataGroupDeclaration 'Пошлина' = DATA NUMERIC[14,2](GroupDeclaration) MINCHARWIDTH 15;
+dutyImportDeclaration 'Пошлина' (declaration) = GROUP SUM dutyDataGroupDeclaration(groupDeclaration) BY declarationGroupDeclaration(groupDeclaration) PERSISTENT MINCHARWIDTH 15;
+
+VATDataGroupDeclaration 'НДС' = DATA NUMERIC[14,2](GroupDeclaration) MINCHARWIDTH 15;
+
+coeffGroupDeclarationDeclarationDetail '' (groupDeclaration, declarationDetail) = sumGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)/
+                                                                                  sumGroupDeclaration(groupDeclaration);
+
+sumReverseGroupDeclarationDetail 'Часть стоимости' (groupDeclaration, declarationDetail) = PARTITION UNGROUP sumDataGroupDeclaration
+                                                                                                     PROPORTION STRICT ROUND(0) coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                                                  BY groupDeclaration
+                                                                                               ORDER declarationDetail PERSISTENT;
+
+//sumReverseGroupDeclarationDetail 'Часть стоимости' (groupDeclaration, declarationDetail) = roundTypeExchangeDeclarationDetail(sumDataGroupDeclaration(groupDeclaration) * coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail), declarationDetail)
+//                                                                                           IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+sumReverseDeclarationDetail 'Стоимость' (declarationDetail) = GROUP SUM sumReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
+
+priceReverseDeclarationDetail 'Цена' (declarationDetail) = roundTypeExchangeDeclarationDetail(sumReverseDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail), declarationDetail);
+
+correctionSumReverseGroupDeclarationDetail 'Часть корр. стоимости' (groupDeclaration, declarationDetail) = roundTypeExchangeDeclarationDetail(correctionSumGroupDeclaration(groupDeclaration) * coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail), declarationDetail)
+                                                                                                           IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+correctionSumReverseDeclarationDetail 'Корр. стоимость' (declarationDetail) = GROUP SUM correctionSumReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
+
+supplierSumDeclarationDetail 'Стоимость' (declarationDetail) = OVERRIDE sumReverseDeclarationDetail(declarationDetail),
+                                                                        correctionSumReverseDeclarationDetail(declarationDetail);
+
+dutyReverseGroupDeclarationDetail 'Часть пошлины' (groupDeclaration, declarationDetail) = PARTITION UNGROUP dutyDataGroupDeclaration
+                                                                                                    PROPORTION STRICT ROUND(0) coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail) IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                                                 BY groupDeclaration
+                                                                                              ORDER declarationDetail PERSISTENT;
+
+//dutyReverseGroupDeclarationDetail 'Часть пошлины' (groupDeclaration, declarationDetail) = roundTypeExchangeDeclarationDetail(dutyDataGroupDeclaration(groupDeclaration) * coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail), declarationDetail)
+//                                                                                          IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+dutyReverseDeclarationDetail 'Пошлина' (declarationDetail) = GROUP SUM dutyReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
+
+dutyReverseDeclaration 'Сумма пошлин' (declaration) = GROUP SUM dutyReverseDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT MINCHARWIDTH 15;
+
+sumDutyReverseDeclarationDetail 'Стоимость с пошлиной' (declarationDetail) =
+    supplierSumDeclarationDetail(declarationDetail) (+) dutyReverseDeclarationDetail(declarationDetail);
+
+// НДС
+VATRangeDataGroupDeclaration 'Шкала НДС (ИД)' = DATA Range(GroupDeclaration);
+VATRangeGroupDeclaration 'Шкала НДС (ИД)' (groupDeclaration) = supplierVATCustomCategory10Date(customCategory10GroupDeclaration(groupDeclaration),
+                                                                                               dateDeclaration(declarationGroupDeclaration(groupDeclaration)));
+
+VATReverseGroupDeclarationDetail 'Часть НДС' (groupDeclaration, declarationDetail) = PARTITION UNGROUP VATDataGroupDeclaration
+                                                                                               PROPORTION STRICT ROUND(0) coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                                            BY groupDeclaration
+                                                                                         ORDER declarationDetail PERSISTENT;
+
+//VATReverseGroupDeclarationDetail 'Часть НДС' (groupDeclaration, declarationDetail) = roundTypeExchangeDeclarationDetail(VATDataGroupDeclaration(groupDeclaration) * coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail), declarationDetail)
+//                                                                                          IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+VATReverseDeclarationDetail 'НДС' (declarationDetail) = GROUP SUM VATReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
+
+CONSTRAINT taxRange(VATRangeDataGroupDeclaration(groupDeclaration)) != Tax.taxVAT OR
+           countryRange(VATRangeDataGroupDeclaration(groupDeclaration)) != countryLegalEntity(importerDeclaration(declarationGroupDeclaration(groupDeclaration)))
+           CHECKED BY VATRangeDataGroupDeclaration
+           MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране импортера';
+
+VATRangeDataGroupDeclaration(groupDeclaration) <- VATRangeGroupDeclaration(groupDeclaration) WHEN CHANGED (customCategory10GroupDeclaration(groupDeclaration));
+
+numberVATRangeGroupDeclaration 'Шкала НДС' (groupDeclaration) = numberRange(VATRangeDataGroupDeclaration(groupDeclaration));
+valueVATRangeGroupDeclaration 'НДС (%)' (groupDeclaration) = valueRateRangeDate(VATRangeDataGroupDeclaration(groupDeclaration),
+                                                                                dateDeclaration(declarationGroupDeclaration(groupDeclaration)));
+
+VATGroupDeclaration 'НДС (расч.)' (groupDeclaration) = roundTypeExchangeGroupDeclaration(((sumGroupDeclaration(groupDeclaration) + dutyGroupDeclaration(groupDeclaration))*
+                                                       (valueVATRangeGroupDeclaration(groupDeclaration))/100), groupDeclaration);
+
+VATRangeDataDeclarationDetail (declarationDetail) = dataSupplierVATCustomCategory10Date(customCategory10DeclarationDetail(declarationDetail),
+                                                                                        dateDeclaration(declarationDeclarationDetail(declarationDetail)));
+
+VATRangeReverseDeclarationDetail 'Шкала НДС (ИД)' (declarationDetail) = VATRangeDataGroupDeclaration(primaryGroupDeclarationDeclarationDetail(declarationDetail));
+
+VATRangeDeclarationDetail = OVERRIDE VATRangeDataDeclarationDetail(declarationDetail), VATRangeReverseDeclarationDetail(declarationDetail);
+
+numberVATRangeReverseDeclarationDetail 'Шкала НДС' (declarationDetail) = numberRange(VATRangeDeclarationDetail(declarationDetail));
+valueVATRangeReverseDeclarationDetail 'НДС (%)' (declarationDetail) = valueRateRangeDate(VATRangeDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
+
+VATDeclarationDetail 'НДС' (declarationDetail) = roundTypeExchangeDeclarationDetail(sumDutyReverseDeclarationDetail(declarationDetail) * valueVATRangeReverseDeclarationDetail(declarationDetail)/100, declarationDetail);
+
+VATReverseDeclaration 'Сумма НДС' (declaration) = GROUP SUM VATReverseDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT MINCHARWIDTH 15;
+
+supplierPriceDeclarationDetail 'Цена' (declarationDetail) = roundCurrencyDeclarationDetail
+    (supplierSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail), declarationDetail);
+
+quantityDiffDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclarationDetail(declarationDetail) (-) quantityCertificatedDeclarationDetail(declarationDetail);
+
+sumDiffDeclarationDetail 'Сумма' (declarationDetail) = supplierPriceDeclarationDetail(declarationDetail) * quantityDiffDeclarationDetail(declarationDetail);
+
+EXTEND CLASS DeclarationDetail : BatchA;
+@implementBatchCustom(declarationDetail, sku, customStore, supplierPrice);
+quantityBatch (batch) += quantityDiffDeclarationDetail(batch);
+ownerBatchA (batch) += importerDeclarationDetail(batch);
+importerPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);
+supplierPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);
+rangeVATBatchA (batch) += VATRangeReverseDeclarationDetail(batch);
+sumInSkuLedger(batch) += sumDiffDeclarationDetail(batch);
+
+
+setSumGroupDeclaration 'Рассчитать суммы' = ACTION (declaration) {
+   FOR declarationGroupDeclaration(groupDeclaration) == declaration DO {
+      SET sumDataGroupDeclaration(groupDeclaration) <- sumGroupDeclaration(groupDeclaration);
+      SET dutyDataGroupDeclaration(groupDeclaration) <- dutyGroupDeclaration(groupDeclaration);
+      SET VATDataGroupDeclaration(groupDeclaration) <- VATGroupDeclaration(groupDeclaration);
+   };
+};
+
+toCreateGroupsDeclaration 'Создать строки' = ACTION (declaration) {
+    FOR quantityDeclarationGrouping(declaration, article, customCategory10, mainComposition, country, price) ADDOBJ g=GroupDeclaration DO {
+
+        SET declarationGroupDeclaration(g) <- declaration;
+        SET articleGroupDeclaration(g) <- article;
+        SET customCategory10GroupDeclaration(g) <- customCategory10;
+        SET mainCompositionGroupDeclaration(g) <- mainComposition;
+        SET countryGroupDeclaration(g) <- country;
+        SET priceGroupDeclaration(g) <- price;
+
+        SET inGroupDeclarationDeclarationDetail(g, declarationDetail) <- TRUE WHERE declarationDeclarationDetail(declarationDetail) == declaration AND
+            articleDeclarationDetail(declarationDetail) == article AND customCategory10DeclarationDetail(declarationDetail) == customCategory10 AND
+            mainCompositionDeclarationDetail(declarationDetail) == mainComposition AND countryDeclarationDetail(declarationDetail) == country AND
+            declarationPriceDeclarationDetail(declarationDetail) == price;
+    };
+
+    EXEC setSumGroupDeclaration(declaration AS Declaration);
+
+} TOOLBAR;
+
+isSubstringGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail) = isSubstring(nameGroupDeclaration(groupDeclaration), sidArticleDeclarationDetail (declarationDetail));
+
+fillInGroupDeclarationDeclarationDetail 'Связать позиции по артикулам' = ACTION(declaration) {
+    SET inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail) <-
+        isSubstringGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+        WHERE declarationGroupDeclaration(groupDeclaration) == declaration AND declarationDeclarationDetail(declarationDetail) == declaration;
+}
+
+importGroupsXLSDeclaration 'Импорт декларации из XLS (Украина)' = ACTION CUSTOM 'roman.actions.ImportGroupsXLSDeclarationActionProperty' IN docGroup;
+importGroupsXMLDeclaration 'Импорт декларации из XML (Беларусь)' = ACTION CUSTOM 'roman.actions.ImportGroupsXMLDeclarationActionProperty' IN docGroup;
+
+//
+sumDeclaration 'Сумма' (declaration) = GROUP SUM declarationSumRateDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
+
+// Таможенный сбор
+sumRegistrationDeclarationDetail 'Таможенный сбор' (declarationDetail) = dutySumCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyRegistrationCustomsZone(customsZoneDeclarationDetail(declarationDetail))) IN base;
+
+sumRegistrationDeclaration 'Таможенный сбор (расч.)' (declaration) = GROUP MAX sumRegistrationDeclarationDetail(declarationDetail)
+                                                                            BY declarationDeclarationDetail(declarationDetail) IN base PERSISTENT;
+
+rateSumRegistrationDeclaration 'Сумма таможенного сбора' (declaration) = roundTypeExchangeDeclaration(sumRegistrationDeclaration(declaration) *
+                                                                                coeffRateDeclaration(declaration), declaration) IN sumGroup PERSISTENT MINCHARWIDTH 12;
+
+sumRegistrationDataDeclaration 'Таможенный сбор' = DATA NUMERIC[14,2](Declaration);
+sumRegistrationUnionDeclaration 'Таможенный сбор' = OVERRIDE rateSumRegistrationDeclaration(declaration), sumRegistrationDataDeclaration(declaration) IN sumGroup;
+sumRegistrationDataDeclaration(declaration) <- rateSumRegistrationDeclaration(declaration) WHEN ASSIGNED (declaration IS PreparedDeclaration);
+
+totalCustomSum 'Сумма платежей' (declaration) = dutyReverseDeclaration(declaration) (+) VATReverseDeclaration(declaration) (+) sumRegistrationDataDeclaration(declaration) IN sumGroup MINCHARWIDTH 17; //
+
+coeffDeclarationDetailDeclaration 'Удельный вес' (declarationDetail) = declarationSumRateDeclarationDetail(declarationDetail)/sumDeclaration(declarationDeclarationDetail(declarationDetail));
+
+registrationSumDeclarationDetail 'Таможенный сбор' (declarationDetail) = PARTITION UNGROUP sumRegistrationUnionDeclaration
+                                                                                   PROPORTION STRICT ROUND(0) coeffDeclarationDetailDeclaration(declarationDetail)
+                                                                                BY declarationDeclarationDetail(declarationDetail)
+                                                                             ORDER declarationDetail PERSISTENT;
+
+//registrationSumDeclarationDetail 'Таможенный сбор' (declarationDetail) = roundTypeExchangeDeclarationDetail(sumRegistrationUnionDeclaration(declarationDeclarationDetail(declarationDetail)) *
+//                                                                                coeffDeclarationDetailDeclaration(declarationDetail), declarationDetail);
+
+registrationSumDataDeclarationDetail 'Таможенный сбор' = DATA NUMERIC[14,2](DeclarationDetail);
+
+registrationSumUnionDeclarationDetail 'Таможенный сбор' = OVERRIDE registrationSumDeclarationDetail(declarationDetail),
+                                                                   registrationSumDataDeclarationDetail(declarationDetail);
+
+registrationDeclarationDetail 'Таможенный сбор (ед.)' (declarationDetail) =  roundTypeExchangeDeclarationDetail(registrationSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail), declarationDetail) PERSISTENT;
+
+registrationRateDeclarationDetail 'Таможенный сбор (в валюте)' (declarationDetail) = roundCurrencyDeclarationDetail(registrationDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail), declarationDetail);
+
+
+// учёт расходов на сертификацию и консультации
+expenseCertificateDeclaration 'Расходы на сертификацию (БУ)' (declaration) = GROUP SUM priceRateDeclarationDetail(declarationDetail) *
+                                                                                       quantityCertificatedDeclarationDetail(declarationDetail)
+                                                                                    IF certificatedDeclarationDetail(declarationDetail)
+                                                                                    BY declarationDeclarationDetail(declarationDetail) IN corrGroup PERSISTENT;
+
+expenseCertificateManagerialDeclarationDetail 'Расходы на сертификацию' (declarationDetail) = priceManagerialDeclarationDetail(declarationDetail) *
+                                                                                              quantityCertificatedDeclarationDetail(declarationDetail)
+                                                                                              IF certificatedDeclarationDetail(declarationDetail);
+
+TABLE declarationCertificate (Declaration, Certificate);
+quantityDeclarationCertificate 'Кол-во на сертификат' (declaration, certificate) = GROUP SUM quantityDiffDeclarationDetail(declarationDetail)
+                                                                                          BY declarationDeclarationDetail(declarationDetail),
+                                                                                             certificatePreparedDeclarationDetail(declarationDetail) PERSISTENT;
+
+sumExpenseDeclarationCertificate '' (declaration, certificate) = GROUP SUM expenseCertificateManagerialDeclarationDetail(declarationDetail)
+                                                                        BY declarationDeclarationDetail(declarationDetail),
+                                                                           certificatePreparedDeclarationDetail(declarationDetail) PERSISTENT;
+
+expenseDeclarationCertificate '' (declaration, certificate) = sumExpenseDeclarationCertificate(declaration, certificate)/quantityDeclarationCertificate(declaration, certificate);
+
+expenseDeclarationDetail 'Затраты на сертификацию' (declarationDetail) = roundCurrencyDeclarationDetail(expenseDeclarationCertificate(
+                                                                                                           declarationDeclarationDetail(declarationDetail),
+                                                                                                           certificatePreparedDeclarationDetail(declarationDetail)
+                                                                                                                     ),
+                                                                                        declarationDetail);
+
+expenseCertificateManagerialDeclaration 'Расходы на сертификацию (УУ)' (declaration) = GROUP SUM expenseCertificateManagerialDeclarationDetail(declarationDetail)
+                                                                                              BY declarationDeclarationDetail(declarationDetail) PERSISTENT;
+
+consultationDeclarationDetail 'Консультация' = DATA BOOLEAN(DeclarationDetail);
+sumConsultationDeclaration 'Сумма за консультацию' = DATA NUMERIC[14,3](Declaration) IN sumGroup;
+
+sumConsultationDeclarationDetail 'За консультацию' (declarationDetail) = PARTITION UNGROUP sumConsultationDeclaration
+                                                                                   PROPORTION STRICT ROUND(0) coeffDeclarationDetailDeclaration(declarationDetail)
+                                                                                BY declarationDeclarationDetail(declarationDetail)
+                                                                             ORDER declarationDetail PERSISTENT;
+
+//sumConsultationDeclarationDetail 'За консультацию' (declarationDetail) = roundTypeExchangeDeclarationDetail(sumConsultationDeclaration(declarationDeclarationDetail(declarationDetail)) *
+//                                                                         coeffDeclarationDetailDeclaration(declarationDetail), declarationDetail);
+
+sumConsultationRateDeclarationDetail 'За консультацию (в валюте)' = roundCurrencyDeclarationDetail(sumConsultationDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail), declarationDetail);
+
+// для себестоимости
+dutyFinDeclarationDetail 'Пошлина' = roundTypeExchangeDeclarationDetail(dutyReverseDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail), declarationDetail);
+VATFinDeclarationDetail 'НДС' = roundTypeExchangeDeclarationDetail(VATReverseDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail), declarationDetail);
+
+dutyRateDeclarationDetail 'Пошлина (в валюте)' (declarationDetail) = roundCurrencyDeclarationDetail(dutyFinDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail), declarationDetail);
+VATRateDeclarationDetail 'НДС (в валюте)' (declarationDetail) = roundCurrencyDeclarationDetail(VATFinDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail), declarationDetail);
+
+priceCustomDeclarationDetail 'Себестоимость (БУ)' (declarationDetail) =
+    priceReverseDeclarationDetail(declarationDetail) (+)
+    dutyFinDeclarationDetail(declarationDetail) (+)
+    registrationDeclarationDetail(declarationDetail) PERSISTENT;
+
+priceManagerialCustomDeclarationDetail 'Себестоимость (УУ)' (declarationDetail) =
+    priceManagerialDeclarationDetail(declarationDetail) (+)
+    dutyRateDeclarationDetail(declarationDetail) (+)
+    registrationRateDeclarationDetail(declarationDetail) (+)
+    expenseDeclarationDetail(declarationDetail) (+)
+    sumConsultationRateDeclarationDetail(declarationDetail) PERSISTENT;
+
+priceCustomBatch (batch) += priceCustomDeclarationDetail(batch);
+priceManagerialBatch (batch) += priceManagerialCustomDeclarationDetail(batch);
+
+quantityDeclarationArticle 'Кол-во' (declaration, article) = GROUP SUM quantityDeclarationSku(declaration, sku) BY declaration, articleSku(sku);
+inDeclarationArticle (declaration, article) = TRUE IF quantityDeclarationArticle(declaration, article);
+
+priceCustomDeclarationSku 'Себестоимость (БУ)' (declaration, innerInvoice, sku) = priceCustomDeclarationDetail(declarationDetailDeclarationInnerInvoiceSku(declaration, innerInvoice, sku));
+priceManagerialDeclarationSku 'Себестоимость (УУ)' (declaration, innerInvoice, sku) = priceManagerialDeclarationDetail(declarationDetailDeclarationInnerInvoiceSku(declaration, innerInvoice, sku));
+
+priceCustomDeclarationArticle 'Себестоимость (БУ)' (declaration, article) = GROUP MAX priceCustomDeclarationSku(declaration, innerInvoice, sku)
+                                                                                   BY declaration, articleSku(sku);
+
+priceManagerialDeclarationArticle 'Себестоимость (УУ)' (declaration, article) = GROUP MAX priceManagerialDeclarationSku(declaration, innerInvoice, sku)
+                                                                                       BY declaration, articleSku(sku);
+
+quantityDeclarationBrandSupplier (declaration, brandSupplier) = GROUP SUM quantityDeclarationDetail(declarationDetail)
+    BY declarationDeclarationDetail(declarationDetail), brandDeclarationDetail(declarationDetail);
+
+canonicalBrandDeclaration 'Бренды' (declaration) = toString255(
+    [GROUP CONCAT name(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , '
+           BY declaration
+           ORDER brandSupplier](declaration))
+    MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+
+stringInnerInvoice (innerInvoice) =
+    [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (
+    sidInnerInvoice(innerInvoice), dateInnerInvoice(innerInvoice));
+
+innerInvoicesDeclaration 'Инвойсы' (declaration) =
+    GROUP CONCAT stringInnerInvoice(innerInvoice) IF inDeclarationInnerInvoice (declaration, innerInvoice), ', '
+          BY declaration
+          ORDER innerInvoice IN docGroup MINCHARWIDTH 20 PREFCHARWIDTH 100;
+
+innerInvoicesGroupDeclaration 'Инвойсы' (groupDeclaration) =
+    GROUP CONCAT sidInnerInvoice(innerInvoice) IF quantityGroupDeclarationInnerInvoice(groupDeclaration, innerInvoice), ', '
+    BY groupDeclaration
+    ORDER innerInvoice MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 20 PERSISTENT;
+
+FORM declarationInvoices 'Присоединение инвойсов'
+    OBJECTS d=Declaration FIXED PANEL
+    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameLanguageDeclaration,
+                  nameCurrencyDeclaration, dateTimeDeclaration, beginTimeDeclaration, endTimeDeclaration
+
+    OBJECTS ii=InnerInvoice
+    PROPERTIES (ii) sidInnerInvoice, dateInnerInvoice, nameImporterInnerInvoice, dateFreightInnerInvoice, numberContractInnerInvoice
+    PROPERTIES (d, ii) inDeclarationInnerInvoice
+    FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
+
+    FILTERGROUP filtersLanguage
+        FILTER 'Только с языком декларации' 'F9' languageDeclarationInnerInvoice(d, ii) DEFAULT
+
+    FILTERGROUP filtersCurrency
+        FILTER 'Только с валютой декларации' 'F10' currencyDeclarationInnerInvoice(d, ii) DEFAULT
+
+    FILTERGROUP filtersImporter
+        FILTER 'Только импортёра декларации' 'F11' importerDeclarationInnerInvoice(d, ii) DEFAULT
+;
+
+showFormDeclarationInvoices 'Присоединить инвойсы' = ACTION (declaration) {
+    FORM declarationInvoices OBJECTS d=declaration MODAL;
+    EXEC apply();
+} IN docGroup TOOLBAR;
+
+//-------------------------------------------- Печатная форма украинской декларации -----------------------------------//
+
+supplierDeclarationDetail(declarationDetail) = supplierArticle(articleDeclarationDetail(declarationDetail));
+nameSupplierDeclarationDetail 'Поставщик' (declarationDetail) = nameLegalEntity(supplierDeclarationDetail(declarationDetail));
+typeFabricDeclarationDetail(declarationDetail) = typeFabricArticle(articleDeclarationDetail(declarationDetail));
+nameTypeFabricDeclarationDetail 'Тип одежды' (declarationDetail) = name(typeFabricDeclarationDetail(declarationDetail));
+nameTypeFabricLanguageDeclarationDetail 'Тип одежды(иностр.)' (declarationDetail) =
+    nameTypeFabricArticleSkuLanguage(skuDeclarationDetail(declarationDetail), languageDeclaration(declarationDeclarationDetail(declarationDetail)));
+sidGenderDeclarationDetail 'Пол' (declarationDetail) = sidGenderArticle(articleDeclarationDetail(declarationDetail));
+sidGenderLanguageDeclarationDetail 'Пол' (declarationDetail) =
+    sidGenderArticleSkuLanguage(skuDeclarationDetail(declarationDetail), languageDeclaration(declarationDeclarationDetail(declarationDetail)));;
+
+castToStringFourObject255 = FORMULA STRING[255] 'CAST($1 AS TEXT)||\' \'||CAST($2 AS TEXT)||\' \'||CAST($3 AS TEXT)||\' \'||CAST($4 AS TEXT)';
+nameArticleDeclarationDetail 'Наименование' (declarationDetail) =
+    castToStringFourObject255(nameBrandDeclarationDetail(declarationDetail), nameInvoiceDeclarationDetail(declarationDetail),
+                              nameTypeFabricDeclarationDetail(declarationDetail), sidGenderDeclarationDetail(declarationDetail));
+
+nameArticleLanguageDeclarationDetail 'Наименование(иностр.)' (declarationDetail) =
+    castToStringFourObject255(nameBrandDeclarationDetail(declarationDetail), nameInvoiceDeclarationDetailLanguage(declarationDetail),
+                              nameTypeFabricLanguageDeclarationDetail(declarationDetail), sidGenderLanguageDeclarationDetail(declarationDetail));
+
+FORM declarationPrint 'Выгрузка деклараций(Укр.)' PRINT
+
+    OBJECTS d = Declaration FIXED PANEL
+    PROPERTIES(d) SELECTOR sidDeclaration
+    PROPERTIES(d) nameImporterDeclaration, nameLanguageDeclaration, dateDeclaration, nameCurrencyDeclaration
+
+    OBJECTS dd = DeclarationDetail
+    PROPERTIES(dd) numberDeclarationDetail, sidArticleDeclarationDetail, nameBrandDeclarationDetail,
+                   nameSupplierDeclarationDetail, nameArticleDeclarationDetail, nameArticleLanguageDeclarationDetail,
+                   mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail,
+                   nameTypeFabricDeclarationDetail, nameTypeFabricLanguageDeclarationDetail,
+                   sidCustomCategoryOriginDeclarationDetail, nameCountryDeclarationDetail, quantityDeclarationDetail,
+                   declarationPriceDeclarationDetail, declarationSumDeclarationDetail
+
+    FILTERS declarationDeclarationDetail(dd) == d
+;
+
+exportDeclarationToEXELLanguageDeclaration 'Выгрузить декларацию в EXCEL(Украина)' = ACTION (declaration) {
+
+    FORM declarationPrint OBJECTS d = declaration MODAL;
+} CONFIRM TOOLBAR;
+
+FORM declarationRBPrint 'Выгрузка деклараций(РБ)'  PRINT
+
+    OBJECTS d = Declaration FIXED PANEL
+    PROPERTIES(d) SELECTOR sidDeclaration
+
+    OBJECTS gd = GroupDeclaration
+    PROPERTIES(gd) overNumberGroupDeclaration, innerInvoicesGroupDeclaration, sidArticleGroupDeclaration, sidGenderGroupDeclaration,
+                   nameInvoiceGroupDeclaration, nameGroupDeclaration, mainCompositionGroupDeclaration, nameCountryGroupDeclaration,
+                   sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
+                   nameTypeFabricGroupDeclaration, quantityGroupDeclaration, sumGroupDeclaration, netWeightGroupDeclaration,
+                   grossWeightGroupDeclaration, nameBrandGroupDeclaration
+
+    FILTERS declarationGroupDeclaration(gd) == d
+;
+
+exportDeclarationToEXELDeclaration 'Выгрузить декларацию в EXCEL(РБ)' = ACTION (declaration) {
+
+    FORM declarationRBPrint OBJECTS d = declaration MODAL;
+} CONFIRM TOOLBAR;
+
+importExportDeclarationUAAllow(declaration) = allowImportExportXLSDeclarationUA(declaration) AND importerDeclaration(declaration);
+importExportDeclarationBYAllow(declaration) = allowImportExportXMLDeclarationBY(declaration) AND importerDeclaration(declaration);
+
+FORM declaration 'Декларация'
+    OBJECTS d=Declaration FIXED PANEL, dd=DeclarationDetail
+    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameCurrencyDeclaration,
+                  nameTypeContainerDeclaration, containerNumberDeclaration,
+                  dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
+                  nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
+                  rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, nameExecuterDeclaration
+    PROPERTIES(d) READONLY numberContractDeclaration, nameLanguageDeclaration, innerInvoicesDeclaration, sumFreightsDeclaration,
+                  palletNumberDeclaration, dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum, expenseCertificateDeclaration
+    PROPERTIES(d) sumConsultationDeclaration, exportDeclarationToEXELLanguageDeclaration TODRAW dd FORCE PANEL SHOWIF allowImportExportXLSDeclarationUA(d)
+
+    OBJECTS c=Correction
+    PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, DELETESESSION
+    FILTERS inDeclarationCorrection(d, c)
+
+    PROPERTIES (dd) READONLY numberDeclarationDetail, sidInnerInvoiceDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameInvoiceDeclarationDetailLanguage SHOWIF languageDeclaration(d),
+                    nameBrandDeclarationDetail, sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
+                    sidGenderDeclarationDetail, nameTypeFabricDeclarationDetail, mainCompositionDeclarationDetail,
+                    mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
+                    nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d)
+    PROPERTIES (dd) sidCustomCategoryOriginDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail
+    PROPERTIES (dd) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
+                    sumGrossWeightDeclarationDetail, quantityDeclarationDetail, quantityCertificatedDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
+                    declarationPriceDeclarationDetail, priceRateDeclarationDetail, declarationSumRateDeclarationDetail,
+                    supplierSumDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
+                    valueVATRangeReverseDeclarationDetail, VATReverseDeclarationDetail, registrationSumDeclarationDetail,
+                    priceCustomDeclarationDetail, priceManagerialDeclarationDetail, expenseDeclarationDetail, sumConsultationRateDeclarationDetail,
+                    priceManagerialCustomDeclarationDetail
+
+    PROPERTIES (dd) certificatedDeclarationDetail ON CHANGE changeCertificatedDeclarationSku(dd),
+                    sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
+                    sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd)
+
+    FILTERS inDeclarationDeclarationDetail(d, dd)
+
+    OBJECTS gd=GroupDeclaration
+    PROPERTIES (gd, dd) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
+    PROPERTIES (gd) READONLY overNumberGroupDeclaration, innerInvoicesGroupDeclaration, nameInvoiceGroupDeclaration, nameBrandGroupDeclaration
+    PROPERTIES (gd) sidArticleGroupDeclaration, sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration
+    PROPERTIES (gd) mainCompositionGroupDeclaration, nameGroupDeclaration,
+                    nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
+                    quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
+                    netWeightGroupDeclaration, grossWeightGroupDeclaration, sumContractGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
+                    sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, ADDOBJ, DELETESESSION
+    PROPERTIES (c, gd) sumCorrectionGroupDeclaration
+
+    PROPERTIES (d) showFormDeclarationInvoices TODRAW dd FORCE PANEL TOOLBAR
+    PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL TOOLBAR, setSumGroupDeclaration TODRAW gd FORCE PANEL TOOLBAR
+    PROPERTIES (d) importGroupsXLSDeclaration TODRAW gd FORCE PANEL TOOLBAR SHOWIF importExportDeclarationUAAllow(d)
+    PROPERTIES (d) importGroupsXMLDeclaration TODRAW gd FORCE PANEL TOOLBAR SHOWIF importExportDeclarationBYAllow(d)
+    PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL TOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
+    PROPERTIES (d) exportDeclaration TODRAW gd FORCE PANEL TOOLBAR SHOWIF allowImportExportXMLDeclarationBY(d)
+
+    FILTERGROUP filterDetail
+        FILTER 'Для текущей позиции' 'F11' inGroupDeclarationDeclarationDetail(gd, dd)
+
+    OBJECTS gd2=GroupDeclaration
+    PROPERTIES (gd2) READONLY overNumberGroupDeclaration, nameCategoryGroupDeclaration, nameBrandGroupDeclaration
+    PROPERTIES (gd2) sidArticleGroupDeclaration
+    PROPERTIES (gd2) READONLY sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration
+    PROPERTIES (gd2) mainCompositionGroupDeclaration, nameGroupDeclaration,
+                    nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
+                    quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
+                    netWeightGroupDeclaration, grossWeightGroupDeclaration, sumContractGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
+                    sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, DELETESESSION
+    //PROPERTIES (c, gd2) sumCorrectionGroupDeclaration
+
+    OBJECTS dd2=DeclarationDetail
+    PROPERTIES (gd2, dd2) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
+    PROPERTIES (dd2) READONLY numberDeclarationDetail, sidInnerInvoiceDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail,
+                    nameInvoiceDeclarationDetailLanguage SHOWIF languageDeclaration(d), nameBrandDeclarationDetail,
+                    sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
+                    sidGenderDeclarationDetail, nameTypeFabricDeclarationDetail, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
+                    nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d)
+    PROPERTIES (dd2) sidCustomCategoryOriginDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail
+    PROPERTIES (dd2) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
+                    sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
+                    declarationPriceDeclarationDetail, priceRateDeclarationDetail, declarationSumRateDeclarationDetail,
+                    supplierSumDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
+                    valueVATRangeReverseDeclarationDetail, VATReverseDeclarationDetail, registrationSumDeclarationDetail,
+                    priceCustomDeclarationDetail, priceManagerialDeclarationDetail, priceManagerialCustomDeclarationDetail
+
+    PROPERTIES (dd2) certificatedDeclarationDetail,
+                    sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd2),
+                    sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd2)
+
+    FILTERS inDeclarationDeclarationDetail(d, dd2)
+
+    FILTERGROUP filterGroup
+        FILTER 'Для текущей строки' 'F10' inGroupDeclarationDeclarationDetail(gd2, dd2) DEFAULT
+
+
+    OBJECTS sf=(s=Sku, fu=FreightUnit)
+    PROPERTIES READONLY FORCE GRID barcodeSku = barcode(s), nameCategoryArticleSku(s), nameBrandSupplierArticleSku(s), sidArticleSku(s),
+                        sidSizeSupplierItem(s), sidColorSupplierItem(s), nameColorSupplierItem(s), mainCompositionSku(s),
+                        barcodeFreightUnit = barcode(fu), nameDestinationFreightUnit(fu)
+
+    PROPERTIES (d, s) quantityDeclarationSku
+    PROPERTIES (fu, s) quantityFreightUnitSku
+    PROPERTIES (d, fu, s) quantityCertificatedDeclarationFreightUnitSku
+
+    FILTERS inDeclarationGroupDeclaration(d, gd), inDeclarationGroupDeclaration(d, gd2), inFreightUnitDeclaration(fu, d), certificatedDeclarationSku(d, s), quantityFreightUnitSku(fu, s)
+
+    EDIT Declaration OBJECT d
+;
+
+
+DESIGN declaration FROM DEFAULT{
+    main {
+        NEW allContainer {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            NEW topContainer {
+                fillVertical = 2;
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+
+                NEW decContainer {
+                    childConstraints = TO THE RIGHT;
+                    fillHorizontal = 2;
+
+                    NEW descrContainer {
+
+                        childConstraints = TO THE BOTTOM;
+
+                        NEW headContainer {
+
+                            caption = 'Шапка документа';
+                            childConstraints = TO THE BOTTOM;
+                            ADD PROPERTY(objectClassName);
+                            ADD PROPERTY(sidDeclaration);
+                            ADD PROPERTY(nameCustomStoreDeclaration);
+                            ADD PROPERTY(nameImporterDeclaration);
+                            ADD PROPERTY(nameLanguageDeclaration);
+                            ADD PROPERTY(showFormDeclarationInvoices);
+                            ADD PROPERTY(innerInvoicesDeclaration);
+                            ADD PROPERTY(numberContractDeclaration);
+                        }
+
+                        NEW bodyContainer {
+
+                            childConstraints = TO THE RIGHT;
+                            ADD d.freightGroup {
+                                caption = 'Информация по транспорту';
+                                childConstraints = TO THE BOTTOM;
+                            }
+
+                            NEW datetimeexecutContainer {
+                                childConstraints = TO THE BOTTOM;
+                                NEW datetimeContainer {
+                                    caption = 'Даты  и время обработки';
+                                    childConstraints = TO THE BOTTOM;
+                                    ADD PROPERTY(dateDeclaration);
+                                    ADD PROPERTY(timeDeclaration);
+                                    ADD PROPERTY(beginTimeDeclaration);
+                                    ADD PROPERTY(endTimeDeclaration);
+                                    ADD PROPERTY(nameExecuterDeclaration);
+                                }
+                            }
+                        }
+                    }
+
+                    NEW sumContainer {
+
+                        childConstraints = TO THE BOTTOM;
+
+                        ADD d.exchangeGroup {
+                            childConstraints = TO THE BOTTOM;
+                        }
+
+                        ADD d.sumGroup {
+                            childConstraints = TO THE BOTTOM;
+                        }
+
+                        ADD d.corrGroup {
+                            childConstraints = TO THE BOTTOM;
+                        }
+                    }
+                }
+
+                ADD c.box {
+                    fillHorizontal = 1;
+                }
+            }
+
+            NEW primary.box {
+                type = TABBED;
+                fillVertical = 5;
+
+                NEW general.box {
+                    type = SPLITV;
+                    childConstraints = TO THE BOTTOM;
+                    title = 'Позиции декларации';
+
+                    ADD dd.box {
+                        fillVertical = 3.5;
+                    };
+
+                    ADD gd.box {
+                        fillVertical = 1.5;
+                    }
+                }
+
+                NEW groupDeclaration.box {
+
+                    type = SPLITV;
+                    childConstraints = TO THE BOTTOM;
+                    title = 'Строки декларации';
+
+                    ADD gd2.box {
+                        fillVertical = 3;
+                    };
+
+                    ADD dd2.box {
+                        fillVertical = 2;
+                    }
+                }
+
+                NEW certification.box {
+                    title = 'Сертификация';
+                    ADD sf.box;
+                }
+            }
+        }
+    }
+
+
+    PROPERTY(sidDeclaration) { background = #FFEEEE; }
+    PROPERTY(dateDeclaration) { background = #FFEEEE; }
+    PROPERTY(nameCurrencyDeclaration) { background = #FFEEEE; }
+    PROPERTY(nameImporterDeclaration) { background = #FFEEEE; }
+    PROPERTY(nameCustomStoreDeclaration) { background = #FFEEEE; }
+    PROPERTY(sumConsultationDeclaration) { background = #FFEEEE; }
+    PROPERTY(nameTypeContainerDeclaration) { background = #FFEEEE; }
+    PROPERTY(containerNumberDeclaration) { background = #FFEEEE; }
+
+    PROPERTY(priceContractDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(declarationPriceDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(priceRateDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(declarationSumRateDeclarationDetail) { background = #AAFFCC; }
+
+    PROPERTY(supplierSumDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(dutyReverseDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(numberVATRangeReverseDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(valueVATRangeReverseDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(VATReverseDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(registrationSumDeclarationDetail) { background = #AAFFFF; }
+
+    ADD functions.box;
+};
+
+FORM declarations 'Декларации'
+    OBJECTS d=Declaration
+    PROPERTIES(d) READONLY sidDeclaration, objectClassName, nameCustomStoreDeclaration, nameImporterDeclaration, numberContractDeclaration,
+                           nameLanguageDeclaration, dateDeclaration, timeDeclaration, nameCurrencyDeclaration,
+                           rateExchangeCustomDataDeclaration, rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration,
+                           dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
+                           expenseCertificateDeclaration, canonicalBrandDeclaration, nameExecuterDeclaration
+    PROPERTIES(d) FORCE PANEL ADDFORM, EDITFORM, deleted=DELETE TOOLBAR
+
+    OBJECTS dd=DeclarationDetail
+    PROPERTIES(dd) READONLY numberDeclarationDetail, sidInnerInvoiceDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail,
+                   nameInvoiceDeclarationDetailLanguage SHOWIF languageDeclaration(d), nameBrandDeclarationDetail,
+                   sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
+                   sidGenderDeclarationDetail, nameTypeFabricDeclarationDetail, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
+                   nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d),
+                   sidCustomCategoryOriginDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail,
+                   netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
+                   quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail,
+                   priceRateDeclarationDetail, declarationSumRateDeclarationDetail,
+                   supplierSumDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
+                   valueVATRangeReverseDeclarationDetail, VATReverseDeclarationDetail, registrationSumDeclarationDetail,
+                   priceCustomDeclarationDetail, priceManagerialDeclarationDetail, priceManagerialCustomDeclarationDetail
+
+    PROPERTIES(dd) READONLY certificatedDeclarationDetail,
+                            sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
+                            sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd)
+
+    FILTERS inDeclarationDeclarationDetail(d, dd)
+
+    OBJECTS s=Sku
+    PROPERTIES (s) READONLY FORCE GRID barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
+                            sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem,  mainCompositionSku
+
+    PROPERTIES (d, s) quantityCertificatedDeclarationSku
+
+    FILTERS certificatedDeclarationSku(d, s)
+
+    OBJECTS gd=GroupDeclaration
+    //PROPERTIES (gd, dd) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
+    PROPERTIES (gd) READONLY overNumberGroupDeclaration, nameCategoryGroupDeclaration, nameBrandGroupDeclaration, sidArticleGroupDeclaration,
+                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionGroupDeclaration, nameGroupDeclaration,
+                    nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
+                    quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
+                    netWeightGroupDeclaration, grossWeightGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
+                    sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration
+
+     FILTERS inDeclarationGroupDeclaration(d, gd)
+;
+
+DESIGN declarations FROM DEFAULT {
+    d.grid {
+        fillVertical = 0.3;
+    }
+
+    PROPERTY (deleted) {
+        caption = 'Удалить';
+    }
+
+    NEW primary.box {
+        type = TABBED;
+
+        NEW general.box {
+            title = 'Позиции декларации';
+            ADD dd.box;
+        }
+
+        NEW declarant.box {
+            title = 'Строки декларации';
+            ADD gd.box;
+        }
+
+        NEW certification.box {
+            title = 'Сертификация';
+            ADD s.box;
+        }
+    }
+
+    PROPERTY(priceContractDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(declarationPriceDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(priceRateDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(declarationSumRateDeclarationDetail) { background = #AAFFCC; }
+
+    PROPERTY(supplierSumDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(dutyReverseDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(numberVATRangeReverseDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(valueVATRangeReverseDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(VATReverseDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(registrationSumDeclarationDetail) { background = #AAFFFF; }
+
+    ADD functions.box;
+}
+
+
+FORM innerInvoices 'Инвойсы РБ'
+    OBJECTS i=InnerInvoice
+    PROPERTIES(i) READONLY sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice, numberContractInnerInvoice, nameLanguageInnerInvoice,
+                  nameCurrencyInnerInvoice, rateExchangeExpensesDirectInvoice
+    PROPERTIES(i) sidDeclarationInnerInvoice, DELETESESSION
+    FILTERS freightArrivedInnerInvoice(i)
+
+    OBJECTS s=Sku
+    PROPERTIES(s) READONLY FORCE GRID barcode, sidArticleSku
+    PROPERTIES (i, s) READONLY FORCE GRID quantityInnerInvoiceSku, priceInnerInvoiceSku, expensesDirectInvoiceSku
+    FILTERS quantityInnerInvoiceSku(i, s)
+;
+
+

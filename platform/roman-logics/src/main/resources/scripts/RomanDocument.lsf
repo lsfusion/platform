@@ -1,0 +1,167 @@
+MODULE RomanDocument;
+
+REQUIRE Document, Stock, Barcode, StorePrice;
+
+
+// для использования метакода должно быть определено свойство sku###object##Detail
+META defineDocumentDetailSkuArticle (object)
+
+    barcode###object##Detail 'Штрих-код' (object##Detail) = barcode(sku###object##Detail(object##Detail));
+
+    sidSize###object##Detail 'Размер' (object##Detail) = sidSizeSupplierItem(sku###object##Detail(object##Detail));
+    sidColor###object##Detail 'Цвет (код)' (object##Detail) = sidColorSupplierItem(sku###object##Detail(object##Detail));
+    nameColor###object##Detail 'Цвет' (object##Detail) = nameColorSupplierItem(sku###object##Detail(object##Detail));
+//    nameSku###object##Detail 'Наименование' (object##Detail) = nameSku(sku###object##Detail(object##Detail));
+
+    article###object##Detail 'Артикул (ИД)' (object##Detail) = articleSku(sku###object##Detail(object##Detail));
+    sidArticle###object##Detail 'Артикул' (object##Detail) = sidArticle(article###object##Detail(object##Detail));
+    brand###object##Detail 'Бренд (ИД)' (object##Detail) = brandSupplierArticle(article###object##Detail(object##Detail));
+    nameBrand###object##Detail 'Бренд' (object##Detail) = name(brand###object##Detail(object##Detail)) MINCHARWIDTH 15;
+    category###object##Detail 'Номенклатурная группа (ИД)' (object##Detail) = categoryArticle(article###object##Detail(object##Detail));
+    nameCategory###object##Detail 'Номенклатурная группа' (object##Detail) = name(category###object##Detail(object##Detail)) MINCHARWIDTH 15;
+
+    nameTypeLabel###object##Detail 'Тип этикетки' (object##Detail) = nameTypeLabelArticle(article###object##Detail(object##Detail)) MINCHARWIDTH 15;
+
+    changeTypeLabel###object##Detail = ACTION (object##Detail) {
+    REQUEST OBJECT tl FORM typeLabels MODAL;
+        IF formResult() == FormResult.ok THEN {
+            SET typeLabelArticle(article) <- chosenObject('tl') WHERE article == article###object##Detail(object##Detail);
+        }
+    };
+
+    shortNameUOM###object##Detail 'Единица измерения' (object##Detail) = shortNameUOMSku(sku###object##Detail(object##Detail));
+END
+
+META extendFormDocumentDetailSkuArticleQuantity (form, object, concrete, quantityProp)
+    EXTEND FORM form
+        PROPERTIES(object) index###concrete##Detail, barcode###concrete##Detail,
+                           nameCategory###concrete##Detail, nameBrand###concrete##Detail,
+                           sidArticle###concrete##Detail, sidSize###concrete##Detail,
+                           sidColor###concrete##Detail, nameColor###concrete##Detail,
+                           quantityProp, shortNameUOM###concrete##Detail,
+                           ADDOBJ, deleteod=DELETESESSION
+    ;
+END
+META extendFormDocumentDetailSkuArticle (form, object, concrete)
+    @extendFormDocumentDetailSkuArticleQuantity(form, object, concrete, quantity###concrete##Detail);
+END
+
+META extendFormDocumentDetailSkuArticleReadonlyQuantity (form, object, concrete, quantityProp)
+    EXTEND FORM form
+        PROPERTIES(object) READONLY index###concrete##Detail, barcode###concrete##Detail,
+                                    nameCategory###concrete##Detail, nameBrand###concrete##Detail,
+                                    sidArticle###concrete##Detail, sidSize###concrete##Detail,
+                                    sidColor###concrete##Detail, nameColor###concrete##Detail,
+                                    quantityProp, shortNameUOM###concrete##Detail
+    ;
+END
+META extendFormDocumentDetailSkuArticleReadonly (form, object, concrete)
+    @extendFormDocumentDetailSkuArticleReadonlyQuantity(form, object, concrete, quantity###concrete##Detail);
+END
+
+//---------------------------Несколько Detail у документа------------------------------------------------//
+META defineDocumentDetailSkuArticleCustom (idetail)
+
+    barcode###idetail 'Штрих-код' (idetail) = barcode(sku###idetail(idetail));
+
+    sidSize###idetail 'Размер' (idetail) = sidSizeSupplierItem(sku###idetail(idetail));
+    sidColor###idetail 'Цвет (код)' (idetail) = sidColorSupplierItem(sku###idetail(idetail));
+    nameColor###idetail 'Цвет' (idetail) = nameColorSupplierItem(sku###idetail(idetail));
+
+    article###idetail 'Артикул (ИД)' (idetail) = articleSku(sku###idetail(idetail));
+    sidArticle###idetail 'Артикул' (idetail) = sidArticle(article###idetail(idetail));
+    brand###idetail 'Бренд (ИД)' (idetail) = brandSupplierArticle(article###idetail(idetail));
+    nameBrand###idetail 'Бренд' (idetail) = name(brand###idetail(idetail)) MINCHARWIDTH 15;
+    category###idetail 'Номенклатурная группа (ИД)' (idetail) = categoryArticle(article###idetail(idetail));
+    nameCategory###idetail 'Номенклатурная группа' (idetail) = name(category###idetail(idetail)) MINCHARWIDTH 15;
+
+    shortNameUOM###idetail 'Единица измерения' (idetail) = shortNameUOMSku(sku###idetail(idetail));
+END
+
+META extendFormDocumentDetailSkuArticleQuantityCustom (form, object, idetail, quantityProp)
+    EXTEND FORM form
+        PROPERTIES(object) index###idetail, barcode###idetail,
+                           nameCategory###idetail, nameBrand###idetail,
+                           sidArticle###idetail, sidSize###idetail,
+                           sidColor###idetail, nameColor###idetail,
+                           quantityProp, shortNameUOM###idetail,
+                           ADDOBJ, DELETESESSION
+    ;
+END
+META extendFormDocumentDetailSkuArticleCustom (form, object, idetail)
+    @extendFormDocumentDetailSkuArticleQuantityCustom(form, object, idetail, quantity###idetail);
+END
+
+META extendFormDocumentDetailSkuArticleReadonlyQuantityCustom (form, object, idetail, quantityProp)
+    EXTEND FORM form
+        PROPERTIES(object) READONLY index###idetail, barcode###idetail,
+                                    nameCategory###idetail, nameBrand###idetail,
+                                    sidArticle###idetail, sidSize###idetail,
+                                    sidColor###idetail, nameColor###idetail,
+                                    quantityProp, shortNameUOM###idetail
+    ;
+END
+META extendFormDocumentDetailSkuArticleReadonlyCustom (form, object, idetail)
+    @extendFormDocumentDetailSkuArticleReadonlyQuantityCustom(form, object, idetail, quantity###idetail);
+END
+
+
+
+// ---------------------------------------------------- Трансферы -------------------------------------------- //
+
+META defineDocumentRetailPrice (concrete, object)
+
+    retailPrice###concrete##Detail 'Цена розничная' = DATA NUMERIC[14,2] (###concrete##Detail);
+    retailSum###concrete##Detail 'Сумма розничная' (detail) = quantity###concrete##Detail(detail) * retailPrice###concrete##Detail(detail);
+
+    retailPrice###concrete##Detail(concrete##Detail) <- priceAPriceSetDocumentSkuCurrencyDateTime(sku###concrete##Detail(concrete##Detail), currency###concrete##Detail(concrete##Detail), dateTime###concrete##Detail(concrete##Detail))
+                                                            WHEN CHANGED(dateTime###concrete##Detail(concrete##Detail))
+                                                                 OR CHANGED(sku###concrete##Detail(concrete##Detail));
+END
+
+META defineDocumentTransferAccountCustom(concrete, retailProp, detail, object)
+    @defineDocumentTransferAccountCustomInner(concrete, retailProp, detail, ###detail, object);
+END
+
+META defineDocumentTransferAccountCustomInner(concrete, retailProp, detail, detailClass, object)
+
+    // Учетные суммы
+    accountSum###detail 'Сумма учетная' (idetail) = IF retailProp(idetail)  THEN retailSum###detail(idetail)
+                                                                            ELSE (supplierSumSkuLedger(idetail) IF idetail IS detailClass);
+
+    accountPrice###detail##BatchA (idetail, batch) = IF retailProp(idetail) THEN retailPrice###detail(idetail) IF batch IS BatchA
+                                                                            ELSE supplierPriceBatchA(batch) IF idetail IS detailClass;
+
+    accountSum###concrete 'Сумма учетная' (iconcrete) = GROUP SUM accountSum###detail(idetail) BY concrete###detail(idetail) IN documentSumGroup;
+
+    EXTEND FORM concrete##s
+        PROPERTIES(t) READONLY accountSum###concrete
+        PROPERTIES(object) READONLY accountSum###detail
+    ;
+
+END
+
+META defineDocumentTransferAccount(concrete, retailProp)
+    @defineDocumentTransferAccountCustom(concrete, retailProp, concrete##Detail, d);
+END
+
+// --------------------------------- Документы для генерации по трансферу -------------------------------- //
+CLASS ABSTRACT InnerDocument 'Внутренний документ' : Historizable, NumberedObject;
+
+dateInnerDocument 'Дата' (innerDocument) = ABSTRACT DATE (InnerDocument);
+
+stockInnerDocument 'Склад-отправитель (ИД)' (innerDocument) = ABSTRACT Stock (InnerDocument);
+nameStockInnerDocument 'Склад-отправитель' (innerDocument) = nameStock(stockInnerDocument(innerDocument)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+//destinationStockInnerDocument 'Склад-получатель (ИД)' (innerDocument) = ABSTRACT Stock (InnerDocument);
+//nameDestinationStockInnerDocument 'Склад-получатель' (innerDocument) = name(destinationStockInnerDocument(innerDocument));
+
+nameDestinationStockInnerDocument 'Получатель' (innerDocument) = ABSTRACT STRING[200] (InnerDocument) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+countDetailInnerDocument 'Количество строк в документе' (innerDocument) = ABSTRACT INTEGER (InnerDocument);
+quantityDetailInnerDocument 'Кол-во (всего)' (innerDocument) = ABSTRACT NUMERIC[14,3] (InnerDocument);
+
+isPostedInnerDocument 'Проведен' (innerDocument) = ABSTRACT BOOLEAN (InnerDocument);
+isDraftInnerDocument 'Не проведен' (innerDocument) = ABSTRACT BOOLEAN (InnerDocument);
+
+skipSkuLedgerInnerDocument 'Не проводить по учету' (innerDocument) = ABSTRACT BOOLEAN (InnerDocument);

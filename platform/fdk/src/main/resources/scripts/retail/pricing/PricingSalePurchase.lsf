@@ -1,0 +1,227 @@
+MODULE PricingSalePurchase;
+
+REQUIRE PricingPurchase, SalePurchaseInvoice;
+
+NAMESPACE Sale;
+
+//----------------------------------------------------------------------------//
+
+@defineDocumentInterfaceHeaderPricingCommittee(invoice, customerStock, purchase);
+
+// Кол-во
+@defineDocumentInterfaceDetailQuantityPrefix (invoice, purchasePricing, ' расценено (закупка)');
+
+// Изменененно кол-во для расценки (пока нигде не используется)
+extraPurchasePricingQuantityUserInvoiceDetail = ABSTRACT NUMERIC[14,3] (UserInvoiceDetail) PERSISTENT;
+purchasePricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail) (+) extraPurchasePricingQuantityUserInvoiceDetail(detail)
+    WHEN CHANGED(quantityUserInvoiceDetail(detail)) OR CHANGED(extraPurchasePricingQuantityUserInvoiceDetail(detail));
+
+// Виды цен
+
+@defineDocumentInterfaceHeaderPriceListType (invoice, calcPriceListType, calcPurchaseRetail, ' (надбавка)');
+@defineDocumentDetailPriceListTypePrefix (invoice, invoiceDetail, calcPriceListType, calcPurchaseRetail, ' (надбавка)');
+@defineDocumentDetailPriceListTypePrefix (userInvoice, userInvoiceDetail, calcPriceListType, calcPurchaseRetail, ' (надбавка)');
+@defineDocumentInterfaceHeaderPriceListType (invoice, priceListType, calcPurchaseRetail, ' (управленческий)');
+@defineDocumentDetailPriceListTypePrefix (invoice, invoiceDetail, priceListType, calcPurchaseRetail, ' (управленческий)');
+@defineDocumentDetailPriceListTypePrefix (userInvoice, userInvoiceDetail, priceListType, calcPurchaseRetail, ' (управленческий)');
+
+@defineDocumentInterfaceDetailPriceListType (invoice, priceListType, purchaseRetail, ' (розничная)');
+
+CONSTRAINT currencyUserInvoice(invoice) != currencyPriceListType(calcPurchaseRetailCalcPriceListTypeUserInvoice(invoice))
+           CHECKED BY calcPurchaseRetailCalcPriceListTypeUserInvoice
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+CONSTRAINT currencyUserInvoice(invoice) != currencyPriceListType(calcPurchaseRetailPriceListTypeUserInvoice(invoice))
+           CHECKED BY calcPurchaseRetailPriceListTypeUserInvoice
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+
+CONSTRAINT currencyUserInvoiceDetail(detail) != currencyPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(detail))
+           CHECKED BY purchaseRetailPriceListTypeUserInvoiceDetail
+           MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+
+WHEN SESSION FORMS userInvoice PREVSTART ALL // цены берем на начало сессии, а не этого event'а
+        (CHANGED(calcPurchaseRetailPriceListTypeUserInvoiceDetail(detail)) OR
+        CHANGED(calcPurchaseRetailCalcPriceListTypeUserInvoiceDetail(detail)) OR
+        CHANGED(skuUserInvoiceDetail(detail)) OR
+        CHANGED(customerStockUserInvoiceDetail(detail)) OR
+        CHANGED(dateTimeUserInvoiceDetail(detail))) AND pt == calcPurchaseRetailPriceListTypeUserInvoiceDetail(detail) NOINLINE (pt) DO
+    purchaseRetailPriceListTypeUserInvoiceDetail(detail) <- IF prevPricePriceListTypeSkuStockDateTime(pt,
+                                                                                          skuUserInvoiceDetail(detail),
+                                                                                          customerStockUserInvoiceDetail(detail),
+                                                                                          dateTimeUserInvoiceDetail(detail))
+                                                    THEN pt ELSE calcPurchaseRetailCalcPriceListTypeUserInvoiceDetail(detail);
+
+
+// Базовая цена
+overPurchasePricingPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
+overPurchasePricingPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
+overPurchasePricingPriceInvoiceDetail (detail) += overPurchasePricingPriceUserInvoiceDetail(detail);
+
+purchasePricingPriceUserInvoiceDetail (detail) = OVERRIDE priceUserInvoiceDetail(detail), overPurchasePricingPriceUserInvoiceDetail(detail) PERSISTENT;
+purchasePricingPriceInvoiceDetail (detail) = OVERRIDE priceInvoiceDetail(detail), overPurchasePricingPriceInvoiceDetail(detail) PERSISTENT;
+
+@defineDocumentInterfaceDetailMarkupPrefix (invoice, purchaseRetail, ' (закупка)');
+
+@defineDocumentInterfaceDetailVAT(invoice, countryCustomerStock, purchaseRetail, ' розничный (закупка)');
+@deriveDocumentDetailVAT(userInvoice, purchaseRetail, date, sku, customerStock);
+@deriveDocumentDetailValueVAT(userInvoice, purchaseRetail);
+
+@defineDocumentInterfaceDetailPricePrefix(invoice, purchaseRetail, ' розничная (закупка)');
+
+// Действия по измению цен и надбавок на форме
+purchaseRoundConditionUserInvoiceDetail(userInvoiceDetail) =
+    IF roundConditionPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
+        THEN roundConditionPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
+        ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
+
+@changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, purchaseRetail, purchasePricing, purchaseRetail, purchaseRetail);
+@changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, purchaseRetail, purchasePricing, purchaseRetail, purchaseRetail, purchase);
+
+// Проставление цены по виду цен
+@deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, purchaseRetail, purchasePricing, customerStock, userInvoice);
+
+// -- Суммы по строкам
+
+@defineDocumentInterfaceDetailMarkupSumPrefix (invoice, purchaseRetail, ' (закупка)');
+@defineDocumentInterfaceDetailVATDataSumPrefix (invoice, purchaseRetail, ' розничная (закупка)');
+@defineDocumentInterfaceDetailDataSumPrefix (invoice, purchaseRetail, ' розничная (закупка)');
+
+// Расчет сумм обратным счетом
+@deriveDocumentDetailSumPrefix(userInvoice, purchaseRetail, currency, purchasePricingQuantity);
+@deriveDocumentDetailReverseVATSumPrefix(userInvoice, purchaseRetail, purchaseRetail);
+@deriveDocumentDetailMarkupSumPrefix(userInvoice, purchaseRetail, purchaseRetail, );
+
+// -- Суммы по документу
+@defineDocumentInterfaceHeaderSumPrefix (invoice, purchaseRetail, ' розничная (закупка)');
+
+// Галочка по созданию акта расценки на закупке
+@defineDocumentInterfaceCreate (invoice, createPurchasePricing, 'Создать акт расценки (закупка)');
+
+// -- Операции
+@defineOperationProperty(createPurchasePricing, 'Акт расценки (закупка)', createContainer);
+@deriveDocumentOperationProperty(UserInvoice, createPurchasePricing);
+
+//// Вид цены для акта расценки (закупка)
+//purchaseRetailPriceListTypeOperation = DATA PriceListType (Operation);
+//namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки управленческий (закупка) ' (operation) = namePriceListType(purchaseRetailPriceListTypeOperation(operation));
+//
+//purchaseRetailCalcPriceListTypeOperation = DATA CalcPriceListType (Operation);
+//namePurchaseRetailCalcPriceListTypeOperation 'Вид цен акт расценки надбавка (закупка)' (operation) = namePriceListType(purchaseRetailCalcPriceListTypeOperation(operation));
+//
+//EXTEND FORM operation
+//    PROPERTIES(o) namePurchaseRetailPriceListTypeOperation, namePurchaseRetailCalcPriceListTypeOperation
+//;
+//
+//EXTEND DESIGN operation{
+//    createContainer {
+//        ADD PROPERTY(namePurchaseRetailPriceListTypeOperation);
+//        ADD PROPERTY(namePurchaseRetailCalcPriceListTypeOperation);
+//    }
+//}
+//
+//calcPurchaseRetailPriceListTypeUserInvoice (invoice) <- purchaseRetailPriceListTypeOperation(operationUserInvoice(invoice))
+//    WHEN CHANGED(operationUserInvoice(invoice));
+//
+//calcPurchaseRetailCalcPriceListTypeUserInvoice (invoice) <- purchaseRetailCalcPriceListTypeOperation(operationUserInvoice(invoice))
+//    WHEN CHANGED(operationUserInvoice(invoice));
+
+// Операция расценки
+@defineDocumentInterfaceOperationPrefix (invoice, purchasePricing, Pricing, ' расценка (закупка)');
+
+purchasePricingOperationOperation  = DATA Pricing.Operation (Operation);
+namePurchasePricingOperationOperation 'Операция расценка (закупка)' (operation)= Pricing.nameOperation(purchasePricingOperationOperation(operation));
+
+purchasePricingOperationUserInvoice (invoice) <- purchasePricingOperationOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+
+// Записываем тип цены по умолчанию из операции
+calcPurchaseRetailPriceListTypeUserInvoice (invoice) <- pricingPriceListTypeOperation(purchasePricingOperationUserInvoice(invoice))
+    WHEN CHANGED(purchasePricingOperationUserInvoice(invoice));
+calcPurchaseRetailCalcPriceListTypeUserInvoice (invoice) <- pricingCalcPriceListTypeOperation(purchasePricingOperationUserInvoice(invoice))
+    WHEN CHANGED(purchasePricingOperationUserInvoice(invoice));
+
+EXTEND FORM operation
+    PROPERTIES(o) namePurchasePricingOperationOperation
+;
+EXTEND DESIGN operation {
+    createContainer {
+        ADD PROPERTY(namePurchasePricingOperationOperation) AFTER PROPERTY(createPurchasePricingOperation);
+    }
+}
+
+showCreatePurchasePricingInvoice (invoice) = customerStockInvoice(invoice) IS DepartmentStore AND createPurchaseInvoiceInvoice(invoice) AND NOT costLedgerDepartmentStore(customerStockInvoice(invoice));
+showPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND NOT createPurchasePricingInvoice(invoice);
+toShowPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND createPurchasePricingInvoice(invoice);
+
+backgroundPurchaseRetailInvoice 'Цвет' (invoice) = RGB(255, 255, 190) IF invoice IS Invoice;
+
+printSalePurchasePricingInvoice 'Акт расценки (закупка)' (invoice) = Purchase.printPricingInvoice(SalePurchaseInvoice.purchaseInvoiceInvoice(invoice)) IMAGE 'print.png' IN printGroup;
+
+EXTEND FORM userInvoice
+    PROPERTIES(i) SHOWIF showCreatePurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i) createPurchasePricingUserInvoice
+    PROPERTIES(i) SHOWIF createPurchasePricingUserInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
+                  namePurchasePricingOperationUserInvoice, namePurchasePricingCommitteeUserInvoice,
+                  nameCalcPurchaseRetailPriceListTypeInvoice, nameCalcPurchaseRetailCalcPriceListTypeInvoice, purchaseRetailSumUserInvoiceDetailUserInvoice
+
+    PROPERTIES(d) BEFORE deleteid SHOWIF createPurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
+                  namePurchaseRetailPriceListTypeUserInvoiceDetail,
+                  purchaseRetailMarkupUserInvoiceDetail ON CHANGE changePurchaseRetailMarkupUserInvoiceDetail(d), purchaseRetailMarkupSumUserInvoiceDetail, numberPurchaseRetailVATUserInvoiceDetail,
+                  valuePurchaseRetailVATUserInvoiceDetail, purchaseRetailVATSumUserInvoiceDetail,
+                  purchaseRetailPriceUserInvoiceDetail ON CHANGE changePurchaseRetailPriceUserInvoiceDetail(d),
+                  purchaseRetailSumUserInvoiceDetail
+    PROPERTIES(d) purchasePricingQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF toShowPurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
+
+//    HINTTABLE LIST purchaseRetailMarkupUserInvoiceDetail, valuePurchaseRetailVATUserInvoiceDetail, purchaseRetailPriceUserInvoiceDetail
+;
+EXTEND DESIGN userInvoice {
+    headerCreateDocuments {
+        NEW headerCreateSalePricing  {
+            title = 'Расценка на закупке';
+            ADD PROPERTY(createPurchasePricingUserInvoice);
+            ADD PROPERTY(namePurchasePricingOperationUserInvoice);
+            ADD PROPERTY(namePurchasePricingCommitteeUserInvoice);
+            ADD PROPERTY(nameCalcPurchaseRetailPriceListTypeInvoice);
+            ADD PROPERTY(nameCalcPurchaseRetailCalcPriceListTypeInvoice);
+        }
+    }
+}
+
+
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY BACKGROUND backgroundPurchaseRetailInvoice(i) createPurchasePricingInvoice, purchaseRetailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
+    PROPERTIES (i) FORCE PANEL printSalePurchasePricingInvoice
+    PROPERTIES(d) READONLY SHOWIF createPurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
+                  namePurchaseRetailPriceListTypeInvoiceDetail,
+                  purchaseRetailMarkupInvoiceDetail, purchaseRetailMarkupSumInvoiceDetail, numberPurchaseRetailVATInvoiceDetail,
+                  valuePurchaseRetailVATInvoiceDetail, purchaseRetailVATSumInvoiceDetail,
+                  purchaseRetailPriceInvoiceDetail, purchaseRetailSumInvoiceDetail
+    PROPERTIES(d) READONLY BACKGROUND backgroundPurchaseRetailInvoice(i) purchasePricingQuantityInvoiceDetail AFTER quantityInvoiceDetail  SHOWIF toShowPurchasePricingInvoice(i)
+;
+
+// --- Заполнение атрибутов приходной накладной ---- //
+
+Purchase.createPricingInvoice(invoice) += createPurchasePricingInvoice(invoicePurchaseInvoice(invoice));
+Purchase.pricingCommitteeInvoice(invoice) += purchasePricingCommitteeInvoice(invoicePurchaseInvoice(invoice));
+
+// Операция расценки закупка
+Purchase.pricingOperationInvoice(invoice) += purchasePricingOperationInvoice(invoicePurchaseInvoice(invoice));
+
+// Вид цены
+Purchase.retailPriceListTypeInvoiceDetail(invoiceDetail) += purchaseRetailPriceListTypeInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+
+// Кол-во
+Purchase.pricingQuantityInvoiceDetail(invoiceDetail) += purchasePricingQuantityInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+
+// Надбавка
+Purchase.retailMarkupInvoiceDetail(invoiceDetail) += purchaseRetailMarkupInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+
+// НДС
+Purchase.retailVATInvoiceDetail(invoiceDetail) += purchaseRetailVATInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.valueRetailVATInvoiceDetail(invoiceDetail) += valuePurchaseRetailVATInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+
+// Розничная цена
+Purchase.retailPriceInvoiceDetail(invoiceDetail) += purchaseRetailPriceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+
+// Суммы
+Purchase.retailMarkupSumInvoiceDetail(invoiceDetail) += purchaseRetailMarkupSumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.retailVATSumInvoiceDetail(invoiceDetail) += purchaseRetailVATSumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.retailSumInvoiceDetail(invoiceDetail) += purchaseRetailSumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));

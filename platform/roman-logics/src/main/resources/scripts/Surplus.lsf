@@ -1,0 +1,324 @@
+MODULE Surplus;
+
+REQUIRE System,
+        Document,
+        RomanDocument,
+        Stock,
+        RomanStock,
+        RetailPrice,
+        DocumentTransfer,
+        Move,
+        Transfer,
+        Customer,
+        Return,
+        InnerOrder,
+        WHtoLegalEntity,
+        DisparityBatch,
+        RomanLogicsModule;
+
+PRIORITY Stock, RomanLogicsModule;
+
+// ---------------------------------------- Излишки ------------------------------------ //
+
+CLASS SurplusOut 'Реализация излишков' : Historizable, NumberedObject, Consignment, OutStockDocumentLedger;
+CLASS SurplusOutPosted 'Проведенная реализация излишков' : SurplusOut, PostedObject;
+CLASS SurplusOutDetail 'Строка реализации излишков' : ConsignmentDetail;
+
+@defineDocument(surplusOut);
+
+@defineDocumentStock(surplusOut, stock, 'Склад-отправитель');
+@defineDocumentStock(surplusOut, stock, 'Склад-получатель', destination);
+
+customerSurplusOut = DATA Customer (SurplusOut);
+nameCustomerSurplusOut 'Покупатель' (surplus) = nameLegalEntity(customerSurplusOut(surplus));
+
+@defineDocumentPosted(surplusOut);
+
+@defineDocumentCurrency(surplusOut);
+@deriveDocumentCurrency(surplusOut, stock);
+
+@defineDocumentDescription (surplusOut, 'Реализация излишков');
+
+@defineDocumentDetailNumber(surplusOut);
+
+@defineDocumentDetailSku(surplusOut, sku);
+
+@defineDocumentDetailQuantity(surplusOut);
+
+@defineDocumentDetailGrossWeight(surplusOut, sku);
+@defineDocumentDetailPackQuantity(surplusOut, sku);
+
+@defineDocumentDetailSkuBalance(surplusOut, sku, stock);
+
+@defineDocumentHeaderQuantity(surplusOut);
+@defineDocumentHeaderSkuQuantity(surplusOut, sku);
+
+// Кнопки подбора
+@defineAddDetailDialogSkuStock(surplusOut, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(surplusOut, sku);
+
+@defineDocumentHeaderAndDetailSumCustomCaption (surplusOut, surplusOutDetail, , ' отгрузки');
+
+//----------------
+
+createDetailSurplusOut 'Сделать подборку строк излишков' = [ACTION (surplusOut) {
+    IF diffPositiveBalanceStock(stockSurplusOut(surplusOut)) THEN {
+        FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+            ADDOBJ SurplusOutDetail;
+            FOR d == addedObject() DO {
+                SET surplusOutSurplusOutDetail(d) <- surplusOut;
+                SET skuSurplusOutDetail(d) <- sku;
+                SET quantitySurplusOutDetail(d) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
+            }
+        }
+    }
+}](surplusOut) IN documentPrmGroup CONFIRM;
+
+
+innerOrderSurplusOut (surplusOut) = DATA InnerOrder (SurplusOut);
+descriptionInnerOrderSurplusOut 'Внутр. заказ' (surplusOut) = descriptionInnerOrder(innerOrderSurplusOut(surplusOut));
+
+createInnerOrderSurplusOut 'Создать внутренний заказ' = ACTION (surplusOut) NEWSESSION {
+    IF NOT innerOrderSurplusOut (surplusOut) THEN {
+
+        LOCAL order = InnerOrder();
+        LOCAL picking = OrderPickingPosted();
+
+        ADDOBJ InnerOrder;
+        FOR i == addedObject() DO {
+            SET innerOrderSurplusOut(surplusOut) <- i AS InnerOrder;
+            SET stockInnerOrder(i) <- stockSurplusOut(surplusOut);
+            SET destinationStockInnerOrder(i) <- destinationStockSurplusOut(surplusOut);
+            SET order() <- i;
+
+            FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+                ADDOBJ InnerOrderDetail;
+                FOR d == addedObject() DO {
+                    SET innerOrderInnerOrderDetail(d) <- i AS InnerOrder;
+                    SET skuInnerOrderDetail(d) <- sku AS Sku;
+                    SET quantityInnerOrderDetail(d) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
+                }
+            }
+        }
+        FORM innerOrder OBJECTS o = order()  MODAL;
+
+        ADDOBJ OrderPickingPosted;
+        FOR p == addedObject() DO {
+            SET picking() <- p;
+            SET innerOrderOrderPicking (p) <- order();
+
+            FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+                ADDOBJ OrderPickingDetail;
+                FOR pd == addedObject() DO {
+                    SET orderPickingOrderPickingDetail(pd) <- p AS OrderPickingPosted;
+                    SET skuOrderPickingDetail(pd) <- sku AS Sku;
+                    SET quantityOrderPickingDetail(pd) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
+                }
+            }
+        }
+        FORM orderPicking OBJECTS o = innerOrderOrderPicking(picking()), p = picking() MODAL;
+        IF formResult() == FormResult.ok THEN {
+            EXEC apply();
+        }
+    }
+} IN documentPrmGroup CONFIRM;
+
+editOrderPicking 'Редактировать' (orderPicking) = ACTION (orderPicking) {
+    IF orderPicking IS OrderPicking  THEN {
+        FORM orderPicking OBJECTS o = innerOrderOrderPicking(orderPicking), p = orderPicking MODAL;
+    }
+
+} IMAGE 'edit.png' IN documentPrmGroup;
+
+editInnerOrder 'Редактировать' (innerOrder) = ACTION (innerOrder) {
+    IF innerOrder IS InnerOrder  THEN {
+        FORM innerOrder OBJECTS o = innerOrder MODAL;
+    }
+
+} IMAGE 'edit.png' IN documentPrmGroup;
+
+invoiceWHOutSurplusOut (surplusOut)= DATA InvoiceWHOut (SurplusOut);
+
+createInnerDocumentSurplusOut 'Создать документы' = ACTION (surplusOut) NEWSESSION {
+    IF  stockSurplusOut(surplusOut) != destinationStockSurplusOut(surplusOut) THEN {
+        FOR innerOrderOrderPicking(orderPicking) == innerOrderSurplusOut(surplusOut) DO {
+            EXEC createDocumentsOrderPicking(orderPicking);
+            FOR innerOrderOrderPicking(orderPickingInnerDocument (innerDocument)) == innerOrderSurplusOut(surplusOut) DO {
+                SET skipSkuLedgerInnerDocument(innerDocument) <- TRUE ;
+            }
+        }
+    }
+    EXEC apply();
+
+    ADDOBJ InvoiceWHOutPosted;
+    FOR i == addedObject() DO {
+        SET invoiceWHOutSurplusOut(surplusOut) <- i AS InvoiceWHOutPosted;
+        SET warehouseInvoiceWHOut(i) <- destinationStockSurplusOut(surplusOut);
+        SET customerInvoiceWHOut(i) <- customerSurplusOut(surplusOut);
+        SET skipSkuLedgerInvoiceWHOut(i) <- TRUE;
+
+        FOR surplusOutSurplusOutDetail(surplusOutDetail) == surplusOut DO {
+            ADDOBJ InvoiceWHOutDetail;
+            FOR id == addedObject() DO {
+                SET invoiceWHOutInvoiceWHOutDetail(id) <- i AS InvoiceWHOutPosted;
+                SET skuInvoiceWHOutDetail(id) <- skuSurplusOutDetail(surplusOutDetail);
+                SET quantityInvoiceWHOutDetail(id) <- quantitySurplusOutDetail(surplusOutDetail);
+                SET supplierPriceInvoiceWHOutDetail(id) <- priceSurplusOutDetail(surplusOutDetail);
+            }
+        }
+    }
+
+    EXEC apply();
+
+}  IN documentPrmGroup CONFIRM;
+
+FORM surplusOut 'Реализация излишков'
+    OBJECTS t = SurplusOut FIXED PANEL
+
+    PROPERTIES (t) numberObject, seriesObject, dateSurplusOut, timeSurplusOut,
+                   nameStockSurplusOut, nameDestinationStockSurplusOut, nameCustomerSurplusOut, nameCurrencySurplusOut, noteSurplusOut,
+                   countSurplusOutDetailSurplusOut, quantitySurplusOutDetailSurplusOut,
+                   createDetailSurplusOut
+
+    OBJECTS d = SurplusOutDetail
+
+    PROPERTIES(t) TODRAW d addDetailDialogSkuStockSurplusOutDetailSurplusOut, addDetailDialogBarcodeSurplusOutDetailSurplusOut,
+                           deleteSurplusOutDetailSurplusOut
+
+    FILTERS surplusOutSurplusOutDetail(d) == t
+
+    EDIT SurplusOut OBJECT t
+;
+
+DESIGN surplusOut FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        t.box {
+            childConstraints = TO THE RIGHT;
+            NEW columnHeaderPrm {
+                childConstraints = TO THE BOTTOM;
+                ADD t.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (nameStockSurplusOut);
+                    ADD PROPERTY (nameDestinationStockSurplusOut);
+                    ADD PROPERTY (nameCustomerSurplusOut);
+                    ADD PROPERTY (numberObject);
+                    ADD PROPERTY (seriesObject);
+                    ADD PROPERTY (dateSurplusOut);
+                    ADD PROPERTY (timeSurplusOut);
+                }
+                ADD t.documentPrmGroup;
+            }
+            NEW columnHeaderSum {
+                ADD t.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
+    }
+}
+
+
+inInnerDocumentOrderPickingSurplusOut (innerDocument, orderPicking, surplusOut) = orderPickingInnerDocument(innerDocument) == orderPicking AND surplusOut IS SurplusOut OR
+   invoiceWHOutSurplusOut(surplusOut) == innerDocument AND orderPicking IS OrderPicking;
+
+
+FORM surplusOuts 'Реализации излишков'
+    OBJECTS t = SurplusOut
+    PROPERTIES (t) READONLY numberObject, seriesObject, dateSurplusOut, timeSurplusOut,
+                            nameStockSurplusOut, nameDestinationStockSurplusOut, nameCustomerSurplusOut, noteSurplusOut,
+                            countSurplusOutDetailSurplusOut, quantitySurplusOutDetailSurplusOut
+
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES (t) ADDFORM, EDITFORM, deletet=DELETE FORCE PANEL TOOLBAR
+
+    OBJECTS d = SurplusOutDetail
+
+    OBJECTS io = InnerOrder FIXED PANEL
+    PROPERTIES(io) READONLY descriptionInnerOrder
+    PROPERTIES(io) editInnerOrder
+
+    OBJECTS o = OrderPicking FIXED PANEL
+    PROPERTIES(o) READONLY descriptionOrderPicking
+    PROPERTIES(o) editOrderPicking
+
+    OBJECTS id = InnerDocument
+
+    PROPERTIES (id) READONLY isPostedInnerDocument, objectClassName, seriesObject, numberObject, dateInnerDocument,
+                    nameStockInnerDocument, nameDestinationStockInnerDocument, countDetailInnerDocument, quantityDetailInnerDocument
+
+    PROPERTIES (id) editInnerDocument FORCE GRID, DELETE, printConsignment FORCE GRID
+    PROPERTIES (t) FORCE PANEL  createInnerOrderSurplusOut, createInnerDocumentSurplusOut SHOWIF needInnerDocumentOrderPicking(o)
+
+    FILTERS surplusOutSurplusOutDetail(d) == t,
+            innerOrderSurplusOut(t) == io,
+            innerOrderOrderPicking(o) == io,
+            inInnerDocumentOrderPickingSurplusOut(id, o, t)
+;
+
+DESIGN surplusOuts FROM DEFAULT {
+    PROPERTY (deletet) {
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD t.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD d.box {
+                title = 'Спецификация';
+            }
+            NEW InnerDocument {
+                title = 'Внутренний заказ';
+                childConstraints = TO THE BOTTOM;
+                NEW row1 {
+                    childConstraints = TO THE RIGHT;
+                    NEW row11 {
+                        title = 'Заказ';
+                        ADD PROPERTY(createInnerOrderSurplusOut(t));
+                    }
+                    ADD io.box {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    ADD o.box {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    NEW row12 {
+                        title = 'Документ';
+                        ADD PROPERTY(createInnerDocumentSurplusOut(t));
+                    }
+                }
+                ADD id.box;
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD t.historyGroup;
+                ADD t.postedGroup;
+            }
+        }
+    }
+}
+
+
+@defineDocumentDetailSkuArticle(surplusOut);
+@extendFormDocumentDetailSkuArticle(surplusOut, d, surplusOut);
+@extendFormDocumentDetailSkuArticleReadonly(surplusOuts, d, surplusOut);
+
+EXTEND FORM surplusOut
+    PROPERTIES(d) priceSurplusOutDetail
+;
+
+EXTEND FORM surplusOuts
+    PROPERTIES(d) READONLY priceSurplusOutDetail
+;
+
+@defineDocumentRetailPrice(surplusOut, d);
+
+

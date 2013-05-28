@@ -1,0 +1,389 @@
+MODULE ListRegister;
+
+REQUIRE System, LegalEntity, Stock, Barcode, Employee, Utils, Store, Ware;
+
+// ----------------------------------- Комиссия ------------------------------------------ //
+
+CLASS RegisterCommittee 'Комиссия для реестра цен' : Committee;
+
+nameRegisterCommittee 'Наименование' = DATA ISTRING[50](RegisterCommittee);
+
+nameCommittee(committee) += nameRegisterCommittee(committee) IF committee IS RegisterCommittee;
+
+@defineCommitteeEmployee(registerCommittee, formedMan, 'Цены сформировал');
+@defineCommitteeEmployee(registerCommittee, checkedMan, 'Реестр проверил');
+@defineCommitteeEmployee(registerCommittee, labeledMan, 'Товар промаркировал');
+@defineCommitteeEmployee(registerCommittee, accountantMan, 'Бухгалтер');
+@defineCommitteeEmployee(registerCommittee, headMan, 'Зав. магазином');
+
+// ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
+
+registerCommitteeDepartmentStore 'Комиссия для реестра (ИД)' = DATA RegisterCommittee (DepartmentStore);
+nameRegisterCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = nameRegisterCommittee(registerCommitteeDepartmentStore(departmentStore));
+isRegisterCommitteeDepartmentStore 'По умолчанию' (registerCommittee, departmentStore) = registerCommitteeDepartmentStore(departmentStore) == registerCommittee;
+CONSTRAINT registerCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(registerCommitteeDepartmentStore(departmentStore), departmentStore)
+    CHECKED BY registerCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
+
+EXTEND FORM departmentStore PROPERTIES nameRegisterCommitteeDepartmentStore(d);
+
+// ----------------------------------- Формы для комиссий для реестра цен ------------------------------------------ //
+
+FORM registerCommittee 'Комиссия для реестра цен'
+    OBJECTS c=RegisterCommittee FIXED PANEL
+    PROPERTIES(c)      nameRegisterCommittee, nameFormedManCommittee, nameCheckedManCommittee,
+                       nameLabeledManCommittee, nameAccountantManCommittee, nameHeadManCommittee
+
+    TREE treeStore a=STRING[3], t=ChainStores, st=StoreType, s=Store
+    PROPERTIES         READONLY OBJVALUE(a), nameChainStores(t), nameStoreType(st), nameStore(s)
+    FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
+
+    OBJECTS dep=DepartmentStore
+    PROPERTIES(dep)    READONLY depName = nameDepartmentStore
+    PROPERTIES(c, dep) inCommitteeEmployeeDivision, isRegisterCommitteeDepartmentStore
+    FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
+    ORDER BY depName
+
+    FILTERGROUP filters5
+        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, dep)
+
+    EDIT RegisterCommittee OBJECT c
+;
+
+DESIGN registerCommittee FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        childConstraints = TO THE BOTTOM;
+
+        NEW caseOne AFTER c.box {
+            childConstraints = TO THE RIGHT;
+            title = 'Отделы, для которых действуют комиссии';
+
+            ADD treeStore.tree {
+                fillHorizontal = 1;
+            }
+
+            ADD dep.box{
+                fillHorizontal = 2;
+            }
+        }
+
+        NEW oneCase AFTER caseOne{
+            title = 'Состав комиссии';
+            fillHorizontal = 3;
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY (nameFormedManCommittee);
+            ADD PROPERTY (nameCheckedManCommittee);
+            ADD PROPERTY (nameLabeledManCommittee);
+            ADD PROPERTY (nameAccountantManCommittee);
+            ADD PROPERTY (nameHeadManCommittee);
+        }
+
+    }
+}
+
+FORM registerCommitteeDialog 'Комиссии для реестра цен'
+    OBJECTS r=RegisterCommittee
+    PROPERTIES(r)      READONLY nameRegisterCommittee, nameEmployeeDivisionCommittee, nameFormedManCommittee, nameCheckedManCommittee, nameLabeledManCommittee,
+                       nameAccountantManCommittee, nameHeadManCommittee
+    PROPERTIES(r)      ADDFORM, EDITFORM
+
+    DIALOG RegisterCommittee OBJECT r
+;
+
+//---------------------------- Реестр цен (внутр) ----------------------------------------//
+
+CLASS ABSTRACT InputListRegister 'Реестр (внутр.)' ;
+CLASS ABSTRACT InputListRegisterDetail 'Строка реестра (внутр.)' ;
+
+numberListRegister 'Номер' (inputListRegister) =  ABSTRACT STRING[18] (InputListRegister) MINCHARWIDTH 7;
+
+seriesListRegister 'Серия' (inputListRegister) = ABSTRACT STRING[2] (InputListRegister) FIXEDCHARWIDTH 2;
+
+dateListRegister 'Дата' (inputListRegister) = ABSTRACT DATE (InputListRegister);
+
+departmentStoreListRegister (inputListRegister) = ABSTRACT DepartmentStore (InputListRegister);
+nameDepartmentStoreListRegister 'Отдел документа' (inputListRegister) = nameDepartmentStore(departmentStoreListRegister(inputListRegister));
+
+consigneeListRegister 'Грузополучатель' (inputListRegister) =
+    [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
+    nameLegalEntityDepartmentStore(departmentStoreListRegister(inputListRegister)),
+    nameStoreDepartmentStore(departmentStoreListRegister(inputListRegister)),
+    nameDepartmentStoreListRegister(inputListRegister));
+
+senderListRegister (inputListRegister) = ABSTRACT LegalEntity (InputListRegister);  // отправитель
+isCustomStoreListRegister 'Отправитель СВХ' (inputListRegister)=  ABSTRACT BOOLEAN (InputListRegister);
+
+shipperListRegister 'Грузоотправитель' (inputListRegister) = ABSTRACT STRING[200] (InputListRegister);
+
+quantityListRegisterDetailListRegister 'Кол-во (всего)' (inputListRegister) = ABSTRACT NUMERIC[14,3] (InputListRegister);
+
+supplierSumListRegisterDetailListRegister 'Сумма поставщика без НДС' (inputListRegister) = ABSTRACT NUMERIC[14,2] (InputListRegister);
+
+wareSumListRegisterDetailListRegister 'Сумма посуды с НДС' (inputListRegister) = ABSTRACT NUMERIC[14,2] (InputListRegister);
+
+wareVATSumListRegisterDetailListRegister 'Сумма НДС по посуде' (inputListRegister) = ABSTRACT NUMERIC[14,2] (InputListRegister);
+
+markupSumListRegisterDetailListRegister 'Сумма надбавки' (inputListRegister) = ABSTRACT NUMERIC[14,2] (InputListRegister);
+
+retailVATSumListRegisterDetailListRegister 'Сумма НДС' (inputListRegister) = ABSTRACT NUMERIC[14,2] (InputListRegister);
+
+retailSumListRegisterDetailListRegister 'Розничная сумма' (inputListRegister) = ABSTRACT NUMERIC[14,2] (InputListRegister);
+
+notPassToBookkeepingListRegister 'Не передавать в бухгалтерию' (inputListRegister) = ABSTRACT BOOLEAN (InputListRegister);
+
+passToBookkeepingListRegister 'Передавать в бухгалтерию' (inputListRegister) = inputListRegister IS InputListRegister AND NOT notPassToBookkeepingListRegister(inputListRegister);
+
+registerCommitteeListRegister  (inputListRegister) = ABSTRACT RegisterCommittee (InputListRegister);
+nameRegisterCommitteeListRegister 'Комиссия для реестра цен' (inputListRegister) = nameRegisterCommittee(registerCommitteeListRegister(inputListRegister));
+nameFormedManListRegister 'Цены сформировал' (inputListRegister) = nameFormedManCommittee(registerCommitteeListRegister(inputListRegister));
+nameCheckedManListRegister 'Реестр проверил' (inputListRegister) = nameCheckedManCommittee(registerCommitteeListRegister(inputListRegister));
+nameLabeledManListRegister 'Товар промаркировал' (inputListRegister) = nameLabeledManCommittee(registerCommitteeListRegister(inputListRegister));
+nameAccountantManListRegister 'Бухгалтер' (inputListRegister) = nameAccountantManCommittee(registerCommitteeListRegister(inputListRegister));
+nameHeadManListRegister 'Зав. магазином' (inputListRegister) = nameHeadManCommittee(registerCommitteeListRegister(inputListRegister));
+
+
+listRegisterListRegisterDetail (inputListRegisterDetail) = ABSTRACT InputListRegister(InputListRegisterDetail);
+
+fullInputListRegister 'Реестр полный' (inputListRegister) = ABSTRACT BOOLEAN (InputListRegister);
+
+indexListRegisterDetail 'Номер строки' (inputListRegisterDetail) = ABSTRACT INTEGER (InputListRegisterDetail);
+skuListRegisterDetail  (inputListRegisterDetail) = ABSTRACT Sku (InputListRegisterDetail);
+nameSkuListRegisterDetail 'Товар' (inputListRegisterDetail) = nameSku(skuListRegisterDetail(inputListRegisterDetail));
+idBarcodeSkuListRegisterDetail 'Штрих-код' (inputListRegisterDetail) = idBarcodeSku(skuListRegisterDetail(inputListRegisterDetail));
+shortNameUOMSkuListRegisterDetail 'Ед. изм.' (inputListRegisterDetail) = shortNameUOMSku(skuListRegisterDetail(inputListRegisterDetail));
+
+quantityListRegisterDetail 'Кол-во' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,3] (InputListRegisterDetail);
+
+importerPriceListRegisterDetail 'Цена изготовителя/импортера' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (InputListRegisterDetail);
+
+supplierSumListRegisterDetail 'Сумма поставщика без НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (InputListRegisterDetail);
+
+supplierMarkupListRegisterDetail 'Оптовая надбавка/торговая скидка, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (InputListRegisterDetail);
+
+wareSumListRegisterDetail 'Сумма посуды с НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (InputListRegisterDetail);
+
+nameWareListRegisterDetail 'Посуда' (inputListRegisterDetail) = ABSTRACT STRING[100] (InputListRegisterDetail) MINCHARWIDTH 20 PREFCHARWIDTH 30;
+
+warePriceListRegisterDetail 'Цена посуды с НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (InputListRegisterDetail);
+
+wareVATSumListRegisterDetail 'Сумма НДС по посуде' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (InputListRegisterDetail);
+
+valueWareRangeListRegisterDetail 'НДС посуды, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (InputListRegisterDetail);
+
+importerMarkupListRegisterDetail '% надбавки с уч. оптовой' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (InputListRegisterDetail);
+
+markupSumListRegisterDetail 'Сумма надбавки' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (InputListRegisterDetail);
+
+valueRetailVATListRegisterDetail 'НДС розничный, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (InputListRegisterDetail);
+
+retailVATSumListRegisterDetail 'Сумма НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (InputListRegisterDetail);
+
+retailPriceListRegisterDetail 'Розничная цена' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (InputListRegisterDetail);
+
+retailSumListRegisterDetail 'Розничная сумма' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (InputListRegisterDetail);
+
+//-------------------------------------------- Реестр цен -------------------------------------------//
+
+CLASS ABSTRACT ListRegister 'Реестр' : InputListRegister;
+CLASS ABSTRACT ListRegisterDetail 'Строка реестра' : InputListRegisterDetail;
+
+supplierVATISumListRegisterDetailListRegister 'Сумма НДС поставщика (без посуды)' (listRegister) = ABSTRACT NUMERIC[14,2] (ListRegister);
+invoiceSumListRegisterDetailListRegister 'Сумма поставщика с НДС' (listRegister) = ABSTRACT NUMERIC[14,2] (ListRegister);
+
+dataFromContractListRegister 'Договор от' (listRegister) = ABSTRACT DATE (ListRegister);
+numberContractListRegister 'Договор' (listRegister) = ABSTRACT STRING[30] (ListRegister);
+
+supplierVATISumListRegisterDetail 'Сумма НДС поставщика (без посуды)' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (ListRegisterDetail);
+
+valueSupplierVATListRegisterDetail 'НДС поставщика, %' (listRegisterDetail) = ABSTRACT NUMERIC[6,2] (ListRegisterDetail);
+
+invoiceSumListRegisterDetail 'Сумма поставщика с НДС' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (ListRegisterDetail);
+
+//------------------------------------ Печатные формы реестра цен ------------------------------------------------ //
+
+FORM listRegister 'Реестр цен (поставка)' PRINT
+    OBJECTS l=ListRegister FIXED PANEL
+    PROPERTIES (l)  SELECTOR numberListRegister, seriesListRegister, objectClassName, dateListRegister, nameDepartmentStoreListRegister,
+                    shipperListRegister, consigneeListRegister, dataFromContractListRegister, numberContractListRegister,
+                    quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister, supplierVATISumListRegisterDetailListRegister,
+                    wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister, invoiceSumListRegisterDetailListRegister, markupSumListRegisterDetailListRegister,
+                    retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
+                    nameFormedManListRegister, nameCheckedManListRegister, nameLabeledManListRegister, nameAccountantManListRegister,
+                    nameHeadManListRegister, notPassToBookkeepingListRegister, isCustomStoreListRegister
+    PROPERTIES()    showWare TODRAW l
+
+    OBJECTS d=ListRegisterDetail
+    PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
+                    importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail, supplierVATISumListRegisterDetail, valueSupplierVATListRegisterDetail,
+                    nameWareListRegisterDetail, wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
+                    invoiceSumListRegisterDetail, importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
+                    retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
+
+    FILTERS listRegisterListRegisterDetail(d) == l
+;
+
+FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
+    OBJECTS l=InputListRegister FIXED PANEL
+    PROPERTIES (l)  SELECTOR numberListRegister, seriesListRegister, objectClassName, dateListRegister, nameDepartmentStoreListRegister,
+                    shipperListRegister, consigneeListRegister,
+                    quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister,
+                    wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister,  markupSumListRegisterDetailListRegister,
+                    retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
+                    nameFormedManListRegister, nameCheckedManListRegister, nameLabeledManListRegister, nameAccountantManListRegister,
+                    nameHeadManListRegister, notPassToBookkeepingListRegister, isCustomStoreListRegister
+    PROPERTIES()    showWare TODRAW l
+
+    OBJECTS d=InputListRegisterDetail
+    PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
+                    importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail,
+                    nameWareListRegisterDetail, wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
+                    importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
+                    retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
+
+    FILTERS listRegisterListRegisterDetail(d) == l
+;
+
+printListRegister 'Реестр цен' (listRegister) = ACTION FORM listRegister OBJECTS l = listRegister IMAGE 'print.png' IN printGroup;
+printInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM inputListRegister OBJECTS l = inputListRegister IMAGE 'print.png' IN printGroup;
+
+printRegister 'Реестр цен' (inputListRegister) = ACTION (inputListRegister) {
+    IF fullInputListRegister(inputListRegister)  THEN {
+        EXEC printListRegister(inputListRegister);
+    } ELSE {
+        EXEC printInputListRegister(inputListRegister);
+    }
+} IMAGE 'print.png' IN printGroup;
+
+
+FORM inputListRegisters 'Реестры цен' // форма в частности для романа пока
+    OBJECTS l=InputListRegister
+    PROPERTIES (l)  READONLY numberListRegister, seriesListRegister, objectClassName, dateListRegister, nameDepartmentStoreListRegister,
+                    shipperListRegister, consigneeListRegister, dataFromContractListRegister FORCE GRID, numberContractListRegister FORCE GRID,
+                    quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister, supplierVATISumListRegisterDetailListRegister FORCE GRID,
+                    wareSumListRegisterDetailListRegister SHOWIF showWare(), wareVATSumListRegisterDetailListRegister SHOWIF showWare(), invoiceSumListRegisterDetailListRegister FORCE GRID,
+                    markupSumListRegisterDetailListRegister,
+                    retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister
+
+    PROPERTIES (l)  printRegister FORCE PANEL TOOLBAR
+
+    OBJECTS d=InputListRegisterDetail
+    PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
+                    importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail, supplierVATISumListRegisterDetail FORCE GRID,
+                    valueSupplierVATListRegisterDetail FORCE GRID,
+                    nameWareListRegisterDetail SHOWIF showWare(), wareSumListRegisterDetail SHOWIF showWare(), warePriceListRegisterDetail SHOWIF showWare(),
+                    wareVATSumListRegisterDetail SHOWIF showWare(), valueWareRangeListRegisterDetail SHOWIF showWare(),
+                    invoiceSumListRegisterDetail FORCE GRID, importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
+                    retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
+
+    FILTERS listRegisterListRegisterDetail(d) == l
+
+    FILTERGROUP notPassToBookkeeping
+        FILTER 'Передаваемые в бухгалтерию' 'F9' passToBookkeepingListRegister(l) DEFAULT
+;
+
+DESIGN inputListRegisters FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD l.box;
+        ADD d.box;
+    }
+
+    ADD functions.box;
+}
+
+// ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
+GROUP committeeGroup 'Комиссия' : public;
+
+META defineDocumentHeaderListRegister(object)
+    @defineDocumentHeaderListRegisterInner(object, ###object);
+END
+
+META defineDocumentHeaderListRegisterInner(object, class)
+    registerCommittee###object (object) = DATA RegisterCommittee(class);
+
+    nameRegisterCommittee###object 'Комиссия для реестра цен' (object) = nameRegisterCommittee(registerCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    registerCommittee###object (object) <- registerCommitteeDepartmentStore(departmentStore###object(object))
+        WHEN ASSIGNED(object IS class);
+
+    nameFormedMan###object 'Цены сформировал' (object) = nameFormedManCommittee(registerCommittee###object(object)) IN committeeGroup;
+    nameCheckedMan###object 'Реестр проверил' (object) = nameCheckedManCommittee(registerCommittee###object(object)) IN committeeGroup;
+    nameLabeledMan###object 'Товар промаркировал' (object) = nameLabeledManCommittee(registerCommittee###object(object)) IN committeeGroup;
+    nameAccountantMan###object 'Бухгалтер' (object) = nameAccountantManCommittee(registerCommittee###object(object)) IN committeeGroup;
+    nameHeadMan###object 'Зав. магазином' (object) = nameHeadManCommittee(registerCommittee###object(object)) IN committeeGroup;
+
+END
+
+// ----------------------------------- Макросы для имплементации реестров цен ------------------------------------------ //
+
+// не включает получателя, отправителя и сумму поставщика
+META implementHeaderInputListRegister (concrete)
+    dateListRegister (inputListRegister) += date###concrete (inputListRegister);
+    departmentStoreListRegister (inputListRegister) += departmentStore###concrete (inputListRegister);
+
+    quantityListRegisterDetailListRegister (inputListRegister) += quantity###concrete##Detail###concrete (inputListRegister);
+    wareSumListRegisterDetailListRegister (inputListRegister) += wareSum###concrete##Detail###concrete (inputListRegister);
+    wareVATSumListRegisterDetailListRegister (inputListRegister) += wareVATSum###concrete##Detail###concrete (inputListRegister);
+    markupSumListRegisterDetailListRegister (inputListRegister) +=  markupSum###concrete##Detail###concrete (inputListRegister);
+    retailVATSumListRegisterDetailListRegister (inputListRegister) += retailVATSum###concrete##Detail###concrete (inputListRegister);
+    retailSumListRegisterDetailListRegister (inputListRegister) += retailSum###concrete##Detail###concrete (inputListRegister);
+    registerCommitteeListRegister(inputListRegister) += registerCommittee###concrete (inputListRegister);
+END
+
+META implementHeaderInputListRegisterNumber (concrete)
+    numberListRegister (inputListRegister) += numberObject (inputListRegister) IF inputListRegister IS concrete;
+    seriesListRegister (inputListRegister) += seriesObject (inputListRegister) IF inputListRegister IS concrete;
+END
+
+META implementHeaderInputListRegisterNumberCustom (concrete, suffix)
+    numberListRegister (inputListRegister) += number###suffix (inputListRegister);
+    seriesListRegister (inputListRegister) += series###suffix (inputListRegister);
+END
+
+META implementInputListRegisterDetail (concrete, skuProp)
+    listRegisterListRegisterDetail(inputListRegisterDetail) += concrete###concrete##Detail (inputListRegisterDetail);
+    indexListRegisterDetail (inputListRegisterDetail) += index###concrete##Detail (inputListRegisterDetail);
+    skuListRegisterDetail  (inputListRegisterDetail) += skuProp###concrete##Detail (inputListRegisterDetail);
+    quantityListRegisterDetail (inputListRegisterDetail) += quantity###concrete##Detail (inputListRegisterDetail);
+    importerPriceListRegisterDetail (inputListRegisterDetail) += importerPrice###concrete##Detail (inputListRegisterDetail);
+    supplierMarkupListRegisterDetail (inputListRegisterDetail) += supplierMarkup###concrete##Detail (inputListRegisterDetail);
+    nameWareListRegisterDetail (inputListRegisterDetail) += nameWare###concrete##Detail (inputListRegisterDetail);
+    wareSumListRegisterDetail (inputListRegisterDetail) += wareSum###concrete##Detail (inputListRegisterDetail);
+    warePriceListRegisterDetail (inputListRegisterDetail) += warePrice###concrete##Detail (inputListRegisterDetail);
+    wareVATSumListRegisterDetail (inputListRegisterDetail) += wareVATSum###concrete##Detail (inputListRegisterDetail);
+    valueWareRangeListRegisterDetail (inputListRegisterDetail) += valueWareRange###concrete##Detail (inputListRegisterDetail);
+    importerMarkupListRegisterDetail (inputListRegisterDetail) += importerMarkup###concrete##Detail (inputListRegisterDetail);
+    markupSumListRegisterDetail (inputListRegisterDetail) += markupSum###concrete##Detail (inputListRegisterDetail);
+    valueRetailVATListRegisterDetail (inputListRegisterDetail) += valueRetailVAT###concrete##Detail (inputListRegisterDetail);
+    retailVATSumListRegisterDetail (inputListRegisterDetail) += retailVATSum###concrete##Detail (inputListRegisterDetail);
+    retailPriceListRegisterDetail (inputListRegisterDetail) += retailPrice###concrete##Detail (inputListRegisterDetail);
+    retailSumListRegisterDetail (inputListRegisterDetail) += retailSum###concrete##Detail (inputListRegisterDetail);
+END
+
+META implementInputListRegister (concrete, skuProp)
+    @implementHeaderInputListRegister(concrete);
+    @implementInputListRegisterDetail(concrete, skuProp);
+END
+
+META implementHeaderListRegister (concrete)
+    supplierVATISumListRegisterDetailListRegister (listRegister) += supplierVATISum###concrete##Detail###concrete(listRegister);
+    invoiceSumListRegisterDetailListRegister (listRegister) += invoiceSum###concrete##Detail###concrete(listRegister);
+END
+
+META implementListRegisterDetail (concrete)
+    supplierVATISumListRegisterDetail (listRegisterDetail) += supplierVATISum###concrete##Detail(listRegisterDetail);
+    valueSupplierVATListRegisterDetail (listRegisterDetail) += valueSupplierVAT###concrete##Detail(listRegisterDetail);
+
+    invoiceSumListRegisterDetail (listRegisterDetail) += invoiceSum###concrete##Detail(listRegisterDetail);
+END
+
+META implementListRegister(concrete, skuProp)
+    @implementHeaderInputListRegister(concrete);
+    @implementHeaderListRegister(concrete);
+
+    @implementInputListRegisterDetail(concrete, skuProp);
+    @implementListRegisterDetail(concrete);
+END

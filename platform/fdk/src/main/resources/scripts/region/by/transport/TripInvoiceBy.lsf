@@ -1,0 +1,11 @@
+MODULE TripInvoiceBy;
+
+REQUIRE TripInvoice, TripBy;
+
+NAMESPACE TripInvoice;
+
+EXTEND FORM printWaybillBy
+    OBJECTS i=Invoice
+    PROPERTIES (i) seriesNumberObject, dateInvoice, addressSupplierStockInvoice, addressCustomerStockInvoice
+    FILTERS inTripInvoice(t, i)
+;
