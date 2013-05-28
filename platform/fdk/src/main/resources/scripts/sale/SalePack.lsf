@@ -1,9 +1,0 @@
-MODULE SalePack;
-
-REQUIRE Pack;
-
-NAMESPACE Sale;
-
-// Упаковка
-
-@definePackSku ('продажи', Sale);

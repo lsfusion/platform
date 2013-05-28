@@ -1,9 +1,0 @@
-MODULE PurchaseOrderTaxReverse;
-
-REQUIRE TaxReverse, PurchaseOrder;
-
-NAMESPACE Purchase;
-
-overValueVATUserOrderDetail(detail) += valueRateRangeDate(VATUserOrderDetail(detail), dateUserOrderDetail(detail)) * 100 /
-                                  (100-valueRateRangeDate(VATUserOrderDetail(detail), dateUserOrderDetail(detail)))
-                                  IF reverseRange(VATUserOrderDetail(detail));

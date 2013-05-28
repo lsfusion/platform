@@ -1,8 +1,0 @@
-MODULE RetailCRMItem;
-
-REQUIRE RetailCRM, Item;
-
-EXTEND CLASS ItemGroup : DiscountSkuGroup;
-inDiscountSkuGroupSku(discountSkuGroup, sku) += itemGroupItem(sku) == discountSkuGroup;
-
-nameDiscountSkuGroup(group) += nameItemGroup(group) IF group IS ItemGroup;

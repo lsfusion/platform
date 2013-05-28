@@ -1,8 +1,0 @@
-MODULE SalePurchaseCertificate;
-
-REQUIRE SaleCertificate, PurchaseCertificate, SalePurchaseInvoice;
-
-NAMESPACE Sale;
-
-Purchase.certificateTextInvoiceDetail(detail) += certificateTextInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));
-overFillInvoiceUserInvoiceDetailInvoiceDetail (sd, id) += ACTION SET Purchase.certificateTextUserInvoiceDetail (sd) <- certificateTextInvoiceDetail(id);

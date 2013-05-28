@@ -1,7 +1,0 @@
-MODULE RomanUtils;
-
-NAMESPACE Utils;
-
-CLASS DoubleNamed 'Объект с кратким наименованием';
-
-shortName 'Краткое наименование' = DATA STRING[5] (DoubleNamed);

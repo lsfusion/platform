@@ -1,6 +1,0 @@
-MODULE CertificateSOT;
-
-REQUIRE Certificate;
-
-@defineDocumentTextBatchPrefix(priceList, 'Прейскурант цен');
-
