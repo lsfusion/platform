@@ -294,7 +294,7 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
             String name = getFieldValue(sprmatImportFile, "POL_NAIM", "Cp866", null);
             String idItem = k_group + name;
             String numberUserInvoice = getFieldValue(sprmatImportFile, "POST_DOK", "Cp866", "");
-            String seriesUserInvoice = "AA";
+            String seriesUserInvoice = getFieldValue(sprmatImportFile, "PRIM", "Cp866", null);
             String idSupplier = getFieldValue(sprmatImportFile, "K_POST", "Cp866", null);
             Date date = getDateFieldValue(sprmatImportFile, "D_PRIH", "Cp866", null);
             String descriptionDeclaration = getFieldValue(sprmatImportFile, "DPRM4", "Cp866", "");
