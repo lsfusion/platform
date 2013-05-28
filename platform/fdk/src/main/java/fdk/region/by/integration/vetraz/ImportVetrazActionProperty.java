@@ -57,11 +57,12 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
                         importItemsFromDBF(path + "//sprmat.dbf", numberOfItems) : null);
 
                 importData.setUserInvoicesList((getLCP("importUserInvoices").read(context) != null) ?
-                        importUserInvoicesFromDBF(path + "//sprmat.dbf", path + "//ostt.dbf", numberOfUserInvoices) : null);
+                        importUserInvoicesFromDBF(path + "//sprmat.dbf", path + "//cen.dbf", path + "//ostt.dbf",
+                                numberOfUserInvoices) : null);
 
                 new ImportActionProperty(LM, importData, context).makeImport();
 
-                if((getLCP("importItems").read(context) != null))
+                if ((getLCP("importItems").read(context) != null))
                     importItemPharmacy(context, path + "//sprmat.dbf", numberOfItems);
 
             }
@@ -107,7 +108,7 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
             BigDecimal retailVAT = getBigDecimalFieldValue(itemsImportFile, "NDSR", "Cp866", null);
             String manufacturer = getFieldValue(itemsImportFile, "DOPPRIM", "Cp866", null);
             String country = "БЕЛАРУСЬ";
-            String tnved = getFieldValue(itemsImportFile, "DPRM1", "Cp866", null);
+            String codeCustomsGroup = getFieldValue(itemsImportFile, "DPRM1", "Cp866", null);
             Date date = getDateFieldValue(itemsImportFile, "DATPR1", "Cp866", null);
             BigDecimal amountInPack = getBigDecimalFieldValue(itemsImportFile, "N_PER2", "Cp866", null);
             BigDecimal weight = getBigDecimalFieldValue(itemsImportFile, "N_PER3", "Cp866", null);
@@ -115,7 +116,7 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
             if (!idItem.trim().isEmpty())
                 data.add(new Item(idItem, "ВСЕ", name, UOM, UOM, UOM, null, null, country, k_group,
                         k_group, date, null, weight, weight, null, allowedVAT.contains(retailVAT.doubleValue()) ? retailVAT : null,
-                        null, null, null, null, null, null, idItem, amountInPack, manufacturer, manufacturer, tnved, country));
+                        null, null, null, null, null, null, idItem, amountInPack, manufacturer, manufacturer, codeCustomsGroup, country));
         }
         return data;
     }
@@ -187,51 +188,98 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
     }
 
     String[] declarationPatterns = new String[]{"№?((?:\\d|\\/)*)от(\\d{2}\\.\\d{2}\\.\\d{2,4})"};
-    String[] compliancePatterns = new String[]{"(сертификат)","(#)",
+    String[] compliancePatterns = new String[]{"(сертификат)", "(#)",
             "№?((?:\\p{L}|\\d|\\.)*)от(\\d{2}\\.\\d{2}\\.\\d{2})",
             "№?\\s?((?:\\p{L}|-|\\d|\\.)*)()\\s?(?:до|по)\\s?(\\d{2}\\.\\d{2}\\.\\d{2,4})",
             "№?((?:\\p{L}|\\d|\\.)*)(\\d{2}\\.\\d{2}\\.\\d{2})",
             "(\\p{L}{2}-?\\s?(?:\\d|\\.)*)", "№?((?:\\p{L}|-|\\s|\\d|\\.)*)"};
     String[] datePatterns = new String[]{"dd.MM.yy", "dd.MM.yyyy"};
 
-    private List<UserInvoiceDetail> importUserInvoicesFromDBF(String sprmatPath, String osttPath, Integer numberOfUserInvoices) throws IOException, xBaseJException, ParseException {
+    private List<UserInvoiceDetail> importUserInvoicesFromDBF(String sprmatPath, String cenPath, String osttPath, Integer numberOfUserInvoices) throws IOException, xBaseJException, ParseException {
 
         if (!(new File(sprmatPath).exists()))
             throw new RuntimeException("Запрашиваемый файл " + sprmatPath + " не найден");
 
+        if (!(new File(cenPath).exists()))
+            throw new RuntimeException("Запрашиваемый файл " + cenPath + " не найден");
+
         if (!(new File(osttPath).exists()))
             throw new RuntimeException("Запрашиваемый файл " + osttPath + " не найден");
 
-        DBF importFile = new DBF(sprmatPath);
-        int totalRecordCount = importFile.getRecordCount();
+        Map<String, String> currenciesMap = new HashMap<String, String>() {
+            {
+                put("BGL", "BGN");
+                put("BGN", "BGN");
+                put("ВGN", "BGN");//В кириллическая
+                put("BYR", "BLR");
+                put("BYB", "BLR");
+                put("ВYR", "BLR"); //В кириллическая
+                put("CHF", "CHF");
+                put("CZK", "CZK");
+                put("СZK", "CZK");//С кириллическая
+                put("EUR", "EUR");
+                put("EURO", "EUR");
+                put("ЕВРО", "EUR");
+                put("GBP", "GBP");
+                put("HUF", "HUF");
+                put("INR", "INR");
+                put("LVL", "LVL");
+                put("MDL", "MDL");
+                put("PLN", "PLN");
+                put("PLZ", "PLN");
+                put("RON", "RON");
+                put("RUR", "RUB");
+                put("RUB", "RUB");
+                put("RYR", "RUB");
+                put("UAH", "UAH");
+                put("UAN", "UAH");
+                put("USD", "USD");
+                put("ДОЛ", "USD");
+            }
+        };
 
-        Map<String, Object[]> sprmatMap = new HashMap<String, Object[]>();
+
+        DBF cenImportFile = new DBF(cenPath);
+        int totalRecordCount = cenImportFile.getRecordCount();
+
+        Map<String, Object[]> priceMap = new HashMap<String, Object[]>();
 
         for (int i = 0; i < totalRecordCount; i++) {
-            importFile.read();
+            cenImportFile.read();
 
-            String k_mat = getFieldValue(importFile, "K_MAT", "Cp866", "");
-            String k_group = getFieldValue(importFile, "K_GRUP", "Cp866", null);
-            String name = getFieldValue(importFile, "POL_NAIM", "Cp866", null);
-            String idItem = k_group + name;
-            String idDocument = getFieldValue(importFile, "POST_DOK", "Cp866", "");
-            String idSupplier = getFieldValue(importFile, "K_POST", "Cp866", null);
-            Date date = getDateFieldValue(importFile, "D_PRIH", "Cp866", null);
-            String descriptionDeclaration = getFieldValue(importFile, "DPRM4", "Cp866", null);
-            String certificateText = getFieldValue(importFile, "DPRM6", "Cp866", null);
-            String descriptionCompliance = getFieldValue(importFile, "DPRM7", "Cp866", null);
-            Date expiryDate = getDateFieldValue(importFile, "D_GODN", "Cp866", null);
-            String bin = getFieldValue(importFile, "DPRM9", "Cp866", null);
+            String k_mat = getFieldValue(cenImportFile, "K_MAT", "Cp866", "");
+            BigDecimal price = getBigDecimalFieldValue(cenImportFile, "N_CENU", "Cp866", null);
+            Date date = getDateFieldValue(cenImportFile, "D_CEN", "Cp866", null);
+
+            if (!k_mat.isEmpty()) {
+                Object[] value = priceMap.get(k_mat);
+                if (value == null || (value != null && date != null && value[1] != null && ((Date) value[1]).before(date)))
+                    priceMap.put(k_mat, new Object[]{price, date});
+            }
+        }
+
+        DBF osttImportFile = new DBF(osttPath);
+        totalRecordCount = osttImportFile.getRecordCount();
+
+        Map<String, Object[]> osttMap = new HashMap<String, Object[]>();
+
+        for (int i = 0; i < totalRecordCount; i++) {
+            osttImportFile.read();
+
+            String k_mat = getFieldValue(osttImportFile, "K_MAT", "Cp866", "");
+            BigDecimal quantity = getBigDecimalFieldValue(osttImportFile, "N_MAT", "Cp866", null);
+            String idWarehouse = getFieldValue(osttImportFile, "K_SKL", "Cp866", "");
+            idWarehouse = idWarehouse.isEmpty() ? null : ("СК" + idWarehouse);
+
             if (!k_mat.isEmpty())
-                sprmatMap.put(k_mat, new Object[]{idItem, idDocument, idSupplier, date, descriptionDeclaration,
-                        certificateText,descriptionCompliance, expiryDate, bin});
+                osttMap.put(k_mat, new Object[]{quantity.doubleValue() == 0 ? null : quantity, idWarehouse});
 
         }
 
         List<UserInvoiceDetail> data = new ArrayList<UserInvoiceDetail>();
 
-        importFile = new DBF(osttPath);
-        totalRecordCount = importFile.getRecordCount();
+        DBF sprmatImportFile = new DBF(sprmatPath);
+        totalRecordCount = sprmatImportFile.getRecordCount();
         int recordCount = (numberOfUserInvoices != null && numberOfUserInvoices != 0 && numberOfUserInvoices < totalRecordCount) ? numberOfUserInvoices : totalRecordCount;
 
         for (int i = 0; i < totalRecordCount; i++) {
@@ -239,26 +287,51 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
             if (data.size() >= recordCount)
                 break;
 
-            importFile.read();
+            sprmatImportFile.read();
 
-            String k_mat = getFieldValue(importFile, "K_MAT", "Cp866", null);
-            BigDecimal quantity = getBigDecimalFieldValue(importFile, "N_MAT", "Cp866", null);
-            String idWarehouse = getFieldValue(importFile, "K_SKL", "Cp866", "");
-            idWarehouse = idWarehouse.isEmpty() ? null : ("СК" + idWarehouse);
-            Object[] sprmat = sprmatMap.get(k_mat);
+            String k_mat = getFieldValue(sprmatImportFile, "K_MAT", "Cp866", null);
+            String k_group = getFieldValue(sprmatImportFile, "K_GRUP", "Cp866", null);
+            String name = getFieldValue(sprmatImportFile, "POL_NAIM", "Cp866", null);
+            String idItem = k_group + name;
+            String numberUserInvoice = getFieldValue(sprmatImportFile, "POST_DOK", "Cp866", "");
+            String seriesUserInvoice = "AA";
+            String idSupplier = getFieldValue(sprmatImportFile, "K_POST", "Cp866", null);
+            Date date = getDateFieldValue(sprmatImportFile, "D_PRIH", "Cp866", null);
+            String descriptionDeclaration = getFieldValue(sprmatImportFile, "DPRM4", "Cp866", "");
+            String certificateText = getFieldValue(sprmatImportFile, "DPRM6", "Cp866", null);
+            String descriptionCompliance = getFieldValue(sprmatImportFile, "DPRM7", "Cp866", "");
+            Date expiryDate = getDateFieldValue(sprmatImportFile, "D_GODN", "Cp866", null);
+            String bin = getFieldValue(sprmatImportFile, "DPRM9", "Cp866", null);
+            String codeCustomsGroup = getFieldValue(sprmatImportFile, "DPRM1", "Cp866", null);
+            BigDecimal retailVAT = getBigDecimalFieldValue(sprmatImportFile, "NDSR", "Cp866", null);
 
-            if (sprmat != null) {
+            BigDecimal n_zps = getBigDecimalFieldValue(sprmatImportFile, "N_ZPS", "Cp866", null);
+            Boolean isForeign = n_zps != null && n_zps.doubleValue() > 0;
 
-                String idItem = (String) sprmat[0];
-                String numberUserInvoice = (String) sprmat[1];
-                String seriesUserInvoice = "AA";
-                String idSupplier = (String) sprmat[2];
-                Date date = (Date) sprmat[3];
-                String descriptionDeclaration = (String) sprmat[4];
-                String certificateText = (String) sprmat[5];
-                String descriptionCompliance = (String) sprmat[6];
-                Date expiryDate = (Date) sprmat[7];
-                String bin = (String) sprmat[8];
+            String shortNameCurrency = isForeign ? null : "BLR";
+            if (isForeign) {
+                String currencyString = getFieldValue(sprmatImportFile, "DPRM3", "Cp866", "");
+                for (Map.Entry<String, String> entry : currenciesMap.entrySet()) {
+                    if (currencyString.toUpperCase().contains(entry.getKey())) {
+                        shortNameCurrency = entry.getValue();
+                        break;
+                    }
+                }
+            }
+
+            BigDecimal n_cenu = priceMap.containsKey(k_mat) ? (BigDecimal) priceMap.get(k_mat)[0] : null;
+            BigDecimal price = isForeign ? n_zps : n_cenu;
+            BigDecimal manufacturingPrice = getBigDecimalFieldValue(sprmatImportFile, "NUMPR1", "Cp866", null);
+            BigDecimal homePrice = isForeign ? n_cenu : null;
+            BigDecimal rateExchange = isForeign ? getBigDecimalFieldValue(sprmatImportFile, "DPRM12", "Cp866", null) : null;
+            BigDecimal priceDuty = isForeign ? manufacturingPrice.subtract(rateExchange == null ? price : price.multiply(rateExchange)) : null;
+            Boolean isHomeCurrency = isForeign ? true : null;
+            Boolean showDeclaration = isForeign ? true : null;
+
+            Object[] ostt = osttMap.get(k_mat);
+            if (ostt != null) {
+                BigDecimal quantity = (BigDecimal) ostt[0];
+                String idWarehouse = (String) ostt[1];
 
                 String numberDeclaration = null;
                 Date dateDeclaration = null;
@@ -287,8 +360,8 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
                         if (m.find()) {
                             numberCompliance = m.group(1).trim();
                             try {
-                                fromDateCompliance = (m.groupCount()>=2 && !m.group(2).isEmpty()) ? new Date(DateUtils.parseDate(m.group(2), datePatterns).getTime()) : null;
-                                toDateCompliance = (m.groupCount() >=3 && !m.group(3).isEmpty()) ? new Date(DateUtils.parseDate(m.group(3), datePatterns).getTime()) : null;
+                                fromDateCompliance = (m.groupCount() >= 2 && !m.group(2).isEmpty()) ? new Date(DateUtils.parseDate(m.group(2), datePatterns).getTime()) : null;
+                                toDateCompliance = (m.groupCount() >= 3 && !m.group(3).isEmpty()) ? new Date(DateUtils.parseDate(m.group(3), datePatterns).getTime()) : null;
                             } catch (ParseException ignored) {
                             }
                             break;
@@ -298,11 +371,13 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
 
 
                 if (!numberUserInvoice.isEmpty())
-                    data.add(new UserInvoiceDetail(seriesUserInvoice + numberUserInvoice + String.valueOf(date),
+                    data.add(new UserInvoiceDetail(seriesUserInvoice + numberUserInvoice + String.valueOf(date) + shortNameCurrency,
                             seriesUserInvoice, numberUserInvoice, null, true, k_mat, date, idItem, null, quantity, idSupplier,
-                            idWarehouse, idSupplier + "WH", null, null, null, null, null, null, null, certificateText, null,
-                            numberDeclaration, dateDeclaration, numberCompliance, fromDateCompliance, toDateCompliance,
-                            expiryDate, bin));
+                            idWarehouse, idSupplier + "WH", price.doubleValue() == 0 ? null : price, null, manufacturingPrice, null,
+                            null, null, null, certificateText, null, numberDeclaration, dateDeclaration, numberCompliance,
+                            fromDateCompliance, toDateCompliance, expiryDate, bin, rateExchange, homePrice, priceDuty,
+                            isHomeCurrency, showDeclaration, true, shortNameCurrency, codeCustomsGroup,
+                            allowedVAT.contains(retailVAT.doubleValue()) ? retailVAT : null));
             }
 
         }
@@ -410,7 +485,8 @@ public class ImportVetrazActionProperty extends ScriptingActionProperty {
     }
 
     private BigDecimal getBigDecimalFieldValue(DBF importFile, String fieldName, String charset, String defaultValue) throws UnsupportedEncodingException {
-        return BigDecimal.valueOf(Double.valueOf(getFieldValue(importFile, fieldName, charset, defaultValue)));
+        String value = getFieldValue(importFile, fieldName, charset, defaultValue);
+        return value == null ? null : new BigDecimal(value);
     }
 
     private Date getDateFieldValue(DBF importFile, String fieldName, String charset, Date defaultValue) throws UnsupportedEncodingException, ParseException {

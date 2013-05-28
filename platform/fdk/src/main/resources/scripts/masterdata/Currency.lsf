@@ -234,11 +234,13 @@ overLoadDefaultCurrencies = ABSTRACT ACTION ();
 loadDefaultCurrencies 'Загрузить стандартные валюты' = ACTION () {
     EXEC loadDefaultCurrency('AUD', 'Австралийский доллар', ' ');
     EXEC loadDefaultCurrency('BGN', 'Болгарский лев', ' ');
+    EXEC loadDefaultCurrency('HUF', 'Венгерский форинт', ' ');
     EXEC loadDefaultCurrency('UAH', 'Гривна', ' ');
     EXEC loadDefaultCurrency('DKK', 'Датская крона', ' ');
     EXEC loadDefaultCurrency('USD', 'Доллар США', '$');
     EXEC loadDefaultCurrency('EUR', 'Евро', '€');
     EXEC loadDefaultCurrency('PLN', 'Злотый', ' ');
+    EXEC loadDefaultCurrency('INR', 'Индийская рупия', ' ');
     EXEC loadDefaultCurrency('ISK', 'Исландская крона', ' ');
     EXEC loadDefaultCurrency('CAD', 'Канадский доллар', ' ');
     EXEC loadDefaultCurrency('CNY', 'Китайский юань', ' ');
@@ -248,6 +250,7 @@ loadDefaultCurrencies 'Загрузить стандартные валюты' =
     EXEC loadDefaultCurrency('MDL', 'Молдавский лей', ' ');
     EXEC loadDefaultCurrency('NOK', 'Норвежская крона', ' ');
     EXEC loadDefaultCurrency('RUB', 'Российский рубль', ' ');
+    EXEC loadDefaultCurrency('RON', 'Румынский лей', ' ');
     EXEC loadDefaultCurrency('XDR', 'СДР', ' ');
     EXEC loadDefaultCurrency('SGD', 'Сингапурский доллар', ' ');
     EXEC loadDefaultCurrency('KGS', 'Сом', ' ');

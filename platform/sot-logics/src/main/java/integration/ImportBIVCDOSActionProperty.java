@@ -92,7 +92,6 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 importData.setImportUserInvoicesPosted(getLCP("importBIVCDOSUserInvoicesPosted").read(context) != null);
 
                 ImportActionProperty imp = new ImportActionProperty(LM, importData, context);
-                imp.showManufacturingPrice = true;
                 imp.showWholesalePrice = true;
                 imp.makeImport();
 
@@ -551,7 +550,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                                 null, true, idSupplierWarehouse + "/" + idCustomerWarehouse + "/" + dateField + "/" + pnt13 + pnt48,
                                 date, idItem, isWare, quantity, idSupplier, idCustomerWarehouse, idSupplierWarehouse, price, chargePrice,
                                 manufacturingPrice, wholesalePrice, wholesaleMarkup, null, null, textCompliance, null, null,
-                                null, null, null, null, null, null));
+                                null, null, null, null, null, null, null, null, null, null, null, true, null, null, null));
                         BigDecimal sum = new BigDecimal((Math.round(((price.doubleValue() + (chargePrice == null ? 0 : chargePrice.doubleValue())) * quantity.doubleValue()) * 100)) / 100);
                         BigDecimal subtotal = totalSumWarehouse.get(idCustomerWarehouse);
                         if (subtotal == null)

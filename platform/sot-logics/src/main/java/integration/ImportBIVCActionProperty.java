@@ -69,7 +69,6 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         importUserInvoices(path + "//stmc") : null);
 
                 ImportActionProperty imp = new ImportActionProperty(LM, importData, context);
-                imp.showManufacturingPrice = true;
                 imp.showWholesalePrice = true;
                 imp.makeImport();
 
@@ -323,7 +322,8 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                             userInvoiceDetailsList.add(new UserInvoiceDetail(series + number, series, number, null, true, sid,
                                     date, idItem, false, quantity, idSupplier, idCustomerWarehouse,idSupplierWarehouse,
                                     price, chargePrice, manufacturingPrice, wholesalePrice, baseMarkup, null, null,
-                                    textCompliance, null, null, null, null, null, null, null, null));
+                                    textCompliance, null, null, null, null, null, null, null, null, null, null, null,
+                                    null, null, true, null, null, null));
                             quantity = null;
                             idSupplier = null;
                             idCustomerWarehouse = null;

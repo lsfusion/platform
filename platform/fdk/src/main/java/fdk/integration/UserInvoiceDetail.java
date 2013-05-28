@@ -1,7 +1,6 @@
 package fdk.integration;
 
 
-
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -35,6 +34,15 @@ public class UserInvoiceDetail {
     public Date toDateCompliance;
     public Date expiryDate;
     public String bin;
+    public BigDecimal rateExchange;
+    public BigDecimal homePrice;
+    public BigDecimal priceDuty;
+    public Boolean isHomeCurrency;
+    public Boolean showDeclaration;
+    public Boolean showManufacturingPrice;
+    public String shortNameCurrency;
+    public String codeCustomsGroup;
+    public BigDecimal retailVAT;
 
 
     public UserInvoiceDetail(String idUserInvoice, String series, String number, Boolean createPricing,
@@ -44,7 +52,9 @@ public class UserInvoiceDetail {
                              BigDecimal wholesalePrice, BigDecimal wholesaleMarkup, BigDecimal retailPrice,
                              BigDecimal retailMarkup, String certificateText, String idContract, String numberDeclaration,
                              Date dateDeclaration, String numberCompliance, Date fromDateCompliance, Date toDateCompliance,
-                             Date expiryDate, String bin) {
+                             Date expiryDate, String bin, BigDecimal rateExchange, BigDecimal homePrice, BigDecimal priceDuty,
+                             Boolean isHomeCurrency, Boolean showDeclaration, Boolean showManufacturingPrice,
+                             String shortNameCurrency, String codeCustomsGroup, BigDecimal retailVAT) {
         this.idUserInvoice = idUserInvoice;
         this.series = series;
         this.number = number;
@@ -74,5 +84,14 @@ public class UserInvoiceDetail {
         this.toDateCompliance = toDateCompliance;
         this.expiryDate = expiryDate;
         this.bin = bin;
+        this.rateExchange = rateExchange;
+        this.homePrice = homePrice;
+        this.priceDuty = priceDuty;
+        this.isHomeCurrency = isHomeCurrency;
+        this.showDeclaration = showDeclaration;
+        this.showManufacturingPrice = showManufacturingPrice;
+        this.shortNameCurrency = shortNameCurrency;
+        this.codeCustomsGroup = codeCustomsGroup;
+        this.retailVAT = retailVAT;
     }
 }

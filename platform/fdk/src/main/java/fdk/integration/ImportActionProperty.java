@@ -397,7 +397,6 @@ public class ImportActionProperty {
         session.close();
     }
 
-    public Boolean showManufacturingPrice;
     public Boolean showWholesalePrice;
 
     private void importUserInvoices(List<UserInvoiceDetail> userInvoiceDetailsList, Boolean posted, Integer numberAtATime) throws SQLException, ScriptingErrorLog.SemanticErrorException {
@@ -433,6 +432,9 @@ public class ImportActionProperty {
                 ImportField quantityUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("Purchase.quantityUserInvoiceDetail"));
                 ImportField priceUserInvoiceDetail = new ImportField(LM.findLCPByCompoundName("Purchase.priceUserInvoiceDetail"));
                 ImportField expiryDateUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("expiryDateUserInvoiceDetail"));
+                ImportField dataRateExchangeUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("dataRateExchangeUserInvoiceDetail"));
+                ImportField homePriceUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("homePriceUserInvoiceDetail"));
+                ImportField priceDutyUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("priceDutyUserInvoiceDetail"));
                 ImportField binUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("idBin"));
                 ImportField manufacturingPriceInvoiceDetail = new ImportField(LM.findLCPByCompoundName("Purchase.manufacturingPriceInvoiceDetail"));
                 ImportField chargePriceUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("Purchase.chargePriceUserInvoiceDetail"));
@@ -451,6 +453,13 @@ public class ImportActionProperty {
                 ImportField numberComplianceField = new ImportField(LM.findLCPByCompoundName("numberObject"));
                 ImportField fromDateComplianceField = new ImportField(LM.findLCPByCompoundName("dateDeclaration"));
                 ImportField toDateComplianceField = new ImportField(LM.findLCPByCompoundName("dateDeclaration"));
+
+                ImportField isHomeCurrencyUserInvoiceField = new ImportField(LM.findLCPByCompoundName("isHomeCurrencyUserInvoice"));
+                ImportField showDeclarationUserInvoiceField = new ImportField(LM.findLCPByCompoundName("showDeclarationUserInvoice"));
+
+                ImportField shortNameCurrencyField = new ImportField(LM.findLCPByCompoundName("shortNameCurrency"));
+                ImportField codeCustomsGroupField = new ImportField(LM.findLCPByCompoundName("codeCustomsGroup"));
+                ImportField valueVATUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("Purchase.valueVATUserInvoiceDetail"));
 
                 ImportKey<?> userInvoiceKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName(posted ? "Purchase.UserInvoicePosted" : "Purchase.UserInvoice"),
                         LM.findLCPByCompoundName("userInvoiceId").getMapping(idUserInvoiceField));
@@ -482,6 +491,15 @@ public class ImportActionProperty {
                 ImportKey<?> binKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Bin"),
                         LM.findLCPByCompoundName("binId").getMapping(binUserInvoiceDetailField));
 
+                ImportKey<?> currencyKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Currency"),
+                        LM.findLCPByCompoundName("currencyShortName").getMapping(shortNameCurrencyField));
+
+                ImportKey<?> customsGroupKey = new ImportKey((CustomClass) LM.findClassByCompoundName("CustomsGroup"),
+                        LM.findLCPByCompoundName("customsGroupCode").getMapping(codeCustomsGroupField));
+
+                ImportKey<?> VATKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Range"),
+                        LM.findLCPByCompoundName("valueCurrentVATDefaultValue").getMapping(valueVATUserInvoiceDetailField));
+
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
                 props.add(new ImportProperty(numberUserInvoiceField, LM.findLCPByCompoundName("numberObject").getMapping(userInvoiceKey)));
@@ -505,10 +523,11 @@ public class ImportActionProperty {
                 props.add(new ImportProperty(quantityUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.quantityUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
                 props.add(new ImportProperty(priceUserInvoiceDetail, LM.findLCPByCompoundName("Purchase.priceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
                 props.add(new ImportProperty(expiryDateUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.expiryDateUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
+                props.add(new ImportProperty(dataRateExchangeUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.dataRateExchangeUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
+                props.add(new ImportProperty(homePriceUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.homePriceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
+                props.add(new ImportProperty(priceDutyUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.priceDutyUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
                 props.add(new ImportProperty(showManufacturingPriceUserInvoiceField, LM.findLCPByCompoundName("Purchase.showManufacturingPriceUserInvoice").getMapping(userInvoiceKey)));
                 props.add(new ImportProperty(manufacturingPriceInvoiceDetail, LM.findLCPByCompoundName("Purchase.manufacturingPriceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
-
-                props.add(new ImportProperty(showManufacturingPriceUserInvoiceField, LM.findLCPByCompoundName("Purchase.showManufacturingPriceUserInvoice").getMapping(userInvoiceKey)));
                 props.add(new ImportProperty(chargePriceUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.chargePriceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
 
                 props.add(new ImportProperty(showWholesalePriceUserInvoiceField, LM.findLCPByCompoundName("Purchase.showWholesalePriceUserInvoice").getMapping(userInvoiceKey)));
@@ -551,34 +570,50 @@ public class ImportActionProperty {
                 props.add(new ImportProperty(binUserInvoiceDetailField, LM.findLCPByCompoundName("binUserInvoiceDetail").getMapping(userInvoiceDetailKey),
                         LM.object(LM.findClassByCompoundName("Bin")).getMapping(binKey)));
 
+                props.add(new ImportProperty(isHomeCurrencyUserInvoiceField, LM.findLCPByCompoundName("isHomeCurrencyUserInvoice").getMapping(userInvoiceKey)));
+                props.add(new ImportProperty(showDeclarationUserInvoiceField, LM.findLCPByCompoundName("showDeclarationUserInvoice").getMapping(userInvoiceKey)));
+
+                props.add(new ImportProperty(shortNameCurrencyField, LM.findLCPByCompoundName("Purchase.currencyUserInvoice").getMapping(userInvoiceKey),
+                        LM.object(LM.findClassByCompoundName("Currency")).getMapping(currencyKey)));
+
+                props.add(new ImportProperty(codeCustomsGroupField, LM.findLCPByCompoundName("customsGroupUserInvoiceDetail").getMapping(userInvoiceDetailKey),
+                        LM.object(LM.findClassByCompoundName("CustomsGroup")).getMapping(customsGroupKey)));
+
+                props.add(new ImportProperty(valueVATUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.VATUserInvoiceDetail").getMapping(userInvoiceDetailKey),
+                        LM.object(LM.findClassByCompoundName("Range")).getMapping(VATKey)));
+
                 List<List<Object>> data = new ArrayList<List<Object>>();
                 for (UserInvoiceDetail u : dataUserInvoiceDetail) {
                     data.add(Arrays.asList((Object) u.idUserInvoice, u.series, u.number, u.createPricing, u.createShipment,
-                            showManufacturingPrice, showWholesalePrice, u.sid, u.date, new Time(12, 0, 0), u.idItem,
-                            u.quantity, u.supplier, u.customerWarehouse, u.supplierWarehouse, u.price, u.price,
-                            u.chargePrice, u.manufacturingPrice, u.wholesalePrice, u.wholesaleMarkup,
-                            u.retailPrice, u.retailMarkup, u.certificateText, true, u.idContract, u.numberDeclaration,
-                            u.dateDeclaration, u.numberCompliance, u.fromDateCompliance, u.toDateCompliance, u.expiryDate,
-                            u.bin));
+                            u.showManufacturingPrice, showWholesalePrice, u.isHomeCurrency, u.showDeclaration,
+                            u.date, new Time(12, 0, 0), u.sid, u.idItem, u.quantity, u.supplier, u.customerWarehouse,
+                            u.supplierWarehouse, u.price, u.price, u.chargePrice, u.manufacturingPrice,
+                            u.wholesalePrice, u.rateExchange, u.homePrice, u.priceDuty, u.wholesaleMarkup, u.retailPrice,
+                            u.retailMarkup, u.certificateText, true, u.idContract, u.numberDeclaration, u.dateDeclaration,
+                            u.numberCompliance, u.fromDateCompliance, u.toDateCompliance, u.expiryDate, u.bin,
+                            u.shortNameCurrency, u.codeCustomsGroup, u.retailVAT));
                 }
                 ImportTable table = new ImportTable(Arrays.asList(idUserInvoiceField, seriesUserInvoiceField,
                         numberUserInvoiceField, createPricingUserInvoiceField, createShipmentUserInvoiceField,
                         showManufacturingPriceUserInvoiceField, showWholesalePriceUserInvoiceField,
-                        idUserInvoiceDetailField, dateUserInvoiceField, timeUserInvoiceField, idItemField,
-                        quantityUserInvoiceDetailField, idSupplierField, idCustomerStockField,
-                        idSupplierWarehouseField, priceUserInvoiceDetail, manufacturingPriceInvoiceDetail,
-                        chargePriceUserInvoiceDetailField, manufacturingPriceUserInvoiceDetailField,
-                        wholesalePriceUserInvoiceDetailField, wholesaleMarkupUserInvoiceDetailField,
+                        isHomeCurrencyUserInvoiceField, showDeclarationUserInvoiceField, dateUserInvoiceField,
+                        timeUserInvoiceField, idUserInvoiceDetailField, idItemField, quantityUserInvoiceDetailField,
+                        idSupplierField, idCustomerStockField, idSupplierWarehouseField, priceUserInvoiceDetail,
+                        manufacturingPriceInvoiceDetail, chargePriceUserInvoiceDetailField,
+                        manufacturingPriceUserInvoiceDetailField, wholesalePriceUserInvoiceDetailField,
+                        dataRateExchangeUserInvoiceDetailField, homePriceUserInvoiceDetailField,
+                        priceDutyUserInvoiceDetailField, wholesaleMarkupUserInvoiceDetailField,
                         retailPriceUserInvoiceDetailField, retailMarkupUserInvoiceDetailField,
                         certificateTextUserInvoiceDetailField, skipCreateWareUserInvoiceDetailField,
                         userContractSkuField, numberDeclarationField, dateDeclarationField, numberComplianceField,
                         fromDateComplianceField, toDateComplianceField, expiryDateUserInvoiceDetailField,
-                        binUserInvoiceDetailField), data);
+                        binUserInvoiceDetailField, shortNameCurrencyField, codeCustomsGroupField, valueVATUserInvoiceDetailField), data);
 
                 DataSession session = context.createSession();
                 session.sql.pushVolatileStats(null);
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(userInvoiceKey, userInvoiceDetailKey,
-                        itemKey, supplierKey, customerStockKey, userContractSkuKey, declarationKey, complianceKey, binKey), props);
+                        itemKey, supplierKey, customerStockKey, userContractSkuKey, declarationKey, complianceKey, binKey,
+                        currencyKey, customsGroupKey, VATKey), props);
                 service.synchronize(true, false);
                 session.apply(context.getBL());
                 session.sql.popVolatileStats(null);
