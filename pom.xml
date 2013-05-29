@@ -14,25 +14,12 @@
         <module>report-api</module>
         <module>desktop-client</module>
         <module>server</module>
-        <module>fdk</module>
-        <module>tmc</module>
-        <module>skolkovo-api</module>
-        <module>skolkovo-logics</module>
-        <module>skolkovo-gwt</module>
-        <module>budget-logics</module>
-        <module>roman-logics</module>
-        <module>equ-api</module>
-        <module>equ-clt</module>
-        <module>equ-srv</module>
-        <module>retail-logics</module>
+        <module>serveragent</module>
         <module>web-api</module>
         <module>web-client</module>
         <module>sgwt-api</module>
-        <module>paas-api</module>
-        <module>paas-logics</module>
-        <module>paas-web</module>
-        <module>serveragent</module>
-        <module>sot-logics</module>
+
+        <module>erp</module>
     </modules>
 
 </project>

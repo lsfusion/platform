@@ -1,5 +1,5 @@
 <assembly>
-  <id>prod</id>
+  <id>assembly</id>
   <formats>
     <format>jar</format>
   </formats>

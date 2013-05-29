@@ -1,2 +1,1 @@
-call mvn gwt:compile
-call mvn war:war -Dnodesktop
+call mvn install -P gwt,war

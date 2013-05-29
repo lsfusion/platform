@@ -26,14 +26,8 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
-
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>gwt-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>

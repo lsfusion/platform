@@ -15,9 +15,34 @@
 
     <properties>
         <assemble.mainClass>platform.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
-        <assemble.descriptor>../server/src/assemble/distribution.xml</assemble.descriptor>
+        <assemble.descriptorref>lsfusion-server-distribution</assemble.descriptorref>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>assemble</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>${assemble.descriptorref}</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>by.luxsoft.platform</groupId>
+                                <artifactId>server</artifactId>
+                                <version>${lsfusion.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <dependencies>
         <dependency>

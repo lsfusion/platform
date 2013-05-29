@@ -8,6 +8,8 @@
     <name>Base</name>
 
     <properties>
+        <lsfusion.version>${project.parent.version}</lsfusion.version>
+
         <findbugs.version>1.0.0</findbugs.version>
         <junit.version>4.10</junit.version>
         <log4j.version>1.2.16</log4j.version>
@@ -91,7 +93,7 @@
         <!-- assemble properties -->
         <assemble.finalName>base</assemble.finalName>
         <assemble.jar>${project.build.directory}/${assemble.finalName}.jar</assemble.jar>
-        <assemble.descriptor>src/assemble/distribution.xml</assemble.descriptor>
+        <assemble.packed>${assemble.jar}.pack.gz</assemble.packed>
         <keystore.file>${project.basedir}/src/assemble/keystore</keystore.file>
         <keystore.alias>lsf</keystore.alias>
         <keystore.pass>qwerty</keystore.pass>
@@ -147,7 +149,7 @@
                         <version>1.12</version>
                         <executions>
                             <execution>
-                                <phase>verify</phase>
+                                <phase>prepare-package</phase>
                                 <goals>
                                     <goal>revision</goal>
                                 </goals>
@@ -169,6 +171,7 @@
                     <plugin>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <configuration>
+                            <attach>false</attach>
                             <finalName>${assemble.finalName}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <archive>
@@ -177,19 +180,39 @@
                                 </manifest>
                                 <manifestEntries>
                                     <SCM-Version>${platform.revision}</SCM-Version>
-                                    <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
                                 </manifestEntries>
                             </archive>
-                            <descriptors>
-                                <descriptor>${assemble.descriptor}</descriptor>
-                            </descriptors>
                         </configuration>
                         <executions>
                             <execution>
-                                <phase>install</phase>
+                                <id>make-assembly</id>
+                                <phase>package</phase>
                                 <goals>
                                     <goal>single</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>1.8</version>
+                        <executions>
+                            <execution>
+                                <id>attach-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>attach-artifact</goal>
+                                </goals>
+                                <configuration>
+                                    <artifacts>
+                                        <artifact>
+                                            <file>${assemble.jar}</file>
+                                            <type>jar</type>
+                                            <classifier>assembly</classifier>
+                                        </artifact>
+                                    </artifacts>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -203,15 +226,16 @@
                 <plugins>
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.7</version>
                         <executions>
                             <execution>
                                 <id>ant-sign</id>
-                                <phase>install</phase>
+                                <phase>package</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <echo message="Repacking jar ${assemble.jar}"/>
                                         <exec executable="pack200">
                                             <arg value="--repack"/>
@@ -223,8 +247,8 @@
                                                 jar="${assemble.jar}"
                                                 keystore="${keystore.file}"
                                                 alias="${keystore.alias}"
-                                                storepass="${keystore.pass}" />
-                                    </tasks>
+                                                storepass="${keystore.pass}"/>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
@@ -239,28 +263,86 @@
                 <plugins>
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.7</version>
                         <executions>
                             <execution>
                                 <id>ant-pack</id>
-                                <phase>install</phase>
+                                <phase>package</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <echo message="Pack200-ing jar ${assemble.jar}"/>
                                         <exec executable="pack200">
                                             <arg value="--segment-limit=-1"/>
-                                            <arg value="${assemble.jar}.pack.gz"/>
+                                            <arg value="${assemble.packed}"/>
                                             <arg value="${assemble.jar}"/>
                                         </exec>
-                                    </tasks>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>1.8</version>
+                        <executions>
+                            <execution>
+                                <id>attach-assembly-packed</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>attach-artifact</goal>
+                                </goals>
+                                <configuration>
+                                    <artifacts>
+                                        <artifact>
+                                            <file>${assemble.packed}</file>
+                                            <type>pack.gz</type>
+                                            <classifier>assembly</classifier>
+                                        </artifact>
+                                    </artifacts>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>exec-client</id>
+            <build>
+               <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.7</version>
+                        <configuration>
+                            <exportAntProperties>true</exportAntProperties>
+                            <target>
+                                <java classpathref="maven.runtime.classpath"
+                                      classname="platform.client.Main"
+                                      fork="true"
+                                      clonevm="true"
+                                      failonerror="true">
+                                    <jvmarg value="-Xms512m"/>
+                                    <jvmarg value="-Xmx1024m"/>
+                                    <jvmarg value="-ea"/>
+                                </java>
+                            </target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+
+            <dependencies>
+                <dependency>
+                    <groupId>by.luxsoft.platform</groupId>
+                    <artifactId>desktop-client</artifactId>
+                    <version>${lsfusion.version}</version>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 
@@ -303,6 +385,11 @@
                             <version>${gwt.version}</version>
                         </dependency>
                     </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>2.3</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -796,102 +883,109 @@
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>base</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>logics</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>api</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>report-api</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>desktop-client</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>by.luxsoft.platform</groupId>
+                <artifactId>desktop-client</artifactId>
+                <version>${lsfusion.version}</version>
+                <classifier>assembly</classifier>
+                <type>pack.gz</type>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>server</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>fdk</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>tmc</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>skolkovo-api</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>paas-api</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>web-api</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>sgwt-api</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>web-client</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>skolkovo-logics</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>skolkovo-gwt</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>budget-logics</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>roman-logics</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>sample-logics</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>equ-api</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>equ-srv</artifactId>
-                <version>${project.version}</version>
+                <version>${lsfusion.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

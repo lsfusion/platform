@@ -277,7 +277,7 @@
     <target name="web-client-recursiveCompileWithGwt">
         <antcall target="recursiveCompileWithGwt">
             <param name="artifactId" value="web-client"/>
-            <param name="gwtProfile" value="gwtWebClient"/>
+            <param name="gwtProfile" value="gwt-dev"/>
         </antcall>
     </target>
 
@@ -332,7 +332,7 @@
     <target name="paas-web-recursiveCompileWithGwt">
         <antcall target="recursiveCompileWithGwt">
             <param name="artifactId" value="paas-web"/>
-            <param name="gwtProfile" value="gwtPaas"/>
+            <param name="gwtProfile" value="gwt-dev-paas"/>
         </antcall>
     </target>
 

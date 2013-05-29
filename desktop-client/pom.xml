@@ -14,7 +14,31 @@
     <properties>
         <assemble.mainClass>platform.client.Main</assemble.mainClass>
         <assemble.finalName>lsfusion-client-${project.version}</assemble.finalName>
+        <assemble.descriptor>src/assemble/distribution.xml</assemble.descriptor>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>assemble</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <archive>
+                                <manifestEntries>
+                                    <SplashScreen-Image>images/lsfusion.jpg</SplashScreen-Image>
+                                </manifestEntries>
+                            </archive>
+                            <descriptors>
+                                <descriptor>${assemble.descriptor}</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
