@@ -106,18 +106,6 @@
         </antcall>
     </target>
 
-    <target name="fdk-recursiveCompile">
-        <antcall target="recursiveCompile">
-            <param name="artifactId" value="fdk"/>
-        </antcall>
-    </target>
-
-    <target name="fdk-quickCompile">
-        <antcall target="quickCompile">
-            <param name="artifactId" value="fdk"/>
-        </antcall>
-    </target>
-
     <target name="tmc-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="tmc"/>
@@ -238,15 +226,15 @@
         </antcall>
     </target>
 
-    <target name="retail-logics-recursiveCompile">
+    <target name="erp-logics-recursiveCompile">
         <antcall target="recursiveCompile">
-            <param name="artifactId" value="retail-logics"/>
+            <param name="artifactId" value="erp-logics"/>
         </antcall>
     </target>
 
-    <target name="retail-logics-quickCompile">
+    <target name="erp-logics-quickCompile">
         <antcall target="quickCompile">
-            <param name="artifactId" value="retail-logics"/>
+            <param name="artifactId" value="erp-logics"/>
         </antcall>
     </target>
 

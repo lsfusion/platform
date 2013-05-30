@@ -88,7 +88,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private DataAdapter adapter;
 
+    private RestartManager restartManager;
+
     private BusinessLogics<?> businessLogics;
+
+    private boolean ignoreMigration;
 
     private BaseLogicsModule<?> LM;
 
@@ -102,8 +106,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private int systemUserObject;
     private int systemComputer;
-
-    private RestartManager restartManager;
 
     private final ThreadLocal<SQLSession> threadLocalSql;
 
@@ -134,6 +136,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public void setRestartManager(RestartManager restartManager) {
         this.restartManager = restartManager;
+    }
+
+    public void setIgnoreMigration(boolean ignoreMigration) {
+        this.ignoreMigration = ignoreMigration;
     }
 
     @Override
@@ -1189,6 +1195,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     private void runAlterationScript() {
+        if (ignoreMigration) {
+            //todo: добавить возможность задавать расположение для migration.script, чтобы можно было запускать разные логики из одного модуля
+            return;
+        }
+
         try {
             InputStream scriptStream = getClass().getResourceAsStream("/migration.script");
             if (scriptStream != null) {

@@ -919,7 +919,7 @@
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
-                <artifactId>fdk</artifactId>
+                <artifactId>erp-logics</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>
             <dependency>

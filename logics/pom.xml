@@ -51,7 +51,7 @@
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
-            <artifactId>fdk</artifactId>
+            <artifactId>erp-logics</artifactId>
         </dependency>
     </dependencies>
 </project>
