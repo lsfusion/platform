@@ -7,9 +7,9 @@ REQUIRE System, Stock, Barcode, PriceListType, DefaultData;
 CLASS EquipmentServer 'Сервер оборудования';
 TABLE equipmentServer (EquipmentServer);
 
-nameEquipmentServer 'Наименование' = DATA ISTRING[50](EquipmentServer);
+nameEquipmentServer 'Наименование' = DATA ISTRING[50](EquipmentServer) IN recognize;
 
-sidEquipmentServer 'Идентификатор' = DATA STRING[20] (EquipmentServer) IN base;
+sidEquipmentServer 'Идентификатор' = DATA STRING[20] (EquipmentServer) IN recognize;
 sidToEquipmentServer(equipmentServer) = GROUP AGGR equipmentServer BY sidEquipmentServer (equipmentServer) WHERE equipmentServer IS EquipmentServer;
 delayEquipmentServer 'Период обновления (в миллисекундах)' = DATA INTEGER (EquipmentServer) IN base;
 

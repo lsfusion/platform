@@ -29,7 +29,7 @@
 	<parameter name="b_params" class="java.util.Map"/>
 	<field name="cs" class="java.lang.Integer"/>
 	<field name="nameCollationSheet" class="java.lang.String"/>
-	<field name="nameCompanyCollationSheet" class="java.lang.String"/>
+	<field name="nameLegalEntityStockCollationSheet" class="java.lang.String"/>
 	<field name="nameCommitteeCollationSheet" class="java.lang.String"/>
 	<field name="nameChairmanCommitteeCollationSheet" class="java.lang.String"/>
 	<field name="namePositionChairmanCollationSheet" class="java.lang.String"/>
@@ -165,7 +165,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Компания: "+$F{nameCompanyCollationSheet}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Компания: "+$F{nameLegalEntityStockCollationSheet}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="451" y="0" width="86" height="10"/>

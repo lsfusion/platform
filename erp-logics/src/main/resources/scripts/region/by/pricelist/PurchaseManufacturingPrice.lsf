@@ -26,12 +26,32 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPri
 manufacturingRoundConditionUserInvoice = DATA RoundCondition(UserInvoice);
 nameManufacturingRoundConditionUserInvoice 'Округление' (userInvoice) = nameRoundCondition(manufacturingRoundConditionUserInvoice(userInvoice));
 
+addCostPriceToManufacturingPriceOperation 'Учитывать в цене изготовителя доп. расходы' = DATA BOOLEAN (Purchase.Operation);
+
+EXTEND FORM Purchase.operation
+    PROPERTIES(o) addCostPriceToManufacturingPriceOperation
+;
+
+EXTEND DESIGN Purchase.operation{
+    tabContainer{
+        showContainer{
+            ADD PROPERTY(addCostPriceToManufacturingPriceOperation);
+        }
+    }
+}
+
+addCostPriceToManufacturingPriceUserInvoice(invoice) <- addCostPriceToManufacturingPriceOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+
+baseManufacturingPriceUserInvoiceDetail = IF addCostPriceToManufacturingPriceUserInvoice(invoiceInvoiceDetail(detail)) THEN costPriceUserInvoiceDetail(detail)
+                                        ELSE incomePriceUserInvoiceDetail(detail);
+
 WHEN SESSION FORMS userInvoice
     CHANGED(costPriceUserInvoiceDetail(d)) OR CHANGED(manufacturingRoundConditionUserInvoice(invoiceInvoiceDetail(d))) DO {
     IF manufacturingRoundConditionUserInvoice(invoiceInvoiceDetail(d)) THEN
-        manufacturingPriceUserInvoiceDetail(d) <- roundPriceRoundCondition(costPriceUserInvoiceDetail(d), manufacturingRoundConditionUserInvoice(invoiceInvoiceDetail(d)))
+        manufacturingPriceUserInvoiceDetail(d) <- roundPriceRoundCondition(baseManufacturingPriceUserInvoiceDetail(d), manufacturingRoundConditionUserInvoice(invoiceInvoiceDetail(d)))
     ELSE
-        manufacturingPriceUserInvoiceDetail(d) <- costPriceUserInvoiceDetail(d);
+        manufacturingPriceUserInvoiceDetail(d) <- baseManufacturingPriceUserInvoiceDetail(d);
 }
 //@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, customerStock);
 

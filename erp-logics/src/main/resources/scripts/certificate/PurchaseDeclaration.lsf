@@ -174,7 +174,11 @@ overSumGrossWeightDeclarationDetail 'Вес брутто' (declarationDetail) = 
 
 quantityDeclarationDetail 'Кол-во' (declarationDetail) = GROUP SUM quantityUserInvoiceDetail(invoiceDetail) BY declarationDetailInvoiceDetail(invoiceDetail) PERSISTENT;
 
-sumDeclarationDetail 'Стоимость (валют.)' (declarationDetail) = priceDeclarationDetail(declarationDetail) * quantityDeclarationDetail(declarationDetail);
+quantityDataDeclarationDetail 'Кол-во' = DATA NUMERIC[14,3](DeclarationDetail);
+
+overQuantityDeclarationDetail 'Кол-во' (declarationDetail) = OVERRIDE quantityDeclarationDetail(declarationDetail), quantityDataDeclarationDetail(declarationDetail);
+
+sumDeclarationDetail 'Стоимость (валют.)' (declarationDetail) = priceDeclarationDetail(declarationDetail) * overQuantityDeclarationDetail(declarationDetail);
 
 sumRateDeclarationDetail 'Стоимость (расч.)' (declarationDetail) = sumDeclarationDetail(declarationDetail) * rateExchangeDeclarationDetail(declarationDetail) MINCHARWIDTH 12 PERSISTENT;
 
@@ -287,13 +291,13 @@ EXTEND FORM declaration
 
     OBJECTS dd=DeclarationDetail
     PROPERTIES(id, dd) inInvoiceDetailDeclarationDetail
-    PROPERTIES(dd) numberDeclarationDetail, invoicesDeclarationDetail READONLY, nameCustomsDeclarationDetail, shortNameUOMDeclarationDetail, nameCountryDeclarationDetail
-    PROPERTIES(dd) overSumNetWeightDeclarationDetail, overSumGrossWeightDeclarationDetail
-    PROPERTIES(dd) codeCustomsGroupDeclarationDetail, quantityDeclarationDetail READONLY, priceDeclarationDetail
+    PROPERTIES(dd) numberDeclarationDetail, invoicesDeclarationDetail READONLY, nameCustomsDeclarationDetail, shortNameUOMDeclarationDetail,
+                   nameCountryDeclarationDetail, overSumNetWeightDeclarationDetail, overSumGrossWeightDeclarationDetail,
+                   codeCustomsGroupDeclarationDetail, overQuantityDeclarationDetail, priceDeclarationDetail
     PROPERTIES(dd) READONLY sumDeclarationDetail, sumRateDeclarationDetail, percentDutyCustomsGroupDeclarationDetail, sumRateDutyDeclarationDetail,
                    numberVATRangeCustomGroupDeclarationDetail, percentVATCustomsGroupDeclarationDetail, sumRateVATDeclarationDetail
     PROPERTIES(dd) sumDataDeclarationDetail, percentDutyDataDeclarationDetail, sumDutyDataDeclarationDetail, numberVATRangeDataDeclarationDetail,
-                   percentVATRangeDeclarationDetail, sumVATDataDeclarationDetail, DELETESESSION
+                   percentVATRangeDeclarationDetail, sumVATDataDeclarationDetail, ADDOBJ FORCE PANEL, DELETESESSION
 
     PROPERTIES (d) toCreateDeclarationDetails TODRAW dd FORCE PANEL TOOLBAR
     PROPERTIES (d) setSumDeclarationDetail TODRAW dd FORCE PANEL TOOLBAR
@@ -349,7 +353,7 @@ EXTEND FORM declarations
 
     OBJECTS dd=DeclarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, nameCustomsDeclarationDetail, nameCountryDeclarationDetail, sumNetWeightDeclarationDetail,
-                   codeCustomsGroupDeclarationDetail, quantityDeclarationDetail, priceDeclarationDetail, sumDeclarationDetail,
+                   codeCustomsGroupDeclarationDetail, overQuantityDeclarationDetail, priceDeclarationDetail, sumDeclarationDetail,
                    sumRateDeclarationDetail, percentDutyCustomsGroupDeclarationDetail, sumRateDutyDeclarationDetail,
                    numberVATRangeCustomGroupDeclarationDetail, percentVATCustomsGroupDeclarationDetail, sumRateVATDeclarationDetail,
                    sumDataDeclarationDetail, percentDutyDataDeclarationDetail, sumDutyDataDeclarationDetail, numberVATRangeDataDeclarationDetail,

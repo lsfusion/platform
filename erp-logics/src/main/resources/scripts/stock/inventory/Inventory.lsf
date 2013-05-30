@@ -459,7 +459,7 @@ sumBatchPageInventoryDetailCollationSheet 'Сумма по описям' (collat
 
 // ------------------------------ Определение состава сличительной ведомости (Sku) ------------------------------------ //
 
-includeCollationSheetSku(collationSheet, sku) = UNION CLASS
+includeCollationSheetSku(collationSheet, sku) = MULTI
     collationSheet IS RegisterCollationSheet IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku),
     (OVERRIDE inManyCollationSheetSku(collationSheet, sku), collationSheet IS ManyCollationSheet IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku)),
     (collationSheet IS RemainsCollationSheet IF (quantityBalanceCollationSheetSku(collationSheet, sku) != 0 OR quantityPageInventoryDetailCollationSheetSku(collationSheet, sku)));
@@ -633,8 +633,8 @@ needToInLedgerCollationSheetSku (collationSheet, sku) = quantityShortageCollatio
 @defineAggregation(collationSheet, sku, outInventorySkuDetail, needToOutLedgerCollationSheetSku);
 @defineAggregation(collationSheet, sku, inInventorySkuDetail, needToInLedgerCollationSheetSku);
 
-collationSheetInventorySkuDetail(inventorySkuDetail) = UNION CLASS collationSheetOutInventorySkuDetail(inventorySkuDetail),
-                                                                       collationSheetInInventorySkuDetail(inventorySkuDetail);
+collationSheetInventorySkuDetail(inventorySkuDetail) = MULTI collationSheetOutInventorySkuDetail(inventorySkuDetail),
+                                                             collationSheetInInventorySkuDetail(inventorySkuDetail);
 
 inventoryInventorySkuDetail(inventorySkuDetail) = inventoryCollationSheet(collationSheetInventorySkuDetail(inventorySkuDetail)) PERSISTENT;
 
@@ -651,8 +651,8 @@ quantityInInventorySkuDetail (inventorySkuDetail) = -quantityShortageCollationSh
 sumOutInventorySkuDetail (inventorySkuDetail) = sumShortageCollationSheetSku(collationSheetOutInventorySkuDetail(inventorySkuDetail), skuOutInventorySkuDetail(inventorySkuDetail));
 sumInInventorySkuDetail (inventorySkuDetail) = -sumShortageCollationSheetSku(collationSheetInInventorySkuDetail(inventorySkuDetail), skuInInventorySkuDetail(inventorySkuDetail));
 
-skuInventorySkuDetail(inventorySkuDetail) = UNION CLASS skuOutInventorySkuDetail(inventorySkuDetail),
-                                                            skuInInventorySkuDetail(inventorySkuDetail) PERSISTENT;
+skuInventorySkuDetail(inventorySkuDetail) = MULTI skuOutInventorySkuDetail(inventorySkuDetail),
+                                                  skuInInventorySkuDetail(inventorySkuDetail) PERSISTENT;
 nameSkuInventorySkuDetail 'Товар' (inventorySkuDetail) = nameSku(skuInventorySkuDetail(inventorySkuDetail)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
 idBarcodeInventorySkuDetail 'Штрих-код' (inventorySkuDetail) =  idBarcodeSku(skuInventorySkuDetail(inventorySkuDetail));
 
@@ -698,8 +698,8 @@ needToInLedgerCollationSheetBatch (collationSheet, batch) = quantityShortageColl
 @defineAggregation(collationSheet, batch, outInventoryBatchDetail, needToOutLedgerCollationSheetBatch);
 @defineAggregation(collationSheet, batch, inInventoryBatchDetail, needToInLedgerCollationSheetBatch);
 
-collationSheetInventoryBatchDetail(inventoryBatchDetail) = UNION CLASS collationSheetOutInventoryBatchDetail(inventoryBatchDetail),
-                                                                           collationSheetInInventoryBatchDetail(inventoryBatchDetail);
+collationSheetInventoryBatchDetail(inventoryBatchDetail) = MULTI collationSheetOutInventoryBatchDetail(inventoryBatchDetail),
+                                                                 collationSheetInInventoryBatchDetail(inventoryBatchDetail);
 
 inventoryInventoryBatchDetail(inventoryBatchDetail) = inventoryCollationSheet(collationSheetInventoryBatchDetail(inventoryBatchDetail)) PERSISTENT;
 
@@ -716,8 +716,8 @@ quantityInInventoryBatchDetail (inventoryBatchDetail) = -quantityShortageCollati
 sumOutInventoryBatchDetail (inventoryBatchDetail) = sumShortageCollationSheetBatch(collationSheetOutInventoryBatchDetail(inventoryBatchDetail), batchOutInventoryBatchDetail(inventoryBatchDetail));
 sumInInventoryBatchDetail (inventoryBatchDetail) = -sumShortageCollationSheetBatch(collationSheetInInventoryBatchDetail(inventoryBatchDetail), batchInInventoryBatchDetail(inventoryBatchDetail));
 
-batchInventoryBatchDetail(inventoryBatchDetail) = UNION CLASS batchOutInventoryBatchDetail(inventoryBatchDetail),
-                                                                  batchInInventoryBatchDetail(inventoryBatchDetail) PERSISTENT;
+batchInventoryBatchDetail(inventoryBatchDetail) = MULTI batchOutInventoryBatchDetail(inventoryBatchDetail),
+                                                        batchInInventoryBatchDetail(inventoryBatchDetail) PERSISTENT;
 nameBatchInventoryBatchDetail 'Партия' (inventoryBatchDetail) = nameBatch(batchInventoryBatchDetail(inventoryBatchDetail)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 skuInventoryBatchDetail (inventoryBatchDetail) = skuBatch(batchInventoryBatchDetail(inventoryBatchDetail));

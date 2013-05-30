@@ -20,7 +20,7 @@ nameGLDocument(document) += descriptionShipment(document);
                                           '41.3',                                  // дебет
                                           '41.3',                                  // кредит
                                           'by_default',                            // идентификатор плана счетов
-                                          'by_default_internalRetail'              // идентификатор операции
+                                          'by_default_sale_shipment_retail'         // идентификатор операции
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerStockShipment(shipmentShipRetCGeneralLedger(generalLedger)) WHEN CLASS(shipmentShipRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockShipment(shipmentShipRetCGeneralLedger(generalLedger)) WHEN CLASS(shipmentShipRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
@@ -34,7 +34,17 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockSh
                                           '41.2',
                                           '41.2',
                                           'by_default',
-                                          'by_default_internalRetail'
+                                          'by_default_sale_shipment_retail'
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerStockShipment(shipmentShipRetNotCGeneralLedger(generalLedger)) WHEN CLASS(shipmentShipRetNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockShipment(shipmentShipRetNotCGeneralLedger(generalLedger)) WHEN CLASS(shipmentShipRetNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+// ----------------------------------- Стандартные данные ----------------------------------- //
+
+@defineLoadDefaultOperationPrefix (Sale, iname, isid, sale);
+
+loadDefaultOperationsSalePurchaseRetailBy 'Загрузить стандарные операции внутреннего перемещения м/ду магазинами' () = ACTION () {
+    EXEC loadDefaultSaleOperation ('Перемещение между собственными магазинами', 'by_default_sale_shipment_retail');
+} ;
+
+loadDefaultOperations () += loadDefaultOperationsSalePurchaseRetailBy();

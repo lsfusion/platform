@@ -99,27 +99,27 @@ userReceipt(receipt) <- currentUser() WHEN ASSIGNED(receipt IS Receipt);
 @defineDocumentDetailCurrency (receipt, receiptSaleDetail);
 @defineDocumentDetailCurrency (receipt, receiptReturnDetail);
 
-receiptReceiptDetail (receiptDetail) = UNION CLASS receiptReceiptReturnDetail(receiptDetail), receiptReceiptSaleDetail(receiptDetail) PERSISTENT;
+receiptReceiptDetail (receiptDetail) = MULTI receiptReceiptReturnDetail(receiptDetail), receiptReceiptSaleDetail(receiptDetail) PERSISTENT;
 
 zReportReceiptDetail (receiptDetail) = zReportReceipt(receiptReceiptDetail(receiptDetail));
 sidCashRegisterModelReceiptDetail 'Код модели' (receiptDetail) = sidCashRegisterModelReceipt(receiptReceiptDetail(receiptDetail));
 
-typeReceiptDetail 'Тип' (receiptDetail) = UNION CLASS 'Продажа' IF receiptDetail IS ReceiptSaleDetail, 'Возврат' IF receiptDetail IS ReceiptReturnDetail FIXEDCHARWIDTH 8;
+typeReceiptDetail 'Тип' (receiptDetail) = MULTI 'Продажа' IF receiptDetail IS ReceiptSaleDetail, 'Возврат' IF receiptDetail IS ReceiptReturnDetail FIXEDCHARWIDTH 8;
 
 @defineDocumentDetailIndex(receipt, ReceiptDetail);
 
 @defineDocumentDetailTime(receipt, ReceiptSaleDetail);
 @defineDocumentDetailTime(receipt, ReceiptReturnDetail);
-dateReceiptDetail 'Дата' (receiptDetail) = UNION CLASS dateReceiptReturnDetail(receiptDetail), dateReceiptSaleDetail(receiptDetail) PERSISTENT;
-dateTimeReceiptDetail 'Дата/время' (receiptDetail) = UNION CLASS dateTimeReceiptReturnDetail(receiptDetail), dateTimeReceiptSaleDetail(receiptDetail) PERSISTENT;
+dateReceiptDetail 'Дата' (receiptDetail) = MULTI dateReceiptReturnDetail(receiptDetail), dateReceiptSaleDetail(receiptDetail) PERSISTENT;
+dateTimeReceiptDetail 'Дата/время' (receiptDetail) = MULTI dateTimeReceiptReturnDetail(receiptDetail), dateTimeReceiptSaleDetail(receiptDetail) PERSISTENT;
 
 @defineDocumentDetailPosted(receipt, ReceiptSaleDetail);
 @defineDocumentDetailPosted(receipt, ReceiptReturnDetail);
-isPostedReceiptDetail 'Проведен' (receiptDetail) = UNION CLASS isPostedReceiptReturnDetail(receiptDetail), isPostedReceiptSaleDetail(receiptDetail) PERSISTENT;
+isPostedReceiptDetail 'Проведен' (receiptDetail) = MULTI isPostedReceiptReturnDetail(receiptDetail), isPostedReceiptSaleDetail(receiptDetail) PERSISTENT;
 
 @defineDocumentDetailDepartmentStoreCustom(receipt, receiptSaleDetail);
 @defineDocumentDetailDepartmentStoreCustom(receipt, receiptReturnDetail);
-departmentStoreReceiptDetail (receiptDetail) = UNION CLASS departmentStoreReceiptReturnDetail(receiptDetail), departmentStoreReceiptSaleDetail(receiptDetail) PERSISTENT;
+departmentStoreReceiptDetail (receiptDetail) = MULTI departmentStoreReceiptReturnDetail(receiptDetail), departmentStoreReceiptSaleDetail(receiptDetail) PERSISTENT;
 
 @defineDocumentDetailSku(receiptSale, sku);
 @defineDocumentDetailSku(receiptReturn, sku);
@@ -204,10 +204,10 @@ discountSumReceiptReturnDetail (detail) <- round(quantityReceiptReturnDetail(det
                                                 CHANGED(receiptSaleDetailReceiptReturnDetail(detail)) OR
                                                 CHANGED(currencyReceiptReturnDetail(detail));
 
-quantityReceiptDetail 'Количество' (receiptDetail) = UNION CLASS quantityReceiptReturnDetail(receiptDetail), quantityReceiptSaleDetail(receiptDetail) PERSISTENT;
-priceReceiptDetail 'Цена' (receiptDetail) = UNION CLASS priceReceiptReturnDetail(receiptDetail), priceReceiptSaleDetail(receiptDetail) PERSISTENT;
-sumReceiptDetail 'Сумма' (receiptDetail) = UNION CLASS sumReceiptReturnDetail(receiptDetail), sumReceiptSaleDetail(receiptDetail) PERSISTENT;
-discountSumReceiptDetail 'Сумма скидки' (receiptDetail) = UNION CLASS discountSumReceiptReturnDetail(receiptDetail), discountSumReceiptSaleDetail(receiptDetail) PERSISTENT;
+quantityReceiptDetail 'Количество' (receiptDetail) = MULTI quantityReceiptReturnDetail(receiptDetail), quantityReceiptSaleDetail(receiptDetail) PERSISTENT;
+priceReceiptDetail 'Цена' (receiptDetail) = MULTI priceReceiptReturnDetail(receiptDetail), priceReceiptSaleDetail(receiptDetail) PERSISTENT;
+sumReceiptDetail 'Сумма' (receiptDetail) = MULTI sumReceiptReturnDetail(receiptDetail), sumReceiptSaleDetail(receiptDetail) PERSISTENT;
+discountSumReceiptDetail 'Сумма скидки' (receiptDetail) = MULTI discountSumReceiptReturnDetail(receiptDetail), discountSumReceiptSaleDetail(receiptDetail) PERSISTENT;
 
 sumReceiptSaleDetailReceipt 'Сумма продажи' (receipt) = GROUP SUM sumReceiptSaleDetail(receiptDetail)
     BY receiptReceiptSaleDetail (receiptDetail) IN documentSumGroup PERSISTENT;
@@ -259,7 +259,7 @@ CONSTRAINT taxRange(VATReceiptReturnDetail(detail)) != Tax.taxVAT OR
 
 VATSumReturnZReport 'Сумма НДС по возвратам' (zReport) = DATA NUMERIC[16,2] (ZReport);
 
-VATReceiptDetail (receiptDetail) = UNION CLASS VATReceiptReturnDetail(receiptDetail), VATReceiptSaleDetail(receiptDetail) PERSISTENT;
+VATReceiptDetail (receiptDetail) = MULTI VATReceiptReturnDetail(receiptDetail), VATReceiptSaleDetail(receiptDetail) PERSISTENT;
 numberVATReceiptDetail 'НДС, номер' (receiptDetail) = numberRange(VATReceiptDetail(receiptDetail));
 valueVATReceiptDetail 'НДС, %' (receiptDetail) = valueRateRangeDate(VATReceiptDetail(receiptDetail), dateReceiptDetail(receiptDetail));
 

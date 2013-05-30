@@ -19,7 +19,7 @@ nameGLDocument(document) += descriptionPricing(document);
                                           '41.3',                                       // дебет
                                           '42.1',                                       // кредит
                                           'by_default',                                 // идентификатор плана счетов
-                                          'by_default_purchase'                         // идентификатор операции
+                                          'by_default_pricing_purchase'                         // идентификатор операции
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrPurMarkCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrPurMarkCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 //-- Товар
@@ -31,7 +31,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreP
                                           '41.2',
                                           '42.1',
                                           'by_default',
-                                          'by_default_purchase'
+                                          'by_default_pricing_purchase'
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrPurMarkIGeneralLedger(generalLedger)) WHEN CLASS(pricingPrPurMarkIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
@@ -45,7 +45,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreP
                                           '41.3',
                                           '42.2',
                                           'by_default',
-                                          'by_default_purchase'
+                                          'by_default_pricing_purchase'
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrPurVATCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrPurVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
@@ -58,7 +58,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreP
                                           '41.2',
                                           '42.2',
                                           'by_default',
-                                          'by_default_purchase'
+                                          'by_default_pricing_purchase'
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrPurVATIGeneralLedger(generalLedger)) WHEN CLASS(pricingPrPurVATIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
@@ -73,7 +73,7 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreP
                                           '42.1',
                                           '41.3',
                                           'by_default',
-                                          'by_default_writeOffNorm'
+                                          'by_default_pricing_writeOffNorm'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNMarkCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNMarkCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 //-- Не тара
@@ -85,7 +85,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           '42.1',
                                           '41.2',
                                           'by_default',
-                                          'by_default_writeOffNorm'
+                                          'by_default_pricing_writeOffNorm'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNMarkNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNMarkNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
@@ -99,7 +99,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           '42.2',
                                           '41.3',
                                           'by_default',
-                                          'by_default_writeOffNorm'
+                                          'by_default_pricing_writeOffNorm'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNVATCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 //-- Не тара
@@ -111,7 +111,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           '42.2',
                                           '41.2',
                                           'by_default',
-                                          'by_default_writeOffNorm'
+                                          'by_default_pricing_writeOffNorm'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNVATNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNVATNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
@@ -125,7 +125,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           '44.1',
                                           '41.3',
                                           'by_default',
-                                          'by_default_writeOffNorm'
+                                          'by_default_pricing_writeOffNorm'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNSupCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNSupCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 //-- Не тара
@@ -137,7 +137,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           '44.1',
                                           '41.2',
                                           'by_default',
-                                          'by_default_writeOffNorm'
+                                          'by_default_pricing_writeOffNorm'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoNSupNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoNSupNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
@@ -152,7 +152,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           '42.1',
                                           '41.3',
                                           'by_default',
-                                          'by_default_writeOffRopes'
+                                          'by_default_pricing_writeOffRopes'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRMarkCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRMarkCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 //-- Не тара
@@ -164,7 +164,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           '42.1',
                                           '41.2',
                                           'by_default',
-                                          'by_default_writeOffRopes'
+                                          'by_default_pricing_writeOffRopes'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRMarkNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRMarkNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
@@ -178,7 +178,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           '42.2',
                                           '41.3',
                                           'by_default',
-                                          'by_default_writeOffRopes'
+                                          'by_default_pricing_writeOffRopes'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRVATCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRVATCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 //-- Не тара
@@ -190,7 +190,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           '42.2',
                                           '41.2',
                                           'by_default',
-                                          'by_default_writeOffRopes'
+                                          'by_default_pricing_writeOffRopes'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRVATNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRVATNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
@@ -204,7 +204,7 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           '44.7',
                                           '41.3',
                                           'by_default',
-                                          'by_default_writeOffRopes'
+                                          'by_default_pricing_writeOffRopes'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRSupCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRSupCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 //-- Не тара
@@ -216,6 +216,16 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStore
                                           '44.7',
                                           '41.2',
                                           'by_default',
-                                          'by_default_writeOffRopes'
+                                          'by_default_pricing_writeOffRopes'
                                           );
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStorePricing(pricingPrWoRSupNotCGeneralLedger(generalLedger)) WHEN CLASS(pricingPrWoRSupNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
+
+// ----------------------------------- Стандартные данные ----------------------------------- //
+
+@defineLoadDefaultOperation (Pricing, iname, isid);
+loadDefaultOperationsPricingBy 'Загрузить стандарные операции расценки' () = ACTION () {
+    EXEC loadDefaultOperation ('Расценка товара при поступлении на магазин', 'by_default_pricing_purchase');
+    EXEC loadDefaultOperation ('Расценка при списании товара по нормам на магазине', 'by_default_pricing_writeOffNorm');
+    EXEC loadDefaultOperation ('Расценка при списании веревок на магазине', 'by_default_pricing_writeOffRopes');
+} ;
+loadDefaultOperations () += loadDefaultOperationsPricingBy();

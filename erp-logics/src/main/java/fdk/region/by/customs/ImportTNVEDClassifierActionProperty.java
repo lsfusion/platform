@@ -16,6 +16,7 @@ import platform.server.session.DataSession;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ public class ImportTNVEDClassifierActionProperty extends ScriptingActionProperty
 
         List<List<Object>> data = new ArrayList<List<Object>>();
 
-        Double defaultVAT = 20.0;
+        BigDecimal defaultVAT = new BigDecimal(20);
         Date defaultDate = new Date(2001 - 1900, 0, 1);
 
         int recordCount = file.getRecordCount();

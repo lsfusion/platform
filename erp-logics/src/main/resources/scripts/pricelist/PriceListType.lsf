@@ -70,6 +70,11 @@ includeVATPriceListType(type) += includeVATBasePriceListType(type);
 pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
 
+FORM basePriceListTypes 'Базовые виды цен'
+    OBJECTS t = BasePriceListType
+    PROPERTIES(t) READONLY nameBasePriceListType
+    DIALOG BasePriceListType OBJECT t
+;
 // --------------------------- Системные виды цен ------------------------- //
 CLASS SystemPriceListType 'Системный вид цены' : BasePriceListType;
 

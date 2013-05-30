@@ -26,7 +26,7 @@
 	<parameter name="e_params" class="java.util.Map"/>
 	<field name="li" class="java.lang.Integer"/>
 	<field name="dateListInventory" class="java.util.Date"/>
-	<field name="nameCompanyListInventory" class="java.lang.String"/>
+	<field name="nameLegalEntityStockListInventory" class="java.lang.String"/>
 	<field name="nameStockListInventory" class="java.lang.String"/>
 	<field name="nameInventoryListInventory" class="java.lang.String"/>
 	<field name="nameListInventory" class="java.lang.String"/>
@@ -857,7 +857,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Компания: "+$F{nameCompanyListInventory}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Компания: "+$F{nameLegalEntityStockListInventory}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="0" y="89" width="149" height="10"/>

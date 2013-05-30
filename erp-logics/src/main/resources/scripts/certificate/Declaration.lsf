@@ -18,8 +18,7 @@ timeCertificate(declaration) += timeDeclaration(declaration);
 seriesCertificate(declaration) += seriesObject(declaration) IF declaration IS Declaration;
 numberCertificate(declaration) += numberObject(declaration) IF declaration IS Declaration;
 
-descriptionDeclaration 'Таможенная декларация' (declaration) = ustring2SP(string2SP('№ ', seriesNumberObject(declaration)),
-                                                 string2SP('от ', dateDeclaration(declaration)));
+descriptionDeclaration 'Таможенная декларация' (declaration) = CONCAT ' ', '№ ' + seriesNumberObject(declaration), 'от ' + dateDeclaration(declaration);
 
 @defineCertificateObjectBatch(declaration, 'Таможенная декларация');
 
@@ -86,7 +85,6 @@ DESIGN declaration FROM DEFAULT{
                 ADD PROPERTY(seriesObject);
                 ADD PROPERTY(dateDeclaration);
                 ADD PROPERTY(timeDeclaration);
-
             }
 
             NEW rightContainer {

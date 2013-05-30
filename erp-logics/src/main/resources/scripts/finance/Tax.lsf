@@ -148,32 +148,35 @@ FORM tax 'Налог'
 
 DESIGN tax FROM DEFAULT {
     main {
-        NEW row1 BEFORE functions.box {
-            childConstraints = TO THE RIGHT;
+        NEW row1 {
+            type = CONTAINERH;
             ADD t.box {
-                t.panel { childConstraints = TO THE RIGHT; }
+                t.panel {
+                    type = CONTAINERH;
+                }
             }
             ADD c.box;
         }
-        NEW secondCase BEFORE functions.box {
-            ADD u.box {
-                fillHorizontal = 3.8;
-            };
+        NEW firstCase {
+            type = CONTAINERH;
+            ADD ra.box {
+                fillHorizontal = 2.5;
+            }
+            ADD rt.box {
+                fillHorizontal = 2.5;
+            }
+        }
+        NEW secondCase {
+            type = CONTAINERH;
             ADD treeTaxUnit.tree.box {
                 title = 'Налоговые субъекты';
                 fillHorizontal = 1.2;
-            };
-            POSITION treeTaxUnit.tree.box TO THE LEFT u.box;
+            }
+            ADD u.box {
+                fillHorizontal = 3.8;
+            }
         }
-        NEW firstCase BEFORE secondCase {
-            ADD ra.box {
-                fillHorizontal = 2.5;
-            };
-            ADD rt.box {
-                fillHorizontal = 2.5;
-            };
-            POSITION ra.box TO THE LEFT rt.box;
-        }
+        ADD functions.box;
     }
 }
 

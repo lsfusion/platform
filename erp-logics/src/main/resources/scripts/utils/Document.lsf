@@ -447,7 +447,7 @@ END
 META defineDocumentAbstractHeaderNumber(objectClass)
     number##objectClass 'Номер' = ABSTRACT STRING[18] (objectClass) IN base MINCHARWIDTH 7 PERSISTENT;
     series##objectClass 'Серия' = ABSTRACT STRING[2] (objectClass) IN base FIXEDCHARWIDTH 3 PERSISTENT;
-    seriesNumber##objectClass 'Серия/Номер' (o) = ustring2(series##objectClass(o), number##objectClass(o)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+    seriesNumber##objectClass 'Серия/Номер' (o) = CONCAT '', series##objectClass(o), number##objectClass(o) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 END
 META defineDocumentInterfaceHeaderNumber(objectClass)
     @defineDocumentAbstractHeaderNumber(objectClass);

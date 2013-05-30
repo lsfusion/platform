@@ -7,7 +7,9 @@ NAMESPACE Production;
 
 @defineDocumentInterfaceHeaderPricingCommittee (output, stock);
 @defineDocumentInterfaceCreate (output, createPricing, 'Создать акт расценки');
-//@defineDocumentInterfaceOperationPrefix(output, pricing, Pricing, ' (расценка)');
+
+// Операция расценки
+@defineDocumentInterfaceOperationPrefix (output, pricing, Pricing, ' (расценка)');
 
 @defineDocumentInterfaceDetailPricePrefix(output, supplier, ' входная');
 supplierPriceUserOutputDetail(detail) <- componentsPriceProductDetail(productDetailUserOutputDetail(detail))
@@ -56,10 +58,9 @@ retailMarkupUserOutputDetail(userOutputDetail) <-[round2(X*100/Y)](retailMarkupS
 
 //-- аггр.расценка на основе заказа
 @defineDocumentHeaderCreate (order, createPricing, 'Создать акт расценки');
-//@defineDocumentOperationPrefix(order, pricing, Pricing, ' (расценка)');
-//@defineDocumentOperationHeaderPrefix(order, pricing, Pricing, ' (расценка)');
-//@defineDocumentOperationDetailPrefix(order, productDetail, pricing, Pricing, ' (расценка)');
-//@defineDocumentOperationDetailPrefix(order, componentDetail, pricing, Pricing, ' (расценка)');
+@defineDocumentOperationHeaderPrefix(order, pricing, Pricing, ' (расценка)');
+@defineDocumentOperationDetailPrefix(order, productDetail, pricing, Pricing, ' (расценка)');
+@defineDocumentOperationDetailPrefix(order, componentDetail, pricing, Pricing, ' (расценка)');
 
 backgroundRetailOrder 'Цвет' (order) = RGB(224, 255, 255) IF order IS Order;
 
@@ -75,7 +76,7 @@ retailMarkupProductDetail 'Надбавка, %'(productDetail) =[round2(X*100/Y)
 
 pricingCommitteeOutput(output) += pricingCommitteeOrder(orderOrderOutput(output));
 createPricingOutput(output) += createPricingOrder(orderOrderOutput(output));
-//pricingOperationOutput(output) += pricingOperationOrder(orderOrderOutput(output));
+pricingOperationOutput(output) += pricingOperationOrder(orderOrderOutput(output));
 
 supplierPriceOutputDetail(outputDetail) += componentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
 supplierSumOutputDetail(outputDetail) += componentsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
@@ -88,7 +89,7 @@ retailPriceOutputDetail(outputDetail) += productsPriceProductDetail(productDetai
 retailSumOutputDetail(outputDetail) += outputProductsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
 
 EXTEND FORM order
-    PROPERTIES(o)  BACKGROUND backgroundRetailOrder(o) createPricingOrder, //namePricingOperationOrder SHOWIF createPricingOrder(o),
+    PROPERTIES(o)  BACKGROUND backgroundRetailOrder(o) createPricingOrder, namePricingOperationOrder SHOWIF createPricingOrder(o),
                    namePricingCommitteeOrder SHOWIF createPricingOrder(o)
     PROPERTIES(pd) BACKGROUND backgroundRetailOrder(o) SHOWIF createPricingOrder(o) READONLY BEFORE outputProductsSumProductDetail
                    componentsSumProductDetail, retailMarkupProductDetail, retailMarkupSumProductDetail, retailVATSumProductDetail
@@ -100,7 +101,7 @@ EXTEND DESIGN order {
             title = 'Расценка';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createPricingOrder);
-//            ADD PROPERTY(namePricingOperationOrder);
+            ADD PROPERTY(namePricingOperationOrder);
             ADD PROPERTY(namePricingCommitteeOrder);
         }
     }
@@ -118,7 +119,7 @@ EXTEND FORM orders
 backgroundRetailOutput 'Цвет' (output) = RGB(224, 255, 255) IF output IS Output;
 
 EXTEND FORM userOutput
-    PROPERTIES(o)  BACKGROUND backgroundRetailOutput(o) createPricingUserOutput, //namePricingOperationUserOutput SHOWIF createPricingUserOutput(o),
+    PROPERTIES(o)  BACKGROUND backgroundRetailOutput(o) createPricingUserOutput, namePricingOperationUserOutput SHOWIF createPricingUserOutput(o),
                    namePricingCommitteeUserOutput SHOWIF createPricingUserOutput(o)
 
     PROPERTIES (d) BEFORE deleted SHOWIF createPricingUserOutput(o) BACKGROUND backgroundRetailOutput(o)
@@ -131,14 +132,14 @@ EXTEND DESIGN userOutput {
             title = 'Расценка';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createPricingUserOutput);
-//            ADD PROPERTY(namePricingOperationUserOutput);
+            ADD PROPERTY(namePricingOperationUserOutput);
             ADD PROPERTY(namePricingCommitteeUserOutput);
         }
     }
 }
 
 EXTEND FORM outputs
-    PROPERTIES(o) READONLY BACKGROUND backgroundRetailOutput(o) createPricingOutput, //namePricingOperationOutput,
+    PROPERTIES(o) READONLY BACKGROUND backgroundRetailOutput(o) createPricingOutput, namePricingOperationOutput,
                   namePricingCommitteeOutput
     PROPERTIES(d) READONLY SHOWIF createPricingOutput(o) BACKGROUND backgroundRetailOutput(o) supplierPriceOutputDetail, supplierSumOutputDetail, retailMarkupOutputDetail, retailMarkupSumOutputDetail,
                   valueRetailVATOutputDetail, retailVATSumOutputDetail, retailPriceOutputDetail, retailSumOutputDetail
@@ -184,7 +185,7 @@ seriesNumberOutputPricing 'Серия/номер документа' (outputPric
 notePricing(pricing) += noteOutput(outputOutputPricing(pricing));
 currencyPricing (pricing) += currencyOutput(outputOutputPricing(pricing));
 pricingCommitteePricing(pricing) += pricingCommitteeOutput(outputOutputPricing(pricing));
-//operationPricing(pricing) += pricingOperationOutput(outputOutputPricing(pricing));
+operationPricing(pricing) += pricingOperationOutput(outputOutputPricing(pricing));
 
 @defineDocumentDescription(outputPricing, OutputPricingDetail, seriesNumberOutputPricing, 'Акт расценки на основе производства');
 descriptionPricing (pricing) += descriptionOutputPricing(pricing);

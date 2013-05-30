@@ -35,9 +35,8 @@ sumCompliance 'Стоимость услуг' = DATA NUMERIC[14,3](Compliance);
 
 isCompliancedCountrySku 'Необходимость сертификации' = ABSTRACT BOOLEAN(Country, Sku);
 
-descriptionCompliance 'Сертификат соответствия' (compliance) = ustring3SP(string2SP('№', seriesNumberObject(compliance)),
-                                                 string2SP('от', fromDateCompliance(compliance)),
-                                                 string2SP('действует по', toDateCompliance(compliance)));
+descriptionCompliance 'Сертификат соответствия' (compliance) = CONCAT ' ', '№ ' + seriesNumberObject(compliance),
+                                                 'от ' + fromDateCompliance(compliance), 'действует по ' + toDateCompliance(compliance);
 
 @defineCertificateObjectBatch(compliance, 'Сертификат соответствия');
 

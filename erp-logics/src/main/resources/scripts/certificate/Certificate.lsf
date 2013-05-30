@@ -11,11 +11,9 @@ TABLE certificate(Certificate);
 
 numberCertificate 'Номер' = ABSTRACT STRING[18] (Certificate) IN base PERSISTENT MINCHARWIDTH 7;
 seriesCertificate 'Серия' = ABSTRACT STRING[2] (Certificate) IN base PERSISTENT FIXEDCHARWIDTH 3;
-seriesNumberCertificate 'Серия/Номер' (certificate) = ustring2(seriesCertificate(certificate), numberCertificate(certificate)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+seriesNumberCertificate 'Серия/Номер' (certificate) = CONCAT '', seriesCertificate(certificate), numberCertificate(certificate) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 
-descriptionCertificate 'Документ качества' (certificate) = ustring3SP(string2SP('№ ', seriesNumberCertificate(certificate)),
-                                                 string2SP('от ', fromDateCertificate(certificate)),
-                                                 string2SP('действует по ', toDateCertificate(certificate)));
+descriptionCertificate 'Документ качества' (certificate) = CONCAT ' ', '№ ' + seriesNumberCertificate(certificate), 'от ' + fromDateCertificate(certificate), 'действует по ' + toDateCertificate(certificate);
 
 // -------------------------- Подготовка документов под расширение сертификатами -------------------- //
 

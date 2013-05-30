@@ -1,12 +1,12 @@
 MODULE PurchaseReserve;
 
-REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseReturnCreditNote, PurchaseScheduleOrder;
+REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseReturnCreditNote;
 
 NAMESPACE Purchase;
 
 //-----------------------------------------------------------------------------------------------------------//
 
-quantitySoldSkuStockUserOrder 'Закуплено' (sku, stock, userOrder) = quantitySoldSkuStockDateFromTo(sku, stock, fromShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
+quantitySoldSkuStockUserOrder 'Продано' (sku, stock, userOrder) = quantitySoldSkuStockDateFromTo(sku, stock, fromShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
 recQuantitySkuStockUserOrder  (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder))  (+) quantitySoldSkuStockUserOrder(sku, stock, userOrder) (-)
                                                         (currentReservePurchaseSkuStock(sku, stock) IF userOrder IS UserOrder)  (-) (currentBalanceSkuStock(sku, stock) IF userOrder IS UserOrder);
 
@@ -14,13 +14,16 @@ recommendedQuantitySkuStockUserOrder 'Рекомендуемое к закупк
 stockReserveSkuStockUserOrder 'Страховой запас (кол-во)' (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder));
 
 fillRecommendedQuantityStockUserOrder 'Заполнить рекомендуемым' = ACTION (userOrder) {
-    FOR inAssortmentSkuStockUserOrder(sku, customerStockUserOrder(userOrder), userOrder) AND recommendedQuantitySkuStockUserOrder (sku, customerStockUserOrder(userOrder), userOrder) DO {
-        SET requestedNumeric() <- recommendedQuantitySkuStockUserOrder (sku, customerStockUserOrder(userOrder), userOrder);
-        EXEC changeQuantityValueSkuUserOrderStock(sku, userOrder, customerStockUserOrder(userOrder));
-    }
+    FOR priceLedgerPriceListTypeSkuStockCompanyDateTime(
+            ledgerPriceListTypePriceListType(priceListTypeUserOrderSku(userOrder, sku)),
+            sku, customerStockUserOrder(userOrder), supplierUserOrder(userOrder), dateTimeUserOrder(userOrder))
+        AND recommendedQuantitySkuStockUserOrder (sku, customerStockUserOrder(userOrder), userOrder)
+        ADDOBJ d = UserOrderDetail DO {
+            SET userOrderUserOrderDetail(d) <- userOrder;
+            SET skuUserOrderDetail(d) <- sku;
+            SET quantityUserOrderDetail (d) <- recommendedQuantitySkuStockUserOrder (sku, customerStockUserOrder(userOrder), userOrder);
+        }
 } TOOLBAR CONFIRM;
-
-overCreateOrder(userOrder) += fillRecommendedQuantityStockUserOrder(userOrder);
 
 EXTEND FORM userOrder
     PROPERTIES READONLY AFTER currentBalanceSkuStock(ks,st) quantitySoldSkuStockUserOrder(ks,st,o), stockReserveSkuStockUserOrder(ks,st,o)

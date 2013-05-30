@@ -329,9 +329,9 @@ META defineOrderBlanketOrder(sign)
 
     seriesOrder(order) += seriesBlanketOrderStock(blanketOrderBlanketOrderOrder(order), stockBlanketOrderOrder(order));
     numberOrder(order) += numberBlanketOrderStock(blanketOrderBlanketOrderOrder(order), stockBlanketOrderOrder(order));
-    seriesNumberBlanketOrderOrder 'Серия/Номер' (blanketOrderOrder) = ustring2(
+    seriesNumberBlanketOrderOrder 'Серия/Номер' (blanketOrderOrder) = CONCAT '',
         seriesBlanketOrderStock(blanketOrderBlanketOrderOrder(blanketOrderOrder), stockBlanketOrderOrder(blanketOrderOrder)),
-        numberBlanketOrderStock(blanketOrderBlanketOrderOrder(blanketOrderOrder), stockBlanketOrderOrder(blanketOrderOrder)));
+        numberBlanketOrderStock(blanketOrderBlanketOrderOrder(blanketOrderOrder), stockBlanketOrderOrder(blanketOrderOrder));
 
 //-- detail
     @defineAggregation(blanketOrderDetail, stock, blanketOrderOrderDetail, needToOrderBlanketOrderDetailStock);

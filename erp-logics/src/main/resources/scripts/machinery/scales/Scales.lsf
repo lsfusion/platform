@@ -216,7 +216,7 @@ loadDefaultGroupScales 'Сгенерировать группу весов' = AC
                 SET numScales() <- numScales() + 1;
                 SET nppMachinery(s) <- numScales();
                 SET scalesModelScales(s) <- model AS ScalesModel;
-                SET descriptionMachinery(s) <- string5CM('Весы', toString255(numScales()), '(', nameStock(stock), ')');
+                SET descriptionMachinery(s) <- CONCAT ' ', 'Весы', toString255(numScales()), '(', nameStock(stock), ')';
             }
         }
     }

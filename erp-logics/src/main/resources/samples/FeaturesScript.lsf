@@ -137,9 +137,6 @@ allNames() = GROUP CONCAT name(obj) IF obj IS Named, ', ' ORDER DESC name(obj);
 nameToCountry(name) = GROUP AGGR country BY name(country);
 
 
-// Union property
-// Expression syntax:
-// UNION (CLASS | EXCLUSIVE) propertyExpression1, ..., propertyExpressionN
 testUnion(store, article) = incomeQuantity(store, article) (+) outcomeQuantity(store, article);
 
 // OR property
@@ -172,6 +169,66 @@ sizeCode 'Размер склада (код)' (ss) = CASE
                                           WHEN ss == StoreSize.medium THEN 'MEDIUM'
                                           WHEN ss == StoreSize.small THEN 'SMALL'
                                       ;
+
+// Multi property
+// Expression syntax:
+// MULTI propertyExpression1, ..., propertyExpressionN [EXCLUSIVE | OVERRIDE]
+
+CLASS CaseA;
+CLASS CaseB : CaseA;
+CLASS CaseC : CaseA;
+CLASS CaseD : CaseC;
+
+caseData1 = DATA INTEGER (CaseA);
+caseData2 = DATA INTEGER (CaseA);
+caseData3 = DATA INTEGER (CaseA);
+
+caseDataB = DATA INTEGER (CaseB);
+caseDataC = DATA INTEGER (CaseC);
+
+overrideTest 'OVERRIDE' (a) = OVERRIDE caseData1(a), caseData2(a), caseData3(a);
+exclusiveTest 'EXCLUSIVE' (a) = EXCLUSIVE caseData1(a), caseData2(a), caseData3(a);
+
+testInt(a) = DATA INTEGER (CaseA);
+
+caseTest(a) = CASE
+                    WHEN testInt(a) < 5 THEN caseData1(a)
+                    WHEN testInt(a) < 6 THEN caseData2(a)
+                    WHEN testInt(a) < 7 THEN caseData3(a)
+                    ELSE 0 IF a IS CaseA;
+              ;
+
+caseTest2(a) = CASE EXCLUSIVE
+                    WHEN testInt(a) >= 5 THEN caseData1(a)
+                    WHEN testInt(a) < 5 THEN caseData2(a)
+                    WHEN testInt(a) == 5 THEN caseData3(a)
+               ;
+
+multiTest 'MULTI' (a) = MULTI caseDataB(a), caseDataC(a);
+multiTest2 'MULTI OVER' (a) = MULTI caseDataB(a), caseDataC(a) OVERRIDE;
+
+caseActionTest(a) = ACTION CASE
+                        WHEN testInt(a) > 7 THEN { MESSAGE '>7'; }
+                        WHEN testInt(a) > 6 THEN { MESSAGE '>6'; }
+                        WHEN testInt(a) > 5 THEN { MESSAGE '>5'; }
+                    ;
+
+caseActionTest2(a) = ACTION CASE EXCLUSIVE
+                        WHEN testInt(a) > 7 THEN { MESSAGE '>7'; }
+                        WHEN testInt(a) > 6 THEN { MESSAGE '>6'; }
+                        WHEN testInt(a) > 5 THEN { MESSAGE '>5'; }
+                     ;
+
+multiActionTest(a) = ACTION MULTI IF a IS CaseB THEN MESSAGE caseDataB(a), IF a IS CaseC THEN MESSAGE caseDataC(a);
+multiActionTest2(a) = ACTION MULTI OVERRIDE IF a IS CaseB THEN MESSAGE caseDataB(a), IF a IS CaseC THEN MESSAGE caseDataC(a);
+
+
+FORM caseTest 'Тест CASE'
+OBJECTS a=CaseA//, b=CaseB, c=CaseC
+PROPERTIES(a) ADDOBJ, testInt, caseData1, caseData2, caseData3, overrideTest, exclusiveTest, caseTest, caseTest2, multiTest, multiTest2
+PROPERTIES(a) caseActionTest, caseActionTest2, multiActionTest, multiActionTest2
+//PROPERTIES ADDOBJ(b), ADDOBJ(c), caseDataB(b), caseDataC(c), multiTest(b, c), multiTest2(b, c)
+;
 
 storeSizeCode 'Размер склада (код)' (s) = sizeCode(storeSize(s));
 
@@ -300,6 +357,17 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // IF propertyExpresson
 //      THEN actionStatement1
 //     [ELSE actionStatement2]
+
+// Case action
+// statement syntax
+// CASE [OVERRIDE | EXCLUSIVE]
+//      WHEN propertyExpr1 THRN action1
+//      ...
+//      WHEN propertyExprN THEN actionN
+
+// Multi action
+// statement syntax:
+// MULTI [OVERRIDE | EXCLUSIVE] action1, ..., actionN
 
 // For/While action
 // statement syntax:
@@ -1483,6 +1551,7 @@ FORM newTestForm 'Test Exception'
 
 NAVIGATOR {
     ADD fibForm;
+    ADD caseTest;
     ADD newTestForm;
     ADD testChangeClass;
     ADD testAddObject;

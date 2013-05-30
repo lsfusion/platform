@@ -84,7 +84,7 @@ TABLE numberedObject (NumberedObject);
 numberObject 'Номер' = DATA STRING[18] (NumberedObject) IN numberedGroup MINCHARWIDTH 7;
 seriesObject 'Серия' = DATA STRING[2] (NumberedObject) IN numberedGroup FIXEDCHARWIDTH 3;
 
-seriesNumberObject 'Серия/Номер' (numberedObject) = ustring2(seriesObject(numberedObject), numberObject(numberedObject)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+seriesNumberObject 'Серия/Номер' (numberedObject) = CONCAT '', seriesObject(numberedObject), numberObject(numberedObject) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 
 initValueNumberObject = ABSTRACT STRING[18] (NumberedObject);
 initValueSeriesObject = ABSTRACT STRING[2] (NumberedObject);
@@ -170,7 +170,7 @@ META defineNumeratedObject(object1, object2)
 
     number###object1###object2 'Номер' = DATA STRING[18] (###object1, ###object2) MINCHARWIDTH 7;
     series###object1###object2 'Серия' = DATA STRING[2] (###object1, ###object2) FIXEDCHARWIDTH 3;
-    seriesNumber###object1###object2 'Серия/Номер' (object1, object2) = ustring2(series###object1###object2(object1, object2), number###object1###object2(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+    seriesNumber###object1###object2 'Серия/Номер' (object1, object2) = CONCAT '', series###object1###object2(object1, object2), number###object1###object2(object1, object2) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 
     numerator###object1###object2 = DATA Numerator (###object1, ###object2);
     nameNumerator###object1###object2 'Нумератор' (object1, object2) = nameNumerator(numerator###object1###object2(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 15;

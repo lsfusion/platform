@@ -20,7 +20,7 @@ nameGLDocument(document) += descriptionInvoice(document);
                                           '62.1',                                  // дебет
                                           '41.3',                                  // кредит
                                           'by_default',                            // идентификатор плана счетов
-                                          'by_default_saleRetail'                  // идентификатор операции
+                                          'by_default_sale_invoice_retail'         // идентификатор операции
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceInvRetCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockInvoice(invoiceInvRetCGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
@@ -34,8 +34,16 @@ creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockIn
                                           '62.1',
                                           '41.2',
                                           'by_default',
-                                          'by_default_saleRetail'
+                                          'by_default_sale_invoice_retail'
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceInvRetIGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierStockInvoice(invoiceInvRetIGeneralLedger(generalLedger)) WHEN CLASS(invoiceInvRetIGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
+// ----------------------------------- Стандартные данные ----------------------------------- //
+
+@defineLoadDefaultOperation (Sale, iname, isid);
+loadDefaultOperationsSaleRetailBy 'Загрузить стандарные операции отгрузки товара из магазина' () = ACTION () {
+    EXEC loadDefaultOperation ('Отгрузка товара из магазина по безналичному расчету', 'by_default_sale_invoice_retail');
+} ;
+
+loadDefaultOperations () += loadDefaultOperationsSaleRetailBy();

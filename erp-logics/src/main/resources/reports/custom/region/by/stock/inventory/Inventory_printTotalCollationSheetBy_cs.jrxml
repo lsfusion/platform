@@ -23,7 +23,7 @@
 	</style>
 	<field name="cs" class="java.lang.Integer"/>
 	<field name="nameCollationSheet" class="java.lang.String"/>
-	<field name="nameCompanyCollationSheet" class="java.lang.String"/>
+	<field name="nameLegalEntityStockCollationSheet" class="java.lang.String"/>
 	<field name="nameCommitteeCollationSheet" class="java.lang.String"/>
 	<field name="nameChairmanCommitteeCollationSheet" class="java.lang.String"/>
 	<field name="namePositionChairmanCollationSheet" class="java.lang.String"/>
@@ -70,7 +70,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Компания: "+$F{nameCompanyCollationSheet}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Компания: "+$F{nameLegalEntityStockCollationSheet}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement x="487" y="12" width="50" height="10"/>

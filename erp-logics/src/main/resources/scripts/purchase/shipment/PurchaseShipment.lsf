@@ -124,9 +124,8 @@ ledgerBatchShipmentDetail (detail) = OVERRIDE shipmentBatchShipmentDetail(detail
 batchPriceListLedger(ledger) += OVERRIDE ledgerBatchShipmentDetail(invoiceShipmentDetailInvoiceDetail(ledger)), batchInvoiceDetail(ledger);
 batchPriceListLedger(ledger) += OVERRIDE ledgerBatchShipmentDetail(invoiceShipmentDetailInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))), batchInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger));
 
-nameBatch(batch) += ustring3(toString10(dateShipmentDetail(shipmentDetailShipmentBatch(batch))),
-                             string2('/ ', seriesNumberShipment(shipmentShipmentDetail(shipmentDetailShipmentBatch(batch)))),
-                             string2('/ ', nameSupplierShipmentDetail(shipmentDetailShipmentBatch(batch))));
+nameBatch(batch) += CONCAT '', toString10(dateShipmentDetail(shipmentDetailShipmentBatch(batch))), '/ ' + seriesNumberShipment(shipmentShipmentDetail(shipmentDetailShipmentBatch(batch))),
+                             '/ ' + nameSupplierShipmentDetail(shipmentDetailShipmentBatch(batch));
 
 // Проводим по регистру учетных цен
 supplierShipmentBatch (ledger) = supplierShipmentDetail(shipmentDetailShipmentBatch(ledger));

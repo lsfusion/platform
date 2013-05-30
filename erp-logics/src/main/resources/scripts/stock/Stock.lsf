@@ -125,7 +125,7 @@ TABLE groupGroup(Group, Group);
 CLASS ABSTRACT GroupType 'Тип классификатора SKU';
 nameGroupType 'Наименование' = ABSTRACT ISTRING[50](GroupType);
 
-FORM groupTypes
+FORM groupTypes 'Типы классификатора SKU'
     OBJECTS g = GroupType
     PROPERTIES(g) READONLY nameGroupType
     DIALOG GroupType OBJECT g
@@ -401,18 +401,18 @@ changedDataSkuLedger = ABSTRACT BOOLEAN (DataSkuLedger);
 
 // -------------------------------- Для всего ledger'а -------------------- //
 
-dateTimeSkuLedger 'Дата/время' (ledger) = UNION CLASS dateTimeDataSkuLedger (ledger), dateTimeBatch (ledger) PERSISTENT INDEXED;
+dateTimeSkuLedger 'Дата/время' (ledger) = MULTI dateTimeDataSkuLedger (ledger), dateTimeBatch (ledger) PERSISTENT INDEXED;
 dateSkuLedger 'Дата' (ledger) = toDate(dateTimeSkuLedger(ledger)) PERSISTENT INDEXED;
 
-isPostedSkuLedger 'Проведен' (ledger) = UNION CLASS isPostedDataSkuLedger (ledger), isPostedBatch (ledger) PERSISTENT;
+isPostedSkuLedger 'Проведен' (ledger) = MULTI isPostedDataSkuLedger (ledger), isPostedBatch (ledger) PERSISTENT;
 
-skuSkuLedger (ledger) = UNION CLASS skuDataSkuLedger (ledger), skuBatch (ledger) PERSISTENT INDEXED;
+skuSkuLedger (ledger) = MULTI skuDataSkuLedger (ledger), skuBatch (ledger) PERSISTENT INDEXED;
 nameSkuSkuLedger 'SKU' (ledger) = nameSku(skuSkuLedger(ledger));
 
-stockSkuLedger (ledger) = UNION CLASS stockDataSkuLedger (ledger), stockBatch (ledger) PERSISTENT INDEXED;
+stockSkuLedger (ledger) = MULTI stockDataSkuLedger (ledger), stockBatch (ledger) PERSISTENT INDEXED;
 nameStockSkuLedger 'Склад' (ledger) = nameStock(stockSkuLedger(ledger));
 
-descriptionSkuLedger 'Описание' (ledger) = UNION CLASS descriptionDataSkuLedger (ledger), descriptionBatch (ledger) PERSISTENT;
+descriptionSkuLedger 'Описание' (ledger) = MULTI descriptionDataSkuLedger (ledger), descriptionBatch (ledger) PERSISTENT;
 
 // -------------------------------- Количества ---------------------------- //
 
@@ -420,21 +420,21 @@ quantityBatch 'Кол-во в партии' = ABSTRACT NUMERIC[14,3] (Batch) PER
 
 quantityInLIFOSkuLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (InLIFOSkuLedger) PERSISTENT;
 
-quantityInSkuLedger 'Кол-во' (ledger) = UNION CLASS quantityBatch(ledger),
-                                                        quantityInLIFOSkuLedger(ledger) PERSISTENT;
+quantityInSkuLedger 'Кол-во' (ledger) = MULTI quantityBatch(ledger),
+                                              quantityInLIFOSkuLedger(ledger) PERSISTENT;
 
 quantityOutFIFOSkuLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (OutFIFOSkuLedger) PERSISTENT;
 
-quantityOutSkuLedger 'Кол-во' (ledger) = UNION CLASS quantityOutFIFOSkuLedger(ledger) PERSISTENT;
+quantityOutSkuLedger 'Кол-во' (ledger) = MULTI quantityOutFIFOSkuLedger(ledger) PERSISTENT;
 
-quantityDataSkuLedger 'Кол-во' (ledger) = UNION CLASS quantityInLIFOSkuLedger(ledger),
-                                                          quantityOutFIFOSkuLedger(ledger) PERSISTENT;
+quantityDataSkuLedger 'Кол-во' (ledger) = MULTI quantityInLIFOSkuLedger(ledger),
+                                                quantityOutFIFOSkuLedger(ledger) PERSISTENT;
 
-quantitySkuLedger 'Кол-во' (ledger) = UNION CLASS quantityInSkuLedger(ledger),
-                                                      quantityOutSkuLedger(ledger) PERSISTENT;
+quantitySkuLedger 'Кол-во' (ledger) = MULTI quantityInSkuLedger(ledger),
+                                            quantityOutSkuLedger(ledger) PERSISTENT;
 
-signedQuantitySkuLedger 'Кол-во' (ledger) = UNION CLASS quantityInSkuLedger(ledger),
-                                                            -quantityOutSkuLedger(ledger) PERSISTENT;
+signedQuantitySkuLedger 'Кол-во' (ledger) = MULTI quantityInSkuLedger(ledger),
+                                                  -quantityOutSkuLedger(ledger) PERSISTENT;
 
 // -------------------------------------------- Расчет себестоимости -------------------------------------- //
 
@@ -463,14 +463,15 @@ quantityOutFIFOSkuLedgerBatch (ledger, batch) =
                   BY ledger
                   ORDER orderOutFIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
 
-quantityDataSkuLedgerBatch (ledger, batch) = UNION CLASS quantityInLIFOSkuLedgerBatch(ledger, batch),
-                                                         quantityOutFIFOSkuLedgerBatch(ledger, batch);
+quantityDataSkuLedgerBatch (ledger, batch) = MULTI quantityInLIFOSkuLedgerBatch(ledger, batch),
+                                                   quantityOutFIFOSkuLedgerBatch(ledger, batch);
 
 // Свойства для расчета себестоимости
 
 costDataSkuLedgerBatch 'Расписано из партии (перв.)' (ledger, batch) = DATA NUMERIC[14,3] (DataSkuLedger, Batch);
 
-costSkuLedgerBatch 'Расписано из партии' (ledger, batch) = UNION CLASS quantityBatchBatch(ledger, batch), costDataSkuLedgerBatch(ledger, batch) PERSISTENT;
+costSkuLedgerBatch 'Расписано из партии' (ledger, batch) = MULTI quantityBatchBatch(ledger, batch),
+                                                                 costDataSkuLedgerBatch(ledger, batch) PERSISTENT;
 
 signedCostSkuLedgerBatch (ledger, batch) = IF ledger IS OutSkuLedger
                                               THEN -costSkuLedgerBatch(ledger, batch)
@@ -559,8 +560,8 @@ costSumSkuLedger 'Сумма поставщика без НДС' = GROUP SUM cos
 sumInSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (InSkuLedger) PERSISTENT;
 sumOutSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (OutSkuLedger) PERSISTENT;
 
-signedSumSkuLedger 'Сумма' (ledger) = UNION CLASS sumInSkuLedger(ledger),
-                                                 -sumOutSkuLedger(ledger) PERSISTENT;
+signedSumSkuLedger 'Сумма' (ledger) = MULTI sumInSkuLedger(ledger),
+                                            -sumOutSkuLedger(ledger) PERSISTENT;
 
 // ---------------------------- Остаток по товару -------------------------------- //
 
@@ -1880,7 +1881,7 @@ META defineDocumentSkuStock(object, skuProp, stockProp)
 END
 
 META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, stockProp)
-
+    not###stockProp###object (o) = NOT stockProp###object(o);
     EXTEND FORM form
 
         TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
@@ -1894,7 +1895,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
         ORDER BY skuTreeName
 
         OBJECTS           sts=(st=Stock, ks=Sku)
-        PROPERTIES        READONLY nameSku(ks), idBarcodeSku(ks), shortNameUOMSku(ks), stockName = nameStock(st)
+        PROPERTIES        READONLY nameSku(ks), idBarcodeSku(ks), shortNameUOMSku(ks), stockName = nameStock(st) SHOWIF not###stockProp###object(concrete)
         PROPERTIES        addSku() TODRAW sts, editSku(ks), copySku(ks)
 
         FILTERS           isParentSkuGroupSku(sk, ks),
@@ -1904,8 +1905,8 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
         FILTERGROUP stockFilters
             FILTER 'Собственные склады' 'F6' legalEntityStock(st) == legalEntityProp###object(concrete) DEFAULT
 
-        FILTERS           nameSku(ks), nameStock(st)
-        ORDER BY          nameSku, stockName
+        FILTERS           nameSku(ks)
+        ORDER BY          nameSku
 
         PROPERTIES        quantitySku###object###stockProp(ks, concrete, st) ON CHANGE changeQuantitySku###object###stock(ks, concrete, st) BACKGROUND backgroundQuantitySku###object###Stock(ks, concrete, st),
                           currentBalanceSkuStock(ks,st) READONLY, priceSkuStock###object(ks, st, concrete) READONLY

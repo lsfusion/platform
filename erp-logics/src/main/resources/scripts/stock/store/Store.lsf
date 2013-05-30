@@ -113,7 +113,7 @@ inChainStoresStore (chainStores, store) = chainStoresStore(store) == chainStores
 parentStockGroup (store) += storeTypeStore(store);
 
 taxUnitGroupTaxUnit(store) += legalEntityStore(store);
-descriptionTaxUnit(store) += string2SP(nameStore(store), addressStore(store));
+descriptionTaxUnit(store) += nameStore(store) + ' ' + addressStore(store);
 
 inChainStoresStoreTypeStore (chainStores, storeType, store) =
     (storeTypeStore(store) == storeType AND chainStores) OR
@@ -257,12 +257,26 @@ FORM departmentStores 'Отделы магазинов'
 ;
 
 DESIGN departmentStores FROM DEFAULT {
-    POSITION treeStore.tree.box TO THE LEFT d.box;
-    treeStore.tree {
-        fillHorizontal = 0.3;
-    }
-    d.grid {
-        defaultComponent = TRUE;
+    main {
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            ADD treeStore.tree.box {
+                title = 'Склады';
+            }
+
+            ADD d.box {
+                d.grid {
+                    defaultComponent = TRUE;
+                    fillHorizontal = 2;
+                }
+            }
+        }
+
+        ADD functions.box;
     }
 }
 

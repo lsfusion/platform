@@ -1,6 +1,6 @@
 MODULE GeneralLedger;
 
-REQUIRE GLAccountType;
+REQUIRE GLAccountType, Operation;
 
 
 CLASS ABSTRACT GLDocument 'Регистр-основание';
@@ -337,3 +337,23 @@ META defineGeneralLedgerAggregationOperation(object1, object2, idGL, companyProp
     idGL###property(o) = property(o) IF id###operation###object1(o) == keyProp;
     @defineGeneralLedgerDoubleAggregation(object1, object2, idGL, companyProp, idGL###property, description, debit, credit, accountType);
 END
+
+
+// ----------------------------------- Стандартные данные ----------------------------------- //
+
+META defineLoadDefaultOperationPrefix (NSR, iname, isid, prefix)
+    loadDefault###prefix###Operation 'Добавить значение операций' = ACTION (iname, isid) {
+        FOR ADDOBJ t = NSR.Operation DO {
+            SET NSR.nameOperation(t) <- iname;
+            SET NSR.idOperation (t) <- isid;
+        }
+    }
+END
+META defineLoadDefaultOperation (NSR, iname, isid)
+    @defineLoadDefaultOperationPrefix (NSR, iname, isid, );
+END
+
+
+loadDefaultOperations 'Загрузить стандарные операции для проводок' () = ABSTRACT ACTION ()  IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultOperations);

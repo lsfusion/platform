@@ -68,6 +68,8 @@ costPriceInvoiceDetail(detail) = incomePriceInvoiceDetail(detail) (+) extraCostP
 costPriceUserInvoiceDetail(detail) = incomePriceUserInvoiceDetail(detail) (+) extraCostPriceUserInvoiceDetail(detail) (+)
                                      customCostPriceUserInvoiceDetail(detail) (+) certificateCostPriceUserInvoiceDetail(detail);
 
+addCostPriceToManufacturingPriceUserInvoice 'Учитывать в цене изготовителя доп.расходы' (invoice) = DATA BOOLEAN (Purchase.UserInvoice) IN documentPrmGroup;
+
 // -------------------------------------- Формирование задолженности ---------------------------------------------------
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isSupplierLegalEntity(supplierUserInvoice(userInvoice))

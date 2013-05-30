@@ -5,7 +5,7 @@ REQUIRE System, Utils, Historizable, Stock, LegalEntity, SaleLedger, Sale, Integ
 NAMESPACE Sale;
 
 // ----------------------------------- Статистический классификатор ------------------------------------------ //
-CLASS StatisticGroupType 'Тип классификатора статистических групп';
+CLASS StatisticGroupType 'Тип классификатора статистических групп' : GroupType;
 TABLE statisticGroupType (StatisticGroupType);
 
 countryStatisticGroupType = DATA Country (StatisticGroupType);
@@ -36,7 +36,7 @@ FORM statisticGroupTypes 'Типы классификаторов статист
     PROPERTIES(t) ADDFORM, EDITFORM, DELETE
 ;
 
-CLASS StatisticGroup 'Статистическая группа';
+CLASS StatisticGroup 'Статистическая группа': Group;
 TABLE statisticGroup(StatisticGroup);
 
 nameStatisticGroup 'Наименование' = DATA ISTRING[100](StatisticGroup);
@@ -208,6 +208,14 @@ FORM statisticGroupDialog 'Статистические группы'
 
     DIALOG StatisticGroup OBJECT g
 ;
+
+//---------------------------------------------- Отображение в форме товаров -------------------------------------//
+
+parentGroup (statisticGroup) += parentStatisticGroup(statisticGroup);
+nameGroup (statisticGroup) += nameStatisticGroup(statisticGroup);
+nameGroupType (statisticGroupType) += nameStatisticGroupType (statisticGroupType);
+groupTypeGroup (statisticGroup) += groupTypeStatisticGroup (statisticGroup);
+groupGroupTypeSku (statisticGroupType, sku) += statisticGroupTypeSku (statisticGroupType, sku);
 
 //---------------------------------------------- Формы стат. отчетов -------------------------------------//
 

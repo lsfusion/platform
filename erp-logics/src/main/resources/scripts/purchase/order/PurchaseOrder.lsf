@@ -71,7 +71,11 @@ EXTEND FORM userOrder
 
     FILTERGROUP filter1
         FILTER 'С поступлением' 'F8' quantityPurchaseSupplierSku(supplierUserOrder(o), ks)
-        FILTER 'В ассортименте' 'F7' inAssortmentSkuStockUserOrder(ks, st, o) DEFAULT
+        FILTER 'В ассортименте' 'F7' priceLedgerPriceListTypeSkuStockCompanyDateTime(ledgerPriceListTypePriceListType(priceListTypeUserOrderSku(o, ks)),
+                                                                                     ks,
+                                                                                     st,
+                                                                                     supplierUserOrder(o),
+                                                                                     dateTimeUserOrder(o)) DEFAULT
 ;
 
 // Резервы

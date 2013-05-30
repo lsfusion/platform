@@ -1,6 +1,6 @@
 package fdk.utils.i18n;
 
-import platform.server.classes.TextClass;
+import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.*;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -23,7 +23,7 @@ public class TranslateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface languageToInterface;
 
     public TranslateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{TextClass.instance, LM.getClassByName("Language"), LM.getClassByName("Language")});
+        super(LM, new ValueClass[]{StringClass.text, LM.getClassByName("Language"), LM.getClassByName("Language")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         translationInterface = i.next();

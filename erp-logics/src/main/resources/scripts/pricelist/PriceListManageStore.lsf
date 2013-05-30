@@ -69,14 +69,27 @@ EXTEND DESIGN priceListManage {
 
 showRetailPrice (p, r) = p != r;
 
+activeMarkupLedgerPriceListTypeLedgerPriceListTypeSkuCompanyDateTime 'Надбавка, %' (rt, pt, s, c, dt) =
+    activePriceLedgerPriceListTypeSkuCompanyDateTime (rt, s, c, dt) * 100.0 /
+    (activePriceLedgerPriceListTypeSkuCompanyDateTime (pt, s, c, dt) IF activePriceLedgerPriceListTypeSkuCompanyDateTime (pt, s, c, dt) != 0) - 100.0;
+
+markupPriceListTypePriceListTypeSkuStockDateTime 'Надбавка, %' (rt, pt, sk, st, dt) =
+    pricePriceListTypeSkuStockDateTime (rt, sk, st, dt) * 100.0 /
+    (pricePriceListTypeSkuStockDateTime (pt, sk, st, dt) IF pricePriceListTypeSkuStockDateTime (pt, sk, st, dt) != 0) - 100.0;
+
+
 EXTEND FORM priceListManage
     OBJECTS rt = DataPriceListType FIXED PANEL
     PROPERTIES(rt) SELECTOR namePriceListType
 
-    PROPERTIES(rt, csk, c, dt) TODRAW csk READONLY cRetailPrice = activePriceLedgerPriceListTypeSkuCompanyDateTime AFTER cPrice SHOWIF showRetailPrice(pt, rt)
+    PROPERTIES TODRAW csk READONLY SHOWIF showRetailPrice(pt, rt) AFTER cPrice
+            cRetailPrice = activePriceLedgerPriceListTypeSkuCompanyDateTime(rt, csk, c, dt),
+            activeMarkupLedgerPriceListTypeLedgerPriceListTypeSkuCompanyDateTime(rt, pt, csk, c, dt)
     PROPERTIES(rt, csk, cst, dt) TODRAW cst READONLY cRetailPriceStock = pricePriceListTypeSkuStockDateTime AFTER cPriceStock SHOWIF showRetailPrice(pt, rt)
 
-    PROPERTIES(rt, ssk, s, dt) TODRAW ssk READONLY sRetailPrice = pricePriceListTypeSkuStockDateTime AFTER sPrice SHOWIF showRetailPrice(pt, rt)
+    PROPERTIES TODRAW ssk READONLY SHOWIF showRetailPrice(pt, rt) AFTER sPrice
+            sRetailPrice = pricePriceListTypeSkuStockDateTime(rt, ssk, s, dt),
+            markupPriceListTypePriceListTypeSkuStockDateTime(rt, pt, ssk, s, dt)
     PROPERTIES(rt, ssk, sst, dt) TODRAW sst READONLY sRetailPriceStock = pricePriceListTypeSkuStockDateTime AFTER sPriceStock SHOWIF showRetailPrice(pt, rt)
 ;
 
@@ -103,13 +116,13 @@ EXTEND DESIGN priceListManage {
 createCompanyRetailPriceList 'Создать розничный прайс' = ACTION (dateTime, dataPriceListType, retailPriceListType, company) {
     FOR ADDOBJ u = UserPriceList DO {
         fillCompanyPriceList(u, dateTime, dataPriceListType, company);
-        SET inUserPriceListDataPriceListType(userPriceList, retailPriceListType) <- TRUE;
-        SET showUserPriceListPriceListType(userPriceList, retailPriceListType) <- TRUE;
+        SET inUserPriceListDataPriceListType(u, retailPriceListType) <- TRUE;
+        SET showUserPriceListPriceListType(u, retailPriceListType) <- TRUE;
         FORM userPriceList OBJECTS p = u MANAGESESSION DOCKEDMODAL;
     }
 } TOOLBAR;
 
-createNewCompanyRetailPriceList 'Создать прайс' = ACTION (dateTime, dataPriceListType, retailPriceListType, company) {
+createNewCompanyRetailPriceList 'Создать розничный прайс' = ACTION (dateTime, dataPriceListType, retailPriceListType, company) {
     inSkuCustomUser(s, u) <- inSku(s) WHERE u == currentUser();
     apply();
     createCompanyRetailPriceList(dateTime, dataPriceListType, retailPriceListType, company);

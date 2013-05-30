@@ -350,11 +350,11 @@ inputDiscountCardNumberReceipt 'Ввести номер' = ACTION (receipt) {
     FORM inputDiscountCardNumberReceipt MODAL;
     IF formResult() == FormResult.ok THEN {
         IF TRUE IF NOT chosenString('s') == '' THEN {
-            IF discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n'))) THEN {
-                IF dateToDiscountCard(discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n'))))<dateReceipt(receipt) THEN
+            IF discountCardSeriesNumber(CONCAT '', chosenString('s'), chosenString('n')) THEN {
+                IF dateToDiscountCard(discountCardSeriesNumber(CONCAT '', chosenString('s'), chosenString('n')))<dateReceipt(receipt) THEN
                     MESSAGE 'Закончился срок действия карты'
                 ELSE
-                    SET discountCardReceipt(receipt) <- discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n')));
+                    SET discountCardReceipt(receipt) <- discountCardSeriesNumber(CONCAT '', chosenString('s'), chosenString('n'));
             }
             ELSE
                 MESSAGE 'Дисконтная карта с такой серией и номером не найдена';

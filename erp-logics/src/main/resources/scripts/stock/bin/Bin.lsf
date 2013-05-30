@@ -90,7 +90,7 @@ nameBinDataSkuLedger 'Ячейка' (ledger) = nameBin(binDataSkuLedger(ledger))
 binBatch (batch) = ABSTRACT Bin (Batch) PERSISTENT INDEXED ;
 nameBinBatch 'Ячейка' (batch) = nameBin(binBatch(batch)) MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
-binSkuLedger (ledger) = UNION CLASS binDataSkuLedger (ledger), binBatch (ledger) PERSISTENT INDEXED;
+binSkuLedger (ledger) = MULTI binDataSkuLedger (ledger), binBatch (ledger) PERSISTENT INDEXED;
 nameBinSkuLedger 'Ячейка' (ledger) = nameBin(binSkuLedger(ledger)) MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
 TABLE skuBin(Sku, Bin);
@@ -209,11 +209,10 @@ EXTEND DESIGN balanceSkuStock {
 // ---------------------  Склады с указанием ячеек ----------------------- //
 
 TABLE stockBinGroup(Stock, BinGroup);
-dataInStockBinGroup 'Отм' = DATA BOOLEAN (Stock, BinGroup);
+dataInStockBinGroup 'Отм.' = DATA BOOLEAN (Stock, BinGroup);
 
 TABLE stockBin(Stock, Bin);
-dataInStockBin 'Отм' = DATA BOOLEAN (Stock, Bin);
-
+dataInStockBin 'Отм.' = DATA BOOLEAN (Stock, Bin);
 
 levelParentStockBinGroup (stock, binGroup) = GROUP MIN levelBinGroupBinGroup(binGroup, parent) IF dataInStockBinGroup(stock, parent)
                                                                BY stock, binGroup PERSISTENT;
@@ -222,9 +221,9 @@ nearestParentStockBinGroup (stock, binGroup) =
 nearestInStockBinGroup (stock, binGroup) =
     dataInStockBinGroup(stock, nearestParentStockBinGroup(stock, binGroup));
 
-inStockBinGroup 'Отм' (stock, binGroup) = OVERRIDE nearestInStockBinGroup (stock, binGroup), dataInStockBinGroup(stock, binGroup) PERSISTENT;
+inStockBinGroup 'Отм.' (stock, binGroup) = OVERRIDE nearestInStockBinGroup (stock, binGroup), dataInStockBinGroup(stock, binGroup) PERSISTENT;
 
-inStockBin 'Отм' (stock, bin) = OVERRIDE inStockBinGroup(stock, binGroupBin(bin)), dataInStockBin(stock, bin) PERSISTENT;
+inStockBin 'Отм.' (stock, bin) = OVERRIDE inStockBinGroup(stock, binGroupBin(bin)), dataInStockBin(stock, bin) PERSISTENT;
 
 binsStock 'Ячейки' (stock) = GROUP CONCAT nameBin(bin) IF inStockBin(stock, bin) , ', '
                                        BY stock
@@ -233,74 +232,6 @@ stocksBin 'Склады' (bin) = GROUP CONCAT nameStock(stock) IF inStockBin(sto
                                        BY bin
                                        ORDER stock MINCHARWIDTH 20 PREFCHARWIDTH 40 PERSISTENT;
 
-
-FORM binStocks 'Ячейки/склады'
-
-    TREE stockTree a=STRING[3], sg = StockGroup PARENT parentStockGroup
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = nameStockGroup(sg)
-
-    ORDER BY sgTreeName
-    FILTERS stringEqualsAll(a)
-    FILTERS countStockStockGroup(sg)
-
-    OBJECTS ts = Stock
-    PROPERTIES READONLY  nameStock(ts)
-    FILTERS ts IS Stock AND NOT sg IS StockGroup OR isParentStockGroupStock(sg, ts),
-            isCompanyStock(ts)
-
-    TREE binTree bg = BinGroup PARENT parentBinGroup
-    PROPERTIES READONLY nameBinGroup(bg)
-    PROPERTIES(ts, bg) inStockBinGroup
-
-    OBJECTS b = Bin
-    PROPERTIES(b) READONLY nameBin, canonicalNameBin
-    PROPERTIES(ts, b) inStockBin
-    FILTERS b IS Bin AND NOT bg IS BinGroup OR isParentBinGroupBin(bg, b)
-    ORDER BY nameBin
-    FILTERGROUP filters1
-            FILTER 'Выбранные ячейки' 'F10' inStockBin(ts, b) DEFAULT
-
-;
-
-DESIGN binStocks FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-        childConstraints = TO THE BOTTOM;
-
-        NEW topContainer1 {
-            type = SPLITH;
-            childConstraints = TO THE RIGHT;
-
-            ADD stockTree.tree.box {
-                title = 'Группы складов';
-            }
-
-            ADD ts.box {
-                ts.grid {
-                    defaultComponent = TRUE;
-                    fillHorizontal = 4;
-                }
-            }
-        }
-        NEW topContainer2 {
-            type = SPLITH;
-            childConstraints = TO THE RIGHT;
-
-            ADD binTree.tree.box {
-                title = 'Группы ячеек';
-            }
-
-            ADD b.box {
-                b.grid {
-                    defaultComponent = TRUE;
-                    fillHorizontal = 4;
-                }
-            }
-        }
-
-        ADD functions.box;
-    }
-}
 
 // ---------------- Ячейка по классификатору ------------------- //
 
@@ -333,12 +264,27 @@ CONSTRAINT dataBinStockSku(stock,sku) AND NOT inStockBin(stock,dataBinStockSku(s
            CHECKED BY dataBinStockSku MESSAGE 'Ячейка (для sku) не включена для склада';
 // ------------------------------------- Формы ---------------------------------- //
 
-FORM binStockSkus 'Ячейки/склады/sku'
+FORM binStocks 'Ячейки'
 
     OBJECTS ts = Stock FIXED PANEL
     PROPERTIES(ts) SELECTOR nameStock
     PROPERTIES(ts) nameGroupTypeStock
     FILTERS isCompanyStock(ts)
+
+    TREE binTree bg = BinGroup PARENT parentBinGroup
+    PROPERTIES READONLY nameBinGroup(bg)
+    PROPERTIES(ts, bg) inStockBinGroup
+    PROPERTIES(bg) ADDFORM, EDITFORM, DELETE TOOLBAR
+
+    OBJECTS b = Bin
+    PROPERTIES(b) READONLY nameBin, canonicalNameBin
+    PROPERTIES(ts, b) inStockBin
+    FILTERS b IS Bin AND NOT bg IS BinGroup OR isParentBinGroupBin(bg, b)
+    ORDER BY nameBin
+    PROPERTIES(b) ADDFORM, EDITFORM, DELETE TOOLBAR
+
+    FILTERGROUP filters1
+            FILTER 'Отмеченные ячейки' 'F10' inStockBin(ts, b)
 
     TREE treeGroup g=Group PARENT parentGroup
     PROPERTIES READONLY nameGroup(g)
@@ -352,26 +298,47 @@ FORM binStockSkus 'Ячейки/склады/sku'
     PROPERTIES(ts, s) nameBinStockSku
 ;
 
-DESIGN binStockSkus FROM DEFAULT{
-    NEW mainContainer{
+DESIGN binStocks FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
         childConstraints = TO THE BOTTOM;
-        ADD ts.box{
-            fillHorizontal = 3.0;
-            childConstraints = TO THE RIGHTBOTTOM;
-        }
-        NEW groupContainer {
-            childConstraints = TO THE BOTTOM;
-            NEW treeContainer{
+
+        ADD ts.box;
+        NEW topContainer {
+            type = SPLITV;
+            NEW binGroup {
                 type = SPLITH;
                 childConstraints = TO THE RIGHT;
-                ADD treeGroup.tree.box { fillHorizontal = 2.0; }
-                ADD s.box { fillHorizontal = 2.0; }
+                ADD binTree.tree.box {
+                    title = 'Группы ячеек';
+                }
+
+                ADD b.box {
+                    b.grid {
+                        defaultComponent = TRUE;
+                        fillHorizontal = 2.5;
+                    }
+                }
+            }
+            NEW skuGroup {
+                type = SPLITH;
+                childConstraints = TO THE RIGHT;
+                ADD treeGroup.tree.box {
+                    title = 'Группы Sku';
+                }
+
+                ADD s.box {
+                    s.grid {
+                        defaultComponent = TRUE;
+                        fillHorizontal = 2.5;
+                    }
+                }
             }
         }
-    }
-    ADD functions.box;
-}
 
+        ADD functions.box;
+    }
+}
 //--------------------------------------------------Ячейка для Detail--------------------------------------//
 
 META defineDocumentDetailBinCustomPrefix(detail, prefix, caption)
@@ -453,9 +420,7 @@ NAVIGATOR {
     stockNavigator {
         NEW binNavigator 'Ячейки' {
             ADD binGroups;
-            ADD bins;
             ADD binStocks;
-            ADD binStockSkus;
         }
     }
 }

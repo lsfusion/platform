@@ -334,7 +334,7 @@ END
 
 META defineCreditMemoUnion (prop, caption)
 
-    prop##CreditMemo caption (creditMemo) = UNION CLASS prop##CreditMemoIn(creditMemo), prop##CreditMemoOut(creditMemo);
+    prop##CreditMemo caption (creditMemo) = MULTI prop##CreditMemoIn(creditMemo), prop##CreditMemoOut(creditMemo);
 
 END
 

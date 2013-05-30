@@ -228,10 +228,11 @@ META defineScheduleOrder(sign, stockProp)
 
     overCreateOrder = ABSTRACT ACTION (UserOrder);
 
-    createOrder 'Создать заказ' = ACTION (scheduleOrderDetail) NEWSESSION {
+    createScheduleUserOrder 'Создать заказ' = ACTION (scheduleOrderDetail) NEWSESSION {
         FOR ADDOBJ o = UserOrder DO {
             SET scheduleOrderDetailUserOrder(o) <- scheduleOrderDetail;
             SET dateUserOrder(o) <- dateOrderScheduleOrderDetail(scheduleOrderDetail);
+            SET timeUserOrder(o) <- currentTime();
             SET shipmentDateUserOrder(o) <- dateSupplyScheduleOrderDetail(scheduleOrderDetail);
             SET shipmentTimeUserOrder(o) <- currentTime();
             SET nextShipmentDateUserOrder(o) <- dateSupplyNextScheduleOrderDetail(scheduleOrderDetail);
@@ -268,7 +269,7 @@ META defineScheduleOrder(sign, stockProp)
         PROPERTIES (sd) READONLY monthInDateScheduleOrderDetail, DOWInDateScheduleOrderDetail,
                         nameSupplierScheduleOrderDetail, nameSupplierStockScheduleOrderDetail,
                         nameCustomerScheduleOrderDetail, nameCustomerStockScheduleOrderDetail
-        PROPERTIES (sd) createOrder, DELETESESSION
+        PROPERTIES (sd) createScheduleUserOrder, DELETESESSION
         ORDER BY dateSupplyScheduleOrderDetail
         PROPERTIES createScheduleOrder(s) TODRAW sd
 
@@ -393,7 +394,7 @@ META defineScheduleOrder(sign, stockProp)
                         monthInDateScheduleOrderDetail, DOWInDateScheduleOrderDetail,
                         nameSupplierScheduleOrderDetail, nameSupplierStockScheduleOrderDetail,
                         nameCustomerScheduleOrderDetail, nameCustomerStockScheduleOrderDetail, quantityOrdersScheduleOrderDetail
-        PROPERTIES (sd) createOrder, editScheduleOrderDetail
+        PROPERTIES (sd) createScheduleUserOrder, editScheduleOrderDetail
 
         ORDER BY dateSupplyScheduleOrderDetail
 

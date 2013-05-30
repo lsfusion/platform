@@ -75,3 +75,12 @@ debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreR
                                           );
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += departmentStoreRepricing(repricingRepSupNotCGeneralLedger(generalLedger)) WHEN CLASS(repricingRepSupNotCGeneralLedger(generalLedger)) AND dimensionType == DimensionType.stock;
 
+// ----------------------------------- Стандартные данные ----------------------------------- //
+
+@defineLoadDefaultOperation (Repricing, iname, isid);
+
+loadDefaultOperationsRepricingBy 'Загрузить стандарные операции переоценки товара' () = ACTION () {
+    EXEC loadDefaultOperation ('Переоценка товара на магазине', 'by_default_repricing');
+} ;
+
+loadDefaultOperations () += loadDefaultOperationsRepricingBy();

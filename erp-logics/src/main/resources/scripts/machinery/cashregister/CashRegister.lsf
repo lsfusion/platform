@@ -185,7 +185,7 @@ loadDefaultGroupCashRegister 'Сгенерировать группу касс' 
                 SET numCashRegister() <- numCashRegister() + 1;
                 SET nppMachinery(c) <- numCashRegister();
                 SET cashRegisterModelCashRegister(c) <- model AS CashRegisterModel;
-                SET descriptionMachinery(c) <- string5CM('Касса', toString255(numCashRegister()), '(', nameStock(stock), ')');
+                SET descriptionMachinery(c) <- CONCAT ' ', 'Касса', toString255(numCashRegister()), '(', nameStock(stock), ')';
             }
         }
     }

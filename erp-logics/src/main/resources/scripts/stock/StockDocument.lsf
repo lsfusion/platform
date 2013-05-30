@@ -21,17 +21,17 @@ descriptionStockDocumentLedger 'Название документа' (ledger) = 
 GROUP ledgerGroup 'Суммы (всего)' : public;
 sumIncStockDocumentLedger 'Сумма прихода' (ledger) = ABSTRACT NUMERIC[16,2] (IncStockDocumentLedger) PERSISTENT IN ledgerGroup;
 sumOutStockDocumentLedger 'Сумма расхода' (ledger) = ABSTRACT NUMERIC[16,2] (OutStockDocumentLedger) PERSISTENT IN ledgerGroup;
-sumStockDocumentLedger 'Сумма' (ledger) = UNION CLASS sumIncStockDocumentLedger(ledger), -sumOutStockDocumentLedger(ledger) PERSISTENT;
+sumStockDocumentLedger 'Сумма' (ledger) = MULTI sumIncStockDocumentLedger(ledger), -sumOutStockDocumentLedger(ledger) PERSISTENT;
 
 GROUP ledgerItemGroup 'Суммы по товару' : public;
 sumItemIncStockDocumentLedger 'Сумма прихода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (IncStockDocumentLedger) PERSISTENT IN ledgerItemGroup;
 sumItemOutStockDocumentLedger 'Сумма расхода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (OutStockDocumentLedger) PERSISTENT IN ledgerItemGroup;
-sumItemStockDocumentLedger 'Сумма, товар' (ledger) = UNION CLASS sumItemIncStockDocumentLedger(ledger), -sumItemOutStockDocumentLedger(ledger) PERSISTENT;
+sumItemStockDocumentLedger 'Сумма, товар' (ledger) = MULTI sumItemIncStockDocumentLedger(ledger), -sumItemOutStockDocumentLedger(ledger) PERSISTENT;
 
 GROUP ledgerContainerGroup 'Суммы по таре' : public;
 sumContainerIncStockDocumentLedger 'Сумма прихода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (IncStockDocumentLedger) PERSISTENT IN ledgerContainerGroup;
 sumContainerOutStockDocumentLedger 'Сумма расхода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (OutStockDocumentLedger) PERSISTENT IN ledgerContainerGroup;
-sumContainerStockDocumentLedger 'Сумма, тара' (ledger) = UNION CLASS sumContainerIncStockDocumentLedger(ledger), -sumContainerOutStockDocumentLedger(ledger) PERSISTENT;
+sumContainerStockDocumentLedger 'Сумма, тара' (ledger) = MULTI sumContainerIncStockDocumentLedger(ledger), -sumContainerOutStockDocumentLedger(ledger) PERSISTENT;
 
 // -------------------------------------- Агрегированные суммы за интервал --------------------------------------------- //
 
