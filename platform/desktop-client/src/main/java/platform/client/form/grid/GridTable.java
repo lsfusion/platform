@@ -416,26 +416,18 @@ public class GridTable extends ClientPropertyTable {
             }
         }
 
-        for (int i = 0; i < model.getColumnCount(); ++i) {
-            if (model.getColumnProperty(i).widthUser != null)
-                getColumnModel().getColumn(i).setPreferredWidth(model.getColumnProperty(i).widthUser);
-        }
-
         int rowHeight = 0;
         hasFocusableCells = false;
         for (int i = 0; i < model.getColumnCount(); ++i) {
             ClientPropertyDraw cell = model.getColumnProperty(i);
 
             TableColumn column = getColumnModel().getColumn(i);
-            if (newColumnCount != oldColumnCount) {
-//                if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
-//                    column.setPreferredWidth(cell.getMinimumWidth(this));
-//                } else {
-//                    column.setPreferredWidth(cell.getPreferredWidth(this));
-//                }
-                column.setMinWidth(cell.getMinimumWidth(this));
-                column.setMaxWidth(cell.getMaximumWidth(this));
-            }
+
+            column.setMinWidth(cell.getMinimumWidth(this));
+            column.setPreferredWidth(model.getColumnProperty(i).widthUser != null ? model.getColumnProperty(i).widthUser :
+                    ((getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) ? cell.getMinimumWidth(this) : cell.getPreferredWidth(this)));
+            column.setMaxWidth(cell.getMaximumWidth(this));
+
             column.setHeaderValue(model.getColumnName(i));
 
             rowHeight = max(rowHeight, cell.getPreferredHeight(this));
@@ -457,9 +449,6 @@ public class GridTable extends ClientPropertyTable {
                 });
             }
         }
-
-        if (newColumnCount != oldColumnCount)
-            setOrResetPreferredColumnWidths();
 
         if (model.getColumnCount() != 0) {
             setRowHeight(rowHeight);

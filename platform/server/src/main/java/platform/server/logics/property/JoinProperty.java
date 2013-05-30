@@ -40,6 +40,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import static platform.base.BaseUtils.capitalize;
+import static platform.base.BaseUtils.multiSet;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
@@ -261,6 +262,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if (implement.mapping.size() == 1 && !implementChange) {
             if (editActionSID.equals(ServerResponse.CHANGE_WYS)) {
                 ActionPropertyMapImplement<?, Interface> changeActionImplement = getEditAction(ServerResponse.CHANGE);
+                if(changeActionImplement==null)
+                    return null;
+
                 ValueClass aggClass = ((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass();
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();

@@ -307,6 +307,10 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             for (int i = 0; i < visibleListModel.getSize(); i++) {
                 int index = orderMap.get(visibleListModel.get(i));
                 initialTable.getProperties().get(index).orderUser = i;
+                if (initialTable.getColumnModel().getColumnCount() > index)
+                    initialTable.getProperties().get(index).widthUser = initialTable.getColumnModel().getColumn(index).getPreferredWidth();
+                else
+                    initialTable.getProperties().get(index).widthUser = null;
                 initialTable.getProperties().get(index).hideUser = false;
             }
             for (int i = 0; i < invisibleListModel.getSize(); i++) {
@@ -327,7 +331,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 sortDirections.put(entry.getKey().first, new Pair<Boolean, Integer>(entry.getValue(), j));
                 j++;
             }
-            
+
             Map<String, ColumnUserPreferences> preferences = new HashMap<String, ColumnUserPreferences>();
             for (int i = 0; i < visibleListModel.getSize(); i++) {
                 int index = orderMap.get(visibleListModel.get(i));
