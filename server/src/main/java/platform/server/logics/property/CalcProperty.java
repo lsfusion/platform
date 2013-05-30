@@ -981,15 +981,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public boolean isFull(ImCol<T> checkInterfaces) {
-        ClassWhere<Object> classWhere = getClassValueWhere(ClassType.ASIS);
-        if(classWhere.isFalse())
-            return true;
-        for (AbstractClassWhere.And<Object> where : classWhere.wheres) {
-            for (T i : checkInterfaces)
-                if(where.get(i)==null)
-                    return false;
-        }
-        return true;
+        return getClassValueWhere(ClassType.ASIS).isFull(checkInterfaces);
     }
 
     private boolean calculateIsFull() {

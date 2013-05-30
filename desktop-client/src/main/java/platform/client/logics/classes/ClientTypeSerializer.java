@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.base.ExtInt;
 import platform.interop.Data;
 
 import java.io.ByteArrayInputStream;
@@ -57,13 +58,7 @@ public class ClientTypeSerializer {
         if (type == Data.NUMERIC) return new ClientNumericClass(inStream.readInt(), inStream.readInt());
         if (type == Data.LOGICAL) return ClientLogicalClass.instance;
         if (type == Data.DATE) return ClientDateClass.instance;
-        if (type == Data.STRING) return new ClientStringClass(inStream.readBoolean(), inStream.readInt());
-        if (type == Data.VARSTRING) return new ClientVarStringClass(inStream.readBoolean(), inStream.readInt());
-        if (type == Data.TEXT) {
-            boolean caseInsensitive = inStream.readBoolean();
-            assert !caseInsensitive;
-            return ClientTextClass.instance;
-        }
+        if (type == Data.STRING) return new ClientStringClass(inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
         if (type == Data.YEAR) return ClientIntegerClass.instance;
         if (type == Data.DATETIME) return ClientDateTimeClass.instance;
         if (type == Data.TIME) return ClientTimeClass.instance;

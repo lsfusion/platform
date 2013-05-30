@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.base.DateConverter;
+import platform.base.ExtInt;
 import platform.base.SystemUtils;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
@@ -83,8 +84,8 @@ public class DateClass extends DataClass<Date> {
     }
 
     @Override
-    public int getCharLength() {
-        return 25;
+    public ExtInt getCharLength() {
+        return new ExtInt(25);
     }
 
     public boolean isSafeString(Object value) {

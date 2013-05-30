@@ -1030,7 +1030,7 @@ public class SQLSession extends MutableObject {
                         mPreparedParams.add(params[p]);
                     }
                     if (notSafeType !=null)
-                        valueString = notSafeType.getCast(valueString, syntax, env, false);
+                        valueString = notSafeType.getCast(valueString, syntax, env);
 
                     char[] valueArray = valueString.toCharArray();
                     if(num + valueArray.length >= parsed.length) {

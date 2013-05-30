@@ -90,11 +90,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP subtractInteger;
     public LCP divide;
 
-    public LCP string2SP, istring2SP, string3SP, istring3SP, string4SP, istring4SP, string5SP, istring5SP;
-    public LCP string2, istring2, string3, istring3;
-    public LCP string5CM;
-    public LCP ustring2CM, ustring2SP, ustring3SP, ustring4SP, ustring5SP, ustring2, ustring3, ustring4, ustring3CM, ustring4CM, ustring5CM;
-    public LCP ustring2CR;
+//    public LCP string2SP, istring2SP, string3SP, istring3SP, string4SP, istring4SP, string5SP, istring5SP;
+//    public LCP string2, istring2, string3, istring3;
+//    public LCP string5CM;
+//    public LCP ustring2CM, ustring2SP, ustring3SP, ustring4SP, ustring5SP, ustring2, ustring3, ustring4, ustring3CM, ustring4CM, ustring5CM;
+//    public LCP ustring2CR;
 
     public LCP vtrue;
     public LCP vzero;
@@ -236,39 +236,39 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         diff2 = addCFProp("diff2", Compare.NOT_EQUALS);
 
         // "Склеивание" строк
-        string2SP = addSProp("string2SP", 2);
-        istring2SP = addInsensitiveSProp("istring2SP", 2);
-
-        string2 = addSProp("string2", 2, "");
-        istring2 = addInsensitiveSProp("istring2", 2, "");
-
-        string3SP = addSProp("string3SP", 3);
-        istring3SP = addInsensitiveSProp("istring3SP", 3);
-
-        string4SP = addSProp("string4SP", 4);
-        istring4SP = addInsensitiveSProp("istring4SP", 4);
-
-        string5SP = addSProp("string5SP", 5);
-        istring5SP = addInsensitiveSProp("istring5SP", 5);
-
-        string3 = addSProp("string3", 3, "");
-        istring3 = addInsensitiveSProp("istring3", 3, "");
-
-        ustring2CM = addSFUProp("ustring2CM", ",", 2);
-        ustring2SP = addSFUProp("ustring2SP", " ", 2);
-        ustring3SP = addSFUProp("ustring3SP", " ", 3);
-        ustring4SP = addSFUProp("ustring4SP", " ", 4);
-        ustring5SP = addSFUProp("ustring5SP", " ", 5);
-        ustring2 = addSFUProp("ustring2", "", 2);
-        ustring3 = addSFUProp("ustring3", "", 3);
-        ustring4 = addSFUProp("ustring4", "", 4);
-
-        string5CM = addSFUProp("string5CM", " ", 5);
-        ustring3CM = addSFUProp("ustring3CM", ",", 3);
-        ustring4CM = addSFUProp("ustring4CM", ",", 4);
-        ustring5CM = addSFUProp("ustring5CM", ",", 5);
-
-        ustring2CR = addSFUProp("ustring2CR", "\n", 2);
+//        string2SP = addSProp("string2SP", 2);
+//        istring2SP = addInsensitiveSProp("istring2SP", 2);
+//
+//        string2 = addSProp("string2", 2, "");
+//        istring2 = addInsensitiveSProp("istring2", 2, "");
+//
+//        string3SP = addSProp("string3SP", 3);
+//        istring3SP = addInsensitiveSProp("istring3SP", 3);
+//
+//        string4SP = addSProp("string4SP", 4);
+//        istring4SP = addInsensitiveSProp("istring4SP", 4);
+//
+//        string5SP = addSProp("string5SP", 5);
+//        istring5SP = addInsensitiveSProp("istring5SP", 5);
+//
+//        string3 = addSProp("string3", 3, "");
+//        istring3 = addInsensitiveSProp("istring3", 3, "");
+//
+//        ustring2CM = addSFUProp("ustring2CM", ",", 2);
+//        ustring2SP = addSFUProp("ustring2SP", " ", 2);
+//        ustring3SP = addSFUProp("ustring3SP", " ", 3);
+//        ustring4SP = addSFUProp("ustring4SP", " ", 4);
+//        ustring5SP = addSFUProp("ustring5SP", " ", 5);
+//        ustring2 = addSFUProp("ustring2", "", 2);
+//        ustring3 = addSFUProp("ustring3", "", 3);
+//        ustring4 = addSFUProp("ustring4", "", 4);
+//
+//        string5CM = addSFUProp("string5CM", " ", 5);
+//        ustring3CM = addSFUProp("ustring3CM", ",", 3);
+//        ustring4CM = addSFUProp("ustring4CM", ",", 4);
+//        ustring5CM = addSFUProp("ustring5CM", ",", 5);
+//
+//        ustring2CR = addSFUProp("ustring2CR", "\n", 2);
 
         // Обработка строк
         upper = addSFProp("upper", "upper(prm1)", 1);

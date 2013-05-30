@@ -149,7 +149,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
             if(!recWhere.isFalse()) // значит будет еще итерация
                 onlyInitial = false;
             recursive = new Pair<ClassExprWhere, StatKeys<KeyExpr>>(getClassWhere(recWhere), getStatKeys(recWhere));
-            result = new Pair<ClassExprWhere, StatKeys<KeyExpr>>(result.first.or(recursive.first), result.second.or(recursive.second));
+            result = new Pair<ClassExprWhere, StatKeys<KeyExpr>>(recursive.first.or(result.first), recursive.second.or(result.second));
         }
         return new Pair<Pair<ClassExprWhere, StatKeys<KeyExpr>>, Boolean>(result, onlyInitial);
     }

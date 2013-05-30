@@ -702,9 +702,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         dataModifier.eventDataChanges(changes);
 
         for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet()) {
-            FormInstance<?> formInstance = (FormInstance<?>) incrementChange.getKey();
             incrementChange.getValue().add(changes);
-            formInstance.dataChanged = true;
+        }
+
+        for (FormInstance form : activeForms.keySet()) {
+            form.dataChanged = true;
         }
     }
 

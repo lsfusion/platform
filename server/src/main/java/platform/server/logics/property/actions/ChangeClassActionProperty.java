@@ -160,7 +160,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
 
     @Override
     public PropertyInterface getSimpleDelete() {
-        if (where == null && valueClass instanceof UnknownClass)
+        if ((where == null || BaseUtils.hashEquals(mapInterfaces.valuesSet(),innerInterfaces)) && valueClass instanceof UnknownClass)
             return interfaces.single();
         return null;
     }

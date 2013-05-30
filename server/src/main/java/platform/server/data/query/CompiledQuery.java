@@ -17,6 +17,7 @@ import platform.server.SystemProperties;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
 import platform.server.classes.IntegralClass;
+import platform.server.classes.StringClass;
 import platform.server.data.*;
 import platform.server.data.expr.*;
 import platform.server.data.expr.formula.FormulaExpr;
@@ -193,7 +194,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             for(GroupJoinsWhere queryJoin : queryJoins) {
                 boolean orderUnion = syntax.orderUnion(); // нужно чтобы фигачило внутрь orders а то многие SQL сервера не видят индексы внутри union all
                 fromString = (fromString.length()==0?"":fromString+" UNION " + (unionAll.result?"ALL ":"")) + "(" + getInnerSelect(query.mapKeys, queryJoin, queryJoin.getFullWhere().followTrue(query.properties, !queryJoin.isComplex()), params, orderUnion?orders:MapFact.<V, Boolean>EMPTYORDER(), orderUnion?top:0, syntax, keyNames, propertyNames, resultKeyOrder, resultPropertyOrder, castTypes, subcontext, false, env) + ")";
-                if(!orderUnion)
+                if(!orderUnion) // собственно потому как union cast'ит к первому union'у (во всяком случае postgreSQL)
                     castTypes = null;
             }
 
@@ -539,12 +540,12 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             protected String getEmptySelect(final Where groupWhere) {
                 ImMap<String, String> keySelect = group.mapValues(new GetValue<String, K>() {
                     public String getMapValue(K value) {
-                        return value.getType(groupWhere).getCast(SQLSyntax.NULL, syntax, env, false);
+                        return value.getType(groupWhere).getCast(SQLSyntax.NULL, syntax, env);
                     }});
 
                 ImMap<String, String> propertySelect = queries.mapValues(new GetValue<String, I>() {
                     public String getMapValue(I value) {
-                        return exprs.get(value).getType().getCast(SQLSyntax.NULL, syntax, env, false);
+                        return exprs.get(value).getType().getCast(SQLSyntax.NULL, syntax, env);
                     }});
                 return "(" + syntax.getSelect("empty", SQLSession.stringExpr(keySelect, propertySelect), "", "", "", "", "") + ")";
             }
@@ -797,13 +798,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(useRecursionFunction) {
                     ImOrderMap<String, String> orderCastKeySelect = orderKeySelect.mapOrderValues(new GetKeyValue<String, String, String>() {
                         public String getMapValue(String key, String value) {
-                            return columnTypes.get(key).getCast(value, syntax, env, false);
+                            return columnTypes.get(key).getCast(value, syntax, env);
                         }});
                     ImOrderMap<String, String> orderGroupPropertySelect = orderPropertySelect.mapOrderValues(new GetKeyValue<String, String, String>() {
                         public String getMapValue(String key, String value) {
                             Type type = columnTypes.get(key);
                             return type.getCast((type instanceof ArrayClass ? GroupType.AGGAR_SETADD : GroupType.SUM).getSource(
-                                    ListFact.<String>singleton(value), MapFact.<String, Boolean>EMPTYORDER(), SetFact.<String>EMPTY(), type, syntax, env), syntax, env, false);
+                                    ListFact.<String>singleton(value), MapFact.<String, Boolean>EMPTYORDER(), SetFact.<String>EMPTY(), type, syntax, env), syntax, env);
                         }});
                     return "(" + getGroupSelect(fromSelect, orderCastKeySelect, orderGroupPropertySelect, whereSelect.result, SetFact.<String>EMPTY()) + ")";
                 } else
@@ -832,7 +833,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Expr concKeys = null; ArrayClass rowType = null;
                 if(cyclePossible && (!isLogical || useRecursionFunction)) {
                     concKeys = ConcatenateExpr.create(mapIterate.keys().toOrderSet());
-                    rowType = ArrayClass.get(concKeys.getType(baseInitialWhere));
+                    rowType = ArrayClass.get(concKeys.getType(innerJoin.getClassWhere())); // classWhere а не initialWhere, чтобы общий тип был и не было проблем с cast'ом ConcatenateType'ов
                     props = props.addExcl(rowPath, rowType);
                 }
 
@@ -909,9 +910,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         stepExprs = mStepExprs.immutableValue();
                     }
 
-                    Expr rowSource = FormulaExpr.createCustomFormula(rowType.getCast("ARRAY[prm1]", syntax, env, false), rowType, concKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
+                    Expr rowSource = FormulaExpr.createCustomFormula(rowType.getCast("ARRAY[prm1]", syntax, env), rowType, concKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
                     initialExprs = initialExprs.addRevExcl(rowPath, rowSource); // заполняем начальный путь
-                    stepExprs = stepExprs.addExcl(rowPath, FormulaExpr.createCustomFormula(rowType.getCast("(prm1 || prm2)", syntax, env, false), rowType, prevPath, rowSource)); // добавляем тек. вершину
+                    stepExprs = stepExprs.addExcl(rowPath, FormulaExpr.createCustomFormula(rowType.getCast("(prm1 || prm2)", syntax, env), rowType, prevPath, rowSource)); // добавляем тек. вершину
                 } else
                     recWhere = recJoin.getWhere();
 
@@ -1081,8 +1082,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         return propertySelect.mapValues(new GetKeyValue<String, V, String>() {
             public String getMapValue(V key, String propertyString) {
                 Type castType;
-                if (propertyString.equals(SQLSyntax.NULL) && (castType = castTypes.get(key)) != null) // кривовато с проверкой на null, но собсно и надо чтобы обойти баг
-                    propertyString = castType.getCast(propertyString, syntax, typeEnv, false);
+                // проблемы бывают когда NULL - автоматический cast к text'у, и когда результат blankPadded, а внутри могут быть нет
+                if ((castType = castTypes.get(key)) != null && (propertyString.equals(SQLSyntax.NULL) || (castType instanceof StringClass && ((StringClass)castType).blankPadded)))
+                    propertyString = castType.getCast(propertyString, syntax, typeEnv);
                 return propertyString;
             }
         });
@@ -1388,16 +1390,24 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         // выведем на экран
         ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> result = execute(session, env);
 
+        String name = "";
+        for(int i=0,size=keyReaders.size();i<size;i++)
+            name += StringUtils.rightPad(keyNames.get(keyReaders.getKey(i)), keyReaders.getValue(i).getCharLength().getAprValue());
+        for(int i=0,size=propertyReaders.size();i<size;i++)
+            name += StringUtils.rightPad(propertyNames.get(propertyReaders.getKey(i)), propertyReaders.getValue(i).getCharLength().getAprValue());
+        System.out.println(name);
+
         for(int i=0,size=result.size();i<size;i++) {
+            String rowName = "";
+
             ImMap<K, Object> keyMap = result.getKey(i);
-            for(int j=0,sizeJ=keyMap.size();j<sizeJ;j++) {
-                System.out.println(keyMap.getKey(j)+"-"+keyMap.getValue(j));
-            }
-            System.out.println("---- ");
+            for(int j=0,sizeJ=keyMap.size();j<sizeJ;j++)
+                rowName += StringUtils.rightPad(BaseUtils.nullToString(keyMap.getValue(j)), keyReaders.get(keyMap.getKey(j)).getCharLength().getAprValue());
             ImMap<V, Object> rowMap = result.getValue(i);
-            for(int j=0,sizeJ=rowMap.size();j<sizeJ;j++) {
-                System.out.println(rowMap.getKey(j)+"-"+rowMap.getValue(j));
-            }
+            for(int j=0,sizeJ=rowMap.size();j<sizeJ;j++)
+                rowName += StringUtils.rightPad(BaseUtils.nullToString(rowMap.getValue(j)), propertyReaders.get(rowMap.getKey(j)).getCharLength().getAprValue());
+
+            System.out.println(rowName);
         }
     }
 }

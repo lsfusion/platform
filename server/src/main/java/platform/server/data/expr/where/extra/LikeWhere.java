@@ -4,7 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.AbstractStringClass;
+import platform.server.classes.StringClass;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.type.Type;
@@ -50,7 +50,7 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
     @Override
     public String getSource(CompileSource compile) {
         Type type = operator1.getType(compile.keyType);
-        String likeString = type instanceof AbstractStringClass && ((AbstractStringClass) type).caseInsensitive ? " " + compile.syntax.getInsensitiveLike() + " " : " LIKE ";
+        String likeString = type instanceof StringClass && ((StringClass) type).caseInsensitive ? " " + compile.syntax.getInsensitiveLike() + " " : " LIKE ";
 
         return operator1.getSource(compile)
                + likeString

@@ -2,6 +2,7 @@ package platform.gwt.form.server.convert;
 
 import platform.client.logics.classes.*;
 import platform.gwt.form.server.FileUtils;
+import platform.gwt.form.shared.view.GExtInt;
 import platform.gwt.form.shared.view.classes.*;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -49,11 +50,6 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     @Converter(from = ClientActionClass.class)
     public GActionType convertActionClass(ClientActionClass clientActionClass) {
         return GActionType.instance;
-    }
-
-    @Converter(from = ClientTextClass.class)
-    public GTextType convertTextClass(ClientTextClass clientTextClass) {
-        return GTextType.instance;
     }
 
     @Converter(from = ClientLogicalClass.class)
@@ -127,12 +123,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientStringClass.class)
     public GStringType convertStringClass(ClientStringClass clientStringClass) {
-        return new GStringType(clientStringClass.length, clientStringClass.caseInsensitive);
-    }
-
-    @Converter(from = ClientVarStringClass.class)
-    public GVarStringType convertVarStringClass(ClientVarStringClass clientVarStringClass) {
-        return new GVarStringType(clientVarStringClass.length, clientVarStringClass.caseInsensitive);
+        return new GStringType(new GExtInt(clientStringClass.length.value), clientStringClass.caseInsensitive, clientStringClass.blankPadded);
     }
 
     @Converter(from = ClientDateClass.class)

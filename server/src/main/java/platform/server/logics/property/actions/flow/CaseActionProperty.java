@@ -75,6 +75,15 @@ public class CaseActionProperty extends ListCaseActionProperty {
         return (ImList<Case<PropertyInterface>>)cases;
     }
 
+    public <I extends PropertyInterface> CaseActionProperty(String sID, String caption, boolean isExclusive, ImList<ActionPropertyMapImplement> impls, ImOrderSet<I> innerInterfaces) {
+        this(sID, caption, isExclusive, innerInterfaces, impls.<Case<I>>mapListValues(new GetValue<Case<I>, ActionPropertyMapImplement>() {
+            @Override
+            public Case<I> getMapValue(ActionPropertyMapImplement value) {
+                return new Case<I>((CalcPropertyMapImplement)value.mapWhereProperty().mapClassProperty(), value);
+            }
+        }));
+    }
+
     public <I extends PropertyInterface> CaseActionProperty(String sID, String caption, boolean isExclusive, ImOrderSet<I> innerInterfaces, ImList<Case<I>> cases)  {
         super(sID, caption, isExclusive, innerInterfaces);
 

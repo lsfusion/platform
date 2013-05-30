@@ -1,5 +1,6 @@
 package platform.server.data.type;
 
+import platform.base.ExtInt;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
@@ -19,8 +20,7 @@ public interface Type<T> extends ClassReader<T> {
         Type getType(K key);
     }
 
-    String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, boolean needLength);
-    boolean needPadding(Object value);
+    String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv);
 
     String getDB(SQLSyntax syntax, TypeEnvironment typeEnv);
     int getSQL(SQLSyntax syntax);
@@ -44,7 +44,7 @@ public interface Type<T> extends ClassReader<T> {
 
     ImList<AndClassSet> getUniversal(BaseClass baseClass);
 
-    int getCharLength();
+    ExtInt getCharLength();
 
     T parseString(String s) throws ParseException;
     

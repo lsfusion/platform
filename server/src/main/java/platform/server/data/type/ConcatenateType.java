@@ -1,5 +1,6 @@
 package platform.server.data.type;
 
+import platform.base.ExtInt;
 import platform.base.ListCombinations;
 import platform.base.col.ListFact;
 import platform.base.col.interfaces.immutable.ImList;
@@ -61,9 +62,8 @@ public class ConcatenateType extends AbstractType<Object[]> {
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        ImList<Type> types = getTypes();
-        typeEnv.addNeedType(types);
-        return DataAdapter.genConcTypeName(types);
+        typeEnv.addNeedType(this);
+        return DataAdapter.genConcTypeName(this);
     }
 
     public boolean isSafeString(Object value) {
@@ -121,7 +121,7 @@ public class ConcatenateType extends AbstractType<Object[]> {
         return false;
     }
 
-    private ImList<Type> getTypes() {
+    public ImList<Type> getTypes() {
         return ListFact.toList(types);
     }
 
@@ -195,7 +195,8 @@ public class ConcatenateType extends AbstractType<Object[]> {
     public Type getCompatible(Type type) {
         if(!(type instanceof ConcatenateType)) return null;
         ConcatenateType concatenate = (ConcatenateType)type;
-        assert concatenate.types.length == types.length;
+        if (concatenate.types.length != types.length)
+            return null;
 
         Type[] compatible = new Type[types.length];
         for(int i=0;i<types.length;i++) {
@@ -227,7 +228,7 @@ public class ConcatenateType extends AbstractType<Object[]> {
     }
 
     public String getConcatenateSource(ImList<String> exprs, SQLSyntax syntax, TypeEnvironment typeEnv) {
-        String source = getCast(getNotSafeConcatenateSource(exprs, syntax, typeEnv), syntax, typeEnv, false);
+        String source = getCast(getNotSafeConcatenateSource(exprs, syntax, typeEnv), syntax, typeEnv);
 
         if(exprs.size()>0)
             source =  "CASE WHEN " + exprs.toString(new GetValue<String, String>() {
@@ -278,10 +279,10 @@ public class ConcatenateType extends AbstractType<Object[]> {
         return new ListCombinations<AndClassSet>(mClassSets.immutableList());
     }
 
-    public int getCharLength() {
-        int length = 0;
+    public ExtInt getCharLength() {
+        ExtInt length = ExtInt.ZERO;
         for(Type type : types)
-            length += type.getCharLength();
+            length = length.sum(type.getCharLength());
         return length;
     }
 

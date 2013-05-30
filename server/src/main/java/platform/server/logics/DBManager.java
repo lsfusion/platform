@@ -1525,7 +1525,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         public Set<DBConcreteClass> concreteClasses = new HashSet<DBConcreteClass>();
 
         public DBStructure(DBVersion dbVersion) {
-            version = 8;
+            version = 9;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {

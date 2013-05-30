@@ -6,6 +6,7 @@ import org.antlr.runtime.CharStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
+import platform.base.ExtInt;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.base.col.MapFact;
@@ -120,7 +121,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private Map<String, DataClass> primitiveTypeAliases = BaseUtils.buildMap(
             asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME", "WORDFILE", "IMAGEFILE", "PDFFILE", "CUSTOMFILE", "EXCELFILE", "COLOR"),
             Arrays.<DataClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance,
-                    DateTimeClass.instance, TextClass.instance, TimeClass.instance, WordClass.get(false, false), ImageClass.get(false, false), PDFClass.get(false, false),
+                    DateTimeClass.instance, StringClass.text, TimeClass.instance, WordClass.get(false, false), ImageClass.get(false, false), PDFClass.get(false, false),
                     DynamicFormatFileClass.get(false, false), ExcelClass.get(false, false), ColorClass.instance)
     );
 
@@ -208,16 +209,16 @@ public class ScriptingLogicsModule extends LogicsModule {
             return primitiveTypeAliases.get(name);
         } else if (name.startsWith("STRING[")) {
             name = name.substring("STRING[".length(), name.length() - 1);
-            return StringClass.get(Integer.parseInt(name));
+            return StringClass.get(new ExtInt(Integer.parseInt(name)));
         } else if (name.startsWith("ISTRING[")) {
             name = name.substring("ISTRING[".length(), name.length() - 1);
-            return StringClass.geti(Integer.parseInt(name));
+            return StringClass.geti(new ExtInt(Integer.parseInt(name)));
         } else if (name.startsWith("VARSTRING[")) {
             name = name.substring("VARSTRING[".length(), name.length() - 1);
-            return StringClass.getv(Integer.parseInt(name));
+            return StringClass.getv(new ExtInt(Integer.parseInt(name)));
         } else if (name.startsWith("VARISTRING[")) {
             name = name.substring("VARISTRING[".length(), name.length() - 1);
-            return StringClass.getvi(Integer.parseInt(name));
+            return StringClass.getvi(new ExtInt(Integer.parseInt(name)));
         } else if (name.startsWith("NUMERIC[")) {
             String length = name.substring("NUMERIC[".length(), name.indexOf(","));
             String precision = name.substring(name.indexOf(",") + 1, name.length() - 1);
@@ -864,6 +865,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(caseProp, mergeAllParams(caseParamProps));
     }
 
+    public LPWithParams addScriptedMultiProp(List<LPWithParams> properties, boolean isExclusive) throws ScriptingErrorLog.SemanticErrorException {
+        if (isExclusive) {
+            return addScriptedUProp(Union.CLASS, properties, "MULTI");
+        } else {
+            return addScriptedUProp(Union.CLASSOVERRIDE, properties, "MULTI");
+        }
+    }
+
     public LPWithParams addScriptedFileAProp(boolean loadFile, LPWithParams property) {
         scriptLogger.info("addScriptedFileAProp(" + loadFile + ", " + property + ");");
         LAP<?> res;
@@ -1160,7 +1169,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedEvalActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedEvalActionProp(" + property + ")");
         Type exprType = property.property.property.getType();
-        if (!(exprType instanceof StringClass || exprType instanceof TextClass)) {
+        if (!(exprType instanceof StringClass)) {
             errLog.emitEvalExpressionError(parser);
         }
         LAP<?> res = addEvalAProp((LCP) property.property);
@@ -1324,6 +1333,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, allParams);
     }
 
+    public LPWithParams addScriptedMultiAProp(List<LPWithParams> actions, boolean isExclusive) {
+        scriptLogger.info("addScriptedMultiAProp(" + actions + ", " + isExclusive + ");");
+
+        List<Integer> allParams = mergeAllParams(actions);
+        LP result = addMultiAProp(isExclusive, getParamsPlainList(actions).toArray());
+        return new LPWithParams(result, allParams);
+
+    }
+
     public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedForAProp(" + oldContext + ", " + condition + ", " + orders + ", " + action + ", " + elseAction + ", " + recursive + ", " + descending + ");");
 
@@ -1474,7 +1492,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedUProp(Union unionType, List<LPWithParams> paramProps, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
+    private LPWithParams addScriptedUProp(Union unionType, List<LPWithParams> paramProps, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedUProp(" + unionType + ", " + paramProps + ");");
         checkPropertyTypes(paramProps, errMsgPropType);
 
@@ -1601,7 +1619,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case LONG: return addCProp(LongClass.instance, value);
             case NUMERIC: return addNumericConst((String) value);
             case REAL: return addCProp(DoubleClass.instance, value);
-            case STRING: return addCProp(StringClass.getv(((String) value).length()), value);
+            case STRING: return addCProp(StringClass.getv(new ExtInt(((String) value).length())), value);
             case LOGICAL: return addCProp(LogicalClass.instance, value);
             case DATE: return addCProp(DateClass.instance, value);
             case DATETIME: return addCProp(DateTimeClass.instance, value);

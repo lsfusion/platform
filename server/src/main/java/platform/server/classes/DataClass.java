@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import platform.base.ExtInt;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImList;
@@ -185,8 +186,8 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return ListFact.<AndClassSet>singleton(this);
     }
 
-    public int getCharLength() {
-        return 8;
+    public ExtInt getCharLength() {
+        return new ExtInt(8);
     }
 
     public DataClass getKeepClass() {

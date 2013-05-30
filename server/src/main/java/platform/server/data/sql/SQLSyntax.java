@@ -36,6 +36,9 @@ public interface SQLSyntax {
 
     int updateModel();
 
+    String getBPTextType();
+    int getBPTextSQL();
+
     String getStringType(int length);
     int getStringSQL();
 

@@ -38,7 +38,7 @@ import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.actions.SessionEnvEvent;
 import platform.server.logics.property.actions.SystemEvent;
 import platform.server.logics.property.actions.flow.ChangeFlowType;
-import platform.server.logics.property.actions.flow.ListActionProperty;
+import platform.server.logics.property.actions.flow.ListCaseActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.logics.table.ImplementTable;
@@ -198,7 +198,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         if (excludedPaths != null) {
             for (String filePath : excludedPaths) {
-                if (filePath.endsWith(".lsf")) {
+                if (filePath.contains("*")) {
+                    filePath += filePath.endsWith(".lsf") ? "" : ".lsf";
+                    Pattern pattern = Pattern.compile(filePath.replace("*", ".*"));
+                    Collection<String> list = ResourceList.getResources(pattern);
+                    for (String name : list) {
+                        excludedLSF.add(name);
+                    }
+                } else if (filePath.endsWith(".lsf")) {
                     excludedLSF.add(filePath);
                 } else {
                     Pattern pattern = Pattern.compile(filePath + ".*\\.lsf");
@@ -211,7 +218,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
 
         for (String filePath : paths) {
-            if (filePath.endsWith(".lsf")) {
+            if (filePath.contains("*")) {
+                filePath += filePath.endsWith(".lsf") ? "" : ".lsf";
+                Pattern pattern = Pattern.compile(filePath.replace("*", ".*"));
+                Collection<String> list = ResourceList.getResources(pattern);
+                for (String name : list) {
+                    if (!excludedLSF.contains(name)) {
+                        addModulesFromResource(name);
+                    }
+                }
+            } else if (filePath.endsWith(".lsf")) {
                 if (!excludedLSF.contains(filePath)) {
                     addModulesFromResource(filePath);
                 }
@@ -519,7 +535,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private void finishActions() { // потому как могут использовать abstract
         for (Property property : getOrderProperties())
             if(property instanceof ActionProperty) {
-                if(property instanceof ListActionProperty && ((ListActionProperty)property).isAbstract())
+                if(property instanceof ListCaseActionProperty && ((ListCaseActionProperty)property).isAbstract())
                     property.finalizeInit();
 
                 if(!((ActionProperty)property).getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности

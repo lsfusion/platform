@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.base.ExtInt;
 import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
@@ -64,7 +65,7 @@ public abstract class FileClass extends DataClass<byte[]> {
     }
 
     @Override
-    public int getCharLength() {
+    public ExtInt getCharLength() {
         throw new RuntimeException("not supported");
     }
 

@@ -4,6 +4,7 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.IdentityLazy;
+import platform.server.classes.CustomClass;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.property.*;
 import platform.server.session.DataSession;
@@ -76,5 +77,15 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         if (formInstance != null) {
             formInstance.refreshData();
         }
+    }
+
+    @Override
+    public CustomClass getSimpleAdd() {
+        return aspectActionImplement.property.getSimpleAdd();
+    }
+
+    @Override
+    public PropertyInterface getSimpleDelete() {
+        return aspectActionImplement.property.getSimpleDelete();
     }
 }

@@ -1,6 +1,7 @@
 package platform.client.descriptor.editor;
 
 import platform.base.BaseUtils;
+import platform.base.ExtInt;
 import platform.base.context.IncrementView;
 import platform.client.ClientResourceBundle;
 import platform.client.Main;
@@ -96,12 +97,10 @@ public class ValueClassEditor extends JPanel {
                     final ClientStringClass.ClientStringTypeClass stringTypClass = (ClientStringClass.ClientStringTypeClass) typeClass;
 
                     final JTextField fieldLength = new JTextField();
-                    fieldLength.setText(Integer.toString(((ClientStringClass) clientClass).length));
+                    fieldLength.setText(Integer.toString(((ClientStringClass) clientClass).length.getValue()));
                     fieldLength.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            ClientStringClass stringClass = stringTypClass instanceof ClientVarStringClass.ClientVarStringTypeClass
-                                                            ? new ClientVarStringClass(stringTypClass.caseInsensitive, Integer.parseInt(fieldLength.getText()))
-                                                            : new ClientStringClass(stringTypClass.caseInsensitive, Integer.parseInt(fieldLength.getText()));
+                            ClientStringClass stringClass = new ClientStringClass(stringTypClass.blankPadded, stringTypClass.caseInsensitive, new ExtInt(Integer.parseInt(fieldLength.getText())));
                             BaseUtils.invokeCheckSetter(object, property, stringClass
                             );
                         }

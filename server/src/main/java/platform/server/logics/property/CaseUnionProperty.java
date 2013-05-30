@@ -53,8 +53,13 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             return new Case(caseClasses ? ((CalcPropertyMapImplement<?, Interface>)value).mapClassProperty() : value, value);
         }
     }
+
+    public CaseUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses, boolean toReverse) {
+        this(sID, caption, interfaces, false, (toReverse ? operands.reverseList() : operands).mapListValues(new OperandCase(caseClasses)));
+    }
+
     public CaseUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses) {
-        this(sID, caption, interfaces, false, operands.reverseList().mapListValues(new OperandCase(caseClasses)));
+        this(sID, caption, interfaces, operands, caseClasses, true);
     }
 
     public CaseUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {

@@ -71,6 +71,8 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
     }
 
     public static ClientCustomStaticFormatFileClass deserialize(DataInputStream inStream) throws IOException {
+        Boolean multiple = inStream.readBoolean();
+        Boolean storeName = inStream.readBoolean();
         String filterDescription = inStream.readUTF();
         String[] filterExtensions;
         int extCount = inStream.readInt();
@@ -85,6 +87,6 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
             }
         }
 
-        return new ClientCustomStaticFormatFileClass(filterDescription, filterExtensions, inStream.readBoolean(), inStream.readBoolean());
+        return new ClientCustomStaticFormatFileClass(filterDescription, filterExtensions, multiple, storeName);
     }
 }

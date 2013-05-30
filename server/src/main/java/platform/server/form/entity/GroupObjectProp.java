@@ -15,7 +15,7 @@ public enum GroupObjectProp {
 
     public DataClass getValueClass() {
         if(this==ORDER)
-            return TextClass.instance;
+            return StringClass.text;
         return LogicalClass.instance;
     }
 

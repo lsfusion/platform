@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.base.ExtInt;
 import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
@@ -67,7 +68,7 @@ public class SystemClass extends DataClass<Integer> {
         return value.toString();
     }
 
-    public int getCharLength() {
+    public ExtInt getCharLength() {
         throw new RuntimeException("not supported yet");
     }
 

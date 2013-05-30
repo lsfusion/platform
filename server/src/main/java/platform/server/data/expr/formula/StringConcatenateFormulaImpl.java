@@ -1,6 +1,7 @@
 package platform.server.data.expr.formula;
 
 import platform.base.BaseUtils;
+import platform.base.ExtInt;
 import platform.server.classes.*;
 import platform.server.data.expr.KeyType;
 import platform.server.data.query.CompileSource;
@@ -38,45 +39,33 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
     protected String getExprSource(CompileSource compile, ExprSource source, Type selfType, int i) {
         Type exprType = source.getType(i, compile.keyType);
         String exprSource = source.getSource(i, compile);
-        if (exprType instanceof StringClass && !(exprType instanceof VarStringClass)) {
+        if (exprType instanceof StringClass && ((StringClass)exprType).blankPadded) {
             exprSource = "rtrim(" + exprSource + ")";
         } else {
-            exprSource = selfType.getCast(exprSource, compile.syntax, compile.env, false);
+            exprSource = selfType.getCast(exprSource, compile.syntax, compile.env);
         }
         return exprSource;
     }
 
     @Override
-    public AbstractStringClass getType(ExprSource source, KeyType keyType) {
+    public StringClass getType(ExprSource source, KeyType keyType) {
 
         int separatorLength = separator.length();
 
-        int length = 0;
-        boolean isVar = false;
-        boolean isText = false;
+        ExtInt length = ExtInt.ZERO;
         boolean caseInsensitive = false;
+        boolean blankPadded = true;
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
             Type exprType = keyType == null ? source.getSelfType(i) : source.getType(i, keyType);
 
-            //конеченый тип будет Text, если тип одного из операторов будет Text
-            //иначе тип будет VarString, если тип одного из операторов будет VarString
-            //иначе тип будет String
-            //тип будет caseInsensitive, если тип одного из операторов - caseInsensitive
-            if (exprType instanceof TextClass) {
-                isText = true;
-                break;
-            } else {
-                length += exprType != null ? exprType.getCharLength() : 0;
-                if (exprType instanceof StringClass) {
-                    caseInsensitive = caseInsensitive || ((StringClass) exprType).caseInsensitive;
-                    if (exprType instanceof VarStringClass) {
-                        isVar = true;
-                    }
-                }
+            length = length.sum(exprType != null ? exprType.getCharLength() : ExtInt.ZERO);
+            if (exprType instanceof StringClass) {
+                caseInsensitive = caseInsensitive || ((StringClass) exprType).caseInsensitive;
+                blankPadded = blankPadded && ((StringClass) exprType).blankPadded;
             }
 
             if (i > 0) {
-                length += separatorLength;
+                length = length.sum(new ExtInt(separatorLength));
             }
         }
 
@@ -84,7 +73,7 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
             caseInsensitive = forceCaseInsensitivity;
         }
 
-        return isText ? TextClass.instance : StringClass.get(isVar, caseInsensitive, length);
+        return StringClass.get(blankPadded, caseInsensitive, length);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.base.ExtInt;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.TypeEnvironment;
@@ -92,8 +93,8 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
 
     @Override
-    public int getCharLength() {
-        return length;
+    public ExtInt getCharLength() {
+        return new ExtInt(length);
     }
 
     public Object getDefaultValue() {
@@ -109,7 +110,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
 
     public String getSID() {
-        return "NumericClass[" + length + "," + precision + "]";
+        return "NumericClass_" + length + "_" + precision + "";
     }
 
     @Override

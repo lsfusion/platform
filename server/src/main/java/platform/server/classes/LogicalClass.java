@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import platform.base.ExtInt;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.TypeEnvironment;
@@ -95,8 +96,8 @@ public class LogicalClass extends DataClass<Boolean> {
   */
 
     @Override
-    public int getCharLength() {
-        return 1;
+    public ExtInt getCharLength() {
+        return new ExtInt(1);
     }
 
     public Boolean shiftValue(Boolean object, boolean back) {

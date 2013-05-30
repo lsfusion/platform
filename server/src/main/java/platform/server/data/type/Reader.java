@@ -1,5 +1,6 @@
 package platform.server.data.type;
 
+import platform.base.ExtInt;
 import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.server.data.query.TypeEnvironment;
@@ -10,6 +11,8 @@ import java.sql.SQLException;
 
 public interface Reader<T> {
     T read(Object value);
+
+    ExtInt getCharLength();
 
     // блок для случая когда JDBC драйвер не поддерживает STRUCT'ы
     String writeDeconc(SQLSyntax syntax, TypeEnvironment env);

@@ -1,29 +1,81 @@
 package platform.server.classes;
 
 import platform.base.BaseUtils;
+import platform.base.ExtInt;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.Format;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import static java.lang.Math.max;
 
-public class StringClass extends AbstractStringClass {
-    public final int length;
+public class StringClass extends DataClass {
 
-    protected StringClass(int length, boolean caseInsensitive) {
-        this(caseInsensitive ? ServerResourceBundle.getString("classes.insensitive.string") : ServerResourceBundle.getString("classes.string"), length, caseInsensitive);
+    private final static Collection<StringClass> strings = new ArrayList<StringClass>();
+
+    public final static StringClass text = getv(ExtInt.UNLIMITED);
+    public final boolean blankPadded;
+    public final boolean caseInsensitive;
+    public final ExtInt length;
+
+    public Format getReportFormat() {
+        return null;
     }
 
-    protected StringClass(String caption, int length, boolean caseInsensitive) {
-        super(caption, caseInsensitive);
+    public Class getReportJavaClass() {
+        return String.class;
+    }
+
+    public Object getDefaultValue() {
+        return "";
+    }
+
+    public String getString(Object value, SQLSyntax syntax) {
+        return "'" + value + "'";
+    }
+
+    @Override
+    public boolean isSafeType(Object value) { // при полиморфных функциях странно себя ведет без explicit cast'а
+        return false;
+    }
+
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+        statement.setString(num, (String) value);
+    }
+
+    public String parseString(String s) throws ParseException {
+        return s;
+    }
+
+    @Override
+    public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
+        outStream.writeBoolean(blankPadded);
+        outStream.writeBoolean(caseInsensitive);
+        length.serialize(outStream);
+    }
+
+    protected StringClass(boolean blankPadded, ExtInt length, boolean caseInsensitive) {
+        this(caseInsensitive ? ServerResourceBundle.getString("classes.insensitive.string") : ServerResourceBundle.getString("classes.string") + (blankPadded ? " (bp)" : ""), blankPadded, length, caseInsensitive);
+    }
+
+    protected StringClass(String caption, boolean blankPadded, ExtInt length, boolean caseInsensitive) {
+        super(caption);
+        this.blankPadded = blankPadded;
         this.length = length;
+        this.caseInsensitive = caseInsensitive;
+
+//        assert !blankPadded || !this.length.isUnlimited();
     }
 
     public int getMinimumWidth() {
@@ -31,38 +83,46 @@ public class StringClass extends AbstractStringClass {
     }
 
     public int getPreferredWidth() {
-        return Math.min(200, max(30, length * 2));
+        if(length.isUnlimited())
+            return 200;
+        return Math.min(200, max(30, length.getValue() * 2));
     }
 
     public byte getTypeID() {
         return Data.STRING;
     }
 
-    public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
-        outStream.writeInt(length);
-    }
-
     public DataClass getCompatible(DataClass compClass) {
-        if (!(compClass instanceof AbstractStringClass)) return null;
-        if (compClass instanceof TextClass) {
-            return compClass;
-        }
+        if (!(compClass instanceof StringClass)) return null;
 
         StringClass stringClass = (StringClass) compClass;
-        if (stringClass instanceof VarStringClass) {
-            return getv(caseInsensitive || stringClass.caseInsensitive, max(length, stringClass.length));
-        }
-
-        return get(caseInsensitive || stringClass.caseInsensitive, max(length, stringClass.length));
+        return get(blankPadded || stringClass.blankPadded, caseInsensitive || stringClass.caseInsensitive, length.max(stringClass.length));
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return syntax.getStringType(length);
+        boolean isUnlimited = length.isUnlimited();
+        if(blankPadded) {
+            if(isUnlimited)
+                return syntax.getBPTextType();
+            int lengthValue = length.getValue();
+            return syntax.getStringType(lengthValue==0 ? 1 : lengthValue);
+        }
+        if(isUnlimited)
+            return syntax.getTextType();
+        int lengthValue = length.getValue();
+        return syntax.getVarStringType(lengthValue==0? 1 : lengthValue);
     }
 
     public int getSQL(SQLSyntax syntax) {
-        return syntax.getStringSQL();
+        boolean isUnlimited = length.isUnlimited();
+        if(blankPadded) {
+            if(isUnlimited)
+                return syntax.getBPTextSQL();
+            return syntax.getStringSQL();
+        }
+        if(isUnlimited)
+            return syntax.getTextSQL();
+        return syntax.getVarStringSQL();
     }
 
     public boolean isSafeString(Object value) {
@@ -71,49 +131,42 @@ public class StringClass extends AbstractStringClass {
 
     public String read(Object value) {
         if (value == null) return null;
-        return BaseUtils.padr((String) value, length);
+
+        if(blankPadded) {
+            if(length.isUnlimited())
+                return ((String)value);
+            return BaseUtils.padr((String) value, length.getValue());
+        }
+
+        if(length.isUnlimited())
+            return (String) value;
+        return BaseUtils.truncate((String) value, length.getValue());
     }
 
     @Override
-    public int getCharLength() {
+    public ExtInt getCharLength() {
         return length;
     }
 
     public String getSID() {
-        return "StringClass_" + (caseInsensitive ? "insensitive_" : "") + length;
+        return "StringClass_" + (caseInsensitive ? "insensitive_" : "") + (blankPadded?"bp_":"") + length;
     }
 
     @Override
     public Stat getTypeStat() {
-        return new Stat(100, length);
+        if(length.isUnlimited())
+            return new Stat(100, 400);
+        return new Stat(100, length.getValue());
     }
 
     public boolean calculateStat() {
-        return length < 400;
+        return length.less(new ExtInt(400));
     }
 
     public StringClass extend(int times) {
-        return get(caseInsensitive, length * times);
-    }
-
-    @Override
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, boolean needLength) {
-        String castString = "CAST(" + value + " AS " + (length == 0 ? syntax.getStringType(1) : getDB(syntax, typeEnv)) + ")";
-        if (needLength) {
-            return "lpad(" + castString + "," + length + ")";
-        } else if (length == 0) {
-            return "trim(" + castString + ")";
-        }
-        return castString;
-    }
-
-    public boolean needPadding(Object value) {
-        return ((String) value).trim().length() != length;
-    }
-
-    @Override
-    public boolean needRTrim() {
-        return true;
+        if(length.isUnlimited())
+            return this;
+        return get(blankPadded, caseInsensitive, new ExtInt(length.getValue() * times));
     }
 
     public String toString() {
@@ -128,47 +181,62 @@ public class StringClass extends AbstractStringClass {
         return result;
     }
 
-    private final static Collection<StringClass> strings = new ArrayList<StringClass>();
-    private final static Collection<StringClass> istrings = new ArrayList<StringClass>();
-    private final static Collection<VarStringClass> vstrings = new ArrayList<VarStringClass>();
-    private final static Collection<VarStringClass> vistrings = new ArrayList<VarStringClass>();
-
     public static StringClass get(final int length) {
+        return get(new ExtInt(length));
+    }
+
+    public static StringClass get(final ExtInt length) {
         return get(false, length);
     }
 
     public static StringClass geti(final int length) {
+        return geti(new ExtInt(length));
+    }
+
+    public static StringClass geti(final ExtInt length) {
         return get(true, length);
     }
 
-    public static VarStringClass getv(final int length) {
+    public static StringClass getv(final int length) {
         return getv(false, length);
     }
 
-    public static VarStringClass getvi(final int length) {
+    public static StringClass getv(final ExtInt length) {
+        return getv(false, length);
+    }
+
+    public static StringClass getvi(final ExtInt length) {
         return getv(true, length);
     }
 
-    public static StringClass get(boolean isVar, boolean caseInsensitive, final int length) {
-        return isVar ? getv(caseInsensitive, length) : get(caseInsensitive, length);
+    public static StringClass get(boolean blankPadded, boolean caseInsensitive, final ExtInt length) {
+        return getCached(strings, length, blankPadded, caseInsensitive);
     }
 
     public static StringClass get(boolean caseInsensitive, final int length) {
-        return getCached(caseInsensitive ? istrings : strings, length, false, caseInsensitive);
+        return get(caseInsensitive, new ExtInt(length));
     }
 
-    public static VarStringClass getv(boolean caseInsensitive, final int length) {
-        return getCached(caseInsensitive ? vistrings : vstrings, length, true, caseInsensitive);
+    public static StringClass get(boolean caseInsensitive, final ExtInt length) {
+        return get(true, caseInsensitive, length);
     }
 
-    private static <T extends StringClass> T getCached(Collection<T> cached, int length, boolean var, boolean caseInsensitive) {
-        for (T string : cached) {
-            if (string.length == length) {
+    public static StringClass getv(boolean caseInsensitive, final int length) {
+        return getv(caseInsensitive, new ExtInt(length));
+    }
+
+    public static StringClass getv(boolean caseInsensitive, final ExtInt length) {
+        return get(false, caseInsensitive, length);
+    }
+
+    private static StringClass getCached(Collection<StringClass> cached, ExtInt length, boolean blankPadded, boolean caseInsensitive) {
+        for (StringClass string : cached) {
+            if (string.length.equals(length) && string.blankPadded == blankPadded && string.caseInsensitive == caseInsensitive) {
                 return string;
             }
         }
 
-        T string = (T) (var ? new VarStringClass(length, caseInsensitive) : new StringClass(length, caseInsensitive));
+        StringClass string = new StringClass(blankPadded, length, caseInsensitive);
 
         cached.add(string);
         DataClass.storeClass(string);

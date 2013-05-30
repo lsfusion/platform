@@ -8,6 +8,7 @@ import platform.server.Settings;
 import platform.server.caches.AbstractTranslateValues;
 import platform.server.data.SQLSession;
 import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.type.ConcatenateType;
 import platform.server.data.type.Type;
 
 import java.sql.Connection;
@@ -23,7 +24,7 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
     private boolean noPrepare;
 
     private ImSet<ImList<Type>> recursions;
-    private ImSet<ImList<Type>> concTypes;
+    private ImSet<ConcatenateType> concTypes;
 
     public ExecuteEnvironment() {
         this(false);
@@ -63,12 +64,12 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         recursions = recursions.merge(types);
     }
 
-    public void addNeedType(ImList<Type> types) {
+    public void addNeedType(ConcatenateType types) {
         concTypes = concTypes.merge(types);
     }
 
     public void before(SQLSession sqlSession, Connection connection, String command) throws SQLException {
-        for(ImList<Type> concType : concTypes)
+        for(ConcatenateType concType : concTypes)
             sqlSession.typePool.ensureConcType(concType);
         for(ImList<Type> recursion : recursions)
             sqlSession.typePool.ensureRecursion(recursion);

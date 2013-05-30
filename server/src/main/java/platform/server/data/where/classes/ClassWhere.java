@@ -1,6 +1,7 @@
 package platform.server.data.where.classes;
 
 import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImCol;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
@@ -13,6 +14,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.where.Where;
+import platform.server.logics.property.ClassType;
 
 public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
 
@@ -150,5 +152,15 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         return BaseUtils.immutableCast(addOr);
     }
 
+    public boolean isFull(ImCol<? extends K> checkInterfaces) {
+        if(isFalse())
+            return true;
+        for (And<K> where : wheres) {
+            for (K i : checkInterfaces)
+                if(where.get(i)==null)
+                    return false;
+        }
+        return true;
+    }
 }
 

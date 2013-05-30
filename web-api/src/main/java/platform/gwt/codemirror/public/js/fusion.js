@@ -24,7 +24,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "HTML IF IMAGE IMAGEFILE IMPOSSIBLE IN INCREMENT INDEX " + 
                            "INDEXED INIT INLINE INPUT INTERSECT IS JOIN LEFT LENGTH LIMIT " +
                            "LIST LOADFILE LOCAL LOGGABLE MANAGESESSION MAX MAXCHARWIDTH " + 
-                           "MESSAGE META MIN MINCHARWIDTH MODAL MODULE NAME NAMESPACE " + 
+                           "MESSAGE META MIN MINCHARWIDTH MODAL MODULE MULTI NAME NAMESPACE " +
                            "NAVIGATOR NEW NEWSESSION NO NOT NOTHING NULL NUMERIC OBJECT " + 
                            "OBJECTS OBJVALUE OK ON OPENFILE OR ORDER OVERRIDE PAGESIZE " + 
                            "PANEL PARENT PARTITION PDF PDFFILE PERSISTENT POSITION " + 
@@ -34,7 +34,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "ROUND RTF SELECTION SELECTOR SESSION SET SHORTCUT SHOW SHOWDROP " +
                            "SHOWIF SINGLE SPLITH SPLITV STEP STRICT STRUCT SUBJECT " +
                            "SUM TABBED TABLE TEXTHALIGN TEXTVALIGN THE THEN TIME TITLE TO TODRAW " +
-                           "TOOLBAR TOP TREE TRUE UNGROUP UNION UPDATE VALIGN " +
+                           "TOOLBAR TOP TREE TRUE UNGROUP UPDATE VALIGN " +
                            "VERTICAL WHEN WHERE WHILE WINDOW WORDFILE XOR YES");
 
     var isOperatorChar = /[+\-*&%=<>!?|@#]/;

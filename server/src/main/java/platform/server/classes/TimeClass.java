@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.base.ExtInt;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.TypeEnvironment;
@@ -65,8 +66,8 @@ public class TimeClass extends DataClass<Time> {
     }
 
     @Override
-    public int getCharLength() {
-        return 25;
+    public ExtInt getCharLength() {
+        return new ExtInt(25);
     }
 
     @Override

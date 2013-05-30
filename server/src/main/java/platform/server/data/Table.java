@@ -116,6 +116,15 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         this.properties = properties;
         this.classes = classes;
         this.propertyClasses = propertyClasses;
+
+        assert classes.isFull(keys.getSet()) && propClassesFull();
+    }
+
+    private boolean propClassesFull() {
+        for(int i=0,size=propertyClasses.size();i<size;i++)
+            if(!propertyClasses.getValue(i).isFull(SetFact.addExcl(keys.getSet(), propertyClasses.getKey(i))))
+                return false;
+        return true;
     }
 
     public String getName(SQLSyntax Syntax) {

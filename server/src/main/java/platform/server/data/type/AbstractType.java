@@ -13,12 +13,8 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return true;
     }
 
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, boolean needLength) {
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv) {
         return "CAST(" + value + " AS " + getDB(syntax, typeEnv) + ")";
-    }
-
-    public boolean needPadding(Object value) {
-        return false;
     }
 
     protected abstract void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException;

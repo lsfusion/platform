@@ -591,18 +591,30 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Case action ----------------- //
+
     protected LAP addCaseAProp(boolean isExclusive, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
 
         MList<CaseActionProperty.Case<PropertyInterface>> mCases = ListFact.mList();
-        for (int i = 0; i+1 < readImplements.size(); i++) {
+        for (int i = 0; i*2+1 < readImplements.size(); i++) {
             mCases.add(new CaseActionProperty.Case((CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2+1)));
         }
         if(readImplements.size() % 2 != 0) {
             mCases.add(new CaseActionProperty.Case(DerivedProperty.createTrue(), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
         }
         return addProperty(null, new LAP(new CaseActionProperty(genSID(), "", isExclusive, listInterfaces, mCases.immutableList())));
+    }
+
+    protected LAP addMultiAProp(boolean isExclusive, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+
+        MList<ActionPropertyMapImplement> mCases = ListFact.mList();
+        for (int i = 0; i < readImplements.size(); i++) {
+            mCases.add((ActionPropertyMapImplement) readImplements.get(i));
+        }
+        return addProperty(null, new LAP(new CaseActionProperty(genSID(), "", isExclusive, mCases.immutableList(), listInterfaces)));
     }
 
     // ------------------- For action ----------------- //
@@ -1171,7 +1183,7 @@ public abstract class LogicsModule {
                 property = new SumUnionProperty(name, caption, listInterfaces, mMapOperands.immutable());
                 break;
             case OVERRIDE:
-                property = new CaseUnionProperty(name, caption, listInterfaces, listOperands, false);
+                property = new CaseUnionProperty(name, caption, listInterfaces, listOperands, false, true);
                 break;
             case XOR:
                 property = new XorUnionProperty(name, caption, listInterfaces, listOperands);
@@ -1181,6 +1193,9 @@ public abstract class LogicsModule {
                 break;
             case CLASS:
                 property = new CaseUnionProperty(name, caption, listInterfaces, listOperands.getCol(), true);
+                break;
+            case CLASSOVERRIDE:
+                property = new CaseUnionProperty(name, caption, listInterfaces, listOperands, true, false);
                 break;
             case STRING_AGG:
                 property = new StringAggUnionProperty(name, caption, listInterfaces, listOperands, separator);
@@ -1357,7 +1372,6 @@ public abstract class LogicsModule {
     public AnyValuePropertyHolder addAnyValuePropertyHolder(String sidPrefix, String captionPrefix, ValueClass... classes) {
         return new AnyValuePropertyHolder(
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Object", captionPrefix + " Object", classes, baseLM.baseClass))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Text", captionPrefix + " Text", classes, TextClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "String", captionPrefix + " String", classes, StringClass.get(2000)))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Integer", captionPrefix + " Integer", classes, IntegerClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Long", captionPrefix + " Long", classes, LongClass.instance))),

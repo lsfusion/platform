@@ -20,14 +20,13 @@ abstract public class ClientClass implements Serializable {
 
     public static ClientTypeClass[] getEnumTypeClasses() {
         return new ClientTypeClass[] {
-            ClientStringClass.type,
-            ClientStringClass.insensetiveType,
-            ClientVarStringClass.type,
-            ClientVarStringClass.insensetiveType,
+            ClientStringClass.getTypeClass(false, false),
+            ClientStringClass.getTypeClass(true, false),
+            ClientStringClass.getTypeClass(false, true),
+            ClientStringClass.getTypeClass(true, true),
             ClientObjectClass.type,
             ClientNumericClass.type,
             ClientDateClass.instance,
-            ClientTextClass.instance,
             ClientLogicalClass.instance,
             ClientIntegerClass.instance,
             ClientDoubleClass.instance,

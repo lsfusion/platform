@@ -263,4 +263,9 @@ public class PostgreDataAdapter extends DataAdapter {
     public String getAnalyze() {
         return "VACUUM ANALYZE";
     }
+
+    @Override
+    public String getBPTextType() {
+        return "bpchar";
+    }
 }

@@ -1044,6 +1044,11 @@ public class BaseUtils {
         else return str;
     }
 
+    public static String nullToString(Object str) {
+        if (str==null) return "NULL";
+        else return str.toString();
+    }
+
     public static Object nullBoolean(Boolean b) {
         if (b) return true;
         else return null;

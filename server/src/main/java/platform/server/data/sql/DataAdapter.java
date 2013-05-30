@@ -2,8 +2,9 @@ package platform.server.data.sql;
 
 import org.apache.log4j.Logger;
 import org.springframework.util.PropertyPlaceholderHelper;
+import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImList;
-import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.lru.LRUCache;
 import platform.base.col.lru.MCacheMap;
 import platform.server.data.AbstractConnectionPool;
@@ -43,6 +44,14 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         this.password = password;
 
         ensureDB();
+    }
+
+    public String getBPTextType() {
+        throw new UnsupportedOperationException();
+    }
+
+    public int getBPTextSQL() {
+        throw new UnsupportedOperationException();
     }
 
     public String getStringType(int length) {
@@ -306,8 +315,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return result;
     }
 
-    public static String genConcTypeName(ImList<Type> types) {
-        return "T" + genTypePostfix(types);
+    public static String genConcTypeName(ConcatenateType type) {
+        return "T" + genTypePostfix(type.getTypes());
     }
 
     public static String genRecursionName(ImList<Type> types) {
@@ -323,7 +332,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
             throw new UnsupportedOperationException();
         }
 
-        public void addNeedType(ImList<Type> types) {
+        public void addNeedType(ConcatenateType types) {
             try {
                 ensureConcType(types);
             } catch (SQLException e) {
@@ -344,24 +353,36 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         }
     }
 
-    private MCacheMap<ImList<Type>, Boolean> ensuredConcTypes = LRUCache.mBig();
+    private MAddExclMap<ConcatenateType, Boolean> ensuredConcTypes = MapFact.mAddExclMap();
 
     protected String notNullRowString;
 
-    public synchronized void ensureConcType(ImList<Type> types) throws SQLException {
+    public synchronized void ensureConcType(ConcatenateType concType) throws SQLException {
 
-        Boolean ensured = ensuredConcTypes.get(types);
+        Boolean ensured = ensuredConcTypes.get(concType);
         if(ensured != null)
             return;
 
         // ensuring types
         String declare = "";
+        ImList<Type> types = concType.getTypes();
         for (int i=0,size=types.size();i<size;i++)
             declare = (declare.length() ==0 ? "" : declare + ",") + ConcatenateType.getFieldName(i) + " " + types.get(i).getDB(this, recTypes);
 
-        executeEnsure("CREATE TYPE " + genConcTypeName(types) + " AS (" + declare + ")");
+        String typeName = genConcTypeName(concType);
+        executeEnsure("CREATE TYPE " + typeName + " AS (" + declare + ")");
 
-        ensuredConcTypes.exclAdd(types, true);
+        // создаем cast'ы всем concatenate типам
+        for(int i=0,size=ensuredConcTypes.size();i<size;i++) {
+            ConcatenateType ensuredType = ensuredConcTypes.getKey(i);
+            if(concType.getCompatible(ensuredType)!=null) {
+                String ensuredName = genConcTypeName(ensuredType);
+                executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT"); // в обе стороны так как containsAll в DataClass по прежнему не направленный
+                executeEnsure("CREATE CAST (" + ensuredName + " AS " + typeName + ") WITH INOUT");
+            }
+        }
+
+        ensuredConcTypes.exclAdd(concType, true);
     }
 
     private static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);

@@ -1043,7 +1043,7 @@ singleParameter[List<String> context, boolean dynamic] returns [LPWithParams pro
 	
 expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; } 
-	|	unionDef=unionPropertyDefinition[context, dynamic] { $property = $unionDef.property;} 
+	|	multiDef=multiPropertyDefinition[context, dynamic] { $property = $multiDef.property; }
 	|	overDef=overridePropertyDefinition[context, dynamic] { $property = $overDef.property; }
 	|	ifElseDef=ifElsePropertyDefinition[context, dynamic] { $property = $ifElseDef.property; }
 	|	maxDef=maxPropertyDefinition[context, dynamic] { $property = $maxDef.property; }
@@ -1206,21 +1206,6 @@ abstractActionPropertyDefinition returns [LP property]
 		')'	
 	;
 	
-
-unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
-@init {
-	Union type = null;
-}
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedUProp(type, $exprList.props, "UNION");
-	}
-}
-	:	'UNION'
-		(('EXCLUSIVE' {type = Union.EXCLUSIVE;}) | ('CLASS' {type = Union.CLASS;}))
-		exprList=nonEmptyPropertyExpressionList[context, dynamic]
-	;
-
 overridePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	boolean isExclusive = false;
@@ -1285,6 +1270,20 @@ casePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPar
 caseBranchBody[List<String> context, boolean dynamic] returns [LPWithParams whenProperty, LPWithParams thenProperty]
 	:	'WHEN' whenExpr=propertyExpression[context, dynamic] { $whenProperty = $whenExpr.property; }
 		'THEN' thenExpr=propertyExpression[context, dynamic] { $thenProperty = $thenExpr.property; }
+	;
+
+multiPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	boolean isExclusive = true;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedMultiProp($exprList.props, isExclusive);
+	}
+}
+	:	'MULTI' 
+		exprList=nonEmptyPropertyExpressionList[context, dynamic] 
+		(('OVERRIDE') { isExclusive = false; } | ('EXCLUSIVE'))?
 	;
 
 recursivePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -1721,6 +1720,8 @@ keepContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParam
 	|	requestInputPDB=requestInputActionPropertyDefinitionBody[context, dynamic] { $property = $requestInputPDB.property; }
 	|	execPDB=execActionPropertyDefinitionBody[context, dynamic] { $property = $execPDB.property; }	
 	|	ifPDB=ifActionPropertyDefinitionBody[context, dynamic] { $property = $ifPDB.property; }
+	|	casePDB=caseActionPropertyDefinitionBody[context, dynamic] { $property = $casePDB.property; }
+	|	multiPDB=multiActionPropertyDefinitionBody[context, dynamic] { $property = $multiPDB.property; }	
 	|	termPDB=terminalFlowActionPropertyDefinitionBody { $property = $termPDB.property; }
 	;
 	
@@ -2078,6 +2079,19 @@ caseActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 actionCaseBranchBody[List<String> context, boolean dynamic] returns [LPWithParams whenProperty, LPWithParams thenAction]
 	:	'WHEN' whenExpr=propertyExpression[context, dynamic] { $whenProperty = $whenExpr.property; }
 		'THEN' thenAct=actionPropertyDefinitionBody[context, dynamic] { $thenAction = $thenAct.property; }
+	;
+
+multiActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property] 
+@init {
+	boolean isExclusive = true;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedMultiAProp($actList.props, isExclusive); 
+	}
+}
+	:	'MULTI' (('OVERRIDE' { isExclusive = false; }) | ('EXCLUSIVE'))?
+		actList=nonEmptyActionPDBList[context, dynamic]
 	;
 
 forAddObjClause[List<String> context] returns [Integer paramCnt, String className]
@@ -2912,6 +2926,21 @@ singleParameterList[List<String> context, boolean dynamic] returns [List<LPWithP
 	:	(first=singleParameter[context, dynamic] { props.add($first.property); }
 		(',' next=singleParameter[context, dynamic] { props.add($next.property); })*)?
 	;
+
+actionPDBList[List<String> context, boolean dynamic] returns [List<LPWithParams> props] 
+@init {
+	$props = new ArrayList<LPWithParams>();
+}
+	:	(neList=nonEmptyActionPDBList[context, dynamic] { $props = $neList.props; })?
+	;
+
+nonEmptyActionPDBList[List<String> context, boolean dynamic] returns [List<LPWithParams> props]
+@init {
+	$props = new ArrayList<LPWithParams>();
+}
+	:	first=actionPropertyDefinitionBody[context, dynamic] { $props.add($first.property); }
+		(',' next=actionPropertyDefinitionBody[context, dynamic] { $props.add($next.property); })* 
+	; 
 
 propertyExpressionList[List<String> context, boolean dynamic] returns [List<LPWithParams> props] 
 @init {

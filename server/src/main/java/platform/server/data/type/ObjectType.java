@@ -1,6 +1,7 @@
 package platform.server.data.type;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import platform.base.ExtInt;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImList;
@@ -113,8 +114,8 @@ public class ObjectType extends AbstractType<Integer> {
         return SetFact.<AndClassSet>toOrderExclSet(baseClass.getUpSet(), baseClass.unknown);
     }
 
-    public int getCharLength() {
-        return 8;
+    public ExtInt getCharLength() {
+        return new ExtInt(8);
     }
 
     public Integer parseString(String s) throws ParseException {

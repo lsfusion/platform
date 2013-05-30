@@ -123,7 +123,7 @@ public enum GroupType implements AggrType {
                 return "notZero(SUM(" + exprs.get(0) + "))";
             case STRING_AGG:
                 assert exprs.size()==2;
-                return type.getCast("STRING_AGG(" + exprs.get(0) + "," + exprs.get(1) + orderClause + ")", syntax, typeEnv, false); // тут точная ширина не нужна главное чтобы не больше
+                return type.getCast("STRING_AGG(" + exprs.get(0) + "," + exprs.get(1) + orderClause + ")", syntax, typeEnv); // тут точная ширина не нужна главное чтобы не больше
             case AGGAR_SETADD:
                 assert exprs.size()==1;
                 return "AGGAR_SETADD(" + exprs.get(0) + orderClause + ")";

@@ -1,15 +1,52 @@
 package platform.gwt.form.shared.view.classes;
 
 import platform.gwt.base.shared.GwtSharedUtils;
+import platform.gwt.form.shared.view.GExtInt;
+import platform.gwt.form.shared.view.GFont;
 import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.filter.GCompare;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.StringGridCellEditor;
+import platform.gwt.form.shared.view.grid.editor.TextGridCellEditor;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import platform.gwt.form.shared.view.grid.renderer.StringGridCellRenderer;
+import platform.gwt.form.shared.view.grid.renderer.TextGridCellRenderer;
 
-public class GStringType extends GAbstractStringType {
-    protected int length = 50;
+import java.text.ParseException;
+
+public class GStringType extends GDataType {
+
+    public boolean blankPadded;
+    public boolean caseInsensitive;
+    protected GExtInt length = new GExtInt(50);
+
+    @Override
+    public GCompare[] getFilterCompares() {
+        return GCompare.values();
+    }
+
+    @Override
+    public Object parseString(String s) throws ParseException {
+        return s;
+    }
+
+    @Override
+    public GCompare getDefaultCompare() {
+        return GCompare.CONTAINS;
+    }
+
+    @Override
+    public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
+        int minCharWidth = getMinimumCharWidth(minimumCharWidth);
+        return font == null || font.size == null ? minCharWidth * 10 : minCharWidth * font.size * 5 / 8;
+    }
+
+    @Override
+    public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
+        int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
+        return font == null || font.size == null ? prefCharWidth * 10 : prefCharWidth * font.size * 5 / 8;
+    }
 
     private String minimumMask;
     private String preferredMask;
@@ -17,26 +54,44 @@ public class GStringType extends GAbstractStringType {
     public GStringType() {}
 
     public GStringType(int length) {
-        this(length, false);
+        this(new GExtInt(length), false, true);
     }
 
-    public GStringType(int length, boolean caseInsensitive) {
-        super(caseInsensitive);
+    public GStringType(GExtInt length, boolean caseInsensitive, boolean blankPadded) {
 
+        this.blankPadded = blankPadded;
+        this.caseInsensitive = caseInsensitive;
         this.length = length;
 
-        minimumMask = GwtSharedUtils.replicate('0', correctMinimumCharWidth(length));
-        preferredMask = GwtSharedUtils.replicate('0', correctPreferredCharWidth(length));
+        if(length.isUnlimited()) {
+            minimumMask = "999 999";
+            preferredMask = "9 999 999";
+        } else {
+            int lengthValue = length.getValue();
+            minimumMask = GwtSharedUtils.replicate('0', correctMinimumCharWidth(lengthValue));
+            preferredMask = GwtSharedUtils.replicate('0', correctPreferredCharWidth(lengthValue));
+        }
+    }
+
+    @Override
+    public int getMinimumPixelHeight(GFont font) {
+        if(length.isUnlimited())
+            return super.getMinimumPixelHeight(font) * 4;
+        return super.getMinimumPixelHeight(font);
     }
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new StringGridCellRenderer(property, false);
+        if(length.isUnlimited())
+            return new TextGridCellRenderer(property);
+        return new StringGridCellRenderer(property, !blankPadded);
     }
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new StringGridCellEditor(editManager, editProperty, false);
+        if(length.isUnlimited())
+            return new TextGridCellEditor(editManager, editProperty);
+        return new StringGridCellEditor(editManager, editProperty, !blankPadded);
     }
 
     @Override
@@ -78,6 +133,6 @@ public class GStringType extends GAbstractStringType {
 
     @Override
     public String toString() {
-        return "Строка" + (caseInsensitive ? " без регистра" : "") + "(" + length + ")";
+        return "Строка" + (caseInsensitive ? " без регистра" : "") + (blankPadded ? " с паддингом" : "") + "(" + length + ")";
     }
 }

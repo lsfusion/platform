@@ -49,7 +49,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
     public PropertyObjectEntity(T property, ImMap<P, PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
         this.property = property;
         this.mapping = mapping;
-        this.creationScript = creationScript;
+        this.creationScript = creationScript==null ? null : creationScript.substring(0, Math.min(10000, creationScript.length()));
         this.creationPath = creationPath;
     }
 

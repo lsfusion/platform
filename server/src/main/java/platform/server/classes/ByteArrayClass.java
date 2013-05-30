@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.base.ExtInt;
 import platform.interop.Data;
 import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
@@ -68,7 +69,7 @@ public class ByteArrayClass extends DataClass<byte[]> {
     }
 
     @Override
-    public int getCharLength() {
+    public ExtInt getCharLength() {
         throw new RuntimeException("not supported");
     }
 
