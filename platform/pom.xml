@@ -18,9 +18,6 @@
         <module>web-api</module>
         <module>web-client</module>
         <module>sgwt-api</module>
-
-        <module>erp</module>
-        <module>custom-logics</module>
     </modules>
 
 </project>
