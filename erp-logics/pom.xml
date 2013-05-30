@@ -16,10 +16,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>server</artifactId>
-        </dependency>
-        <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
         </dependency>
