@@ -17,9 +17,16 @@ NAMESPACE Sale;
 wholesaleMarkupInvoiceDetail 'Оптовая надбавка' (detail) = round2([(X/Y-1)*100](priceInvoiceDetail(detail),manufacturingPriceInvoiceDetail(detail)));
 wholesaleMarkupUserInvoiceDetail 'Оптовая надбавка' (detail) = round2([(X/Y-1)*100](priceUserInvoiceDetail(detail),manufacturingPriceUserInvoiceDetail(detail)));
 
+@defineDocumentInterfaceDetailDataSumPrefix (invoice, manufacturing, ' изготовителя'); // объявляем сумму изготовителя
+@deriveDocumentDetailSumPrefix(userInvoice, manufacturing, currency, quantity); // записываем сумму изготовителя
+
+@defineDocumentInterfaceHeaderItemSum (invoice, manufacturing, manufacturing);
+
 EXTEND FORM userInvoice
     PROPERTIES(i)  showManufacturingPriceUserInvoice
-    PROPERTIES(d)  SHOWIF showManufacturingPriceUserInvoice(i) AFTER invoiceSumUserInvoiceDetail  wholesaleMarkupUserInvoiceDetail READONLY, manufacturingPriceUserInvoiceDetail
+    PROPERTIES(d)  SHOWIF showManufacturingPriceUserInvoice(i) AFTER invoiceSumUserInvoiceDetail  manufacturingSumUserInvoiceDetail,
+                   wholesaleMarkupUserInvoiceDetail READONLY, manufacturingPriceUserInvoiceDetail
+
 ;
 EXTEND DESIGN userInvoice {
     headerExtraParams {
@@ -32,7 +39,7 @@ EXTEND DESIGN userInvoice {
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY showManufacturingPriceInvoice
-    PROPERTIES(d) READONLY  SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail wholesaleMarkupInvoiceDetail, manufacturingPriceInvoiceDetail
+    PROPERTIES(d) READONLY  SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail manufacturingSumInvoiceDetail, wholesaleMarkupInvoiceDetail, manufacturingPriceInvoiceDetail
 ;
 
 overPricingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));

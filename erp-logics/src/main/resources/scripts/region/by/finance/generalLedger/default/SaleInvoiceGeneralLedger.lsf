@@ -8,6 +8,7 @@ NAMESPACE Sale;
 
 EXTEND CLASS Invoice : GeneralLedger.GLDocument;
 nameGLDocument(document) += descriptionInvoice(document);
+//editGLDocument (GLDocument)+= editInvoice(GLDocument);
 
 ////////////////////////////// Отгрузка по безналу (из розницы) //////////////////////////////////
 //------------------- Розничная сумма --------------------//

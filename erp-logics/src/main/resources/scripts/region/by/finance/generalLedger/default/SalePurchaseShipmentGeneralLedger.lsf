@@ -8,6 +8,7 @@ NAMESPACE Sale;
 
 EXTEND CLASS Shipment : GeneralLedger.GLDocument;
 nameGLDocument(document) += descriptionShipment(document);
+//editGLDocument (GLDocument)+= editInvoice(GLDocument);
 
 ////////////////////////////// Внутреннее перемещение (магазин-магазин) //////////////////////////////////
 //-------------------------------- Розничная сумма ----------------------------------//

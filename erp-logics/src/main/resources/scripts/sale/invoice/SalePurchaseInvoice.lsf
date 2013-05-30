@@ -305,7 +305,6 @@ moveUserInvoiceInvoice 'Накладная (закупка)' =  ACTION (invoice)
             SET Purchase.skuUserInvoiceDetail(d) <- skuInvoiceDetail(detail);
             SET Purchase.quantityUserInvoiceDetail (d) <- quantityInvoiceDetail(detail);
             SET Purchase.VATUserInvoiceDetail (d) <- VATInvoiceDetail(detail);
-            SET Purchase.valueVATUserInvoiceDetail (d) <- valueVATInvoiceDetail(detail);
             SET Purchase.priceUserInvoiceDetail (d) <- priceInvoiceDetail(detail);
             SET Purchase.invoicePriceUserInvoiceDetail (d) <- invoicePriceInvoiceDetail(detail);
 

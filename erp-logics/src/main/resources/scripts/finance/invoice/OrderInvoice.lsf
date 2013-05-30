@@ -168,7 +168,7 @@ META defineOrderInvoice(sign, stockProp)
                     SET priceListTypeUserInvoiceDetail (d) <- priceListTypeOrderDetail(orderDetail);
                     SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
                     SET invoicePriceUserInvoiceDetail (d) <- invoicePriceOrderDetail(orderDetail);
-//                    SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
+                    SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
                     SET data###stockProp###userInvoiceDetail (d) <- data###stockProp###orderDetail(orderDetail);
 
                     EXEC overCreateDetailUserInvoiceDetailOrderDetail(d, orderDetail);

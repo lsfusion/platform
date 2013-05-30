@@ -10,24 +10,21 @@ NAMESPACE Purchase;
 @defineOperationProperty(showChargePrice, 'Услуги', showContainer);
 @deriveDocumentOperationProperty(UserInvoice, showChargePrice);
 
-chargeSumUserInvoice 'Сумма услуг в документе' (userInvoice) = GROUP SUM sumUserInvoiceDetail(idetail) IF isChargeSkuUserInvoiceDetail(idetail)
-    BY userInvoiceUserInvoiceDetail(idetail) IN documentSumGroup;
-chargeSumInvoice 'Сумма услуг в документе' (invoice) = GROUP SUM sumInvoiceDetail(idetail) IF isChargeSkuInvoiceDetail(idetail)
-    BY invoiceInvoiceDetail(idetail) IN documentSumGroup;
-
-itemSumUserInvoice 'Сумма товара в документе' (userInvoice) = GROUP SUM sumUserInvoiceDetail(idetail) IF isStockSkuUserInvoiceDetail(idetail)
-    BY userInvoiceUserInvoiceDetail(idetail) IN documentSumGroup;
-itemSumInvoice 'Сумма товара в документе' (invoice) = GROUP SUM sumInvoiceDetail(idetail) IF isStockSkuInvoiceDetail(idetail)
-    BY invoiceInvoiceDetail(idetail) IN documentSumGroup;
-
 calcChargePriceUserInvoiceDetail  (detail) = [(X*Y)/(Z*W)](
     sumUserInvoiceDetail(detail),
-    chargeSumUserInvoice(userInvoiceUserInvoiceDetail(detail)),
-    itemSumUserInvoice(userInvoiceUserInvoiceDetail(detail)),
+    sumChargeUserInvoiceDetailUserInvoice(userInvoiceUserInvoiceDetail(detail)),
+    sumNotChargeUserInvoiceDetailUserInvoice(userInvoiceUserInvoiceDetail(detail)),
     quantityUserInvoiceDetail(detail)
 ) IF isStockSkuInvoiceDetail(detail);
 
-@defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, charge, ' услуг за ед.');
+@defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, charge, ' услуг за ед.'); // объявляем цену услуг
+@defineDocumentInterfaceDetailDataSumCustomPrefix (invoiceDetail, charge, ' услуг'); // объявляем сумму услуг
+@deriveDocumentDetailSumCustomPrefix(userInvoiceDetail, charge, currency, quantity); // записываем сумму услуг
+
+chargeSumUserInvoiceDetailUserInvoice 'Сумма услуг в документе (построчно)' (userInvoice) = GROUP SUM chargeSumUserInvoiceDetail(idetail)
+    BY userInvoiceUserInvoiceDetail(idetail) IN documentSumGroup;
+chargeSumInvoiceDetailInvoice 'Сумма услуг в документе (построчно)' (invoice) = GROUP SUM chargeSumInvoiceDetail(idetail)
+    BY invoiceInvoiceDetail(idetail) IN documentSumGroup;
 
 deriveChargePriceUserInvoice 'Расписать сумму услуг по товарам' = ACTION (userInvoice) {
     SET chargePriceUserInvoiceDetail(detail) <- calcChargePriceUserInvoiceDetail(detail) WHERE userInvoiceUserInvoiceDetail(detail) == userInvoice;
@@ -50,10 +47,10 @@ backgroundChargeInvoice 'Цвет' (invoice) = RGB(224, 255, 128) IF invoice IS 
 EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundChargeInvoice(i) showChargePriceUserInvoice
     PROPERTIES(i) BACKGROUND backgroundChargeInvoice(i) SHOWIF showChargePriceUserInvoice(i)
-                                                        chargeSumUserInvoice
+                                                        sumChargeUserInvoiceDetailUserInvoice
     PROPERTIES(i)                                       deriveChargePriceUserInvoice TODRAW d FORCE PANEL TOOLBAR
-    PROPERTIES(d) BACKGROUND backgroundChargeInvoice(i) SHOWIF showChargePriceUserInvoice(i)
-                                                        chargePriceUserInvoiceDetail BEFORE numberVATUserInvoiceDetail(d)
+    PROPERTIES(d) BACKGROUND backgroundChargeInvoice(i) SHOWIF showChargePriceUserInvoice(i) BEFORE numberVATUserInvoiceDetail(d)
+                                                        chargePriceUserInvoiceDetail, chargeSumUserInvoiceDetail
 ;
 
 EXTEND DESIGN userInvoice {
@@ -66,9 +63,9 @@ EXTEND DESIGN userInvoice {
 }
 
 EXTEND FORM invoices
-    PROPERTIES(i) BACKGROUND backgroundChargeInvoice(i) READONLY showChargePriceInvoice, chargeSumInvoice
-    PROPERTIES(d) BACKGROUND backgroundChargeInvoice(i) SHOWIF showChargePriceInvoice(i) READONLY
-                                                                 chargePriceInvoiceDetail BEFORE numberVATInvoiceDetail(d)
+    PROPERTIES(i) BACKGROUND backgroundChargeInvoice(i) READONLY showChargePriceInvoice, sumChargeInvoiceDetailInvoice
+    PROPERTIES(d) BACKGROUND backgroundChargeInvoice(i) SHOWIF showChargePriceInvoice(i) READONLY BEFORE numberVATInvoiceDetail(d)
+                                                        chargePriceInvoiceDetail, chargeSumInvoiceDetail
 ;
 
 //-------------Расчет транспорта по коэффициенту в шапке накладной-------------//

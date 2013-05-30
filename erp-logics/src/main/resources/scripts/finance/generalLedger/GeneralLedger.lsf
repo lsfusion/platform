@@ -304,15 +304,15 @@ END
 
 // ----------------------------------- Для двух объектов --------------------------------------- //
 
-META defineGeneralLedgerDoubleAggregation (object1, object2, idGL, companyProp, property, description, debit, credit, accountType)   //  object1 - документ
-    @defineGeneralLedgerDoubleAggregation (object1, object2, idGL, companyProp, property, date, time, description, debit, credit, accountType);
+META defineGeneralLedgerDoubleAggregation (object1, object2, idGL, companyProp, property, descriptionProp, debit, credit, accountType)   //  object1 - документ
+    @defineGeneralLedgerDoubleAggregation (object1, object2, idGL, companyProp, property, date, time, descriptionProp, debit, credit, accountType);
 END
 
-META defineGeneralLedgerDoubleAggregation (object1, object2, idGL, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
-    @defineGeneralLedgerDoubleAggregation (object1, object2, idGL, ###idGL, companyProp, property, dateProp, timeProp, description, debit, credit, accountType);
+META defineGeneralLedgerDoubleAggregation (object1, object2, idGL, companyProp, property, dateProp, timeProp, descriptionProp, debit, credit, accountType)
+    @defineGeneralLedgerDoubleAggregation (object1, object2, idGL, ###idGL, companyProp, property, dateProp, timeProp, descriptionProp, debit, credit, accountType);
 END
 
-META defineGeneralLedgerDoubleAggregation (object1, object2, idGL, classGL, companyProp, property, dateProp, timeProp, description, debit, credit, accountType)
+META defineGeneralLedgerDoubleAggregation (object1, object2, idGL, classGL, companyProp, property, dateProp, timeProp, descriptionProp, debit, credit, accountType)
 
     CLASS classGL###generalLedger : GeneralLedger;
 
@@ -324,7 +324,7 @@ META defineGeneralLedgerDoubleAggregation (object1, object2, idGL, classGL, comp
     GLDocumentGeneralLedger(generalLedger) += object1###idGL###generalLedger(generalLedger);
     legalEntityGeneralLedger(generalLedger) += companyProp###object1(object1###idGL###generalLedger(generalLedger));
     isPostedGeneralLedger(generalLedger) += isPosted###object1(object1###idGL###generalLedger(generalLedger));
-    descriptionGeneralLedger(generalLedger) += description###object1(object1###idGL###generalLedger(generalLedger), object2###idGL###generalLedger(generalLedger));
+    descriptionGeneralLedger(generalLedger) += descriptionProp(object1###idGL###generalLedger(generalLedger), object2###idGL###generalLedger(generalLedger));
     dateGeneralLedger(generalLedger) += dateProp###object1(object1###idGL###generalLedger(generalLedger));
     timeGeneralLedger(generalLedger) += timeProp###object1(object1###idGL###generalLedger(generalLedger));
     debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) IF generalLedger IS classGL###generalLedger;
@@ -333,9 +333,9 @@ META defineGeneralLedgerDoubleAggregation (object1, object2, idGL, classGL, comp
 END
 
 //-- С операцией
-META defineGeneralLedgerAggregationOperation(object1, object2, idGL, companyProp, property, description, debit, credit, accountType, keyProp)
-    idGL###property(o) = property(o) IF id###operation###object1(o) == keyProp;
-    @defineGeneralLedgerDoubleAggregation(object1, object2, idGL, companyProp, idGL###property, description, debit, credit, accountType);
+META defineGeneralLedgerAggregationOperation(object1, object2, idGL, companyProp, property, descriptionProp, debit, credit, accountType, keyProp)
+    idGL###property(object1, object2) = property(object1, object2) IF id###operation###object1(object1) == keyProp;
+    @defineGeneralLedgerDoubleAggregation(object1, object2, idGL, companyProp, idGL###property, descriptionProp, debit, credit, accountType);
 END
 
 

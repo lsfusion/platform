@@ -17,7 +17,7 @@ FORM dimensions 'Субконто'
 CLASS DimensionType 'Тип субконто';
 TABLE dimensionType(DimensionType);
 
-nameDimensionType 'Наименование' = DATA ISTRING[100](DimensionType);
+nameDimensionType 'Наименование' (type) = staticCaption(type) IF type IS DimensionType;
 
 idDimensionType 'Идентификатор' = DATA STRING[20] (DimensionType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
 dimensionTypeDimension = ABSTRACT DimensionType (Dimension) EXCLUSIVE PERSISTENT;

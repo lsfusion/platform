@@ -19,6 +19,7 @@ import platform.server.session.DataSession;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -62,7 +63,7 @@ public class ImportTNVEDCustomsRatesActionProperty extends ScriptingActionProper
 
         DBF file = new DBF(tempFile.getPath());
 
-        Map<String, Double> registrationMap = new HashMap<String, Double>();
+        Map<String, BigDecimal> registrationMap = new HashMap<String, BigDecimal>();
         List<List<Object>> data = new ArrayList<List<Object>>();
 
         int recordCount = file.getRecordCount();
@@ -71,8 +72,8 @@ public class ImportTNVEDCustomsRatesActionProperty extends ScriptingActionProper
 
             Integer type = Integer.parseInt(new String(file.getField("PP").getBytes(), "Cp866").trim());
             String groupID = new String(file.getField("KOD").getBytes(), "Cp866").trim();
-            Double stav_a = Double.parseDouble(new String(file.getField("STAV_A").getBytes(), "Cp866").trim());
-            Double stav_s = Double.parseDouble(new String(file.getField("STAV_S").getBytes(), "Cp866").trim());
+            BigDecimal stav_a = new BigDecimal(new String(file.getField("STAV_A").getBytes(), "Cp866").trim());
+            BigDecimal stav_s = new BigDecimal(new String(file.getField("STAV_S").getBytes(), "Cp866").trim());
             Date dateFrom = new Date(DateUtils.parseDate(new String(file.getField("DATE1").getBytes(), "Cp866").trim(), new String[]{"yyyyMMdd"}).getTime());
             Date dateTo = new Date(DateUtils.parseDate(new String(file.getField("DATE2").getBytes(), "Cp866").trim(), new String[]{"yyyyMMdd"}).getTime());
 

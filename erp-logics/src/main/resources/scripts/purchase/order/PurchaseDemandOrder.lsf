@@ -25,6 +25,8 @@ createDemandUserOrder 'Создать заказ' = ACTION (supplier, stock, pri
         SET dateUserOrder(o) <- toDate(dateTime AS DATETIME);
         SET timeUserOrder(o) <- toTime(dateTime AS DATETIME);
         SET supplierUserOrder(o) <- supplier;
+        SET supplierStockUserOrder(o) <- defaultStockEmployeeLegalEntity(currentUser(), supplier)
+            IF countAccessStockEmployeeLegalEntity (currentUser(), supplier) == 1;
         SET customerUserOrder(o) <- legalEntityStock(stock);
         SET customerStockUserOrder(o) <- stock;
         SET priceListTypeUserOrder(o) <- priceListType;

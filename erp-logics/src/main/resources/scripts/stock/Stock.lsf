@@ -1330,7 +1330,7 @@ META deriveDocumentDetailSum(object, quantityProp)
     @deriveDocumentDetailSum(object, currency, quantityProp);
 END
 
-//-
+//-  Суммы по товару, таре, услугам по документу
 META defineDocumentHeaderItemSumCustom (object, detail, prefixA, prefixB)
     prefixB###sumItem###detail###object 'Сумма, товар' (object) =
         GROUP SUM prefixA###sum###detail(idetail) IF isItemSku(sku###detail(idetail))
@@ -1351,7 +1351,6 @@ META defineDocumentHeaderItemSumCustom (object, detail, prefixA, prefixB)
         GROUP SUM prefixA###sum###detail(idetail) IF isNotContainerSku(sku###detail(idetail))
             BY object###detail(idetail) IN documentSumGroup;
 
-
 END
 META defineDocumentHeaderItemSum (object, prefixA, prefixB)
     @defineDocumentHeaderItemSumCustom(object, object##Detail, prefixA, prefixB);
@@ -1359,6 +1358,35 @@ END
 META defineDocumentInterfaceHeaderItemSum (object, prefixA, prefixB)
     @defineDocumentHeaderItemSum (object, prefixA, prefixB);
     @defineDocumentHeaderItemSum (user###object, prefixA, prefixB);
+END
+
+//-  Суммы по товару, таре, услугам по двум объектам (первый из них документ)
+META defineDocumentHeaderItemSumDoubleCustom (object1, object2, detail, prefixA, prefixB, prefixC, object2Prop)
+    prefixB###sumItem###detail###object1###prefixC###object2 'Сумма, товар' (object1, object2) =
+        GROUP SUM prefixA###sum###detail(idetail) IF isItemSku(sku###detail(idetail))
+            BY object1###detail(idetail), object2Prop###detail(idetail) IN documentSumGroup;
+    prefixB###sumContainer###detail###object1###prefixC###object2 'Сумма, тара' (object1, object2) =
+        GROUP SUM prefixA###sum###detail(idetail) IF isContainerSku(sku###detail(idetail))
+            BY object1###detail(idetail), object2Prop###detail(idetail) IN documentSumGroup;
+    prefixB###sumCharge###detail###object1###prefixC###object2 'Сумма услуг' (object1, object2) =
+        GROUP SUM prefixA###sum###detail(idetail) IF isChargeSku(sku###detail(idetail))
+            BY object1###detail(idetail), object2Prop###detail(idetail) IN documentSumGroup;
+    prefixB###sumNotCharge###detail###object1###prefixC###object2 'Сумма кроме услуг' (object1, object2) =
+        GROUP SUM prefixA###sum###detail(idetail) IF isNotChargeSku(sku###detail(idetail))
+            BY object1###detail(idetail), object2Prop###detail(idetail) IN documentSumGroup;
+    prefixB###sumNotItem###detail###object1###prefixC###object2 'Сумма кроме товара' (object1, object2) =
+        GROUP SUM prefixA###sum###detail(idetail) IF isNotItemSku(sku###detail(idetail))
+            BY object1###detail(idetail), object2Prop###detail(idetail) IN documentSumGroup;
+    prefixB###sumNotContainer###detail###object1###prefixC###object2 'Сумма кроме тары' (object1, object2) =
+        GROUP SUM prefixA###sum###detail(idetail) IF isNotContainerSku(sku###detail(idetail))
+            BY object1###detail(idetail), object2Prop###detail(idetail) IN documentSumGroup;
+END
+META defineDocumentHeaderItemSumDouble (object1, object2, prefixA, prefixB, prefixC, object2Prop)
+    @defineDocumentHeaderItemSumDoubleCustom(object1, object2, object1##Detail, prefixA, prefixB, prefixC, object2Prop);
+END
+META defineDocumentInterfaceHeaderItemSumDouble (object1, object2, prefixA, prefixB, prefixC, object2Prop)
+    @defineDocumentHeaderItemSumDouble (object1, object2, prefixA, prefixB, prefixC, object2Prop);
+    @defineDocumentHeaderItemSumDouble (user###object1, object2, prefixA, prefixB, prefixC, object2Prop);
 END
 
 // ------------------------------------------------- Вес нетто ----------------------------------- //

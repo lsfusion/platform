@@ -63,10 +63,22 @@ WHEN SESSION FORMS userInvoice
 
 toShowRepricingPriceInvoice (invoice) = createRepricingInvoice(invoice) AND showManufacturingPriceInvoice(invoice);
 
+@defineDocumentInterfaceDetailDataSumPrefix (invoice, manufacturing, ' изготовителя'); // объявляем сумму изготовителя
+@deriveDocumentDetailSumPrefix(userInvoice, manufacturing, currency, quantity); // записываем сумму изготовителя
+
+calcDiscountSumUserInvoiceDetail (detail) = manufacturingSumUserInvoiceDetail(detail) - sumUserInvoiceDetail(detail);
+discountSumUserInvoiceDetail 'Скидка от цены изг. (сумма)' (detail) = calcDiscountSumUserInvoiceDetail(detail) IF calcDiscountSumUserInvoiceDetail(detail) > 0.0;
+
+calcDiscountSumInvoiceDetail (detail) = manufacturingSumInvoiceDetail(detail) - sumInvoiceDetail(detail);
+discountSumInvoiceDetail 'Скидка от цены изг. (сумма)' (detail) = calcDiscountSumInvoiceDetail(detail) IF calcDiscountSumInvoiceDetail(detail) > 0.0;
+
+@defineDocumentInterfaceHeaderItemSum (invoice, discount, discount);
+@defineDocumentInterfaceHeaderItemSum (invoice, manufacturing, manufacturing);
+
 EXTEND FORM userInvoice
     PROPERTIES(i) showManufacturingPriceUserInvoice
     PROPERTIES(i) nameManufacturingRoundConditionUserInvoice SHOWIF showManufacturingPriceUserInvoice(i)
-    PROPERTIES(d) SHOWIF showManufacturingPriceUserInvoice(i) manufacturingPriceUserInvoiceDetail ON CHANGE changeManufacturingPriceUserInvoiceDetail(d)  AFTER invoiceSumUserInvoiceDetail
+    PROPERTIES(d) SHOWIF showManufacturingPriceUserInvoice(i) AFTER invoiceSumUserInvoiceDetail manufacturingSumUserInvoiceDetail, manufacturingPriceUserInvoiceDetail ON CHANGE changeManufacturingPriceUserInvoiceDetail(d)
     PROPERTIES(d) BACKGROUND backgroundCurInvoice(i) SHOWIF toShowRepricingPriceInvoice(i) curManufacturingPriceUserInvoiceDetail ON CHANGE changeCurManufacturingPriceUserInvoiceDetail(d) BEFORE curPriceUserInvoiceDetail
 ;
 EXTEND DESIGN userInvoice {
@@ -81,7 +93,7 @@ EXTEND DESIGN userInvoice {
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY showManufacturingPriceInvoice
-    PROPERTIES(d) READONLY manufacturingPriceInvoiceDetail SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail
+    PROPERTIES(d) READONLY SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail manufacturingSumInvoiceDetail, manufacturingPriceInvoiceDetail
 ;
 //--
 overPricingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));
