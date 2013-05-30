@@ -7,7 +7,14 @@
            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd"
        default-lazy-init="true">
 
-    <context:property-placeholder location="file:settings.properties"/>
+    <context:property-placeholder location="file:conf/features_settings.properties"/>
 
     <import resource="classpath:settings/common-bl-scripted-settings.xml"/>
+
+    <bean id="dbManager" class="platform.server.logics.DBManager">
+        <property name="adapter" ref="dataAdapter"/>
+        <property name="businessLogics" ref="businessLogics"/>
+        <property name="restartManager" ref="restartManager"/>
+        <property name="ignoreMigration" value="true" />
+    </bean>
 </beans>
