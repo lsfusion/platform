@@ -5,7 +5,7 @@
     <artifactId>platform</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>lsFusion</name>
+    <name>Fusion platform</name>
 
     <modules>
         <module>base</module>

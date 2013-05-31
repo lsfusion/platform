@@ -17,7 +17,7 @@
             <arg value="/c"/>
             <arg value="mvn"/>
             <arg value="-P"/>
-            <arg value="gwt-dev"/>
+            <arg value="${gwtProfile}"/>
             <arg value="-Dnodesktop"/>
             <arg value="--also-make" />
             <arg value="--projects" />
@@ -78,6 +78,7 @@
 
     <target name="web-client-recursiveCompileWithGwt">
         <antcall target="recursiveCompileWithGwt">
+            <param name="gwtProfile" value="gwt-dev" />
             <param name="artifactId" value="web-client"/>
         </antcall>
     </target>
@@ -161,11 +162,8 @@
     </target>
 
     <target name="paas-web-recursiveCompileWithGwt">
-        <antcall target="recursiveCompile">
-            <param name="artifactId" value="sgwt-api"/>
-        </antcall>
-
         <antcall target="recursiveCompileWithGwt">
+            <param name="gwtProfile" value="gwt-dev-paas" />
             <param name="artifactId" value="paas-web"/>
         </antcall>
     </target>
