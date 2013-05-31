@@ -58,6 +58,8 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     }
     public abstract CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive);
 
+    public abstract ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders);
+
     @Message("message.query.execute")
     protected ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException {
         return compile(session.syntax, orders, selectTop).execute(session, env);

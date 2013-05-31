@@ -7,6 +7,7 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.Settings;
 import platform.server.classes.StringClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.query.CompileOrder;
 import platform.server.data.query.Query;
 import platform.server.data.query.TypeEnvironment;
 import platform.server.data.sql.SQLSyntax;
@@ -105,8 +106,8 @@ public enum GroupType implements AggrType {
         return !isSelect();
     }
 
-    public String getSource(ImList<String> exprs, ImOrderMap<String, Boolean> orders, ImSet<String> ordersNotNull, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-        String orderClause = BaseUtils.clause("ORDER BY", Query.stringOrder(orders, ordersNotNull, syntax));
+    public String getSource(ImList<String> exprs, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+        String orderClause = BaseUtils.clause("ORDER BY", Query.stringOrder(orders, syntax));
 
         switch (this) {
             case MAX:

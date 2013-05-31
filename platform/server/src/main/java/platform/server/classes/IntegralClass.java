@@ -30,12 +30,12 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     }
     
     @Override
-    public Number getInfiniteValue() {
+    public Number getInfiniteValue(boolean min) {
         throw new RuntimeException("not supported");
     }
     
     public Number getSafeInfiniteValue() { // бесконечное число которое можно сколько угодно суммировать и не выйти за тип
-        return read(Math.round(Math.sqrt(getInfiniteValue().doubleValue())));
+        return read(Math.round(Math.sqrt(getInfiniteValue(false).doubleValue())));
     }
     
     public Number div(Number obj, int div) {

@@ -46,6 +46,7 @@ public interface ImList<K> extends Iterable<K> {
     String toString(String separator);
     String toString(GetValue<String, K> getter, String delimiter);
     String toString(GetStaticValue<String> getter, String delimiter);
+    String toString(GetIndexValue<String, K> getter, String delimiter);
 
     <V> ImList<V> map(ImMap<? extends K, ? extends V> map);
 

@@ -81,8 +81,8 @@ public class LongClass extends IntegralClass<Long> {
     }
 
     @Override
-    public Number getInfiniteValue() {
-        return Math.round((double)(Long.MAX_VALUE / 2));
+    public Number getInfiniteValue(boolean min) {
+        return min ? Long.MIN_VALUE : Long.MAX_VALUE;
     }
 
     @Override

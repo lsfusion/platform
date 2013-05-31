@@ -20,6 +20,8 @@ public interface Type<T> extends ClassReader<T> {
         Type getType(K key);
     }
 
+    public Object getInfiniteValue(boolean min);
+
     String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv);
 
     String getDB(SQLSyntax syntax, TypeEnvironment typeEnv);

@@ -63,7 +63,7 @@ public class AutoHintsAspect {
                 CalcProperty dependProperty = depends.get(i);
 
                 byte result = 0;
-                if(modifier.allowHintIncrement(dependProperty)) {
+                if(dependProperty.isFull() && modifier.allowHintIncrement(dependProperty)) {
                     result |= 1;
                     if(modifier.forceHintIncrement(dependProperty))
                         result |= 2;

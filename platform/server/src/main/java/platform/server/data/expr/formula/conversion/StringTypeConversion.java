@@ -20,7 +20,7 @@ public class StringTypeConversion implements TypeConversion {
                             (type2 instanceof StringClass && ((StringClass) type2).caseInsensitive);
 
             boolean blankPadded =
-                    (type1 instanceof StringClass && ((StringClass) type1).blankPadded) ||
+                    (type1 instanceof StringClass && ((StringClass) type1).blankPadded) &&
                             (type2 instanceof StringClass && ((StringClass) type2).blankPadded);
 
             return get(blankPadded, caseInsensitive, length1.sum(length2));

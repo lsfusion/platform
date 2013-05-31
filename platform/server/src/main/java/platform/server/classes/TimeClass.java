@@ -92,6 +92,11 @@ public class TimeClass extends DataClass<Time> {
     }
 
     @Override
+    public Object getInfiniteValue(boolean min) {
+        return min ? new Time(0, 0, 0) : new Time(23, 59, 59);
+    }
+
+    @Override
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
     }

@@ -348,6 +348,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         try {
             statement.execute(command);
         } catch(SQLException e) {
+            e = e;
         } finally {
             statement.close();
         }
@@ -377,8 +378,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
             ConcatenateType ensuredType = ensuredConcTypes.getKey(i);
             if(concType.getCompatible(ensuredType)!=null) {
                 String ensuredName = genConcTypeName(ensuredType);
-                executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT"); // в обе стороны так как containsAll в DataClass по прежнему не направленный
-                executeEnsure("CREATE CAST (" + ensuredName + " AS " + typeName + ") WITH INOUT");
+                executeEnsure("DROP CAST IF EXISTS (" + typeName + " AS " + ensuredName + ")");
+                executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT AS IMPLICIT"); // в обе стороны так как containsAll в DataClass по прежнему не направленный
+                executeEnsure("DROP CAST IF EXISTS (" + ensuredName + " AS " + typeName + ")");
+                executeEnsure("CREATE CAST (" + ensuredName + " AS " + typeName + ") WITH INOUT AS IMPLICIT");
             }
         }
 

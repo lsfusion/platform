@@ -241,8 +241,11 @@ public class ConcatenateType extends AbstractType<Object[]> {
     public static String getFieldName(int part) {
         return "f" + part;
     }
-    public String getDeconcatenateSource(String expr, int part, SQLSyntax syntax, TypeEnvironment typeEnv) {
+    public static String getDeconcatenateSource(String expr, int part) {
         return "(" + expr + ")." + getFieldName(part);
+    }
+    public String getDeconcatenateSource(String expr, int part, SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return getDeconcatenateSource(expr, part);
     }
 
     public void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass) {
@@ -302,5 +305,9 @@ public class ConcatenateType extends AbstractType<Object[]> {
         for (Type type : types)
             result = result + "_" + type.getSID() + "_C";
         return result;
+    }
+
+    public Object getInfiniteValue(boolean min) {
+        throw new UnsupportedOperationException();
     }
 }

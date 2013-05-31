@@ -70,6 +70,16 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         return builder.toString();
     }
 
+    public String toString(GetIndexValue<String, K> getter, String delimiter) {
+        StringBuilder builder = new StringBuilder();
+        for(int i=0,size=size();i<size;i++) {
+            if(i!=0)
+                builder.append(delimiter);
+            builder.append(getter.getMapValue(i, get(i)));
+        }
+        return builder.toString();
+    }
+
     public boolean isEmpty() {
         return getCol().isEmpty();
     }
@@ -184,7 +194,6 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
             mResult.exclAdd(getterKey.getMapValue(i), get(i));
         return mResult.immutable();
     }
-
 
     public <MK, MV> ImMap<MK, MV> mapListKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue) {
         MExclMap<MK, MV> mResult = MapFact.mExclMap(size());

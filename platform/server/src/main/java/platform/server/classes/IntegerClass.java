@@ -78,7 +78,7 @@ public class IntegerClass extends IntegralClass<Integer> {
     }
 
     @Override
-    public Number getInfiniteValue() {
-        return Integer.MAX_VALUE / 2;
+    public Number getInfiniteValue(boolean min) {
+        return min ? Integer.MIN_VALUE : Integer.MAX_VALUE;
     }
 }

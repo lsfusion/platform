@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.base.BaseUtils;
 import platform.base.ExtInt;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
@@ -114,8 +115,8 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
 
     @Override
-    public Number getInfiniteValue() {
-        return BigDecimal.valueOf(Double.MAX_VALUE / 2);
+    public Number getInfiniteValue(boolean min) {
+        return new BigDecimal((min ? "-" : "") + BaseUtils.replicate('9', getWhole()) + "." + BaseUtils.replicate('9', getPrecision()));
     }
 
     @Override

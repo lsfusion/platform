@@ -13,17 +13,18 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.order.PartitionCalc;
 import platform.server.data.expr.order.PartitionParam;
 import platform.server.data.expr.order.PartitionToken;
+import platform.server.data.query.CompileOrder;
 import platform.server.data.where.Where;
 
 public enum PartitionType implements AggrType {
     SUM, DISTR_CUM_PROPORTION, DISTR_RESTRICT, DISTR_RESTRICT_OVER, PREVIOUS;
 
-    public static <K> ImSet<K> getSet(ImList<K> exprs, ImOrderMap<K, Boolean> orders, ImSet<K> partitions) {
+    public static <K> ImSet<K> getSet(ImList<K> exprs, ImOrderMap<K, CompileOrder> orders, ImSet<K> partitions) {
         return SetFact.add(exprs.toOrderSet().getSet(), orders.keys(), partitions);
     }
 
     // вообще первый параметр PartitionParam, но не хочется с generics'ами играться
-    public PartitionCalc createAggr(MExclMap<PartitionToken, String> mTokens, ImList<String> sourceExprs, ImOrderMap<String, Boolean> sourceOrders, ImSet<String> sourcePartitions) {
+    public PartitionCalc createAggr(MExclMap<PartitionToken, String> mTokens, ImList<String> sourceExprs, ImOrderMap<String, CompileOrder> sourceOrders, ImSet<String> sourcePartitions) {
         ImSet<String> paramNames = getSet(sourceExprs, sourceOrders, sourcePartitions);
         ImRevMap<String, PartitionParam> params = paramNames.mapRevValues(new GetStaticValue<PartitionParam>() {
             public PartitionParam getMapValue() {
@@ -33,7 +34,7 @@ public enum PartitionType implements AggrType {
 
         ImRevMap<String, PartitionToken> castParams = BaseUtils.immutableCast(params);
         ImList<PartitionToken> exprs = sourceExprs.map(castParams);
-        ImOrderMap<PartitionToken, Boolean> orders = sourceOrders.map(castParams);
+        ImOrderMap<PartitionToken, CompileOrder> orders = sourceOrders.map(castParams);
         ImSet<PartitionToken> partitions = sourcePartitions.mapRev(castParams);
 
         switch (this) {

@@ -1,6 +1,9 @@
 package platform.server.data.sql;
 
 import platform.base.col.interfaces.immutable.ImMap;
+import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
+import platform.server.data.query.CompiledQuery;
 import platform.server.data.query.ExecuteEnvironment;
 import platform.server.data.type.ParseInterface;
 

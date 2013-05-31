@@ -33,6 +33,7 @@ import platform.server.data.query.stat.StatKeys;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
+import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
@@ -100,12 +101,11 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             }), orders, ordersNotNull, type);
         }
 
-        public String getSource(ImMap<Expr, String> fromPropertySelect, SQLSyntax syntax, TypeEnvironment typeEnv, Type resultType) {
-            Result<ImSet<Expr>> orderExprsNotNull = new Result<ImSet<Expr>>();
-            ImOrderMap<Expr, Boolean> packOrders = CompiledQuery.getOrdersNotNull(orders, orders.keys().toMap(), orderExprsNotNull);
+        public String getSource(ImMap<Expr, String> fromPropertySelect, platform.server.data.query.Query<KeyExpr, Expr> query, SQLSyntax syntax, TypeEnvironment typeEnv, Type resultType) {
+            ImOrderMap<Expr, CompileOrder> compileOrders = query.getCompileOrders(orders);
             if(ordersNotNull) // если notNull, то все пометим
-                orderExprsNotNull.set(packOrders.keys());
-            return type.getSource(exprs.map(fromPropertySelect), packOrders.map(fromPropertySelect), orderExprsNotNull.result.map(fromPropertySelect).toSet(), resultType, syntax, typeEnv);
+                compileOrders = CompileOrder.setNotNull(compileOrders);
+            return type.getSource(exprs.map(fromPropertySelect), compileOrders.map(fromPropertySelect), resultType, syntax, typeEnv);
         }
     }
 
@@ -221,16 +221,16 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
         final Result<ImMap<Expr,String>> fromPropertySelect = new Result<ImMap<Expr, String>>();
         Result<ImCol<String>> fromWhereSelect = new Result<ImCol<String>>(); // проверить crossJoin
-        String fromSelect = new platform.server.data.query.Query<KeyExpr,Expr>(getInner().getQueryKeys().toRevMap(),
-                group.keys().addExcl(query.getExprs()).toMap(), getInner().getFullWhere())
-            .compile(source.syntax, subcontext).fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, source.params, null);
+        platform.server.data.query.Query<KeyExpr,Expr> subQuery = new platform.server.data.query.Query<KeyExpr,Expr>(getInner().getQueryKeys().toRevMap(),
+                group.keys().addExcl(query.getExprs()).toMap(), getInner().getFullWhere());
+        String fromSelect = subQuery.compile(source.syntax, subcontext).fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, source.params, null);
         
         ImCol<String> whereSelect = fromWhereSelect.result.mergeCol(group.mapColValues(new GetKeyValue<String, Expr, BaseExpr>() {
             public String getMapValue(Expr key, BaseExpr value) {
                 return fromPropertySelect.result.get(key)+"="+value.getSource(source);
             }}));
 
-        return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect.result, source.syntax, source.env, getType()),
+        return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect.result, subQuery, source.syntax, source.env, getType()),
                 whereSelect.toString(" AND "), "", "", "", "") + ")";
     }
 

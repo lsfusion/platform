@@ -170,7 +170,7 @@ public class StringClass extends DataClass {
     }
 
     public String toString() {
-        return caseInsensitive ? ServerResourceBundle.getString("classes.insensitive.string") : ServerResourceBundle.getString("classes.string") + " " + length;
+        return (caseInsensitive ? ServerResourceBundle.getString("classes.insensitive.string") : ServerResourceBundle.getString("classes.string")) + (blankPadded ? " (bp)" : "") + " " + length;
     }
 
     public static StringClass[] getArray(int... lengths) {
@@ -241,5 +241,13 @@ public class StringClass extends DataClass {
         cached.add(string);
         DataClass.storeClass(string);
         return string;
+    }
+
+    @Override
+    public Object getInfiniteValue(boolean min) {
+        if(min)
+            return "";
+
+        return super.getInfiniteValue(min);
     }
 }

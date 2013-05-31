@@ -3,12 +3,12 @@ package platform.server.data.expr.order;
 import platform.base.BaseUtils;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
-import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MExclMap;
+import platform.server.data.query.CompileOrder;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 
@@ -18,10 +18,10 @@ public class PartitionCalc extends PartitionToken {
         public String func;
 
         public ImList<PartitionToken> exprs;
-        public ImOrderMap<PartitionToken, Boolean> orders;
+        public ImOrderMap<PartitionToken, CompileOrder> orders;
         public ImSet<PartitionToken> partitions;
 
-        public Aggr(String func, ImList<PartitionToken> exprs, ImOrderMap<PartitionToken, Boolean> orders, ImSet<PartitionToken> partitions) {
+        public Aggr(String func, ImList<PartitionToken> exprs, ImOrderMap<PartitionToken, CompileOrder> orders, ImSet<PartitionToken> partitions) {
             this.func = func;
             this.exprs = exprs;
             this.orders = orders;
@@ -29,21 +29,21 @@ public class PartitionCalc extends PartitionToken {
         }
 
         public Aggr(String func, ImList<PartitionToken> exprs, ImSet<PartitionToken> partitions) {
-            this(func, exprs, MapFact.<PartitionToken, Boolean>EMPTYORDER(), partitions);
+            this(func, exprs, MapFact.<PartitionToken, CompileOrder>EMPTYORDER(), partitions);
         }
 
         public Aggr(String func, ImSet<PartitionToken> partitions) {
             this(func, ListFact.<PartitionToken>EMPTY(), partitions);
         }
 
-        public Aggr(String func, ImOrderMap<PartitionToken, Boolean> orders, ImSet<PartitionToken> partitions) {
+        public Aggr(String func, ImOrderMap<PartitionToken, CompileOrder> orders, ImSet<PartitionToken> partitions) {
             this(func, ListFact.<PartitionToken>EMPTY(), orders, partitions);
         }
 
         public String getSource(ImMap<PartitionToken, String> sources, SQLSyntax syntax) {
             return "(" + func + "(" + exprs.map(sources).toString(",") + ") OVER ("+BaseUtils.toString(" ",
                     BaseUtils.clause("PARTITION BY ",partitions.map(sources).toString(",")) +
-                    BaseUtils.clause("ORDER BY ", Query.stringOrder(orders.map(sources), SetFact.<String>EMPTY(), syntax))) + ")" + ")";
+                    BaseUtils.clause("ORDER BY ", Query.stringOrder(orders.map(sources), syntax))) + ")" + ")";
         }
     }
 

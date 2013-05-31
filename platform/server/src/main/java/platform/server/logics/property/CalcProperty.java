@@ -999,4 +999,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getClassValueWhere(ClassType.ASIS).isFalse();
     }
 
+    @IdentityLazy
+    public boolean allowHintIncrement() {
+        assert isFull();
+
+        if(!isEmpty())
+            for(ValueClass usedClass : getInterfaceClasses(ClassType.ASSERTFULL).values().toSet().merge(getValueClass()))
+                if(usedClass instanceof OrderClass)
+                    return false;
+
+        return false;
+    }
 }

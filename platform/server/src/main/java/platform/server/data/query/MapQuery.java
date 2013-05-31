@@ -53,6 +53,10 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         return new CompiledQuery<K,V>(query.compile(syntax, orders.map(mapProps), top, subcontext, recursive),mapKeys,mapProps,mapValues);
     }
 
+    public ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders) {
+        return query.getCompileOrders(orders.map(mapProps)).map(mapProps.reverse());
+    }
+
     public <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps) {
         // нужно перемаппить ClassWhere, здесь по большому счету не нужен mapColValues потому как assert то классы совпадают
         return (ClassWhere<B>) new ClassWhere<Object>(query.getClassWhere(((ImSet<V>)classProps).mapRev(mapProps)), MapFact.addRevExcl(mapProps, mapKeys).reverse());

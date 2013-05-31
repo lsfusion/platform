@@ -133,4 +133,8 @@ public class ObjectType extends AbstractType<Integer> {
     public String getSID() {
         return "ObjectType";
     }
+
+    public Object getInfiniteValue(boolean min) {
+        return idClass.getInfiniteValue(min);
+    }
 }

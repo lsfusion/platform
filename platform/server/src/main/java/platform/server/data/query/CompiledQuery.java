@@ -17,6 +17,7 @@ import platform.server.SystemProperties;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
 import platform.server.classes.IntegralClass;
+import platform.server.classes.OrderClass;
 import platform.server.classes.StringClass;
 import platform.server.data.*;
 import platform.server.data.expr.*;
@@ -134,24 +135,23 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
     }
 
-    // многие субд сами не могут определить
-    public static <V> ImOrderMap<V, Boolean> getOrdersNotNull(ImOrderMap<V, Boolean> orders, ImMap<V, Expr> orderExprs, Result<ImSet<V>> resultOrders) {
-        MOrderFilterMap<V, Boolean> mResult = MapFact.mOrderFilter(orders);
-        MOrderFilterSet<V> mOrdersNotNull = SetFact.mOrderFilter(orders);
+    // многие субд сами не могут определить некоторые вещи, приходится им помогать
+    public static <P> ImOrderMap<P, CompileOrder> getPackedCompileOrders(ImMap<P, Expr> orderExprs, Where where, ImOrderMap<P, Boolean> orders) {
+        MOrderExclMap<P, CompileOrder> mResult = MapFact.mOrderExclMapMax(orders.size());
         MAddSet<KeyExpr> currentKeys = SetFact.mAddSet();
         for(int i=0,size=orders.size();i<size;i++) {
-             V order = orders.getKey(i);
-             Expr orderExpr = orderExprs.get(order);
-             if(!currentKeys.containsAll(BaseUtils.<ImSet<KeyExpr>>immutableCast(orderExpr.getOuterKeys()))) {
-                 if(orderExpr instanceof KeyExpr) {
-                     mOrdersNotNull.keep(order);
-                     currentKeys.add((KeyExpr)orderExpr);
-                 }
-                 mResult.keep(order, orders.getValue(i));
-             }
-         }
-        resultOrders.set(SetFact.imOrderFilter(mOrdersNotNull, orders).getSet());
-        return MapFact.imOrderFilter(mResult, orders);
+            P order = orders.getKey(i);
+            Expr orderExpr = orderExprs.get(order);
+            if(!currentKeys.containsAll(BaseUtils.<ImSet<KeyExpr>>immutableCast(orderExpr.getOuterKeys()))) {
+                boolean notNull = false;
+                if(orderExpr instanceof KeyExpr) {
+                    notNull = true;
+                    currentKeys.add((KeyExpr)orderExpr);
+                }
+                mResult.exclAdd(order, new CompileOrder(orders.getValue(i), where.isFalse() ? NullReader.instance : orderExpr.getReader(where), notNull));
+            }
+        }
+        return mResult.immutableOrder();
     }
 
     public CompiledQuery(final Query<K,V> query, SQLSyntax syntax, ImOrderMap<V,Boolean> orders, int top, SubQueryContext subcontext, boolean noExclusive) {
@@ -176,6 +176,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
         });
 
+        ImOrderMap<V, CompileOrder> compileOrders = query.getPackedCompileOrders(orders);
+
         boolean useFJ = syntax.useFJ();
         noExclusive = noExclusive || Settings.get().isNoExclusiveCompile();
         Result<Boolean> unionAll = new Result<Boolean>();
@@ -186,7 +188,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             ImMap<V, Type> castTypes = BaseUtils.immutableCast(
                     propertyReaders.filterFnValues(new SFunctionSet<ClassReader>() {
                         public boolean contains(ClassReader element) {
-                            return element instanceof Type;
+                            return element instanceof Type && !(element instanceof OrderClass); // так как для упорядочивания по выражению, оно должно быть в запросе - опасный хак, но собственно ORDER оператор и есть один большой хак
                         }
                     }));
 
@@ -204,9 +206,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             propertySelect = propertyNames.mapValues(addAlias);
             from = "(" + fromString + ") "+alias;
             whereSelect = SetFact.EMPTY();
-            select = syntax.getUnionOrder(fromString, Query.stringOrder(resultPropertyOrder.result, query.mapKeys.size(), orders, SetFact.<V>EMPTY(), syntax), top ==0?"":String.valueOf(top));
+            String topString = top == 0 ? "" : String.valueOf(top);
+            Result<Boolean> needSources = new Result<Boolean>();
+            String orderBy = Query.stringOrder(resultPropertyOrder.result, query.mapKeys.size(), compileOrders, propertySelect, syntax, needSources);
+            if(needSources.result)
+                select = syntax.getSelect(from, "*",  "", orderBy, "", "", topString);
+            else
+                select = syntax.getUnionOrder(fromString, orderBy, topString);
         } else {
-            ImSet<V> ordersNotNull = SetFact.<V>EMPTY();
             if(queryJoins.size()==0) { // "пустой" запрос
                 keySelect = query.mapKeys.mapValues(new GetStaticValue<String>() {
                     public String getMapValue() {
@@ -224,8 +231,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(queryJoins.size()==1) { // "простой" запрос
                     Result<ImCol<String>> resultWhere = new Result<ImCol<String>>(); Result<ImSet<V>> resultOrders = new Result<ImSet<V>>();
                     from = fillInnerSelect(query.mapKeys, queryJoins.single(), query.properties, resultKey, resultProperty, resultWhere, params, syntax, subcontext, env);
-                    orders = getOrdersNotNull(orders, query.properties, resultOrders);
-                    whereSelect = resultWhere.result; ordersNotNull = resultOrders.result;
+                    whereSelect = resultWhere.result;
                 } else { // "сложный" запрос с full join'ами
                     from = fillFullSelect(query.mapKeys, queryJoins, query.where, query.properties, orders, top, resultKey, resultProperty, params, syntax, subcontext, env);
                     whereSelect = SetFact.EMPTY();
@@ -233,7 +239,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 keySelect = resultKey.result; propertySelect = resultProperty.result;
             }
 
-            select = getSelect(from, keySelect, keyNames, resultKeyOrder, propertySelect, propertyNames, resultPropertyOrder, whereSelect, syntax, orders, ordersNotNull, top, false);
+            select = getSelect(from, keySelect, keyNames, resultKeyOrder, propertySelect, propertyNames, resultPropertyOrder, whereSelect, syntax, compileOrders, top, false);
         }
 
         keyOrder = resultKeyOrder.result; propertyOrder = resultPropertyOrder.result;
@@ -604,13 +610,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 final Result<ImCol<String>> whereSelect = new Result<ImCol<String>>(); // проверить crossJoin
                 final Result<ImMap<Expr,String>> fromPropertySelect = new Result<ImMap<Expr, String>>();
-                String fromSelect = new Query<KeyExpr,Expr>(keys.toRevMap(), queryExprs.toMap(), groupWhere)
-                    .compile(syntax, subcontext).fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, whereSelect, params, env);
+                final Query<KeyExpr, Expr> query = new Query<KeyExpr, Expr>(keys.toRevMap(), queryExprs.toMap(), groupWhere);
+                String fromSelect = query.compile(syntax, subcontext).fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, whereSelect, params, env);
 
                 ImMap<String, String> keySelect = group.join(fromPropertySelect.result);
                 ImMap<String, String> propertySelect = queries.mapValues(new GetValue<String, GroupExpr.Query>() {
                     public String getMapValue(GroupExpr.Query value) {
-                        return value.getSource(fromPropertySelect.result, syntax, env, exprs.get(value).getType());
+                        return value.getSource(fromPropertySelect.result, query, syntax, env, exprs.get(value).getType());
                     }});
 
                 ImCol<String> havingSelect;
@@ -669,8 +675,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Result<ImMap<String,String>> keySelect = new Result<ImMap<String, String>>();
                 Result<ImMap<Expr,String>> fromPropertySelect = new Result<ImMap<Expr, String>>();
                 Result<ImCol<String>> whereSelect = new Result<ImCol<String>>(); // проверить crossJoin
-                String fromSelect = new Query<String,Expr>(group,queryExprs.toMap(),fullWhere)
-                    .compile(syntax, subcontext).fillSelect(keySelect, fromPropertySelect, whereSelect, params, env);
+                Query<String, Expr> subQuery = new Query<String, Expr>(group, queryExprs.toMap(), fullWhere);
+                String fromSelect = subQuery.compile(syntax, subcontext).fillSelect(keySelect, fromPropertySelect, whereSelect, params, env);
 
                 // обработка multi-level order'ов
                 MExclMap<PartitionToken, String> mTokens = MapFact.<PartitionToken, String>mExclMap();
@@ -679,7 +685,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     PartitionExpr.Query query = queries.getValue(i);
                     PartitionCalc calc = query.type.createAggr(mTokens,
                             query.exprs.map(fromPropertySelect.result),
-                            query.orders.map(fromPropertySelect.result),
+                            subQuery.getCompileOrders(query.orders).map(fromPropertySelect.result),
                             query.partitions.map(fromPropertySelect.result).toSet());
                     mResultNames.mapValue(i, calc);
                 }
@@ -804,7 +810,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         public String getMapValue(String key, String value) {
                             Type type = columnTypes.get(key);
                             return type.getCast((type instanceof ArrayClass ? GroupType.AGGAR_SETADD : GroupType.SUM).getSource(
-                                    ListFact.<String>singleton(value), MapFact.<String, Boolean>EMPTYORDER(), SetFact.<String>EMPTY(), type, syntax, env), syntax, env);
+                                    ListFact.<String>singleton(value), MapFact.<String, CompileOrder>EMPTYORDER(), type, syntax, env), syntax, env);
                         }});
                     return "(" + getGroupSelect(fromSelect, orderCastKeySelect, orderGroupPropertySelect, whereSelect.result, SetFact.<String>EMPTY()) + ")";
                 } else
@@ -877,7 +883,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         }});
                     propertySelect = queries.mapValues(new GetKeyValue<String, String, RecursiveExpr.Query>() {
                         public String getMapValue(String key, RecursiveExpr.Query value) {
-                            return GroupType.SUM.getSource(ListFact.singleton(key), MapFact.<String, Boolean>EMPTYORDER(), SetFact.<String>EMPTY(), value.getType(), syntax, env);
+                            return GroupType.SUM.getSource(ListFact.singleton(key), MapFact.<String, CompileOrder>EMPTYORDER(), value.getType(), syntax, env);
                         }});
                 }
 
@@ -1098,14 +1104,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         if(castTypes!=null)
             andPropertySelect.set(castProperties(andPropertySelect.result, castTypes, syntax, env));
 
-        Result<ImSet<V>> ordersNotNull = new Result<ImSet<V>>();
-        return getSelect(andFrom, andKeySelect.result, keyNames, keyOrder, andPropertySelect.result, propertyNames, propertyOrder, andWhereSelect.result, syntax, CompiledQuery.getOrdersNotNull(orders, compiledProps, ordersNotNull), ordersNotNull.result, top, noInline);
+        return getSelect(andFrom, andKeySelect.result, keyNames, keyOrder, andPropertySelect.result, propertyNames, propertyOrder, andWhereSelect.result, syntax, getPackedCompileOrders(compiledProps, innerSelect.getFullWhere(), orders), top, noInline);
     }
 
-    private static <K,V> String getSelect(String from, ImMap<K, String> keySelect, ImRevMap<K, String> keyNames, Result<ImOrderSet<K>> keyOrder, ImMap<V, String> propertySelect, ImRevMap<V, String> propertyNames, Result<ImOrderSet<V>> propertyOrder, ImCol<String> whereSelect, SQLSyntax syntax, ImOrderMap<V, Boolean> orders, ImSet<V> ordersNotNull, int top, boolean noInline) {
+    private static <K,V> String getSelect(String from, ImMap<K, String> keySelect, ImRevMap<K, String> keyNames, Result<ImOrderSet<K>> keyOrder, ImMap<V, String> propertySelect, ImRevMap<V, String> propertyNames, Result<ImOrderSet<V>> propertyOrder, ImCol<String> whereSelect, SQLSyntax syntax, ImOrderMap<V, CompileOrder> orders, int top, boolean noInline) {
         return syntax.getSelect(from, SQLSession.stringExpr(SQLSession.mapNames(keySelect, keyNames, keyOrder),
                 SQLSession.mapNames(propertySelect, propertyNames, propertyOrder)) + (noInline && syntax.inlineTrouble()?",random()":""),
-                whereSelect.toString(" AND "), Query.stringOrder(propertyOrder.result, keySelect.size(), orders, ordersNotNull, syntax),"", "", top==0?"":String.valueOf(top));
+                whereSelect.toString(" AND "), Query.stringOrder(propertyOrder.result, keySelect.size(), orders, propertySelect, syntax, new Result<Boolean>()),
+                "", "", top==0?"":String.valueOf(top));
     }
 
     private static <K,AV> String fillSingleSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<AV, Expr> compiledProps, Result<ImMap<K, String>> resultKey, Result<ImMap<AV, String>> resultProperty, ImRevMap<ParseValue, String> params, SQLSyntax syntax, SubQueryContext subcontext, ExecuteEnvironment env) {

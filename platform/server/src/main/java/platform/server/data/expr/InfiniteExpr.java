@@ -32,7 +32,7 @@ public class InfiniteExpr extends StaticExpr<DataClass> {
     }
 
     public String getSource(CompileSource compile) {
-        return objectClass.getString(objectClass.getInfiniteValue(), compile.syntax);
+        return objectClass.getString(objectClass.getInfiniteValue(false), compile.syntax);
     }
 
     public boolean twins(TwinImmutableObject o) {

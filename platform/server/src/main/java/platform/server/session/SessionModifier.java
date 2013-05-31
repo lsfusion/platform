@@ -19,6 +19,7 @@ import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.ClassType;
 import platform.server.logics.property.OverrideSessionModifier;
 import platform.server.logics.property.PropertyInterface;
 
@@ -155,6 +156,9 @@ public abstract class SessionModifier implements Modifier {
             return false;
 
         if (readProperty != null && readProperty.equals(property))
+            return false;
+
+        if (!property.allowHintIncrement())
             return false;
 
         return true;

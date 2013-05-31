@@ -18,17 +18,13 @@ import platform.interop.form.PropertyReadType;
 import platform.server.Message;
 import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
-import platform.server.classes.BaseClass;
-import platform.server.classes.ByteArrayClass;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.ValueClass;
+import platform.server.classes.*;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
-import platform.server.data.expr.ConcatenateExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.FormulaUnionExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.formula.CastFormulaImpl;
 import platform.server.data.expr.formula.FormulaExpr;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
@@ -521,7 +517,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     
     @Message("message.form.update.group.keys")
     @ThisMessage
-    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, IncrementChangeProps environmentIncrement, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<FunctionSet<CalcProperty>> changedProps) throws SQLException {
+    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<FunctionSet<CalcProperty>> changedProps) throws SQLException {
         if (refresh || (updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.exclAdd(this, curClassView);
         }
@@ -635,13 +631,21 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 }
 
         if(updateOrders && orderProperty!=null) { // изменились порядки, надо обновить свойства созданные при помощи соответствующих операторов форм
-            ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+            final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
             PropertyChange<ClassPropertyInterface> change;
             if(orders.isEmpty())
                 change = orderProperty.property.getNoChange();
-            else
-                change = new PropertyChange<ClassPropertyInterface>(orderProperty.mapping.join(mapKeys),
-                        FormulaExpr.create(new CastFormulaImpl(GroupObjectProp.ORDER.getValueClass()), ListFact.singleton(orders.getKey(0).getExpr(mapKeys, modifier))), getClassWhere(mapKeys, modifier));
+            else {
+                ImOrderMap<Expr, Boolean> orderExprs = orders.mapOrderKeys(new GetValue<Expr, OrderInstance>() {
+                    public Expr getMapValue(OrderInstance value) {
+                        return value.getExpr(mapKeys, modifier);
+                    }});
+                OrderClass orderClass = OrderClass.get(orders.keyOrderSet().mapListValues(new GetValue<Type, OrderInstance>() {
+                    public Type getMapValue(OrderInstance value) {
+                        return value.getType();
+                    }}), orderExprs.valuesList());
+                change = new PropertyChange<ClassPropertyInterface>(orderProperty.mapping.join(mapKeys), FormulaUnionExpr.create(orderClass, orderExprs.keyOrderSet()));
+            }
             environmentIncrement.add(orderProperty.property, change);
 
             changedProps.set(BaseUtils.merge(changedProps.result, CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)orderProperty.property))));

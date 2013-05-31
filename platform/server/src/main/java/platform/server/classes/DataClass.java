@@ -206,7 +206,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return sidToClass.get(sid);        
     }
 
-    public Object getInfiniteValue() {
+    public Object getInfiniteValue(boolean min) {
         throw new RuntimeException("not supported");
     }
 

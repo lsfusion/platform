@@ -6,6 +6,7 @@ import platform.base.Result;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MOrderExclMap;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.*;
@@ -13,6 +14,7 @@ import platform.server.Message;
 import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
+import platform.server.classes.OrderClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
 import platform.server.data.Value;
@@ -184,22 +186,41 @@ public class Query<K,V> extends IQuery<K,V> {
         return join;
     }
 
+    public static <K> String stringOrder(final ImOrderSet<K> sourcesOrder, final int offset, ImOrderMap<K, CompileOrder> orders, final ImMap<K, String> sources, SQLSyntax syntax, final Result<Boolean> needSources) {
+        needSources.set(false);
 
-    public static <K> String stringOrder(final ImOrderSet<K> sources, final int offset, ImOrderMap<K, Boolean> orders, ImSet<K> ordersNotNull, SQLSyntax syntax) {
-        ImRevMap<K, String> orderNumbers = orders.keys().mapRevValues(new GetValue<String, K>() {
-            public String getMapValue(K value) {
-                return ((Integer) (sources.indexOf(value) + offset + 1)).toString();
+        ImRevMap<K, String> orderNumbers = orders.getMap().mapRevValues(new GetKeyValue<String, K, CompileOrder>() {
+            public String getMapValue(K key, CompileOrder value) {
+                if (value.reader instanceof OrderClass) {
+                    needSources.set(true);
+                    return sources.get(key);
+                } else
+                    return ((Integer) (sourcesOrder.indexOf(key) + offset + 1)).toString();
             }});
-        ImOrderMap<String, Boolean> orderSources = orders.map(orderNumbers);
-        ImSet<String> sourcesNotNull = ordersNotNull.mapRev(orderNumbers);
-        return stringOrder(orderSources, sourcesNotNull, syntax);
+        ImOrderMap<String, CompileOrder> orderSources = orders.map(orderNumbers);
+        return stringOrder(orderSources, syntax);
     }
 
-    public static String stringOrder(ImOrderMap<String,Boolean> orders, ImSet<String> notNull, SQLSyntax syntax) {
-        String orderString = "";
+    private static ImOrderMap<String, CompileOrder> compileOrders(ImOrderMap<String,CompileOrder> orders) {
+        MOrderExclMap<String, CompileOrder> mResult = MapFact.mOrderExclMap();
         for(int i=0,size=orders.size();i<size;i++) {
             String key = orders.getKey(i);
-            orderString = (orderString.length()==0?"":orderString+",") + key + " " + syntax.getOrderDirection(orders.getValue(i), notNull.contains(key));
+            CompileOrder compileOrder = orders.getValue(i);
+            ImOrderMap<String, CompileOrder> compiledOrder;
+            if(compileOrder.reader instanceof OrderClass && (compiledOrder = ((OrderClass)compileOrder.reader).getCompileOrders(key, compileOrder)) != null)
+                mResult.exclAddAll(compiledOrder);
+            else
+                mResult.exclAdd(key, compileOrder);
+        }
+        return mResult.immutableOrder();
+    }
+    public static String stringOrder(ImOrderMap<String,CompileOrder> orders, SQLSyntax syntax) {
+        orders = compileOrders(orders);
+
+        String orderString = "";
+        for(int i=0,size=orders.size();i<size;i++) {
+            CompileOrder compileOrder = orders.getValue(i);
+            orderString = (orderString.length()==0?"":orderString+",") + orders.getKey(i) + " " + syntax.getOrderDirection(compileOrder.desc, compileOrder.notNull);
         }
         return orderString;
     }
@@ -291,6 +312,16 @@ public class Query<K,V> extends IQuery<K,V> {
     @Message("message.core.query.compile")
     public CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer selectTop, SubQueryContext subcontext, boolean noExclusive) {
         return new CompiledQuery<K,V>(this, syntax, orders, selectTop, subcontext, noExclusive);
+    }
+
+    @SynchronizedLazy
+    @Pack
+    public ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders) {
+        return getPackedCompileOrders(orders);
+    }
+
+    public ImOrderMap<V, CompileOrder> getPackedCompileOrders(ImOrderMap<V, Boolean> orders) {
+        return CompiledQuery.getPackedCompileOrders(properties, where, orders);
     }
 
     public ImCol<GroupJoinsWhere> getWhereJoins(boolean tryExclusive, Result<Boolean> isExclusive, ImOrderSet<Expr> orderTop) {

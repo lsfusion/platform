@@ -73,7 +73,7 @@ public class DoubleClass extends IntegralClass<Double> {
     }
 
     @Override
-    public Number getInfiniteValue() {
-        return Double.POSITIVE_INFINITY;
+    public Number getInfiniteValue(boolean min) {
+        return min ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
     }
 }
