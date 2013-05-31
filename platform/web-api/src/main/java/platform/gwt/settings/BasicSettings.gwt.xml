@@ -22,6 +22,9 @@
     <!--<set-property name="user.agent" value="gecko1_8" />-->
     <!--<set-property name="locale" value="ru" />-->
 
+    <!-- выключить обфускацию стилей -->
+    <!--<set-configuration-property name="CssResource.style" value="pretty" />-->
+
     <!-- For production most teams prefer to set the default log level to `OFF` -->
      <inherits name="com.allen_sauer.gwt.log.gwt-log-OFF" />
 
