@@ -81,6 +81,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             }
 
             @Override
+            protected void ordersCleared(GGroupObject groupObject) {
+                form.clearPropertyOrders(groupObject);
+            }
+
+            @Override
             protected GPropertyDraw getColumnKey(int column) {
                 return tree.getColumnProperty(column);
             }
@@ -464,6 +469,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return true;
         }
         return false;
+    }
+
+    public void clearOrders(GGroupObject groupObject) {
+        sortableHeaderManager.clearOrders(groupObject);
     }
 
     public class TreeTableKeyboardSelectionHandler extends GridPropertyTableKeyboardSelectionHandler<GTreeGridRecord> {

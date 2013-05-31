@@ -3,12 +3,10 @@ package platform.client.descriptor.view;
 import platform.base.context.IncrementView;
 import platform.base.context.Lookup;
 import platform.client.ClientResourceBundle;
-import platform.client.Main;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorElement;
 import platform.client.navigator.NavigatorTreeNode;
-import platform.client.remote.proxy.RemoteFormProxy;
 import platform.client.tree.ClientTreeNode;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
@@ -16,11 +14,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
-import java.util.List;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NavigatorDescriptorView extends JPanel {
     private final RemoteNavigatorInterface remoteNavigator;
@@ -33,6 +30,7 @@ public class NavigatorDescriptorView extends JPanel {
     private final Map<String, FormDescriptor> changedForms = new HashMap<String, FormDescriptor>();
 
     private final JButton previewBtn;
+    //private final JButton generateCodeBtn;
 
     private final IncrementView captionUpdater = new IncrementView() {
         public void update(Object updateObject, String updateField) {
@@ -92,6 +90,16 @@ public class NavigatorDescriptorView extends JPanel {
                 dlg.setVisible(true);
             }
         });
+
+        /*generateCodeBtn = new JButton(ClientResourceBundle.getString("descriptor.view.generate.code"));
+        generateCodeBtn.setEnabled(false);
+        generateCodeBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                PreviewDialog dlg = new PreviewDialog(clientNavigator, formView.getForm());
+                dlg.setBounds(SwingUtilities.windowForComponent(NavigatorDescriptorView.this).getBounds());
+                dlg.setVisible(true);
+            }
+        });*/
 
         JPanel commandPanel = new JPanel();
         commandPanel.setLayout(new BoxLayout(commandPanel, BoxLayout.X_AXIS));

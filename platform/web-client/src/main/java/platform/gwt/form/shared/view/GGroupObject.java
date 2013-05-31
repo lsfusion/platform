@@ -18,7 +18,10 @@ public class GGroupObject implements Serializable {
     public GShowType showType;
     public GToolbar toolbar;
     public GFilter filter;
+
     public int ID;
+    public String sID;
+
     public List<String> banClassView;
 
     public boolean isRecursive;
@@ -29,6 +32,8 @@ public class GGroupObject implements Serializable {
     public GRowForegroundReader rowForegroundReader;
 
     public GPropertyDraw filterProperty;
+
+    public boolean hasUserPreferences;
 
     public String getCaption() {
         if (objects.isEmpty()) {
@@ -44,6 +49,13 @@ public class GGroupObject implements Serializable {
             result += object.getCaption();
         }
         return result;
+    }
+
+    public String getSID() {
+        if (sID != null)
+            return sID;
+        else
+            return "obj" + ID;
     }
 
     public boolean mayHaveChildren() {

@@ -99,6 +99,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private LoadingBlocker blocker = new LoadingBlocker(this);
 
+    private static final Comparator<GPropertyDraw> COMPARATOR_USERSORT = new Comparator<GPropertyDraw>() {
+        @Override
+        public int compare(GPropertyDraw c1, GPropertyDraw c2) {
+            if (c1.ascendingSortUser != null && c2.ascendingSortUser != null) {
+                return c1.sortUser - c2.sortUser;
+            } else {
+                return 0;
+            }
+        }
+    };
+
     public GFormController(FormsController formsController, GForm gForm, final boolean isDialog) {
         actionDispatcher = new GFormActionDispatcher(this);
         simpleDispatcher = new GSimpleChangePropertyDispatcher(this);
@@ -121,6 +132,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         addStyleName("formController");
 
         add(formLayout);
+
+        initializeUserPreferences();
 
         initializeControllers();
 
@@ -234,6 +247,37 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
+    private void initializeUserPreferences() {
+        if (form.userPreferences != null) {
+            for (GPropertyDraw property : getPropertyDraws()) {
+                for (GGroupObjectUserPreferences groupObjectUP : form.userPreferences.getGroupObjectUserPreferencesList()) {
+                    GColumnUserPreferences columnUP = groupObjectUP.getColumnUserPreferences().get(property.sID);
+                    if (columnUP != null) {
+                        property.hideUser = columnUP.isNeedToHide();
+                        if (columnUP.getWidthUser() != null) {
+                            property.widthUser = columnUP.getWidthUser();
+                        }
+                        if (columnUP.getOrderUser() != null) {
+                            property.orderUser = columnUP.getOrderUser();
+                        }
+                        if (columnUP.getSortUser() != null) {
+                            property.sortUser = columnUP.getSortUser();
+                            property.ascendingSortUser = columnUP.getAscendingSortUser();
+                        }
+                    }
+                }
+            }
+            for (GGroupObjectUserPreferences groupObjectUP : form.userPreferences.getGroupObjectUserPreferencesList()) {
+                GGroupObject groupObject = form.getGroupObject(groupObjectUP.getGroupObjectSID());
+                if (groupObject != null) {
+                    groupObject.hasUserPreferences = groupObjectUP.hasUserPreferences();
+                }
+
+            }
+        }
+        form.userPreferences = null;
+    }
+
     private void initializeControllers() {
         for (GTreeGroup treeGroup : form.treeGroups) {
             GTreeGroupController treeController = new GTreeGroupController(treeGroup, this, form);
@@ -260,6 +304,27 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private void initializeDefaultOrders() {
         applyOrders(form.defaultOrders);
+
+        LinkedHashMap<GPropertyDraw, Boolean> userOrders = new LinkedHashMap<GPropertyDraw, Boolean>();
+        for (GGroupObjectController controller : controllers.values()) {
+            boolean userPreferencesEmpty = true;
+            boolean hasUserPreferences = controller.groupObject != null && controller.groupObject.hasUserPreferences;
+            if (hasUserPreferences) {
+                List<GPropertyDraw> propertyDrawList = controller.getPropertyDraws();
+                Collections.sort(propertyDrawList, COMPARATOR_USERSORT);
+                for (GPropertyDraw property : controller.getPropertyDraws()) {
+                    if (property.sortUser != null && property.ascendingSortUser != null) {
+                        userOrders.put(property, property.ascendingSortUser);
+                        userPreferencesEmpty = false;
+                    }
+                }
+            }
+            if (userPreferencesEmpty && hasUserPreferences) {
+                controller.clearOrders(controller.groupObject);
+            }
+        }
+        applyOrders(userOrders);
+
         defaultOrdersInitialized = true;
     }
 
@@ -646,6 +711,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
+    public void clearPropertyOrders(GGroupObject groupObject) {
+        if (defaultOrdersInitialized) {
+            syncDispatch(new ClearPropertyOrders(groupObject.ID), new ServerResponseCallback());
+        }
+    }
+
     public void expandGroupObject(GGroupObject group, GGroupObjectValue value) {
         syncDispatch(new ExpandGroupObject(group.ID, value), new ServerResponseCallback());
     }
@@ -770,6 +841,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void openReportWindow(String fileName) {
         String reportUrl = GwtClientUtils.getWebAppBaseURL() + "downloadFile?name=" + fileName;
         Window.open(reportUrl, "Report", "");
+    }
+
+    public void saveUserPreferences(GFormUserPreferences userPreferences, boolean forAllUsers, ErrorHandlingCallback<VoidResult> callback) {
+        syncDispatch(new SaveUserPreferencesAction(userPreferences, forAllUsers), callback);
     }
 
     public List<GPropertyDraw> getPropertyDraws() {

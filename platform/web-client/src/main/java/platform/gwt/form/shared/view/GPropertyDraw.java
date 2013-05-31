@@ -69,6 +69,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public boolean panelLabelAbove;
 
+    public Boolean hideUser;
+    public Integer widthUser;
+    public Integer orderUser;
+    public Integer sortUser;
+    public Boolean ascendingSortUser;
+
     private transient GridCellRenderer cellRenderer;
 
     public static class AddRemove implements Serializable {
@@ -214,7 +220,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public String getMinimumHeight() {
-        return getMinimumPixelWidth() + "px";
+        return getMinimumPixelHeight() + "px";
     }
 
     public int getMinimumPixelHeight() {

@@ -8,6 +8,7 @@ import platform.gwt.form.client.form.ui.container.GAbstractFormContainer;
 import platform.gwt.form.client.form.ui.toolbar.GCalculateSumButton;
 import platform.gwt.form.client.form.ui.toolbar.GCountQuantityButton;
 import platform.gwt.form.client.form.ui.toolbar.GToolbarButton;
+import platform.gwt.form.client.form.ui.toolbar.preferences.GUserPreferencesButton;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -112,7 +113,9 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
             addToToolbar(sumButton);
         }
 
-        addToToolbar(GwtClientUtils.createHorizontalStrut(5));
+        if (groupObject.toolbar.showPrintGroupButton || groupObject.toolbar.showPrintGroupXlsButton) {
+            addToToolbar(GwtClientUtils.createHorizontalStrut(5));
+        }
 
         if (groupObject.toolbar.showPrintGroupButton) {
             addToToolbar(new GToolbarButton("reportbw.png", "Распечатать таблицу") {
@@ -136,6 +139,22 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
                         @Override
                         public void onClick(ClickEvent event) {
                             formController.runSingleGroupReport(groupObject.ID, true);
+                        }
+                    });
+                }
+            });
+        }
+
+        if (groupObject.toolbar.showHideSettings) {
+            addToToolbar(GwtClientUtils.createHorizontalStrut(5));
+            addToToolbar(new GUserPreferencesButton(groupObject.hasUserPreferences) {
+                @Override
+                public void addListener() {
+                    addClickHandler(new ClickHandler() {
+                        @Override
+                        public void onClick(ClickEvent event) {
+                            dialog = new UserPreferencesDialog(grid.getTable(), formController);
+                            dialog.showDialog();
                         }
                     });
                 }
@@ -373,6 +392,13 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     @Override
     public void changeOrder(GPropertyDraw property, GOrder modiType) {
         grid.changeOrder(property, modiType);
+    }
+
+    @Override
+    public void clearOrders(GGroupObject groupObject) {
+        if (grid != null) {
+            grid.clearGridOrders(groupObject);
+        }
     }
 
     @Override

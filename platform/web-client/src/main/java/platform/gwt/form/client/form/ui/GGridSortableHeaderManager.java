@@ -1,14 +1,15 @@
 package platform.gwt.form.client.form.ui;
 
+import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.GOrder;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class GGridSortableHeaderManager<T> {
     private GGridPropertyTable table;
     private boolean ignoreFirstColumn;
-    private Map<T, Boolean> orderDirections = new HashMap<T, Boolean>();
+    private LinkedHashMap<T, Boolean> orderDirections = new LinkedHashMap<T, Boolean>();
 
     public GGridSortableHeaderManager(GGridPropertyTable table, boolean ignoreFirstColumn) {
         this.table = table;
@@ -67,7 +68,18 @@ public abstract class GGridSortableHeaderManager<T> {
         orderChanged(columnKey, modiType);
     }
 
+    public void clearOrders(GGroupObject groupObject) {
+        orderDirections.clear();
+        ordersCleared(groupObject);
+    }
+
+    public Map<T, Boolean> getOrderDirections() {
+        return orderDirections;
+    }
+
     protected abstract void orderChanged(T columnKey, GOrder modiType);
+
+    protected abstract void ordersCleared(GGroupObject groupObject);
 
     protected abstract T getColumnKey(int column);
 }

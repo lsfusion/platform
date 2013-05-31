@@ -387,6 +387,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GGroupObject groupObject = cacheInstance(clientGroupObject, new GGroupObject());
 
         groupObject.ID = clientGroupObject.ID;
+        groupObject.sID = clientGroupObject.getSID();
+
         for (ClientObject clientObject : clientGroupObject.objects) {
             GObject object = convertOrCast(clientObject);
             groupObject.objects.add(object);
@@ -412,6 +414,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
 
         groupObject.filterProperty = convertOrCast(clientGroupObject.filterProperty);
+
+        groupObject.hasUserPreferences = clientGroupObject.hasUserPreferences;
 
         return groupObject;
     }

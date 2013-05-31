@@ -62,6 +62,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private int pageSize = 50;
 
+    private static final Comparator<GPropertyDraw> COLUMN_ORDER_COMPARATOR = new Comparator<GPropertyDraw>() {
+        public int compare(GPropertyDraw c1, GPropertyDraw c2) {
+            if (c1.orderUser == null || c2.orderUser == null)
+                return 0;
+            else
+                return c1.orderUser - c2.orderUser;
+        }
+    };
+
     public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController) {
         super(iform);
 
@@ -89,6 +98,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             @Override
             protected void orderChanged(Map<GPropertyDraw, GGroupObjectValue> columnKey, GOrder modiType) {
                 form.changePropertyOrder(columnKey.keySet().iterator().next(), columnKey.values().iterator().next(), modiType);
+            }
+
+            @Override
+            protected void ordersCleared(GGroupObject groupObject) {
+                form.clearPropertyOrders(groupObject);
             }
 
             @Override
@@ -199,20 +213,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 }
 
                 Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
-
                 for (GGroupObjectValue columnKey : propertyColumnKeys) {
-                    Object propCaption = null;
-                    if (propCaptions == null || (propCaption = propCaptions.get(columnKey)) != null) {
+                    Boolean needToHide = property.hideUser != null && property.hideUser;
+                    if ((propCaptions == null || propCaptions.get(columnKey) != null) && !needToHide) {
                         columnProperties.add(property);
                         columnKeysList.add(columnKey);
-                        if (propCaptions != null) {
-                            columnCaptions.add(property.getDynamicCaption(propCaption));
-                        } else {
-                            columnCaptions.add(property.getCaptionOrEmpty());
-                        }
                     }
                 }
             }
+
+            Collections.sort(columnProperties, COLUMN_ORDER_COMPARATOR);
 
             int rowHeight = 0;
             NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>>();
@@ -225,7 +235,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                     moveGridColumn(column, i);
                 } else {
                     column = insertGridColumn(i);
-                    setColumnWidth(column, property.getMinimumWidth());
                     // если колонка появилась через showif без обновления данных
                     if (!updatedProperties.containsKey(property)) {
                         updatedProperties.put(property, TRUE);
@@ -233,9 +242,22 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                     }
                 }
 
+                setColumnWidth(column, property.widthUser != null ? property.widthUser + "px" : property.getMinimumWidth());
+
+                String columnCaption = null;
+                Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
+                Object propCaption = null;
+                if (propCaptions == null || (propCaption = propCaptions.get(columnKey)) != null) {
+                    if (propCaptions != null) {
+                        columnCaption = property.getDynamicCaption(propCaption);
+                    } else {
+                        columnCaption = property.getCaptionOrEmpty();
+                    }
+                }
+
                 GGridPropertyTableHeader header = headers.get(i);
-                header.setCaption(columnCaptions.get(i));
-                header.setToolTip(property.getTooltipText(columnCaptions.get(i)));
+                header.setCaption(columnCaption);
+                header.setToolTip(property.getTooltipText(columnCaption));
 
                 putToColumnsMap(newColumnsMap, property, columnKey, column);
 
@@ -263,6 +285,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
             columnsUpdated = false;
         }
+    }
+
+    public void columnsPreferencesChanged() {
+        columnsUpdated = true;
+        dataUpdated = true;
+        updatedColumnsImpl();
+//        updateRowsImpl();
+        updateDataImpl();
     }
 
     public static void putToColumnsMap(NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column, GridColumn value) {
@@ -374,6 +404,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         return groupObjectController;
     }
 
+    public GGroupObject getGroupObject() {
+        return groupObject;
+    }
+
     public GPropertyDraw getCurrentProperty() {
         GPropertyDraw property = getSelectedProperty();
         if (property == null && getColumnCount() > 0) {
@@ -394,6 +428,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public void setCurrentKey(GGroupObjectValue currentKey) {
         Log.debug("Setting current object to: " + currentKey);
         this.currentKey = currentKey;
+    }
+
+    public ArrayList<GPropertyDraw> getProperties() {
+        return properties;
     }
 
     public void removeProperty(GPropertyDraw property) {
@@ -644,6 +682,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     }
 
     private int nextColumnID = 0;
+
+    public void clearGridOrders(GGroupObject groupObject) {
+        sortableHeaderManager.clearOrders(groupObject);
+    }
+
+    public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {
+        return sortableHeaderManager.getOrderDirections();
+    }
+
     private class GridColumn extends Column<GridDataRecord, Object> {
         private int columnID;
 

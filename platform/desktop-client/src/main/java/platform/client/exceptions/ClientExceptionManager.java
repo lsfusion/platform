@@ -62,7 +62,7 @@ public class ClientExceptionManager {
                 Main.clientExceptionLog(info, SystemUtils.getLocalHostName(), message, e.getClass().getName(), stackTrace);
             } catch (RemoteException ignored) {
             }
-            Log.printFailedMessage(ClientResourceBundle.getString("exceptions.error.on.executing") + message, stackTrace);
+            Log.printFailedMessage("Внутренняя ошибка сервера", stackTrace);
         }
     }
 

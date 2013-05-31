@@ -20,6 +20,7 @@ public interface GGroupObjectLogicsSupplier {
     boolean hasPanelProperty(GPropertyDraw property);
     GGroupObjectValue getCurrentKey();
     void changeOrder(GPropertyDraw property, GOrder modiType);
+    void clearOrders(GGroupObject groupObject);
     GGroupObject getSelectedGroupObject();
     List<GPropertyDraw> getGroupObjectProperties();
     List<GObject> getObjects();

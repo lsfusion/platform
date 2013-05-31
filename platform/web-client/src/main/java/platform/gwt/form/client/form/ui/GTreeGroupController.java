@@ -200,6 +200,11 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
     }
 
     @Override
+    public void clearOrders(GGroupObject groupObject) {
+        tree.clearOrders(groupObject);
+    }
+
+    @Override
     public GGroupObject getSelectedGroupObject() {
         GTreeGridRecord record = tree.getSelectedRecord();
         return record != null

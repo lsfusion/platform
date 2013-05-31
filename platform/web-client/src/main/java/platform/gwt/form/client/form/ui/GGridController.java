@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.CellPanel;
 import platform.gwt.base.client.ui.ResizableLayoutPanel;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.shared.view.GGrid;
+import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.GOrder;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -125,5 +126,9 @@ public class GGridController implements DefaultFocusReceiver {
             }
         });
         return true;
+    }
+
+    public void clearGridOrders(GGroupObject groupObject) {
+        table.clearGridOrders(groupObject);
     }
 }

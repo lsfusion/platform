@@ -25,10 +25,20 @@ public class GForm implements Serializable {
     private transient HashMap<Integer, GObject> idObjects;
 
     public GFormChangesDTO initialFormChanges;
+    public GFormUserPreferences userPreferences;
 
     public GGroupObject getGroupObject(int id) {
         for (GGroupObject groupObject : groupObjects) {
             if (groupObject.ID == id) {
+                return groupObject;
+            }
+        }
+        return null;
+    }
+
+    public GGroupObject getGroupObject(String sID) {
+        for (GGroupObject groupObject : groupObjects) {
+            if (groupObject.getSID().equals(sID)) {
                 return groupObject;
             }
         }

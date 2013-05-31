@@ -8,7 +8,6 @@ import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.cellview.client.Header;
-import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GPropertyDraw;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
@@ -235,19 +234,25 @@ public class GGridPropertyTableHeader extends Header<String> {
             double newLeftWidth = leftInitialWidth + dragColumnWidth;
 
             if (table.getTableDataScroller().getMaximumHorizontalScrollPosition() > 0) {
-                GPropertyDraw property = table.getProperty(new Cell.Context(table.getKeyboardSelectedRow(), table.getColumnIndex(leftColumn), table.getKeyboardSelectedRowValue()));
+                GPropertyDraw property = table.getProperty(leftColumn);
                 int propertyMinWidth = property != null ? property.getMinimumPixelWidth() : 0;
                 int propertyMaxWidth = property != null ? property.getMaximumPixelWidth() : Integer.MAX_VALUE;
                 if (property == null || (newLeftWidth >= propertyMinWidth && newLeftWidth <= propertyMaxWidth)) {
                     table.setColumnWidth(leftColumn, newLeftWidth + "px");
+                    property.widthUser = (int) newLeftWidth;
                     table.onResize();
                 }
             } else {
                 if (newLeftWidth > 0) {
                     table.setColumnWidth(leftColumn, newLeftWidth + "px");
+                    GPropertyDraw leftProperty = table.getProperty(leftColumn);
+                    leftProperty.widthUser = (int) newLeftWidth;
 
                     for (int i = 0; i < rightColumns.length; i++) {
-                        table.setColumnWidth(rightColumns[i], (rightInitialWidths[i] - (rightCoeffs[i] != 0.0 ? dragColumnWidth * rightCoeffs[i] : dragColumnWidth / rightCoeffs.length)) + "px");
+                        double newWidth = rightInitialWidths[i] - (rightCoeffs[i] != 0.0 ? dragColumnWidth * rightCoeffs[i] : dragColumnWidth / rightCoeffs.length);
+                        table.setColumnWidth(rightColumns[i], newWidth + "px");
+                        GPropertyDraw property = table.getProperty(rightColumns[i]);
+                        property.widthUser = (int) newWidth;
                     }
                     table.onResize();
                 }

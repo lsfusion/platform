@@ -199,7 +199,7 @@ textarea {
 .captionPanelContainer {
     border: 2px groove threedface;
     position: relative;
-    padding: 0.5em 0 0.1em 0;
+    padding: 0.5em 0.1em 0.1em 0;
     border-radius: 5px;
 }
 
@@ -369,6 +369,56 @@ textarea {
     word-wrap: break-word;
 }
 
+/* ------------ Loading blocker  ------------ */
+.dualListContainer {
+    border-spacing: 3px;
+}
+
+.listPositioner{
+    z-index: 1;
+    border-top: 1px dashed green;
+    margin-top: 1px;
+}
+
+.userPreferencesDualList .dragdrop-selected {
+    opacity: 1.0;
+}
+
+.userPreferencesDualList .draggableListBox {
+    /*border: 1px solid gray;*/
+    background-color: white;
+}
+
+.userPreferencesDualList .listBoxContainer {
+    outline: none;
+    background-color: white;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #d3d3d3;
+    padding: 2px 3px;
+}
+
+.dualListButtonsContainer {
+    margin: 0.4em;
+}
+
+.dualListButtonsContainer td {
+    padding: 0.2em 0.4em;
+}
+
+.dualListButtonsContainer button {
+    width: 4em;
+}
+
+.userPreferencesDualList .dragdrop-selected ,
+.userPreferencesDualList .dragdrop-movable-panel .draggableListBoxItem {
+    background-color: rgb(210, 222, 255);
+}
+
+.userPreferencesDualList .dragdrop-movable-panel {
+    opacity: 0.5;
+}
+
 /* ------------ Other components  ------------ */
 .formController {
     overflow: auto !important;
@@ -416,4 +466,8 @@ textarea {
 
 .nullValueString {
     color: #A7A7A7;
+}
+
+.floatRight {
+    float: right;
 }

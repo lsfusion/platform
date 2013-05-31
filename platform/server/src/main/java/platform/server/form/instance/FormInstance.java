@@ -344,32 +344,31 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     if (propertyDrawObjectValue instanceof DataObject) {
                         DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
                         Integer idShow = null;
-                        if (entry.getValue().isNeedToHide() != null) {
-                            idShow = entry.getValue().isNeedToHide() ? BL.reflectionLM.propertyDrawShowStatus.getObjectID("Hide") : BL.reflectionLM.propertyDrawShowStatus.getObjectID("Show");
+                        ColumnUserPreferences columnPreferences = entry.getValue();
+                        if (columnPreferences.isNeedToHide() != null) {
+                            idShow = columnPreferences.isNeedToHide() ? BL.reflectionLM.propertyDrawShowStatus.getObjectID("Hide") : BL.reflectionLM.propertyDrawShowStatus.getObjectID("Show");
+                        }
+                        if (forAllUsers) {
+                            BL.reflectionLM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject, userObject);
+                            BL.reflectionLM.columnWidthPropertyDraw.change(columnPreferences.getWidthUser(), dataSession, propertyDrawObject);
+                            BL.reflectionLM.columnOrderPropertyDraw.change(columnPreferences.getOrderUser(), dataSession, propertyDrawObject);
+                            BL.reflectionLM.columnSortPropertyDraw.change(columnPreferences.getSortUser(), dataSession, propertyDrawObject, userObject);
+                            BL.reflectionLM.columnAscendingSortPropertyDraw.change(columnPreferences.getAscendingSortUser(), dataSession, propertyDrawObject, userObject);
                         }
                         BL.reflectionLM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
-                        if (forAllUsers)
-                            BL.reflectionLM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnWidthPropertyDrawCustomUser.change(entry.getValue().getWidthUser(), dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(entry.getValue().getOrderUser(), dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnSortPropertyDrawCustomUser.change(entry.getValue().getSortUser(), dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(entry.getValue().getAscendingSortUser(), dataSession, propertyDrawObject, userObject);
-                        if (forAllUsers) {
-                            BL.reflectionLM.columnSortPropertyDraw.change(entry.getValue().getSortUser(), dataSession, propertyDrawObject, userObject);
-                            BL.reflectionLM.columnAscendingSortPropertyDraw.change(entry.getValue().getAscendingSortUser(), dataSession, propertyDrawObject, userObject);
-                        }
-                        if (forAllUsers) {
-                            BL.reflectionLM.columnWidthPropertyDraw.change(entry.getValue().getWidthUser(), dataSession, propertyDrawObject);
-                            BL.reflectionLM.columnOrderPropertyDraw.change(entry.getValue().getOrderUser(), dataSession, propertyDrawObject);
-                        }
+                        BL.reflectionLM.columnWidthPropertyDrawCustomUser.change(columnPreferences.getWidthUser(), dataSession, propertyDrawObject, userObject);
+                        BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.getOrderUser(), dataSession, propertyDrawObject, userObject);
+                        BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.getSortUser(), dataSession, propertyDrawObject, userObject);
+                        BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.getAscendingSortUser(), dataSession, propertyDrawObject, userObject);
                     } else {
                         throw new RuntimeException("Объект " + entry.getKey() + " (" + entity.getSID() + ") не найден");
                     }
                 }
                 DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(dataSession, new DataObject(groupObjectPreferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
                 BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject, userObject);
-                if (forAllUsers)
+                if (forAllUsers) {
                     BL.reflectionLM.hasUserPreferencesGroupObject.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject);
+                }
             }
             dataSession.apply(BL);
         } catch (SQLException e) {

@@ -12,14 +12,21 @@ import platform.gwt.base.server.spring.BusinessLogicsProvider;
 import platform.gwt.base.server.spring.InvalidateListener;
 import platform.gwt.form.server.convert.ClientComponentToGwtConverter;
 import platform.gwt.form.server.convert.ClientFormChangesToGwtConverter;
+import platform.gwt.form.shared.view.GColumnUserPreferences;
 import platform.gwt.form.shared.view.GForm;
+import platform.gwt.form.shared.view.GFormUserPreferences;
+import platform.gwt.form.shared.view.GGroupObjectUserPreferences;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.action.ProcessFormChangesClientAction;
+import platform.interop.form.ColumnUserPreferences;
+import platform.interop.form.FormUserPreferences;
+import platform.interop.form.GroupObjectUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +52,21 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
                 new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(clientAction.formChanges)), clientForm),
                 blProvider
         );
+
+        FormUserPreferences formUP = remoteForm.getUserPreferences();
+        ArrayList<GGroupObjectUserPreferences> gGroupObjectUPList = new ArrayList<GGroupObjectUserPreferences>();
+        if (formUP != null) {
+        for (GroupObjectUserPreferences groupObjectUP : formUP.getGroupObjectUserPreferencesList()) {
+            HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<String, GColumnUserPreferences>();
+            for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectUP.getColumnUserPreferences().entrySet()) {
+                ColumnUserPreferences columnUP = entry.getValue();
+                gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.isNeedToHide(), columnUP.getWidthUser(), columnUP.getOrderUser(), columnUP.getSortUser(), columnUP.getAscendingSortUser()));
+            }
+            gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, groupObjectUP.hasUserPreferences));
+        }
+        }
+        gForm.userPreferences = new GFormUserPreferences(gGroupObjectUPList);
+
         currentForms.put(gForm.sessionID, new FormSessionObject(clientForm, remoteForm));
 
         return gForm;

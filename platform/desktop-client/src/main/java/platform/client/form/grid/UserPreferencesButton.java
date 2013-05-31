@@ -307,10 +307,6 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             for (int i = 0; i < visibleListModel.getSize(); i++) {
                 int index = orderMap.get(visibleListModel.get(i));
                 initialTable.getProperties().get(index).orderUser = i;
-                if (initialTable.getColumnModel().getColumnCount() > index)
-                    initialTable.getProperties().get(index).widthUser = initialTable.getColumnModel().getColumn(index).getPreferredWidth();
-                else
-                    initialTable.getProperties().get(index).widthUser = null;
                 initialTable.getProperties().get(index).hideUser = false;
             }
             for (int i = 0; i < invisibleListModel.getSize(); i++) {
@@ -336,22 +332,14 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             for (int i = 0; i < visibleListModel.getSize(); i++) {
                 int index = orderMap.get(visibleListModel.get(i));
                 ClientPropertyDraw property = initialTable.getProperties().get(index);
-                Boolean sortDirection = sortDirections.containsKey(property) ? sortDirections.get(property).first : null;
-                Integer sortIndex = sortDirections.containsKey(property) ? sortDirections.get(property).second : null;
-                preferences.put(property.getSID(),
-                        new ColumnUserPreferences(false, initialTable.getProperties().get(index).widthUser, i, sortDirection != null ? sortIndex : null, sortDirection));
-                initialTable.getProperties().get(index).hideUser = false;
-                initialTable.getProperties().get(index).orderUser = i;
-                orderMap.put(initialTable.getProperties().get(index).caption, i);
+                preferences.put(property.getSID(), refreshPropertyUserPreferences(property, false, i, sortDirections));
             }
 
             for (int i = 0; i < invisibleListModel.getSize(); i++) {
                 int index = orderMap.get(invisibleListModel.get(i));
-                preferences.put(initialTable.getProperties().get(index).getSID(),
-                        new ColumnUserPreferences(true, initialTable.getProperties().get(index).widthUser, i + visibleListModel.getSize(), 0, null));
-                initialTable.getProperties().get(index).hideUser = true;
-                initialTable.getProperties().get(index).orderUser = visibleListModel.getSize() + i;
-                orderMap.put(initialTable.getProperties().get(index).caption, visibleListModel.getSize() + i);
+                ClientPropertyDraw property = initialTable.getProperties().get(index);
+                int propertyOrder = visibleListModel.getSize() + i;
+                preferences.put(property.getSID(), refreshPropertyUserPreferences(property, true, propertyOrder, sortDirections));
             }
             if (initialTable.getProperties().size() != 0) {
                 List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
@@ -359,38 +347,31 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 form.saveUserPreferences(new FormUserPreferences(groupObjectUserPreferencesList), forAllUsers);
             }
             JOptionPane.showMessageDialog(this, getString("form.grid.hide.save.settings.successfully.complete"), getString("form.grid.hide.save.complete"), JOptionPane.INFORMATION_MESSAGE);
+            setIcon(savedIcon);
+        }
+
+        private ColumnUserPreferences refreshPropertyUserPreferences(ClientPropertyDraw property, boolean hide, int propertyOrder,
+                                                                     Map<ClientPropertyDraw, Pair<Boolean, Integer>> sortDirections) {
+            Boolean sortDirection = sortDirections.containsKey(property) ? sortDirections.get(property).first : null;
+            Integer sortIndex = sortDirections.containsKey(property) ? sortDirections.get(property).second : null;
+            property.hideUser = hide;
+            property.orderUser = propertyOrder;
+            orderMap.put(property.caption, propertyOrder);
+            return new ColumnUserPreferences(hide, property.widthUser, propertyOrder, sortDirection != null ? sortIndex : null, sortDirection);
         }
 
         private void resetButtonPressed(Boolean forAllUsers) throws IOException {
             Map<String, ColumnUserPreferences> preferences = new HashMap<String, ColumnUserPreferences>();
-            initialTable.setOrResetPreferredColumnWidths();
             for (int i = 0; i < visibleListModel.getSize(); i++) {
                 int index = orderMap.get(visibleListModel.get(i));
-                String propertySID = initialTable.getProperties().get(index).getSID();
-                preferences.put(propertySID,
-                        new ColumnUserPreferences(null, null, null, null, null));
-                initialTable.getProperties().get(index).hideUser = null;
-                if (initialTable.getColumnModel().getColumnCount() > index)
-                    initialTable.getProperties().get(index).widthUser = initialTable.getColumnModel().getColumn(index).getPreferredWidth();
-                else
-                    initialTable.getProperties().get(index).widthUser = null;
-                initialTable.getProperties().get(index).sortUser = null;
-                initialTable.getProperties().get(index).ascendingSortUser = null;
-                initialTable.getProperties().get(index).orderUser = initialTable.getProperties().get(index).getID();
+                ClientPropertyDraw property = initialTable.getProperties().get(index);
+                preferences.put(property.getSID(), resetPropertyUserPreferences(property));
             }
 
             for (int i = 0; i < invisibleListModel.getSize(); i++) {
                 int index = orderMap.get(invisibleListModel.get(i));
-                preferences.put(initialTable.getProperties().get(index).getSID(),
-                        new ColumnUserPreferences(null, null, null, null, null));
-                initialTable.getProperties().get(index).hideUser = null;
-                if (initialTable.getColumnModel().getColumnCount() > index)
-                    initialTable.getProperties().get(index).widthUser = initialTable.getColumnModel().getColumn(index).getPreferredWidth();
-                else
-                    initialTable.getProperties().get(index).widthUser = null;
-                initialTable.getProperties().get(index).sortUser = null;
-                initialTable.getProperties().get(index).ascendingSortUser = null;
-                initialTable.getProperties().get(index).orderUser = initialTable.getProperties().get(index).getID();
+                ClientPropertyDraw property = initialTable.getProperties().get(index);
+                preferences.put(property.getSID(), resetPropertyUserPreferences(property));
             }
             if (initialTable.getProperties().size() != 0) {
                 List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
@@ -411,6 +392,18 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             }
 
             JOptionPane.showMessageDialog(this, getString("form.grid.hide.reset.settings.successfully.complete"), getString("form.grid.hide.reset.complete"), JOptionPane.INFORMATION_MESSAGE);
+            if (forAllUsers) {
+                setIcon(unsavedIcon);
+            }
+        }
+
+        private ColumnUserPreferences resetPropertyUserPreferences(ClientPropertyDraw property) {
+            property.hideUser = null;
+            property.widthUser = null;
+            property.sortUser = null;
+            property.ascendingSortUser = null;
+            property.orderUser = property.getID();
+            return new ColumnUserPreferences(null, null, null, null, null);
         }
 
         class ValueComparator implements Comparator {

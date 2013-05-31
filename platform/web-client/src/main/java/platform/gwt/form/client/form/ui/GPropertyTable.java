@@ -1,12 +1,12 @@
 package platform.gwt.form.client.form.ui;
 
-import com.bfr.client.selection.Selection;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import platform.gwt.cellview.client.Column;
 import platform.gwt.cellview.client.DataGrid;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.cellview.client.cell.HasCell;
@@ -40,8 +40,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     protected Element editCellParent;
     protected GType editType;
 
-    private Selection selection;
-
     public GPropertyTable(GFormController iform, Resources resources) {
         this(iform, resources, false);
     }
@@ -56,9 +54,11 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         this.editBindingMap.setMouseAction(GEditBindingMap.CHANGE);
         this.editBindingMap.setKeyAction(new GKeyStroke(KeyCodes.KEY_BACKSPACE), GEditBindingMap.EDIT_OBJECT);
 
-        selection = Selection.getSelection();
-
         sinkEvents(Event.ONPASTE);
+    }
+
+    public GPropertyDraw getProperty(Column column) {
+        return getProperty(new Cell.Context(getKeyboardSelectedRow(), getColumnIndex(column), getKeyboardSelectedRowValue()));
     }
 
     public abstract boolean isEditable(Context context);
