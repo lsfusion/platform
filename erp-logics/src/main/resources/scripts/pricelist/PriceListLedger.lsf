@@ -189,7 +189,49 @@ pricePriceListLedgerSystemLedgerPriceListType = ABSTRACT NUMERIC[14,2] (PriceLis
 inPriceListLedgerLedgerPriceListType(ledger, type) += inPriceListLedgerSystemLedgerPriceListType(ledger, type);
 pricePriceListLedgerLedgerPriceListType(ledger, type) += pricePriceListLedgerSystemLedgerPriceListType(ledger, type);
 
+//Учетные цены и суммы
+//для товаров
+accountPriceSkuStockDateTime 'Учетная цена' (sku, stock, dateTime) =
+    prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.accountPriceListType, sku, stock, dateTime);
+accountSumSkuStockDateTime 'Учетная сумма товара' (sku, stock, dateTime) =
+    balanceASkuStockDateTime(sku, stock, dateTime) * accountPriceSkuStockDateTime(sku, stock, dateTime);
+accountSumStockDateTime 'Учетная сумма склада' (stock, dateTime) =
+    GROUP SUM accountSumSkuStockDateTime(sku, stock, dateTime)
+    BY stock, dateTime;
+accountSumGroupStockDateTime 'Учетная сумма группы товаров' (group, stock, dateTime) =
+    GROUP SUM accountSumSkuStockDateTime(sku, stock, dateTime) IF isParentGroupSku(group, sku)
+    BY group, stock, dateTime;
+//для партий
+accountPriceBatchStockDateTime 'Учетная цена товара в партии' (batch, stock, dateTime) =
+    prevPricePriceListTypeBatchStockDateTime(SystemLedgerPriceListType.accountPriceListType, batch, stock, dateTime);
+accountSumBatchStockDateTime 'Учетная сумма товара в партии' (batch, stock, dateTime) =
+    balanceABatchStockDateTime(batch, stock, dateTime) * accountPriceBatchStockDateTime(batch, stock, dateTime);
+accountSumBatchesStockDateTime 'Учетная сумма склада' (stock, dateTime) =
+    GROUP SUM accountSumBatchStockDateTime(batch, stock, dateTime)
+    BY stock, dateTime;
+accountSumBatchesGroupStockDateTime 'Учетная сумма группы товаров' (group, stock, dateTime) =
+    GROUP SUM accountSumBatchStockDateTime(batch, stock, dateTime) IF isParentGroupBatch(group, batch)
+    BY group, stock, dateTime;
+
 // --------------------------- Формы ---------------------------- //
+
+EXTEND FORM printBalanceSkusStock
+    PROPERTIES(sk, st, dt) READONLY accountSumGroupStockDateTime
+    PROPERTIES(s, st, dt) READONLY accountSumSkuStockDateTime
+;
+EXTEND FORM reportBalanceSkusStock
+    PROPERTIES(sk, st, dt) READONLY accountSumGroupStockDateTime
+    PROPERTIES(s, st, dt) READONLY accountSumSkuStockDateTime
+;
+
+EXTEND FORM printBalanceBatchesStock
+    PROPERTIES(sk, st, dt) READONLY accountSumBatchesGroupStockDateTime
+    PROPERTIES(bt, st, dt) READONLY accountSumBatchStockDateTime
+;
+EXTEND FORM reportBalanceBatchesStock
+    PROPERTIES(sk, st, dt) READONLY accountSumBatchesGroupStockDateTime
+    PROPERTIES(bt, st, dt) READONLY accountSumBatchStockDateTime
+;
 
 EXTEND FORM priceListTypes
     PROPERTIES(pt, sk, s, dt) READONLY nameCompanyLedgerPriceListTypeSkuStockDateTime, descriptionLedgerPriceListTypeSkuStockDateTime

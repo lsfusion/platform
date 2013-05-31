@@ -46,3 +46,6 @@ EXTEND DESIGN disparity{
         ADD PROPERTY(nameOperationDisparity) BEFORE PROPERTY(noteDisparity);
     }
 }
+EXTEND FORM disparities
+    PROPERTIES(dis) READONLY nameOperationDisparity AFTER nameStockDisparity(dis)
+;

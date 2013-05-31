@@ -118,7 +118,7 @@ META extendFormOperationPrefix(object, char, afterProp, prefix, containerProp)
 END
 
 
-META defineDocumentOperation(object, char, befProp)
+META defineDocumentOperation(object, char, befProp, befProperty)
 
     operation###object = ABSTRACT Operation (###object) PERSISTENT;
     name###operation###object 'Операция' = nameOperation(operation###object(object));
@@ -140,11 +140,13 @@ META defineDocumentOperation(object, char, befProp)
             ADD PROPERTY(name###operationUser###object) BEFORE PROPERTY(befProp###object);
         }
     }
-
+    EXTEND FORM object##s
+        PROPERTIES(char) name###operation###object BEFORE befProperty###object(char)
+    ;
 END
 
 META defineDocumentOperation(object, char)
-    @defineDocumentOperation(object, char, nameCurrencyUser);
+    @defineDocumentOperation(object, char, nameCurrencyUser, nameCurrency);
 END
 // -------------------------------------- Организации ---------------------------------- //
 

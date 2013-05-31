@@ -1,6 +1,6 @@
 MODULE SalePurchaseInvoice;
 
-REQUIRE SaleInvoice, PurchaseInvoice;
+REQUIRE SaleInvoice, PurchaseInvoice, SalePurchaseOperation;
 
 PRIORITY Sale;
 
@@ -266,8 +266,36 @@ invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
 // -- Операция
-@defineOperationProperty(createPurchaseInvoice, 'Накладную (закупка)', createContainer);
+createPurchaseInvoiceOperation 'Накладная (закупка) ' = DATA BOOLEAN (Operation);
+
+EXTEND FORM operation
+    PROPERTIES(o) createPurchaseInvoiceOperation
+;
+EXTEND DESIGN operation {
+    createContainer {
+        ADD PROPERTY(createPurchaseInvoiceOperation) BEFORE PROPERTY(namePurchaseOperationOperation);
+    }
+}
+
 @deriveDocumentOperationProperty(UserInvoice, createPurchaseInvoice);
+
+@defineDocumentInterfaceOperationPrefix (invoice, purchase, Purchase, ' (закупка)');
+
+// Записываем операцию для закупки по умолчанию из операции
+purchaseOperationUserInvoice (invoice) <- purchaseOperationOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+
+Purchase.operationInvoice(invoice) += purchaseOperationInvoice(invoicePurchaseInvoice(invoice));
+
+EXTEND FORM userInvoice
+    PROPERTIES(i) BACKGROUND backgroundPurchaseInvoice(i) SHOWIF createPurchaseInvoiceUserInvoice(i) namePurchaseOperationUserInvoice
+
+;
+EXTEND DESIGN userInvoice {
+    headerCreatePurchase {
+        ADD PROPERTY(namePurchaseOperationUserInvoice) AFTER PROPERTY(createPurchaseInvoiceUserInvoice);
+    }
+}
 
 //-- Действие
 

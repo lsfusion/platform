@@ -34,9 +34,9 @@ createDemandUserOrder 'Создать заказ' = ACTION (supplier, stock, pri
         FOR priceLedgerPriceListTypeSkuStockCompanyDateTime(priceListType, sku, stock, supplier, dateTime)
             AND recommendedQuantitySkuStockUserOrder (sku, stock, o)
             ADDOBJ d = UserOrderDetail DO {
-            SET userOrderUserOrderDetail(d) <- o;
-            SET skuUserOrderDetail(d) <- sku;
-            SET quantityUserOrderDetail (d) <- recommendedQuantitySkuStockUserOrder (sku, stock, o);
+                SET userOrderUserOrderDetail(d) <- o;
+                SET skuUserOrderDetail(d) <- sku;
+                SET quantityUserOrderDetail (d) <- recommendedQuantitySkuStockUserOrder (sku, stock, o);
         }
 
         FORM userOrder OBJECTS o = o MANAGESESSION DOCKEDMODAL;

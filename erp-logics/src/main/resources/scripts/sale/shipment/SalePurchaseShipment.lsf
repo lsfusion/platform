@@ -1,6 +1,6 @@
 MODULE SalePurchaseShipment;
 
-REQUIRE SaleShipment, PurchaseShipment;
+REQUIRE SaleShipment, PurchaseShipment, SalePurchaseOperation;
 
 PRIORITY Sale;
 
@@ -18,10 +18,16 @@ backgroundPurchaseShipment 'Цвет' (shipment) = RGB(255, 224, 255) IF shipmen
 
 @defineDocumentInterfaceHeaderTimePrefix(Shipment, purchaseShipment, ' поставки (закупка)');
 
+@defineDocumentInterfaceOperationPrefix (shipment, purchase, Purchase, ' (закупка)');
+
+// Записываем операцию для закупки по умолчанию из операции
+purchaseOperationUserShipment (shipment) <- purchaseOperationOperation(operationUserShipment(shipment))
+    WHEN CHANGED(operationUserShipment(shipment));
+
 EXTEND FORM userShipment
     PROPERTIES(s) BACKGROUND backgroundPurchaseShipment(s) createPurchaseUserShipment
-    PROPERTIES(s) BACKGROUND backgroundPurchaseShipment(s) SHOWIF createPurchaseUserShipment(s) purchaseShipmentDateUserShipment,
-                  purchaseShipmentTimeUserShipment
+    PROPERTIES(s) BACKGROUND backgroundPurchaseShipment(s) SHOWIF createPurchaseUserShipment(s) namePurchaseOperationUserShipment,
+                  purchaseShipmentDateUserShipment, purchaseShipmentTimeUserShipment
 ;
 EXTEND DESIGN userShipment {
     headerCreateDocuments{
@@ -29,6 +35,7 @@ EXTEND DESIGN userShipment {
             title = 'Поставка';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createPurchaseUserShipment);
+            ADD PROPERTY(namePurchaseOperationUserShipment);
             ADD PROPERTY(purchaseShipmentDateUserShipment);
             ADD PROPERTY(purchaseShipmentTimeUserShipment);
         }
@@ -112,6 +119,7 @@ Purchase.currencyShipment (shipment) += currencyPurchaseShipment(shipment);
 
 @defineDocumentDescription(purchaseShipment, PurchaseShipmentDetail, seriesNumberPurchaseShipment, 'Поставка на основе поставки ');
 Purchase.descriptionShipment (shipment) += descriptionPurchaseShipment(shipment);
+Purchase.operationShipment(shipment) += purchaseOperationShipment(shipmentPurchaseShipment(shipment));
 
 @defineDocumentAggregationDetailSku(shipment, purchaseShipment, sku);
 Purchase.skuShipmentDetail(shipmentDetail) +=  skuPurchaseShipmentDetail(shipmentDetail);

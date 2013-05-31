@@ -381,6 +381,7 @@ orderBatch (batch) = STRUCT(dateTimeBatch(batch), batch) PERSISTENT;
 isSkuBatch (batch, sku) = skuBatch(batch) == sku;
 
 isParentSkuGroupBatch (skuGroup, batch) = isParentSkuGroupSku(skuGroup, skuBatch(batch));
+isParentGroupBatch (group, batch) = isParentGroupSku(group, skuBatch(batch));
 
 isContainerBatch 'Тара' (batch) = isContainerSku(skuBatch(batch));
 
@@ -618,6 +619,10 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
     balanceA##postfix##SkuStockDateTime 'Остаток (после)'###caption (sku, stock, dateTime) = (currentBalance##postfix##SkuStock(sku, stock) IF dateTime AS DATETIME)
                                                                              (-) [GROUP SUM signedQuantityActive##postfix##SkuLedger(ledger) IF dateTimeSkuLedger(ledger) > (dateTime AS DATETIME)
                                                                                         BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
+
+    balanceA##postfix##GroupStockDateTime 'Остаток (после)'###caption (group,  stock, dateTime) =
+        GROUP SUM balanceA##postfix##SkuStockDateTime (sku, stock, dateTime) IF isParentGroupSku(group, sku)
+        BY group, stockSkuLedger(ledger), dateTime;
 
     currentBalance##postfix##Sku 'Остаток (всего)'###caption (sku) = GROUP SUM currentBalance##postfix##SkuStock(sku, stock) BY sku PERSISTENT;
 
@@ -1860,6 +1865,7 @@ META defineDocumentSkuStockSystemLedgerPriceListType(object, priceListTypeProp, 
     @defineDocumentSkuStock(object, sku, stockProp);
     priceSkuStock###object 'Цена' (sku, stock, object) = prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.##priceListTypeProp, sku, stock, dateTime###object(object));
 END
+
 
 META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
     detail###Sku###object###stockProp (sku, object, stock) =  GROUP MAX detail
@@ -3500,6 +3506,197 @@ META implementDocumentSupplierCustomer(object)
     customerDocument(object) += customer###object(object);
     customerStockDocument(object) += customerStock###object(object);
 END
+
+//Печатные формы
+
+dataInSessionGroup 'Отм.' = DATA SESSION BOOLEAN (Group);
+
+levelParentGroup (group) = GROUP MIN levelGroupGroup(group, parent) IF dataInSessionGroup(parent)
+    BY group PERSISTENT;
+
+inParentGroup (group) = TRUE IF levelParentGroup(group) PERSISTENT;
+
+inSessionGroup 'Отм.' (group) = OVERRIDE
+    inParentGroup(group),
+    dataInSessionGroup(group);
+
+sessionConcatGroups 'Склады' (groupType) =
+    GROUP CONCAT nameGroup(group) IF inSessionGroup(group) AND NOT inSessionGroup(parentGroup(group)),','
+    BY groupTypeGroup(group);
+
+//остатки по товарам
+FORM printBalanceSkusStock 'Остатки по товарам' PRINT
+    OBJECTS dt = DATETIME FIXED PANEL
+    PROPERTIES(dt) OBJVALUE
+
+    OBJECTS st = Stock FIXED PANEL
+    PROPERTIES(st) SELECTOR nameStock
+
+    OBJECTS gt = GroupType FIXED PANEL
+    PROPERTIES(gt) SELECTOR nameGroupType
+    PROPERTIES(gt) READONLY sessionConcatGroups
+
+    TREE sk = Group
+    PROPERTIES READONLY canonicalNameGroup(sk)
+    ORDER BY canonicalNameGroup
+    FILTERS inSessionGroup(sk) AND isLeafGroup(sk)
+    FILTERS groupTypeGroup(sk) == gt
+
+//    PROPERTIES(sk, st, dt) READONLY balanceAGroupStockDateTime
+//    FILTERS balanceAGroupStockDateTime(sk, st, dt)
+
+    OBJECTS s = Sku
+    PROPERTIES(s) READONLY nameSku, shortNameUOMSku
+    ORDER BY nameSku
+    FILTERS isParentGroupSku(sk, s)
+
+    PROPERTIES(s, st, dt) READONLY balanceASkuStockDateTime
+    FILTERS balanceASkuStockDateTime(s, st, dt)
+;
+
+printBalanceSkusStockDateTime 'Распечатать' (stock, dateTime) =
+    ACTION FORM printBalanceSkusStock OBJECTS st = stock, dt = dateTime  IMAGE 'print.png' IN printGroup;
+
+FORM reportBalanceSkusStock 'Остатки по товарам'
+    OBJECTS dt=DATETIME FIXED PANEL
+    PROPERTIES(dt) OBJVALUE
+
+    OBJECTS st = Stock FIXED PANEL
+    PROPERTIES(st) SELECTOR nameStock
+    PROPERTIES printBalanceSkusStockDateTime(st, dt)
+
+    OBJECTS gt = GroupType FIXED PANEL
+    PROPERTIES(gt) SELECTOR nameGroupType
+//    PROPERTIES(gt) READONLY sessionConcatGroups
+
+    TREE skuTree sk = Group PARENT parentGroup
+    PROPERTIES READONLY skuTreeName = nameGroup(sk)
+    PROPERTIES inSessionGroup(sk)
+    ORDER BY skuTreeName
+    FILTERS groupTypeGroup(sk) == gt
+
+//    PROPERTIES(sk, st, dt) READONLY balanceAGroupStockDateTime
+//    FILTERS balanceAGroupStockDateTime(sk, st, dt)
+
+    OBJECTS s = Sku
+    PROPERTIES(s) READONLY nameSku, shortNameUOMSku
+    ORDER BY nameSku
+    FILTERS isParentGroupSku(sk, s)
+
+    PROPERTIES(s, st, dt) READONLY balanceASkuStockDateTime
+    FILTERS balanceASkuStockDateTime(s, st, dt)
+;
+
+DESIGN reportBalanceSkusStock FROM DEFAULT{
+    NEW topContainer{
+        childConstraints = TO THE RIGHT;
+        ADD dt.box;
+        ADD st.box;
+        ADD gt.box;
+        ADD PROPERTY(printBalanceSkusStockDateTime);
+    }
+    NEW skuContainer{
+        childConstraints = TO THE RIGHT;
+        type = SPLITH;
+        ADD skuTree.tree.box;
+        ADD s.box{
+            fillHorizontal = 2;
+            ADD PROPERTY(inSessionGroup);
+        }
+    }
+    ADD functions.box;
+}
+
+//остатки по партиям
+FORM printBalanceBatchesStock 'Остатки по партиям' PRINT
+    OBJECTS dt = DATETIME FIXED PANEL
+    PROPERTIES(dt) OBJVALUE
+
+    OBJECTS st = Stock FIXED PANEL
+    PROPERTIES(st) SELECTOR nameStock
+
+    OBJECTS gt = GroupType FIXED PANEL
+    PROPERTIES(gt) SELECTOR nameGroupType
+    PROPERTIES(gt) READONLY sessionConcatGroups
+
+    TREE sk = Group
+    PROPERTIES READONLY canonicalNameGroup(sk)
+    ORDER BY canonicalNameGroup
+    FILTERS inSessionGroup(sk) AND isLeafGroup(sk)
+    FILTERS groupTypeGroup(sk) == gt
+
+//    PROPERTIES(sk, st, dt) READONLY balanceAGroupStockDateTime
+//    FILTERS balanceAGroupStockDateTime(sk, st, dt)
+
+    OBJECTS           bt=Batch
+    PROPERTIES(bt)    READONLY dateBatch, nameBatch, nameSkuBatch, shortNameUOMBatch//, quantityBatch
+    FILTERS           isParentGroupBatch(sk, bt)
+    ORDER BY          dateBatch, nameBatch, nameSkuBatch
+
+    PROPERTIES(bt, st, dt) READONLY balanceABatchStockDateTime
+    FILTERS balanceABatchStockDateTime(bt, st, dt)
+;
+
+printBalanceBatchesStockDateTime 'Распечатать' (stock, dateTime) =
+    ACTION FORM printBalanceBatchesStock OBJECTS st = stock, dt = dateTime  IMAGE 'print.png' IN printGroup;
+
+FORM reportBalanceBatchesStock 'Остатки по партиям'
+    OBJECTS dt=DATETIME FIXED PANEL
+    PROPERTIES(dt) OBJVALUE
+
+    OBJECTS st = Stock FIXED PANEL
+    PROPERTIES(st) SELECTOR nameStock
+    PROPERTIES printBalanceBatchesStockDateTime(st, dt)
+
+    OBJECTS gt = GroupType FIXED PANEL
+    PROPERTIES(gt) SELECTOR nameGroupType
+//    PROPERTIES(gt) READONLY sessionConcatGroups
+
+    TREE skuTree sk = Group PARENT parentGroup
+    PROPERTIES READONLY skuTreeName = nameGroup(sk)
+    PROPERTIES inSessionGroup(sk)
+    ORDER BY skuTreeName
+
+    FILTERS groupTypeGroup(sk) == gt
+
+//    PROPERTIES(sk, st, dt) READONLY balanceAGroupStockDateTime
+//    FILTERS balanceAGroupStockDateTime(sk, st, dt)
+
+    OBJECTS           bt=Batch
+    PROPERTIES(bt)    READONLY dateTimeBatch, nameBatch, nameSkuBatch, shortNameUOMBatch//, quantityBatch
+    FILTERS           isParentGroupBatch(sk, bt)
+    ORDER BY          dateTimeBatch, nameBatch, nameSkuBatch
+
+    PROPERTIES(bt, st, dt) READONLY balanceABatchStockDateTime
+    FILTERS balanceABatchStockDateTime(bt, st, dt)
+;
+
+DESIGN reportBalanceBatchesStock FROM DEFAULT{
+    NEW topContainer{
+        childConstraints = TO THE RIGHT;
+        ADD dt.box;
+        ADD st.box;
+        ADD gt.box;
+        ADD PROPERTY(printBalanceBatchesStockDateTime);
+    }
+    NEW skuContainer{
+        childConstraints = TO THE RIGHT;
+        type = SPLITH;
+        ADD skuTree.tree.box;
+        ADD bt.box{
+            fillHorizontal = 2;
+            ADD PROPERTY(inSessionGroup);
+        }
+    }
+    ADD functions.box;
+}
+
+NAVIGATOR {
+    stockReports{
+        ADD reportBalanceSkusStock;
+        ADD reportBalanceBatchesStock;
+    }
+}
 
 // ------------------------------------------------ Стандартные значения --------------------------------------- //
 

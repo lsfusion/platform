@@ -18,10 +18,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GenerateTNVEDClassifierActionProperty extends ScriptingActionProperty {
 
@@ -62,6 +59,8 @@ public class GenerateTNVEDClassifierActionProperty extends ScriptingActionProper
                 List<String> groupIDsList = new ArrayList<String>();
 
                 Map<String, Object[]> dutiesMap = getDuties(context, fileDuties);
+
+                Set<String> codes = new HashSet<String>();
 
                 int recordCount = dbfFile.getRecordCount();
                 for (int i = 1; i <= recordCount; i++) {
@@ -105,15 +104,18 @@ public class GenerateTNVEDClassifierActionProperty extends ScriptingActionProper
 
                     groupIDsList.add(code);
 
-                    writer.println(String.format("EXEC loadDefaultCustomsGroup('%s', %s, '%s', %d, '%s', %s, %s, %s, %s, %s, %s, %s);",
-                            code, parent==null ? "NULL" : ("\'" + parent + "\'"), (name + extraName).replace("'", "\\'"),
-                            i, nameCustomsZone, hasCode == null ? "NULL" : "TRUE",
-                            registration==null ? "NULL" : String.valueOf(registration),
-                            weightDuty==null ? "NULL" : String.valueOf(weightDuty),
-                            percentDuty==null ? "NULL" : String.valueOf(percentDuty),
-                            vat==null ? "NULL" : String.valueOf(vat),
-                            dateFrom == null ? "NULL" : new SimpleDateFormat("yyyy_MM_dd").format(dateFrom),
-                            dateTo == null ? "NULL" : new SimpleDateFormat("yyyy_MM_dd").format(dateTo)));
+                    if (!codes.contains(code)) {
+                        codes.add(code);
+                        writer.println(String.format("EXEC loadDefaultCustomsGroup('%s', %s, '%s', %d, '%s', %s, %s, %s, %s, %s, %s, %s);",
+                                code, parent == null ? "NULL" : ("\'" + parent + "\'"), (name + extraName).replace("'", "\\'"),
+                                i, nameCustomsZone, hasCode == null ? "NULL" : "TRUE",
+                                registration == null ? "NULL" : String.valueOf(registration),
+                                weightDuty == null ? "NULL" : String.valueOf(weightDuty),
+                                percentDuty == null ? "NULL" : String.valueOf(percentDuty),
+                                vat == null ? "NULL" : String.valueOf(vat),
+                                dateFrom == null ? "NULL" : new SimpleDateFormat("yyyy_MM_dd").format(dateFrom),
+                                dateTo == null ? "NULL" : new SimpleDateFormat("yyyy_MM_dd").format(dateTo)));
+                    }
                 }
 
                 writeBottom(writer);

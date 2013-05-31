@@ -13154,7 +13154,6 @@ EXEC loadDefaultCustomsGroup('8414108900', '841410', '- - - - прочие', 131
 EXEC loadDefaultCustomsGroup('841420', '8414', '- насосы ручные или ножные пневматические:', 13122, 'ТАМОЖЕННЫЙ СОЮЗ', TRUE, NULL, NULL, NULL, NULL, NULL, NULL);
 EXEC loadDefaultCustomsGroup('8414202000', '841420', '- - насосы ручныедля велосипедов', 13123, 'ТАМОЖЕННЫЙ СОЮЗ', TRUE, 45.00, 0.00, 0.00, NULL, 2010_01_01, 2040_12_31);
 EXEC loadDefaultCustomsGroup('8414208000', '841420', '- - прочие', 13124, 'ТАМОЖЕННЫЙ СОЮЗ', TRUE, 45.00, 0.00, 0.00, NULL, 2010_01_01, 2040_12_31);
-EXEC loadDefaultCustomsGroup('8414208000', '841420', '- - прочие', 13125, 'ТАМОЖЕННЫЙ СОЮЗ', TRUE, 45.00, 0.00, 0.00, NULL, 2010_01_01, 2040_12_31);
 EXEC loadDefaultCustomsGroup('841430', '8414', '- компрессоры, используемые в холодильном оборудовании:', 13126, 'ТАМОЖЕННЫЙ СОЮЗ', TRUE, NULL, NULL, NULL, NULL, NULL, NULL);
 EXEC loadDefaultCustomsGroup('841430200', '841430', '- - мощностью не более 0,4 кВт:', 13127, 'ТАМОЖЕННЫЙ СОЮЗ', TRUE, NULL, NULL, NULL, NULL, NULL, NULL);
 EXEC loadDefaultCustomsGroup('8414302001', '841430200', '- - - для гражданской авиации', 13128, 'ТАМОЖЕННЫЙ СОЮЗ', TRUE, 45.00, 0.00, 0.00, NULL, 2010_01_01, 2040_12_31);

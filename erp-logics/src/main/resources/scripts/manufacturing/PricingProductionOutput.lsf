@@ -1,8 +1,8 @@
 MODULE  PricingProductionOutput;
 
 REQUIRE ProductionOutput, Pricing;
-NAMESPACE Production;
 
+NAMESPACE Production;
 // ----------------  Расценка ------------------- //
 
 @defineDocumentInterfaceHeaderPricingCommittee (output, stock);

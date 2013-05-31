@@ -259,6 +259,20 @@ EXTEND FORM batches
     PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
 ;
 
+EXTEND FORM printBalanceSkusStock
+    PROPERTIES(s) idBarcodeSku BEFORE nameSku(s)
+;
+EXTEND FORM reportBalanceSkusStock
+    PROPERTIES(s) idBarcodeSku BEFORE nameSku(s)
+;
+
+EXTEND FORM printBalanceBatchesStock
+    PROPERTIES(bt) idBarcodeSkuBatch BEFORE nameSkuBatch(bt)
+;
+EXTEND FORM reportBalanceBatchesStock
+    PROPERTIES(bt) idBarcodeSkuBatch BEFORE nameSkuBatch(bt)
+;
+
 // ------------------------------------------ Объявление штрих-кода в документе ------------------------------------ //
 
 META defineDocumentDetailBarcodeCustomPrefix (detail, skuProp, prefixB, prefixS)

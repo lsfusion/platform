@@ -525,11 +525,13 @@ META defineInvoiceReturn(NS, NSR, stockProp)
 //                                             CHANGED(NSR.stockProp###invoiceDetail(detail)) OR
 //                                             CHANGED(NSR.dateTimeInvoiceDetail(detail));
 
+    overRecalculatedPriceUserInvoiceDetail = ABSTRACT ACTION (NSR.UserInvoiceDetail);
     recalculatedPriceUserInvoiceDetail(detail) = ACTION (detail) {    //todo: необходимо сделать, чтобы ACTION вызывался после пересчета цены от партии
         IF invoiceDetailUserInvoiceDetail(detail) THEN {
             SET NSR.priceUserInvoiceDetail(detail) <-  NS.priceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
             SET NSR.invoicePriceUserInvoiceDetail(detail) <-  NS.invoicePriceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
             SET NSR.VATUserInvoiceDetail(detail) <- NS.VATInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
+            EXEC overRecalculatedPriceUserInvoiceDetail(detail);
         }
     }
         WHEN SESSION FORMS userInvoice
