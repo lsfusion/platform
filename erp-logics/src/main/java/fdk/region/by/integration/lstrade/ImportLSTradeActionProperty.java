@@ -4,11 +4,11 @@ import fdk.integration.*;
 import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.logics.scripted.ScriptingErrorLog;
-import platform.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,8 +1,8 @@
 package fdk.region.by.machinery.cashregister.fiscalvmk;
 
-import platform.interop.action.ClientAction;
-import platform.interop.action.ClientActionDispatcher;
-import platform.interop.action.MessageClientAction;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ClientActionDispatcher;
+import lsfusion.interop.action.MessageClientAction;
 
 import java.io.IOException;
 import java.util.List;

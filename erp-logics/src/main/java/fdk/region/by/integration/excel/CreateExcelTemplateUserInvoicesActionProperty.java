@@ -1,7 +1,7 @@
 package fdk.region.by.integration.excel;
 
 import jxl.write.WriteException;
-import platform.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
 import java.util.Arrays;

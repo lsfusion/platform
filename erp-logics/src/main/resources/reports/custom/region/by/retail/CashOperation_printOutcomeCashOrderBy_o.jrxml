@@ -125,7 +125,7 @@
 			<textField>
 				<reportElement style="GroupCellStyle0_1_1" x="10" y="80" width="560" height="15"/>
 				<textElement/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.formatRussian($F{dateCashDocument})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.formatRussian($F{dateCashDocument})]]>]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="10" y="95" width="200" height="20"/>

@@ -69,12 +69,12 @@
 			<textField>
 				<reportElement style="GroupCellStyle3" x="227" y="60" width="395" height="20"/>
 				<textElement/>
-				<textFieldExpression><![CDATA["Дата заказа "+platform.base.BaseUtils.formatRussian($F{dateOrder})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA["Дата заказа "+lsfusion.base.BaseUtils.formatRussian($F{dateOrder})]]>]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle3" x="227" y="80" width="395" height="20"/>
 				<textElement/>
-				<textFieldExpression><![CDATA["Дата поставки "+platform.base.BaseUtils.formatRussian($F{shipmentDateOrder})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA["Дата поставки "+lsfusion.base.BaseUtils.formatRussian($F{shipmentDateOrder})]]>]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="100" width="221" height="20"/>

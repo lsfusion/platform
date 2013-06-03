@@ -1,12 +1,12 @@
 package fdk.region.ua.machinery.cashregister.fiscaldatecs;
 
-import platform.interop.action.MessageClientAction;
-import platform.server.classes.ValueClass;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.logics.scripted.ScriptingErrorLog;
-import platform.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 

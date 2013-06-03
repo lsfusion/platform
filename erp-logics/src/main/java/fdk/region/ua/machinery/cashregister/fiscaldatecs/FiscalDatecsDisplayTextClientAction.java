@@ -1,7 +1,7 @@
 package fdk.region.ua.machinery.cashregister.fiscaldatecs;
 
-import platform.interop.action.ClientAction;
-import platform.interop.action.ClientActionDispatcher;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ClientActionDispatcher;
 
 import java.io.IOException;
 

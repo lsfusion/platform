@@ -73,42 +73,42 @@
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityShortageCollationSheet},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{quantityShortageCollationSheet},0)]]>]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="377" y="0" width="40" height="10"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityPageInventoryDetailCollationSheet},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{quantityPageInventoryDetailCollationSheet},0)]]>]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="297" y="0" width="40" height="10"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityBalanceCollationSheet},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{quantityBalanceCollationSheet},0)]]>]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="337" y="0" width="40" height="10"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumBalanceCollationSheet},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumBalanceCollationSheet},0)]]>]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="497" y="0" width="40" height="10"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumShortageCollationSheet},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumShortageCollationSheet},0)]]>]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="417" y="0" width="40" height="10"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumPageInventoryDetailCollationSheet},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumPageInventoryDetailCollationSheet},0)]]>]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -126,7 +126,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Bottom">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["от  "+platform.base.BaseUtils.formatRussian($F{dateCollationSheet})+" года"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA["от  "+lsfusion.base.BaseUtils.formatRussian($F{dateCollationSheet})+" года"]]>]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="10" width="366" height="10"/>

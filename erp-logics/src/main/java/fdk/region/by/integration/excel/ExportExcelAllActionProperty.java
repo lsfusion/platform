@@ -2,12 +2,12 @@ package fdk.region.by.integration.excel;
 
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
-import platform.interop.action.ExportFileClientAction;
-import platform.server.classes.DateClass;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.interop.action.ExportFileClientAction;
+import lsfusion.server.classes.DateClass;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
 import java.sql.SQLException;

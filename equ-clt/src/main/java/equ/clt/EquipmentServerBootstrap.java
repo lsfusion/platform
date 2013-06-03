@@ -3,7 +3,7 @@ package equ.clt;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
-import platform.base.SystemUtils;
+import lsfusion.base.SystemUtils;
 
 import java.io.IOException;
 

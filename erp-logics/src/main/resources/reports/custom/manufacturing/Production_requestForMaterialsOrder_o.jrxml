@@ -71,7 +71,7 @@
 				<textElement verticalAlignment="Top">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["от "+platform.base.BaseUtils.formatRussian($F{dateOrder})+" года"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA["от "+lsfusion.base.BaseUtils.formatRussian($F{dateOrder})+" года"]]>]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="52" width="293" height="10"/>

@@ -175,27 +175,27 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="445" y="0" width="60" height="18"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{curPriceRevaluationDetail},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{curPriceRevaluationDetail},0)]]>]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="505" y="0" width="60" height="18"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{curSumRevaluationDetail},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{curSumRevaluationDetail},0)]]>]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="565" y="0" width="60" height="18"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{priceRevaluationDetail},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{priceRevaluationDetail},0)]]>]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="625" y="0" width="60" height="18"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumRevaluationDetail},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumRevaluationDetail},0)]]>]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="685" y="0" width="117" height="18"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{diffSumRevaluationDetail},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{diffSumRevaluationDetail},0)]]>]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

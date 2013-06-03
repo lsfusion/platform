@@ -2,15 +2,14 @@ package equ.clt.handler.shtrihPrint;
 
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.Dispatch;
-import com.jacob.com.LibraryLoader;
 import com.jacob.com.Variant;
 import equ.api.ItemInfo;
 import equ.api.ScalesHandler;
 import equ.api.ScalesInfo;
 import equ.api.TransactionScalesInfo;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.List;
 
 public class ShtrihPrintHandler extends ScalesHandler {
 
@@ -20,7 +19,7 @@ public class ShtrihPrintHandler extends ScalesHandler {
     @Override
     public void sendTransaction(TransactionScalesInfo transactionInfo, List<ScalesInfo> machineryInfoList) throws IOException {
 
-        System.setProperty(LibraryLoader.JACOB_DLL_PATH, "D:\\Projects\\platform\\equ-clt\\conf\\Shtrih\\jacob-1.15-M3.dll");
+        //System.setProperty(LibraryLoader.JACOB_DLL_PATH, "D:\\Projects\\platform\\equ-clt\\conf\\Shtrih\\jacob-1.15-M3.dll");
 
         ActiveXComponent shtrihActiveXComponent = new ActiveXComponent("AddIn.DrvLP");
         Dispatch shtrihDispatch = shtrihActiveXComponent.getObject();

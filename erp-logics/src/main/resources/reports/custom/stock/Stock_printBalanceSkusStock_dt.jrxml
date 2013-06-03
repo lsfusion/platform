@@ -71,7 +71,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.formatRussian($F{objectValueProperty_DateTimeClass})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.formatRussian($F{objectValueProperty_DateTimeClass})]]>]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="79" y="17" width="497" height="18" backcolor="#FFFFFF"/>

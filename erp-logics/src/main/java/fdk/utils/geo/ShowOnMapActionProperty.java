@@ -1,15 +1,15 @@
 package fdk.utils.geo;
 
-import platform.interop.action.OpenUriClientAction;
-import platform.server.classes.DoubleClass;
-import platform.server.classes.StringClass;
-import platform.server.classes.ValueClass;
-import platform.server.logics.DataObject;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.logics.scripted.ScriptingErrorLog;
-import platform.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.interop.action.OpenUriClientAction;
+import lsfusion.server.classes.DoubleClass;
+import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.net.URI;
 import java.net.URISyntaxException;

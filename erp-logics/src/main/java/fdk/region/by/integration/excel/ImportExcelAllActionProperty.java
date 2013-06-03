@@ -3,12 +3,12 @@ package fdk.region.by.integration.excel;
 import fdk.integration.ImportActionProperty;
 import fdk.integration.ImportData;
 import jxl.read.biff.BiffException;
-import platform.server.classes.CustomStaticFormatFileClass;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.classes.CustomStaticFormatFileClass;
+import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
 import java.sql.SQLException;

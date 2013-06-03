@@ -46,7 +46,7 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="404" y="0" width="80" height="12"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumContainerOutStockDocumentLedger},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumContainerOutStockDocumentLedger},0)]]>]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="484" y="0" width="53" height="12"/>
@@ -56,7 +56,7 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="324" y="0" width="80" height="12"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemOutStockDocumentLedger},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumItemOutStockDocumentLedger},0)]]>]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -73,7 +73,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemAccountADocumentLedgerDate},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumItemAccountADocumentLedgerDate},0)]]>]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="484" y="12" width="53" height="12"/>
@@ -99,7 +99,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumContainerOutStockDocumentStockDateInterval},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumContainerOutStockDocumentStockDateInterval},0)]]>]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="324" y="0" width="80" height="12"/>
@@ -112,7 +112,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemOutStockDocumentStoreDateInterval},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumItemOutStockDocumentStoreDateInterval},0)]]>]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="484" y="0" width="53" height="12"/>
@@ -151,7 +151,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumContainerAccountADocumentLedgerDate},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumContainerAccountADocumentLedgerDate},0)]]>]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement stretchType="RelativeToBandHeight" x="93" y="12" width="231" height="12" backcolor="#FFFFFF"/>

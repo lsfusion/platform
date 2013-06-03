@@ -1,24 +1,20 @@
 package fdk.region.by.integration.excel;
 
 import jxl.write.WriteException;
-import platform.base.col.MapFact;
-import platform.base.col.interfaces.immutable.ImMap;
-import platform.base.col.interfaces.immutable.ImOrderMap;
-import platform.base.col.interfaces.immutable.ImRevMap;
-import platform.server.classes.DateClass;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.QueryBuilder;
-import platform.server.logics.DataObject;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.scripted.ScriptingErrorLog;
-import platform.server.logics.scripted.ScriptingLogicsModule;
-import platform.server.session.DataSession;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.session.DataSession;
 
 import java.io.IOException;
-import java.sql.Date;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ExportExcelLegalEntitiesActionProperty extends ExportExcelActionProperty {

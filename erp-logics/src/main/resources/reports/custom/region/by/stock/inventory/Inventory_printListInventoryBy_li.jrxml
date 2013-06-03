@@ -181,8 +181,8 @@
 					<textElement verticalAlignment="Bottom">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["По данным бухучета остаток по товарам на _____________________20_____г. составил __________________________руб.\n"+
-"На основании приказа (распоряжения) от ___________ № __________ проведено снятие фактических остатков ценностей по состоянию на "+platform.base.BaseUtils.formatRussian($F{dateListInventory})+" года"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA["По данным бухучета остаток по товарам на _____________________20_____г. составил __________________________руб.\n"+
+"На основании приказа (распоряжения) от ___________ № __________ проведено снятие фактических остатков ценностей по состоянию на "+lsfusion.base.BaseUtils.formatRussian($F{dateListInventory})+" года"]]>]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="18">
@@ -381,7 +381,7 @@
 					<textElement>
 						<font size="10" isItalic="true" isUnderline="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{countIndexListInventory})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.Words.toString($F{countIndexListInventory})]]>]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="15">
@@ -410,7 +410,7 @@
 					<textElement>
 						<font size="10" isItalic="true" isUnderline="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{countIndexBatchListInventory})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.Words.toString($F{countIndexBatchListInventory})]]>]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="15">
@@ -438,7 +438,7 @@
 					<textElement>
 						<font size="10" isItalic="true" isUnderline="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{quantityPageInventoryDetailListInventory})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.Words.toString($F{quantityPageInventoryDetailListInventory})]]>]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="20">
@@ -466,7 +466,7 @@
 					<textElement>
 						<font size="10" isItalic="true" isUnderline="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumPageInventoryDetailListInventory})+ " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.Words.toString($F{sumPageInventoryDetailListInventory})+ " белорусских рублей"]]>]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="30">

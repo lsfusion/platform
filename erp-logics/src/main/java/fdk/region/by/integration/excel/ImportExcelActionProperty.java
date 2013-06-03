@@ -1,10 +1,10 @@
 package fdk.region.by.integration.excel;
 
 import org.apache.commons.lang.time.DateUtils;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.math.BigDecimal;
 import java.sql.Date;

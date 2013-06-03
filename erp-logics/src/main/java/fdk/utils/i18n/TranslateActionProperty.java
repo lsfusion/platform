@@ -1,14 +1,14 @@
 package fdk.utils.i18n;
 
-import platform.server.classes.StringClass;
-import platform.server.classes.ValueClass;
-import platform.server.logics.*;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.logics.scripted.ScriptingErrorLog;
-import platform.server.logics.scripted.ScriptingLogicsModule;
-import platform.server.session.DataSession;
+import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.*;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.session.DataSession;
 
 import java.io.*;
 import java.net.*;

@@ -241,7 +241,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{VATSumOrderDetailOrder}) + " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.Words.toString($F{VATSumOrderDetailOrder}) + " белорусских рублей"]]>]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="16">
@@ -269,7 +269,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{invoiceSumOrderDetailOrder}) + " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.Words.toString($F{invoiceSumOrderDetailOrder}) + " белорусских рублей"]]>]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="75">
@@ -420,7 +420,7 @@
 				<textElement>
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["ОПЛАТИТЬ ДО "+ ($F{closeDateOrder}!=null?(platform.base.BaseUtils.formatRussian($F{closeDateOrder})+" года."):"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA["ОПЛАТИТЬ ДО "+ ($F{closeDateOrder}!=null?(lsfusion.base.BaseUtils.formatRussian($F{closeDateOrder})+" года."):"")]]>]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="10" y="22" width="560" height="16"/>
@@ -433,7 +433,7 @@
 				<textElement textAlignment="Center">
 					<font size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["ОТ "+platform.base.BaseUtils.formatRussian($F{dateOrder})+" года"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA["ОТ "+lsfusion.base.BaseUtils.formatRussian($F{dateOrder})+" года"]]>]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="10" y="127" width="560" height="12"/>

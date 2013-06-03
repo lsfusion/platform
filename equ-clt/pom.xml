@@ -18,6 +18,10 @@
     <dependencies>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
+            <artifactId>erp-logics</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
             <artifactId>equ-api</artifactId>
         </dependency>
         <dependency>

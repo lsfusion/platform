@@ -1,16 +1,16 @@
 package fdk.integration;
 
 import org.xBaseJ.xBaseJException;
-import platform.server.classes.*;
-import platform.server.integration.*;
-import platform.server.logics.DataObject;
-import platform.server.logics.NullValue;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.scripted.ScriptingErrorLog;
-import platform.server.logics.scripted.ScriptingLogicsModule;
-import platform.server.session.DataSession;
+import lsfusion.server.classes.*;
+import lsfusion.server.integration.*;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.NullValue;
+import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.session.DataSession;
 
 import java.io.IOException;
 import java.sql.SQLException;

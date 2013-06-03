@@ -1,13 +1,13 @@
 package fdk.region.by.integration.formular;
 
-import platform.interop.action.MessageClientAction;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.integration.*;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.logics.scripted.ScriptingErrorLog;
-import platform.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.integration.*;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.*;
 import java.util.ArrayList;

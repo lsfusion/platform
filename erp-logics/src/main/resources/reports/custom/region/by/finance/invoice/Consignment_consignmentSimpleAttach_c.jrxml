@@ -429,7 +429,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumVATConsignmentDetailConsignment}) + " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.Words.toString($F{sumVATConsignmentDetailConsignment}) + " белорусских рублей"]]>]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="84" y="13" width="471" height="1"/>
@@ -495,7 +495,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumInvoiceConsignmentDetailConsignment}) + " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.Words.toString($F{sumInvoiceConsignmentDetailConsignment}) + " белорусских рублей"]]>]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="21">
@@ -814,7 +814,7 @@
 				<textElement textAlignment="Center">
 					<font size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["№ "+$F{seriesObject}+" "+$F{numberObject}+" ОТ "+platform.base.BaseUtils.formatRussian($F{dateConsignment})+" года"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[<![CDATA["№ "+$F{seriesObject}+" "+$F{numberObject}+" ОТ "+lsfusion.base.BaseUtils.formatRussian($F{dateConsignment})+" года"]]>]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="10" width="575" height="16"/>

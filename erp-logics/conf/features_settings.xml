@@ -11,7 +11,7 @@
 
     <import resource="classpath:settings/common-bl-scripted-settings.xml"/>
 
-    <bean id="dbManager" class="platform.server.logics.DBManager">
+    <bean id="dbManager" class="lsfusion.server.logics.DBManager">
         <property name="adapter" ref="dataAdapter"/>
         <property name="businessLogics" ref="businessLogics"/>
         <property name="restartManager" ref="restartManager"/>

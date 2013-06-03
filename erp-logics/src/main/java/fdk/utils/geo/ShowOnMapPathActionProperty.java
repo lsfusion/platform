@@ -1,21 +1,21 @@
 package fdk.utils.geo;
 
-import platform.base.col.MapFact;
-import platform.base.col.interfaces.immutable.ImMap;
-import platform.base.col.interfaces.immutable.ImOrderMap;
-import platform.base.col.interfaces.immutable.ImRevMap;
-import platform.interop.action.MessageClientAction;
-import platform.interop.action.OpenUriClientAction;
-import platform.server.classes.ValueClass;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.QueryBuilder;
-import platform.server.logics.linear.LCP;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.logics.scripted.ScriptingErrorLog;
-import platform.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.interop.action.MessageClientAction;
+import lsfusion.interop.action.OpenUriClientAction;
+import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.math.BigDecimal;
 import java.net.URI;
