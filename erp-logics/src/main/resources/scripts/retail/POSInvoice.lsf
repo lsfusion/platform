@@ -33,8 +33,8 @@ EXTEND FORM POS
     PROPERTIES(r) SHOWIF currentZReport() createInvoiceReceipt
 ;
 EXTEND DESIGN POS {
-    secondFirstEastContainer{
-        NEW invoiceContainer{
+    misc {
+        NEW invoice {
             title = 'Накладная';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createInvoiceReceipt) { focusable = FALSE; font = 'Tahoma bold 24';  }

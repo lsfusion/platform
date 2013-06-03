@@ -54,8 +54,8 @@ descriptionZReport (zReport) =
     [FORMULA STRING[200] '\'Продажа по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
     numberCashRegisterZReport(zReport), nameDepartmentStoreZReport(zReport), dateZReport(zReport));
 
-exportReceiptsZReport 'Экспортировать чеки' = ACTION CUSTOM 'lsfusion.erp.retail.ExportReceiptsActionProperty';
-importReceiptsZReport 'Импортировать чеки' = ACTION CUSTOM 'lsfusion.erp.retail.ImportReceiptsActionProperty';
+exportReceiptsZReport 'Экспортировать чеки' = ACTION CUSTOM 'fdk.retail.ExportReceiptsActionProperty';
+importReceiptsZReport 'Импортировать чеки' = ACTION CUSTOM 'fdk.retail.ImportReceiptsActionProperty';
 
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
@@ -125,6 +125,7 @@ departmentStoreReceiptDetail (receiptDetail) = MULTI departmentStoreReceiptRetur
 @defineDocumentDetailSku(receiptReturn, sku);
 skuReceiptDetail (receiptDetail) = OVERRIDE skuReceiptReturnDetail(receiptDetail), skuReceiptSaleDetail(receiptDetail);
 nameSkuReceiptDetail 'Товар' (receiptDetail) = nameSkuStock(skuReceiptDetail(receiptDetail), departmentStoreReceiptDetail(receiptDetail)) IN recognize;
+shortNameUOMSkuReceiptDetail 'Ед. изм.' (receiptDetail) = shortNameUOMSku(skuReceiptDetail(receiptDetail));
 
 numberReceipt 'Номер чека' (receipt) = DATA INTEGER (Receipt) IN documentHeaderGroup;
 numberReceiptReceiptDetail 'Номер чека' (receiptDetail) = numberReceipt(receiptReceiptDetail(receiptDetail));
