@@ -71,7 +71,7 @@
     </appender>
 
 <!--
-    <category name="platform.client.remote.proxy" additivity="false">
+    <category name="lsfusion.client.remote.proxy" additivity="false">
         <priority value="DEBUG"/>
         <appender-ref ref="remotelog"/>
     </category>

@@ -1,0 +1,30 @@
+package lsfusion.server.logics.property.actions.flow;
+
+import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+
+import java.sql.SQLException;
+
+public class ApplyActionProperty extends SystemExplicitActionProperty {
+    private final CalcProperty canceled;
+
+    public ApplyActionProperty(CalcProperty canceled) {
+        super("apply", "apply", new ValueClass[]{});
+        
+        this.canceled = canceled;
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        return type == ChangeFlowType.APPLY;
+    }
+
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+        if(!context.apply() && canceled!=null) // если apply'ся то canceled по опререлению сбросится
+            canceled.change(context, true);
+    }
+}
+

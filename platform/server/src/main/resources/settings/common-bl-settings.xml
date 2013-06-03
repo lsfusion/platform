@@ -7,9 +7,9 @@
            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
        default-lazy-init="true">
 
-    <bean id="settings" class="platform.server.Settings"/>
+    <bean id="settings" class="lsfusion.server.Settings"/>
 
-    <bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
+    <bean id="dataAdapter" class="lsfusion.server.data.sql.PostgreDataAdapter">
         <constructor-arg value="${db.name}"/>
         <constructor-arg value="${db.server}"/>
         <constructor-arg value="${db.user}"/>
@@ -18,18 +18,18 @@
         <constructor-arg value="${backup.dumpDir:}"/>
     </bean>
 
-    <bean id="dbManager" class="platform.server.logics.DBManager">
+    <bean id="dbManager" class="lsfusion.server.logics.DBManager">
         <property name="adapter" ref="dataAdapter"/>
         <property name="businessLogics" ref="businessLogics"/>
         <property name="restartManager" ref="restartManager"/>
     </bean>
 
-    <bean id="restartManager" class="platform.server.logics.RestartManager">
+    <bean id="restartManager" class="lsfusion.server.logics.RestartManager">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="navigatorsManager" ref="navigatorsManager"/>
     </bean>
 
-    <bean id="navigatorsManager" class="platform.server.logics.NavigatorsManager">
+    <bean id="navigatorsManager" class="lsfusion.server.logics.NavigatorsManager">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="restartManager" ref="restartManager"/>
@@ -38,12 +38,12 @@
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
-    <bean id="securityManager" class="platform.server.logics.SecurityManager">
+    <bean id="securityManager" class="lsfusion.server.logics.SecurityManager">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
-    <bean id="logicsInstance" class="platform.server.logics.LogicsInstance">
+    <bean id="logicsInstance" class="lsfusion.server.logics.LogicsInstance">
         <property name="lifecycle" ref="lifecycleManager"/>
         <property name="businessLogics" ref="businessLogics"/>
         <property name="navigatorsManager" ref="navigatorsManager"/>
@@ -55,7 +55,7 @@
     </bean>
 
     <!-- Список для переопределения custom-объектов -->
-    <bean id="instanceCustomObjects" class="platform.spring.SpringListsMergerFactory">
+    <bean id="instanceCustomObjects" class="lsfusion.spring.SpringListsMergerFactory">
         <property name="listsToMerge">
             <list>
                 <ref bean="coreCustomObjects"/>
@@ -73,13 +73,13 @@
     <util:list id="customObjects"/>
 
     <!-- Remoting -->
-    <bean id="rmiManager" class="platform.server.logics.RMIManager">
+    <bean id="rmiManager" class="lsfusion.server.logics.RMIManager">
         <property name="registryPort" value="${rmi.registryPort}"/>
         <property name="exportPort" value="${rmi.exportPort?:0}"/>
         <property name="exportName" value="${rmi.exportName:}"/>
     </bean>
 
-    <bean id="remoteLogics" class="platform.server.remote.RemoteLogics">
+    <bean id="remoteLogics" class="lsfusion.server.remote.RemoteLogics">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="navigatorsManager" ref="navigatorsManager"/>
@@ -88,24 +88,24 @@
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
-    <bean id="remoteLogicsLoader" class="platform.server.remote.RemoteLogicsLoader">
+    <bean id="remoteLogicsLoader" class="lsfusion.server.remote.RemoteLogicsLoader">
         <property name="rmiManager" ref="rmiManager"/>
         <property name="remoteLogics" ref="remoteLogics"/>
     </bean>
 
     <!-- Other services -->
-    <bean id="scheduler" class="platform.server.logics.Scheduler">
+    <bean id="scheduler" class="lsfusion.server.logics.Scheduler">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
     <!-- Lifecycle Manager setup -->
-    <bean id="lifecycleManager" class="platform.server.lifecycle.LifecycleManager">
+    <bean id="lifecycleManager" class="lsfusion.server.lifecycle.LifecycleManager">
         <constructor-arg ref="lifecycleListeners"/>
     </bean>
 
-    <bean id="lifecycleListeners" class="platform.spring.SpringListsMergerFactory">
+    <bean id="lifecycleListeners" class="lsfusion.spring.SpringListsMergerFactory">
         <property name="listsToMerge">
             <list>
                 <ref bean="coreLifecycleListeners"/>

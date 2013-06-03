@@ -26,12 +26,12 @@
     </http>
 
     <!-- Custom security filters -->
-    <b:bean id="expiredSessionFilter" class="platform.gwt.base.server.spring.ExpiredSessionFilter">
+    <b:bean id="expiredSessionFilter" class="lsfusion.gwt.base.server.spring.ExpiredSessionFilter">
         <!-- фильтруем запросы к gwt-сервисам -->
         <b:property name="urlPattern" value="/(?!login\.).*/dispatch.*"/>
     </b:bean>
 
-    <b:bean id="propertyReadAccessFilter" class="platform.gwt.base.server.spring.PropertyReadAccessFilter">
+    <b:bean id="propertyReadAccessFilter" class="lsfusion.gwt.base.server.spring.PropertyReadAccessFilter">
         <b:property name="URI" value="/readFile"/>
     </b:bean>
 
@@ -46,7 +46,7 @@
         <b:property name="defaultTargetUrl" value="/form.jsp" />
     </b:bean>
 
-    <b:bean id="accessDeniedHandler" class="platform.gwt.base.server.spring.AccessDeniedHandlerImpl" >
+    <b:bean id="accessDeniedHandler" class="lsfusion.gwt.base.server.spring.AccessDeniedHandlerImpl" >
         <b:property name="errorPage" value="/restricted.jsp" />
     </b:bean>
 
@@ -60,39 +60,39 @@
         <authentication-provider ref="authenticationProvider"/>
     </authentication-manager>
 
-    <b:bean id="authenticationProvider" class="platform.gwt.base.server.spring.GwtAuthenticationProvider">
+    <b:bean id="authenticationProvider" class="lsfusion.gwt.base.server.spring.GwtAuthenticationProvider">
         <b:property name="passwordEncoder">
-            <b:bean class="platform.gwt.base.server.spring.Base64ShaPasswordEncoder" />
+            <b:bean class="lsfusion.gwt.base.server.spring.Base64ShaPasswordEncoder" />
         </b:property>
         <b:property name="userDetailsService">
-            <b:bean class="platform.gwt.base.server.spring.GwtLogicsUserDetailsService" />
+            <b:bean class="lsfusion.gwt.base.server.spring.GwtLogicsUserDetailsService" />
         </b:property>
     </b:bean>
 
     <!-- Custom beans -->
-    <b:bean id="blProvider" class="platform.gwt.base.server.spring.ContextBusinessLogicsProvider" />
+    <b:bean id="blProvider" class="lsfusion.gwt.base.server.spring.ContextBusinessLogicsProvider" />
 
-    <b:bean id="navigatorProvider" scope="session" class="platform.gwt.base.server.spring.NavigatorProviderImpl">
+    <b:bean id="navigatorProvider" scope="session" class="lsfusion.gwt.base.server.spring.NavigatorProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
         <b:constructor-arg ref="blProvider"/>
     </b:bean>
 
-    <b:bean id="formManager" scope="session" class="platform.gwt.form.server.FormSessionManagerImpl">
+    <b:bean id="formManager" scope="session" class="lsfusion.gwt.form.server.FormSessionManagerImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
 
     <!-- Custom request handlers -->
-    <b:bean id="formDispatch" class="platform.gwt.form.server.FormDispatchServlet"/>
+    <b:bean id="formDispatch" class="lsfusion.gwt.form.server.FormDispatchServlet"/>
 
-    <b:bean id="captchaHandler" class="platform.gwt.base.server.captcha.ImageCaptchaRequestHandler"/>
+    <b:bean id="captchaHandler" class="lsfusion.gwt.base.server.captcha.ImageCaptchaRequestHandler"/>
 
-    <b:bean id="readFileHandler" class="platform.gwt.base.server.spring.ReadFileRequestHandler"/>
+    <b:bean id="readFileHandler" class="lsfusion.gwt.base.server.spring.ReadFileRequestHandler"/>
 
-    <b:bean id="propertyImageHandler" class="platform.gwt.base.server.spring.GetPropertyImageRequestHandler" />
+    <b:bean id="propertyImageHandler" class="lsfusion.gwt.base.server.spring.GetPropertyImageRequestHandler" />
 
-    <b:bean id="fileUploadHandler" class="platform.gwt.base.server.spring.UploadFileRequestHandler" />
+    <b:bean id="fileUploadHandler" class="lsfusion.gwt.base.server.spring.UploadFileRequestHandler" />
 
-    <b:bean id="fileDownloadHandler" class="platform.gwt.base.server.spring.DownloadFileRequestHandler" />
+    <b:bean id="fileDownloadHandler" class="lsfusion.gwt.base.server.spring.DownloadFileRequestHandler" />
 
-    <b:bean id="jnlpHandler" class="platform.gwt.base.server.spring.ClientJNLPRequestHandler" />
+    <b:bean id="jnlpHandler" class="lsfusion.gwt.base.server.spring.ClientJNLPRequestHandler" />
 </b:beans>

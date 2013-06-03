@@ -4,21 +4,21 @@ REQUIRE System, Reflection, Time;
 
 NAMESPACE Service;
 
-checkAggregationsAction 'Проверить аггрегации' = ACTION CUSTOM 'platform.server.logics.service.CheckAggregationsActionProperty';
-recalculateAction 'Пересчитать аггрегации' = ACTION CUSTOM 'platform.server.logics.service.RecalculateActionProperty';
-recalculateFollowsAction 'Пересчитать следствия' = ACTION CUSTOM 'platform.server.logics.service.RecalculateFollowsActionProperty';
-analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'platform.server.logics.service.AnalyzeDBActionProperty';
-packAction 'Упаковать таблицы' = ACTION CUSTOM 'platform.server.logics.service.PackActionProperty';
-serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'platform.server.logics.service.ServiceDBActionProperty';
-getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'platform.server.logics.service.GetVMInfoActionProperty';
-toggleExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов' = ACTION CUSTOM 'platform.server.logics.service.ToggleExplainAnalyzeModeActionProperty';
-toggleExplainMode 'Выводить в лог EXPLAIN запросов' = ACTION CUSTOM 'platform.server.logics.service.ToggleExplainModeActionProperty';
-toggleVolatileStats 'Не использовать nested loop' = ACTION CUSTOM 'platform.server.logics.service.ToggleVolatileStatsActionProperty';
-toggleSQLLoggerDebugMode 'Выводить в лог доп.информацию' = ACTION CUSTOM 'platform.server.logics.service.ToggleSQLLoggerDebugModeActionProperty';
+checkAggregationsAction 'Проверить аггрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsActionProperty';
+recalculateAction 'Пересчитать аггрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty';
+recalculateFollowsAction 'Пересчитать следствия' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty';
+analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'lsfusion.server.logics.service.AnalyzeDBActionProperty';
+packAction 'Упаковать таблицы' = ACTION CUSTOM 'lsfusion.server.logics.service.PackActionProperty';
+serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBActionProperty';
+getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'lsfusion.server.logics.service.GetVMInfoActionProperty';
+toggleExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleExplainAnalyzeModeActionProperty';
+toggleExplainMode 'Выводить в лог EXPLAIN запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleExplainModeActionProperty';
+toggleVolatileStats 'Не использовать nested loop' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleVolatileStatsActionProperty';
+toggleSQLLoggerDebugMode 'Выводить в лог доп.информацию' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleSQLLoggerDebugModeActionProperty';
 
-restartServerAction 'Остановить сервер' = ACTION CUSTOM 'platform.server.logics.service.RestartActionProperty';
-runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'platform.server.logics.service.GarbageCollectorActionProperty';
-cancelRestartServerAction 'Отменить остановку сервера' = ACTION CUSTOM 'platform.server.logics.service.CancelRestartActionProperty';
+restartServerAction 'Остановить сервер' = ACTION CUSTOM 'lsfusion.server.logics.service.RestartActionProperty';
+runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'lsfusion.server.logics.service.GarbageCollectorActionProperty';
+cancelRestartServerAction 'Отменить остановку сервера' = ACTION CUSTOM 'lsfusion.server.logics.service.CancelRestartActionProperty';
 isNotServerRestarting () = TRUE IF NOT isServerRestarting();
 
 FORM admin 'Администрирование'

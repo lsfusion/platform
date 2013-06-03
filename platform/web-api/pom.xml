@@ -19,10 +19,10 @@
             <resource>
                 <directory>src/main/java</directory>
                 <includes>
-                    <include>platform/gwt/**/*.*</include>
+                    <include>lsfusion/gwt/**/*.*</include>
                 </includes>
                 <excludes>
-                    <exclude>platform/gwt/**/server/**/*.*</exclude>
+                    <exclude>lsfusion/gwt/**/server/**/*.*</exclude>
                 </excludes>
             </resource>
             <resource>

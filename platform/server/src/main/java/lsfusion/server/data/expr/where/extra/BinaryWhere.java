@@ -1,0 +1,116 @@
+package lsfusion.server.data.expr.where.extra;
+
+import lsfusion.base.BaseUtils;
+import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.interop.Compare;
+import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.OuterContext;
+import lsfusion.server.caches.ParamLazy;
+import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.NotNullExpr;
+import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.query.*;
+import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.where.DataWhere;
+import lsfusion.server.data.where.Where;
+import lsfusion.server.data.where.classes.ClassExprWhere;
+
+public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWhere {
+
+    public final BaseExpr operator1;
+    public final BaseExpr operator2;
+
+    protected BinaryWhere(BaseExpr operator1, BaseExpr operator2) {
+        this.operator1 = operator1;
+        this.operator2 = operator2;
+    }
+
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return SetFact.<OuterContext>toSet(operator1, operator2);
+    }
+
+    public void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+        operator1.fillJoinWheres(joins,andWhere);
+        operator2.fillJoinWheres(joins,andWhere);
+    }
+
+    public ImSet<DataWhere> calculateFollows() {
+        return NotNullExpr.getFollows(NotNullExpr.getExprFollows(SetFact.toSet(operator1, operator2), true));
+    }
+
+    protected abstract This createThis(BaseExpr operator1, BaseExpr operator2);
+    protected abstract Compare getCompare();
+
+    protected Where translate(MapTranslate translator) {
+        return createThis(operator1.translateOuter(translator),operator2.translateOuter(translator));
+    }
+    @ParamLazy
+    public Where translateQuery(QueryTranslator translator) {
+        return operator1.translateQuery(translator).compare(operator2.translateQuery(translator),getCompare());
+    }
+
+    @Override
+    public Where packFollowFalse(Where falseWhere) {
+        Expr packOperator1 = operator1.packFollowFalse(falseWhere);
+        Expr packOperator2 = operator2.packFollowFalse(falseWhere);
+        if(BaseUtils.hashEquals(packOperator1, operator1) && BaseUtils.hashEquals(packOperator2, operator2))
+            return this;
+        else
+            return packOperator1.compare(packOperator2, getCompare());
+    }
+
+    public WhereJoin groupJoinsWheres(ImOrderSet<Expr> orderTop, boolean not) {
+        if(operator1.isValue()) {
+            if(operator2.isTableIndexed() && orderTop.contains(operator2))
+                return new ExprOrderTopJoin(operator2, getCompare().reverse(), operator1, not);
+            if(getCompare().equals(Compare.EQUALS) && !not)
+                return new ExprStatJoin(operator2, Stat.ONE, operator1);
+        }
+        if(operator2.isValue()) {
+            if(operator1.isTableIndexed() && orderTop.contains(operator1))
+                return new ExprOrderTopJoin(operator1, getCompare(), operator2, not);
+            if(getCompare().equals(Compare.EQUALS) && !not)
+                return new ExprStatJoin(operator1, Stat.ONE, operator2);
+        }
+        if(getCompare().equals(Compare.EQUALS) && !not)
+            return new ExprEqualsJoin(operator1, operator2);
+        return null;        
+    }
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
+        WhereJoin exprJoin = groupJoinsWheres(orderTop, false);
+        if(exprJoin!=null)
+            return new GroupJoinsWheres(exprJoin, this, noWhere);
+        return getOperandWhere().groupJoinsWheres(keepStat, keyStat, orderTop, noWhere).and(new GroupJoinsWheres(this, noWhere));
+    }
+
+    @IdentityLazy
+    protected Where getOperandWhere() {
+        return operator1.getNotNullWhere().and(operator2.getNotNullWhere());
+    }
+
+    public ClassExprWhere calculateClassWhere() {
+        return getOperandWhere().getClassWhere();
+    }
+
+    public boolean twins(TwinImmutableObject obj) {
+        return operator1.equals(((BinaryWhere)obj).operator1) && operator2.equals(((BinaryWhere)obj).operator2);
+    }
+
+    protected abstract String getCompareSource(CompileSource compile);
+    public String getSource(CompileSource compile) {
+        return operator1.getSource(compile) + getCompareSource(compile) + operator2.getSource(compile);
+    }
+
+    protected static Where create(BaseExpr operator1, BaseExpr operator2, BinaryWhere where) {
+        return create(where).and(operator1.getOrWhere().and(operator2.getOrWhere()));
+    }
+}

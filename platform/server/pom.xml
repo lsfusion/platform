@@ -12,7 +12,7 @@
     <name>Server</name>
 
     <properties>
-        <assemble.mainClass>platform.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
+        <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
     </properties>
 

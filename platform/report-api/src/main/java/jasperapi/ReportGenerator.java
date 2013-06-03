@@ -4,11 +4,11 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.export.JExcelApiExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
-import platform.base.BaseUtils;
-import platform.base.ByteArray;
-import platform.base.Pair;
-import platform.interop.form.ReportConstants;
-import platform.interop.form.ReportGenerationData;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.ByteArray;
+import lsfusion.base.Pair;
+import lsfusion.interop.form.ReportConstants;
+import lsfusion.interop.form.ReportGenerationData;
 
 import java.awt.*;
 import java.io.*;

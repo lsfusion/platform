@@ -132,10 +132,10 @@ percentNotNullTableColumn 'Не null, %' (tableColumn) = IF rowsTable (tableTabl
                                                           ELSE toNumeric15p2(notNullQuantityTableColumn(tableColumn)) / rowsTable (tableTableColumn(tableColumn)) * 100;
 sparseColumnsTable 'Количество разреженных колонок' (table) = GROUP SUM 1 BY tableTableColumn(tableColumn) IF percentNotNullTableColumn(tableColumn) < 50;
 
-recalculateAggregationTableColumn 'Пересчитать аггрегации' = ACTION CUSTOM 'platform.server.logics.reflection.RecalculateTableColumnActionProperty';
-dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'platform.server.logics.reflection.DropColumnActionProperty';
+recalculateAggregationTableColumn 'Пересчитать аггрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty';
+dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty';
 
-recalculateStats 'Пересчитать статистику' = ACTION CUSTOM 'platform.server.logics.reflection.RecalculateStatsActionProperty';
+recalculateStats 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateStatsActionProperty';
 
 
 CLASS DropColumn 'Удалённая колонка';

@@ -14,7 +14,7 @@
     <name>Logics</name>
 
     <properties>
-        <assemble.mainClass>platform.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
+        <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
         <assemble.descriptorref>lsfusion-server-distribution</assemble.descriptorref>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
     </properties>
@@ -48,10 +48,6 @@
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>erp-logics</artifactId>
         </dependency>
     </dependencies>
 </project>

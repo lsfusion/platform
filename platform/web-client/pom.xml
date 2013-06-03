@@ -30,7 +30,7 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>gwt-maven-plugin</artifactId>
                         <configuration>
-                            <module>platform.gwt.form.Form</module>
+                            <module>lsfusion.gwt.form.Form</module>
 
                             <webappDirectory>${war.explodedDir}</webappDirectory>
                             <force>true</force>
@@ -59,7 +59,7 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>gwt-maven-plugin</artifactId>
                         <configuration>
-                            <module>platform.gwt.form.Form</module>
+                            <module>lsfusion.gwt.form.Form</module>
 
                             <webappDirectory>${war.explodedDir}</webappDirectory>
                             <force>true</force>
@@ -164,7 +164,7 @@
             <resource>
                 <directory>src/main/java</directory>
                 <includes>
-                    <include>platform/gwt/**/*.*</include>
+                    <include>lsfusion/gwt/**/*.*</include>
                 </includes>
             </resource>
             <resource>

@@ -158,7 +158,7 @@
                         <configuration>
                             <entries>
                                 <entry>
-                                    <prefix>platform</prefix>
+                                    <prefix>lsfusion</prefix>
                                     <path>${project.basedir}</path>
                                     <depth>empty</depth>
                                     <reportUnversioned>false</reportUnversioned>
@@ -179,7 +179,7 @@
                                     <mainClass>${assemble.mainClass}</mainClass>
                                 </manifest>
                                 <manifestEntries>
-                                    <SCM-Version>${platform.revision}</SCM-Version>
+                                    <SCM-Version>${lsfusion.revision}</SCM-Version>
                                 </manifestEntries>
                             </archive>
                         </configuration>
@@ -340,7 +340,7 @@
                             <exportAntProperties>true</exportAntProperties>
                             <target>
                                 <java classpathref="maven.runtime.classpath"
-                                      classname="platform.client.Main"
+                                      classname="lsfusion.client.Main"
                                       fork="true"
                                       clonevm="true"
                                       failonerror="true">

@@ -12,7 +12,7 @@
     <name>Desktop Client</name>
 
     <properties>
-        <assemble.mainClass>platform.client.Main</assemble.mainClass>
+        <assemble.mainClass>lsfusion.client.Main</assemble.mainClass>
         <assemble.finalName>lsfusion-client-${project.version}</assemble.finalName>
         <assemble.descriptor>src/assemble/distribution.xml</assemble.descriptor>
     </properties>

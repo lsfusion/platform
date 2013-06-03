@@ -1,0 +1,82 @@
+package lsfusion.server.classes;
+
+import lsfusion.base.ExtInt;
+import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.type.ParseException;
+import lsfusion.server.logics.ServerResourceBundle;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.Format;
+
+public class SystemClass extends DataClass<Integer> {
+
+    public final static SystemClass instance = new SystemClass();
+
+    static {
+        DataClass.storeClass(instance);
+    }
+
+    private SystemClass() { super(ServerResourceBundle.getString("classes.system")); }
+    
+    public String toString() {
+        return ServerResourceBundle.getString("classes.system");
+    }
+
+    public byte getTypeID() {
+        throw new RuntimeException("not supported yet");
+    }
+
+    public Format getReportFormat() {
+        throw new RuntimeException("not supported yet");
+    }
+
+    public Class getReportJavaClass() {
+        return Integer.class;
+    }
+
+    public Object getDefaultValue() {
+        return 0;
+    }
+
+    public DataClass getCompatible(DataClass compClass) {
+        return compClass instanceof SystemClass?this:null; 
+    }
+
+    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return syntax.getIntegerType();
+    }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getIntegerSQL();
+    }
+
+    public Integer read(Object value) {
+        if(value==null) return null;
+        return ((Number)value).intValue();
+    }
+
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+        statement.setInt(num, (Integer)value);
+    }
+
+    public boolean isSafeString(Object value) {
+        return true;
+    }
+
+    public String getString(Object value, SQLSyntax syntax) {
+        return value.toString();
+    }
+
+    public ExtInt getCharLength() {
+        throw new RuntimeException("not supported yet");
+    }
+
+    public Integer parseString(String s) throws ParseException {
+        throw new RuntimeException("not supported");
+    }
+
+    public String getSID() {
+        return "SystemClass";
+    }
+}

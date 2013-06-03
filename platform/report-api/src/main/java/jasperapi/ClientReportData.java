@@ -3,12 +3,12 @@ package jasperapi;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
-import platform.base.BaseUtils;
-import platform.base.ByteArray;
-import platform.base.DateConverter;
-import platform.base.Pair;
-import platform.interop.form.PropertyReadType;
-import platform.interop.form.ReportConstants;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.ByteArray;
+import lsfusion.base.DateConverter;
+import lsfusion.base.Pair;
+import lsfusion.interop.form.PropertyReadType;
+import lsfusion.interop.form.ReportConstants;
 
 import java.io.DataInputStream;
 import java.io.IOException;

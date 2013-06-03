@@ -24,9 +24,9 @@ calculatedHash 'Значение хэш' = DATA SESSION STRING[100] ();
 forbidChangePasswordCustomUser 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
 forbidEditProfileCustomUser 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);
 
-calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'platform.server.logics.authentication.CalculateBase64HashActionProperty';
-logOut 'Выйти' = ACTION CUSTOM 'platform.server.logics.authentication.LogOutActionProperty';
-reloginUser 'Сменить пользователя' = ACTION CUSTOM 'platform.server.logics.authentication.ReloginUserActionProperty';
+calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty';
+logOut 'Выйти' = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty';
+reloginUser 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty';
 
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
 serverLDAP 'Сервер' = DATA STRING[100] ();

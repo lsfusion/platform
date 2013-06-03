@@ -24,7 +24,7 @@ case "$1" in
     -errfile $FUSION_HOME/logs/stderr.log \
     $FUSION_OPTS \
     -cp $CLASSPATH \
-    platform.server.logics.BusinessLogicsBootstrap
+    lsfusion.server.logics.BusinessLogicsBootstrap
     exit $?
     ;;
 
@@ -33,7 +33,7 @@ case "$1" in
     -home $JAVA_HOME \
     -stop \
     -pidfile $PID_FILE \
-    platform.server.logics.BusinessLogicsBootstrap
+    lsfusion.server.logics.BusinessLogicsBootstrap
     exit $?
     ;;
 

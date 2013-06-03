@@ -9,7 +9,7 @@
 
     <import resource="classpath:settings/common-bl-settings.xml"/>
 
-    <bean id="businessLogics" class="platform.server.logics.scripted.ScriptingBusinessLogics">
+    <bean id="businessLogics" class="lsfusion.server.logics.scripted.ScriptingBusinessLogics">
         <property name="scriptFilePaths" value="${logics.includedPaths}"/>
         <property name="excludedScriptFilePaths" value="${logics.excludedPaths:}"/>
 

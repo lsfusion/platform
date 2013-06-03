@@ -33,7 +33,7 @@ TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog);
 messageScheduledClientTaskLog 'Сообщение'= DATA STRING[200] (ScheduledClientTaskLog);
 
-runSetupScheduler 'Планировщик' = ACTION CUSTOM 'platform.server.SetupSchedulerActionProperty';
+runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty';
 
 WHEN [GROUP SUM 1 IF
     (CHANGED (runAtStartScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR

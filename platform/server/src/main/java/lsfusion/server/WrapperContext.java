@@ -1,0 +1,94 @@
+package lsfusion.server;
+
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.server.classes.CustomClass;
+import lsfusion.server.classes.DataClass;
+import lsfusion.server.context.AbstractContext;
+import lsfusion.server.context.Context;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.instance.DialogInstance;
+import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.remote.RemoteDialog;
+import lsfusion.server.remote.RemoteForm;
+import lsfusion.server.session.DataSession;
+
+import java.sql.SQLException;
+
+public class WrapperContext extends AbstractContext implements Context {
+    private final Context wrappedContext;
+
+    public WrapperContext(Context wrappedContext) {
+        this.wrappedContext = wrappedContext;
+    }
+
+    @Override
+    public LogicsInstance getLogicsInstance() {
+        return wrappedContext.getLogicsInstance();
+    }
+
+    public FormInstance getFormInstance() {
+        return wrappedContext.getFormInstance();
+    }
+
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
+        return wrappedContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive);
+    }
+
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
+        return wrappedContext.createRemoteForm(formInstance);
+    }
+
+    public RemoteDialog createRemoteDialog(DialogInstance dialogInstance) {
+        return wrappedContext.createRemoteDialog(dialogInstance);
+    }
+
+    public ObjectValue requestUserObject(ExecutionContext.RequestDialog requestDialog) throws SQLException {
+        return wrappedContext.requestUserObject(requestDialog);
+    }
+
+    public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
+        return wrappedContext.requestUserData(dataClass, oldValue);
+    }
+
+    public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
+        return wrappedContext.requestUserClass(baseClass, defaultValue, concrete);
+    }
+
+    public String getLogMessage() {
+        return wrappedContext.getLogMessage();
+    }
+
+    public void delayUserInteraction(ClientAction action) {
+        wrappedContext.delayUserInteraction(action);
+    }
+
+    public Object requestUserInteraction(ClientAction action) {
+        return wrappedContext.requestUserInteraction(action);
+    }
+
+    public Object[] requestUserInteraction(ClientAction... actions) {
+        return wrappedContext.requestUserInteraction(actions);
+    }
+
+    public void setActionMessage(String message) {
+        wrappedContext.setActionMessage(message);
+    }
+
+    public String getActionMessage() {
+        return wrappedContext.getActionMessage();
+    }
+
+    public void pushActionMessage(String segment) {
+        wrappedContext.pushActionMessage(segment);
+    }
+
+    public String popActionMessage() {
+        return wrappedContext.popActionMessage();
+    }
+}

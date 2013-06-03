@@ -9,11 +9,11 @@
         <constructor-arg type="int" value="7652"/>
     </bean>
 
-    <bean id="serverAgent" class="platform.agent.ServerAgent">
+    <bean id="serverAgent" class="lsfusion.agent.ServerAgent">
         <constructor-arg ref="registryPort"/>
     </bean>
 
-    <bean id="serverAgentLocator" class="platform.agent.ServerAgentLocator">
+    <bean id="serverAgentLocator" class="lsfusion.agent.ServerAgentLocator">
         <constructor-arg value="6667"/>
         <constructor-arg ref="registryPort"/>
     </bean>

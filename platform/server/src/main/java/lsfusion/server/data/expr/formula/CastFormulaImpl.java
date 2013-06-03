@@ -1,0 +1,41 @@
+package lsfusion.server.data.expr.formula;
+
+import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.classes.DataClass;
+import lsfusion.server.data.expr.KeyType;
+import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.type.Type;
+
+public class CastFormulaImpl implements FormulaImpl {
+    private DataClass castClass;
+
+    public CastFormulaImpl(DataClass castClass) {
+        this.castClass = castClass;
+    }
+
+    @Override
+    public String getSource(CompileSource compile, ExprSource source) {
+        assert source.getExprCount() == 1;
+        return castClass.getCast(source.getSource(0, compile), compile.syntax, compile.env);
+    }
+
+    @Override
+    public ConcreteClass getStaticClass(ExprSource source) {
+        return castClass;
+    }
+
+    @Override
+    public Type getType(ExprSource source, KeyType keyType) {
+        return castClass;
+    }
+
+    @Override
+    public int hashCode() {
+        return castClass.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return castClass.equals(((CastFormulaImpl)obj).castClass);
+    }
+}
