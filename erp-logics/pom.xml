@@ -5,16 +5,23 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>by.luxsoft.platform</groupId>
+        <groupId>lsfusion.platform</groupId>
         <artifactId>logics</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../../platform/logics/pom.xml</relativePath>
     </parent>
+
+    <groupId>lsfusion.erp</groupId>
     <artifactId>erp-logics</artifactId>
     <packaging>jar</packaging>
     <name>ERP Logics</name>
 
     <dependencies>
+        <dependency>
+            <groupId>lsfusion.erp</groupId>
+            <artifactId>equ-srv</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
@@ -40,10 +47,6 @@
         <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>equ-srv</artifactId>
         </dependency>
         <dependency>
             <groupId>net.sf.sevenzipjbinding</groupId>
