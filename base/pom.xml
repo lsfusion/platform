@@ -101,14 +101,14 @@
         <keystore.pass>qwerty</keystore.pass>
 
         <!-- Repositories properties -->
-        <archiva.server>192.168.0.1:8080</archiva.server>
+        <lsfusion.repository.url>lsfusion.ru</lsfusion.repository.url>
     </properties>
 
     <repositories>
         <repository>
             <id>lsfusion</id>
-            <name>Внутренний snapshot-сервер ЛюксСофт.</name>
-            <url>http://${archiva.server}/archiva/repository/internal</url>
+            <name>lsFusion Internal Repository</name>
+            <url>http://${lsfusion.repository.url}/archiva/repository/internal</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -118,8 +118,8 @@
         </repository>
         <repository>
             <id>lsfusion.snapshots</id>
-            <name>Внутренний snapshot-сервер ЛюксСофт.</name>
-            <url>http://${archiva.server}/archiva/repository/snapshots</url>
+            <name>lsFusion Snapshot Repository</name>
+            <url>http://${lsfusion.repository.url}/archiva/repository/snapshots</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -132,11 +132,11 @@
     <distributionManagement>
         <repository>
             <id>lsfusion</id>
-            <url>http://${archiva.server}/archiva/repository/internal</url>
+            <url>http://${lsfusion.repository.url}/archiva/repository/internal</url>
         </repository>
         <snapshotRepository>
             <id>lsfusion.snapshots</id>
-            <url>http://${archiva.server}/archiva/repository/snapshots</url>
+            <url>http://${lsfusion.repository.url}/archiva/repository/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 
