@@ -13,6 +13,8 @@
 
     <groupId>lsfusion.erp</groupId>
     <artifactId>erp-logics</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
     <packaging>jar</packaging>
     <name>ERP Logics</name>
 
