@@ -153,7 +153,7 @@ public abstract class FileClass extends DataClass<byte[]> {
         if (value == null)
             return new ArrayList<byte[]>();
 
-        if (!multiple && this instanceof DynamicFormatFileClass) { // обратная совместимость со Сколково так что так криво
+        if (!multiple && this instanceof DynamicFormatFileClass) { // обратная совместимость
             ByteArrayInputStream byteInStream = new ByteArrayInputStream(value);
             DataInputStream inStream = new DataInputStream(byteInStream);
             try {

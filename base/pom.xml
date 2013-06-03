@@ -10,7 +10,6 @@
     <properties>
         <lsfusion.version>1.0-SNAPSHOT</lsfusion.version>
         <lsfusion.erp.version>${lsfusion.version}</lsfusion.erp.version>
-        <lsfusion.skolkovo.version>${lsfusion.version}</lsfusion.skolkovo.version>
         <lsfusion.paas.version>${lsfusion.version}</lsfusion.paas.version>
 
         <findbugs.version>1.0.0</findbugs.version>
@@ -958,22 +957,6 @@
                 <groupId>by.luxsoft</groupId>
                 <artifactId>paas-api</artifactId>
                 <version>${lsfusion.paas.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>by.luxsoft</groupId>
-                <artifactId>skolkovo-api</artifactId>
-                <version>${lsfusion.skolkovo.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft</groupId>
-                <artifactId>skolkovo-logics</artifactId>
-                <version>${lsfusion.skolkovo.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft</groupId>
-                <artifactId>skolkovo-gwt</artifactId>
-                <version>${lsfusion.skolkovo.version}</version>
             </dependency>
 
             <!-- ERP modules -->

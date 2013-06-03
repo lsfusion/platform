@@ -17,7 +17,7 @@ import java.util.Locale;
 public class RequestContextFilter extends OncePerRequestFilter {
     private static final String LOCALE_PARAM_NAME = "locale";
 
-    private static final String LOCALE_COOKIE_NAME = "skolkovo.locale.current";
+    private static final String LOCALE_COOKIE_NAME = "lsfusion.locale.current";
 
     private final CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
 
