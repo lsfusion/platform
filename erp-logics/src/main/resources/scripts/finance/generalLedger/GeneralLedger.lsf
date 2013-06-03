@@ -6,7 +6,7 @@ REQUIRE GLAccountType, Operation;
 CLASS ABSTRACT GLDocument 'Регистр-основание';
 TABLE GLDocument(GLDocument);
 
-nameGLDocument 'Регистр-основание' = ABSTRACT STRING[200] (GLDocument);
+nameGLDocument 'Регистр-основание' = ABSTRACT STRING[200] (GLDocument) PERSISTENT;
 editGLDocument 'Редактировать регистр' = ABSTRACT ACTION (GLDocument) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 onlineGeneralLedger 'Создавать проводки онлайн' = DATA BOOLEAN ();
