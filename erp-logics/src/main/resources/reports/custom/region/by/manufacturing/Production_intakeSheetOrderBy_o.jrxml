@@ -879,7 +879,7 @@
 				<textElement>
 					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[($F{dateOrder}!=null?lsfusion.base.BaseUtils.formatRussian($F{dateOrder}):"")]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{dateOrder}!=null?lsfusion.base.BaseUtils.formatRussian($F{dateOrder}):"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="672" y="90" width="75" height="20"/>

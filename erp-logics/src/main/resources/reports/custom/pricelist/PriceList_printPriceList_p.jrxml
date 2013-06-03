@@ -91,7 +91,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA[<![CDATA["ПРАЙС № "+$F{seriesObject}+"-"+$F{numberObject}+" от "+lsfusion.base.BaseUtils.formatRussian($F{datePriceList})+" года"]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA["ПРАЙС № "+$F{seriesObject}+"-"+$F{numberObject}+" от "+lsfusion.base.BaseUtils.formatRussian($F{datePriceList})+" года"]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="25" width="105" height="13"/>
@@ -149,7 +149,7 @@
 					<font fontName="lsf.TimesNewRoman" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.formatRussian($F{fromDatePriceList})]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.formatRussian($F{fromDatePriceList})]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement mode="Transparent" x="104" y="50" width="471" height="13" forecolor="#000000" backcolor="#FFFFFF"/>
@@ -163,7 +163,7 @@
 					<font fontName="lsf.TimesNewRoman" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.formatRussian($F{toDatePriceList})]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.formatRussian($F{toDatePriceList})]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

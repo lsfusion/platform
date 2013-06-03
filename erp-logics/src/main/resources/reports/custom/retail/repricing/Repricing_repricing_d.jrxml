@@ -267,7 +267,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{markupSumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{markupSumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="26" y="0" width="114" height="18"/>
@@ -287,7 +287,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{curRetailPriceRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{curRetailPriceRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="531" y="0" width="43" height="18"/>
@@ -297,7 +297,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{retailPriceRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{retailPriceRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="402" y="0" width="43" height="18"/>
@@ -307,7 +307,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{sumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="574" y="0" width="45" height="18"/>
@@ -317,7 +317,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{retailSumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{retailSumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="185" y="0" width="43" height="18"/>
@@ -327,7 +327,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{curSumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{curSumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="140" y="0" width="19" height="18"/>
@@ -357,7 +357,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{diffRetailSumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{diffRetailSumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="619" y="0" width="45" height="18"/>
@@ -367,7 +367,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{diffSumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{diffSumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="228" y="0" width="43" height="18"/>
@@ -377,7 +377,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{curMarkupSumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{curMarkupSumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="709" y="0" width="45" height="18"/>
@@ -387,7 +387,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{diffVATSumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{diffVATSumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="357" y="0" width="45" height="18"/>
@@ -397,7 +397,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{curRetailSumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{curRetailSumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="271" y="0" width="43" height="18"/>
@@ -407,7 +407,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{curVATSumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{curVATSumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="159" y="0" width="26" height="18"/>
@@ -427,7 +427,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{VATSumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{VATSumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="664" y="0" width="45" height="18"/>
@@ -437,7 +437,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{diffMarkupSumRepricingDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{diffMarkupSumRepricingDetail},0)]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

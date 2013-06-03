@@ -153,7 +153,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[<![CDATA["За период с "+lsfusion.base.BaseUtils.formatRussian($F{objFrom}lsfusion+lsfusion.base.BaseUtils.formatRussian($F{objTo})]]>]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA["За период с "+lsfusion.base.BaseUtils.formatRussian($F{objFrom})+" по "+lsfusion.base.BaseUtils.formatRussian($F{objTo})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="78" width="537" height="12"/>
@@ -201,7 +201,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA["Остаток на "+lsfusion.base.BaseUtils.formatRussian($F{objFrom})]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Остаток на "+lsfusion.base.BaseUtils.formatRussian($F{objFrom})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToBandHeight" x="177" y="115" width="30" height="12"/>
@@ -222,7 +222,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA["Остаток на "+lsfusion.base.BaseUtils.formatRussian($F{objTo})]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Остаток на "+lsfusion.base.BaseUtils.formatRussian($F{objTo})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToBandHeight" x="447" y="115" width="30" height="12"/>
@@ -314,63 +314,63 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{costBatch},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{costBatch},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="177" y="0" width="30" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{balanceBBatchStockDate},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{balanceBBatchStockDate},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="207" y="0" width="60" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{costSumBatchStockDateFrom},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{costSumBatchStockDateFrom},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="447" y="0" width="30" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{balanceABatchStockDate},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{balanceABatchStockDate},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="477" y="0" width="60" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{costSumBatchStockDateTo},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{costSumBatchStockDateTo},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="267" y="0" width="30" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{costInBalanceBatchStockDateFromTo},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{costInBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="297" y="0" width="60" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{costSumInBalanceBatchStockDateFromTo},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{costSumInBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="357" y="0" width="30" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{costOutBalanceBatchStockDateFromTo},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{costOutBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="387" y="0" width="60" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{costSumOutBalanceBatchStockDateFromTo},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{costSumOutBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -111,7 +111,7 @@
 					<textElement verticalAlignment="Top">
 						<font size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[<![CDATA["от "+lsfusion.base.BaseUtils.formatRussian($F{dateOrder})+" года"]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA["от "+lsfusion.base.BaseUtils.formatRussian($F{dateOrder})+" года"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="12">

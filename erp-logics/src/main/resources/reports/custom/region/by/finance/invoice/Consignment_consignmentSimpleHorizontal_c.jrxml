@@ -436,14 +436,14 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumInvoiceConsignmentDetailConsignment},0)]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{sumInvoiceConsignmentDetailConsignment},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="341" y="0" width="49" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{quantityConsignmentDetailConsignment},0.0)]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{quantityConsignmentDetailConsignment},0.0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="25" y="0" width="24" height="14" backcolor="#FFFFFF"/>
@@ -457,14 +457,14 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumVATConsignmentDetailConsignment},0)]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{sumVATConsignmentDetailConsignment},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumConsignmentDetailConsignment},0)]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{sumConsignmentDetailConsignment},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="49" y="0" width="260" height="14" backcolor="#FFFFFF"/>
@@ -499,7 +499,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[<![CDATA[($F{sumVATConsignmentDetailConsignment}!=null ? lsfusion.base.Words.toString($F{sumVATConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{sumVATConsignmentDetailConsignment}!=null ? lsfusion.base.Words.toString($F{sumVATConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="109" y="15" width="701" height="1"/>
@@ -533,7 +533,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[<![CDATA[($F{sumInvoiceConsignmentDetailConsignment}!=null?lsfusion.base.Words.toString($F{sumInvoiceConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{sumInvoiceConsignmentDetailConsignment}!=null?lsfusion.base.Words.toString($F{sumInvoiceConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="25" y="0" width="105" height="12"/>
@@ -884,7 +884,7 @@
 				<textElement textAlignment="Center">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.formatRussian($F{dateConsignment})+" года"]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.formatRussian($F{dateConsignment})+" года"]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="GroupCellStyle0" x="373" y="50" width="97" height="20" backcolor="#FFFFFF"/>
@@ -991,7 +991,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{quantityConsignmentDetail},0.0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{quantityConsignmentDetail},0.0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="390" y="0" width="56" height="12"/>
@@ -1004,7 +1004,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{priceConsignmentDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{priceConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="12"/>
@@ -1017,7 +1017,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumConsignmentDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{sumConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="517" y="0" width="42" height="12"/>
@@ -1030,7 +1030,7 @@
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{vatConsignmentDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{vatConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="559" y="0" width="69" height="12"/>
@@ -1043,7 +1043,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumVATConsignmentDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{sumVATConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="628" y="0" width="82" height="12"/>
@@ -1056,7 +1056,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumInvoiceConsignmentDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{sumInvoiceConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="710" y="0" width="100" height="12"/>
@@ -1133,7 +1133,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{quantityConsignmentDetail},0.0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{quantityConsignmentDetail},0.0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="390" y="0" width="56" height="12">
@@ -1146,7 +1146,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{wareSupplierPriceConsignmentDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{wareSupplierPriceConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="12">
@@ -1159,7 +1159,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{wareSupplierSumConsignmentDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{wareSupplierSumConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="517" y="0" width="42" height="12">
@@ -1172,7 +1172,7 @@
 				<textElement textAlignment="Center">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{valueWareRangeConsignmentDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{valueWareRangeConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="559" y="0" width="69" height="12">
@@ -1185,7 +1185,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{wareVATSumConsignmentDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{wareVATSumConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="628" y="0" width="82" height="12">
@@ -1198,7 +1198,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{wareSumConsignmentDetail},0)]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{wareSumConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="710" y="0" width="100" height="12">

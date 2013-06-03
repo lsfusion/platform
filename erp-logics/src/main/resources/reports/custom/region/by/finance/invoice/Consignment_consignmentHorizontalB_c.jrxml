@@ -71,7 +71,7 @@
 				<textElement verticalAlignment="Top">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[<![CDATA[($F{packQuantityConsignmentDetailConsignment}!=null?lsfusion.base.Words.toString($F{packQuantityConsignmentDetailConsignment}) + " мест":"")]]>]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{packQuantityConsignmentDetailConsignment}!=null?lsfusion.base.Words.toString($F{packQuantityConsignmentDetailConsignment}) + " мест":"")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="132" y="82" width="273" height="24"/>
@@ -116,7 +116,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[<![CDATA[($F{sumVATConsignmentDetailConsignment}!=null ? lsfusion.base.Words.toString($F{sumVATConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]>]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{sumVATConsignmentDetailConsignment}!=null ? lsfusion.base.Words.toString($F{sumVATConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="422" y="187" width="141" height="12"/>
@@ -172,7 +172,7 @@
 				<textElement verticalAlignment="Top">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[<![CDATA[($F{grossWeightTonConsignmentDetailConsignment}!=null?lsfusion.base.Words.toString($F{grossWeightTonConsignmentDetailConsignment}) + " т":"")]]>]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{grossWeightTonConsignmentDetailConsignment}!=null?lsfusion.base.Words.toString($F{grossWeightTonConsignmentDetailConsignment}) + " т":"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="17" y="106" width="115" height="24"/>
@@ -224,7 +224,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[<![CDATA[($F{sumInvoiceConsignmentDetailConsignment}!=null?lsfusion.base.Words.toString($F{sumInvoiceConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]>]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{sumInvoiceConsignmentDetailConsignment}!=null?lsfusion.base.Words.toString($F{sumInvoiceConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="118" y="360" width="17" height="12"/>

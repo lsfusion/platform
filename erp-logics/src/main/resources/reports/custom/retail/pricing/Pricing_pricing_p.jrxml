@@ -222,7 +222,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA[<![CDATA["Основание: Накладная № "+$F{numberPricing}+"-"+$F{seriesPricing}+" от "+lsfusion.base.BaseUtils.formatRussian($F{datePricing})+" года"]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Основание: Накладная № "+$F{numberPricing}+"-"+$F{seriesPricing}+" от "+lsfusion.base.BaseUtils.formatRussian($F{datePricing})+" года"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="315" y="23" width="480" height="13"/>
@@ -266,7 +266,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA[<![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН № "+$F{numberPricing}+"-"+$F{seriesPricing}+" от "+lsfusion.base.BaseUtils.formatRussian($F{datePricing})+" года"]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН № "+$F{numberPricing}+"-"+$F{seriesPricing}+" от "+lsfusion.base.BaseUtils.formatRussian($F{datePricing})+" года"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

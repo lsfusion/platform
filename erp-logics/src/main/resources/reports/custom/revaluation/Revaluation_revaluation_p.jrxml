@@ -112,7 +112,7 @@
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="685" y="0" width="117" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right"/>
-					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{diffSumRevaluationDetailRevaluation},0)]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{diffSumRevaluationDetailRevaluation},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="445" y="0" width="60" height="18" backcolor="#FFFFFF"/>
@@ -122,12 +122,12 @@
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="625" y="0" width="60" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right"/>
-					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{sumRevaluationDetailRevaluation},0)]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{sumRevaluationDetailRevaluation},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="505" y="0" width="60" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right"/>
-					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.nvl($F{curSumRevaluationDetailRevaluation},0)]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.nvl($F{curSumRevaluationDetailRevaluation},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="22" height="18" backcolor="#FFFFFF"/>
@@ -184,8 +184,8 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.Words.toString($F{curSumRevaluationDetailRevaluation})+
-" "+"белорусских рублей"]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[lsfusion.base.Words.toString($F{curSumRevaluationDetailRevaluation})+
+" "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="159" y="36" width="643" height="13"/>
@@ -193,8 +193,8 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.Words.toString($F{sumRevaluationDetailRevaluation})+
-" "+"белорусских рублей"]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[lsfusion.base.Words.toString($F{sumRevaluationDetailRevaluation})+
+" "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="159" y="49" width="643" height="13"/>
@@ -202,8 +202,8 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[<![CDATA[<![CDATA[($F{diffSumRevaluationDetailRevaluation}.compareTo(BigDecimal.Zlsfusion(lsfusion.base.Words.toString($F{diffSumRevaluationDetailRevaluation})):(lsfusion.base.Words.toString($F{diffSumRevaluationDetailRevaluation}.negate())))+
-" "+"белорусских рублей"]]>]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{diffSumRevaluationDetailRevaluation}.compareTo(BigDecimal.ZERO)>=0?(lsfusion.base.Words.toString($F{diffSumRevaluationDetailRevaluation})):(lsfusion.base.Words.toString($F{diffSumRevaluationDetailRevaluation}.negate())))+
+" "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="159" y="10" width="643" height="13"/>
@@ -211,7 +211,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.Words.toString($F{quantityRevaluationDetailRevaluation})]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[lsfusion.base.Words.toString($F{quantityRevaluationDetailRevaluation})]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="11" y="78" width="129" height="13"/>
@@ -409,7 +409,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[<![CDATA["от " +lsfusion.base.BaseUtils.formatRussian($F{dateRevaluation})+" года."]]>]]></textFieldExpression>
+				<textFieldExpression><![CDATA["от " +lsfusion.base.BaseUtils.formatRussian($F{dateRevaluation})+" года."]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="10" y="38" width="792" height="13"/>

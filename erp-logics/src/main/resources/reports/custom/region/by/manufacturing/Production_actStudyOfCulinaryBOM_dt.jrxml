@@ -80,7 +80,7 @@
 					<textElement textAlignment="Center">
 						<font size="10" isBold="false" isItalic="false" isUnderline="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[<![CDATA[lsfusion.base.BaseUtils.formatRussian($F{objectValueProperty_DateClass})]]>]]></textFieldExpression>
+					<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.formatRussian($F{objectValueProperty_DateClass})]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="8">
