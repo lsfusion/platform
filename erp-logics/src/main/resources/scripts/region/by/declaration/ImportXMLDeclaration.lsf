@@ -6,7 +6,7 @@ REQUIRE System,
         PurchaseDeclaration
         ;
 
-importXMLDeclaration 'Импортировать' = ACTION CUSTOM 'fdk.region.by.declaration.ImportXMLDeclarationActionProperty';
+importXMLDeclaration 'Импортировать' = ACTION CUSTOM 'lsfusion.erp.region.by.declaration.ImportXMLDeclarationActionProperty';
 
 EXTEND FORM declaration
     PROPERTIES (d) importXMLDeclaration TODRAW dd FORCE PANEL TOOLBAR

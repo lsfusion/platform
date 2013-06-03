@@ -16,35 +16,35 @@ GROUP excelContractsGroup 'Импорт контрактов' : public;
 GROUP excelUserInvoicesGroup 'Импорт документов прихода' : public;
 GROUP excelAllGroup 'Импорт всего' : public;
 
-createTemplateItemsAction 'Создать шаблон для импорта товаров' = ACTION CUSTOM 'fdk.region.by.integration.excel.CreateExcelTemplateItemsActionProperty' IN excelItemsGroup;
-importItemsAction 'Импортировать товары' = ACTION CUSTOM 'fdk.region.by.integration.excel.ImportExcelItemsActionProperty' IN excelItemsGroup;
+createTemplateItemsAction 'Создать шаблон для импорта товаров' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.CreateExcelTemplateItemsActionProperty' IN excelItemsGroup;
+importItemsAction 'Импортировать товары' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ImportExcelItemsActionProperty' IN excelItemsGroup;
 
-createTemplateGroupItemsAction 'Создать шаблон для импорта групп товаров' = ACTION CUSTOM 'fdk.region.by.integration.excel.CreateExcelTemplateGroupItemsActionProperty' IN excelGroupItemsGroup;
-importGroupItemsAction 'Импортировать группы товаров' = ACTION CUSTOM 'fdk.region.by.integration.excel.ImportExcelGroupItemsActionProperty' IN excelGroupItemsGroup;
+createTemplateGroupItemsAction 'Создать шаблон для импорта групп товаров' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.CreateExcelTemplateGroupItemsActionProperty' IN excelGroupItemsGroup;
+importGroupItemsAction 'Импортировать группы товаров' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ImportExcelGroupItemsActionProperty' IN excelGroupItemsGroup;
 
-createTemplateBanksAction 'Создать шаблон для импорта банков' = ACTION CUSTOM 'fdk.region.by.integration.excel.CreateExcelTemplateBanksActionProperty' IN excelBanksGroup;
-importBanksAction 'Импортировать банки' = ACTION CUSTOM 'fdk.region.by.integration.excel.ImportExcelBanksActionProperty' IN excelBanksGroup;
+createTemplateBanksAction 'Создать шаблон для импорта банков' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.CreateExcelTemplateBanksActionProperty' IN excelBanksGroup;
+importBanksAction 'Импортировать банки' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ImportExcelBanksActionProperty' IN excelBanksGroup;
 
-createTemplateLegalEntitiesAction 'Создать шаблон для импорта организаций' = ACTION CUSTOM 'fdk.region.by.integration.excel.CreateExcelTemplateLegalEntitiesActionProperty' IN excelLegalEntitiesGroup;
-importLegalEntitiesAction 'Импортировать организации' = ACTION CUSTOM 'fdk.region.by.integration.excel.ImportExcelLegalEntitiesActionProperty' IN excelLegalEntitiesGroup;
+createTemplateLegalEntitiesAction 'Создать шаблон для импорта организаций' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.CreateExcelTemplateLegalEntitiesActionProperty' IN excelLegalEntitiesGroup;
+importLegalEntitiesAction 'Импортировать организации' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ImportExcelLegalEntitiesActionProperty' IN excelLegalEntitiesGroup;
 
-createTemplateStoresAction 'Создать шаблон для импорта магазинов' = ACTION CUSTOM 'fdk.region.by.integration.excel.CreateExcelTemplateStoresActionProperty' IN excelStoresGroup;
-importStoresAction 'Импортировать магазины' = ACTION CUSTOM 'fdk.region.by.integration.excel.ImportExcelStoresActionProperty' IN excelStoresGroup;
+createTemplateStoresAction 'Создать шаблон для импорта магазинов' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.CreateExcelTemplateStoresActionProperty' IN excelStoresGroup;
+importStoresAction 'Импортировать магазины' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ImportExcelStoresActionProperty' IN excelStoresGroup;
 
-createTemplateDepartmentStoresAction 'Создать шаблон для импорта отделов магазинов' = ACTION CUSTOM 'fdk.region.by.integration.excel.CreateExcelTemplateDepartmentStoresActionProperty' IN excelDepartmentStoresGroup;
-importDepartmentStoresAction 'Импортировать отделы магазинов' = ACTION CUSTOM 'fdk.region.by.integration.excel.ImportExcelDepartmentStoresActionProperty' IN excelDepartmentStoresGroup;
+createTemplateDepartmentStoresAction 'Создать шаблон для импорта отделов магазинов' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.CreateExcelTemplateDepartmentStoresActionProperty' IN excelDepartmentStoresGroup;
+importDepartmentStoresAction 'Импортировать отделы магазинов' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ImportExcelDepartmentStoresActionProperty' IN excelDepartmentStoresGroup;
 
-createTemplateWarehousesAction 'Создать шаблон для импорта складов' = ACTION CUSTOM 'fdk.region.by.integration.excel.CreateExcelTemplateWarehousesActionProperty' IN excelWarehousesGroup;
-importWarehousesAction 'Импортировать склады' = ACTION CUSTOM 'fdk.region.by.integration.excel.ImportExcelWarehousesActionProperty' IN excelWarehousesGroup;
+createTemplateWarehousesAction 'Создать шаблон для импорта складов' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.CreateExcelTemplateWarehousesActionProperty' IN excelWarehousesGroup;
+importWarehousesAction 'Импортировать склады' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ImportExcelWarehousesActionProperty' IN excelWarehousesGroup;
 
-createTemplateContractsAction 'Создать шаблон для импорта договоров' = ACTION CUSTOM 'fdk.region.by.integration.excel.CreateExcelTemplateContractsActionProperty' IN excelContractsGroup;
-importContractsAction 'Импортировать договоры' = ACTION CUSTOM 'fdk.region.by.integration.excel.ImportExcelContractsActionProperty' IN excelContractsGroup;
+createTemplateContractsAction 'Создать шаблон для импорта договоров' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.CreateExcelTemplateContractsActionProperty' IN excelContractsGroup;
+importContractsAction 'Импортировать договоры' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ImportExcelContractsActionProperty' IN excelContractsGroup;
 
-createTemplateUserInvoicesAction 'Создать шаблон для импорта остатков' = ACTION CUSTOM 'fdk.region.by.integration.excel.CreateExcelTemplateUserInvoicesActionProperty' IN excelUserInvoicesGroup;
-importUserInvoicesAction 'Импортировать остатки' = ACTION CUSTOM 'fdk.region.by.integration.excel.ImportExcelUserInvoicesActionProperty' IN excelUserInvoicesGroup;
+createTemplateUserInvoicesAction 'Создать шаблон для импорта остатков' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.CreateExcelTemplateUserInvoicesActionProperty' IN excelUserInvoicesGroup;
+importUserInvoicesAction 'Импортировать остатки' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ImportExcelUserInvoicesActionProperty' IN excelUserInvoicesGroup;
 
-createTemplateAllAction 'Создать все шаблоны' = ACTION CUSTOM 'fdk.region.by.integration.excel.CreateExcelTemplateAllActionProperty' IN excelAllGroup;
-importAllAction 'Импортировать всё' = ACTION CUSTOM 'fdk.region.by.integration.excel.ImportExcelAllActionProperty' IN excelAllGroup;
+createTemplateAllAction 'Создать все шаблоны' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.CreateExcelTemplateAllActionProperty' IN excelAllGroup;
+importAllAction 'Импортировать всё' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ImportExcelAllActionProperty' IN excelAllGroup;
 
 EXTEND FORM integrationData
     PROPERTIES() createTemplateAllAction, importAllAction, createTemplateItemsAction, importItemsAction, createTemplateGroupItemsAction, importGroupItemsAction,

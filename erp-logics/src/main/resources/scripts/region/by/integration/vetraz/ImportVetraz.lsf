@@ -8,7 +8,7 @@ REQUIRE Import,
 
 GROUP vetrazGroup 'Ветразь' : public;
 
-importVetrazDataAction 'Импортировать данные (Ветразь)' = ACTION CUSTOM 'fdk.region.by.integration.vetraz.ImportVetrazActionProperty' IN vetrazGroup;
+importVetrazDataAction 'Импортировать данные (Ветразь)' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.vetraz.ImportVetrazActionProperty' IN vetrazGroup;
 importVetrazDirectory 'Папка' = DATA STRING[200] () IN vetrazGroup;
 importItems 'Импортировать товары' = DATA BOOLEAN() IN vetrazGroup;
 importNumberItems 'Кол-во' = DATA INTEGER () IN vetrazGroup;

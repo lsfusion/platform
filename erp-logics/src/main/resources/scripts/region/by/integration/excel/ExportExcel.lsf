@@ -26,12 +26,12 @@ REQUIRE System,
 
 GROUP exportExcelGroup 'Экспорт в Excel' : public;
 
-exportGeneralLedgerAction 'Экспортировать проводки' = ACTION CUSTOM 'fdk.region.by.integration.excel.ExportExcelGeneralLedgerActionProperty' IN exportExcelGroup;
-exportLegalEntitiesAction 'Экспортировать организации' = ACTION CUSTOM 'fdk.region.by.integration.excel.ExportExcelLegalEntitiesActionProperty' IN exportExcelGroup;
-exportItemsAction 'Экспортировать товары' = ACTION CUSTOM 'fdk.region.by.integration.excel.ExportExcelItemsActionProperty' IN exportExcelGroup;
-exportUserInvoicesAction 'Экспортировать остатки' = ACTION CUSTOM 'fdk.region.by.integration.excel.ExportExcelUserInvoicesActionProperty' IN exportExcelGroup;
+exportGeneralLedgerAction 'Экспортировать проводки' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ExportExcelGeneralLedgerActionProperty' IN exportExcelGroup;
+exportLegalEntitiesAction 'Экспортировать организации' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ExportExcelLegalEntitiesActionProperty' IN exportExcelGroup;
+exportItemsAction 'Экспортировать товары' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ExportExcelItemsActionProperty' IN exportExcelGroup;
+exportUserInvoicesAction 'Экспортировать остатки' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ExportExcelUserInvoicesActionProperty' IN exportExcelGroup;
 
-exportAllAction 'Экспортировать всё' = ACTION CUSTOM 'fdk.region.by.integration.excel.ExportExcelAllActionProperty' IN exportExcelGroup;
+exportAllAction 'Экспортировать всё' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.excel.ExportExcelAllActionProperty' IN exportExcelGroup;
 
 EXTEND FORM integrationData
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL

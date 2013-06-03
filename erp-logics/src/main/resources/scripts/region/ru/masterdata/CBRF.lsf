@@ -7,7 +7,7 @@ REQUIRE System,
 
 //---------------------------------------------- Импорт курсов ЦБРФ -----------------------------------------------------//
 
-importCBRFExchangeRateAction 'Импортировать курс ЦБРФ' = ACTION CUSTOM 'fdk.region.ru.masterdata.ImportCBRFExchangeRateActionProperty' IN cbrfGroup;
+importCBRFExchangeRateAction 'Импортировать курс ЦБРФ' = ACTION CUSTOM 'lsfusion.erp.region.ru.masterdata.ImportCBRFExchangeRateActionProperty' IN cbrfGroup;
 
 importCBRFExchangeRate 'Импортировать курсы ЦБРФ' = ACTION () {
     FOR c IS Currency DO {

@@ -5,7 +5,7 @@ REQUIRE System,
         PurchaseDeclaration
         ;
 
-exportDeclaration 'Экспортировать' = ACTION CUSTOM 'fdk.region.by.declaration.ExportDeclarationActionProperty';
+exportDeclaration 'Экспортировать' = ACTION CUSTOM 'lsfusion.erp.region.by.declaration.ExportDeclarationActionProperty';
 
 EXTEND FORM declaration
     PROPERTIES (d) exportDeclaration TODRAW dd FORCE PANEL TOOLBAR

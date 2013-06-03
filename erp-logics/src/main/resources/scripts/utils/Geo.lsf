@@ -36,7 +36,7 @@ longitudePOI 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);
 readLatitude 'Координата X' = DATA SESSION NUMERIC[10,5] ();
 readLongitude 'Координата Y' = DATA SESSION NUMERIC[10,5] ();
 
-getCoordinatesAddressMapProvider = ACTION CUSTOM 'fdk.utils.geo.GetCoordinatesAddressActionProperty';
+getCoordinatesAddressMapProvider = ACTION CUSTOM 'lsfusion.erp.utils.geo.GetCoordinatesAddressActionProperty';
 getCoordinatesAddress = getCoordinatesAddressMapProvider(address, mapProvider());
 
 changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
@@ -49,7 +49,7 @@ changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
 WHEN SESSION (SETCHANGED(countryPOI(POI)) OR SETCHANGED(addressPOI(POI))) AND autoSynchronizeCoordinates() DO EXEC changeCoordinatesPOI(POI);
 
 // Показать на карте одну точку
-showOnMapMapProvider 'Показать на карте'= ACTION CUSTOM 'fdk.utils.geo.ShowOnMapActionProperty';
+showOnMapMapProvider 'Показать на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapActionProperty';
 showOnMap = showOnMapMapProvider (latitude, longitude, mapProvider(), address);
 
 showOnMapPOI 'Показать на карте'= ACTION (POI) {
@@ -60,11 +60,11 @@ showOnMapPOI 'Показать на карте'= ACTION (POI) {
 numberPathPOI 'Номер' = DATA SESSION INTEGER (POI);
 descriptionPathPOI 'Описание' = DATA SESSION STRING[200] (POI);
 
-showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'fdk.utils.geo.ShowOnMapPathActionProperty';
+showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapPathActionProperty';
 
 inPathPOI 'Вкл' = DATA SESSION BOOLEAN (POI);
 startPathPOI 'Место старта'= DATA SESSION POI();
-calculatePath 'Рассчитать путь'= ACTION CUSTOM 'fdk.utils.geo.CalculatePathActionProperty';
+calculatePath 'Рассчитать путь'= ACTION CUSTOM 'lsfusion.erp.utils.geo.CalculatePathActionProperty';
 
 EXTEND FORM options
 PROPERTIES() autoSynchronizeCoordinates, nameUserMapProvider

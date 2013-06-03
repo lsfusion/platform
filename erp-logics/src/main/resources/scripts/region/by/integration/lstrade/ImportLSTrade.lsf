@@ -7,7 +7,7 @@ REQUIRE Import;
 
 GROUP lstradeGroup 'LS Trade' : public;
 
-importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'fdk.region.by.integration.lstrade.ImportLSTradeActionProperty' IN lstradeGroup;
+importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'lsfusion.erp.region.by.integration.lstrade.ImportLSTradeActionProperty' IN lstradeGroup;
 importLSTDirectory 'Папка' = DATA STRING[200] () IN lstradeGroup;
 importInactive 'Импортировать в том числе неактивные' = DATA BOOLEAN () IN lstradeGroup;
 importGroupItems 'Импортировать группы товаров' = DATA BOOLEAN () IN lstradeGroup;
