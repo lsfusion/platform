@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>base</artifactId>
-        <groupId>by.luxsoft.platform</groupId>
+        <groupId>lsfusion.platform</groupId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
@@ -30,7 +30,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>by.luxsoft.platform</groupId>
+            <groupId>lsfusion.platform</groupId>
             <artifactId>web-api</artifactId>
         </dependency>
 

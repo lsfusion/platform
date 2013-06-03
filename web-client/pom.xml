@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>by.luxsoft.platform</groupId>
+        <groupId>lsfusion.platform</groupId>
         <artifactId>base</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../base/pom.xml</relativePath>
@@ -96,7 +96,7 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <copy file="${settings.localRepository}/by/luxsoft/platform/desktop-client/${lsfusion.version}/desktop-client-${lsfusion.version}-assembly.pack.gz"
+                                        <copy file="${settings.localRepository}/lsfusion/platform/desktop-client/${lsfusion.version}/desktop-client-${lsfusion.version}-assembly.pack.gz"
                                               tofile="${war.desktopClientPath}">
                                         </copy>
                                     </target>
@@ -108,7 +108,7 @@
             </build>
             <dependencies>
                 <dependency>
-                    <groupId>by.luxsoft.platform</groupId>
+                    <groupId>lsfusion.platform</groupId>
                     <artifactId>desktop-client</artifactId>
                     <classifier>assembly</classifier>
                     <type>pack.gz</type>
@@ -258,15 +258,15 @@
         </dependency>
 
         <dependency>
-            <groupId>by.luxsoft.platform</groupId>
+            <groupId>lsfusion.platform</groupId>
             <artifactId>web-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>by.luxsoft.platform</groupId>
+            <groupId>lsfusion.platform</groupId>
             <artifactId>desktop-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>by.luxsoft.platform</groupId>
+            <groupId>lsfusion.platform</groupId>
             <artifactId>report-api</artifactId>
             <!--избавляемся от ошибок при компиляции-->
             <exclusions>

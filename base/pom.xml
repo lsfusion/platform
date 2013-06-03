@@ -1,14 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>by.luxsoft.platform</groupId>
+    <groupId>lsfusion.platform</groupId>
     <artifactId>base</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <name>Base</name>
 
     <properties>
-        <lsfusion.version>${project.parent.version}</lsfusion.version>
+        <lsfusion.version>1.0-SNAPSHOT</lsfusion.version>
+        <lsfusion.erp.version>${lsfusion.version}</lsfusion.erp.version>
+        <lsfusion.skolkovo.version>${lsfusion.version}</lsfusion.skolkovo.version>
+        <lsfusion.paas.version>${lsfusion.version}</lsfusion.paas.version>
 
         <findbugs.version>1.0.0</findbugs.version>
         <junit.version>4.10</junit.version>
@@ -356,7 +359,7 @@
 
             <dependencies>
                 <dependency>
-                    <groupId>by.luxsoft.platform</groupId>
+                    <groupId>lsfusion.platform</groupId>
                     <artifactId>desktop-client</artifactId>
                     <version>${lsfusion.version}</version>
                 </dependency>
@@ -899,111 +902,95 @@
 
             <!-- Platform modules -->
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.platform</groupId>
                 <artifactId>base</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.platform</groupId>
                 <artifactId>logics</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.platform</groupId>
                 <artifactId>api</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.platform</groupId>
                 <artifactId>report-api</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.platform</groupId>
                 <artifactId>desktop-client</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.platform</groupId>
                 <artifactId>desktop-client</artifactId>
                 <version>${lsfusion.version}</version>
                 <classifier>assembly</classifier>
                 <type>pack.gz</type>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.platform</groupId>
                 <artifactId>server</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>erp-logics</artifactId>
-                <version>${lsfusion.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>tmc</artifactId>
-                <version>${lsfusion.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>skolkovo-api</artifactId>
-                <version>${lsfusion.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>paas-api</artifactId>
-                <version>${lsfusion.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.platform</groupId>
                 <artifactId>web-api</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.platform</groupId>
                 <artifactId>sgwt-api</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.platform</groupId>
                 <artifactId>web-client</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>
+
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>by.luxsoft</groupId>
+                <artifactId>paas-api</artifactId>
+                <version>${lsfusion.paas.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>by.luxsoft</groupId>
+                <artifactId>skolkovo-api</artifactId>
+                <version>${lsfusion.skolkovo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>by.luxsoft</groupId>
                 <artifactId>skolkovo-logics</artifactId>
-                <version>${lsfusion.version}</version>
+                <version>${lsfusion.skolkovo.version}</version>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>by.luxsoft</groupId>
                 <artifactId>skolkovo-gwt</artifactId>
-                <version>${lsfusion.version}</version>
+                <version>${lsfusion.skolkovo.version}</version>
+            </dependency>
+
+            <!-- ERP modules -->
+            <dependency>
+                <groupId>lsfusion.erp</groupId>
+                <artifactId>erp-logics</artifactId>
+                <version>${lsfusion.erp.version}</version>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>budget-logics</artifactId>
-                <version>${lsfusion.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>roman-logics</artifactId>
-                <version>${lsfusion.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>sample-logics</artifactId>
-                <version>${lsfusion.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.erp</groupId>
                 <artifactId>equ-api</artifactId>
-                <version>${lsfusion.version}</version>
+                <version>${lsfusion.erp.version}</version>
             </dependency>
             <dependency>
-                <groupId>by.luxsoft.platform</groupId>
+                <groupId>lsfusion.erp</groupId>
                 <artifactId>equ-srv</artifactId>
-                <version>${lsfusion.version}</version>
+                <version>${lsfusion.erp.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
