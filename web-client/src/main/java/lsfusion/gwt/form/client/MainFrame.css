@@ -369,7 +369,7 @@ textarea {
     word-wrap: break-word;
 }
 
-/* ------------ Loading blocker  ------------ */
+/* ------------ Table user preferences  ------------ */
 .dualListContainer {
     border-spacing: 3px;
 }
@@ -385,7 +385,6 @@ textarea {
 }
 
 .userPreferencesDualList .draggableListBox {
-    /*border: 1px solid gray;*/
     background-color: white;
 }
 

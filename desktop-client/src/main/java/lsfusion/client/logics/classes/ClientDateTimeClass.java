@@ -37,11 +37,7 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
     }
 
     public Format getDefaultFormat() {
-        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
-        if (Main.timeZone != null) {
-            format.setTimeZone(Main.timeZone);
-        }
-        return format;
+        return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

@@ -82,6 +82,10 @@ public class ClientNumericClass extends ClientDoubleClass {
 
     @Override
     public Object parseString(String s) throws ParseException {
+        return commonParseString(s);
+    }
+
+    public static Object commonParseString(String s) throws ParseException {
         try {
             return BigDecimal.valueOf(NumberFormat.getInstance().parse(s).doubleValue());
         } catch (NumberFormatException nfe) {

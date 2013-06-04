@@ -21,4 +21,9 @@ public class GExtInt implements Serializable {
         assert !isUnlimited();
         return value;
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
 }

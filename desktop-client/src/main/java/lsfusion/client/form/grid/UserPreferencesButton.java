@@ -142,7 +142,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 }
             });
 
-            final JButton applyButton = new JButton(getString("form.grid.hide.apply"));
+            final JButton applyButton = new JButton(getString("form.grid.hide.save.settings"));
             applyButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
@@ -157,49 +157,11 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 }
             });
 
-            final JButton applyForAllButton = new JButton(getString("form.grid.hide.apply.for.all"));
-            applyForAllButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        if (Main.configurationAccessAllowed) {
-                            applyButtonPressed(true);
-                        } else {
-                            JOptionPane.showMessageDialog(null, getString("form.grid.hide.not.enough.rights"), getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);
-                        }
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                    if (dialog != null) {
-                        dialog.firePropertyChange("buttonPressed", null, null);
-                    }
-                    initialTable.updateTable();
-                }
-            });
-
-            final JButton resetButton = new JButton(getString("form.grid.hide.reset"));
+            final JButton resetButton = new JButton(getString("form.grid.hide.reset.settings"));
             resetButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
                         resetButtonPressed(false);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                    if (dialog != null) {
-                        dialog.firePropertyChange("buttonPressed", null, null);
-                    }
-                    initialTable.updateTable();
-                }
-            });
-
-            final JButton resetForAllButton = new JButton(getString("form.grid.hide.reset.for.all"));
-            resetForAllButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        if (Main.configurationAccessAllowed) {
-                            resetButtonPressed(true);
-                        } else {
-                            JOptionPane.showMessageDialog(null, getString("form.grid.hide.not.enough.rights"), getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);
-                        }
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -273,17 +235,49 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             buttonsPanel.add(cancelButton);
 
 
-            TitledPanel applyButtonsPanel = new TitledPanel(getString("form.grid.hide.save.settings"));
-            applyButtonsPanel.add(applyButton, BorderLayout.NORTH);
-            applyButtonsPanel.add(applyForAllButton, BorderLayout.SOUTH);
-
-            TitledPanel resetButtonsPanel = new TitledPanel(getString("form.grid.hide.reset.settings"));
-            resetButtonsPanel.add(resetButton, BorderLayout.NORTH);
-            resetButtonsPanel.add(resetForAllButton, BorderLayout.SOUTH);
+            TitledPanel currentUserPanel = new TitledPanel(getString("form.grid.hide.for.user"));
+            currentUserPanel.add(applyButton, BorderLayout.NORTH);
+            currentUserPanel.add(resetButton, BorderLayout.SOUTH);
 
             JPanel applyResetButtonsPanel = new JPanel();
-            applyResetButtonsPanel.add(applyButtonsPanel, BorderLayout.WEST);
-            applyResetButtonsPanel.add(resetButtonsPanel, BorderLayout.EAST);
+            applyResetButtonsPanel.add(currentUserPanel, BorderLayout.WEST);
+
+            if (Main.configurationAccessAllowed) {
+                final JButton applyForAllButton = new JButton(getString("form.grid.hide.save.settings"));
+                applyForAllButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            applyButtonPressed(true);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        if (dialog != null) {
+                            dialog.firePropertyChange("buttonPressed", null, null);
+                        }
+                        initialTable.updateTable();
+                    }
+                });
+
+                final JButton resetForAllButton = new JButton(getString("form.grid.hide.reset.settings"));
+                resetForAllButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            resetButtonPressed(true);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        if (dialog != null) {
+                            dialog.firePropertyChange("buttonPressed", null, null);
+                        }
+                        initialTable.updateTable();
+                    }
+                });
+
+                TitledPanel allUsersPanelPanel = new TitledPanel(getString("form.grid.hide.for.all.users"));
+                allUsersPanelPanel.add(applyForAllButton, BorderLayout.NORTH);
+                allUsersPanelPanel.add(resetForAllButton, BorderLayout.SOUTH);
+                applyResetButtonsPanel.add(allUsersPanelPanel, BorderLayout.EAST);
+            }
 
             JPanel bottomPanel = new JPanel();
             bottomPanel.setLayout(new BorderLayout());

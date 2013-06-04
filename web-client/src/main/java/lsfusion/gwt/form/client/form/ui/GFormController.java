@@ -304,6 +304,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private void initializeDefaultOrders() {
         applyOrders(form.defaultOrders);
+        defaultOrdersInitialized = true;
 
         LinkedHashMap<GPropertyDraw, Boolean> userOrders = new LinkedHashMap<GPropertyDraw, Boolean>();
         for (GGroupObjectController controller : controllers.values()) {
@@ -324,8 +325,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         }
         applyOrders(userOrders);
-
-        defaultOrdersInitialized = true;
     }
 
     public void totalResize() {
