@@ -11,6 +11,10 @@ NAMESPACE Purchase;
 @deriveDocumentOperationProperty(UserInvoice, showManufacturingPrice);
 
 @defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, manufacturing, ' изготовителя');
+@defineDocumentInterfaceDetailInclVATCustomPrefix (invoiceDetail);
+includeVATUserInvoiceDetail(detail) <-  fixedPriceSku(skuUserInvoiceDetail(detail)) WHEN CHANGED (skuUserInvoiceDetail(detail));
+
+@defineDocumentInterfaceDetailMPVATCustomPrefix (invoiceDetail, manufacturing, );
 
 EXTEND CLASS SystemLedgerPriceListType { manufacturingPriceStockPriceListType 'Изготовителя (последняя по складу)' }
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType. manufacturingPriceStockPriceListType;
@@ -57,9 +61,10 @@ WHEN SESSION FORMS userInvoice
 
 @defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, curManufacturing, ' изготовителя до');
 @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, curManufacturing, sku, customerStock);
+@defineDocumentInterfaceDetailMPVATCustomPrefix (invoiceDetail, curManufacturing, );
 
-@changeDocumentDetailPricePrefix(userInvoiceDetail, manufacturing, manRetail, retail, manufacturing, retail, retail);
-@changeDocumentDetailPricePrefix(userInvoiceDetail, curManufacturing, newManRetail, cur, curManufacturing, cur, curRetail);
+@changeDocumentDetailPricePrefix(userInvoiceDetail, manufacturing, manRetail, retail, manufacturingMVAT, retail, retail);
+@changeDocumentDetailPricePrefix(userInvoiceDetail, curManufacturing, newManRetail, cur, curManufacturingMVAT, cur, curRetail);
 
 toShowRepricingPriceInvoice (invoice) = createRepricingInvoice(invoice) AND showManufacturingPriceInvoice(invoice);
 
@@ -78,8 +83,10 @@ discountSumInvoiceDetail 'Скидка от цены изг. (сумма)' (deta
 EXTEND FORM userInvoice
     PROPERTIES(i) showManufacturingPriceUserInvoice
     PROPERTIES(i) nameManufacturingRoundConditionUserInvoice SHOWIF showManufacturingPriceUserInvoice(i)
-    PROPERTIES(d) SHOWIF showManufacturingPriceUserInvoice(i) AFTER invoiceSumUserInvoiceDetail manufacturingSumUserInvoiceDetail, manufacturingPriceUserInvoiceDetail ON CHANGE changeManufacturingPriceUserInvoiceDetail(d)
-    PROPERTIES(d) BACKGROUND backgroundCurInvoice(i) SHOWIF toShowRepricingPriceInvoice(i) curManufacturingPriceUserInvoiceDetail ON CHANGE changeCurManufacturingPriceUserInvoiceDetail(d) BEFORE curPriceUserInvoiceDetail
+    PROPERTIES(d) SHOWIF showManufacturingPriceUserInvoice(i) AFTER invoiceSumUserInvoiceDetail manufacturingSumUserInvoiceDetail,
+                  includeVATUserInvoiceDetail, manufacturingPriceUserInvoiceDetail ON CHANGE changeManufacturingPriceUserInvoiceDetail(d)
+    PROPERTIES(d) BACKGROUND backgroundCurInvoice(i) SHOWIF toShowRepricingPriceInvoice(i) BEFORE curPriceUserInvoiceDetail
+                  curManufacturingPriceUserInvoiceDetail ON CHANGE changeCurManufacturingPriceUserInvoiceDetail(d)
 ;
 EXTEND DESIGN userInvoice {
     headerExtraParams {
@@ -93,7 +100,8 @@ EXTEND DESIGN userInvoice {
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY showManufacturingPriceInvoice
-    PROPERTIES(d) READONLY SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail manufacturingSumInvoiceDetail, manufacturingPriceInvoiceDetail
+    PROPERTIES(d) READONLY SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail
+                  manufacturingSumInvoiceDetail, includeVATInvoiceDetail, manufacturingPriceInvoiceDetail
 ;
 //--
 overPricingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));

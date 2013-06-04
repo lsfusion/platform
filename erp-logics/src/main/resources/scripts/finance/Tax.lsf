@@ -269,6 +269,7 @@ META defineDocumentAbstractDetailVATCustom(detail, prefix, caption)
     prefix###VAT###detail(detail) = ABSTRACT Range (###detail) PERSISTENT;
     number###prefix###VAT###detail 'НДС, номер'###caption (detail) = numberRange(prefix###VAT###detail(detail));
     value###prefix###VAT###detail 'НДС, %'###caption (detail) = ABSTRACT NUMERIC[10,5] (###detail) PERSISTENT;
+    calcValue###prefix###VAT###detail 'НДС (перегруженный), %'###caption (detail) = ABSTRACT NUMERIC[10,5] (###detail) PERSISTENT;
 
 END
 
@@ -277,6 +278,7 @@ META defineDocumentInterfaceDetailVATCustom(detail, countryProp, prefix, caption
     @defineDocumentDetailVATCustom(user###detail, countryProp, prefix, caption);
     prefix###VAT###detail(detail) += prefix###VAT###user###detail(detail);
     value###prefix###VAT###detail(detail) += value###prefix###VAT###user###detail(detail);
+    calcValue###prefix###VAT###detail(detail) += calcValue###prefix###VAT###user###detail(detail);
 END
 
 META defineDocumentDetailVAT(object, countryProp, prefix, caption)
@@ -288,6 +290,42 @@ END
 META defineDocumentInterfaceDetailVAT(object, countryProp, prefix, caption)
     @defineDocumentInterfaceDetailVATCustom(object##Detail, countryProp, prefix, caption);
 END
+
+// -------------------------- Галочка включен НДС или нет -------------------------------- //
+
+META defineDocumentDetailInclVATCustomPrefix (detail)
+    includeVAT###detail 'Вкл. НДС' = DATA BOOLEAN (###detail);
+END
+META defineDocumentAbstractDetailInclVATCustomPrefix (detail)
+    includeVAT###detail 'Вкл. НДС' = ABSTRACT BOOLEAN (###detail) PERSISTENT;
+END
+META defineDocumentInterfaceDetailInclVATCustomPrefix (detail)
+    @defineDocumentAbstractDetailInclVATCustomPrefix(detail);
+    @defineDocumentDetailInclVATCustomPrefix(user###detail);
+    includeVAT###detail (detail) += includeVAT###user###detail(detail);
+END
+
+META defineDocumentDetailMPVATCustomPrefix (detail, prefix, prefixRange)
+    prefix###MVAT###price###detail (detail) =
+        IF includeVAT###detail(detail)
+            THEN
+                prefix###price###detail(detail) * 100.0 /(100.0 + calcValue###prefixRange###VAT###detail(detail))
+            ELSE
+                prefix###price###detail(detail);
+
+    prefix###PVAT###price###detail (detail) =
+        IF includeVAT###detail(detail)
+            THEN
+                prefix###price###detail(detail)
+            ELSE
+                prefix###price###detail(detail) * (100.0 + calcValue###prefixRange###VAT###detail(detail)) / 100.0;
+
+END
+META defineDocumentInterfaceDetailMPVATCustomPrefix (detail, prefix, prefixRange)
+    @defineDocumentDetailMPVATCustomPrefix (detail, prefix, prefixRange);
+    @defineDocumentDetailMPVATCustomPrefix (user###detail, prefix, prefixRange);
+END
+
 
 // ---------- без префикса
 META defineDocumentDetailVATCustom(detail, countryProp)

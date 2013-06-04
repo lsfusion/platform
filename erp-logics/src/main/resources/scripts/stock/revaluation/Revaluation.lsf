@@ -1,7 +1,8 @@
 MODULE Revaluation;
 
-REQUIRE RepricingCommittee, StockDocument, PriceListCalc, Terminal, PriceListLedger;
+REQUIRE RepricingCommittee, StockDocument, PriceListCalc, Terminal, PriceListLedger, RevaluationOperation;
 
+NAMESPACE Revaluation;
 
 //----------------------------------------------- Переоценка (опт) ---------------------------------------------------//
 
@@ -97,8 +98,7 @@ changeBatchUserRevaluationDetail = ACTION (userRevaluationDetail) {
 @defineDocumentInterfaceHeaderSumPrefix (revaluation, diff, ' изменения учетной');
 
 // Изменение сумм по товару и таре
-@defineDocumentHeaderItemSum(revaluation, diff, );
-@defineDocumentHeaderItemSum(userRevaluation, diff, );
+@defineDocumentInterfaceHeaderItemSum(revaluation, diff, diff);
 
 // Действия по добавлению строк
 @defineAddDetailDialogSkuStock(userRevaluation, sku, stock, dialogSku);
@@ -310,9 +310,28 @@ DESIGN revaluations FROM DEFAULT {
     }
 }
 
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineDocumentInterfaceOperation (revaluation, Revaluation, );
+
+@defineDocumentOperationRolePrefix(userRevaluation, );
+
+EXTEND FORM userRevaluation
+    PROPERTIES(p) nameOperationUserRevaluation
+;
+EXTEND DESIGN userRevaluation{
+    p.documentPrmGroup{
+        ADD PROPERTY (nameOperationUserRevaluation) BEFORE PROPERTY(noteUserRevaluation);
+    }
+}
+EXTEND FORM revaluations
+    PROPERTIES(p) READONLY nameOperationRevaluation AFTER nameStockRevaluation
+;
+
 NAVIGATOR {
     revaluationNavigator {
         ADD revaluations BEFORE repricingCommitteeDialog;
+        ADD Revaluation.operations AFTER repricingCommitteeDialog;
     }
 }
 

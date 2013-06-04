@@ -4,7 +4,7 @@ REQUIRE Operation, LegalEntity, PriceListCalc;
 
 NAMESPACE Repricing;
 
-@defineOperation(' (переоценка)');
+@defineOperation(' переоценка (розница)');
 
 //@defineOperationPriceListType();
 

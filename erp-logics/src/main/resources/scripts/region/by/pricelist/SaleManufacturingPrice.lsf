@@ -11,11 +11,14 @@ NAMESPACE Sale;
 @deriveDocumentOperationProperty(UserInvoice, showManufacturingPrice);
 
 @defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, manufacturing, ' изготовителя');
+@defineDocumentInterfaceDetailInclVATCustomPrefix (invoiceDetail);
+includeVATUserInvoiceDetail(detail) <-  fixedPriceSku(skuUserInvoiceDetail(detail)) WHEN CHANGED (skuUserInvoiceDetail(detail));
+@defineDocumentInterfaceDetailMPVATCustomPrefix (invoiceDetail, manufacturing, );
 
 @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, supplierStock);
 
-wholesaleMarkupInvoiceDetail 'Оптовая надбавка' (detail) = round2([(X/Y-1)*100](priceInvoiceDetail(detail),manufacturingPriceInvoiceDetail(detail)));
-wholesaleMarkupUserInvoiceDetail 'Оптовая надбавка' (detail) = round2([(X/Y-1)*100](priceUserInvoiceDetail(detail),manufacturingPriceUserInvoiceDetail(detail)));
+wholesaleMarkupInvoiceDetail 'Оптовая надбавка (от цены изг.)' (detail) = round2([(X/Y-1)*100](priceInvoiceDetail(detail),manufacturingMVATPriceInvoiceDetail(detail)));
+wholesaleMarkupUserInvoiceDetail 'Оптовая надбавка (от цены изг.)' (detail) = round2([(X/Y-1)*100](priceUserInvoiceDetail(detail),manufacturingMVATPriceUserInvoiceDetail(detail)));
 
 @defineDocumentInterfaceDetailDataSumPrefix (invoice, manufacturing, ' изготовителя'); // объявляем сумму изготовителя
 @deriveDocumentDetailSumPrefix(userInvoice, manufacturing, currency, quantity); // записываем сумму изготовителя
@@ -24,7 +27,7 @@ wholesaleMarkupUserInvoiceDetail 'Оптовая надбавка' (detail) = ro
 
 EXTEND FORM userInvoice
     PROPERTIES(i)  showManufacturingPriceUserInvoice
-    PROPERTIES(d)  SHOWIF showManufacturingPriceUserInvoice(i) AFTER invoiceSumUserInvoiceDetail  manufacturingSumUserInvoiceDetail,
+    PROPERTIES(d)  SHOWIF showManufacturingPriceUserInvoice(i) AFTER invoiceSumUserInvoiceDetail  manufacturingSumUserInvoiceDetail, includeVATUserInvoiceDetail,
                    wholesaleMarkupUserInvoiceDetail READONLY, manufacturingPriceUserInvoiceDetail
 
 ;
@@ -39,7 +42,8 @@ EXTEND DESIGN userInvoice {
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY showManufacturingPriceInvoice
-    PROPERTIES(d) READONLY  SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail manufacturingSumInvoiceDetail, wholesaleMarkupInvoiceDetail, manufacturingPriceInvoiceDetail
+    PROPERTIES(d) READONLY  SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail manufacturingSumInvoiceDetail, includeVATInvoiceDetail,
+                  wholesaleMarkupInvoiceDetail, manufacturingPriceInvoiceDetail
 ;
 
 overPricingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));

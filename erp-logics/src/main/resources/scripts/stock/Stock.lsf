@@ -323,7 +323,7 @@ isNotItemSku 'Не товар' (sku) = NOT isItemSku(sku) AND sku IS Sku PERSIST
 isNotContainerSku 'Не тара' (sku) = NOT isContainerSku(sku) AND sku IS Sku PERSISTENT;
 
 isWeightSku 'Весовой товар' =  ABSTRACT BOOLEAN (Sku) PERSISTENT;
-
+fixedPriceSku 'Товар с фиксированной ценой' =  ABSTRACT BOOLEAN (Sku) PERSISTENT;
 inactiveSku 'Неактивный' = ABSTRACT BOOLEAN (Sku) PERSISTENT;
 
 replaceSkuSku = ABSTRACT ACTION(Sku, Sku);
@@ -1220,7 +1220,7 @@ META defineDocumentInterfaceCreate (object, createProp, caption)
     @defineDocumentInterfaceDetailCreate (object, createProp, caption);
 END
 
-// ---------------------------------------------- Учетные суммы -------------------------------------------- //
+// -------------------------- Цена ---------------------------- //
 
 META defineDocumentDetailPriceCustomPrefix (detail, prefix, caption)
     prefix###price###detail 'Цена'###caption = DATA NUMERIC[14,2] (###detail);
@@ -1263,6 +1263,8 @@ END
 META defineDocumentInterfaceDetailPrice (object)
     @defineDocumentInterfaceDetailPricePrefix(object, ,);
 END
+
+// -------------------------- Сумма ---------------------------- //
 
 META defineDocumentDetailSumCustom (detail, currencyProp)
     sum###detail 'Сумма' (detail) = toNumeric16p2(roundPriceCurrency((quantity###detail(detail) * price###detail(detail)), currencyProp###detail(detail)));

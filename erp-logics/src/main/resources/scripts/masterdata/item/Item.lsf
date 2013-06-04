@@ -544,6 +544,11 @@ isWeightItem 'Весовой товар' = DATA BOOLEAN (Item) IN itemBaseGroup;
 isWeightSku(sku) += isWeightItem(sku);
 EXTEND FORM item PROPERTIES(i) isWeightItem;
 
+// Фиксированная цена
+fixedPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (Item) IN itemBaseGroup;
+fixedPriceSku(sku) += fixedPriceItem(sku);
+EXTEND FORM item PROPERTIES(i) fixedPriceItem;
+
 // Неактивный
 inactiveItem 'Неактивный' = DATA BOOLEAN (Item) IN itemBaseGroup;
 activeItem 'Активный' (item) = item IS Item AND NOT inactiveItem(item);
