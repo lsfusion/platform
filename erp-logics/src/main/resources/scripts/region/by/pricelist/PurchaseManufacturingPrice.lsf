@@ -57,6 +57,12 @@ WHEN SESSION FORMS userInvoice
     ELSE
         manufacturingPriceUserInvoiceDetail(d) <- baseManufacturingPriceUserInvoiceDetail(d);
 }
+
+overAdditionalValuation(rd, detail) += ACTION (rd, detail) {
+    SET curManufacturingPriceUserRepricingDetail(rd) <- prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.manufacturingPriceStockPriceListType, skuInvoiceDetail(detail), customerStockInvoiceDetail(detail), dateTimeInvoiceDetail(detail));
+    SET manufacturingPriceUserRepricingDetail(rd) <- manufacturingPriceInvoiceDetail(detail);
+}
+
 //@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, customerStock);
 
 @defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, curManufacturing, ' изготовителя до');
