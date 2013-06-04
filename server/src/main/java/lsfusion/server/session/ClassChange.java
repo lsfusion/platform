@@ -69,11 +69,14 @@ public class ClassChange extends ImmutableObject {
         return getQuery().join(MapFact.singleton("key", expr));
     }
 
-    public boolean needMaterialize() {
+    public boolean needMaterialize() { // из-за сложности
         if(keyValue != null)
             return false;
 
         return where.needMaterialize() || expr.needMaterialize();
+    }
+    public boolean needMaterialize(SessionTableUsage usage) { // из-за множественного использования
+        return usage.table.used(getQuery());
     }
 
     public SingleKeyPropertyUsage materialize(SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {

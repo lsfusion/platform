@@ -1007,6 +1007,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                 if(usedClass instanceof OrderClass)
                     return false;
 
-        return false;
+        return true;
     }
 }

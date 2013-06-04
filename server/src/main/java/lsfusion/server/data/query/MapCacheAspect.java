@@ -556,6 +556,8 @@ public class MapCacheAspect {
 
     public <K extends PropertyInterface> PropertyChange<K> getIncrementChange(CalcProperty<K> property, PropertyChanges propChanges, MCacheMap<Integer, MAddCol<CacheResult<PropertyChanges, PropertyChange<K>>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         // assert что в interfaceValues только values
+        if(disableCaches)
+            return (PropertyChange<K>) thisJoinPoint.proceed();
 
         PropertyChanges implement = property.getUsedChanges(propChanges);
 

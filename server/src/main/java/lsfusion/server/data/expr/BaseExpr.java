@@ -154,11 +154,15 @@ public abstract class BaseExpr extends Expr {
     }
 
     private static <K> ImMap<K, BaseExpr> pushValues(ImMap<K, BaseExpr> group, Where falseWhere) {
-        final ImMap<BaseExpr, BaseExpr> exprValues = falseWhere.not().getExprValues();
+        // нельзя пока использовать getExprValues, потому как этой логиги нет в checkTrue, и таким образом например при (I=5 AND f(i)=1) OR f(i)=2
+        // потеряется exclusive условий, что вместе с "перетасовкой" структуры Where, которую делает createMean в If'е и еще ряд механизмов, может в getClassWhere создать ветки где будет не хватать ключей
+
+        return group;
+/*        final ImMap<BaseExpr, BaseExpr> exprValues = falseWhere.not().getExprValues();
         return group.mapValues(new GetValue<BaseExpr, BaseExpr>() {
             public BaseExpr getMapValue(BaseExpr value) {
                 return BaseUtils.nvl(exprValues.get(value), value);
-            }});
+            }});*/
     }
 
     public static <K> ImMap<K, Expr> packPushFollowFalse(ImMap<K, BaseExpr> mapExprs, Where falseWhere) {

@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.BaseExpr;
@@ -149,6 +150,18 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     };
     public static <K, V> AddValue<K, ClassWhere<V>> addOr() {
         return BaseUtils.immutableCast(addOr);
+    }
+
+    // потом на containsAll переделать
+    public boolean fitDataClasses(ImMap<K, DataClass> checkClasses) {
+        if(isFalse())
+            return true;
+        for (And<K> where : wheres) {
+            for (int i=0,size=checkClasses.size();i<size;i++)
+                if(!BaseUtils.hashEquals(where.get(checkClasses.getKey(i)), checkClasses.getValue(i)))
+                    return false;
+        }
+        return true;
     }
 
     public boolean isFull(ImCol<? extends K> checkInterfaces) {

@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.InnerContext;
 import lsfusion.server.caches.MapValuesIterable;
 import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.classes.BaseClass;
@@ -19,7 +20,6 @@ import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
-import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ObjectType;
@@ -135,7 +135,7 @@ public class SessionRows extends SessionData<SessionRows> {
         System.out.println("Rows :" + rows);
     }
 
-    public boolean used(IQuery<?, ?> query) {
+    public boolean used(InnerContext query) {
         return false;
     }
 
@@ -214,5 +214,10 @@ public class SessionRows extends SessionData<SessionRows> {
                 return updateAdded(value, property, shifts);
             }});
         return new SessionRows(keys, properties, updatedRows);
+    }
+
+    @Override
+    public String toString() {
+        return rows.toString();
     }
 }

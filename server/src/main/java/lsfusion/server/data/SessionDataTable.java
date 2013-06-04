@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.caches.InnerContext;
 import lsfusion.server.caches.MapValuesIterable;
 import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.classes.BaseClass;
@@ -162,7 +163,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         table.rollDrop(session, owner);
     }
 
-    public boolean used(IQuery<?, ?> query) {
+    public boolean used(InnerContext query) {
         return query.getInnerValues().contains(table);
     }
 
@@ -212,5 +213,10 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
 
     public int getCount() {
         return table.count;
+    }
+
+    @Override
+    public String toString() {
+        return table + "{k:" + keyValues + ",v:" + propertyValues + "}";
     }
 }

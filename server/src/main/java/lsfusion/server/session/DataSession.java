@@ -1341,6 +1341,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         if(news ==null)
             news = new SingleKeyPropertyUsage(ObjectType.instance, ObjectType.instance);
+
+        SingleKeyPropertyUsage changeTable = null;
+        boolean needMaterialize = change.needMaterialize(news);
         change.modifyRows(news, sql, baseClass, Modify.MODIFY, env);
         this.newClasses.clear();
 
@@ -1348,6 +1351,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             DataProperty property = dataChange.getKey();
             if(property.depends(removeClasses)) { // оптимизация
                 SinglePropertyTableUsage<ClassPropertyInterface> table = dataChange.getValue();
+
+                if(needMaterialize) {
+                    changeTable = change.materialize(sql, baseClass, env);
+                    change = changeTable.getChange();
+                }
 
                 // кейс с удалением, похож на getEventChange и в saveClassChanges - "мини паковка"
                 Where removeWhere = Where.FALSE;
@@ -1366,9 +1374,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                     removeWhere = removeWhere.or(newJoin.getWhere().and(isValueClass(newJoin.getExpr("value"), (CustomClass) property.value, usedNewClasses).not()));
                     dataModifier.eventDataChange(property);
                 }
+
+                needMaterialize = change.needMaterialize(table);
                 table.modifyRows(sql, new Query<ClassPropertyInterface, String>(mapKeys, removeWhere), baseClass, Modify.DELETE, getQueryEnv());
             }
         }
+
+        if(changeTable!=null)
+            changeTable.drop(sql);
     }
 
     private static void changeSingle(ImSet<CustomClass> thisChanged, ClassChange thisChange, Map<CustomClass, DataObject> single, Set<CustomClass> changed, Map<CustomClass, DataObject> singleBack, Set<CustomClass> changedBack) {

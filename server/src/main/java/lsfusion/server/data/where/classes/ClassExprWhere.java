@@ -44,7 +44,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             if(keyExpr instanceof PullExpr)
                 return ObjectType.instance;
             else
-                throw new RuntimeException("no classes");
+                throw new RuntimeException("no classes"); // см. BaseExpr.pushValues или Settings.limitClassWhereCount
         } else
             type = classWhere.getType();
         assert checkType(keyExpr,type);
@@ -57,7 +57,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             if(keyExpr instanceof PullExpr)
                 return Stat.ALOT;
             else
-                throw new RuntimeException("no classes");
+                throw new RuntimeException("no classes"); // см. ClassExprWhere.getKeyType
         } else
             return classSet.getTypeStat();
     }

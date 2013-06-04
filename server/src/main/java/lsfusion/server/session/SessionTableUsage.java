@@ -188,4 +188,9 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     public int getCount() {
         return table.getCount();
     }
+
+    @Override
+    public String toString() {
+        return table.toString();
+    }
 }

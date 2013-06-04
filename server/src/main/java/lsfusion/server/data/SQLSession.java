@@ -539,7 +539,7 @@ public class SQLSession extends MutableObject {
                 runTime = System.currentTimeMillis() - started;
             }
         } catch (SQLException e) {
-            logger.error(statement.toString());
+            logger.error(statement.toString());  // duplicate keys валится при : неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями, нецелостной базой (значения классов в базе не правильные)
             throw e;
         } finally {
             env.after(this, connection, command);
@@ -948,6 +948,7 @@ public class SQLSession extends MutableObject {
         return executeDML(modify.getInsertSelect(syntax));
     }
     public int insertSessionSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env) throws SQLException {
+//        query.outSelect(this, env);
         return executeDML(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, syntax));
     }
 

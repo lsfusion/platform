@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractValuesContext;
+import lsfusion.server.caches.InnerContext;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.Expr;
@@ -45,7 +46,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     public abstract void drop(SQLSession session, Object owner) throws SQLException;
     public abstract void rollDrop(SQLSession session, Object owner) throws SQLException;
 
-    public abstract boolean used(IQuery<?, ?> query);
+    public abstract boolean used(InnerContext query);
 
     public abstract SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException;
 

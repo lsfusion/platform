@@ -266,7 +266,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     // без рекурсии
     @TwinManualLazy
     public Expr packInnerFollowFalse(Where falseWhere) {
-        ImMap<Expr, Expr> packGroup = packFollowFalse(group, falseWhere);
+        ImMap<Expr, Expr> packGroup = packPushFollowFalse(group, falseWhere);
 
         ImRevMap<Expr, BaseExpr> revGroup = getRevGroup();
 

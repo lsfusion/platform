@@ -68,7 +68,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public DataObject(String string) {
-        this(string, StringClass.get(string.length()));
+        this(string, StringClass.getv(string.length()));
     }
 
     public DataObject(Double dbl) {

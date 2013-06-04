@@ -2,6 +2,7 @@ package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -117,9 +118,31 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         this.classes = classes;
         this.propertyClasses = propertyClasses;
 
-        assert classes.isFull(keys.getSet()) && propClassesFull();
+        // assert classes.fitTypes();
+        assert classes.isFull(keys.getSet()) && propClassesFull(); // см. ClassExprWhere.getKeyType
     }
 
+    private <K extends Field> ImMap<K, DataClass> getDataFields(ImSet<K> fields) {
+        return BaseUtils.immutableCast(fields.mapValues(new GetValue<Type, K>() {
+            public Type getMapValue(K value) {
+                return value.type;
+            }
+        }).filterFnValues(new SFunctionSet<Type>() {
+            public boolean contains(Type element) {
+                return element instanceof DataClass;
+            }
+        }));
+    }
+    private boolean fitTypes() {
+        ImMap<KeyField, DataClass> keyDataFields = getDataFields(keys.getSet());
+        if(!classes.fitDataClasses(keyDataFields))
+            return false;
+
+        for(int i=0,size=propertyClasses.size();i<size;i++)
+            if(!propertyClasses.getValue(i).fitDataClasses(MapFact.addExcl(keyDataFields, getDataFields(SetFact.singleton(propertyClasses.getKey(i))))))
+                return false;
+        return true;
+    }
     private boolean propClassesFull() {
         for(int i=0,size=propertyClasses.size();i<size;i++)
             if(!propertyClasses.getValue(i).isFull(SetFact.addExcl(keys.getSet(), propertyClasses.getKey(i))))
