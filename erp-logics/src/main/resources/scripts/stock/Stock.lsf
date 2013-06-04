@@ -3527,6 +3527,38 @@ sessionConcatGroups 'Склады' (groupType) =
     BY groupTypeGroup(group);
 
 //остатки по товарам
+FORM printListBalanceSkusStock 'Остатки по товарам' PRINT
+    OBJECTS dt = DATETIME FIXED PANEL
+    PROPERTIES(dt) OBJVALUE
+
+    OBJECTS st = Stock FIXED PANEL
+    PROPERTIES(st) SELECTOR nameStock
+
+    OBJECTS gt = GroupType FIXED PANEL
+    PROPERTIES(gt) SELECTOR nameGroupType
+    PROPERTIES(gt) READONLY sessionConcatGroups
+
+    TREE sk = Group
+    PROPERTIES READONLY canonicalNameGroup(sk)
+    ORDER BY canonicalNameGroup
+    FILTERS inSessionGroup(sk) AND isLeafGroup(sk)
+    FILTERS groupTypeGroup(sk) == gt
+
+//    PROPERTIES(sk, st, dt) READONLY balanceAGroupStockDateTime
+//    FILTERS balanceAGroupStockDateTime(sk, st, dt)
+
+    OBJECTS s = Sku
+    PROPERTIES(s) READONLY nameSku, shortNameUOMSku
+    ORDER BY nameSku
+    FILTERS isParentGroupSku(sk, s)
+
+    PROPERTIES(s, st, dt) READONLY balanceASkuStockDateTime
+    FILTERS balanceASkuStockDateTime(s, st, dt)
+;
+
+printListBalanceSkusStockDateTime 'Списком' (stock, dateTime) =
+    ACTION FORM printListBalanceSkusStock OBJECTS st = stock, dt = dateTime  IMAGE 'print.png' IN printGroup;
+
 FORM printBalanceSkusStock 'Остатки по товарам' PRINT
     OBJECTS dt = DATETIME FIXED PANEL
     PROPERTIES(dt) OBJVALUE
@@ -3556,60 +3588,42 @@ FORM printBalanceSkusStock 'Остатки по товарам' PRINT
     FILTERS balanceASkuStockDateTime(s, st, dt)
 ;
 
-printBalanceSkusStockDateTime 'Распечатать' (stock, dateTime) =
+printBalanceSkusStockDateTime 'По группам' (stock, dateTime) =
     ACTION FORM printBalanceSkusStock OBJECTS st = stock, dt = dateTime  IMAGE 'print.png' IN printGroup;
 
-FORM reportBalanceSkusStock 'Остатки по товарам'
-    OBJECTS dt=DATETIME FIXED PANEL
+//остатки по партиям
+FORM printListBalanceBatchesStock 'Остатки по партиям' PRINT
+    OBJECTS dt = DATETIME FIXED PANEL
     PROPERTIES(dt) OBJVALUE
 
     OBJECTS st = Stock FIXED PANEL
     PROPERTIES(st) SELECTOR nameStock
-    PROPERTIES printBalanceSkusStockDateTime(st, dt)
 
     OBJECTS gt = GroupType FIXED PANEL
     PROPERTIES(gt) SELECTOR nameGroupType
-//    PROPERTIES(gt) READONLY sessionConcatGroups
+    PROPERTIES(gt) READONLY sessionConcatGroups
 
-    TREE skuTree sk = Group PARENT parentGroup
-    PROPERTIES READONLY skuTreeName = nameGroup(sk)
-    PROPERTIES inSessionGroup(sk)
-    ORDER BY skuTreeName
+    TREE sk = Group
+    PROPERTIES READONLY canonicalNameGroup(sk)
+    ORDER BY canonicalNameGroup
+    FILTERS inSessionGroup(sk) AND isLeafGroup(sk)
     FILTERS groupTypeGroup(sk) == gt
 
 //    PROPERTIES(sk, st, dt) READONLY balanceAGroupStockDateTime
 //    FILTERS balanceAGroupStockDateTime(sk, st, dt)
 
-    OBJECTS s = Sku
-    PROPERTIES(s) READONLY nameSku, shortNameUOMSku
-    ORDER BY nameSku
-    FILTERS isParentGroupSku(sk, s)
+    OBJECTS           bt=Batch
+    PROPERTIES(bt)    READONLY dateBatch, nameBatch, nameSkuBatch, shortNameUOMBatch//, quantityBatch
+    FILTERS           isParentGroupBatch(sk, bt)
+    ORDER BY          dateBatch, nameBatch, nameSkuBatch
 
-    PROPERTIES(s, st, dt) READONLY balanceASkuStockDateTime
-    FILTERS balanceASkuStockDateTime(s, st, dt)
+    PROPERTIES(bt, st, dt) READONLY balanceABatchStockDateTime
+    FILTERS balanceABatchStockDateTime(bt, st, dt)
 ;
 
-DESIGN reportBalanceSkusStock FROM DEFAULT{
-    NEW topContainer{
-        childConstraints = TO THE RIGHT;
-        ADD dt.box;
-        ADD st.box;
-        ADD gt.box;
-        ADD PROPERTY(printBalanceSkusStockDateTime);
-    }
-    NEW skuContainer{
-        childConstraints = TO THE RIGHT;
-        type = SPLITH;
-        ADD skuTree.tree.box;
-        ADD s.box{
-            fillHorizontal = 2;
-            ADD PROPERTY(inSessionGroup);
-        }
-    }
-    ADD functions.box;
-}
+printListBalanceBatchesStockDateTime 'Списком' (stock, dateTime) =
+    ACTION FORM printListBalanceBatchesStock OBJECTS st = stock, dt = dateTime  IMAGE 'print.png' IN printGroup;
 
-//остатки по партиям
 FORM printBalanceBatchesStock 'Остатки по партиям' PRINT
     OBJECTS dt = DATETIME FIXED PANEL
     PROPERTIES(dt) OBJVALUE
@@ -3639,16 +3653,15 @@ FORM printBalanceBatchesStock 'Остатки по партиям' PRINT
     FILTERS balanceABatchStockDateTime(bt, st, dt)
 ;
 
-printBalanceBatchesStockDateTime 'Распечатать' (stock, dateTime) =
+printBalanceBatchesStockDateTime 'По группам' (stock, dateTime) =
     ACTION FORM printBalanceBatchesStock OBJECTS st = stock, dt = dateTime  IMAGE 'print.png' IN printGroup;
 
-FORM reportBalanceBatchesStock 'Остатки по партиям'
+FORM reportBalanceStock 'Отчет по остакам'
     OBJECTS dt=DATETIME FIXED PANEL
     PROPERTIES(dt) OBJVALUE
 
     OBJECTS st = Stock FIXED PANEL
     PROPERTIES(st) SELECTOR nameStock
-    PROPERTIES printBalanceBatchesStockDateTime(st, dt)
 
     OBJECTS gt = GroupType FIXED PANEL
     PROPERTIES(gt) SELECTOR nameGroupType
@@ -3658,36 +3671,66 @@ FORM reportBalanceBatchesStock 'Остатки по партиям'
     PROPERTIES READONLY skuTreeName = nameGroup(sk)
     PROPERTIES inSessionGroup(sk)
     ORDER BY skuTreeName
-
     FILTERS groupTypeGroup(sk) == gt
 
 //    PROPERTIES(sk, st, dt) READONLY balanceAGroupStockDateTime
 //    FILTERS balanceAGroupStockDateTime(sk, st, dt)
 
+    OBJECTS s = Sku
+    PROPERTIES(s) READONLY nameSku, shortNameUOMSku
+    ORDER BY nameSku
+    FILTERS isParentGroupSku(sk, s)
+
+    PROPERTIES(s, st, dt) READONLY balanceASkuStockDateTime
+    PROPERTIES(st, dt) printListBalanceSkusStockDateTime, printBalanceSkusStockDateTime
+    FILTERS balanceASkuStockDateTime(s, st, dt)
+
     OBJECTS           bt=Batch
-    PROPERTIES(bt)    READONLY dateTimeBatch, nameBatch, nameSkuBatch, shortNameUOMBatch//, quantityBatch
+    PROPERTIES(bt)    READONLY dateBatch, nameBatch, nameSkuBatch, shortNameUOMBatch//, quantityBatch
     FILTERS           isParentGroupBatch(sk, bt)
-    ORDER BY          dateTimeBatch, nameBatch, nameSkuBatch
+    ORDER BY          dateBatch, nameBatch, nameSkuBatch
 
     PROPERTIES(bt, st, dt) READONLY balanceABatchStockDateTime
+    PROPERTIES(st, dt) printListBalanceBatchesStockDateTime, printBalanceBatchesStockDateTime
     FILTERS balanceABatchStockDateTime(bt, st, dt)
 ;
 
-DESIGN reportBalanceBatchesStock FROM DEFAULT{
+DESIGN reportBalanceStock FROM DEFAULT{
     NEW topContainer{
         childConstraints = TO THE RIGHT;
         ADD dt.box;
         ADD st.box;
-        ADD gt.box;
-        ADD PROPERTY(printBalanceBatchesStockDateTime);
+        ADD gt.box{ADD PROPERTY(inSessionGroup);}
     }
-    NEW skuContainer{
+    NEW bottomContainer{
         childConstraints = TO THE RIGHT;
         type = SPLITH;
         ADD skuTree.tree.box;
-        ADD bt.box{
+        NEW tabContainer{
+            type = TABBED;
             fillHorizontal = 2;
-            ADD PROPERTY(inSessionGroup);
+            NEW skuContainer{
+                caption = 'Товары';
+                childConstraints = TO THE BOTTOM;
+                NEW printSkuContainer{
+                    childConstraints = TO THE RIGHT;
+                    caption = 'Печать';
+                    ADD PROPERTY(printListBalanceSkusStockDateTime);
+                    ADD PROPERTY(printBalanceSkusStockDateTime);
+                }
+                ADD s.box;
+            }
+            NEW batchContainer{
+                caption = 'Партии';
+                childConstraints = TO THE BOTTOM;
+                NEW printBatchContainer{
+                    childConstraints = TO THE RIGHT;
+                    caption = 'Печать';
+                    ADD PROPERTY(printListBalanceBatchesStockDateTime);
+                    ADD PROPERTY(printBalanceBatchesStockDateTime);
+                }
+                ADD bt.box;
+            }
         }
     }
     ADD functions.box;
@@ -3695,8 +3738,7 @@ DESIGN reportBalanceBatchesStock FROM DEFAULT{
 
 NAVIGATOR {
     stockReports{
-        ADD reportBalanceSkusStock;
-        ADD reportBalanceBatchesStock;
+        ADD reportBalanceStock;
     }
 }
 

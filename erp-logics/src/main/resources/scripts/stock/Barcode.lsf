@@ -262,14 +262,17 @@ EXTEND FORM batches
 EXTEND FORM printBalanceSkusStock
     PROPERTIES(s) idBarcodeSku BEFORE nameSku(s)
 ;
-EXTEND FORM reportBalanceSkusStock
+EXTEND FORM printListBalanceSkusStock
     PROPERTIES(s) idBarcodeSku BEFORE nameSku(s)
 ;
-
 EXTEND FORM printBalanceBatchesStock
     PROPERTIES(bt) idBarcodeSkuBatch BEFORE nameSkuBatch(bt)
 ;
-EXTEND FORM reportBalanceBatchesStock
+EXTEND FORM printListBalanceBatchesStock
+    PROPERTIES(bt) idBarcodeSkuBatch BEFORE nameSkuBatch(bt)
+;
+EXTEND FORM reportBalanceStock
+    PROPERTIES(s) idBarcodeSku BEFORE nameSku(s)
     PROPERTIES(bt) idBarcodeSkuBatch BEFORE nameSkuBatch(bt)
 ;
 

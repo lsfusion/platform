@@ -206,10 +206,10 @@ accountPriceBatchStockDateTime 'Учетная цена товара в парт
     prevPricePriceListTypeBatchStockDateTime(SystemLedgerPriceListType.accountPriceListType, batch, stock, dateTime);
 accountSumBatchStockDateTime 'Учетная сумма товара в партии' (batch, stock, dateTime) =
     balanceABatchStockDateTime(batch, stock, dateTime) * accountPriceBatchStockDateTime(batch, stock, dateTime);
-accountSumBatchesStockDateTime 'Учетная сумма склада' (stock, dateTime) =
+accountSumBatchesStockDateTime 'Учетная сумма склада(по партиям)' (stock, dateTime) =
     GROUP SUM accountSumBatchStockDateTime(batch, stock, dateTime)
     BY stock, dateTime;
-accountSumBatchesGroupStockDateTime 'Учетная сумма группы товаров' (group, stock, dateTime) =
+accountSumBatchesGroupStockDateTime 'Учетная сумма группы товаров(по партиям)' (group, stock, dateTime) =
     GROUP SUM accountSumBatchStockDateTime(batch, stock, dateTime) IF isParentGroupBatch(group, batch)
     BY group, stock, dateTime;
 
@@ -219,17 +219,21 @@ EXTEND FORM printBalanceSkusStock
     PROPERTIES(sk, st, dt) READONLY accountSumGroupStockDateTime
     PROPERTIES(s, st, dt) READONLY accountSumSkuStockDateTime
 ;
-EXTEND FORM reportBalanceSkusStock
+EXTEND FORM printListBalanceSkusStock
     PROPERTIES(sk, st, dt) READONLY accountSumGroupStockDateTime
     PROPERTIES(s, st, dt) READONLY accountSumSkuStockDateTime
 ;
-
 EXTEND FORM printBalanceBatchesStock
     PROPERTIES(sk, st, dt) READONLY accountSumBatchesGroupStockDateTime
     PROPERTIES(bt, st, dt) READONLY accountSumBatchStockDateTime
 ;
-EXTEND FORM reportBalanceBatchesStock
+EXTEND FORM printListBalanceBatchesStock
     PROPERTIES(sk, st, dt) READONLY accountSumBatchesGroupStockDateTime
+    PROPERTIES(bt, st, dt) READONLY accountSumBatchStockDateTime
+;
+EXTEND FORM reportBalanceStock
+    PROPERTIES(sk, st, dt) READONLY accountSumGroupStockDateTime BEFORE inSessionGroup(sk), accountSumBatchesGroupStockDateTime BEFORE inSessionGroup(sk)
+    PROPERTIES(s, st, dt) READONLY accountSumSkuStockDateTime
     PROPERTIES(bt, st, dt) READONLY accountSumBatchStockDateTime
 ;
 

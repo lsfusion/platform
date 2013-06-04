@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="dt" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.771561000000001"/>
-	<property name="ireport.x" value="119"/>
+	<property name="ireport.zoom" value="3.4522712143931042"/>
+	<property name="ireport.x" value="297"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -27,6 +27,18 @@
 		</box>
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
+	<style name="GroupCellStyle3" mode="Opaque" backcolor="#F2F2F2" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle4" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
 	<field name="dt" class="java.util.Date"/>
 	<field name="objectValueProperty_DateTimeClass" class="java.util.Date"/>
 	<field name="st" class="java.lang.Integer"/>
@@ -46,23 +58,6 @@
 	<field name="accountSumBatchStockDateTime" class="java.math.BigDecimal"/>
 	<field name="idBarcodeSkuBatch" class="java.lang.String"/>
 	<field name="shortNameUOMBatch" class="java.lang.String"/>
-	<group name="designGroup18">
-		<groupExpression><![CDATA[String.valueOf($F{sk})]]></groupExpression>
-		<groupHeader>
-			<band height="14">
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle2" positionType="Float" x="0" y="0" width="486" height="14"/>
-					<textElement textAlignment="Left"/>
-					<textFieldExpression><![CDATA[$F{canonicalNameGroup}]]></textFieldExpression>
-				</textField>
-				<textField pattern="#,##0.###">
-					<reportElement style="GroupCellStyle2" stretchType="RelativeToTallestObject" x="486" y="0" width="90" height="14"/>
-					<textElement textAlignment="Right"/>
-					<textFieldExpression><![CDATA[$F{accountSumBatchesGroupStockDateTime}]]></textFieldExpression>
-				</textField>
-			</band>
-		</groupHeader>
-	</group>
 	<title>
 		<band height="69">
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yy H:mm" isBlankWhenNull="true">
@@ -77,7 +72,7 @@
 				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.formatRussian($F{objectValueProperty_DateTimeClass})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="91" y="17" width="498" height="18" backcolor="#FFFFFF"/>
+				<reportElement positionType="Float" x="91" y="17" width="485" height="18" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>

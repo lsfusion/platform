@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="dt" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.771561000000001"/>
-	<property name="ireport.x" value="119"/>
+	<property name="ireport.zoom" value="3.4522712143931042"/>
+	<property name="ireport.x" value="1135"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -27,42 +27,34 @@
 		</box>
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
+	<style name="GroupCellStyle3" mode="Opaque" backcolor="#F2F2F2" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle4" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
 	<field name="dt" class="java.util.Date"/>
 	<field name="objectValueProperty_DateTimeClass" class="java.util.Date"/>
 	<field name="st" class="java.lang.Integer"/>
 	<field name="nameStock" class="java.lang.String"/>
 	<field name="gt" class="java.lang.Integer"/>
 	<field name="nameGroupType" class="java.lang.String"/>
-	<field name="sessionConcatGroups" class="java.lang.String"/>
 	<field name="sk" class="java.lang.Integer"/>
 	<field name="canonicalNameGroup" class="java.lang.String"/>
-	<field name="bt" class="java.lang.Integer"/>
-	<field name="dateBatch" class="java.util.Date"/>
-	<field name="nameBatch" class="java.lang.String"/>
-	<field name="nameSkuBatch" class="java.lang.String"/>
-	<field name="quantityBatch" class="java.math.BigDecimal"/>
-	<field name="balanceABatchStockDateTime" class="java.math.BigDecimal"/>
-	<field name="accountSumBatchesGroupStockDateTime" class="java.math.BigDecimal"/>
-	<field name="accountSumBatchStockDateTime" class="java.math.BigDecimal"/>
-	<field name="idBarcodeSkuBatch" class="java.lang.String"/>
-	<field name="shortNameUOMBatch" class="java.lang.String"/>
-	<group name="designGroup18">
-		<groupExpression><![CDATA[String.valueOf($F{sk})]]></groupExpression>
-		<groupHeader>
-			<band height="14">
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle2" positionType="Float" x="0" y="0" width="486" height="14"/>
-					<textElement textAlignment="Left"/>
-					<textFieldExpression><![CDATA[$F{canonicalNameGroup}]]></textFieldExpression>
-				</textField>
-				<textField pattern="#,##0.###">
-					<reportElement style="GroupCellStyle2" stretchType="RelativeToTallestObject" x="486" y="0" width="90" height="14"/>
-					<textElement textAlignment="Right"/>
-					<textFieldExpression><![CDATA[$F{accountSumBatchesGroupStockDateTime}]]></textFieldExpression>
-				</textField>
-			</band>
-		</groupHeader>
-	</group>
+	<field name="s" class="java.lang.Integer"/>
+	<field name="nameSku" class="java.lang.String"/>
+	<field name="balanceASkuStockDateTime" class="java.math.BigDecimal"/>
+	<field name="shortNameUOMSku" class="java.lang.String"/>
+	<field name="idBarcodeSku" class="java.lang.String"/>
+	<field name="accountSumGroupStockDateTime" class="java.math.BigDecimal"/>
+	<field name="accountSumSkuStockDateTime" class="java.math.BigDecimal"/>
+	<field name="sessionConcatGroups" class="java.lang.String"/>
 	<title>
 		<band height="69">
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yy H:mm" isBlankWhenNull="true">
@@ -77,7 +69,7 @@
 				<textFieldExpression><![CDATA[lsfusion.base.BaseUtils.formatRussian($F{objectValueProperty_DateTimeClass})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="91" y="17" width="498" height="18" backcolor="#FFFFFF"/>
+				<reportElement positionType="Float" x="91" y="17" width="485" height="18" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -158,9 +150,9 @@
 	<columnHeader>
 		<band height="18">
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="127" y="0" width="140" height="18"/>
+				<reportElement stretchType="RelativeToBandHeight" x="80" y="0" width="311" height="18"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA["Партия"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Наименование"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToBandHeight" x="425" y="0" width="61" height="18"/>
@@ -173,19 +165,9 @@
 				<textFieldExpression><![CDATA["Ед.изм."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="50" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA["Дата"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="50" y="0" width="77" height="18"/>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="80" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA["Шрих-код"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="267" y="0" width="124" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA["Наименование"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToBandHeight" x="486" y="0" width="90" height="18"/>
@@ -196,40 +178,30 @@
 	</columnHeader>
 	<detail>
 		<band height="14">
-			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="0" y="0" width="50" height="14"/>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$F{dateBatch}]]></textFieldExpression>
-			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="127" y="0" width="140" height="14"/>
+				<reportElement positionType="Float" x="80" y="0" width="311" height="14"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression><![CDATA[$F{nameBatch}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="267" y="0" width="124" height="14"/>
-				<textElement textAlignment="Left"/>
-				<textFieldExpression><![CDATA[$F{nameSkuBatch}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="425" y="0" width="61" height="14"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$F{balanceABatchStockDateTime}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement stretchType="RelativeToTallestObject" x="50" y="0" width="77" height="14"/>
-				<textElement/>
-				<textFieldExpression><![CDATA[$F{idBarcodeSkuBatch}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{balanceASkuStockDateTime}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement stretchType="RelativeToTallestObject" x="391" y="0" width="34" height="14"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[$F{shortNameUOMBatch}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMSku}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###">
+			<textField>
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="80" height="14"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{idBarcodeSku}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="486" y="0" width="90" height="14"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$F{accountSumBatchStockDateTime}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{accountSumSkuStockDateTime}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
