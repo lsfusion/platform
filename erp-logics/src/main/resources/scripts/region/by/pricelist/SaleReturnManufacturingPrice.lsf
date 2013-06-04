@@ -10,6 +10,10 @@ NAMESPACE SaleReturn;
 @deriveDocumentOperationProperty(UserInvoice, showManufacturingPrice);
 
 @defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, manufacturing, ' изготовителя');
+@defineDocumentInterfaceDetailInclVATCustomPrefix (invoiceDetail);
+includeVATUserInvoiceDetail(detail) <-  fixedPriceSku(skuUserInvoiceDetail(detail)) WHEN CHANGED (skuUserInvoiceDetail(detail));
+
+@defineDocumentInterfaceDetailMPVATCustomPrefix (invoiceDetail, manufacturing, );
 
 overRecalculatedPriceUserInvoiceDetail(detail) += ACTION (detail) {
     SET SaleReturn.manufacturingPriceUserInvoiceDetail(detail) <- Sale.manufacturingPriceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
@@ -23,7 +27,7 @@ overRecalculatedPriceUserInvoiceDetail(detail) += ACTION (detail) {
 EXTEND FORM userInvoice
     PROPERTIES(i)  showManufacturingPriceUserInvoice
     PROPERTIES(d)  SHOWIF showManufacturingPriceUserInvoice(i) AFTER invoiceSumUserInvoiceDetail  manufacturingSumUserInvoiceDetail,
-                   manufacturingPriceUserInvoiceDetail
+                   includeVATUserInvoiceDetail, manufacturingPriceUserInvoiceDetail
 
 ;
 EXTEND DESIGN userInvoice {
@@ -37,6 +41,7 @@ EXTEND DESIGN userInvoice {
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY showManufacturingPriceInvoice
-    PROPERTIES(d) READONLY  SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail manufacturingSumInvoiceDetail, manufacturingPriceInvoiceDetail
+    PROPERTIES(d) READONLY  SHOWIF showManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail manufacturingSumInvoiceDetail,
+                  includeVATInvoiceDetail, manufacturingPriceInvoiceDetail
 ;
 
