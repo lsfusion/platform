@@ -7,6 +7,7 @@ import lsfusion.client.form.cell.CellTableInterface;
 import lsfusion.client.form.cell.ClientAbstractCellEditor;
 import lsfusion.client.form.cell.ClientAbstractCellRenderer;
 import lsfusion.client.form.dispatch.EditPropertyDispatcher;
+import lsfusion.client.form.editor.TextPropertyEditor;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientType;
@@ -147,6 +148,9 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             if (getProperty(editRow, editCol).clearText) {
                 textEditor.setText("");
             }
+        } else if (editorComp instanceof TextPropertyEditor) {
+            TextPropertyEditor textEditor = (TextPropertyEditor) editorComp;
+            textEditor.prepareTextEditor(getProperty(editRow, editCol).clearText);
         }
     }
 
