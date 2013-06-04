@@ -56,6 +56,11 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return precision;
     }
 
+    @Override
+    protected boolean isNegative(BigDecimal value) {
+        return value.compareTo(BigDecimal.ZERO) < 0;
+    }
+
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getNumericType(length,precision);
     }

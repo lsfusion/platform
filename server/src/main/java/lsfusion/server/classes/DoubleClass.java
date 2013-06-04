@@ -39,6 +39,11 @@ public class DoubleClass extends IntegralClass<Double> {
         return 99999;
     }
 
+    @Override
+    protected boolean isNegative(Double value) {
+        return value < 0.0;
+    }
+
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getDoubleType();
     }

@@ -41,6 +41,11 @@ public class IntegerClass extends IntegralClass<Integer> {
         return 0;
     }
 
+    @Override
+    protected boolean isNegative(Integer value) {
+        return value < 0;
+    }
+
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getIntegerType();
     }

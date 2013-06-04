@@ -44,6 +44,11 @@ public class LongClass extends IntegralClass<Long> {
         return 0;
     }
 
+    @Override
+    protected boolean isNegative(Long value) {
+        return value < 0;
+    }
+
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getLongType();
     }

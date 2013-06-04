@@ -63,6 +63,10 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
         return true;
     }
     public String getString(Object value, SQLSyntax syntax) {
-        return value.toString();
+        if (isNegative((T)value))
+            return "(" + value.toString() + ")";
+        else
+            return value.toString();
     }
+    protected abstract boolean isNegative(T value);
 }
