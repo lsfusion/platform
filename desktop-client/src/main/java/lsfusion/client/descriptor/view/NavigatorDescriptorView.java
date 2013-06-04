@@ -30,7 +30,7 @@ public class NavigatorDescriptorView extends JPanel {
     private final Map<String, FormDescriptor> changedForms = new HashMap<String, FormDescriptor>();
 
     private final JButton previewBtn;
-    //private final JButton generateCodeBtn;
+    private final JButton generateCodeBtn;
 
     private final IncrementView captionUpdater = new IncrementView() {
         public void update(Object updateObject, String updateField) {
@@ -91,20 +91,20 @@ public class NavigatorDescriptorView extends JPanel {
             }
         });
 
-        /*generateCodeBtn = new JButton(ClientResourceBundle.getString("descriptor.view.generate.code"));
-        generateCodeBtn.setEnabled(false);
+        generateCodeBtn = new JButton(ClientResourceBundle.getString("descriptor.view.generate.code"));
         generateCodeBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                PreviewDialog dlg = new PreviewDialog(clientNavigator, formView.getForm());
+                GenerateCodeDialog dlg = new GenerateCodeDialog(formView.getForm());
                 dlg.setBounds(SwingUtilities.windowForComponent(NavigatorDescriptorView.this).getBounds());
                 dlg.setVisible(true);
             }
-        });*/
+        });
 
         JPanel commandPanel = new JPanel();
         commandPanel.setLayout(new BoxLayout(commandPanel, BoxLayout.X_AXIS));
         commandPanel.add(Box.createRigidArea(new Dimension(5, 5)));
         commandPanel.add(previewBtn);
+        commandPanel.add(generateCodeBtn);
         commandPanel.add(Box.createRigidArea(new Dimension(20, 5)));
         commandPanel.add(Box.createHorizontalGlue());
 

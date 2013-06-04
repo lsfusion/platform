@@ -27,6 +27,15 @@ public class FontConverter extends AbstractConverter {
         }
 
         String name = null;
+
+        // Название шрифта состоит из нескольких слов
+        if(value.toString().contains("\"")) {
+            int start = value.toString().indexOf('"');
+            int end = value.toString().lastIndexOf('"') + 1;
+            name = value.toString().substring(start+1, end-1);
+            value = value.toString().substring(0,start) + value.toString().substring(end, value.toString().length());
+        }
+
         int style = 0;
         int size = -1;
         for (String part : value.toString().split(" ")) {

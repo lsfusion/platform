@@ -24,12 +24,15 @@ public class SimplexConstraints<T> extends ContextObject implements Serializable
     public double fillVertical = 0; //PREFERRED;
     public double fillHorizontal = 0; //PREFERRED;
 
-    public Insets insetsSibling = new Insets(0, 0, 0, 0);
+    public static Insets DEFAULT_INSETS_SIBLING = new Insets(0, 0, 0, 0);
+    public Insets insetsSibling = DEFAULT_INSETS_SIBLING;
 
     //приходится ставить хотя бы один вниз, иначе криво отрисовывает объекты снизу
-    public Insets insetsInside = new Insets(1, 0, 1, 1); //new Insets(1, 0, 1, 0);
+    public static Insets DEFAULT_INSETS_INSIDE = new Insets(1, 0, 1, 1); //new Insets(1, 0, 1, 0);
+    public Insets insetsInside = DEFAULT_INSETS_INSIDE;
 
-    public SimplexComponentDirections directions = new SimplexComponentDirections(0.01, 0.01, 0, 0);
+    public static SimplexComponentDirections DEFAULT_DIRECTIONS = new SimplexComponentDirections(0.01, 0.01, 0, 0);
+    public SimplexComponentDirections directions = DEFAULT_DIRECTIONS;
 
     // приходится делать сериализацию отдельно, посколько клиент будет работать не с исходным классом T, а с его ID
     transient public Map<T, DoNotIntersectSimplexConstraint> intersects = new HashMap<T, DoNotIntersectSimplexConstraint>();
