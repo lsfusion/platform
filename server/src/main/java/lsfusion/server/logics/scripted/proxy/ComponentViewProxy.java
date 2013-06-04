@@ -5,6 +5,7 @@ import lsfusion.interop.form.layout.SimplexComponentDirections;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.logics.scripted.Bounds;
 
+import javax.swing.*;
 import java.awt.*;
 
 public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
@@ -80,6 +81,11 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
 
     public void setForeground(Color foreground) {
         target.design.foreground = foreground;
+    }
+
+    public void setIconPath(String iconPath) {
+        target.design.iconPath = iconPath;
+        target.design.setImage(new ImageIcon(ComponentView.class.getResource("/images/" + iconPath)));
     }
 
 }
