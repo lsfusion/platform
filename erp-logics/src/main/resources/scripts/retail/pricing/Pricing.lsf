@@ -203,10 +203,10 @@ END
 
 META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD, prefixCondition)
 
-    calc###prefixA###price###detail(detail)  = roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
+    calc###prefixA###price###detail(detail)  = roundPriceRoundCondition(NUMERIC[14,2]([X*(Y+100)*(Z+100)/10000](
     prefixB###price###detail(detail),
     prefixC###markup###detail(detail),
-    value###prefixD###VAT###detail(detail)), prefixCondition###roundCondition###detail(detail));
+    value###prefixD###VAT###detail(detail))), prefixCondition###roundCondition###detail(detail));
 
     change###prefixC###markup###detail = ACTION (detail) {
         REQUEST NUMERIC[8,3] INPUT;
@@ -245,10 +245,10 @@ END
 
 META changeDocumentDetailPricePrefix(detail, prefixA, prefixB, prefixC, prefixD, prefixE, prefixF)
 
-    calc###prefixB###price###detail(detail)  = roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
+    calc###prefixB###price###detail(detail)  = roundPriceRoundCondition(NUMERIC[14,2]([X*(Y+100)*(Z+100)/10000](
         prefixD###price###detail(detail),
         prefixC###markup###detail(detail),
-        value###prefixE###VAT###detail(detail)), roundCondition###detail(detail));
+        value###prefixE###VAT###detail(detail))), roundCondition###detail(detail));
 
     change###prefixA###price###detail = ACTION (detail) {
         REQUEST NUMERIC[14,2] INPUT;
@@ -402,7 +402,7 @@ pricingPricePricingDetail (detail) = OVERRIDE pricePricingDetail(detail), overPr
 @defineDocumentInterfaceDetailSkip(pricing, changeLedger, 'Не изменять текущие цены');
 
 // Основание
-descriptionDocumentPricing 'Документы-основания' = ABSTRACT STRING[255] (Pricing)PERSISTENT;
+descriptionDocumentPricing 'Документы-основания' = ABSTRACT STRING[255] (Pricing) PERSISTENT;
 extraDescriptionPricingDetail 'Доп. наименование'  = ABSTRACT STRING[255] (PricingDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
 // Возвраты
@@ -1015,5 +1015,5 @@ META defineInvoicePricingRelation(sign, stockProp)
     ;
 
     invoiceDetailPricingDetail(pricingDetail) += invoiceDetailInvoicePricingDetail(pricingDetail);
-    descriptionDocumentPricing(pricing) += invoicesPricing(pricing);
+    descriptionDocumentPricing(pricing) += STRING[255](invoicesPricing(pricing));
 END

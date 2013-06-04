@@ -425,7 +425,7 @@ EXTEND FORM discountCards
 
 TABLE receiptSaleDetailPromotionCondition(ReceiptSaleDetail, PromotionCondition);
 quantityReceiptSaleDetailPromotionCondition 'Кол-во по акции' = DATA NUMERIC[14,3] (ReceiptSaleDetail, PromotionCondition) INDEXED;
-promotionSumReceiptSaleDetailPromotionCondition 'Сумма скидки' = DATA NUMERIC[14,3] (ReceiptSaleDetail, PromotionCondition);
+promotionSumReceiptSaleDetailPromotionCondition 'Сумма скидки' = DATA NUMERIC[16,2] (ReceiptSaleDetail, PromotionCondition);
 setUserPromotionReceiptSaleDetailPromotionCondition 'Применить скидку' = DATA BOOLEAN (ReceiptSaleDetail, PromotionCondition);
 
 setUserPromotionReceipt (receipt) = GROUP SUM 1 IF setUserPromotionReceiptSaleDetailPromotionCondition (receiptSaleDetail, promotionCondition)  BY receiptReceiptSaleDetail (receiptSaleDetail);

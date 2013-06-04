@@ -68,11 +68,11 @@ backgroundRetailOrder 'Цвет' (order) = RGB(224, 255, 255) IF order IS Order;
 
 //-- Свойства для аггрегированных производств/расценок
 
-componentsSumProductDetail 'Сумма компонентов произведенного изделия' (productDetail)= roundPriceCurrency((componentsPriceProductDetail(productDetail)*outputQuantityProductDetail(productDetail)),currencyProductDetail(productDetail));
-VATMarkupSumProductDetail 'НДС и надбавка' (productDetail) =  outputProductsSumProductDetail(productDetail) (-) componentsSumProductDetail(productDetail);
-retailVATSumProductDetail 'Сумма НДС' (productDetail) = roundPriceCurrency([X*Y/(100+Y)](VATMarkupSumProductDetail(productDetail), valueVATProductDetail(productDetail)), currencyProductDetail(productDetail));
-retailMarkupSumProductDetail 'Сумма надбавки' (productDetail) =  VATMarkupSumProductDetail(productDetail) (-) retailVATSumProductDetail(productDetail);
-retailMarkupProductDetail 'Надбавка, %'(productDetail) =[round2(X*100/Y)](retailMarkupSumProductDetail(productDetail), componentsSumProductDetail(productDetail));
+componentsSumProductDetail 'Сумма компонентов произведенного изделия' (productDetail) = NUMERIC[16,2](roundPriceCurrency((componentsPriceProductDetail(productDetail)*outputQuantityProductDetail(productDetail)),currencyProductDetail(productDetail)));
+VATMarkupSumProductDetail 'НДС и надбавка' (productDetail) =  NUMERIC[16,2](outputProductsSumProductDetail(productDetail) (-) componentsSumProductDetail(productDetail));
+retailVATSumProductDetail 'Сумма НДС' (productDetail) = NUMERIC[16,2](roundPriceCurrency([X*Y/(100+Y)](VATMarkupSumProductDetail(productDetail), valueVATProductDetail(productDetail)), currencyProductDetail(productDetail)));
+retailMarkupSumProductDetail 'Сумма надбавки' (productDetail) = NUMERIC[16,2](VATMarkupSumProductDetail(productDetail) (-) retailVATSumProductDetail(productDetail));
+retailMarkupProductDetail 'Надбавка, %'(productDetail) = NUMERIC[8,3]([round2(X*100/Y)](retailMarkupSumProductDetail(productDetail), componentsSumProductDetail(productDetail)));
 
 pricingCommitteeOutput(output) += pricingCommitteeOrder(orderOrderOutput(output));
 createPricingOutput(output) += createPricingOrder(orderOrderOutput(output));

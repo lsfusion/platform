@@ -10,7 +10,7 @@ REQUIRE System,
 CLASS WarehouseGroup 'Группа складов' : StockGroup;
 TABLE warehouseGroup (WarehouseGroup);
 
-nameWarehouseGroup 'Наименование' = DATA ISTRING[150](WarehouseGroup);
+nameWarehouseGroup 'Наименование' = DATA ISTRING[100](WarehouseGroup);
 
 nameStockGroup(group) += nameWarehouseGroup(group) IF group IS WarehouseGroup;
 

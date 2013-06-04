@@ -219,8 +219,8 @@ terminalDocumentDetailIDDocumentIDDetail (terminalDocumentDetail, terminalDocume
 
 barcodeTerminalDocumentDetail 'Штрих-код' = DATA STRING[15] (TerminalDocumentDetail) IN base;
 quantityTerminalDocumentDetail 'Количество' = DATA NUMERIC[14,3] (TerminalDocumentDetail) IN base;
-priceTerminalDocumentDetail 'Цена' = DATA NUMERIC[14,3] (TerminalDocumentDetail) IN base;
-sumTerminalDocumentDetail 'Сумма' = DATA NUMERIC[14,3] (TerminalDocumentDetail) IN base;
+priceTerminalDocumentDetail 'Цена' = DATA NUMERIC[14,2] (TerminalDocumentDetail) IN base;
+sumTerminalDocumentDetail 'Сумма' = DATA NUMERIC[16,2] (TerminalDocumentDetail) IN base;
 nameTerminalDocumentDetail 'Наименование' = DATA STRING[200] (TerminalDocumentDetail) IN base;
 isNewTerminalDocumentDetail 'Новый товар' = DATA BOOLEAN (TerminalDocumentDetail) IN base;
 

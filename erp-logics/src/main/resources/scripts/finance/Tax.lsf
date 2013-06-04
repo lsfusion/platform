@@ -67,7 +67,7 @@ CLASS ABSTRACT TaxUnit 'Налоговый субъект';
 TABLE taxUnit(TaxUnit);
 
 taxUnitGroupTaxUnit = ABSTRACT TaxUnitGroup (TaxUnit) PERSISTENT;
-descriptionTaxUnit 'Название налогового субъекта' = ABSTRACT STRING[255] (TaxUnit) PERSISTENT;
+descriptionTaxUnit 'Название налогового субъекта' = ABSTRACT ISTRING[255] (TaxUnit) PERSISTENT;
 
 TABLE rangeTaxUnit (Range, TaxUnit);
 inRangeTaxUnit 'Вкл.' (range, taxUnit) = DATA BOOLEAN (Range, TaxUnit);
@@ -499,10 +499,10 @@ END
 //-- НДС - Розничный
 
 META defineDocumentDetailVATDataSumCustomPrefix (detail, prefix, caption)
-    prefix###VATSum###detail 'Сумма НДС'###caption = DATA NUMERIC[14,3] (###detail);
+    prefix###VATSum###detail 'Сумма НДС'###caption = DATA NUMERIC[16,2] (###detail);
 END
 META defineDocumentAbstractDetailVATDataSumCustomPrefix (detail, prefix, caption)
-    prefix###VATSum###detail 'Сумма НДС'###caption = ABSTRACT NUMERIC[14,3] (###detail) PERSISTENT;
+    prefix###VATSum###detail 'Сумма НДС'###caption = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailVATDataSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailVATDataSumCustomPrefix(detail, prefix, caption);

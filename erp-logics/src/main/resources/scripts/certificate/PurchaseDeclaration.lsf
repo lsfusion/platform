@@ -29,7 +29,7 @@ invoicesDeclaration 'Накладные' (declaration) =
 backgroundCustomedInvoice 'Цвет' (invoice) = RGB(255, 224, 224) IF invoice IS Invoice;
 
 // свойства товаров
-nameCustomsSku 'Наименование (декл.)' = ABSTRACT STRING[200](Sku);
+nameCustomsSku 'Наименование (декл.)' = ABSTRACT ISTRING[255](Sku);
 nameCustomsSku(sku) += nameSku(sku);
 
 nameCustomsUserInvoiceDetail 'Наименование (декл.)' (userInvoiceDetail) = nameCustomsSku(skuUserInvoiceDetail(userInvoiceDetail));

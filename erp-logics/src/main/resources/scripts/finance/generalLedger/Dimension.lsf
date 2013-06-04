@@ -6,7 +6,7 @@ REQUIRE GeneralLedger;
 
 CLASS ABSTRACT Dimension 'Субконто';
 TABLE dimension(Dimension);
-nameDimension 'Название' = ABSTRACT STRING[255] (Dimension) MINCHARWIDTH 40 PREFCHARWIDTH 80;
+nameDimension 'Название' = ABSTRACT ISTRING[255] (Dimension) MINCHARWIDTH 40 PREFCHARWIDTH 80;
 
 FORM dimensions 'Субконто'
     OBJECTS d = Dimension

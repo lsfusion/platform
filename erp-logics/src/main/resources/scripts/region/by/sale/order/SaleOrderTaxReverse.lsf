@@ -4,6 +4,6 @@ REQUIRE TaxReverse, SaleOrder;
 
 NAMESPACE Sale;
 
-overValueVATUserOrderDetail(detail) += valueRateRangeDate(VATUserOrderDetail(detail), dateUserOrderDetail(detail)) * 100 /
-                                  (100-valueRateRangeDate(VATUserOrderDetail(detail), dateUserOrderDetail(detail)))
-                                  IF reverseRange(VATUserOrderDetail(detail));
+overValueVATUserOrderDetail(detail) += NUMERIC[10,5](valueRateRangeDate(VATUserOrderDetail(detail), dateUserOrderDetail(detail)) * 100 /
+                                                     (100-valueRateRangeDate(VATUserOrderDetail(detail), dateUserOrderDetail(detail))))
+                                       IF reverseRange(VATUserOrderDetail(detail));

@@ -213,14 +213,14 @@ percentUserRepricing 'Процент' (userRepricing)= DATA NUMERIC[8,3](UserRep
 CONSTRAINT changePriceTypeUserRepricing(userRepricing) AND NOT percentUserRepricing(userRepricing) //CHECKED BY changePriceTypeUserRepricing
         MESSAGE 'Не задан процент для изменения цены';
 
-newDiscountRetailPriceUserRepricingDetail (d) =  roundPriceRoundCondition([X+(X*Y)/100](
+newDiscountRetailPriceUserRepricingDetail (d) =  roundPriceRoundCondition(NUMERIC[14,2]([X+(X*Y)/100](
     curRetailPriceUserRepricingDetail(d),
-    percentUserRepricing(userRepricingUserRepricingDetail(d))), roundConditionDepartmentStore(departmentStoreUserRepricingDetail(d)));
+    percentUserRepricing(userRepricingUserRepricingDetail(d)))), roundConditionDepartmentStore(departmentStoreUserRepricingDetail(d)));
 
-newMarkupRetailPriceUserRepricingDetail (d) = roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
+newMarkupRetailPriceUserRepricingDetail (d) = roundPriceRoundCondition(NUMERIC[14,2]([X*(Y+100)*(Z+100)/10000](
     curRepricingPriceUserRepricingDetail(d),
     percentUserRepricing(userRepricingUserRepricingDetail(d)),
-    valueCurVATUserRepricingDetail(d)), roundConditionDepartmentStore(departmentStoreUserRepricingDetail(d)));
+    valueCurVATUserRepricingDetail(d))), roundConditionDepartmentStore(departmentStoreUserRepricingDetail(d)));
 
 
 FORM addPercentUserRepricing 'Изменение цены'

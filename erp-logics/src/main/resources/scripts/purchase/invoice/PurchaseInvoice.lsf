@@ -42,16 +42,16 @@ NAMESPACE Purchase;
 
 // --------------------------- Себестоимость ---------------------------------- //
 
-extraCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
-extraCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
+extraCostPriceInvoiceDetail = ABSTRACT NUMERIC[16,4] (InvoiceDetail) PERSISTENT;
+extraCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[16,4] (UserInvoiceDetail) PERSISTENT;
 extraCostPriceInvoiceDetail (detail) += extraCostPriceUserInvoiceDetail(detail);
 
-customCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2](InvoiceDetail) PERSISTENT;
-customCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2](UserInvoiceDetail) PERSISTENT;
+customCostPriceInvoiceDetail = ABSTRACT NUMERIC[16,4](InvoiceDetail) PERSISTENT;
+customCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[16,4](UserInvoiceDetail) PERSISTENT;
 customCostPriceInvoiceDetail(detail) += customCostPriceUserInvoiceDetail(detail);
 
-certificateCostPriceInvoiceDetail 'Цена за сертификацию' = ABSTRACT NUMERIC[14,2](InvoiceDetail) PERSISTENT;
-certificateCostPriceUserInvoiceDetail 'Цена за сертификацию' = ABSTRACT NUMERIC[14,2](UserInvoiceDetail) PERSISTENT;
+certificateCostPriceInvoiceDetail = ABSTRACT NUMERIC[16,4](InvoiceDetail) PERSISTENT;
+certificateCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[16,4](UserInvoiceDetail) PERSISTENT;
 certificateCostPriceInvoiceDetail(detail) += certificateCostPriceUserInvoiceDetail(detail);
 
 incomePriceInvoiceDetail (detail) = IF isHomeCurrencyInvoice(invoiceInvoiceDetail(detail)) THEN
@@ -59,14 +59,14 @@ incomePriceInvoiceDetail (detail) = IF isHomeCurrencyInvoice(invoiceInvoiceDetai
                                     ELSE priceInvoiceDetail(detail);
 
 incomePriceUserInvoiceDetail (detail) = IF isHomeCurrencyUserInvoice(userInvoiceUserInvoiceDetail(detail)) THEN
-                                         homePriceUserInvoiceDetail(detail)
-                                    ELSE priceUserInvoiceDetail(detail);
+                                           homePriceUserInvoiceDetail(detail)
+                                        ELSE priceUserInvoiceDetail(detail);
 
-costPriceInvoiceDetail(detail) = incomePriceInvoiceDetail(detail) (+) extraCostPriceInvoiceDetail(detail) (+)
-                                 customCostPriceInvoiceDetail(detail) (+) certificateCostPriceInvoiceDetail(detail);
+costPriceInvoiceDetail(detail) = NUMERIC[14,2] (incomePriceInvoiceDetail(detail) (+) extraCostPriceInvoiceDetail(detail) (+)
+                                                customCostPriceInvoiceDetail(detail) (+) certificateCostPriceInvoiceDetail(detail));
 
-costPriceUserInvoiceDetail(detail) = incomePriceUserInvoiceDetail(detail) (+) extraCostPriceUserInvoiceDetail(detail) (+)
-                                     customCostPriceUserInvoiceDetail(detail) (+) certificateCostPriceUserInvoiceDetail(detail);
+costPriceUserInvoiceDetail(detail) = NUMERIC[14,2] (incomePriceUserInvoiceDetail(detail) (+) extraCostPriceUserInvoiceDetail(detail) (+)
+                                                    customCostPriceUserInvoiceDetail(detail) (+) certificateCostPriceUserInvoiceDetail(detail));
 
 addCostPriceToManufacturingPriceUserInvoice 'Учитывать в цене изготовителя доп.расходы' (invoice) = DATA BOOLEAN (Purchase.UserInvoice) IN documentPrmGroup;
 

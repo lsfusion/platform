@@ -4,7 +4,7 @@ REQUIRE TaxReverse, Pricing;
 
 NAMESPACE Pricing;
 
-overValueRetailVATUserPricingDetail(detail) += valueRateRangeDate(retailVATUserPricingDetail(detail), dateUserPricingDetail(detail)) * 100 /
-                                    (100-valueRateRangeDate(retailVATUserPricingDetail(detail), dateUserPricingDetail(detail)))
-                                    IF reverseRange(retailVATUserPricingDetail(detail));
+overValueRetailVATUserPricingDetail(detail) += NUMERIC[10,5](valueRateRangeDate(retailVATUserPricingDetail(detail), dateUserPricingDetail(detail)) * 100 /
+                                                             (100-valueRateRangeDate(retailVATUserPricingDetail(detail), dateUserPricingDetail(detail))))
+                                               IF reverseRange(retailVATUserPricingDetail(detail));
 

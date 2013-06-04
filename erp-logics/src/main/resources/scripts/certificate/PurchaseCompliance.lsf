@@ -28,7 +28,7 @@ invoicesCompliance 'Накладные' (compliance) =
 
 backgroundCompliancedInvoice 'Цвет' (invoice) = RGB(224, 224, 255) IF invoice IS Invoice;
 
-nameComplianceSku 'Наименование (декл.)' = ABSTRACT STRING[200](Sku);
+nameComplianceSku 'Наименование (декл.)' = ABSTRACT ISTRING[255](Sku);
 nameComplianceSku(sku) += nameSku(sku);
 
 nameComplianceUserInvoiceDetail 'Наименование (декл.)' (userInvoiceDetail) = nameComplianceSku(skuUserInvoiceDetail(userInvoiceDetail));

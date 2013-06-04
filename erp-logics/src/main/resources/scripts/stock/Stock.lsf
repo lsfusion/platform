@@ -46,7 +46,7 @@ countryStock (stock) = countryLegalEntity(legalEntityStock(stock)) PERSISTENT;
 nameCountryStock 'Страна' (stock) = nameCountry(countryStock(stock));
 countryPOI (poi) += countryStock(poi);
 
-addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (Stock) PERSISTENT;
+addressStock 'Адрес' (stock) = ABSTRACT ISTRING[100] (Stock) PERSISTENT;
 addressPOI (poi) += addressStock(poi);
 
 //latitudeStock 'Координата X' = DATA NUMERIC[10,5](Stock);
@@ -123,7 +123,7 @@ TABLE groupGroup(Group, Group);
 @defineHierarchyAbstract(group, Group);
 
 CLASS ABSTRACT GroupType 'Тип классификатора SKU';
-nameGroupType 'Наименование' = ABSTRACT ISTRING[50](GroupType);
+nameGroupType 'Наименование' = ABSTRACT ISTRING[100](GroupType);
 
 FORM groupTypes 'Типы классификатора SKU'
     OBJECTS g = GroupType
@@ -368,7 +368,7 @@ costBatch 'Себестоимость' (batch) = ABSTRACT NUMERIC[14,2] (Batch) 
 prevCostBatch 'Себестоимость' (batch) = PREV(costBatch(batch));
 
 descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (Batch) PERSISTENT IN recognize MINCHARWIDTH 30 PREFCHARWIDTH 60;
-nameBatch 'Название' (batch) = ABSTRACT STRING[200] (Batch) PERSISTENT IN recognize MINCHARWIDTH 30 PREFCHARWIDTH 60;
+nameBatch 'Название' (batch) = ABSTRACT ISTRING[200] (Batch) PERSISTENT IN recognize MINCHARWIDTH 30 PREFCHARWIDTH 60;
 
 expiryDateBatch 'Годен до' (batch) = ABSTRACT DATE (Batch) PERSISTENT INDEXED;
 prevExpiryDateBatch 'Годен до' (batch) = PREV(expiryDateBatch(batch));
@@ -1770,10 +1770,10 @@ META defineDocumentInterfaceDetailMarkupPrefix (object, prefix, caption)
 END
 
 META defineDocumentDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum###detail 'Сумма надбавки'###caption = DATA NUMERIC[14,3] (###detail);
+    prefix###markupSum###detail 'Сумма надбавки'###caption = DATA NUMERIC[16,2] (###detail);
 END
 META defineDocumentAbstractDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum###detail 'Сумма надбавки'###caption = ABSTRACT NUMERIC[14,3] (###detail) PERSISTENT;
+    prefix###markupSum###detail 'Сумма надбавки'###caption = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailMarkupSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupSumCustomPrefix(detail, prefix, caption);
@@ -3428,8 +3428,8 @@ EXTEND DESIGN legalEntity{
 CLASS ABSTRACT Document 'Документ с товарами';
 CLASS ABSTRACT DocumentDetail 'Строка документа';
 
-numberDocument 'Номер' = ABSTRACT STRING[10](Document);
-seriesDocument 'Серия' = ABSTRACT STRING[10](Document);
+numberDocument 'Номер' = ABSTRACT STRING[18] (Document);
+seriesDocument 'Серия' = ABSTRACT STRING[2] (Document);
 dateDocument 'Дата' = ABSTRACT DATE(Document);
 
 supplierDocument = ABSTRACT LegalEntity(Document);
@@ -3446,8 +3446,8 @@ documentDocumentDetail = ABSTRACT Document(DocumentDetail);
 
 skuDocumentDetail = ABSTRACT Sku(DocumentDetail);
 nameSkuDocumentDetail 'Товар' (documentDetail) = nameSku(skuDocumentDetail(documentDetail));
-quantityDocumentDetail 'Кол-во' = ABSTRACT NUMERIC[14,3](DocumentDetail);
-priceDocumentDetail 'Цена' = ABSTRACT NUMERIC[14,3](DocumentDetail);
+quantityDocumentDetail 'Кол-во' = ABSTRACT NUMERIC[14,3] (DocumentDetail);
+priceDocumentDetail 'Цена' = ABSTRACT NUMERIC[14,2] (DocumentDetail);
 indexDocumentDetail 'Номер' = ABSTRACT INTEGER(DocumentDetail);
 
 FORM documents 'Документы с товарами'

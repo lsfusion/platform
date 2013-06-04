@@ -6,7 +6,7 @@ NAMESPACE PriceList;
 
 CLASS ABSTRACT LedgerPriceListType 'Регистровый вид цены' : BasePriceListType;
 
-nameLedgerPriceListType 'Наименование' = ABSTRACT ISTRING[50](LedgerPriceListType);
+nameLedgerPriceListType 'Наименование' = ABSTRACT ISTRING[100](LedgerPriceListType);
 nameBasePriceListType(type) += nameLedgerPriceListType(type) IF type IS LedgerPriceListType;
 
 batchLedgerPriceListType 'Использовать для партий свои цены' = ABSTRACT BOOLEAN (PriceListType) EXCLUSIVE PERSISTENT;

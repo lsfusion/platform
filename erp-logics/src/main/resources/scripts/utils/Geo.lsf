@@ -22,12 +22,12 @@ mapProvider = OVERRIDE MapProvider.yandex, userMapProvider();
 
 nameUserMapProvider 'Использовать карты' () = staticCaption(userMapProvider());
 
-namePOI 'Название'= ABSTRACT STRING[200] (POI) PERSISTENT;
+namePOI 'Название'= ABSTRACT ISTRING[200] (POI) PERSISTENT;
 
 countryPOI = ABSTRACT Country (POI) PERSISTENT;
 nameCountryPOI 'Страна' (poi) = nameCountry(countryPOI(poi));
 
-addressPOI 'Адрес' = ABSTRACT STRING[100] (POI) PERSISTENT;
+addressPOI 'Адрес' = ABSTRACT ISTRING[100] (POI) PERSISTENT;
 
 latitudePOI 'Координата X' = ABSTRACT NUMERIC[10,5] (POI);
 longitudePOI 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);

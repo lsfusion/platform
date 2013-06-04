@@ -333,7 +333,7 @@ META defineItemAttribute (attribute, caption, group)
 END
 
 // Объявление
-valueItemAttribute = ABSTRACT STRING[255] (Item, ItemAttribute) PERSISTENT;
+valueItemAttribute = ABSTRACT ISTRING[255] (Item, ItemAttribute) PERSISTENT;
 
 META implementItemAttribute(property, caption, itemType, attributeClass)
     EXTEND CLASS itemType##ItemAttribute { attributeClass caption }
@@ -413,7 +413,7 @@ END
 // Строка
 CLASS StringItemAttribute 'Строковый атрибут' : ItemAttribute;
 
-valueStringItemAttribute = ABSTRACT STRING[255] (Item, StringItemAttribute) EXCLUSIVE PERSISTENT;
+valueStringItemAttribute = ABSTRACT ISTRING[255] (Item, StringItemAttribute) EXCLUSIVE PERSISTENT;
 valueItemAttribute(item, attribute) += valueStringItemAttribute(item, attribute);
 
 META defineStringItemAttribute(attribute, type, caption, group)

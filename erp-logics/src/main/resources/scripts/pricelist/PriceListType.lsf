@@ -9,7 +9,7 @@ NAMESPACE PriceList;
 CLASS ABSTRACT PriceListType 'Вид цены';
 TABLE priceListType(PriceListType);
 
-namePriceListType 'Наименование' = ABSTRACT ISTRING[50](PriceListType);
+namePriceListType 'Наименование' = ABSTRACT ISTRING[100](PriceListType);
 
 includeVATPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (PriceListType) PERSISTENT;
 
@@ -58,7 +58,7 @@ CONSTRAINT currencyRoundCondition(roundConditionPriceListType(priceListType)) !=
 
 CLASS ABSTRACT BasePriceListType 'Базовый вид цены' : PriceListType;
 
-nameBasePriceListType 'Наименование' = ABSTRACT ISTRING[50](BasePriceListType);
+nameBasePriceListType 'Наименование' = ABSTRACT ISTRING[100](BasePriceListType);
 namePriceListType(type) += nameBasePriceListType(type) IF type IS BasePriceListType;
 
 priceBasePriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (BasePriceListType, Sku, Stock, DATETIME);
@@ -80,8 +80,8 @@ CLASS SystemPriceListType 'Системный вид цены' : BasePriceListTy
 
 nameBasePriceListType(type) += staticCaption(type) IF type IS SystemPriceListType;
 
-priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (SystemPriceListType, Sku, Stock, DATETIME) EXCLUSIVE;
-priceSystemPriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (SystemPriceListType, Batch, Stock, DATETIME) EXCLUSIVE;
+priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (SystemPriceListType, Sku, Stock, DATETIME) EXCLUSIVE;
+priceSystemPriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (SystemPriceListType, Batch, Stock, DATETIME) EXCLUSIVE;
 
 includeVATSystemPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (SystemPriceListType);
 includeVATBasePriceListType(type) += includeVATSystemPriceListType(type);

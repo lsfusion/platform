@@ -622,8 +622,8 @@ META defineInvoiceHomeCurrency(dumb)
     rateExchangeUserInvoiceDetail 'Курс' (d) = OVERRIDE rateExchangeUserInvoice(userInvoiceUserInvoiceDetail(d)),  dataRateExchangeUserInvoiceDetail(d);
     rateExchangeInvoiceDetail(d) += rateExchangeUserInvoiceDetail(d);
 
-    homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](InvoiceDetail) PERSISTENT;
-    homePriceUserInvoiceDetail 'Цена (пост.)' = DATA NUMERIC[14,3](UserInvoiceDetail);
+    homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,2](InvoiceDetail) PERSISTENT;
+    homePriceUserInvoiceDetail 'Цена (пост.)' = DATA NUMERIC[14,2](UserInvoiceDetail);
     homePriceInvoiceDetail(d) += homePriceUserInvoiceDetail(d);
 
     homePriceUserInvoiceDetail(d) <- roundPriceCurrency(priceUserInvoiceDetail(d) *
