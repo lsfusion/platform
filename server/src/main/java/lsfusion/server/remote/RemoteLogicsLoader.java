@@ -1,17 +1,18 @@
 package lsfusion.server.remote;
 
 import com.google.common.io.Resources;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.RMIManager;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -51,6 +52,8 @@ public class RemoteLogicsLoader extends LifecycleAdapter implements RemoteLogics
         try {
             rmiManager.export(remoteLogics);
             rmiManager.bindAndExport(EXPORT_NAME, this);
+        } catch (AlreadyBoundException e) {
+            throw new RuntimeException("Port is already bound. Maybe another server is already running.");
         } catch (Exception e) {
             throw new RuntimeException("Error binding Remote Logics Loader: ", e);
         }
