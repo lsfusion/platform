@@ -123,7 +123,7 @@ WHEN CHANGED(numeratorObject(numeratedObject)) AND
 
 // --------------------------------------------- Стандартные значения ---------------------------- //
 
-loadDefaultNumerators 'Загрузить стандартные нумераторы' = ABSTRACT ACTION();
+loadDefaultNumerators 'Загрузить стандартные нумераторы' = ABSTRACT ACTION LIST ();
 @implementLoadDefaultData(loadDefaultNumerators);
 
 // --------------------------------------------- Макрос по объявлению нумерируемого объекта ---------------------------- //
