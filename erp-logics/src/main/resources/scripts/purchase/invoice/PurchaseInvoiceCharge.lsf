@@ -80,10 +80,14 @@ calcChargePercentUserInvoiceDetail (userInvoiceDetail) =
 
 deriveCalcChargePriceUserInvoice 'Рассчитать сумму услуг по товарам' = ACTION (userInvoice) {
     SET chargePercentUserInvoiceDetail(detail) <- chargePercentUserInvoice(userInvoiceUserInvoiceDetail(detail)) WHERE userInvoiceUserInvoiceDetail(detail) == userInvoice;
-    SET chargePriceUserInvoiceDetail(detail) <- calcChargePercentUserInvoiceDetail (detail) WHERE userInvoiceUserInvoiceDetail(detail) == userInvoice;
+ //   SET chargePriceUserInvoiceDetail(detail) <- calcChargePercentUserInvoiceDetail (detail) WHERE userInvoiceUserInvoiceDetail(detail) == userInvoice;
 }
 
-WHEN SESSION FORMS userInvoice CHANGED(chargePercentUserInvoice(userInvoice)) DO EXEC deriveCalcChargePriceUserInvoice(userInvoice);
+WHEN SESSION FORMS userInvoice CHANGED(chargePercentUserInvoice(userInvoice)) OR CHANGED(countUserInvoiceDetailUserInvoice(userInvoice))
+    DO EXEC deriveCalcChargePriceUserInvoice(userInvoice);
+
+chargePriceUserInvoiceDetail(userInvoiceDetail) <- calcChargePercentUserInvoiceDetail (userInvoiceDetail)
+    WHEN CHANGED(chargePercentUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(sumUserInvoiceDetail(userInvoiceDetail));
 
 chargePercentInvoice(invoice) += chargePercentUserInvoice(invoice);
 
