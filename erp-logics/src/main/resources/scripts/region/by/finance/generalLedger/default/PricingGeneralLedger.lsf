@@ -7,6 +7,8 @@ NAMESPACE Pricing;
                                                                               //todo: добавить в аналитику по кредиту организацию
 EXTEND CLASS Pricing : GeneralLedger.GLDocument;
 nameGLDocument(document) += descriptionPricing(document);
+numberGLDocument(document) += numberPricing(document);
+seriesGLDocument(document) += seriesPricing(document);
 //editGLDocument (GLDocument)+= editInvoice(GLDocument);
 
 ////////////////////////////// Приход от поставщика //////////////////////////////////

@@ -7,6 +7,11 @@ CLASS ABSTRACT GLDocument 'Регистр-основание';
 TABLE GLDocument(GLDocument);
 
 nameGLDocument 'Регистр-основание' = ABSTRACT STRING[200] (GLDocument) PERSISTENT;
+numberGLDocument 'Номер' = ABSTRACT STRING[18] (GLDocument) IN numberedGroup MINCHARWIDTH 7;
+seriesGLDocument 'Серия' = ABSTRACT STRING[2] (GLDocument) IN numberedGroup FIXEDCHARWIDTH 3;
+seriesNumberGLDocument 'Серия/Номер' (GLDocument) = CONCAT '', seriesGLDocument(GLDocument), numberGLDocument(GLDocument) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+
+
 editGLDocument 'Редактировать регистр' = ABSTRACT ACTION (GLDocument) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 onlineGeneralLedger 'Создавать проводки онлайн' = DATA BOOLEAN ();
@@ -30,9 +35,16 @@ CLASS UserGeneralLedgerPosted 'Проведенная проводка (поль
 @defineDocumentInterfaceHeaderTimePrefix(GeneralLedger, , );
 
 GLDocumentGeneralLedger = ABSTRACT GLDocument (GeneralLedger) PERSISTENT;
-nameGLDocumentGeneralLedger 'Регистр-основание' (generalLedger) = nameGLDocument(GLDocumentGeneralLedger(generalLedger));
+nameGLDocumentGeneralLedger 'Регистр (описание)' (generalLedger) = nameGLDocument(GLDocumentGeneralLedger(generalLedger));
+numberGLDocumentGeneralLedger 'Регистр (номер)' (generalLedger) = numberGLDocument(GLDocumentGeneralLedger(generalLedger));
+seriesGLDocumentGeneralLedger 'Регистр (серия)' (generalLedger) = seriesGLDocument(GLDocumentGeneralLedger(generalLedger));
+seriesNumberGLDocumentGeneralLedger 'Регистр (серия/номер)' (generalLedger) = seriesNumberGLDocument(GLDocumentGeneralLedger(generalLedger));
 GLDocumentUserGeneralLedger = DATA GLDocument (UserGeneralLedger);
 nameGLDocumentUserGeneralLedger 'Регистр-основание' (userGeneralLedger) = nameGLDocument(GLDocumentUserGeneralLedger(userGeneralLedger));
+numberGLDocumentUserGeneralLedger 'Регистр (номер)' (userGeneralLedger) = numberGLDocument(GLDocumentUserGeneralLedger(userGeneralLedger));
+seriesGLDocumentUserGeneralLedger 'Регистр (серия)' (userGeneralLedger) = seriesGLDocument(GLDocumentUserGeneralLedger(userGeneralLedger));
+seriesNumberGLDocumentUserGeneralLedger 'Регистр (серия/номер)' (userGeneralLedger) = seriesNumberGLDocument(GLDocumentUserGeneralLedger(userGeneralLedger));
+
 GLDocumentGeneralLedger (generalLedger) += GLDocumentUserGeneralLedger (generalLedger);
 
 editGLDocumentGeneralLedger 'Редактировать регистр' (generalLedger) = editGLDocument(GLDocumentGeneralLedger(generalLedger));
@@ -230,7 +242,8 @@ copyGeneralLedger 'Копировать' = ACTION (generalLedger) NEWSESSION {
 
 FORM generalLedgers 'Проводки'
     OBJECTS g = GeneralLedger
-    PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, dateTimeGeneralLedger, nameLegalEntityGeneralLedger, nameGLDocumentGeneralLedger, descriptionGeneralLedger, idDebitGeneralLedger,
+    PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, dateTimeGeneralLedger, nameLegalEntityGeneralLedger, nameGLDocumentGeneralLedger,
+                   descriptionGeneralLedger, numberGLDocumentGeneralLedger, seriesGLDocumentGeneralLedger, idDebitGeneralLedger,
                    idCreditGeneralLedger, sumGeneralLedger
     ORDER BY dateTimeGeneralLedger, nameGLDocumentGeneralLedger
 //    todo : не работает поскольку для абстрактного свойства не задано ни одной реализации

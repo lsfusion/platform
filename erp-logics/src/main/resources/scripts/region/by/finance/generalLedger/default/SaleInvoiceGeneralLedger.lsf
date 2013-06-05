@@ -8,6 +8,8 @@ NAMESPACE Sale;
 
 EXTEND CLASS Invoice : GeneralLedger.GLDocument;
 nameGLDocument(document) += descriptionInvoice(document);
+numberGLDocument(document) += numberInvoice(document);
+seriesGLDocument(document) += seriesInvoice(document);
 //editGLDocument (GLDocument)+= editInvoice(GLDocument);
 
 ////////////////////////////// Отгрузка по безналу (из розницы) //////////////////////////////////
