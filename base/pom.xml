@@ -11,6 +11,7 @@
         <lsfusion.version>1.0-SNAPSHOT</lsfusion.version>
         <lsfusion.erp.version>${lsfusion.version}</lsfusion.erp.version>
         <lsfusion.paas.version>${lsfusion.version}</lsfusion.paas.version>
+        <lsfusion.fsl.version>${lsfusion.version}</lsfusion.fsl.version>
 
         <findbugs.version>1.0.0</findbugs.version>
         <junit.version>4.10</junit.version>
@@ -952,6 +953,12 @@
                 <groupId>lsfusion.platform</groupId>
                 <artifactId>web-client</artifactId>
                 <version>${lsfusion.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>lsfusion.platform</groupId>
+                <artifactId>fsl</artifactId>
+                <version>${lsfusion.fsl.version}</version>
             </dependency>
 
             <dependency>
