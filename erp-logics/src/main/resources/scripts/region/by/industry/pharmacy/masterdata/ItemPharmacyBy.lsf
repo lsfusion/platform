@@ -18,11 +18,11 @@ loadDefaultPharmacyPriceGroup 'Добавить Типы лекарственн�
     }
 }
 
-loadDefaultPharmacyPriceInterval 'Добавить интервал цен лекарственного средства (by)' = ACTION (sidGroup, isid, priceFrom, wMarkup, rMarkup) {
+loadDefaultPharmacyPriceInterval 'Добавить интервал цен лекарственного средства (by)' = ACTION (sidGroup, priceFrom, wMarkup, rMarkup) {
     FOR ADDOBJ i = PharmacyPriceInterval DO {
          SET pharmacyGroupPharmacyInterval(i) <- pharmacyGroupIdPharmacyGroup(sidGroup);
-         SET idPharmacyPriceInterval(i) <- isid;
-         SET fromPricePharmacyInterval(i) <- priceFrom;
+         SET pricePharmacyInterval(i) <- priceFrom;
+         SET fromDatePharmacyInterval(i) <- 2013_01_01;
          SET wholesaleMarkupPharmacyGroupInterval(g,i) <- wMarkup WHERE g == pharmacyGroupIdPharmacyGroup(sidGroup);
          SET retailMarkupPharmacyGroupInterval(g,i) <- rMarkup WHERE g == pharmacyGroupIdPharmacyGroup(sidGroup);
     }
@@ -31,28 +31,28 @@ loadDefaultPharmacyPriceInterval 'Добавить интервал цен ле�
 
 loadDefaultPharmacyPriceGroups 'Загрузить стандарные типы лек. ср-в и надбавки для них' () = ACTION () {
     EXEC loadDefaultPharmacyPriceGroup('Лекарственные средства', 'by_1');
-        EXEC loadDefaultPharmacyPriceInterval('by_1', '1', 0.00, 11.00, 30.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_1', '2', 5.00, 10.00, 25.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_1', '3', 10.00, 9.00, 21.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_1', '4', 15.00, 8.00, 17.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_1', '5', 30.00, 7.00, 13.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_1', '6', 50.00, 4.00, 6.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_1', '7', 100.00, 2.00, 2.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_1', 0.00, 11.00, 30.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_1', 5.00, 10.00, 25.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_1', 10.00, 9.00, 21.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_1', 15.00, 8.00, 17.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_1', 30.00, 7.00, 13.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_1', 50.00, 4.00, 6.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_1', 100.00, 2.00, 2.00);
 
     EXEC loadDefaultPharmacyPriceGroup('Изделия медецинского назначения', 'by_2');
-        EXEC loadDefaultPharmacyPriceInterval('by_2', '1', 0.00, 13.00, 31.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_2', '2', 5.00, 10.00, 29.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_2', '3', 10.00, 9.00, 25.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_2', '4', 15.00, 8.00, 19.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_2', '5', 50.00, 5.00, 9.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_2', 0.00, 13.00, 31.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_2', 5.00, 10.00, 29.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_2', 10.00, 9.00, 25.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_2', 15.00, 8.00, 19.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_2', 50.00, 5.00, 9.00);
 
     EXEC loadDefaultPharmacyPriceGroup('Медецинская техника', 'by_3');
-        EXEC loadDefaultPharmacyPriceInterval('by_3', '1', 0.00, 22.00, 23.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_3', '2', 3000.00, 20.00, 20.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_3', '3', 10000.00, 10.00, 0.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_3', '4', 50000.00, 8.00, 0.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_3', '5', 500000.00, 5.00, 0.00);
-        EXEC loadDefaultPharmacyPriceInterval('by_3', '6', 1000000.00, 3.00, 0.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_3', 0.00, 22.00, 23.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_3', 3000.00, 20.00, 20.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_3', 10000.00, 10.00, 0.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_3', 50000.00, 8.00, 0.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_3', 500000.00, 5.00, 0.00);
+        EXEC loadDefaultPharmacyPriceInterval('by_3', 1000000.00, 3.00, 0.00);
 
 }IN loadDefaultGroup;
 

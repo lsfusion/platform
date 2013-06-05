@@ -49,29 +49,29 @@ EXTEND DESIGN options {
     }
 }
 
-idPharmacyPriceInterval 'Идентификатор' = DATA STRING[20] (PharmacyPriceInterval) MINCHARWIDTH 15 PREFCHARWIDTH 20;
+pricePharmacyInterval 'Цена от' = DATA NUMERIC[14,2] (PharmacyPriceInterval);
 
-fromPricePharmacyInterval 'Цена от' = DATA NUMERIC[14,2] (PharmacyPriceInterval);
+fromDatePharmacyInterval 'Дата действия с' = DATA DATE (PharmacyPriceInterval);
+toDatePharmacyInterval 'Дата действия по' = DATA DATE (PharmacyPriceInterval);
 
 wholesaleMarkupPharmacyGroupInterval 'Оптовая надбавка' = DATA NUMERIC[8,3] (PharmacyPriceGroup, PharmacyPriceInterval);
 retailMarkupPharmacyGroupInterval 'Розничная надбавка' = DATA NUMERIC[8,3] (PharmacyPriceGroup, PharmacyPriceInterval);
 
 pharmacyExchangePriceDate  (price, date)= (price AS NUMERIC[14,2]) / rateTypeExchangeCurrencyDate(pharmacyTypeExchange(), currencyShortName('USD'), date);
 
-orderIntervalGroupPriceDate (group, price, date) = GROUP MAX STRUCT(fromPricePharmacyInterval(interval), interval)
-    IF pharmacyExchangePriceDate(price, date) > fromPricePharmacyInterval(interval)
+orderIntervalGroupPriceDate (group, price, date) = GROUP MAX STRUCT(pricePharmacyInterval(interval), fromDatePharmacyInterval(interval), interval)
+    IF pharmacyExchangePriceDate(price, date) > pricePharmacyInterval(interval)
+    IF date >= fromDatePharmacyInterval(interval)
+    IF NOT date > toDatePharmacyInterval(interval)
         BY pharmacyGroupPharmacyInterval(interval), price, date;
 
-pharmacyIntervalPharmacyGroupPriceDate (group, price, date) = orderIntervalGroupPriceDate(group, price, date)[2];
+pharmacyIntervalPharmacyGroupPriceDate (group, price, date) = orderIntervalGroupPriceDate(group, price, date)[3];
 
 wholesaleMarkupPharmacyGroupPriceDate 'Оптовая надбавка' (priceGroup, price, date) = wholesaleMarkupPharmacyGroupInterval(priceGroup, pharmacyIntervalPharmacyGroupPriceDate(priceGroup, price, date));
 wholesaleMarkupPharmacySkuPriceDate 'Оптовая надбавка' (sku, price, date) =  wholesaleMarkupPharmacyGroupPriceDate(pharmacyPriceGroupSku(sku), price, date);
 
 retailMarkupPharmacyGroupPriceDate 'Розничная надбавка' (priceGroup, price, date) = retailMarkupPharmacyGroupInterval(priceGroup, pharmacyIntervalPharmacyGroupPriceDate(priceGroup, price, date));
 retailMarkupPharmacySkuPriceDate 'Розничная надбавка' (sku, price, date) =  retailMarkupPharmacyGroupPriceDate(pharmacyPriceGroupSku(sku), price, date);
-
-pharmacyIntervalIdGroupIdGInterval (string1, string2) = GROUP AGGR interval
-    BY idPharmacyPriceGroup(pharmacyGroupPharmacyInterval(interval)), idPharmacyPriceInterval(interval) WHERE interval IS PharmacyPriceInterval;
 
 
 FORM pharmacyMarkups 'Надбавки для лекарственных средств'
@@ -82,10 +82,11 @@ FORM pharmacyMarkups 'Надбавки для лекарственных сре�
     ORDER BY idPharmacyPriceGroup
 
     OBJECTS i=PharmacyPriceInterval
-    PROPERTIES idPharmacyPriceInterval(i), fromPricePharmacyInterval(i), wholesaleMarkupPharmacyGroupInterval(g,i), retailMarkupPharmacyGroupInterval(g,i)
+    PROPERTIES fromDatePharmacyInterval(i), toDatePharmacyInterval(i), pricePharmacyInterval(i),
+               wholesaleMarkupPharmacyGroupInterval(g,i), retailMarkupPharmacyGroupInterval(g,i)
     PROPERTIES(i) ADDOBJ, DELETESESSION
     FILTERS    pharmacyGroupPharmacyInterval(i)==g
-    ORDER BY idPharmacyPriceInterval
+    ORDER BY pricePharmacyInterval
 
     OBJECTS nu=NUMERIC[14,3] FIXED PANEL
     PROPERTIES val = OBJVALUE(nu)
