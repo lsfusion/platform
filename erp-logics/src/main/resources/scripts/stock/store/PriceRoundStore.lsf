@@ -1,16 +1,31 @@
 MODULE PriceRoundStore;
 
-REQUIRE PriceRound, Store;
+REQUIRE PriceRound, Store, Country;
 
 //------------------------- Расширяем форму Отдела -------------------------//
 
-roundConditionDepartmentStore = DATA RoundCondition (DepartmentStore);
-nameRoundConditionDepartmentStore 'Условие округления розничной цены' (departmentStore)= nameRoundCondition(roundConditionDepartmentStore(departmentStore)) IN bookkeepingGroup;
+dataRoundConditionDepartmentStore = DATA RoundCondition (DepartmentStore);
+nameDataRoundConditionDepartmentStore 'Условие округления розничной цены' (departmentStore)= nameRoundCondition(dataRoundConditionDepartmentStore(departmentStore)) IN bookkeepingGroup;
 
-CONSTRAINT currencyStock(departmentStore) != currencyRoundCondition(roundConditionDepartmentStore(departmentStore))
-           CHECKED BY roundConditionDepartmentStore
-           MESSAGE 'Валюта склада должна совпадать с валютой округления';
+roundConditionCountry = DATA RoundCondition(Country);
+nameRoundConditionCountry 'Условие округления розничной цены (по умолчанию)' (country)= nameRoundCondition(roundConditionCountry(country));
+
+roundConditionCountryDepartmentStore (departmentStore) = roundConditionCountry(countryLegalEntity(legalEntityDepartmentStore(departmentStore))) PERSISTENT;
+
+roundConditionDepartmentStore (departmentStore) = OVERRIDE roundConditionCountryDepartmentStore(departmentStore), dataRoundConditionDepartmentStore(departmentStore);
+
+CONSTRAINT currencyStock(departmentStore) != currencyRoundCondition(dataRoundConditionDepartmentStore(departmentStore))
+           CHECKED BY dataRoundConditionDepartmentStore
+           MESSAGE 'Валюта округления должна совпадать с валютой склада';
+
+CONSTRAINT currencyCountry(country) != currencyRoundCondition(roundConditionCountry(country))
+           CHECKED BY roundConditionCountry
+           MESSAGE 'Валюта округления должна совпадать с валютой страны';
 
 EXTEND FORM departmentStore
-    PROPERTIES(d) nameRoundConditionDepartmentStore
+    PROPERTIES(d) nameDataRoundConditionDepartmentStore
+;
+
+EXTEND FORM country
+    PROPERTIES (c) nameRoundConditionCountry
 ;
