@@ -1,7 +1,0 @@
-MODULE PricingSalePurchaseShipment;
-
-REQUIRE PricingSalePurchase, SalePurchaseInvoiceShipment;
-
-NAMESPACE Sale;
-
-overPurchaseShipmentPriceUserInvoiceDetail(detail) += purchaseRetailPriceUserInvoiceDetail(detail);

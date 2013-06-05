@@ -1,7 +1,0 @@
-MODULE WareSaleReturnInvoice;
-
-REQUIRE WareInvoice, SaleReturnInvoice, SaleReturnShipment;
-
-NAMESPACE SaleReturn;
-
-@defineInvoiceWare(SaleReturn);

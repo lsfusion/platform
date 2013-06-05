@@ -1,9 +1,0 @@
-MODULE SaleOrderTaxReverse;
-
-REQUIRE TaxReverse, SaleOrder;
-
-NAMESPACE Sale;
-
-overValueVATUserOrderDetail(detail) += NUMERIC[10,5](valueRateRangeDate(VATUserOrderDetail(detail), dateUserOrderDetail(detail)) * 100 /
-                                                     (100-valueRateRangeDate(VATUserOrderDetail(detail), dateUserOrderDetail(detail))))
-                                       IF reverseRange(VATUserOrderDetail(detail));

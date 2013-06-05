@@ -16,4 +16,21 @@
 
     <packaging>jar</packaging>
     <name>Fusion Standard Library</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>lsfusion.platform</groupId>
+            <artifactId>server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.geocoder-java</groupId>
+            <artifactId>geocoder-java</artifactId>
+            <version>0.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20090211</version>
+        </dependency>
+    </dependencies>
 </project>

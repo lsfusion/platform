@@ -1,9 +1,0 @@
-MODULE PricingSalePurchaseTaxReverse;
-
-REQUIRE TaxReverse, PricingSalePurchase;
-
-NAMESPACE Sale;
-
-overValuePurchaseRetailVATUserInvoiceDetail(detail) += NUMERIC[10,5] (valueRateRangeDate(purchaseRetailVATUserInvoiceDetail(detail), dateUserInvoiceDetail(detail)) * 100 /
-                                                                      (100-valueRateRangeDate(purchaseRetailVATUserInvoiceDetail(detail), dateUserInvoiceDetail(detail))))
-                                                       IF reverseRange(purchaseRetailVATUserInvoiceDetail(detail));
