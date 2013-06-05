@@ -9,8 +9,6 @@
 
     <properties>
         <lsfusion.version>1.0-SNAPSHOT</lsfusion.version>
-        <lsfusion.erp.version>${lsfusion.version}</lsfusion.erp.version>
-        <lsfusion.paas.version>${lsfusion.version}</lsfusion.paas.version>
         <lsfusion.fsl.version>${lsfusion.version}</lsfusion.fsl.version>
 
         <findbugs.version>1.0.0</findbugs.version>
@@ -959,29 +957,6 @@
                 <groupId>lsfusion.platform</groupId>
                 <artifactId>fsl</artifactId>
                 <version>${lsfusion.fsl.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>by.luxsoft</groupId>
-                <artifactId>paas-api</artifactId>
-                <version>${lsfusion.paas.version}</version>
-            </dependency>
-
-            <!-- ERP modules -->
-            <dependency>
-                <groupId>lsfusion.erp</groupId>
-                <artifactId>erp-logics</artifactId>
-                <version>${lsfusion.erp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>lsfusion.erp</groupId>
-                <artifactId>equ-api</artifactId>
-                <version>${lsfusion.erp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>lsfusion.erp</groupId>
-                <artifactId>equ-srv</artifactId>
-                <version>${lsfusion.erp.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
