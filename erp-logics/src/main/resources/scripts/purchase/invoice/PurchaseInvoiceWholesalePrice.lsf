@@ -47,7 +47,8 @@ wholesaleMarkupUserInvoiceDetail(detail) <- markupCalcPriceListTypeSku(wholesale
     WHEN CHANGED(wholesaleCalcPriceListTypeUserInvoiceDetail(detail)) OR
          CHANGED(skuUserInvoiceDetail(detail));
 
-wholesalePriceUserInvoiceDetail(detail) <- roundPriceCurrency((basePriceUserInvoiceDetail(detail) * (wholesaleMarkupUserInvoiceDetail(detail) + 100)/ 100), currencyUserInvoiceDetail(detail))
+wholesalePriceUserInvoiceDetail(detail) <- roundPriceRoundCondition((basePriceUserInvoiceDetail(detail) * (wholesaleMarkupUserInvoiceDetail(detail) + 100)/ 100),
+                                                                    roundConditionPriceListType(wholesaleCalcPriceListTypeUserInvoiceDetail(detail))) //currencyUserInvoiceDetail(detail))
     WHEN CHANGED(basePriceUserInvoiceDetail(detail)) OR
          CHANGED(wholesaleMarkupUserInvoiceDetail(detail)) OR
          CHANGED(currencyUserInvoiceDetail(detail));
