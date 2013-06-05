@@ -37,7 +37,7 @@ public class ListActionProperty extends ListCaseActionProperty {
     }
 
     public <I extends PropertyInterface> ListActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
-        super(sID, caption, false, innerInterfaces, mapClasses);
+        super(sID, caption, false, AbstractType.LIST, innerInterfaces, mapClasses);
 
         actions = ListFact.mList();
     }

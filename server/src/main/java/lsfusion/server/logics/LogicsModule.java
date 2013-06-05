@@ -617,6 +617,11 @@ public abstract class LogicsModule {
         return addProperty(null, new LAP(new CaseActionProperty(genSID(), "", isExclusive, mCases.immutableList(), listInterfaces)));
     }
 
+    protected LAP addAbstractCaseAProp(ListCaseActionProperty.AbstractType type, boolean isExclusive, ValueClass[] params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
+        return addProperty(null, new LAP(new CaseActionProperty(genSID(), "sys", isExclusive, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+    }
+
     // ------------------- For action ----------------- //
 
     protected LAP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
@@ -1205,10 +1210,10 @@ public abstract class LogicsModule {
         return addProperty(group, persistent, new LCP<UnionProperty.Interface>(property, listInterfaces));
     }
 
-    protected LCP addAUProp(AbstractGroup group, String name, boolean isExclusive, boolean persistent, String caption, ValueClass valueClass, ValueClass... interfaces) {
+    protected LCP addAUProp(AbstractGroup group, String name, boolean persistent, boolean isExclusive, CaseUnionProperty.Type type, String caption, ValueClass valueClass, ValueClass... interfaces) {
         ImOrderSet<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(interfaces.length);
         return addProperty(group, persistent, new LCP<UnionProperty.Interface>(
-                new CaseUnionProperty(name, true, !isExclusive, caption, listInterfaces, valueClass, listInterfaces.mapList(ListFact.toList(interfaces))), listInterfaces));
+                new CaseUnionProperty(name, isExclusive, type, caption, listInterfaces, valueClass, listInterfaces.mapList(ListFact.toList(interfaces))), listInterfaces));
     }
 
     protected LCP addCaseUProp(AbstractGroup group, String name, boolean persistent, String caption, Object... params) {

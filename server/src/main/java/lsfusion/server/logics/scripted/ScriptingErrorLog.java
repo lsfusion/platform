@@ -376,6 +376,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("property '%s' is not ABSTRACT", propName));
     }
 
+    public void emitNotAbstractActionError(ScriptParser parser, String propName) throws SemanticErrorException {
+        emitSimpleError(parser, format("action '%s' is not ABSTRACT", propName));
+    }
+
     public void emitRequestUserInputDataTypeError(ScriptParser parser, String typeName) throws SemanticErrorException {
         emitSimpleError(parser, format("type '%s' cannot be used with INPUT option", typeName));
     }
@@ -473,6 +477,14 @@ public class ScriptingErrorLog {
 
     public void emitDateDayError(ScriptParser parser, int y, int m, int d) throws SemanticErrorException {
         emitSimpleError(parser, format("wrong date %04d-%02d-%02d", y, m, d));
+    }
+
+    public void emitAbstractCaseImplError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "abstract CASE implementation needs WHEN ... THEN block");
+    }
+
+    public void emitAbstractNonCaseImplError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "WHEN ... THEN block should be used only with CASE abstract");
     }
 
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {

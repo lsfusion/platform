@@ -1,14 +1,18 @@
 package lsfusion.server.logics.linear;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.PropertyUtils;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormEnvironment;
+import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.logics.property.actions.flow.ListActionProperty;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -75,5 +79,17 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         ActionPropertyMapImplement<T, P> actionImplement = new ActionPropertyMapImplement<T, P>(property, getRevMap(mainProperty.listInterfaces));
 
         mainProperty.property.setEditAction(actionSID, actionImplement);
+    }
+
+    public void addOperand(boolean hasWhen, Object... params) {
+        ImList<PropertyInterfaceImplement<T>> readImplements = PropertyUtils.readImplements(listInterfaces, params);
+        ActionPropertyMapImplement<?, PropertyInterface> actImpl = (ActionPropertyMapImplement<?, PropertyInterface>)readImplements.get(0);
+        if (property instanceof ListActionProperty) {
+            ((ListActionProperty) property).addAction(actImpl);
+        } else if (hasWhen) {
+            ((CaseActionProperty) property).addCase((CalcPropertyMapImplement<?, PropertyInterface>)readImplements.get(1), actImpl);
+        } else {
+            ((CaseActionProperty) property).addOperand(actImpl);
+        }
     }
 }

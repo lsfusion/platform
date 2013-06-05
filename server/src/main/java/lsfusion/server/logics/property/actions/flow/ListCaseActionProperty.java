@@ -13,9 +13,18 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
     private final CalcPropertyMapImplement<UnionProperty.Interface, PropertyInterface> abstractWhere;
     protected final boolean isExclusive;
 
+    public enum AbstractType { CASE, MULTI, LIST }
+
+    protected final AbstractType type;
+
     public boolean isAbstract() {
         return abstractWhere != null;
     }
+
+    public AbstractType getAbstractType() {
+        return type;
+    }
+
 
     protected void addWhereOperand(ActionPropertyMapImplement<?, PropertyInterface> action) {
         ((CaseUnionProperty) abstractWhere.property).addOperand(action.mapWhereProperty().map(abstractWhere.mapping.reverse()));
@@ -30,14 +39,23 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
         super(sID, caption, innerInterfaces.size());
 
         this.abstractWhere = null;
+        this.type = null;
         this.isExclusive = isExclusive;
     }
 
-    public <I extends PropertyInterface> ListCaseActionProperty(String sID, String caption, boolean isExclusive, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+    public <I extends PropertyInterface> ListCaseActionProperty(String sID, String caption, boolean isExclusive, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
         super(sID, caption, innerInterfaces.size());
 
         this.isExclusive = isExclusive;
-        abstractWhere = DerivedProperty.createUnion(getSID() + "_case", isExclusive, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
+        this.type = type;
+
+        CaseUnionProperty.Type caseType = null;
+        switch (type) {
+            case CASE: caseType = CaseUnionProperty.Type.CASE; break;
+            case MULTI: caseType = CaseUnionProperty.Type.MULTI; break;
+            case LIST: caseType = CaseUnionProperty.Type.VALUE; break;
+        }
+        abstractWhere = DerivedProperty.createUnion(getSID() + "_case", isExclusive, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
     }
 
     protected abstract CalcPropertyMapImplement<?, PropertyInterface> calculateWhereProperty();

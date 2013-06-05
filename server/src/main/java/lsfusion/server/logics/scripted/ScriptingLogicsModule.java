@@ -1,10 +1,5 @@
 package lsfusion.server.logics.scripted;
 
-import org.antlr.runtime.ANTLRFileStream;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
-import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.base.IOUtils;
@@ -53,13 +48,18 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
-import lsfusion.server.logics.property.actions.flow.ListActionProperty;
+import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.mail.AttachmentFormat;
 import lsfusion.server.mail.EmailActionProperty;
 import lsfusion.server.mail.EmailActionProperty.FormStorageType;
 import lsfusion.server.session.DataSession;
+import org.antlr.runtime.ANTLRFileStream;
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CharStream;
+import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
 
 import javax.mail.Message;
 import javax.swing.*;
@@ -463,25 +463,28 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LP<?, ?> addScriptedAbstractProp(String returnClass, List<String> paramClasses, boolean isExclusive) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedAbstractProp(" + returnClass + ", " + paramClasses + ", " + isExclusive + ");");
+    public LP<?, ?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, List<String> paramClasses, boolean isExclusive) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAbstractProp(" + type + ", " + returnClass + ", " + paramClasses + ", " + isExclusive + ");");
 
         ValueClass value = findClassByCompoundName(returnClass);
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClassByCompoundName(paramClasses.get(i));
         }
-        return addAUProp(null, genSID(), isExclusive, false, "", value, params);
+        return addAUProp(null, genSID(), false, isExclusive, type, "", value, params);
     }
 
-    public LP addScriptedAbstractActionProp(List<String> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedAbstractActionProp(" + paramClasses + ");");
-
+    public LP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAbstractActionProp(" + type + ", " + paramClasses + ", " + isExclusive + ");");
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClassByCompoundName(paramClasses.get(i));
         }
+        if (type == ListCaseActionProperty.AbstractType.LIST) {
         return addAbstractListAProp(params);
+        } else {
+            return addAbstractCaseAProp(type, isExclusive, params);
+        }
     }
 
     public void addImplementationToAbstract(String abstractPropName, List<String> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
@@ -489,24 +492,41 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LP abstractLP = findLPByCompoundName(abstractPropName);
         checkParamCount(abstractLP, context.size());
-        checkAbstractProperty(abstractLP, abstractPropName);
 
         List<LPWithParams> allProps = new ArrayList<LPWithParams>();
         allProps.add(implement);
-        if(when!=null) {
+        if (when != null) {
             checkCalculationProperty(when.property);
             allProps.add(when);
         }
+        List<Object> params = getParamsPlainList(allProps);
+
+        if (abstractLP instanceof LCP) {
+            addImplementationToAbstractProp(abstractPropName, (LCP) abstractLP, when != null, params);
+        } else {
+            addImplementationToAbstractAction(abstractPropName, (LAP) abstractLP, when != null, params);
+        }
+    }
+
+    private void addImplementationToAbstractProp(String propName, LCP abstractProp, boolean isCase, List<Object> params) throws ScriptingErrorLog.SemanticErrorException {
+        checkAbstractProperty(abstractProp, propName);
+        CaseUnionProperty.Type type = ((CaseUnionProperty)abstractProp.property).getAbstractType();
+        checkAbstractTypes(type == CaseUnionProperty.Type.CASE, isCase);
+
         try {
-            List<Object> params = getParamsPlainList(allProps);
-            if (abstractLP instanceof LCP) {
-                checkCalculationProperty(implement.property);
-                ((LCP) abstractLP).addOperand(when != null, params.toArray());
-            } else if (abstractLP instanceof LAP) {
-                checkActionProperty(implement.property);
-                ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(abstractLP.listInterfaces, params.toArray());
-                ((ListActionProperty) abstractLP.property).addAction(actionImplements.get(0));
-            } else assert false;
+            abstractProp.addOperand(isCase, params.toArray());
+        } catch (ScriptParsingException e) {
+            errLog.emitSimpleError(parser, e.getMessage());
+        }
+    }
+
+    private void addImplementationToAbstractAction(String actionName, LAP abstractAction, boolean isCase, List<Object> params) throws ScriptingErrorLog.SemanticErrorException {
+        checkAbstractAction(abstractAction, actionName);
+        ListCaseActionProperty.AbstractType type = ((ListCaseActionProperty)abstractAction.property).getAbstractType();
+        checkAbstractTypes(type == ListCaseActionProperty.AbstractType.CASE, isCase);
+
+        try {
+            abstractAction.addOperand(isCase, params.toArray());
         } catch (ScriptParsingException e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
@@ -2535,10 +2555,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void checkAbstractProperty(LP property, String propName) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(property.property instanceof CaseUnionProperty && ((CaseUnionProperty)property.property).isAbstract()) &&
-            !(property.property instanceof ListActionProperty && ((ListActionProperty)property.property).isAbstract())) {
+    public void checkAbstractProperty(LCP property, String propName) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(property.property instanceof CaseUnionProperty && ((CaseUnionProperty)property.property).isAbstract())) {
             errLog.emitNotAbstractPropertyError(parser, propName);
+        }
+    }
+
+    public void checkAbstractAction(LAP action, String actionName) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(action.property instanceof ListCaseActionProperty && ((ListCaseActionProperty)action.property).isAbstract())) {
+            errLog.emitNotAbstractActionError(parser, actionName);
         }
     }
 
@@ -2561,6 +2586,15 @@ public class ScriptingLogicsModule extends LogicsModule {
                     errLog.emitAddObjToPropertyError(parser);
                 }
             }
+        }
+    }
+
+    public void checkAbstractTypes(boolean isCase, boolean implIsCase) throws ScriptingErrorLog.SemanticErrorException {
+        if (isCase && !implIsCase) {
+            errLog.emitAbstractCaseImplError(parser);
+        }
+        if (!isCase && implIsCase) {
+            errLog.emitAbstractNonCaseImplError(parser);
         }
     }
 

@@ -37,7 +37,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         super(sID, caption, interfaces);
         this.cases = cases;
         this.isExclusive = isExclusive;
-        caseClasses = false;
+        this.abstractType = null;
 
         finalizeInit();
     }
@@ -112,7 +112,14 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return SetFact.add(propChanges.getUsedDataChanges(mPropValues.immutable()), propChanges.getUsedChanges(mPropValues.immutable()));
     }
 
+    public enum Type { CASE, MULTI, VALUE }
+
     private final boolean isExclusive;
+    private final Type abstractType;
+
+    public Type getAbstractType() {
+        return abstractType;
+    }
 
     protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         DataChanges result = DataChanges.EMPTY;
@@ -240,7 +247,6 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
 
     private Object cases;
-    private final boolean caseClasses;
 
     private ClassWhere<Object> classValueWhere;
 
@@ -265,18 +271,18 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     // для постзадания
-    public CaseUnionProperty(String sID, boolean isExclusive, boolean caseClasses, String caption, ImOrderSet<Interface> interfaces, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
+    public CaseUnionProperty(String sID, boolean isExclusive, Type type, String caption, ImOrderSet<Interface> interfaces, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
         super(sID, caption, interfaces);
 
         this.isExclusive = isExclusive;
-        this.caseClasses = caseClasses;
+        this.abstractType = type;
         cases = ListFact.mList();
 
         classValueWhere = new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(interfaceClasses, "value", valueClass), true);
     }
 
     public void addCase(CalcPropertyInterfaceImplement<Interface> where, CalcPropertyInterfaceImplement<Interface> property) {
-        assert !caseClasses;
+        assert abstractType == Type.CASE;
 
         addCase(new Case(where, property));
     }
@@ -285,7 +291,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         assert isAbstract();
 
         Case addCase;
-        if(caseClasses)
+        if (abstractType == Type.MULTI)
             addCase = new Case(operand.mapClassProperty(), operand);
         else
             addCase = new Case(operand, operand);

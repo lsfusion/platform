@@ -22,7 +22,6 @@ import static lsfusion.server.logics.property.derived.DerivedProperty.createForA
 public class CaseActionProperty extends ListCaseActionProperty {
 
     private Object cases;
-    private final boolean caseClasses;
 
     public static <I extends PropertyInterface> ActionProperty createIf(String sID, String caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
         assert trueAction != null;
@@ -47,9 +46,12 @@ public class CaseActionProperty extends ListCaseActionProperty {
     }
 
     public void addCase(CalcPropertyMapImplement<?, PropertyInterface> where, ActionPropertyMapImplement<?, PropertyInterface> action) {
-        assert !caseClasses;
+        assert type == AbstractType.CASE;
 
-        addCase(new Case<PropertyInterface>(where, action));
+        Case<PropertyInterface> aCase = new Case<PropertyInterface>(where, action);
+        ((MList<Case<PropertyInterface>>)cases).add(aCase);
+
+        addWhereCase(aCase.where, aCase.action);
     }
 
     public void addOperand(ActionPropertyMapImplement<?,PropertyInterface> action) {
@@ -57,19 +59,16 @@ public class CaseActionProperty extends ListCaseActionProperty {
 
         CalcPropertyMapImplement<?, PropertyInterface> where = action.mapWhereProperty();
         Case<PropertyInterface> addCase;
-        if(caseClasses)
+        if(type == AbstractType.CASE)
             addCase = new Case<PropertyInterface>((CalcPropertyMapImplement<?,PropertyInterface>) where.mapClassProperty(), action);
         else
             addCase = new Case<PropertyInterface>(where, action);
 
-        addCase(addCase);
+        ((MList<Case<PropertyInterface>>)cases).add(addCase);
+
+        addWhereOperand(addCase.action);
     }
 
-    public void addCase(Case<PropertyInterface> aCase) {
-        ((MList<Case<PropertyInterface>>)cases).add(aCase);
-
-        addWhereCase(aCase.where, aCase.action);
-    }
 
     private ImList<Case<PropertyInterface>> getCases() {
         return (ImList<Case<PropertyInterface>>)cases;
@@ -92,16 +91,14 @@ public class CaseActionProperty extends ListCaseActionProperty {
             public Case<PropertyInterface> getMapValue(Case<I> value) {
                 return new Case<PropertyInterface>(value.where.map(mapInterfaces), value.action.map(mapInterfaces));
             }});
-        caseClasses = false;
 
         finalizeInit();
     }
 
-    public <I extends PropertyInterface> CaseActionProperty(String sID, String caption, boolean isExclusive, boolean caseClasses, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
-        super(sID, caption, isExclusive, innerInterfaces, mapClasses);
+    public <I extends PropertyInterface> CaseActionProperty(String sID, String caption, boolean isExclusive, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+        super(sID, caption, isExclusive, type, innerInterfaces, mapClasses);
 
         cases = ListFact.mList();
-        this.caseClasses = caseClasses;
     }
 
     protected CalcPropertyMapImplement<?, PropertyInterface> calculateWhereProperty() {

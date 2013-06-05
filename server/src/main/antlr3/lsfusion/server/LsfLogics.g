@@ -37,6 +37,9 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.actions.flow.Inline;
 	import lsfusion.server.logics.property.actions.SystemEvent;
 	import lsfusion.server.logics.property.Event;
+	import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
+	import lsfusion.server.logics.property.CaseUnionProperty;
+	
 	import javax.mail.Message;
 
 	import lsfusion.server.form.entity.GroupObjectProp;
@@ -55,7 +58,7 @@ grammar LsfLogics;
 }
 
 @lexer::header { 
-	package lsfusion.server;
+	package lsfusion.server; 
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 	import lsfusion.server.logics.scripted.ScriptParser;
 }
@@ -1179,28 +1182,43 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 
 abstractPropertyDefinition returns [LP property]
 @init {
-	boolean isExclusive = false;
+	boolean isExclusive = true;
+	CaseUnionProperty.Type type = CaseUnionProperty.Type.MULTI;	
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedAbstractProp($returnClass.sid, $paramClassNames.ids, isExclusive);	
+		$property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, isExclusive);	
 	}
 }
 	:	'ABSTRACT'
+		(
+			'CASE' { type = CaseUnionProperty.Type.CASE; isExclusive = false; } (opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
+		|	'MULTI'	{ type = CaseUnionProperty.Type.MULTI; isExclusive = true; } (opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
+		|	'OVERRIDE' { type = CaseUnionProperty.Type.VALUE; isExclusive = false; }
+		|	'EXCLUSIVE'{ type = CaseUnionProperty.Type.VALUE; isExclusive = true; }	
+		)?
 		returnClass=classId
 		'('
 			paramClassNames=classIdList
 		')'
-		('EXCLUSIVE' { isExclusive = true; })?
 	;
 
 abstractActionPropertyDefinition returns [LP property]
+@init {
+	boolean isExclusive = true;	
+	ListCaseActionProperty.AbstractType type = ListCaseActionProperty.AbstractType.MULTI;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedAbstractActionProp($params.ids);
+		$property = self.addScriptedAbstractActionProp(type, $params.ids, isExclusive);
 	}
 }
 	:	'ABSTRACT' 'ACTION' 
+		(
+			'CASE' (opt=exclusiveOverrideOption { type = ListCaseActionProperty.AbstractType.CASE; isExclusive = $opt.isExclusive; })?
+		|	'MULTI'	(opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
+		|	'LIST' { type = ListCaseActionProperty.AbstractType.LIST; }
+		)?
 		'(' 
 			params=classIdList
 		')'	
@@ -1261,7 +1279,7 @@ casePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPar
 		$property = self.addScriptedCaseUProp(whenProps, thenProps, elseProp, isExclusive);
 	}
 }
-	:	'CASE' (('OVERRIDE') | ('EXCLUSIVE' { isExclusive = true; }))?
+	:	'CASE' (opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
 			( branch=caseBranchBody[context, dynamic] { whenProps.add($branch.whenProperty); thenProps.add($branch.thenProperty); } )+
 			('ELSE' elseExpr=propertyExpression[context, dynamic] { elseProp = $elseExpr.property; })?
 	;
@@ -1283,7 +1301,7 @@ multiPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPa
 }
 	:	'MULTI' 
 		exprList=nonEmptyPropertyExpressionList[context, dynamic] 
-		(('OVERRIDE') { isExclusive = false; } | ('EXCLUSIVE'))?
+		(opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
 	;
 
 recursivePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -2071,7 +2089,7 @@ caseActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 		$property = self.addScriptedCaseAProp(whenProps, thenActions, elseAction, isExclusive); 
 	}
 }
-	:	'CASE' (('OVERRIDE') | ('EXCLUSIVE' { isExclusive = true; }))?
+	:	'CASE' (opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
 			( branch=actionCaseBranchBody[context, dynamic] { whenProps.add($branch.whenProperty); thenActions.add($branch.thenAction); } )+
 			('ELSE' elseAct=actionPropertyDefinitionBody[context, dynamic] { elseAction = $elseAct.property; })?
 	;
@@ -2090,7 +2108,7 @@ multiActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns
 		$property = self.addScriptedMultiAProp($actList.props, isExclusive); 
 	}
 }
-	:	'MULTI' (('OVERRIDE' { isExclusive = false; }) | ('EXCLUSIVE'))?
+	:	'MULTI' (opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
 		actList=nonEmptyActionPDBList[context, dynamic]
 	;
 
@@ -2169,10 +2187,10 @@ overrideStatement
 	:	propName=compoundID
 		'(' list=idList ')' { context = $list.ids; dynamic = false; }
 		'+='
+		('WHEN' whenExpr=propertyExpression[context, dynamic] 'THEN' { when = $whenExpr.property; })?
 		(	expr=propertyExpression[context, dynamic] { property = $expr.property; }
 		|	action=actionPropertyDefinition[context, dynamic] { property = $action.property; }
 		)
-		('WHEN' where=propertyExpression[context, dynamic] {when = $where.property; } ) ?
 		( {!self.semicolonNeeded()}?=>  | ';')
 	;
 
@@ -3006,6 +3024,11 @@ groupObjectID returns [String sid]
 
 multiCompoundID returns [String sid]
 	:	id=ID { $sid = $id.text; } ('.' cid=ID { $sid = $sid + '.' + $cid.text; } )*
+	;
+
+exclusiveOverrideOption returns [boolean isExclusive]
+	:	'OVERRIDE' { $isExclusive = false; }
+	|	'EXCLUSIVE'{ $isExclusive = true; } 
 	;
 
 colorLiteral returns [Color val]

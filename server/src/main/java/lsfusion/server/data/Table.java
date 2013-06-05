@@ -119,7 +119,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         this.propertyClasses = propertyClasses;
 
         // assert classes.fitTypes();
-        assert classes.isFull(keys.getSet()) && propClassesFull(); // см. ClassExprWhere.getKeyType
+        assert (this instanceof SerializedTable) || classes.isFull(keys.getSet()) && propClassesFull(); // см. ClassExprWhere.getKeyType
     }
 
     private <K extends Field> ImMap<K, DataClass> getDataFields(ImSet<K> fields) {
