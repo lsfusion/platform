@@ -1,23 +1,142 @@
 MODULE PharmacyPriceList;
 
+REQUIRE System, Currency, Stock;
+
 NAMESPACE PriceList;
 
 CLASS PharmacyPriceGroup 'Тип лекарственного средства';
 TABLE pharmacyPriceGroup(PharmacyPriceGroup);
 
 namePharmacyPriceGroup 'Наименование' = DATA ISTRING[50](PharmacyPriceGroup);
+idPharmacyPriceGroup 'Идентификатор' = DATA STRING[20] (PharmacyPriceGroup) MINCHARWIDTH 15 PREFCHARWIDTH 20;
+
+pharmacyGroupIdPharmacyGroup (string1) = GROUP AGGR group
+    BY idPharmacyPriceGroup(group) WHERE group IS PharmacyPriceGroup;
+
+pharmacyPriceGroupSku= ABSTRACT PharmacyPriceGroup (Sku);
+namePharmacyPriceGroupSku 'Тип лекарственного средства' (sku) = namePharmacyPriceGroup(pharmacyPriceGroupSku(sku));
 
 FORM pharmacyPriceGroup 'Типы лекарственных средств'
     OBJECTS t=PharmacyPriceGroup FIXED PANEL
-    PROPERTIES(t) namePharmacyPriceGroup
+    PROPERTIES(t) namePharmacyPriceGroup, idPharmacyPriceGroup
     EDIT PharmacyPriceGroup OBJECT t
 ;
 
 FORM pharmacyPriceGroups 'Типы лекарственных средств'
     OBJECTS t=PharmacyPriceGroup
-    PROPERTIES(t) namePharmacyPriceGroup READONLY, DELETE
+    PROPERTIES(t) namePharmacyPriceGroup READONLY, idPharmacyPriceGroup READONLY, DELETE
     PROPERTIES(t) ADDFORM, EDITFORM
-    ORDER BY namePharmacyPriceGroup
+    ORDER BY idPharmacyPriceGroup
     DIALOG PharmacyPriceGroup OBJECT t
 ;
 DESIGN pharmacyPriceGroups FROM DEFAULT { main{ preferredSize = (600, 400); } }
+
+CLASS PharmacyPriceInterval 'Интервал цен лекарственного средства';
+TABLE pharmacyPriceInterval(PharmacyPriceInterval);
+
+pharmacyGroupPharmacyInterval= DATA PharmacyPriceGroup (PharmacyPriceInterval);
+namePharmacyGroupPharmacyInterval 'Тип лекарственного средства' (interval) = namePharmacyPriceGroup(pharmacyGroupPharmacyInterval(interval));
+
+pharmacyTypeExchange = DATA TypeExchange ();
+namePharmacyTypeExchange 'Тип обмена для Лекарственных средств' ()= nameTypeExchange(pharmacyTypeExchange());
+
+EXTEND FORM options
+    PROPERTIES() namePharmacyTypeExchange
+;
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(namePharmacyTypeExchange);
+    }
+}
+
+idPharmacyPriceInterval 'Идентификатор' = DATA STRING[20] (PharmacyPriceInterval) MINCHARWIDTH 15 PREFCHARWIDTH 20;
+
+fromPricePharmacyInterval 'Цена от' = DATA NUMERIC[14,2] (PharmacyPriceInterval);
+
+wholesaleMarkupPharmacyGroupInterval 'Оптовая надбавка' = DATA NUMERIC[8,3] (PharmacyPriceGroup, PharmacyPriceInterval);
+retailMarkupPharmacyGroupInterval 'Розничная надбавка' = DATA NUMERIC[8,3] (PharmacyPriceGroup, PharmacyPriceInterval);
+
+pharmacyExchangePriceDate  (price, date)= (price AS NUMERIC[14,2]) / rateTypeExchangeCurrencyDate(pharmacyTypeExchange(), currencyShortName('USD'), date);
+
+orderIntervalGroupPriceDate (group, price, date) = GROUP MAX STRUCT(fromPricePharmacyInterval(interval), interval)
+    IF pharmacyExchangePriceDate(price, date) > fromPricePharmacyInterval(interval)
+        BY pharmacyGroupPharmacyInterval(interval), price, date;
+
+pharmacyIntervalPharmacyGroupPriceDate (group, price, date) = orderIntervalGroupPriceDate(group, price, date)[2];
+
+wholesaleMarkupPharmacyGroupPriceDate 'Оптовая надбавка' (priceGroup, price, date) = wholesaleMarkupPharmacyGroupInterval(priceGroup, pharmacyIntervalPharmacyGroupPriceDate(priceGroup, price, date));
+wholesaleMarkupPharmacySkuPriceDate 'Оптовая надбавка' (sku, price, date) =  wholesaleMarkupPharmacyGroupPriceDate(pharmacyPriceGroupSku(sku), price, date);
+
+retailMarkupPharmacyGroupPriceDate 'Розничная надбавка' (priceGroup, price, date) = retailMarkupPharmacyGroupInterval(priceGroup, pharmacyIntervalPharmacyGroupPriceDate(priceGroup, price, date));
+retailMarkupPharmacySkuPriceDate 'Розничная надбавка' (sku, price, date) =  retailMarkupPharmacyGroupPriceDate(pharmacyPriceGroupSku(sku), price, date);
+
+pharmacyIntervalIdGroupIdGInterval (string1, string2) = GROUP AGGR interval
+    BY idPharmacyPriceGroup(pharmacyGroupPharmacyInterval(interval)), idPharmacyPriceInterval(interval) WHERE interval IS PharmacyPriceInterval;
+
+
+FORM pharmacyMarkups 'Надбавки для лекарственных средств'
+
+    OBJECTS g=PharmacyPriceGroup
+    PROPERTIES (g) READONLY namePharmacyPriceGroup, idPharmacyPriceGroup
+    PROPERTIES (g) ADDFORM, EDITFORM, DELETE
+    ORDER BY idPharmacyPriceGroup
+
+    OBJECTS i=PharmacyPriceInterval
+    PROPERTIES idPharmacyPriceInterval(i), fromPricePharmacyInterval(i), wholesaleMarkupPharmacyGroupInterval(g,i), retailMarkupPharmacyGroupInterval(g,i)
+    PROPERTIES(i) ADDOBJ, DELETESESSION
+    FILTERS    pharmacyGroupPharmacyInterval(i)==g
+    ORDER BY idPharmacyPriceInterval
+
+    OBJECTS nu=NUMERIC[14,3] FIXED PANEL
+    PROPERTIES val = OBJVALUE(nu)
+
+    OBJECTS t=DATE FIXED PANEL
+    PROPERTIES value = OBJVALUE(t)
+    PROPERTIES(g, nu, t) READONLY wholesaleMarkupPharmacyGroupPriceDate,retailMarkupPharmacyGroupPriceDate
+
+;
+
+DESIGN pharmacyMarkups FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        ADD g.box;
+        ADD i.box;
+        NEW test {
+            title = 'Тестовая форма';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (value) {
+                caption = 'Выберите дату';
+                panelLabelAbove = TRUE;
+                font = 'Tahoma bold 24';
+            }
+            ADD PROPERTY (val) {
+                caption = 'Введите цену в рублях';
+                panelLabelAbove = TRUE;
+                font = 'Tahoma bold 24';
+            }
+
+            ADD PROPERTY (wholesaleMarkupPharmacyGroupPriceDate(g, nu, t)) {
+                caption = 'Результат (оптовая надбавка)';
+                panelLabelAbove = TRUE;
+                font = 'Tahoma bold 24';
+            }
+            ADD PROPERTY (retailMarkupPharmacyGroupPriceDate(g, nu, t)) {
+                caption = 'Результат (розничная надбавка)';
+                panelLabelAbove = TRUE;
+                font = 'Tahoma bold 24';
+            }
+        }
+        ADD functions.box;
+    }
+}
+
+
+
+NAVIGATOR {
+    skuNavigator {
+        NEW pharmacy 'Лекарственные средства' {
+            ADD pharmacyPriceGroups;
+            ADD pharmacyMarkups;
+        }
+    }
+}
