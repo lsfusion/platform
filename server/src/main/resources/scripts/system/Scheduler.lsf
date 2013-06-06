@@ -77,7 +77,7 @@ EXTEND DESIGN scheduledTask {
                 type = TABBED;
                 ADD p.box;
                 NEW logContainer {
-                    title = 'Лог';
+                    caption = 'Лог';
                     ADD stl.box;
                     ADD sctl.box;
                 }

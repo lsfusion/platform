@@ -255,29 +255,29 @@ EXTEND DESIGN securityPolicy {
 
             NEW defaultPolicyContainer {
                 type = TABBED;
-                title = 'Политика по умолчанию';
+                caption = 'Политика по умолчанию';
 
                 NEW defaultFormsContainer {
                     type = TABBED;
-                    title = 'Формы';
+                    caption = 'Формы';
                     ADD treeDefaultForm.tree.box;
                     ADD df.box {
-                        title = 'Таблица';
+                        caption = 'Таблица';
                     };
                 }
 
                 NEW defaultPropertyContainer {
                     type = TABBED;
-                    title = 'Свойства';
+                    caption = 'Свойства';
                     ADD treeDefaultProperty.tree.box;
                     ADD dpr.box {
-                        title = 'Таблица';
+                        caption = 'Таблица';
                     };
                 }
             }
 
             NEW rolesContainer {
-                title = 'Роли';
+                caption = 'Роли';
                 ADD ur.box;
 
                 NEW rolePolicyContainer {
@@ -285,26 +285,26 @@ EXTEND DESIGN securityPolicy {
 
                     NEW formsContainer {
                         type = TABBED;
-                        title = 'Формы';
+                        caption = 'Формы';
                         ADD treeFormObject.tree.box;
                         ADD f.box {
-                            title = 'Таблица';
+                            caption = 'Таблица';
                         };
                     }
 
                     NEW propertiesContainer {
                         type = TABBED;
-                        title = 'Свойства';
+                        caption = 'Свойства';
                         ADD treePropertyObject.tree.box;
                         ADD pr.box {
-                            title = 'Таблица';
+                            caption = 'Таблица';
                         };
                     }
                 }
             }
 
             ADD p.box {
-                title = 'Дополнительные политики';
+                caption = 'Дополнительные политики';
             };
         }
     }

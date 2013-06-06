@@ -97,7 +97,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     public GContainer convertContainer(ClientContainer clientContainer) {
         GContainer container = initGwtComponent(clientContainer,  new GContainer());
 
-        container.title = clientContainer.getTitle();
+        container.caption = clientContainer.getRawCaption();
 
         byte containerType = clientContainer.getType();
         switch (containerType) {

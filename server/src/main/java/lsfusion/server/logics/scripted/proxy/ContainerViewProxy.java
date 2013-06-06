@@ -9,11 +9,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     }
     
     public void setCaption(String caption) {
-        setTitle(caption);
-    }
-
-    public void setTitle(String title) {
-        target.title = title;
+        target.caption = caption;
     }
 
     public void setDescription(String description) {

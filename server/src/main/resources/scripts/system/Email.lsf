@@ -74,7 +74,7 @@ EXTEND DESIGN notification {
             ADD n.box;
             ADD p.box;
             NEW textContainer {
-                title = 'Текст письма';
+                caption = 'Текст письма';
                 childConstraints = TO THE BOTTOM;
                 fillHorizontal = 1;
                 fillVertical = 1;

@@ -20,7 +20,7 @@ import static lsfusion.interop.form.layout.ContainerType.*;
 
 public class ClientContainer extends ClientComponent implements AbstractContainer<ClientContainer, ClientComponent>, CustomConstructible {
 
-    private String title;
+    private String caption;
     private String description;
 
     public List<ClientComponent> children = new ArrayList<ClientComponent>();
@@ -42,7 +42,7 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
         pool.serializeCollection(outStream, children);
 
-        pool.writeString(outStream, title);
+        pool.writeString(outStream, caption);
         pool.writeString(outStream, description);
 
         outStream.writeByte(type);
@@ -54,7 +54,7 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
         children = pool.deserializeList(inStream);
 
-        title = pool.readString(inStream);
+        caption = pool.readString(inStream);
         description = pool.readString(inStream);
 
         type = inStream.readByte();
@@ -70,16 +70,8 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
     }
 
     @Override
-    public String getCaption() {
-        if (title == null || title.equals("")) {
-            return (description == null) ? "" : description;
-        } else
-            return title;
-    }
-
-    @Override
     public String toString() {
-        String result = title == null ? "" : title;
+        String result = caption == null ? "" : caption;
         if (description == null)
             result += " (";
         else
@@ -131,13 +123,26 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         return new ComponentEditor(this);
     }
 
-    public String getTitle() {
-        return title;
+    public void setCaption(String caption) {
+        setRawCaption(caption);
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-        updateDependency(this, "title");
+    @Override
+    public String getCaption() {
+        if (caption == null || caption.equals("")) {
+            return (description == null) ? "" : description;
+        } else
+            return caption;
+    }
+
+    //приходится выделять отдельное свойство, чтобы можно было редактировать и при этом возвращать более хитрый caption
+    public String getRawCaption() {
+        return caption;
+    }
+
+    public void setRawCaption(String caption) {
+        this.caption = caption;
+        updateDependency(this, "rawCaption");
     }
 
     public String getDescription() {

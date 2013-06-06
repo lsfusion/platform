@@ -185,21 +185,21 @@ EXTEND DESIGN physicalModel {
         NEW container BEFORE functions.box{
             type = TABBED;
             NEW modelContainer {
-                title = 'Таблицы';
+                caption = 'Таблицы';
                 ADD t.box {
-                    title = 'Таблицы';
+                    caption = 'Таблицы';
                 };
                 ADD tk.box {
-                    title = 'Ключи';
+                    caption = 'Ключи';
                 }
                 ADD tc.box {
-                    title = 'Колонки';
+                    caption = 'Колонки';
                 }
                 ADD PROPERTY(recalculateStats);
             }
 
             NEW dropColumnsContainer {
-                title = 'Удалённые колонки';
+                caption = 'Удалённые колонки';
                 ADD dc.box;
             }
         }
@@ -264,12 +264,12 @@ EXTEND DESIGN properties {
             type = TABBED;
 
             NEW treeContainer {
-                title = 'Дерево';
+                caption = 'Дерево';
                 ADD treePropertiesObject.tree.box;
             }
 
             NEW tableContainer {
-                title = 'Таблица';
+                caption = 'Таблица';
                 ADD p.box;
             }
         }

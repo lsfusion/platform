@@ -4,7 +4,7 @@ import java.util.List;
 
 public class GContainer extends GComponent {
     public ArrayList<GComponent> children = new ArrayList<GComponent>();
-    public String title;
+    public String caption;
     public String description;
     public GContainerType type;
 
@@ -13,7 +13,7 @@ public class GContainer extends GComponent {
         return "GContainer" +
                 "[" + sID + "]" +
                 "[" + type + "]{" +
-                "title='" + title + '\'' +
+                "caption='" + caption + '\'' +
                 ", hAlign=" + hAlign +
                 '}';
     }

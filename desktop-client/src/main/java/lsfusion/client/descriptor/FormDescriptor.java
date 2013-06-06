@@ -221,7 +221,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
                 // по сути дублирует логику из GroupObjectContainerSet в плане установки caption для контейнера
                 ClientContainer groupContainer = group.getClientComponent(client.mainContainer);
                 if (groupContainer != null) {
-                    groupContainer.setTitle(group.client.getCaption());
+                    groupContainer.setCaption(group.client.getCaption());
                 }
             }
         }

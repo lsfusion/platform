@@ -261,13 +261,13 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         return createContainer(null);
     }
 
-    public ContainerView createContainer(String title) {
-        return createContainer(title, null, null);
+    public ContainerView createContainer(String caption) {
+        return createContainer(caption, null, null);
     }
 
-    public ContainerView createContainer(String title, String description, String sID) {
+    public ContainerView createContainer(String caption, String description, String sID) {
         ContainerView container = new ContainerView(idGenerator.idShift());
-        container.setTitle(title);
+        container.setCaption(caption);
         container.setDescription(description);
         container.setSID(sID);
         if (sID != null) {

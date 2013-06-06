@@ -48,7 +48,7 @@ public class TreeGroupContainerSet <C extends AbstractContainer<C, T>, T extends
         TreeGroupContainerSet<C,T> set = new TreeGroupContainerSet<C,T>();
 
         set.treeContainer = factory.createContainer();
-        set.treeContainer.setTitle(getString("form.layout.tree"));
+        set.treeContainer.setCaption(getString("form.layout.tree"));
         set.treeContainer.setDescription(getString("form.layout.tree"));
         set.treeContainer.setSID(treeGroup.getSID() + GroupObjectContainerSet.TREE_GROUP_CONTAINER);
         set.treeContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;

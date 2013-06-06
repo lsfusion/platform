@@ -62,14 +62,14 @@ public class GFormTabbedPane extends GAbstractFormContainer {
     }
 
     private String getTabTitle(GComponent child) {
-        String tabTitle = null;
+        String tabCaption = null;
         if (child instanceof GContainer) {
-            tabTitle = ((GContainer) child).title;
+            tabCaption = ((GContainer) child).caption;
         }
-        if (tabTitle == null) {
-            tabTitle = "";
+        if (tabCaption == null) {
+            tabCaption = "";
         }
-        return tabTitle;
+        return tabCaption;
     }
 
     public void setChildVisible(GComponent child, boolean visible) {

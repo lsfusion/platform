@@ -77,7 +77,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
 
         set.groupContainer = factory.createContainer(); // контейнер всей группы
         // та же логика с Title еще есть в ContainerRemover 
-        set.groupContainer.setTitle(group.getCaption());
+        set.groupContainer.setCaption(group.getCaption());
         set.groupContainer.setDescription(getString("form.layout.group.objects"));
         set.groupContainer.setSID(group.getSID() + GROUP_CONTAINER);
         set.groupContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;

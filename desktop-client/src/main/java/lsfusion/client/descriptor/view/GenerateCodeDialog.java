@@ -39,7 +39,7 @@ public class GenerateCodeDialog extends JDialog {
             if (child instanceof ClientContainer) {
                 design += String.format("NEW %s {\n%s%s%s%s%s%s%s%s%s%s%s%s}\n",
                         child.getSID(),
-                        getTitle(child, offset + 1),
+                        getContainerCaption((ClientContainer) child, offset + 1),
                         getType((ClientContainer) child, offset + 1),
                         getFill(child, offset + 1),
                         getInsets(child, offset + 1),
@@ -112,9 +112,9 @@ public class GenerateCodeDialog extends JDialog {
         return caption == null ? "" : String.format("%scaption = '%s';\n", getOffset(offset), caption);
     }
 
-    private String getTitle(ClientComponent component, int offset) {
-        String title = (component instanceof ClientContainer) ? ((ClientContainer) component).getTitle() : component.getCaption();
-        return title == null ? "" : String.format("%stitle = '%s';\n", getOffset(offset), title);
+    private String getContainerCaption(ClientContainer container, int offset) {
+        String caption = container.getRawCaption();
+        return caption == null ? "" : String.format("%scaption = '%s';\n", getOffset(offset), caption);
     }
 
     private String getTitle(FormDescriptor form, int offset) {

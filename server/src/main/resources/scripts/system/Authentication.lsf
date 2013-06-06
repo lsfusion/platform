@@ -91,7 +91,7 @@ FORM reloginLoginUser 'Сменить пользователя'
 EXTEND DESIGN reloginLoginUser {
     main{
         data.box {
-            title = 'Смена пользователя';
+            caption = 'Смена пользователя';
             PROPERTY(valueLogin){
                 caption = 'Логин';
                 font = 'Tahoma 36';
@@ -145,7 +145,7 @@ FORM reloginPasswordUser 'Сменить пользователя'
 EXTEND DESIGN reloginPasswordUser {
     main{
         password.box {
-            title = 'Смена пользователя';
+            caption = 'Смена пользователя';
             PROPERTY(valuePassword){
                 caption = 'Пароль';
                 font = 'Tahoma 36';

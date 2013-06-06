@@ -35,14 +35,10 @@ class ClientFormContainer extends JPanel implements AutoHideableContainer {
         return key.toString();
     }
 
-    public String getTitle() {
-        return key.getTitle();
-    }
-
     public void addBorder() {
-        String title = getTitle();
-        if (title != null) {
-            TitledBorder border = BorderFactory.createTitledBorder(title);
+        String caption = key.getRawCaption();
+        if (caption != null) {
+            TitledBorder border = BorderFactory.createTitledBorder(caption);
             setBorder(border);
         }
     }

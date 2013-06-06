@@ -14,13 +14,13 @@ import java.util.List;
 
 public class ContainerView extends ComponentView implements AbstractContainer<ContainerView, ComponentView> {
 
-    public String title;
+    public String caption;
     public String description;
 
     private byte type = ContainerType.CONTAINER;
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setCaption(String caption) {
+        this.caption = caption;
     }
 
     public void setDescription(String description) {
@@ -141,7 +141,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
         pool.serializeCollection(outStream, children, serializationType);
 
-        pool.writeString(outStream, title);
+        pool.writeString(outStream, caption);
         pool.writeString(outStream, description);
 
         outStream.writeByte(type);
@@ -153,7 +153,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
         children = pool.deserializeList(inStream);
 
-        title = pool.readString(inStream);
+        caption = pool.readString(inStream);
         description = pool.readString(inStream);
 
         type = inStream.readByte();

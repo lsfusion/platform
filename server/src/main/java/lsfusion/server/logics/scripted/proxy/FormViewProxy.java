@@ -13,8 +13,8 @@ public class FormViewProxy extends ViewProxy<FormView> {
         target.keyStroke = keyStroke;
     }
 
-    public void setTitle(String title) {
-        target.caption = title;
+    public void setCaption(String caption) {
+        target.caption = caption;
     }
 
     public void setOverridePageWidth(Integer overridePageWidth) {

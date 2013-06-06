@@ -17,7 +17,7 @@ public class ContainerEditor extends JTabbedPane implements NodeEditor {
 
     public ContainerEditor(ClientContainer descriptor) {
 
-        addTab(ClientResourceBundle.getString("descriptor.editor.common"), new NorthBoxPanel(new TitledPanel(ClientResourceBundle.getString("descriptor.editor.common.title"), new IncrementTextEditor(descriptor, "title")),
+        addTab(ClientResourceBundle.getString("descriptor.editor.common"), new NorthBoxPanel(new TitledPanel(ClientResourceBundle.getString("descriptor.editor.common.caption"), new IncrementTextEditor(descriptor, "rawCaption")),
                 new TitledPanel(ClientResourceBundle.getString("descriptor.editor.common.description"), new IncrementTextEditor(descriptor, "description")),
                 new TitledPanel(ClientResourceBundle.getString("descriptor.editor.common.identificator"), new IncrementTextEditor(descriptor, "sID"))));
 
