@@ -115,7 +115,7 @@ META defineDocumentHeaderTimePrefix (objectClass, prefix, caption)
 END
 
 META deriveDocumentHeaderTimePrefix (objectClass, prefix)
-    WHEN SESSION ASSIGNED(o AS objectClass) DO {
+    WHEN SESSION ASSIGNED(o IS objectClass) DO {
         IF o IS objectClass AND NOT prefix###date##objectClass(o) THEN SET prefix###date##objectClass(o) <- currentDate();
         IF o IS objectClass AND NOT prefix###time##objectClass(o) THEN SET prefix###time##objectClass(o) <- currentTime();
     };
