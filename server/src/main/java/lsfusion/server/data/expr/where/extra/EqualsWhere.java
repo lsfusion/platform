@@ -68,24 +68,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         return super.calculateKeyEquals();
     }
 
-    @Override
-    public MeanClassWhere getMeanClassWhere() {
-        ImSet<ImSet<VariableClassExpr>> equals = SetFact.EMPTY();
-        ClassExprWhere classWhere = getOperandWhere().getClassWhere();
-
-        ConcreteClass staticClass;
-        if(operator2 instanceof VariableSingleClassExpr && operator1 instanceof StaticClassExprInterface && (staticClass = ((StaticClassExprInterface)operator1).getStaticClass()) != null)
-            classWhere = classWhere.and(new ClassExprWhere((VariableSingleClassExpr)operator2, staticClass));
-        if(operator2 instanceof VariableClassExpr && operator1 instanceof VariableClassExpr)
-            equals = SetFact.singleton(SetFact.toSet((VariableClassExpr)operator1, (VariableClassExpr) operator2));
-        if(operator1 instanceof VariableSingleClassExpr && operator2 instanceof StaticClassExprInterface && (staticClass = ((StaticClassExprInterface)operator2).getStaticClass()) != null)
-            classWhere = classWhere.and(new ClassExprWhere((VariableSingleClassExpr)operator1,staticClass));
-
-        return new MeanClassWhere(classWhere, equals);
-    }
-    // повторяет FormulaWhere так как должен andEquals сделать
-    @Override
-    public ClassExprWhere calculateClassWhere() {
-        return getMeanClassWhere().getClassWhere(operator1, operator2); // именно так а не как Formula потому как иначе бесконечный цикл getMeanClassWheres -> MeanClassWhere.getClassWhere -> means(isFalse) и т.д. пойдет
+    protected boolean isEquals() {
+        return true;
     }
 }

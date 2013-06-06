@@ -135,6 +135,10 @@ public class SetFact {
         return ((ImSet<T>)set).remove(remove);
     }
 
+    public static <T, K extends T> ImSet<K> removeSet(ImSet<K> set, ImSet<? extends T> remove) {
+        return (ImSet<K>) ((ImSet<T>)set).remove(remove);
+    }
+
     public static <T> ImOrderSet<T> addOrderExcl(ImOrderSet<? extends T> set1, ImOrderSet<? extends T> set2) {
         return ((ImOrderSet<T>)set1).addOrderExcl(set2);
     }

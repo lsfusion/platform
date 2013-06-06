@@ -2,6 +2,8 @@ package lsfusion.server.data.expr.query;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.AbstractOuterContext;
@@ -68,8 +70,8 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         super(join, translator);
     }
 
-    public GroupJoin(ImMap<KeyExpr, Type> keyTypes, ImSet<Value> values, Where where, StatKeys<Expr> joins, ImMap<Expr, BaseExpr> group) {
-        super(keyTypes.keys(),values,new Query(where, joins, keyTypes),group);
+    public GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, ImMap<KeyExpr, Type> extKeyTypes, Where where, StatKeys<Expr> joins, ImMap<Expr, BaseExpr> group) {
+        super(keys,values,new Query(where, joins, extKeyTypes),group);
     }
 
     private GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<Expr, BaseExpr> group) {

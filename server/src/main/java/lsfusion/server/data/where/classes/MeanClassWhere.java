@@ -25,64 +25,83 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
     private final ClassExprWhere classWhere;
     private final ClassExprWhere classNotWhere;
     private final ImSet<ImSet<VariableClassExpr>> equals;
+    private final ImSet<ImSet<VariableClassExpr>> greaters; // нужны для выведения классов для случаев a<5
 
-    public ClassExprWhere getClassWhere(BaseExpr operator1, BaseExpr operator2) {
+    public ClassExprWhere getClassWhere(BaseExpr operator1, BaseExpr operator2, boolean isEquals) {
         assert classNotWhere.isFalse();
         if(operator1 instanceof VariableClassExpr && operator2 instanceof VariableClassExpr) {
-            assert equals.size()==1;
+            assert equals.size() + greaters.size() == 1 && ((equals.size()==1)==isEquals);
             EqualMap equalMap = new EqualMap(2);
             equalMap.add(operator1,operator2);
-            return classWhere.andEquals(equalMap);
+            return classWhere.andEquals(equalMap, !isEquals);
         } else {
-            assert equals.size()==0;
+            assert equals.size() + greaters.size() == 0;
             return classWhere;
         }
     }
 
-    private int getEqualSize() {
+    private static int getCompSize(ImSet<ImSet<VariableClassExpr>> comps) {
         int result = 0;
-        for(int i=0;i<equals.size();i++)
-            result += equals.get(i).size();
+        for(int i=0;i<comps.size();i++)
+            result += comps.get(i).size();
         return result;
     }
-    private void fillEqualMap(EqualMap equalMap) { // избыточное выполнение, но пока не важно
-        for(int i=0;i<equals.size();i++) {
-            ImSet<VariableClassExpr> equal = equals.get(i);
+
+    private static void fillEqualMap(ImSet<ImSet<VariableClassExpr>> comps, EqualMap equalMap) { // избыточное выполнение, но пока не важно
+        for(int i=0;i<comps.size();i++) {
+            ImSet<VariableClassExpr> equal = comps.get(i);
             VariableClassExpr firstEqual = equal.get(0);
             for(int j=1;j<equal.size();j++)
                 equalMap.add(firstEqual, equal.get(j));
         }
     }
-    
+
     public ClassExprWhere getClassWhere() {
-        EqualMap equalMap = new EqualMap(getEqualSize()*2);
-        fillEqualMap(equalMap);
-        return classWhere.andEquals(equalMap).andNot(classNotWhere.andEquals(equalMap));
+        EqualMap equalMap = new EqualMap((getCompSize(equals) + getCompSize(greaters)) *2);
+
+        ClassExprWhere eqClassWhere = classWhere;
+        ClassExprWhere eqClassNotWhere = classNotWhere;
+
+        fillEqualMap(equals, equalMap); // сливаем equals
+        eqClassWhere = eqClassWhere.andEquals(equalMap);
+        eqClassNotWhere = eqClassNotWhere.andEquals(equalMap);
+
+        fillEqualMap(greaters, equalMap); // тут могла быть проблема с staticExpr'ами, но здесь она изначально решена, так как и equals и greaters работают с VariableClassExpr
+        eqClassWhere = eqClassWhere.andEquals(equalMap, true);
+        eqClassNotWhere = eqClassNotWhere.andEquals(equalMap, true);
+
+        return eqClassWhere.andNot(eqClassNotWhere);
     }
 
     public MeanClassWhere(ClassExprWhere classWhere) {
-        this(classWhere, SetFact.<ImSet<VariableClassExpr>>EMPTY());
+        this(classWhere, SetFact.<ImSet<VariableClassExpr>>EMPTY(), true);
     }
     
     public MeanClassWhere(ClassExprWhere classWhere, boolean not) {
-        this(ClassExprWhere.TRUE, classWhere, SetFact.<ImSet<VariableClassExpr>>EMPTY());
+        this(ClassExprWhere.TRUE, classWhere, SetFact.<ImSet<VariableClassExpr>>EMPTY(), SetFact.<ImSet<VariableClassExpr>>EMPTY());
         assert not;
     }
 
-    public MeanClassWhere(ClassExprWhere classWhere, ImSet<ImSet<VariableClassExpr>> equals) {
-        this(classWhere, ClassExprWhere.FALSE, equals);
+    public MeanClassWhere(ClassExprWhere classWhere, ImSet<ImSet<VariableClassExpr>> comps, boolean isEquals) {
+        this(classWhere, ClassExprWhere.FALSE, isEquals ? comps : SetFact.<ImSet<VariableClassExpr>>EMPTY(), isEquals ? SetFact.<ImSet<VariableClassExpr>>EMPTY() : comps);
     }
 
-    public MeanClassWhere(ClassExprWhere classWhere, ClassExprWhere classNotWhere, ImSet<ImSet<VariableClassExpr>> equals) {
+    public MeanClassWhere(ClassExprWhere classWhere, ClassExprWhere classNotWhere, ImSet<ImSet<VariableClassExpr>> equals, ImSet<ImSet<VariableClassExpr>> greaters) {
         this.classWhere = classWhere;
         this.classNotWhere = classNotWhere;
         this.equals = equals;
+        this.greaters = greaters;
     }
 
     // пока так потом компоненты надо образовывать будет
     public MeanClassWhere and(MeanClassWhere where) {
-        EqualMap equalMap = new EqualMap((getEqualSize() + where.getEqualSize()) * 2);
-        fillEqualMap(equalMap); where.fillEqualMap(equalMap);
+        return new MeanClassWhere(classWhere.and(where.classWhere), classNotWhere.or(where.classNotWhere), andComps(equals, where.equals), andComps(greaters, where.greaters));
+    }
+
+    private static ImSet<ImSet<VariableClassExpr>> andComps(ImSet<ImSet<VariableClassExpr>> comps, ImSet<ImSet<VariableClassExpr>> whereComps) {
+        EqualMap equalMap = new EqualMap((getCompSize(comps) + getCompSize(whereComps)) * 2);
+        fillEqualMap(comps, equalMap);
+        fillEqualMap(whereComps, equalMap);
 
         MSet<ImSet<VariableClassExpr>> mAndEquals = SetFact.mSet();
         for(int i=0;i<equalMap.num;i++) {
@@ -90,22 +109,30 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
             if(!equal.dropped)
                 mAndEquals.add(BaseUtils.<ImSet<VariableClassExpr>>immutableCast(SetFact.toExclSet(equal.size, equal.exprs)));
         }
-        return new MeanClassWhere(classWhere.and(where.classWhere), classNotWhere.or(where.classNotWhere), mAndEquals.immutable());
+        return mAndEquals.immutable();
     }
 
     public MeanClassWhere translate(final MapTranslate translator) {
-        ImSet<ImSet<VariableClassExpr>> transEquals = equals.mapSetValues(new GetValue<ImSet<VariableClassExpr>, ImSet<VariableClassExpr>>() {
-            public ImSet<VariableClassExpr> getMapValue(ImSet<VariableClassExpr> value) {
-                return translator.translateVariable(value);
-            }});
-        return new MeanClassWhere(classWhere.translateOuter(translator), classNotWhere.translateOuter(translator), transEquals);
+        return new MeanClassWhere(classWhere.translateOuter(translator), classNotWhere.translateOuter(translator), translateComps(translator, equals), translateComps(translator, greaters));
+    }
+
+    private ImSet<ImSet<VariableClassExpr>> translateComps(final MapTranslate translator, ImSet<ImSet<VariableClassExpr>> comps) {
+        return comps.mapSetValues(new GetValue<ImSet<VariableClassExpr>, ImSet<VariableClassExpr>>() {
+                public ImSet<VariableClassExpr> getMapValue(ImSet<VariableClassExpr> value) {
+                    return translator.translateVariable(value);
+                }
+            });
     }
 
     protected int hash(HashContext hash) {
+        return 31 * (31 * (classWhere.hashOuter(hash) * 31 + classNotWhere.hashOuter(hash)) + hashComps(hash, equals)) + hashComps(hash, greaters);
+    }
+
+    private static int hashComps(HashContext hash, ImSet<ImSet<VariableClassExpr>> comps) {
         int result = 0;
-        for(int i=0,size=equals.size();i<size;i++)
-            result ^= AbstractOuterContext.hashOuter(equals.get(i), hash);
-        return 31 * (classWhere.hashOuter(hash) * 31 + classNotWhere.hashOuter(hash)) + result;
+        for(int i=0,size= comps.size();i<size;i++)
+            result ^= AbstractOuterContext.hashOuter(comps.get(i), hash);
+        return result;
     }
 
     protected boolean isComplex() {
@@ -113,17 +140,21 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
     }
 
     public ImSet<OuterContext> calculateOuterDepends() {
+        return classWhere.getOuterDepends().merge(classNotWhere.getOuterDepends()).merge(getOuterDepends(equals)).merge(getOuterDepends(greaters));
+    }
+
+    private static ImSet<OuterContext> getOuterDepends(ImSet<ImSet<VariableClassExpr>> comps) {
         MSet<OuterContext> mEqualContext = SetFact.mSet();
-        for(int i=0,size=equals.size();i<size;i++)
-            mEqualContext.addAll(equals.get(i));
-        return classWhere.getOuterDepends().merge(classNotWhere.getOuterDepends()).merge(mEqualContext.immutable());
+        for(int i=0,size= comps.size();i<size;i++)
+            mEqualContext.addAll(comps.get(i));
+        return mEqualContext.immutable();
     }
 
     public boolean twins(TwinImmutableObject o) {
-        return classWhere.equals(((MeanClassWhere) o).classWhere) && classNotWhere.equals(((MeanClassWhere) o).classNotWhere) && equals.equals(((MeanClassWhere) o).equals);
+        return classWhere.equals(((MeanClassWhere) o).classWhere) && classNotWhere.equals(((MeanClassWhere) o).classNotWhere) && equals.equals(((MeanClassWhere) o).equals) && greaters.equals(((MeanClassWhere) o).greaters);
     }
 
     public String toString() {
-        return classWhere.toString() + " N " + classNotWhere.toString() + " " + equals.toString();
+        return classWhere.toString() + " N " + classNotWhere.toString() + " " + equals.toString() + " " + greaters.toString();
     }
 }

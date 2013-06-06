@@ -823,7 +823,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     @IdentityInstanceLazy
     public ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
-        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.ASSERTFULL);
+        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.FULL); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
 
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
         ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);

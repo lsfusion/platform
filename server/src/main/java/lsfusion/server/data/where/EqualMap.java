@@ -31,6 +31,7 @@ public class EqualMap extends HMap<BaseExpr,Equal> {
         if(equal1.equals(equal2))
             return true;
 
+        // с этими проверками нужно быть аккуратнее, так как в MeanClassWhere используется просто для собирания "компонент"
         if(equal1.value==null) {
             equal1.value = equal2.value;
         } else

@@ -48,4 +48,8 @@ public class GreaterWhere extends CompareWhere {
     protected String getCompareSource(CompileSource compile) {
         return ">" + (orEquals ? "=" : "");
     }
+
+    protected boolean isEquals() {
+        return false;
+    }
 }

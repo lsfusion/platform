@@ -11,14 +11,15 @@ currentDate 'Тек. дата' = DATA DATE ();
 currentMonth 'Тек. месяц' = numberMonthInDate (currentDate());
 currentYear 'Тек. год' = yearInDate (currentDate());
 
-toDate = FORMULA DATE '(CAST(($1) as date))';
-toTime = FORMULA TIME '(CAST(($1) as time))';
-toDateTime = FORMULA DATETIME '(CAST(($1) as timestamp))';
+toDate(dateTime) = [FORMULA DATE '(CAST(($1) as date))'](dateTime AS DATETIME);
+toTime(dateTime) = [FORMULA TIME '(CAST(($1) as time))'](dateTime AS DATETIME);
+toDateTime(date) = [FORMULA DATETIME '(CAST(($1) as timestamp))'](date AS DATE);
 
-sumDate = FORMULA DATE '(($1)+($2))';
-subtractDate = FORMULA DATE '(($1)-($2))';
-sumDateTimeDay = FORMULA DATETIME '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))';
-subtractDateTimeSeconds = FORMULA DATETIME '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))';
+sumDate(date, days) = [FORMULA DATE '(($1)+($2))'](date AS DATE, days AS LONG);
+subtractDate(date, days) = [FORMULA DATE '(($1)-($2))'](date AS DATE, days AS LONG);
+sumDateTimeDay(dateTime, days) = [FORMULA DATETIME '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))'](dateTime AS DATETIME, days AS LONG);
+subtractDateTimeSeconds(dateTime, days) = [FORMULA DATETIME '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))'](dateTime AS DATETIME, days AS LONG);
+
 dateTimeToDateTime = FORMULA DATETIME 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')';
 
 // --------------------------------- Месяца ------------------------ //

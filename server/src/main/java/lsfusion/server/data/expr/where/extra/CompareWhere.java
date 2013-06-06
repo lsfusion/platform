@@ -1,16 +1,20 @@
 package lsfusion.server.data.expr.where.extra;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.ManualLazy;
-import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.classes.DataClass;
+import lsfusion.server.data.expr.*;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.where.OrObjectWhere;
 import lsfusion.server.data.where.OrWhere;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.logics.DataObject;
 
 public abstract class CompareWhere<This extends CompareWhere<This>> extends BinaryWhere<This> {
@@ -81,5 +85,32 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
             return compare;
         else
             return "(" + result + " OR " + compare + ")";
+    }
+
+    @Override
+    public MeanClassWhere getMeanClassWhere() {
+        ImSet<ImSet<VariableClassExpr>> comps = SetFact.EMPTY();
+        ClassExprWhere classWhere = getOperandWhere().getClassWhere();
+
+        boolean isEquals = isEquals();
+        ConcreteClass staticClass;
+        if(operator2 instanceof VariableSingleClassExpr && operator1 instanceof StaticClassExprInterface &&
+                (staticClass = ((StaticClassExprInterface)operator1).getStaticClass()) != null && (isEquals || staticClass instanceof DataClass))
+            classWhere = classWhere.and(new ClassExprWhere((VariableSingleClassExpr)operator2, staticClass));
+        if(operator2 instanceof VariableClassExpr && operator1 instanceof VariableClassExpr)
+            comps = SetFact.singleton(SetFact.toSet((VariableClassExpr)operator1, (VariableClassExpr) operator2));
+        if(operator1 instanceof VariableSingleClassExpr && operator2 instanceof StaticClassExprInterface &&
+                (staticClass = ((StaticClassExprInterface)operator2).getStaticClass()) != null && (isEquals || staticClass instanceof DataClass))
+            classWhere = classWhere.and(new ClassExprWhere((VariableSingleClassExpr)operator1,staticClass));
+
+        return new MeanClassWhere(classWhere, comps, isEquals);
+    }
+
+    protected abstract boolean isEquals();
+
+    // повторяет FormulaWhere так как должен andEquals сделать
+    @Override
+    public ClassExprWhere calculateClassWhere() {
+        return getMeanClassWhere().getClassWhere(operator1, operator2, isEquals()); // именно так а не как Formula потому как иначе бесконечный цикл getMeanClassWheres -> MeanClassWhere.getClassWhere -> means(isFalse) и т.д. пойдет
     }
 }

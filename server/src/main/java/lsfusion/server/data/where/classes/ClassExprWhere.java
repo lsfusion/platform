@@ -15,6 +15,7 @@ import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.ValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -126,27 +127,36 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         return new ClassExprWhere(wheres);
     }
 
-    private static And<VariableSingleClassExpr> andEquals(And<VariableSingleClassExpr> and, EqualMap equals) {
+    private static And<VariableSingleClassExpr> andEquals(And<VariableSingleClassExpr> and, EqualMap equals, boolean onlyData) {
         MMap<VariableSingleClassExpr, AndClassSet> mResult = null;
         for(int i=0;i<equals.num;i++) {
             Equal equal = equals.comps[i];
             if(!equal.dropped) {
+                boolean[] noClasses = null;
+                if(onlyData)
+                    noClasses = new boolean[equal.size];
                 AndClassSet andClasses = null;
                 for(int j=0;j<equal.size;j++)
                     if(equal.exprs[j] instanceof VariableClassExpr) { // static'и особо не интересуют, так как либо в явную отработаны, либо не нужны (в булевой логике)
                         AndClassSet classes = equal.exprs[j].getAndClassSet(and);
                         if(classes!=null) {
+                            if(onlyData && !(classes instanceof DataClass))
+                                break;
+
                             if(andClasses==null)
                                 andClasses = classes;
                             else {
                                 andClasses = andClasses.and(classes);
                                 if(andClasses.isEmpty()) return null;
                             }
+                        } else {
+                            if(onlyData)
+                                noClasses[j] = true;
                         }
                     }
                 if(andClasses!=null)
                     for(int j=0;j<equal.size;j++)
-                        if(equal.exprs[j] instanceof VariableSingleClassExpr) {
+                        if(equal.exprs[j] instanceof VariableSingleClassExpr && (!onlyData || noClasses[j])) { // выводим класс только если его не было (наиболее логичное поведение для сравнений)
                             if(mResult==null)
                                 mResult = MapFact.mMap(and, MapFact.<VariableSingleClassExpr, AndClassSet>override());
                             mResult.add((VariableSingleClassExpr) equal.exprs[j], andClasses);
@@ -158,13 +168,17 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         else
             return new And<VariableSingleClassExpr>(mResult.immutable());
     }
-    // нужен очень быстрый так как в checkTrue используется
+
     public ClassExprWhere andEquals(EqualMap equals) {
+        return andEquals(equals, false);
+    }
+    // нужен очень быстрый так как в checkTrue используется
+    public ClassExprWhere andEquals(EqualMap equals, boolean onlyData) {
         if(equals.size()==0 || isFalse() || isTrue()) return this;
 
         And<VariableSingleClassExpr>[] rawAndWheres = newArray(wheres.length); int num=0;
         for(And<VariableSingleClassExpr> where : wheres) {
-            And<VariableSingleClassExpr> andWhere = andEquals(where,equals);
+            And<VariableSingleClassExpr> andWhere = andEquals(where,equals,onlyData);
             if(andWhere!=null)
                 rawAndWheres[num++] = andWhere;
         }

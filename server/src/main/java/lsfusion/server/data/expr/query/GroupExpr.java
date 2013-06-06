@@ -6,6 +6,7 @@ import lsfusion.base.Result;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
@@ -176,7 +177,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
         protected ImMap<KeyExpr, Type> getInnerKeyTypes() {
             final KeyType contextType = getFullWhere();
-            return getQueryKeys().mapValues(new GetValue<Type, KeyExpr>() {
+            return SetFact.removeSet(getQueryKeys(), thisObj.group.keys()).mapValues(new GetValue<Type, KeyExpr>() { // те, по которым группируется не интересует, так как инвариант типов придет "сверху"
                 public Type getMapValue(KeyExpr value) {
                     return contextType.getKeyType(value);
                 }
@@ -242,7 +243,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 statKeys = statKeys.or(join.stats);
         } else
             statKeys = query.getWhere().getStatExprs(group.keys());
-        return new GroupJoin(getInner().getInnerKeyTypes(), getInner().getInnerValues(),
+        return new GroupJoin(getInner().getQueryKeys(), getInner().getInnerValues(), getInner().getInnerKeyTypes(),
                 query.type.nullsNotAllowed() ? query.getWhere() :
                 (query.type.hasAdd() && query.type.splitExprCases()? query.exprs.single().getBaseWhere():Where.TRUE),
                 statKeys, group);
