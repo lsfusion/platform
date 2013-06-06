@@ -249,16 +249,16 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     private void initializeActionMap() {
-        final Action nextColumnAction = new GotNextCellAction(0, 1);
-        final Action prevColumnAction = new GotNextCellAction(0, -1);
-        final Action nextRowAction = new GotNextCellAction(1, 0);
-        final Action prevRowAction = new GotNextCellAction(-1, 0);
+        final Action nextColumnAction = new GoToNextCellAction(0, 1);
+        final Action prevColumnAction = new GoToNextCellAction(0, -1);
+        final Action nextRowAction = new GoToNextCellAction(1, 0);
+        final Action prevRowAction = new GoToNextCellAction(-1, 0);
 
-        final Action firstColumnAction = new GotNextCellAction(0, 1, true);
-        final Action lastColumnAction = new GotNextCellAction(0, -1, true);
+        final Action firstColumnAction = new GoToNextCellAction(0, -1, true);
+        final Action lastColumnAction = new GoToNextCellAction(0, 1, true);
 
-        final Action firstRowAction = new GotNextCellAction(1, 0, true);
-        final Action lastRowAction = new GotNextCellAction(-1, 0, true);
+        final Action firstRowAction = new GoToNextCellAction(-1, 0, true);
+        final Action lastRowAction = new GoToNextCellAction(1, 0, true);
 
         ActionMap actionMap = getActionMap();
 
@@ -810,50 +810,19 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return currentPath;
     }
 
-    private class GotNextCellAction extends AbstractAction {
+    private class GoToNextCellAction extends AbstractAction {
         private final int dc;
         private final int dr;
         private final boolean boundary;
 
-        public GotNextCellAction(int dr, int dc) {
+        public GoToNextCellAction(int dr, int dc) {
             this(dr, dc, false);
         }
 
-        public GotNextCellAction(int dr, int dc, boolean boundary) {
+        public GoToNextCellAction(int dr, int dc, boolean boundary) {
             this.dr = dr;
             this.dc = dc;
             this.boundary = boundary;
-        }
-
-        private int[] moveNext(int row, int column, int maxR, int maxC) {
-            if (dc != 0) {
-                column += dc;
-                if (column > maxC) {
-                    column = 0;
-                    if (!boundary) {
-                        ++row;
-                        if (row > maxR) {
-                            row = 0;
-                        }
-                    }
-                } else if (column < 0) {
-                    column = maxC;
-                    if (!boundary) {
-                        --row;
-                        if (row < 0) {
-                            row = maxR;
-                        }
-                    }
-                }
-            } else {
-                row += dr;
-                if (row > maxR) {
-                    row = 0;
-                } else if (row < 0) {
-                    row = maxR;
-                }
-            }
-            return new int[]{row, column};
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -867,28 +836,86 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             int maxR = getRowCount() - 1;
             int maxC = getColumnCount() - 1;
 
-            int startRow = boundary && dr != 0
-                           ? (dr > 0 ? 0 : maxR)
-                           : getSelectionModel().getLeadSelectionIndex();
+            int row = getSelectionModel().getLeadSelectionIndex();
+            int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
-            int startColumn = boundary && dc != 0
-                              ? (dc > 0 ? 0 : maxC)
-                              : getColumnModel().getSelectionModel().getLeadSelectionIndex();
+            boolean checkFirst = row == -1 || column == -1;
+            row = row == -1 ? 0 : row;
+            column = column == -1 ? 0 : column;
 
-            boolean checkFirst = startRow == -1 || startColumn == -1 || boundary;
+            if (boundary) {
+                int startRow = dr != 0
+                               ? (dr > 0 ? 0 : maxR)
+                               : row;
 
-            int row = startRow = startRow == -1 ? 0 : startRow;
-            int column = startColumn = startColumn == -1 ? 0 : startColumn;
+                int startColumn = dc != 0
+                                  ? (dc > 0 ? 0 : maxC)
+                                  : column;
 
-            if (!(checkFirst && isCellFocusable(row, column))) {
-                do {
-                    int next[] = moveNext(row, column, maxR, maxC);
-                    row = next[0];
-                    column = next[1];
-                } while ((row != startRow || column != startColumn) && !isCellFocusable(row, column));
+                int endRow = dr != 0
+                        ? (dr > 0 ? maxR : 0)
+                        : startRow;
+                int endColumn = dc != 0
+                        ? (dc > 0 ? maxC : 0)
+                        : startColumn;
+
+                int rc[] = moveBoundary(startRow, endRow, startColumn, endColumn);
+                row = rc[0];
+                column = rc[1];
+            } else {
+                if (!(checkFirst && isCellFocusable(row, column))) {
+                    do {
+                        int next[] = moveNext(row, column, maxR, maxC);
+                        row = next[0];
+                        column = next[1];
+                    } while (row != -1 && !isCellFocusable(row, column));
+                }
             }
 
-            changeSelection(row, column, false, false);
+            if (row >= 0 && column >= 0) {
+                changeSelection(row, column, false, false);
+            }
+        }
+
+        private int[] moveNext(int row, int column, int maxR, int maxC) {
+            if (dc != 0) {
+                column += dc;
+                if (column > maxC) {
+                    ++row;
+                    if (row > maxR) {
+                        // в крайнем положении - больше некуда двигаться
+                        row = -1;
+                    } else {
+                        column = 0;
+                    }
+                } else if (column < 0) {
+                    --row;
+                    if (row < 0) {
+                        // в крайнем положении - больше некуда двигаться
+                        row = -1;
+                    } else {
+                        column = maxC;
+                    }
+                }
+            } else {
+                row += dr;
+                if (row > maxR || row < 0) {
+                    row = -1;
+                }
+            }
+            return new int[]{row, column};
+        }
+
+        private int[] moveBoundary(int startRow, int endRow, int startColumn, int endColumn) {
+            for (int r = endRow, c = endColumn; r != startRow || c != startColumn; r -= dr, c -= dc) {
+                if (isCellFocusable(r, c)) {
+                    return new int[] {r, c};
+                }
+            }
+            if (isCellFocusable(startRow, startColumn)) {
+                return new int[] {startRow, startColumn};
+            }
+            return new int[] {-1, -1};
         }
     }
 
