@@ -63,7 +63,7 @@ FORM defaultNumerators 'Нумераторы'
 DESIGN defaultNumerators FROM DEFAULT {
     main {
         NEW defaultContainer AFTER n.box {
-            title = 'Нумераторы по умолчанию';
+            caption = 'Нумераторы по умолчанию';
         }
     }
 }

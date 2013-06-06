@@ -17,7 +17,7 @@ DESIGN defaultData FROM DEFAULT {
         fillHorizontal = 1.0;
 
         NEW commons {
-            title = 'Общие';
+            caption = 'Общие';
 
             ADD PROPERTY(loadDefaultData);
         }
