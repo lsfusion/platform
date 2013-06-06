@@ -643,7 +643,11 @@ public class DerivedProperty {
         String distrSID = !roundfirst ? sID : genID();
         String distrCaption = !roundfirst ? caption : "sys";
         // округляем
-        CalcPropertyMapImplement<?, T> distrRound = createFormula(distrSID, distrCaption, innerInterfaces, "ROUND(CAST((prm1*prm2/prm3) as NUMERIC(15,3)),"+roundlen+")", formulaClass, ListFact.toList(distribute, proportion, propSum));
+
+        int numericLength = 15 + roundlen;
+        CalcPropertyMapImplement<?, T> distrRound =
+                createFormula(distrSID, distrCaption, innerInterfaces,
+                              "ROUND(CAST((prm1*prm2/prm3) as NUMERIC(" + numericLength + "," + roundlen+ "))," + roundlen + ")", NumericClass.get(numericLength, roundlen), ListFact.toList(distribute, proportion, propSum));
 
         if (!roundfirst) return distrRound;
         
