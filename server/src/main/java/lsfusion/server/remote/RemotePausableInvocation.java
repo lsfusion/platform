@@ -60,11 +60,19 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         if (logger.isDebugEnabled()) {
             logger.debug("Interaction " + sid + " called delayUserInteraction: " + action);
         }
-        delayedActions.add(action);
+
         if (action instanceof AsyncGetRemoteChangesClientAction) {
-            delayedGetRemoteChanges = true;
+            if (!delayedGetRemoteChanges) {
+                delayedActions.add(action);
+                delayedGetRemoteChanges = true;
+            }
         } else if (action instanceof HideFormClientAction) {
-            delayedHideForm = true;
+            if (!delayedHideForm) {
+                delayedActions.add(action);
+                delayedHideForm = true;
+            }
+        } else {
+            delayedActions.add(action);
         }
     }
 
