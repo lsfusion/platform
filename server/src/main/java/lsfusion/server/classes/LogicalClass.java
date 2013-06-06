@@ -100,6 +100,11 @@ public class LogicalClass extends DataClass<Boolean> {
         return new ExtInt(1);
     }
 
+    @Override
+    public Object getInfiniteValue(boolean min) {
+        return true;
+    }
+
     public Boolean shiftValue(Boolean object, boolean back) {
         return object==null?true:null;
     }
