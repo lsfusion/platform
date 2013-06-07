@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
@@ -38,9 +39,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
 
     @Override
     public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
-        ImMap<Interface, ValueClass> result = MapFact.EMPTY();
-        for(CalcPropertyInterfaceImplement<Interface> operand : getOperands())
-            result = or(interfaces, result, operand.mapInterfaceCommonClasses(commonValue));
-        return result;
+        ImCol<CalcPropertyInterfaceImplement<Interface>> operands = getOperands();
+        return or(interfaces, operands.toList(), ListFact.toList(commonValue, operands.size()));
     }
 }

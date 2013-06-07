@@ -49,7 +49,14 @@ public class ListFact {
         return mList.immutableList();
     }
 
-    public static <T> ImList<T> add(T element, ImList<? extends T> list) {
+    public static <T> ImList<T> toList(final T value, int size) {
+        return toList(size, new GetIndex<T>() {
+            public T getMapValue(int i) {
+                return value;
+            }});
+    }
+
+        public static <T> ImList<T> add(T element, ImList<? extends T> list) {
         MList<T> mList = ListFact.mList(list.size()+1);
         mList.add(element);
         mList.addAll(list);

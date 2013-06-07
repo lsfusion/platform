@@ -1,13 +1,16 @@
 package lsfusion.server.logics.property.derived;
 
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.AggrExpr;
@@ -73,7 +76,8 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         return interfaces.mapRevValues(new GetValue<T, Interface<T>>() {
             public T getMapValue(Interface<T> value) {
                 return value.propertyInterface;
-            }});
+            }
+        });
     }
 
     // кривовать как и в GroupProperty, перетягивание на себя функций компилятора (то есть с третьего ограничивается второй), но достаточно хороший case оптимизации
@@ -103,21 +107,24 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         return partitions.mapItValues(new GetValue<Expr, CalcPropertyInterfaceImplement<T>>() {
             public Expr getMapValue(CalcPropertyInterfaceImplement<T> value) {
                 return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
-            }});
+            }
+        });
     }
 
     protected ImOrderMap<Expr, Boolean> getOrderImplements(final ImMap<T, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         return orders.mapMergeItOrderKeys(new GetValue<Expr, CalcPropertyInterfaceImplement<T>>() {
             public Expr getMapValue(CalcPropertyInterfaceImplement<T> value) {
                 return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
-            }});
+            }
+        });
     }
 
     protected ImList<Expr> getExprImplements(final ImMap<T, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         return props.mapItListValues(new GetValue<Expr, CalcPropertyInterfaceImplement<T>>() {
             public Expr getMapValue(CalcPropertyInterfaceImplement<T> value) {
                 return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
-            }});
+            }
+        });
     }
 
     protected Expr calculateExpr(ImMap<Interface<T>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -141,5 +148,21 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
 
     private Where getPartitionWhere(Where where, ImMap<CalcPropertyInterfaceImplement<T>,Expr> partitionImplements, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, ImMap<KeyExpr, Expr> mapExprs) {
         return GroupExpr.create(partitionImplements, where.and(Expr.getWhere(exprs)).and(AggrExpr.getOrderWhere(orders, ordersNotNull)), partitionImplements).getWhere().map(mapExprs);
+    }
+
+    @Override
+    public ImMap<Interface<T>, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue) {
+        return or(interfaces, super.getInterfaceCommonClasses(commonValue),
+                getMapInterfaces().rightJoin(getInnerInterfaceCommonClasses(commonValue)));
+    }
+
+    private ImMap<T, ValueClass> getInnerInterfaceCommonClasses(final ValueClass commonValue) {
+        final boolean isSelect = partitionType.isSelect();
+        ImList<CalcPropertyInterfaceImplement<T>> used = props.addList(partitions.toList()).addList(orders.keyOrderSet());
+        return or(innerInterfaces, used, ListFact.toList(used.size(), new GetIndex<ValueClass>() {
+            public ValueClass getMapValue(int i) {
+                return isSelect && i == 0 ? commonValue : null;
+            }
+        }));
     }
 }

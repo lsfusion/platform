@@ -857,6 +857,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return v1.getUpSet().getOr().or(v2.getUpSet().getOr()).getCommonClass();
     }
 
+    public static <T extends PropertyInterface, X> ImMap<T, ValueClass> or(ImSet<T> interfaces, ImList<CalcPropertyInterfaceImplement<T>> operands, ImList<ValueClass> operandClasses) {
+        ImMap<T, ValueClass> result = MapFact.EMPTY();
+        for(int i=0,size=operands.size();i<size;i++)
+            result = or(interfaces, result, operands.get(i).mapInterfaceCommonClasses(operandClasses.get(i)));
+        return result;
+    }
+
     public static <T extends PropertyInterface> ImMap<T, ValueClass> or(ImSet<T> interfaces, ImMap<T, ValueClass> or1, ImMap<T, ValueClass> or2) {
         ImFilterValueMap<T, ValueClass> mvResult = interfaces.mapFilterValues();
         for(int i=0,size=interfaces.size();i<size;i++) {

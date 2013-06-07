@@ -106,6 +106,10 @@ public class MapFact {
         return ((ImMap<K,V>)map1).innerCrossValues(map2);
     }
 
+    public static <K, E, V> ImMap<K, V> innerJoin(ImMap<K, ? extends E> map, ImMap<? extends E, V> joinMap) {
+        return ((ImMap<K,E>)map).innerJoin(joinMap);
+    }
+
     public static <K, E, V> ImMap<K, V> nullInnerJoin(ImMap<K, ? extends E> map, ImMap<? extends E, V> joinMap) {
         return joinMap==null ? null : ((ImMap<K,E>)map).innerJoin(joinMap);
     }

@@ -1,9 +1,11 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -52,6 +54,21 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     public abstract ImList<CalcPropertyInterfaceImplement<I>> getProps();
 
     public abstract ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders();
+
+    public ImMap<I, ValueClass> getInnerInterfaceCommonClasses(final ValueClass commonValue) {
+        final boolean isSelect = getGroupType().isSelect();
+        ImList<CalcPropertyInterfaceImplement<I>> props = getProps().addList(getMapInterfaces().values().toList()).addList(getOrders().keyOrderSet());
+        return or(innerInterfaces, props, ListFact.toList(props.size(), new GetIndex<ValueClass>() {
+                    public ValueClass getMapValue(int i) {
+                        return isSelect && i==0 ? commonValue : null;
+                    }}));
+    }
+
+    @Override
+    public ImMap<Interface<I>, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue) {
+        return or(interfaces, super.getInterfaceCommonClasses(commonValue),
+                MapFact.innerJoin(getMapInterfaces(), getInnerInterfaceCommonClasses(commonValue)));
+    }
 
     protected ImMap<Interface<I>, Expr> getGroupImplements(ImMap<I, ? extends Expr> mapKeys, PropertyChanges changes) {
         return getGroupImplements(mapKeys, false, changes);
@@ -122,7 +139,8 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
 
     public ImMap<I, ValueClass> getInnerInterfaceClasses() {
-        ImRevMap<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
+        return getInnerInterfaceCommonClasses(null);
+/*        ImRevMap<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
         Where w = Expr.getWhere(getGroupImplements(mapKeys, PropertyChanges.EMPTY))
                 .and(Expr.getWhere(getExprImplements(mapKeys, PropertyChanges.EMPTY)))
                 .and(Expr.getWhere(getOrderImplements(mapKeys, PropertyChanges.EMPTY).keys()))
@@ -130,7 +148,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
 
         ClassWhere<I> classWhere = w.getClassWhere().get(mapKeys);
 
-        return classWhere.getCommonParent(innerInterfaces);
+        return classWhere.getCommonParent(innerInterfaces);*/
     }
 
     @Override

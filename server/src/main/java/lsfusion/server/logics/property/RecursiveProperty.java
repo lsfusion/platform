@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -12,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.IntegralClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -180,4 +182,15 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         return calculateIncrementExpr(joinImplement, propChanges, getExpr(joinImplement), changedWhere);
     }
 
+    @Override
+    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue) {
+        return or(interfaces, super.getInterfaceCommonClasses(commonValue),
+                mapInterfaces.rightJoin(getInnerInterfaceCommonClasses()));
+    }
+
+    private ImMap<T, ValueClass> getInnerInterfaceCommonClasses() {
+        ImSet<T> outerInnerKeys = mapIterate.valuesSet();
+        ImMap<T, ValueClass> stepClasses = step.mapInterfaceCommonClasses(null);
+        return or(outerInnerKeys, or(outerInnerKeys, stepClasses.remove(mapIterate.keys()), mapIterate.reverse().innerJoin(stepClasses)), initial.mapInterfaceCommonClasses(null));
+    }
 }
