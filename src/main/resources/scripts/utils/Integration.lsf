@@ -18,6 +18,6 @@ META defineExternalizableAbstract (object, type)
 END
 
 META defineExternalizableAbstract (object, type, prefix)
-    prefix###id###object = ABSTRACT type (###object) PERSISTENT INDEXED;
+    prefix###id###object 'Внешний код' = ABSTRACT type (###object) PERSISTENT INDEXED;
     prefix###object##Id (object) = GROUP AGGR object BY prefix###id###object (object);
 END
