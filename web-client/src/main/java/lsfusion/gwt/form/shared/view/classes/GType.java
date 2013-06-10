@@ -2,6 +2,7 @@ package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GFont;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
@@ -40,7 +41,7 @@ public abstract class GType implements Serializable {
     public abstract Object parseString(String s) throws ParseException;
 
     public int getMinimumPixelHeight(GFont font) {
-        return font == null || font.size == null ? 16 : (int) (font.size * 1.25);
+        return font == null || font.size == null ? 16 : GFontMetrics.getSymbolHeight(font);
     }
 
     public int getPreferredPixelHeight(GFont font) {

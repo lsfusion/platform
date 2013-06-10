@@ -27,6 +27,8 @@ public class GForm implements Serializable {
     public GFormChangesDTO initialFormChanges;
     public GFormUserPreferences userPreferences;
 
+    public ArrayList<GFont> usedFonts;
+
     public GGroupObject getGroupObject(int id) {
         for (GGroupObject groupObject : groupObjects) {
             if (groupObject.ID == id) {

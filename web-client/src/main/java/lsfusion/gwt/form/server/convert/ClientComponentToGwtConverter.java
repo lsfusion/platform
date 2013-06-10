@@ -84,12 +84,14 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     }
 
     private GFont convertFont(Font headerFont) {
-        return new GFont(
-                ((headerFont.getStyle() & Font.ITALIC) != 0 ? "italic" : null),
-                ((headerFont.getStyle() & Font.BOLD) != 0 ? "bold" : null),
+        GFont font = new GFont(
+                ((headerFont.getStyle() & Font.ITALIC) != 0 ? GFont.ITALIC : null),
+                ((headerFont.getStyle() & Font.BOLD) != 0 ? GFont.BOLD : null),
                 headerFont.getSize(),
                 headerFont.getFamily()
         );
+        GFontMetrics.registerFont(font);
+        return font;
     }
 
     @Cached

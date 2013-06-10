@@ -7,6 +7,7 @@ import lsfusion.gwt.form.client.form.ui.classes.ClassChosenHandler;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.form.client.log.GLog;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.actions.*;
 import lsfusion.gwt.form.shared.view.classes.GObjectClass;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
@@ -55,12 +56,19 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(GDialogAction action) {
+    public void execute(final GDialogAction action) {
         pauseDispatching();
-        form.showModalDialog(action.dialog, latestEditEvent, new WindowHiddenHandler() {
+
+        // перед открытием формы необходимо рассчитать размеры используемых шрифтов
+        GFontMetrics.calculateFontMetrics(action.dialog.usedFonts, new GFontMetrics.MetricsCallback() {
             @Override
-            public void onHidden() {
-                continueDispatching();
+            public void metricsCalculated() {
+                form.showModalDialog(action.dialog, latestEditEvent, new WindowHiddenHandler() {
+                    @Override
+                    public void onHidden() {
+                        continueDispatching();
+                    }
+                });
             }
         });
     }

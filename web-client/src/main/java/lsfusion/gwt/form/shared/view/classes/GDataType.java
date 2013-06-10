@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.form.shared.view.GFont;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 
 import static lsfusion.gwt.form.shared.view.filter.GCompare.*;
@@ -20,13 +21,13 @@ public abstract class GDataType extends GType implements GClass {
     @Override
     public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
         int minCharWidth = getMinimumCharWidth(minimumCharWidth);
-        return font == null || font.size == null ? minCharWidth * 7 : minCharWidth * font.size / 2;
+        return minCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null? null : font) + 8;
     }
 
     @Override
     public int getMaximumPixelWidth(int maximumCharWidth, GFont font) {
         if (maximumCharWidth != 0) {
-            return font == null || font.size == null ? maximumCharWidth * 7 : maximumCharWidth * font.size / 2;
+            return maximumCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null ? null : font) + 8;
         } else {
             return Integer.MAX_VALUE;
         }
@@ -35,7 +36,7 @@ public abstract class GDataType extends GType implements GClass {
     @Override
     public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
         int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
-        return font == null || font.size == null ? prefCharWidth * 7 : prefCharWidth * font.size / 2;
+        return prefCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null ? null : font) + 8;
     }
 
     public int getMinimumCharWidth(int definedMinimumCharWidth) {

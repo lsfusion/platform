@@ -2,6 +2,7 @@ package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GFont;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.grid.renderer.ActionGridCellRenderer;
@@ -36,7 +37,8 @@ public class GActionType extends GDataType {
 
     @Override
     public int getPreferredPixelHeight(GFont font) {
-        return font == null || font.size == null ? 18 : (int) (font.size * 1.4);
+        int result =  font == null || font.size == null ? 13 : GFontMetrics.getSymbolHeight(font);
+        return result + 5;
     }
 
     @Override

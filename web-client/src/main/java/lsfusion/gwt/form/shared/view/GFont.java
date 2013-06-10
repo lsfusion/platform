@@ -1,8 +1,13 @@
 package lsfusion.gwt.form.shared.view;
 
+import lsfusion.gwt.base.shared.GwtSharedUtils;
+
 import java.io.Serializable;
 
 public class GFont implements Serializable {
+    public static final String BOLD = "bold";
+    public static final String ITALIC = "italic";
+
     public String style;
     public String weight;
     public Integer size;
@@ -33,5 +38,16 @@ public class GFont implements Serializable {
             font += family;
         }
         return font;
+    }
+
+    public boolean isBold() {
+        return weight != null && weight.equals(BOLD);
+    }
+
+    public boolean equalsForMetrics(GFont font) {
+        if (font == null) {
+            return false;
+        }
+        return GwtSharedUtils.nullEquals(style, font.style) && GwtSharedUtils.nullEquals(size, font.size) && GwtSharedUtils.nullEquals(weight, font.weight);
     }
 }

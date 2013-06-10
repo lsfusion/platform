@@ -3,6 +3,7 @@ package lsfusion.gwt.form.shared.view.classes;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GExtInt;
 import lsfusion.gwt.form.shared.view.GFont;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
@@ -39,13 +40,13 @@ public class GStringType extends GDataType {
     @Override
     public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
         int minCharWidth = getMinimumCharWidth(minimumCharWidth);
-        return font == null || font.size == null ? minCharWidth * 10 : minCharWidth * font.size * 5 / 8;
+        return minCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null? null : font) + 8;
     }
 
     @Override
     public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
         int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
-        return font == null || font.size == null ? prefCharWidth * 10 : prefCharWidth * font.size * 5 / 8;
+        return prefCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null ? null : font) + 8;
     }
 
     private String minimumMask;
@@ -117,8 +118,8 @@ public class GStringType extends GDataType {
         return charWidth <= 20
                 ? charWidth
                 : charWidth <= 80
-                    ? (int) Math.round(Math.pow(charWidth, 0.8))
-                    : (int) Math.round(Math.pow(charWidth, 0.7));
+                    ? (int) Math.round(Math.pow(charWidth, 0.85))
+                    : (int) Math.round(Math.pow(charWidth, 0.8));
     }
 
     @Override

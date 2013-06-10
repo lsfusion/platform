@@ -17,6 +17,7 @@ import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalForm;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.form.shared.actions.GetForm;
 import lsfusion.gwt.form.shared.actions.GetFormResult;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GForm;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
 
@@ -75,13 +76,23 @@ public abstract class DefaultFormsController extends SimpleLayoutPanel implement
                     result.form.caption += "(" + formSID + ")";
                 }
 
-                openForm(dockable, result.form, modalityType, null);
+                openFormAfterFontsInitialization(dockable, result.form, modalityType, null);
             }
         });
     }
 
-    public void openForm(GForm form, GModalityType modalityType, final WindowHiddenHandler hiddenHandler) {
-        openForm(null, form, modalityType, hiddenHandler);
+    public void openForm(GForm form, GModalityType modalityType, WindowHiddenHandler hiddenHandler) {
+        openFormAfterFontsInitialization(null, form, modalityType, hiddenHandler);
+    }
+
+    private void openFormAfterFontsInitialization(final FormDockable dockable, final GForm form, final GModalityType modalityType, final WindowHiddenHandler hiddenHandler) {
+        // перед открытием формы необходимо рассчитать размеры используемых шрифтов
+        GFontMetrics.calculateFontMetrics(form.usedFonts, new GFontMetrics.MetricsCallback() {
+            @Override
+            public void metricsCalculated() {
+                openForm(dockable, form, modalityType, hiddenHandler);
+            }
+        });
     }
 
     private void openForm(FormDockable dockable, GForm form, GModalityType modalityType, final WindowHiddenHandler hiddenHandler) {
