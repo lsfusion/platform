@@ -73,12 +73,12 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return sources;
     }
 
-    private Query<ObjectInstance, Pair<Object, PropertyType>> createQuery(ImSet<GroupObjectInstance> groups, SessionTableUsage<ObjectInstance,
+    private Query<ObjectInstance, Pair<Object, PropertyType>> createQuery(ImOrderSet<GroupObjectInstance> groups, SessionTableUsage<ObjectInstance,
             Pair<Object, PropertyType>> parentTable, Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders, Result<ImMap<Pair<Object, PropertyType>, Type>> types) {
 
         QueryBuilder<ObjectInstance, Pair<Object, PropertyType>> newQuery;
         if (groupId == null) {
-            newQuery = new QueryBuilder<ObjectInstance, Pair<Object, PropertyType>>(GroupObjectInstance.getObjects(groups));
+            newQuery = new QueryBuilder<ObjectInstance, Pair<Object, PropertyType>>(GroupObjectInstance.getObjects(groups.getSet()));
         } else {
             GroupObjectInstance ourGroup = null;
             for (GroupObjectInstance group : groups) {
@@ -126,7 +126,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             }
         }
 
-        for(PropertyDrawInstance<?> property : filterProperties(groups)) {
+        for(PropertyDrawInstance<?> property : filterProperties(groups.getSet())) {
             if (property.getColumnGroupObjects().isEmpty()) {
                 Pair<Object, PropertyType> propertyObject = new Pair<Object, PropertyType>(property, PropertyType.PLAIN);
                 newQuery.addProperty(propertyObject, property.getDrawInstance().getExpr(newQuery.getMapExprs(), modifier));
@@ -169,7 +169,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     return value.getType();
                 }});
 
-            Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups.getSet(), parentTable, orders, propTypes);
+            Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentTable, orders, propTypes);
             SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>>(
                     form.session.sql, query, form.BL.LM.baseClass, form.getQueryEnv(), keyTypes, propTypes.result);
 
