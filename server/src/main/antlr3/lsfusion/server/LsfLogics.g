@@ -1183,11 +1183,12 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 abstractPropertyDefinition returns [LP property]
 @init {
 	boolean isExclusive = true;
+	boolean isChecked = false;
 	CaseUnionProperty.Type type = CaseUnionProperty.Type.MULTI;	
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, isExclusive);	
+		$property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, isExclusive, isChecked);	
 	}
 }
 	:	'ABSTRACT'
@@ -1197,6 +1198,7 @@ abstractPropertyDefinition returns [LP property]
 		|	'OVERRIDE' { type = CaseUnionProperty.Type.VALUE; isExclusive = false; }
 		|	'EXCLUSIVE'{ type = CaseUnionProperty.Type.VALUE; isExclusive = true; }	
 		)?
+		('CHECKED' { isChecked = true; })?
 		returnClass=classId
 		'('
 			paramClassNames=classIdList
@@ -1206,11 +1208,12 @@ abstractPropertyDefinition returns [LP property]
 abstractActionPropertyDefinition returns [LP property]
 @init {
 	boolean isExclusive = true;	
+	boolean isChecked = false;
 	ListCaseActionProperty.AbstractType type = ListCaseActionProperty.AbstractType.MULTI;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedAbstractActionProp(type, $params.ids, isExclusive);
+		$property = self.addScriptedAbstractActionProp(type, $params.ids, isExclusive, isChecked);
 	}
 }
 	:	'ABSTRACT' 'ACTION' 
@@ -1219,6 +1222,7 @@ abstractActionPropertyDefinition returns [LP property]
 		|	'MULTI'	(opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
 		|	'LIST' { type = ListCaseActionProperty.AbstractType.LIST; }
 		)?
+		('CHECKED' { isChecked = true; })?
 		'(' 
 			params=classIdList
 		')'	

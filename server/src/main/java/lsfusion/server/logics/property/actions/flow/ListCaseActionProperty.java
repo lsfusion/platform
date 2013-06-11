@@ -43,7 +43,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
         this.isExclusive = isExclusive;
     }
 
-    public <I extends PropertyInterface> ListCaseActionProperty(String sID, String caption, boolean isExclusive, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+    public <I extends PropertyInterface> ListCaseActionProperty(String sID, String caption, boolean isExclusive, boolean isChecked, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
         super(sID, caption, innerInterfaces.size());
 
         this.isExclusive = isExclusive;
@@ -55,7 +55,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
             case MULTI: caseType = CaseUnionProperty.Type.MULTI; break;
             case LIST: caseType = CaseUnionProperty.Type.VALUE; break;
         }
-        abstractWhere = DerivedProperty.createUnion(getSID() + "_case", isExclusive, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
+        abstractWhere = DerivedProperty.createUnion(getSID() + "_case", isExclusive, isChecked, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
     }
 
     protected abstract CalcPropertyMapImplement<?, PropertyInterface> calculateWhereProperty();
@@ -72,10 +72,14 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
     public void finalizeInit() {
         super.finalizeInit();
 
-        if(isAbstract()) {
+        if (isAbstract()) {
             CaseUnionProperty caseProp = (CaseUnionProperty) abstractWhere.property;
             caseProp.finalizeInit();
-            caseProp.checkAbstract();
+            try {
+                caseProp.checkAbstract();
+            } catch (CaseUnionProperty.NotFullyImplementedException e) {
+                throw new RuntimeException("Action is not fully implemented : " + this +  ", Calculated : " + e.fullClassValueWhere + ", Specified : " + e.classValueWhere);
+            }
         }
     }
 

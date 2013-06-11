@@ -263,10 +263,10 @@ public class DerivedProperty {
         return new CalcPropertyMapImplement<UnionProperty.Interface,T>(unionProperty, revMapInterfaces);
     }
 
-    public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<UnionProperty.Interface,T> createUnion(String sID, boolean exclusive, CaseUnionProperty.Type type, ImSet<T> interfaces, ValueClass valueClass, ImMap<T, ValueClass> interfaceClasses) {
+    public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<UnionProperty.Interface,T> createUnion(String sID, boolean exclusive, boolean checked, CaseUnionProperty.Type type, ImSet<T> interfaces, ValueClass valueClass, ImMap<T, ValueClass> interfaceClasses) {
         ImRevMap<T,UnionProperty.Interface> mapInterfaces = interfaces.mapRevValues(UnionProperty.genInterface);
         ImRevMap<UnionProperty.Interface, T> revMapInterfaces = mapInterfaces.reverse();
-        CaseUnionProperty unionProperty = new CaseUnionProperty(sID, exclusive, type, "sys", revMapInterfaces.keys().toOrderSet(), valueClass, revMapInterfaces.join(interfaceClasses));
+        CaseUnionProperty unionProperty = new CaseUnionProperty(sID, exclusive, checked, type, "sys", revMapInterfaces.keys().toOrderSet(), valueClass, revMapInterfaces.join(interfaceClasses));
         return new CalcPropertyMapImplement<UnionProperty.Interface,T>(unionProperty, revMapInterfaces);
     }
 

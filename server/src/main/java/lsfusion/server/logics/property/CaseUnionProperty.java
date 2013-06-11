@@ -37,6 +37,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         super(sID, caption, interfaces);
         this.cases = cases;
         this.isExclusive = isExclusive;
+        this.isChecked = false;
         this.abstractType = null;
 
         finalizeInit();
@@ -115,6 +116,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     public enum Type { CASE, MULTI, VALUE }
 
     private final boolean isExclusive;
+    private final boolean isChecked;
     private final Type abstractType;
 
     public Type getAbstractType() {
@@ -271,10 +273,11 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     // для постзадания
-    public CaseUnionProperty(String sID, boolean isExclusive, Type type, String caption, ImOrderSet<Interface> interfaces, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
+    public CaseUnionProperty(String sID, boolean isExclusive, boolean isChecked, Type type, String caption, ImOrderSet<Interface> interfaces, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
         super(sID, caption, interfaces);
 
         this.isExclusive = isExclusive;
+        this.isChecked = isChecked;
         this.abstractType = type;
         cases = ListFact.mList();
 
@@ -346,21 +349,31 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return super.getInterfaceCommonClasses(commonValue);
     }
 
-    protected boolean checkFull() {
-        return false;
+    protected boolean isChecked() {
+        return isChecked;
+    }
+
+    public static class NotFullyImplementedException extends RuntimeException {
+        public ClassWhere fullClassValueWhere;
+        public ClassWhere classValueWhere;
+        public NotFullyImplementedException(String msg, ClassWhere full, ClassWhere cur) {
+            super(msg);
+            this.fullClassValueWhere = full;
+            this.classValueWhere = cur;
+        }
     }
 
     public void checkAbstract() {
-        if(!isAbstract())
-            return;
+        if (isAbstract() && isChecked()) {
+            ClassWhere<Object> fullClassValueWhere = ClassWhere.FALSE();
+            for (Case operand : getCases()) {
+                fullClassValueWhere = fullClassValueWhere.or(getCaseClassValueWhere(operand));
+            }
 
-        ClassWhere<Object> fullClassValueWhere = ClassWhere.FALSE();
-        for(Case operand : getCases()) {
-            fullClassValueWhere = fullClassValueWhere.or(getCaseClassValueWhere(operand));
+            if (!classValueWhere.filterKeys(interfaces).means(fullClassValueWhere.filterKeys(interfaces))) {
+                throw new NotFullyImplementedException("Property is not fully implemented : " + this +  ", Calculated : " + fullClassValueWhere + ", Specified : " + classValueWhere, fullClassValueWhere, classValueWhere);
+            }
         }
-
-        if(checkFull() && classValueWhere.means(fullClassValueWhere))
-            throw new RuntimeException("Property is not fully implemented : " + this +  ", Calculated : " + fullClassValueWhere + ", Specified : " + classValueWhere);
     }
 
     private ClassWhere<Object> getCaseClassValueWhere(Case propCase) {

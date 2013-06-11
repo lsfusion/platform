@@ -95,8 +95,8 @@ public class CaseActionProperty extends ListCaseActionProperty {
         finalizeInit();
     }
 
-    public <I extends PropertyInterface> CaseActionProperty(String sID, String caption, boolean isExclusive, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
-        super(sID, caption, isExclusive, type, innerInterfaces, mapClasses);
+    public <I extends PropertyInterface> CaseActionProperty(String sID, String caption, boolean isExclusive, boolean isChecked, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+        super(sID, caption, isExclusive, isChecked, type, innerInterfaces, mapClasses);
 
         cases = ListFact.mList();
     }

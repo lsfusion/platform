@@ -463,27 +463,27 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LP<?, ?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, List<String> paramClasses, boolean isExclusive) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedAbstractProp(" + type + ", " + returnClass + ", " + paramClasses + ", " + isExclusive + ");");
+    public LP<?, ?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, List<String> paramClasses, boolean isExclusive, boolean isChecked) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAbstractProp(" + type + ", " + returnClass + ", " + paramClasses + ", " + isExclusive + ", " + isChecked + ");");
 
         ValueClass value = findClassByCompoundName(returnClass);
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClassByCompoundName(paramClasses.get(i));
         }
-        return addAUProp(null, genSID(), false, isExclusive, type, "", value, params);
+        return addAUProp(null, genSID(), false, isExclusive, isChecked, type, "", value, params);
     }
 
-    public LP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedAbstractActionProp(" + type + ", " + paramClasses + ", " + isExclusive + ");");
+    public LP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAbstractActionProp(" + type + ", " + paramClasses + ", " + isExclusive + ", " + isChecked + ");");
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClassByCompoundName(paramClasses.get(i));
         }
         if (type == ListCaseActionProperty.AbstractType.LIST) {
-        return addAbstractListAProp(params);
+            return addAbstractListAProp(isChecked, params);
         } else {
-            return addAbstractCaseAProp(type, isExclusive, params);
+            return addAbstractCaseAProp(type, isExclusive, isChecked, params);
         }
     }
 

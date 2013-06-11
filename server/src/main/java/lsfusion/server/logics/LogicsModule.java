@@ -571,9 +571,9 @@ public abstract class LogicsModule {
                 readActionImplements(listInterfaces, params))));
     }
 
-    protected LAP addAbstractListAProp(ValueClass[] params) {
+    protected LAP addAbstractListAProp(boolean isChecked, ValueClass[] params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addProperty(null, new LAP(new ListActionProperty(genSID(), "sys", listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addProperty(null, new LAP(new ListActionProperty(genSID(), "sys", isChecked, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
 
     // ------------------- If action ----------------- //
@@ -617,9 +617,9 @@ public abstract class LogicsModule {
         return addProperty(null, new LAP(new CaseActionProperty(genSID(), "", isExclusive, mCases.immutableList(), listInterfaces)));
     }
 
-    protected LAP addAbstractCaseAProp(ListCaseActionProperty.AbstractType type, boolean isExclusive, ValueClass[] params) {
+    protected LAP addAbstractCaseAProp(ListCaseActionProperty.AbstractType type, boolean isExclusive, boolean isChecked, ValueClass[] params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addProperty(null, new LAP(new CaseActionProperty(genSID(), "sys", isExclusive, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addProperty(null, new LAP(new CaseActionProperty(genSID(), "sys", isExclusive, isChecked, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
 
     // ------------------- For action ----------------- //
@@ -1210,10 +1210,10 @@ public abstract class LogicsModule {
         return addProperty(group, persistent, new LCP<UnionProperty.Interface>(property, listInterfaces));
     }
 
-    protected LCP addAUProp(AbstractGroup group, String name, boolean persistent, boolean isExclusive, CaseUnionProperty.Type type, String caption, ValueClass valueClass, ValueClass... interfaces) {
+    protected LCP addAUProp(AbstractGroup group, String name, boolean persistent, boolean isExclusive, boolean isChecked, CaseUnionProperty.Type type, String caption, ValueClass valueClass, ValueClass... interfaces) {
         ImOrderSet<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(interfaces.length);
         return addProperty(group, persistent, new LCP<UnionProperty.Interface>(
-                new CaseUnionProperty(name, isExclusive, type, caption, listInterfaces, valueClass, listInterfaces.mapList(ListFact.toList(interfaces))), listInterfaces));
+                new CaseUnionProperty(name, isExclusive, isChecked, type, caption, listInterfaces, valueClass, listInterfaces.mapList(ListFact.toList(interfaces))), listInterfaces));
     }
 
     protected LCP addCaseUProp(AbstractGroup group, String name, boolean persistent, String caption, Object... params) {
