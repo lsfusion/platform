@@ -8,7 +8,10 @@ import lsfusion.gwt.base.server.spring.BusinessLogicsProvider;
 import lsfusion.gwt.base.server.spring.InvalidateListener;
 import lsfusion.gwt.form.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.form.server.convert.ClientFormChangesToGwtConverter;
-import lsfusion.gwt.form.shared.view.*;
+import lsfusion.gwt.form.shared.view.GColumnUserPreferences;
+import lsfusion.gwt.form.shared.view.GForm;
+import lsfusion.gwt.form.shared.view.GFormUserPreferences;
+import lsfusion.gwt.form.shared.view.GGroupObjectUserPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.form.ColumnUserPreferences;
@@ -42,9 +45,6 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
         GForm gForm = new ClientComponentToGwtConverter().convertOrCast(clientForm);
-
-        gForm.usedFonts = new ArrayList<GFont>(GFontMetrics.registeredFonts);
-        GFontMetrics.registeredFonts.clear();
 
         gForm.sessionID = nextFormSessionID();
 

@@ -27,7 +27,7 @@ public class GForm implements Serializable {
     public GFormChangesDTO initialFormChanges;
     public GFormUserPreferences userPreferences;
 
-    public ArrayList<GFont> usedFonts;
+    public ArrayList<GFont> usedFonts = new ArrayList<GFont>();
 
     public GGroupObject getGroupObject(int id) {
         for (GGroupObject groupObject : groupObjects) {
@@ -91,4 +91,7 @@ public class GForm implements Serializable {
         return prop;
     }
 
+    public void addFont(GFont font) {
+        usedFonts.add(font);
+    }
 }

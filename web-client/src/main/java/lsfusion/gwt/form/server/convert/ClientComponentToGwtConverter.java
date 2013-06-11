@@ -90,7 +90,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
                 headerFont.getSize(),
                 headerFont.getFamily()
         );
-        GFontMetrics.registerFont(font);
+        forms.get().addFont(font);
         return font;
     }
 
@@ -433,10 +433,13 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return object;
     }
 
+    private ThreadLocal<GForm> forms = new ThreadLocal<GForm>();
+
     @Cached
     @Converter(from = ClientForm.class)
     public GForm convertForm(ClientForm clientForm) {
         GForm form = new GForm();
+        forms.set(form);
 
         form.caption = clientForm.caption;
         form.mainContainer = convertOrCast(clientForm.mainContainer);
