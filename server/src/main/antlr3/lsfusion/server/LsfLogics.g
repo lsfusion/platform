@@ -39,6 +39,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.Event;
 	import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 	import lsfusion.server.logics.property.CaseUnionProperty;
+	import lsfusion.server.logics.property.IncrementType;
 	
 	import javax.mail.Message;
 
@@ -1057,6 +1058,7 @@ expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParam
 	|	concatDef=concatPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
 	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
+	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
@@ -1369,25 +1371,34 @@ concatPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithP
 	;
 
 sessionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	IncrementType type = null; 
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedSpecialProp($name.text, $expr.property);
+		$property = self.addScriptedSessionProp(type, $expr.property);
 	}
 }
-	:	name=specialPropertyName 
-		'(' 
-			expr=propertyExpression[context, dynamic] 
+	:	(	'PREV' { type = null; } 
+		| 	'CHANGED' { type = IncrementType.CHANGED; }
+		| 	'SET' { type = IncrementType.SET; }
+		| 	'DROPPED' { type = IncrementType.DROP; }
+		|   'SETCHANGED' { type = IncrementType.SETCHANGED; }
+		|	'DROPCHANGED' { type = IncrementType.DROPCHANGED; }
+		|   'DROPSET' { type = IncrementType.DROPSET; }
+		)
+		'('
+		expr=propertyExpression[context, dynamic] 
 		')'
 	;
 
-specialPropertyName
-	:	('PREV') 
-	| 	('CHANGED')
-	|   ('SETCHANGED')
-	|   ('CHANGEDSET')
-	| 	('ASSIGNED')
-	| 	('DROPPED')
-    | 	('CLASS')
+signaturePropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property] 	
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedSignatureProp($expr.property);
+	}
+} 
+	: 	'CLASS' '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
 
@@ -1730,7 +1741,7 @@ extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithPar
 		self.getErrLog().emitExtendActionContextError(self.getParser());
 	}
 }
-	:	setPDB=setActionPropertyDefinitionBody[context] { $property = $setPDB.property; }
+	:	setPDB=assignActionPropertyDefinitionBody[context] { $property = $setPDB.property; }
 	|	forPDB=forActionPropertyDefinitionBody[context] { $property = $forPDB.property; }
 	|	classPDB=changeClassActionPropertyDefinitionBody[context] { $property = $classPDB.property; }
 	|	delPDB=deleteActionPropertyDefinitionBody[context] { $property = $delPDB.property; }
@@ -2051,17 +2062,17 @@ execActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 		')'
 	;
 
-setActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
+assignActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
 @init {
 	List<String> newContext = new ArrayList<String>(context); 
 	LPWithParams condition = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedSetPropertyAProp(context, $propName.sid, $params.props, $expr.property, condition);
+		$property = self.addScriptedAssignPropertyAProp(context, $propName.sid, $params.props, $expr.property, condition);
 	}
 }
-	:	('SET')?
+	:	('ASSIGN')?
 		propName=compoundID
 		'(' params=singleParameterList[newContext, true] ')'
 		'<-'

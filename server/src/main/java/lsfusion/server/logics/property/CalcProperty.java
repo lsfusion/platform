@@ -302,9 +302,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         Where forceWhere;
         switch(incrementType) {
-            case CHANGEDSET:
-                forceWhere = newExpr.getWhere().or(prevExpr.getWhere()).and(newExpr.getWhere().and(prevExpr.getWhere()).not());
-                break;
             case SET:
                 forceWhere = newExpr.getWhere().and(prevExpr.getWhere().not());
                 break;
@@ -316,6 +313,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                 break;
             case SETCHANGED:
                 forceWhere = newExpr.getWhere().and(newExpr.compare(prevExpr, Compare.EQUALS).not());
+                break;
+            case DROPCHANGED:
+                forceWhere = prevExpr.getWhere().and(newExpr.compare(prevExpr, Compare.EQUALS).not());
+                break;
+            case DROPSET:
+                forceWhere = newExpr.getWhere().or(prevExpr.getWhere()).and(newExpr.getWhere().and(prevExpr.getWhere()).not());
                 break;
             case SUSPICION:
                 forceWhere = newExpr.getWhere().or(prevExpr.getWhere());

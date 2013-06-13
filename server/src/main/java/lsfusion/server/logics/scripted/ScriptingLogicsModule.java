@@ -1196,8 +1196,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res, property.usedParams);
     }
 
-    public LPWithParams addScriptedSetPropertyAProp(List<String> context, String toPropertyName, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedSetPropertyAProp(" + context + ", " + toPropertyName + ", " + fromProperty + ", " + whereProperty + ");");
+    public LPWithParams addScriptedAssignPropertyAProp(List<String> context, String toPropertyName, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAssignPropertyAProp(" + context + ", " + toPropertyName + ", " + fromProperty + ", " + whereProperty + ");");
         LP toPropertyLP = findLPByCompoundName(toPropertyName);
 
         if (!(toPropertyLP.property instanceof DataProperty || toPropertyLP.property instanceof CaseUnionProperty)) {
@@ -1206,7 +1206,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (fromProperty.property != null && fromProperty.property.property.getType() != null &&
                 toPropertyLP.property.getType().getCompatible(fromProperty.property.property.getType()) == null) {
-            errLog.emitIncompatibleTypes(parser, "SET");
+            errLog.emitIncompatibleTypes(parser, "ASSIGN");
         }
 
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
@@ -1882,24 +1882,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         addConstraint((LCP<?>) property, type, checkedProps, event, this);
     }
 
-    public LPWithParams addScriptedSpecialProp(String propType, LPWithParams property) {
-        scriptLogger.info("addScriptedSpecialProp(" + propType + ", " + property + ");");
-        LCP newProp = null;
-        if (propType.equals("PREV")) {
+    public LPWithParams addScriptedSessionProp(IncrementType type, LPWithParams property) {
+        scriptLogger.info("addScriptedSessionProp(" + type + ", " + property + ");");
+        LCP newProp;
+        if (type == null) {
             newProp = addOldProp((LCP) property.property);
-        } else if (propType.equals("CHANGED")) {
-            newProp = addCHProp((LCP) property.property, IncrementType.CHANGED);
-        } else if (propType.equals("CHANGEDSET")) {
-            newProp = addCHProp((LCP) property.property, IncrementType.CHANGEDSET);
-        } else if (propType.equals("SETCHANGED")) {
-            newProp = addCHProp((LCP) property.property, IncrementType.SETCHANGED);
-        } else if (propType.equals("ASSIGNED")) {
-            newProp = addCHProp((LCP) property.property, IncrementType.SET);
-        } else if (propType.equals("DROPPED")) {
-            newProp = addCHProp((LCP) property.property, IncrementType.DROP);
-        } else if (propType.equals("CLASS")) {
-            newProp = addClassProp((LCP) property.property);
+        } else {
+            newProp = addCHProp((LCP) property.property, type);
         }
+        return new LPWithParams(newProp, property.usedParams);
+    }
+
+    public LPWithParams addScriptedSignatureProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedSignatureProp(" + property + ");");
+        checkCalculationProperty(property.property);
+        LCP newProp = addClassProp((LCP) property.property);
         return new LPWithParams(newProp, property.usedParams);
     }
 

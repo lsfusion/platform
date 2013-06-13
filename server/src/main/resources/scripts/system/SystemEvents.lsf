@@ -50,12 +50,12 @@ nameConnectionStatusConnection 'Статус подключения' (connection
 
 connectTimeConnection 'Время подключения' = DATA DATETIME (Connection);
 disconnectTimeConnection 'Время отключения' = DATA DATETIME (Connection);
-disconnectTimeConnection (connection) <- currentDateTime() WHEN ASSIGNED(connectionStatusConnection(connection) == ConnectionStatus.disconnectedConnection);
+disconnectTimeConnection (connection) <- currentDateTime() WHEN SET(connectionStatusConnection(connection) == ConnectionStatus.disconnectedConnection);
 
 //заменили user на customUser
 userSession 'Пользователь сессии' = DATA CustomUser (Session);
 nameUserSession (session) = nameContact(userSession(session));
-userSession (session) <- currentUser() WHEN ASSIGNED(session IS Session);
+userSession (session) <- currentUser() WHEN SET(session IS Session);
 
 connectionFormCount 'Количество открытых форм' = DATA INTEGER (Connection, NavigatorElement);
 
@@ -71,7 +71,7 @@ quantityChangedClassesSession 'Количество изменённых кла�
 changesSession 'Изменения' = DATA TEXT (Session);
 
 dateTimeSession 'Время' = DATA DATETIME (Session) IN recognize;
-dateTimeSession(session) <- currentDateTime() WHEN ASSIGNED (session IS Session);
+dateTimeSession(session) <- currentDateTime() WHEN SET (session IS Session);
 
 navigatorElementSession 'Элемент навигатора сессии' = DATA NavigatorElement (Session);
 captionNavigatorElementSession 'Название формы' (session) = captionNavigatorElement(navigatorElementSession(session));

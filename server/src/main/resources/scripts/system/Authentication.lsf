@@ -35,7 +35,7 @@ portLDAP 'Порт' = DATA INTEGER ();
 changeSHA256PasswordCustomUser = ACTION(customUser) {
     REQUEST STRING[30] INPUT;
     EXEC calculateBase64Hash('SHA-256', requestedString());
-    SET sha256PasswordCustomUser(customUser) <- calculatedHash();
+    ASSIGN sha256PasswordCustomUser(customUser) <- calculatedHash();
 }
 
 FORM customUser 'Пользователь'
@@ -111,7 +111,7 @@ reloginLoginUser = ACTION () {
     FORM reloginLoginUser MODAL;
     IF formResult() == FormResult.ok THEN {
         LOCAL user = CustomUser();
-        SET user() <- customUserLogin(chosenString('login'));
+        ASSIGN user() <- customUserLogin(chosenString('login'));
         IF user() THEN {
             IF TRUE IF NOT sha256PasswordCustomUser(user()) THEN {
                 IF passwordCustomUser(user())==chosenString('password') THEN {
@@ -239,9 +239,9 @@ changePasswordUser = ACTION (customUser) {
             MESSAGE 'Введённые пароли не совпадают';
             BREAK;
         }
-        //SET passwordCustomUser(customUser) <- chosenString('new1');
+        //ASSIGN passwordCustomUser(customUser) <- chosenString('new1');
         EXEC calculateBase64Hash('SHA-256', chosenString('new1'));
-        SET sha256PasswordCustomUser(customUser) <- calculatedHash();
+        ASSIGN sha256PasswordCustomUser(customUser) <- calculatedHash();
         MESSAGE 'Пароль изменён';
         }
 }
