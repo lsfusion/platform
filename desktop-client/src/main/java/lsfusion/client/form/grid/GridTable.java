@@ -424,7 +424,7 @@ public class GridTable extends ClientPropertyTable {
             TableColumn column = getColumnModel().getColumn(i);
 
             column.setMinWidth(cell.getMinimumWidth(this));
-            column.setPreferredWidth(model.getColumnProperty(i).widthUser != null ? model.getColumnProperty(i).widthUser :
+            column.setPreferredWidth(cell.widthUser != null ? cell.widthUser :
                     ((getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) ? cell.getMinimumWidth(this) : cell.getPreferredWidth(this)));
             column.setMaxWidth(cell.getMaximumWidth(this));
 

@@ -2,11 +2,6 @@ package lsfusion.client.form.tree;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import org.jdesktop.swingx.JXTableHeader;
-import org.jdesktop.swingx.decorator.ColorHighlighter;
-import org.jdesktop.swingx.decorator.HighlightPredicate;
-import org.jdesktop.swingx.table.TableColumnExt;
-import org.jdesktop.swingx.treetable.TreeTableNode;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.SwingUtils;
@@ -23,11 +18,17 @@ import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.ClientTreeGroup;
 import lsfusion.client.logics.classes.ClientType;
 import lsfusion.interop.Order;
+import org.jdesktop.swingx.JXTableHeader;
+import org.jdesktop.swingx.decorator.ColorHighlighter;
+import org.jdesktop.swingx.decorator.HighlightPredicate;
+import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumnModel;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
@@ -48,6 +49,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     private final EditBindingMap editBindingMap = new EditBindingMap();
 
     private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);
+
+    private final int HIERARCHICAL_COLUMN_MIN_WIDTH = 50;
+    private final int HIERARCHICAL_COLUMN_MAX_WIDTH = 100000;
 
     protected EventObject editEvent;
     protected int editRow;
@@ -237,6 +241,64 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         tableHeader.resizeAndRepaint();
     }
 
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        return fitWidth();
+    }
+
+    private boolean fitWidth() {
+        int minWidth = 0;
+        TableColumnModel columnModel = getColumnModel();
+
+        for (int i = 0; i < getColumnCount(); i++) {
+            if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
+                minWidth += columnModel.getColumn(i).getWidth();
+            } else {
+                minWidth += columnModel.getColumn(i).getMinWidth();
+            }
+        }
+
+        // тут надо смотреть pane, а не саму table
+        return (minWidth < getParent().getWidth());
+    }
+
+    @Override
+    public void doLayout() {
+        int newAutoResizeMode = fitWidth()
+                ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
+                : JTable.AUTO_RESIZE_OFF;
+        if (newAutoResizeMode != autoResizeMode) {
+            autoResizeMode = newAutoResizeMode;
+            setAutoResizeMode(newAutoResizeMode);
+
+            setOrResetPreferredColumnWidths();
+        }
+        super.doLayout();
+    }
+
+    public void setOrResetPreferredColumnWidths() {
+        if (getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) {
+            setPreferredColumnWidthsAsMinWidth();
+        } else {
+            resetPreferredColumnWidths();
+        }
+    }
+
+    private void setPreferredColumnWidthsAsMinWidth() {
+        getColumnModel().getColumn(0).setPreferredWidth(HIERARCHICAL_COLUMN_MIN_WIDTH);
+        for (int i = 1; i < model.getColumnCount(); ++i) {
+            getColumnModel().getColumn(i).setPreferredWidth(getColumnModel().getColumn(i).getMinWidth());
+        }
+    }
+
+    private void resetPreferredColumnWidths() {
+        getColumnModel().getColumn(0).setPreferredWidth(treeGroup.calculatePreferredSize());
+        for (int i = 1; i < model.getColumnCount(); ++i) {
+            ClientPropertyDraw cell = model.getColumnProperty(i);
+            getColumnModel().getColumn(i).setPreferredWidth(cell.getPreferredWidth(this));
+        }
+    }
+
     private void ordersCleared(ClientGroupObject groupObject) {
         try {
             form.clearPropertyOrders(groupObject);
@@ -368,16 +430,18 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     private void setupHierarhicalColumn() {
         TableColumnExt tableColumn = getColumnExt(0);
-        int min = 50;
-        int max = 100000;
-        int pref = treeGroup.calculatePreferredSize();
 
-        setColumnSizes(tableColumn, min, max, pref);
+        int pref = treeGroup.calculatePreferredSize();
+        setColumnSizes(tableColumn, HIERARCHICAL_COLUMN_MIN_WIDTH, HIERARCHICAL_COLUMN_MAX_WIDTH, pref);
+
+        getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
     }
 
     private void createNewColumn(ClientPropertyDraw property, int pos) {
         TableColumnExt tableColumn = getColumnFactory().createAndConfigureTableColumn(getModel(), pos);
         if (tableColumn != null) {
+            int currentSelectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+
             int min = property.getMinimumWidth(this);
             int max = property.getMaximumWidth(this);
             int pref = property.getPreferredWidth(this);
@@ -389,6 +453,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             //нужно поменять реальный индекс всех колонок после данной
             for (int i = pos + 1; i < getColumnCount(); ++i) {
                 getColumn(i).setModelIndex(i);
+            }
+
+            // moveColumn норовит выделить вновь добавленную колонку (при инициализации происходит скроллирование вправо). возвращаем выделение обратно
+            if (currentSelectedColumn != -1) {
+                getColumnModel().getSelectionModel().setLeadSelectionIndex(pos <= currentSelectedColumn ? currentSelectedColumn + 1 : currentSelectedColumn);
             }
 
             tableColumn.setToolTipText(property.getTooltipText(model.getColumnName(pos)));
@@ -406,7 +475,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             tableColumn.setMaxWidth(max);
             tableColumn.setMinWidth(min);
         }
-        tableColumn.setPreferredWidth(pref);
+        tableColumn.setPreferredWidth(getAutoResizeMode() == JTable.AUTO_RESIZE_OFF ? min : pref);
     }
 
     public void setCurrentPath(final ClientGroupObjectValue objects) {
