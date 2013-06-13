@@ -15,34 +15,8 @@
 
     <properties>
         <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
-        <assemble.descriptorref>lsfusion-server-distribution</assemble.descriptorref>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
     </properties>
-
-    <profiles>
-        <profile>
-            <id>assemble</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <configuration>
-                            <descriptorRefs>
-                                <descriptorRef>${assemble.descriptorref}</descriptorRef>
-                            </descriptorRefs>
-                        </configuration>
-                        <dependencies>
-                            <dependency>
-                                <groupId>lsfusion.platform</groupId>
-                                <artifactId>server</artifactId>
-                                <version>${lsfusion.version}</version>
-                            </dependency>
-                        </dependencies>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <dependencies>
         <dependency>
