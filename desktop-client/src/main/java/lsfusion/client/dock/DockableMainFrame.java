@@ -11,7 +11,6 @@ import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import com.google.common.base.Throwables;
-import net.sf.jasperreports.engine.JRException;
 import lsfusion.client.Log;
 import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
@@ -24,6 +23,7 @@ import lsfusion.interop.AbstractWindowType;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import net.sf.jasperreports.engine.JRException;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -88,8 +88,6 @@ public class DockableMainFrame extends MainFrame {
 
         navigatorController.update();
 
-        focusPageIfNeeded();
-
         bindUIHandlers();
     }
 
@@ -121,7 +119,7 @@ public class DockableMainFrame extends MainFrame {
         });
     }
 
-    private void focusPageIfNeeded() {
+    public void focusPageIfNeeded() {
         try {
             ClientFormDockable pageToFocus = null;
             List<String> savedForms = remoteNavigator.showDefaultForms()

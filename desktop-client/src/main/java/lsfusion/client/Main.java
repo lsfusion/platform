@@ -2,8 +2,6 @@ package lsfusion.client;
 
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
-import org.apache.log4j.Logger;
-import org.aspectj.lang.Aspects;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.dock.DockableMainFrame;
@@ -23,6 +21,8 @@ import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import org.apache.log4j.Logger;
+import org.aspectj.lang.Aspects;
 
 import javax.swing.*;
 import java.awt.*;
@@ -185,6 +185,8 @@ public class Main {
                             ConnectionLostManager.install(frame);
 
                             frame.setVisible(true);
+
+                            ((DockableMainFrame) frame).focusPageIfNeeded();
 
                             ArrayList<IDaemonTask> tasks = remoteLogics.getDaemonTasks(Main.computerId);
                             daemonTasksExecutor = Executors.newScheduledThreadPool(1);
