@@ -75,7 +75,7 @@ translateTermDictionaryEntry 'Перевести' = ACTION (dictionaryEntry) {
     EXEC translate (toText(termDictionaryEntry(dictionaryEntry)),
             languageFromDictionary(dictionaryDictionaryEntry(dictionaryEntry)),
             languageToDictionary(dictionaryDictionaryEntry(dictionaryEntry)));
-    SET translationDictionaryEntry(dictionaryEntry) <- toString50(translationResult());
+    ASSIGN translationDictionaryEntry(dictionaryEntry) <- toString50(translationResult());
 }
 
 translateText 'Перевести' = ACTION () {

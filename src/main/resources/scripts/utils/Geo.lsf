@@ -42,8 +42,8 @@ getCoordinatesAddress = getCoordinatesAddressMapProvider(address, mapProvider())
 changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
 
     EXEC getCoordinatesAddress (CONCAT ',', nameCountryPOI(POI), addressPOI(POI));
-    SET latitudePOI(POI) <- readLatitude();
-    SET longitudePOI(POI) <- readLongitude();
+    ASSIGN latitudePOI(POI) <- readLatitude();
+    ASSIGN longitudePOI(POI) <- readLongitude();
 
 }
 WHEN SESSION (SETCHANGED(countryPOI(POI)) OR SETCHANGED(addressPOI(POI))) AND autoSynchronizeCoordinates() DO EXEC changeCoordinatesPOI(POI);

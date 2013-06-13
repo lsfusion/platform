@@ -16,9 +16,9 @@ computerClosed 'Проведен на компьютере' = DATA Computer (Pos
 nameUserClosed 'Проведен пользователем' (postedObject) = nameContact(userClosed(postedObject)) IN postedGroup;
 hostnameComputerClosed 'Проведен на компьютере' (postedObject) = hostnameComputer(computerClosed(postedObject)) IN postedGroup;
 
-timeClosed(postedObject) <- currentDateTime() WHEN ASSIGNED(postedObject IS PostedObject);
-userClosed(postedObject) <- currentUser() WHEN ASSIGNED(postedObject IS PostedObject);
-computerClosed(postedObject) <- currentComputer() WHEN ASSIGNED(postedObject IS PostedObject);
+timeClosed(postedObject) <- currentDateTime() WHEN SET(postedObject IS PostedObject);
+userClosed(postedObject) <- currentUser() WHEN SET(postedObject IS PostedObject);
+computerClosed(postedObject) <- currentComputer() WHEN SET(postedObject IS PostedObject);
 
 // Логика нумерирования документов
 
@@ -115,9 +115,9 @@ META defineDocumentHeaderTimePrefix (objectClass, prefix, caption)
 END
 
 META deriveDocumentHeaderTimePrefix (objectClass, prefix)
-    WHEN SESSION ASSIGNED(o IS objectClass) DO {
-        IF o IS objectClass AND NOT prefix###date##objectClass(o) THEN SET prefix###date##objectClass(o) <- currentDate();
-        IF o IS objectClass AND NOT prefix###time##objectClass(o) THEN SET prefix###time##objectClass(o) <- currentTime();
+    WHEN SESSION SET(o IS objectClass) DO {
+        IF o IS objectClass AND NOT prefix###date##objectClass(o) THEN ASSIGN prefix###date##objectClass(o) <- currentDate();
+        IF o IS objectClass AND NOT prefix###time##objectClass(o) THEN ASSIGN prefix###time##objectClass(o) <- currentTime();
     };
 END
 
@@ -357,11 +357,11 @@ META defineDocumentHeaderClosed (objectClass)
     isOpened##objectClass 'Не закрыт' (o) = isPosted##objectClass(o) AND NOT isClosed##objectClass(o) PERSISTENT;
 
     close##objectClass 'Закрыть' (o) = ACTION NEWSESSION AUTOAPPLY {
-                                            IF isPosted##objectClass(o) AND NOT isClosed##objectClass(o) THEN SET isClosed##objectClass(o) <- TRUE;
+                                            IF isPosted##objectClass(o) AND NOT isClosed##objectClass(o) THEN ASSIGN isClosed##objectClass(o) <- TRUE;
                                        } TOOLBAR CONFIRM;
 
     open##objectClass 'Открыть' (o) = ACTION NEWSESSION AUTOAPPLY {
-                                            IF isClosed##objectClass(o) THEN SET isClosed##objectClass(o) <- NULL;
+                                            IF isClosed##objectClass(o) THEN ASSIGN isClosed##objectClass(o) <- NULL;
                                       } TOOLBAR CONFIRM;
 END
 

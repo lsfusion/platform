@@ -17,7 +17,7 @@ maxValueNumerator 'Макс. значение' = DATA LONG (Numerator) IN recogn
 stringLengthNumerator 'Длина' = DATA INTEGER (Numerator) IN base;
 
 curValueNumerator 'Тек. значение' = DATA LONG (Numerator) IN recognize MINCHARWIDTH 15;
-curValueNumerator(numerator) <- minValueNumerator(numerator) WHEN ASSIGNED(numerator IS Numerator);
+curValueNumerator(numerator) <- minValueNumerator(numerator) WHEN SET(numerator IS Numerator);
 
 lpadStringWithZero = FORMULA STRING[18] 'lpad(CAST($1 AS text),$2,\'0\')';
 
@@ -27,7 +27,7 @@ incrementValueNumerator 'Увеличить значение' = ACTION (numerato
     IF curValueNumerator(numerator) >= maxValueNumerator(numerator) THEN
         MESSAGE 'Счетчик нумератора достиг максимального значения. Обратитесь к администратору.'
     ELSE {
-        SET curValueNumerator(numerator) <- curValueNumerator(numerator) + 1;
+        ASSIGN curValueNumerator(numerator) <- curValueNumerator(numerator) + 1;
         EXEC apply();
     };
 };
@@ -36,7 +36,7 @@ incrementValueSessionNumerator 'Увеличить значение' = ACTION (n
     IF curValueNumerator(numerator) >= maxValueNumerator(numerator) THEN
         MESSAGE 'Счетчик нумератора достиг максимального значения. Обратитесь к администратору.'
     ELSE
-        SET curValueNumerator(numerator) <- curValueNumerator(numerator) + 1;
+        ASSIGN curValueNumerator(numerator) <- curValueNumerator(numerator) + 1;
 }
 
 FORM numerator 'Нумератор'
@@ -105,14 +105,14 @@ initWhenNumeratorObject = ABSTRACT BOOLEAN (NumeratedObject);
 numeratorObject (object) <- initValueNumeratorObject (object) WHEN initWhenNumeratorObject(object);
 
 setValueNumeratedObject 'Сгенерировать номер' = ACTION (numeratedObject) {
-    SET numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
-    SET seriesObject(numeratedObject) <- seriesNumerator(numeratorObject(numeratedObject));
+    ASSIGN numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
+    ASSIGN seriesObject(numeratedObject) <- seriesNumerator(numeratorObject(numeratedObject));
     EXEC incrementValueNumerator(numeratorObject(numeratedObject));
 }
 
 setValueSessionNumeratedObject 'Сгенерировать номер' = ACTION (numeratedObject) {
-    SET numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
-    SET seriesObject(numeratedObject) <- seriesNumerator(numeratorObject(numeratedObject));
+    ASSIGN numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
+    ASSIGN seriesObject(numeratedObject) <- seriesNumerator(numeratorObject(numeratedObject));
     EXEC incrementValueSessionNumerator(numeratorObject(numeratedObject));
 }
 
@@ -149,18 +149,18 @@ META defineNumeratedObjectDefaultPrefix(class, caption, series, prefix)
     loadDefaultNumerators() += ACTION () {
         ADDOBJ Numerator;
         FOR n == addedObject() DO {
-            SET nameNumerator(n) <- caption;
-            SET seriesNumerator(n) <- series;
-            SET minValueNumerator(n) <- 1L;
-            SET maxValueNumerator(n) <- 99999L;
-            SET stringLengthNumerator(n) <- 5;
+            ASSIGN nameNumerator(n) <- caption;
+            ASSIGN seriesNumerator(n) <- series;
+            ASSIGN minValueNumerator(n) <- 1L;
+            ASSIGN maxValueNumerator(n) <- 99999L;
+            ASSIGN stringLengthNumerator(n) <- 5;
 
-            SET prefix###defaultNumerator###class() <- n;
+            ASSIGN prefix###defaultNumerator###class() <- n;
         }
     }
 
     initValueNumeratorObject(object) += prefix###defaultNumerator###class() IF object IS class;
-    initWhenNumeratorObject(object) += ASSIGNED(object IS class);
+    initWhenNumeratorObject(object) += SET(object IS class);
 
 END
 
@@ -176,8 +176,8 @@ META defineNumeratedObject(object1, object2)
     nameNumerator###object1###object2 'Нумератор' (object1, object2) = nameNumerator(numerator###object1###object2(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
     setValueSessionNumerated###object1###object2 'Сгенерировать номер' = ACTION (object1, object2) {
-        SET number###object1###object2(object1, object2) <- curStringValueNumerator(numerator###object1###object2(object1, object2));
-        SET series###object1###object2(object1, object2) <- seriesNumerator(numerator###object1###object2(object1, object2));
+        ASSIGN number###object1###object2(object1, object2) <- curStringValueNumerator(numerator###object1###object2(object1, object2));
+        ASSIGN series###object1###object2(object1, object2) <- seriesNumerator(numerator###object1###object2(object1, object2));
         EXEC incrementValueSessionNumerator(numerator###object1###object2(object1, object2));
     } SHORTCUT number###object1###object2;
 
@@ -205,15 +205,15 @@ META defineNumeratedObjectDefault (object1, object2, property, caption, series)
     loadDefaultNumerators() += ACTION () {
         ADDOBJ Numerator;
         FOR n == addedObject() DO {
-            SET nameNumerator(n) <- caption;
-            SET seriesNumerator(n) <- series;
-            SET minValueNumerator(n) <- 1L;
-            SET maxValueNumerator(n) <- 99999L;
-            SET stringLengthNumerator(n) <- 5;
+            ASSIGN nameNumerator(n) <- caption;
+            ASSIGN seriesNumerator(n) <- series;
+            ASSIGN minValueNumerator(n) <- 1L;
+            ASSIGN maxValueNumerator(n) <- 99999L;
+            ASSIGN stringLengthNumerator(n) <- 5;
 
-            SET defaultNumerator###object1###object2() <- n;
+            ASSIGN defaultNumerator###object1###object2() <- n;
         }
     };
 
-    numerator###object1###object2 (object1, object2) <- defaultNumerator###object1###object2 () WHEN ASSIGNED(property(object1, object2));
+    numerator###object1###object2 (object1, object2) <- defaultNumerator###object1###object2 () WHEN SET(property(object1, object2));
 END

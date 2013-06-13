@@ -8,15 +8,15 @@ TABLE historizable (Historizable);
 GROUP historyGroup 'История' : public;
 
 timeCreatedHistorizable 'Время создания'= DATA DATETIME (Historizable) IN historyGroup;
-timeCreatedHistorizable (object) <- currentDateTime() WHEN ASSIGNED(object IS Historizable);
+timeCreatedHistorizable (object) <- currentDateTime() WHEN SET(object IS Historizable);
 
 userCreatedHistorizable = DATA CustomUser (Historizable);
 nameUserCreatedHistorizable 'Пользователь' (historizable) = nameContact (userCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN historyGroup;
-userCreatedHistorizable (object) <- currentUser() WHEN ASSIGNED(object IS Historizable);
+userCreatedHistorizable (object) <- currentUser() WHEN SET(object IS Historizable);
 
 computerCreatedHistorizable = DATA Computer (Historizable);
 hostnameComputerCreatedHistorizable 'Компьютер' (historizable) = hostnameComputer (computerCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN historyGroup;
-computerCreatedHistorizable (object) <- currentComputer() WHEN ASSIGNED(object IS Historizable);
+computerCreatedHistorizable (object) <- currentComputer() WHEN SET(object IS Historizable);
 
 META defineHistorizable(property, caption, type, object, objectIdentity, group)
     data###property##Date caption = DATA type (###object, DATE) IN group;
