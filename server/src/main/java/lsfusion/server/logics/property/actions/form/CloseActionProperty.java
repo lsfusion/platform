@@ -21,7 +21,7 @@ public class CloseActionProperty extends FormToolbarActionProperty {
     }
 
     @Override
-    protected LCP getPropertyCaption() {
+    protected LCP getShowIf() {
         return showIf;
     }
 }

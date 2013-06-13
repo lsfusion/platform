@@ -30,6 +30,7 @@ import static lsfusion.interop.form.layout.ContainerType.*;
 public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
+    private GForm form;
 
     public ClientComponentToGwtConverter() {
     }
@@ -90,7 +91,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
                 headerFont.getSize(),
                 headerFont.getFamily()
         );
-        forms.get().addFont(font);
+        form.addFont(font);
         return font;
     }
 
@@ -270,6 +271,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.checkEquals = clientPropertyDraw.checkEquals;
 
         propertyDraw.captionReader = convertCaptionReader(clientPropertyDraw.captionReader);
+        propertyDraw.showIfReader = convertShowIfReader(clientPropertyDraw.showIfReader);
         propertyDraw.footerReader = convertFooterReader(clientPropertyDraw.footerReader);
         propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
         propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
@@ -331,6 +333,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GCaptionReader convertCaptionReader(ClientPropertyDraw.CaptionReader reader) {
         return reader == null ? null : new GCaptionReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GShowIfReader convertShowIfReader(ClientPropertyDraw.ShowIfReader reader) {
+        return reader == null ? null : new GShowIfReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     public GFooterReader convertFooterReader(ClientPropertyDraw.FooterReader reader) {
@@ -433,13 +439,11 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return object;
     }
 
-    private ThreadLocal<GForm> forms = new ThreadLocal<GForm>();
-
     @Cached
     @Converter(from = ClientForm.class)
     public GForm convertForm(ClientForm clientForm) {
         GForm form = new GForm();
-        forms.set(form);
+        this.form = form;
 
         form.caption = clientForm.caption;
         form.mainContainer = convertOrCast(clientForm.mainContainer);

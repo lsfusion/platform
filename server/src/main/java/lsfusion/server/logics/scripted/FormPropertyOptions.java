@@ -21,7 +21,7 @@ public class FormPropertyOptions {
     private Boolean hintTable;
     private Boolean drawToToolbar;
     private List<GroupObjectEntity> columns;
-    private MappedProperty showIf;
+    private CalcPropertyObjectEntity showIf;
     private CalcPropertyObjectEntity readOnlyIf;
     private CalcPropertyObjectEntity background;
     private CalcPropertyObjectEntity foreground;
@@ -52,12 +52,12 @@ public class FormPropertyOptions {
         this.columns = columns;
     }
 
-    public void setShowIf(MappedProperty showIf) {
-        this.showIf = showIf;
+    public CalcPropertyObjectEntity getShowIf() {
+        return showIf;
     }
 
-    public MappedProperty getShowIf() {
-        return showIf;
+    public void setShowIf(CalcPropertyObjectEntity showIf) {
+        this.showIf = showIf;
     }
 
     public CalcPropertyObjectEntity getReadOnlyIf() {

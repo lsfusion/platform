@@ -146,6 +146,7 @@ public class InstanceFactory {
                     getInstance(entity.toDraw),
                     columnGroupObjects,
                     entity.propertyCaption == null ? null : getInstance(entity.propertyCaption),
+                    entity.propertyShowIf == null ? null : getInstance(entity.propertyShowIf),
                     entity.propertyReadOnly == null ? null : getInstance(entity.propertyReadOnly),
                     entity.propertyFooter == null ? null : getInstance(entity.propertyFooter),
                     entity.propertyBackground == null ? null : getInstance(entity.propertyBackground),

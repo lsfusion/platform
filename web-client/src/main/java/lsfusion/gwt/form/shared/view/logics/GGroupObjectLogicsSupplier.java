@@ -13,6 +13,7 @@ public interface GGroupObjectLogicsSupplier {
     void updateBackgroundValues(GBackgroundReader reader, Map<GGroupObjectValue, Object> values);
     void updateForegroundValues(GForegroundReader reader, Map<GGroupObjectValue, Object> values);
     void updateCaptionValues(GCaptionReader reader, Map<GGroupObjectValue, Object> values);
+    void updateShowIfValues(GShowIfReader reader, Map<GGroupObjectValue, Object> values);
     void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values);
     void updateReadOnlyValues(GReadOnlyReader reader, Map<GGroupObjectValue, Object> values);
     void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values);

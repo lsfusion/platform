@@ -27,7 +27,7 @@ public class FormCancelActionProperty extends FormToolbarActionProperty {
     }
 
     @Override
-    protected LCP getPropertyCaption() {
+    protected LCP getShowIf() {
         return showIf;
     }
 }

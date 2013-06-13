@@ -41,6 +41,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private ArrayList<GGroupObjectValue> rowKeys = new ArrayList<GGroupObjectValue>();
 
     private NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> values = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>>();
+    protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> showIfs = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
     private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> readOnlyValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
@@ -49,6 +50,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private boolean rowsUpdated = false;
     private boolean columnsUpdated = false;
+    private boolean captionsUpdated = false;
     private boolean dataUpdated = false;
 
     private final ArrayList<GridDataRecord> currentRecords = new ArrayList<GridDataRecord>();
@@ -152,6 +154,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
         updatedColumnsImpl();
 
+        updateCaptionsImpl();
+
         updateRowsImpl();
 
         updateDataImpl();
@@ -212,10 +216,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                     propertyColumnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
                 }
 
-                Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
+                Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
                 for (GGroupObjectValue columnKey : propertyColumnKeys) {
                     Boolean needToHide = property.hideUser != null && property.hideUser;
-                    if ((propCaptions == null || propCaptions.get(columnKey) != null) && !needToHide) {
+                    if ((propShowIfs == null || propShowIfs.get(columnKey) != null) && !needToHide) {
                         columnProperties.add(property);
                         columnKeysList.add(columnKey);
                     }
@@ -244,6 +248,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 setColumnWidth(column, property.widthUser != null ? property.widthUser + "px" : property.getMinimumWidth());
 
+                //дублирование логики изменения captions для оптимизации
                 String columnCaption = null;
                 Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
                 Object propCaption = null;
@@ -284,6 +289,27 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             gridController.setForceHidden(columnProperties.isEmpty());
 
             columnsUpdated = false;
+            captionsUpdated = false;
+        }
+    }
+
+    public void updateCaptionsImpl() {
+        if (captionsUpdated) {
+            for (int i = 0; i < columnProperties.size(); ++i) {
+                GPropertyDraw property = columnProperties.get(i);
+
+                String columnCaption = null;
+                Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
+                if (propCaptions != null) {
+                    columnCaption = property.getDynamicCaption(propCaptions.get(columnKeysList.get(i)));
+                } else {
+                    columnCaption = property.getCaptionOrEmpty();
+                }
+
+                headers.get(i).setCaption(columnCaption);
+            }
+            refreshHeaders();
+            captionsUpdated = false;
         }
     }
 
@@ -487,9 +513,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     @Override
     public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
-        Map<GGroupObjectValue, Object> oldValues = propertyCaptions.get(propertyDraw);
+        super.updatePropertyCaptions(propertyDraw, values);
+        captionsUpdated = true;
+    }
+
+    public void updateShowIfValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        Map<GGroupObjectValue, Object> oldValues = showIfs.get(propertyDraw);
         if (!nullEquals(oldValues, values)) {
-            super.updatePropertyCaptions(propertyDraw, values);
+            showIfs.put(propertyDraw, values);
             columnsUpdated = true;
         }
     }
@@ -536,12 +567,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     @Override
     String getCellBackground(GridDataRecord rowValue, int row, int column) {
-        return rowValue.getBackground(((GridColumn)getColumn(column)).columnID);
+        return rowValue.getBackground(((GridColumn) getColumn(column)).columnID);
     }
 
     @Override
     String getCellForeground(GridDataRecord rowValue, int row, int column) {
-        return rowValue.getForeground(((GridColumn)getColumn(column)).columnID);
+        return rowValue.getForeground(((GridColumn) getColumn(column)).columnID);
     }
 
     private int getMinPropertyIndex(GPropertyDraw property) {

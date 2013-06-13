@@ -3,8 +3,6 @@ package lsfusion.server.logics.property.actions.form;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.interop.form.GlobalConstants;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.DefaultFormView;
@@ -15,7 +13,8 @@ import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 
 import java.awt.*;
 
-import static lsfusion.server.logics.property.derived.DerivedProperty.*;
+import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
+import static lsfusion.server.logics.property.derived.DerivedProperty.createTrue;
 
 public abstract class FormToolbarActionProperty extends SystemExplicitActionProperty {
     public final static Dimension BUTTON_SIZE = new Dimension(25, 20);
@@ -32,7 +31,7 @@ public abstract class FormToolbarActionProperty extends SystemExplicitActionProp
     }
 
     public FormToolbarActionProperty(String sid, String caption, boolean showCaption) {
-        super(sid, caption, new ValueClass[0]);
+        super(sid, caption);
         this.showCaption = showCaption;
     }
 
@@ -40,7 +39,7 @@ public abstract class FormToolbarActionProperty extends SystemExplicitActionProp
         return null;
     }
 
-    protected LCP getPropertyCaption() {
+    protected LCP getShowIf() {
         return null;
     }
 
@@ -51,9 +50,10 @@ public abstract class FormToolbarActionProperty extends SystemExplicitActionProp
     }
 
     private void setupToolbarButton(FormEntity form, PropertyDrawEntity propertyDraw) {
-        LCP propertyCaption = getPropertyCaption();
+        LCP propertyCaption = getShowIf();
         if (propertyCaption != null) {
-            propertyDraw.propertyCaption = form.addPropertyObject(propertyCaption);
+//            propertyDraw.propertyCaption = form.addPropertyObject(propertyCaption);
+            propertyDraw.propertyShowIf = form.addPropertyObject(propertyCaption);
         }
     }
 
@@ -85,7 +85,6 @@ public abstract class FormToolbarActionProperty extends SystemExplicitActionProp
         }
 
         CalcPropertyMapImplement showIfImplement = createAnd(SetFact.<PropertyInterface>EMPTY(), createTrue(), mAnds.immutableList(), mNots.immutableList());
-
-        return new LCP(createAnd(SetFact.<PropertyInterface>EMPTY(), createStatic(GlobalConstants.CAPTION_ORIGINAL), showIfImplement).property);
+        return new LCP(showIfImplement.property);
     }
 }

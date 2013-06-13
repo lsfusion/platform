@@ -23,6 +23,7 @@ public class PanelController {
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> readOnlyValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> captions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> showIfs = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
@@ -68,6 +69,7 @@ public class PanelController {
 
         columnKeys.remove(property);
         captions.remove(property);
+        showIfs.remove(property);
         cellBackgroundValues.remove(property);
         cellForegroundValues.remove(property);
         values.remove(property);
@@ -103,7 +105,7 @@ public class PanelController {
             ClientPropertyDraw property = entry.getKey();
             Map<ClientGroupObjectValue, Object> propertyValues = entry.getValue();
             Map<ClientGroupObjectValue, Object> propertyReadOnly = readOnlyValues.get(property);
-            Map<ClientGroupObjectValue, Object> propertyCaptions = captions.get(property);
+            Map<ClientGroupObjectValue, Object> propertyShowIfs = showIfs.get(property);
             Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(property);
 
             Collection<ClientGroupObjectValue> drawKeys = new ArrayList<ClientGroupObjectValue>(); // чисто из-за autohide
@@ -111,7 +113,7 @@ public class PanelController {
                 Object value = propertyValues.get(columnKey);
 
                 if (!(property.autoHide && value == null) // если не прятать при значении null
-                        && !(propertyCaptions != null && propertyCaptions.get(columnKey) == null)) // и если значения propertyCaption != null
+                        && !(propertyShowIfs != null && propertyShowIfs.get(columnKey) == null)) // и если значения propertyShowIf != null
                 {
                     PropertyController propController = propControllers.get(columnKey);
                     if (propController == null) {
@@ -150,7 +152,7 @@ public class PanelController {
                 PropertyController propController = propControllers.get(updateKeys.getKey());
                 // так как может быть autoHide'ута
                 if (propController != null) {
-                    propController.setCaption(updateCaption.getKey().getDynamicCaption(BaseUtils.toCaption(updateKeys.getValue())));
+                    propController.setCaption(updateCaption.getKey().getDynamicCaption(updateKeys.getValue()));
                 }
             }
         }
@@ -204,6 +206,10 @@ public class PanelController {
 
     public void updatePropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
         this.captions.put(property, captions);
+    }
+
+    public void updateShowIfs(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> showIfs) {
+        this.showIfs.put(property, showIfs);
     }
 
     public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> readOnlyValues) {

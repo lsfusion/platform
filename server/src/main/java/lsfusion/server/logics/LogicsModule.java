@@ -17,7 +17,6 @@ import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.ModalityType;
-import lsfusion.interop.form.GlobalConstants;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
@@ -869,12 +868,6 @@ public abstract class LogicsModule {
         return addProperty(group, persistent, new LCP<JoinProperty.Interface>(property, listInterfaces));
     }
 
-    // ------------------- SHOWIF ----------------- //
-
-    public void showIf(FormEntity<?> form, PropertyDrawEntity property, LCP ifProperty, PropertyObjectInterfaceEntity... objects) {
-        property.propertyCaption = form.addPropertyObject(addHideCaptionProp(ifProperty), objects);
-    }
-
     // ------------------- mapLProp ----------------- //
 
     private <P extends PropertyInterface, L extends PropertyInterface> LCP mapLProp(AbstractGroup group, boolean persistent, CalcPropertyMapImplement<L, P> implement, ImOrderSet<P> listInterfaces) {
@@ -1482,44 +1475,6 @@ public abstract class LogicsModule {
         property.setShowEditKey(false);
         property.setDrawToToolbar(true);
         property.setForceViewType(ClassViewType.PANEL);
-    }
-
-    protected LCP addHideCaptionProp(LCP hideProperty) {
-        return addHideCaptionProp(privateGroup, "hideCaption", hideProperty);
-    }
-
-    /**
-     * Нужно для скрытия свойств при соблюдении какого-то критерия
-     * <p/>
-     * <pre>
-     * Пример использования:
-     *       Скроем свойство descriptionPolicy, если у текущего user'а логин - "Admin"
-     *
-     *       Вводим свойство критерия:
-     *
-     *         LP hideUserPolicyDescription = addJProp(diff2, userLogin, 1, addCProp(StringClass.get(30), "Admin"));
-     *
-     *       Вводим свойство которое будет использовано в качестве propertyCaption для descriptionPolicy:
-     *
-     *         policyDescriptorCaption = addHideCaptionProp(null, "Policy caption", descriptionPolicy, hideUserPolicyDescription);
-     *
-     *       Далее в форме указываем соответсвующий propertyCaption:
-     *
-     *         PropertyDrawEntity descriptionDraw = getPropertyDraw(descriptionPolicy, objPolicy.groupTo);
-     *         PropertyDrawEntity descriptorCaptionDraw = addPropertyDraw(policyDescriptorCaption, objUser);
-     *         descriptionDraw.setPropertyCaption(descriptorCaptionDraw.propertyObject);
-     * </pre>
-     *
-     *
-     * @param group        ...
-     * @param caption      ...
-     * @param hideProperty критерий
-     * @return свойство, которое должно использоваться в качестве propertyCaption для скрываемого свойства
-     */
-    protected LCP addHideCaptionProp(AbstractGroup group, String caption, LCP hideProperty) {
-        String captionOriginal = GlobalConstants.CAPTION_ORIGINAL;
-        LCP originalCaption = addCProp(StringClass.get(captionOriginal.length()), captionOriginal);
-        return addJProp(group, caption, baseLM.and1, add(new Object[]{originalCaption}, directLI(hideProperty)));
     }
 
     public LAP addProp(ActionProperty prop) {

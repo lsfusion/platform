@@ -293,6 +293,8 @@ public class ScriptingFormEntity {
         property.propertyCaption = options.getHeader();
         property.propertyFooter = options.getFooter();
 
+        property.propertyShowIf = options.getShowIf();
+
         CalcPropertyObjectEntity backgroundProperty = options.getBackground();
         if (backgroundProperty != null && !backgroundProperty.property.getType().equals(ColorClass.instance)) {
             property.propertyBackground = addGroundPropertyObject(backgroundProperty, true);
@@ -313,11 +315,6 @@ public class ScriptingFormEntity {
         }
         if (options.getToDraw() != null) {
             property.toDraw = options.getToDraw();
-        }
-        MappedProperty showIf = options.getShowIf();
-        if (showIf != null) {
-            // todo [dale]: нужна проверка на LCP
-            LM.showIf(form, property, (LCP) showIf.property, showIf.mapping);
         }
 
         Boolean hintNoUpdate = options.getHintNoUpdate();

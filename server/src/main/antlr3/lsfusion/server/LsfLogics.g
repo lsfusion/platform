@@ -543,7 +543,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HINTTABLE' { $options.setHintTable(true); }
 		|   'TOOLBAR' { $options.setDrawToToolbar(true); }
 		|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
-		|	'SHOWIF' mappedProp=mappedProperty { $options.setShowIf(getPropertyWithMapping($mappedProp.name, $mappedProp.mapping)); }  // refactor to formPropertyObject? 
+		|	'SHOWIF' propObj=formCalcPropertyObject { $options.setShowIf($propObj.property); }
 		|	'READONLYIF' propObj=formCalcPropertyObject { $options.setReadOnlyIf($propObj.property); }
 		|	'BACKGROUND' propObj=formCalcPropertyObject { $options.setBackground($propObj.property); }
 		|	'FOREGROUND' propObj=formCalcPropertyObject { $options.setForeground($propObj.property); }

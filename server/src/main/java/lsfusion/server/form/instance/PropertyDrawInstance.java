@@ -1,5 +1,6 @@
 package lsfusion.server.form.instance;
 
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -12,6 +13,8 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.NullValueProperty;
 import lsfusion.server.logics.property.PropertyInterface;
+
+import static lsfusion.interop.ClassViewType.GRID;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
@@ -39,6 +42,13 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ImOrderSet<GroupObjectInstance> getOrderColumnGroupObjects() {
         return columnGroupObjects;
     }
+    public ImSet<GroupObjectInstance> getColumnGroupObjectsInGridView() {
+        return getColumnGroupObjects().filterFn(new SFunctionSet<GroupObjectInstance>() {
+            public boolean contains(GroupObjectInstance element) {
+                return element.curClassView == GRID;
+            }
+        });
+    }
 
     public ValueClass getValueClass() {
         return propertyObject.property.getValueClass();
@@ -46,6 +56,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
     public final CalcPropertyObjectInstance<?> propertyCaption;
+    public final CalcPropertyObjectInstance<?> propertyShowIf;
     public final CalcPropertyObjectInstance<?> propertyReadOnly;
     public final CalcPropertyObjectInstance<?> propertyFooter;
     public final CalcPropertyObjectInstance<?> propertyBackground;
@@ -53,6 +64,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     // извращенное множественное наследование
     public CaptionReaderInstance captionReader = new CaptionReaderInstance();
+    public ShowIfReaderInstance showIfReader = new ShowIfReaderInstance();
     public FooterReaderInstance footerReader = new FooterReaderInstance();
     public ReadOnlyReaderInstance readOnlyReader = new ReadOnlyReaderInstance();
     public BackgroundReaderInstance backgroundReader = new BackgroundReaderInstance();
@@ -65,6 +77,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
                                 GroupObjectInstance toDraw,
                                 ImOrderSet<GroupObjectInstance> columnGroupObjects,
                                 CalcPropertyObjectInstance<?> propertyCaption,
+                                CalcPropertyObjectInstance<?> propertyShowIf,
                                 CalcPropertyObjectInstance<?> propertyReadOnly,
                                 CalcPropertyObjectInstance<?> propertyFooter,
                                 CalcPropertyObjectInstance<?> propertyBackground,
@@ -74,6 +87,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         this.toDraw = toDraw;
         this.columnGroupObjects = columnGroupObjects;
         this.propertyCaption = propertyCaption;
+        this.propertyShowIf = propertyShowIf;
         this.propertyReadOnly = propertyReadOnly;
         this.propertyFooter = propertyFooter;
         this.propertyBackground = propertyBackground;
@@ -117,6 +131,25 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         public int getID() {
             return PropertyDrawInstance.this.getID();
+        }
+    }
+
+    public class ShowIfReaderInstance implements PropertyReaderInstance {
+
+        public CalcPropertyObjectInstance getPropertyObjectInstance() {
+            return propertyShowIf;
+        }
+
+        public byte getTypeID() {
+            return PropertyReadType.SHOWIF;
+        }
+
+        public int getID() {
+            return PropertyDrawInstance.this.getID();
+        }
+
+        public PropertyDrawInstance<P> getPropertyDraw() {
+            return PropertyDrawInstance.this;
         }
     }
 

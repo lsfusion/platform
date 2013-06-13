@@ -14,7 +14,6 @@ import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.PropertyEditType;
-import lsfusion.interop.form.GlobalConstants;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.interop.form.layout.SimplexConstraints;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
@@ -37,6 +36,7 @@ import static lsfusion.client.ClientResourceBundle.getString;
 @SuppressWarnings({"UnusedDeclaration"})
 public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
     public CaptionReader captionReader = new CaptionReader();
+    public ShowIfReader showIfReader = new ShowIfReader();
     public BackgroundReader backgroundReader = new BackgroundReader();
     public ForegroundReader foregroundReader = new ForegroundReader();
     public FooterReader footerReader = new FooterReader();
@@ -429,8 +429,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return caption;
     }
 
-    public String getDynamicCaption(String caption) {
-        return GlobalConstants.CAPTION_ORIGINAL.equals(caption) ? this.caption : caption;
+    public String getDynamicCaption(Object captionValue) {
+        return BaseUtils.toCaption(captionValue);
     }
 
     @Override
@@ -515,6 +515,28 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.CAPTION;
+        }
+    }
+
+    public class ShowIfReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public boolean shouldBeDrawn(ClientFormController form) {
+            return ClientPropertyDraw.this.shouldBeDrawn(form);
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+            controller.updateShowIfs(ClientPropertyDraw.this, values);
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.SHOWIF;
         }
     }
 

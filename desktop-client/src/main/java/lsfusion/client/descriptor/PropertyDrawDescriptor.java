@@ -25,6 +25,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
 
     private PropertyObjectDescriptor propertyObject;
     private CalcPropertyObjectDescriptor propertyCaption;
+    private CalcPropertyObjectDescriptor propertyShowIf;
     private CalcPropertyObjectDescriptor propertyReadOnly;
     private CalcPropertyObjectDescriptor propertyFooter;
     private CalcPropertyObjectDescriptor propertyBackground;
@@ -151,6 +152,15 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         updateDependency(this, "propertyCaption");
     }
 
+    public CalcPropertyObjectDescriptor getPropertyShowIf() { // usage через reflection
+        return propertyShowIf;
+    }
+
+    public void setPropertyShowIf(CalcPropertyObjectDescriptor propertyShowIf) {
+        this.propertyShowIf = propertyShowIf;
+        updateDependency(this, "propertyShowIf");
+    }
+
     public CalcPropertyObjectDescriptor getPropertyBackground() { // usage через reflection
         return propertyBackground;
     }
@@ -207,6 +217,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         pool.serializeObject(outStream, toDraw);
         pool.serializeCollection(outStream, columnGroupObjects);
         pool.serializeObject(outStream, propertyCaption);
+        pool.serializeObject(outStream, propertyShowIf);
         pool.serializeObject(outStream, propertyReadOnly);
         pool.serializeObject(outStream, propertyFooter);
         pool.serializeObject(outStream, propertyBackground);
@@ -228,6 +239,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         toDraw = pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
         propertyCaption = pool.deserializeObject(inStream);
+        propertyShowIf = pool.deserializeObject(inStream);
         propertyReadOnly = pool.deserializeObject(inStream);
         propertyFooter = pool.deserializeObject(inStream);
         propertyBackground = pool.deserializeObject(inStream);

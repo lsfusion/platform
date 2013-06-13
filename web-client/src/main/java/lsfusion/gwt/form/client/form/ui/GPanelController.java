@@ -102,6 +102,10 @@ public class GPanelController {
         propertyControllers.get(property).setPropertyCaptions(propertyCaptions);
     }
 
+    public void updateShowIfValues(GPropertyDraw property, Map<GGroupObjectValue, Object> showIfs) {
+        propertyControllers.get(property).setShowIfs(showIfs);
+    }
+
     public void updateReadOnlyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> readOnlyValues) {
         propertyControllers.get(property).setReadOnlyValues(readOnlyValues);
     }
@@ -136,6 +140,7 @@ public class GPanelController {
         private Map<GGroupObjectValue, Object> values;
 
         private Map<GGroupObjectValue, Object> propertyCaptions;
+        private Map<GGroupObjectValue, Object> showIfs;
         private Map<GGroupObjectValue, Object> readOnly;
         private Map<GGroupObjectValue, Object> cellBackgroundValues;
 
@@ -161,7 +166,7 @@ public class GPanelController {
 
                 List<GGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
                 for (GGroupObjectValue columnKey : columnKeys) {
-                    if (propertyCaptions == null || propertyCaptions.get(columnKey) != null) {
+                    if (showIfs == null || showIfs.get(columnKey) != null) {
                         PanelRenderer renderer = renderers.get(columnKey);
                         if (renderer == null) {
                             renderer = property.createPanelRenderer(form, columnKey);
@@ -257,15 +262,16 @@ public class GPanelController {
         }
 
         public void setPropertyCaptions(Map<GGroupObjectValue,Object> propertyCaptions) {
-            if (columnsUpdated || !GwtSharedUtils.nullEquals(this.propertyCaptions, propertyCaptions)) {
-                this.propertyCaptions = propertyCaptions;
-                columnsUpdated = true;
-            }
+            this.propertyCaptions = propertyCaptions;
         }
 
         public void setReadOnlyValues(Map<GGroupObjectValue,Object> readOnly) {
-            if (columnsUpdated || !GwtSharedUtils.nullEquals(this.readOnly, readOnly)) {
-                this.readOnly = readOnly;
+            this.readOnly = readOnly;
+        }
+
+        public void setShowIfs(Map<GGroupObjectValue,Object> showIfs) {
+            if (columnsUpdated || !GwtSharedUtils.nullEquals(this.showIfs, showIfs)) {
+                this.showIfs = showIfs;
                 columnsUpdated = true;
             }
         }

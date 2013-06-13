@@ -20,8 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader {
-    public static final String CAPTION_ORIGINAL = "CAPTION_ORIGINAL";
-
     public int ID;
     public String sID;
     public String caption;
@@ -58,6 +56,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public boolean drawAsync;
 
     public GCaptionReader captionReader;
+    public GShowIfReader showIfReader;
     public GFooterReader footerReader;
     public GReadOnlyReader readOnlyReader;
     public GBackgroundReader backgroundReader;
@@ -128,9 +127,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public String getDynamicCaption(Object caption) {
-        return CAPTION_ORIGINAL.equals(caption)
-               ? getCaptionOrEmpty()
-               : (caption == null ? "" : caption.toString().trim());
+        return caption == null ? "" : caption.toString().trim();
     }
 
     public String getEditCaption(String caption) {

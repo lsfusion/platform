@@ -21,7 +21,7 @@ public class DropActionProperty extends FormToolbarActionProperty {
     }
 
     @Override
-    protected LCP getPropertyCaption() {
+    protected LCP getShowIf() {
         return showIf;
     }
 }

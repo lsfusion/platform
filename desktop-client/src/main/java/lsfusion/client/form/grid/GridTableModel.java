@@ -71,7 +71,10 @@ public class GridTableModel extends AbstractTableModel {
         }
     }
 
-    public void updateColumns(List<ClientPropertyDraw> columnProperties, Map<ClientPropertyDraw, List<ClientGroupObjectValue>> mapColumnKeys, Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnCaptions) {
+    public void updateColumns(List<ClientPropertyDraw> columnProperties,
+                              Map<ClientPropertyDraw, List<ClientGroupObjectValue>> mapColumnKeys,
+                              Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnCaptions,
+                              Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnShowIfs) {
         List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
         List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
 
@@ -79,11 +82,11 @@ public class GridTableModel extends AbstractTableModel {
 
         for (ClientPropertyDraw property : columnProperties) {
             if (mapColumnKeys.containsKey(property)) {
-                Map<ClientGroupObjectValue, Object> columnCaption = columnCaptions.get(property);
+                Map<ClientGroupObjectValue, Object> columnShowIf = columnShowIfs.get(property);
                 for (ClientGroupObjectValue key : mapColumnKeys.get(property)) {
                     //не показываем колонку, если propertyCaption равно null
                     Boolean needToHide = property.hideUser == null ? property.hide : property.hideUser;
-                    if ((columnCaption == null || columnCaption.get(key) != null) && !needToHide) {
+                    if ((columnShowIf == null || columnShowIf.get(key) != null) && !needToHide) {
                         columnKeysList.add(key);
                         columnPropsList.add(property);
                     }
@@ -106,7 +109,7 @@ public class GridTableModel extends AbstractTableModel {
         for (int i = 0; i < columnNames.length; ++i) {
             Map<ClientGroupObjectValue, Object> propColumnCaptions = columnCaptions.get(columnProps[i]);
             columnNames[i] = propColumnCaptions != null ?
-                                       columnProps[i].getDynamicCaption(toCaption(propColumnCaptions.get(columnKeys[i]))) :
+                                       columnProps[i].getDynamicCaption(propColumnCaptions.get(columnKeys[i])) :
                                        toCaption(columnProps[i].getCaption());
         }
     }

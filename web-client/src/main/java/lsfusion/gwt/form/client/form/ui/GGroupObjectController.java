@@ -273,6 +273,16 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     @Override
+    public void updateShowIfValues(GShowIfReader reader, Map<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (panel.containsProperty(property)) {
+            panel.updateShowIfValues(property, values);
+        } else if (grid != null) {
+            grid.updateShowIfValues(property, values);
+        }
+    }
+
+    @Override
     public void updateReadOnlyValues(GReadOnlyReader reader, Map<GGroupObjectValue, Object> values) {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (panel.containsProperty(property)) {

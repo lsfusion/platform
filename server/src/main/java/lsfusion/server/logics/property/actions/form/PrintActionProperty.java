@@ -22,7 +22,7 @@ public class PrintActionProperty extends FormToolbarActionProperty {
     }
 
     @Override
-    protected LCP getPropertyCaption() {
+    protected LCP getShowIf() {
         return showIf;
     }
 }

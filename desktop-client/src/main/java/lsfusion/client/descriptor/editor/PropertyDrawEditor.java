@@ -62,6 +62,13 @@ public class PropertyDrawEditor extends GroupElementEditor {
             }
         });
 
+        // propertyCaption из списка columnGroupObjects (+objects без toDraw)
+        TitledPanel propertyShowIfPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.dynamic.title"), new IncrementDialogEditor(descriptor, "propertyShowIf") {
+            protected Object dialogValue(Object currentValue) {
+                return new ListGroupObjectEditor(descriptor.getColumnGroupObjects()).getPropertyObject();
+            }
+        });
+
         TitledPanel propertyBackgroundPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.selection.property.background"), new IncrementDialogEditor(descriptor, "propertyBackground") {
             protected Object dialogValue(Object currentValue) {
                 return new ListGroupObjectEditor(descriptor.getColumnGroupObjects()).getPropertyObject();
@@ -98,6 +105,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 groupObjectPanel,
                 columnGroupObjectsPanel,
                 propertyCaptionPanel,
+                propertyShowIfPanel,
                 propertyBackgroundPanel,
                 propertyForegroundPanel,
                 shouldBeLastPanel,

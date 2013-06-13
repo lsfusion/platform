@@ -86,6 +86,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt());
             case PropertyReadType.CAPTION:
                 return clientForm.getProperty(inStream.readInt()).captionReader;
+            case PropertyReadType.SHOWIF:
+                return clientForm.getProperty(inStream.readInt()).showIfReader;
             case PropertyReadType.FOOTER:
                 return clientForm.getProperty(inStream.readInt()).footerReader;
             case PropertyReadType.CELL_BACKGROUND:

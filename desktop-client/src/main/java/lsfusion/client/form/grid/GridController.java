@@ -275,6 +275,10 @@ public class GridController {
         table.updateColumnCaptions(property, captions);
     }
 
+    public void updateShowIfs(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> showIfs) {
+        table.updateShowIfs(property, showIfs);
+    }
+
     public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> readOnlyValues) {
         table.updateReadOnlyValues(property, readOnlyValues);
     }

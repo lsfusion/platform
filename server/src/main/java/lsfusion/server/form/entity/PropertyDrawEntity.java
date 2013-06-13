@@ -65,6 +65,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
     public CalcPropertyObjectEntity<?> propertyCaption;
+    public CalcPropertyObjectEntity<?> propertyShowIf;
     public CalcPropertyObjectEntity<?> propertyReadOnly;
     public CalcPropertyObjectEntity<?> propertyFooter;
     public CalcPropertyObjectEntity<?> propertyBackground;
@@ -256,6 +257,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.propertyCaption = propertyCaption;
     }
 
+    public void setPropertyCaptionAndShowIf(CalcPropertyObjectEntity propertyCaptionAsShowIf) {
+        this.propertyCaption = propertyCaptionAsShowIf;
+        this.propertyShowIf = propertyCaptionAsShowIf;
+    }
+
     public void setPropertyFooter(CalcPropertyObjectEntity propertyFooter) {
         this.propertyFooter = propertyFooter;
     }
@@ -300,6 +306,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         //не сериализуем эти property*, если они были созданы без привязки к BL, через DerivedProperty.*
         //потому что иначе не сможем десериализовать для preview
         serializeIfDeserializable(propertyCaption, pool, outStream, serializationType);
+        serializeIfDeserializable(propertyShowIf, pool, outStream, serializationType);
         serializeIfDeserializable(propertyReadOnly, pool, outStream, serializationType);
         serializeIfDeserializable(propertyFooter, pool, outStream, serializationType);
         serializeIfDeserializable(propertyBackground, pool, outStream, serializationType);
@@ -338,6 +345,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         toDraw = pool.deserializeObject(inStream);
         setColumnGroupObjects(SetFact.fromJavaOrderSet(pool.<GroupObjectEntity>deserializeList(inStream)));
         propertyCaption = pool.deserializeObject(inStream);
+        propertyShowIf = pool.deserializeObject(inStream);
         propertyReadOnly = pool.deserializeObject(inStream);
         propertyFooter = pool.deserializeObject(inStream);
         propertyBackground = pool.deserializeObject(inStream);

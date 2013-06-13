@@ -283,6 +283,14 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
     }
 
+    public void updateShowIfs(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> showIfs) {
+        if (panel.containsProperty(property)) {
+            panel.updateShowIfs(property, showIfs);
+        } else {
+            grid.updateShowIfs(property, showIfs);
+        }
+    }
+
     @Override
     public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
         if (panel.containsProperty(property)) {

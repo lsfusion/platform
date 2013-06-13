@@ -67,6 +67,8 @@ public class GFormChanges {
                 return form.getProperty(readerId);
             case GPropertyReadType.CAPTION:
                 return form.getProperty(readerId).captionReader;
+            case GPropertyReadType.SHOWIF:
+                return form.getProperty(readerId).showIfReader;
             case GPropertyReadType.READONLY:
                 return form.getProperty(readerId).readOnlyReader;
             case GPropertyReadType.CELL_BACKGROUND:
@@ -87,11 +89,12 @@ public class GFormChanges {
     public class GPropertyReadType {
         public final static byte DRAW = 0;
         public final static byte CAPTION = 1;
-        public final static byte FOOTER = 2;
-        public final static byte READONLY = 3;
-        public final static byte CELL_BACKGROUND = 4;
-        public final static byte CELL_FOREGROUND = 5;
-        public final static byte ROW_BACKGROUND = 6;
-        public final static byte ROW_FOREGROUND = 7;
+        public final static byte SHOWIF = 2;
+        public final static byte FOOTER = 3;
+        public final static byte READONLY = 4;
+        public final static byte CELL_BACKGROUND = 5;
+        public final static byte CELL_FOREGROUND = 6;
+        public final static byte ROW_BACKGROUND = 7;
+        public final static byte ROW_FOREGROUND = 8;
     }
 }
