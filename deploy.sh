@@ -1,4 +1,4 @@
-export MAVEN_OPTS=-Xms512m -Xmx4024m -XX:MaxPermSize=512m
+export MAVEN_OPTS="-Xms512m -Xmx4096m -XX:MaxPermSize=512m"
 
 mvn deploy
 
@@ -10,3 +10,4 @@ mvn deploy -P assemble,pack
 
 cd ../web-client
 mvn deploy -P gwt,desktop,war
+
