@@ -1,5 +1,7 @@
 export MAVEN_OPTS="-Xms512m -Xmx4096m -XX:MaxPermSize=512m"
 
+svn update
+
 mvn deploy
 
 cd desktop-client
