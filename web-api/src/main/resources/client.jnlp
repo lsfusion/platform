@@ -19,7 +19,7 @@
         <property name="lsfusion.client.hostname" value="${jnlp.registryHost}"/>
         <property name="lsfusion.client.hostport" value="${jnlp.registryPort}"/>
         <property name="lsfusion.client.exportname" value="${jnlp.exportName}"/>
-        <jar href="lsfusion-client-1.0-SNAPSHOT.jar"/>
+        <jar href="lsfusion-client-1.1.0-SNAPSHOT.jar"/>
     </resources>
     <application-desc/>
 </jnlp>
