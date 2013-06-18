@@ -6,6 +6,7 @@ import lsfusion.server.logics.SchedulerLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 
 import java.sql.SQLException;
 
@@ -19,6 +20,10 @@ public class SetupSchedulerActionProperty extends ScriptingActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
-        scheduler.setupScheduledTasks(context.getSession());
+        try {
+            scheduler.setupScheduledTasks(context.getSession());
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw new RuntimeException("Error starting Scheduler: ", e);
+        }
     }
 }

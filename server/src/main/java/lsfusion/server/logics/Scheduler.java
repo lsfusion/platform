@@ -1,6 +1,8 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -80,6 +82,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             setupCurrentDateSynchronization();
         } catch (SQLException e) {
             throw new RuntimeException("Error starting Scheduler: ", e);
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw new RuntimeException("Error starting Scheduler: ", e);
         }
     }
 
@@ -150,7 +154,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    public void setupScheduledTasks(DataSession session) throws SQLException {
+    public void setupScheduledTasks(DataSession session) throws SQLException, ScriptingErrorLog.SemanticErrorException {
 
         KeyExpr scheduledTask1Expr = new KeyExpr("scheduledTask");
         ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTask1Expr);
@@ -159,6 +163,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         scheduledTaskQuery.addProperty("runAtStartScheduledTask", businessLogics.schedulerLM.runAtStartScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
         scheduledTaskQuery.addProperty("startDateScheduledTask", businessLogics.schedulerLM.startDateScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
         scheduledTaskQuery.addProperty("periodScheduledTask", businessLogics.schedulerLM.periodScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
+        scheduledTaskQuery.addProperty("schedulerStartTypeScheduledTask", businessLogics.schedulerLM.schedulerStartTypeScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
 
         scheduledTaskQuery.and(businessLogics.schedulerLM.activeScheduledTask.getExpr(scheduledTask1Expr).getWhere());
 
@@ -166,6 +171,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             daemonTasksExecutor.shutdown();
 
         daemonTasksExecutor = Executors.newScheduledThreadPool(3, new ContextAwareDaemonThreadFactory(new SchedulerContext(), "-scheduler-daemon-"));
+
+        Object afterFinish = ((ConcreteCustomClass) businessLogics.schedulerLM.findClassByCompoundName("SchedulerStartType")).getDataObject("afterFinish").object;
 
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> scheduledTaskResult = scheduledTaskQuery.execute(session.sql);
         for (int i = 0, size = scheduledTaskResult.size(); i < size; i++) {
@@ -175,6 +182,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             Boolean runAtStart = value.get("runAtStartScheduledTask") != null;
             Timestamp startDate = (Timestamp) value.get("startDateScheduledTask");
             Integer period = (Integer) value.get("periodScheduledTask");
+            Object schedulerStartType = value.get("schedulerStartTypeScheduledTask");
 
             KeyExpr propertyExpr = new KeyExpr("property");
             KeyExpr scheduledTaskExpr = new KeyExpr("scheduledTask");
@@ -214,8 +222,10 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                         int periods = (int) (System.currentTimeMillis() - start) / (period) + 1;
                         start += periods * period;
                     }
-                    daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), period, TimeUnit.MILLISECONDS);
-
+                    if(afterFinish.equals(schedulerStartType))
+                        daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), period, TimeUnit.MILLISECONDS);
+                    else
+                        daemonTasksExecutor.scheduleAtFixedRate(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), period, TimeUnit.MILLISECONDS);
                 } else if (start > System.currentTimeMillis()) {
                     daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
                 }

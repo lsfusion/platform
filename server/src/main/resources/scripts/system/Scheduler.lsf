@@ -3,6 +3,25 @@ MODULE Scheduler;
 REQUIRE System, Reflection;
 
 
+CLASS SchedulerStartType 'Отсчёт времени' {
+    afterStart 'От запуска предыдущего',
+    afterFinish 'От окончания предыдущего'
+}
+
+FORM schedulerStartTypes
+    OBJECTS s = SchedulerStartType
+    PROPERTIES(s) READONLY staticCaption
+    DIALOG SchedulerStartType OBJECT s
+;
+
+EXTEND DESIGN schedulerStartTypes {
+    main {
+        PROPERTY(staticCaption) {
+            caption = 'Отсчёт времени';
+        }
+    }
+}
+
 CLASS ScheduledTask 'Задание планировщика';
 TABLE scheduledTask (ScheduledTask);
 TABLE scheduledTaskProperty (ScheduledTask, Property);
@@ -11,6 +30,8 @@ nameScheduledTask 'Имя' = DATA STRING[100] (ScheduledTask);
 runAtStartScheduledTask 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
 startDateScheduledTask 'Дата начала' = DATA DATETIME (ScheduledTask);
 periodScheduledTask 'Повторять каждые (секунд)' = DATA INTEGER (ScheduledTask);
+schedulerStartTypeScheduledTask 'Отсчёт времени' = DATA SchedulerStartType (ScheduledTask);
+nameSchedulerStartTypeScheduledTask 'Отсчёт времени' = staticCaption(schedulerStartTypeScheduledTask(ScheduledTask));
 activeScheduledTask 'Активно' = DATA BOOLEAN (ScheduledTask);
 inScheduledTaskProperty 'Вкл.' = DATA BOOLEAN (ScheduledTask, Property);
 activeScheduledTaskProperty 'Активно' = DATA BOOLEAN (ScheduledTask, Property);
@@ -36,10 +57,11 @@ messageScheduledClientTaskLog 'Сообщение'= DATA STRING[200] (ScheduledC
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty';
 
 WHEN [GROUP SUM 1 IF
-    (CHANGED (runAtStartScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
-    CHANGED (startDateScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
-    CHANGED (periodScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
-    CHANGED (activeScheduledTask(scheduledTask) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    ((CHANGED (runAtStartScheduledTask(scheduledTask)) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    (CHANGED (startDateScheduledTask(scheduledTask)) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    (CHANGED (periodScheduledTask(scheduledTask)) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    (CHANGED (schedulerStartTypeScheduledTask(scheduledTask)) AND activeScheduledTaskProperty(scheduledTask, property)) OR
+    (CHANGED (activeScheduledTask(scheduledTask)) AND activeScheduledTaskProperty(scheduledTask, property)) OR
     CHANGED (inScheduledTaskProperty(scheduledTask, property)) OR
     CHANGED (activeScheduledTaskProperty(scheduledTask, property)) OR
     CHANGED (orderScheduledTaskProperty(scheduledTask, property)))] ()
@@ -48,7 +70,8 @@ WHEN [GROUP SUM 1 IF
 FORM scheduledTask 'Планировщик'
 
     OBJECTS st=ScheduledTask
-    PROPERTIES (st) activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask, runAtStartScheduledTask
+    PROPERTIES (st) activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask,
+                    nameSchedulerStartTypeScheduledTask, runAtStartScheduledTask
 
     OBJECTS p=Property
     PROPERTIES (st, p) inScheduledTaskProperty, activeScheduledTaskProperty, orderScheduledTaskProperty
@@ -62,7 +85,9 @@ FORM scheduledTask 'Планировщик'
     PROPERTIES (sctl) READONLY messageScheduledClientTaskLog
 
     FILTERS scheduledTaskScheduledTaskLog(stl) == st,
-            scheduledTaskLogScheduledClientTaskLog(sctl) == stl
+            scheduledTaskLogScheduledClientTaskLog(sctl) == stl,
+            signatureProperty(p) == '',
+            returnProperty(p) == 'ActionClass'
 
     FILTERGROUP filtersScheduler
             FILTER 'Только отмеченные' 'F9' inScheduledTaskProperty(st, p)
