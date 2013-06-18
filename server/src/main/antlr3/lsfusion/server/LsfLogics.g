@@ -1046,6 +1046,11 @@ singleParameter[List<String> context, boolean dynamic] returns [LPWithParams pro
 	;
 	
 expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		self.checkPropertyValue($property.property);
+	}
+}
 	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; } 
 	|	multiDef=multiPropertyDefinition[context, dynamic] { $property = $multiDef.property; }
 	|	overDef=overridePropertyDefinition[context, dynamic] { $property = $overDef.property; }

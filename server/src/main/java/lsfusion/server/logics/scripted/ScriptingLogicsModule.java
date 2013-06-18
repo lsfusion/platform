@@ -106,6 +106,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final ScriptingErrorLog errLog;
     private ScriptParser parser;
     private List<String> warningList = new ArrayList<String>();
+    private Map<Property, String> alwaysNullProperties = new HashMap<Property, String>();
 
     private String lastOpimizedJPropSID = null;
 
@@ -622,10 +623,27 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (property.property instanceof CalcProperty) {
-            checkPropertyValue(property, name);
-            checkClassWhere((LCP)property, name);
+            checkPropertyValue(property);
+            if (!alwaysNullProperties.isEmpty()) {
+                showAlwaysNullErrors();
+            }
+
+            checkClassWhere((LCP) property, name);
         }
         addNamedParams(property.property.getSID(), namedParams);
+    }
+
+    private void showAlwaysNullErrors() throws ScriptingErrorLog.SemanticErrorException {
+        String errorMessage = "";
+        for (Property property : alwaysNullProperties.keySet()) {
+            if (!errorMessage.isEmpty()) {
+                errorMessage += "\n";
+            }
+            String location = alwaysNullProperties.get(property);
+            errorMessage += "[error]:\t" + location + " property '" + property.getName() + "' is always NULL";
+        }
+        alwaysNullProperties.clear();
+        errLog.emitSemanticError(errorMessage, new ScriptingErrorLog.SemanticErrorException(parser.getCurrentParser().input));
     }
 
     public void addToContextMenuFor(LP onContextAction, String contextMenuCaption, String mainPropertySID) throws ScriptingErrorLog.SemanticErrorException {
@@ -2273,9 +2291,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void checkPropertyValue(LP property, String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (property.property instanceof CalcProperty && !property.property.check()) {
-            errLog.emitPropertyAlwaysNullError(parser, name);
+    public void checkPropertyValue(LP property) throws ScriptingErrorLog.SemanticErrorException {
+        if (property.property instanceof CalcProperty && !property.property.check() && !alwaysNullProperties.containsKey(property.property)) {
+            String path = parser.getCurrentScriptPath(getName(), parser.getCurrentParserLineNumber(), "\n\t\t\t");
+            String location = path + ":" + (parser.getCurrentParser().input.LT(1).getCharPositionInLine() + 1);
+            alwaysNullProperties.put(property.property, location);
         }
     }
 

@@ -1,10 +1,10 @@
 package lsfusion.server.logics.scripted;
 
+import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.linear.LP;
 import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.IntStream;
 import org.antlr.runtime.RecognitionException;
-import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.linear.LP;
 
 import java.io.StringWriter;
 import java.util.List;
@@ -230,10 +230,6 @@ public class ScriptingErrorLog {
 
     public void emitMustBeAnActionCall(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "can't use parameter here, must be an action call");
-    }
-
-    public void emitPropertyAlwaysNullError(ScriptParser parser, String propertyName) throws SemanticErrorException {
-        emitSimpleError(parser, format("property '%s' is always NULL", propertyName));
     }
 
     public void emitAlreadyDefinedError(ScriptParser parser, String type, String name) throws SemanticErrorException {
