@@ -145,9 +145,9 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
             return KeyEquals.EMPTY;
 
         for(Where where : wheres)
-            if(!where.getKeyEquals().isSimple())
+            if(!where.getKeyEquals().isSimple)
                 return calculateGroupKeyEquals();
 
-        return new KeyEquals(this);
+        return new KeyEquals(this, true);
     }
 }

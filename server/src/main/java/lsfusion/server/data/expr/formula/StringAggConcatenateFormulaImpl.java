@@ -1,9 +1,8 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.type.Type;
 
-public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImpl {
+public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImpl implements FormulaUnionImpl {
 
     public StringAggConcatenateFormulaImpl(String separator) {
         super(separator, null);
@@ -11,18 +10,18 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
 
     //считает, что последний expr - сепаратор
     @Override
-    public String getSource(CompileSource compile, ExprSource source) {
+    public String getSource(ExprSource source) {
         int exprCount = source.getExprCount();
         if (exprCount == 0) {
             return "";
         }
 
-        Type type = getType(source, compile.keyType);
+        Type type = getType(source);
 
-        String result = getExprSource(compile, source, type, 0);
+        String result = getExprSource(source, type, 0);
 
         for (int i = 1; i < exprCount; i++) {
-            String exprSource = getExprSource(compile, source, type, i);
+            String exprSource = getExprSource(source, type, i);
 
             result = "CASE WHEN " + result + " IS NOT NULL" +
                     " THEN " + result + " || (CASE WHEN " + exprSource + " IS NOT NULL THEN '" + separator + "' || " + exprSource + " ELSE '' END)" +

@@ -11,6 +11,7 @@ import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ValueClassSet;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.IsClassType;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.cases.ExprCase;
@@ -64,11 +65,11 @@ public class NullExpr extends Expr {
         return this;
     }
 
-    public Expr classExpr(ImSet<ClassField> classes) {
+    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
         return this;
     }
 
-    public Where isClass(ValueClassSet set) {
+    public Where isClass(ValueClassSet set, boolean inconsistent) {
         return Where.FALSE;
     }
 

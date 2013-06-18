@@ -29,8 +29,8 @@ public class OrConcatenateClass extends AbstractClassWhere<Integer,OrConcatenate
         return and((OrConcatenateClass)node);
     }
 
-    public boolean containsAll(OrClassSet node) {
-        return ((OrConcatenateClass)node).means(this);
+    public boolean containsAll(OrClassSet node, boolean implicitCast) {
+        return ((OrConcatenateClass)node).means(this, implicitCast);
     }
 
     public ValueClass getCommonClass() {

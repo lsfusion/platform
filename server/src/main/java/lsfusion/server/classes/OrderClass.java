@@ -8,11 +8,11 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.formula.ExprSource;
+import lsfusion.server.data.expr.formula.ExprType;
 import lsfusion.server.data.expr.formula.FormulaImpl;
+import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.query.CompileOrder;
-import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 // суррогатный класс, необходимый для реализации оператора ORDER
-public class OrderClass extends DataClass<Object> implements FormulaImpl {
+public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
 
     private final ImList<Type> types; // типы придется в явную хранить, так как выводить их из expr'ов не всегда получится (могут быть NULL'ы) и тогда непонятно к чему cast'ить
     private final ImList<Boolean> desc;
@@ -49,32 +49,28 @@ public class OrderClass extends DataClass<Object> implements FormulaImpl {
         this.desc = desc;
     }
 
-    public Type getType(ExprSource source, KeyType keyType) {
+    public Type getType(ExprType source) {
         return this;
     }
 
-    public ConcreteClass getStaticClass(ExprSource source) {
-        return this;
-    }
-
-    public String getSource(CompileSource compile, ExprSource source) {
+    public String getSource(ExprSource source) {
         assert source.getExprCount() == desc.size();
 
         if(desc.size() == 0)
             return SQLSyntax.NULL;
 
         if(desc.size() == 1)
-            return source.getSource(0, compile);
+            return source.getSource(0);
 
         MList<String> mExprs = ListFact.mList(source.getExprCount());
         String resultSource = "";
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
             Type exprType = types.get(i);
-            String exprSource = source.getSource(i, compile);
-            resultSource = (resultSource.length()==0 ? "" : resultSource + "," ) + "COALESCE(" + exprSource + "," + exprType.getString(exprType.getInfiniteValue(true), compile.syntax) + ")";
+            String exprSource = source.getSource(i);
+            resultSource = (resultSource.length()==0 ? "" : resultSource + "," ) + "COALESCE(" + exprSource + "," + exprType.getString(exprType.getInfiniteValue(true), source.getSyntax()) + ")";
             mExprs.add(exprSource);
         }
-        resultSource = ConcatenateType.get(types.toArray(new Type[types.size()])).getCast("ROW(" + resultSource + ")", compile.syntax, compile.env);
+        resultSource = ConcatenateType.get(types.toArray(new Type[types.size()])).getCast("ROW(" + resultSource + ")", source.getSyntax(), source.getEnv());
 
         return "CASE WHEN " + mExprs.immutableList().toString(new GetValue<String, String>() {
             public String getMapValue(String value) {

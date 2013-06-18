@@ -18,6 +18,8 @@ import lsfusion.server.session.StructChanges;
 
 public class ChangeEvent<C extends PropertyInterface> {
 
+    public static final PrevScope scope = PrevScope.DB;
+
     protected final CalcProperty<C> writeTo; // что меняем
     public final CalcPropertyMapImplement<?, C> where;
 

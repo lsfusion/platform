@@ -3,11 +3,9 @@ package lsfusion.server.data.expr.formula;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.server.classes.*;
-import lsfusion.server.data.expr.KeyType;
-import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.type.Type;
 
-public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
+public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
     protected final String separator;
     protected final Boolean forceCaseInsensitivity;
 
@@ -16,39 +14,19 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
         this.forceCaseInsensitivity = forceCaseInsensitivity;
     }
 
-    @Override
-    public String getSource(CompileSource compile, ExprSource source) {
-        Type type = getType(source, compile.keyType);
-
-        String separator = " || '" + this.separator + "' || ";
-        StringBuilder builder = new StringBuilder();
-        builder.append("(");
-        for (int i = 0, size = source.getExprCount(); i < size; i++) {
-            String exprSource = getExprSource(compile, source, type, i);
-
-            if (i > 0) {
-                builder.append(separator);
-            }
-
-            builder.append(exprSource);
-        }
-        builder.append(")");
-        return builder.toString();
-    }
-
-    protected String getExprSource(CompileSource compile, ExprSource source, Type selfType, int i) {
-        Type exprType = source.getType(i, compile.keyType);
-        String exprSource = source.getSource(i, compile);
+    protected String getExprSource(ExprSource source, Type selfType, int i) {
+        Type exprType = source.getType(i);
+        String exprSource = source.getSource(i);
         if (exprType instanceof StringClass && ((StringClass)exprType).blankPadded) {
             exprSource = "rtrim(" + exprSource + ")";
         } else {
-            exprSource = selfType.getCast(exprSource, compile.syntax, compile.env);
+            exprSource = selfType.getCast(exprSource, source.getSyntax(), source.getEnv());
         }
         return exprSource;
     }
 
     @Override
-    public StringClass getType(ExprSource source, KeyType keyType) {
+    public Type getType(ExprType source) {
 
         int separatorLength = separator.length();
 
@@ -56,7 +34,7 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
         boolean caseInsensitive = false;
         boolean blankPadded = true;
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
-            Type exprType = keyType == null ? source.getSelfType(i) : source.getType(i, keyType);
+            Type exprType = source.getType(i);
 
             length = length.sum(exprType != null ? exprType.getCharLength() : ExtInt.ZERO);
             if (exprType instanceof StringClass) {
@@ -74,11 +52,6 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
         }
 
         return StringClass.get(blankPadded, caseInsensitive, length);
-    }
-
-    @Override
-    public ConcreteClass getStaticClass(ExprSource source) {
-        return getType(source, null);
     }
 
     @Override

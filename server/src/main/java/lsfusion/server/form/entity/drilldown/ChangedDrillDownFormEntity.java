@@ -7,6 +7,7 @@ import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.ChangedProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.PrevScope;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -24,7 +25,7 @@ public class ChangedDrillDownFormEntity extends DrillDownFormEntity<ClassPropert
     protected void setupDrillDownForm() {
         propertyDraw = addPropertyDraw(property, interfaceObjects);
         newPropertyDraw = addPropertyDraw(property.property, interfaceObjects);
-        oldPropertyDraw = addPropertyDraw(property.property.getOld(), interfaceObjects);
+        oldPropertyDraw = addPropertyDraw(property.property.getOld(PrevScope.DB), interfaceObjects);
     }
 
     @Override

@@ -3,6 +3,7 @@ package lsfusion.server.data.expr;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.SFunctionSet;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
@@ -18,6 +19,7 @@ import lsfusion.server.classes.*;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.formula.FormulaExpr;
+import lsfusion.server.data.expr.formula.MaxFormulaImpl;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
@@ -82,11 +84,17 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public abstract ExprCaseList getCases();
 
     public Expr classExpr(BaseClass baseClass) {
-        return classExpr(baseClass.getUpTables().keys());
+        return classExpr(baseClass, IsClassType.CONSISTENT);
     }
-    public abstract Expr classExpr(ImSet<ClassField> classes); // classes - за пределами которых можно (и нужно ?) возвращать null
+    public Expr classExpr(BaseClass baseClass, IsClassType type) {
+        return classExpr(baseClass.getUpTables().keys(), type);
+    }
+    public abstract Expr classExpr(ImSet<ClassField> classes, IsClassType type); // classes - за пределами которых можно (и нужно ?) возвращать null
 
-    public abstract Where isClass(ValueClassSet set);
+    public Where isClass(ValueClassSet set) {
+        return isClass(set, false);
+    }
+    public abstract Where isClass(ValueClassSet set, boolean inconsistent); // по 2-му параметру см. описание IsClassWhere
     public Where isUpClass(ValueClass set) {
         return isClass(set.getUpSet());
     }
@@ -151,8 +159,12 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
             return IfExpr.create(where, this, elseExpr);
     }
     public Expr compareExpr(Expr expr, boolean min) {
+        return FormulaUnionExpr.create(new MaxFormulaImpl(min), ListFact.toList(this, expr));
+    }
+    public Expr calcCompareExpr(Expr expr, boolean min) {
         return ifElse(compare(expr, min).or(expr.getWhere().not()),expr);
     }
+
     public Expr max(Expr expr) {
         return compareExpr(expr, false);
     }

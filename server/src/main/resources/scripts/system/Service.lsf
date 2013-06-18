@@ -5,6 +5,8 @@ REQUIRE System, Reflection, Time;
 NAMESPACE Service;
 
 checkAggregationsAction 'Проверить аггрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsActionProperty';
+checkClassesAction 'Проверить классы' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesActionProperty';
+recalculateClassesAction 'Пересчитать классы' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesActionProperty';
 recalculateAction 'Пересчитать аггрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty';
 recalculateFollowsAction 'Пересчитать следствия' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty';
 analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'lsfusion.server.logics.service.AnalyzeDBActionProperty';
@@ -23,7 +25,7 @@ isNotServerRestarting () = TRUE IF NOT isServerRestarting();
 
 FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, restartServerAction SHOWIF isNotServerRestarting(),
-                 cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, recalculateAction,
+                 cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, recalculateClassesAction, recalculateAction,
                  recalculateFollowsAction, packAction, analyzeDBAction, serviceDBAction,
                  runGarbageCollector, getVMInfo, toggleExplainAnalyzeMode, toggleExplainMode, toggleVolatileStats,
                  toggleSQLLoggerDebugMode

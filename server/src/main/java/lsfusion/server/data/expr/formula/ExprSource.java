@@ -3,17 +3,15 @@ package lsfusion.server.data.expr.formula;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.ExecuteEnvironment;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
-public interface ExprSource {
+public interface ExprSource extends ExprType {
 
-    int getExprCount();
+    String getSource(int i);
 
-    Expr getExpr(int i);
+    SQLSyntax getSyntax();
 
-    Type getSelfType(int i);
-
-    Type getType(int i, KeyType keyType);
-
-    String getSource(int i, CompileSource compile);
+    ExecuteEnvironment getEnv();
 }

@@ -89,14 +89,14 @@ public class ConcatenateExpr extends VariableClassExpr {
         return true;
     }
 
-    public Expr classExpr(ImSet<ClassField> classes) {
+    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
         throw new RuntimeException("not supported");
     }
 
-    public Where isClass(ValueClassSet set) {
+    public Where isClass(ValueClassSet set, boolean inconsistent) {
         Where where = Where.TRUE;
         for(int i=0;i<exprs.size();i++)
-            where = where.and(exprs.get(i).isClass((ValueClassSet)getPartClass(set, i)));
+            where = where.and(exprs.get(i).isClass((ValueClassSet)getPartClass(set, i)), inconsistent);
         return where;
     }
 

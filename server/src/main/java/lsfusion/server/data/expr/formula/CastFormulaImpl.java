@@ -1,12 +1,9 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.data.expr.KeyType;
-import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.type.Type;
 
-public class CastFormulaImpl implements FormulaImpl {
+public class CastFormulaImpl implements FormulaJoinImpl {
     private DataClass castClass;
 
     public CastFormulaImpl(DataClass castClass) {
@@ -14,18 +11,13 @@ public class CastFormulaImpl implements FormulaImpl {
     }
 
     @Override
-    public String getSource(CompileSource compile, ExprSource source) {
+    public String getSource(ExprSource source) {
         assert source.getExprCount() == 1;
-        return castClass.getCast(source.getSource(0, compile), compile.syntax, compile.env);
+        return castClass.getCast(source.getSource(0), source.getSyntax(), source.getEnv());
     }
 
     @Override
-    public ConcreteClass getStaticClass(ExprSource source) {
-        return castClass;
-    }
-
-    @Override
-    public Type getType(ExprSource source, KeyType keyType) {
+    public Type getType(ExprType source) {
         return castClass;
     }
 

@@ -97,7 +97,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return result;
     }
     public KeyEquals calculateGroupKeyEquals() {
-        KeyEquals result = new KeyEquals(TRUE);
+        KeyEquals result = new KeyEquals(TRUE, false); // потому что вызывается из calculateGroupKeyEquals, а там уже проверили что все не isSimple
         for(Where where : wheres)
             result = result.and(where.getKeyEquals());
         return result;

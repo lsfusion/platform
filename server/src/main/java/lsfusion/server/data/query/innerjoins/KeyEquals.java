@@ -28,19 +28,26 @@ import java.util.Iterator;
 
 public class KeyEquals extends WrapMap<KeyEqual, Where> {
 
-    public KeyEquals(ImMap<KeyEqual, Where> map) {
+    public final boolean isSimple; // сделано через поле, а не проверкой на один пустой KeyEquals, потому как из-за перетрансляций в and'е может упростить условие, а keyEquals останется один
+    public KeyEquals(ImMap<KeyEqual, Where> map, boolean isSimple) {
         super(map);
+
+        this.isSimple = isSimple;
     }
 
-    public final static KeyEquals EMPTY = new KeyEquals(MapFact.<KeyEqual, Where>EMPTY());
+    public final static KeyEquals EMPTY = new KeyEquals(MapFact.<KeyEqual, Where>EMPTY(), false);
 
-    public KeyEquals(Where where) {
+    public KeyEquals(Where where, boolean isSimple) {
         super(KeyEqual.EMPTY, where);
         assert !where.isFalse();
+
+        this.isSimple = isSimple;
     }
 
     public KeyEquals(ParamExpr key, BaseExpr expr) {
         super(new KeyEqual(key, expr), expr.getWhere());
+
+        isSimple = false;
     }
 
     public KeyEquals and(KeyEquals joins) {
@@ -130,7 +137,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
                     }
                 }
             }
-        return new KeyEquals(result.immutable());
+        return new KeyEquals(result.immutable(), false); // потому что вызывается из calculateGroupKeyEquals, а там уже проверили что все не isSimple
     }
 
     // получает Where с учетом трансляций
@@ -239,11 +246,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
         }
     }
     
-    public boolean isSimple() {
-        return size()==1 && getKey(0).isEmpty();
-    }
-
     public KeyEquals translateOuter(MapTranslate translator) {
-        return new KeyEquals(translator.translateMap(map));
+        return new KeyEquals(translator.translateMap(map), isSimple);
     }
 }

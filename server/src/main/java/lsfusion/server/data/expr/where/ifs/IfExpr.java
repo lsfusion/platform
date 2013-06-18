@@ -15,6 +15,7 @@ import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClassSet;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.IsClassType;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.cases.ExprCase;
@@ -180,12 +181,12 @@ public class IfExpr extends Expr {
         return new ExprCaseList(ListFact.toList(new ExprCase(ifWhere, trueExpr), new ExprCase(Where.TRUE, falseExpr)));
     }
 
-    public Expr classExpr(ImSet<ClassField> classes) {
-        return trueExpr.classExpr(classes).ifElse(ifWhere, falseExpr.classExpr(classes));
+    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
+        return trueExpr.classExpr(classes, type).ifElse(ifWhere, falseExpr.classExpr(classes, type));
     }
 
-    public Where isClass(ValueClassSet set) {
-        return ifWhere.ifElse(trueExpr.isClass(set), falseExpr.isClass(set));
+    public Where isClass(ValueClassSet set, boolean inconsistent) {
+        return ifWhere.ifElse(trueExpr.isClass(set, inconsistent), falseExpr.isClass(set, inconsistent));
     }
 
     public Where compareBase(BaseExpr expr, Compare compareBack) {

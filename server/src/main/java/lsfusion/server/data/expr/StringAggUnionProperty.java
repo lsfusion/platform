@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.caches.IdentityLazy;
-import lsfusion.server.data.expr.formula.FormulaImpl;
+import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.StringAggUnionDrillDownFormEntity;
@@ -29,7 +29,7 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
     }
 
     @IdentityLazy
-    protected FormulaImpl getFormula() {
+    protected FormulaUnionImpl getFormula() {
         return new StringAggConcatenateFormulaImpl(separator);
     }
 

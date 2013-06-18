@@ -39,17 +39,23 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         if (wheres.length == 0) {
             return ObjectType.instance;
         }
-        AndClassSet classWhere = wheres[0].get(keyExpr);
-        Type type;
-        if(classWhere==null) {
-            if(keyExpr instanceof PullExpr)
-                return ObjectType.instance;
+        Type result = null;
+        for(And<VariableSingleClassExpr> where : wheres) {
+            AndClassSet classWhere = where.get(keyExpr);
+            if(classWhere==null) {
+                if(keyExpr instanceof PullExpr)
+                    return ObjectType.instance;
+                else
+                    throw new RuntimeException("no classes"); // см. BaseExpr.pushValues или Settings.limitClassWhereCount
+            }
+            Type whereType = classWhere.getType();
+            if(result == null)
+                result = whereType;
             else
-                throw new RuntimeException("no classes"); // см. BaseExpr.pushValues или Settings.limitClassWhereCount
-        } else
-            type = classWhere.getType();
-        assert checkType(keyExpr,type);
-        return type;
+                result = result.getCompatible(whereType);
+        }
+
+        return result;
     }
 
     public Stat getKeyStat(ParamExpr keyExpr) {

@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ConcreteValueClass;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.where.WhereBuilder;
@@ -40,7 +41,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         throw new RuntimeException("not found");
     }
 
-    public StringFormulaProperty(String sID, ConcreteValueClass valueClass, String formula, int paramCount) {
+    public StringFormulaProperty(String sID, DataClass valueClass, String formula, int paramCount) {
         super(sID,formula,getInterfaces(paramCount),valueClass);
         this.formula = formula;
 

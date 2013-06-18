@@ -715,15 +715,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     @IdentityStrongLazy
-    public <T extends PropertyInterface> LCP<T> addOldProp(LCP<T> lp) {
-        return addProperty(null, new LCP<T>(lp.property.getOld(), lp.listInterfaces));
+    public <T extends PropertyInterface> LCP<T> addOldProp(LCP<T> lp, PrevScope scope) {
+        return addProperty(null, new LCP<T>(lp.property.getOld(scope), lp.listInterfaces));
     }
 
     @Override
     @IdentityStrongLazy
-    public <T extends PropertyInterface> LCP<T> addCHProp(LCP<T> lp, IncrementType type) {
-        addOldProp(lp); // регистрируем старое значение в списке свойств
-        return addProperty(null, new LCP<T>(lp.property.getChanged(type), lp.listInterfaces));
+    public <T extends PropertyInterface> LCP<T> addCHProp(LCP<T> lp, IncrementType type, PrevScope scope) {
+        addOldProp(lp, scope); // регистрируем старое значение в списке свойств
+        return addProperty(null, new LCP<T>(lp.property.getChanged(type, scope), lp.listInterfaces));
     }
 
     @Override

@@ -19,21 +19,21 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
         return getClassWhere(this, classes);
     }
 
-    public static Expr classExpr(StaticClassExprInterface expr, ImSet<ClassField> classTables) {
+    public static Expr classExpr(StaticClassExprInterface expr, ImSet<ClassField> classTables, IsClassType type) {
         ConcreteObjectClass staticClass = (ConcreteObjectClass) expr.getStaticClass();
         if(!IsClassExpr.inSet(staticClass, classTables))
             return Expr.NULL;
         return staticClass.getClassObject().getStaticExpr();
     }
-    public Expr classExpr(ImSet<ClassField> classes) {
-        return classExpr(this, classes);
+    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
+        return classExpr(this, classes, type);
     }
 
-    public static Where isClass(StaticClassExprInterface expr, AndClassSet set) {
+    public static Where isClass(StaticClassExprInterface expr, AndClassSet set, boolean notConsistent) {
         return expr.getStaticClass().inSet(set)?Where.TRUE:Where.FALSE;
     }
-    public Where isClass(ValueClassSet set) {
-        return isClass(this, set);
+    public Where isClass(ValueClassSet set, boolean inconsistent) {
+        return isClass(this, set, inconsistent);
     }
 
     public static AndClassSet getAndClassSet(StaticClassExprInterface expr, ImMap<VariableSingleClassExpr, AndClassSet> and) {

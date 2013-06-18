@@ -82,7 +82,7 @@ public abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere
     abstract protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere);
 
     public KeyEquals calculateKeyEquals() {
-        return new KeyEquals(this);  // в operator'ах никаких equals быть не может
+        return new KeyEquals(this, true);  // в operator'ах никаких equals быть не может
     }
 
     public abstract <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere);

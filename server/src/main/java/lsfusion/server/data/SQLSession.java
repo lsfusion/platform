@@ -1,5 +1,6 @@
 package lsfusion.server.data;
 
+import lsfusion.server.classes.BaseClass;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import lsfusion.base.*;
@@ -325,7 +326,7 @@ public class SQLSession extends MutableObject {
 
     public SessionTable createTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, Object owner) throws SQLException {
         Result<Integer> actual = new Result<Integer>();
-        return new SessionTable(getTemporaryTable(keys, properties, fill, count, actual, owner), keys, properties, queryClasses.first, queryClasses.second, actual.result);
+        return new SessionTable(getTemporaryTable(keys, properties, fill, count, actual, owner), keys, properties, queryClasses.first, queryClasses.second, actual.result).checkClasses(this, null);
     }
 
     private final Set<String> transactionTables = SetFact.mAddRemoveSet();
@@ -539,7 +540,7 @@ public class SQLSession extends MutableObject {
                 runTime = System.currentTimeMillis() - started;
             }
         } catch (SQLException e) {
-            logger.error(statement.toString());  // duplicate keys валится при : неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями, нецелостной базой (значения классов в базе не правильные)
+            logger.error(statement.toString());  // duplicate keys валится при : неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses), неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями, нецелостной базой (значения классов в базе не правильные)
             throw e;
         } finally {
             env.after(this, connection, command);

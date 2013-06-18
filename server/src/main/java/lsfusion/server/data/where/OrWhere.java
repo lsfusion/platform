@@ -489,6 +489,8 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return true;
     }
 */
+
+    public final static boolean implicitCast = false; // для детерминированности
     // на самом деле wheres чисто из object where состоит
     static boolean[] checkObjectTrue(AndObjectWhere[] wheres, int numWheres) {
 /*        if(Settings.instance.isCheckFollowsWhenObjects()) {
@@ -558,7 +560,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         if(!equalsClassesNot.isTrue()) {
             ClassExprWhere classesOr = ClassExprWhere.FALSE;
             for(int i=0;i<numWheres;i++) {
-                if(wheres[i] instanceof IsClassWhere || wheres[i] instanceof PackClassWhere) {
+                if((wheres[i] instanceof IsClassWhere && !((IsClassWhere)wheres[i]).inconsistent) || wheres[i] instanceof PackClassWhere) {
                     ClassExprWhere classWhere = wheres[i].getClassWhere();
                     if(!equalsClassesNot.and(classWhere).isFalse()) {
                         result[i] = true;
@@ -566,7 +568,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                     }
                 }
             }
-            if(equalsClassesNot.means(classesOr))
+            if(equalsClassesNot.means(classesOr, implicitCast))
                 return result;
         }
 
@@ -773,7 +775,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         MMap<KeyEqual, Where> result = MapFact.mMap(AbstractWhere.<KeyEqual>addOr());
         for(Where where : wheres)
             result.addAll(where.getKeyEquals());
-        return new KeyEquals(result.immutable());
+        return new KeyEquals(result.immutable(), false); // потому что вызывается из calculateGroupKeyEquals, а там уже проверили что все не isSimple
     }
     public MeanClassWheres calculateGroupMeanClassWheres(boolean useNots) {
         MMap<MeanClassWhere, CheckWhere> result = MapFact.mMap(AbstractWhere.<MeanClassWhere>addOrCheck());

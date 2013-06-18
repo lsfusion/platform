@@ -20,10 +20,7 @@ import lsfusion.server.form.entity.drilldown.DataDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.actions.ChangeEvent;
-import lsfusion.server.session.DataChanges;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.PropertyChanges;
-import lsfusion.server.session.StructChanges;
+import lsfusion.server.session.*;
 
 import static lsfusion.base.BaseUtils.capitalize;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -165,9 +162,9 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         MSet<ChangedProperty> mRemoveDepends = SetFact.mSet();
         for(ClassPropertyInterface remove : interfaces)
             if(remove.interfaceClass instanceof CustomClass)
-                mRemoveDepends.add(((CustomClass)remove.interfaceClass).getProperty().getChanged(IncrementType.DROP));
+                mRemoveDepends.add(((CustomClass)remove.interfaceClass).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
         if(value instanceof CustomClass)
-            mRemoveDepends.add(((CustomClass)value).getProperty().getChanged(IncrementType.DROP));
+            mRemoveDepends.add(((CustomClass)value).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
         for(CalcProperty property : mRemoveDepends.immutable())
             mResult.add(new Pair<Property<?>, LinkType>(property, LinkType.EVENTACTION));
 

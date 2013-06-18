@@ -111,9 +111,9 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return OrWhere.checkTrue(not(),where);
     }
 
-    public static Where toWhere(IsClassWhere[] wheres) { // чисто оптимизационная вещь для классов
-        return toWhere((AndObjectWhere[])wheres);
-    }
+//    public static Where toWhere(IsClassWhere[] wheres) { // чисто оптимизационная вещь для классов
+//        return toWhere((AndObjectWhere[])wheres);
+//    }
 
     protected static Where toWhere(AndObjectWhere[] wheres) {
         return toWhere(wheres, false);

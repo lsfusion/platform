@@ -27,6 +27,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 public class ChangedProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
     private final IncrementType type;
+    private final PrevScope scope;
 
     public static class Interface extends PropertyInterface<Interface> {
         Interface(int ID) {
@@ -34,32 +35,35 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
         }
     }
 
-    public ChangedProperty(CalcProperty<T> property, IncrementType type) {
-        super("CHANGED_" + type + "_" + property.getSID(), property.caption + " (" + type + ")", property);
+    public ChangedProperty(CalcProperty<T> property, IncrementType type, PrevScope scope) {
+        super("CHANGED_" + type + "_" + property.getSID() + "_" + scope.getSID(), property.caption + " (" + type + ")", property);
         this.type = type;
+        this.scope = scope;
 
-        property.getOld();// чтобы зарегить old
+        property.getOld(scope);// чтобы зарегить old
     }
 
     public OldProperty<T> getOldProperty() {
-        return property.getOld();
+        return property.getOld(scope);
     }
 
     @Override
     protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
         depends.add(property);
-        depends.add(property.getOld());
+        depends.add(property.getOld(scope));
     }
 
     protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         WhereBuilder changedIncrementWhere = new WhereBuilder();
-        property.getIncrementExpr(joinImplement, changedIncrementWhere, propClasses, propChanges, type);
+        property.getIncrementExpr(joinImplement, changedIncrementWhere, propClasses, propChanges, type, scope);
         if(changedWhere!=null) changedWhere.add(changedIncrementWhere.toWhere());
         return ValueExpr.get(changedIncrementWhere.toWhere());
     }
 
     // для resolve'а следствий в частности
     public PropertyChange<T> getFullChange(Modifier modifier) {
+        assert scope.onlyDB(); // так как event Apply
+
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         Expr expr = property.getExpr(mapKeys, modifier);
         Where where;

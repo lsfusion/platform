@@ -15,7 +15,7 @@ public class MLinearOperandMap {
     }
 
     // !!!! он меняется при add'е, но конструктора пока нету так что все равно
-    void add(Expr expr,int coeff) {
+    public void add(Expr expr,int coeff) {
         if(expr.isNull()) // если null не добавляем
             return;
 

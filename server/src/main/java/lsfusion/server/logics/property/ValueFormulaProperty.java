@@ -2,13 +2,14 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.ConcreteValueClass;
+import lsfusion.server.classes.DataClass;
 
 // вообще Collection
 abstract class ValueFormulaProperty<T extends PropertyInterface> extends FormulaProperty<T> {
 
-    ConcreteValueClass value; // can be null
+    DataClass value; // can be null
 
-    protected ValueFormulaProperty(String sID, String caption, ImOrderSet<T> interfaces, ConcreteValueClass value) {
+    protected ValueFormulaProperty(String sID, String caption, ImOrderSet<T> interfaces, DataClass value) {
         super(sID, caption, interfaces);
 
         this.value = value;

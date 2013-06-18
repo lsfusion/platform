@@ -17,6 +17,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.ManualLazy;
+import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.ValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -90,7 +91,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
     };
     public static <K> AddValue<K, AndClassSet> addOr() {
-        return (AddValue<K, AndClassSet>) addAnd;
+        return (AddValue<K, AndClassSet>) addOr;
     }
 
     public static class And<K> extends NF<K, AndClassSet> {
@@ -148,7 +149,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
 
         protected boolean containsAll(AndClassSet who, AndClassSet what) {
-            return who.containsAll(what);
+            return who.containsAll(what, false); // важно что не implicitCast, для детерменированности, чтобы выбирало именно
         }
 
         public Where getWhere(GetValue<Expr, K> mapExprs) {
@@ -169,7 +170,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                 ands[i] = orderAnd.getValue(i).getAnd();
             ArrayCombinations<AndClassSet> combs = new ArrayCombinations<AndClassSet>(ands, AndClassSet.arrayInstancer);
             if(combs.max==1) {
-                if(where.meansFrom(this))
+                if(where.meansFrom(this, true)) // тут вопрос надо ли implicit кастить, но раньше работало так
                     return new And[0];
                 else
                     return null; // не меняем ничего
@@ -177,7 +178,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             And<K>[] keep = new And[combs.max]; int k=0;
             for(AndClassSet[] comb : combs) {
                 And<K> and = new And<K>(orderAnd.replaceValues(comb).getMap());
-                if(!where.meansFrom(and))
+                if(!where.meansFrom(and, true)) // тут вопрос надо ли implicit кастить, но раньше работало так
                     keep[k++] = and;
             }
             if(combs.max==k)
@@ -264,18 +265,18 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         return changedWhere.or(createThis(keepWheres));
     }
 
-    public boolean means(This where) {
+    public boolean means(This where, boolean implicitCast) {
         // берем все перестановки из means, and'им их и проверяем на means всех элементов, сделаем в лоб потому как Combinations слишком громоздкий
         if(where.isFalse()) return isFalse();
         if(where.isTrue() || isFalse()) return true;
         if(isTrue()) return false;
 
         for(And<K> andWhere : wheres)
-            if(!where.meansFrom(andWhere)) return false;
+            if(!where.meansFrom(andWhere, implicitCast)) return false;
         return true;
     }
 
-    private boolean meansFrom(And<K> andFrom) {
+    private boolean meansFrom(And<K> andFrom, boolean implicitCast) {
         if(knf==null) {
             Object[][] mwheres = new Object[wheres.length][]; AndClassSet[][] msets=new AndClassSet[wheres.length][]; int[] mnums=new int[wheres.length]; int mnum=0;
             // берем все перестановки из means, and'им их и проверяем на means всех элементов, сделаем в лоб потому как Combinations слишком громоздкий
@@ -288,7 +289,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                         num = -1;
                         break;
                     } else
-                        if(!set.containsAll(fromSet)) { // если не следует
+                        if(!set.containsAll(fromSet, implicitCast)) { // если не следует
                             keys[num]=key; sets[num++]=set;
                         }
                 }
@@ -305,7 +306,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                 return false;
         }
 
-        boolean result = getKNF().meansFrom(andFrom);
+        boolean result = getKNF().meansFrom(andFrom, implicitCast);
 //        assert result == getPrevKNF().meansFrom(andFrom);
         return result;
 
@@ -364,16 +365,6 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
         return knf;
     }
-    
-    private KNF<K> prevKnf;
-    private KNF<K> getPrevKNF() {
-        if(prevKnf == null) {
-            prevKnf = KNF.STATIC(false);
-            for(And<K> where : wheres) // бежим по всем операндам
-                prevKnf = prevKnf.or(where);
-        }
-        return prevKnf;
-    }
 
     public static class Or<K> extends NF<K,OrClassSet> {
 
@@ -387,7 +378,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
 
         protected boolean containsAll(OrClassSet who, OrClassSet what) {
-            return who.containsAll(what);
+            return what.containsAll(who, false); // важно что не implicitCast, для детерменированности
         }
 
         protected Or<K> intersect(Or<K> where2) {
@@ -395,10 +386,10 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return new Or<K>(map.merge(where2.map, OrObjectClassSet.<K>addOr())); // так быстрее этот участок кода выполняется, ОЧЕНЬ много раз
         }
 
-        public boolean meansFrom(And<K> where) {
+        public boolean meansFrom(And<K> where, boolean implicitCast) {
             for(int i=0,size=size();i<size;i++) { // так как элементы не зависимы проверим каждый в отдельности
                 AndClassSet inSet = where.getPartial(getKey(i));
-                if(inSet!=null && getValue(i).containsAll(inSet.getOr())) return true;
+                if(inSet!=null && getValue(i).containsAll(inSet.getOr(), implicitCast)) return true;
             }
             return false;
         }
@@ -456,10 +447,6 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return value1.and(value2);
         }
 
-        public KNF<K> or(ImMap<K,AndClassSet> map) {
-            return orPairs(new BaseUtils.Paired<Or<K>>(wheres, toOr(map), KNF.<K>instancer()));
-        }
-
         private static <K> Or<K>[] toOr(ImMap<K, AndClassSet> map) {
             int size = map.size();
             Or<K>[] toOr = new Or[size];
@@ -488,9 +475,9 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return true;
         }
 
-        public boolean meansFrom(And<K> andFrom) {
+        public boolean meansFrom(And<K> andFrom, boolean implicitCast) {
             for(Or<K> where : wheres)
-                if(!where.meansFrom(andFrom)) return false;
+                if(!where.meansFrom(andFrom, implicitCast)) return false;
             return true;
         }
     }

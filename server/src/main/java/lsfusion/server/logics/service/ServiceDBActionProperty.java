@@ -23,7 +23,11 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
         SQLSession sqlSession = context.getSession().sql;
 
         BusinessLogics BL = context.getBL();
-        
+
+        sqlSession.startTransaction();
+        BL.recalculateClasses(sqlSession);
+        sqlSession.commitTransaction();
+
         sqlSession.startTransaction();
         context.getDbManager().recalculateAggregations(sqlSession);
         sqlSession.commitTransaction();

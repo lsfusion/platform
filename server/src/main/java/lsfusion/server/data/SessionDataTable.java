@@ -197,7 +197,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         assert getProperties().size()==1;
         SessionTable fixTable;
         if(propertyValues.size()>0 && propertyValues.singleValue() instanceof NullValue &&
-                !hashEquals(table, fixTable = table.fixKeyClasses(fixClasses))) {
+                !hashEquals(table, fixTable = table.fixKeyClasses(fixClasses.remove(keyValues.keys())))) {
             return new SessionDataTable(fixTable, keys, keyValues, propertyValues);
         } else
             return this;
@@ -218,5 +218,9 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     @Override
     public String toString() {
         return table + "{k:" + keyValues + ",v:" + propertyValues + "}";
+    }
+
+    public boolean checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+        return table.assertCheckClasses(session, baseClass);
     }
 }

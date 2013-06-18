@@ -1,5 +1,9 @@
 package lsfusion.server.classes;
 
+import lsfusion.server.data.GlobalTable;
+import lsfusion.server.data.Table;
+import lsfusion.server.data.expr.*;
+import lsfusion.server.logics.table.ImplementTable;
 import org.apache.log4j.Logger;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
@@ -15,10 +19,6 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.IsClassExpr;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.QueryBuilder;
@@ -211,8 +211,12 @@ public class BaseClass extends AbstractCustomClass {
         return set;
     }
     @IdentityLazy
-    public Pair<KeyExpr, Expr> getSubQuery(ImSet<ClassField> classTables) {
+    public Pair<KeyExpr, Expr> getSubQuery(ImSet<ClassField> classTables, IsClassType type) {
         KeyExpr keyExpr = new KeyExpr("isSetClass");
-        return new Pair<KeyExpr, Expr>(keyExpr, IsClassExpr.getTableExpr(keyExpr, classTables, IsClassExpr.subqueryThreshold));
+        return new Pair<KeyExpr, Expr>(keyExpr, IsClassExpr.getTableExpr(keyExpr, classTables, IsClassExpr.subqueryThreshold, type));
+    }
+    @IdentityStrongLazy
+    public Table getInconsistentTable(ImplementTable table) {
+        return table.getInconsistent(this);
     }
 }

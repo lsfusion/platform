@@ -3,33 +3,37 @@ package lsfusion.server.data.expr;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.data.expr.formula.ExprSource;
-import lsfusion.server.data.expr.formula.FormulaImpl;
-import lsfusion.server.data.expr.formula.ListExprSource;
+import lsfusion.server.data.expr.formula.*;
+import lsfusion.server.data.expr.formula.conversion.CompatibleTypeConversion;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.type.Type;
+import lsfusion.server.data.where.Where;
 
 public class FormulaUnionExpr extends UnionExpr {
 
     private final ImList<Expr> exprs;
-    private final FormulaImpl formula;
-    private final ExprSource exprSource;
+    private final FormulaUnionImpl formula;
 
-    private FormulaUnionExpr(FormulaImpl formula, ImList<Expr> exprs) {
+    private FormulaUnionExpr(FormulaUnionImpl formula, ImList<Expr> exprs) {
         this.formula = formula;
         this.exprs = exprs;
-        this.exprSource = new ListExprSource(exprs);
     }
 
-    public static Expr create(final FormulaImpl formula, final ImList<Expr> exprs) {
-        return new FormulaUnionExpr(formula, exprs);
+    public static Expr create(final FormulaUnionImpl formula, final ImList<Expr> exprs) {
+        Expr resolve = resolveObjectType(formula, exprs, null);
+        if(resolve != null)
+            return resolve;
+
+        return create(new FormulaUnionExpr(formula, exprs));
     }
 
     public DataClass getStaticClass() {
-        return (DataClass) formula.getStaticClass(exprSource);
+        return (DataClass) formula.getType(new SelfListExprType(exprs));
     }
 
     protected ImSet<Expr> getParams() {
@@ -44,8 +48,11 @@ public class FormulaUnionExpr extends UnionExpr {
         return new FormulaUnionExpr(formula, translator.translate(exprs));
     }
 
-    public String getSource(CompileSource compile) {
-        return formula.getSource(compile, exprSource);
+    public String getSource(final CompileSource compile) {
+        return formula.getSource(new ListExprSource(exprs) {
+            public CompileSource getCompileSource() {
+                return compile;
+            }});
     }
 
     protected int hash(HashContext hashContext) {
@@ -54,5 +61,35 @@ public class FormulaUnionExpr extends UnionExpr {
 
     public boolean twins(TwinImmutableObject o) {
         return formula.equals(((FormulaUnionExpr)o).formula) && exprs.equals(((FormulaUnionExpr)o).exprs);
+    }
+
+    public static Expr resolveObjectType(FormulaImpl impl, ImList<Expr> exprs, final KeyType keyType) {
+        if(impl instanceof MaxFormulaImpl && !((MaxFormulaImpl)impl).notObjectType) {
+            Type compatibleType = AbstractFormulaImpl.getCompatibleType(keyType==null ? new SelfListExprType(exprs): new ContextListExprType(exprs) {
+                public KeyType getKeyType() {
+                    return keyType;
+                }
+            }, CompatibleTypeConversion.instance);
+            if(compatibleType == null)
+                return null;
+
+            boolean isMin = ((MaxFormulaImpl) impl).isMin;
+            if(compatibleType instanceof DataClass)
+                return create(new MaxFormulaImpl(isMin, true), exprs);
+            else
+                return exprs.get(0).calcCompareExpr(exprs.get(1), isMin);
+        }
+        return null;
+    }
+
+    public Expr packFollowFalse(final Where where) {
+        Expr expr = resolveObjectType(formula, exprs, where.not());
+        if(expr!=null)
+            return expr.followFalse(where, true);
+
+        return create(formula, exprs.mapListValues(new GetValue<Expr, Expr>() {
+            public Expr getMapValue(Expr value) {
+                return value.followFalse(where, true);
+            }}));
     }
 }

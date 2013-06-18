@@ -5,8 +5,8 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
@@ -18,9 +18,7 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
@@ -71,7 +69,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         for(ConcreteObjectClass usedClass : usedNewClasses)
             if(usedClass instanceof ConcreteCustomClass) {
                 ConcreteCustomClass customUsedClass = (ConcreteCustomClass) usedClass;
-                if(classSet.containsAll(customUsedClass)) // если изменяется на класс, у которого
+                if(customUsedClass.inSet(classSet)) // если изменяется на класс, у которого
                     result = result.or(expr.compare(customUsedClass.getClassObject(), Compare.EQUALS));
             }
         return result;
@@ -408,7 +406,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
     private ImSet<OldProperty> sessionEventOldDepends;
     @ManualLazy
-    private ImSet<OldProperty> getSessionEventOldDepends() {
+    private ImSet<OldProperty> getSessionEventOldDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
         if(sessionEventOldDepends==null) {
             MSet<OldProperty> mResult = SetFact.mSet();
             for(ActionProperty<?> action : getActiveSessionEvents())
@@ -711,14 +709,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
 
     // для OldProperty хранит изменения с предыдущего execute'а
-    private IncrementTableProps sessionEventChangedOld = new IncrementTableProps();
-    private IncrementChangeProps sessionEventNotChangedOld = new IncrementChangeProps();
-    private OverrideSessionModifier sessionEventModifier;
+    private IncrementTableProps sessionEventChangedOld = new IncrementTableProps(); // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
+    private IncrementChangeProps sessionEventNotChangedOld = new IncrementChangeProps(); // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
 
     // потом можно было бы оптимизировать создание OverrideSessionModifier'а (в рамках getPropertyChanges) и тогда можно создавать modifier'ы непосредственно при запуске
-    private OverrideSessionModifier commonSessionEventModifier = new OverrideSessionModifier(new OverrideIncrementProps(sessionEventChangedOld, sessionEventNotChangedOld), false, dataModifier);
-    private Set<OverrideSessionModifier> prevStartSessionEventModifiers = new HashSet<OverrideSessionModifier>();
-    private Map<ActionProperty, OverrideSessionModifier> mapPrevStartSessionEventModifiers = new HashMap<ActionProperty, OverrideSessionModifier>();
+    private boolean inSessionEvent;
+    private OverrideSessionModifier sessionEventModifier = new OverrideSessionModifier(new OverrideIncrementProps(sessionEventChangedOld, sessionEventNotChangedOld), false, dataModifier);
 
     public <P extends PropertyInterface> void updateSessionEvents(ImSet<? extends CalcProperty> changes) throws SQLException {
         if(!isInTransaction())
@@ -728,7 +724,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
 
     private boolean isInSessionEvent() {
-        return sessionEventModifier!=null;
+        return inSessionEvent;
     }
 
     public <T extends PropertyInterface> void executeSessionEvents(FormInstance form) throws SQLException {
@@ -737,6 +733,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
             ExecutionEnvironment env = (form != null ? form : this);
 
+            inSessionEvent = true;
+
             for(ActionProperty<?> action : getActiveSessionEvents()) {
                 if(sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends())) { // оптимизация аналогичная верхней
                     executeSessionEvent(env, action);
@@ -744,7 +742,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                         return;
                 }
             }
-            sessionEventModifier = null;
+            inSessionEvent = false;
 
             // закидываем старые изменения
             for(CalcProperty changedOld : sessionEventChangedOld.getProperties()) // assert что только old'ы
@@ -755,9 +753,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
     @LogTime
     private void executeSessionEvent(ExecutionEnvironment env, ActionProperty<?> action) throws SQLException {
-        sessionEventModifier = mapPrevStartSessionEventModifiers.get(action); // перегружаем modifier своим если он есть
-        if(sessionEventModifier==null) sessionEventModifier = commonSessionEventModifier;
-
         action.execute(env);
     }
 
@@ -774,6 +769,75 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         resolveModifier.clean(sql);
         resolveModifier = null;
+    }
+
+    public String checkClasses() throws SQLException {
+
+        // тут можно было бы использовать нижнюю конструкцию, но с учетом того что не все базы поддерживают FULL JOIN, на UNION'ах и их LEFT JOIN'ах с проталкиванием, запросы получаются мегабайтные и СУБД не справляется
+//        KeyExpr key = new KeyExpr("key");
+//        String incorrect = new Query<String,String>(MapFact.singletonRev("key", key), key.classExpr(baseClass, IsClassType.SUMCONSISTENT).compare(ValueExpr.COUNT, Compare.GREATER)).readSelect(sql, env);
+
+        // пока не вытягивает определение, для каких конкретно классов образовалось пересечение, ни сервер приложение ни СУБД
+        final KeyExpr key = new KeyExpr("key");
+        final int threshold = 30;
+        final ImOrderSet<ClassField> tables = baseClass.getUpTables().keys().toOrderSet();
+
+        final MLinearOperandMap mSum = new MLinearOperandMap();
+//        final MList<Expr> mAgg = ListFact.mList();
+        final MAddCol<SingleKeyTableUsage<String>> usedTables = ListFact.mAddCol();
+        for(ImSet<ClassField> group : tables.getSet().group(new BaseUtils.Group<Integer, ClassField>() {
+            public Integer group(ClassField key) {
+                return tables.indexOf(key) % threshold;
+            }}).values()) {
+            SingleKeyTableUsage<String> table = new SingleKeyTableUsage<String>(ObjectType.instance, SetFact.toOrderExclSet("sum"), new Type.Getter<String>() {
+                public Type getType(String key) { // "agg"
+                    return key.equals("sum") ? ValueExpr.COUNTCLASS : StringClass.getv(false, ExtInt.UNLIMITED);
+                }});
+            Expr sumExpr = IsClassExpr.create(key, group, IsClassType.SUMCONSISTENT);
+//            Expr aggExpr = IsClassExpr.create(key, group, IsClassType.AGGCONSISTENT);
+            table.writeRows(sql, new Query<String,String>(MapFact.singletonRev("key", key), MapFact.singleton("sum", sumExpr), sumExpr.getWhere()), baseClass, env); //, "agg", aggExpr
+
+            Join<String> tableJoin = table.join(key);
+            mSum.add(tableJoin.getExpr("sum"), 1);
+//            mAgg.add(tableJoin.getExpr("agg"));
+
+            usedTables.add(table);
+        }
+
+        // FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList()) , "value",
+        String incorrect = new Query<String,String>(MapFact.singletonRev("key", key), mSum.getExpr().compare(ValueExpr.COUNT, Compare.GREATER)).readSelect(sql, env);
+
+        for(SingleKeyTableUsage<String> usedTable : usedTables.it())
+            usedTable.drop(sql);
+
+        if(!incorrect.isEmpty())
+            return "---- Checking Classes Exclusiveness -----" + '\n' + incorrect;
+        return "";
+    }
+
+    @Message("logics.checking.data.classes")
+    public String checkClasses(@ParamMessage StoredDataProperty property) throws SQLException {
+        ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = property.getMapKeys();
+        Where where = getIncorrectWhere(property, baseClass, mapKeys);
+        Query<ClassPropertyInterface, String> query = new Query<ClassPropertyInterface, String>(mapKeys, where);
+
+        String incorrect = query.readSelect(sql, env);
+        if(!incorrect.isEmpty())
+            return "---- Checking Classes for DataProperty : " + property + "-----" + '\n' + incorrect;
+        return "";
+    }
+
+    public static Where getIncorrectWhere(StoredDataProperty property, BaseClass baseClass, ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys) {
+        Where correctClasses = Where.TRUE;
+        Expr dataExpr = property.getInconsistentExpr(mapKeys, baseClass);
+        for(int i=0,size= mapKeys.size();i<size;i++) {
+            ValueClass interfaceClass = mapKeys.getKey(i).interfaceClass;
+            if(interfaceClass instanceof CustomClass)
+                correctClasses = correctClasses.and(mapKeys.getValue(i).isClass(((CustomClass) interfaceClass).getUpSet(), true));
+        }
+        if(property.value instanceof CustomClass)
+            correctClasses = correctClasses.and(dataExpr.isClass(((CustomClass) property.value).getUpSet(), true));
+        return dataExpr.getWhere().and(correctClasses.not());
     }
 
     // для оптимизации
@@ -887,17 +951,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
 
     public static <T extends PropertyInterface> boolean fitKeyClasses(CalcProperty<T> property, SinglePropertyTableUsage<T> change) {
-        return change.getClassWhere(property.mapTable.mapKeys).means(property.mapTable.table.getClasses());
+        return change.getClassWhere(property.mapTable.mapKeys).means(property.mapTable.table.getClasses(), true); // если только по ширинам отличаются то тоже подходят
     }
 
     public static <T extends PropertyInterface> boolean fitClasses(CalcProperty<T> property, SinglePropertyTableUsage<T> change) {
-        return change.getClassWhere(property.mapTable.mapKeys, property.field).means(property.fieldClassWhere);
+        return change.getClassWhere(property.mapTable.mapKeys, property.field).means(property.fieldClassWhere, true); // если только по ширинам отличаются то тоже подходят
     }
 
     public static <T extends PropertyInterface> boolean notFitKeyClasses(CalcProperty<T> property, SinglePropertyTableUsage<T> change) {
         return change.getClassWhere(property.mapTable.mapKeys).and(property.mapTable.table.getClasses()).isFalse();
     }
 
+    // см. splitSingleApplyClasses почему не используется сейчас
     public static <T extends PropertyInterface> boolean notFitClasses(CalcProperty<T> property, SinglePropertyTableUsage<T> change) {
         return change.getClassWhere(property.mapTable.mapKeys, property.field).and(property.fieldClassWhere).isFalse();
     }
@@ -974,7 +1039,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
 
         for(CalcProperty<D> depend : dependProps) {
-            assert depend.isSingleApplyStored() || depend instanceof OldProperty;
+            assert depend.isSingleApplyStored() || (depend instanceof OldProperty && ((OldProperty)depend).scope.onlyDB());
 
             if(neededProps!=null) { // управление pending'ом
                 assert !flush || !pendingSingleTables.containsKey(depend); // assert что если flush то уже обработано (так как в обратном лексикографике идет)
@@ -1163,35 +1228,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         dropFormCaches();
     }
     private void dropFormCaches() throws SQLException {
-        // убираем все prevStart
-        for(OverrideSessionModifier modifier : prevStartSessionEventModifiers) {
-            for(FormInstance<?> activeForm : activeForms.keySet()) {
-                SessionModifier formModifier = activeForm.modifiers.remove(modifier);
-                if(formModifier!=null)
-                    formModifier.clean(sql);
-            }
-            modifier.clean(sql);
-        }
-        prevStartSessionEventModifiers.clear();
-        mapPrevStartSessionEventModifiers.clear();
-
         activeSessionEvents = null;
         sessionEventOldDepends = null;
-
-        final ImSet<OldProperty> eventOlds = getSessionEventOldDepends();
-        ImMap<ImSet<OldProperty>, ImSet<ActionProperty>> conflictActions = getActiveSessionEvents().getSet().mapValues(new GetValue<ImSet<OldProperty>, ActionProperty>() {
-            public ImSet<OldProperty> getMapValue(ActionProperty eventAction) {
-                return eventAction.getSessionEventOldStartDepends().filter(eventOlds);
-            }
-        }).groupValues();
-        for(int i=0,size=conflictActions.size();i<size;i++) {
-            ImSet<OldProperty> conflictPrevs = conflictActions.getKey(i);
-            if(!conflictPrevs.isEmpty()) {
-                OverrideSessionModifier conflictModifier = new OverrideSessionModifier(new IncrementChangeProps(conflictPrevs), commonSessionEventModifier);
-                prevStartSessionEventModifiers.add(conflictModifier);
-                MapFact.addJavaAll(mapPrevStartSessionEventModifiers, conflictActions.getValue(i).toMap(conflictModifier));
-            }
-        }
     }
     public Set<FormInstance> getActiveForms() {
         return activeForms.keySet();
@@ -1442,7 +1480,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
     public void cancel() throws SQLException {
         if(isInSessionEvent()) {
-            sessionEventModifier = null;
+            inSessionEvent = false;
         }
 
         if(isInTransaction()) {

@@ -305,7 +305,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     public void addCase(Case addCase) {
         if (isAbstract()) {
             ClassWhere<Object> caseClassValueWhere = getCaseClassValueWhere(addCase);
-            if (!caseClassValueWhere.means(classValueWhere)) {
+            if (!caseClassValueWhere.means(classValueWhere, false)) {
                 throw new ScriptParsingException("wrong signature of implementation " + addCase.property + " (specified " + caseClassValueWhere + ") for abstract property " + this + " (expected " + classValueWhere + ")");
             }
         }
@@ -370,7 +370,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 fullClassValueWhere = fullClassValueWhere.or(getCaseClassValueWhere(operand));
             }
 
-            if (!classValueWhere.filterKeys(interfaces).means(fullClassValueWhere.filterKeys(interfaces))) {
+            if (!classValueWhere.filterKeys(interfaces).means(fullClassValueWhere.filterKeys(interfaces), true)) {
                 throw new NotFullyImplementedException("Property is not fully implemented : " + this +  ", Calculated : " + fullClassValueWhere + ", Specified : " + classValueWhere, fullClassValueWhere, classValueWhere);
             }
         }

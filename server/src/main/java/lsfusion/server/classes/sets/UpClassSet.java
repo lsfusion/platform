@@ -33,10 +33,6 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return wheres[0].getBaseClass();
     }
 
-    public ValueClassSet getKeepClass() {
-        return getBaseClass().getUpSet();
-    }
-
     public boolean has(CustomClass checkNode) {
         for(CustomClass node : wheres)
             if(checkNode.isChild(node)) return true;
@@ -114,12 +110,12 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return wheres.length==0;
     }
 
-    public boolean containsAll(AndClassSet node) {
+    public boolean containsAll(AndClassSet node, boolean implicitCast) {
         if(node instanceof ConcreteClass)
             return has((ConcreteClass)node);
         if(node instanceof UpClassSet)
             return ((UpClassSet)node).inSet(this, SetFact.<ConcreteCustomClass>EMPTY());
-        return getOr().containsAll((OrClassSet)node);
+        return getOr().containsAll((OrClassSet)node, implicitCast);
     }
 
     public ConcreteCustomClass getSingleClass() {

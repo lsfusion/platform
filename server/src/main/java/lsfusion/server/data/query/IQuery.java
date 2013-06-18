@@ -91,6 +91,13 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         compile(session.syntax).outSelect(session, env);
     }
 
+    public String readSelect(SQLSession session) throws SQLException {
+        return readSelect(session,  QueryEnvironment.empty);
+    }
+    public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException {
+        return compile(session.syntax).readSelect(session, env);
+    }
+
     public abstract Query<K, V> getQuery(); // по сути protectedQ  GH  N
     public abstract <RMK, RMV> IQuery<RMK,RMV> map(ImRevMap<RMK, K> remapKeys, ImRevMap<RMV, V> remapProps, MapValuesTranslate translate);
 

@@ -126,7 +126,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         return set.isEmpty() && up.isFalse() && !unknown;
     }
 
-    public boolean containsAll(OrClassSet node) { // ради этого метода все и делается
+    public boolean containsAll(OrClassSet node, boolean implicitCast) { // ради этого метода все и делается
         OrObjectClassSet objectNode = ((OrObjectClassSet)node);
         return !(objectNode.unknown && !unknown) && inSet(objectNode.set, up, set) && objectNode.up.inSet(up, set);
     }
@@ -261,8 +261,8 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         return or(node.getOr());
     }
 
-    public boolean containsAll(AndClassSet node) {
-        return containsAll(node.getOr());
+    public boolean containsAll(AndClassSet node, boolean implicitCast) {
+        return containsAll(node.getOr(), implicitCast);
     }
 
     public OrObjectClassSet getOr() {
@@ -288,14 +288,6 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
 
     public static AndClassSet or(ObjectClassSet set1, AndClassSet set2) {
         return set1.getOr().or(set2.getOr());
-    }
-
-    public ValueClassSet getKeepClass() {
-        assert !unknown;
-        if(up.isEmpty() && set.isEmpty())
-            return OrObjectClassSet.FALSE;
-        else
-            return getBaseClass().getUpSet();
     }
 
     private final static AddValue<Object, OrClassSet> addOr = new SimpleAddValue<Object, OrClassSet>() {

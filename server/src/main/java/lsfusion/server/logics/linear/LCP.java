@@ -243,6 +243,6 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
     
     public LCP<T> getOld() {
-        return new LCP<T>(property.getOld(), listInterfaces);
+        return new LCP<T>(property.getOld(PrevScope.DB), listInterfaces);
     }
 }

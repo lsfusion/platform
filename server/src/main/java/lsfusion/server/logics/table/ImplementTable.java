@@ -6,15 +6,16 @@ import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.SystemProperties;
-import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.IntegerClass;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.caches.IdentityStrongLazy;
+import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -22,6 +23,7 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
@@ -295,5 +297,31 @@ public class ImplementTable extends GlobalTable {
             }
         }
         statProps = mvUpdateStatProps.immutableValue();
+    }
+
+    public static class InconsistentTable extends GlobalTable {
+
+        private final StatKeys<KeyField> statKeys;
+        private final ImMap<PropertyField, PropStat> statProps;
+
+        private InconsistentTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, BaseClass baseClass, StatKeys<KeyField> statKeys, ImMap<PropertyField, PropStat> statProps) {
+            super(name, keys, properties, null, null);
+            initBaseClasses(baseClass);
+            this.statKeys = statKeys;
+            this.statProps = statProps;
+        }
+
+        public StatKeys<KeyField> getStatKeys() {
+            return statKeys;
+        }
+
+        public ImMap<PropertyField, PropStat> getStatProps() {
+            return statProps;
+        }
+    }
+
+    public Table getInconsistent(BaseClass baseClass) {
+        return new InconsistentTable(name, keys, properties, baseClass, statKeys, statProps);
+//        return new SerializedTable(name, keys, properties, baseClass);
     }
 }

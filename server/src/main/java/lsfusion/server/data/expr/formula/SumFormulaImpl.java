@@ -1,8 +1,10 @@
 package lsfusion.server.data.expr.formula;
 
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.expr.formula.conversion.*;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.ExecuteEnvironment;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
 public class SumFormulaImpl extends ArithmeticFormulaImpl {
@@ -33,7 +35,7 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
         }
 
         @Override
-        public String getSource(CompileSource compile, Type type1, Type type2, String src1, String src2) {
+        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, ExecuteEnvironment env) {
             Type type = conversion.getType(type1, type2);
             if (type != null) {
                 return "(" + src1 + "+" + src2 + ")";
@@ -50,22 +52,22 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
         }
 
         @Override
-        public String getSource(CompileSource compile, Type type1, Type type2, String src1, String src2) {
+        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, ExecuteEnvironment env) {
             Type type = conversion.getType(type1, type2);
             if (type != null) {
                 if (!(type1 instanceof StringClass)) {
-                    src1 = type.getCast(src1, compile.syntax, compile.env);
+                    src1 = type.getCast(src1, syntax, env);
                 } else if (((StringClass)type1).blankPadded) {
                     src1 = "rtrim(" + src1 + ")";
                 }
 
                 if (!(type2 instanceof StringClass)) {
-                    src2 = type.getCast(src2, compile.syntax, compile.env);
+                    src2 = type.getCast(src2, syntax, env);
                 } else if (((StringClass)type2).blankPadded) {
                     src2 = "rtrim(" + src2 + ")";
                 }
 
-                return type.getCast("(" + src1 + " || " + src2 + ")", compile.syntax, compile.env);
+                return type.getCast("(" + src1 + " || " + src2 + ")", syntax, env);
             }
             return null;
         }

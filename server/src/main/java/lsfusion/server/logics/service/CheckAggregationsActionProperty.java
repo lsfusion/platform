@@ -25,7 +25,7 @@ public class CheckAggregationsActionProperty extends ScriptingActionProperty {
         String message = context.getDbManager().checkAggregations(sqlSession);
         sqlSession.commitTransaction();
 
-        context.delayUserInterfaction(new MessageClientAction(getString("logics.check.aggregation.was.completed") + '\n' + '\n' + message, getString("logics.checking.aggregations"), true));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.check.was.completed") + '\n' + '\n' + message, getString("logics.checking.aggregations"), true));
     }
 
     @Override

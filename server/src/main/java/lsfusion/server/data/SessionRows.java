@@ -220,4 +220,8 @@ public class SessionRows extends SessionData<SessionRows> {
     public String toString() {
         return rows.toString();
     }
+
+    public boolean checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+        return true;
+    }
 }

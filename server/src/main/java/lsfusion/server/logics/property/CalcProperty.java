@@ -206,7 +206,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         SinglePropertyTableUsage<T> notFit = readChangeTable(sql, change.and(classWhere.not()), baseClass, env);
         assert DataSession.fitClasses(this, fit);
         assert DataSession.fitKeyClasses(this, fit);
-        assert DataSession.notFitClasses(this, notFit); // из-за эвристики с not могут быть накладки
+
+        // это была не совсем правильная эвристика, например если изменение было таблицей с классом X, а свойство принадлежность классу Y, то X and not Y превращался назад в X (если X не равнялся / наследовался от Y)
+        // для того чтобы этот assertion продолжил работать надо совершенствовать ClassWhere.andNot, что пока нецелесообразность
+        // assert DataSession.notFitClasses(this, notFit);
+
         changeTable.drop(sql);
         return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(fit,notFit);
     }
@@ -220,18 +224,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             mResult.addAll(property.getParseOldDepends());
         return mResult.immutable();
     }
-    private OldProperty<T> old;
-    public OldProperty<T> getOld() {
-        if(old==null) {
-            assert noOld();
-            old = new OldProperty<T>(this);
-        }
-        return old;
+    @IdentityStrongLazy // используется много где
+    public OldProperty<T> getOld(PrevScope scope) {
+        return new OldProperty<T>(this, scope);
     }
 
     @IdentityStrongLazy // используется в resolve и кое где еще
-    public ChangedProperty<T> getChanged(IncrementType type) {
-        return new ChangedProperty<T>(this, type);
+    public ChangedProperty<T> getChanged(IncrementType type, PrevScope scope) {
+        return new ChangedProperty<T>(this, type, scope);
     }
 
     public boolean noDB() {
@@ -292,13 +292,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public Expr getIncrementExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder resultChanged) {
-        return getIncrementExpr(joinImplement, resultChanged, false, modifier.getPropertyChanges(), IncrementType.SUSPICION);
+        return getIncrementExpr(joinImplement, resultChanged, false, modifier.getPropertyChanges(), IncrementType.SUSPICION, PrevScope.DB); // тут не важно какой scope
     }
 
-    public Expr getIncrementExpr(ImMap<T, ? extends Expr> joinImplement, WhereBuilder resultChanged, boolean propClasses, PropertyChanges propChanges, IncrementType incrementType) {
+    public Expr getIncrementExpr(ImMap<T, ? extends Expr> joinImplement, WhereBuilder resultChanged, boolean propClasses, PropertyChanges propChanges, IncrementType incrementType, PrevScope scope) {
         WhereBuilder incrementWhere = propClasses ? null : new WhereBuilder();
         Expr newExpr = getExpr(joinImplement, propClasses, propChanges, incrementWhere);
-        Expr prevExpr = getOld().getExpr(joinImplement, propClasses, propChanges, incrementWhere);
+        Expr prevExpr = getOld(scope).getExpr(joinImplement, propClasses, propChanges, incrementWhere);
 
         Where forceWhere;
         switch(incrementType) {
@@ -365,6 +365,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         // при вызове readChangeTable, используется assertion (см. assert fitKeyClasses) что если таблица подходит по классам для значения, то подходит по классам и для ключей
         // этот assertion может нарушаться если определилось конкретное значение и оно было null, как правило с комбинаторными event'ами (вообще может нарушиться и если не null, но так как propertyClasses просто вырезаются то не может), соответственно необходимо устранить этот случай
         readTable.fixKeyClasses(getClassWhere(ClassType.ASSERTFULL));
+        assert readTable.checkClasses(session, null);
 
         return readTable;
     }
@@ -568,6 +569,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return mapTable.table.join(mapTable.mapKeys.crossJoin(joinImplement)).getExpr(field);
     }
 
+    public Table.Join.Expr getInconsistentExpr(ImMap<T, ? extends Expr> joinImplement, BaseClass baseClass) {
+        Table table = baseClass.getInconsistentTable(mapTable.table);
+        return (Table.Join.Expr) table.join(mapTable.mapKeys.crossJoin(joinImplement)).getExpr(field);
+    }
+
     public MapKeysTable<T> mapTable; // именно здесь потому как не обязательно persistent
     public PropertyField field;
     public ClassWhere<Field> fieldClassWhere;
@@ -737,14 +743,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public <D extends PropertyInterface> void setEventChange(boolean valueChanged, final IncrementType incrementType, CalcPropertyImplement<D, CalcPropertyInterfaceImplement<T>> valueImplement, ImList<CalcPropertyMapImplement<?, T>> whereImplements, ImCol<CalcPropertyMapImplement<?, T>> onChangeImplements) {
         // нужно onChange обернуть в getChange, and where, and change implement'ы
         if(!valueChanged)
-            valueImplement = new CalcPropertyImplement<D, CalcPropertyInterfaceImplement<T>>(valueImplement.property.getOld(), valueImplement.mapping);
+            valueImplement = new CalcPropertyImplement<D, CalcPropertyInterfaceImplement<T>>(valueImplement.property.getOld(ChangeEvent.scope), valueImplement.mapping); // вычисляемое событие, нужно значение из базы
 
         ImCol<CalcPropertyMapImplement<?, T>> onChangeWhereImplements = onChangeImplements.mapColValues(new GetValue<CalcPropertyMapImplement<?, T>, CalcPropertyMapImplement<?, T>>() {
                     public CalcPropertyMapImplement<?, T> getMapValue(CalcPropertyMapImplement<?, T> value) {
-                        return value.mapChanged(incrementType);
+                        return value.mapChanged(incrementType, ChangeEvent.scope);
                     }}).mergeCol(CalcPropertyMapImplement.filter(valueImplement.mapping.values()).mapColValues(new GetValue<CalcPropertyMapImplement<?, T>, CalcPropertyMapImplement<?, T>>() {
                     public CalcPropertyMapImplement<?, T> getMapValue(CalcPropertyMapImplement<?, T> value) {
-                        return value.mapChanged(IncrementType.CHANGED);
+                        return value.mapChanged(IncrementType.CHANGED, ChangeEvent.scope);
                     }}));
 
         CalcPropertyMapImplement<?, T> where;
@@ -766,12 +772,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement) {
         if(action && !Settings.get().isDisableWhenCalcDo()) {
             ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(interfaces, getImplement(), valueImplement);
-            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, Event.SESSION, null, SetFact.<T>EMPTY(), true, false);
+            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, Event.SESSION, null, true, false);
             return;
         }
 
         if(!((CalcProperty)whereImplement.property).noDB())
-            whereImplement = whereImplement.mapChanged(IncrementType.SET);
+            whereImplement = whereImplement.mapChanged(IncrementType.SET, ChangeEvent.scope);
 
         ChangeEvent<T> event = new ChangeEvent<T>(this, valueImplement, whereImplement);
         // запишем в DataProperty

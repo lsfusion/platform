@@ -6,6 +6,7 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ObjectClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.data.expr.formula.FormulaClass;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -14,7 +15,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.ActionProperty;
 
-public class UnknownClass extends ImmutableObject implements ConcreteObjectClass {
+public class UnknownClass extends ImmutableObject implements FormulaClass, ConcreteObjectClass {
 
     public String toString() {
         return ServerResourceBundle.getString("classes.unknown");
@@ -32,10 +33,10 @@ public class UnknownClass extends ImmutableObject implements ConcreteObjectClass
     }
 
     public boolean inSet(AndClassSet set) {
-        return set.containsAll(this);
+        return ConcreteCustomClass.inSet(this, set);
     }
 
-    public boolean containsAll(AndClassSet node) {
+    public boolean containsAll(AndClassSet node, boolean implicitCast) {
         return node instanceof UnknownClass && equals(node);
     }
 

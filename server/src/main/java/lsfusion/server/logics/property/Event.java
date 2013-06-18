@@ -8,6 +8,10 @@ public class Event {
     public final BaseEvent base;
     public final SessionEnvEvent session;
 
+    public PrevScope getScope() {
+        return base.getScope();
+    }
+
     public static final Event APPLY = new Event(SystemEvent.APPLY, SessionEnvEvent.ALWAYS);
     public static final Event SESSION = new Event(SystemEvent.SESSION, SessionEnvEvent.ALWAYS);
 

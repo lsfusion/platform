@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.FormulaUnionExpr;
 import lsfusion.server.data.expr.formula.FormulaImpl;
+import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.session.PropertyChanges;
 
@@ -31,5 +32,5 @@ public abstract class FormulaUnionProperty extends UnionProperty {
         return true;
     }
 
-    protected abstract FormulaImpl getFormula();
+    protected abstract FormulaUnionImpl getFormula();
 }

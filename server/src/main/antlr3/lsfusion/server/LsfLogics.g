@@ -1687,7 +1687,7 @@ onEditEventSetting [LP property, List<String> context]
 @after {
 	if (inPropParseState()) {
 		self.setScriptedEditAction(property, type, $action.property);
-	}	
+	}
 }
 	:	'ON'
 	    (   'CHANGE' { type = ServerResponse.CHANGE; }
@@ -2230,8 +2230,18 @@ constraintStatement
 }
 	:	'CONSTRAINT'
 	    et=baseEvent
+        {
+            if (inPropParseState()) {
+                self.setPrevScope($et.event);
+            }
+        }
 		expr=propertyExpression[new ArrayList<String>(), true] { if (inPropParseState()) self.checkNecessaryProperty($expr.property); }
-		('CHECKED' { checked = true; } 
+        {
+            if (inPropParseState()) {
+                self.dropPrevScope($et.event);
+            }
+        }
+		('CHECKED' { checked = true; }
 			('BY' list=nonEmptyCompoundIdList { propNames = $list.ids; })? 
 		)?
 		'MESSAGE' message=stringLiteral
@@ -2318,13 +2328,22 @@ eventStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $et.event, $prevStart.list, $in.noInline, $in.forceInline);
+		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $et.event, $in.noInline, $in.forceInline);
 	} 
 }
 	:	'WHEN'
 		et=baseEvent
-		prevStart=prevStartStatement
+        {
+            if (inPropParseState()) {
+                self.setPrevScope($et.event);
+            }
+        }
 		whenExpr=propertyExpression[context, true]
+        {
+            if (inPropParseState()) {
+                self.dropPrevScope($et.event);
+            }
+        }
 		in=inlineStatement[context]
 		'DO'
 		action=actionPropertyDefinitionBody[context, false]
@@ -2344,15 +2363,24 @@ globalEventStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedGlobalEvent($action.property, $et.event, single, $property.text, $prevStart.list);
+		self.addScriptedGlobalEvent($action.property, $et.event, single, $property.text);
 	}
 }
 	:	'ON' 
 		et=baseEvent
-		prevStart=prevStartStatement
 		('SINGLE' { single = true; })?
 		('SHOWDEP' property=ID)?
+		{
+			if (inPropParseState()) {
+                self.setPrevScope($et.event);
+        	}
+        }
 		action=actionPropertyDefinitionBody[new ArrayList<String>(), false]
+		{
+			if (inPropParseState()) {
+                self.dropPrevScope($et.event);
+        	}
+		}
 		( {!self.semicolonNeeded()}?=>  | ';')
 	;
 
@@ -2374,19 +2402,6 @@ inlineStatement[List<String> context] returns [List<LPWithParams> noInline = new
 	:   ('NOINLINE' { $noInline = null; } ( '(' params=singleParameterList[context, false] { $noInline = $params.props; } ')' )? )?
 	    ('INLINE' { $forceInline = true; })?
 	;
-
-prevStartStatement returns [Set<LCP> list]
-@init {
-	List<String> ids = new ArrayList<String>();
-}
-@after {
-	if (inPropParseState()) {
-		$list = self.findLCPsByCompoundName(ids);
-	}
-}
-	:   ('PREVSTART' ('ALL' { ids = null; } | prevStart=nonEmptyIdList { ids = $prevStart.ids; } ) )?
-	;
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// SHOWDEP STATEMENT //////////////////////////////

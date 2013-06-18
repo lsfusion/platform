@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.FormulaImpl;
+import lsfusion.server.data.expr.formula.FormulaJoinImpl;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.session.PropertyChanges;
 
@@ -26,9 +27,9 @@ public class FormulaImplProperty extends FormulaProperty<FormulaImplProperty.Int
         });
     }
 
-    private final FormulaImpl formula;
+    private final FormulaJoinImpl formula;
 
-    public FormulaImplProperty(String sID, String caption, int intCount, FormulaImpl formula) {
+    public FormulaImplProperty(String sID, String caption, int intCount, FormulaJoinImpl formula) {
         super(sID, caption, getInterfaces(intCount));
 
         this.formula = formula;

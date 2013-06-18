@@ -6,6 +6,8 @@ import lsfusion.server.data.expr.Expr;
 
 public interface ClassField {
 
+    Table.Join.Expr getInconsistentExpr(Expr expr);
+
     Table.Join.Expr getStoredExpr(Expr expr);
 
     ObjectValueClassSet getSet();

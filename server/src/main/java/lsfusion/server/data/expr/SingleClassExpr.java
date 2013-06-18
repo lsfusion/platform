@@ -22,12 +22,12 @@ public abstract class SingleClassExpr extends VariableClassExpr {
         return this instanceof ParamExpr || this instanceof CurrentEnvironmentExpr;
     }
 
-    public Expr classExpr(ImSet<ClassField> classes) {
+    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
 /*        ConcreteObjectClass singleClass;
         if(!isTrueWhere() && ((singleClass = ((OrObjectClassSet)getSet().and(classes.getOr())).getSingleClass(classes.getBaseClass()))!=null))
             return singleClass.getClassObject().getStaticExpr().and(getWhere());*/
 
-        return IsClassExpr.create(this, classes);
+        return IsClassExpr.create(this, classes, type);
     }
 
     private OrClassSet getSet() {
@@ -54,13 +54,15 @@ public abstract class SingleClassExpr extends VariableClassExpr {
         }
     }
 
-    public Where isClass(ValueClassSet set) {
-        // в принципе можно было бы проand'ить но нарушит инварианты конструирования внутри IsClassExpr(baseClass+ joinExpr)
-        if(!intersect(set)) // если не пересекается то false
-            return Where.FALSE;
-        if(!isTrueWhere())
-            if(set.getOr().containsAll(getSet())) // если set содержит все элементы, то достаточно просто что не null
-                return getWhere();
-        return IsClassWhere.create(this, set);
+    public Where isClass(ValueClassSet set, boolean inconsistent) {
+        if(!inconsistent) {
+            // в принципе можно было бы проand'ить но нарушит инварианты конструирования внутри IsClassExpr(baseClass+ joinExpr)
+            if(!intersect(set)) // если не пересекается то false
+                return Where.FALSE;
+            if(!isTrueWhere())
+                if(set.getOr().containsAll(getSet(), true)) // если set содержит все элементы, то достаточно просто что не null (implicit cast'ы подходят)
+                    return getWhere();
+        }
+        return IsClassWhere.create(this, set, inconsistent);
     }
 }

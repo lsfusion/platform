@@ -6,6 +6,7 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.data.expr.formula.AbstractFormulaImpl;
 import lsfusion.server.data.expr.formula.ListExprSource;
+import lsfusion.server.data.expr.formula.SelfListExprType;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
@@ -19,7 +20,7 @@ public class LinearOperandMap extends WrapMap<Expr,Integer> {
     }
 
     public IntegralClass getType() {
-        return (IntegralClass) AbstractFormulaImpl.getCompatibleType(new ListExprSource(keys().toList()), CompatibleTypeConversion.instance);
+        return (IntegralClass) AbstractFormulaImpl.getCompatibleType(new SelfListExprType(keys().toList()), CompatibleTypeConversion.instance);
     }
 
     public int hashOuter(HashContext hashContext) {

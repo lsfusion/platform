@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.server.data.expr.formula.FormulaClass;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import lsfusion.base.ExtInt;
 import lsfusion.base.col.ListFact;
@@ -33,7 +34,7 @@ import java.io.IOException;
 import java.text.Format;
 import java.util.Random;
 
-public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, ValueClassSet, OrClassSet {
+public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, FormulaClass, ValueClassSet, OrClassSet {
     private static MAddExclMap<String, DataClass> sidToClass = MapFact.mBigStrongMap();
     protected String caption;
 
@@ -115,12 +116,19 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return this;
     }
 
-    public boolean containsAll(AndClassSet node) {
-        return node instanceof DataClass && getCompatible((DataClass) node) != null;
+    private boolean containsAll(DataClass node, boolean implicitCast) {
+        DataClass compatible = getCompatible((DataClass) node);
+        if(implicitCast)
+            return compatible != null;
+        return compatible == this;
     }
 
-    public boolean containsAll(OrClassSet node) {
-        return node instanceof DataClass && getCompatible((DataClass) node) != null;
+    public boolean containsAll(AndClassSet node, boolean implicitCast) {
+        return node instanceof DataClass && containsAll((DataClass) node, implicitCast);
+    }
+
+    public boolean containsAll(OrClassSet node, boolean implicitCast) {
+        return node instanceof DataClass && containsAll((DataClass) node, implicitCast);
     }
 
     public OrClassSet getOr() {
@@ -128,7 +136,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     }
 
     public boolean inSet(AndClassSet set) {
-        return set.containsAll(this);
+        return ConcreteCustomClass.inSet(this, set);
     }
 
     public Type getType() {
@@ -188,10 +196,6 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     public ExtInt getCharLength() {
         return new ExtInt(8);
-    }
-
-    public DataClass getKeepClass() {
-        return this;
     }
 
     public DataClass getBaseClass() {

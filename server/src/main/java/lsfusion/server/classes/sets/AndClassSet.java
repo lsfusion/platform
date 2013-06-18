@@ -14,7 +14,7 @@ public interface AndClassSet {
 
     boolean isEmpty();
 
-    boolean containsAll(AndClassSet node);
+    boolean containsAll(AndClassSet node, boolean implicitCast);
 
     OrClassSet getOr();
     AndClassSet[] getAnd(); // определяет "чистые" And, для and not

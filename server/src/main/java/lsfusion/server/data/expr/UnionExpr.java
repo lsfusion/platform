@@ -76,13 +76,13 @@ public abstract class UnionExpr extends NotNullExpr implements StaticClassExprIn
     }
 
     @Override
-    public Expr classExpr(ImSet<ClassField> classes) {
-        return StaticClassExpr.classExpr(this, classes);
+    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
+        return StaticClassExpr.classExpr(this, classes, type);
     }
 
     @Override
-    public Where isClass(ValueClassSet set) {
-        return StaticClassExpr.isClass(this, set);
+    public Where isClass(ValueClassSet set, boolean inconsistent) {
+        return StaticClassExpr.isClass(this, set, inconsistent);
     }
 
     @Override

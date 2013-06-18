@@ -62,4 +62,8 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
     public void updateCurrentClasses(DataSession session) throws SQLException {
         table = table.updateCurrentClasses(session);
     }
+
+    public boolean checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+        return table.checkClasses(session, baseClass);
+    }
 }

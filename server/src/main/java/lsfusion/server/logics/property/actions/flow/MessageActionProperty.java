@@ -35,4 +35,9 @@ public class MessageActionProperty extends SystemActionProperty {
     protected void showMessage(ExecutionContext<PropertyInterface> context, Object msgValue) throws SQLException {
         context.requestUserInteraction(new MessageClientAction(String.valueOf(msgValue), title));
     }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) { // потому как важен порядок, в котором выдаются MESSAGE'и, иначе компилятор начнет их переставлять
+        return type == ChangeFlowType.VOLATILE;
+    }
 }

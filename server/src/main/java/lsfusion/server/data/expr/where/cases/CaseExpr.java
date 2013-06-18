@@ -17,6 +17,7 @@ import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClassSet;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.IsClassType;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.CompileSource;
@@ -185,10 +186,10 @@ public class CaseExpr extends Expr {
         });
     }
 
-    public Where isClass(final ValueClassSet set) {
+    public Where isClass(final ValueClassSet set, final boolean inconsistent) {
         return cases.getWhere(new GetValue<Where, Expr>(){
             public Where getMapValue(Expr cCase) {
-                return cCase.isClass(set);
+                return cCase.isClass(set, inconsistent);
             }
         });
     }
@@ -228,10 +229,10 @@ public class CaseExpr extends Expr {
         return result.getExpr();
     }*/
 
-    public Expr classExpr(ImSet<ClassField> classes) {
+    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
         MExprCaseList result = new MExprCaseList(cases.exclusive);
         for(ExprCase exprCase : cases)
-            result.add(exprCase.where,exprCase.data.classExpr(classes));
+            result.add(exprCase.where,exprCase.data.classExpr(classes, type));
         return result.getFinal();
     }
 

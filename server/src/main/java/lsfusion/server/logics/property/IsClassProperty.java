@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MCol;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -18,6 +19,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
@@ -81,7 +83,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     public static boolean fitClass(ConcreteClass concreteClass, ValueClass valueClass) {
         // unknown, custom, concatenateClassSet
         if(concreteClass instanceof ValueClass)
-            return valueClass.getUpSet().containsAll(concreteClass);
+            return valueClass.getUpSet().containsAll(concreteClass, true); // при изменениях, вызове custom action
         else {
             assert concreteClass instanceof UnknownClass; // с concatenate'ами надо будет разбираться
             return false;
@@ -105,11 +107,19 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         assert actionChangeProps.isEmpty();
         assert getDepends().isEmpty();
 
-        MCol<Pair<Property<?>, LinkType>> mResult = ListFact.mCol();
-        mResult.add(new Pair<Property<?>, LinkType>(getChanged(IncrementType.DROP), LinkType.DEPEND));
-        mResult.add(new Pair<Property<?>, LinkType>(getChanged(IncrementType.SET), LinkType.DEPEND));
+        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
+        fillChangedProps(mResult, IncrementType.DROP);
+        fillChangedProps(mResult, IncrementType.SET);
 
-        return mResult.immutableCol();
+        return mResult.immutable().mapSetValues(new GetValue<Pair<Property<?>, LinkType>, CalcProperty>() {
+            public Pair<Property<?>, LinkType> getMapValue(CalcProperty value) {
+                return new Pair<Property<?>, LinkType>(value, LinkType.DEPEND);
+            }});
+    }
+
+    public void fillChangedProps(MExclSet<CalcProperty> mSet, IncrementType type) {
+        for(PrevScope scope : PrevScope.values())
+            mSet.exclAdd(getChanged(type, scope));
     }
 
     protected boolean useSimpleIncrement() {
@@ -134,6 +144,6 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     public Where getRemoveWhere(Expr joinExpr, PropertyChanges newChanges) {
-        return getChanged(IncrementType.DROP).getExpr(MapFact.singleton(interfaces.single(), joinExpr), newChanges).getWhere();
+        return getChanged(IncrementType.DROP, ChangeEvent.scope).getExpr(MapFact.singleton(interfaces.single(), joinExpr), newChanges).getWhere();
     }
 }

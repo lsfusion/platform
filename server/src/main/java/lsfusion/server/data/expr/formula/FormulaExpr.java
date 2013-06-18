@@ -9,6 +9,8 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.UnknownClass;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
@@ -28,14 +30,11 @@ public class FormulaExpr extends StaticClassExpr {
     public final static String MULT2 = "(prm1*prm2)";
     protected final ImList<BaseExpr> exprs;
 
-    protected final FormulaImpl formula;
+    protected final FormulaJoinImpl formula;
 
-    protected final ExprSource exprSource;
-
-    private FormulaExpr(ImList<BaseExpr> exprs, FormulaImpl formula) {
+    private FormulaExpr(ImList<BaseExpr> exprs, FormulaJoinImpl formula) {
         this.exprs = exprs;
         this.formula = formula;
-        this.exprSource = new ListExprSource(exprs);
     }
 
     public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
@@ -56,16 +55,24 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     @Override
-    public String getSource(CompileSource compile) {
-        return formula.getSource(compile, exprSource);
+    public String getSource(final CompileSource compile) {
+        return formula.getSource(new ListExprSource(exprs) {
+            public CompileSource getCompileSource() {
+                return compile;
+            }});
     }
 
     public ConcreteClass getStaticClass() {
-        return formula.getStaticClass(exprSource);
+        if(formula instanceof CustomFormulaImpl && ((CustomFormulaImpl)formula).valueClass instanceof UnknownClass) // так как это один очень частный случай, генерации id'ков
+            return ((CustomFormulaImpl)formula).valueClass;
+        return (DataClass)getSelfType();
     }
 
-    public Type getType(KeyType keyType) {
-        return formula.getType(exprSource, keyType);
+    public Type getType(final KeyType keyType) {
+        return formula.getType(new ContextListExprType(exprs) {
+            public KeyType getKeyType() {
+                return keyType;
+            }});
     }
 
     public boolean twins(TwinImmutableObject o) {
@@ -111,15 +118,15 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     // методы для создания
-    public static Expr createCustomFormula(final String formula, final ConcreteClass value, Expr prm1) {
+    public static Expr createCustomFormula(final String formula, final FormulaClass value, Expr prm1) {
         return createCustomFormula(formula, value, MapFact.singleton("prm1", prm1));
     }
 
-    public static Expr createCustomFormula(final String formula, final ConcreteClass value, Expr prm1, Expr prm2) {
+    public static Expr createCustomFormula(final String formula, final FormulaClass value, Expr prm1, Expr prm2) {
         return createCustomFormula(formula, value, MapFact.toMap("prm1", prm1, "prm2", prm2));
     }
 
-    public static Expr createCustomFormula(final String formula, final ConcreteClass valueClass, ImMap<String, ? extends Expr> params) {
+    public static Expr createCustomFormula(final String formula, final FormulaClass valueClass, ImMap<String, ? extends Expr> params) {
         ImOrderSet<String> keys = params.keys().toOrderSet();
 
         ImMap<String, Integer> mapParams = keys.mapOrderValues(new GetIndex<Integer>() {
@@ -133,7 +140,7 @@ public class FormulaExpr extends StaticClassExpr {
         return create(new CustomFormulaImpl(formula, mapParams, valueClass), exprs);
     }
 
-    public static Expr create(final FormulaImpl formula, ImList<? extends Expr> exprs) {
+    public static Expr create(final FormulaJoinImpl formula, ImList<? extends Expr> exprs) {
         return new ExprPullWheres<Integer>() {
             protected Expr proceedBase(ImMap<Integer, BaseExpr> map) {
                 return createBase(ListFact.fromIndexedMap(map), formula);
@@ -141,7 +148,7 @@ public class FormulaExpr extends StaticClassExpr {
         }.proceed(exprs.toIndexedMap());
     }
 
-    private static Expr createBase(ImList<BaseExpr> exprs, final FormulaImpl formula) {
+    private static Expr createBase(ImList<BaseExpr> exprs, final FormulaJoinImpl formula) {
         if (formula instanceof CustomFormulaImpl) {
             CustomFormulaImpl customFormula = (CustomFormulaImpl) formula;
             if (customFormula.formula.equals(MIN2)) {

@@ -1,6 +1,7 @@
 package lsfusion.server.data.where.classes;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -31,7 +32,7 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     }
 
     public boolean meansCompatible(ClassWhere<K> where) {
-        return compatible(where) && means(where);
+        return compatible(where) && means(where, true); // с implicit cast'ом
     }
 
     public ClassWhere() {
@@ -173,6 +174,20 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
                     return false;
         }
         return true;
+    }
+
+    public ImSet<K> getFullInterfaces() {
+        ImSet<K> result = null;
+        for (And<K> where : wheres)
+            if(result == null)
+                result = where.keys();
+            else
+                result = result.filter(where.keys());
+        return result;
+    }
+
+    public boolean isEqual(ImSet<K> interfaces) {
+        return isFalse() || BaseUtils.hashEquals(getFullInterfaces(), interfaces);
     }
 }
 

@@ -269,7 +269,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
         if(type==Modify.DELETE) { // статистику пока не учитываем
             return new SessionTable(name, keys, properties, count - deleteRecords(session, keyFields), classes, propertyClasses).
-                    updateStatistics(session, count, owner);
+                    updateStatistics(session, count, owner).checkClasses(session, null);
         }
 
         boolean update = (type== Modify.UPDATE);
@@ -289,7 +289,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
         return new SessionTable(name, keys, properties, count + (update?0:1),
                         orFieldsClassWheres(classes, propertyClasses, keyFields, propFields)).
-                            updateStatistics(session, count, owner);
+                            updateStatistics(session, count, owner).checkClasses(session, null);
     }
 
     public SessionTable modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, Modify type, QueryEnvironment env, Object owner) throws SQLException {
@@ -315,13 +315,13 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 break;
             case DELETE:
                 return new SessionTable(name, keys, properties, count - session.deleteRecords(modify), classes, propertyClasses).
-                        updateStatistics(session, count, owner);
+                        updateStatistics(session, count, owner).checkClasses(session, null);
             default:
                 throw new RuntimeException("should not be");
         }
         return new SessionTable(name, keys, properties, count + inserted,
                         orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
-                            updateStatistics(session, count, owner);
+                            updateStatistics(session, count, owner).checkClasses(session, null);
     }
     public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Integer, Integer>[] shifts) throws SQLException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
@@ -384,7 +384,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     return value.or(new ClassWhere<Field>(result.filterIncl(SetFact.addExcl(getTableKeys(), key))));
                 }});
         }
-        return new SessionTable(name, keys, properties, count, updatedClasses, updatedPropertyClasses);
+        return new SessionTable(name, keys, properties, count, updatedClasses, updatedPropertyClasses); // не check'аем классы, так как для этого update и есть checkClasses(session.sql, null);
     }
 
     public SessionTable updateStatistics(final SQLSession session, int prevCount, final Object owner) throws SQLException {
@@ -442,7 +442,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
                 QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<KeyField, PropertyField>(remainKeys);
 
-                if(remainKeys.size()==keys.size()) { // для оптимизации
+                if (remainKeys.size() == keys.size()) { // для оптимизации
                     lsfusion.server.data.query.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
                     moveData.and(prevJoin.getWhere());
                     moveData.addProperties(prevJoin.getExprs().filterIncl(remainProps));
@@ -451,7 +451,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     lsfusion.server.data.query.Join<PropertyField> prevJoin = join(tableKeys);
                     ImRevMap<KeyField, KeyExpr> groupKeys = tableKeys.filterInclRev(remainKeys);
                     moveData.and(GroupExpr.create(groupKeys, prevJoin.getWhere(), moveData.getMapExprs()).getWhere());
-                    for(PropertyField prop : remainProps)
+                    for (PropertyField prop : remainProps)
                         moveData.addProperty(prop, GroupExpr.create(groupKeys, prevJoin.getExpr(prop), GroupType.ANY, moveData.getMapExprs()));
                 }
                 session.insertSessionSelect(name, moveData.getQuery(), QueryEnvironment.empty);
@@ -484,5 +484,11 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             return this;
         else
             return new SessionTable(name, keys, properties, count, fixedClasses, propertyClasses);
+    }
+
+    public SessionTable checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+        assert assertCheckClasses(session, baseClass);
+
+        return this;
     }
 }

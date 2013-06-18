@@ -1900,13 +1900,25 @@ public class ScriptingLogicsModule extends LogicsModule {
         addConstraint((LCP<?>) property, type, checkedProps, event, this);
     }
 
+    private PrevScope prevScope = null;
+    public void setPrevScope(Event event) {
+        assert prevScope == null;
+        prevScope = event.getScope();
+    }
+
+    public void dropPrevScope(Event event) {
+        assert prevScope.equals(event.getScope());
+        prevScope = null;
+    }
+
     public LPWithParams addScriptedSessionProp(IncrementType type, LPWithParams property) {
         scriptLogger.info("addScriptedSessionProp(" + type + ", " + property + ");");
         LCP newProp;
+        PrevScope scope = (prevScope == null ? PrevScope.DB : prevScope);
         if (type == null) {
-            newProp = addOldProp((LCP) property.property);
+            newProp = addOldProp((LCP) property.property, scope);
         } else {
-            newProp = addCHProp((LCP) property.property, type);
+            newProp = addCHProp((LCP) property.property, type, scope);
         }
         return new LPWithParams(newProp, property.usedParams);
     }
@@ -1963,7 +1975,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             return ((LCP<?>)value).property;
         }};
 
-    public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, Set<LCP> prevStart, List<LPWithParams> noInline, boolean forceInline) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, List<LPWithParams> noInline, boolean forceInline) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedEvent(" + whenProp + ", " + event + ", " + orders + ", " + descending + ", " + baseEvent + ");");
         checkActionProperty(event.property);
         if(noInline==null) {
@@ -1972,17 +1984,17 @@ public class ScriptingLogicsModule extends LogicsModule {
                 noInline.add(new LPWithParams(null, asList(usedParam)));
         }
         List<Object> params = getParamsPlainList(asList(event, whenProp), orders, noInline);
-        addEventAction(baseEvent, descending, false, prevStart == null ? null : SetFact.fromJavaSet(prevStart).mapSetValues(getProp), noInline.size(), forceInline, params.toArray());
+        addEventAction(baseEvent, descending, false, noInline.size(), forceInline, params.toArray());
     }
 
-    public void addScriptedGlobalEvent(LPWithParams event, Event baseEvent, boolean single, String showDep, Set<LCP> prevStart) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedGlobalEvent(LPWithParams event, Event baseEvent, boolean single, String showDep) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedGlobalEvent(" + event + ", " + baseEvent + ");");
         checkActionProperty(event.property);
         checkEventNoParameters(event.property);
         ActionProperty action = (ActionProperty) event.property.property;
         if(showDep!=null)
             action.showDep = findLPByCompoundName(showDep).property;
-        addBaseEvent(action, baseEvent, false, single, SetFact.fromJavaSet(prevStart).mapSetValues(getProp));
+        addBaseEvent(action, baseEvent, false, single);
     }
 
     public void addScriptedShowDep(String property, String propFrom) throws ScriptingErrorLog.SemanticErrorException {

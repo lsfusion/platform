@@ -369,10 +369,10 @@ public class DerivedProperty {
         return new CalcPropertyMapImplement<GroupProperty.Interface<T>, T>(groupProperty, BaseUtils.<ImMap<GroupProperty.Interface<T>, T>>immutableCast(groupProperty.getMapInterfaces()).toRevExclMap());
     }
 
-    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createFormula(ImSet<T> interfaces, String formula, ConcreteValueClass valueClass, ImList<? extends CalcPropertyInterfaceImplement<T>> params) {
+    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createFormula(ImSet<T> interfaces, String formula, DataClass valueClass, ImList<? extends CalcPropertyInterfaceImplement<T>> params) {
         return createFormula(genID(), "sys", interfaces, formula, valueClass, params);
     }
-    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createFormula(String sID, String caption, ImSet<T> interfaces, String formula, ConcreteValueClass valueClass, ImList<? extends CalcPropertyInterfaceImplement<T>> params) {
+    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createFormula(String sID, String caption, ImSet<T> interfaces, String formula, DataClass valueClass, ImList<? extends CalcPropertyInterfaceImplement<T>> params) {
         final ImRevMap<T, JoinProperty.Interface> joinMap = interfaces.mapRevValues(JoinProperty.genInterface);
         ImRevMap<JoinProperty.Interface, T> revJoinMap = joinMap.reverse();
 

@@ -35,6 +35,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.where.OrWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 
@@ -287,7 +288,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
         if(thisExpr!=null) {
             for(ClassExprWhere packed : thisExpr.packNoChange)
-                if(packed.means(packClasses)) // если более общим пакуем
+                if(packed.means(packClasses, OrWhere.implicitCast)) // если более общим пакуем
                     return thisExpr;
 
             Expr packResult = thisExpr.packClassExprs.get(packClasses);
@@ -307,7 +308,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             if(thisExpr!=null) {
                 Iterator<ClassExprWhere> i = thisExpr.packNoChange.iterator();
                 while(i.hasNext())
-                    if(packClasses.means(i.next()))
+                    if(packClasses.means(i.next(), OrWhere.implicitCast))
                         i.remove();
                 thisExpr.packNoChange.add(packClasses);
 

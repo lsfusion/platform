@@ -52,7 +52,8 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
         return TRUE.and(where);
     }
 
-    public static StaticValueExpr COUNT = new StaticValueExpr(1, IntegerClass.instance);
+    public static IntegralClass COUNTCLASS = IntegerClass.instance;
+    public static StaticValueExpr COUNT = new StaticValueExpr(1, COUNTCLASS);
 
     public String getSource(CompileSource compile) {
         return compile.params.get(this);

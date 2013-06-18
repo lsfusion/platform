@@ -287,8 +287,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 pending.add(key);
             }
 
-            if(pending.contains(key))
-                stackUsedPendingKeys.peek().add(key);
+            if(pending.contains(key)) {
+                stackUsedPendingKeys.peek().add(key); // если stackUsedPendingKeys пустой, значит висячий ключ, например PREV с датой ключем и в событии
+            }
 
             return source;
         }
@@ -1393,15 +1394,22 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException {
+        System.out.println(select + '\n' + readSelect(session, env));
+    }
+
+    public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException {
         // выведем на экран
         ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> result = execute(session, env);
+        String resultString = "";
+        if(result.isEmpty())
+            return resultString;
 
         String name = "";
         for(int i=0,size=keyReaders.size();i<size;i++)
             name += StringUtils.rightPad(keyNames.get(keyReaders.getKey(i)), keyReaders.getValue(i).getCharLength().getAprValue());
         for(int i=0,size=propertyReaders.size();i<size;i++)
             name += StringUtils.rightPad(propertyNames.get(propertyReaders.getKey(i)), propertyReaders.getValue(i).getCharLength().getAprValue());
-        System.out.println(name);
+        resultString += name + '\n';
 
         for(int i=0,size=result.size();i<size;i++) {
             String rowName = "";
@@ -1413,8 +1421,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             for(int j=0,sizeJ=rowMap.size();j<sizeJ;j++)
                 rowName += StringUtils.rightPad(BaseUtils.nullToString(rowMap.getValue(j)), propertyReaders.get(rowMap.getKey(j)).getCharLength().getAprValue());
 
-            System.out.println(rowName);
+            resultString += rowName + '\n';
         }
+        return resultString;
     }
 }
 

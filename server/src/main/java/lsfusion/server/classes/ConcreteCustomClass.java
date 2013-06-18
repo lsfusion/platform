@@ -49,8 +49,11 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return objectClass;
     }
 
+    public static boolean inSet(ConcreteClass cClass, AndClassSet set) {
+        return set.containsAll(cClass, true); // считаем что примитивы могут быть implicit cast'ся
+    }
     public boolean inSet(AndClassSet set) {
-        return set.containsAll(this);
+        return inSet(this, set);
     }
 
     public void fillNextConcreteChilds(MSet<ConcreteCustomClass> mClassSet) {
@@ -85,7 +88,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return false;
     }
 
-    public boolean containsAll(AndClassSet node) {
+    public boolean containsAll(AndClassSet node, boolean implicitCast) {
         return node instanceof ConcreteCustomClass && this==node;
     }
 
@@ -102,10 +105,6 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
     public static AndClassSet or(ConcreteObjectClass set1, AndClassSet set2) {
         return set1.inSet(set2)?set2:OrObjectClassSet.or(set1,set2); 
-    }
-
-    public ValueClassSet getKeepClass() {
-        return getBaseClass().getUpSet();
     }
 
     public AndClassSet[] getAnd() {

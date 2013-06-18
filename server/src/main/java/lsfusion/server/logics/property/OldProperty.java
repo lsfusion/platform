@@ -15,8 +15,12 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class OldProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
-    public OldProperty(CalcProperty<T> property) {
-        super("OLD_" + property.getSID(), property.caption + " (в БД)", property);
+    public final PrevScope scope;
+
+    public OldProperty(CalcProperty<T> property, PrevScope scope) {
+        super("OLD_" + property.getSID() + "_" + scope.getSID(), property.caption + " (в БД)", property);
+
+        this.scope = scope;
     }
 
 /*    @Override

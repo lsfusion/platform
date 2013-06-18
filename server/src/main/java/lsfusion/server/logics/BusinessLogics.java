@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.data.SQLSession;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -833,15 +834,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     @IdentityLazy
     public ImOrderMap<OldProperty, SessionEnvEvent> getApplyEventDependProps() {
-        MOrderMap<OldProperty, SessionEnvEvent> result = MapFact.mOrderMap(SessionEnvEvent.<OldProperty>mergeSessionEnv());
+        MOrderMap<OldProperty, SessionEnvEvent> mResult = MapFact.mOrderMap(SessionEnvEvent.<OldProperty>mergeSessionEnv());
         for (Property<?> property : getPropertyList()) {
             SessionEnvEvent sessionEnv;
             if (property instanceof ActionProperty && (sessionEnv = ((ActionProperty) property).getSessionEnv(SystemEvent.APPLY))!=null)
-                result.addAll(property.getOldDepends().toMap(sessionEnv).toOrderMap());
+                mResult.addAll(property.getOldDepends().toMap(sessionEnv).toOrderMap());
             if (property instanceof DataProperty && ((DataProperty) property).event != null)
-                result.addAll(((DataProperty) property).event.getOldDepends().toMap(SessionEnvEvent.ALWAYS).toOrderMap());
+                mResult.addAll(((DataProperty) property).event.getOldDepends().toMap(SessionEnvEvent.ALWAYS).toOrderMap());
         }
-        return result.immutableOrder();
+        ImOrderMap<OldProperty, SessionEnvEvent> result = mResult.immutableOrder();
+
+        assert result.keys().filterFn(new SFunctionSet<OldProperty>() {
+            public boolean contains(OldProperty element) {
+                return !element.scope.onlyDB();
+            }}).isEmpty();
+
+        return result;
     }
 
     @IdentityLazy
@@ -964,6 +972,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 if (action.getSessionEnv(SystemEvent.APPLY)==SessionEnvEvent.ALWAYS && action.resolve)
                     session.resolve(action);
             }
+    }
+
+    public String checkClasses(DataSession session) throws SQLException {
+        String message = session.checkClasses();
+        for (Property property : getPropertyList())
+            if (property instanceof StoredDataProperty)
+                message += session.checkClasses((StoredDataProperty)property);
+        return message;
+    }
+
+    public void recalculateClasses(SQLSession session) throws SQLException {
+        for (Property property : getPropertyList())
+            if (property instanceof StoredDataProperty)
+                ((StoredDataProperty)property).recalculateClasses(session, LM.baseClass);;
     }
 
     protected LP getLP(String sID) {

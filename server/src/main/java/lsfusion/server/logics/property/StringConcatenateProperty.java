@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
+import lsfusion.server.data.expr.formula.StringJoinConcatenateFormulaImpl;
 
 public class StringConcatenateProperty extends FormulaImplProperty {
 
@@ -13,7 +14,7 @@ public class StringConcatenateProperty extends FormulaImplProperty {
     }
 
     public StringConcatenateProperty(String sID, String caption, int intNum, String separator, boolean caseInsensitive) {
-        super(sID, caption, intNum, new StringConcatenateFormulaImpl(separator, caseInsensitive));
+        super(sID, caption, intNum, new StringJoinConcatenateFormulaImpl(separator, caseInsensitive));
     }
 
     @Override

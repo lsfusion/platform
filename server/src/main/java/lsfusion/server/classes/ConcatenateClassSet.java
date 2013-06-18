@@ -56,14 +56,14 @@ public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // Ð
         return false;
     }
 
-    public boolean containsAll(AndClassSet node) {
+    public boolean containsAll(AndClassSet node, boolean implicitCast) {
         if(!(node instanceof ConcatenateClassSet)) return false;
 
         ConcatenateClassSet concatenate = (ConcatenateClassSet) node;
         assert concatenate.classes.length == classes.length;
 
         for(int i=0;i<classes.length;i++)
-            if(!classes[i].containsAll(concatenate.classes[i]))
+            if(!classes[i].containsAll(concatenate.classes[i], implicitCast))
                 return false;
         return true; 
     }
@@ -85,11 +85,7 @@ public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // Ð
     }
 
     public boolean inSet(AndClassSet set) {
-        return set.containsAll(this);
-    }
-
-    public ValueClassSet getKeepClass() {
-        return this;
+        return ConcreteCustomClass.inSet(this, set);
     }
 
     @Override

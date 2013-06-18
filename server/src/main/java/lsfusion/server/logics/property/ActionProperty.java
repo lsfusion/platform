@@ -3,6 +3,7 @@ package lsfusion.server.logics.property;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.NotFunctionSet;
 import lsfusion.base.Pair;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -202,7 +203,6 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public boolean singleApply = false;
-    public ImSet<CalcProperty> prevStart;
     public boolean resolve = false;
     
     private Object beforeAspects = ListFact.mCol();
@@ -311,25 +311,13 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     @IdentityLazy
-    public ImSet<OldProperty> getSessionEventOldDepends() { // фильтрует те свойства которые нужны не на
+    public ImSet<OldProperty> getSessionEventOldDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
         assert getSessionEnv(SystemEvent.SESSION)!=null;
-
-        ImSet<OldProperty> result = getOldDepends();
-        if(!prevStart.isEmpty())
-            result = result.filterFn(new NotFunctionSet<OldProperty>(prevStart.mapSetValues(new GetValue<OldProperty, CalcProperty>() {
-                public OldProperty getMapValue(CalcProperty value) {
-                    return value.getOld();
-                }})));
-        return result;
+        return getOldDepends().filterFn(new SFunctionSet<OldProperty>() {
+            public boolean contains(OldProperty element) {
+                return element.scope == PrevScope.EVENT;
+            }});
     }
-
-    @IdentityLazy
-    public ImSet<OldProperty> getSessionEventOldStartDepends() {
-        assert getSessionEnv(SystemEvent.SESSION)!=null;
-
-        return getOldDepends(true).remove(getSessionEventOldDepends());
-    }
-
 
     public ActionPropertyMapImplement<?, P> compile() {
        return null;

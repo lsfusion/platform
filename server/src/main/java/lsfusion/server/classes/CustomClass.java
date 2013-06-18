@@ -458,6 +458,10 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return property;
     }
 
+    public void fillChangedProps(MExclSet<CalcProperty> mSet, IncrementType type) { // использование в aspectChangeExtProps у ADDOBJ, ChangeClass и т.п.
+        getProperty().fillChangedProps(mSet, type);
+    }
+
     public static ImSet<IsClassProperty> getProperties(ImSet<? extends ValueClass> classes) {
         return ((ImSet<ValueClass>)classes).mapSetValues(new GetValue<IsClassProperty, ValueClass>() {
             public IsClassProperty getMapValue(ValueClass value) {
@@ -474,24 +478,20 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     public ImSet<CalcProperty> getChildProps() {
         ImSet<CustomClass> childs = getChilds();
-        MExclSet<CalcProperty> mResult = SetFact.mExclSet(childs.size()*2);
+        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
         for(CustomClass customClass : childs) {
-            mResult.exclAdd(customClass.getProperty().getChanged(IncrementType.SET));
-            mResult.exclAdd(customClass.getProperty().getChanged(IncrementType.DROP));
+            customClass.fillChangedProps(mResult, IncrementType.SET);
+            customClass.fillChangedProps(mResult, IncrementType.DROP);
         }
         return mResult.immutable();
     }
 
     public ImSet<CalcProperty> getChildDropProps(final ConcreteObjectClass toClass) {
-        return getChilds().filterFn(new SFunctionSet<CustomClass>() {
-            public boolean contains(CustomClass customClass) {
-                return !(toClass instanceof CustomClass && ((CustomClass) toClass).isChild(customClass));
-            }
-        }).mapSetValues(new GetValue<CalcProperty, CustomClass>() {
-            public CalcProperty getMapValue(CustomClass value) {
-                return value.getProperty().getChanged(IncrementType.DROP);
-            }
-        });
+        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
+        for(CustomClass child : getChilds())
+            if(!(toClass instanceof CustomClass && ((CustomClass) toClass).isChild(child)))
+                child.fillChangedProps(mResult, IncrementType.DROP);
+        return mResult.immutable();
     }
 
     public ImSet<CalcProperty> getParentSetProps() {
@@ -499,19 +499,17 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         fillParents(mParents);
         ImSet<CustomClass> parents = mParents.immutable();
 
-        MExclSet<CalcProperty> result = SetFact.mExclSet(parents.size());
+        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
         for(CustomClass parent : parents)
-            result.exclAdd(parent.getProperty().getChanged(IncrementType.SET));
-        return result.immutable();
+            parent.fillChangedProps(mResult, IncrementType.SET);
+        return mResult.immutable();
     }
 
-    public static ImSet<ChangedProperty> getChangeProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) {
-        MExclSet<ChangedProperty> result = SetFact.mExclSet(addClasses.size() + removeClasses.size());
+    public static void getChangeProperties(MExclSet<CalcProperty> mResult, ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) {
         for(CustomClass addClass : addClasses)
-            result.exclAdd(addClass.getProperty().getChanged(IncrementType.SET));
+            addClass.fillChangedProps(mResult, IncrementType.SET);
         for(CustomClass removeClass : removeClasses)
-            result.exclAdd(removeClass.getProperty().getChanged(IncrementType.DROP));
-        return result.immutable();
+            removeClass.fillChangedProps(mResult, IncrementType.DROP);
     }
 
     public static ImSet<CalcProperty<ClassPropertyInterface>> getProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses) {
@@ -526,7 +524,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         MSet<CustomClass> mAddClasses = SetFact.mSet();
         MSet<CustomClass> mRemoveClasses = SetFact.mSet();
         getDiffSet(cls, mAddClasses, mRemoveClasses);
-        fill.exclAddAll(getChangeProperties(mAddClasses.immutable(), mRemoveClasses.immutable()));
+        getChangeProperties(fill, mAddClasses.immutable(), mRemoveClasses.immutable());
     }
 
     public static ActionProperty getChangeClassAction(ObjectClass cls) {

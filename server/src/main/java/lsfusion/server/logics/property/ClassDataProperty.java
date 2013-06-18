@@ -3,8 +3,10 @@ package lsfusion.server.logics.property;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.data.GlobalTable;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
@@ -38,6 +40,10 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
 
     protected ClassWhere<Object> getClassValueWhere(ClassType type) {
         return new ClassWhere<Object>(MapFact.<Object, AndClassSet>toMap(interfaces.single(), set, "value", set.getBaseClass().objectClass));
+    }
+
+    public Table.Join.Expr getInconsistentExpr(Expr expr) {
+        return getInconsistentExpr(MapFact.singleton(interfaces.single(), expr), set.getBaseClass());
     }
 
     public Table.Join.Expr getStoredExpr(Expr expr) {

@@ -1,9 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Result;
-import lsfusion.base.SFunctionSet;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -21,6 +18,7 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.PropStat;
@@ -49,6 +47,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.table.ImplementTable;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -119,7 +118,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         this.propertyClasses = propertyClasses;
 
         // assert classes.fitTypes();
-        assert (this instanceof SerializedTable) || classes.isFull(keys.getSet()) && propClassesFull(); // см. ClassExprWhere.getKeyType
+        assert (this instanceof SerializedTable || this instanceof ImplementTable.InconsistentTable) || classes.isEqual(keys.getSet()) && propClassesFull(); // см. ClassExprWhere.getKeyType
     }
 
     private <K extends Field> ImMap<K, DataClass> getDataFields(ImSet<K> fields) {
@@ -144,8 +143,11 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return true;
     }
     private boolean propClassesFull() {
+        if(!BaseUtils.hashEquals(propertyClasses.keys(), properties))
+            return false;
+
         for(int i=0,size=propertyClasses.size();i<size;i++)
-            if(!propertyClasses.getValue(i).isFull(SetFact.addExcl(keys.getSet(), propertyClasses.getKey(i))))
+            if(!propertyClasses.getValue(i).isEqual(SetFact.addExcl(keys.getSet(), propertyClasses.getKey(i))))
                 return false;
         return true;
     }
@@ -221,6 +223,24 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         query.addProperties(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
         return query.executeClasses(session, baseClass);
+    }
+
+    // для проверки общей целостности есть специальные административные процедуры
+    public boolean assertCheckClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+        return true;
+
+/*        if(baseClass==null)
+            baseClass = ThreadLocalContext.getBusinessLogics().LM.baseClass;
+
+        Pair<ClassWhere<KeyField>,ImMap<PropertyField,ClassWhere<Field>>> readClasses = SessionRows.getClasses(properties, read(session, baseClass).getMap());
+        if(!readClasses.first.means(classes, true))
+            return false;
+
+        for(PropertyField property : properties)
+            if(!readClasses.second.get(property).means(propertyClasses.get(property), true))
+                return false;
+
+        return true;*/
     }
 
     protected ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
