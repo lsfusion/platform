@@ -414,6 +414,8 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> implements MCacheMap<K, V
                             return false;
 
                         ni++;
+                        if(ni>=size)
+                            break;
 
                         int kHash = keys[ni].hashCode();
                         if(kHash != hash) {
