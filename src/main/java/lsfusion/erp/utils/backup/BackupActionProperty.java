@@ -36,18 +36,21 @@ public class BackupActionProperty extends ScriptingActionProperty {
             String backupFilePath = context.getDbManager().backupDB(backupFileName);
             if (backupFilePath != null) {
                 String backupFileLogPath = backupFilePath + ".log";
+                String backupFileExtension = backupFilePath.substring(backupFilePath.lastIndexOf("."), backupFilePath.length());
 
                 DataObject backupObject = session.addObject((ConcreteCustomClass) LM.findClassByCompoundName("Backup"));
                 LM.findLCPByCompoundName("dateBackup").change(new java.sql.Date(currentTime), session, backupObject);
                 LM.findLCPByCompoundName("timeBackup").change(new java.sql.Time(currentTime), session, backupObject);
                 LM.findLCPByCompoundName("fileBackup").change(backupFilePath, session, backupObject);
+                LM.findLCPByCompoundName("nameBackup").change(backupFileName + backupFileExtension, session, backupObject);
                 LM.findLCPByCompoundName("fileLogBackup").change(backupFileLogPath, session, backupObject);
 
                 LM.findLCPByCompoundName("logBackup").change(readFileToString(backupFileLogPath), session, backupObject);
 
                 session.apply(context.getBL());
 
-                LM.findLCPByCompoundName("fileNameBackup").change(backupFilePath, context.getSession());
+                LM.findLCPByCompoundName("backupFilePath").change(backupFilePath, context.getSession());
+                LM.findLCPByCompoundName("backupFileName").change(backupFileName + backupFileExtension, context.getSession());
             }
         } catch (Exception e) {
             Throwables.propagate(e);

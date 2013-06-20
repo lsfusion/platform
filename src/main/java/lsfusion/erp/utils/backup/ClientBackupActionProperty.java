@@ -22,12 +22,13 @@ public class ClientBackupActionProperty extends ScriptingActionProperty {
         try {
             new BackupActionProperty(LM).executeCustom(context);
 
-            String lastBackupFilePath = (String) LM.findLCPByCompoundName("fileNameBackup").read(context.getSession());
+            String lastBackupFilePath = (String) LM.findLCPByCompoundName("backupFilePath").read(context.getSession());
+            String backupFileName = ((String) LM.findLCPByCompoundName("backupFileName").read(context.getSession())).trim();
             if (lastBackupFilePath != null) {
                 lastBackupFilePath = lastBackupFilePath.trim();
                 File file = new File(lastBackupFilePath);
                 if (file.exists()) {
-                    context.delayUserInterfaction(new ExportFileClientAction(lastBackupFilePath, IOUtils.getFileBytes(file)));
+                    context.delayUserInterfaction(new ExportFileClientAction(backupFileName, IOUtils.getFileBytes(file)));
                 }
             }
         } catch (Exception e) {

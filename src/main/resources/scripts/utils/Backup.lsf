@@ -12,11 +12,13 @@ TABLE backup(Backup);
 dateBackup 'Дата' = DATA DATE (Backup);
 timeBackup 'Время' = DATA TIME (Backup);
 fileBackup 'Адрес файла' = DATA STRING[200] (Backup);
+nameBackup 'Имя файла' = DATA STRING[100] (Backup);
 fileLogBackup 'Адрес лога файла' = DATA STRING[200] (Backup);
 fileDeletedBackup 'Файл удалён' = DATA BOOLEAN (Backup);
 logBackup 'Лог' = DATA TEXT (Backup);
 
-fileNameBackup 'Файл резервной копии' = DATA SESSION STRING[200]();
+backupFileName 'Имя файла резервной копии' = DATA SESSION STRING[100] ();
+backupFilePath 'Файл резервной копии' = DATA SESSION STRING[200]();
 
 FORM backup 'Резервное копирование'
     OBJECTS b = Backup
