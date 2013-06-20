@@ -150,8 +150,12 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         if(orderWhere.isTrue()) // оптимизация для SQL серверов
             return expr.compare(this, desc ? Compare.LESS_EQUALS : Compare.GREATER_EQUALS);
         else {
-            Where greater = expr.compare(this,Compare.GREATER);
-            return (desc?greater.not():greater).or(expr.compare(this,Compare.EQUALS).and(orderWhere));
+            Where greater;
+            if(desc)
+                greater = expr.compare(this, Compare.GREATER_EQUALS).not();
+            else
+                greater = expr.compare(this,Compare.GREATER);
+            return greater.or(expr.compare(this,Compare.EQUALS).and(orderWhere));
         }
     }
 
