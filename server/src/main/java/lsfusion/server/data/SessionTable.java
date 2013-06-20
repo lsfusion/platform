@@ -384,7 +384,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     return value.or(new ClassWhere<Field>(result.filterIncl(SetFact.addExcl(getTableKeys(), key))));
                 }});
         }
-        return new SessionTable(name, keys, properties, count, updatedClasses, updatedPropertyClasses); // не check'аем классы, так как для этого update и есть checkClasses(session.sql, null);
+        return new SessionTable(name, keys, properties, count, updatedClasses, updatedPropertyClasses).checkClasses(session.sql, null);
     }
 
     public SessionTable updateStatistics(final SQLSession session, int prevCount, final Object owner) throws SQLException {
@@ -484,6 +484,42 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             return this;
         else
             return new SessionTable(name, keys, properties, count, fixedClasses, propertyClasses);
+    }
+
+    // для проверки общей целостности есть специальные административные процедуры
+    private boolean assertCheckClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+        if(1==1 || session.inconsistent)
+            return true;
+
+        if(baseClass==null)
+            baseClass = ThreadLocalContext.getBusinessLogics().LM.baseClass;
+
+        final Pair<ClassWhere<KeyField>,ImMap<PropertyField,ClassWhere<Field>>> readClasses;
+        ImMap<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> readData = readClasses(session, baseClass); // теоретически может очень долго работать, когда много колонок, из-за большого количества case'ов по которым надо группировать
+        if(readData!=null)
+            readClasses = SessionRows.getClasses(readData,  properties);
+        else
+            readClasses = SessionRows.getClasses(properties, read(session, baseClass).getMap());
+
+        // похоже все же не имеет смысла пока
+/*        if(!classes.means(readClasses.first, true))
+            classes = readClasses.first;
+        propertyClasses = propertyClasses.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ClassWhere<Field>>() {
+            public ClassWhere<Field> getMapValue(PropertyField key, ClassWhere<Field> value) {
+                ClassWhere<Field> readWhere = readClasses.second.get(key);
+                if(!value.means(readWhere, true))
+                    return readWhere;
+                return value;
+            }});*/
+
+        if(!readClasses.first.means(classes, true))
+            return false;
+
+        for(PropertyField property : properties)
+            if(!readClasses.second.get(property).means(propertyClasses.get(property), true))
+                return false;
+
+        return true;
     }
 
     public SessionTable checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {

@@ -365,7 +365,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         // при вызове readChangeTable, используется assertion (см. assert fitKeyClasses) что если таблица подходит по классам для значения, то подходит по классам и для ключей
         // этот assertion может нарушаться если определилось конкретное значение и оно было null, как правило с комбинаторными event'ами (вообще может нарушиться и если не null, но так как propertyClasses просто вырезаются то не может), соответственно необходимо устранить этот случай
         readTable.fixKeyClasses(getClassWhere(ClassType.ASSERTFULL));
-        assert readTable.checkClasses(session, null);
+        readTable.checkClasses(session, null); // нужен как раз для проверки fixKeyClasses
 
         return readTable;
     }

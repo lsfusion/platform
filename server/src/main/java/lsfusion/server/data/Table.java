@@ -4,10 +4,8 @@ import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.OuterContext;
@@ -15,15 +13,13 @@ import lsfusion.server.caches.ParamLazy;
 import lsfusion.server.caches.TwinLazy;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.*;
-import lsfusion.server.data.expr.query.DistinctKeys;
-import lsfusion.server.data.expr.query.PropStat;
-import lsfusion.server.data.expr.query.QueryJoin;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.expr.where.cases.MCaseList;
 import lsfusion.server.data.expr.where.cases.MJoinCaseList;
 import lsfusion.server.data.expr.where.ifs.IfJoin;
@@ -39,6 +35,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
@@ -225,23 +222,149 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return query.executeClasses(session, baseClass);
     }
 
-    // для проверки общей целостности есть специальные административные процедуры
-    public boolean assertCheckClasses(SQLSession session, BaseClass baseClass) throws SQLException {
-        return true;
-
-/*        if(baseClass==null)
-            baseClass = ThreadLocalContext.getBusinessLogics().LM.baseClass;
-
-        Pair<ClassWhere<KeyField>,ImMap<PropertyField,ClassWhere<Field>>> readClasses = SessionRows.getClasses(properties, read(session, baseClass).getMap());
-        if(!readClasses.first.means(classes, true))
-            return false;
-
-        for(PropertyField property : properties)
-            if(!readClasses.second.get(property).means(propertyClasses.get(property), true))
-                return false;
-
-        return true;*/
+    private static <T extends Field> ImSet<T> splitData(ImSet<T> fields, Result<ImMap<T, DataClass>> dataClasses) {
+        MExclSet<T> mObjectFields = SetFact.mExclSetMax(fields.size());
+        MExclMap<T, DataClass> mDataClasses = MapFact.mExclMapMax(fields.size());
+        for(T field : fields) {
+            if(field.type instanceof DataClass)
+                mDataClasses.exclAdd(field, (DataClass) field.type);
+            else
+            if(field.type instanceof ObjectType)
+                mObjectFields.exclAdd(field);
+            else
+                return null;
+        }
+        dataClasses.set(mDataClasses.immutable());
+        return mObjectFields.immutable();
     }
+
+    public ImMap<ImMap<KeyField,ConcreteClass>,ImMap<PropertyField,ConcreteClass>> readClasses(SQLSession session, final BaseClass baseClass) throws SQLException {
+        final Result<ImMap<KeyField, DataClass>> dataKeys = new Result<ImMap<KeyField, DataClass>>();
+        final Result<ImMap<PropertyField, DataClass>> dataProps = new Result<ImMap<PropertyField, DataClass>>();
+        final ImSet<KeyField> objectKeys = splitData(keys.getSet(), dataKeys);
+        if(objectKeys == null)
+            return null;
+        final ImSet<PropertyField> objectProps = splitData(properties, dataProps);
+        if(objectProps == null)
+            return null;
+
+        ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
+        ImRevMap<KeyField, KeyExpr> objectMapKeys = mapKeys.filterRev(objectKeys);
+        ImRevMap<Field, KeyExpr> classKeys = MapFact.addRevExcl(objectMapKeys, KeyExpr.getMapKeys(properties));
+        if(classKeys.isEmpty())
+            return MapFact.singleton(BaseUtils.<ImMap<KeyField, ConcreteClass>>immutableCast(dataKeys.result), BaseUtils.<ImMap<PropertyField, ConcreteClass>>immutableCast(dataProps.result));
+
+        final lsfusion.server.data.query.Join<PropertyField> tableJoin = join(mapKeys);
+
+        final ValueExpr nullExpr = new ValueExpr(-2, baseClass.unknown);
+        final ValueExpr unknownExpr = new ValueExpr(-1, baseClass.unknown);
+        GetKeyValue<Expr, Field, Expr> classExpr = new GetKeyValue<Expr, Field, Expr>() {
+            public Expr getMapValue(Field key, Expr value) {
+                Expr resultExpr;
+                if((key instanceof PropertyField && !objectProps.contains((PropertyField) key)))
+                    resultExpr = unknownExpr;
+                else
+                    resultExpr = value.classExpr(baseClass).nvl(unknownExpr);
+                return resultExpr.ifElse(value.getWhere(), nullExpr);
+            }};
+        ImMap<Field, Expr> group = MapFact.addExcl(objectMapKeys, properties.mapValues(new GetValue<Expr, PropertyField>() {
+            public Expr getMapValue(PropertyField value) {
+                return tableJoin.getExpr(value);
+            }
+        })).mapValues(classExpr);
+
+        ImSet<ImMap<Field, ConcreteClass>> readClasses = new Query<Field, Object>(classKeys, GroupExpr.create(group, tableJoin.getWhere(), classKeys).getWhere()).execute(session).keyOrderSet().getSet().mapSetValues(new GetValue<ImMap<Field, ConcreteClass>, ImMap<Field, Object>>() {
+            public ImMap<Field, ConcreteClass> getMapValue(ImMap<Field, Object> value) {
+                return value.filterFnValues(new SFunctionSet<Object>() {
+                    public boolean contains(Object element) {
+                        return ((Integer) element) != -2;
+                    }
+                }).mapValues(new GetKeyValue<ConcreteClass, Field, Object>() {
+                    public ConcreteClass getMapValue(Field key, Object id) {
+                        if(key instanceof PropertyField && !objectProps.contains((PropertyField) key))
+                            return dataProps.result.get((PropertyField) key);
+                        else
+                            return baseClass.findConcreteClassID(((Integer) id) != -1 ? (Integer) id : null);
+                    }
+                });
+            }
+        });
+
+        return readClasses.mapKeyValues(new GetValue<ImMap<KeyField, ConcreteClass>, ImMap<Field, ConcreteClass>>() {
+            public ImMap<KeyField, ConcreteClass> getMapValue(ImMap<Field, ConcreteClass> value) {
+                return MapFact.addExcl(value.filter(objectKeys), dataKeys.result);
+            }}, new GetValue<ImMap<PropertyField, ConcreteClass>, ImMap<Field, ConcreteClass>>() {
+            public ImMap<PropertyField, ConcreteClass> getMapValue(ImMap<Field, ConcreteClass> value) {
+                return value.filter(properties);
+            }});
+    }
+
+    /*         final Result<ImMap<KeyField, DataClass>> dataKeys = new Result<ImMap<KeyField, DataClass>>();
+        final Result<ImMap<PropertyField, DataClass>> dataProps = new Result<ImMap<PropertyField, DataClass>>();
+        final ImSet<KeyField> objectKeys = splitData(keys.getSet(), dataKeys);
+        if(objectKeys == null)
+            return null;
+        final ImSet<PropertyField> objectProps = splitData(properties, dataProps);
+        if(objectProps == null)
+            return null;
+
+        ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
+        ImRevMap<KeyField, KeyExpr> objectMapKeys = mapKeys.filterRev(objectKeys);
+
+        final lsfusion.server.data.query.Join<PropertyField> tableJoin = join(mapKeys);
+
+        final ValueExpr unknownExpr = new ValueExpr(-1, baseClass.unknown);
+        GetValue<Expr, Expr> classExpr = new GetValue<Expr, Expr>() {
+            public Expr getMapValue(Expr value) {
+                return value.classExpr(baseClass).nvl(unknownExpr);
+            }};
+
+        ImMap<PropertyField, Expr> objectMapProps = objectProps.mapValues(new GetValue<Expr, PropertyField>() {
+            public Expr getMapValue(PropertyField value) {
+                return tableJoin.getExpr(value);
+            }
+        });
+        ImMap<Field, Expr> group = MapFact.addExcl(objectMapKeys, objectMapProps).mapValues(classExpr);
+
+        GetValue<ImMap<Field, ConcreteClass>, ImMap<Field, Object>> findClasses = new GetValue<ImMap<Field, ConcreteClass>, ImMap<Field, Object>>() {
+            public ImMap<Field, ConcreteClass> getMapValue(ImMap<Field, Object> value) {
+                return value.mapValues(new GetValue<ConcreteClass, Object>() {
+                    public ConcreteClass getMapValue(Object id) {
+                        return baseClass.findConcreteClassID(((Integer) id) != -1 ? (Integer) id : null);
+                    }
+                });
+            }};
+
+        KeyExpr propKey = new KeyExpr("prop");
+        MExclMap<PropertyField, ClassWhere<Field>> mPropertyClasses = MapFact.mExclMap(properties.size()); // из-за exception'а в том числе
+        for(final PropertyField prop : properties) {
+            boolean isObject = objectProps.contains(prop);
+
+            ImRevMap<Field, KeyExpr> classKeys = BaseUtils.immutableCast(objectMapKeys);
+            if(isObject)
+                classKeys = classKeys.addRevExcl(prop, propKey);
+
+            ImSet<ImMap<Field, ConcreteClass>> readClasses = new Query<Field, Object>(classKeys, GroupExpr.create(group.filter(classKeys.keys()), objectMapProps.get(prop).getWhere(), classKeys).getWhere()).execute(session).keyOrderSet().getSet().mapSetValues(findClasses);
+
+            ClassWhere<Field> where = ClassWhere.FALSE();
+            for(ImMap<Field, ConcreteClass> readClass : readClasses) {
+                ImMap<Field, ConcreteClass> resultClass = MapFact.addExcl(readClass, dataKeys.result);
+                if(!isObject)
+                    resultClass = resultClass.addExcl(prop, dataProps.result.get(prop));
+                where = where.or(new ClassWhere<Field>(resultClass));
+            }
+            mPropertyClasses.exclAdd(prop, where);
+        }
+
+        // в общем-то дублирование верхнего кода
+        ImSet<ImMap<KeyField, ConcreteClass>> readClasses = new Query<KeyField, Object>(objectMapKeys, GroupExpr.create(group.filter(objectMapKeys.keys()), tableJoin.getWhere(), objectMapKeys).getWhere()).execute(session).
+                keyOrderSet().getSet().mapSetValues(BaseUtils.<GetValue<ImMap<KeyField, ConcreteClass>, ImMap<KeyField, Object>>>immutableCast(findClasses));
+
+        ClassWhere<KeyField> where = ClassWhere.FALSE();
+        for(ImMap<KeyField, ConcreteClass> readClass : readClasses)
+            where = where.or(new ClassWhere<KeyField>(MapFact.addExcl(readClass, dataKeys.result)));
+        mPropertyClasses.exclAdd(prop, where);
+    */
 
     protected ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
     protected ImMap<PropertyField,ClassWhere<Field>> propertyClasses;

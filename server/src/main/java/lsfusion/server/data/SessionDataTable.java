@@ -28,12 +28,12 @@ import java.sql.SQLException;
 import static lsfusion.base.BaseUtils.hashEquals;
 
 public class SessionDataTable extends SessionData<SessionDataTable> {
-    private SessionTable table;
+    private final SessionTable table;
 
-    private ImOrderSet<KeyField> keys; // чисто для порядка ключей
+    private final ImOrderSet<KeyField> keys; // чисто для порядка ключей
 
-    private ImMap<KeyField, DataObject> keyValues;
-    private ImMap<PropertyField, ObjectValue> propertyValues;
+    private final ImMap<KeyField, DataObject> keyValues;
+    private final ImMap<PropertyField, ObjectValue> propertyValues;
 
     public SessionDataTable(SessionTable table, ImOrderSet<KeyField> keys, ImMap<KeyField, DataObject> keyValues, ImMap<PropertyField, ObjectValue> propertyValues) {
         assert keys.getSet().containsAll(table.getTableKeys());
@@ -136,8 +136,8 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
 
         this.keys = keys;
         // сначала пробежим по всем проверим с какими field'ами создавать таблицы и заодно propertyClasses узнаем, после этого batch'ем запишем
-        keyValues = rows.getKey(0);
-        propertyValues = rows.getValue(0);
+        ImMap<KeyField, DataObject> keyValues = rows.getKey(0);
+        ImMap<PropertyField, ObjectValue> propertyValues = rows.getValue(0);
 
         for(int i=1,size=rows.size();i<size;i++) {
             keyValues = keyValues.removeNotEquals(rows.getKey(i));
@@ -153,6 +153,8 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
             public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
                 return value.remove(removeProperties);
             }});
+        this.keyValues = keyValues;
+        this.propertyValues = propertyValues;
         table = SessionTable.create(session, keys.removeOrder(removeKeys), properties.remove(removeProperties), tableRows, owner);
     }
 
@@ -220,7 +222,11 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return table + "{k:" + keyValues + ",v:" + propertyValues + "}";
     }
 
-    public boolean checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
-        return table.assertCheckClasses(session, baseClass);
+    public SessionDataTable checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+        SessionTable checkTable = table.checkClasses(session, baseClass);
+        if(BaseUtils.hashEquals(checkTable, table))
+            return this;
+        else
+            return new SessionDataTable(checkTable, keys, keyValues, propertyValues);
     }
 }

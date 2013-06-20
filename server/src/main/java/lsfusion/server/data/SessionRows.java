@@ -152,6 +152,13 @@ public class SessionRows extends SessionData<SessionRows> {
         return orClasses;
     }
 
+    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getClasses(ImMap<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> rows, ImSet<PropertyField> properties) {
+        Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orClasses = new Pair<ClassWhere<KeyField>, ImMap<PropertyField,ClassWhere<Field>>>(ClassWhere.<KeyField>FALSE(), properties.toMap(ClassWhere.<Field>FALSE()));
+        for(int i=0,size=rows.size();i<size;i++)
+            orClasses = SessionTable.orFieldsClassWheres(rows.getKey(i), rows.getValue(i), orClasses.first, orClasses.second);
+        return orClasses;
+    }
+
     @IdentityLazy
     private Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getClasses() {
         return getClasses(properties, rows);
@@ -221,7 +228,7 @@ public class SessionRows extends SessionData<SessionRows> {
         return rows.toString();
     }
 
-    public boolean checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
-        return true;
+    public SessionRows checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+        return this;
     }
 }

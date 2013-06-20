@@ -45,7 +45,7 @@ public class FormulaUnionExpr extends UnionExpr {
     }
 
     public Expr translateQuery(QueryTranslator translator) {
-        return new FormulaUnionExpr(formula, translator.translate(exprs));
+        return create(formula, translator.translate(exprs));
     }
 
     public String getSource(final CompileSource compile) {

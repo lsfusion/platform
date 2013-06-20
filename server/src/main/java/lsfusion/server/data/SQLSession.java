@@ -72,6 +72,8 @@ public class SQLSession extends MutableObject {
 
     private Connection privateConnection = null;
 
+    public boolean inconsistent = true; // для отладки
+
     public final static String userParam = "adsadaweewuser";
     public final static String isServerRestartingParam = "sdfisserverrestartingpdfdf";
     public final static String computerParam = "fjruwidskldsor";

@@ -135,8 +135,6 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             }
         }, getQueryClasses(query), owner);
 
-        assert table.assertCheckClasses(session, baseClass);
-
         // нужно прочитать то что записано
         if(table.count > SessionRows.MAX_ROWS) {
             if(!Settings.get().isDisableReadSingleValues()) { // чтение singleValues
@@ -251,5 +249,5 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     
     public abstract int getCount();
 
-    public abstract boolean checkClasses(SQLSession session, BaseClass baseClass) throws SQLException;
+    public abstract T checkClasses(SQLSession session, BaseClass baseClass) throws SQLException;
 }

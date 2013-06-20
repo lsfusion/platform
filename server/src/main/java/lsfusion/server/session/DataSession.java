@@ -1261,6 +1261,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             return true;
         }
 
+        sql.inconsistent = true;
+
         ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions = updateRecursiveActions();
 
         // записываем в базу, то что туда еще не сохранено, приходится сохранять группами, так могут не подходить по классам
@@ -1273,6 +1275,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         apply.clear(sql); // все сохраненные хинты обнуляем
         restart(false, SetFact.fromJavaSet(recursiveUsed)); // оставляем usedSessiona
+
+        sql.inconsistent = false;
 
         if(recursiveActions.size() > 0) {
             recursiveUsed.clear(); recursiveActions.clear();
