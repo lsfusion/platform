@@ -33,10 +33,10 @@ public class Words {
     private static final HashMap<String, String[]> decimalPostfix = new HashMap<String, String[]>();
 
     static {
-        decimalPostfix.put(("euro"), new String[]{"евро ", "евро ", "евро "});
-        decimalPostfix.put(("usd"), new String[]{"доллар ", "доллара ", "долларов"});
-        decimalPostfix.put(("rub"), new String[]{"рубль ", "рубля ", "рублей "});
-        decimalPostfix.put(("bel"), new String[]{"белорусский рубль ", "белорусских рубля ", "белорусских рублей "});
+        decimalPostfix.put(("EUR"), new String[]{"евро ", "евро ", "евро "});
+        decimalPostfix.put(("USD"), new String[]{"доллар ", "доллара ", "долларов"});
+        decimalPostfix.put(("RUB"), new String[]{"рубль ", "рубля ", "рублей "});
+        decimalPostfix.put(("BLR"), new String[]{"белорусский рубль ", "белорусских рубля ", "белорусских рублей "});
         decimalPostfix.put(("number0"), new String[]{"", "", ""});
         decimalPostfix.put(("number"), new String[]{"целая ", "целых ", "целых "});
     }
@@ -44,10 +44,10 @@ public class Words {
     private static final HashMap<String, String[]> fractalPostfix = new HashMap<String, String[]>();
 
     static {
-        fractalPostfix.put("euro2", new String[]{"евроцент ", "евроцента ", "евроцентов "});
-        fractalPostfix.put("usd2", new String[]{"цент ", "цента ", "центов"});
-        fractalPostfix.put("rub2", new String[]{"копейка ", "копейки ", "копеек"});
-        fractalPostfix.put("bel2", new String[]{"копейка ", "копейки ", "копеек"});
+        fractalPostfix.put("EUR2", new String[]{"евроцент ", "евроцента ", "евроцентов "});
+        fractalPostfix.put("USD2", new String[]{"цент ", "цента ", "центов"});
+        fractalPostfix.put("RUB2", new String[]{"копейка ", "копейки ", "копеек"});
+        fractalPostfix.put("BLR2", new String[]{"копейка ", "копейки ", "копеек"});
         fractalPostfix.put("number1", new String[]{"десятая ", "десятых ", "десятых "});
         fractalPostfix.put("number2", new String[]{"cотая ", "сотых ", "сотых "});
         fractalPostfix.put("number3", new String[]{"тысячная ", "тысячных ", "тысячных "});
@@ -57,15 +57,15 @@ public class Words {
     private static final HashMap<String, Boolean> sexMap = new HashMap<String, Boolean>(); //true - female, false - male
 
     static {
-        sexMap.put(("euro"), false);
-        sexMap.put(("usd"), false);
-        sexMap.put(("rub"), false);
-        sexMap.put(("bel"), false);
+        sexMap.put(("EUR"), false);
+        sexMap.put(("USD"), false);
+        sexMap.put(("RUB"), false);
+        sexMap.put(("BLR"), false);
         sexMap.put(("number"), true);
-        sexMap.put(("euro2"), false);
-        sexMap.put(("usd2"), false);
-        sexMap.put(("rub2"), true);
-        sexMap.put(("bel2"), true);
+        sexMap.put(("EUR2"), false);
+        sexMap.put(("USD2"), false);
+        sexMap.put(("RUB2"), true);
+        sexMap.put(("BLR2"), true);
         sexMap.put(("number0"), false);
         sexMap.put(("number1"), true);
         sexMap.put(("number2"), true);
