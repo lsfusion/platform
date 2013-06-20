@@ -88,7 +88,7 @@ public class CustomObjectInstance extends ObjectInstance {
         else {
             ConcreteClass sessionClass = session.getCurrentClass(getDataObject());
             if(!(sessionClass instanceof ConcreteCustomClass)) {
-                groupTo.dropSeek(this);
+//                groupTo.addSeek(this, getDataObject(), false);
                 return;
             }
             changeClass = (ConcreteCustomClass) sessionClass;
