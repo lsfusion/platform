@@ -140,10 +140,18 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                action.mapWhereProperty(), elseAction != null ? elseAction.mapWhereProperty() : null);
     }
 
+    private ImSet<I> getExtendInterfaces() {
+        ImSet<I> result = innerInterfaces.remove(mapInterfaces.valuesSet());
+        if(addObject != null)
+            result = result.removeIncl(addObject);
+        return result;
+    }
+
     private ImMap<I, ValueClass> getExtendClasses() {
         if(ifProp==null)
             return MapFact.<I, ValueClass>EMPTY();
-        return ifProp.mapInterfaceClasses(ClassType.ASSERTFULL).remove(mapInterfaces.valuesSet());
+        assert ifProp.mapIsFull(getExtendInterfaces());
+        return ifProp.mapInterfaceClasses(ClassType.ASIS).remove(mapInterfaces.valuesSet()); // вообще тут предполагается ASSERTFULL, но только для не mapInterfaces, а пока такой возможности нет
     }
 
     @Override
