@@ -105,21 +105,23 @@ public class GStringType extends GDataType {
     }
 
     private int correctMinimumCharWidth(int charWidth) {
-        return charWidth <= 3
+        return charWidth <= 20
                 ? charWidth
-                : charWidth <= 40
-                    ? (int) Math.round(Math.pow(charWidth, 0.87))
-                    : charWidth <= 80
-                        ? (int) Math.round(Math.pow(charWidth, 0.7))
-                        : (int) Math.round(Math.pow(charWidth, 0.65));
+                : charWidth <= 80
+                    ? (int) Math.round(Math.pow(charWidth, 0.85))
+                    : charWidth <= 500
+                        ? (int) Math.round(Math.pow(charWidth, 0.8))
+                        : (int) Math.round(Math.pow(charWidth, 0.7));
     }
 
     private int correctPreferredCharWidth(int charWidth) {
         return charWidth <= 20
                 ? charWidth
                 : charWidth <= 80
-                    ? (int) Math.round(Math.pow(charWidth, 0.85))
-                    : (int) Math.round(Math.pow(charWidth, 0.8));
+                    ? (int) Math.round(Math.pow(charWidth, 0.9))
+                    : charWidth <= 500
+                        ? (int) Math.round(Math.pow(charWidth, 0.85))
+                        : (int) Math.round(Math.pow(charWidth, 0.75));
     }
 
     @Override
