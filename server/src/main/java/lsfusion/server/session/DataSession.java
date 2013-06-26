@@ -400,7 +400,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     @ManualLazy
     private ImOrderSet<ActionProperty> getActiveSessionEvents() {
         if(activeSessionEvents == null)
-            activeSessionEvents = filterEnv(sessionEvents);
+            activeSessionEvents = filterOrderEnv(sessionEvents);
         return activeSessionEvents;
     }
 
@@ -942,12 +942,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return apply(BL, null);
     }
 
-    public boolean apply(BusinessLogics BL, FormInstance form) throws SQLException {
-        return apply(BL, false, form);
-    }
-
     public boolean check(BusinessLogics BL, FormInstance form) throws SQLException {
-        return apply(BL, true, form);
+        setApplyFilter(ApplyFilter.ONLYCHECK);
+
+        boolean result = apply(BL, form);
+
+        setApplyFilter(ApplyFilter.NO);
+        return result;
     }
 
     public static <T extends PropertyInterface> boolean fitKeyClasses(CalcProperty<T> property, SinglePropertyTableUsage<T> change) {
@@ -1028,7 +1029,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         OverrideSessionModifier modifier = new OverrideSessionModifier(new OverrideIncrementProps(noUpdate, increment), emptyModifier);
 
-        ImOrderSet<CalcProperty> dependProps = filterEnv(BL.getSingleApplyDependFrom(property)); // !!! важно в лексикографическом порядке должно быть
+        ImOrderSet<CalcProperty> dependProps = BL.getSingleApplyDependFrom(property, this); // !!! важно в лексикографическом порядке должно быть
 
         if(neededProps!=null && !flush) { // придется отдельным прогоном чтобы правильную лексикографику сохранить
             for(CalcProperty<D> depend : dependProps)
@@ -1167,7 +1168,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         recursiveUsed.addAll(sessionUsed.toJavaSet());
     }
 
-    public boolean apply(final BusinessLogics<?> BL, boolean onlyCheck, FormInstance form) throws SQLException {
+    public boolean apply(final BusinessLogics<?> BL, FormInstance form) throws SQLException {
         if(!hasChanges())
             return true;
 
@@ -1201,7 +1202,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         startTransaction();
 
         try {
-            return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, onlyCheck);
+            return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL);
         } catch (SQLException e) { // assert'им что последняя SQL комманда, работа с транзакцией
             apply.clear(sql);
             dataModifier.clearHints(sql); // drop'ем hint'ы (можно и без sql но пока не важно)
@@ -1234,29 +1235,33 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     public Set<FormInstance> getActiveForms() {
         return activeForms.keySet();
     }
-    private <K> ImOrderSet<K> filterEnv(ImOrderMap<K, SessionEnvEvent> elements) {
+    public <K> ImOrderSet<K> filterOrderEnv(ImOrderMap<K, SessionEnvEvent> elements) {
         return elements.filterOrderValues(new SFunctionSet<SessionEnvEvent>() {
             public boolean contains(SessionEnvEvent elements) {
                 return elements.contains(DataSession.this);
             }});
     }
-    
-    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, boolean onlyCheck) throws SQLException {
+
+    public ApplyFilter applyFilter = ApplyFilter.NO;
+    public void setApplyFilter(ApplyFilter applyFilter) {
+        this.applyFilter = applyFilter;
+    }
+
+    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL) throws SQLException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
-        ImOrderMap<Object, SessionEnvEvent> execActions = MapFact.addOrderExcl(actions.toOrderMap(SessionEnvEvent.ALWAYS), BL.getAppliedProperties(onlyCheck));
-        for (Object property : filterEnv(execActions)) {
+        ImOrderSet<Object> execActions = SetFact.addOrderExcl(actions, BL.getAppliedProperties(this));
+        for (Object property : execActions) {
             if(property instanceof ActionPropertyValueImplement) {
                 startPendingSingles(((ActionPropertyValueImplement) property).property);
                 ((ActionPropertyValueImplement)property).execute(this);
                 if(!isInTransaction()) // если ушли из транзакции вываливаемся
                     return false;
                 flushPendingSingles(BL);
-            }
-            if(property instanceof CalcProperty) // постоянно-хранимые свойства
+            } else // постоянно-хранимые свойства
                 readStored((CalcProperty<PropertyInterface>) property, BL);
         }
 
-        if (onlyCheck) {
+        if (applyFilter == ApplyFilter.ONLYCHECK) {
             cancel();
             return true;
         }
@@ -1280,7 +1285,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         if(recursiveActions.size() > 0) {
             recursiveUsed.clear(); recursiveActions.clear();
-            return recursiveApply(updatedRecursiveActions, BL, onlyCheck);
+            return recursiveApply(updatedRecursiveActions, BL);
         }
 
         commitTransaction();

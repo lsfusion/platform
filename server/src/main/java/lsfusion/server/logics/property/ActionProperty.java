@@ -204,6 +204,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public boolean singleApply = false;
     public boolean resolve = false;
+    public boolean hasResolve() {
+        return getSessionEnv(SystemEvent.APPLY)==SessionEnvEvent.ALWAYS && resolve;
+    }
     
     private Object beforeAspects = ListFact.mCol();
     public void addBeforeAspect(ActionPropertyMapImplement<?, P> action) {

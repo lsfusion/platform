@@ -33,6 +33,7 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.ApplyFilterProperty;
 import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
 import lsfusion.server.logics.property.actions.SleepActionProperty;
 import lsfusion.server.logics.property.actions.flow.ApplyActionProperty;
@@ -45,6 +46,7 @@ import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.PropertySet;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.table.TableFactory;
+import lsfusion.server.session.ApplyFilter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -113,6 +115,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP seek;
 
     public LAP sleep;
+    public LAP applyOnlyWithoutRecalc;
+    public LAP applyAll;
 
     public LAP delete;
 
@@ -303,6 +307,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         seek = addSAProp();
 
         sleep = addProperty(null, new LAP(new SleepActionProperty()));
+        applyOnlyWithoutRecalc = addProperty(null, new LAP(new ApplyFilterProperty(ApplyFilter.WITHOUT_RECALC)));
+        applyAll = addProperty(null, new LAP(new ApplyFilterProperty(ApplyFilter.NO)));
 
         staticName = addDProp(publicGroup, "staticName", getString("logics.static.name"), StringClass.get(250), baseClass);
         staticCaption = addDProp(publicGroup, "staticCaption", getString("logics.static.caption"), StringClass.geti(100), baseClass);

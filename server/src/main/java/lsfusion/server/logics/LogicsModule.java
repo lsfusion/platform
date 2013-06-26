@@ -1615,7 +1615,7 @@ public abstract class LogicsModule {
                                 baseLM.cancel.property.getImplement(SetFact.<ClassPropertyInterface>EMPTYORDER())
                         )
                 );
-        constraintAction.mapEventAction(this, DerivedProperty.createAnyGProp(property).getImplement(), event, false);
+        constraintAction.mapEventAction(this, DerivedProperty.createAnyGProp(property).getImplement(), event, true);
         addProp(constraintAction.property);
     }
 

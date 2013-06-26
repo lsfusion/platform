@@ -413,7 +413,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public void finalizeAroundInit() {
-        links = null;
         editActions = editActions == null ? MapFact.EMPTY() : ((MMap)editActions).immutable();
         keyBindings = keyBindings == null ? MapFact.EMPTY() : ((MMap)keyBindings).immutable();
         contextMenuBindings = contextMenuBindings == null ? MapFact.EMPTYORDER() : ((MOrderMap)contextMenuBindings).immutableOrder();
@@ -433,6 +432,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 }});
         }
         return links;
+    }
+    public void dropLinks() {
+        links = null;
     }
     public abstract ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events);
     public abstract ImSet<OldProperty> getParseOldDepends(); // именно так, а не через getSessionCalcDepends, так как может использоваться до инициализации логики

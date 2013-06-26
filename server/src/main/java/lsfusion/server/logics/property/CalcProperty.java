@@ -425,13 +425,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         actionChangeProps.add(pair);
     }
     public ImCol<Pair<Property<?>, LinkType>> getActionChangeProps() {
-        if(actionChangeProps!=null) {
-            ImCol<Pair<Property<?>, LinkType>> result = actionChangeProps.immutableCol();
-            actionChangeProps = null;
-            return result;
-        }
+        if(actionChangeProps!=null)
+            return actionChangeProps.immutableCol();
 
         return SetFact.EMPTY();
+    }
+    public void dropActionChangeProps() {
+        actionChangeProps = null;
     }
 
     protected ImCol<Pair<Property<?>, LinkType>> calculateLinks() {

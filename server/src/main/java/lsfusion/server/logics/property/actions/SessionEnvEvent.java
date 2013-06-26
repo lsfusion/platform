@@ -2,13 +2,15 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
+import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.session.DataSession;
 
-public class SessionEnvEvent implements FunctionSet<DataSession> {
+public class SessionEnvEvent extends TwinImmutableObject {
 
     public final static SessionEnvEvent ALWAYS = new SessionEnvEvent(null);
 
@@ -32,11 +34,11 @@ public class SessionEnvEvent implements FunctionSet<DataSession> {
         if(env.forms==null)
             return env;
 
-        return new SessionEnvEvent(BaseUtils.merge(forms, env.forms));
+        return new SessionEnvEvent(forms.merge(env.forms));
     }
 
-    private final FunctionSet<FormEntity> forms;
-    public SessionEnvEvent(FunctionSet<FormEntity> forms) {
+    private final ImSet<FormEntity> forms;
+    public SessionEnvEvent(ImSet<FormEntity> forms) {
         this.forms = forms;
     }
 
@@ -58,5 +60,13 @@ public class SessionEnvEvent implements FunctionSet<DataSession> {
 
     public boolean isFull() {
         return false;
+    }
+
+    public boolean twins(TwinImmutableObject o) {
+        return BaseUtils.nullHashEquals(forms, ((SessionEnvEvent)o).forms);
+    }
+
+    public int immutableHashCode() {
+        return forms == null ? 34432 : forms.hashCode();
     }
 }
