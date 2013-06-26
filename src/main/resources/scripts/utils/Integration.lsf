@@ -21,3 +21,10 @@ META defineExternalizableAbstract (object, type, prefix)
     prefix###id###object 'Внешний код' = ABSTRACT type (###object) PERSISTENT INDEXED;
     prefix###object##Id (object) = GROUP AGGR object BY prefix###id###object (object);
 END
+
+EXTEND FORM options PROPERTIES() showIDs;
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(showIDs);
+    }
+}
