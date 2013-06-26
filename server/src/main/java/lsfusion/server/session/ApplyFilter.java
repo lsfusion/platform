@@ -1,9 +1,6 @@
 package lsfusion.server.session;
 
-import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.DataProperty;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 
@@ -31,7 +28,7 @@ public enum ApplyFilter {
             case NO:
                 return true;
             case WITHOUT_RECALC:
-                return property instanceof DataProperty || ((property instanceof ActionProperty)
+                return property instanceof DataProperty || property instanceof ClassDataProperty || ((property instanceof ActionProperty)
                         && !((ActionProperty)property).hasResolve());
             case ONLYCHECK:
                 return isCheck(property);

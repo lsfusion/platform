@@ -780,7 +780,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     fillActionChangeProps();
                     found = true;
                 }
-                show += findDependency(property, property.showDep, LinkType.DEPEND);
+                show += findDependency(property, property.showDep, LinkType.USEDACTION);
             }
         if (!show.isEmpty()) {
             systemLogger.debug("Dependencies: " + show);
