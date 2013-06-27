@@ -104,12 +104,12 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
 
     public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env) throws SQLException {
-        table = table.rewrite(session, query.map(mapKeys, mapProps, MapValuesTranslator.noTranslate), baseClass, env, this);
+        table = table.rewrite(session, query.map(mapKeys, mapProps), baseClass, env, this);
     }
 
     // добавляет ряды которых не было в таблице, или modify'ит
     public void modifyRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException {
-        table = table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps, MapValuesTranslator.noTranslate), baseClass, type, env, this);
+        table = table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps), baseClass, type, env, this);
     }
     // оптимизационная штука
     public void updateAdded(SQLSession session, BaseClass baseClass, V property, Pair<Integer,Integer>[] shifts) throws SQLException {

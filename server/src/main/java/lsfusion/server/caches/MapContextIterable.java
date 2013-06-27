@@ -2,6 +2,8 @@ package lsfusion.server.caches;
 
 import lsfusion.base.EmptyIterator;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.data.Value;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapTranslator;
 import lsfusion.server.data.translator.MapValuesTranslate;
@@ -40,8 +42,9 @@ public class MapContextIterable implements Iterable<MapTranslate> {
                     mapValues = valueIterator.next();
             } else {
                 valueIterator = new EmptyIterator<MapValuesTranslate>();
-                if(from.getInnerValues().equals(to.getInnerValues())) // если контексты не совпадают то сразу вываливаемся
-                    mapValues = MapValuesTranslator.noTranslate;
+                ImSet<Value> innerValues = from.getInnerValues();
+                if(innerValues.equals(to.getInnerValues())) // если контексты не совпадают то сразу вываливаемся
+                    mapValues = MapValuesTranslator.noTranslate(innerValues);
             }
 
             if(mapValues==null) {

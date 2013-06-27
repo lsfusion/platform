@@ -1,5 +1,6 @@
 package lsfusion.server.data.translator;
 
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -44,15 +45,20 @@ public class MapTranslator extends AbstractMapTranslator {
     }
 
     public MapTranslate onlyKeys() {
-        return new MapTranslator(keys, MapValuesTranslator.noTranslate);
+        return new MapTranslator(keys, values.onlyKeys());
     }
 
     public MapTranslate reverseMap() {
         return new MapTranslator(keys.reverse(), values.reverse());
     }
 
+    private final static SFunctionSet<ParamExpr> removePullExpr = new SFunctionSet<ParamExpr>() {
+        public boolean contains(ParamExpr element) {
+            return !(element instanceof PullExpr);
+        }};
     public boolean identityKeys(ImSet<ParamExpr> keys) {
-        return this.keys.filterInclRev(keys).identity();
+        assert this.keys.keys().filterFn(removePullExpr).containsAll(keys.filterFn(removePullExpr));
+        return this.keys.filterRev(keys).identity();
     }
     public boolean identityValues(ImSet<? extends Value> values) {
         return this.values.identityValues(values);

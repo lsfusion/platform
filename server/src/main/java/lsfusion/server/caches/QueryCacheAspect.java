@@ -1,5 +1,7 @@
 package lsfusion.server.caches;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.data.translator.RemapValuesTranslator;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -97,7 +99,8 @@ public class QueryCacheAspect {
     }
 
     private <K,V> IQuery<K,V> cacheNoBigTwin(Query<K, V> query, Result<Query> cacheTwin) throws Throwable {
-        ImRevMap<Value, Value> bigValues = AbstractValuesContext.getBigValues(query.getContextValues());
+        ImSet<Value> contextValues = query.getContextValues();
+        ImRevMap<Value, Value> bigValues = AbstractValuesContext.getBigValues(contextValues);
         if(BaseUtils.onlyObjects(query.mapKeys.keyIt()) && BaseUtils.onlyObjects(query.properties.keyIt()) && bigValues == null) {
             cacheTwin.set(query);
             return query;
@@ -108,12 +111,12 @@ public class QueryCacheAspect {
             Query<Object, Object> cache = new Query<Object, Object>(genKeys.crossJoin(query.mapKeys), genProps.crossJoin(query.properties), query.where);
 
             if(bigValues!=null) // bigvalues - работа с транслированными объектами, а в конце трансляция назад
-                cache = cache.translateQuery(new MapValuesTranslator(bigValues));
+                cache = cache.translateQuery(new RemapValuesTranslator(bigValues));
 
             cacheTwin.set(cache);
 
             return new MapQuery<K, V, Object, Object>(cache, genProps, genKeys,
-                    bigValues == null ? MapValuesTranslator.noTranslate : new MapValuesTranslator(bigValues.reverse()));
+                    bigValues == null ? MapValuesTranslator.noTranslate(contextValues) : new RemapValuesTranslator(bigValues.reverse()));
         }
     }
 

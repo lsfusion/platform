@@ -160,7 +160,7 @@ public class Query<K,V> extends IQuery<K,V> {
     
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues) {
         assert joinImplement.size()== mapKeys.size();
-        assert mapValues.assertValuesEquals(getInnerValues()); // все должны быть параметры
+        assert mapValues.assertValuesContains(getInnerValues()); // все должны быть параметры
         ImRevMap<K, KeyExpr> joinKeys = getMapKeys(joinImplement);
         if(joinKeys==null)
             return joinExprs(joinImplement, mapValues);

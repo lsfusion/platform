@@ -46,7 +46,7 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         this.mapKeys = mapKeys;
         this.mapValues = mapValues;
 
-//        assert mapValues.assertValuesEquals(query.getInnerValues()); // все должны быть параметры
+        assert mapValues.assertValuesContains(query.getInnerValues()); // например pack может убирать часть значений
     }
 
     public CompiledQuery<K, V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive) {
@@ -70,11 +70,11 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
     }
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {
-        assert joinValues.assertValuesEquals(getInnerValues());
+        assert joinValues.assertValuesContains(getInnerValues());
         return new RemapJoin<V,MV>(query.join(mapKeys.crossJoin(joinImplement),mapValues.map(joinValues)),mapProps);
     }
     public Join<V> joinExprs(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {
-        assert joinValues.assertValuesEquals(getInnerValues());
+        assert joinValues.assertValuesContains(getInnerValues());
         return new RemapJoin<V,MV>(query.joinExprs(mapKeys.crossJoin(joinImplement),mapValues.map(joinValues)),mapProps);
     }
 

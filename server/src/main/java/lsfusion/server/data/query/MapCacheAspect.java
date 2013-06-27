@@ -1,5 +1,6 @@
 package lsfusion.server.data.query;
 
+import lsfusion.server.data.translator.RemapValuesTranslator;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -118,12 +119,12 @@ public class MapCacheAspect {
                 hashCaches.add(new CacheResult<JoinImplement<K>, Join<V>>(joinImplement, join));
                 return join;
             } else { // для предотвращения утечки памяти, bigvalues - работа с транслированными объектами, а в конце трансляция назад
-                JoinImplement<K> cacheImplement = joinImplement.translateInner(new MapValuesTranslator(bigValues));
+                JoinImplement<K> cacheImplement = joinImplement.translateInner(new RemapValuesTranslator(bigValues));
 
                 Join<V> join = (Join<V>) thisJoinPoint.proceed(new Object[]{query, cacheImplement.exprs, cacheImplement.mapValues});
                 hashCaches.add(new CacheResult<JoinImplement<K>, Join<V>>(cacheImplement, join));
 
-                return new MapJoin<V>((MapTranslate)new MapValuesTranslator(bigValues.reverse()), join);
+                return new MapJoin<V>((MapTranslate)new RemapValuesTranslator(bigValues.reverse()), join);
             }
         }
     }
@@ -302,7 +303,7 @@ public class MapCacheAspect {
         if(bigValues == null) // если нет больших значений просто записываем
             hashCaches.add(new CacheResult<I, R>(implement, result));
         else { // bigvalues - работа со старыми объектами, а сохранение транслированных
-            MapValuesTranslator removeBig = new MapValuesTranslator(bigValues);
+            MapValuesTranslator removeBig = new RemapValuesTranslator(bigValues);
             hashCaches.add(new CacheResult<I, R>(implement.translateRemoveValues(removeBig), result.translateRemoveValues(removeBig)));
         }
     }

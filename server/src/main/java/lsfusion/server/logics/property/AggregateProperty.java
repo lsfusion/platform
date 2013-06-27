@@ -85,7 +85,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     public void recalculateAggregation(SQLSession session) throws SQLException {
         session.pushVolatileStats(null);
         session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false).map(
-                mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue"), MapValuesTranslator.noTranslate)));
+                mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue"))));
         session.popVolatileStats(null);
     }
 

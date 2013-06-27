@@ -16,6 +16,7 @@ public interface MapValuesTranslate extends MapObject {
 
     // extend'ит интерфейс до MapTranslate
     MapTranslate mapKeys();
+    MapValuesTranslator onlyKeys();
 
     MapValuesTranslate filter(ImSet<? extends Value> values);
 
@@ -30,7 +31,7 @@ public interface MapValuesTranslate extends MapObject {
     <K extends Value,U> ImMap<K, U> translateValuesMapKeys(ImMap<K, U> map);
     <K extends Value,U> ImRevMap<K, U> translateValuesMapKeys(ImRevMap<K, U> map);
 
-    boolean assertValuesEquals(ImSet<? extends Value> values);
+    boolean assertValuesContains(ImSet<? extends Value> values);
 
     public MapValuesTranslate reverse();
 

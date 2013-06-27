@@ -505,6 +505,8 @@ public class SQLSession extends MutableObject {
 
         if(rows==null)
             return 0;
+        if(rows==0) // INSERT'ы и UPDATE'ы почему-то всегда 0 лепят (хотя не всегда почему-то)
+            return 100;
         return rows;
     }
 

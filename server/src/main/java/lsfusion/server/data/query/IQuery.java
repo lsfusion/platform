@@ -70,7 +70,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     public abstract Pair<IQuery<K, Object>, ImRevMap<Expr, Object>> getClassQuery(final BaseClass baseClass);
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
-        return join(joinImplement, MapValuesTranslator.noTranslate);
+        return join(joinImplement, MapValuesTranslator.noTranslate(getInnerValues()));
     }
     public abstract Join<V> join(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues); // последний параметр = какой есть\какой нужно, joinImplement не translateOuter'ся
     public abstract Join<V> joinExprs(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues);
@@ -100,6 +100,9 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
     public abstract Query<K, V> getQuery(); // по сути protectedQ  GH  N
     public abstract <RMK, RMV> IQuery<RMK,RMV> map(ImRevMap<RMK, K> remapKeys, ImRevMap<RMV, V> remapProps, MapValuesTranslate translate);
+    public <RMK, RMV> IQuery<RMK,RMV> map(ImRevMap<RMK, K> remapKeys, ImRevMap<RMV, V> remapProps) {
+        return map(remapKeys, remapProps, MapValuesTranslator.noTranslate(getInnerValues()));
+    }
 
     
     public static class PullValues<K, V> {

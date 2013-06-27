@@ -126,8 +126,8 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
     }
 
     // пересечение с игнорированием ValueExpr.TRUE
-    public static boolean noStaticEquals(ImSet<? extends Value> col1, ImSet<? extends Value> col2) {
-        return ((ImSet<Value>)removeStatic(col1)).equals(removeStatic(col2));
+    public static boolean noStaticContains(ImSet<? extends Value> col1, ImSet<? extends Value> col2) {
+        return ((ImSet<Value>)removeStatic(col1)).containsAll(removeStatic(col2));
     }
 
     public TypeObject getParseInterface() {

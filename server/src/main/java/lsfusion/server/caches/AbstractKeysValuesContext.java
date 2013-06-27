@@ -16,15 +16,12 @@ public abstract class AbstractKeysValuesContext<T> extends AbstractTranslateCont
         ImSet<Value> values = aspectGetValues();
         ImSet<ParamExpr> keys = aspectGetKeys();
 
-        ImSet<ParamExpr> transKeys = translator.translateDirect(keys);
-        ImSet<Value> transValues = translator.translateValues(values);
-
-        if(transValues.equals(values) && transKeys.equals(keys))
+        if(translator.identityKeysValues(keys, values)) // если identity трансляция
             return (T) this;
         else {
             AbstractKeysValuesContext<T> result = (AbstractKeysValuesContext<T>) translate(translator);
-            result.values = transValues;
-            result.keys = transKeys;
+            result.values = translator.translateValues(values);
+            result.keys = translator.translateDirect(keys);
             return (T) result;
         }
     }

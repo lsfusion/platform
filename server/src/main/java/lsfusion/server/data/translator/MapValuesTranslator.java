@@ -19,7 +19,7 @@ import lsfusion.server.data.expr.ValueExpr;
 import java.util.Map;
 
 // отличается тем что не только маппит ValueExpr к ValueExpr, а с assertion'ом, что только одинаковых классов
-public class MapValuesTranslator extends AbstractMapTranslator implements MapValuesTranslate {
+public abstract class MapValuesTranslator extends AbstractMapTranslator implements MapValuesTranslate {
 
     private GetValue<TranslateValues, TranslateValues> trans;
     private <V extends TranslateValues> GetValue<V, V> TRANS() {
@@ -54,55 +54,12 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return BaseUtils.immutableCast(transValue);
     }
 
-    private final ImRevMap<Value, Value> mapValues;
-
-    public int hash(HashValues hashValues) {
-        int hash = 0;
-        for(int i=0,size=mapValues.size();i<size;i++)
-            hash += mapValues.getKey(i).hashCode() ^ hashValues.hash(mapValues.getValue(i));
-        return hash;
-    }
-
-    public ImSet<Value> getValues() {
-        return mapValues.valuesSet();
-    }
-
-    private MapValuesTranslator() {
-        this.mapValues = MapFact.EMPTYREV();
-    }
-    public final static MapValuesTranslator noTranslate = new MapValuesTranslator();
-
-    public MapValuesTranslator(ImRevMap<Value, Value> mapValues) {
-        this.mapValues = mapValues;
-        // assert что ValueClass'ы совпадают
-
-//        assert !ValueExpr.removeStatic(mapValues).containsValue(null);
-    }
-
-    public <V extends Value> V translate(V expr) {
-        return BaseUtils.nvl((V) mapValues.get(expr), expr);
-    }
-
-    public boolean identityValues(ImSet<? extends Value> values) {
-        return mapValues.filterInclRev(values).identity();
+    public static MapValuesTranslator noTranslate(ImSet<Value> values) {
+        return new IdentityValuesTranslator(values);
     }
 
     public boolean identityKeysValues(ImSet<ParamExpr> keys, ImSet<? extends Value> values) {
         return identityValues(values);
-    }
-
-    public MapValuesTranslate map(MapValuesTranslate map) {
-        if(this==noTranslate) return map;
-        if(map==noTranslate) return this;
-
-        return new MapValuesTranslator(map.translateMapValues(mapValues));
-    }
-
-    public MapValuesTranslate filter(ImSet<? extends Value> values) {
-        if(this==noTranslate) return noTranslate;
-        if(BaseUtils.hashEquals(mapValues.keys(), values)) return this;
-
-        return new MapValuesTranslator(mapValues.filterInclRev(values));
     }
 
     public <K,U extends ValuesContext<U>> ImMap<K, U> translateValues(ImMap<K, U> map) {
@@ -139,28 +96,12 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return map.mapRevKeys(this.<K>TRANSVALUE());
     }
 
-    public boolean assertValuesEquals(ImSet<? extends Value> values) {
-        return this==noTranslate || ValueExpr.noStaticEquals(mapValues.keys(), values);
-    }
-
-    public boolean twins(TwinImmutableObject o) {
-        return mapValues.equals(((MapValuesTranslator) o).mapValues);
-    }
-
-    public int immutableHashCode() {
-        return mapValues.hashCode();
-    }
-
     public ParamExpr translate(ParamExpr expr) {
         return expr;
     }
 
     public MapValuesTranslate mapValues() {
         return this;
-    }
-
-    public MapTranslate onlyKeys() {
-        return MapValuesTranslator.noTranslate;
     }
 
     public boolean identityKeys(ImSet<ParamExpr> keys) {
@@ -173,24 +114,6 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
 
     public MapTranslate mapKeys() {
         return this;
-    }
-
-    public MapValuesTranslate reverse() {
-        if(this==noTranslate) return noTranslate;
-        
-        return new MapValuesTranslator(mapValues.reverse());
-    }
-
-    public MapTranslate reverseMap() {
-        if(this==noTranslate) return (MapTranslate) noTranslate;
-
-        return new MapValuesTranslator(mapValues.reverse());
-    }
-
-    public HashValues getHashValues() {
-        if(this==noTranslate || mapValues.isEmpty()) return HashCodeValues.instance;
-
-        return new HashTranslateValues(this);
     }
 
     public MapTranslate mapValues(MapValuesTranslate translate) {
