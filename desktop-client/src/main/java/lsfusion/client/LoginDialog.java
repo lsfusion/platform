@@ -51,8 +51,6 @@ public class LoginDialog extends JDialog {
         setUndecorated(true);
         setModal(true);
 
-        getRootPane().setDefaultButton(buttonOK);
-
         initServerHostList((MutableComboBoxModel) serverHost.getModel());
 
         initUIHandlers();
@@ -345,6 +343,8 @@ public class LoginDialog extends JDialog {
             setLocationRelativeTo(null);
 
             loginField.requestFocusInWindow();
+
+            getRootPane().setDefaultButton(buttonOK);
 
             setVisible(true);
 

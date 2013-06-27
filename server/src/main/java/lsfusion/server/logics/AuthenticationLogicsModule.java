@@ -24,6 +24,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public ConcreteCustomClass systemUser;
     public ConcreteCustomClass customUser;
 
+    public LCP isLockedCustomUser;
     public LCP loginCustomUser;
     public LCP customUserLogin;
     public LCP passwordCustomUser;
@@ -70,6 +71,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         hostnameComputer = getLCPByName("hostnameComputer");
         currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
         hostnameCurrentComputer = addJProp("hostnameCurrentComputer", getString("logics.current.computer.hostname"), hostnameComputer, currentComputer);
+
+        isLockedCustomUser = getLCPByName("isLockedCustomUser");
 
         loginCustomUser = getLCPByName("loginCustomUser");
         customUserLogin = getLCPByName("customUserLogin");

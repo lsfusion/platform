@@ -4,6 +4,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.client.remote.proxy.RemoteBusinessLogicProxy;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -35,6 +36,7 @@ public final class LoginAction {
     final static int ERROR = 5;
     final static int CANCELED = 6;
     final static int LOGIN_ERROR = 7;
+    final static int LOCKED_ERROR = 8;
 
     private boolean autoLogin;
     public LoginInfo loginInfo;
@@ -89,6 +91,9 @@ public final class LoginAction {
                 case LOGIN_ERROR:
                     loginDialog.setWarningMsg(getString("errors.check.login.and.password"));
                     break;
+                case LOCKED_ERROR:
+                    loginDialog.setWarningMsg(getString("errors.locked.user"));
+                    break;
             }
             loginDialog.setAutoLogin(false);
             loginInfo = loginDialog.login();
@@ -134,6 +139,9 @@ public final class LoginAction {
         } catch (LoginException e) {
             e.printStackTrace();
             return LOGIN_ERROR;
+        } catch (LockedException e) {
+            e.printStackTrace();
+            return LOCKED_ERROR;
         } catch (Throwable e) {
             e.printStackTrace();
             return ERROR;

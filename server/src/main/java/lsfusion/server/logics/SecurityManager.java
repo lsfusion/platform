@@ -457,10 +457,11 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 if (userId == null) {
                     throw new LoginException();
                 }
-
-                String password = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, new DataObject(userId, businessLogics.authenticationLM.customUser));
+                DataObject userObject = new DataObject(userId, businessLogics.authenticationLM.customUser);
+                String password = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, userObject);
+                Boolean isLocked = (Boolean) businessLogics.authenticationLM.isLockedCustomUser.read(session, userObject);
                 if (password == null) {
-                    String plainPassword = (String) businessLogics.authenticationLM.passwordCustomUser.read(session, new DataObject(userId, businessLogics.authenticationLM.customUser));
+                    String plainPassword = (String) businessLogics.authenticationLM.passwordCustomUser.read(session, userObject);
                     if (plainPassword == null) plainPassword = "";
                     plainPassword = plainPassword.trim();
                     password = BaseUtils.calculateBase64Hash("SHA-256", plainPassword, UserInfo.salt);
@@ -468,7 +469,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 if (password != null)
                     password = password.trim();
 
-                return new UserInfo(username, password, getUserRolesNames(username, extraUserRoleNames));
+                return new UserInfo(isLocked, username, password, getUserRolesNames(username, extraUserRoleNames));
             } finally {
                 session.close();
             }

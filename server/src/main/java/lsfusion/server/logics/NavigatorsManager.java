@@ -1,11 +1,9 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.UserInfo;
@@ -17,6 +15,9 @@ import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.DataSession;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import javax.naming.CommunicationException;
 import java.rmi.RemoteException;
@@ -142,17 +143,23 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
                 }
             }
             if (needAuthentication) {
+
                 if (user == null)
                     throw new LoginException();
 
+                DataObject userObject = new DataObject(user.ID, businessLogics.authenticationLM.customUser);
+
+                if( businessLogics.authenticationLM.isLockedCustomUser.read(session, userObject)!=null)
+                    throw new LockedException();
+
                 if (!isUniversalPasswordUsed) {
-                    String hashPassword = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, new DataObject(user.ID, businessLogics.authenticationLM.customUser));
+                    String hashPassword = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, userObject);
                     if (hashPassword != null) {
                         if (!hashPassword.trim().equals(BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt))) {
                             throw new LoginException();
                         }
                     } else {
-                        String correctPassword = (String) businessLogics.authenticationLM.passwordCustomUser.read(session, new DataObject(user.ID, businessLogics.authenticationLM.customUser));
+                        String correctPassword = (String) businessLogics.authenticationLM.passwordCustomUser.read(session, userObject);
                         if (!nullEquals(nullTrim(correctPassword), nullTrim(password))) {
                             throw new LoginException();
                         }
