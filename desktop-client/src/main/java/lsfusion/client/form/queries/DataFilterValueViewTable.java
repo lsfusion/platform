@@ -86,11 +86,13 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
 
     @Override
     public void editingStopped(ChangeEvent e) {
+        super.editingStopped(e);
         logicsSupplier.getForm().clearCurrentEditingTable(this);
     }
 
     @Override
     public void editingCanceled(ChangeEvent e) {
+        super.editingCanceled(e);
         logicsSupplier.getForm().clearCurrentEditingTable(this);
     }
 
