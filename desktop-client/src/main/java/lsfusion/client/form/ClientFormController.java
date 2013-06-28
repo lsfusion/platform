@@ -4,10 +4,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.EProvider;
-import lsfusion.base.OrderedMap;
-import lsfusion.base.Pair;
+import lsfusion.base.*;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.client.Log;
@@ -91,6 +88,8 @@ public class ClientFormController implements AsyncListener {
     private Timer asyncTimer;
     private PanelView asyncView;
     private Icon asyncPrevIcon;
+
+    private boolean blocked = false;
 
     public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) {
         this(remoteForm, clientNavigator, false, false);
@@ -312,6 +311,15 @@ public class ClientFormController implements AsyncListener {
 
     public void setCurrentEditingTable(JTable currentTable) {
         tableManager.setCurrentEditingTable(currentTable);
+        if (currentTable == null) {
+            rmiQueue.editingStopped();
+        }
+    }
+
+    public void clearCurrentEditingTable(JTable currentTable) {
+        if (tableManager.getCurrentTable() == currentTable) {
+            setCurrentEditingTable(null);
+        }
     }
 
     public JTable getCurrentEditingTable() {
@@ -713,6 +721,16 @@ public class ClientFormController implements AsyncListener {
     }
 
     public ServerResponse executeEditAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID) throws IOException {
+        // При выполнение синхронных запросов, EDT блокируется. Если перед этим синхр. запросом был послан асинхронный, который возвращает DockedModal-FormAction,
+        // то получается dead-lock: executeEditAction ждёт окончания предыдущего async-запроса и значит закрытия DockedModal формы,
+        // а форма не может отработать, т.к. EDT заблокирован. Модальные диалоги отрабатывают нормально, т.к. Swing специально создаёт для них новый поток.
+        // Поэтому применяется двойной хак: если DockedModal-FormAction пришёл после начала синхронного редактирования, то она показывается в модальном диалоге,
+        // а если сначала была показана форма, а затем на текущей форме сработало редактирование - то мы его отменяем
+
+        if (blocked) {
+            return ServerResponse.empty;
+        }
+
         commitOrCancelCurrentEditing();
 
         SwingUtils.commitDelayedGroupObjectChange(property.getGroupObject());
@@ -1201,10 +1219,16 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
+    public boolean canShowDockedModal() {
+        return !isModal && !rmiQueue.isSyncStarted();
+    }
+
     public void block() {
+        blocked = true;
     }
 
     public void unblock() {
+        blocked = false;
     }
 
     private abstract class ProcessServerResponseRmiRequest extends RmiRequest<ServerResponse> {

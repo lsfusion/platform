@@ -8,9 +8,6 @@ import lsfusion.base.Result;
 import lsfusion.client.SwingUtils;
 import lsfusion.interop.DaemonThreadFactory;
 
-import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.*;
@@ -27,6 +24,7 @@ public class RmiQueue {
     private final Provider<String> serverMessageProvider;
     private final AsyncListener asyncListener;
     private boolean asyncStarted = false;
+    private boolean syncStarted = false;
 
     private long nextRmiRequestIndex = 0;
 
@@ -102,7 +100,11 @@ public class RmiQueue {
                 }
             });
 
+            syncStarted = true;
+
             forceProcessAllRequests();
+
+            syncStarted = false;
 
             return result.result;
         } catch (Exception e) {
@@ -139,14 +141,7 @@ public class RmiQueue {
 
         // если чегонить редактируем, то не обрабатываем результат пока не закончим
         if (tableManager.isEditing()) {
-            final JTable currentTable = tableManager.getCurrentTable();
-            currentTable.getModel().addTableModelListener(new TableModelListener() {
-                @Override
-                public void tableChanged(TableModelEvent e) {
-                    flushCompletedRequests();
-                    currentTable.getModel().removeTableModelListener(this);
-                }
-            });
+            //не обрабатываем результат, пока не закончится редактирование и не вызовется this.editingStopped()
         } else {
             while (!rmiFutures.isEmpty() && rmiFutures.element().isDone()) {
                 try {
@@ -156,6 +151,14 @@ public class RmiQueue {
                 }
             }
         }
+    }
+
+    void editingStopped() {
+        flushCompletedRequests();
+    }
+
+    boolean isSyncStarted() {
+        return syncStarted;
     }
 
     private void execNextFutureCallback() throws Exception {

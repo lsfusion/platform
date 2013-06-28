@@ -84,6 +84,15 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         return result;
     }
 
+    @Override
+    public void editingStopped(ChangeEvent e) {
+        logicsSupplier.getForm().clearCurrentEditingTable(this);
+    }
+
+    @Override
+    public void editingCanceled(ChangeEvent e) {
+        logicsSupplier.getForm().clearCurrentEditingTable(this);
+    }
 
     /**
      * see {@link javax.swing.JTable#columnMarginChanged(javax.swing.event.ChangeEvent)}

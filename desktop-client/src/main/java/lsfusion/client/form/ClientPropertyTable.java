@@ -188,6 +188,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         quickLog("formTable.commitValue: " + value);
         commitingValue = true;
         editDispatcher.commitValue(value);
+        getForm().clearCurrentEditingTable(this);
     }
 
     @Override
@@ -195,6 +196,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         quickLog("formTable.cancelEdit");
         internalRemoveEditor();
         editDispatcher.cancelEdit();
+        getForm().clearCurrentEditingTable(this);
     }
 
     @SuppressWarnings("deprecation")
@@ -205,7 +207,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         }
 
         //copy/paste из JTable
-        // изменён, чтобы не запращивать фокус обратно в таблицу,
+        // изменён, чтобы не запрашивать фокус обратно в таблицу,
         // потому что на самом деле нам надо, чтобы он переходил на editorComponent.getNextFocusableComponent()
         // в обычных случаях - это и будет таблица, но при редактировании по хоткею - предыдущий компонент,
         // а в случае начала редактирование новой таблицы - эта новая таблица

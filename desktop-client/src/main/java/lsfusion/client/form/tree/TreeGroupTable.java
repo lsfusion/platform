@@ -783,11 +783,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return component;
     }
 
-    private void commitValue(Object value) {
-        commitingValue = true;
-        editDispatcher.commitValue(value);
-    }
-
     @Override
     public void editingStopped(ChangeEvent e) {
         TableCellEditor editor = getCellEditor();
@@ -798,14 +793,21 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
     }
 
-    public void updateEditValue(Object value) {
-        setValueAt(value, editRow, editCol);
+    private void commitValue(Object value) {
+        commitingValue = true;
+        editDispatcher.commitValue(value);
+        form.clearCurrentEditingTable(this);
     }
 
     @Override
     public void editingCanceled(ChangeEvent e) {
         internalRemoveEditor();
         editDispatcher.cancelEdit();
+        form.clearCurrentEditingTable(this);
+    }
+
+    public void updateEditValue(Object value) {
+        setValueAt(value, editRow, editCol);
     }
 
     private void internalRemoveEditor() {
