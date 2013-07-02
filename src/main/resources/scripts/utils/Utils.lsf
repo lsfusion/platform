@@ -12,16 +12,6 @@ GROUP printGroup 'Печатные формы' : public;
 
 stringEqualsAll(string) = string == STRING[3]('Все');
 
-toText = FORMULA TEXT 'CAST($1 AS TEXT)';
-
-toString2 = FORMULA STRING[2] 'CAST($1 AS character(2))' FIXEDCHARWIDTH 2;
-toString3 = FORMULA STRING[3] 'CAST($1 AS character(3))' FIXEDCHARWIDTH 3;
-toString4 = FORMULA STRING[4] 'CAST($1 AS character(4))' FIXEDCHARWIDTH 4;
-toString10 = FORMULA STRING[4] 'CAST($1 AS character(10))' FIXEDCHARWIDTH 10;
-toString15 = FORMULA STRING[15] 'CAST($1 AS character(15))' FIXEDCHARWIDTH 15;
-toString50 = FORMULA STRING[50] 'CAST($1 AS character(50))';
-toString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
-
 isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE 0 END';
 
 isSubstring = FORMULA BOOLEAN 'CASE WHEN (($1) LIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END';
@@ -45,11 +35,6 @@ divideInteger = FORMULA INTEGER 'CAST(CAST(trunc($1) AS integer)/CAST(trunc($2) 
 divideIntegerNeg = FORMULA INTEGER 'CASE WHEN CAST(($1) AS integer)<0 THEN -CAST(((-CAST(($1) as integer)-1)/CAST(($2) as integer)) as integer) ELSE CAST(CAST(($1) as integer)/CAST(($2) as integer) as integer) END';
 divideIntegerRnd = FORMULA INTEGER 'CAST(round(($1)/($2),0) as integer)';
 subtractIntegerIncl = FORMULA INTEGER '(($1)-($2)+1)';
-
-toInteger = FORMULA INTEGER 'CAST($1 AS integer)';
-toNumeric14p2 = FORMULA NUMERIC[14,2] 'CAST($1 AS numeric(14,2))';
-toNumeric14p3 = FORMULA NUMERIC[14,3] 'CAST($1 AS numeric(14,3))';
-toNumeric16p2 = FORMULA NUMERIC[16,2] 'CAST($1 AS numeric(16,2))';
 
 iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER STEP i==$i+1 AND i<=to CYCLES IMPOSSIBLE;
 count(i, count) = iterate(i, 1, count);

@@ -72,10 +72,10 @@ translate  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateActionProperty';
 
 translateTermDictionaryEntry 'Перевести' = ACTION (dictionaryEntry) {
 
-    EXEC translate (toText(termDictionaryEntry(dictionaryEntry)),
+    EXEC translate (TEXT(termDictionaryEntry(dictionaryEntry)),
             languageFromDictionary(dictionaryDictionaryEntry(dictionaryEntry)),
             languageToDictionary(dictionaryDictionaryEntry(dictionaryEntry)));
-    ASSIGN translationDictionaryEntry(dictionaryEntry) <- toString50(translationResult());
+    ASSIGN translationDictionaryEntry(dictionaryEntry) <- STRING[50](translationResult());
 }
 
 translateText 'Перевести' = ACTION () {
