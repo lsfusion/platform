@@ -357,7 +357,7 @@ public class MapFact {
     public static <K, V> ImMap<K, V> imFilter(MFilterMap<K, V> mMap, ImMap<K, V> map) {
         ImMap<K, V> result = mMap.immutable();
         if(result.size()==map.size()) {
-            assert BaseUtils.hashEquals(result, map);
+//            assert BaseUtils.hashEquals(result, map); // так как может null содержать в PropertyChanges.replace например
             return map;
         }
         return result;
