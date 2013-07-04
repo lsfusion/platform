@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.DistinctKeys;
@@ -60,13 +61,9 @@ public class StatKeys<K> extends TwinImmutableObject {
         return 31 * rows.hashCode() + distinct.hashCode();
     }
 
-    private final static AddValue<Object, StatKeys<Object>> addOr = new SimpleAddValue<Object, StatKeys<Object>>() {
+    private final static AddValue<Object, StatKeys<Object>> addOr = new SymmAddValue<Object, StatKeys<Object>>() {
         public StatKeys<Object> addValue(Object key, StatKeys<Object> prevValue, StatKeys<Object> newValue) {
             return prevValue.or(newValue);
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
     public static <M, K> AddValue<M, StatKeys<K>> addOr() {

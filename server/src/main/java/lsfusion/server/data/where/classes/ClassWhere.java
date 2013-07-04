@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClass;
@@ -140,13 +141,9 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         return new ClassWhere<T>(remapWheres);
     }
 
-    private final static AddValue<Object, ClassWhere<Object>> addOr = new SimpleAddValue<Object, ClassWhere<Object>>() {
+    private final static AddValue<Object, ClassWhere<Object>> addOr = new SymmAddValue<Object, ClassWhere<Object>>() {
         public ClassWhere<Object> addValue(Object key, ClassWhere<Object> prevValue, ClassWhere<Object> newValue) {
             return prevValue.or(newValue);
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
     public static <K, V> AddValue<K, ClassWhere<V>> addOr() {

@@ -48,7 +48,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
     public abstract boolean used(InnerContext query);
 
-    public abstract SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException;
+    public abstract SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, Result<Boolean> changed) throws SQLException;
 
 
     public abstract void out(SQLSession session) throws SQLException;
@@ -159,7 +159,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             // надо бы batch update сделать, то есть зная уже сколько запискй
             SessionRows sessionRows = new SessionRows(keys, properties);
             for (int i=0,size=readRows.size();i<size;i++)
-                sessionRows = (SessionRows) sessionRows.modifyRecord(session, readRows.getKey(i).addExcl(keyValues.result), readRows.getValue(i).addExcl(propValues.result), Modify.ADD, owner);
+                sessionRows = (SessionRows) sessionRows.modifyRecord(session, readRows.getKey(i).addExcl(keyValues.result), readRows.getValue(i).addExcl(propValues.result), Modify.ADD, owner, new Result<Boolean>());
             return sessionRows;
         }
     }
@@ -186,7 +186,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return result;
     }
 
-    public SessionData modifyRows(final SQLSession session, final IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, QueryEnvironment env, final Object owner) throws SQLException {
+    public SessionData modifyRows(final SQLSession session, final IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, QueryEnvironment env, final Object owner, final Result<Boolean> changed) throws SQLException {
         if(!Settings.get().isDisableReadSingleValues()) {
             SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<IQuery<KeyField, PropertyField>>(), new Result<ImMap<KeyField, DataObject>>(),
                     new Result<ImMap<PropertyField, ObjectValue>>(), new ResultSingleValues<SessionData>() {
@@ -195,7 +195,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                 }
 
                 public SessionData singleRow(ImMap<KeyField, DataObject> keyValues, ImMap<PropertyField, ObjectValue> propValues) throws SQLException {
-                    return modifyRecord(session, keyValues, propValues, type, owner);
+                    return modifyRecord(session, keyValues, propValues, type, owner, changed);
                 }
             });
             if(singleResult!=null)
@@ -207,17 +207,21 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
         final Where prevWhere = prevJoin.getWhere();
         final Where newWhere = query.getWhere();
-        modifyQuery.and(type==Modify.DELETE ? prevWhere.and(newWhere.not()) : (type == Modify.UPDATE ? prevWhere : prevWhere.or(newWhere)));
+        modifyQuery.and(type == Modify.DELETE ? prevWhere.and(newWhere.not()) : (type == Modify.UPDATE ? prevWhere : prevWhere.or(newWhere)));
         modifyQuery.addProperties(getProperties().mapValues(new GetValue<Expr, PropertyField>() {
             public Expr getMapValue(PropertyField value) {
                 Expr prevExpr = prevJoin.getExpr(value);
-                if(type == Modify.DELETE || !query.getProperties().contains(value))
+                if (type == Modify.DELETE || !query.getProperties().contains(value))
                     return prevExpr;
                 Expr newExpr = query.getExpr(value);
                 return (type == Modify.MODIFY || type == Modify.UPDATE ?
                         newExpr.ifElse(newWhere, prevExpr) : prevExpr.ifElse(prevWhere, newExpr));
-            }}));
-        return rewrite(session, modifyQuery.getQuery(), baseClass, env, owner);
+            }
+        }));
+        SessionData result = rewrite(session, modifyQuery.getQuery(), baseClass, env, owner);
+        if(!(((SessionData)this) instanceof SessionRows && result instanceof SessionRows && BaseUtils.hashEquals(this, result))) // оптимизация
+            changed.set(true);
+        return result;
     }
     public abstract SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Integer, Integer>[] shifts) throws SQLException;
 

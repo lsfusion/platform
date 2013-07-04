@@ -1,6 +1,8 @@
 package lsfusion.server.data;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -103,21 +105,27 @@ public class SessionRows extends SessionData<SessionRows> {
         return keys.equals(((SessionRows)obj).keys) && properties.equals(((SessionRows)obj).properties) && rows.equals(((SessionRows)obj).rows);
     }
 
-    public SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException {
+    public SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, Result<Boolean> changed) throws SQLException {
 
         if(type==Modify.DELETE)
             return new SessionRows(keys, properties, rows.remove(keyFields));
         if(type== Modify.LEFT)
             if(rows.containsKey(keyFields))
                 return this;
-        if(type== Modify.ADD)
-            if(rows.containsKey(keyFields))
-                throw new RuntimeException("should not be");
+        assert !(type== Modify.ADD && rows.containsKey(keyFields));
         if(type== Modify.UPDATE)
             if(!rows.containsKey(keyFields))
                 return this;
 
-        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> orRows = rows.override(keyFields, propFields);
+        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> orRows;
+        if(type==Modify.ADD || type==Modify.LEFT) {
+            changed.set(true);
+            orRows = rows.addExcl(keyFields, propFields);
+        } else {
+            orRows = rows.override(keyFields, propFields);
+            if(!BaseUtils.hashEquals(orRows, rows))
+                changed.set(true);
+        }
 
         if(orRows.size()>MAX_ROWS) // если превысили количество рядов "переходим" в таблицу
             return new SessionDataTable(session, keys, properties, orRows, owner);

@@ -9,10 +9,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -126,13 +123,9 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return getStatKeys(groups, null, keyStat);        
     }
 
-    private final static SimpleAddValue<BaseJoin, Stat> minStat = new SimpleAddValue<BaseJoin, Stat>() {
+    private final static SimpleAddValue<BaseJoin, Stat> minStat = new SymmAddValue<BaseJoin, Stat>() {
         public Stat addValue(BaseJoin key, Stat prevValue, Stat newValue) {
             return prevValue.min(newValue);
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
 

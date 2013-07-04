@@ -290,13 +290,9 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         return set1.getOr().or(set2.getOr());
     }
 
-    private final static AddValue<Object, OrClassSet> addOr = new SimpleAddValue<Object, OrClassSet>() {
+    private final static AddValue<Object, OrClassSet> addOr = new SymmAddValue<Object, OrClassSet>() {
         public OrClassSet addValue(Object key, OrClassSet prevValue, OrClassSet newValue) {
             return prevValue.or(newValue);
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
     public static <T> AddValue<T, OrClassSet> addOr() {
@@ -365,13 +361,9 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         return result;
     }
 
-    private static AddValue<Object, ObjectValueClassSet> objectValueSetAdd = new SimpleAddValue<Object, ObjectValueClassSet>() {
+    private static AddValue<Object, ObjectValueClassSet> objectValueSetAdd = new SymmAddValue<Object, ObjectValueClassSet>() {
         public ObjectValueClassSet addValue(Object key, ObjectValueClassSet prevValue, ObjectValueClassSet newValue) {
             return (ObjectValueClassSet) prevValue.or(newValue);
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
     public static <K> AddValue<K, ObjectValueClassSet> objectValueSetAdd() {

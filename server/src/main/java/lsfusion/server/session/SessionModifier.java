@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import lsfusion.base.FullFunctionSet;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.Pair;
 import lsfusion.base.WeakIdentityHashSet;
@@ -41,58 +42,58 @@ public abstract class SessionModifier implements Modifier {
         views.remove(modifier);
     }
 
-    protected void eventDataChanges(Iterable<? extends CalcProperty> properties) {
+    protected void eventDataChanges(ImSet<? extends CalcProperty> properties, FunctionSet<? extends CalcProperty> sourceChanged) {
+        assert sourceChanged.isFull() || (((ImSet<CalcProperty>)properties).containsAll((ImSet<CalcProperty>)sourceChanged));
         for(CalcProperty property : properties)
-            eventDataChange(property);
+            eventChange(property, true, ((FunctionSet<CalcProperty>) sourceChanged).contains(property)); // как правило этот метод используется для сброса изменений, поэтому пометим что все изменилось
+    }
+
+    protected void eventDataChanges(ImSet<? extends CalcProperty> properties) {
+        eventDataChanges(properties, FullFunctionSet.<CalcProperty>instance());
     }
 
     private MSet<CalcProperty> mChanged = SetFact.mSet();
 
-    protected void eventDataChange(CalcProperty property) {
-        mChanged.add(property);
+    protected void eventChange(CalcProperty property, boolean data, boolean source) {
+        if(source)
+            mChanged.add(property);
 
-        // если increment использовал property drop'аем hint
-        try {
-            for(CalcProperty<?> incrementProperty : getIncrementProps()) {
-                if(CalcProperty.depends(incrementProperty, property)) {
-                    if(increment.contains(incrementProperty))
-                        increment.remove(incrementProperty, getSQL());
-                    preread.remove(incrementProperty);
-                    eventSourceChange(incrementProperty);
+        if(data) { // если изменились данные, drop'аем хинты
+            try {
+                for(CalcProperty<?> incrementProperty : getIncrementProps()) {
+                    if(CalcProperty.depends(incrementProperty, property)) {
+                        if(increment.contains(incrementProperty))
+                            increment.remove(incrementProperty, getSQL());
+                        preread.remove(incrementProperty);
+                        eventChange(incrementProperty, false, true); // так как изначально итерация идет или по increment или по preread, сработает в любом случае
+                    }
                 }
+                MAddSet<CalcProperty> removedNoUpdate = SetFact.mAddSet();
+                for(CalcProperty<?> incrementProperty : noUpdate)
+                    if(CalcProperty.depends(incrementProperty, property)) // сбрасываем noUpdate, уведомляем остальных об изменении
+                        eventNoUpdate(incrementProperty);
+                    else
+                        removedNoUpdate.add(incrementProperty);
+                noUpdate = removedNoUpdate;
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-            MAddSet<CalcProperty> removedNoUpdate = SetFact.mAddSet();
-            for(CalcProperty<?> incrementProperty : noUpdate)
-                if(CalcProperty.depends(incrementProperty, property))
-                    eventNoUpdate(incrementProperty);
-                else
-                    removedNoUpdate.add(incrementProperty);
-            noUpdate = removedNoUpdate;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
 
         for(OverrideSessionModifier view : views)
-            view.eventDataChange(property);
+            view.eventChange(property, data, source);
     }
 
     protected void eventNoUpdate(CalcProperty property) {
         mChanged.add(property);
 
         for(OverrideSessionModifier view : views)
-            view.eventDataChange(property);
-    }
-
-    protected void eventSourceChange(CalcProperty property) {
-        mChanged.add(property);
-
-        for(OverrideSessionModifier view : views)
-            view.eventSourceChange(property);
+            view.eventChange(property, true, true); // если сюда зашли, значит гарантировано изменили данные
     }
 
     protected void eventSourceChanges(Iterable<? extends CalcProperty> properties) {
         for(CalcProperty property : properties)
-            eventSourceChange(property);
+            eventChange(property, false, true); // используется только в случаях когда гарантировано меняется "источник"
     }
 
 
@@ -137,7 +138,7 @@ public abstract class SessionModifier implements Modifier {
         eventSourceChanges(getIncrementProps());
         increment.clear(session);
         preread.clear();
-        eventDataChanges(noUpdate);
+        eventDataChanges(noUpdate.immutableCopy());
         noUpdate = SetFact.mAddSet();
     }
 
@@ -251,7 +252,7 @@ public abstract class SessionModifier implements Modifier {
             throw new RuntimeException(e);
         }
 
-        eventSourceChange(property);
+        eventChange(property, false, true); // используется только в случаях когда гарантировано меняется "источник"
     }
 
     public <P extends PropertyInterface> void addPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) {
@@ -293,7 +294,7 @@ public abstract class SessionModifier implements Modifier {
             throw new RuntimeException(e);
         }
 
-        eventSourceChange(property);
+        eventChange(property, false, true); // используется только в случаях когда гарантировано меняется "источник"
     }
 
     private MAddSet<CalcProperty> noUpdate = SetFact.mAddSet();

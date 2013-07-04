@@ -11,10 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.AddValue;
-import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.ObjectValueClassSet;
@@ -69,8 +66,12 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return andValue;
         }
 
-        public boolean symmetric() {
+        public boolean reversed() {
             return true;
+        }
+
+        public AddValue<Object, AndClassSet> reverse() {
+            return this;
         }
 
         public boolean stopWhenNull() {
@@ -81,13 +82,9 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         return (AddValue<K, AndClassSet>) addAnd;
     }
 
-    private final static AddValue<Object, AndClassSet> addOr = new SimpleAddValue<Object, AndClassSet>() {
+    private final static AddValue<Object, AndClassSet> addOr = new SymmAddValue<Object, AndClassSet>() {
         public AndClassSet addValue(Object key, AndClassSet prevValue, AndClassSet newValue) {
             return prevValue.or(newValue);
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
     public static <K> AddValue<K, AndClassSet> addOr() {

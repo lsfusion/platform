@@ -33,12 +33,12 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         });
     }
 
-    public void modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, ObjectValue propertyValue, Modify type) throws SQLException {
-        modifyRecord(session, keyFields, MapFact.singleton("value", propertyValue), type);
+    public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, ObjectValue propertyValue, Modify type) throws SQLException {
+        return modifyRecord(session, keyFields, MapFact.singleton("value", propertyValue), type);
     }
 
-    public void modifyRows(SQLSession session, ImRevMap<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException {
-        modifyRows(session, new Query<K, String>(mapKeys, expr, "value", where), baseClass, type, env);
+    public ModifyResult modifyRows(SQLSession session, ImRevMap<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException {
+        return modifyRows(session, new Query<K, String>(mapKeys, expr, "value", where), baseClass, type, env);
     }
 
     public static <P extends PropertyInterface> PropertyChange<P> getChange(SinglePropertyTableUsage<P> table) {

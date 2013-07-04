@@ -752,4 +752,14 @@ public class Settings {
     public void setDisableSimpleAddRemoveInNonExclCase(boolean disableSimpleAddRemoveInNonExclCase) {
         this.disableSimpleAddRemoveInNonExclCase = disableSimpleAddRemoveInNonExclCase;
     }
+
+    private boolean modifySessionTableInsteadOfRewrite = true;
+
+    public boolean isModifySessionTableInsteadOfRewrite() {
+        return modifySessionTableInsteadOfRewrite;
+    }
+
+    public void setModifySessionTableInsteadOfRewrite(boolean modifySessionTableInsteadOfRewrite) {
+        this.modifySessionTableInsteadOfRewrite = modifySessionTableInsteadOfRewrite;
+    }
 }

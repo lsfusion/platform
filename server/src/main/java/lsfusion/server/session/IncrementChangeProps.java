@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -48,8 +49,8 @@ public class IncrementChangeProps extends IncrementProps {
     }
 
     public <P extends PropertyInterface> void add(CalcProperty<P> property, PropertyChange<P> change) {
-        changes.put(property, (PropertyChange<PropertyInterface>) change);
+        PropertyChange<PropertyInterface> previous = changes.put(property, (PropertyChange<PropertyInterface>) change);
 
-        eventChange(property);
+        eventChange(property, previous==null || !BaseUtils.hashEquals(previous, change));
     }
 }

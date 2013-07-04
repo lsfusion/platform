@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import lsfusion.base.col.MapFact;
@@ -2131,13 +2132,9 @@ public class BaseUtils {
         return a > b ? a : b;
     }
 
-    private static SimpleAddValue<Object, Integer> addMinInt = new SimpleAddValue<Object, Integer>() {
+    private static SimpleAddValue<Object, Integer> addMinInt = new SymmAddValue<Object, Integer>() {
         public Integer addValue(Object key, Integer prevValue, Integer newValue) {
             return BaseUtils.min(prevValue, newValue);
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
     public static <K> SimpleAddValue<K, Integer> addMinInt() {

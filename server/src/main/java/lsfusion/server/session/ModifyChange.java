@@ -60,8 +60,12 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
             return prevValue.add(newValue);
         }
 
-        public boolean symmetric() {
+        public boolean reversed() {
             return false;
+        }
+
+        public AddValue<Object, ModifyChange<PropertyInterface>> reverse() {
+            throw new UnsupportedOperationException();
         }
     };
     public static <M> AddValue<M, ModifyChange> addValue() {

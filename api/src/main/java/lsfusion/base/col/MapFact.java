@@ -24,13 +24,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class MapFact {
-    private final static AddValue<Object, Integer> addLinear = new SimpleAddValue<Object, Integer>() {
+    private final static AddValue<Object, Integer> addLinear = new SymmAddValue<Object, Integer>() {
         public Integer addValue(Object key, Integer prevValue, Integer newValue) {
             return prevValue + newValue;
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
 
@@ -240,8 +236,12 @@ public class MapFact {
             return prevValue;
         }
 
-        public boolean symmetric() {
-            return false;
+        public boolean reversed() {
+            return true;
+        }
+
+        public AddValue<Object, Object> reverse() {
+            return override;
         }
     };
     public static <K, V> AddValue<K, V> keep() {
@@ -253,12 +253,54 @@ public class MapFact {
             return newValue;
         }
 
-        public boolean symmetric() {
-            return false;
+        public boolean reversed() {
+            return true;
+        }
+
+        public AddValue<Object, Object> reverse() {
+            return keep;
         }
     };
     public static <K, V> AddValue<K, V> override() {
         return (AddValue<K, V>) override;
+    }
+
+    private final static AddValue<Object, Object> keepNewRef = new SimpleAddValue<Object, Object>() {
+        public Object addValue(Object key, Object prevValue, Object newValue) {
+            if(BaseUtils.hashEquals(prevValue, newValue))
+                return newValue;
+            return prevValue;
+        }
+
+        public boolean reversed() {
+            return true;
+        }
+
+        public AddValue<Object, Object> reverse() {
+            return overridePrevRef;
+        }
+    };
+    public static <K, V> AddValue<K, V> keepNewRef() {
+        return (AddValue<K, V>) keepNewRef;
+    }
+
+    private final static AddValue<Object, Object> overridePrevRef = new SimpleAddValue<Object, Object>() {
+        public Object addValue(Object key, Object prevValue, Object newValue) {
+            if(BaseUtils.hashEquals(prevValue, newValue))
+                return prevValue;
+            return newValue;
+        }
+
+        public boolean reversed() {
+            return true;
+        }
+
+        public AddValue<Object, Object> reverse() {
+            return keepNewRef;
+        }
+    };
+    public static <K, V> AddValue<K, V> overridePrevRef() {
+        return (AddValue<K, V>) overridePrevRef;
     }
 
     // exclusive
@@ -268,7 +310,11 @@ public class MapFact {
             throw new UnsupportedOperationException(); // при duplicate keys в executeSelect, см. exception в executeDML
         }
 
-        public boolean symmetric() {
+        public boolean reversed() {
+            throw new UnsupportedOperationException();
+        }
+
+        public AddValue<Object, Object> reverse() {
             throw new UnsupportedOperationException();
         }
     };

@@ -25,16 +25,16 @@ public abstract class IncrementProps {
         increments.remove(modifier);
     }
 
-    public void eventChange(CalcProperty property) {
+    public void eventChange(CalcProperty property, boolean sourceChanged) {
         for(OverrideIncrementProps increment : increments)
-            increment.eventChange(property);
+            increment.eventChange(property, sourceChanged);
 
          for(OverrideSessionModifier modifier : modifiers)
-            modifier.eventIncrementChange(property);
+            modifier.eventIncrementChange(property, sourceChanged);
     }
     public void eventChanges(Iterable<? extends CalcProperty> properties) {
         for(CalcProperty property : properties)
-            eventChange(property);
+            eventChange(property, true); // вызывается при clear, а значит все "источники" сбрасываются
     }
     
     public abstract <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property);

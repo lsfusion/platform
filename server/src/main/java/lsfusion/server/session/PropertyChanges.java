@@ -1,6 +1,7 @@
 package lsfusion.server.session;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -8,6 +9,8 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MFilterSet;
+import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.caches.AbstractValuesContext;
@@ -28,28 +31,14 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         this.changes = changes;
     }
 
-    public PropertyChanges replace(ImMap<CalcProperty, ModifyChange> replace) {
-
-        MFilterSet<CalcProperty> mReallyChanged = SetFact.mFilter(replace);
-        MExclMap<CalcProperty, ModifyChange> mResult = MapFact.mExclMap();
-        for(int i=0;i<replace.size();i++) {
-            CalcProperty property = replace.getKey(i);
-            ModifyChange modifyChange = replace.getValue(i);
-
-            ModifyChange<PropertyInterface> prevChange = getModify(property);
-            if(!BaseUtils.nullEquals(prevChange, modifyChange)) { // чтобы сохранять ссылки
-                if (modifyChange != null && (modifyChange.isFinal || !modifyChange.isEmpty())) // в общем-то почти никогда не срабатывает, на всякий случай
-                    mResult.exclAdd(property, modifyChange);
-                mReallyChanged.keep(property);
-            }
+    private final static SFunctionSet<ModifyChange> emptyChanges = new SFunctionSet<ModifyChange>() {
+        public boolean contains(ModifyChange element) {
+        return element==null || (!element.isFinal && element.isEmpty());
         }
-        ImSet<CalcProperty> reallyChanged = SetFact.imFilter(mReallyChanged, replace);
-
-        if(reallyChanged.size()>0) {
-            mResult.exclAddAll(changes.remove(reallyChanged));
-            return new PropertyChanges(mResult.immutable());
-        } else // чтобы сохранить ссылку
-            return this;
+    };
+    public PropertyChanges replace(ImMap<CalcProperty, ModifyChange> replace) {
+        ImSet<CalcProperty> keys = replace.filterFnValues(emptyChanges).keys();
+        return new PropertyChanges(changes.remove(keys).merge(replace.remove(keys), MapFact.<CalcProperty, ModifyChange>overridePrevRef())); // override с оставлением ссылки
     }
 
     @IdentityLazy

@@ -1,6 +1,9 @@
 package lsfusion.server.data.query;
 
+import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.server.data.KeyField;
 import lsfusion.server.data.translator.RemapValuesTranslator;
+import lsfusion.server.logics.table.ImplementTable;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -329,10 +332,6 @@ public class MapCacheAspect {
             this.values = values;
         }
 
-        protected ImSet<KeyExpr> getKeys() {
-            return SetFact.EMPTY();
-        }
-
         @Override
         public boolean twins(TwinImmutableObject o) {
             return changed == ((QueryInterfaceImplement<K>)o).changed && propClasses == ((QueryInterfaceImplement<K>)o).propClasses && usedChanges.equals(((QueryInterfaceImplement<K>)o).usedChanges) && values.equals(((QueryInterfaceImplement<K>)o).values);
@@ -609,5 +608,114 @@ public class MapCacheAspect {
             "&& target(property) && args(propChanges)")
     public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, CalcProperty property, PropertyChanges propChanges) throws Throwable {
         return getIncrementChange(property, propChanges, ((MapPropertyInterface) property).getIncChangeCache(), thisJoinPoint);
+    }
+
+    // read save cache
+
+    public interface MapTableInterface {
+        MCacheMap getReadSaveCache();
+    }
+    public static class MapTableInterfaceImplement implements MapTableInterface {
+        private MCacheMap<Integer,MAddCol<CacheResult<ReadSaveInterfaceImplement,IQuery>>> readSaveCache;
+        public MCacheMap getReadSaveCache() {
+            if(readSaveCache==null)
+                readSaveCache = LRUCache.mSmall(LRUCache.EXP_RARE);
+            return readSaveCache;
+        }
+    }
+    @DeclareParents(value="lsfusion.server.logics.table.ImplementTable",defaultImpl= MapTableInterfaceImplement.class)
+    private MapTableInterface mapTableInterface;
+
+    static class ReadSaveInterfaceImplement extends AbstractValuesContext<ReadSaveInterfaceImplement> {
+        private final ImSet<CalcProperty> properties;
+        private final PropertyChanges usedChanges;
+
+        ReadSaveInterfaceImplement(ImSet<CalcProperty> properties, PropertyChanges changes) {
+            MSet<CalcProperty> mCommonChanges = SetFact.mSet();
+            for(CalcProperty property : properties)
+                mCommonChanges.addAll(property.getSetUsedChanges(changes));
+            usedChanges = changes.filter(mCommonChanges.immutable());
+            this.properties = properties;
+        }
+
+        public boolean twins(TwinImmutableObject o) {
+            return BaseUtils.hashEquals(properties,((ReadSaveInterfaceImplement)o).properties) && BaseUtils.hashEquals(usedChanges,((ReadSaveInterfaceImplement)o).usedChanges);
+        }
+
+        protected boolean isComplex() {
+            return true;
+        }
+
+        protected int hash(HashValues hash) {
+            return 31 * usedChanges.hashValues(hash) + properties.hashCode();
+        }
+
+        public ImSet<Value> getValues() {
+            return usedChanges.getContextValues();
+        }
+
+        private ReadSaveInterfaceImplement(ReadSaveInterfaceImplement implement, MapValuesTranslate translator) {
+            usedChanges = implement.usedChanges.translateValues(translator);
+            properties = implement.properties;
+        }
+
+        protected ReadSaveInterfaceImplement translate(MapValuesTranslate translator) {
+            return new ReadSaveInterfaceImplement(this, translator);
+        }
+    }
+
+    public <K extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImplementTable table, ImSet<CalcProperty> properties, PropertyChanges propChanges, MCacheMap<Integer, MAddCol<CacheResult<ReadSaveInterfaceImplement, IQuery<KeyField, CalcProperty>>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+        // assert что в interfaceValues только values
+        if(disableCaches)
+            return (IQuery<KeyField, CalcProperty>) thisJoinPoint.proceed();
+
+        ReadSaveInterfaceImplement implement = new ReadSaveInterfaceImplement(properties, propChanges);
+
+        MAddCol<CacheResult<ReadSaveInterfaceImplement, IQuery<KeyField, CalcProperty>>> hashCaches;
+        synchronized(exprCaches) {
+            int hashImplement = implement.getValueComponents().hash;
+            hashCaches = exprCaches.get(hashImplement);
+            if(hashCaches==null) {
+                hashCaches = ListFact.mAddCol();
+                exprCaches.exclAdd(hashImplement, hashCaches);
+            }
+        }
+
+        IQuery<KeyField, CalcProperty> query;
+        IQuery<KeyField, CalcProperty> cacheQuery = null;
+        synchronized(hashCaches) {
+            for(CacheResult<ReadSaveInterfaceImplement, IQuery<KeyField, CalcProperty>> cache : hashCaches.it()) {
+                for(MapValuesTranslate mapValues : new MapValuesIterable(cache.implement, implement)) {
+                    if(cache.implement.translateValues(mapValues).equals(implement)) {
+                        cacheQuery = cache.result.translateValues(mapValues.filter(cache.result.getInnerValues())); // так как могут не использоваться values в Query
+                        break;
+                    }
+                }
+            }
+            if(cacheQuery==null || checkCaches) {
+                query = (IQuery<KeyField, CalcProperty>) thisJoinPoint.proceed(new Object[]{table, properties, implement.usedChanges});
+
+                assert implement.getContextValues().containsAll(ValueExpr.removeStatic(query.getInnerValues())); // в query не должно быть элементов не из implement.getContextValues
+
+                if(cacheQuery== null || !checkCaches)
+                    cacheNoBig(implement, hashCaches, query);
+
+                logger.info("readSaveQuery - not cached "+table);
+            } else {
+                query = cacheQuery;
+
+                logger.info("readSaveQuery - cached "+table);
+            }
+        }
+
+        if (checkCaches && cacheQuery!=null && !BaseUtils.hashEquals(query, cacheQuery))
+            query = query;
+        return query;
+    }
+
+    @Around("execution(* lsfusion.server.logics.table.ImplementTable.getReadSaveQuery(lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.session.PropertyChanges)) " +
+            "&& target(table) && args(properties, propChanges)")
+    public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, ImplementTable table, ImSet properties, PropertyChanges propChanges) throws Throwable {
+        return getReadSaveQuery(table, properties, propChanges, ((MapTableInterface) table).getReadSaveCache(), thisJoinPoint);
     }
 }

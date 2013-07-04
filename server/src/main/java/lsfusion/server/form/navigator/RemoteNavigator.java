@@ -140,7 +140,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
         for (DataSession session : sessions)
-            session.updateProperties(SetFact.singleton(property));
+            session.updateProperties(SetFact.singleton(property), true); // редко используется поэтому все равно
     }
 
     public SecurityPolicy getUserSecurityPolicy() {

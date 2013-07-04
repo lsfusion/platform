@@ -311,7 +311,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> implements MCacheMap<K, V
     public ImMap<K, V> merge(ImMap<? extends K, ? extends V> map, AddValue<K, V> add) { // важная оптимизация так как ОЧЕНЬ много раз вызывается
         if(map.isEmpty()) return this;
 
-        if(add.symmetric() && size < map.size()) return ((ImMap<K, V>)map).merge(this, add);
+        if(add.reversed() && size < map.size()) return ((ImMap<K, V>)map).merge(this, add.reverse());
 
         ArIndexedMap<K, V> result;
         if(map.size() <= SetFact.useIndexedAddInsteadOfMerge) {

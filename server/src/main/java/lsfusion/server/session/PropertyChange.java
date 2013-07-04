@@ -192,8 +192,12 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
             return prevValue.add(newValue);
         }
 
-        public boolean symmetric() {
+        public boolean reversed() {
             return false;
+        }
+
+        public AddValue<Object, PropertyChange<PropertyInterface>> reverse() {
+            throw new UnsupportedOperationException();
         }
     };
     public static <M, K extends PropertyInterface> AddValue<M, PropertyChange<K>> addValue() {
@@ -223,12 +227,12 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return getQuery().executeClasses(env);
     }
 
-    public void modifyRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv) throws SQLException {
+    public ModifyResult modifyRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv) throws SQLException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
-            table.modifyRecord(session, mapValues, exprValue, type);
+            return table.modifyRecord(session, mapValues, exprValue, type);
         else
-            table.modifyRows(session, getQuery(), baseClass, type, queryEnv);
+            return table.modifyRows(session, getQuery(), baseClass, type, queryEnv);
     }
 
     public void writeRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException {

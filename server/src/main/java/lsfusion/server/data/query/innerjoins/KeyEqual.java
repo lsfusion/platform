@@ -5,6 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.TranslateContext;
@@ -39,15 +40,11 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
         this.keyExprs = keyExprs;
     }
     
-    private final static AddValue<ParamExpr, Expr> keepValue = new SimpleAddValue<ParamExpr, Expr>() {
+    private final static AddValue<ParamExpr, Expr> keepValue = new SymmAddValue<ParamExpr, Expr>() {
         public Expr addValue(ParamExpr key, Expr prevValue, Expr newValue) {
             if(!prevValue.isValue()) // если было не value, предпочтительнее использовать value;
                 return newValue;
             return prevValue;
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
     public static <E extends Expr> AddValue<ParamExpr, E> keepValue() {

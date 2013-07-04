@@ -291,8 +291,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new PropertyChange<T>(incrementQuery.getMapKeys(), incrementQuery.getExpr("value"), incrementQuery.getExpr("changed").getWhere());
     }
 
-    public Expr getIncrementExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder resultChanged) {
-        return getIncrementExpr(joinImplement, resultChanged, false, modifier.getPropertyChanges(), IncrementType.SUSPICION, PrevScope.DB); // тут не важно какой scope
+    public Expr getIncrementExpr(ImMap<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder resultChanged) {
+        return getIncrementExpr(joinImplement, resultChanged, false, propChanges, IncrementType.SUSPICION, PrevScope.DB); // тут не важно какой scope
     }
 
     public Expr getIncrementExpr(ImMap<T, ? extends Expr> joinImplement, WhereBuilder resultChanged, boolean propClasses, PropertyChanges propChanges, IncrementType incrementType, PrevScope scope) {
@@ -903,8 +903,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return result;
     }
 
+    public ImSet<CalcProperty> getSetUsedChanges(PropertyChanges propChanges) {
+        return getUsedChanges(propChanges.getStruct());
+    }
+
     public PropertyChanges getUsedChanges(PropertyChanges propChanges) {
-        return propChanges.filter(getUsedChanges(propChanges.getStruct()));
+        return propChanges.filter(getSetUsedChanges(propChanges));
     }
 
     @PackComplex

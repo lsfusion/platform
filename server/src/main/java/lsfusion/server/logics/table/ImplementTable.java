@@ -21,14 +21,21 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.*;
+import lsfusion.server.data.query.IQuery;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ReflectionLogicsModule;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.Modifier;
+import lsfusion.server.session.PropertyChanges;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -52,6 +59,19 @@ public class ImplementTable extends GlobalTable {
         parents = new ArrayList<ImplementTable>();
 
         classes = classes.or(new ClassWhere<KeyField>(mapFields,true));
+    }
+
+    public <P extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImSet<CalcProperty> properties, Modifier modifier) {
+        return getReadSaveQuery(properties, modifier.getPropertyChanges());
+    }
+
+    public <P extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImSet<CalcProperty> properties, PropertyChanges propertyChanges) {
+        QueryBuilder<KeyField, CalcProperty> changesQuery = new QueryBuilder<KeyField, CalcProperty>(this);
+        WhereBuilder changedWhere = new WhereBuilder();
+        for (CalcProperty<P> property : properties)
+            changesQuery.addProperty(property, property.getIncrementExpr(property.mapTable.mapKeys.join(changesQuery.getMapExprs()), propertyChanges, changedWhere));
+        changesQuery.and(changedWhere.toWhere());
+        return changesQuery.getQuery();
     }
 
     public void moveColumn(SQLSession sql, PropertyField field, Table prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException {

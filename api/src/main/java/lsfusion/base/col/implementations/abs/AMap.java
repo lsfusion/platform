@@ -188,7 +188,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     public ImMap<K, V> merge(ImMap<? extends K, ? extends V> imMap, AddValue<K, V> add) {
         if(imMap.isEmpty()) return this;
         
-        if(add.symmetric() && size() < imMap.size()) return ((ImMap<K, V>)imMap).merge(this, add);
+        if(add.reversed() && size() < imMap.size()) return ((ImMap<K, V>)imMap).merge(this, add.reverse());
 
         MMap<K, V> mResult = MapFact.mMap(this, add);
         if(!mResult.addAll(imMap))
@@ -258,6 +258,11 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public ImMap<K, V> filterFn(FunctionSet<K> filter) {
+        if(filter.isFull()) // оптимизация
+            return this;
+        if(filter.isEmpty())
+            return MapFact.<K, V>EMPTY();
+
         MFilterMap<K, V> mResult = MapFact.mFilter(this);
         for(int i=0,size=size();i<size;i++) {
             K key = getKey(i);
@@ -326,6 +331,9 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public ImMap<K, V> remove(ImSet<? extends K> keys) {
+        if(keys.isEmpty()) // оптимизация
+            return this;
+
         return filterFn(new NotFunctionSet<K>((FunctionSet<K>) keys));
     }
 
@@ -531,13 +539,9 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return new FilterValueMap<K, M>(this.<M>mapItValues());
     }
 
-    private static final AddValue<Object, ImMap<Object, ImSet<Object>>> addMergeMapSets = new SimpleAddValue<Object, ImMap<Object, ImSet<Object>>>() {
+    private static final AddValue<Object, ImMap<Object, ImSet<Object>>> addMergeMapSets = new SymmAddValue<Object, ImMap<Object, ImSet<Object>>>() {
         public ImMap<Object, ImSet<Object>> addValue(Object key, ImMap<Object, ImSet<Object>> prevValue, ImMap<Object, ImSet<Object>> newValue) {
             return prevValue.merge(newValue, ASet.addMergeSet());
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
     public static <K, KV, V> AddValue<K, ImMap<KV, ImSet<V>>> addMergeMapSets() {

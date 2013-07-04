@@ -36,13 +36,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         super(sID, caption, interfaces);
     }
 
-    public final static AddValue<CalcProperty, Boolean> addValue = new SimpleAddValue<CalcProperty, Boolean>() {
+    public final static AddValue<CalcProperty, Boolean> addValue = new SymmAddValue<CalcProperty, Boolean>() {
         public Boolean addValue(CalcProperty key, Boolean prevValue, Boolean newValue) {
             return prevValue && newValue;
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
 

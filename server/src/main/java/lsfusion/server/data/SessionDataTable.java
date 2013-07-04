@@ -2,11 +2,13 @@ package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.InnerContext;
 import lsfusion.server.caches.MapValuesIterable;
 import lsfusion.server.caches.hash.HashValues;
@@ -93,7 +95,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return keys.equals(((SessionDataTable) obj).keys) && table.equals(((SessionDataTable) obj).table) && keyValues.equals(((SessionDataTable) obj).keyValues);
     }
 
-    public SessionDataTable modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException {
+    public SessionDataTable modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, Result<Boolean> changed) throws SQLException {
 
         ImMap<KeyField, DataObject> fixedKeyValues;
         ImMap<PropertyField, ObjectValue> fixedPropValues;
@@ -110,15 +112,15 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
             fixedPropValues = propFields.addEquals(propertyValues);
             fixedTable = table.addFields(session, keys.removeOrder(fixedKeyValues.keys()), keyValues.remove(fixedKeyValues.keys()), propertyValues.remove(fixedPropValues.keys()), owner);
         }
-        return new SessionDataTable(fixedTable.modifyRecord(session, keyFields.remove(fixedKeyValues.keys()), propFields.remove(fixedPropValues.keys()), type, owner),
+        return new SessionDataTable(fixedTable.modifyRecord(session, keyFields.remove(fixedKeyValues.keys()), propFields.remove(fixedPropValues.keys()), type, owner, changed),
                 keys, fixedKeyValues, fixedPropValues);
     }
 
     @Override
-    public SessionData modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, Modify type, QueryEnvironment env, Object owner) throws SQLException {
-        if(keyValues.isEmpty() && propertyValues.isEmpty() && (type== Modify.LEFT || type== Modify.ADD || type==Modify.DELETE)) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
-            return new SessionDataTable(table.modifyRows(session, query, type, env, owner), keys, keyValues, propertyValues);
-        return super.modifyRows(session, query, baseClass, type, env, owner);
+    public SessionData modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, Modify type, QueryEnvironment env, Object owner, Result<Boolean> changed) throws SQLException {
+        if(keyValues.isEmpty() && propertyValues.isEmpty() && (Settings.get().isModifySessionTableInsteadOfRewrite() || type == Modify.LEFT || type== Modify.ADD || type==Modify.DELETE)) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
+            return new SessionDataTable(table.modifyRows(session, query, type, env, owner, changed), keys, keyValues, propertyValues);
+        return super.modifyRows(session, query, baseClass, type, env, owner, changed);
     }
 
     @Override

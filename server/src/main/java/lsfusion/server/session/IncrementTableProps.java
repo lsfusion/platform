@@ -39,9 +39,10 @@ public class IncrementTableProps extends IncrementProps {
     }
 
     public <P extends PropertyInterface> void add(CalcProperty<P> property, SinglePropertyTableUsage<P> changeTable) {
+        assert !tableProps.contains(property);
         tableProps.add(property, changeTable);
 
-        eventChange(property);
+        eventChange(property, true);
     }
 
     public void clear(SQLSession session) throws SQLException {

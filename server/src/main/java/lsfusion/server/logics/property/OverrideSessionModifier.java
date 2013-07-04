@@ -168,14 +168,14 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     // уведомляет что IncrementProps изменился
-    public void eventIncrementChange(CalcProperty property) {
+    public void eventIncrementChange(CalcProperty property, boolean sourceChanged) {
 //        pushHint.remove(property);
-        eventDataChange(property);
+        eventChange(property, true, sourceChanged);
 
-        // пробежим по increment'ам modifier, и уведомим что они могли изменится
-        for(CalcProperty incrementProperty : modifier.getHintProps())
-            if(CalcProperty.depends(incrementProperty, property))
-                eventSourceChange(incrementProperty);
+        if(sourceChanged)
+            for(CalcProperty incrementProperty : modifier.getHintProps()) // пробежим по increment'ам modifier, и уведомим что они могли изменится
+                if(CalcProperty.depends(incrementProperty, property))
+                    eventChange(incrementProperty, false, true);
     }
 
     @Override

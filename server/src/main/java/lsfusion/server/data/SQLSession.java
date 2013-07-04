@@ -416,13 +416,19 @@ public class SQLSession extends MutableObject {
     private int volatileStats = 0;
     public void pushVolatileStats(Connection connection) throws SQLException {
         if(syntax.noDynamicSampling())
-            if(volatileStats++==0)
+            if(volatileStats++==0) {
+                needPrivate();
+
                 executeDDL("SET enable_nestloop=off");
+            }
     }
     public void popVolatileStats(Connection connection) throws SQLException {
         if(syntax.noDynamicSampling())
-            if(--volatileStats==0)
+            if(--volatileStats==0) {
                executeDDL("SET enable_nestloop=on");
+
+               tryCommon();
+            }
     }
 
     public void toggleVolatileStats() throws SQLException {
@@ -808,8 +814,20 @@ public class SQLSession extends MutableObject {
     }
 
     public void updateRecords(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) throws SQLException {
+        updateRecords(table, false, keyFields, propFields);
+    }
+
+    public int updateRecordsCount(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) throws SQLException {
+        return updateRecords(table, true, keyFields, propFields);
+    }
+
+    private int updateRecords(Table table, boolean count, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) throws SQLException {
         if(!propFields.isEmpty()) // есть запись нужно Update лупить
-            updateRecords(new ModifyQuery(table, new Query<KeyField, PropertyField>(table.getMapKeys(), Where.TRUE, keyFields, ObjectValue.getMapExprs(propFields))));
+            return updateRecords(new ModifyQuery(table, new Query<KeyField, PropertyField>(table.getMapKeys(), Where.TRUE, keyFields, ObjectValue.getMapExprs(propFields))));
+        if(count)
+            return isRecord(table, keyFields) ? 1 : 0;
+        return 0;
+
     }
 
     public boolean insertRecord(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, boolean update) throws SQLException {
@@ -962,13 +980,19 @@ public class SQLSession extends MutableObject {
     }
 
     public int modifyRecords(ModifyQuery modify) throws SQLException {
-        return modifyRecords(modify, false);
+        return modifyRecords(modify, new Result<Integer>());
     }
 
-        // сначала делает InsertSelect, затем UpdateRecords
-    public int modifyRecords(ModifyQuery modify, boolean insertOnlyNotNull) throws SQLException {
-        if (modify.isEmpty()) // оптимизация
+    public int modifyRecords(ModifyQuery modify, Result<Integer> proceeded) throws SQLException {
+        return modifyRecords(modify, proceeded, false);
+    }
+
+    // сначала делает InsertSelect, затем UpdateRecords
+    public int modifyRecords(ModifyQuery modify, Result<Integer> proceeded, boolean insertOnlyNotNull) throws SQLException {
+        if (modify.isEmpty()) { // оптимизация
+            proceeded.set(0);
             return 0;
+        }
 
         int result = 0;
         if (modify.table.isSingle()) {// потому как запросом никак не сделаешь, просто вкинем одну пустую запись
@@ -976,7 +1000,8 @@ public class SQLSession extends MutableObject {
                 result = insertSelect(modify);
         } else
             result = insertLeftSelect(modify, false, insertOnlyNotNull);
-        updateRecords(modify);
+        int updated = updateRecords(modify);
+        proceeded.set(result + updated);
         return result;
     }
 

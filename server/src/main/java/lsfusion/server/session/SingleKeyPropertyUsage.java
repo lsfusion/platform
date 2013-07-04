@@ -31,8 +31,8 @@ public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
         }, propertyType);
     }
 
-    public void modifyRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, Modify type) throws SQLException {
-        modifyRecord(session, MapFact.singleton("key", keyObject), MapFact.singleton("value", propertyObject), type);
+    public ModifyResult modifyRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, Modify type) throws SQLException {
+        return modifyRecord(session, MapFact.singleton("key", keyObject), MapFact.singleton("value", propertyObject), type);
     }
     
     public void writeRows(SQLSession session, KeyExpr key, Expr expr, Where where, BaseClass baseClass, QueryEnvironment env) throws SQLException {

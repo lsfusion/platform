@@ -6,6 +6,7 @@ import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.session.DataSession;
@@ -14,13 +15,9 @@ public class SessionEnvEvent extends TwinImmutableObject {
 
     public final static SessionEnvEvent ALWAYS = new SessionEnvEvent(null);
 
-    public final static SimpleAddValue<Object, SessionEnvEvent> mergeEnv = new SimpleAddValue<Object, SessionEnvEvent>() {
+    public final static SimpleAddValue<Object, SessionEnvEvent> mergeEnv = new SymmAddValue<Object, SessionEnvEvent>() {
         public SessionEnvEvent addValue(Object key, SessionEnvEvent prevValue, SessionEnvEvent newValue) {
             return prevValue.merge(newValue);
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
 

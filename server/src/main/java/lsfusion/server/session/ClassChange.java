@@ -50,11 +50,11 @@ public class ClassChange extends ImmutableObject {
         this.propValue = null;
     }
 
-    public void modifyRows(SingleKeyPropertyUsage table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv) throws SQLException {
+    public ModifyResult modifyRows(SingleKeyPropertyUsage table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv) throws SQLException {
         if(keyValue !=null)
-            table.modifyRecord(session, keyValue, propValue, type);
+            return table.modifyRecord(session, keyValue, propValue, type);
         else
-            table.modifyRows(session, getQuery(), baseClass, type, queryEnv);
+            return table.modifyRows(session, getQuery(), baseClass, type, queryEnv);
     }
 
     @IdentityLazy

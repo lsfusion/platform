@@ -1,9 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.GlobalObject;
-import lsfusion.base.Pair;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -265,60 +262,77 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
     }
 
-    public SessionTable modifyRecord(final SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, final Object owner) throws SQLException {
+    public SessionTable modifyRecord(final SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, final Object owner, Result<Boolean> changed) throws SQLException {
 
         if(type==Modify.DELETE) { // статистику пока не учитываем
-            return new SessionTable(name, keys, properties, count - deleteRecords(session, keyFields), classes, propertyClasses).
+            int proceeded = deleteRecords(session, keyFields);
+            if(proceeded == 0)
+                return this;
+            changed.set(true);
+            return new SessionTable(name, keys, properties, count - proceeded, classes, propertyClasses).
                     updateStatistics(session, count, owner).checkClasses(session, null);
         }
+        if (type == Modify.LEFT && session.isRecord(this, keyFields))
+            return this;
 
-        boolean update = (type== Modify.UPDATE);
-        if(type== Modify.MODIFY || type== Modify.LEFT) {
-            if(session.isRecord(this, keyFields)) {
-                if(type== Modify.MODIFY)
-                    update = true;
-                else
+        boolean update = (type==Modify.UPDATE || type==Modify.MODIFY);
+
+        if(update) {
+            if(session.updateRecordsCount(this, keyFields, propFields)==0) { // запись не найдена
+                if(type==Modify.UPDATE)
                     return this;
+                else
+                    update = false;
             }
         }
-
-        if(update)
-            session.updateRecords(this, keyFields, propFields);
-        else
+        if(!update)
             session.insertRecord(this, keyFields, propFields);
 
+        changed.set(true);
         return new SessionTable(name, keys, properties, count + (update?0:1),
                         orFieldsClassWheres(classes, propertyClasses, keyFields, propFields)).
                             updateStatistics(session, count, owner).checkClasses(session, null);
     }
 
-    public SessionTable modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, Modify type, QueryEnvironment env, Object owner) throws SQLException {
+    public SessionTable modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, Modify type, QueryEnvironment env, Object owner, Result<Boolean> changed) throws SQLException {
 
         if(query.isEmpty()) // оптимизация
             return this;
 
         ModifyQuery modify = new ModifyQuery(this, query, env);
-        int inserted;
+        int inserted, proceeded;
         switch (type) {
             case MODIFY:
-                inserted = session.modifyRecords(modify);
+                Result<Integer> modifyProceeded = new Result<Integer>();
+                inserted = session.modifyRecords(modify, modifyProceeded);
+                proceeded = modifyProceeded.result;
                 break;
             case LEFT:
-                inserted = session.insertLeftSelect(modify, true, false);
+                proceeded = session.insertLeftSelect(modify, true, false);
+                inserted = proceeded;
                 break;
             case ADD:
-                inserted = session.insertSelect(modify);
+                proceeded = session.insertSelect(modify);
+                inserted = proceeded;
                 break;
             case UPDATE:
-                session.updateRecords(modify);
+                proceeded = session.updateRecords(modify);
                 inserted = 0;
                 break;
             case DELETE:
-                return new SessionTable(name, keys, properties, count - session.deleteRecords(modify), classes, propertyClasses).
+                proceeded = session.deleteRecords(modify);
+                if(proceeded==0)
+                    return this;
+
+                return new SessionTable(name, keys, properties, count - proceeded, classes, propertyClasses).
                         updateStatistics(session, count, owner).checkClasses(session, null);
             default:
                 throw new RuntimeException("should not be");
         }
+        if(proceeded==0)
+            return this;
+
+        changed.set(true);
         return new SessionTable(name, keys, properties, count + inserted,
                         orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
                             updateStatistics(session, count, owner).checkClasses(session, null);

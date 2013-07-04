@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.PackInterface;
 import lsfusion.server.data.expr.BaseExpr;
@@ -23,7 +24,7 @@ import java.util.Map;
 // используется только в groupJoinWheres, по сути protected класс
 public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Value, GroupJoinsWheres> implements PackInterface<GroupJoinsWheres> {
 
-    private static class WriteMap extends SimpleAddValue<WhereJoins, Value> {
+    private static class WriteMap extends SymmAddValue<WhereJoins, Value> {
         private final boolean noWhere;
 
         public WriteMap(boolean noWhere) {
@@ -32,10 +33,6 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
 
         public Value addValue(WhereJoins key, Value prevValue, Value newValue) {
             return prevValue.or(key, newValue, noWhere);
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     }
     private static final WriteMap addValue = new WriteMap(false);

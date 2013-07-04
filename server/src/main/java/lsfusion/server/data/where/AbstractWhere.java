@@ -369,26 +369,18 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return and(trueWhere).exclOr(falseWhere.and(not()));
     }
 
-    private final static AddValue<Object, Where> addOr = new SimpleAddValue<Object, Where>() {
+    private final static AddValue<Object, Where> addOr = new SymmAddValue<Object, Where>() {
         public Where addValue(Object key, Where prevValue, Where newValue) {
             return prevValue.or(newValue);
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
     public static <T> AddValue<T, Where> addOr() {
         return (AddValue<T, Where>) addOr;
     }
 
-    private final static AddValue<Object, CheckWhere> addOrCheck = new SimpleAddValue<Object, CheckWhere>() {
+    private final static AddValue<Object, CheckWhere> addOrCheck = new SymmAddValue<Object, CheckWhere>() {
         public CheckWhere addValue(Object key, CheckWhere prevValue, CheckWhere newValue) {
             return prevValue.orCheck(newValue);
-        }
-
-        public boolean symmetric() {
-            return true;
         }
     };
     public static <T> AddValue<T, CheckWhere> addOrCheck() {

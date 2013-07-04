@@ -40,7 +40,11 @@ public class StructChanges extends TwinImmutableObject {
             return newValue;
         }
 
-        public boolean symmetric() {
+        public AddValue<CalcProperty, ChangeType> reverse() {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean reversed() {
             return false;
         }
     };

@@ -1,6 +1,8 @@
 package lsfusion.server.session;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
@@ -10,7 +12,6 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.translator.MapValuesTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -84,8 +85,19 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         return table.join(mapKeys.join(mapExprs)).getWhere();
     }
 
-    public void modifyRecord(SQLSession session, ImMap<K, DataObject> keyObjects, ImMap<V, ObjectValue> propertyObjects, Modify type) throws SQLException {
-        table = table.modifyRecord(session, mapKeys.join(keyObjects), mapProps.join(propertyObjects), type, this);
+    private ModifyResult aspectModify(SessionData<?> newTable, Boolean dataChanged) {
+        boolean sourceChanged = !BaseUtils.hashEquals(table, newTable);
+        table = newTable;
+        if(sourceChanged) // теоретический при этом может быть не dataChanged (что часто баг но не всегда, например при добавлении полей)
+            return ModifyResult.DATA_SOURCE;
+        if(dataChanged != null && dataChanged)
+            return ModifyResult.DATA;
+        return ModifyResult.NO;
+    }
+
+    public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyObjects, ImMap<V, ObjectValue> propertyObjects, Modify type) throws SQLException {
+        Result<Boolean> changed = new Result<Boolean>();
+        return aspectModify(table.modifyRecord(session, mapKeys.join(keyObjects), mapProps.join(propertyObjects), type, this, changed), changed.result);
     }
 
     public void writeKeys(SQLSession session,ImSet<ImMap<K,DataObject>> writeRows) throws SQLException {
@@ -108,8 +120,9 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
 
     // добавляет ряды которых не было в таблице, или modify'ит
-    public void modifyRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException {
-        table = table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps), baseClass, type, env, this);
+    public ModifyResult modifyRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException {
+        Result<Boolean> changed = new Result<Boolean>();
+        return aspectModify(table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps), baseClass, type, env, this, changed), changed.result);
     }
     // оптимизационная штука
     public void updateAdded(SQLSession session, BaseClass baseClass, V property, Pair<Integer,Integer>[] shifts) throws SQLException {
