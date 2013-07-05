@@ -79,8 +79,18 @@ public class IsClassWhere extends DataWhere {
         return ((ObjectValueClassSet)classes).getNotWhereString(classExpr.getSource(compile));
     }
 
+    private IsClassWhere(IsClassWhere isClass, MapTranslate translate) {
+        this.expr = isClass.expr.translateOuter(translate);
+        this.classes = isClass.classes;
+        this.inconsistent = isClass.inconsistent;
+        if(isClass.classExpr!=null)
+            classExpr = (IsClassExpr) isClass.classExpr.translateOuter(translate);
+        else
+            classExpr = null;
+    }
+
     protected Where translate(MapTranslate translator) {
-        return new IsClassWhere(expr.translateOuter(translator),classes, inconsistent);
+        return new IsClassWhere(this, translator);
     }
     @ParamLazy
     public Where translateQuery(QueryTranslator translator) {

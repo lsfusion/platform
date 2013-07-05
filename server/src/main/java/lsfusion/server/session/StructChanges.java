@@ -14,24 +14,20 @@ import lsfusion.server.logics.property.CalcProperty;
 
 public class StructChanges extends TwinImmutableObject {
 
-    public StructChanges(final PropertyChanges propChanges) {
-        changes = propChanges.getProperties().mapValues(new GetValue<ChangeType, CalcProperty>() {
-            public ChangeType getMapValue(CalcProperty value) {
-                ModifyChange modify = propChanges.getModify(value);
-                ChangeType type;
-                if (modify.isFinal) {
-                    if (modify.isEmpty())
-                        type = ChangeType.NOUPDATE;
-                    else
-                        type = ChangeType.FINAL;
-                } else {
-                    type = ChangeType.NOTFINAL;
-                    assert !modify.isEmpty();
-                }
-                return type;
+    public final static GetValue<ChangeType, ModifyChange> getType = new GetValue<ChangeType, ModifyChange>() {
+        public ChangeType getMapValue(ModifyChange modify) {
+            ChangeType type;
+            if (modify.isFinal) {
+                if (modify.isEmpty())
+                    type = ChangeType.NOUPDATE;
+                else
+                    type = ChangeType.FINAL;
+            } else {
+                type = ChangeType.NOTFINAL;
+                assert !modify.isEmpty();
             }
-        });
-    }
+            return type;
+        }};
 
     private final static AddValue<CalcProperty, ChangeType> addValue = new SimpleAddValue<CalcProperty, ChangeType>() {
         public ChangeType addValue(CalcProperty key, ChangeType prevValue, ChangeType newValue) {
@@ -83,7 +79,7 @@ public class StructChanges extends TwinImmutableObject {
         return false;
     }
 
-    private StructChanges(ImMap<CalcProperty, ChangeType> changes) {
+    public StructChanges(ImMap<CalcProperty, ChangeType> changes) {
         this.changes = changes;
     }
 

@@ -95,14 +95,14 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     }
 
     public <P extends PropertyInterface> ModifyChange<P> getModify(CalcProperty<P> property) {
-        return (ModifyChange<P>)changes.getObject(property);
+        return (ModifyChange<P>)changes.get(property);
     }
 
     private StructChanges struct;
     @ManualLazy
     public StructChanges getStruct() {
         if(struct==null)
-            struct = new StructChanges(this);
+            struct = new StructChanges(changes.mapValues(StructChanges.getType));
         return struct;
     }
 
