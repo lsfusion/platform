@@ -1,5 +1,6 @@
 package lsfusion.server.data.expr;
 
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -24,10 +25,17 @@ public class FormulaUnionExpr extends UnionExpr {
         this.exprs = exprs;
     }
 
-    public static Expr create(final FormulaUnionImpl formula, final ImList<Expr> exprs) {
+    private final static SFunctionSet<Expr> notIsNull = new SFunctionSet<Expr>() {
+        public boolean contains(Expr element) {
+            return !element.isNull();
+        }};
+    public static Expr create(final FormulaUnionImpl formula, ImList<Expr> exprs) {
         Expr resolve = resolveObjectType(formula, exprs, null);
         if(resolve != null)
             return resolve;
+
+        if(formula.supportRemoveNull())
+            exprs = exprs.filterList(notIsNull);
 
         return create(new FormulaUnionExpr(formula, exprs));
     }

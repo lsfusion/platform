@@ -28,6 +28,10 @@ import java.util.Collection;
 // суррогатный класс, необходимый для реализации оператора ORDER
 public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
 
+    public boolean supportRemoveNull() {
+        return false;
+    }
+
     private final ImList<Type> types; // типы придется в явную хранить, так как выводить их из expr'ов не всегда получится (могут быть NULL'ы) и тогда непонятно к чему cast'ить
     private final ImList<Boolean> desc;
 

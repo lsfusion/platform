@@ -8,6 +8,10 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
         super(separator, null);
     }
 
+    public boolean supportRemoveNull() {
+        return true;
+    }
+
     //считает, что последний expr - сепаратор
     @Override
     public String getSource(ExprSource source) {

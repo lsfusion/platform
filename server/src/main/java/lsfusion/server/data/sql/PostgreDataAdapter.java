@@ -268,4 +268,9 @@ public class PostgreDataAdapter extends DataAdapter {
     public String getBPTextType() {
         return "bpchar";
     }
+
+    @Override
+    public boolean noMaxImplicitCast() {
+        return true;
+    }
 }

@@ -1,8 +1,14 @@
 package lsfusion.server.data.expr.formula;
 
+import lsfusion.server.data.query.ExecuteEnvironment;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
 public class MaxFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
+
+    public boolean supportRemoveNull() {
+        return true;
+    }
 
     public final boolean isMin;
     public final boolean notObjectType;
@@ -24,11 +30,18 @@ public class MaxFormulaImpl extends AbstractFormulaImpl implements FormulaUnionI
         }
 
         Type type = getType(source);
+        SQLSyntax syntax = source.getSyntax();
+        ExecuteEnvironment env = source.getEnv();
+        boolean noMaxImplicitCast = syntax.noMaxImplicitCast();
 
-        String result = type.getCast(source.getSource(0), source.getSyntax(), source.getEnv()); // чтобы когда NULL'ы тип правильно определило
+        String result = type.getCast(source.getSource(0), syntax, env); // чтобы когда NULL'ы тип правильно определило
 
-        for (int i = 1; i < exprCount; i++)
-            result = (isMin ? "MIN" : "MAX") + "(" + result + "," + source.getSource(i) + ")";
+        for (int i = 1; i < exprCount; i++) {
+            String exprSource = source.getSource(i);
+            if(noMaxImplicitCast)
+                exprSource = type.getCast(exprSource, syntax, env);
+            result = (isMin ? "MIN" : "MAX") + "(" + result + "," + exprSource + ")";
+        }
         return result;
     }
 
