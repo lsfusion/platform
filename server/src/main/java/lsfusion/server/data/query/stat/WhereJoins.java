@@ -155,6 +155,15 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         while(!queue.isEmpty()) {
             BaseJoin<Object> join = queue.poll();
             ImMap<?, BaseExpr> joinExprs = join.getJoins();
+
+            if(((BaseJoin)join) instanceof UnionJoin) { // UnionJoin может потерять ключи, а они важны
+                for(ParamExpr lostKey : ((UnionJoin) (BaseJoin)join).getLostKeys())
+                    if(!joins.contains(lostKey)) {
+                        queue.add(lostKey);
+                        joins.add(lostKey);
+                    }
+            }
+
             for(int i=0,size=joinExprs.size();i<size;i++) {
                 Object joinKey = joinExprs.getKey(i);
                 BaseExpr joinExpr = joinExprs.getValue(i);

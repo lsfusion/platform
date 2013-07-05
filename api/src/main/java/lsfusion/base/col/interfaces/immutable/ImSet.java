@@ -33,6 +33,7 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
 
     public ImSet<T> filter(ImSet<? extends T> filter);
     ImSet<T> remove(ImSet<? extends T> remove);
+    ImSet<T> removeIncl(ImSet<? extends T> remove);
     public ImSet<T> removeIncl(T element);
 
     <V> ImMap<T, V> toMap(V value);

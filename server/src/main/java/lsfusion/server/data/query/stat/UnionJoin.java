@@ -12,10 +12,13 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.OuterContext;
+import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.expr.query.QueryJoin;
 import lsfusion.server.data.query.ExprEnumerator;
@@ -31,6 +34,11 @@ public class UnionJoin extends CalculateJoin<Integer> {
 
     public UnionJoin(ImSet<Expr> exprs) {
         this.exprs = exprs;
+    }
+
+    @IdentityLazy
+    public ImSet<ParamExpr> getLostKeys() {
+        return AbstractOuterContext.getOuterKeys(exprs).removeIncl(AbstractOuterContext.getOuterKeys(getJoins().values()));
     }
 
     @IdentityLazy
