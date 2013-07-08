@@ -16,6 +16,7 @@ import lsfusion.server.ParamMessage;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.classes.sets.UpClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
@@ -293,7 +294,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return null;
     }
 
-    private PropertyChange<ClassPropertyInterface> getClassChange(IsClassProperty property) {
+    private PropertyChange<ClassPropertyInterface> getClassChange(IsClassProperty property) { // важно чтобы совпадало с инкрементальным алгритмом в DataSession.aspectChangeClass
         ValueClass isClass = property.getInterfaceClass();
         if(isClass instanceof CustomClass) {
             CustomClass customClass = (CustomClass) isClass;
@@ -1100,7 +1101,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             pendingSingleTables.put(property, prevTable);
         }
         ImRevMap<P, KeyExpr> mapKeys = property.getMapKeys();
-        prevTable.modifyRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, Modify.LEFT, env); // если он уже был в базе он не заместится
+        ModifyResult result = prevTable.modifyRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, Modify.LEFT, env);// если он уже был в базе он не заместится
+        if(!result.dataChanged() && prevTable.isEmpty())
+            pendingSingleTables.remove(property);
     }
 
     // assert что в pendingSingleTables в обратном лексикографике
@@ -1394,6 +1397,20 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return checkChanged ? SetFact.imFilter(result, add) : null;
     }
 
+    private static ImSet<CustomClass> addUsed(ImSet<CustomClass> classes, final ImSet<ConcreteObjectClass> usedNews) {
+        return classes.filterFn(new SFunctionSet<CustomClass>() {
+            public boolean contains(CustomClass element) {
+                UpClassSet upSet = element.getUpSet();
+                for(ConcreteObjectClass usedClass : usedNews)
+                    if(usedClass instanceof ConcreteCustomClass) {
+                        ConcreteCustomClass customUsedClass = (ConcreteCustomClass) usedClass;
+                        if(customUsedClass.inSet(upSet)) // добавляется еще один or
+                            return true;
+                    }
+                return false;
+            }});
+    }
+
     private FunctionSet<CalcProperty<ClassPropertyInterface>> aspectChangeClass(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses, ClassChange change) throws SQLException {
         checkTransaction(); // важно что, вначале
 
@@ -1403,8 +1420,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         SingleKeyPropertyUsage changeTable = null;
         boolean needMaterialize = change.needMaterialize(news);
         ModifyResult tableChanged = change.modifyRows(news, sql, baseClass, Modify.MODIFY, env);
-        if(!tableChanged.dataChanged())
+        if(!tableChanged.dataChanged()) {
+            if(news.isEmpty())
+                news = null;
             return null;
+        }
 
         boolean sourceNotChanged = !tableChanged.sourceChanged();
         this.newClasses.clear();
@@ -1416,6 +1436,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         // оптимизация
         Pair<ImSet<CustomClass>, ImSet<CustomClass>> changedAdd = changeSingle(addClasses, change, singleAdd, add, singleRemove, remove, sourceNotChanged);
         Pair<ImSet<CustomClass>, ImSet<CustomClass>> changedRemove = changeSingle(removeClasses, change, singleRemove, remove, singleAdd, add, sourceNotChanged);
+
+        ImSet<CustomClass> changedAddFull = sourceNotChanged ? changedAdd.first.addExcl(changedRemove.second).merge(addUsed(addClasses, changedUsedNew)) : null;
+        ImSet<CustomClass> changeRemoveFull = sourceNotChanged ? changedRemove.first.addExcl(changedAdd.second).merge(addUsed(removeClasses, changedUsedNew)) : null;
 
         for(Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> dataChange : data.entrySet()) { // удаляем существующие изменения
             DataProperty property = dataChange.getKey();
@@ -1455,7 +1478,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         if(changeTable!=null)
             changeTable.drop(sql);
 
-        return sourceNotChanged ? CustomClass.getProperties(changedAdd.first.addExcl(changedRemove.second), changedRemove.first.addExcl(changedAdd.second), changedUsedOld, changedUsedNew) : FullFunctionSet.<CalcProperty<ClassPropertyInterface>>instance();
+        return sourceNotChanged ? CustomClass.getProperties(changedAddFull, changeRemoveFull, changedUsedOld, changedUsedNew) : FullFunctionSet.<CalcProperty<ClassPropertyInterface>>instance();
     }
 
     private static Pair<ImSet<CustomClass>, ImSet<CustomClass>> changeSingle(ImSet<CustomClass> thisChanged, ClassChange thisChange, Map<CustomClass, DataObject> single, Set<CustomClass> changed, Map<CustomClass, DataObject> singleBack, Set<CustomClass> changedBack, boolean checkChanged) {
@@ -1498,7 +1521,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             dataChange = property.createChangeTable();
             data.put(property, dataChange);
         }
-        return change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, getQueryEnv());
+        ModifyResult result = change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, getQueryEnv());
+        if(!result.dataChanged() && dataChange.isEmpty())
+            data.remove(property);
+        return result;
     }
 
     public void dropTables(ImSet<SessionDataProperty> keep) throws SQLException {
@@ -1561,6 +1587,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         ModifyResult tableChanges = prevTable.modifyRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, Modify.LEFT, env); // если он уже был в базе он не заместится
         if(tableChanges.dataChanged())
             apply.eventChange(property, tableChanges.sourceChanged());
+        else
+            if(prevTable.isEmpty())
+                apply.remove(property, sql);
         tableUsage.drop(sql);
     }
 

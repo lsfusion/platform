@@ -1,9 +1,6 @@
 package lsfusion.server.session;
 
-import lsfusion.base.FullFunctionSet;
-import lsfusion.base.FunctionSet;
-import lsfusion.base.Pair;
-import lsfusion.base.WeakIdentityHashSet;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -57,6 +54,13 @@ public abstract class SessionModifier implements Modifier {
     protected void eventChange(CalcProperty property, boolean data, boolean source) {
         if(source)
             mChanged.add(property);
+/*        else {
+            if(!mChanged.contains(property)) {
+                ModifyChange modifyChange = getModifyChange(property);
+                if(!BaseUtils.nullEquals(modifyChange, propertyChanges.getModify(property)))
+                    modifyChange = modifyChange;
+            }
+        }*/
 
         if(data) { // если изменились данные, drop'аем хинты
             try {

@@ -45,6 +45,13 @@ public class IncrementTableProps extends IncrementProps {
         eventChange(property, true);
     }
 
+    public <P extends PropertyInterface> void remove(CalcProperty<P> property, SQLSession sql) throws SQLException {
+        assert tableProps.contains(property);
+        tableProps.remove(property, sql);
+
+        eventChange(property, true);
+    }
+
     public void clear(SQLSession session) throws SQLException {
         eventChanges(tableProps.getProperties());
 
