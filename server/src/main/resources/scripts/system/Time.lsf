@@ -17,8 +17,12 @@ toDateTime(date) = [FORMULA DATETIME '(CAST(($1) as timestamp))'](date AS DATE);
 
 sumDate(date, days) = [FORMULA DATE '(($1)+($2))'](date AS DATE, days AS LONG);
 subtractDate(date, days) = [FORMULA DATE '(($1)-($2))'](date AS DATE, days AS LONG);
+
+sumTimeSeconds(time, seconds) = [FORMULA TIME '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))'](time AS TIME, seconds AS LONG);
+
 sumDateTimeDay(dateTime, days) = [FORMULA DATETIME '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))'](dateTime AS DATETIME, days AS LONG);
-subtractDateTimeSeconds(dateTime, days) = [FORMULA DATETIME '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))'](dateTime AS DATETIME, days AS LONG);
+sumDateTimeSeconds(dateTime, seconds) = [FORMULA DATETIME '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))'](dateTime AS DATETIME, seconds AS LONG);
+subtractDateTimeSeconds(dateTime, seconds) = [FORMULA DATETIME '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))'](dateTime AS DATETIME, seconds AS LONG);
 
 dateTimeToDateTime = FORMULA DATETIME 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')';
 
