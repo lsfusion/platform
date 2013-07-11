@@ -521,7 +521,7 @@ public class SQLSession extends MutableObject {
         Connection connection = getConnection();
 
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
-        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
+        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
 
         int result = 0;
         long runTime = 0;
