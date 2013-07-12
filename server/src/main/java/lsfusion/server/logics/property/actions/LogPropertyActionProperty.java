@@ -43,7 +43,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
         DataSession session = context.getSession();
         List<List<String>> data = new ArrayList<List<String>>();
         FormInstance formInstance = context.createFormInstance(new PropertyFormEntity(property, recognizeGroup),
-                MapFact.<ObjectEntity, DataObject>EMPTY(), session, false, FormSessionScope.OLDSESSION, false, false, false);
+                MapFact.<ObjectEntity, DataObject>EMPTY(), session, false, FormSessionScope.OLDSESSION, false, false, false, null);
 
         List<String> titleRow = new ArrayList<String>();
         for (FormRow formRow : formInstance.getFormData(30).rows) {

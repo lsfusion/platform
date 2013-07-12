@@ -1,11 +1,13 @@
 package lsfusion.server.context;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.DialogInstance;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
@@ -17,6 +19,7 @@ import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
+import java.util.List;
 
 public interface Context {
 
@@ -24,7 +27,7 @@ public interface Context {
 
     FormInstance getFormInstance();
 
-    FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive)  throws SQLException;
+    FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters)  throws SQLException;
     RemoteForm createRemoteForm(FormInstance formInstance);
     RemoteDialog createRemoteDialog(DialogInstance dialogInstance);
 

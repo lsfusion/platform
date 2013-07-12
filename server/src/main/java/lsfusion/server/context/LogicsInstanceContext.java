@@ -1,5 +1,7 @@
 package lsfusion.server.context;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.form.entity.filter.FilterEntity;
 import org.apache.log4j.Logger;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.ClientAction;
@@ -39,12 +41,12 @@ public class LogicsInstanceContext extends AbstractContext {
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException {
         DataObject serverComputer = logicsInstance.getDbManager().getServerComputerObject();
         return new FormInstance(formEntity,
                                 logicsInstance, session, SecurityManager.serverSecurityPolicy, null, null,
                                 serverComputer,
-                                null, mapObjects, isModal, sessionScope.isManageSession(), checkOnOk, showDrop, interactive, null);
+                                null, mapObjects, isModal, sessionScope.isManageSession(), checkOnOk, showDrop, interactive, contextFilters);
     }
 
     @Override

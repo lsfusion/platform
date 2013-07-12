@@ -27,7 +27,7 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
     }
 
     private ImOrderSet<ImMap<ObjectInstance, DataObject>> getObjectGroupKeys(ExecutionContext context) throws SQLException {
-        GroupObjectInstance groupObject = context.getGroupObjectInstance();
+        GroupObjectInstance groupObject = context.getChangingPropertyToDraw();
         ImRevMap<ObjectInstance, KeyExpr> groupKeys = groupObject.getMapKeys();
         return new Query<ObjectInstance, Object>(groupKeys, groupObject.getWhere(groupKeys, context.getModifier())).executeClasses(context).keyOrderSet();
     }

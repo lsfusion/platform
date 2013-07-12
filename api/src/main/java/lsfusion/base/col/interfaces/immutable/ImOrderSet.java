@@ -33,7 +33,7 @@ public interface ImOrderSet<K> extends ImList<K> {
 
     ImOrderSet<K> filterOrderIncl(ImSet<? extends K> set);
 
-    ImOrderSet<K> subOrder(int i, int length);
+    ImOrderSet<K> subOrder(int from, int to);
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues();
     <M> ImRevValueMap<K, M> mapItOrderRevValues(); // предполагается заполнение в том же порядке

@@ -93,7 +93,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
 
                     changeValue = context.requestUserObject(new ExecutionContext.RequestDialog() {
                         public DialogInstance createDialog() throws SQLException {
-                            return formInstance.createChangeEditorDialog(propertyValues, context.getGroupObjectInstance(), filterProperty);
+                            return formInstance.createChangeEditorDialog(propertyValues, context.getChangingPropertyToDraw(), filterProperty);
                         }
                     });
 

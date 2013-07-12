@@ -3,6 +3,7 @@ package lsfusion.server.context;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ChooseClassClientAction;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.DialogClientAction;
@@ -12,6 +13,7 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.DialogInstance;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
@@ -106,7 +108,7 @@ public abstract class AbstractContext implements Context {
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException {
         throw new UnsupportedOperationException("createFormInstance is not supported");
     }
 

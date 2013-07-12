@@ -1760,8 +1760,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new Time(h, m, 0);
     }
 
-    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, String contextObjectName, LPWithParams contextProperty, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + modalityType + ", " + sessionScope + ");");
+
+        if (contextProperty != null) {
+            checkCalculationProperty(contextProperty.property);
+        }
 
         FormEntity form = findFormByCompoundName(formName);
 
@@ -1770,11 +1774,23 @@ public class ScriptingLogicsModule extends LogicsModule {
             objects[i] = findObjectEntity(form, objectNames.get(i));
         }
 
-        LPWithParams res = new LPWithParams(addFAProp(null, genSID(), "", form, objects, null, sessionScope, modalityType, checkOnOk, showDrop), new ArrayList<Integer>());
+        ObjectEntity contextObject = contextObjectName == null ? null : findObjectEntity(form, contextObjectName);
+
+        LAP property = addFAProp(null, genSID(), "", form, objects, null, contextObject,
+                                 contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
+                                 sessionScope, modalityType, checkOnOk, showDrop);
+
         if (mapping.size() > 0) {
-            res = addScriptedJoinAProp(res.property, mapping);
+            if (contextProperty != null) {
+                for (int usedParam : contextProperty.usedParams) {
+                    mapping.add(new LPWithParams(null, singletonList(usedParam)));
+                }
+            }
+            return addScriptedJoinAProp(property, mapping);
+        } else {
+            List<Integer> usedParams = contextProperty == null ? new ArrayList<Integer>() : contextProperty.usedParams;
+            return new LPWithParams(property, usedParams);
         }
-        return res;
     }
 
     public ObjectEntity findObjectEntity(FormEntity form, String objectName) throws ScriptingErrorLog.SemanticErrorException {

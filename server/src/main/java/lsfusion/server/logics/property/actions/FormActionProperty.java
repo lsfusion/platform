@@ -1,6 +1,9 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.FormClientAction;
@@ -12,16 +15,12 @@ import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.instance.FormCloseType;
-import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.FormSessionScope;
-import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.form.entity.filter.FilterEntity;
+import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.AnyValuePropertyHolder;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.remote.RemoteForm;
 
 import java.sql.SQLException;
@@ -46,11 +45,23 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
     private final AnyValuePropertyHolder chosenValueProperty;
 
-    public static ValueClass[] getValueClasses(ObjectEntity[] objects) {
-        ValueClass[] valueClasses = new ValueClass[objects.length];
+    private final ObjectEntity contextObject;
+    private final CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> contextPropertyImplement;
+
+    private static ValueClass[] getValueClasses(ObjectEntity[] objects, CalcProperty contextProperty) {
+        ValueClass[] valueClasses = new ValueClass[objects.length + (contextProperty == null ? 0 : contextProperty.interfaces.size())];
         for (int i = 0; i < objects.length; i++) {
             valueClasses[i] = objects[i].baseClass;
         }
+
+        if (contextProperty != null) {
+            ImMap<PropertyInterface, ValueClass> interfaceClasses = contextProperty.getInterfaceClasses(ClassType.FULL);
+            ImOrderSet<PropertyInterface> propInterfaces = contextProperty.getOrderInterfaces();
+            for (int i = 0; i < propInterfaces.size(); ++i) {
+                valueClasses[objects.length + i] = interfaceClasses.get(propInterfaces.get(i));
+            }
+        }
+
         return valueClasses;
     }
 
@@ -58,8 +69,21 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     //assert getProperties и startAction одинаковой длины
     //startAction привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, final ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, ConcreteCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
-        super(sID, caption, getValueClasses(objectsToSet));
+    public FormActionProperty(String sID,
+                              String caption,
+                              FormEntity form,
+                              final ObjectEntity[] objectsToSet,
+                              ActionPropertyObjectEntity startAction,
+                              FormSessionScope sessionScope,
+                              ModalityType modalityType,
+                              boolean checkOnOk,
+                              boolean showDrop,
+                              ConcreteCustomClass formResultClass,
+                              LCP formResultProperty,
+                              AnyValuePropertyHolder chosenValueProperty,
+                              ObjectEntity contextObject,
+                              CalcProperty contextProperty) {
+        super(sID, caption, getValueClasses(objectsToSet, contextProperty));
 
         this.formResultClass = formResultClass;
         this.formResultProperty = formResultProperty;
@@ -71,11 +95,19 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.sessionScope = sessionScope;
         this.startAction = startAction;
 
-        mapObjects = getOrderInterfaces().mapOrderRevKeys(new GetIndex<ObjectEntity>() { // такой же дебилизм и в SessionDataProperty
-            public ObjectEntity getMapValue(int i) {
-                return objectsToSet[i];
-            }
-        });
+        this.contextObject = contextObject;
+
+        this.contextPropertyImplement = contextProperty == null ? null : contextProperty.getImplement(
+                getOrderInterfaces().subOrder(objectsToSet.length, interfaces.size())
+        );
+
+        mapObjects = getOrderInterfaces()
+                .subOrder(0, objectsToSet.length)
+                .mapOrderRevKeys(new GetIndex<ObjectEntity>() { // такой же дебилизм и в SessionDataProperty
+                    public ObjectEntity getMapValue(int i) {
+                        return objectsToSet[i];
+                    }
+                });
         this.form = form;
     }
 
@@ -89,7 +121,22 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        final FormInstance newFormInstance = context.createFormInstance(form, mapObjects.join(context.getKeys()), context.getSession(), modalityType.isModal(), sessionScope, checkOnOk, showDrop, !form.isPrintForm);
+        ImSet<FilterEntity> contextFilters = null;
+        if (contextPropertyImplement != null) {
+            final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapValues(context.getDataKeys());
+            final FormInstance thisFormInstance = context.getFormInstance();
+            contextFilters = thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), null);
+        }
+
+        final FormInstance newFormInstance = context.createFormInstance(form,
+                                                                        mapObjects.join(context.getKeys()),
+                                                                        context.getSession(),
+                                                                        modalityType.isModal(),
+                                                                        sessionScope,
+                                                                        checkOnOk,
+                                                                        showDrop,
+                                                                        !form.isPrintForm,
+                                                                        contextFilters);
 
         if (form.isPrintForm && !newFormInstance.areObjectsFound()) {
             context.requestUserInteraction(

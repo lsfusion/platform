@@ -1,15 +1,11 @@
 package lsfusion.server.logics.property;
 
 import jasperapi.ReportGenerator;
-import net.sf.jasperreports.engine.JRAbstractExporter;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.auth.SecurityPolicy;
@@ -21,12 +17,18 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.*;
+import net.sf.jasperreports.engine.JRAbstractExporter;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
 
 import java.io.File;
 import java.io.IOException;
@@ -144,12 +146,13 @@ public class ExecutionContext<P extends PropertyInterface> {
         return getDbManager().createSession();
     }
 
-    public GroupObjectInstance getGroupObjectInstance() {
-        PropertyDrawInstance drawInstance = form.getDrawInstance();
+    public GroupObjectInstance getChangingPropertyToDraw() {
+        PropertyDrawInstance drawInstance = form.getChangingDrawInstance();
         if(drawInstance==null)
             return null;
         return drawInstance.toDraw;
     }
+
     public ImMap<P, PropertyObjectInterfaceInstance> getObjectInstances() {
         return form!=null ? form.getMapObjects() : null;
     }
@@ -295,8 +298,8 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive)  throws SQLException {
-        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters)  throws SQLException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {
@@ -304,7 +307,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException {
-        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, FormSessionScope.OLDSESSION, false, false, false));
+        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, FormSessionScope.OLDSESSION, false, false, false, null));
     }
 
     public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException {

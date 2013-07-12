@@ -142,7 +142,7 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
 
     private static <P extends PropertyInterface> void executeAction(ExecutionContext<ClassPropertyInterface> context, ActionProperty<P> property, ImRevMap<P, KeyExpr> keys, ImMap<P, PropertyObjectInterfaceInstance> objects, Where where) throws SQLException {
         context.getEnv().execute(property, new PropertySet<P>(keys, where, MapFact.<Expr, Boolean>EMPTYORDER(), false),
-                                    new FormEnvironment<P>(objects, context.getForm().getDrawInstance()));
+                                    new FormEnvironment<P>(objects, context.getForm().getChangingDrawInstance()));
     }
     
     private ImRevMap<P, PropertyObjectInterfaceInstance> getMapObjectsForMainProperty(final ImMap<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {

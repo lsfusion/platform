@@ -343,8 +343,8 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     private static <K> Expr create(final ImMap<K, ? extends Expr> inner, Query query, ImMap<K, ? extends Expr> outer, final PullExpr noPull) {
-        ImMap<Object, KeyExpr> pullKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterKeys(inner.values()).merge(query.getOuterKeys())).filterFn(new SFunctionSet<KeyExpr>() {
-            public boolean contains(KeyExpr key) {
+        ImMap<Object, ParamExpr> pullKeys = BaseUtils.<ImSet<ParamExpr>>immutableCast(getOuterKeys(inner.values()).merge(query.getOuterKeys())).filterFn(new SFunctionSet<ParamExpr>() {
+            public boolean contains(ParamExpr key) {
                 return key instanceof PullExpr && !((ImMap<K,Expr>)inner).containsValue(key) && !key.equals(noPull);
             }}).mapRevKeys(new GetStaticValue<Object>() {
             public Object getMapValue() {

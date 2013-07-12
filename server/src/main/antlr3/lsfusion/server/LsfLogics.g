@@ -1789,14 +1789,17 @@ formActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 	boolean showDrop = false;
 	List<String> objects = new ArrayList<String>();
 	List<LPWithParams> mapping = new ArrayList<LPWithParams>();
+	String contextObjectName = null;
+	LPWithParams contextProperty = null;
 	}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, modalityType, sessionScope, checkOnOk, showDrop);
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, modalityType, sessionScope, checkOnOk, showDrop);
 	}
 }
 	:	'FORM' formName=compoundID 
-		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })? 
+		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })?
+		('CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; })?
 		(sessScope = formSessionScopeLiteral { sessionScope = $sessScope.val; })?
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('CHECK' { checkOnOk = true; })?

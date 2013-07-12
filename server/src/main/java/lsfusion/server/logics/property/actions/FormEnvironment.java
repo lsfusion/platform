@@ -10,11 +10,11 @@ import lsfusion.server.logics.property.PropertyInterface;
 
 public class FormEnvironment<P extends PropertyInterface> {
     private final ImMap<P, PropertyObjectInterfaceInstance> mapObjects;
-    private final PropertyDrawInstance drawInstance;
+    private final PropertyDrawInstance changingDrawInstance;
 
-    public FormEnvironment(ImMap<P, PropertyObjectInterfaceInstance> mapObjects, PropertyDrawInstance drawInstance) {
+    public FormEnvironment(ImMap<P, PropertyObjectInterfaceInstance> mapObjects, PropertyDrawInstance changingDrawInstance) {
         this.mapObjects = mapObjects;
-        this.drawInstance = drawInstance;
+        this.changingDrawInstance = changingDrawInstance;
     }
 
     public ImMap<P, PropertyObjectInterfaceInstance> getMapObjects() {
@@ -22,14 +22,14 @@ public class FormEnvironment<P extends PropertyInterface> {
     }
     
     public <T extends PropertyInterface> FormEnvironment<T> mapJoin(ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> map) {
-        return new FormEnvironment<T>(MapFact.nullInnerJoin(map, mapObjects), drawInstance);
+        return new FormEnvironment<T>(MapFact.nullInnerJoin(map, mapObjects), changingDrawInstance);
     }
 
     public <T extends PropertyInterface> FormEnvironment<T> map(ImRevMap<T, P> map) {
-        return new FormEnvironment<T>(MapFact.nullInnerJoin(map, mapObjects), drawInstance);
+        return new FormEnvironment<T>(MapFact.nullInnerJoin(map, mapObjects), changingDrawInstance);
     }
 
-    public PropertyDrawInstance getDrawInstance() {
-        return drawInstance;
+    public PropertyDrawInstance getChangingDrawInstance() {
+        return changingDrawInstance;
     }
 }

@@ -522,11 +522,11 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk) {
-        return addFAProp(group, sID, caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, false);
+        return addFAProp(group, sID, caption, form, objectsToSet, startAction, null, null, sessionScope, modalityType, checkOnOk, false);
     }
 
-    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop) {
-        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty())));
+    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, ObjectEntity contextObject, CalcProperty contextProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop) {
+        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), contextObject, contextProperty)));
     }
 
     // ------------------- Change Class action ----------------- //

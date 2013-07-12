@@ -123,7 +123,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, MapFact.<ObjectEntity, ObjectValue>EMPTY(), false, true, false, false, false, null);
     }
 
-    public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> additionalFixedFilters) throws SQLException {
+    public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException {
         this.manageSession = manageSession;
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
@@ -166,8 +166,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         properties = mProperties.immutableList();
 
         ImSet<FilterEntity> allFixedFilters = SetFact.fromJavaSet(entity.fixedFilters);
-        if(additionalFixedFilters!=null)
-            allFixedFilters = allFixedFilters.merge(additionalFixedFilters);
+        if(contextFilters !=null)
+            allFixedFilters = allFixedFilters.merge(contextFilters);
         ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.mapSetValues(new GetValue<FilterInstance, FilterEntity>() {
             public FilterInstance getMapValue(FilterEntity value) {
                 return value.getInstance(instanceFactory);
@@ -964,11 +964,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return ((CustomObjectInstance) object).currentClass;
     }
 
-    public FormInstance<T> createForm(FormEntity<T> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOK, boolean showDrop, boolean interactive) throws SQLException {
+    public FormInstance<T> createForm(FormEntity<T> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOK, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException {
         return new FormInstance<T>(form, logicsInstance,
                 sessionScope.isNewSession() ? session.createSession() : session,
                 securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, instanceFactory.connection, mapObjects, isModal, sessionScope.isManageSession(),
-                checkOnOK, showDrop, interactive, null);
+                checkOnOK, showDrop, interactive, contextFilters);
     }
 
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException {
@@ -1419,34 +1419,40 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new FormData(mResult.immutableOrder());
     }
 
-    // pullProps чтобы запретить hint'ить
     public <P extends PropertyInterface, F extends PropertyInterface> ImSet<FilterEntity> getEditFixedFilters(ClassFormEntity<T> editForm, CalcPropertyValueImplement<P> implement, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
-        CalcProperty<P> implementProperty = (CalcProperty<P>) implement.property;
+        return getContextFilters(editForm.object, implement, selectionGroupObject, pullProps);
+    }
+
+    // pullProps чтобы запретить hint'ить
+    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<FilterEntity> getContextFilters(ObjectEntity filterObject, CalcPropertyValueImplement<P> propValues, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
+        CalcProperty<P> implementProperty = propValues.property;
 
         MSet<FilterEntity> mFixedFilters = SetFact.mSet();
         MSet<PullChangeProperty> mPullProps = SetFact.mSet();
         for (MaxChangeProperty<?, P> constrainedProperty : implementProperty.getMaxChangeProperties(BL.getCheckConstrainedProperties(implementProperty))) {
             mPullProps.add(constrainedProperty);
             mFixedFilters.add(new NotFilterEntity(new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
-                    constrainedProperty.getPropertyObjectEntity(implement.mapping, editForm.object))));
+                    constrainedProperty.getPropertyObjectEntity(propValues.mapping, filterObject))));
         }
 
         for (FilterEntity filterEntity : entity.fixedFilters) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) {
                 for (CalcPropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
-                    OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) ((CalcProperty) filterImplement.property).getOnChangeProperty((CalcProperty) implement.property);
+                    OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) ((CalcProperty) filterImplement.property).getOnChangeProperty((CalcProperty) propValues.property);
                     mPullProps.add(onChangeProperty);
                     mFixedFilters.add(new NotNullFilterEntity<OnChangeProperty.Interface<F, P>>(
-                            onChangeProperty.getPropertyObjectEntity((ImMap<F, DataObject>) filterImplement.mapping, implement.mapping, editForm.object)));
+                            onChangeProperty.getPropertyObjectEntity((ImMap<F, DataObject>) filterImplement.mapping, propValues.mapping, filterObject)));
                 }
             }
         }
-        pullProps.set(mPullProps.immutable());
+        if (pullProps != null) {
+            pullProps.set(mPullProps.immutable());
+        }
         return mFixedFilters.immutable();
     }
 
-    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<FilterEntity> getObjectFixedFilters(ClassFormEntity<T> editForm, GroupObjectInstance selectionGroupObject) {
+    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<FilterEntity> getObjectFixedFilters(ClassFormEntity <T> editForm, GroupObjectInstance selectionGroupObject) {
         MSet<FilterEntity> mFixedFilters = SetFact.mSet();
         ObjectEntity object = editForm.object;
         for (FilterEntity filterEntity : entity.fixedFilters) {

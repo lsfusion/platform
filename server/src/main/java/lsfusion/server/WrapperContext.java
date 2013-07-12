@@ -1,6 +1,7 @@
 package lsfusion.server;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
@@ -8,6 +9,7 @@ import lsfusion.server.context.AbstractContext;
 import lsfusion.server.context.Context;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.DialogInstance;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
@@ -36,8 +38,8 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getFormInstance();
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
-        return wrappedContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException {
+        return wrappedContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {
