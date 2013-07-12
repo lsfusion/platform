@@ -2417,9 +2417,9 @@ showDepStatement
     }
 }
     :	'SHOWDEP'
-        property=ID
+        property=compoundID
         'FROM'
-        propFrom=ID
+        propFrom=compoundID
         ';'
     ;
 
