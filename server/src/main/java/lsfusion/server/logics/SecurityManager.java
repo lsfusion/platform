@@ -206,16 +206,23 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
         User userObject = new User(userId);
 
-        applyDefaultPolicy(userObject);
+        // политика по умолчанию из кода
+        userObject.addSecurityPolicy(defaultPolicy);
 
+        // политики для пользователя, заданные в коде
         List<SecurityPolicy> codeUserPolicy = getUserPolicies(userObject.ID);
         if (codeUserPolicy != null) {
             for (SecurityPolicy policy : codeUserPolicy)
                 userObject.addSecurityPolicy(policy);
         }
 
+        // политика по умолчанию из формы "Политика безопасности"
+        applyDefaultFormDefinedPolicy(userObject);
+
+        // политика для роли из формы "Политика безопасности"
         applyFormDefinedUserPolicy(userObject);
 
+        // дополнительные политики из формы "Политика безопасности"
         List<Integer> userPoliciesIds = readUserPoliciesIds(userId);
         for (int policyId : userPoliciesIds) {
             SecurityPolicy policy = getPolicy(policyId);
@@ -263,12 +270,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         });
     }
 
-    private void applyDefaultPolicy(User user) {
-        ImRevMap<String, Property> sidProperties = getSIDProperties();
-
-        //сначала политика по умолчанию из кода
-        user.addSecurityPolicy(defaultPolicy);
-        //затем политика по умолчанию из визуальной настройки
+    private void applyDefaultFormDefinedPolicy(User user) {
         SecurityPolicy policy = new SecurityPolicy(-1);
         try {
             DataSession session = createSession();
@@ -299,6 +301,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             qp.addProperty("forbidChange", securityLM.forbidChangeProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId")));
 
             ImCol<ImMap<String, Object>> propertyValues = qp.execute(session.sql).values();
+            ImRevMap<String, Property> sidProperties = getSIDProperties();
             for (ImMap<String, Object> valueMap : propertyValues) {
 //                Property prop = businessLogics.getProperty(((String) valueMap.get("sid")).trim());
                 Property prop = sidProperties.get(((String) valueMap.get("sid")).trim());
