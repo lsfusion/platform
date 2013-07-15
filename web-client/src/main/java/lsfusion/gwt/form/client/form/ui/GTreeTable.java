@@ -58,7 +58,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         createdFields.add("treeColumn");
         headers.add(header);
         addColumn(column, header);
-        setColumnWidth(column, "80px");
+        setColumnWidth(column, "81px");
 
         keyboardSelectionHandler = new TreeTableKeyboardSelectionHandler(this);
         setKeyboardSelectionHandler(keyboardSelectionHandler);
