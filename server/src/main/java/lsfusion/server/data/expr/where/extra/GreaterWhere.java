@@ -8,7 +8,7 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.where.Where;
 
 // если operator1 не null и больше operator2 или operator2 null
-public class GreaterWhere extends CompareWhere {
+public class GreaterWhere<T> extends CompareWhere<GreaterWhere<T>> {
 
     public final boolean orEquals; // упрощает компиляцию, но не разбирает некоторые случаи, потом надо будет доделать
 
@@ -37,7 +37,7 @@ public class GreaterWhere extends CompareWhere {
         return super.twins(obj) && orEquals == ((GreaterWhere)obj).orEquals;
     }
 
-    protected CompareWhere createThis(BaseExpr operator1, BaseExpr operator2) {
+    protected GreaterWhere createThis(BaseExpr operator1, BaseExpr operator2) {
         return new GreaterWhere(operator1, operator2, orEquals);
     }
 

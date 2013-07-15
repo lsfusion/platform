@@ -153,7 +153,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             return thisObj.createThis(thisObj.query.translateOuter(translate), (ImMap<K, BaseExpr>) translate.translateExprKeys(thisObj.group)).getInner();
         }
 
-        private T getThis() {
+        protected T getThis() {
             return thisObj;
         }
 
@@ -253,6 +253,11 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             } else
                 result = ClassExprWhere.mapBack(outerInner, fullWhere).and(new ClassExprWhere(QueryExpr.this, staticClass));
             return result.and(getWhere(group).getClassWhere());
+        }
+
+        @Override
+        public Where translateOuter(MapTranslate translator) {
+            return super.translateOuter(translator);
         }
     }
 }

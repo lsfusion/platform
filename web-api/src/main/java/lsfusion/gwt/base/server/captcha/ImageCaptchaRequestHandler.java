@@ -1,10 +1,9 @@
 package lsfusion.gwt.base.server.captcha;
 
 import com.octo.captcha.service.CaptchaServiceException;
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import org.springframework.web.HttpRequestHandler;
 
+import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -25,8 +24,7 @@ public class ImageCaptchaRequestHandler implements HttpRequestHandler {
             String captchaId = request.getSession().getId() + captchaSalt;
             BufferedImage challenge = CaptchaServiceSingleton.getInstance().getImageChallengeForID(captchaId,
                             request.getLocale());
-            JPEGImageEncoder jpegEncoder = JPEGCodec.createJPEGEncoder(jpegOutputStream);
-            jpegEncoder.encode(challenge);
+            ImageIO.write(challenge, "jpeg", jpegOutputStream);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_NOT_FOUND);

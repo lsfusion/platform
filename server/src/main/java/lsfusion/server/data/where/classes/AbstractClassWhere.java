@@ -11,10 +11,12 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.AddValue;
+import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.ManualLazy;
-import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.ValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -273,7 +275,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         return true;
     }
 
-    private boolean meansFrom(And<K> andFrom, boolean implicitCast) {
+    protected boolean meansFrom(And<K> andFrom, boolean implicitCast) {
         if(knf==null) {
             Object[][] mwheres = new Object[wheres.length][]; AndClassSet[][] msets=new AndClassSet[wheres.length][]; int[] mnums=new int[wheres.length]; int mnum=0;
             // берем все перестановки из means, and'им их и проверяем на means всех элементов, сделаем в лоб потому как Combinations слишком громоздкий

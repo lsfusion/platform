@@ -1,6 +1,5 @@
 package lsfusion.server.form.entity;
 
-import org.apache.log4j.Logger;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -45,6 +44,7 @@ import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
+import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.io.ByteArrayInputStream;
@@ -80,7 +80,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
     public List<TreeGroupEntity> treeGroups = new ArrayList<TreeGroupEntity>();
-    public List<PropertyDrawEntity> propertyDraws = new ArrayList<PropertyDrawEntity>();
+    public List<PropertyDrawEntity<?>> propertyDraws = new ArrayList<PropertyDrawEntity<?>>();
     public Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
     public List<RegularFilterGroupEntity> regularFilterGroups = new ArrayList<RegularFilterGroupEntity>();
 
@@ -617,7 +617,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected void removePropertyDraw(AbstractNode group) {
-        Iterator<PropertyDrawEntity> it = propertyDraws.iterator();
+        Iterator<PropertyDrawEntity<?>> it = propertyDraws.iterator();
         while (it.hasNext()) {
             if (group.hasChild(it.next().propertyObject.property)) {
                 it.remove();

@@ -103,7 +103,7 @@ public class GwtSharedUtils {
 
     public static <MK, K, V> void putUpdate(Map<MK, Map<K, V>> keyValues, MK key, Map<K, V> values, boolean update) {
         if (update) {
-            keyValues.put(key, override(keyValues.get(key), values));
+            keyValues.put(key, GwtSharedUtils.<K, K, K ,V>override(keyValues.get(key), values));
         } else {
             keyValues.put(key, values);
         }

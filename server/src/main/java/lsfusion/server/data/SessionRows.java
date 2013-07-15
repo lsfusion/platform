@@ -151,7 +151,7 @@ public class SessionRows extends SessionData<SessionRows> {
         Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orClasses = new Pair<ClassWhere<KeyField>, ImMap<PropertyField,ClassWhere<Field>>>(ClassWhere.<KeyField>FALSE(), properties.toMap(ClassWhere.<Field>FALSE()));
         ImSet<Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>>> rowClasses = rows.mapMergeSetValues(new GetKeyValue<Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>>, ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>>() {
             public Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> getMapValue(ImMap<KeyField, DataObject> key, ImMap<PropertyField, ObjectValue> value) {
-                return new Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>>(DataObject.getMapClasses(key), ObjectValue.getMapClasses(value));
+                return new Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>>(DataObject.getMapDataClasses(key), ObjectValue.getMapClasses(value));
             }});
         for(int i=0,size=rowClasses.size();i<size;i++) {
             Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> classes = rowClasses.get(i);

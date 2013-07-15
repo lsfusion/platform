@@ -1,13 +1,13 @@
 package lsfusion.client.descriptor.nodes;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.context.ApplicationContext;
+import lsfusion.base.context.ApplicationContextProvider;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.descriptor.FormDescriptor;
 import lsfusion.client.descriptor.GroupObjectDescriptor;
 import lsfusion.client.descriptor.PropertyDrawDescriptor;
-import lsfusion.base.context.ApplicationContext;
-import lsfusion.base.context.ApplicationContextProvider;
 import lsfusion.client.tree.ClientTree;
-import lsfusion.base.BaseUtils;
 
 import javax.swing.*;
 
@@ -25,7 +25,7 @@ public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> i
         this.form = form;
 
         // добавим новые свойства, предполагается что оно одно, но пока не будем вешать assertion
-        for (PropertyDrawDescriptor propertyDraw : BaseUtils.mergeList(form.getGroupPropertyDraws(group), form.getAddPropertyDraws(group)))
+        for (PropertyDrawDescriptor propertyDraw : BaseUtils.<PropertyDrawDescriptor, PropertyDrawDescriptor, PropertyDrawDescriptor>mergeList(form.getGroupPropertyDraws(group), form.getAddPropertyDraws(group)))
             add(new PropertyDrawNode(group, propertyDraw, form));
 
         addCollectionReferenceActions(this, "propertyDraws", new String[] {""}, new Class[] {PropertyDrawDescriptor.class});

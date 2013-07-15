@@ -132,14 +132,14 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return BaseUtils.immutableCast(map);
     }
 
-    public static <K> ImMap<K,Object> getMapValues(ImMap<K,DataObject> map) {
+    public static <K> ImMap<K,Object> getMapDataValues(ImMap<K, DataObject> map) {
         return map.mapValues(new GetValue<Object, DataObject>() {
             public Object getMapValue(DataObject value) {
                 return value.object;
             }});
     }
 
-    public static <K> ImMap<K,ConcreteClass> getMapClasses(ImMap<K,DataObject> map) {
+    public static <K> ImMap<K,ConcreteClass> getMapDataClasses(ImMap<K, DataObject> map) {
         return map.mapValues(new GetValue<ConcreteClass, DataObject>() {
             public ConcreteClass getMapValue(DataObject value) {
                 return value.objectClass;

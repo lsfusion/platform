@@ -3,10 +3,10 @@ package lsfusion.gwt.sgwtbase.client.ui.register;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.widgets.Img;
-import com.smartgwt.client.widgets.form.fields.events.ClickEvent;
-import com.smartgwt.client.widgets.form.fields.events.ClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.*;
+import com.smartgwt.client.widgets.form.fields.events.ClickEvent;
+import com.smartgwt.client.widgets.form.fields.events.ClickHandler;
 import com.smartgwt.client.widgets.form.validator.MatchesFieldValidator;
 import com.smartgwt.client.widgets.form.validator.RegExpValidator;
 import com.smartgwt.client.widgets.layout.VLayout;
@@ -84,7 +84,7 @@ public class RegisterBox extends VLayout {
         repeatPasswordBox.setRequired(true);
 
         captchaSalt = ("" + Math.random() * 10).substring(3);
-        Img captchaImage = new Img(GwtClientUtils.getWebAppBaseURL() + "/jcaptcha?salt=" + captchaSalt);
+        Img captchaImage = new Img(GwtClientUtils.getWebAppBaseURL() + "jcaptcha?salt=" + captchaSalt);
         captchaImageItem = new CanvasItem();
         captchaImageItem.setShowTitle(false);
         captchaImageItem.setCanvas(captchaImage);

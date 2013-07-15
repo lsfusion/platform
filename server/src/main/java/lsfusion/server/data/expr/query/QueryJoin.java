@@ -88,7 +88,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     }
     protected abstract OC createOuterContext();
     protected OC outer;
-    private OC getOuter() {
+    protected OC getOuter() {
         if(outer==null)
             outer = createOuterContext();
         return outer;
@@ -145,7 +145,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
 
     // нужны чтобы при merge'е у транслятора хватало ключей/значений
     protected final ImSet<KeyExpr> keys;
-    private final ImSet<Value> values;
+    protected final ImSet<Value> values;
 
     public ImSet<ParamExpr> getKeys() {
         return BaseUtils.immutableCast(keys);

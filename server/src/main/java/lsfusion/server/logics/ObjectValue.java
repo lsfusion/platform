@@ -52,7 +52,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     }
 
     public static <K> ImMap<K,ConcreteClass> getMapClasses(ImMap<K,ObjectValue> map) {
-        return DataObject.getMapClasses(DataObject.filterDataObjects(map));
+        return DataObject.getMapDataClasses(DataObject.filterDataObjects(map));
     }
 
     public static <K> ImMap<K,Object> getMapValues(ImMap<K,ObjectValue> map) {

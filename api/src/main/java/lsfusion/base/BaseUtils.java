@@ -1,8 +1,5 @@
 package lsfusion.base;
 
-import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.Logger;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HMap;
@@ -14,7 +11,10 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MFilterSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.log4j.Logger;
 
 import java.awt.*;
 import java.io.*;
@@ -2192,7 +2192,7 @@ public class BaseUtils {
 
     public static <MK, K, V> void putUpdate(Map<MK, Map<K, V>> keyValues, MK key, Map<K, V> values, boolean update) {
         if(update)
-            keyValues.put(key, override(keyValues.get(key), values));
+            keyValues.put(key, BaseUtils.<K, K, K, V>override(keyValues.get(key), values));
         else
             keyValues.put(key, values);
     }

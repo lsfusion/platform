@@ -191,7 +191,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, final ImMap<PropertyField, ClassWhere<Field>> propertyClasses, ImMap<KeyField, DataObject> keyFields, final ImMap<PropertyField, ObjectValue> propFields) {
-        return orFieldsClassWheres(DataObject.getMapClasses(keyFields), ObjectValue.getMapClasses(propFields), classes, propertyClasses);
+        return orFieldsClassWheres(DataObject.getMapDataClasses(keyFields), ObjectValue.getMapClasses(propFields), classes, propertyClasses);
     }
 
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(final ImMap<KeyField, ConcreteClass> keyFields, final ImMap<PropertyField, ConcreteClass> propFields, ClassWhere<KeyField> classes, final ImMap<PropertyField, ClassWhere<Field>> propertyClasses) {
@@ -211,7 +211,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> andFieldsClassWheres(ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) {
         // определяем новые классы чтобы создать таблицу
-        final ClassWhere<KeyField> addKeyClasses = new ClassWhere<KeyField>(DataObject.getMapClasses(keyFields));
+        final ClassWhere<KeyField> addKeyClasses = new ClassWhere<KeyField>(DataObject.getMapDataClasses(keyFields));
 
         final ClassWhere<KeyField> andKeyClasses = classes.and(addKeyClasses);
 
@@ -244,7 +244,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         ClassWhere<KeyField> keysClassWhere = ClassWhere.<KeyField>FALSE();
         ImMap<PropertyField, ClassWhere<Field>> propertiesClassWheres = null;
         for (int i=0,size=data.size();i<size;) {
-            final ImMap<KeyField, ConcreteClass> rowKeyClasses = DataObject.getMapClasses(data.getKey(i));
+            final ImMap<KeyField, ConcreteClass> rowKeyClasses = DataObject.getMapDataClasses(data.getKey(i));
 
             keysClassWhere = keysClassWhere.or(new ClassWhere(rowKeyClasses));
 
@@ -419,7 +419,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     public int deleteRecords(SQLSession session, ImMap<KeyField, DataObject> keys) throws SQLException {
-        return session.deleteKeyRecords(this, DataObject.getMapValues(keys));
+        return session.deleteKeyRecords(this, DataObject.getMapDataValues(keys));
     }
 
 
