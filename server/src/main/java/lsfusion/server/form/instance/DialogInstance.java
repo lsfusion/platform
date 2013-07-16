@@ -27,8 +27,6 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
     public PropertyDrawEntity initFilterPropertyDraw;
     public Boolean undecorated;
 
-    private final ImSet<PullChangeProperty> pullProps;
-
     public DialogInstance(FormEntity<T> entity,
                           LogicsInstance logicsInstance,
                           DataSession session,
@@ -68,36 +66,12 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
               false,
               true,
               true,
-              additionalFilters
+              additionalFilters,
+              pullProps
         );
         // все равно нашли объекты или нет
 
-        this.pullProps = pullProps;
         dialogObject = instanceFactory.getInstance(dialogEntity);
-    }
-
-    @Override
-    protected FunctionSet<CalcProperty> getNoHints() {
-        FunctionSet<CalcProperty> result = super.getNoHints();
-        if(pullProps==null)
-            return result;
-
-        return BaseUtils.merge(result, new FunctionSet<CalcProperty>() {
-            public boolean contains(CalcProperty element) {
-                for(PullChangeProperty pullProp : pullProps)
-                    if(pullProp.isChangeBetween(element))
-                        return true;
-                return false;
-            }
-
-            public boolean isEmpty() {
-                return false;
-            }
-
-            public boolean isFull() {
-                return false;
-            }
-        });
     }
 
     public ObjectValue getDialogObjectValue() {

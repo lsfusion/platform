@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -121,11 +122,12 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
+        Result<ImSet<PullChangeProperty>> pullProps = new Result<ImSet<PullChangeProperty>>();
         ImSet<FilterEntity> contextFilters = null;
         if (contextPropertyImplement != null) {
             final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapValues(context.getDataKeys());
             final FormInstance thisFormInstance = context.getFormInstance();
-            contextFilters = thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), null);
+            contextFilters = thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), pullProps);
         }
 
         final FormInstance newFormInstance = context.createFormInstance(form,
@@ -136,7 +138,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                                                                         checkOnOk,
                                                                         showDrop,
                                                                         !form.isPrintForm,
-                                                                        contextFilters);
+                                                                        contextFilters,
+                                                                        pullProps.result);
 
         if (form.isPrintForm && !newFormInstance.areObjectsFound()) {
             context.requestUserInteraction(

@@ -23,6 +23,7 @@ import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteDialog;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
@@ -108,7 +109,7 @@ public abstract class AbstractContext implements Context {
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps) throws SQLException {
         throw new UnsupportedOperationException("createFormInstance is not supported");
     }
 

@@ -120,10 +120,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     // для импорта конструктор, объекты пустые
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection) throws SQLException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, MapFact.<ObjectEntity, ObjectValue>EMPTY(), false, true, false, false, false, null);
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, MapFact.<ObjectEntity, ObjectValue>EMPTY(), false, true, false, false, false, null, null);
     }
 
-    public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException {
+    private final ImSet<PullChangeProperty> pullProps;
+
+    public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps) throws SQLException {
         this.manageSession = manageSession;
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
@@ -134,6 +136,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this.logicsInstance = logicsInstance;
         this.BL = (T) logicsInstance.getBusinessLogics();
         this.securityPolicy = securityPolicy;
+
+        this.pullProps = pullProps;
 
         instanceFactory = new InstanceFactory(computer, connection);
 
@@ -386,8 +390,27 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     protected FunctionSet<CalcProperty> getNoHints() {
-        return entity.getNoHints();
-    }
+        FunctionSet<CalcProperty> result = entity.getNoHints();
+        if(pullProps==null)
+            return result;
+
+        return BaseUtils.merge(result, new FunctionSet<CalcProperty>() {
+            public boolean contains(CalcProperty element) {
+                for(PullChangeProperty pullProp : pullProps)
+                    if(pullProp.isChangeBetween(element))
+                        return true;
+                return false;
+            }
+
+            public boolean isEmpty() {
+                return false;
+            }
+
+            public boolean isFull() {
+                return false;
+            }
+        });
+   }
 
     public CustomClass getCustomClass(int classID) {
         return BL.LM.baseClass.findClassID(classID);
@@ -964,11 +987,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return ((CustomObjectInstance) object).currentClass;
     }
 
-    public FormInstance<T> createForm(FormEntity<T> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOK, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException {
+    public FormInstance<T> createForm(FormEntity<T> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOK, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps) throws SQLException {
         return new FormInstance<T>(form, logicsInstance,
                 sessionScope.isNewSession() ? session.createSession() : session,
                 securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, instanceFactory.connection, mapObjects, isModal, sessionScope.isManageSession(),
-                checkOnOK, showDrop, interactive, contextFilters);
+                checkOnOK, showDrop, interactive, contextFilters, pullProps);
     }
 
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException {

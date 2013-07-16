@@ -297,9 +297,13 @@ public class ExecutionContext<P extends PropertyInterface> {
         return env.getWasUserInput();
     }
 
-    // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters)  throws SQLException {
-        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters);
+        return createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, null);
+    }
+
+    // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps)  throws SQLException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, pullProps);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {
