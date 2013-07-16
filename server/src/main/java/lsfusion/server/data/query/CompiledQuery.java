@@ -277,7 +277,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         public final Map<KeyExpr,String> keySelect;
         private Stack<MRevMap<String, String>> stackTranslate = new Stack<MRevMap<String, String>>();
         private Stack<MSet<KeyExpr>> stackUsedPendingKeys = new Stack<MSet<KeyExpr>>();
+        private Stack<Result<Boolean>> stackUsedOuterPendingJoins = new Stack<Result<Boolean>>();
         private Set<KeyExpr> pending;
+
+        void usedJoin(JoinSelect join) {
+            if(mOuterPendingJoins!=null && mOuterPendingJoins.contains(join))
+                stackUsedOuterPendingJoins.peek().set(true);
+        }
 
         public String getSource(KeyExpr key) {
             String source = keySelect.get(key);
@@ -324,7 +330,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         MList<JoinSelect> mJoins = ListFact.mList();
         ImList<JoinSelect> joins;
         MList<String> mImplicitJoins = ListFact.mList();
-        MList<JoinSelect> mOuterPendingJoins = ListFact.mList();
+        MOrderExclSet<JoinSelect> mOuterPendingJoins = SetFact.mOrderExclSet();
 
         private abstract class JoinSelect<I extends InnerJoin> {
 
@@ -356,14 +362,16 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     else {
                         stackUsedPendingKeys.push(SetFact.<KeyExpr>mSet());
                         stackTranslate.push(MapFact.<String, String>mRevMap());
+                        stackUsedOuterPendingJoins.push(new Result<Boolean>());
                         String exprJoin = keySource + "=" + expr.getSource(InnerSelect.this);
                         ImSet<KeyExpr> usedPendingKeys = stackUsedPendingKeys.pop().immutable();
                         ImRevMap<String, String> translate = stackTranslate.pop().immutableRev(); // их надо перетранслировать
+                        Result<Boolean> usedOuterPending = stackUsedOuterPendingJoins.pop();
                         exprJoin = translatePlainParam(exprJoin, translate);
 
                         boolean havePending = usedPendingKeys.size() > translate.size();
-                        if(havePending && inner) { // какие-то ключи еще зависли, придется в implicitJoins закидывать
-                            assert usedPendingKeys.intersect(SetFact.fromJavaSet(pending));
+                        if(inner && (havePending || usedOuterPending.result != null)) { // какие-то ключи еще зависли, придется в implicitJoins закидывать
+                            assert !havePending || usedPendingKeys.intersect(SetFact.fromJavaSet(pending));
                             mImplicitJoins.add(exprJoin);
                         } else { // можно explicit join делать, перетранслировав usedPending
                             joinString = (joinString.length() == 0 ? "" : joinString + " AND ") + exprJoin;
@@ -395,7 +403,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 join = joinString;
 
                 if(outerPending)
-                    mOuterPendingJoins.add(this);
+                    mOuterPendingJoins.exclAdd(this);
                 else
                     mJoins.add(this);
             }
@@ -408,7 +416,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         public void fillInnerJoins(MCol<String> whereSelect) { // заполним Inner Joins, чтобы keySelect'ы были
             innerWhere = whereJoins.fillInnerJoins(upWheres, whereSelect, this);
             whereSelect.addAll(mImplicitJoins.immutableList().getCol());
-            mJoins.addAll(mOuterPendingJoins.immutableList());
+            mJoins.addAll(mOuterPendingJoins.immutableOrder());
             assert pending.isEmpty();
             mImplicitJoins = null;
             mOuterPendingJoins = null;
@@ -490,6 +498,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 join = new TableSelect(table);
                 tables.exclAdd(table,join);
             }
+            usedJoin(join);
             return join.alias;
         }
 
@@ -1074,6 +1083,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 select = new SubQuerySelect((SubQueryJoin)exprJoin);
 
             queries.exclAdd(exprJoin,select);
+            usedJoin(select);
             return select.add(queryExpr.query,queryExpr);
         }
         private JoinSelect getJoinSelect(InnerJoin innerJoin) {
