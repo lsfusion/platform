@@ -6,6 +6,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -17,7 +18,10 @@ import lsfusion.interop.form.PropertyReadType;
 import lsfusion.server.Message;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
-import lsfusion.server.classes.*;
+import lsfusion.server.classes.BaseClass;
+import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.classes.OrderClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
@@ -151,17 +155,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     public ImSet<FilterInstance> getSetFilters() {
         if(setFilters==null) {
             FilterInstance userComboFilter = combineUserFilters(userFilters);
-            ImSet<FilterInstance> userComboSet = userComboFilter != null ? SetFact.singleton(userComboFilter) : SetFact.fromJavaSet(userFilters);
+            ImSet<FilterInstance> userComboSet = userComboFilter != null ? SetFact.singleton(userComboFilter) : userFilters.immutableOrder().getSet();
             setFilters = fixedFilters.merge(userComboSet).merge(SetFact.fromJavaSet(regularFilters)).merge(SetFact.fromJavaSet(tempFilters));
         }
         return setFilters;
     }
 
-    private FilterInstance combineUserFilters(Set<FilterInstance> filterSet) {
+    private FilterInstance combineUserFilters(MOrderSet<FilterInstance> filterSet) {
         FilterInstance comboFilter = null;
         List<List<FilterInstance>> organizedFilters = new ArrayList<List<FilterInstance>>();
         List<FilterInstance> orFilters = new ArrayList<FilterInstance>();
-        for (FilterInstance filter : filterSet) {
+        for (FilterInstance filter : filterSet.immutableOrder()) {
             orFilters.add(filter);
             if (filter.junction) {
                 organizedFilters.add(orFilters);
@@ -197,9 +201,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     // вообще все фильтры
     public ImSet<FilterInstance> fixedFilters = SetFact.EMPTY();
 
-    private Set<FilterInstance> userFilters = SetFact.mAddRemoveSet();
+    private MOrderSet<FilterInstance> userFilters = SetFact.mOrderSet();
     public void clearUserFilters() {
-        userFilters.clear();
+        userFilters = SetFact.mOrderSet();
 
         setFilters = null;
         updated |= UPDATED_FILTER;
