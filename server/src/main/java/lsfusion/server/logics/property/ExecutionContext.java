@@ -1,8 +1,12 @@
 package lsfusion.server.logics.property;
 
+import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -35,21 +39,23 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-public class ExecutionContext<P extends PropertyInterface> {
-    private final ImMap<P, ? extends ObjectValue> keys;
+public class ExecutionContext<P extends PropertyInterface> implements UpdateCurrentClasses {
+    private ImMap<P, ? extends ObjectValue> keys;
 
     private final ObjectValue pushedUserInput;
     private final DataObject pushedAddObject;
 
     private final ExecutionEnvironment env;
+    private final ExecutionContext stack;
     private final FormEnvironment<P> form;
 
-    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form) {
+    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form, ExecutionContext stack) {
         this.keys = keys;
         this.pushedUserInput = pushedUserInput;
         this.pushedAddObject = pushedAddObject;
         this.env = env;
         this.form = form;
+        this.stack = stack;
     }
 
     public ExecutionEnvironment getEnv() {
@@ -61,7 +67,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public ImMap<P, DataObject> getDataKeys() { // предполагается что вызывается из действий у которых !allowNulls
-        return DataObject.assertDataObjects(keys);
+        return DataObject.assertDataObjects(getKeys());
     }
 
     public ObjectValue getKeyValue(P key) {
@@ -89,7 +95,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public int getKeyCount() {
-        return keys.size();
+        return getKeys().size();
     }
 
     public DataSession getSession() {
@@ -205,7 +211,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public boolean apply(BusinessLogics BL) throws SQLException {
-        return getEnv().apply(BL);
+        return getEnv().apply(BL, this);
     }
 
     public boolean apply() throws SQLException {
@@ -223,7 +229,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form);
+        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form, null);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
@@ -242,8 +248,19 @@ public class ExecutionContext<P extends PropertyInterface> {
         return override(keys, form, pushedUserInput);
     }
 
+    @Override
+    public void update(DataSession session) {
+        try {
+            keys = session.updateCurrentClasses(keys);
+        } catch (SQLException e) {
+            Throwables.propagate(e);
+        }
+        if(stack != null)
+            stack.update(session);
+    }
+
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
-        return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form);
+        return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form, this);
     }
 
     public QueryEnvironment getQueryEnv() {

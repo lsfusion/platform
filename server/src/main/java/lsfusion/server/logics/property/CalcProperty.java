@@ -792,7 +792,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if(!check || (read(env.getSession().sql, values, env.getModifier(), env.getQueryEnv())!=null) != notNull) {
             ActionPropertyMapImplement<?, T> action = getSetNotNullAction(notNull);
             if(action!=null)
-                action.execute(new ExecutionContext<T>(values , null, null, env, null));
+                action.execute(new ExecutionContext<T>(values , null, null, env, null, null));
         }
     }
     public void setNotNull(ImRevMap<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull) throws SQLException {

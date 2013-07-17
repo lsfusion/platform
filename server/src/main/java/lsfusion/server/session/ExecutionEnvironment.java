@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.data.QueryEnvironment;
@@ -50,12 +51,16 @@ public abstract class ExecutionEnvironment {
     }
 
     public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, ImMap<P, ? extends ObjectValue> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject) throws SQLException {
-        return property.execute(new ExecutionContext<P>(change, pushUserInput, pushAddObject, this, formEnv));
+        return property.execute(new ExecutionContext<P>(change, pushUserInput, pushAddObject, this, formEnv, null));
     }
 
     public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException;
 
-    public abstract boolean apply(BusinessLogics BL) throws SQLException;
+    public boolean apply(BusinessLogics BL) throws SQLException {
+        return apply(BL, null);
+    }
+
+    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update) throws SQLException;
 
     public abstract void cancel() throws SQLException;
 

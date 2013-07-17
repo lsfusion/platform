@@ -947,14 +947,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 //            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
-    public boolean apply(BusinessLogics BL) throws SQLException {
-        return apply(BL, null);
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update) throws SQLException {
+        return apply(BL, null, update);
     }
 
     public boolean check(BusinessLogics BL, FormInstance form) throws SQLException {
         setApplyFilter(ApplyFilter.ONLYCHECK);
 
-        boolean result = apply(BL, form);
+        boolean result = apply(BL, form, null);
 
         setApplyFilter(ApplyFilter.NO);
         return result;
@@ -1179,7 +1179,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         recursiveUsed.addAll(sessionUsed.toJavaSet());
     }
 
-    public boolean apply(final BusinessLogics<?> BL, FormInstance form) throws SQLException {
+    public boolean apply(final BusinessLogics<?> BL, FormInstance form, UpdateCurrentClasses update) throws SQLException {
         if(!hasChanges())
             return true;
 
@@ -1213,7 +1213,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         startTransaction();
 
         try {
-            return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL);
+            return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, update);
         } catch (SQLException e) { // assert'им что последняя SQL комманда, работа с транзакцией
             apply.clear(sql);
             dataModifier.clearHints(sql); // drop'ем hint'ы (можно и без sql но пока не важно)
@@ -1258,7 +1258,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         this.applyFilter = applyFilter;
     }
 
-    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL) throws SQLException {
+    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, UpdateCurrentClasses update) throws SQLException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         ImOrderSet<Object> execActions = SetFact.addOrderExcl(actions, BL.getAppliedProperties(this));
         for (Object property : execActions) {
@@ -1280,6 +1280,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         sql.inconsistent = true;
 
         ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions = updateRecursiveActions();
+        if(update != null)
+            update.update(this);
 
         // записываем в базу, то что туда еще не сохранено, приходится сохранять группами, так могут не подходить по классам
         packRemoveClasses(BL); // нужно делать до, так как классы должны быть актуальными, иначе спакует свои же изменения
@@ -1296,7 +1298,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         if(recursiveActions.size() > 0) {
             recursiveUsed.clear(); recursiveActions.clear();
-            return recursiveApply(updatedRecursiveActions, BL);
+            return recursiveApply(updatedRecursiveActions, BL, update);
         }
 
         commitTransaction();
