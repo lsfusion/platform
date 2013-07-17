@@ -12,9 +12,9 @@ GROUP printGroup 'Печатные формы' : public;
 
 stringEqualsAll(string) = string == STRING[3]('Все');
 
-isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE 0 END';
+isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE NULL END';
 
-isSubstring = FORMULA BOOLEAN 'CASE WHEN (($1) LIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END';
+isSubstring = FORMULA INTEGER 'CASE WHEN (($1) LIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END';
 
 replace = FORMULA 'replace($1,$2,$3)';
 
