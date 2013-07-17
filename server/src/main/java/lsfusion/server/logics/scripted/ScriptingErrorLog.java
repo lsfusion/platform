@@ -436,7 +436,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitWrongPropertyParametersError(ScriptParser parser, String propertyName) throws SemanticErrorException {
-        emitSimpleError(parser, format("unable to add property '%s' to the form: wrong parameters", propertyName));
+        emitSimpleError(parser, format("wrong parameters are passed to the property '%s'", propertyName));
     }
 
     public void emitOnlyDataCasePropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {

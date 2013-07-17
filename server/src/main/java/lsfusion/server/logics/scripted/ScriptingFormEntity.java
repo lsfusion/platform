@@ -244,16 +244,7 @@ public class ScriptingFormEntity {
             } else {
                 MappedProperty prop = getPropertyWithMapping(propertyName, mapping);
 
-                ImMap<PropertyInterface, AndClassSet> map = prop.property.listInterfaces.mapList(ListFact.toList(prop.mapping)).mapValues(new GetValue<AndClassSet, PropertyObjectInterfaceEntity>() {
-                    @Override
-                    public AndClassSet getMapValue(PropertyObjectInterfaceEntity value) {
-                        return value.getAndClassSet();
-                    }
-                });
-
-                if (!prop.getProperty().isInInterface(map, true)) {
-                    LM.getErrLog().emitWrongPropertyParametersError(LM.getParser(), propertyName);
-                }
+                checkPropertyParameters(prop.property, prop.mapping);
 
                 property = form.addPropertyDraw(prop.property, prop.mapping);
             }
@@ -278,6 +269,19 @@ public class ScriptingFormEntity {
     private void checkCustomClassParam(ObjectEntity param, String propertyName) throws ScriptingErrorLog.SemanticErrorException {
         if (!(param.baseClass instanceof CustomClass)) {
             LM.getErrLog().emitCustomClassExpextedError(LM.getParser(), propertyName);
+        }
+    }
+
+    private void checkPropertyParameters(LP<PropertyInterface, ?> property, PropertyObjectInterfaceEntity[] mapping) throws ScriptingErrorLog.SemanticErrorException {
+        ImMap<PropertyInterface, AndClassSet> map = property.listInterfaces.mapList(ListFact.toList(mapping)).mapValues(new GetValue<AndClassSet, PropertyObjectInterfaceEntity>() {
+            @Override
+            public AndClassSet getMapValue(PropertyObjectInterfaceEntity value) {
+                return value.getAndClassSet();
+            }
+        });
+
+        if (!property.property.isInInterface(map, true)) {
+            LM.getErrLog().emitWrongPropertyParametersError(LM.getParser(), property.property.getName());
         }
     }
 
@@ -424,7 +428,10 @@ public class ScriptingFormEntity {
     public void addScriptedFilters(List<LP> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            form.addFixedFilter(new NotNullFilterEntity(form.addPropertyObject((LCP) properties.get(i), getMappingObjectsArray(mappings.get(i))), true));
+            LCP property = (LCP) properties.get(i);
+            checkPropertyParameters(property, getMappingObjectsArray(mappings.get(i)));
+
+            form.addFixedFilter(new NotNullFilterEntity(form.addPropertyObject(property, getMappingObjectsArray(mappings.get(i))), true));
         }
     }
 
@@ -455,6 +462,8 @@ public class ScriptingFormEntity {
             if (keyStroke == null) {
                 LM.getErrLog().emitWrongKeyStrokeFormat(LM.getParser(), keystrokes.get(i));
             }
+
+            checkPropertyParameters(properties.get(i), getMappingObjectsArray(mappings.get(i)));
 
             regularFilterGroup.addFilter(
                     new RegularFilterEntity(form.genID(), new NotNullFilterEntity(form.addPropertyObject((LCP) properties.get(i), getMappingObjectsArray(mappings.get(i))), true), caption, keyStroke),
