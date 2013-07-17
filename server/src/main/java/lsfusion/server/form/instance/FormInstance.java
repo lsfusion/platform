@@ -290,11 +290,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             query.addProperty("columnSortOverridePropertyDrawCustomUser", BL.reflectionLM.columnSortOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.addProperty("columnAscendingSortOverridePropertyDrawCustomUser", BL.reflectionLM.columnAscendingSortOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             Expr groupObjectPropertyDrawExpr = BL.reflectionLM.groupObjectPropertyDraw.getExpr(propertyDrawExpr);
+            Expr hasPrefsExpr = BL.reflectionLM.hasUserPreferencesOverrideGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr);
             query.addProperty("groupObjectPropertyDraw", groupObjectPropertyDrawExpr);
             query.addProperty("sIDGroupObjectPropertyDraw", BL.reflectionLM.sidGroupObject.getExpr(groupObjectPropertyDrawExpr));
-            query.addProperty("hasUserPreferencesOverrideGroupObjectCustomUser", BL.reflectionLM.hasUserPreferencesOverrideGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
+            query.addProperty("hasUserPreferencesOverrideGroupObjectCustomUser", hasPrefsExpr);
 
             query.and(BL.reflectionLM.formPropertyDraw.getExpr(propertyDrawExpr).compare(formObject.getExpr(), Compare.EQUALS));
+            query.and(hasPrefsExpr.getWhere());
 
             ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = query.execute(this);
 

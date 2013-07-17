@@ -64,7 +64,7 @@ TABLE propertyDrawCustomUser (PropertyDraw, CustomUser);
 
 sidPropertyDraw 'Код свойства на форме' = DATA STRING[100] (PropertyDraw);
 captionPropertyDraw 'Название свойства на форме' = DATA STRING[250] (PropertyDraw);
-formPropertyDraw 'Форма' = DATA Form (PropertyDraw);
+formPropertyDraw 'Форма' = DATA Form (PropertyDraw) INDEXED;
 groupObjectPropertyDraw 'Группа объектов' = DATA GroupObject (PropertyDraw);
 propertyDrawFormSID 'Свойство на форме' = GROUP AGGR propertyDraw BY formPropertyDraw (propertyDraw), sidPropertyDraw (propertyDraw) WHERE propertyDraw IS PropertyDraw;
 propertyDrawSIDNavigatorElementSIDPropertyDraw 'Код формы' (str1, str2) = propertyDrawFormSID (navigatorElementSID(str1), str2);

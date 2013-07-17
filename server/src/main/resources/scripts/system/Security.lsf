@@ -80,6 +80,8 @@ forbidChangePropertyGroup 'Запретить изменение группы с
 dataForbidChangeProperty 'Запретить изменение свойства' = DATA BOOLEAN (Property);
 forbidChangeProperty 'Запретить изменение свойства' (property) = OVERRIDE levelForbidChangePropertyGroup (parentProperty(property)), dataForbidChangeProperty (property) PERSISTENT;
 
+notNullPermissionProperty (property) = OVERRIDE permitViewProperty(property), forbidViewProperty(property), permitChangeProperty(property), forbidChangeProperty(property) PERSISTENT INDEXED;
+
 dataPermitViewUserRolePropertyGroup 'Разрешить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
 levelPermitViewParentUserRolePropertyGroup (userRole, propertyGroup) =

@@ -1,10 +1,10 @@
 package lsfusion.server.logics;
 
-import org.antlr.runtime.RecognitionException;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
 
@@ -24,6 +24,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP forbidViewProperty;
     public LCP permitChangeProperty;
     public LCP forbidChangeProperty;
+    public LCP notNullPermissionProperty;
 
     public LCP permitViewAllPropertyUser;
     public LCP forbidChangeAllPropertyRole;
@@ -100,6 +101,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidViewProperty = getLCPByName("forbidViewProperty");
         permitChangeProperty = getLCPByName("permitChangeProperty");
         forbidChangeProperty = getLCPByName("forbidChangeProperty");
+        notNullPermissionProperty = getLCPByName("notNullPermissionProperty");
 
         // -- Разрешения для каждой роли
 

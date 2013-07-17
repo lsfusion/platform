@@ -1,8 +1,5 @@
 package lsfusion.server.logics;
 
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -24,6 +21,9 @@ import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.session.DataSession;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -277,10 +277,15 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
             QueryBuilder<String, String> qf = new QueryBuilder<String, String>(SetFact.singleton("formId"));
             Expr expr = reflectionLM.sidNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
+            Expr permitFormExpr = securityLM.permitNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
+            Expr forbidFormExpr = securityLM.forbidNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
+
             qf.and(expr.getWhere());
+            qf.and(permitFormExpr.getWhere().or(forbidFormExpr.getWhere()));
+
             qf.addProperty("sid", expr);
-            qf.addProperty("permit", securityLM.permitNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId")));
-            qf.addProperty("forbid", securityLM.forbidNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId")));
+            qf.addProperty("permit", permitFormExpr);
+            qf.addProperty("forbid", forbidFormExpr);
 
             ImCol<ImMap<String, Object>> formValues = qf.execute(session.sql).values();
             for (ImMap<String, Object> valueMap : formValues) {
@@ -294,6 +299,8 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             QueryBuilder<String, String> qp = new QueryBuilder<String, String>(SetFact.singleton("propertyId"));
             Expr expr2 = reflectionLM.SIDProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId"));
             qp.and(expr2.getWhere());
+            qp.and(securityLM.notNullPermissionProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId")).getWhere());
+
             qp.addProperty("sid", expr2);
             qp.addProperty("permitView", securityLM.permitViewProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId")));
             qp.addProperty("forbidView", securityLM.forbidViewProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId")));
@@ -322,46 +329,53 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     }
 
     private void applyFormDefinedUserPolicy(User user) {
-        ImRevMap<String, Property> sidProperties = getSIDProperties();
-
         SecurityPolicy policy = new SecurityPolicy(-1);
         try {
             DataSession session = createSession();
 
             DataObject userObject = new DataObject(user.ID, businessLogics.authenticationLM.customUser);
 
-            Object forbidAll = securityLM.forbidAllFormsUser.read(session, userObject);
-            Object allowAll = securityLM.permitAllFormsUser.read(session, userObject);
-            if (forbidAll != null)
-                policy.navigator.defaultPermission = false;
-            else if (allowAll != null)
-                policy.navigator.defaultPermission = true;
+            QueryBuilder<String, String> qu = new QueryBuilder<String, String>(SetFact.toExclSet("userId"));
+            Expr userExpr = qu.getMapExprs().get("userId");
+            qu.and(userExpr.compare(userObject, Compare.EQUALS));
+            qu.addProperty("permitAllForms", securityLM.permitAllFormsUser.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("forbidAllForms", securityLM.forbidAllFormsUser.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("permitViewAllProperties", securityLM.permitViewAllPropertyUser.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("forbidViewAllProperty", securityLM.forbidViewAllPropertyUser.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("permitChangeAllProperty", securityLM.permitChangeAllPropertyUser.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("forbidChangeAllProperty", securityLM.forbidChangeAllPropertyRole.getExpr(session.getModifier(), userExpr));
 
+            ImCol<ImMap<String, Object>> userPermissionValues = qu.execute(session.sql).values();
+            for (ImMap<String, Object> valueMap : userPermissionValues) {
+                if (valueMap.get("forbidAllForms") != null)
+                    policy.navigator.defaultPermission = false;
+                else if (valueMap.get("permitAllForms") != null)
+                    policy.navigator.defaultPermission = true;
 
-            Object forbidViewAll = securityLM.forbidViewAllPropertyUser.read(session, userObject);
-            Object allowViewAll = securityLM.permitViewAllPropertyUser.read(session, userObject);
-            if (forbidViewAll != null)
-                policy.property.view.defaultPermission = false;
-            else if (allowViewAll != null)
-                policy.property.view.defaultPermission = true;
+                if (valueMap.get("forbidViewAllProperty") != null)
+                    policy.property.view.defaultPermission = false;
+                else if (valueMap.get("permitViewAllProperties") != null)
+                    policy.property.view.defaultPermission = true;
 
-
-            Object forbidChangeAll = securityLM.forbidChangeAllPropertyRole.read(session, userObject);
-            Object allowChangeAll = securityLM.permitChangeAllPropertyUser.read(session, userObject);
-            if (forbidChangeAll != null)
-                policy.property.change.defaultPermission = false;
-            else if (allowChangeAll != null)
-                policy.property.change.defaultPermission = true;
+                if (valueMap.get("forbidChangeAllProperty") != null)
+                    policy.property.change.defaultPermission = false;
+                else if (valueMap.get("permitChangeAllProperty") != null)
+                    policy.property.change.defaultPermission = true;
+            }
 
 
             QueryBuilder<String, String> qf = new QueryBuilder<String, String>(SetFact.toExclSet("userId", "formId"));
             Expr formExpr = reflectionLM.sidNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
+            Expr permitUserFormExpr = securityLM.permitUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId"));
+            Expr forbidUserFormExpr = securityLM.forbidUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId"));
+
             qf.and(formExpr.getWhere());
-            qf.and(qf.getMapExprs().get("userId").compare(new DataObject(user.ID, businessLogics.authenticationLM.customUser), Compare.EQUALS));
+            qf.and(qf.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
+            qf.and(permitUserFormExpr.getWhere().or(forbidUserFormExpr.getWhere()));
 
             qf.addProperty("sid", formExpr);
-            qf.addProperty("permit", securityLM.permitUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId")));
-            qf.addProperty("forbid", securityLM.forbidUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId")));
+            qf.addProperty("permit", permitUserFormExpr);
+            qf.addProperty("forbid", forbidUserFormExpr);
 
             ImCol<ImMap<String, Object>> formValues = qf.execute(session.sql).values();
             for (ImMap<String, Object> valueMap : formValues) {
@@ -375,7 +389,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             QueryBuilder<String, String> qp = new QueryBuilder<String, String>(SetFact.toExclSet("userId", "propertyId"));
             Expr propExpr = reflectionLM.SIDProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId"));
             qp.and(propExpr.getWhere());
-            qp.and(qp.getMapExprs().get("userId").compare(new DataObject(user.ID, businessLogics.authenticationLM.customUser), Compare.EQUALS));
+            qp.and(qp.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
             qp.and(securityLM.notNullPermissionUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyId")).getWhere());
 
             qp.addProperty("sid", propExpr);
@@ -385,6 +399,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             qp.addProperty("forbidChange", securityLM.forbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyId")));
 
             ImCol<ImMap<String, Object>> propValues = qp.execute(session.sql).values();
+            ImRevMap<String, Property> sidProperties = getSIDProperties();
             for (ImMap<String, Object> valueMap : propValues) {
                 Property prop = sidProperties.get(((String) valueMap.get("sid")).trim());
                 if (valueMap.get("forbidView") != null)
