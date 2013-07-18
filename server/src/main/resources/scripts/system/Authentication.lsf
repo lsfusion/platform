@@ -5,7 +5,7 @@ REQUIRE System, Contact;
 CLASS Computer 'Рабочее место';
 TABLE computer (Computer);
 
-hostnameComputer 'Имя хоста' = DATA ISTRING[100] (Computer) IN recognize;
+hostnameComputer 'Имя хоста' = DATA VARISTRING[100] (Computer) IN recognize;
 
 CLASS ABSTRACT User 'Пользователь';
 TABLE user (User);
@@ -20,8 +20,8 @@ isLockedCustomUser 'Заблокирован' = DATA BOOLEAN (CustomUser);
 loginCustomUser 'Логин' = DATA STRING[30] (CustomUser);
 customUserLogin 'Обычный пользователь' (login) = GROUP AGGR customUser BY loginCustomUser(customUser) WHERE customUser IS CustomUser;
 passwordCustomUser 'Пароль' = DATA STRING[30] (CustomUser) ECHO;
-sha256PasswordCustomUser 'Хэш пароля' = DATA STRING[100] (CustomUser) ECHO;
-calculatedHash 'Значение хэш' = DATA SESSION STRING[100] ();
+sha256PasswordCustomUser 'Хэш пароля' = DATA VARSTRING[100] (CustomUser) ECHO;
+calculatedHash 'Значение хэш' = DATA SESSION VARSTRING[100] ();
 forbidChangePasswordCustomUser 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
 forbidEditProfileCustomUser 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);
 
@@ -30,7 +30,7 @@ logOut 'Выйти' = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOu
 reloginUser 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty';
 
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
-serverLDAP 'Сервер' = DATA STRING[100] ();
+serverLDAP 'Сервер' = DATA VARSTRING[100] ();
 portLDAP 'Порт' = DATA INTEGER ();
 
 changeSHA256PasswordCustomUser = ACTION(customUser) {

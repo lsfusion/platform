@@ -5,13 +5,13 @@ REQUIRE System;
 CLASS ABSTRACT Contact 'Контакт';
 TABLE contact (Contact);
 
-firstNameContact 'Имя' = DATA STRING[30] (Contact) MINCHARWIDTH 10 IN base;
-lastNameContact 'Фамилия' = DATA STRING[30] (Contact) MINCHARWIDTH 10 IN base;
+firstNameContact 'Имя' = DATA VARSTRING[30] (Contact) MINCHARWIDTH 10 IN base;
+lastNameContact 'Фамилия' = DATA VARSTRING[30] (Contact) MINCHARWIDTH 10 IN base;
 nameContact 'Имя' (contact) = CONCAT ' ', firstNameContact(contact), lastNameContact(contact) IN recognize;
 
-phoneContact 'Телефон' = DATA STRING[30] (Contact) MINCHARWIDTH 10;
-postAddressContact 'Почтовый адрес' = DATA STRING[100] (Contact) MINCHARWIDTH 20;
+phoneContact 'Телефон' = DATA VARSTRING[30] (Contact) MINCHARWIDTH 10;
+postAddressContact 'Почтовый адрес' = DATA VARSTRING[100] (Contact) MINCHARWIDTH 20;
 birthdayContact 'День рождения' = DATA DATE (Contact);
 
-emailContact 'E-mail'= DATA STRING[50] (Contact);
+emailContact 'E-mail'= DATA VARSTRING[50] (Contact);
 contactEmail (email) = GROUP MAX contact BY emailContact(contact);

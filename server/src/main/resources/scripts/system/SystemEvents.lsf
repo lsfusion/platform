@@ -7,12 +7,12 @@ CLASS ClientException 'Исключение на клиенте' : Exception;
 CLASS ServerException 'Исключение на сервере' : Exception;
 TABLE exception (Exception);
 
-messageException 'Сообщение исключения' = DATA STRING[250] (Exception);
+messageException 'Сообщение исключения' = DATA VARSTRING[250] (Exception);
 dateException 'Время возникновения' = DATA DATETIME (Exception);
 erTraceException 'След исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;
-typeException 'Тип исключения' = DATA STRING[250] (Exception);
-clientClientException 'Клиент' = DATA STRING[100] (ClientException);
-loginClientException 'Логин' = DATA STRING[100] (ClientException);
+typeException 'Тип исключения' = DATA VARSTRING[250] (Exception);
+clientClientException 'Клиент' = DATA VARSTRING[100] (ClientException);
+loginClientException 'Логин' = DATA VARSTRING[100] (ClientException);
 
 CLASS Launch 'Запуск';
 TABLE launch (Launch);
@@ -20,7 +20,7 @@ TABLE launch (Launch);
 computerLaunch 'Компьютер' = DATA Computer (Launch);
 hostnameLaunch 'Имя компьютера' (launch) = hostnameComputer(computerLaunch(launch));
 timeLaunch 'Время запуска'= DATA DATETIME (Launch);
-revisionLaunch 'Версия'= DATA STRING[10] (Launch);
+revisionLaunch 'Версия'= DATA VARSTRING[10] (Launch);
 
 CLASS Connection 'Подключение';
 
@@ -40,7 +40,7 @@ TABLE connectionNavigatorElement (Connection, NavigatorElement);
 computerConnection 'Компьютер' = DATA Computer (Connection);
 hostnameComputerConnection 'Имя компьютера'(connection) = hostnameComputer(computerConnection(connection));
 
-remoteAddressConnection 'IP пользователя' = DATA STRING[40] (Connection);
+remoteAddressConnection 'IP пользователя' = DATA VARSTRING[40] (Connection);
 
 userConnection 'Пользователь' = DATA CustomUser (Connection);
 userLoginConnection 'Логин пользователя' (connection) = loginCustomUser(userConnection(connection));

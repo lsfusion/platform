@@ -26,7 +26,7 @@ CLASS ScheduledTask 'Задание планировщика';
 TABLE scheduledTask (ScheduledTask);
 TABLE scheduledTaskProperty (ScheduledTask, Property);
 
-nameScheduledTask 'Имя' = DATA STRING[100] (ScheduledTask);
+nameScheduledTask 'Имя' = DATA VARSTRING[100] (ScheduledTask);
 runAtStartScheduledTask 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
 startDateScheduledTask 'Дата начала' = DATA DATETIME (ScheduledTask);
 periodScheduledTask 'Повторять каждые (секунд)' = DATA INTEGER (ScheduledTask);
@@ -41,8 +41,8 @@ CLASS ScheduledTaskLog 'Лог планировщика';
 TABLE scheduledTaskLog (ScheduledTaskLog);
 TABLE scheduledTaskScheduledTaskLog (ScheduledTask, ScheduledTaskLog);
 
-resultScheduledTaskLog 'Результат' = DATA STRING[200] (ScheduledTaskLog);
-propertyScheduledTaskLog 'Свойство' = DATA STRING[200] (ScheduledTaskLog);
+resultScheduledTaskLog 'Результат' = DATA VARSTRING[200] (ScheduledTaskLog);
+propertyScheduledTaskLog 'Свойство' = DATA VARSTRING[200] (ScheduledTaskLog);
 dateStartScheduledTaskLog 'Начало' = DATA DATETIME (ScheduledTaskLog);
 dateFinishScheduledTaskLog 'Конец' = DATA DATETIME (ScheduledTaskLog);
 scheduledTaskScheduledTaskLog 'Задание планировщика' = DATA ScheduledTask (ScheduledTaskLog);
@@ -52,7 +52,7 @@ CLASS ScheduledClientTaskLog 'Сообщения клиента';
 TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 
 scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog);
-messageScheduledClientTaskLog 'Сообщение'= DATA STRING[200] (ScheduledClientTaskLog);
+messageScheduledClientTaskLog 'Сообщение'= DATA VARSTRING[200] (ScheduledClientTaskLog);
 
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty';
 

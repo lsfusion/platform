@@ -10,9 +10,9 @@ parentPropertyGroup 'Родит. группа' = DATA PropertyGroup (PropertyGro
 levelPropertyGroupPropertyGroup 'Уровень' (child, parent) = RECURSION 1l IF child IS PropertyGroup AND parent == child
                                                                       STEP 2l IF parent == parentPropertyGroup($parent) PERSISTENT;
 
-captionPropertyGroup 'Имя' = DATA STRING[250] (PropertyGroup);
+captionPropertyGroup 'Имя' = DATA VARSTRING[250] (PropertyGroup);
 numberPropertyGroup 'Номер' = DATA INTEGER (PropertyGroup);
-SIDPropertyGroup 'Код свойства' = DATA STRING[100] (PropertyGroup);
+SIDPropertyGroup 'Код свойства' = DATA VARSTRING[100] (PropertyGroup);
 propertyGroupSID 'Свойство' (sid) = GROUP AGGR propertyGroup BY SIDPropertyGroup(propertyGroup) WHERE propertyGroup IS PropertyGroup;
 
 CLASS NavigatorElement 'Элемент навигатора';
@@ -20,8 +20,8 @@ CLASS NavigatorAction 'Действие' : NavigatorElement;
 CLASS Form 'Форма' : NavigatorElement;
 TABLE navigatorElement (NavigatorElement);
 
-captionNavigatorElement 'Название формы' = DATA STRING[250] (NavigatorElement);
-sidNavigatorElement 'Код формы' = DATA STRING[50] (NavigatorElement);
+captionNavigatorElement 'Название формы' = DATA VARSTRING[250] (NavigatorElement);
+sidNavigatorElement 'Код формы' = DATA VARSTRING[50] (NavigatorElement);
 numberNavigatorElement 'Номер' = DATA INTEGER (NavigatorElement);
 navigatorElementSID 'Форма' (sid) = GROUP AGGR navigatorElement BY sidNavigatorElement(navigatorElement) WHERE navigatorElement IS NavigatorElement;
 parentNavigatorElement 'Родит. форма' = DATA NavigatorElement (NavigatorElement);
@@ -34,16 +34,16 @@ TABLE property (Property);
 
 parentProperty 'Родит. группа' = DATA PropertyGroup (Property);
 numberProperty 'Номер' = DATA INTEGER (Property);
-SIDProperty 'Код свойства' = DATA STRING[100] (Property) IN base;
+SIDProperty 'Код свойства' = DATA VARSTRING[100] (Property) IN base;
 loggableProperty 'Логируется' = DATA BOOLEAN (Property);
 userLoggableProperty 'Логируется пользователем' = DATA BOOLEAN (Property);
 storedProperty 'Постоянно хранимое' = DATA BOOLEAN (Property);
 isSetNotNullProperty 'Не может быть null' = DATA BOOLEAN (Property);
-signatureProperty 'Сигнатура' = DATA STRING[100] (Property);
-returnProperty 'Возвращаемый класс' = DATA STRING[100] (Property);
-classProperty 'Класс свойства' = DATA STRING[100] (Property);
+signatureProperty 'Сигнатура' = DATA VARSTRING[100] (Property);
+returnProperty 'Возвращаемый класс' = DATA VARSTRING[100] (Property);
+classProperty 'Класс свойства' = DATA VARSTRING[100] (Property);
 complexityProperty 'Сложность свойства' = DATA LONG (Property);
-captionProperty 'Заголовок' = DATA STRING[250] (Property) IN base;
+captionProperty 'Заголовок' = DATA VARSTRING[250] (Property) IN base;
 propertySID 'Свойство' (sid) = GROUP AGGR property BY SIDProperty(property) WHERE property IS Property;
 
 CLASS PropertyDraw 'Свойство на форме';
@@ -62,8 +62,8 @@ TABLE formPropertyDraw (Form, PropertyDraw);
 TABLE propertyDraw (PropertyDraw);
 TABLE propertyDrawCustomUser (PropertyDraw, CustomUser);
 
-sidPropertyDraw 'Код свойства на форме' = DATA STRING[100] (PropertyDraw);
-captionPropertyDraw 'Название свойства на форме' = DATA STRING[250] (PropertyDraw);
+sidPropertyDraw 'Код свойства на форме' = DATA VARSTRING[100] (PropertyDraw);
+captionPropertyDraw 'Название свойства на форме' = DATA VARSTRING[250] (PropertyDraw);
 formPropertyDraw 'Форма' = DATA Form (PropertyDraw) INDEXED;
 groupObjectPropertyDraw 'Группа объектов' = DATA GroupObject (PropertyDraw);
 propertyDrawFormSID 'Свойство на форме' = GROUP AGGR propertyDraw BY formPropertyDraw (propertyDraw), sidPropertyDraw (propertyDraw) WHERE propertyDraw IS PropertyDraw;
@@ -101,7 +101,7 @@ hasUserPreferencesOverrideGroupObjectCustomUser 'Настройки сохран
 CLASS Table 'Таблица';
 TABLE tables (Table);
 
-sidTable 'Имя таблицы' = DATA STRING[100] (Table);
+sidTable 'Имя таблицы' = DATA VARSTRING[100] (Table);
 tableSID 'Имя таблицы' (sid) = GROUP AGGR table BY sidTable (table) WHERE table IS Table;
 rowsTable 'Количество записей' = DATA INTEGER (Table);
 tableTableKey 'Таблица' = DATA Table (TableKey);
@@ -109,17 +109,17 @@ tableTableKey 'Таблица' = DATA Table (TableKey);
 CLASS TableKey 'Ключ';
 TABLE tableKey (TableKey);
 
-sidTableKey 'Код ключа' = DATA STRING[100] (TableKey);
+sidTableKey 'Код ключа' = DATA VARSTRING[100] (TableKey);
 tableKeySID 'Ключ' = GROUP AGGR tableKey BY sidTableKey (tableKey) WHERE tableKey IS TableKey;
-classTableKey 'Класс ключа' = DATA STRING[40] (TableKey);
-nameTableKey 'Имя ключа' = DATA STRING[20] (TableKey);
+classTableKey 'Класс ключа' = DATA VARSTRING[40] (TableKey);
+nameTableKey 'Имя ключа' = DATA VARSTRING[20] (TableKey);
 quantityTableKey 'Количество разновидностей' = DATA INTEGER (TableKey);
 
 CLASS TableColumn 'Колонка';
 TABLE tableColumn (TableColumn);
 
 tableTableColumn 'Таблица' = DATA Table(TableColumn);
-sidTableColumn 'Имя колонки' = DATA STRING[100] (TableColumn);
+sidTableColumn 'Имя колонки' = DATA VARSTRING[100] (TableColumn);
 tableColumnSID 'Колонка' = GROUP AGGR tableColumn BY sidTableColumn(tableColumn) WHERE tableColumn IS TableColumn;
 propertyTableColumn 'Свойство' (tableColumn) = propertySID(sidTableColumn(tableColumn));
 namePropertyTableColumn 'Заголовок свойства' (tableColumn) = captionProperty (propertyTableColumn(tableColumn));
@@ -141,17 +141,17 @@ recalculateStats 'Пересчитать статистику' = ACTION CUSTOM '
 CLASS DropColumn 'Удалённая колонка';
 TABLE dropColumn (DropColumn);
 
-sidDropColumn 'Имя колонки' = DATA STRING[100] (DropColumn);
+sidDropColumn 'Имя колонки' = DATA VARSTRING[100] (DropColumn);
 dropColumnSID 'Удалённая колонка' (sid) = GROUP AGGR dropColumn BY sidDropColumn (dropColumn) WHERE dropColumn IS DropColumn;
-sidTableDropColumn 'Имя таблицы' = DATA STRING[100] (DropColumn);
+sidTableDropColumn 'Имя таблицы' = DATA VARSTRING[100] (DropColumn);
 timeDropColumn 'Время удаления' = DATA DATETIME (DropColumn);
-revisionDropColumn 'Версия' = DATA STRING[10] (DropColumn);
+revisionDropColumn 'Версия' = DATA VARSTRING[10] (DropColumn);
 
 CLASS GroupObject 'Группа объектов';
 TABLE groupObjectCustomUser (GroupObject, CustomUser);
 TABLE groupObject (GroupObject);
 
-sidGroupObject 'Код группы объектов' = DATA STRING[100] (GroupObject);
+sidGroupObject 'Код группы объектов' = DATA VARSTRING[100] (GroupObject);
 navigatorElementGroupObject 'Элемент навигатора' = DATA NavigatorElement (GroupObject);
 sidNavigatorElementGroupObject (groupObject) = sidNavigatorElement (navigatorElementGroupObject(groupObject));
 groupObjectSIDGroupObjectSIDNavigatorElementGroupObject  'Группа объектов' (sidNavigatorElement, sidGroupObject) = GROUP AGGR groupObject BY sidGroupObject (groupObject), sidNavigatorElementGroupObject (groupObject) WHERE groupObject IS GroupObject;
