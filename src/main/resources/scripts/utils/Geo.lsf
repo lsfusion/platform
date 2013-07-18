@@ -22,12 +22,12 @@ mapProvider = OVERRIDE MapProvider.yandex, userMapProvider();
 
 nameUserMapProvider 'Использовать карты' () = staticCaption(userMapProvider());
 
-namePOI 'Название'= ABSTRACT ISTRING[200] (POI) PERSISTENT;
+namePOI 'Название'= ABSTRACT VARISTRING[200] (POI) PERSISTENT;
 
 countryPOI = ABSTRACT Country (POI) PERSISTENT;
 nameCountryPOI 'Страна' (poi) = nameCountry(countryPOI(poi));
 
-addressPOI 'Адрес' = ABSTRACT ISTRING[100] (POI) PERSISTENT;
+addressPOI 'Адрес' = ABSTRACT VARISTRING[100] (POI) PERSISTENT;
 
 latitudePOI 'Координата X' = ABSTRACT NUMERIC[10,5] (POI);
 longitudePOI 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);
@@ -58,7 +58,7 @@ showOnMapPOI 'Показать на карте'= ACTION (POI) {
 
 // Показать на карте путь
 numberPathPOI 'Номер' = DATA SESSION INTEGER (POI);
-descriptionPathPOI 'Описание' = DATA SESSION STRING[200] (POI);
+descriptionPathPOI 'Описание' = DATA SESSION VARSTRING[200] (POI);
 
 showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapPathActionProperty';
 

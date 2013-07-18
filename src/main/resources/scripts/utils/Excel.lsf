@@ -5,7 +5,7 @@ REQUIRE System, MasterData;
 CLASS Template 'Шаблон';
 TABLE template(Template);
 
-nameTemplate 'Имя' = DATA STRING[100] (Template);
+nameTemplate 'Имя' = DATA VARSTRING[100] (Template);
 fileTemplate 'Файл шаблона' (Template) = DATA EXCELFILE (Template);
 loadFileTemplate 'Загрузить шаблон'(t) = ACTION LOADFILE fileTemplate(t);
 openFileTemplate 'Открыть шаблон'(t) = ACTION OPENFILE fileTemplate(t);
@@ -25,7 +25,7 @@ CLASS TemplateEntry 'Строка шаблона';
 TABLE templateEntry(TemplateEntry);
 
 templateTemplateEntry 'Шаблон' = DATA Template (TemplateEntry);
-keyTemplateEntry 'Параметр' = DATA STRING[100](TemplateEntry);
+keyTemplateEntry 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 valueTemplateEntry 'Значение' = DATA SESSION TEXT (TemplateEntry);
 
 FORM template 'Шаблон Excel'

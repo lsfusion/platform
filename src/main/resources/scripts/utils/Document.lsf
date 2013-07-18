@@ -277,10 +277,10 @@ END
 
 // Примечание
 META defineDocumentHeaderNote (objectClass)
-    note##objectClass 'Примечание' = DATA STRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup PERSISTENT;
+    note##objectClass 'Примечание' = DATA VARSTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup PERSISTENT;
 END
 META defineDocumentAbstractHeaderNote (objectClass)
-    note##objectClass 'Примечание' = ABSTRACT STRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup PERSISTENT;
+    note##objectClass 'Примечание' = ABSTRACT VARSTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup PERSISTENT;
 END
 META defineDocumentInterfaceHeaderNote(objectClass)
     @defineDocumentAbstractHeaderNote(objectClass);
@@ -289,10 +289,10 @@ META defineDocumentInterfaceHeaderNote(objectClass)
 END
 
 META defineDocumentDetailNote (detailClass)
-    note##detailClass 'Примечание' = DATA STRING[100] (detailClass) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+    note##detailClass 'Примечание' = DATA VARSTRING[100] (detailClass) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 END
 META defineDocumentAbstractDetailNote (detailClass)
-    note##detailClass 'Примечание' = ABSTRACT STRING[100] (detailClass) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+    note##detailClass 'Примечание' = ABSTRACT VARSTRING[100] (detailClass) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 END
 META defineDocumentInterfaceDetailNote(detailClass)
     @defineDocumentAbstractDetailNote(detailClass);
@@ -519,11 +519,11 @@ END
 // ----- Description ----- //
 META defineDocumentHeaderDescription(objectClass, numberProp, caption)
     description##objectClass 'Название документа' (o) =
-        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
+        [FORMULA VARSTRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
         caption, numberProp(o), date##objectClass(o)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
 META defineDocumentAbstractHeaderDescription(objectClass)
-    description##objectClass 'Название документа' = ABSTRACT STRING[200] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+    description##objectClass 'Название документа' = ABSTRACT VARSTRING[200] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 END
 META defineDocumentInterfaceHeaderDescription(objectClass, numberProp, caption)
     @defineDocumentAbstractHeaderDescription(objectClass);
@@ -541,7 +541,7 @@ END
 META defineDocumentDetailDescription(object, detailClass)
     description##detailClass 'Название документа' (d) = description###object(object##detailClass(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
     descriptionIndex##detailClass 'Название документа' (d) =
-        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
+        [FORMULA VARSTRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
             description##detailClass(d),
             index##detailClass(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END

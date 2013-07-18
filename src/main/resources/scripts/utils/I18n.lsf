@@ -7,7 +7,7 @@ REQUIRE System, MasterData, Utils;
 CLASS Dictionary 'Словарь';
 TABLE dictionary (Dictionary);
 
-nameDictionary 'Наименование' = DATA ISTRING[50](Dictionary);
+nameDictionary 'Наименование' = DATA VARISTRING[50](Dictionary);
 
 insensitiveDictionary 'Нечувствительный к регистру' = DATA BOOLEAN (Dictionary);
 
@@ -15,9 +15,9 @@ CLASS DictionaryEntry 'Слова';
 TABLE dictionaryEntry (DictionaryEntry);
 
 dictionaryDictionaryEntry 'Словарь' = DATA Dictionary (DictionaryEntry);
-termDictionaryEntry 'Термин' = DATA STRING[50] (DictionaryEntry);
+termDictionaryEntry 'Термин' = DATA VARSTRING[50] (DictionaryEntry);
 insensitiveTermDictionaryEntry(dictionaryEntry) = upper (termDictionaryEntry(dictionaryEntry));
-translationDictionaryEntry 'Перевод' = DATA STRING[50] (DictionaryEntry);
+translationDictionaryEntry 'Перевод' = DATA VARSTRING[50] (DictionaryEntry);
 
 dictionaryEntryDictionaryTerm = GROUP AGGR dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), termDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS DictionaryEntry;
 translationDictionaryEntryDictionaryTerm 'Перевод' (dictionary, term) = translationDictionaryEntry(dictionaryEntryDictionaryTerm(dictionary, term));
@@ -28,7 +28,7 @@ insensitiveTranslationDictionaryEntryDictionaryTerm 'Нечувствитель�
 CLASS Language 'Язык';
 TABLE language(Language);
 
-nameLanguage 'Наименование' = DATA ISTRING[50](Language);
+nameLanguage 'Наименование' = DATA VARISTRING[50](Language);
 
 localeLanguage 'Locale' = DATA STRING[5] (Language);
 
@@ -75,7 +75,7 @@ translateTermDictionaryEntry 'Перевести' = ACTION (dictionaryEntry) {
     EXEC translate (TEXT(termDictionaryEntry(dictionaryEntry)),
             languageFromDictionary(dictionaryDictionaryEntry(dictionaryEntry)),
             languageToDictionary(dictionaryDictionaryEntry(dictionaryEntry)));
-    ASSIGN translationDictionaryEntry(dictionaryEntry) <- STRING[50](translationResult());
+    ASSIGN translationDictionaryEntry(dictionaryEntry) <- VARSTRING[50](translationResult());
 }
 
 translateText 'Перевести' = ACTION () {
@@ -84,8 +84,8 @@ translateText 'Перевести' = ACTION () {
 
 // ------------------------------------ Перевод через словарь -------------------------------- //
 
-translationOriginalString 'Фраза' = DATA SESSION STRING[50] ();
-translationResultString 'Перевод' = DATA SESSION STRING[50] ();
+translationOriginalString 'Фраза' = DATA SESSION VARSTRING[50] ();
+translationResultString 'Перевод' = DATA SESSION VARSTRING[50] ();
 
 translateDictionary  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateDictionaryActionProperty';
 
@@ -137,7 +137,7 @@ NAVIGATOR {
 CLASS MultiLanguageNamed 'Мультиязычный объект';
 
 TABLE multiLanguageNamedLanguage(MultiLanguageNamed, Language);
-languageName 'Название (иностр.)' = DATA ISTRING[110] (MultiLanguageNamed, Language);
+languageName 'Название (иностр.)' = DATA VARISTRING[110] (MultiLanguageNamed, Language);
 
 // ---------------------------------------------- Словари --------------------------------------------- //
 

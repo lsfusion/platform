@@ -278,7 +278,7 @@ META defineHistorizableLedger(property, caption, type, key0, key0Class, key1, ke
 
     key1###property##Ledger (ledger) = ABSTRACT key1Class (###property##Ledger) PERSISTENT INDEXED;
 
-    description###property##Ledger 'Описание' (ledger) = ABSTRACT STRING[200] (###property##Ledger) PERSISTENT;
+    description###property##Ledger 'Описание' (ledger) = ABSTRACT VARSTRING[200] (###property##Ledger) PERSISTENT;
 
     property###property##Ledger caption (ledger) = ABSTRACT type (###property##Ledger) PERSISTENT;
 

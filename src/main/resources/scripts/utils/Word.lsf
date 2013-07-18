@@ -5,11 +5,11 @@ REQUIRE System, MasterData;
 CLASS Template 'Шаблон';
 TABLE template(Template);
 
-nameTemplate 'Имя' = DATA STRING[100] (Template);
+nameTemplate 'Имя' = DATA VARSTRING[100] (Template);
 fileTemplate 'Файл шаблона' (Template) = DATA WORDFILE (Template);
 loadFileTemplate 'Загрузить шаблон'(t) = ACTION LOADFILE fileTemplate(t);
 openFileTemplate 'Открыть шаблон'(t) = ACTION OPENFILE fileTemplate(t);
-idTemplate 'Идентификатор' = DATA STRING[20] (Template) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
+idTemplate 'Идентификатор' = DATA VARSTRING[20] (Template) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 
 processTemplate = ACTION CUSTOM 'lsfusion.erp.utils.word.ProcessTemplateActionProperty';
 
@@ -27,7 +27,7 @@ CLASS TemplateEntry 'Строка шаблона';
 TABLE templateEntry(TemplateEntry);
 
 templateTemplateEntry 'Шаблон' = DATA Template (TemplateEntry);
-keyTemplateEntry 'Параметр' = DATA STRING[100](TemplateEntry);
+keyTemplateEntry 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 valueTemplateEntry 'Значение' = DATA SESSION TEXT (TemplateEntry);
 
 templateEntryKeyEntryIdTemplate (string1, string2) = GROUP AGGR templateEntry BY  keyTemplateEntry(templateEntry), idTemplate(templateTemplateEntry(templateEntry)) WHERE templateEntry IS TemplateEntry;

@@ -7,7 +7,7 @@ REQUIRE System, MasterData, DefaultData;
 CLASS Numerator 'Нумератор';
 TABLE numerator (Numerator);
 
-nameNumerator 'Наименование' = DATA ISTRING[100](Numerator);
+nameNumerator 'Наименование' = DATA VARISTRING[100](Numerator);
 
 seriesNumerator 'Серия' = DATA STRING[2] (Numerator) IN recognize FIXEDCHARWIDTH 3;
 
