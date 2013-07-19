@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.data.expr.Expr;
@@ -50,13 +51,15 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
          if(needDialog() || where==null || (orSet = where.mapClassWhere(ClassType.ASIS).getOrSet(changeInterface))==null)
              return baseClass.getChildProps().toMap(false);
 
-         MExclSet<CalcProperty> mResult = SetFact.mExclSet();
-         for(CustomClass cls : orSet.up.wheres) {
+         MSet<CalcProperty> mResult = SetFact.mSet(); // можно было бы оптимизировать (для exclAdd в частности), но пока не критично
+         for(ConcreteCustomClass cls : orSet.getSetConcreteChildren())
+             mResult.addAll(cls.getChangeProps((ConcreteObjectClass) valueClass));
+/*         for(CustomClass cls : orSet.up.wheres) {
              cls.fillChangeProps((ConcreteObjectClass)valueClass, mResult);
              mResult.exclAddAll(cls.getChildDropProps((ConcreteObjectClass) valueClass));
          }
-         for(CustomClass cls : orSet.set)
-            cls.fillChangeProps((ConcreteObjectClass)valueClass, mResult);
+         for(ConcreteCustomClass cls : orSet.set)
+            cls.fillChangeProps((ConcreteObjectClass)valueClass, mResult);*/
          return mResult.immutable().toMap(false);
      }
 

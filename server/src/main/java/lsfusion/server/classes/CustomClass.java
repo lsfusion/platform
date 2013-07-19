@@ -214,22 +214,9 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return mResult.immutable();
     }
 
-    public void getDiffSet(ConcreteObjectClass diffClass, MSet<CustomClass> mAddClasses, MSet<CustomClass> mRemoveClasses) {
-        if(diffClass instanceof UnknownClass) { // если неизвестный то все добавляем
-            fillParents(mAddClasses);
-            return;
-        }
-
-        commonClassSet1(true); // check
-        if(diffClass!=null) ((CustomClass)diffClass).commonClassSet2(false,mRemoveClasses,true);
-
-        commonClassSet3(null,mAddClasses,true);
-    }
-
-
     int check = 0;
     // 1-й шаг расставляем пометки 1
-    private void commonClassSet1(boolean up) {
+    protected void commonClassSet1(boolean up) {
         if(check ==1) return;
         check = 1;
         for(CustomClass child : (up? parents : children))
@@ -239,7 +226,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     // 2-й шаг пометки
     // 2 - верхний общий класс
     // 3 - просто общий класс
-    private void commonClassSet2(boolean set, MSet<CustomClass> free,boolean up) {
+    protected void commonClassSet2(boolean set, MSet<CustomClass> free,boolean up) {
         if(!set) {
             if(check >0) {
                 if(check !=1) return;
@@ -261,7 +248,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     // 3-й шаг выводит в Set, и сбрасывает пометки
-    private void commonClassSet3(MSet<CustomClass> common,MSet<CustomClass> free,boolean up) {
+    protected void commonClassSet3(MSet<CustomClass> common,MSet<CustomClass> free,boolean up) {
         if(check ==0) return;
         if(common!=null && check ==2) common.add(this);
         if(free!=null && check ==1) free.add(this);
@@ -505,11 +492,13 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return mResult.immutable();
     }
 
-    public static void getChangeProperties(MExclSet<CalcProperty> mResult, ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) {
+    public static ImSet<CalcProperty> getChangeProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) {
+        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
         for(CustomClass addClass : addClasses)
             addClass.fillChangedProps(mResult, IncrementType.SET);
         for(CustomClass removeClass : removeClasses)
             removeClass.fillChangedProps(mResult, IncrementType.DROP);
+        return mResult.immutable();
     }
 
     public static ImSet<CalcProperty<ClassPropertyInterface>> getProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses) {
@@ -518,13 +507,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
                 return element instanceof ConcreteCustomClass;
             }
         }))));
-    }
-
-    public void fillChangeProps(ConcreteObjectClass cls, MExclSet<CalcProperty> fill) {
-        MSet<CustomClass> mAddClasses = SetFact.mSet();
-        MSet<CustomClass> mRemoveClasses = SetFact.mSet();
-        getDiffSet(cls, mAddClasses, mRemoveClasses);
-        getChangeProperties(fill, mAddClasses.immutable(), mRemoveClasses.immutable());
     }
 
     public static ActionProperty getChangeClassAction(ObjectClass cls) {

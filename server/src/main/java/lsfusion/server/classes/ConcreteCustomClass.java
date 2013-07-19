@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ObjectClassSet;
@@ -22,6 +23,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassDataProperty;
 import lsfusion.server.logics.property.ClassField;
 import lsfusion.server.logics.property.Property;
@@ -277,4 +279,24 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     public ValueClassSet getValueClassSet() {
         return this;
     }
+
+    public void getDiffSet(ConcreteObjectClass diffClass, MSet<CustomClass> mAddClasses, MSet<CustomClass> mRemoveClasses) {
+        if(diffClass instanceof UnknownClass) { // если неизвестный то все добавляем
+            fillParents(mAddClasses);
+            return;
+        }
+
+        commonClassSet1(true); // check
+        if(diffClass!=null) ((CustomClass)diffClass).commonClassSet2(false,mRemoveClasses,true);
+
+        commonClassSet3(null,mAddClasses,true);
+    }
+
+    public ImSet<CalcProperty> getChangeProps(ConcreteObjectClass cls) {
+        MSet<CustomClass> mAddClasses = SetFact.mSet();
+        MSet<CustomClass> mRemoveClasses = SetFact.mSet();
+        cls.getDiffSet(this, mAddClasses, mRemoveClasses);
+        return getChangeProperties(mAddClasses.immutable(), mRemoveClasses.immutable());
+    }
+
 }

@@ -166,7 +166,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         if(value instanceof CustomClass)
             mRemoveDepends.add(((CustomClass)value).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
         for(CalcProperty property : mRemoveDepends.immutable())
-            mResult.add(new Pair<Property<?>, LinkType>(property, LinkType.EVENTACTION));
+            mResult.add(new Pair<Property<?>, LinkType>(property, LinkType.DEPEND));
 
         return super.calculateLinks().mergeCol(mResult.immutableCol()); // чтобы удаления классов зацеплять
     }
