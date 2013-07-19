@@ -281,7 +281,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         private Set<KeyExpr> pending;
 
         void usedJoin(JoinSelect join) {
-            if(stackUsedOuterPendingJoins.isEmpty() && mOuterPendingJoins!=null && mOuterPendingJoins.contains(join))
+            if(!stackUsedOuterPendingJoins.isEmpty() && mOuterPendingJoins!=null && mOuterPendingJoins.contains(join))
                 stackUsedOuterPendingJoins.peek().set(true);
         }
 
