@@ -11,11 +11,9 @@ import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import com.google.common.base.Throwables;
-import lsfusion.client.Log;
-import lsfusion.client.Main;
-import lsfusion.client.MainFrame;
-import lsfusion.client.ReportDialog;
+import lsfusion.client.*;
 import lsfusion.client.descriptor.view.LogicsDescriptorView;
+import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.dispatch.ClientNavigatorActionDispatcher;
 import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.*;
@@ -33,6 +31,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
+import java.rmi.RemoteException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -215,11 +214,23 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(String reportSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+    public void runReport(final String reportSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+        EditReportInvoker editInvoker = new EditReportInvoker() {
+            @Override
+            public void invokeEditReport() throws RemoteException {
+                new ClientFormController(Main.remoteNavigator.createForm(reportSID, null, false, true), mainNavigator).runEditReport();
+            }
+        };
+
+        runReport(reportSID, isModal, generationData, editInvoker);
+    }
+
+    @Override
+    public void runReport(final String reportSID, boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         if (isModal) {
-            ReportDialog.showReportDialog(generationData);
+            ReportDialog.showReportDialog(generationData, editInvoker);
         } else {
-            dockableManager.openReport(reportSID, generationData);
+            dockableManager.openReport(reportSID, generationData, editInvoker);
         }
     }
 

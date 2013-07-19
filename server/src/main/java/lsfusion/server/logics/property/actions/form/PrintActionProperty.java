@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions.form;
 
 import lsfusion.base.ApiResourceBundle;
 import lsfusion.interop.action.RunPrintReportClientAction;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
@@ -18,7 +19,7 @@ public class PrintActionProperty extends FormToolbarActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.delayUserInterfaction(new RunPrintReportClientAction());
+        context.delayUserInterfaction(new RunPrintReportClientAction(SystemProperties.isDebug));
     }
 
     @Override

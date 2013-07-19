@@ -4,9 +4,13 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.EProvider;
+import lsfusion.base.OrderedMap;
+import lsfusion.base.Pair;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
+import lsfusion.client.EditReportInvoker;
 import lsfusion.client.Log;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
@@ -90,6 +94,13 @@ public class ClientFormController implements AsyncListener {
     private Icon asyncPrevIcon;
 
     private boolean blocked = false;
+
+    private EditReportInvoker editReportInvoker = new EditReportInvoker() {
+        @Override
+        public void invokeEditReport() {
+            runEditReport();
+        }
+    };
 
     public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) {
         this(remoteForm, clientNavigator, false, false);
@@ -1072,7 +1083,7 @@ public class ClientFormController implements AsyncListener {
         remoteForm = null;
     }
 
-    public void runPrintReport() {
+    public void runPrintReport(final boolean isDebug) {
         assert Main.module.isFull();
 
         try {
@@ -1084,7 +1095,7 @@ public class ClientFormController implements AsyncListener {
 
                 @Override
                 public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
-                    Main.frame.runReport(remoteForm.getSID(), false, generationData);
+                    Main.frame.runReport(remoteForm.getSID(), false, generationData, isDebug ? editReportInvoker : null);
                 }
             });
         } catch (Exception e) {
@@ -1148,7 +1159,7 @@ public class ClientFormController implements AsyncListener {
 
                 @Override
                 public void onResponse(long requstIndex, ReportGenerationData generationData) throws Exception {
-                    Main.frame.runReport("SingleGroupReport_" + remoteForm.getSID(), false, generationData);
+                    Main.frame.runReport("SingleGroupReport_" + remoteForm.getSID(), false, generationData, null);
                 }
             });
         } catch (Exception e) {

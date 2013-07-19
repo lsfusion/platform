@@ -1,6 +1,7 @@
 package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
+import lsfusion.client.Main;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
@@ -48,7 +49,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     public void execute(RunPrintReportClientAction action) {
-        getFormController().runPrintReport();
+        getFormController().runPrintReport(action.isDebug);
     }
 
     public void execute(RunOpenInExcelClientAction action) {
@@ -57,6 +58,19 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
 
     public void execute(RunEditReportClientAction action) {
         getFormController().runEditReport();
+    }
+
+    @Override
+    public void execute(ReportClientAction action) {
+        try {
+            if (action.isDebug) {
+                Main.frame.runReport(action.reportSID, action.isModal, action.generationData);
+            } else {
+                Main.frame.runReport(action.reportSID, action.isModal, action.generationData, null);
+            }
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
     }
 
     public void execute(HideFormClientAction action) {

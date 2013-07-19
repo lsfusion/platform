@@ -77,6 +77,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
                 textEditor.selectAll();
             }
             if (editor != null) {
+                editor.requestFocusInWindow();
                 logicsSupplier.getForm().setCurrentEditingTable(this);
             }
         }

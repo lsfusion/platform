@@ -9,11 +9,13 @@ public class ReportClientAction extends ExecuteClientAction {
     public String reportSID;
     public boolean isModal;
     public ReportGenerationData generationData;
+    public boolean isDebug;
 
-    public ReportClientAction(String reportSID, boolean isModal, ReportGenerationData generationData) {
+    public ReportClientAction(String reportSID, boolean isModal, ReportGenerationData generationData, boolean isDebug) {
         this.reportSID = reportSID;
         this.isModal = isModal;
         this.generationData = generationData;
+        this.isDebug = isDebug;
     }
 
     @Override

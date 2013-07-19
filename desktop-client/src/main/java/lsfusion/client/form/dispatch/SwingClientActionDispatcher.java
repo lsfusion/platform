@@ -4,7 +4,10 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.SystemUtils;
-import lsfusion.client.*;
+import lsfusion.client.Log;
+import lsfusion.client.Main;
+import lsfusion.client.MainFrame;
+import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientDialog;
 import lsfusion.client.form.ClientModalForm;
 import lsfusion.client.form.ClientNavigatorDialog;
@@ -24,7 +27,9 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.text.DecimalFormat;
@@ -155,11 +160,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(ReportClientAction action) {
-        try {
-            Main.frame.runReport(action.reportSID, action.isModal, action.generationData);
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
     }
 
     public void execute(DialogClientAction action) {

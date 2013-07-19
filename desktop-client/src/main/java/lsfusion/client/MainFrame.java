@@ -118,6 +118,7 @@ public abstract class MainFrame extends JFrame {
     }
 
     public abstract void runReport(String reportSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
+    public abstract void runReport(String reportSID, boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
 
     public abstract void runForm(RemoteFormInterface remoteForm, FormCloseListener closeListener);
 }

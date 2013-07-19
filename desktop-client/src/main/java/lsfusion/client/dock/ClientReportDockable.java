@@ -2,29 +2,29 @@ package lsfusion.client.dock;
 
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
+import lsfusion.client.EditReportInvoker;
+import lsfusion.client.Main;
+import lsfusion.client.ReportViewer;
+import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
-import lsfusion.base.SystemUtils;
-import lsfusion.client.Main;
-import lsfusion.interop.form.ReportGenerationData;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
 public class ClientReportDockable extends ClientDockable {
-    public ClientReportDockable(String reportSID, ReportGenerationData generationData, DockableManager dockableManager) throws ClassNotFoundException, IOException {
+    public ClientReportDockable(String reportSID, ReportGenerationData generationData, DockableManager dockableManager, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
         super(reportSID, dockableManager);
 
         try {
             JasperPrint print = new ReportGenerator(generationData, Main.timeZone).createReport(false, null);
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
-            setContent(print.getName(), prepareViewer(new RViewer(print)));
+            setContent(print.getName(), prepareViewer(new ReportViewer(print, editInvoker)));
         } catch (JRException e) {
             Throwables.propagate(e);
         }
@@ -43,24 +43,5 @@ public class ClientReportDockable extends ClientDockable {
             }
         });
         return viewer;
-    }
-
-    private static class RViewer extends JRViewer {
-        public RViewer(JasperPrint print) {
-            super(print);
-
-            lastFolder = SystemUtils.loadCurrentDirectory();
-
-            ActionListener[] al = btnSave.getActionListeners();
-
-            btnSave.removeActionListener(al[0]);
-
-            btnSave.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    SystemUtils.saveCurrentDirectory(lastFolder);
-                }
-            });
-            btnSave.addActionListener(al[0]);
-        }
     }
 }

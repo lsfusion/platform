@@ -5,13 +5,14 @@ import bibliothek.gui.dock.common.CGridArea;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.intern.CDockable;
-import net.sf.jasperreports.engine.JRException;
+import lsfusion.client.EditReportInvoker;
 import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
 import lsfusion.client.form.ClientModalForm;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
+import net.sf.jasperreports.engine.JRException;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,8 +76,8 @@ public class DockableManager {
         new ClientModalForm(Main.frame, navigator.remoteNavigator.createForm(formSID, null, true, true)).showDialog(showFullScreen);
     }
 
-    public void openReport(String reportSID, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
-        openForm(new ClientReportDockable(reportSID, generationData, this));
+    public void openReport(String reportSID, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+        openForm(new ClientReportDockable(reportSID, generationData, this, editInvoker));
     }
 
     public void openReport(File file) throws JRException {

@@ -10,6 +10,7 @@ import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
@@ -17,7 +18,10 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
-import lsfusion.server.form.instance.*;
+import lsfusion.server.form.instance.FormCloseType;
+import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
@@ -157,7 +161,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
             RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
             if (form.isPrintForm) {
-                context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData()));
+                context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), SystemProperties.isDebug));
             } else {
                 context.requestUserInteraction(new FormClientAction(newRemoteForm, modalityType));
             }
