@@ -72,4 +72,8 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
         return BaseUtils.immutableCast(addValue);
     }
 
+    @Override
+    public String toString() {
+        return change + ", f:" + isFinal + ", p:" + preread;
+    }
 }

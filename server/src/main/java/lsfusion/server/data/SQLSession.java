@@ -1,6 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.server.classes.BaseClass;
+import lsfusion.server.classes.IntegerClass;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import lsfusion.base.*;
@@ -484,7 +484,7 @@ public class SQLSession extends MutableObject {
         explainNoAnalyze = explainAnalyzeMode;
     }
     private boolean explainNoAnalyze = false;
-    private int executeExplain(PreparedStatement statement, boolean noAnalyze) throws SQLException {
+    private int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml) throws SQLException {
         long l = System.currentTimeMillis();
         ResultSet result = statement.executeQuery();
         Integer rows = null;
@@ -492,7 +492,7 @@ public class SQLSession extends MutableObject {
             int i=0;
             while(result.next()) {
                 String row = (String) result.getObject("QUERY PLAN");
-                if(!noAnalyze && i++==0) { // первый ряд
+                if(!noAnalyze && dml && i++==1) { // второй ряд (первый почему то всегда 0)
                     Pattern pt = Pattern.compile(" rows=((\\d)+) ");
                     Matcher matcher = pt.matcher(row);
                     int m=0;
@@ -511,8 +511,8 @@ public class SQLSession extends MutableObject {
 
         if(rows==null)
             return 0;
-        if(rows==0) // INSERT'ы и UPDATE'ы почему-то всегда 0 лепят (хотя не всегда почему-то)
-            return 100;
+//        if(rows==0) // INSERT'ы и UPDATE'ы почему-то всегда 0 лепят (хотя не всегда почему-то)
+//            return 100;
         return rows;
     }
 
@@ -536,7 +536,7 @@ public class SQLSession extends MutableObject {
                 }
                 systemLogger.info(explainStatement.toString());
                 env.before(this, connection, command);
-                result = executeExplain(explainStatement, explainNoAnalyze);
+                result = executeExplain(explainStatement, explainNoAnalyze, true);
                 env.after(this, connection, command);
                 if(explainNoAnalyze)
                     returnExplain.result.proceed(explainStatement, System.currentTimeMillis() - explainStarted);
@@ -617,7 +617,7 @@ public class SQLSession extends MutableObject {
             PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze ? "VERBOSE, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
             long started = System.currentTimeMillis();
             env.before(this, connection, select);
-            executeExplain(statement, explainNoAnalyze);
+            executeExplain(statement, explainNoAnalyze, false);
             env.after(this, connection, select);
             returnExplain.result.proceed(statement, System.currentTimeMillis() - started);
         }

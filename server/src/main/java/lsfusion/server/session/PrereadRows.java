@@ -107,4 +107,9 @@ public class PrereadRows<P extends PropertyInterface> extends AbstractValuesCont
             return this;
         return new PrereadRows<P>(readParams.addExcl(rows.readParams), readValues.addExcl(rows.readValues));
     }
+
+    @Override
+    public String toString() {
+        return readValues + ", " + readParams;
+    }
 }

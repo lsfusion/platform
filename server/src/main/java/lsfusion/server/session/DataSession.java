@@ -1089,7 +1089,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         if(!action.singleApply)
             return;
 
-        neededProps = action.usedProps;
+        neededProps = action.getDependsUsedProps();
     }
 
     private <P extends PropertyInterface> void updatePendingApplyStart(CalcProperty<P> property, SinglePropertyTableUsage<P> tableUsage) throws SQLException { // изврат конечно

@@ -70,6 +70,13 @@ public class MapFact {
         return mMap.immutableRev();
     }
 
+    public static <K, V> ImMap<K, V> toMap(K[] keys, V[] values) {
+        MExclMap<K, V> mMap = MapFact.mExclMap(keys.length);
+        for(int i=0;i<keys.length;i++)
+            mMap.exclAdd(keys[i], values[i]);
+        return mMap.immutable();
+    }
+
     public static <K, V> ImMap<K, V> override(ImMap<? extends K, ? extends V> map1, ImMap<? extends K, ? extends V> map2) {
         return ((ImMap<K, V>)map1).override(map2);
     }

@@ -1,9 +1,6 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.FunctionSet;
-import lsfusion.base.NotFunctionSet;
-import lsfusion.base.Pair;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -26,6 +23,7 @@ import lsfusion.server.logics.property.actions.SystemEvent;
 import lsfusion.server.logics.property.actions.edit.GroupChangeActionProperty;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
@@ -77,6 +75,11 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return result.immutable();
     }
 
+    protected void markRecursions(ListCaseActionProperty recursiveAction) {
+        for(ActionProperty action : getDependActions())
+            action.markRecursions(recursiveAction);
+    }
+
     public ImMap<CalcProperty, Boolean> getUsedExtProps() {
         ActionPropertyMapImplement<?, P> compile = compile();
         if(compile!=null)
@@ -115,7 +118,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return mResult.immutable().toMap(false);
     }
     
-    public FunctionSet<CalcProperty> usedProps;
+    private FunctionSet<CalcProperty> usedProps;
     public FunctionSet<CalcProperty> getDependsUsedProps() {
         if(usedProps==null)
             usedProps = CalcProperty.getDependsFromSet(getUsedProps());

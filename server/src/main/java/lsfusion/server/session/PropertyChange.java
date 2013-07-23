@@ -314,4 +314,9 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
 /*    public StatKeys<T> getStatKeys() {
         return where.getStatKeys(getInnerKeys()).mapBack(mapKeys).and(new StatKeys<T>(mapColValues.keySet(), Stat.ONE));
     }*/
+
+    @Override
+    public String toString() {
+        return where + ", " + expr + ", mv:" + mapValues;
+    }
 }

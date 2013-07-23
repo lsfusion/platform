@@ -80,6 +80,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
             } catch (CaseUnionProperty.NotFullyImplementedException e) {
                 throw new RuntimeException("Action is not fully implemented : " + this +  ", Calculated : " + e.fullClassValueWhere + ", Specified : " + e.classValueWhere);
             }
+            markRecursions(this);
         }
     }
 

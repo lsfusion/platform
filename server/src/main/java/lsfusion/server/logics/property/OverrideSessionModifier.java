@@ -2,6 +2,7 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.FullFunctionSet;
 import lsfusion.base.FunctionSet;
+import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
