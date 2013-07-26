@@ -12,8 +12,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
-import net.customware.gwt.dispatch.shared.Result;
-import net.customware.gwt.dispatch.shared.general.StringResult;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.WrapperAsyncCallbackEx;
@@ -53,6 +51,8 @@ import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 import lsfusion.gwt.form.shared.view.panel.PanelRenderer;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
+import net.customware.gwt.dispatch.shared.Result;
+import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.Serializable;
 import java.util.*;
@@ -948,6 +948,33 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 initialResizeProcessed = true;
             }
             scheduleFocusFirstWidget();
+            restoreGridScrollPosition();
+        } else {
+            // обходим баг Chrome со скроллингом
+            // http://code.google.com/p/chromium/issues/detail?id=36428
+            // необходимо, чтобы нормально заработало следующее
+            // http://jsfiddle.net/sammy/RubNy/
+            storeGridScrollPosition();
+        }
+    }
+
+    public void storeGridScrollPosition() {
+        List<GGrid> grids = formLayout.getMainKey().getAllGrids();
+        for (GGrid grid : grids) {
+            GGroupObjectController goController = getGroupObjectController(grid.groupObject);
+            if (goController != null) {
+                goController.beforeHidingGrid();
+            }
+        }
+    }
+
+    public void restoreGridScrollPosition() {
+        List<GGrid> grids = formLayout.getMainKey().getAllGrids();
+        for (GGrid grid : grids) {
+            GGroupObjectController goController = getGroupObjectController(grid.groupObject);
+            if (goController != null) {
+                goController.afterShowingGrid();
+            }
         }
     }
 

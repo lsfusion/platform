@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.Header;
 import lsfusion.gwt.cellview.client.cell.Cell;
@@ -149,6 +150,17 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public abstract GAbstractGroupObjectController getGroupController();
     abstract String getCellBackground(GridDataRecord rowValue, int row, int column);
     abstract String getCellForeground(GridDataRecord rowValue, int row, int column);
+
+    public void beforeHiding() {
+        if (GwtClientUtils.isVisible(this)) {
+            storeScrollPosition();
+            needToRestoreScrollPosition = true;
+        }
+    }
+
+    public void afterShowing() {
+        restoreScrollPosition();
+    }
 
     void storeScrollPosition() {
         int selectedRow = getKeyboardSelectedRow();

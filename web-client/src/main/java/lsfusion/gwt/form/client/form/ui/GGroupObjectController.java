@@ -377,6 +377,18 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         panel.setVisible(classViewType != GClassViewType.HIDE);
     }
 
+    public void beforeHidingGrid() {
+        if (grid != null) {
+            grid.beforeHiding();
+        }
+    }
+
+    public void afterShowingGrid() {
+        if (grid != null) {
+            grid.afterShowing();
+        }
+    }
+
     void restoreScrollPosition() {
         if (grid != null) {
             grid.restoreScrollPosition();

@@ -69,6 +69,14 @@ public class GGridController implements DefaultFocusReceiver {
         table.restoreScrollPosition();
     }
 
+    public void beforeHiding() {
+        table.beforeHiding();
+    }
+
+    void afterShowing() {
+        table.afterShowing();
+    }
+
     public void addToLayout(GFormLayout formLayout) {
         formLayout.add(grid, gridView);
         if (grid.defaultComponent) {
