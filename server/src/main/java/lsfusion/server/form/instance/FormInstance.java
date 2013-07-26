@@ -548,31 +548,32 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void expandCurrentGroupObject(ObjectInstance object) throws SQLException {
         GroupObjectInstance groupObject = object.groupTo;
         if (groupObject != null && groupObject.isInTree()) {
-            if (groupObject.parent != null) {
-                // если рекурсивное свойство, то просто раскрываем текущий объект
-                ImMap<ObjectInstance, DataObject> value = DataObject.filterDataObjects(groupObject.objects.mapValues(new GetValue<ObjectValue, ObjectInstance>() {
-                    public ObjectValue getMapValue(ObjectInstance value) {
-                        return value.getObjectValue();
-                    }}));
-                if (!value.isEmpty())
-                    expandGroupObject(groupObject, value);
-            } else {
-                // раскрываем все верхние groupObject
-                for (GroupObjectInstance group : getOrderGroups()) {
-                    ImOrderSet<GroupObjectInstance> upGroups = group.getOrderUpTreeGroups();
-                    MExclMap<ObjectInstance, DataObject> mValue = MapFact.mExclMap();
-                    int upObjects = 0;
+            for (GroupObjectInstance group : getOrderGroups()) {
+                ImOrderSet<GroupObjectInstance> upGroups = group.getOrderUpTreeGroups();
+                MExclMap<ObjectInstance, DataObject> mValue = MapFact.mExclMap();
+                int upObjects = 0;
+                if (group.parent != null) {
+                    ImMap<ObjectInstance, DataObject> goValue = group.getGroupObjectValue();
+                    upObjects += goValue.size();
+                    mValue.exclAddAll(goValue);
+                } else {
                     for (GroupObjectInstance goi : upGroups) {
                         if (goi != null && !goi.equals(group)) {
                             upObjects += goi.objects.size();
                             mValue.exclAddAll(goi.getGroupObjectValue());
                         }
                     }
-                    ImMap<ObjectInstance, DataObject> value = mValue.immutable();
-                    if (!value.isEmpty() && value.size() == upObjects) // проверка на то, что в каждом из верхних groupObject выбран какой-то объект
+                }
+                ImMap<ObjectInstance, DataObject> value = mValue.immutable();
+                if (!value.isEmpty() && value.size() == upObjects) { // проверка на то, что в каждом из верхних groupObject выбран какой-то объект
+                    if (group.parent != null) {
+                        expandGroupObject(group, value);
+                    } else {
                         expandGroupObject(group.getUpTreeGroup(), value);
-                    if (group.equals(groupObject))
-                        break;
+                    }
+                }
+                if (group.equals(groupObject)) {
+                    break;
                 }
             }
         }
