@@ -507,9 +507,7 @@ public class GridTable extends ClientPropertyTable {
             moveToFocusableCellIfNeeded();
         } else {
             if (rowNumber != getSelectedRow()) {
-                isInternalNavigating = true;
-                changeSelection(rowNumber, colSel, false, false);
-                isInternalNavigating = false;
+                super.changeSelection(rowNumber, colSel, false, false);
             }
             getSelectionModel().setLeadSelectionIndex(rowNumber);
         }
