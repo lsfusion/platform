@@ -1124,6 +1124,7 @@ groupingType returns [GroupingType type]
 	|	'CONCAT' { $type = GroupingType.CONCAT; }
 	|	'AGGR' { $type = GroupingType.AGGR; }
 	|	'EQUAL'	{ $type = GroupingType.EQUAL; }	
+	|	'LAST'	{ $type = GroupingType.LAST; }
 	;
 
 

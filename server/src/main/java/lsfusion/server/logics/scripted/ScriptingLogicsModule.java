@@ -117,7 +117,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER, FIRST}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
-    public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL}
+    public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST}
 
     private Map<String, DataClass> primitiveTypeAliases = BaseUtils.buildMap(
             asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME", "WORDFILE", "IMAGEFILE", "PDFFILE", "CUSTOMFILE", "EXCELFILE", "COLOR"),
@@ -1502,6 +1502,13 @@ public class ScriptingLogicsModule extends LogicsModule {
                 whereProps.add(new LPWithParams(null, asList(mainProps.get(0).usedParams.get(0))));
             }
         }
+        if (type == GroupingType.LAST) {
+            if (whereProp != null) {
+                mainProps.add(0, whereProp);
+            } else {
+                mainProps.add(mainProps.get(0));
+            }
+        }
         List<Object> resultParams = getParamsPlainList(mainProps, whereProps, orderProps, groupProps);
 
         boolean ordersNotNull = doesExtendContext(mergeLists(mainProps, groupProps), orderProps);
@@ -1518,6 +1525,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             resultProp = addAGProp(null, false, genSID(), false, "", false, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
             resultProp = addCGProp(null, false, genSID(), false, "", null, groupPropParamCount, resultParams.toArray());
+        } else if (type == GroupingType.LAST) {
+            resultProp = addOGProp(null, genSID(), false, "", GroupType.LAST, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, resultParams.toArray());
         }
         return resultProp;
     }
@@ -2462,7 +2471,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkGPropOrderConsistence(GroupingType type, int orderParamsCnt) throws ScriptingErrorLog.SemanticErrorException {
-        if (type != GroupingType.CONCAT && orderParamsCnt > 0) {
+        if (type != GroupingType.CONCAT && type != GroupingType.LAST && orderParamsCnt > 0) {
             errLog.emitRedundantOrderGPropError(parser, type);
         }
     }
@@ -2485,7 +2494,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkGPropWhereConsistence(GroupingType type, LPWithParams where) throws ScriptingErrorLog.SemanticErrorException {
-        if (type != GroupingType.AGGR && where != null) {
+        if (type != GroupingType.AGGR && type != GroupingType.LAST && where != null) {
             errLog.emitWhereGPropError(parser, type);
         }
     }
