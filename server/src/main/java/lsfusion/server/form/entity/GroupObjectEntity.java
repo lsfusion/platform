@@ -74,8 +74,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         assert finalizedObjects && !finalizedProps;
         MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
-        if(prop==null) {
-            prop = DerivedProperty.createDataPropRev(true, type.getSID() + "_" + getSID(), type.toString() + " (" + objects.toString() + ")", getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
+        if(prop==null) { // type.getSID() + "_" + getSID() нельзя потому как надо еще SID формы подмешивать
+            prop = DerivedProperty.createDataPropRev(true, DerivedProperty.genID(), type.toString() + " (" + objects.toString() + ")", getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
                 public ValueClass getMapValue(ObjectEntity value) {
                     return value.baseClass;
                 }}), type.getValueClass());

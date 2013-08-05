@@ -2274,4 +2274,15 @@ public class BaseUtils {
             }
         }.start();
     }
+
+    public static <T> void addToOrderedList(List<T> orderedList, T element, int after, Comparator<T> compare) {
+        assert after <= orderedList.size();
+        while(true) {
+            if(after >= orderedList.size() || compare.compare(orderedList.get(after), element) > 0) {
+                orderedList.add(after, element);
+                break;
+            }
+            after++;
+        }
+    }
 }

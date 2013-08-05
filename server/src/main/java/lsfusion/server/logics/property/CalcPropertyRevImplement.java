@@ -4,8 +4,15 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.Join;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.session.SinglePropertyTableUsage;
+
+import java.sql.SQLException;
 
 public class CalcPropertyRevImplement<P extends PropertyInterface, T> {
 

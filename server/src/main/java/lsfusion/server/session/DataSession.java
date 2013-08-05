@@ -649,6 +649,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         if(!data.containsKey(property)) // оптимизация, см. использование
             return;
 
+        updateSessionEvents(SetFact.singleton(property));
+
         aspectDropChanges(property);
 
         updateProperties(SetFact.singleton(property), true); // уже соптимизировано выше

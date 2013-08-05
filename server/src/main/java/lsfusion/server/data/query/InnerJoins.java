@@ -13,8 +13,10 @@ import lsfusion.server.data.where.Where;
 
 public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
 
-    public InnerJoins() {
+    private InnerJoins() {
     }
+
+    public static InnerJoins EMPTY = new InnerJoins();
 
     public InnerJoins(InnerJoin where) {
         super(where);

@@ -51,7 +51,7 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
     }
 
     public static InnerJoins getInnerJoins(BaseExpr baseExpr) {
-        InnerJoins result = new InnerJoins();
+        InnerJoins result = InnerJoins.EMPTY;
         ImSet<InnerExpr> innerExprs = NotNullExpr.getInnerExprs(baseExpr.getExprFollows(true, false), null);
         for(int i=0,size=innerExprs.size();i<size;i++)
             result = result.and(new InnerJoins(innerExprs.get(i).getInnerJoin()));

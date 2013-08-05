@@ -492,18 +492,45 @@ public class SQLSession extends MutableObject {
             int i=0;
             while(result.next()) {
                 String row = (String) result.getObject("QUERY PLAN");
-                if(!noAnalyze && dml && i++==1) { // второй ряд (первый почему то всегда 0)
-                    Pattern pt = Pattern.compile(" rows=((\\d)+) ");
-                    Matcher matcher = pt.matcher(row);
-                    int m=0;
-                    while(matcher.find()) {
-                        if(m++==1) { // 2-е соответствие
-                            rows = Integer.valueOf(matcher.group(1));
-                            break;
-                        }
+
+                Pattern pt = Pattern.compile(" rows=((\\d)+) ");
+                Matcher matcher = pt.matcher(row);
+                int est=0;
+                int act=-1;
+                int m=0;
+                while(matcher.find()) {
+                    if(m==0)
+                        est = Integer.valueOf(matcher.group(1));
+                    if(m==1) { // 2-е соответствие
+                        act = Integer.valueOf(matcher.group(1));
+                        break;
                     }
+                    m++;
                 }
-                systemLogger.info(row);
+
+                if(!noAnalyze && dml && i++==1 && act>=0) // второй ряд (первый почему то всегда 0)
+                    rows = act;
+
+                Pattern tpt = Pattern.compile("actual time=(((\\d)+)[.]((\\d)+))[.][.](((\\d)+)[.]((\\d)+))");
+                matcher = tpt.matcher(row);
+                double rtime = 0.0; // never executed
+                if(matcher.find()) {
+                    rtime = Double.valueOf(matcher.group(6));
+                }
+
+                String mark = "";
+                double diff = ((double)act)/((double)est);
+                if(act > 500) {
+                    if(diff > 4)
+                        mark += "G";
+                    else if(diff < 0.25)
+                        mark += "L";
+                    if(rtime > 1000.0)
+                        mark += "T";
+                }
+                else if(rtime > 100.0)
+                    mark += "t";
+                systemLogger.info(BaseUtils.padr(mark, 2) + row);
             }
         } finally {
             result.close();

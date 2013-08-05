@@ -71,7 +71,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
     @ManualLazy
     public InnerJoins getInnerJoins() {
         if(innerJoins == null) {
-            innerJoins = new InnerJoins();
+            innerJoins = InnerJoins.EMPTY;
             for(WhereJoin where : wheres)
                 innerJoins = innerJoins.and(where.getInnerJoins());
         }
@@ -323,14 +323,36 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return new StatKeys<K>(distinct.getMax().min(finalStat), distinct); // возвращаем min(суммы groups, расчитанного результата)
     }
 
-    public <K extends BaseExpr> Where getPushWhere(ImSet<K> groups, ImMap<WhereJoin, Where> upWheres, KeyStat stat, Stat currentStat, Stat currentJoinStat) {
+    public <K extends BaseExpr> Where getPushWhere(ImSet<K> groups, ImMap<WhereJoin, Where> upWheres, final KeyStat stat, Stat currentStat, Stat currentJoinStat) {
         // нужно попытаться опускаться ниже, устраняя "избыточные" WhereJoin'ы или InnerJoin'ы
+
+        Comparator<WhereJoin> orderComplexity = new Comparator<WhereJoin>() {
+            public int compare(WhereJoin o1, WhereJoin o2) {
+                long comp1 = o1.getComplexity(false);
+                long comp2 = o2.getComplexity(false);
+                if(comp1 < comp2)
+                        return 1;
+                if(comp1 > comp2)
+                        return -1;
+
+                Stat r1 = o1.getStatKeys(stat).rows;
+                Stat r2 = o2.getStatKeys(stat).rows;
+                if(r1.less(r2))
+                    return 1;
+                if(r2.less(r1))
+                    return -1;
+
+                return 0;
+            }};
 
         List<WhereJoin> current;
         Result<Stat> rows = new Result<Stat>();
         Stat resultStat = getStatKeys(groups, rows, stat).rows;
         if(resultStat.less(currentJoinStat) && rows.result.lessEquals(currentStat)) {
-            currentJoinStat = resultStat; currentStat = rows.result; current = BaseUtils.toList(wheres);
+            currentJoinStat = resultStat; currentStat = rows.result;
+            WhereJoin[] cloned = wheres.clone();
+            Arrays.sort(cloned, orderComplexity);
+            current = BaseUtils.toList(cloned);
         } else // если ключей больше чем в исходном или статистика увеличилась
             return null;
 
@@ -351,7 +373,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
                         break;
                     }
                 if(!found) {
-                    reduced.add(joinFollow);
+                    BaseUtils.addToOrderedList(reduced, joinFollow, it, orderComplexity);
                     reducedUpWheres.exclAdd(joinFollow, reduceFollowUpWheres.result.get(joinFollow));
                 }
             }

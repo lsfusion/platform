@@ -27,7 +27,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     public final static int UPDATED_CLASS = (1 << 1);
     public final static int UPDATED_GRIDCLASS = (1 << 3);
 
-    protected int updated = UPDATED_CLASS | UPDATED_GRIDCLASS;
+    public int updated = UPDATED_CLASS | UPDATED_GRIDCLASS;
 
     public GroupObjectInstance groupTo;
 

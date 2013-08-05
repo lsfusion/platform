@@ -75,7 +75,7 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
     @Override
     public InnerJoins getInnerJoins() {
         if(not)
-            return new InnerJoins();
+            return InnerJoins.EMPTY;
         return super.getInnerJoins();
     }
 

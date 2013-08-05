@@ -515,10 +515,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    public void  changeGroupObject(GroupObjectInstance group, ImMap<ObjectInstance, DataObject> values) throws SQLException {
+    public void changeGroupObject(GroupObjectInstance group, ImMap<ObjectInstance, DataObject> values) throws SQLException {
         ImMap<ObjectInstance, DataObject> oldValues = group.getGroupObjectValue();
         for (ObjectInstance objectInstance : oldValues.keyIt()) {
-            if (!BaseUtils.nullEquals(oldValues.get(objectInstance), values.get(objectInstance))) {
+            if (!BaseUtils.nullEquals(oldValues.get(objectInstance), values.get(objectInstance)) || (objectInstance.updated & UPDATED_OBJECT)!=0) { // последняя проверка хак, для forceChangeObject
                 fireObjectChanged(objectInstance);
             }
         }
@@ -651,9 +651,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         // todo : теоретически надо переделывать
         // нужно менять текущий объект, иначе не будет работать ImportFromExcelActionProperty
-        object.changeValue(session, dataObject);
-
-        object.groupTo.addSeek(object, dataObject, false);
+        forceChangeObject(object, dataObject);
 
         // меняем вид, если при добавлении может получиться, что фильтр не выполнится, нужно как-то проверить в общем случае
 //      changeClassView(object.groupTo, ClassViewType.PANEL);
@@ -1156,6 +1154,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
+    private void updateData(Result<FunctionSet<CalcProperty>> mChangedProps) throws SQLException {
+        if (dataChanged) {
+            session.executeSessionEvents(this);
+            mChangedProps.set(BaseUtils.merge(mChangedProps.result, CalcProperty.getDependsOnSet(session.update(this))));
+            dataChanged = false;
+        }
+
+    }
+
     @Message("message.form.end.apply")
     @LogTime
     public FormChanges endApply() throws SQLException {
@@ -1170,28 +1177,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         QueryEnvironment queryEnv = getQueryEnv();
 
         // если изменились данные, применяем изменения
-        FunctionSet<CalcProperty> changedProps;
-        if (dataChanged) {
-            session.executeSessionEvents(this);
-            changedProps = CalcProperty.getDependsOnSet(session.update(this));
-        } else
-            changedProps = SetFact.EMPTY();
+        Result<FunctionSet<CalcProperty>> mChangedProps = new Result<FunctionSet<CalcProperty>>(SetFact.<CalcProperty>EMPTY());  // так как могут еще измениться свойства созданные при помощи операторов форм
+        updateData(mChangedProps);
 
-        Result<FunctionSet<CalcProperty>> mGroupChangedProps = new Result<FunctionSet<CalcProperty>>(changedProps);  // так как могут еще измениться свойства созданные при помощи операторов форм
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : getOrderGroups()) {
-            ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, BL.LM.baseClass, isHidden(group), refresh, result, mGroupChangedProps);
+            ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh, result, mChangedProps);
             if (selectObjects != null) // то есть нужно изменять объект
                 updateGroupObject = new GroupObjectValue(group, selectObjects);
 
             if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
-                updateGroupObject.group.update(session, result, updateGroupObject.value);
+                updateGroupObject.group.update(session, result, this, updateGroupObject.value);
                 updateGroupObject = null;
             }
         }
-        changedProps = mGroupChangedProps.result;
 
-        fillChangedDrawProps(result, changedProps);
+        updateData(mChangedProps); // повторная проверка для VIEW свойств
+
+        fillChangedDrawProps(result, mChangedProps.result);
 
         // сбрасываем все пометки
         for (GroupObjectInstance group : getGroups()) {
@@ -1202,7 +1205,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             group.updated = 0;
         }
         refresh = false;
-        dataChanged = false;
 
 //        result.out(this);
 

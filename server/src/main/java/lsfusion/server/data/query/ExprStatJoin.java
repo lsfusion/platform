@@ -29,7 +29,7 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
     }
 
     public ExprStatJoin(BaseExpr baseExpr, Stat stat) {
-        this(baseExpr, stat, new InnerJoins());
+        this(baseExpr, stat, InnerJoins.EMPTY);
     }
     
     public boolean depends(InnerJoin join) {

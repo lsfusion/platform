@@ -499,7 +499,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                     executeClasses(session, env, baseClass, orderExprs);
     }
 
-    public void change(SessionChanges session, ImMap<ObjectInstance, DataObject> value) throws SQLException {
+    public void change(SessionChanges session, ImMap<ObjectInstance, DataObject> value, FormInstance eventForm) throws SQLException {
+        eventForm.changeGroupObject(this, value);
+
         // проставим все объектам метки изменений
         assert value.isEmpty() || value.keys().equals(GroupObjectInstance.getObjects(getUpTreeGroups()));
         for (ObjectInstance object : GroupObjectInstance.getObjects(getUpTreeGroups()))
@@ -508,9 +510,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             object.changeValue(session, NullValue.instance);
     }
 
-    public void update(SessionChanges session, MFormChanges changes, ImMap<ObjectInstance, DataObject> value) throws SQLException {
+    public void update(SessionChanges session, MFormChanges changes, FormInstance eventForm, ImMap<ObjectInstance, DataObject> value) throws SQLException {
         changes.objects.exclAdd(this, value.isEmpty() ? NullValue.getMap(getObjects(getUpTreeGroups())) : value);
-        change(session, value);
+        change(session, value, eventForm);
     }
 
     public ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props;
@@ -519,7 +521,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     
     @Message("message.form.update.group.keys")
     @ThisMessage
-    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<FunctionSet<CalcProperty>> changedProps) throws SQLException {
+    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<FunctionSet<CalcProperty>> changedProps) throws SQLException {
         if (refresh || (updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.exclAdd(this, curClassView);
         }
@@ -781,9 +783,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
                 if(viewProperty != null) {
                     ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
-                    environmentIncrement.add(viewProperty.property, new PropertyChange<ClassPropertyInterface>(viewProperty.mapping.join(mapKeys), ValueExpr.TRUE, keyTable.join(mapKeys).getWhere()));
+                    execEnv.getSession().dropChanges((SessionDataProperty)viewProperty.property);
+                    execEnv.change(viewProperty.property, new PropertyChange<ClassPropertyInterface>(viewProperty.mapping.join(mapKeys), ValueExpr.TRUE, keyTable.join(mapKeys).getWhere()));
 
-                    changedProps.set(BaseUtils.merge(changedProps.result, CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)viewProperty.property))));
+                    // обновлять changeProps не надо, так как это сделает updateData
+//                    changedProps.set(BaseUtils.merge(changedProps.result, CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)viewProperty.property))));
                 }
 
                 if (!keys.containsKey(currentObject)) { // если нету currentObject'а, его нужно изменить

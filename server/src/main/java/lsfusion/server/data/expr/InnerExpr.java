@@ -6,6 +6,9 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.server.data.expr.query.PropStat;
+import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.query.ExprStatJoin;
 import lsfusion.server.data.query.InnerJoin;
 import lsfusion.server.data.query.InnerJoins;
 import lsfusion.server.data.query.JoinData;
@@ -38,7 +41,13 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
     public abstract class NotNull extends NotNullExpr.NotNull {
 
         public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
-            return new GroupJoinsWheres(InnerExpr.this.getInnerJoin(), this, noWhere);
+            WhereJoin join = InnerExpr.this.getInnerJoin();
+
+            PropStat statValue = InnerExpr.this.getStatValue(keyStat);
+            if(statValue.notNull!=null && statValue.notNull.less(join.getStatKeys(keyStat).rows))
+                join = new ExprStatJoin(InnerExpr.this, statValue.notNull); // сама статистика тут не важна, важно наличие join'а
+
+            return new GroupJoinsWheres(join, this, noWhere);
         }
     }
 
@@ -54,7 +63,7 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
 
     // множественное наследование
     public static InnerJoins getFollowJoins(WhereJoin<?, ?> join, Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) { // куда-то надо же положить
-        InnerJoins result = new InnerJoins();
+        InnerJoins result = InnerJoins.EMPTY;
         ImMap<InnerJoin, Where> upResult = MapFact.EMPTY();
         ImSet<InnerExpr> innerExprs = getInnerExprs(join.getExprFollows(false), unionJoins);
         for(int i=0,size=innerExprs.size();i<size;i++) {
