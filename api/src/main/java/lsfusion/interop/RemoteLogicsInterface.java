@@ -44,6 +44,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     boolean checkDefaultViewPermission(String propertySid) throws RemoteException;
 
     boolean checkPropertyViewPermission(String userName, String propertySID) throws RemoteException;
+
+    boolean checkFormExportPermission(String formSid) throws RemoteException;
     
     int generateID() throws RemoteException;
 

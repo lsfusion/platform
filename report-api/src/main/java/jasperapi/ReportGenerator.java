@@ -1,14 +1,14 @@
 package jasperapi;
 
-import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.design.*;
-import net.sf.jasperreports.engine.export.JExcelApiExporter;
-import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
 import lsfusion.base.Pair;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.interop.form.ReportGenerationData;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.design.*;
+import net.sf.jasperreports.engine.export.JExcelApiExporter;
+import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 
 import java.awt.*;
 import java.io.*;
@@ -38,7 +38,7 @@ public class ReportGenerator {
     // имя должно быть, как строковая константа, в двойных кавычках
     private final String repeatPropertyFieldName = "REPORT_REPEAT_FIELD";
 
-    private static class SourcesGenerationOutput {
+    public static class SourcesGenerationOutput {
         public Map<String, ClientReportData> data;
         // данные для свойств с группами в колонках
         // объекты, от которых зависит свойство
@@ -124,7 +124,7 @@ public class ReportGenerator {
         return source;
     }
 
-    private static Pair<String, Map<String, java.util.List<String>>> retrieveReportHierarchy(byte[] array) throws IOException, ClassNotFoundException {
+    public static Pair<String, Map<String, java.util.List<String>>> retrieveReportHierarchy(byte[] array) throws IOException, ClassNotFoundException {
         ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(array));
         String rootID = objStream.readUTF();
         Map<String, java.util.List<String>> hierarchy = (Map<String, java.util.List<String>>) objStream.readObject();
@@ -136,7 +136,7 @@ public class ReportGenerator {
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
-    private static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files) throws IOException, ClassNotFoundException {
+    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files) throws IOException, ClassNotFoundException {
         SourcesGenerationOutput output = new SourcesGenerationOutput();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(generationData.reportSourceData));
         int size = dataStream.readInt();

@@ -1,14 +1,14 @@
 package jasperapi;
 
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRField;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
 import lsfusion.base.DateConverter;
 import lsfusion.base.Pair;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.interop.form.ReportConstants;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRField;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -78,6 +78,42 @@ public class ClientReportData implements JRDataSource {
         iterator = keyRows.listIterator();
 
         this.files = files;
+    }
+
+    public Map<String, Integer> getObjects() {
+        return objects;
+    }
+
+    public List<String> getPropertyNames() {
+        return propertyNames;
+    }
+
+    public Map<String, Pair<Integer, Integer>> getProperties() {
+        return properties;
+    }
+
+    public List<HashMap<Integer, Object>> getKeyRows() {
+        return keyRows;
+    }
+
+    public Map<Map<Integer, Object>, Map<Pair<Integer, Integer>, Object>> getRows() {
+        return rows;
+    }
+
+    public Map<String, List<Integer>> getCompositeFieldsObjects() {
+        return compositeFieldsObjects;
+    }
+
+    public Map<String, Map<List<Object>, Object>> getCompositeObjectValues() {
+        return compositeObjectValues;
+    }
+
+    public Map<String, List<Integer>> getCompositeColumnObjects() {
+        return compositeColumnObjects;
+    }
+
+    public Map<String, List<List<Object>>> getCompositeColumnValues() {
+        return compositeColumnValues;
     }
 
     public boolean next() throws JRException {

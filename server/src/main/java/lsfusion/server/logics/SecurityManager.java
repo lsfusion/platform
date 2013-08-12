@@ -588,5 +588,19 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
         return false;
     }
+
+    public boolean checkFormExportPermission(String formSid) {
+        try {
+            DataSession session = createSession();
+            Object form = reflectionLM.navigatorElementSID.read(session, new DataObject(formSid));
+            if (form == null) {
+                throw new RuntimeException(getString("form.navigator.form.with.id.not.found"));
+            }
+            DataObject formObject = new DataObject(form, reflectionLM.navigatorElement);
+            return securityLM.permitExportNavigatorElement.read(session, formObject) != null;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
 

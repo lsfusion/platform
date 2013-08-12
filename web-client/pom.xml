@@ -265,16 +265,5 @@
             <groupId>lsfusion.platform</groupId>
             <artifactId>desktop-client</artifactId>
         </dependency>
-        <dependency>
-            <groupId>lsfusion.platform</groupId>
-            <artifactId>report-api</artifactId>
-            <!--избавляемся от ошибок при компиляции-->
-            <exclusions>
-                <exclusion>
-                    <artifactId>jdtcore</artifactId>
-                    <groupId>eclipse</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
 </project>

@@ -156,6 +156,7 @@ defaultNumberUserNavigatorElement 'Номер по умолчанию' (user, na
 
 permitNavigatorElement 'Разрешить форму' = DATA BOOLEAN (NavigatorElement);
 forbidNavigatorElement 'Запретить форму' = DATA BOOLEAN (NavigatorElement);
+permitExportNavigatorElement 'Разрешить экспорт формы' = DATA BOOLEAN (NavigatorElement);
 
 permitAllFormsUserRole 'Разрешить отображение всех форм' = DATA BOOLEAN (UserRole);
 permitAllFormsUser 'Разрешить отображение всех форм' (user) = permitAllFormsUserRole(mainRoleUser(user));
@@ -226,7 +227,7 @@ FORM securityPolicy 'Политика безопасности'
 
     OBJECTS df=NavigatorElement
     PROPERTIES(df) READONLY captionNavigatorElement, sidNavigatorElement
-    PROPERTIES(df) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement
+    PROPERTIES(df) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement, permitExportNavigatorElement
     ORDER BY SIDProperty(pr)
 
     OBJECTS dpr=Property
@@ -248,7 +249,7 @@ FORM securityPolicy 'Политика безопасности'
 
     TREE treeDefaultForm tdf = NavigatorElement PARENT parentNavigatorElement
     PROPERTIES(tdf) READONLY captionNavigatorElement, sidNavigatorElement
-    PROPERTIES(tdf) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement
+    PROPERTIES(tdf) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement, permitExportNavigatorElement
     ORDER BY numberNavigatorElement(tdf)
 
     TREE treeDefaultProperty tdprs = PropertyGroup PARENT parentPropertyGroup, dprs = Property

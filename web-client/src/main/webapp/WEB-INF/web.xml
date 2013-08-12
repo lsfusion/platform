@@ -23,6 +23,14 @@
         <param-name>registryPort</param-name>
         <param-value>7652</param-value>
     </context-param>
+    <context-param>
+        <param-name>exportUserLogin</param-name>
+        <param-value>exportUser</param-value>
+    </context-param>
+    <context-param>
+        <param-name>exportUserPassword</param-name>
+        <param-value>exportPass</param-value>
+    </context-param>
 
     <listener>
         <listener-class>lsfusion.gwt.form.server.AppContextListener</listener-class>
@@ -54,6 +62,15 @@
     <servlet-mapping>
         <servlet-name>readFileHandler</servlet-name>
         <url-pattern>/readFile</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>readFormHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>readFormHandler</servlet-name>
+        <url-pattern>/readForm</url-pattern>
     </servlet-mapping>
 
     <servlet>

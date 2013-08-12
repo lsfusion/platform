@@ -88,6 +88,8 @@
 
     <b:bean id="readFileHandler" class="lsfusion.gwt.base.server.spring.ReadFileRequestHandler"/>
 
+    <b:bean id="readFormHandler" class="lsfusion.gwt.base.server.spring.ReadFormRequestHandler"/>
+
     <b:bean id="propertyImageHandler" class="lsfusion.gwt.base.server.spring.GetPropertyImageRequestHandler" />
 
     <b:bean id="fileUploadHandler" class="lsfusion.gwt.base.server.spring.UploadFileRequestHandler" />

@@ -1,8 +1,5 @@
 package lsfusion.server.remote;
 
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Subsets;
 import lsfusion.base.SystemUtils;
@@ -31,6 +28,9 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.session.DataSession;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -312,6 +312,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
         return securityManager.checkDefaultViewPermission(propertySid);
+    }
+
+    public boolean checkFormExportPermission(String formSid) throws RemoteException {
+        return securityManager.checkFormExportPermission(formSid);
     }
 
     @Override

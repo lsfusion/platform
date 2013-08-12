@@ -41,6 +41,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP defaultFormsUser;
     public LCP permitNavigatorElement;
     public LCP forbidNavigatorElement;
+    public LCP permitExportNavigatorElement;
 
     public LCP forbidAllFormsUserRole;
     public LCP forbidAllFormsUser;
@@ -126,6 +127,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         // -- Глобальные разрешения для всех ролей
         permitNavigatorElement = getLCPByName("permitNavigatorElement");
         forbidNavigatorElement = getLCPByName("forbidNavigatorElement");
+        permitExportNavigatorElement = getLCPByName("permitExportNavigatorElement");
         
         // -- Разрешения для каждой роли
 

@@ -68,6 +68,18 @@
             <artifactId>api</artifactId>
         </dependency>
         <dependency>
+            <groupId>lsfusion.platform</groupId>
+            <artifactId>report-api</artifactId>
+            <!--избавляемся от ошибок при компиляции-->
+            <exclusions>
+                <exclusion>
+                    <artifactId>jdtcore</artifactId>
+                    <groupId>eclipse</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
         </dependency>
@@ -98,6 +110,10 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>stax</groupId>
+            <artifactId>stax</artifactId>
         </dependency>
     </dependencies>
 </project>

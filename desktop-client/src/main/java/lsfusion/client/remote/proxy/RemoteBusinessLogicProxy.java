@@ -146,6 +146,13 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return result;
     }
 
+    public boolean checkFormExportPermission(String formSid) throws RemoteException {
+        logRemoteMethodStartCall("checkFormExportPermission");
+        boolean result = target.checkFormExportPermission(formSid);
+        logRemoteMethodEndVoidCall("checkFormExportPermission");
+        return result;
+    }
+
     public String  addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
         logRemoteMethodStartCall("addUser");
         String result = target.addUser(username, email, password, firstName, lastName, localeLanguage);

@@ -3,15 +3,12 @@ package lsfusion.server.form.navigator;
 // навигатор работает с абстрактной BL
 
 import com.google.common.base.Throwables;
-import lsfusion.base.DefaultForms;
-import org.apache.log4j.Logger;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.DefaultForms;
 import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
@@ -46,6 +43,10 @@ import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.session.DataSession;
+import org.apache.log4j.Logger;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -403,7 +404,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             for (String objectSID : initialObjects.keySet()) {
                 GroupObjectInstance groupObject = null;
                 ObjectInstance object = null;
-                for (GroupObjectInstance group : (List<GroupObjectInstance>) form.form.getOrderGroups()) {
+                for (GroupObjectInstance group : (ImOrderSet<GroupObjectInstance>) form.form.getOrderGroups()) {
                     for (ObjectInstance obj : group.objects) {
                         if (obj.getsID().equals(objectSID)) {
                             object = obj;
