@@ -47,7 +47,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
     private DBManager dbManager;
 
     private DataObject currentScheduledTaskObject;
-    private DataObject currentScheduledTaskLogObject;
+    private DataObject currentScheduledTaskLogStartObject;
+    private DataObject currentScheduledTaskLogFinishObject;
     private DataSession currentLogSession;
 
     public Scheduler() {
@@ -235,23 +236,32 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
     private boolean executeLAP(LAP lap, DataObject scheduledTask) throws SQLException {
         currentLogSession = dbManager.createSession();
-        currentScheduledTaskLogObject = currentLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
+        currentScheduledTaskLogStartObject = currentLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
+        currentScheduledTaskLogFinishObject = currentLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
+
         try {
-            businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) currentLogSession, currentScheduledTaskLogObject);
-            businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", currentLogSession, currentScheduledTaskLogObject);
-            businessLogics.schedulerLM.dateStartScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+
+            businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) currentLogSession, currentScheduledTaskLogStartObject);
+            businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", currentLogSession, currentScheduledTaskLogStartObject);
+            businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogStartObject);
+            businessLogics.schedulerLM.resultScheduledTaskLog.change("Запущено", currentLogSession, currentScheduledTaskLogStartObject);
 
             DataSession session = dbManager.createSession();
             lap.execute(session);
             String applyResult = session.applyMessage(businessLogics);
 
-            businessLogics.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? "Выполнено успешно" : applyResult, currentLogSession, currentScheduledTaskLogObject);
-            businessLogics.schedulerLM.dateFinishScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+            businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) currentLogSession, currentScheduledTaskLogFinishObject);
+            businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", currentLogSession, currentScheduledTaskLogFinishObject);
+            businessLogics.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? "Выполнено успешно" : applyResult, currentLogSession, currentScheduledTaskLogFinishObject);
+            businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogFinishObject);
+
             currentLogSession.apply(businessLogics);
             return applyResult == null;
         } catch (Exception e) {
-            businessLogics.schedulerLM.resultScheduledTaskLog.change(e, currentLogSession, currentScheduledTaskLogObject);
-            businessLogics.schedulerLM.dateFinishScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+            businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) currentLogSession, currentScheduledTaskLogFinishObject);
+            businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", currentLogSession, currentScheduledTaskLogFinishObject);
+            businessLogics.schedulerLM.resultScheduledTaskLog.change(String.valueOf(e), currentLogSession, currentScheduledTaskLogFinishObject);
+            businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogFinishObject);
             currentLogSession.apply(businessLogics);
             return false;
         }
@@ -293,7 +303,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     DataObject scheduledClientTaskLogObject = currentLogSession.addObject(businessLogics.schedulerLM.scheduledClientTaskLog);
 
                     businessLogics.schedulerLM.scheduledTaskLogScheduledClientTaskLog
-                            .change(currentScheduledTaskLogObject, (ExecutionEnvironment) currentLogSession, scheduledClientTaskLogObject);
+                            .change(currentScheduledTaskLogFinishObject, (ExecutionEnvironment) currentLogSession, scheduledClientTaskLogObject);
                     businessLogics.schedulerLM.messageScheduledClientTaskLog
                             .change(((MessageClientAction) action).message, currentLogSession, scheduledClientTaskLogObject);
                 } catch (SQLException e) {

@@ -24,8 +24,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
     public LCP resultScheduledTaskLog;
     public LCP propertyScheduledTaskLog;
-    public LCP dateStartScheduledTaskLog;
-    public LCP dateFinishScheduledTaskLog;
+    public LCP dateScheduledTaskLog;
     public LCP scheduledTaskScheduledTaskLog;
     public LCP scheduledTaskLogScheduledClientTaskLog;
     public LCP messageScheduledClientTaskLog;
@@ -59,8 +58,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
         resultScheduledTaskLog = getLCPByName("resultScheduledTaskLog");
         propertyScheduledTaskLog = getLCPByName("propertyScheduledTaskLog");
-        dateStartScheduledTaskLog = getLCPByName("dateStartScheduledTaskLog");
-        dateFinishScheduledTaskLog = getLCPByName("dateFinishScheduledTaskLog");
+        dateScheduledTaskLog = getLCPByName("dateScheduledTaskLog");
         scheduledTaskScheduledTaskLog = getLCPByName("scheduledTaskScheduledTaskLog");
         scheduledTaskLogScheduledClientTaskLog = getLCPByName("scheduledTaskLogScheduledClientTaskLog");
         messageScheduledClientTaskLog = getLCPByName("messageScheduledClientTaskLog");

@@ -43,8 +43,7 @@ TABLE scheduledTaskScheduledTaskLog (ScheduledTask, ScheduledTaskLog);
 
 resultScheduledTaskLog 'Результат' = DATA VARSTRING[200] (ScheduledTaskLog);
 propertyScheduledTaskLog 'Свойство' = DATA VARSTRING[200] (ScheduledTaskLog);
-dateStartScheduledTaskLog 'Начало' = DATA DATETIME (ScheduledTaskLog);
-dateFinishScheduledTaskLog 'Конец' = DATA DATETIME (ScheduledTaskLog);
+dateScheduledTaskLog 'Время' = DATA DATETIME (ScheduledTaskLog);
 scheduledTaskScheduledTaskLog 'Задание планировщика' = DATA ScheduledTask (ScheduledTaskLog);
 
 
@@ -79,7 +78,7 @@ FORM scheduledTask 'Планировщик'
     PROPERTIES (p) READONLY captionProperty, SIDProperty, classProperty, returnProperty
 
     OBJECTS stl=ScheduledTaskLog
-    PROPERTIES (stl) READONLY propertyScheduledTaskLog, resultScheduledTaskLog, dateStartScheduledTaskLog, dateFinishScheduledTaskLog
+    PROPERTIES (stl) READONLY propertyScheduledTaskLog, resultScheduledTaskLog, dateScheduledTaskLog
 
     OBJECTS sctl=ScheduledClientTaskLog
     PROPERTIES (sctl) READONLY messageScheduledClientTaskLog
