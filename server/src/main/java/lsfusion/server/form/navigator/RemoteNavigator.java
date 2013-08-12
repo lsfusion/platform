@@ -3,6 +3,7 @@ package lsfusion.server.form.navigator;
 // навигатор работает с абстрактной BL
 
 import com.google.common.base.Throwables;
+import lsfusion.base.DefaultForms;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -548,7 +549,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    public boolean showDefaultForms() throws RemoteException {
+    public DefaultForms showDefaultForms() throws RemoteException {
         return securityManager.showDefaultForms(user);
     }
 

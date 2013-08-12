@@ -136,10 +136,23 @@ forbidChangeUserProperty 'Запретить изменение свойства
 
 notNullPermissionUserProperty (user, property) = OVERRIDE permitViewUserProperty(user, property), forbidViewUserProperty(user, property), permitChangeUserProperty(user, property), forbidChangeUserProperty(user, property);
 
-defaultFormsUserRole 'Отображение форм по умолчанию' = DATA BOOLEAN (UserRole);
+CLASS DefaultForms 'Отображение форм при запуске' {
+    none 'Не восстанавливать формы',
+    restore 'Отображать сохранённые формы',
+    default 'Отображать формы по умолчанию'
+}
+FORM defaultForms 'Отображение форм при запуске'
+    OBJECTS df = DefaultForms
+    PROPERTIES(df) READONLY staticCaption
+    DIALOG DefaultForms OBJECT df
+;
+
+defaultFormsUserRole 'Отображение форм при запуске' = DATA DefaultForms (UserRole);
+nameDefaultFormsUserRole 'Отображение форм при запуске' (userRole) = staticCaption(defaultFormsUserRole(userRole));
+defaultFormsUser 'Отображение форм при запуске' (user) = defaultFormsUserRole(mainRoleUser(user));
+
 defaultNumberUserRoleNavigatorElement 'Номер по умолчанию' = DATA INTEGER (UserRole, NavigatorElement);
 defaultNumberUserNavigatorElement 'Номер по умолчанию' (user, navigatorElement) = defaultNumberUserRoleNavigatorElement(mainRoleUser(user), navigatorElement);
-defaultFormsUser 'Отображение форм по умолчанию' (user) = defaultFormsUserRole(mainRoleUser(user));
 
 permitNavigatorElement 'Разрешить форму' = DATA BOOLEAN (NavigatorElement);
 forbidNavigatorElement 'Запретить форму' = DATA BOOLEAN (NavigatorElement);
@@ -196,7 +209,7 @@ FORM securityPolicy 'Политика безопасности'
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY nameUserRole, sidUserRole
     PROPERTIES(ur) permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole, permitChangeAllPropertyUserRole,
-                   forbidChangeAllPropertyUserRole, defaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole
+                   forbidChangeAllPropertyUserRole, nameDefaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole
 
     OBJECTS p=Policy
     PROPERTIES(p)  namePolicy, descriptionPolicy

@@ -1,5 +1,6 @@
 package lsfusion.client.remote.proxy;
 
+import lsfusion.base.DefaultForms;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -104,7 +105,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @ImmutableMethod
-    public boolean showDefaultForms() throws RemoteException {
+    public DefaultForms showDefaultForms() throws RemoteException {
         return target.showDefaultForms();
     }
 

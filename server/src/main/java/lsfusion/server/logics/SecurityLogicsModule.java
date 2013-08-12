@@ -36,7 +36,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP forbidChangeUserProperty;
 
     public LCP notNullPermissionUserProperty;
-    public LCP defaultFormsUserRole;
     public LCP defaultNumberUserRoleNavigatorElement;
     public LCP defaultNumberUserNavigatorElement;
     public LCP defaultFormsUser;

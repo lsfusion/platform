@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.DefaultForms;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -48,6 +49,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     private DBManager dbManager;
 
     private BaseLogicsModule LM;
+    private AuthenticationLogicsModule authenticationLM;
     private SecurityLogicsModule securityLM;
     private ReflectionLogicsModule reflectionLM;
 
@@ -73,6 +75,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     protected void onInit(LifecycleEvent event) {
         logger.info("Initializing Security Manager.");
         this.LM = businessLogics.LM;
+        this.authenticationLM = businessLogics.authenticationLM;
         this.securityLM = businessLogics.securityLM;
         this.reflectionLM = businessLogics.reflectionLM;
 
@@ -163,7 +166,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             //todo: в будущем нужно поменять на проставление локали в Context
 //            ServerResourceBundle.load(localeLanguage);
             DataSession session = createSession();
-            Object userId = businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(30)));
+            Object userId = authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(30)));
             if (userId != null)
                 return getString("logics.error.user.duplicate");
 
@@ -172,10 +175,10 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 return getString("logics.error.emailContact.duplicate");
             }
 
-            DataObject userObject = session.addObject(businessLogics.authenticationLM.customUser);
-            businessLogics.authenticationLM.loginCustomUser.change(username, session, userObject);
+            DataObject userObject = session.addObject(authenticationLM.customUser);
+            authenticationLM.loginCustomUser.change(username, session, userObject);
             businessLogics.contactLM.emailContact.change(email, session, userObject);
-            businessLogics.authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt), session, userObject);
+            authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt), session, userObject);
             businessLogics.contactLM.firstNameContact.change(firstName, session, userObject);
             businessLogics.contactLM.lastNameContact.change(lastName, session, userObject);
             session.apply(businessLogics);
@@ -189,10 +192,10 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
         User user = readUser(login, session);
         if (user == null) {
-            DataObject addObject = session.addObject(businessLogics.authenticationLM.customUser);
-            businessLogics.authenticationLM.loginCustomUser.change(login, session, addObject);
-            businessLogics.authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, addObject);
-            Integer userID = (Integer) addObject.object;
+            DataObject userObject = session.addObject(authenticationLM.customUser);
+            authenticationLM.loginCustomUser.change(login, session, userObject);
+            authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, userObject);
+            Integer userID = (Integer) userObject.object;
             user = new User(userID);
         }
 
@@ -200,7 +203,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     }
 
     public User readUser(String login, DataSession session) throws SQLException {
-        Integer userId = (Integer) businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(login, StringClass.get(30)));
+        Integer userId = (Integer) authenticationLM.customUserLogin.read(session, new DataObject(login, StringClass.get(30)));
         if (userId == null) {
             return null;
         }
@@ -244,7 +247,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
             q.addProperty("pOrder", orderExpr);
             q.and(orderExpr.getWhere());
-            q.and(q.getMapExprs().get("userId").compare(new DataObject(userId, businessLogics.authenticationLM.customUser), Compare.EQUALS));
+            q.and(q.getMapExprs().get("userId").compare(new DataObject(userId, authenticationLM.customUser), Compare.EQUALS));
 
             ImOrderMap<Object, Boolean> orderBy = MapFact.<Object, Boolean>singletonOrder("pOrder", false);
             ImSet<ImMap<String, Object>> keys = q.execute(session, orderBy, 0).keys();
@@ -333,7 +336,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         try {
             DataSession session = createSession();
 
-            DataObject userObject = new DataObject(user.ID, businessLogics.authenticationLM.customUser);
+            DataObject userObject = new DataObject(user.ID, authenticationLM.customUser);
 
             QueryBuilder<String, String> qu = new QueryBuilder<String, String>(SetFact.toExclSet("userId"));
             Expr userExpr = qu.getMapExprs().get("userId");
@@ -418,17 +421,23 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
     }
 
-    public boolean showDefaultForms(DataObject user) {
+    public DefaultForms showDefaultForms(DataObject user) {
         try {
             DataSession session = createSession();
 
-            if (securityLM.defaultFormsUser.read(session, user) != null) {
-                return true;
+            ObjectValue defaultForms = securityLM.defaultFormsUser.readClasses(session, user);
+            if (defaultForms instanceof NullValue) return DefaultForms.NONE;
+            else {
+                String name = (String) LM.getLCPByName("staticName").read(session, defaultForms);
+                if (name.contains("default"))
+                    return DefaultForms.DEFAULT;
+                else if (name.contains("restore"))
+                    return DefaultForms.RESTORE;
+                else return DefaultForms.NONE;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return false;
     }
 
     public List<String> getDefaultForms(DataObject user) {
@@ -471,15 +480,15 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 //if (user == null) {
                 //    throw new LoginException();
                 //}
-                Integer userId = (Integer) businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(30)));
+                Integer userId = (Integer) authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(30)));
                 if (userId == null) {
                     throw new LoginException();
                 }
-                DataObject userObject = new DataObject(userId, businessLogics.authenticationLM.customUser);
-                String password = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, userObject);
-                Boolean isLocked = (Boolean) businessLogics.authenticationLM.isLockedCustomUser.read(session, userObject);
+                DataObject userObject = new DataObject(userId, authenticationLM.customUser);
+                String password = (String) authenticationLM.sha256PasswordCustomUser.read(session, userObject);
+                Boolean isLocked = (Boolean) authenticationLM.isLockedCustomUser.read(session, userObject);
                 if (password == null) {
-                    String plainPassword = (String) businessLogics.authenticationLM.passwordCustomUser.read(session, userObject);
+                    String plainPassword = (String) authenticationLM.passwordCustomUser.read(session, userObject);
                     if (plainPassword == null) plainPassword = "";
                     plainPassword = plainPassword.trim();
                     password = BaseUtils.calculateBase64Hash("SHA-256", plainPassword, UserInfo.salt);
@@ -506,7 +515,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
                 QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(securityLM.inMainRoleCustomUser.getExpr(session.getModifier(), userExpr, roleExpr).getWhere());
-                q.and(businessLogics.authenticationLM.loginCustomUser.getExpr(session.getModifier(), userExpr).compare(new DataObject(username), Compare.EQUALS));
+                q.and(authenticationLM.loginCustomUser.getExpr(session.getModifier(), userExpr).compare(new DataObject(username), Compare.EQUALS));
 
                 q.addProperty("roleName", securityLM.sidUserRole.getExpr(session.getModifier(), roleExpr));
 
@@ -538,7 +547,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         try {
 
             if (userRoleSID != null) {
-                DataObject customUser = new DataObject(user.ID, businessLogics.authenticationLM.customUser);
+                DataObject customUser = new DataObject(user.ID, authenticationLM.customUser);
                 ObjectValue userRole = securityLM.userRoleSID.readClasses(session, new DataObject(userRoleSID));
 
                 if (userRole instanceof NullValue) {

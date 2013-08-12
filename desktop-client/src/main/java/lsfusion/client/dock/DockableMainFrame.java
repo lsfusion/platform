@@ -11,6 +11,7 @@ import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import com.google.common.base.Throwables;
+import lsfusion.base.DefaultForms;
 import lsfusion.client.*;
 import lsfusion.client.descriptor.view.LogicsDescriptorView;
 import lsfusion.client.form.ClientFormController;
@@ -32,6 +33,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,10 +123,19 @@ public class DockableMainFrame extends MainFrame {
     public void focusPageIfNeeded() {
         try {
             ClientFormDockable pageToFocus = null;
-            List<String> savedForms = remoteNavigator.showDefaultForms()
-                    ? remoteNavigator.getDefaultForms()
-                    : dockableManager.getForms().getFormsList();
-
+            DefaultForms showDefaultForms = remoteNavigator.showDefaultForms();
+            List<String> savedForms;
+            switch (showDefaultForms) {
+                case DEFAULT:
+                    savedForms = remoteNavigator.getDefaultForms();
+                    break;
+                case RESTORE:
+                    savedForms = dockableManager.getForms().getFormsList();
+                    break;
+                case NONE:
+                default:
+                    savedForms = new ArrayList<String>();
+            }
             dockableManager.getForms().clear();
             ClientFormDockable page;
             for (String formSID : savedForms) {
