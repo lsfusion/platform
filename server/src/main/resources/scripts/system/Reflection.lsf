@@ -183,8 +183,10 @@ FORM physicalModel 'Таблицы'
 EXTEND DESIGN physicalModel {
     main{
         NEW container BEFORE functions.box{
+            fill = 1;
             type = TABBED;
             NEW modelContainer {
+                fill = 1;
                 caption = 'Таблицы';
                 ADD t.box {
                     caption = 'Таблицы';
@@ -199,6 +201,7 @@ EXTEND DESIGN physicalModel {
             }
 
             NEW dropColumnsContainer {
+                fill = 1;
                 caption = 'Удалённые колонки';
                 ADD dc.box;
             }
@@ -259,16 +262,19 @@ FORM properties 'Свойства'
 ;
 
 EXTEND DESIGN properties {
-    main{
+    main {
         NEW container BEFORE functions.box {
+            fill = 1;
             type = TABBED;
 
             NEW treeContainer {
+                fill = 1;
                 caption = 'Дерево';
                 ADD treePropertiesObject.tree.box;
             }
 
             NEW tableContainer {
+                fill = 1;
                 caption = 'Таблица';
                 ADD p.box;
             }

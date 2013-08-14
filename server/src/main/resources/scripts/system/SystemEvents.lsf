@@ -105,7 +105,13 @@ FORM connections 'Журнал подключений'
 ;
 
 EXTEND DESIGN connections{
-    POSITION n.box TO THE LEFT s.box;
+    NEW boxes BEFORE functions.box {
+        fill = 1;
+        type = CONTAINERH;
+
+        ADD n.box;
+        ADD s.box;
+    }
 }
 
 FORM  exceptions 'Журнал ошибок'
@@ -118,15 +124,14 @@ FORM  exceptions 'Журнал ошибок'
 EXTEND DESIGN exceptions {
     main {
         NEW specContainer {
+            fill = 1;
             ADD e.box;
             NEW textContainer {
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(erTraceException(e));
-                fillHorizontal = 1;
-                fillVertical = 1;
-                PROPERTY (erTraceException(e)) {
-                    fillHorizontal = 1;
-                    fillVertical = 0.5;
+                type = CONTAINERV;
+                fill = 1;
+
+                ADD PROPERTY(erTraceException(e)) {
+                    fill = 0.5;
                     preferredSize = ( -1, 200);
                     panelLabelAbove = TRUE;
                 }
@@ -155,15 +160,14 @@ FORM changes 'Журнал изменений'
 EXTEND DESIGN changes {
     main {
         NEW specContainer {
+            fill = 1;
             ADD s.box;
             NEW textContainer {
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(changesSession(s));
-                fillHorizontal = 1;
-                fillVertical = 1;
-                PROPERTY (changesSession(s)) {
-                    fillHorizontal = 1;
-                    fillVertical = 0.5;
+                type = CONTAINERV;
+                fill = 1;
+
+                ADD PROPERTY(changesSession(s)) {
+                    fill = 0.5;
                     preferredSize = ( -1, 200);
                     panelLabelAbove = TRUE;
                 }

@@ -188,9 +188,9 @@ EXTEND FORM customUser
 ;
 
 EXTEND DESIGN customUser {
-    container{
+    container {
         ADD ur.box {
-            fillHorizontal = 2.0;
+            flex = 1.0;
         }
     }
 }
