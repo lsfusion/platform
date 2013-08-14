@@ -19,4 +19,10 @@ public class ResizableLayoutPanel extends ResizeLayoutPanel implements RequiresR
             super.setVisible(visible);
         }
     }
+
+    public static ResizableLayoutPanel wrapPanel(Widget widget) {
+        ResizableLayoutPanel panel = new ResizableLayoutPanel();
+        panel.add(widget);
+        return panel;
+    }
 }

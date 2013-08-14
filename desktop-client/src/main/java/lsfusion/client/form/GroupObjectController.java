@@ -5,6 +5,7 @@ import lsfusion.base.OrderedMap;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Main;
 import lsfusion.client.form.grid.GridController;
+import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.panel.PanelController;
 import lsfusion.client.form.queries.FilterController;
 import lsfusion.client.form.showtype.ShowTypeController;
@@ -120,7 +121,8 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
         addToToolbar(Box.createHorizontalStrut(5));
 
-        if (groupObject.toolbar.showPrint && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
+        // todo [dale]: Можно ли избавиться от if'ов?
+        if (groupObject.toolbar.showPrint && Main.module.isFull()) {
             addToToolbar(grid.createPrintGroupButton());
         }
 
@@ -302,7 +304,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
         if (panel.containsProperty(property)) {
-            panel.updateCellBackgroundValue(property, cellBackgroundValues);
+            panel.updateCellBackgroundValues(property, cellBackgroundValues);
         } else {
             grid.updateCellBackgroundValues(property, cellBackgroundValues);
         }
@@ -310,7 +312,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
         if (panel.containsProperty(property)) {
-            panel.updateCellForegroundValue(property, cellForegroundValues);
+            panel.updateCellForegroundValues(property, cellForegroundValues);
         } else {
             grid.updateCellForegroundValues(property, cellForegroundValues);
         }
@@ -353,9 +355,8 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
     }
 
-    // приходится делать именно так, так как логика отображения одного GroupObject може не совпадать с логикой Container-Component
+    // приходится делать именно так, так как логика отображения одного GroupObject может не совпадать с логикой Container-Component
     void addGroupObjectActions(JComponent comp) {
-
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getSwitchClassViewKeyStroke(), "switchClassView");
         comp.getActionMap().put("switchClassView", new AbstractAction() {
 

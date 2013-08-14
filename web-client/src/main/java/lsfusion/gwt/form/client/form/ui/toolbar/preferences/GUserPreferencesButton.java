@@ -81,7 +81,9 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
             VerticalPanel currentUserButtons = new VerticalPanel();
             currentUserButtons.add(saveForUserButton);
             currentUserButtons.add(resetForUserButton);
-            saveResetButtons.add(new GCaptionPanel("Для текущего пользователя", currentUserButtons));
+            GCaptionPanel titledPanel = new GCaptionPanel("Для текущего пользователя", currentUserButtons);
+            titledPanel.setSize("100%", "100%");
+            saveResetButtons.add(titledPanel);
 
             if (MainFrame.configurationAccessAllowed) {
                 Button saveButton = new Button("Сохранить настройки");
@@ -103,7 +105,10 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
                 VerticalPanel allUsersButtons = new VerticalPanel();
                 allUsersButtons.add(saveButton);
                 allUsersButtons.add(resetButton);
-                saveResetButtons.add(new GCaptionPanel("Для всех пользователей", allUsersButtons));
+
+                titledPanel = new GCaptionPanel("Для всех пользователей", allUsersButtons);
+                titledPanel.setSize("100%", "100%");
+                saveResetButtons.add(titledPanel);
             }
 
             SimplePanel srbContainer = new SimplePanel(saveResetButtons);

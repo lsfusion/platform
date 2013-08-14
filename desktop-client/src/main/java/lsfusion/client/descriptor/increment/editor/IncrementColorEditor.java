@@ -1,6 +1,6 @@
 package lsfusion.client.descriptor.increment.editor;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.base.context.*;
 
 import javax.swing.*;
@@ -88,10 +88,10 @@ public class IncrementColorEditor extends JPanel implements IncrementView{
 	}
     
     private void updateField() {
-        BaseUtils.invokeSetter(object, field, selected);
+        ReflectionUtils.invokeSetter(object, field, selected);
     }
 
     public void update(Object updateObject, String updateField) {
-        selected = (Color) BaseUtils.invokeGetter(object, field);
+        selected = (Color) ReflectionUtils.invokeGetter(object, field);
     }
 }

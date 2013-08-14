@@ -1,9 +1,7 @@
 package lsfusion.gwt.form.client.form.ui;
 
-import com.google.gwt.user.client.ui.CellPanel;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.ResizableLayoutPanel;
-import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GFormChanges;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -15,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GTreeGroupController extends GAbstractGroupObjectController implements DefaultFocusReceiver {
+public class GTreeGroupController extends GAbstractGroupObjectController {
     private GTreeGroup treeGroup;
 
     private GTreeTable tree;
@@ -29,22 +27,19 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
 
         tree = new GTreeTable(iFormController, iForm, this);
 
-        CellPanel treeTableView = new ResizableVerticalPanel();
-        treeTableView.setSize("100%", "100%");
+        TreeTableView treeTableView = new TreeTableView();
+        //todo: think more, commented only to be used in flex layout
+//        treeTableView.setSize("100%", "100%");
 
         ResizableLayoutPanel panel = new ResizableLayoutPanel();
         panel.setStyleName("gridResizePanel");
-        panel.setSize("100%", "100%");
+//        panel.setSize("100%", "100%");
         panel.setWidget(tree);
 
-        treeTableView.add(panel);
-        treeTableView.setCellHeight(panel, "100%");
-        treeTableView.setCellWidth(panel, "100%");
+//        treeTableView.add(panel);
+//        getFormLayout().add(treeGroup, treeTableView);
 
-        getFormLayout().add(treeGroup, treeTableView, 0);
-        if (treeGroup.defaultComponent) {
-            getFormLayout().addDefaultComponent(this);
-        }
+        getFormLayout().add(treeGroup, panel);
 
         addFilterButton();
     }
@@ -261,8 +256,10 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
         formController.changeFilter(treeGroup, conditions);
     }
 
-    @Override
-    public boolean focus() {
-        return focusFirstWidget();
+    private class TreeTableView extends ResizableLayoutPanel implements DefaultFocusReceiver {
+        @Override
+        public boolean focus() {
+            return focusFirstWidget();
+        }
     }
 }

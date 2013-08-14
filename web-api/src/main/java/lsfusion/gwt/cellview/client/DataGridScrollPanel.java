@@ -1,5 +1,6 @@
 package lsfusion.gwt.cellview.client;
 
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -51,5 +52,9 @@ public class DataGridScrollPanel extends ScrollPanel {
 
     public int getOffsetWidth() {
         return getScrollableElement().getOffsetWidth();
+    }
+
+    public Element getContainerElement() {
+        return super.getContainerElement();
     }
 }

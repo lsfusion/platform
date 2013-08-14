@@ -17,6 +17,7 @@ import lsfusion.client.SwingUtils;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.dispatch.SimpleChangePropertyDispatcher;
+import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.tree.TreeGroupController;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientObjectClass;
@@ -164,7 +165,7 @@ public class ClientFormController implements AsyncListener {
     // ------------------------------------------------------------------------------------ //
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
-    void initializeForm() throws Exception {
+    private void initializeForm() throws Exception {
         formLayout = new ClientFormLayout(this, form.mainContainer);
 
         applyUserProperties();
@@ -479,7 +480,7 @@ public class ClientFormController implements AsyncListener {
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                formLayout.getComponent().revalidate();
+                formLayout.revalidate();
                 ClientExternalScreen.repaintAll(getID());
             }
         });
@@ -1048,15 +1049,11 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void dropLayoutCaches() {
-        formLayout.dropCaches();
+    public void revalidate() {
+        formLayout.revalidate();
     }
 
     public void closed() {
-    }
-
-    public Dimension calculatePreferredSize() {
-        return formLayout.calculatePreferredSize();
     }
 
     public Boolean needToHideProperty(ClientPropertyDraw property){

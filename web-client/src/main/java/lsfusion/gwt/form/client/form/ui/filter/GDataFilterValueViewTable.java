@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.client.form.ui.filter;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.DivElement;
@@ -13,6 +12,7 @@ import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.AbstractCell;
 import lsfusion.gwt.form.client.form.ui.CopyPasteUtils;
 import lsfusion.gwt.form.client.form.ui.GPropertyTableBuilder;
+import lsfusion.gwt.form.client.form.ui.GSinglePropertyTable;
 import lsfusion.gwt.form.shared.view.GKeyStroke;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
@@ -36,18 +36,8 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
     private DataFilterValueEditableCell cell;
 
-    public interface GDataFilterValueViewTableResource extends Resources {
-        @Source("lsfusion/gwt/form/client/form/ui/GSinglePropertyTable.css")
-        GDataFilterValueViewTableStyle style();
-    }
-
-    public interface GDataFilterValueViewTableStyle extends Style {
-    }
-
-    public static final GDataFilterValueViewTableResource GFILTER_VALUE_TABLE_RESOURCE = GWT.create(GDataFilterValueViewTableResource.class);
-
     public GDataFilterValueViewTable(GDataFilterValueView valueView, GPropertyDraw property) {
-        super(GFILTER_VALUE_TABLE_RESOURCE);
+        super(GSinglePropertyTable.GSINGLE_PROPERTY_TABLE_RESOURCE);
 
         this.valueView = valueView;
         this.property = property;

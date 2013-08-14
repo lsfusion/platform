@@ -8,6 +8,8 @@ grammar LsfLogics;
 	import lsfusion.interop.PropertyEditType;
 	import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
 	import lsfusion.interop.form.layout.ContainerType;
+	import lsfusion.interop.form.layout.FlexAlignment;
+	import lsfusion.interop.form.layout.Alignment;
 	import lsfusion.interop.form.ServerResponse;
 	import lsfusion.interop.FormEventType;
 	import lsfusion.interop.ModalityType;
@@ -2533,10 +2535,10 @@ windowOptions returns [NavigatorWindowOptions options]
 		|	o=orientation { $options.setOrientation($o.val); }
 		|	dp=dockPosition { $options.setDockPosition($dp.val); }
 		|	bp=borderPosition { $options.setBorderPosition($bp.val); }
-		|	'HALIGN' '(' ha=horizontalAlignment ')' { $options.setHAlign($ha.val); }
-		|	'VALIGN' '(' va=verticalAlignment ')' { $options.setVAlign($va.val); }
-		|	'TEXTHALIGN' '(' tha=horizontalAlignment ')' { $options.setTextHAlign($tha.val); }
-		|	'TEXTVALIGN' '(' tva=verticalAlignment ')' { $options.setTextVAlign($tva.val); }
+		|	'HALIGN' '(' ha=alignmentLiteral ')' { $options.setHAlign($ha.val); }
+		|	'VALIGN' '(' va=alignmentLiteral ')' { $options.setVAlign($va.val); }
+		|	'TEXTHALIGN' '(' tha=alignmentLiteral ')' { $options.setTextHAlign($tha.val); }
+		|	'TEXTVALIGN' '(' tva=alignmentLiteral ')' { $options.setTextVAlign($tva.val); }
 		)*
 	;
 
@@ -2549,18 +2551,6 @@ borderPosition returns [BorderPosition val]
 
 dockPosition returns [DockPosition val]
 	:	'POSITION' '(' x=intLiteral ',' y=intLiteral ',' w=intLiteral ',' h=intLiteral ')' { $val = new DockPosition($x.val, $y.val, $w.val, $h.val); }
-	;
-
-verticalAlignment returns [VAlign val]
-	:	'TOP'		{ $val = VAlign.TOP; }
-	|	'CENTER'	{ $val = VAlign.CENTER; }
-	|	'BOTTOM'	{ $val = VAlign.BOTTOM; }
-	;
-
-horizontalAlignment returns [HAlign val]
-	:	'LEFT'		{ $val = HAlign.LEFT; }
-	|	'CENTER'	{ $val = HAlign.CENTER; }
-	|	'RIGHT'		{ $val = HAlign.RIGHT; }
 	;
 
 orientation returns [Orientation val]
@@ -2840,8 +2830,8 @@ componentPropertyValue returns [Object value]
 	|	intB=boundsIntLiteral { $value = $intB.val; }
 	|	doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   contType=containerTypeLiteral { $value = $contType.val; }
+	|   alignment=flexAlignmentLiteral { $value = $alignment.val; }
 	;
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3149,14 +3139,27 @@ insertRelativePositionLiteral returns [InsertPosition val]
 	|	'AFTER' { $val = InsertPosition.AFTER; }
 	;
 
-containerTypeLiteral returns [byte val]
+containerTypeLiteral returns [ContainerType val]
 	:	'CONTAINERV' { $val = ContainerType.CONTAINERV; }	
 	|	'CONTAINERH' { $val = ContainerType.CONTAINERH; }	
-	|	'CONTAINERVH' { $val = ContainerType.CONTAINERVH; }	
+	|	'COLUMNS' { $val = ContainerType.COLUMNS; }
 	|	'TABBED' { $val = ContainerType.TABBED_PANE; }
-	|	'SPLITH' { $val = ContainerType.SPLIT_PANE_HORIZONTAL; }
-	|	'SPLITV' { $val = ContainerType.SPLIT_PANE_VERTICAL; }
+	|	'SPLITH' { $val = ContainerType.HORIZONTAL_SPLIT_PANE; }
+	|	'SPLITV' { $val = ContainerType.VERTICAL_SPLIT_PANE; }
 	;
+
+alignmentLiteral returns [Alignment val]
+    :   'LEADING' { $val = Alignment.LEADING; }
+    |   'CENTER' { $val = Alignment.CENTER; }
+    |   'TRAILING' { $val = Alignment.TRAILING; }
+    ;
+
+flexAlignmentLiteral returns [FlexAlignment val]
+    :   'LEADING' { $val = FlexAlignment.LEADING; }
+    |   'CENTER' { $val = FlexAlignment.CENTER; }
+    |   'TRAILING' { $val = FlexAlignment.TRAILING; }
+    |   'STRETCH' { $val = FlexAlignment.STRETCH; }
+    ;
 
 propertyEditTypeLiteral returns [PropertyEditType val]
 	:	'EDITABLE' { $val = PropertyEditType.EDITABLE; }
@@ -3201,7 +3204,7 @@ uintLiteral returns [int val]
 ulongLiteral returns [long val]
 	:	u=ULONG_LITERAL { $val = self.createScriptedLong($u.text.substring(0, $u.text.length() - 1)); }
 	;
-	
+
 /////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// LEXER //////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////

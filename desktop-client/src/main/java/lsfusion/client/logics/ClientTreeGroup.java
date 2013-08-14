@@ -5,7 +5,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.form.layout.AbstractTreeGroup;
-import lsfusion.interop.form.layout.SimplexConstraints;
+import lsfusion.interop.form.layout.FlexAlignment;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -34,6 +34,12 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     }
 
     @Override
+    protected void initDefaultConstraints() {
+        flex = 1;
+        alignment = FlexAlignment.STRETCH;
+    }
+
+    @Override
     public ClientComponent getToolbar() {
         return toolbar;
     }
@@ -41,11 +47,6 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     @Override
     public ClientComponent getFilter() {
         return filter;
-    }
-
-    @Override
-    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
-        return SimplexConstraints.getTreeDefaultConstraints(super.getDefaultConstraints());
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

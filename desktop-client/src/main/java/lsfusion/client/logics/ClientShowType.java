@@ -18,11 +18,6 @@ public class ClientShowType extends ClientComponent {
 
     public ClientGroupObject groupObject;
 
-    @Override
-    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
-        return SimplexConstraints.getShowTypeDefaultConstraints(super.getDefaultConstraints());
-    }
-
     public ClientShowType(ApplicationContext context) {
         super(context);
     }
@@ -56,8 +51,4 @@ public class ClientShowType extends ClientComponent {
         return new ComponentEditor(this);
     }
 
-    @Override
-    public boolean shouldBeDeclared() {
-        return true;
-    }
 }

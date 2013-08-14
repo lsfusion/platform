@@ -33,6 +33,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
+import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.Cell.Context;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
@@ -81,6 +82,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private static final int PAGE_INCREMENT = 30;
     private static final int IGNORE_SCROLL_TIMEOUT = 40;
     private static int nativeScrollbarWidth = AbstractNativeScrollbar.getNativeScrollbarWidth();
+
+    private static FocusImpl focusImpl = FocusImpl.getFocusImplForPanel();
 
     /**
      * A ClientBundle that provides images for this widget.
@@ -454,10 +457,13 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     @Override
     public void setFocus(boolean focused) {
+        Element focusHolderElement = getFocusHolderElement();
+        com.google.gwt.user.client.Element focusable = focusHolderElement.cast();
+
         if (focused) {
             getFocusHolderElement().focus();
         } else {
-            getFocusHolderElement().blur();
+            focusHolderElement.blur();
         }
     }
 
@@ -2316,7 +2322,10 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             containerElement.appendChild(tableElement);
             setFocusable(containerElement, true);
 
+//            containerElement.getStyle().setPosition(Position.RELATIVE);
+            tableElement.getStyle().setHeight(100.0, Unit.PCT);
             tableElement.getStyle().setPosition(Position.ABSOLUTE);
+            GwtClientUtils.setupFillParent(tableElement);
 
             setElement(containerElement);
         }

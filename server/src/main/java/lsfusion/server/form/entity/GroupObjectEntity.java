@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static lsfusion.interop.ClassViewType.*;
+
 public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
 
     public static int PAGE_SIZE_DEFAULT_VALUE = 50;
@@ -61,7 +63,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         ID = iID;
     }
 
-    public ClassViewType initClassView = ClassViewType.GRID;
+    public ClassViewType initClassView = GRID;
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
     public Integer pageSize;
 
@@ -142,12 +144,16 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public void setSingleClassView(ClassViewType type) {
         setInitClassView(type);
-        banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.GRID, ClassViewType.HIDE));
+        banClassView.addAll(BaseUtils.toList(PANEL, GRID, HIDE));
         banClassView.remove(type);
     }
 
     public boolean isAllowedClassView(ClassViewType type) {
         return !banClassView.contains(type);
+    }
+
+    public boolean isForcedPanel() {
+        return initClassView == PANEL && !isAllowedClassView(GRID) && !isAllowedClassView(HIDE);
     }
 
     private boolean finalizedObjects;

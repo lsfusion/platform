@@ -1,6 +1,6 @@
 package lsfusion.client.tree;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.base.context.ApplicationContextHolder;
 import lsfusion.base.context.ApplicationContextProvider;
 import lsfusion.base.context.Lookup;
@@ -91,7 +91,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     }
 
     protected void addFieldReferenceNode(Object object, String field, String fieldCaption, Object context, String[] derivedNames, Class[] derivedClasses) {
-        Object value = BaseUtils.invokeGetter(object, field);
+        Object value = ReflectionUtils.invokeGetter(object, field);
         ClientTreeNode newNode;
         if (value == null) {
             newNode = new NullFieldNode(fieldCaption);
@@ -108,7 +108,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     public void addInitializeReferenceActions(final Object object, final String field, String[] captions, final Class[] classes) {
         addNodeAction(new ClientTreeAction(ClientResourceBundle.getString("tree.reset")) {
             public void actionPerformed(ClientTreeActionEvent e) {
-                BaseUtils.invokeSetter(object, field, null);
+                ReflectionUtils.invokeSetter(object, field, null);
             }
         });
 
@@ -117,7 +117,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             addNodeAction(new ClientTreeAction(ClientResourceBundle.getString("tree.initialize.as")+" " + captions[i]) {
                 public void actionPerformed(ClientTreeActionEvent e) {
                     try {
-                        BaseUtils.invokeSetter(object, field, processCreatedObject(classes[prm].newInstance(), object));
+                        ReflectionUtils.invokeSetter(object, field, processCreatedObject(classes[prm].newInstance(), object));
                     } catch (InstantiationException e1) {
                         throw new RuntimeException(e1);
                     } catch (IllegalAccessException e1) {
@@ -134,7 +134,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             addNodeAction(new ClientTreeAction(ClientResourceBundle.getString("tree.add") + (captions.length > 1 ? " " + captions[i] : "")) {
                 public void actionPerformed(ClientTreeActionEvent e) {
                     try {
-                        BaseUtils.invokeAdder(object, collectionField, processCreatedObject(classes[prm].newInstance(), object));
+                        ReflectionUtils.invokeAdder(object, collectionField, processCreatedObject(classes[prm].newInstance(), object));
                     } catch (InstantiationException e1) {
                         throw new RuntimeException(e1);
                     } catch (IllegalAccessException e1) {
@@ -148,7 +148,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             @Override
             public void actionPerformed(ClientTreeActionEvent e) {
                 Object deletedObject = e.getNode().getTypedObject();
-                BaseUtils.invokeRemover(object, collectionField, deletedObject);
+                ReflectionUtils.invokeRemover(object, collectionField, deletedObject);
                 if (object instanceof ApplicationContextProvider) {
                     ApplicationContextProvider provider = (ApplicationContextProvider) object;
                     provider.getContext().setProperty(Lookup.DELETED_OBJECT_PROPERTY, deletedObject);

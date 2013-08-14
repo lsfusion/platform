@@ -25,6 +25,11 @@ public class GLongType extends GIntegralType {
     }
 
     @Override
+    public String getPreferredMask() {
+        return "9 999 999 999 999 999 999";
+    }
+
+    @Override
     public String toString() {
         return "Длинное целое число";
     }

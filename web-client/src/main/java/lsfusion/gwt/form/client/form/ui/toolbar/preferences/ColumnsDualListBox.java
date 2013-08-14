@@ -48,6 +48,7 @@ public class ColumnsDualListBox extends AbsolutePanel {
         ColumnsListContainer leftFocusPanel = new ColumnsListContainer(left);
         leftFocusPanel.setHeight("100%");
         GCaptionPanel leftColumns = new GCaptionPanel("Отображаемые колонки", leftFocusPanel);
+        leftColumns.setSize("100%", "100%");
         horizontalPanel.add(leftColumns);
         horizontalPanel.setCellHeight(leftColumns, "100%");
         horizontalPanel.setCellWidth(leftColumns, "43%");
@@ -58,6 +59,7 @@ public class ColumnsDualListBox extends AbsolutePanel {
         ColumnsListContainer rightFocusPanel = new ColumnsListContainer(right);
         rightFocusPanel.setHeight("100%");
         GCaptionPanel rightColumns = new GCaptionPanel("Спрятанные колонки", rightFocusPanel);
+        rightColumns.setSize("100%", "100%");
         horizontalPanel.add(rightColumns);
         horizontalPanel.setCellHeight(rightColumns, "100%");
 

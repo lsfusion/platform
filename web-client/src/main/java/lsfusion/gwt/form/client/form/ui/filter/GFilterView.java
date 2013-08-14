@@ -6,8 +6,8 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FlowPanel;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.ResizableFocusPanel;
-import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.GPropertyFilter;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
@@ -22,7 +22,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     private static final String ADD_CONDITION = "filtadd.png";
     private static final String APPLY = "filt.png";
 
-    private ResizableVerticalPanel filterContainer;
+    private FlexPanel filterContainer;
 
     private ImageButton applyButton;
 
@@ -33,7 +33,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
     public GFilterView(GFilterController iController) {
         controller = iController;
 
-        filterContainer = new ResizableVerticalPanel();
+        filterContainer = new FlexPanel(true);
         setWidget(filterContainer);
         addStyleName("noOutline");
 

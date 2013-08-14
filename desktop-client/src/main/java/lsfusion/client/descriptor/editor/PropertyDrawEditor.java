@@ -118,7 +118,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 new SizesEditor(descriptor.client),
                 new ComponentDesignEditor(ClientResourceBundle.getString("descriptor.editor.view.design"), descriptor.client.design)));
 
-        addTab(ClientResourceBundle.getString("descriptor.editor.arrangement"), new NorthBoxPanel(new ComponentConstraintsEditor(descriptor.client.constraints)));
+        addTab(ClientResourceBundle.getString("descriptor.editor.arrangement"), new NorthBoxPanel(new ComponentConstraintsEditor(descriptor.client)));
     }
 
     @Override

@@ -7,9 +7,7 @@ import lsfusion.client.descriptor.editor.ComponentEditor;
 import lsfusion.client.descriptor.nodes.ComponentNode;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.ComponentDesign;
-import lsfusion.interop.form.layout.AbstractComponent;
-import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
-import lsfusion.interop.form.layout.SimplexConstraints;
+import lsfusion.interop.form.layout.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +15,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 public abstract class ClientComponent extends ContextIdentityObject implements Serializable, IdentitySerializable<ClientSerializationPool>, AbstractComponent<ClientContainer, ClientComponent> {
@@ -30,13 +27,13 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
     public Dimension maximumSize;
     public Dimension preferredSize;
 
-    public SimplexConstraints<ClientComponent> constraints;
-
-    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
-        return new SimplexConstraints<ClientComponent>();
-    }
+    public double flex = 0;
+    public FlexAlignment alignment = FlexAlignment.LEADING;
 
     public boolean defaultComponent = false;
+
+    //todo: remove after .lsf refactoring
+    public SimplexConstraints<ClientComponent> constraints = new SimplexConstraints<ClientComponent>();
 
     public ClientComponent() {
     }
@@ -52,9 +49,14 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
     }
 
     protected void initAggregateObjects(ApplicationContext context) {
-        constraints = getDefaultConstraints();
-        constraints.setContext(context);
         design = new ComponentDesign(context);
+
+        constraints.setContext(context);
+
+        initDefaultConstraints();
+    }
+
+    protected void initDefaultConstraints() {
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -65,16 +67,12 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         pool.writeObject(outStream, maximumSize);
         pool.writeObject(outStream, preferredSize);
 
-        pool.writeObject(outStream, constraints);
-        pool.writeString(outStream, sID);
-
-        outStream.writeInt(constraints.intersects.size());
-        for (Map.Entry<ClientComponent, DoNotIntersectSimplexConstraint> intersect : constraints.intersects.entrySet()) {
-            pool.serializeObject(outStream, intersect.getKey());
-            pool.writeObject(outStream, intersect.getValue());
-        }
+        outStream.writeDouble(flex);
+        pool.writeObject(outStream, alignment);
 
         outStream.writeBoolean(defaultComponent);
+
+        pool.writeString(outStream, sID);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -86,18 +84,12 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         maximumSize = pool.readObject(inStream);
         preferredSize = pool.readObject(inStream);
 
-        constraints = pool.readObject(inStream);
-        sID = pool.readString(inStream);
-
-        constraints.intersects = new HashMap<ClientComponent, DoNotIntersectSimplexConstraint>();
-        int count = inStream.readInt();
-        for (int i = 0; i < count; i++) {
-            ClientComponent view = pool.deserializeObject(inStream);
-            DoNotIntersectSimplexConstraint constraint = pool.readObject(inStream);
-            constraints.intersects.put(view, constraint);
-        }
+        flex = inStream.readDouble();
+        alignment = pool.readObject(inStream);
 
         defaultComponent = inStream.readBoolean();
+
+        sID = pool.readString(inStream);
     }
 
     public ComponentNode getNode() {
@@ -108,6 +100,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         return new ComponentEditor(this);
     }
 
+    //todo: remove
     public SimplexConstraints<ClientComponent> getConstraints() {
         return constraints;
     }
@@ -117,19 +110,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         updateDependency(this, "constraints");
     }
 
-    public void setDefaultComponent(boolean defaultComponent) {
-        this.defaultComponent = defaultComponent;
-        updateDependency(this, "defaultComponent");
-    }
-
-    public boolean getDefaultComponent() {
-        return defaultComponent;
-    }
-
-    public boolean shouldBeDeclared() {
-        return !constraints.equals(getDefaultConstraints()) || !design.isDefaultDesign();
-    }
-
     public Map<ClientComponent, DoNotIntersectSimplexConstraint> getIntersects() {
         return constraints.intersects;
     }
@@ -137,6 +117,19 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
     public void setIntersects(Map<ClientComponent, DoNotIntersectSimplexConstraint> intersects) {
         constraints.intersects = intersects;
         updateDependency(this.constraints, "intersects");
+    }
+
+    public DoNotIntersectSimplexConstraint getChildConstraints() {
+        return constraints.getChildConstraints();
+    }
+
+    public void setDefaultComponent(boolean defaultComponent) {
+        this.defaultComponent = defaultComponent;
+        updateDependency(this, "defaultComponent");
+    }
+
+    public boolean getDefaultComponent() {
+        return defaultComponent;
     }
 
     public String getMinimumWidth() {
@@ -211,9 +204,23 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         updateDependency(this, "preferredHeight");
     }
 
-    public abstract String getCaption();
-
-    public DoNotIntersectSimplexConstraint getChildConstraints() {
-        return constraints.getChildConstraints();
+    public double getFlex() {
+        return flex;
     }
+
+    public void setFlex(double flex) {
+        this.flex = flex;
+        updateDependency(this, "flex");
+    }
+
+    public FlexAlignment getAlignment() {
+        return alignment;
+    }
+
+    public void setAlignment(FlexAlignment alignment) {
+        this.alignment = alignment;
+        updateDependency(this, "alignment");
+    }
+
+    public abstract String getCaption();
 }

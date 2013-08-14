@@ -13,7 +13,6 @@ public class AbstractGroupDescriptor extends AbstractNodeDescriptor implements C
     public String caption;
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {

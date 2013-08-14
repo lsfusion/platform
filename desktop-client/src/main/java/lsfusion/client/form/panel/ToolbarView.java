@@ -2,12 +2,9 @@ package lsfusion.client.form.panel;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.StartupProperties;
-import lsfusion.client.form.queries.ToolbarGridButton;
 
 import javax.swing.*;
 import java.awt.*;
-
-import static lsfusion.client.SwingUtils.getNewBoundsIfNotAlmostEquals;
 
 public class ToolbarView extends JPanel {
     private JPanel mainPanel;
@@ -24,14 +21,7 @@ public class ToolbarView extends JPanel {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
         mainPanel.setAlignmentY(Component.TOP_ALIGNMENT);
 
-        infoLabel = new JLabel() {
-            @Override
-            public Dimension getPreferredSize() {
-                return new Dimension(super.getPreferredSize().width, ToolbarGridButton.DEFAULT_SIZE.height);
-            }
-        };
-        infoLabel.setMinimumSize(new Dimension(1, ToolbarGridButton.DEFAULT_SIZE.height));
-        infoLabel.setPreferredSize(new Dimension(300, ToolbarGridButton.DEFAULT_SIZE.height));
+        infoLabel = new JLabel();
 
         add(mainPanel, BorderLayout.WEST);
         add(infoLabel, BorderLayout.CENTER);
@@ -51,12 +41,5 @@ public class ToolbarView extends JPanel {
             infoLabel.setVisible(!text.isEmpty());
             infoLabel.invalidate();
         }
-    }
-
-    //Чтобы лэйаут не прыгал игнорируем мелкие изменения координат
-    @Override
-    public void setBounds(int x, int y, int width, int height) {
-        Rectangle newBounds = getNewBoundsIfNotAlmostEquals(this, x, y, width, height);
-        super.setBounds(newBounds.x, newBounds.y, newBounds.width,  newBounds.height);
     }
 }

@@ -3,6 +3,7 @@ package lsfusion.client.form;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.classes.ClassChooserController;
 import lsfusion.client.form.classes.ClassChooserView;
+import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.queries.QueryConditionView;
 import lsfusion.client.form.queries.ToolbarGridButton;
 import lsfusion.client.logics.ClientObject;

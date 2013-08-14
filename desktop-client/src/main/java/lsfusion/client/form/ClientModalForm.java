@@ -109,7 +109,10 @@ public class ClientModalForm extends JDialog {
     }
 
     public Dimension calculatePreferredSize(boolean undecorated) {
-        Dimension preferredSize = form.calculatePreferredSize();
+        //сначала нужно провалидейтать все компоненты, чтобы отработала логика autohide
+        form.getComponent().preValidateMainContainer();
+
+        Dimension preferredSize = form.getComponent().getPreferredSize();
 
         // так как у нас есть только preferredSize самого contentPane, а нам нужен у JDialog
         // сколько будет занимать все "рюшечки" вокруг contentPane мы посчитать не можем, поскольку

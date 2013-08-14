@@ -47,6 +47,7 @@ public class GPanelNavigatorView extends GNavigatorView {
         }
 
         GCaptionPanel titledPanel = new GCaptionPanel(element.caption, insidePanel);
+        titledPanel.setSize("100%", "100%");
         container.add(titledPanel);
     }
 

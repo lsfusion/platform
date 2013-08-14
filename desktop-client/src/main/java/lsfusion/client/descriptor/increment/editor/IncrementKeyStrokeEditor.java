@@ -1,6 +1,6 @@
 package lsfusion.client.descriptor.increment.editor;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.descriptor.editor.KeyInputDialog;
 import lsfusion.base.context.*;
@@ -55,11 +55,11 @@ public class IncrementKeyStrokeEditor extends JPanel implements IncrementView {
     };
 
     private void updateField() {
-        BaseUtils.invokeSetter(object, field, key);
+        ReflectionUtils.invokeSetter(object, field, key);
     }
 
     public void update(Object updateObject, String updateField) {
-        key = (KeyStroke) BaseUtils.invokeGetter(object, field);
+        key = (KeyStroke) ReflectionUtils.invokeGetter(object, field);
         if (key != null) {
             keyStrokeText = key.toString();
             button.transform();

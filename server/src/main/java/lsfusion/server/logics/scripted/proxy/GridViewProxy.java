@@ -7,10 +7,6 @@ public class GridViewProxy extends ComponentViewProxy<GridView> {
         super(target);
     }
     
-    public void setMinRowCount(byte minRowCount) {
-        target.minRowCount = minRowCount;
-    }
-
     public void setTabVertical(boolean tabVertical) {
         target.tabVertical = tabVertical;
     }

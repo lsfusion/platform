@@ -15,7 +15,6 @@ import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.PropertyReadType;
-import lsfusion.interop.form.layout.SimplexConstraints;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
 
 import javax.swing.*;
@@ -118,13 +117,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     @Override
-    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
-        return SimplexConstraints.getPropertyDrawDefaultConstraints(super.getDefaultConstraints());
-    }
-
-    @Override
-    public boolean shouldBeDeclared() {
-        return super.shouldBeDeclared() || editKey != null || !columnGroupObjects.isEmpty();
+    protected void initDefaultConstraints() {
+//        constraints.insetsSibling = new Insets(0, 0, 2, 2);
     }
 
     public KeyStroke getEditKey() {
@@ -172,6 +166,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return baseType.getPanelView(this, columnKey, form);
     }
 
+
     public int getMinimumWidth(JComponent comp) {
         if (minimumSize != null && minimumSize.width > -1) {
             return minimumSize.width;
@@ -212,21 +207,27 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public int getMaximumWidth(JComponent comp) {
+        int result;
         if (maximumSize != null && maximumSize.width > -1) {
-            return maximumSize.width;
+            result = maximumSize.width;
+        } else {
+            result = baseType.getMaximumWidth(maximumCharWidth, comp.getFontMetrics(design.getFont(comp)));
         }
-        return baseType.getMaximumWidth(maximumCharWidth, comp.getFontMetrics(design.getFont(comp)));
+        return max(result, getPreferredWidth(comp));
     }
 
     public int getMaximumHeight(JComponent comp) {
+        int result;
         if (maximumSize != null && maximumSize.width > -1) {
-            return maximumSize.height;
+            result = maximumSize.height;
+        } else {
+            result = baseType.getMaximumHeight(comp.getFontMetrics(design.getFont(comp)));
         }
-        return baseType.getMaximumHeight(comp.getFontMetrics(design.getFont(comp)));
+        return max(result, getPreferredHeight(comp));
     }
 
     public Dimension getMaximumSize(JComponent comp) {
-        return new Dimension(max(getMaximumWidth(comp), getPreferredWidth(comp)), max(getMaximumHeight(comp), getPreferredHeight(comp)));
+        return new Dimension(getMaximumWidth(comp), getMaximumHeight(comp));
     }
 
     public Format getFormat() {
@@ -303,7 +304,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
         pool.writeObject(outStream, externalScreenConstraints);
 
-        outStream.writeBoolean(autoHide);
         outStream.writeBoolean(showTableFirst);
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
@@ -339,7 +339,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         externalScreenConstraints = pool.readObject(inStream);
 
-        autoHide = inStream.readBoolean();
         showTableFirst = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();

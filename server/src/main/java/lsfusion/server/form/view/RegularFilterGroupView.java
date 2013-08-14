@@ -1,6 +1,5 @@
 package lsfusion.server.form.view;
 
-import lsfusion.interop.form.layout.SimplexConstraints;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.serialization.ServerSerializationPool;
@@ -37,11 +36,6 @@ public class RegularFilterGroupView extends ComponentView {
             }
         }
         return null;
-    }
-
-    @Override
-    public SimplexConstraints<ComponentView> getDefaultConstraints() {
-        return SimplexConstraints.getRegularFilterGroupDefaultConstraints(super.getDefaultConstraints());
     }
 
     @Override

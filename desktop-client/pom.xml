@@ -15,15 +15,6 @@
         <assemble.finalName>lsfusion-client-${project.version}</assemble.finalName>
     </properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <dependency>
             <groupId>lsfusion.platform</groupId>

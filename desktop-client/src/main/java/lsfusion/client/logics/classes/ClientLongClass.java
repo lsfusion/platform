@@ -24,6 +24,11 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
         return Data.LONG;
     }
 
+    @Override
+    public String getPreferredMask() {
+        return "9 999 999 999 999 999 999";
+    }
+
     public Object parseString(String s) throws ParseException {
         try {
             return Long.parseLong(s);

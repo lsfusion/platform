@@ -5,7 +5,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.form.ReportConstants;
-import lsfusion.interop.form.layout.SimplexConstraints;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
 import lsfusion.server.classes.ActionClass;
@@ -38,16 +37,6 @@ public class PropertyDrawView extends ComponentView {
 
     public PropertyDrawEntity<?> entity;
 
-    /**
-     * Usage example:
-     * <pre><code>
-     *  LP someLP = ...;
-     *  ...
-     *  PropertyDrawEntity propertyDraw = getPropertyDraw(someLP);
-     *  design.get(propertyDraw).autoHide = true;
-     *  </code></pre>
-     */
-    public boolean autoHide;
     public boolean showTableFirst;
     public boolean editOnSingleClick;
     public boolean hide;
@@ -84,11 +73,6 @@ public class PropertyDrawView extends ComponentView {
     public PropertyDrawView(PropertyDrawEntity entity) {
         super(entity.ID);
         this.entity = entity;
-    }
-
-    @Override
-    public SimplexConstraints<ComponentView> getDefaultConstraints() {
-        return SimplexConstraints.getPropertyDrawDefaultConstraints(super.getDefaultConstraints());
     }
 
     public Type getType() {
@@ -203,7 +187,6 @@ public class PropertyDrawView extends ComponentView {
         }
         pool.writeObject(outStream, externalScreenConstraints);
 
-        outStream.writeBoolean(autoHide);
         outStream.writeBoolean(showTableFirst);
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
@@ -333,7 +316,6 @@ public class PropertyDrawView extends ComponentView {
 
         externalScreenConstraints = pool.readObject(inStream);
 
-        autoHide = inStream.readBoolean();
         showTableFirst = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();

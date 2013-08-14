@@ -64,7 +64,7 @@
         <url.rewriter.version>4.0.3</url.rewriter.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
-        <gwt.version>2.5.0-patched-4</gwt.version>
+        <gwt.version>2.5.0-patched-5</gwt.version>
 
         <gwt.plugin.version>2.5.0</gwt.plugin.version>
         <smartgwt.version>3.0p</smartgwt.version>

@@ -22,7 +22,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public FilterView filter;
 
     public Boolean needVerticalScroll = true;
-    public Integer tableRowsCount;
 
     public GroupObjectView() {
     }
@@ -120,7 +119,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         }
         pool.writeInt(outStream, entity.pageSize);
         outStream.writeBoolean(needVScroll);
-        outStream.writeInt(tableRowsCount == null ? -1 : tableRowsCount);
         outStream.writeUTF(getSID());
     }
 
@@ -135,11 +133,5 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         filter = pool.deserializeObject(inStream);
 
         needVerticalScroll = inStream.readBoolean();
-        tableRowsCount = inStream.readInt();
-    }
-
-    public void setTableRowsCount(int tableRowsCount) {
-        this.tableRowsCount = tableRowsCount;
-        grid.constraints.fillVertical = 0.0;
     }
 }

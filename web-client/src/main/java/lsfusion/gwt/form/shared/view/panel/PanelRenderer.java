@@ -1,10 +1,10 @@
 package lsfusion.gwt.form.shared.view.panel;
 
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.GFlexAlignment;
 
-import java.io.Serializable;
-
-public interface PanelRenderer extends Serializable {
+public interface PanelRenderer {
     Widget getComponent();
     void setValue(Object value);
     void setReadOnly(boolean readOnly);
@@ -16,5 +16,6 @@ public interface PanelRenderer extends Serializable {
     void updateCellForegroundValue(Object value);
 
     void focus();
-    String getWidth();
+
+    void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex);
 }

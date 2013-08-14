@@ -10,8 +10,4 @@ public class GroupObjectViewProxy extends ViewProxy<GroupObjectView> {
     public void setNeedVerticalScroll(Boolean needVerticalScroll) {
         target.needVerticalScroll = needVerticalScroll;
     }
-
-    public void setTableRowsCount(Integer tableRowsCount) {
-        target.setTableRowsCount(tableRowsCount);
-    }
 }

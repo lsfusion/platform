@@ -12,6 +12,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
+import net.customware.gwt.dispatch.shared.Result;
+import net.customware.gwt.dispatch.shared.general.StringResult;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.WrapperAsyncCallbackEx;
@@ -120,7 +123,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         dispatcher = new FormDispatchAsync(this);
 
-        formLayout = new GFormLayout(this, gForm.mainContainer);
+        formLayout = new GFormLayout(this, form.mainContainer);
 
         asyncTimer = new Timer() {
             @Override
@@ -726,9 +729,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
         dispatcher.execute(new SetTabVisible(tabbedPane.ID, visibleComponent.ID), new ServerResponseCallback());
-        if (formLayout != null && visibleComponent instanceof GContainer) {
-            formLayout.adjustContainerSizes((GContainer) visibleComponent);
-        }
         relayoutTables(visibleComponent);
     }
 
@@ -894,11 +894,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public int getPreferredWidth() {
-        return formLayout.getMainKey().preferredWidth;
+        return form.mainContainer.preferredWidth;
     }
 
     public int getPreferredHeight() {
-        return formLayout.getMainKey().preferredHeight;
+        return form.mainContainer.preferredHeight;
     }
 
     private GPropertyTable editingTable;
@@ -944,7 +944,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void setSelected(boolean selected) {
         if (selected) {
             if (!initialResizeProcessed) { // до чего-нибудь мог не успеть дойти onResize() при открытии (открытие сразу нескольких форм)
-                relayoutTables(formLayout.getMainKey());
+                relayoutTables(form.mainContainer);
                 initialResizeProcessed = true;
             }
             scheduleFocusFirstWidget();
@@ -959,7 +959,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void storeGridScrollPosition() {
-        List<GGrid> grids = formLayout.getMainKey().getAllGrids();
+        List<GGrid> grids = form.mainContainer.getAllGrids();
         for (GGrid grid : grids) {
             GGroupObjectController goController = getGroupObjectController(grid.groupObject);
             if (goController != null) {
@@ -969,7 +969,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void restoreGridScrollPosition() {
-        List<GGrid> grids = formLayout.getMainKey().getAllGrids();
+        List<GGrid> grids = form.mainContainer.getAllGrids();
         for (GGrid grid : grids) {
             GGroupObjectController goController = getGroupObjectController(grid.groupObject);
             if (goController != null) {

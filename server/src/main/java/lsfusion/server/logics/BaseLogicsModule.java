@@ -14,6 +14,7 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.Compare;
 import lsfusion.interop.form.layout.ContainerType;
+import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.Union;
@@ -802,8 +803,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             ContainerView pane = design.createContainer(null, null, "pane");
             pane.setType(ContainerType.TABBED_PANE);
 
-            pane.constraints.fillVertical = 1.0;
-            pane.constraints.fillHorizontal = 1.0;
+            pane.flex = 1;
+            pane.alignment = FlexAlignment.STRETCH;
 
             design.mainContainer.addBefore(pane, design.formButtonContainer);
 

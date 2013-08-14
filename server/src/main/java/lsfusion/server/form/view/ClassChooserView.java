@@ -1,6 +1,6 @@
 package lsfusion.server.form.view;
 
-import lsfusion.interop.form.layout.SimplexConstraints;
+import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.serialization.ServerSerializationPool;
@@ -22,6 +22,9 @@ public class ClassChooserView extends ComponentView  {
         this.visible = view.baseClass instanceof CustomClass && !((CustomClass)view.baseClass).children.isEmpty();
 
         this.object = object;
+
+        flex = 0.2;
+        alignment = FlexAlignment.STRETCH;
     }
 
     @Override
@@ -38,10 +41,5 @@ public class ClassChooserView extends ComponentView  {
 
         object = pool.deserializeObject(inStream);
         visible = inStream.readBoolean();
-    }
-
-    @Override
-    public SimplexConstraints<ComponentView> getDefaultConstraints() {
-        return SimplexConstraints.getClassChooserDefaultConstraints(super.getDefaultConstraints());
     }
 }

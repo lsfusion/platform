@@ -8,9 +8,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+//todo: remove
 public class SimplexConstraints<T> extends ContextObject implements Serializable {
-
-    public static final SimplexConstraints DEFAULT_CONSTRAINT = new SimplexConstraints();
 
     public DoNotIntersectSimplexConstraint childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
     public int maxVariables = 3;
@@ -217,44 +216,5 @@ public class SimplexConstraints<T> extends ContextObject implements Serializable
     public void setIntersects(Map<T, DoNotIntersectSimplexConstraint> intersects) {
         this.intersects = intersects;
         updateDependency(this, "intersects");
-    }
-
-    public static <T> SimplexConstraints<T> getContainerDefaultConstraints(SimplexConstraints<T> constraints) {
-        constraints.fillVertical = -1;
-        constraints.fillHorizontal = -1;
-        return constraints;
-    }
-
-    public static <T> SimplexConstraints<T> getGridDefaultConstraints(SimplexConstraints<T> constraints) {
-        constraints.fillVertical = 1;
-        constraints.fillHorizontal = 1;
-        return constraints;
-    }
-
-    public static <T> SimplexConstraints<T> getTreeDefaultConstraints(SimplexConstraints<T> constraints) {
-        constraints.fillVertical = 1;
-        constraints.fillHorizontal = 1;
-        return constraints;
-    }
-
-    public static <T> SimplexConstraints<T> getClassChooserDefaultConstraints(SimplexConstraints<T> constraints) {
-        constraints.fillVertical = 1;
-        constraints.fillHorizontal = 0.2;
-        return constraints;
-    }
-
-    public static <T> SimplexConstraints<T> getPropertyDrawDefaultConstraints(SimplexConstraints<T> constraints) {
-        constraints.insetsSibling = new Insets(0, 0, 2, 2);
-        return constraints;
-    }
-
-    public static <T> SimplexConstraints<T> getRegularFilterGroupDefaultConstraints(SimplexConstraints<T> constraints) {
-        constraints.insetsSibling = new Insets(0, 4, 2, 4);
-        return constraints;
-    }
-
-    public static <T> SimplexConstraints<T> getShowTypeDefaultConstraints(SimplexConstraints<T> constraints) {
-        constraints.directions =new SimplexComponentDirections(0.01, 0.0, 0.0, 0.01);
-        return constraints;
     }
 }

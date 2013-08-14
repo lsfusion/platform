@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.shared.view.grid.renderer;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
@@ -24,6 +25,8 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
         ImageElement img = cellElement.getFirstChild().cast();
         if (value instanceof String) {
             img.setSrc(imageSrc(value));
+        } else {
+            img.setSrc(GWT.getModuleBaseURL() + "images/empty.png");
         }
     }
 

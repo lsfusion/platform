@@ -8,6 +8,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
@@ -198,8 +200,9 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     }
 
     @Override
-    public String getWidth() {
-        return null;
+    public void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex) {
+        //todo:
+
     }
 
     @Override

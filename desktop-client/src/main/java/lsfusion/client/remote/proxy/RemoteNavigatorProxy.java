@@ -1,5 +1,6 @@
 package lsfusion.client.remote.proxy;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.DefaultForms;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
@@ -10,6 +11,7 @@ import lsfusion.interop.remote.MethodInvocation;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         extends RemoteObjectProxy<T>
@@ -106,22 +108,58 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
 
     @ImmutableMethod
     public DefaultForms showDefaultForms() throws RemoteException {
-        return target.showDefaultForms();
+        try {
+            return callImmutableMethod("showDefaultForms", new Callable<DefaultForms>() {
+                @Override
+                public DefaultForms call() throws Exception {
+                    return target.showDefaultForms();
+                }
+            });
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @ImmutableMethod
     public List<String> getDefaultForms() throws RemoteException {
-        return target.getDefaultForms();
+        try {
+            return callImmutableMethod("getDefaultForms", new Callable<List<String>>() {
+                @Override
+                public List<String> call() throws Exception {
+                    return target.getDefaultForms();
+                }
+            });
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @ImmutableMethod
     public byte[] getNavigatorTree() throws RemoteException {
-        return target.getNavigatorTree();
+        try {
+            return callImmutableMethod("getNavigatorTree", new Callable<byte[]>() {
+                @Override
+                public byte[] call() throws Exception {
+                    return target.getNavigatorTree();
+                }
+            });
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @ImmutableMethod
     public byte[] getCommonWindows() throws RemoteException {
-        return target.getCommonWindows();
+        try {
+            return callImmutableMethod("getCommonWindows", new Callable<byte[]>() {
+                @Override
+                public byte[] call() throws Exception {
+                    return target.getCommonWindows();
+                }
+            });
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override

@@ -1,6 +1,7 @@
 package lsfusion.client.descriptor.increment.editor;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.base.context.*;
 
 import javax.swing.*;
@@ -19,7 +20,7 @@ public abstract class IncrementListSelectionModel<S> extends AbstractListModel i
 
     public void setSelectedItem(S anItem) {
         if (!BaseUtils.nullEquals(selected, anItem)) {
-            BaseUtils.invokeSetter(object, field, anItem);
+            ReflectionUtils.invokeSetter(object, field, anItem);
         }
     }
 
@@ -30,7 +31,7 @@ public abstract class IncrementListSelectionModel<S> extends AbstractListModel i
     private class SelectIncrement implements IncrementView {
 
         public void update(Object updateObject, String updateField) {
-            selected = (S) BaseUtils.invokeGetter(object, field);
+            selected = (S) ReflectionUtils.invokeGetter(object, field);
             updateSelectionViews();
         }
     }

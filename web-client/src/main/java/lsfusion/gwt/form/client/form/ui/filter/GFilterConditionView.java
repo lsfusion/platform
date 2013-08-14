@@ -7,7 +7,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.CheckBox;
-import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.*;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
@@ -17,7 +18,7 @@ import lsfusion.gwt.form.shared.view.panel.ImageButton;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GFilterConditionView extends ResizableHorizontalPanel implements GFilterValueView.GFilterValueListener {
+public class GFilterConditionView extends FlexPanel implements GFilterValueView.GFilterValueListener {
     public interface UIHandler {
         void conditionChanged();
         void conditionRemoved(GPropertyFilter condition);
@@ -76,7 +77,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
                 handler.conditionChanged();
             }
         });
-        add(negationView);
+        add(negationView, GFlexAlignment.CENTER);
 
         compareView = new GFilterConditionListBox();
         compareView.addStyleName("customFontPresenter");
@@ -156,7 +157,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
 
         valueView = valueViews.get(condition.value);
         if (valueView != null) {
-            insert(valueView, getWidgetIndex(junctionView));
+            add(valueView, getWidgetIndex(junctionView));
             valueView.propertyChanged(condition.property);
         }
         compareView.setItems(condition.property.baseType.getFilterCompares());

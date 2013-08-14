@@ -36,7 +36,6 @@ public class ClientPropertyContextMenuPopup extends JPopupMenu {
             final String action = e.getKey();
             final String caption = e.getValue();
 
-            //todo: icon
             JMenuItem item = new JMenuItem(caption, null);
             item.setOpaque(false);
             item.addActionListener(new ActionListener() {

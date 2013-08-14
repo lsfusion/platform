@@ -1,15 +1,15 @@
 package lsfusion.client.descriptor.increment.editor;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.client.descriptor.editor.base.FlatButton;
 import lsfusion.base.context.*;
 
 public abstract class IncrementDialogEditor extends FlatButton implements IncrementView {
 
     protected void onClick() {
-        Object dialogResult = dialogValue(BaseUtils.invokeGetter(object, field));
+        Object dialogResult = dialogValue(ReflectionUtils.invokeGetter(object, field));
         if(dialogResult!=null)
-            BaseUtils.invokeSetter(object, field, dialogResult);
+            ReflectionUtils.invokeSetter(object, field, dialogResult);
     }
 
     protected abstract Object dialogValue(Object currentValue);
@@ -25,7 +25,7 @@ public abstract class IncrementDialogEditor extends FlatButton implements Increm
     }
 
     public void update(Object updateObject, String updateField) {
-        Object value = BaseUtils.invokeGetter(object, field);
+        Object value = ReflectionUtils.invokeGetter(object, field);
         setText(value==null?"":value.toString());
     }
 }

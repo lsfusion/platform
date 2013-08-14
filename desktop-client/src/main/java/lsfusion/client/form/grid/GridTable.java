@@ -7,7 +7,6 @@ import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.ClientPropertyTable;
 import lsfusion.client.form.GroupObjectController;
-import lsfusion.client.form.grid.groupchange.GroupChangeAction;
 import lsfusion.client.form.sort.MultiLineHeaderRenderer;
 import lsfusion.client.form.sort.TableSortableHeaderManager;
 import lsfusion.client.logics.ClientForm;
@@ -34,13 +33,13 @@ import java.util.*;
 import java.util.List;
 
 import static java.lang.Math.max;
+import static lsfusion.base.BaseUtils.override;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class GridTable extends ClientPropertyTable {
 
     public static final String GOTO_LAST_ACTION = "gotoLastRow";
     public static final String GOTO_FIRST_ACTION = "gotoFirstRow";
-    public static final String GROUP_CORRECTION_ACTION = "groupPropertyCorrection";
 
     private final List<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
 
@@ -313,12 +312,10 @@ public class GridTable extends ClientPropertyTable {
 
         actionMap.put(GOTO_FIRST_ACTION, new ScrollToEndAction(Scroll.HOME));
         actionMap.put(GOTO_LAST_ACTION, new ScrollToEndAction(Scroll.END));
-        actionMap.put(GROUP_CORRECTION_ACTION, new GroupChangeAction(this));
 
         InputMap inputMap = getInputMap();
         inputMap.put(KeyStrokes.getCtrlHome(), GOTO_FIRST_ACTION);
         inputMap.put(KeyStrokes.getCtrlEnd(), GOTO_LAST_ACTION);
-//        inputMap.put(KeyStrokes.getGroupCorrectionDialogKeyStroke(), GROUP_CORRECTION_ACTION);
     }
 
     int getID() {
@@ -346,35 +343,31 @@ public class GridTable extends ClientPropertyTable {
             selectionController.keysChanged(viewMoveInterval < 0);
         }
 
-        // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
-        // приходится это делать за него, а то JViewPort смотрит именно на getHeight()
-        setSize(getSize().width, getRowHeight() * getRowCount());
+        //todo: сложно оттестить, но по идее всё это не нужно... убрать, когда подтвердится, что всё ок
+//        // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
+//        // приходится это делать за него, а то JViewPort смотрит именно на getHeight()
+//        setSize(getSize().width, getRowHeight() * getRowCount());
+//
+//        adjustSelection();
+//
+//        setPreferredScrollableViewportSize(getPreferredSize());
+//
+//        if (groupObject.grid.minimumSize != null) {
+//            gridView.pane.setMinimumSize(
+//                    overrideSize(gridView.pane.getMinimumSize(), groupObject.grid.minimumSize));
+//        }
+//
+//        if (groupObject.grid.preferredSize != null) {
+//            gridView.pane.setPreferredSize(
+//                    overrideSize(gridView.pane.getPreferredSize(), groupObject.grid.preferredSize));
+//        }
+//
+//        if (groupObject.grid.maximumSize != null) {
+//            gridView.pane.setMaximumSize(
+//                    overrideSize(gridView.pane.getMaximumSize(), groupObject.grid.maximumSize));
+//        }
 
         adjustSelection();
-
-        setPreferredScrollableViewportSize(getPreferredSize());
-        if (groupObject.tableRowsCount >= 0) {
-            int count = groupObject.tableRowsCount == 0 ? getRowCount() : groupObject.tableRowsCount;
-            int height = count * (getRowHeight() + 1) + getTableHeader().getPreferredSize().height;
-            gridView.pane.setMinimumSize(new Dimension(getMinimumSize().width, height));
-            gridView.pane.setPreferredSize(new Dimension(getPreferredSize().width, height + 2));
-            gridView.pane.setMaximumSize(new Dimension(getMaximumSize().width, height + 5));
-        }
-
-        if (groupObject.grid.minimumSize != null) {
-            gridView.pane.setMinimumSize(
-                    SwingUtils.getOverridedSize(gridView.pane.getMinimumSize(), groupObject.grid.minimumSize));
-        }
-
-        if (groupObject.grid.preferredSize != null) {
-            gridView.pane.setPreferredSize(
-                    SwingUtils.getOverridedSize(gridView.pane.getPreferredSize(), groupObject.grid.preferredSize));
-        }
-
-        if (groupObject.grid.maximumSize != null) {
-            gridView.pane.setMaximumSize(
-                    SwingUtils.getOverridedSize(gridView.pane.getMaximumSize(), groupObject.grid.maximumSize));
-        }
 
         previousSelectedRow = getCurrentRow();
     }
@@ -452,7 +445,13 @@ public class GridTable extends ClientPropertyTable {
         }
 
         if (model.getColumnCount() != 0) {
-            setRowHeight(rowHeight);
+
+            //дополнительная проверка, чтобы не было лишнего layout'а
+            if (getRowHeight() != rowHeight) {
+                setRowHeight(rowHeight);
+            }
+
+            repaint();
             tableHeader.resizeAndRepaint();
             gridController.setForceHidden(false);
         } else {
@@ -464,26 +463,27 @@ public class GridTable extends ClientPropertyTable {
         //надо сдвинуть ViewPort - иначе дергаться будет
 
         int currentRow = getCurrentRow();
+        if (currentRow >= 0) {
+            final int dltpos = viewMoveInterval * getRowHeight();
+            final Rectangle viewRect = ((JViewport) getParent()).getViewRect();
 
-        final int dltpos = viewMoveInterval * getRowHeight();
-        final Rectangle viewRect = ((JViewport) getParent()).getViewRect();
+            viewRect.y += dltpos;
+            if (viewRect.y < 0) {
+                viewRect.y = 0;
+            }
 
-        viewRect.y += dltpos;
-        if (viewRect.y < 0) {
-            viewRect.y = 0;
+            int currentRowTop = currentRow * getRowHeight();
+            int currentRowBottom = currentRowTop + getRowHeight() - 1;
+
+            if (currentRowTop < viewRect.getMinY()) {
+                viewRect.y = currentRowTop;
+            } else if (currentRowBottom > viewRect.getMaxY()) {
+                viewRect.y = currentRowBottom - viewRect.height;
+            }
+            ((JViewport) getParent()).setViewPosition(viewRect.getLocation());
+
+            selectRow(currentRow);
         }
-
-        int currentRowTop = currentRow * getRowHeight();
-        int currentRowBottom = currentRowTop + getRowHeight() - 1;
-
-        if (currentRowTop < viewRect.getMinY()) {
-            viewRect.y = currentRowTop;
-        } else if (currentRowBottom > viewRect.getMaxY()) {
-            viewRect.y = currentRowBottom - viewRect.height;
-        }
-        ((JViewport) getParent()).setViewPosition(viewRect.getLocation());
-
-        selectRow(currentRow);
 
         viewMoveInterval = 0;
     }
@@ -702,7 +702,7 @@ public class GridTable extends ClientPropertyTable {
                 selectionController.resetSelection();
             }
         } catch (IOException e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -828,7 +828,12 @@ public class GridTable extends ClientPropertyTable {
     }
 
     public void setColumnValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
-        BaseUtils.putUpdate(this.values, property, values, update);
+        Map<ClientGroupObjectValue, Object> propValues = this.values.get(property);
+        if (!update || propValues == null) {
+            this.values.put(property, values);
+        } else {
+            this.values.put(property, override(propValues, values));
+        }
     }
 
     public void updateColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> columnKeys) {
@@ -958,7 +963,7 @@ public class GridTable extends ClientPropertyTable {
         }
     }
 
-    public void configureWheelScrolling(final JScrollPane pane) {
+    void configureWheelScrolling(final JScrollPane pane) {
         assert pane.getViewport() == getParent();
         if (groupObject.pageSize != 0) {
             pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {

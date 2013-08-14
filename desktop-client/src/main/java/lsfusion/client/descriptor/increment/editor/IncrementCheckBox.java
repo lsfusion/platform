@@ -1,6 +1,6 @@
 package lsfusion.client.descriptor.increment.editor;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.base.context.*;
 
 import javax.swing.*;
@@ -23,10 +23,10 @@ public class IncrementCheckBox extends JCheckBox implements IncrementView, ItemL
     }
 
     public void itemStateChanged(ItemEvent e) {
-        BaseUtils.invokeSetter(object, field, isSelected());
+        ReflectionUtils.invokeSetter(object, field, isSelected());
     }
 
     public void update(Object updateObject, String updateField) {
-        setSelected((Boolean) BaseUtils.invokeGetter(object, field));
+        setSelected((Boolean) ReflectionUtils.invokeGetter(object, field));
     }
 }

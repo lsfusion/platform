@@ -299,6 +299,12 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         return null;
     }
 
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        //JViewport по умолчанию использует тупо константу - переопределяем это поведение
+        return getPreferredSize();
+    }
+
     protected void quickLog(String msg) {
 //        if (getForm().isDialog()) {
 //            return;

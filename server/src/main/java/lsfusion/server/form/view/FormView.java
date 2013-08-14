@@ -6,7 +6,6 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.layout.AbstractForm;
 import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
-import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
@@ -66,8 +65,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     protected PropertyDrawView cancelButton;
     protected PropertyDrawView okButton;
     protected PropertyDrawView closeButton;
-
-    public boolean gwtAllowScrollSplits;
 
     protected transient Map<TreeGroupEntity, TreeGroupView> mtreeGroups = new HashMap<TreeGroupEntity, TreeGroupView>();
     public TreeGroupView get(TreeGroupEntity treeGroup) { return mtreeGroups.get(treeGroup); }
@@ -582,26 +579,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         property.focusable = focusable;
     }
 
-    public void setShowTableFirstLogical(Boolean showTableFirst) {
-
-        for (PropertyDrawView propertyView : getProperties()) {
-            // просто охрененная затычка
-            if (propertyView.entity.propertyObject.property.getType() instanceof LogicalClass)
-                setShowTableFirst(propertyView, showTableFirst);
-        }
-    }
-
-    public void setShowTableFirst(Boolean showTableFirst, GroupObjectEntity groupObject) {
-
-        for (PropertyDrawView propertyView : getProperties(groupObject)) {
-            setShowTableFirst(propertyView, showTableFirst);
-        }
-    }
-
-    public void setShowTableFirst(PropertyDrawView property, Boolean showTableFirst) {
-        property.showTableFirst = showTableFirst;
-    }
-
     public void setEditOnSingleClick(Boolean editOnSingleClick, Type type) {
 
         for (PropertyDrawView propertyView : getProperties()) {
@@ -622,52 +599,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         property.editOnSingleClick = editOnSingleClick;
     }
 
-//    public void setReadOnly(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {
-//
-//        for (PropertyDrawView property : getProperties(group, groupObject)) {
-//            setReadOnly(property, readOnly);
-//        }
-//    }
-//
-//    public void setReadOnly(LP property, boolean readOnly) {
-//        setReadOnly(property.property, readOnly);
-//    }
-//
-//    public void setReadOnly(LP property, boolean readOnly, GroupObjectEntity groupObject) {
-//        setReadOnly(property.property, readOnly, groupObject);
-//    }
-//
-//    public void setReadOnly(Property property, boolean readOnly) {
-//
-//        for (PropertyDrawView propertyView : getProperties(property)) {
-//            setReadOnly(propertyView, readOnly);
-//        }
-//    }
-//
-//    public void setReadOnly(Property property, boolean readOnly, GroupObjectEntity groupObject) {
-//
-//        for (PropertyDrawView propertyView : getProperties(property, groupObject)) {
-//            setReadOnly(propertyView, readOnly);
-//        }
-//    }
-//
-//    public void setReadOnly(boolean readOnly, GroupObjectEntity groupObject) {
-//
-//        for (PropertyDrawView propertyView : getProperties(groupObject)) {
-//            setReadOnly(propertyView, readOnly);
-//        }
-//    }
-//
-//    public void setReadOnly(ObjectEntity objectEntity, boolean readOnly) {
-//        for (PropertyDrawView property : getProperties(objectEntity.groupTo)) {
-//            setReadOnly(property, readOnly);
-//        }
-//    }
-//
-//    public void setReadOnly(PropertyDrawView property, boolean readOnly) {
-//        property.entity.readOnly = readOnly;
-//    }
-//
     public void setKeyStroke(KeyStroke keyStroke) {
         this.keyStroke = keyStroke;
     }
@@ -760,16 +691,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         property.panelLabelAbove = panelLabelAbove;
     }
 
-    public void setConstraintsFillHorizontal(AbstractGroup group, double fillFactor) {
-        for (PropertyDrawView property : getProperties(group)) {
-            setConstraintsFillHorizontal(property, fillFactor);
-        }
-    }
-
-    private void setConstraintsFillHorizontal(PropertyDrawView property, double fillFactor) {
-        property.constraints.fillHorizontal = fillFactor;
-    }
-
     public void setPreferredSize(AbstractGroup group, Dimension size) {
         for (PropertyDrawView property : getProperties(group)) {
             setPreferredSize(property, size);
@@ -797,6 +718,14 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     public ComponentView getComponentBySID(String sid) {
         return sidToComponent.get(sid);
+    }
+
+    public ContainerView getContainerBySID(String sid) {
+        ComponentView component = getComponentBySID(sid);
+        if (component != null && !(component instanceof ContainerView)) {
+            throw new IllegalStateException(sid + " component has to be container");
+        }
+        return (ContainerView) component;
     }
 
     private PropertyDrawView setupFormButton(PropertyDrawEntity function, String type) {
@@ -857,7 +786,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
         pool.writeInt(outStream, overridePageWidth);
-        outStream.writeBoolean(gwtAllowScrollSplits);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -876,7 +804,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         keyStroke = pool.readObject(inStream);
         caption = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
-        gwtAllowScrollSplits = inStream.readBoolean();
 
         entity = pool.context.entity;
 

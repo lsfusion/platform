@@ -1,5 +1,6 @@
 package lsfusion.server.form.view;
 
+import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -15,6 +16,8 @@ public class FilterView extends ComponentView {
 
     public FilterView(int ID) {
         super(ID);
+
+        alignment = FlexAlignment.STRETCH;
     }
 
     @Override

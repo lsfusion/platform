@@ -16,8 +16,5 @@ public class GridEditor extends ComponentEditor {
                 new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.vertical.tabulation"), component, "tabVertical")),
                 new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.autohide"), component, "autoHide"))
         ));
-
-
-        //todo: minRowCount
     }
 }

@@ -37,13 +37,11 @@ public class ClassChooserView extends JPanel {
     public void expandTree() {
         isExpanded = true;
         setVisible(true);
-        form.dropLayoutCaches();
     }
 
     public void collapseTree() {
         isExpanded = false;
         setVisible(false);
-        form.dropLayoutCaches();
     }
 
     @Override

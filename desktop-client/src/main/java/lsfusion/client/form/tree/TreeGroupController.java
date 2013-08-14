@@ -4,7 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.AbstractGroupObjectController;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.ClientFormLayout;
+import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.LogicsSupplier;
 import lsfusion.client.form.panel.PanelController;
 import lsfusion.client.form.queries.FilterController;
@@ -221,7 +221,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
 
     public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
         if (panel.containsProperty(property)) {
-            panel.updateCellBackgroundValue(property, cellBackgroundValues);
+            panel.updateCellBackgroundValues(property, cellBackgroundValues);
         } else {
             tree.updateCellBackgroundValues(property, cellBackgroundValues);
         }
@@ -229,7 +229,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
 
     public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
         if (panel.containsProperty(property)) {
-            panel.updateCellForegroundValue(property, cellForegroundValues);
+            panel.updateCellForegroundValues(property, cellForegroundValues);
         } else {
             tree.updateCellForegroundValues(property, cellForegroundValues);
         }

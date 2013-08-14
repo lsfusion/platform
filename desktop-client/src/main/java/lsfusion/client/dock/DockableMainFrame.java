@@ -336,7 +336,8 @@ public class DockableMainFrame extends MainFrame {
 
     private JMenu createViewMenu() {
         RootMenuPiece layout = new RootMenuPiece(getString("layout.menu.view"), false);
-        layout.add(new SubmenuPiece(getString("layout.menu.view.look.and.feel"), true, new CLookAndFeelMenuPiece(mainControl)));
+        // todo: изменение LAF пока не работает
+//        layout.add(new SubmenuPiece(getString("layout.menu.view.look.and.feel"), true, new CLookAndFeelMenuPiece(mainControl)));
         layout.add(new SubmenuPiece(getString("layout.menu.view.theme"), true, new CThemeMenuPiece(mainControl)));
         layout.add(CPreferenceMenuPiece.setup(mainControl));
 
