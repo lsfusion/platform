@@ -9,9 +9,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
 
 import static java.lang.Math.max;
-import static lsfusion.interop.form.layout.CachableLayout.limitedSum;
-import static lsfusion.interop.form.layout.CachableLayout.minSizeGetter;
-import static lsfusion.interop.form.layout.CachableLayout.prefSizeGetter;
+import static lsfusion.interop.form.layout.CachableLayout.*;
 
 public class SplitClientContainerView extends AbstractClientContainerView {
 
@@ -146,6 +144,9 @@ public class SplitClientContainerView extends AbstractClientContainerView {
     private class SplitPane extends JSplitPane {
         public SplitPane() {
             super(container.isVerticalSplit() ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT, false);
+
+            setBorder(null);
+
             ((BasicSplitPaneUI) getUI()).getDivider().setBorder(BorderFactory.createEtchedBorder());
         }
 
