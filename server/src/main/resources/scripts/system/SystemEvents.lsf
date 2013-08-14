@@ -52,6 +52,8 @@ connectTimeConnection 'Время подключения' = DATA DATETIME (Conne
 disconnectTimeConnection 'Время отключения' = DATA DATETIME (Connection);
 disconnectTimeConnection (connection) <- currentDateTime() WHEN SET(connectionStatusConnection(connection) == ConnectionStatus.disconnectedConnection);
 
+disconnectConnection 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.DisconnectActionProperty'; 
+
 //заменили user на customUser
 userSession 'Пользователь сессии' = DATA CustomUser (Session);
 nameUserSession (session) = nameContact(userSession(session));

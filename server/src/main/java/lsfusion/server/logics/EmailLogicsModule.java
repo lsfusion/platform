@@ -68,7 +68,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     @Override
     public void initProperties() throws RecognitionException {
-        fromAddress = addDProp(getGroupByName("email"), "fromAddress", getString("logics.email.sender"), StringClass.get(50));
         super.initProperties();
 
         // ------- Управление почтой ------ //
@@ -96,6 +95,8 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         textNotification = getLCPByName("textNotification");
         subjectNotification = getLCPByName("subjectNotification");
         inNotificationProperty = getLCPByName("inNotificationProperty");
+
+        fromAddress = getLCPByName("fromAddress");
     }
 
     public LAP addEAProp(ValueClass... params) {
@@ -107,7 +108,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     }
 
     public LAP addEAProp(String subject, ValueClass... params) {
-        return addEAProp(subject, fromAddress, emailBlindCarbonCopy, params);
+        return addEAProp(subject, getLCPByName("fromAddress"), emailBlindCarbonCopy, params);
     }
 
     public LAP addEAProp(LCP fromAddress, LCP emailBlindCarbonCopy, ValueClass... params) {

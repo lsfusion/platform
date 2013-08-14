@@ -89,8 +89,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         connectionStatusConnection = (LCP<PropertyInterface>) getLCPByName("connectionStatusConnection");
 
         connectTimeConnection = getLCPByName("connectTimeConnection");
-        disconnectConnection = addProperty(null, new LAP(new DisconnectActionProperty(connection)));
-        addIfAProp(baseGroup, getString("logics.connection.disconnect"), true, getLCPByName("disconnectTimeConnection"), 1, disconnectConnection, 1);
+        disconnectConnection = getLAPByName("disconnectConnection");
+        addIfAProp(baseGroup, "Отключить", true, getLCPByName("disconnectTimeConnection"), 1, disconnectConnection, 1);
 
         // Логирование старта сервера
         computerLaunch = getLCPByName("computerLaunch");

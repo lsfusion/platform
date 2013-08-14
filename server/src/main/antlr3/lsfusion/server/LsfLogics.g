@@ -812,13 +812,15 @@ propertyStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.setPropertyScriptInfo(property, $text, lineNumber);
+	    if(property != null) // not native
+		    self.setPropertyScriptInfo(property, $text, lineNumber);
 	}
 }
 	:	declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; } }
 		'=' 
 		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; }
 		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); property = $expr.property.property; } }
+		|   'NATIVE' { property = null; }
 		)
 		propertyOptions[property, $declaration.name, $declaration.caption, context]
 		( {!self.semicolonNeeded()}?=>  | ';')
@@ -1480,8 +1482,10 @@ propertyOptions[LP property, String propertyName, String caption, List<String> n
 }
 @after {
 	if (inPropParseState()) {
-		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, isComplex, table, notNullResolve, notNullEvent);
-		self.makeLoggable(property, isLoggable);
+	    if(property != null) { // not native
+            self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, isComplex, table, notNullResolve, notNullEvent);
+            self.makeLoggable(property, isLoggable);
+		}
 	}
 }
 	: 	(	'IN' name=compoundID { groupName = $name.sid; }
@@ -3212,7 +3216,7 @@ fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
 fragment FIRST_ID_LETTER	: ('a'..'z'|'A'..'Z');
 fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 
-PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'TEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'CUSTOMFILE' | 'EXCELFILE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'  | 'VARSTRING[' DIGITS ']' | 'VARISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
+PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' | 'TEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'CUSTOMFILE' | 'EXCELFILE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'  | 'VARSTRING[' DIGITS ']' | 'VARISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 NULL_LITERAL	:	'NULL';	
 ID          	:	FIRST_ID_LETTER NEXT_ID_LETTER*;

@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import lsfusion.base.BaseUtils;
@@ -1262,12 +1263,6 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP(property));
     }
 
-    // ------------------- Seek ACTION ----------------- //
-
-    protected LAP<?> addSAProp() {
-        return baseLM.addSAProp();
-    }
-
     // ------------------- MESSAGE ----------------- //
 
     protected LAP addMAProp(String title, Object... params) {
@@ -1369,23 +1364,23 @@ public abstract class LogicsModule {
 
     public AnyValuePropertyHolder addAnyValuePropertyHolder(String sidPrefix, String captionPrefix, ValueClass... classes) {
         return new AnyValuePropertyHolder(
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Object", captionPrefix + " Object", classes, baseLM.baseClass))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "String", captionPrefix + " String", classes, StringClass.get(2000)))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Integer", captionPrefix + " Integer", classes, IntegerClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Long", captionPrefix + " Long", classes, LongClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Double", captionPrefix + " Double", classes, DoubleClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Numeric", captionPrefix + " Numeric", classes, NumericClass.get(20, 7)))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Year", captionPrefix + " Year", classes, YearClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "DateTime", captionPrefix + " DateTime", classes, DateTimeClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Logical", captionPrefix + " Logical", classes, LogicalClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Date", captionPrefix + " Date", classes, DateClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Time", captionPrefix + " Time", classes, TimeClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Color", captionPrefix + " Color", classes, ColorClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "WordFile", captionPrefix + " Word file", classes, WordClass.get(false, false)))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ImageFile", captionPrefix + " Image file", classes, ImageClass.get(false, false)))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "PdfFile", captionPrefix + " Pdf file", classes, PDFClass.get(false, false)))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "CustomFile", captionPrefix + " Custom file", classes, DynamicFormatFileClass.get(false, false)))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ExcelFile", captionPrefix + " Excel file", classes, ExcelClass.get(false, false))))
+                getLCPByName(sidPrefix + "Object"),
+                getLCPByName(sidPrefix + "String"),
+                getLCPByName(sidPrefix + "Integer"),
+                getLCPByName(sidPrefix + "Long"),
+                getLCPByName(sidPrefix + "Double"),
+                getLCPByName(sidPrefix + "Numeric"),
+                getLCPByName(sidPrefix + "Year"),
+                getLCPByName(sidPrefix + "DateTime"),
+                getLCPByName(sidPrefix + "Logical"),
+                getLCPByName(sidPrefix + "Date"),
+                getLCPByName(sidPrefix + "Time"),
+                getLCPByName(sidPrefix + "Color"),
+                getLCPByName(sidPrefix + "WordFile"),
+                getLCPByName(sidPrefix + "ImageFile"),
+                getLCPByName(sidPrefix + "PdfFile"),
+                getLCPByName(sidPrefix + "CustomFile"),
+                getLCPByName(sidPrefix + "ExcelFile")
         );
     }
 
@@ -1581,7 +1576,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy // для ID
     public LAP addOSAProp(ObjectEntity object) {
-        SeekActionProperty seekProperty = new SeekActionProperty(object);
+        SeekActionProperty seekProperty = new SeekActionProperty((ScriptingLogicsModule)this, object);
         return addProperty(null, new LAP<ClassPropertyInterface>(seekProperty));
     }
 

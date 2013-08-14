@@ -30,6 +30,8 @@ textNotification 'Текст письма' = DATA TEXT (Notification);
 subjectNotification 'Тема письма'= DATA VARSTRING[100] (Notification);
 inNotificationProperty 'Вкл.' = DATA BOOLEAN (Notification, Property);
 
+fromAddress 'Адрес отправителя' = DATA VARSTRING[50] () IN email;
+
 smtpHost 'SMTP хост' = DATA VARSTRING[50]() IN email;
 smtpPort 'SMTP порт' = DATA VARSTRING[10]() IN email;
 

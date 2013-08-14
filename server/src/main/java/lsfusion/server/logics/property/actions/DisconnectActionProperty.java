@@ -5,17 +5,19 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.SystemEventsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
-public class DisconnectActionProperty extends AdminActionProperty {
+public class DisconnectActionProperty extends ScriptingActionProperty {
 
-    public DisconnectActionProperty(ValueClass dictionary) {
-        super("disconnectConnection", getString("logics.connection.disconnect"), new ValueClass[] {dictionary});
+    public DisconnectActionProperty(SystemEventsLogicsModule lm) {
+        super(lm, new ValueClass[] {lm.getClassByName("Connection")});
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

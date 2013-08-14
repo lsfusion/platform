@@ -1,0 +1,82 @@
+MODULE System;
+
+NAMESPACE System;
+
+CLASS FormResult 'Результат вызова формы' {
+    drop 'Сбросить',
+    ok 'Принять',
+    close 'Закрыть'
+}
+
+GROUP root 'Корневая группа';
+GROUP public 'Пользовательские свойства' : root;
+GROUP private 'Внутренние свойства' : root;
+
+GROUP base 'Атрибуты' : public;
+GROUP recognize 'Идентифицирующие свойства' : base;
+GROUP drillDown 'Действия детализации' : root;
+GROUP propertyPolicy 'Свойства политики безопасности' : root;
+
+canceled 'Canceled' = DATA SESSION BOOLEAN ();
+
+apply = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.ApplyActionProperty';
+cancel = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.CancelActionProperty';
+
+upper = FORMULA 'upper($1)';
+
+subtractInteger = FORMULA INTEGER '(($1)-($2))';
+
+formApply 'Сохранить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty';
+formCancel 'Отменить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty';
+formPrint 'Печать' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.PrintActionProperty';
+formEdit 'Редактировать' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.EditActionProperty';
+formXls 'Экспорт в xls' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.XlsActionProperty';
+formDrop 'Сбросить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.DropActionProperty';
+formRefresh 'Обновить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RefreshActionProperty';
+formOk 'OK' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty';
+formClose 'Закрыть' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.CloseActionProperty';
+
+seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekActionProperty';
+
+sleep 'Sleep' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty';
+
+applyOnlyWithoutRecalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty';
+applyAll = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyAllActionProperty';
+
+staticName 'Статическое имя' = DATA STRING[250] (Object);
+staticCaption 'Статический заголовок' = DATA ISTRING[100] (Object);
+
+objectClassName 'Класс объекта' (o) = staticCaption(objectClass(o));;
+
+defaultBackgroundColor 'Цвет фона по умолчанию при выделении' = DATA COLOR ();
+defaultOverrideBackgroundColor 'Цвет фона по умолчанию при выделении' = OVERRIDE RGB(255, 255, 0), defaultBackgroundColor() PERSISTENT;
+defaultForegroundColor 'Цвет шрифта по умолчанию при выделении' = DATA COLOR ();
+defaultOverrideForegroundColor 'Цвет шрифта по умолчанию при выделении' = OVERRIDE RGB(255, 0, 0), defaultForegroundColor() PERSISTENT;
+  
+addedObject() = DATA SESSION Object ();
+confirmed() = DATA SESSION BOOLEAN ();
+requestCanceled() = DATA SESSION BOOLEAN ();
+formResult() = DATA SESSION FormResult ();
+
+META defineAnyValue(name, param) 
+    name##Object = DATA SESSION Object (param);
+    name##String = DATA SESSION STRING[2000] (param);
+    name##Integer = DATA SESSION INTEGER (param);
+    name##Long = DATA SESSION LONG (param);
+    name##Double = DATA SESSION DOUBLE (param);
+    name##Numeric = DATA SESSION NUMERIC[20,7] (param);
+    name##Year = DATA SESSION YEAR (param);
+    name##DateTime = DATA SESSION DATETIME (param);
+    name##Logical = DATA SESSION BOOLEAN (param);
+    name##Date = DATA SESSION DATE (param);
+    name##Time = DATA SESSION TIME (param);
+    name##Color = DATA SESSION COLOR (param);
+    name##WordFile = DATA SESSION WORDFILE (param);
+    name##ImageFile = DATA SESSION IMAGEFILE (param);
+    name##PdfFile = DATA SESSION PDFFILE (param);
+    name##CustomFile = DATA SESSION CUSTOMFILE (param);
+    name##ExcelFile = DATA SESSION EXCELFILE (param);
+END
+
+@defineAnyValue(requested, );
+@defineAnyValue(chosen, STRING[100]);

@@ -13,21 +13,23 @@ import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 
-public class SeekActionProperty extends SystemExplicitActionProperty {
+public class SeekActionProperty extends ScriptingActionProperty {
 
     private final ObjectEntity object;
 
-    public SeekActionProperty(BaseClass baseClass) {
-        super("seek", ServerResourceBundle.getString("logics.property.actions.seekobject"), new ValueClass[]{baseClass});
+    public SeekActionProperty(BaseLogicsModule lm) {
+        super(lm, new ValueClass[]{lm.baseClass});
 
         object = null;
     }
 
-    public SeekActionProperty(ObjectEntity object) {
-        super("seek_" + object.getSID(), ServerResourceBundle.getString("logics.property.actions.seekobject") + " (" + object.caption + ")", new ValueClass[]{object.baseClass});
+    public SeekActionProperty(ScriptingLogicsModule lm, ObjectEntity object) {
+        super(lm, "seek_" + object.getSID(), "Найти объект (" + object.caption + ")", new ValueClass[]{object.baseClass});
 
         this.object = object;
     }

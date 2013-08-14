@@ -4,6 +4,7 @@ import lsfusion.base.ApiResourceBundle;
 import lsfusion.server.classes.ColorClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -24,8 +25,8 @@ public class FormApplyActionProperty extends FormToolbarActionProperty {
             ).property
     );
 
-    public FormApplyActionProperty() {
-        super("formApply", ApiResourceBundle.getString("form.layout.apply"));
+    public FormApplyActionProperty(BaseLogicsModule lm) {
+        super(lm);
     }
 
 

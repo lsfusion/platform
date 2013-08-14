@@ -1,20 +1,23 @@
 package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
-public class ApplyActionProperty extends SystemExplicitActionProperty {
+public class ApplyActionProperty extends ScriptingActionProperty {
     private final CalcProperty canceled;
 
-    public ApplyActionProperty(CalcProperty canceled) {
-        super("apply", "apply", new ValueClass[]{});
+    public ApplyActionProperty(BaseLogicsModule lm) {
+        super(lm, new ValueClass[]{});
         
-        this.canceled = canceled;
+        this.canceled = lm.getLCPByName("canceled").property;
     }
 
     @Override

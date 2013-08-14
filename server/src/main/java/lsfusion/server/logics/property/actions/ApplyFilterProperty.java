@@ -1,17 +1,20 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.ApplyFilter;
 
 import java.sql.SQLException;
 
-public class ApplyFilterProperty extends SystemExplicitActionProperty {
+public class ApplyFilterProperty extends ScriptingActionProperty {
 
     private final ApplyFilter type;
 
-    public ApplyFilterProperty(ApplyFilter type) {
-        super(type.getSID(), type.getSID());
+    public ApplyFilterProperty(BaseLogicsModule lm, ApplyFilter type) {
+        super(lm);
         this.type = type;
     }
 

@@ -7,6 +7,11 @@ weekInDate = FORMULA INTEGER '(extract(week from ($1)))';
 numberMonthInDate = FORMULA INTEGER '(extract(month from ($1)))';
 yearInDate = FORMULA INTEGER '(extract(year from ($1)))';
 
+currentDateTime = NATIVE;
+currentMinute = NATIVE;
+currentHour = NATIVE;
+currentEpoch = NATIVE;
+
 currentDate 'Тек. дата' = DATA DATE ();
 currentMonth 'Тек. месяц' = numberMonthInDate (currentDate());
 currentYear 'Тек. год' = yearInDate (currentDate());
@@ -14,6 +19,8 @@ currentYear 'Тек. год' = yearInDate (currentDate());
 toDate(dateTime) = [FORMULA DATE '(CAST(($1) as date))'](dateTime AS DATETIME);
 toTime(dateTime) = [FORMULA TIME '(CAST(($1) as time))'](dateTime AS DATETIME);
 toDateTime(date) = [FORMULA DATETIME '(CAST(($1) as timestamp))'](date AS DATE);
+
+currentTime 'Тек. время' = toTime(currentDateTime());
 
 sumDate(date, days) = [FORMULA DATE '(($1)+($2))'](date AS DATE, days AS LONG);
 subtractDate(date, days) = [FORMULA DATE '(($1)-($2))'](date AS DATE, days AS LONG);

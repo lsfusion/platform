@@ -16,6 +16,12 @@ CLASS CustomUser 'Обычный пользователь' : User, Contact;
 TABLE customUser (CustomUser);
 TABLE loginSID (STRING[30], STRING[30]);
 
+currentUser = NATIVE;
+currentUserName 'Имя Тек. Польз.' () = nameContact(currentUser());
+
+currentComputer = NATIVE;
+hostnameCurrentComputer 'Текущий компьютер' () = hostnameComputer(currentComputer());
+
 isLockedCustomUser 'Заблокирован' = DATA BOOLEAN (CustomUser);
 loginCustomUser 'Логин' = DATA STRING[30] (CustomUser);
 customUserLogin 'Обычный пользователь' (login) = GROUP AGGR customUser BY loginCustomUser(customUser) WHERE customUser IS CustomUser;
@@ -28,6 +34,8 @@ forbidEditProfileCustomUser 'Запретить пользователю ред�
 calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty';
 logOut 'Выйти' = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty';
 reloginUser 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty';
+
+generateLoginPassword 'Сгенерировать логин и пароль' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty';
 
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
 serverLDAP 'Сервер' = DATA VARSTRING[100] ();

@@ -10,13 +10,15 @@ import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.awt.*;
 
 import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createTrue;
 
-public abstract class FormToolbarActionProperty extends SystemExplicitActionProperty {
+public abstract class FormToolbarActionProperty extends ScriptingActionProperty {
     public final static Dimension BUTTON_SIZE = new Dimension(25, 20);
 
     private final boolean showCaption;
@@ -26,12 +28,12 @@ public abstract class FormToolbarActionProperty extends SystemExplicitActionProp
         return true;
     }
 
-    public FormToolbarActionProperty(String sid, String caption) {
-        this(sid, caption, true);
+    public FormToolbarActionProperty(ScriptingLogicsModule lm) {
+        this(lm, true);
     }
 
-    public FormToolbarActionProperty(String sid, String caption, boolean showCaption) {
-        super(sid, caption);
+    public FormToolbarActionProperty(ScriptingLogicsModule lm, boolean showCaption) {
+        super(lm);
         this.showCaption = showCaption;
     }
 

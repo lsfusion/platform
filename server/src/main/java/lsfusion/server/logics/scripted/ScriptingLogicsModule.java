@@ -120,9 +120,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST}
 
     private Map<String, DataClass> primitiveTypeAliases = BaseUtils.buildMap(
-            asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME", "WORDFILE", "IMAGEFILE", "PDFFILE", "CUSTOMFILE", "EXCELFILE", "COLOR"),
+            asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME", "YEAR", "WORDFILE", "IMAGEFILE", "PDFFILE", "CUSTOMFILE", "EXCELFILE", "COLOR"),
             Arrays.<DataClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance,
-                    DateTimeClass.instance, StringClass.text, TimeClass.instance, WordClass.get(false, false), ImageClass.get(false, false), PDFClass.get(false, false),
+                    DateTimeClass.instance, StringClass.text, TimeClass.instance, YearClass.instance, WordClass.get(false, false), ImageClass.get(false, false), PDFClass.get(false, false),
                     DynamicFormatFileClass.get(false, false), ExcelClass.get(false, false), ColorClass.instance)
     );
 
@@ -974,7 +974,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             eaProp.setFromAddress(allImplements.get(i++));
         } else {
             // по умолчанию используем стандартный fromAddress
-            eaProp.setFromAddress(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.fromAddress.property));
+            eaProp.setFromAddress(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.getLCPByName("fromAddress").property));
         }
         eaProp.setSubject(allImplements.get(i++));
 

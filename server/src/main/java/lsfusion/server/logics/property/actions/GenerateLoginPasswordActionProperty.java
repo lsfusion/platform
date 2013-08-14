@@ -2,18 +2,21 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.AuthenticationLogicsModule;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Random;
 
-public class GenerateLoginPasswordActionProperty extends AdminActionProperty {
+public class GenerateLoginPasswordActionProperty extends ScriptingActionProperty {
 
     private LCP email;
     private LCP userLogin;
@@ -21,12 +24,16 @@ public class GenerateLoginPasswordActionProperty extends AdminActionProperty {
 
     private final ClassPropertyInterface customUserInterface;
 
-    public GenerateLoginPasswordActionProperty(LCP email, LCP userLogin, LCP userPassword, ValueClass customUser) {
-        super("generateLoginPassword", ServerResourceBundle.getString("logics.property.actions.generate.login.and.password"), new ValueClass[]{customUser});
+    public GenerateLoginPasswordActionProperty(AuthenticationLogicsModule lm) {
+        super(lm, new ValueClass[]{lm.getClassByName("customUser")});
 
-        this.email = email;
-        this.userLogin = userLogin;
-        this.userPassword = userPassword;
+        try {
+            this.email = lm.findLCPByCompoundName("Contact.emailContact");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw new RuntimeException(e);
+        }
+        this.userLogin = lm.getLCPByName("loginCustomUser");
+        this.userPassword = lm.getLCPByName("passwordCustomUser");
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         customUserInterface = i.next();

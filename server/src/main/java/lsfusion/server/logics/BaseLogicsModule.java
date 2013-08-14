@@ -33,9 +33,7 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.ApplyFilterProperty;
-import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
-import lsfusion.server.logics.property.actions.SleepActionProperty;
+import lsfusion.server.logics.property.actions.*;
 import lsfusion.server.logics.property.actions.flow.ApplyActionProperty;
 import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
 import lsfusion.server.logics.property.actions.flow.CancelActionProperty;
@@ -45,11 +43,14 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.PropertySet;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.TableFactory;
 import lsfusion.server.session.ApplyFilter;
+import org.antlr.runtime.RecognitionException;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -61,7 +62,8 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
  * Time: 17:52
  */
 
-public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule {
+public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogicsModule {
+    // classes
     // classes
     public BaseClass baseClass;
 
@@ -132,6 +134,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP staticName;
     public LCP staticCaption;
 
+    private LCP addedObject;
+    private LCP confirmed;
+    private LCP requestCanceled;
+    private LCP formResultProp;
+
     public LCP defaultBackgroundColor;
     public LCP defaultOverrideBackgroundColor;
     public LCP defaultForegroundColor;
@@ -151,8 +158,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     // т.к. она должна быть доступна в точке, в которой вызывается baseLM.BL
     private final T BL;
 
-    public BaseLogicsModule(T BL) {
-        super("System", "System");
+    public BaseLogicsModule(T BL) throws IOException {
+        super(AuthenticationLogicsModule.class.getResourceAsStream("/scripts/system/System.lsf"), null, BL);
         setBaseLogicsModule(this);
         this.BL = BL;
     }
@@ -170,51 +177,47 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     }
 
     @Override
-    public void initModuleDependencies() {
-    }
-
-    @Override
-    public void initModule() {
-    }
-
-    @Override
-    public void initClasses() {
+    public void initClasses() throws RecognitionException {
         baseClass = addBaseClass("Object", getString("logics.object"));
+        
+        super.initClasses();
 
-        formResult = addConcreteClass("FormResult", "Результат вызова формы",
-                new String[]{"drop", "ok", "close"},
-                new String[]{"Сбросить", "Принять", "Закрыть"},
-                baseClass);
-
-        initBaseClassAliases();
+        formResult = (ConcreteCustomClass) getClassByName("FormResult");
     }
 
     @Override
-    public void initGroups() {
-        rootGroup = addAbstractGroup("root", getString("logics.groups.root"), null, false);
-        publicGroup = addAbstractGroup("public", getString("logics.groups.public"), rootGroup, false);
-        privateGroup = addAbstractGroup("private", getString("logics.groups.private"), rootGroup, false);
-        baseGroup = addAbstractGroup("base", getString("logics.groups.base"), publicGroup, false);
-        recognizeGroup = addAbstractGroup("recognize", getString("logics.groups.recognize"), baseGroup, false);
-        drillDownGroup = addAbstractGroup("drilldown", getString("logics.groups.drilldown"), rootGroup, false);
-        propertyPolicyGroup = addAbstractGroup("propertyPolicy", getString("logics.groups.policy"), rootGroup, false);
+    public void initGroups() throws RecognitionException {
+        super.initGroups();
 
-        initBaseGroupAliases();
+        rootGroup = getGroupByName("root");
+        publicGroup = getGroupByName("public");
+        privateGroup = getGroupByName("private");
+        baseGroup = getGroupByName("base");
+        recognizeGroup = getGroupByName("recognize");
+        drillDownGroup = getGroupByName("drilldown");
+        propertyPolicyGroup = getGroupByName("propertyPolicy");
     }
 
     @Override
-    public void initTables() {
+    public void initTables() throws RecognitionException {
         tableFactory = new TableFactory(baseClass);
+        
+        super.initTables();
     }
 
     @Override
-    public void initProperties() throws ScriptingErrorLog.SemanticErrorException {
+    public void initProperties() throws RecognitionException {
 
-        canceled = addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("canceled", "Canceled", LogicalClass.instance)));
+        objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
 
-        apply = addAProp(new ApplyActionProperty(canceled.property));
-        cancel = addAProp(new CancelActionProperty());
+        super.initProperties();
 
+        canceled = getLCPByName("canceled");
+
+        apply = getLAPByName("apply");
+        cancel = getLAPByName("cancel");
+
+        // только через операторы 
         flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
         flowReturn = addProperty(null, new LAP(new ReturnActionProperty()));
 
@@ -272,9 +275,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 //
 //        ustring2CR = addSFUProp("ustring2CR", "\n", 2);
 
-        // Обработка строк
-        upper = addSFProp("upper", "upper(prm1)", 1);
-
         // Математические операции
         sum = addSumProp("sum");
         multiply = addMultProp("multiply");
@@ -283,52 +283,61 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         minus = addSFProp("minus", "(-(prm1))", 1);
 
-        // Оставляем пока в BaseLogicsModule, посколько скорее всего их придется использовать в DSL
-
-        // Операции с целыми числами
-        subtractInteger = addSFProp("subtractInteger", "((prm1)-(prm2))", IntegerClass.instance, 2);
-
         // Константы
         vtrue = addCProp(LogicalClass.instance, true);
         vzero = addCProp(DoubleClass.instance, 0);
         vnull = addProperty(privateGroup, new LCP<PropertyInterface>(NullValueProperty.instance));
 
+        // через JOIN (не операторы)
+        
+        // Обработка строк
+        upper = getLCPByName("upper");
+
+        // Операции с целыми числами
+        subtractInteger = getLCPByName("subtractInteger");
+
         // Действия на форме
-        formApply = addProperty(null, new LAP(new FormApplyActionProperty()));
-        formCancel = addProperty(null, new LAP(new FormCancelActionProperty()));
-        formPrint = addProperty(null, new LAP(new PrintActionProperty()));
-        formEdit = addProperty(null, new LAP(new EditActionProperty()));
-        formXls = addProperty(null, new LAP(new XlsActionProperty()));
-        formDrop = addProperty(null, new LAP(new DropActionProperty()));
-        formRefresh = addProperty(null, new LAP(new RefreshActionProperty()));
-        formOk = addProperty(null, new LAP(new OkActionProperty()));
-        formClose = addProperty(null, new LAP(new CloseActionProperty()));
+        formApply = getLAPByName("formApply");
+        formCancel = getLAPByName("formCancel");
+        formPrint = getLAPByName("formPrint");
+        formEdit = getLAPByName("formEdit");
+        formXls = getLAPByName("formXls");
+        formDrop = getLAPByName("formDrop");
+        formRefresh = getLAPByName("formRefresh");
+        formOk = getLAPByName("formOk");
+        formClose = getLAPByName("formClose");
 
-        seek = addSAProp();
+        seek = getLAPByName("seek");
+        
+        addedObject = getLCPByName("addedObject");
+        confirmed = getLCPByName("confirmed");
+        requestCanceled = getLCPByName("requestCanceled");
+        formResultProp = getLCPByName("formResult");
 
-        sleep = addProperty(null, new LAP(new SleepActionProperty()));
-        applyOnlyWithoutRecalc = addProperty(null, new LAP(new ApplyFilterProperty(ApplyFilter.WITHOUT_RECALC)));
-        applyAll = addProperty(null, new LAP(new ApplyFilterProperty(ApplyFilter.NO)));
+        sleep = getLAPByName("sleep");
+        applyOnlyWithoutRecalc = getLAPByName("applyOnlyWithoutRecalc");
+        applyAll = getLAPByName("applyAll");
 
-        staticName = addDProp(publicGroup, "staticName", getString("logics.static.name"), StringClass.get(250), baseClass);
-        staticCaption = addDProp(publicGroup, "staticCaption", getString("logics.static.caption"), StringClass.geti(100), baseClass);
+        staticName = getLCPByName("staticName");
+        staticCaption = getLCPByName("staticCaption");
         ((CalcProperty)staticCaption.property).aggProp = true;
 
-        // todo : поменять возможно названия
-        objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
-        objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), staticCaption, objectClass, 1);
+        objectClassName = getLCPByName("objectClassName");
 
         // Настройка форм
-        defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
-        defaultOverrideBackgroundColor = addSUProp("defaultOverrideBackgroundColor", true, getString("logics.default.background.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.YELLOW), defaultBackgroundColor);
-        defaultForegroundColor = addDProp("defaultForegroundColor", getString("logics.default.foreground.color"), ColorClass.instance);
-        defaultOverrideForegroundColor = addSUProp("defaultOverrideForegroundColor", true, getString("logics.default.foreground.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.RED), defaultForegroundColor);
+        defaultBackgroundColor = getLCPByName("defaultBackgroundColor");
+        defaultOverrideBackgroundColor = getLCPByName("defaultOverrideBackgroundColor");
+        defaultForegroundColor = getLCPByName("defaultForegroundColor");
+        defaultOverrideForegroundColor = getLCPByName("defaultOverrideForegroundColor");
 
         initNavigators();
     }
 
     @Override
-    public void initIndexes() {
+    public void initIndexes() throws RecognitionException {
+        
+        super.initIndexes();
+        
         addIndex(staticCaption);
     }
 
@@ -676,17 +685,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     }
 
     @Override
-    @IdentityStrongLazy
     public SessionDataProperty getAddedObjectProperty() {
-        SessionDataProperty addedObject = new SessionDataProperty("addedObject", "Added Object", baseLM.baseClass);
-        addProperty(null, new LCP<ClassPropertyInterface>(addedObject));
-        return addedObject;
+        return (SessionDataProperty) addedObject.property;
     }
 
     @Override
-    @IdentityStrongLazy
     public LCP getConfirmedProperty() {
-        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("confirmed", "Confirmed", LogicalClass.instance)));
+        return confirmed;
     }
 
     @Override
@@ -704,19 +709,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     @Override
     @IdentityStrongLazy
     public LCP getRequestCanceledProperty() {
-        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("requestCanceled", "Request Input Canceled", LogicalClass.instance)));
+        return requestCanceled;
     }
 
     @Override
     @IdentityStrongLazy
     public LCP getFormResultProperty() {
-        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("formResult", "Form Result", baseLM.formResult)));
-    }
-
-    @Override
-    @IdentityStrongLazy
-    protected LAP<?> addSAProp() {
-        return addProperty(null, new LAP(new SeekActionProperty(baseLM.baseClass)));
+        return formResultProp;
     }
 
     @Override

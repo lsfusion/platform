@@ -63,14 +63,15 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public void initProperties() throws RecognitionException {
         // Текущий пользователь
         currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
-        currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), BL.contactLM.nameContact, currentUser);
+        currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
 
         super.initProperties();
 
+        currentUserName = getLCPByName("currentUserName");
+
         // Компьютер
         hostnameComputer = getLCPByName("hostnameComputer");
-        currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
-        hostnameCurrentComputer = addJProp("hostnameCurrentComputer", getString("logics.current.computer.hostname"), hostnameComputer, currentComputer);
+        hostnameCurrentComputer = getLCPByName("hostnameCurrentComputer");
 
         isLockedCustomUser = getLCPByName("isLockedCustomUser");
 
@@ -89,7 +90,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         serverLDAP = getLCPByName("serverLDAP");
         portLDAP =  getLCPByName("portLDAP");
 
-        generateLoginPassword = addAProp(new GenerateLoginPasswordActionProperty(BL.contactLM.emailContact, loginCustomUser, passwordCustomUser, customUser));
+        generateLoginPassword = getLAPByName("generateLoginPassword");
 
 
     }

@@ -4,6 +4,7 @@ import lsfusion.base.ApiResourceBundle;
 import lsfusion.interop.action.RunPrintReportClientAction;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -14,8 +15,8 @@ import java.sql.SQLException;
 public class PrintActionProperty extends FormToolbarActionProperty {
     private static LCP showIf = createShowIfProperty(new CalcProperty[] {FormEntity.isFullClient, FormEntity.isDialog}, new boolean[] {false, true});
 
-    public PrintActionProperty() {
-        super("formPrint", ApiResourceBundle.getString("form.layout.print"), false);
+    public PrintActionProperty(BaseLogicsModule lm) {
+        super(lm, false);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
