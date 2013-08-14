@@ -94,7 +94,7 @@ END
 
 // Header
 META defineDocumentHeaderCount (object, detailClass, caption)
-    count##detailClass###object 'Количество строк в документе'###caption (o) =
+    count##detailClass###object 'Кол-во строк'###caption (o) =
         GROUP SUM 1 BY object##detailClass(d) PERSISTENT IN documentSumGroup;
 END
 
