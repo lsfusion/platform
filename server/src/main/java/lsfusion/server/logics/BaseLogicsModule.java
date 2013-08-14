@@ -191,12 +191,25 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         super.initGroups();
 
         rootGroup = getGroupByName("root");
+        rootGroup.createContainer = false;
+
         publicGroup = getGroupByName("public");
+        publicGroup.createContainer = false;
+
         privateGroup = getGroupByName("private");
+        privateGroup.createContainer = false;
+
         baseGroup = getGroupByName("base");
+        baseGroup.createContainer = false;
+
         recognizeGroup = getGroupByName("recognize");
-        drillDownGroup = getGroupByName("drilldown");
+        recognizeGroup.createContainer = false;
+
+        drillDownGroup = getGroupByName("drillDown");
+        drillDownGroup.createContainer = false;
+
         propertyPolicyGroup = getGroupByName("propertyPolicy");
+        propertyPolicyGroup.createContainer = false;
     }
 
     @Override
