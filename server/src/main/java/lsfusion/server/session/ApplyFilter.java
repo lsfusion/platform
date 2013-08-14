@@ -7,7 +7,7 @@ import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 public enum ApplyFilter {
     WITHOUT_RECALC, ONLYCHECK, NO;
 
-    public String getSID() {
+/*    public String getSID() {
         switch (this) {
             case WITHOUT_RECALC:
                 return "enableOnlyWithoutRecalc";
@@ -17,7 +17,7 @@ public enum ApplyFilter {
                 return "enableAll";
         }
         throw new UnsupportedOperationException();
-    }
+    }*/
 
     public static boolean isCheck(Property property) {
         return property instanceof ActionProperty && ((ActionProperty) property).hasFlow(ChangeFlowType.CANCEL);
