@@ -8,6 +8,9 @@ CLASS FormResult 'Результат вызова формы' {
     close 'Закрыть'
 }
 
+CLASS NATIVE Object;
+objectClass = NATIVE; 
+
 GROUP root 'Корневая группа';
 GROUP public 'Пользовательские свойства' : root;
 GROUP private 'Внутренние свойства' : root;

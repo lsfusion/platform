@@ -246,15 +246,17 @@ classStatement
 @init {
 	List<String> classParents = new ArrayList<String>();
 	boolean isAbstract = false;
+	boolean isNative = false;
 	List<String> instanceNames = new ArrayList<String>();
 	List<String> instanceCaptions = new ArrayList<String>();
 }
 @after {
 	if (inClassParseState()) {
-		self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, $classData.names, $classData.captions, $classData.parents);
+	    if(!isNative)
+		    self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, $classData.names, $classData.captions, $classData.parents);
 	}
 }
-	:	'CLASS' ('ABSTRACT' {isAbstract = true;})?
+	:	'CLASS' ('ABSTRACT' {isAbstract = true;} | 'NATIVE' {isNative = true;})?
 		nameCaption=simpleNameWithCaption
 		classData=classInstancesAndParents
 	;	  
