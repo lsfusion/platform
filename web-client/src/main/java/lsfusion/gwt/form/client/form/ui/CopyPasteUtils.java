@@ -12,7 +12,7 @@ public class CopyPasteUtils {
     private static Selection selection = Selection.getSelection();
 
     public static void putIntoClipboard(Element element) {
-        if (selection.getRange() == null || selection.getRange().getText().isEmpty()) {
+        if (element != null && (selection.getRange() == null || selection.getRange().getText().isEmpty())) {
             selection.setRange(new Range(element));
 
             Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
@@ -26,8 +26,8 @@ public class CopyPasteUtils {
         }
     }
 
-    public static void setEmptySelection(Element element) {
-        if (!GwtClientUtils.isIEUserAgent()) {
+    public static void setEmptySelection(final Element element) {
+        if (element != null && !GwtClientUtils.isIEUserAgent() && Range.getAdjacentTextElement(element, element, true, false) != null) {
             // для вставки в Chrome без предварительного клика по ячейке, но валит весь селекшн в IE
             selection.setRange(new Range(new RangeEndPoint(element, true)));
         }

@@ -120,6 +120,18 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         panel.update();
     }
 
+    public void beforeHidingGrid() {
+        if (tree != null) {
+            tree.beforeHiding();
+        }
+    }
+
+    public void afterShowingGrid() {
+        if (tree != null) {
+            tree.afterShowing();
+        }
+    }
+
     @Override
     public void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
         GPropertyDraw property = formController.getProperty(reader.ID);

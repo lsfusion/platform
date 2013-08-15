@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
@@ -159,7 +160,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public void afterShowing() {
-        restoreScrollPosition();
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                restoreScrollPosition();
+            }
+        });
     }
 
     void storeScrollPosition() {

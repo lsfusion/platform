@@ -12,9 +12,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
-import net.customware.gwt.dispatch.shared.Result;
-import net.customware.gwt.dispatch.shared.general.StringResult;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.WrapperAsyncCallbackEx;
@@ -39,6 +36,7 @@ import lsfusion.gwt.form.client.form.ui.classes.ClassChosenHandler;
 import lsfusion.gwt.form.client.form.ui.classes.GResizableClassDialog;
 import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalDialog;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
+import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.shared.actions.form.*;
 import lsfusion.gwt.form.shared.actions.navigator.GenerateID;
 import lsfusion.gwt.form.shared.actions.navigator.GenerateIDResult;
@@ -948,33 +946,29 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 initialResizeProcessed = true;
             }
             scheduleFocusFirstWidget();
-            restoreGridScrollPosition();
+            restoreGridScrollPositions();
         } else {
             // обходим баг Chrome со скроллингом
             // http://code.google.com/p/chromium/issues/detail?id=36428
-            // необходимо, чтобы нормально заработало следующее
-            // http://jsfiddle.net/sammy/RubNy/
-            storeGridScrollPosition();
+            storeGridScrollPositions();
         }
     }
 
-    public void storeGridScrollPosition() {
-        List<GGrid> grids = form.mainContainer.getAllGrids();
-        for (GGrid grid : grids) {
-            GGroupObjectController goController = getGroupObjectController(grid.groupObject);
-            if (goController != null) {
-                goController.beforeHidingGrid();
-            }
+    public void storeGridScrollPositions() {
+        for (GGroupObjectController controller : controllers.values()) {
+            controller.beforeHidingGrid();
+        }
+        for (GTreeGroupController treeController : treeControllers.values()) {
+            treeController.beforeHidingGrid();
         }
     }
 
-    public void restoreGridScrollPosition() {
-        List<GGrid> grids = form.mainContainer.getAllGrids();
-        for (GGrid grid : grids) {
-            GGroupObjectController goController = getGroupObjectController(grid.groupObject);
-            if (goController != null) {
-                goController.afterShowingGrid();
-            }
+    public void restoreGridScrollPositions() {
+        for (GGroupObjectController controller : controllers.values()) {
+            controller.afterShowingGrid();
+        }
+        for (GTreeGroupController treeController : treeControllers.values()) {
+            treeController.afterShowingGrid();
         }
     }
 
