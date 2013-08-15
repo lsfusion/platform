@@ -16,6 +16,7 @@ import lsfusion.interop.form.layout.HasLabels;
 import javax.swing.*;
 import java.awt.*;
 
+import static java.lang.Math.max;
 import static lsfusion.base.BaseUtils.nullEquals;
 
 public class DataPanelView extends JPanel implements PanelView, HasLabels {
@@ -215,11 +216,11 @@ public class DataPanelView extends JPanel implements PanelView, HasLabels {
             int width;
             int height;
             if (property.panelLabelAbove) {
-                width = Math.max(labelSize.width, tableSize.width);
+                width = max(labelSize.width, tableSize.width);
                 height = limitedSum(labelSize.height, tableSize.height);
             } else {
                 width = limitedSum(8, labelSize.width, tableSize.width);
-                height = Math.max(labelSize.height, tableSize.height);
+                height = max(labelSize.height, tableSize.height);
             }
 
             return new Dimension(width, height);
@@ -253,7 +254,7 @@ public class DataPanelView extends JPanel implements PanelView, HasLabels {
                 }
             } else {
                 //horizontal
-                tableSpace = Math.max(0, tableSpace - 4 - labelPref.width - 4);
+                tableSpace = max(0, tableSpace - 4 - labelPref.width - 4);
                 if (!tableFirst) {
                     tableLeft += 4 + labelPref.width + 4;
                 }
@@ -269,19 +270,19 @@ public class DataPanelView extends JPanel implements PanelView, HasLabels {
                 }
             }
 
+            int labelWidth = vertical ? width : labelPref.width;
+            int labelHeight = labelPref.height;
+            int labelLeft = in.left;
+            int labelTop = in.top;
+
             if (vertical) {
-                if (tableFirst) {
-                    label.setBounds(in.left, in.top + tablePref.height, width, tablePref.height);
-                } else {
-                    label.setBounds(in.left, in.top, width, labelPref.height);
-                }
+                labelTop += tableHeight;
             } else {
-                if (tableFirst) {
-                    label.setBounds(in.left + 4 + tableSpace + 4, in.top, labelPref.width, labelPref.height);
-                } else {
-                    label.setBounds(in.left + 4, in.top, labelPref.width, labelPref.height);
-                }
+                labelTop += max(0, height - labelHeight)/2;
+                labelLeft += tableFirst ? 4 + tableSpace + 4 : 4;
             }
+
+            label.setBounds(labelLeft, labelTop, labelWidth, labelHeight);
             table.setBounds(tableLeft, tableTop, tableWidth, tableHeight);
         }
     }
