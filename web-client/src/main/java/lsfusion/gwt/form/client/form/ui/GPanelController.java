@@ -2,18 +2,21 @@ package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.panel.PanelRenderer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GPanelController {
     private final GFormController form;
 
+    private final List<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
     private final Map<GPropertyDraw, GPropertyController> propertyControllers = new HashMap<GPropertyDraw, GPropertyController>();
 
     private Object rowBackground;
@@ -25,25 +28,40 @@ public class GPanelController {
 
     public void addProperty(GPropertyDraw property) {
         if (property.container != null && !containsProperty(property)) {
+            int ins = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
+            properties.add(ins, property);
             propertyControllers.put(property, new GPropertyController(property));
         }
     }
 
     public void removeProperty(GPropertyDraw property) {
         if (containsProperty(property)) {
-            GPropertyController propController = propertyControllers.remove(property);
-            form.formLayout.remove(property, propController.getView());
+            form.formLayout.remove(property);
+            properties.remove(property);
+            propertyControllers.remove(property);
         }
     }
 
     public void update() {
-        for (GPropertyController propController : propertyControllers.values()) {
-            propController.update();
+        for (GPropertyDraw property : properties) {
+            propertyControllers.get(property).update();
         }
     }
 
     public boolean isEmpty() {
-        return propertyControllers.size() == 0;
+        return properties.size() == 0;
+    }
+
+    public void hide() {
+        for (GPropertyController propertyController : propertyControllers.values()) {
+            propertyController.getView().setVisible(false);
+        }
+    }
+
+    public void show() {
+        for (GPropertyController propertyController : propertyControllers.values()) {
+            propertyController.getView().setVisible(true);
+        }
     }
 
     private boolean visible = true;
@@ -57,7 +75,7 @@ public class GPanelController {
     }
 
     public boolean containsProperty(GPropertyDraw property) {
-        return propertyControllers.containsKey(property);
+        return properties.contains(property);
     }
 
     public void updateRowBackgroundValue(Object color) {
@@ -97,12 +115,12 @@ public class GPanelController {
     }
 
     public boolean focusFirstWidget() {
-        if (propertyControllers.isEmpty()) {
+        if (properties.isEmpty()) {
             return false;
         }
 
-        for (GPropertyController propController : propertyControllers.values()) {
-            if (propController.focusFirstWidget()) {
+        for (GPropertyDraw property : properties) {
+            if (propertyControllers.get(property).focusFirstWidget()) {
                 return true;
             }
         }
@@ -110,23 +128,24 @@ public class GPanelController {
         return true;
     }
 
-    private class GPropertyController {
+    private class GPropertyController implements DefaultFocusReceiver {
         private boolean addedToLayout = false;
         private boolean columnsUpdated = true;
 
         private GPropertyDraw property;
 
         private List<GGroupObjectValue> columnKeys;
+        private Map<GGroupObjectValue, PanelRenderer> renderers;
+
         private Map<GGroupObjectValue, Object> values;
-        private Map<GGroupObjectValue, Object> captions;
+
+        private Map<GGroupObjectValue, Object> propertyCaptions;
         private Map<GGroupObjectValue, Object> showIfs;
         private Map<GGroupObjectValue, Object> readOnly;
         private Map<GGroupObjectValue, Object> cellBackgroundValues;
+
         private Map<GGroupObjectValue, Object> cellForegroundValues;
-
-        private Map<GGroupObjectValue, PanelRenderer> renderers;
-
-        private ControllerPanel renderersPanel;
+        private ResizableHorizontalPanel renderersPanel;
 
         public GPropertyController(GPropertyDraw property) {
             this.property = property;
@@ -142,8 +161,7 @@ public class GPanelController {
                     renderers = new HashMap<GGroupObjectValue, PanelRenderer>();
                 }
                 if (renderersPanel == null) {
-                    renderersPanel = new ControllerPanel();
-                    renderersPanel.getElement().getStyle().setProperty("minHeight", "20px");
+                    renderersPanel = new ResizableHorizontalPanel();
                 }
 
                 List<GGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
@@ -155,31 +173,33 @@ public class GPanelController {
                             renderers.put(columnKey, renderer);
                         }
                     } else {
-                        PanelRenderer renderer = renderers.remove(columnKey);
-                        if (renderer != null) {
-                            renderersPanel.remove(renderer.getComponent());
-                        }
-
+                        renderers.remove(columnKey);
                     }
                 }
 
-//                renderersPanel.clear();
+                renderersPanel.clear();
 
                 for (GGroupObjectValue columnKey : columnKeys) {
                     PanelRenderer renderer = renderers.get(columnKey);
-                    if (renderer != null && renderer.getComponent().getParent() != renderersPanel) {
-                        renderersPanel.add(renderer.getComponent(), GFlexAlignment.STRETCH, 1);
+                    if (renderer != null) {
+                        renderersPanel.add(renderer.getComponent());
+                        if (renderer.getWidth() != null) {
+                            renderersPanel.setWidth(renderer.getWidth());
+                        }
                     }
                 }
 
                 if (isViewVisible()) {
                     if (!addedToLayout) {
-                        form.formLayout.add(property, renderersPanel);
+                        form.formLayout.add(property, getView(), property.container.children.indexOf(property));
+                        if (property.defaultComponent) {
+                            form.formLayout.addDefaultComponent(this);
+                        }
                         addedToLayout = true;
                     }
                 } else {
                     if (addedToLayout) {
-                        form.formLayout.remove(property, renderersPanel);
+                        form.formLayout.remove(property);
                         addedToLayout = false;
                     }
                 }
@@ -211,8 +231,8 @@ public class GPanelController {
             }
             renderer.updateCellForegroundValue(foreground == null ? property.foreground : foreground);
 
-            if (captions != null) {
-                renderer.setCaption(property.getDynamicCaption(captions.get(columnKey)));
+            if (propertyCaptions != null) {
+                renderer.setCaption(property.getDynamicCaption(propertyCaptions.get(columnKey)));
             }
         }
 
@@ -230,7 +250,7 @@ public class GPanelController {
         }
 
         public boolean isViewVisible() {
-            return renderersPanel.getWidgetCount() > 0;
+            return renderersPanel.iterator().hasNext();
         }
 
         public void setPropertyValues(Map<GGroupObjectValue, Object> valueMap, boolean updateKeys) {
@@ -241,8 +261,8 @@ public class GPanelController {
             }
         }
 
-        public void setPropertyCaptions(Map<GGroupObjectValue,Object> captions) {
-            this.captions = captions;
+        public void setPropertyCaptions(Map<GGroupObjectValue,Object> propertyCaptions) {
+            this.propertyCaptions = propertyCaptions;
         }
 
         public void setReadOnlyValues(Map<GGroupObjectValue,Object> readOnly) {
@@ -271,18 +291,9 @@ public class GPanelController {
             this.cellForegroundValues = cellForegroundValues;
         }
 
-        private class ControllerPanel extends FlexPanel implements DefaultFocusReceiver, FlexPanel.FlexAware {
-            @Override
-            public boolean focus() {
-                return focusFirstWidget();
-            }
-
-            @Override
-            public void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex) {
-                for (PanelRenderer renderer : renderers.values()) {
-                    renderer.addedToFlexPanel(parent, alignment, flex);
-                }
-            }
+        @Override
+        public boolean focus() {
+            return focusFirstWidget();
         }
     }
 }

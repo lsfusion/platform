@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.PropertyEditType;
-import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -64,18 +63,18 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
         paramsContainer = design.createContainer(getString("logics.property.drilldown.form.params"));
-        paramsContainer.setAlignment(FlexAlignment.STRETCH);
+        paramsContainer.constraints.fillHorizontal = 1;
         design.mainContainer.addFirst(paramsContainer);
         for (ObjectEntity obj : paramObjects) {
             paramsContainer.add(design.getGroupObjectContainer(obj.groupTo));
         }
 
         valueContainer = design.createContainer(getString("logics.property.drilldown.form.value"));
-        valueContainer.setAlignment(FlexAlignment.STRETCH);
+        valueContainer.constraints.fillHorizontal = 1;
         design.mainContainer.addAfter(valueContainer, paramsContainer);
 
         detailsContainer = design.createContainer(getString("logics.property.drilldown.form.details"));
-        detailsContainer.setAlignment(FlexAlignment.STRETCH);
+        detailsContainer.constraints.fillHorizontal = 1;
         design.mainContainer.addAfter(detailsContainer, valueContainer);
 
         return design;

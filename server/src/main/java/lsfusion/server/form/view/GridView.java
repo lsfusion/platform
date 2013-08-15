@@ -1,6 +1,6 @@
 package lsfusion.server.form.view;
 
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.layout.SimplexConstraints;
 import lsfusion.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -9,6 +9,7 @@ import java.io.IOException;
 
 public class GridView extends ComponentView {
 
+    public byte minRowCount = 0;
     public boolean tabVertical = false;
     public boolean autoHide = false;
 
@@ -17,18 +18,22 @@ public class GridView extends ComponentView {
     public GridView() {
         
     }
-
     public GridView(int ID, GroupObjectView groupObject) {
         super(ID);
+
         this.groupObject = groupObject;
-        flex = 1;
-        alignment = FlexAlignment.STRETCH;
+    }
+
+    @Override
+    public SimplexConstraints<ComponentView> getDefaultConstraints() {
+        return SimplexConstraints.getGridDefaultConstraints(super.getDefaultConstraints());
     }
 
     @Override
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
+        outStream.writeByte(minRowCount);
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(autoHide);
 
@@ -39,6 +44,7 @@ public class GridView extends ComponentView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
+        minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();
         autoHide = inStream.readBoolean();
 

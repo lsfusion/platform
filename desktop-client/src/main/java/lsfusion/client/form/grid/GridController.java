@@ -3,9 +3,9 @@ package lsfusion.client.form.grid;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Main;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.ClientFormLayout;
 import lsfusion.client.form.GroupObjectController;
 import lsfusion.client.form.InternalEditEvent;
-import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.queries.*;
 import lsfusion.client.logics.ClientGrid;
 import lsfusion.client.logics.ClientGroupObject;
@@ -18,6 +18,7 @@ import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -54,6 +55,12 @@ public class GridController {
 
         view = new GridView(this, form, clientGrid.tabVertical, clientGrid.groupObject.needVerticalScroll);
         table = view.getTable();
+
+        if (clientGrid.minRowCount > 0) { // вообще говоря, так делать неправильно, посколько и HeaderHeight и RowHeight могут изменяться во времени
+            Dimension minSize = table.getMinimumSize();
+            minSize.height = Math.max(minSize.height, (int) table.getTableHeader().getPreferredSize().getHeight() + clientGrid.minRowCount * table.getRowHeight());
+            view.setMinimumSize(minSize);
+        }
     }
 
     public UserPreferencesButton createHideSettingsButton() {

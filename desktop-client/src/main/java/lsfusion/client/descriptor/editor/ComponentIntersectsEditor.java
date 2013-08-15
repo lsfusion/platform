@@ -1,6 +1,6 @@
 package lsfusion.client.descriptor.editor;
 
-import lsfusion.base.ReflectionUtils;
+import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.descriptor.editor.base.TitledPanel;
 import lsfusion.client.logics.ClientComponent;
@@ -103,12 +103,12 @@ public class ComponentIntersectsEditor extends TitledPanel implements IncrementV
                     currMap.put(editor.getLeftComponent(), editor.getConstraint());
                 }
             }
-            ReflectionUtils.invokeSetter(component.constraints, field, currMap);
+            BaseUtils.invokeSetter(component.constraints, field, currMap);
         }
     }
 
     public void update(Object updateObject, String updateField) {
-        List<ClientComponent> childrenList = (List<ClientComponent>) ReflectionUtils.invokeGetter(updateObject, updateField);
+        List<ClientComponent> childrenList = (List<ClientComponent>) BaseUtils.invokeGetter(updateObject, updateField);
         for (ClientComponent component : childrenList) {
             for (ClientComponent comp2 : component.constraints.intersects.keySet()) {
                 if (!childrenList.contains(comp2)) {

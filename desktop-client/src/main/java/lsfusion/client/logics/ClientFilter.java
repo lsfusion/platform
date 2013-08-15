@@ -4,7 +4,7 @@ import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.descriptor.editor.FilterEditor;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -19,11 +19,6 @@ public class ClientFilter extends ClientComponent {
 
     public ClientFilter(ApplicationContext context) {
         super(context);
-    }
-
-    @Override
-    protected void initDefaultConstraints() {
-        alignment = FlexAlignment.STRETCH;
     }
 
     @Override
@@ -50,6 +45,11 @@ public class ClientFilter extends ClientComponent {
     }
 
     @Override
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return SimplexConstraints.getShowTypeDefaultConstraints(super.getDefaultConstraints());
+    }
+
+    @Override
     public String getCaption() {
         return ClientResourceBundle.getString("logics.filter");
     }
@@ -64,4 +64,8 @@ public class ClientFilter extends ClientComponent {
         return new FilterEditor(this);
     }
 
+    @Override
+    public boolean shouldBeDeclared() {
+        return true;
+    }
 }

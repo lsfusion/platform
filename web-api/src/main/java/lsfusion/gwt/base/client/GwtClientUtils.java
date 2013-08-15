@@ -3,7 +3,6 @@ package lsfusion.gwt.base.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.http.client.UrlBuilder;
@@ -205,19 +204,5 @@ public class GwtClientUtils {
             return w.isVisible();
         }
         return w.isVisible() && isVisible(w.getParent());
-    }
-
-    public static void setupFillParent(Element parent, Element child) {
-        parent.getStyle().setPosition(Style.Position.RELATIVE);
-        setupFillParent(child);
-    }
-
-    public static void setupFillParent(Element child) {
-        Style childStyle = child.getStyle();
-        childStyle.setPosition(Style.Position.ABSOLUTE);
-        childStyle.setTop(0, Style.Unit.PX);
-        childStyle.setLeft(0, Style.Unit.PX);
-        childStyle.setBottom(0, Style.Unit.PX);
-        childStyle.setRight(0, Style.Unit.PX);
     }
 }

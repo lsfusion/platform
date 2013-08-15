@@ -10,6 +10,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         super(target);
     }
 
+    public void setAutoHide(boolean autoHide) {
+        target.autoHide = autoHide;
+    }
+
     public void setShowTableFirst(boolean showTableFirst) {
         target.showTableFirst = showTableFirst;
     }

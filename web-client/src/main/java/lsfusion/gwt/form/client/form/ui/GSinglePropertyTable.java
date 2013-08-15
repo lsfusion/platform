@@ -1,7 +1,6 @@
 package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.GWT;
-import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.cell.Cell;
@@ -21,9 +20,7 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
         @Source("GSinglePropertyTable.css")
         GSinglePropertyTableStyle style();
     }
-    public interface GSinglePropertyTableStyle extends Style {
-        String dataGridCellInnerDiv();
-    }
+    public interface GSinglePropertyTableStyle extends Style {}
 
     public static final GSinglePropertyTableResource GSINGLE_PROPERTY_TABLE_RESOURCE = GWT.create(GSinglePropertyTableResource.class);
 
@@ -55,12 +52,6 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
             }
         });
         setRowData(Arrays.asList(new Object()));
-    }
-
-    public void setupFillParent() {
-        GwtClientUtils.setupFillParent(getElement());
-        GwtClientUtils.setupFillParent(getTableDataScroller().getContainerElement());
-        ((GSinglePropertyTableBuilder)getTableBuilder()).setStripCellHeight(true);
     }
 
     public void setValue(Object value) {

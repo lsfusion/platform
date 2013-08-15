@@ -1,6 +1,9 @@
 package lsfusion.gwt.form.client.form.ui;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.cellview.client.Column;
@@ -270,12 +273,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     }
 
     private Element getFocusCellElement() {
-        TableRowElement selectedRow = getChildElement(getKeyboardSelectedRow());
-        if (selectedRow != null) {
-            return selectedRow.getCells().getItem(getKeyboardSelectedColumn()).getFirstChildElement();
-        } else {
-            return null;
-        }
+        return getChildElement(getKeyboardSelectedRow()).getCells().getItem(getKeyboardSelectedColumn()).getFirstChildElement();
     }
 
     private void executePaste(Event event) {

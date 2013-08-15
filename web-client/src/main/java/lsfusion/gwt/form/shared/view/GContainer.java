@@ -1,25 +1,12 @@
 package lsfusion.gwt.form.shared.view;
-
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GAlignment;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.gwt.form.shared.view.GContainerType.*;
-
 public class GContainer extends GComponent {
+    public ArrayList<GComponent> children = new ArrayList<GComponent>();
     public String caption;
     public String description;
-
     public GContainerType type;
-    public GAlignment childrenAlignment;
-
-    public int gapX;
-    public int gapY;
-    public int columns;
-
-    public ArrayList<GComponent> children = new ArrayList<GComponent>();
 
     @Override
     public String toString() {
@@ -27,29 +14,71 @@ public class GContainer extends GComponent {
                 "[" + sID + "]" +
                 "[" + type + "]{" +
                 "caption='" + caption + '\'' +
-                ", alignment=" + alignment +
+                ", hAlign=" + hAlign +
                 '}';
     }
 
-    public FlexPanel.Justify getFlexJustify() {
-        switch (childrenAlignment) {
-            case LEADING: return FlexPanel.Justify.LEADING;
-            case CENTER: return FlexPanel.Justify.CENTER;
-            case TRAILING: return FlexPanel.Justify.TRAILING;
+    public void calculateFills() {
+        for (GComponent child : children) {
+            if (child instanceof GContainer) {
+                ((GContainer) child).calculateFills();
+            }
         }
-        throw new IllegalStateException("Unknown alignment");
+
+        if (getAbsoluteWidth() == -1 && fillHorizontal < 0) {
+            double childFill = getChildFill(false);
+            if (childFill > 0) {
+                fillHorizontal = childFill;
+            }
+        }
+
+        if (getAbsoluteHeight() == -1 && fillVertical < 0) {
+            double childFill = getChildFill(true);
+            if (childFill > 0) {
+                fillVertical = childFill;
+            }
+        }
     }
 
-    public boolean isTabbed() {
-        return type == TABBED_PANE;
+    public String getChildPercentSize(GComponent child, boolean width) {
+        assert children.contains(child);
+        return (width ? child.fillHorizontal : child.fillVertical) / getChildFill(!width) * 100 + "%";
     }
 
-    public boolean isSplit() {
-        return type == HORIZONTAL_SPLIT_PANE || type == VERTICAL_SPLIT_PANE;
+    private double getChildFill(boolean vertical) {
+        double fill = 0;
+        boolean chooseMax = true;
+        if (!vertical) {
+            if (toFlow() || !drawVertical()) {
+                chooseMax = false;
+            }
+        } else if (!toFlow() && drawVertical()) {
+            chooseMax = false;
+        }
+
+        for (GComponent child : children) {
+            double childFill = 0;
+            if (vertical) {
+                if (child.fillVertical > 0) {
+                    childFill = child.fillVertical;
+                }
+            } else {
+                if (child.fillHorizontal > 0) {
+                    childFill = child.fillHorizontal;
+                }
+            }
+            if (chooseMax) {
+                fill = Math.max(fill, childFill);
+            } else {
+                fill += childFill;
+            }
+        }
+        return fill;
     }
 
-    public boolean isVerticalSplit() {
-        return type == VERTICAL_SPLIT_PANE;
+    public boolean hasSingleGridInTree() {
+        List<GGrid> grids = getAllGrids();
+        return grids.size() == 1 && (grids.get(0).groupObject.isRecursive || grids.get(0).groupObject.parent != null) && !containsTreeGroup();
     }
 
     public List<GGrid> getAllGrids() {
@@ -88,19 +117,43 @@ public class GContainer extends GComponent {
         return draws;
     }
 
+    public boolean containsTreeGroup() {
+        return !getAllTreeGrids().isEmpty();
+    }
+
+    public boolean isNotOriented() {
+        return type == GContainerType.CONTAINERVH || type == GContainerType.TABBED_PANEL;
+    }
+
     public boolean isVertical() {
-        return type == CONTAINERV;
+        return type == GContainerType.VERTICAL_SPLIT_PANEL || type == GContainerType.CONTAINERV;
     }
 
-    public boolean isHorizontal() {
-        return type == CONTAINERH;
+    public boolean drawVertical() {
+        return isNotOriented() || isVertical();
     }
 
-    public boolean isLinear() {
-        return isVertical() || isHorizontal();
+    public boolean toFlow() {
+        return isNotOriented() && fillVertical <= 0 && containerFlows();
     }
 
-    public boolean isColumns() {
-        return type == COLUMNS;
+    private boolean containerFlows() {
+        if (container != null) {
+            if (container.isNotOriented()) {
+                return container.containerFlows();
+            } else {
+                if (container.isVertical()) {
+                    return (container.fillVertical > 0 && !container.isGroupObjectWithBannedGrid()) || container.containerFlows();
+                } else {
+                    return (container.fillHorizontal > 0 && !container.isGroupObjectWithBannedGrid()) || container.containerFlows();
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isGroupObjectWithBannedGrid() {
+        List<GGrid> grids = getAllGrids();
+        return grids.size() == 1 && grids.get(0).groupObject.banClassView.contains("GRID");
     }
 }

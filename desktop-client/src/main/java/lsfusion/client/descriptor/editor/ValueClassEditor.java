@@ -1,7 +1,7 @@
 package lsfusion.client.descriptor.editor;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.context.IncrementView;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Main;
@@ -62,7 +62,7 @@ public class ValueClassEditor extends JPanel {
 
             public void actionPerformed(ActionEvent e) {
                 if (!updated) {
-                    ReflectionUtils.invokeCheckSetter(object, property, ((ClientTypeClass) typeClasses.getSelectedItem()).getDefaultClass(baseClass));
+                    BaseUtils.invokeCheckSetter(object, property, ((ClientTypeClass) typeClasses.getSelectedItem()).getDefaultClass(baseClass));
                 }
             }
         });
@@ -73,7 +73,7 @@ public class ValueClassEditor extends JPanel {
 
         typeVisible = new IncrementView() {
             public void update(Object updateObject, String updateField) {
-                final ClientClass clientClass = (ClientClass) ReflectionUtils.invokeGetter(object, property);
+                final ClientClass clientClass = (ClientClass) BaseUtils.invokeGetter(object, property);
 
                 if (clientClass == null) {
 //                    BaseUtils.invokeCheckSetter(object, property, ClientIntegerClass.instance);
@@ -101,7 +101,7 @@ public class ValueClassEditor extends JPanel {
                     fieldLength.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             ClientStringClass stringClass = new ClientStringClass(stringTypClass.blankPadded, stringTypClass.caseInsensitive, new ExtInt(Integer.parseInt(fieldLength.getText())));
-                            ReflectionUtils.invokeCheckSetter(object, property, stringClass
+                            BaseUtils.invokeCheckSetter(object, property, stringClass
                             );
                         }
                     });
@@ -109,7 +109,7 @@ public class ValueClassEditor extends JPanel {
                 } else if (typeClass.equals(ClientNumericClass.type)) {
                     currentComponent = new Numeric(((ClientNumericClass) clientClass).length, ((ClientNumericClass) clientClass).precision) {
                         public void actionPerformed(ActionEvent e) {
-                            ReflectionUtils.invokeCheckSetter(object, property, new ClientNumericClass(Integer.parseInt(fieldLength.getText()), Integer.parseInt(precisionLength.getText())));
+                            BaseUtils.invokeCheckSetter(object, property, new ClientNumericClass(Integer.parseInt(fieldLength.getText()), Integer.parseInt(precisionLength.getText())));
                         }
                     };
                 } else if (typeClass.equals(ClientObjectClass.type)) {
@@ -117,7 +117,7 @@ public class ValueClassEditor extends JPanel {
                         protected void onClick() {
                             ClientObjectClass selectedClass = ClassDialog.dialogObjectClass(this, baseClass, (ClientObjectClass) clientClass, false);
                             if (selectedClass != null) {
-                                ReflectionUtils.invokeCheckSetter(object, property, selectedClass);
+                                BaseUtils.invokeCheckSetter(object, property, selectedClass);
                             }
                         }
                     });

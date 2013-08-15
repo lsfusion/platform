@@ -1,6 +1,6 @@
 package lsfusion.client.descriptor.increment.editor;
 
-import lsfusion.base.ReflectionUtils;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.context.ApplicationContextProvider;
 import lsfusion.base.context.IncrementView;
 import lsfusion.client.descriptor.editor.base.TristateCheckBox;
@@ -27,11 +27,11 @@ public class IncrementTristateCheckBox extends TristateCheckBox implements Incre
     }
 
     public void itemStateChanged(ItemEvent e) {
-        ReflectionUtils.invokeSetter(object, field, getStateAsBoolean());
+        BaseUtils.invokeSetter(object, field, getStateAsBoolean());
     }
 
     public void stateChanged(ChangeEvent e) {
-        ReflectionUtils.invokeSetter(object, field, getStateAsBoolean());
+        BaseUtils.invokeSetter(object, field, getStateAsBoolean());
     }
 
     @Override
@@ -40,6 +40,6 @@ public class IncrementTristateCheckBox extends TristateCheckBox implements Incre
     }
 
     public void update(Object updateObject, String updateField) {
-        setStateFromBoolean((Boolean) ReflectionUtils.invokeGetter(object, field));
+        setStateFromBoolean((Boolean) BaseUtils.invokeGetter(object, field));
     }
 }

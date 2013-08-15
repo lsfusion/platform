@@ -41,6 +41,8 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     public OrderedMap<ClientPropertyDraw, Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<ClientRegularFilterGroup>();
 
+    public boolean gwtAllowScrollSplits;
+
     public ClientContainer getMainContainer() {
         return mainContainer;
     }
@@ -175,6 +177,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
         pool.writeInt(outStream, overridePageWidth);
+        outStream.writeBoolean(gwtAllowScrollSplits);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -194,6 +197,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         keyStroke = pool.readObject(inStream);
         caption = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
+        gwtAllowScrollSplits = inStream.readBoolean();
     }
 
     public boolean removePropertyDraw(ClientPropertyDraw clientPropertyDraw) {
@@ -211,6 +215,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public boolean removeGroupObject(ClientGroupObject groupObject) {
         groupObjects.remove(groupObject);
+        //todo: what about properties
 
         ClientContainer groupContainer = groupObject.getClientComponent(mainContainer);
         if (groupContainer != null) {

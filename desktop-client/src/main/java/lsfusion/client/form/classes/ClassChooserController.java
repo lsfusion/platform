@@ -1,7 +1,7 @@
 package lsfusion.client.form.classes;
 
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.layout.ClientFormLayout;
+import lsfusion.client.form.ClientFormLayout;
 import lsfusion.client.logics.ClientObject;
 import lsfusion.client.logics.classes.ClientObjectClass;
 

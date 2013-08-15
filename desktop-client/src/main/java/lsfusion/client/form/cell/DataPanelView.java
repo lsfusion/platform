@@ -3,71 +3,62 @@ package lsfusion.client.form.cell;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.ClientFormLayout;
 import lsfusion.client.form.dispatch.SimpleChangePropertyDispatcher;
-import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.event.ValueEvent;
 import lsfusion.interop.event.ValueEventListener;
-import lsfusion.interop.form.layout.CachableLayout;
-import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.interop.form.layout.HasLabels;
 
 import javax.swing.*;
 import java.awt.*;
 
 import static lsfusion.base.BaseUtils.nullEquals;
+import static lsfusion.client.SwingUtils.getNewBoundsIfNotAlmostEquals;
 
-public class DataPanelView extends JPanel implements PanelView, HasLabels {
+public class DataPanelView extends JPanel implements PanelView {
     private final JLabel label;
 
     private final DataPanelViewTable table;
 
     private final ClientPropertyDraw property;
-
     private final ClientGroupObjectValue columnKey;
 
-    //чтобы не собрался GC
-    @SuppressWarnings("FieldCanBeLocal")
-    private final ValueEventListener valueEventListener;
-
+    private ValueEventListener valueEventListener;
     private final ClientFormController form;
 
     private final SimpleChangePropertyDispatcher simpleDispatcher;
 
-    private int labelWidth = -1;
-
     public DataPanelView(final ClientFormController iform, final ClientPropertyDraw iproperty, ClientGroupObjectValue icolumnKey) {
-        super(null);
+        setOpaque(false);
 
         form = iform;
         property = iproperty;
         columnKey = icolumnKey;
         simpleDispatcher = form.getSimpleChangePropertyDispatcher();
 
-        setLayout(new DataPanelLayout());
+        setLayout(new BoxLayout(this, (property.panelLabelAbove ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS)));
+
+        label = new JLabel();
+        label.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
+        label.setText(property.getEditCaption());
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        property.design.designHeader(label);
 
         //игнорируем key.readOnly, чтобы разрешить редактирование,
         //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType
         table = new DataPanelViewTable(iform, columnKey, property);
 
-        label = new JLabel(property.getEditCaption());
-        if (property.panelLabelAbove) {
-            label.setHorizontalAlignment(SwingConstants.CENTER);
-        }
-
-        property.design.designHeader(label);
-        if (property.focusable != null) {
-            setFocusable(property.focusable);
-        } else if (property.editKey != null) {
-            setFocusable(false);
-        }
-
-        add(label);
-        add(table);
-
-        setOpaque(false);
         setToolTip(property.getCaption());
+
+        if (property.showTableFirst) {
+            add(table);
+            add(label);
+        } else {
+            add(label);
+            add(table);
+        }
 
         if (property.eventID != null) {
             valueEventListener = new ValueEventListener() {
@@ -77,8 +68,8 @@ public class DataPanelView extends JPanel implements PanelView, HasLabels {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            ClientFormLayout focusLayout = SwingUtils.getClientFormLayout(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
-                            ClientFormLayout curLayout = SwingUtils.getClientFormLayout(table);
+                            ClientFormLayout focusLayout = SwingUtils.getClientFormlayout(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
+                            ClientFormLayout curLayout = SwingUtils.getClientFormlayout(table);
                             if ((curLayout != null) && (curLayout.equals(focusLayout))) {
                                 forceChangeValue(event.getValue());
                             }
@@ -87,8 +78,6 @@ public class DataPanelView extends JPanel implements PanelView, HasLabels {
                 }
             };
             Main.eventBus.addListener(valueEventListener, property.eventID);
-        } else {
-            valueEventListener = null;
         }
     }
 
@@ -185,104 +174,10 @@ public class DataPanelView extends JPanel implements PanelView, HasLabels {
         throw new RuntimeException("not supported");
     }
 
+   //Чтобы лэйаут не прыгал игнорируем мелкие изменения координат
     @Override
-    public boolean hasLabels() {
-        //todo: пока убираем выравнивание заголовков
-//        return true;
-        return false;
-    }
-
-    @Override
-    public int getLabelsPreferredWidth() {
-        return property.panelLabelAbove ? 0 : label.getPreferredSize().width;
-    }
-
-    @Override
-    public void setLabelsWidth(int width) {
-        labelWidth = width;
-    }
-
-    private class DataPanelLayout extends CachableLayout {
-
-        public DataPanelLayout() {
-            super(DataPanelView.this, false);
-        }
-
-        @Override
-        protected Dimension layoutSize(Container parent, ComponentSizeGetter sizeGetter) {
-            Dimension labelSize = sizeGetter.get(label);
-            Dimension tableSize = sizeGetter.get(table);
-            int width;
-            int height;
-            if (property.panelLabelAbove) {
-                width = Math.max(labelSize.width, tableSize.width);
-                height = limitedSum(labelSize.height, tableSize.height);
-            } else {
-                width = limitedSum(8, labelSize.width, tableSize.width);
-                height = Math.max(labelSize.height, tableSize.height);
-            }
-
-            return new Dimension(width, height);
-        }
-
-        @Override
-        public void layoutContainer(Container parent) {
-            boolean vertical = property.panelLabelAbove;
-            boolean tableFirst = property.showTableFirst;
-
-            Insets in = parent.getInsets();
-
-            int width = parent.getWidth() - in.left - in.right;
-            int height = parent.getHeight() - in.top - in.bottom;
-
-            Dimension labelPref = label.getPreferredSize();
-            Dimension tablePref = table.getPreferredSize();
-
-            if (!tableFirst && labelWidth != -1) {
-                labelPref.width = labelWidth;
-            }
-
-            int tableSpace = width;
-            int tableLeft = in.left;
-            int tableTop = 0;
-            int tableHeight = height;
-            if (vertical) {
-                tableHeight -= labelPref.height;
-                if (!tableFirst) {
-                    tableTop += labelPref.height;
-                }
-            } else {
-                //horizontal
-                tableSpace = Math.max(0, tableSpace - 4 - labelPref.width - 4);
-                if (!tableFirst) {
-                    tableLeft += 4 + labelPref.width + 4;
-                }
-            }
-
-            int tableWidth = tableSpace;
-            if (property.alignment != FlexAlignment.STRETCH) {
-                tableWidth = Math.min(tableSpace, tablePref.width);
-                if (property.alignment == FlexAlignment.TRAILING) {
-                    tableLeft += tableSpace - tableWidth;
-                } else if (property.alignment == FlexAlignment.CENTER) {
-                    tableLeft += (tableSpace - tableWidth)/2;
-                }
-            }
-
-            if (vertical) {
-                if (tableFirst) {
-                    label.setBounds(in.left, in.top + tablePref.height, width, tablePref.height);
-                } else {
-                    label.setBounds(in.left, in.top, width, labelPref.height);
-                }
-            } else {
-                if (tableFirst) {
-                    label.setBounds(in.left + 4 + tableSpace + 4, in.top, labelPref.width, labelPref.height);
-                } else {
-                    label.setBounds(in.left + 4, in.top, labelPref.width, labelPref.height);
-                }
-            }
-            table.setBounds(tableLeft, tableTop, tableWidth, tableHeight);
-        }
+    public void setBounds(int x, int y, int width, int height) {
+        Rectangle newBounds = getNewBoundsIfNotAlmostEquals(this, x, y, width, height);
+        super.setBounds(newBounds.x, newBounds.y, newBounds.width,  newBounds.height);
     }
 }

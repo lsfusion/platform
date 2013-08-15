@@ -589,6 +589,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     @Override
     public boolean isSelected(int row, int coulumn) {
+        //todo:
         return false;
     }
 

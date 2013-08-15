@@ -1,6 +1,6 @@
 package lsfusion.client.descriptor.increment.editor;
 
-import lsfusion.base.ReflectionUtils;
+import lsfusion.base.BaseUtils;
 import lsfusion.client.descriptor.editor.FontChooser;
 import lsfusion.base.context.*;
 import lsfusion.client.descriptor.editor.base.FlatButton;
@@ -32,11 +32,11 @@ public class IncrementFontEditor extends TitledPanel implements IncrementView {
     }
 
     private void updateField() {
-        ReflectionUtils.invokeSetter(object, field, font);
+        BaseUtils.invokeSetter(object, field, font);
     }
 
     public void update(Object updateObject, String updateField) {
-        font = (Font) ReflectionUtils.invokeGetter(object, field);
+        font = (Font) BaseUtils.invokeGetter(object, field);
     }
 
     private class FontFlatButton extends FlatButton {

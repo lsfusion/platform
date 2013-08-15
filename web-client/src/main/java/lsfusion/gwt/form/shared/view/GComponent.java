@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.shared.view;
 
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
 
 import java.io.Serializable;
@@ -11,6 +10,9 @@ public class GComponent implements Serializable {
     public GContainer container;
     public boolean defaultComponent;
 
+    public double fillHorizontal = -1;
+    public double fillVertical = -1;
+
     public int minimumWidth = -1;
     public int minimumHeight = -1;
     public int maximumWidth = -1;
@@ -18,14 +20,17 @@ public class GComponent implements Serializable {
     public int preferredWidth = -1;
     public int preferredHeight = -1;
 
-    public double flex = 0;
-    public GFlexAlignment alignment;
+    public Alignment hAlign;
 
     public ColorDTO background;
     public ColorDTO foreground;
 
     public GFont font;
     public GFont headerFont;
+
+    public enum Alignment {
+        LEFT, RIGHT, CENTER
+    }
 
     @Override
     public String toString() {

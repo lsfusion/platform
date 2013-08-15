@@ -1,9 +1,7 @@
 package lsfusion.client.descriptor.view;
 
 import lsfusion.client.descriptor.FormDescriptor;
-import lsfusion.client.logics.ClientComponent;
-import lsfusion.client.logics.ClientContainer;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.logics.*;
 import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
 import lsfusion.interop.form.layout.SimplexConstraints;
 import lsfusion.interop.form.layout.SingleSimplexConstraint;
@@ -43,7 +41,7 @@ public class GenerateCodeDialog extends JDialog {
                         child.getSID(),
                         getContainerCaption((ClientContainer) child, offset + 1),
                         getType((ClientContainer) child, offset + 1),
-                        getFlex(child, offset + 1),
+                        getFill(child, offset + 1),
                         getInsets(child, offset + 1),
                         getDirection(child, offset + 1),
                         getSize(child, offset + 1),
@@ -57,7 +55,7 @@ public class GenerateCodeDialog extends JDialog {
                 String propertyDrawDesign = getCaption(child, offset + 1) +
                         getImage((ClientPropertyDraw) child, offset + 1) +
                         getEditKey((ClientPropertyDraw) child, offset + 1) +
-                        getFlex(child, offset + 1) +
+                        getFill(child, offset + 1) +
                         getInsets(child, offset + 1) +
                         getDirection(child, offset + 1) +
                         getFont(child, offset + 1) +
@@ -139,10 +137,12 @@ public class GenerateCodeDialog extends JDialog {
                 getOffset(offset), String.valueOf(showEditKey).toUpperCase());
     }
 
-    private String getFlex(ClientComponent component, int offset) {
+    private String getFill(ClientComponent component, int offset) {
         String result = "";
-        double flex = component.getFlex();
-        result += getOffset(offset) + "flex = " + flex + ";\n";
+        double horizontal = component.getConstraints().fillHorizontal;
+        double vertical = component.getConstraints().fillVertical;
+        result += horizontal==0 ? "" : (getOffset(offset) + "fillHorizontal = " + horizontal + ";\n");
+        result += vertical==0 ? "" : (getOffset(offset) + "fillVertical = " + vertical + ";\n");
         return result;
     }
 
@@ -152,6 +152,9 @@ public class GenerateCodeDialog extends JDialog {
         String insetsInsideLeft = component.getConstraints().getInsetsInsideLeft();
         String insetsInsideBottom = component.getConstraints().getInsetsInsideBottom();
         String insetsInsideRight = component.getConstraints().getInsetsInsideRight();
+        if (!SimplexConstraints.DEFAULT_INSETS_INSIDE.equals(component.getConstraints().insetsInside))
+            result += getOffset(offset) + String.format("insetsInside = (%s, %s, %s, %s);\n", insetsInsideTop, insetsInsideLeft, insetsInsideBottom, insetsInsideRight);
+
         String insetsSiblingTop = component.getConstraints().getInsetsSiblingTop();
         String insetsSiblingLeft = component.getConstraints().getInsetsSiblingLeft();
         String insetsSiblingBottom = component.getConstraints().getInsetsSiblingBottom();
@@ -212,33 +215,30 @@ public class GenerateCodeDialog extends JDialog {
         else if (constraints.equals(SingleSimplexConstraint.TOTHE_RIGHT))
             type = "CONTAINERH";
         else if (constraints.equals(SingleSimplexConstraint.TOTHE_RIGHTBOTTOM))
-            type = "COLUMNS";
+            type = "CONTAINERVH";
         else {
             switch (container.getType()) {
-                case CONTAINERH:
+                case 0:
                     type = "CONTAINERH";
                     break;
-                case CONTAINERV:
+                case 1:
                     type = "CONTAINERV";
                     break;
-                case COLUMNS:
-                    type = "COLUMNS";
+                case 2:
+                    type = "CONTAINERVH";
                     break;
-                case TABBED_PANE:
+                case 3:
                     type = "TABBED";
                     break;
-                case VERTICAL_SPLIT_PANE:
+                case 4:
                     type = "SPLITV";
                     break;
-                case HORIZONTAL_SPLIT_PANE:
+                case 5:
                     type = "SPLITH";
                     break;
-                case SCROLL:
-                    throw new IllegalStateException("SCROLL container isn't yet supported");
-                case FLOW:
-                    throw new IllegalStateException("FLOW container isn't yet supported");
+                case 6:
                 default:
-                    throw new IllegalStateException("shouldn't happen");
+                    return "";
             }
         }
         return getOffset(offset) + "type = " + type + ";\n";

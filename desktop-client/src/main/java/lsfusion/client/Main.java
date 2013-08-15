@@ -8,8 +8,10 @@ import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.exceptions.ExceptionThreadGroup;
 import lsfusion.client.form.ClientExternalScreen;
+import lsfusion.client.form.SimplexLayout;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
+import lsfusion.client.remote.ImmutableProxyMethodsAspect;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.client.rmi.RMITimeoutSocketFactory;
@@ -20,6 +22,7 @@ import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.log4j.Logger;
+import org.aspectj.lang.Aspects;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,6 +52,8 @@ import static lsfusion.client.StartupProperties.*;
 
 public class Main {
     private final static Logger logger = Logger.getLogger(Main.class);
+
+    private static ImmutableProxyMethodsAspect immutablesAspect = Aspects.aspectOf(ImmutableProxyMethodsAspect.class);
 
     public static final String LSFUSION_TITLE = "lsFusion";
     private static final String DEFAULT_SPLASH_PATH = "/images/lsfusion.jpg";
@@ -215,6 +220,7 @@ public class Main {
 
     // будет загружать все не кросс-платформенные библиотеки
     private static void loadLibraries() throws IOException {
+        SimplexLayout.loadLibraries();
         ComBridge.loadJacobLibraries();
         ComBridge.loadJsscLibraries();
     }
@@ -444,6 +450,8 @@ public class Main {
     }
 
     private static void clean() {
+        immutablesAspect.startRestarting();
+
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                 @Override
@@ -486,6 +494,8 @@ public class Main {
         remoteNavigator = null;
 
         System.gc();
+
+        immutablesAspect.stopRestarting();
     }
 
     static class DaemonTask extends TimerTask {

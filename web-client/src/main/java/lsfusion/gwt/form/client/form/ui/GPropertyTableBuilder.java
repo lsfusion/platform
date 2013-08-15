@@ -80,20 +80,14 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             updateTD(rowIndex, rowValue, td, columnIndex, true);
 
             // Add the inner div.
-
-            DivElement div = createCellInnerDiv();
+            DivElement div = Document.get().createDivElement();
+            div.getStyle().setHeight(cellHeight, Style.Unit.PX);
 
             // Render the cell into the div.
             renderCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
 
             td.appendChild(div);
         }
-    }
-
-    protected DivElement createCellInnerDiv() {
-        DivElement div = Document.get().createDivElement();
-        div.getStyle().setHeight(cellHeight, Style.Unit.PX);
-        return div;
     }
 
     @Override
@@ -136,7 +130,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         updateCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
     }
 
-    protected void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex, boolean updateCellHeight) {
+    private void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex, boolean updateCellHeight) {
         if (updateCellHeight) {
             td.getStyle().setHeight(cellHeight, Style.Unit.PX);
             td.getStyle().setLineHeight(cellHeight, Style.Unit.PX);

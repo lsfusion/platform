@@ -1,10 +1,10 @@
 package lsfusion.client.logics;
 
-import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.descriptor.editor.ComponentEditor;
+import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -13,21 +13,14 @@ import java.io.IOException;
 
 public class ClientClassChooser extends ClientComponent {
 
-    public ClientObject object;
-
-    public boolean visible = true;
-
     public ClientClassChooser() {
     }
 
+    public ClientObject object;
+    public boolean visible = true;
+
     public ClientClassChooser(int ID, ApplicationContext context) {
         super(ID, context);
-    }
-
-    @Override
-    protected void initDefaultConstraints() {
-        flex = 0.2;
-        alignment = FlexAlignment.STRETCH;
     }
 
     @Override
@@ -68,5 +61,15 @@ public class ClientClassChooser extends ClientComponent {
     @Override
     public JComponent getPropertiesEditor() {
         return new ComponentEditor(this);
+    }
+
+    @Override
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return SimplexConstraints.getClassChooserDefaultConstraints(super.getDefaultConstraints());
+    }
+
+    @Override
+    public boolean shouldBeDeclared() {
+        return true;
     }
 }

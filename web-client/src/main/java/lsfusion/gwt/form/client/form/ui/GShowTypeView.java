@@ -4,7 +4,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.form.shared.view.GClassViewType;
 import lsfusion.gwt.form.shared.view.GGroupObject;
@@ -73,10 +72,6 @@ public class GShowTypeView extends ResizableHorizontalPanel {
 
     public void addToLayout(GFormLayout formLayout) {
         formLayout.add(groupObject.showType, this);
-    }
-
-    public void update(GClassViewType classView) {
-        setClassView(classView);
     }
 
     private class ChangeViewBtnClickHandler implements ClickHandler {

@@ -5,8 +5,6 @@ import lsfusion.client.form.EditBindingMap;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientActionClass;
 import lsfusion.client.logics.classes.ClientFileClass;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.base.client.ui.GAlignment;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
@@ -14,9 +12,8 @@ import lsfusion.gwt.form.shared.view.classes.GClass;
 import lsfusion.gwt.form.shared.view.reader.*;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.PropertyEditType;
-import lsfusion.interop.form.layout.Alignment;
-import lsfusion.interop.form.layout.ContainerType;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.layout.SimplexConstraints;
+import lsfusion.interop.form.layout.SingleSimplexConstraint;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static lsfusion.interop.form.layout.ContainerType.*;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientComponentToGwtConverter extends CachedObjectConverter {
@@ -44,6 +43,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.container = convertOrCast(clientComponent.container);
         component.defaultComponent = clientComponent.defaultComponent;
 
+        component.fillHorizontal = clientComponent.constraints.fillHorizontal;
+        component.fillVertical = clientComponent.constraints.fillVertical;
+
         if (clientComponent.minimumSize != null) {
             component.minimumWidth = clientComponent.minimumSize.width;
             component.minimumHeight = clientComponent.minimumSize.height;
@@ -59,8 +61,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             component.preferredHeight = clientComponent.preferredSize.height;
         }
 
-        component.flex = clientComponent.flex;
-        component.alignment = convertFlexAlignment(clientComponent.alignment);
+        component.hAlign = clientComponent.constraints.directions.R > 0 ? GComponent.Alignment.RIGHT : GComponent.Alignment.LEFT;
 
         if (clientComponent.design.getBackground() != null) {
             component.background = new ColorDTO(Integer.toHexString(clientComponent.design.getBackground().getRGB()).substring(2, 8));
@@ -83,25 +84,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return component;
     }
 
-    private GAlignment convertAlignment(Alignment alignment) {
-        switch (alignment) {
-            case LEADING: return GAlignment.LEADING;
-            case CENTER: return GAlignment.CENTER;
-            case TRAILING: return GAlignment.TRAILING;
-        }
-        throw new IllegalStateException("Unknown alignment");
-    }
-
-    private GFlexAlignment convertFlexAlignment(FlexAlignment alignment) {
-        switch (alignment) {
-            case LEADING: return GFlexAlignment.LEADING;
-            case CENTER: return GFlexAlignment.CENTER;
-            case TRAILING: return GFlexAlignment.TRAILING;
-            case STRETCH: return GFlexAlignment.STRETCH;
-        }
-        throw new IllegalStateException("Unknown alignment");
-    }
-
     private GFont convertFont(Font headerFont) {
         GFont font = new GFont(
                 ((headerFont.getStyle() & Font.ITALIC) != 0 ? GFont.ITALIC : null),
@@ -113,33 +95,44 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return font;
     }
 
-    private GContainerType convertContainerType(ContainerType containerType) {
-        switch (containerType) {
-            case CONTAINERH: return GContainerType.CONTAINERH;
-            case CONTAINERV: return GContainerType.CONTAINERV;
-            case COLUMNS: return GContainerType.COLUMNS;
-            case TABBED_PANE: return GContainerType.TABBED_PANE;
-            case VERTICAL_SPLIT_PANE: return GContainerType.VERTICAL_SPLIT_PANE;
-            case HORIZONTAL_SPLIT_PANE: return GContainerType.HORIZONTAL_SPLIT_PANE;
-            case SCROLL:
-                throw new IllegalStateException("SCROLL container isn't yet supported");
-            case FLOW:
-                throw new IllegalStateException("FLOW container isn't yet supported");
-        }
-        throw new IllegalStateException("Unknown container type");
-    }
-
     @Cached
     @Converter(from = ClientContainer.class)
     public GContainer convertContainer(ClientContainer clientContainer) {
         GContainer container = initGwtComponent(clientContainer,  new GContainer());
 
         container.caption = clientContainer.getRawCaption();
-        container.type = convertContainerType(clientContainer.getType());
-        container.childrenAlignment = convertAlignment(clientContainer.childrenAlignment);
-        container.gapX = clientContainer.gapX;
-        container.gapY = clientContainer.gapY;
-        container.columns = clientContainer.columns;
+
+        byte containerType = clientContainer.getType();
+        switch (containerType) {
+            case CONTAINERH:
+                container.type = GContainerType.CONTAINERH;
+                break;
+            case CONTAINERV:
+                container.type = GContainerType.CONTAINERV;
+                break;
+            case CONTAINERVH:
+                container.type = GContainerType.CONTAINERVH;
+                break;
+            case SPLIT_PANE_VERTICAL:
+                container.type = GContainerType.VERTICAL_SPLIT_PANEL;
+                break;
+            case SPLIT_PANE_HORIZONTAL:
+                container.type = GContainerType.HORIZONTAL_SPLIT_PANEL;
+                break;
+            case TABBED_PANE:
+                container.type = GContainerType.TABBED_PANEL;
+                break;
+            case CONTAINER:
+                SimplexConstraints<ClientComponent> constraints = clientContainer.getConstraints();
+                if (constraints.childConstraints.equals(SingleSimplexConstraint.TOTHE_RIGHT)) {
+                    container.type = GContainerType.CONTAINERH;
+                } else if (constraints.childConstraints.equals(SingleSimplexConstraint.TOTHE_BOTTOM)) {
+                    container.type = GContainerType.CONTAINERV;
+                } else {
+                    container.type = GContainerType.CONTAINERVH;
+                }
+                break;
+        }
 
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);
@@ -478,6 +471,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         for (ClientPropertyDraw property : clientForm.defaultOrders.keyList()) {
             form.defaultOrders.put((GPropertyDraw) convertOrCast(property), clientForm.defaultOrders.get(property));
         }
+
+        form.allowScrollSplits = clientForm.gwtAllowScrollSplits;
 
         return form;
     }

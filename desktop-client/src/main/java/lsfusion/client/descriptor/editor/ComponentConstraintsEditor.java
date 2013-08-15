@@ -1,73 +1,81 @@
 package lsfusion.client.descriptor.editor;
 
+import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.descriptor.editor.base.TitledPanel;
-import lsfusion.client.descriptor.increment.editor.IncrementDoubleEditor;
-import lsfusion.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
 import lsfusion.client.descriptor.increment.editor.IncrementTextEditor;
 import lsfusion.client.logics.ClientComponent;
-import lsfusion.interop.form.layout.Alignment;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
-
-import static lsfusion.client.ClientResourceBundle.getString;
 
 public class ComponentConstraintsEditor extends TitledPanel {
 
-    protected ClientComponent component;
+    protected SimplexConstraints<ClientComponent> constraints;
+    protected TitledPanel fill;
+    protected TitledPanel insetsSibling;
+    protected TitledPanel directions;
 
-    protected JPanel panel;
-
-    protected TitledPanel flex;
-
-    protected FlexAlignmentEditor alignment;
-
-    public ComponentConstraintsEditor(ClientComponent component) {
-        super(getString("descriptor.editor.location.limit"));
-        this.component = component;
+    public ComponentConstraintsEditor(SimplexConstraints<ClientComponent> constraints) {
+        super(ClientResourceBundle.getString("descriptor.editor.location.limit"));
+        this.constraints = constraints;
 
         initialize();
     }
 
     private void initialize() {
-        panel = new JPanel();
+        JTextField fillVertical = new IncrementTextEditor(constraints, "fillVertical");
+        JTextField fillHorizontal = new IncrementTextEditor(constraints, "fillHorizontal");
+
+        JTextField topDirection = new IncrementTextEditor(constraints, "directionsTop");
+        JTextField leftDirection = new IncrementTextEditor(constraints, "directionsLeft");
+        JTextField bottomDirection = new IncrementTextEditor(constraints, "directionsBottom");
+        JTextField rightDirection = new IncrementTextEditor(constraints, "directionsRight");
+
+        SingleInsetsEditor siblingEditor = new SingleInsetsEditor("insetsSibling");
+
+        JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        flex = new TitledPanel(getString("descriptor.editor.location.limit.flex"), new IncrementDoubleEditor(component, "flex"));
-        alignment = new FlexAlignmentEditor(getString("descriptor.editor.location.limit.alignment"), "alignment");
 
-        panel.add(flex);
-        panel.add(alignment);
+        fill = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.location.limit.filling"));
+        fill.setLayout(new BoxLayout(fill, BoxLayout.X_AXIS));
+        fill.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.filling.horizontal")+" "));
+        fill.add(fillHorizontal);
+        fill.add(Box.createRigidArea(new Dimension(5, 5)));
+        fill.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.filling.vertical")+" "));
+        fill.add(fillVertical);
+
+        insetsSibling = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.location.limit.margins.on.the.components"), siblingEditor);
+
+        directions = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions"));
+        directions.setLayout(new BoxLayout(directions, BoxLayout.X_AXIS));
+        directions.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.up")));
+        directions.add(topDirection);
+        directions.add(Box.createRigidArea(new Dimension(5, 5)));
+        directions.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.left")));
+        directions.add(leftDirection);
+        directions.add(Box.createRigidArea(new Dimension(5, 5)));
+        directions.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.down")));
+        directions.add(bottomDirection);
+        directions.add(Box.createRigidArea(new Dimension(5, 5)));
+        directions.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.right")));
+        directions.add(rightDirection);
+
+        panel.add(fill);
+        panel.add(insetsSibling);
+        panel.add(directions);
 
         setLayout(new BorderLayout());
         add(panel, BorderLayout.CENTER);
     }
 
-    public class AlignmentEditor extends TitledPanel {
-        public AlignmentEditor(String description, String field) {
-            super(description, new JComboBox(new IncrementSingleListSelectionModel(component, field) {
-                @Override
-                public java.util.List<?> getSingleList() {
-                    return Arrays.asList(Alignment.values());
-                }
-            }));
-        }
-    }
-
-    public class FlexAlignmentEditor extends TitledPanel {
-        public FlexAlignmentEditor(String description, String field) {
-            super(description, new JComboBox(new IncrementSingleListSelectionModel(component, field) {
-                @Override
-                public java.util.List<?> getSingleList() {
-                    return Arrays.asList(FlexAlignment.values());
-                }
-            }));
-        }
+    public boolean validateEditor() {
+        return true;
     }
 
     public class SingleInsetsEditor extends JPanel {
+
         private JTextField topField;
         private JTextField leftField;
         private JTextField bottomField;
@@ -75,22 +83,22 @@ public class ComponentConstraintsEditor extends TitledPanel {
 
         public SingleInsetsEditor(String field) {
 
-            topField = new IncrementTextEditor(component, field + "Top");
-            leftField = new IncrementTextEditor(component, field + "Left");
-            bottomField = new IncrementTextEditor(component, field + "Bottom");
-            rightField = new IncrementTextEditor(component, field + "Right");
+            topField = new IncrementTextEditor(constraints, field + "Top");
+            leftField = new IncrementTextEditor(constraints, field + "Left");
+            bottomField = new IncrementTextEditor(constraints, field + "Bottom");
+            rightField = new IncrementTextEditor(constraints, field + "Right");
 
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-            add(new JLabel(getString("descriptor.editor.location.limit.directions.from.above")));
+            add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.from.above")));
             add(topField);
             add(Box.createRigidArea(new Dimension(5, 5)));
-            add(new JLabel(getString("descriptor.editor.location.limit.directions.on.the.right")));
+            add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.on.the.right")));
             add(leftField);
             add(Box.createRigidArea(new Dimension(5, 5)));
-            add(new JLabel(getString("descriptor.editor.location.limit.directions.from.below")));
+            add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.from.below")));
             add(bottomField);
             add(Box.createRigidArea(new Dimension(5, 5)));
-            add(new JLabel(getString("descriptor.editor.location.limit.directions.on.the.left")));
+            add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.on.the.left")));
             add(rightField);
         }
     }

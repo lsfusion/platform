@@ -1,11 +1,9 @@
 package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.Scheduler;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import com.google.gwt.user.client.ui.CellPanel;
 import lsfusion.gwt.base.client.ui.ResizableLayoutPanel;
-import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
+import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.form.shared.view.GGrid;
 import lsfusion.gwt.form.shared.view.GGroupObject;
 import lsfusion.gwt.form.shared.view.GOrder;
@@ -15,9 +13,9 @@ import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import java.util.List;
 import java.util.Map;
 
-public class GGridController {
+public class GGridController implements DefaultFocusReceiver {
     private GGrid grid;
-    private GridView gridView;
+    private CellPanel gridView;
     private GGridTable table;
     private GGroupObjectController groupController;
     private boolean forceHidden = false;
@@ -25,15 +23,17 @@ public class GGridController {
     public GGridController(GGrid igrid, GFormController iformController, GGroupObjectController igroupObject) {
         grid = igrid;
         groupController = igroupObject;
-        gridView = new GridView();
+        gridView = new ResizableVerticalPanel();
         table = new GGridTable(iformController, igroupObject, this);
 
         ResizableLayoutPanel panel = new ResizableLayoutPanel();
         panel.setStyleName("gridResizePanel");
         panel.setSize("100%", "100%");
-
+        gridView.setSize("100%", "100%");
         panel.setWidget(table);
-        gridView.add(panel, GFlexAlignment.STRETCH, 1);
+        gridView.add(panel);
+
+        gridView.setCellHeight(panel, "100%");
     }
 
     public GGridTable getTable() {
@@ -79,6 +79,10 @@ public class GGridController {
 
     public void addToLayout(GFormLayout formLayout) {
         formLayout.add(grid, gridView);
+        if (grid.defaultComponent) {
+            formLayout.addDefaultComponent(this);
+        }
+//        formLayout.setTableCellSize(grid.container, gridView, "100%", false);
     }
 
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
@@ -125,24 +129,18 @@ public class GGridController {
         table.selectProperty(propertyDraw);
     }
 
-    public void clearGridOrders(GGroupObject groupObject) {
-        table.clearGridOrders(groupObject);
+    @Override
+    public boolean focus() {
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                table.setFocus(true);
+            }
+        });
+        return true;
     }
 
-    private class GridView extends FlexPanel implements DefaultFocusReceiver {
-        public GridView() {
-            super(true);
-        }
-
-    @Override
-        public boolean focus() {
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    table.setFocus(true);
-                }
-            });
-            return true;
-        }
+    public void clearGridOrders(GGroupObject groupObject) {
+        table.clearGridOrders(groupObject);
     }
 }

@@ -23,6 +23,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
         divStyle.setBorderWidth(1, Style.Unit.PX);
         divStyle.setBorderStyle(Style.BorderStyle.SOLID);
         divStyle.setProperty("borderRadius", 3, Style.Unit.PX);
+        divStyle.setProperty("display", "table");
         divStyle.setWidth(100, Style.Unit.PCT);
 
         DivElement innerDiv = cellElement.appendChild(Document.get().createDivElement());

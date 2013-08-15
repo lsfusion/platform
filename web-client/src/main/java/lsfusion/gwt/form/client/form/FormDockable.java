@@ -137,9 +137,7 @@ final class FormDockable {
 
             if (content instanceof GFormController) {
                 ((GFormController) content).setFiltersVisible(selected && !blocked);
-                if (!selected || !blocked) { // чтобы автоматом не проставлять фокус под блокировку
-                    ((GFormController) content).setSelected(selected);
-                }
+                ((GFormController) content).setSelected(selected);
             }
         }
     }

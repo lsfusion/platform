@@ -87,55 +87,6 @@ public class ReflectionUtils {
         return (T) Proxy.newProxyInstance(ifaceClass.getClassLoader(), new Class<?>[]{ifaceClass}, new Handler(object));
     }
 
-    public static Method getSingleMethod(Object object, String method, int paramCount) {
-        for (Method methodObject : object.getClass().getMethods())
-            if (methodObject.getName().equals(method) && (paramCount == -1 || methodObject.getParameterTypes().length == paramCount))
-                return methodObject;
-        throw new RuntimeException("no single method");
-    }
-
-    public static Method getSingleMethod(Object object, String method) {
-        return getSingleMethod(object, method, -1);
-    }
-
-    public static void invokeCheckSetter(Object object, String field, Object set) {
-        if (!BaseUtils.nullEquals(invokeGetter(object, field), set))
-            invokeSetter(object, field, set);
-    }
-
-    public static void invokeSetter(Object object, String field, Object set) {
-        try {
-            getSingleMethod(object, "set" + BaseUtils.capitalize(field), 1).invoke(object, set);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static Object invokeGetter(Object object, String field) {
-        try {
-            Method method = object.getClass().getMethod("get" + BaseUtils.capitalize(field));
-            return method.invoke(object);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void invokeAdder(Object object, String field, Object add) {
-        try {
-            getSingleMethod(object, "addTo" + BaseUtils.capitalize(field), 1).invoke(object, add);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void invokeRemover(Object object, String field, Object add) {
-        try {
-            getSingleMethod(object, "removeFrom" + BaseUtils.capitalize(field), 1).invoke(object, add);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private static class Handler<T> implements InvocationHandler {
         private final T object;
 

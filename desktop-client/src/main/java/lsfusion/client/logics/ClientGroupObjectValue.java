@@ -1,7 +1,9 @@
 package lsfusion.client.logics;
 
 import java.io.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import static lsfusion.base.BaseUtils.*;
 
@@ -22,8 +24,6 @@ public class ClientGroupObjectValue extends HashMap<ClientObject, Object> implem
             throw new UnsupportedOperationException("not supported");
         }
     };
-
-    public static final List<ClientGroupObjectValue> SINGLE_EMPTY_KEY_LIST = Arrays.asList(EMPTY);
 
     public ClientGroupObjectValue(ClientObject object, Object value) {
         put(object, value);

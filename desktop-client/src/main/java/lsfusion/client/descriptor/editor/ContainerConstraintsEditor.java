@@ -1,38 +1,47 @@
 package lsfusion.client.descriptor.editor;
 
+import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.descriptor.editor.base.TitledPanel;
-import lsfusion.client.descriptor.increment.editor.IncrementIntegerEditor;
-import lsfusion.client.logics.ClientContainer;
+import lsfusion.client.descriptor.increment.editor.IncrementTextEditor;
+import lsfusion.client.logics.ClientComponent;
+import lsfusion.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.awt.*;
 
-import static lsfusion.client.ClientResourceBundle.getString;
-
 public class ContainerConstraintsEditor extends ComponentConstraintsEditor {
 
-    public ContainerConstraintsEditor(ClientContainer container) {
-        super(container);
+    public ContainerConstraintsEditor(SimplexConstraints<ClientComponent> constraints) {
+        super(constraints);
         initialize();
     }
 
     private void initialize() {
-        JTextField gapX = new IncrementIntegerEditor(component, "gapX");
-        JTextField gapY = new IncrementIntegerEditor(component, "gapY");
+        ChildConstraintsEditor childConstraintsEditor = new ChildConstraintsEditor(constraints, "childConstraints");
 
-        JPanel gaps = new TitledPanel(getString("descriptor.editor.location.limit.gaps"));
-        gaps.setLayout(new BoxLayout(gaps, BoxLayout.X_AXIS));
-        gaps.add(new JLabel(getString("descriptor.editor.location.limit.gaps.x") + " "));
-        gaps.add(gapX);
-        gaps.add(Box.createRigidArea(new Dimension(5, 5)));
-        gaps.add(new JLabel(getString("descriptor.editor.location.limit.gaps.y") + " "));
-        gaps.add(gapY);
+        SingleInsetsEditor insideEditor = new SingleInsetsEditor("insetsInside");
 
-        JPanel columns = new TitledPanel(getString("descriptor.editor.location.limit.columns"), new IncrementIntegerEditor(component, "columns"));
+        JTextField maxVars = new IncrementTextEditor(constraints, "maxVariables");
 
-        AlignmentEditor childrenAlignment = new AlignmentEditor(getString("descriptor.editor.location.limit.children.alignment"), "childrenAlignment");
-        panel.add(childrenAlignment);
-        panel.add(gaps);
-        panel.add(columns);
+        TitledPanel doNotIntersect = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.intersections"), childConstraintsEditor);
+
+        TitledPanel insetsInside = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.margins.of.borders"), insideEditor);
+
+        TitledPanel maxVarsPanel = new TitledPanel("");
+        maxVarsPanel.setLayout(new BoxLayout(maxVarsPanel, BoxLayout.X_AXIS));
+        maxVarsPanel.add(new JLabel((ClientResourceBundle.getString("descriptor.editor.variables.maximum")+": ")));
+        maxVarsPanel.add(maxVars);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.add(doNotIntersect);
+        panel.add(fill);
+        panel.add(insetsInside);
+        panel.add(insetsSibling);
+        panel.add(directions);
+        panel.add(maxVarsPanel);
+
+        setLayout(new BorderLayout());
+        add(panel, BorderLayout.CENTER);
     }
 }

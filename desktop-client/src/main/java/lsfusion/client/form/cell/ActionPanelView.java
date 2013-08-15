@@ -9,12 +9,11 @@ import lsfusion.client.form.EditPropertyHandler;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.editor.DialogBasedPropertyEditor;
+import lsfusion.client.form.queries.ToolbarGridButton;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientType;
 import lsfusion.interop.form.ServerResponse;
-import lsfusion.interop.form.layout.FlexConstraints;
-import lsfusion.interop.form.layout.FlexLayout;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,20 +30,18 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     private final ClientPropertyDraw property;
     private final ClientGroupObjectValue columnKey;
     private final ClientFormController form;
+    public boolean toToolbar;
     private Object value;
     private boolean readOnly;
 
-    private JPanel panel;
-
     public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
-        super((String)null);
+        super(iproperty.getEditCaption());
 
         this.defaultBackground = getBackground();
         this.property = iproperty;
         this.columnKey = icolumnKey;
         this.form = iform;
 
-        setCaption(property.getCaption());
         setToolTip(property.getCaption());
 
         if (property.isReadOnly()) {
@@ -52,11 +49,6 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         }
 
         property.design.designComponent(this);
-        if (property.focusable != null) {
-            setFocusable(property.focusable);
-        } else if (property.editKey != null) {
-            setFocusable(false);
-        }
 
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -68,7 +60,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (isRightMouseButton(e)) {
+                if (isRightMouseButton(e) ) {
                     showContextMenu(e.getPoint());
                 }
             }
@@ -85,9 +77,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
             }
         });
 
-        panel = new JPanel(null);
-        panel.setLayout(new FlexLayout(panel, true));
-        panel.add(this, new FlexConstraints(property.alignment, 1));
+        setDefaultSizes();
     }
 
     private void showContextMenu(Point point) {
@@ -117,7 +107,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public JComponent getComponent() {
-        return panel;
+        return this;
     }
 
     public void setValue(Object value) {
@@ -141,13 +131,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setCaption(String caption) {
-        caption = property.getEditCaption(caption);
-        if (BaseUtils.isRedundantString(caption)) {
-            setMargin(new Insets(2, 2, 2, 2));
-        } else {
-            setMargin(new Insets(2, 14, 2, 14));
-        }
-        setText(caption);
+        setText(property.getEditCaption(caption));
     }
 
     public void setBackgroundColor(Color background) {
@@ -174,19 +158,14 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         setToolTipText(toolTip);
     }
 
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(super.getPreferredSize().width, property.getPreferredHeight(this));
-    }
+    private void setDefaultSizes() {
+        int height = toToolbar ? ToolbarGridButton.DEFAULT_SIZE.height : property.getPreferredHeight(this);
 
-    @Override
-    public Dimension getMinimumSize() {
-        return new Dimension(super.getMinimumSize().width, property.getPreferredHeight(this));
-    }
+        int minimumWidth = property.minimumSize != null ? property.getMinimumWidth(this) : 0;
+        int maximumWidth = property.maximumSize != null ? property.getMaximumWidth(this) : 32767;
 
-    @Override
-    public Dimension getMaximumSize() {
-        return new Dimension(super.getMaximumSize().width, property.getPreferredHeight(this));
+        setMinimumSize(new Dimension(minimumWidth, height));
+        setMaximumSize(new Dimension(maximumWidth, height));
     }
 
     @Override

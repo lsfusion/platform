@@ -4,7 +4,7 @@ import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.descriptor.editor.GridEditor;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -13,6 +13,7 @@ import java.io.IOException;
 
 public class ClientGrid extends ClientComponent {
 
+    public byte minRowCount;
     public boolean tabVertical = false;
     public boolean autoHide;
 
@@ -26,15 +27,15 @@ public class ClientGrid extends ClientComponent {
     }
 
     @Override
-    protected void initDefaultConstraints() {
-        flex = 1;
-        alignment = FlexAlignment.STRETCH;
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return SimplexConstraints.getGridDefaultConstraints(super.getDefaultConstraints());
     }
 
     @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
+        outStream.writeByte(minRowCount);
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(autoHide);
 
@@ -45,6 +46,7 @@ public class ClientGrid extends ClientComponent {
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
+        minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();
         autoHide = inStream.readBoolean();
 
@@ -81,5 +83,19 @@ public class ClientGrid extends ClientComponent {
 
     public boolean getAutoHide() {
         return autoHide;
+    }
+
+    public void setMinRowCount(byte minRowCount) {
+        this.minRowCount = minRowCount;
+        updateDependency(this, "minRowCount");
+    }
+
+    public byte getMinRowCount() {
+        return minRowCount;
+    }
+
+    @Override
+    public boolean shouldBeDeclared() {
+        return true;
     }
 }

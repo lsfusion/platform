@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import org.jdesktop.swingx.SwingXUtilities;
 import lsfusion.base.ERunnable;
-import lsfusion.client.form.layout.ClientFormLayout;
+import lsfusion.client.form.ClientFormLayout;
 import lsfusion.client.form.TableTransferHandler;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.interop.KeyStrokes;
@@ -12,7 +12,6 @@ import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
 import javax.swing.Timer;
-import javax.swing.border.Border;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.*;
@@ -260,19 +259,12 @@ public class SwingUtils {
         }
     }
 
-    public static Dimension overrideSize(Dimension base, Dimension override) {
-        if (override != null) {
-            if (override.width >= 0) {
-                base.width = override.width;
-            }
-            if (override.height >= 0) {
-                base.height = override.height;
-            }
-        }
-        return base;
+    public static Dimension getOverridedSize(Dimension base, Dimension override) {
+        return new Dimension(override.width == -1 ? base.width : override.width,
+                             override.height == -1 ? base.height : override.height);
     }
 
-    public static ClientFormLayout getClientFormLayout(Component comp) {
+    public static ClientFormLayout getClientFormlayout(Component comp) {
         while (comp != null) {
             if (comp instanceof ClientFormLayout) {
                 return (ClientFormLayout) comp;
@@ -405,13 +397,6 @@ public class SwingUtils {
         table.getColumnModel().setColumnMargin(2);
         table.setRowMargin(2);
         table.setBorder(BorderFactory.createLineBorder(Color.gray));
-    }
-
-    public static Border randomBorder() {
-        int r = (int) (Math.random() * 256);
-        int g = (int) (Math.random() * 256);
-        int b = (int) (Math.random() * 256);
-        return BorderFactory.createLineBorder(new Color(r, g, b), 2);
     }
 
     private static final class SingleActionTimer extends Timer {

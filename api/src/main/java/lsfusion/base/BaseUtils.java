@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -1619,6 +1620,55 @@ public class BaseUtils {
     public static String capitalize(String s) {
         if (s.length() == 0) return s;
         return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
+
+    public static Method getSingleMethod(Object object, String method, int paramCount) {
+        for (Method methodObject : object.getClass().getMethods())
+            if (methodObject.getName().equals(method) && (paramCount == -1 || methodObject.getParameterTypes().length == paramCount))
+                return methodObject;
+        throw new RuntimeException("no single method");
+    }
+
+    public static Method getSingleMethod(Object object, String method) {
+        return getSingleMethod(object, method, -1);
+    }
+
+    public static void invokeCheckSetter(Object object, String field, Object set) {
+        if (!nullEquals(invokeGetter(object, field), set))
+            invokeSetter(object, field, set);
+    }
+
+    public static void invokeSetter(Object object, String field, Object set) {
+        try {
+            getSingleMethod(object, "set" + BaseUtils.capitalize(field), 1).invoke(object, set);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Object invokeGetter(Object object, String field) {
+        try {
+            Method method = object.getClass().getMethod("get" + BaseUtils.capitalize(field));
+            return method.invoke(object);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void invokeAdder(Object object, String field, Object add) {
+        try {
+            getSingleMethod(object, "addTo" + BaseUtils.capitalize(field), 1).invoke(object, add);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void invokeRemover(Object object, String field, Object add) {
+        try {
+            getSingleMethod(object, "removeFrom" + BaseUtils.capitalize(field), 1).invoke(object, add);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static boolean isRedundantString(String s) {

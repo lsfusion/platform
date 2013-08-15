@@ -23,15 +23,9 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
     private String caption;
     private String description;
 
-    private ContainerType type = ContainerType.CONTAINERH;
-
-    public Alignment childrenAlignment = Alignment.CENTER;
-
-    public int gapX = 10;
-    public int gapY = 5;
-    public int columns = 4;
-
     public List<ClientComponent> children = new ArrayList<ClientComponent>();
+
+    private byte type = ContainerType.CONTAINER;
 
     public ClientContainer() {
     }
@@ -40,10 +34,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         super(context);
 
         customConstructor();
-    }
-
-    public void customConstructor() {
-        initAggregateObjects(getContext());
     }
 
     @Override
@@ -55,13 +45,7 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         pool.writeString(outStream, caption);
         pool.writeString(outStream, description);
 
-        pool.writeObject(outStream, type);
-
-        pool.writeObject(outStream, childrenAlignment);
-
-        outStream.writeInt(columns);
-        outStream.writeInt(gapX);
-        outStream.writeInt(gapY);
+        outStream.writeByte(type);
     }
 
     @Override
@@ -73,13 +57,16 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         caption = pool.readString(inStream);
         description = pool.readString(inStream);
 
-        type = pool.readObject(inStream);
+        type = inStream.readByte();
+    }
 
-        childrenAlignment = pool.readObject(inStream);
+    @Override
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return SimplexConstraints.getContainerDefaultConstraints(super.getDefaultConstraints());
+    }
 
-        columns = inStream.readInt();
-        gapX = inStream.readInt();
-        gapY = inStream.readInt();
+    public void customConstructor() {
+        initAggregateObjects(getContext());
     }
 
     @Override
@@ -167,85 +154,29 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         updateDependency(this, "description");
     }
 
-    public ContainerType getType() {
+    public byte getType() {
         return type;
     }
 
-    public void setType(ContainerType type) {
+    public void setType(byte type) {
         this.type = type;
-        updateDependency(this, "type");
     }
 
-    public Alignment getChildrenAlignment() {
-        return childrenAlignment;
+    public String getStringType() {  // usage через reflection
+        return ContainerType.getTypeNamesList().get((int) type);
     }
 
-    public void setChildrenAlignment(Alignment childrenAlignment) {
-        this.childrenAlignment = childrenAlignment;
-        updateDependency(this, "childrenAlignment");
+    public void setStringType(String type) {
+        this.type = (byte) ContainerType.getTypeNamesList().indexOf(type);
+        updateDependency(this, "stringType");
     }
 
-    public int getGapX() {
-        return gapX;
+    public boolean isTabbedPane() {
+        return type == ContainerType.TABBED_PANE;
     }
 
-    public void setGapX(int gapX) {
-        this.gapX = gapX;
-        updateDependency(this, "gapX");
-    }
-
-    public int getGapY() {
-        return gapY;
-    }
-
-    public void setGapY(int gapY) {
-        this.gapY = gapY;
-        updateDependency(this, "gapY");
-    }
-
-    public int getColumns() {
-        return columns;
-    }
-
-    public void setColumns(int columns) {
-        this.columns = columns;
-        updateDependency(this, "columns");
-    }
-
-    public boolean isTabbed() {
-        return type == TABBED_PANE;
-    }
-
-    public boolean isSplit() {
-        return type == HORIZONTAL_SPLIT_PANE || type == VERTICAL_SPLIT_PANE;
-    }
-
-    public boolean isVerticalSplit() {
-        return type == VERTICAL_SPLIT_PANE;
-    }
-
-    public boolean isVertical() {
-        return type == CONTAINERV;
-    }
-
-    public boolean isHorizontal() {
-        return type == CONTAINERH;
-    }
-
-    public boolean isLinear() {
-        return isVertical() || isHorizontal();
-    }
-
-    public boolean isColumns() {
-        return type == COLUMNS;
-    }
-
-    public boolean isScroll() {
-        return type == SCROLL;
-    }
-
-    public boolean isFlow() {
-        return type == FLOW;
+    public boolean isSplitPane() {
+        return type == ContainerType.SPLIT_PANE_HORIZONTAL || type == SPLIT_PANE_VERTICAL;
     }
 
     @Override
@@ -275,4 +206,18 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
     public List<ClientComponent> getChildren() {
         return children;
     }
+
+    @Override
+    public DoNotIntersectSimplexConstraint getChildConstraints() {
+        if (type == CONTAINERV) {
+            return SingleSimplexConstraint.TOTHE_BOTTOM;
+        } else if (type == CONTAINERH) {
+            return SingleSimplexConstraint.TOTHE_RIGHT;
+        }else if (type == CONTAINERVH) {
+            return SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
+        } else {
+            return super.getChildConstraints();
+        }
+    }
+
 }

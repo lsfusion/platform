@@ -32,38 +32,26 @@ public class ContextIdentityObject extends IdentityObject implements Application
     }
 
     public void addDependency(String field, IncrementView view) {
-        if (context != null) {
-            context.addDependency(field, view);
-        }
+        context.addDependency(field, view);
     }
 
     public void addDependency(Object object, String field, IncrementView view) {
-        if (context != null) {
-            context.addDependency(object, field, view);
-        }
+        context.addDependency(object, field, view);
     }
 
     public void removeDependency(String field, IncrementView view) {
-        if (context != null) {
-            context.removeDependency(field, view);
-        }
+        context.removeDependency(field, view);
     }
 
     public void removeDependency(IncrementView view) {
-        if (context != null) {
-            context.removeDependency(view);
-        }
+        context.removeDependency(view);
     }
 
     public void removeDependency(Object object, String field, IncrementView view) {
-        if (context != null) {
-            context.removeDependency(object, field, view);
-        }
+        context.removeDependency(object, field, view);
     }
 
     public void updateDependency(Object object, String field) {
-        if (context != null) {
-            context.updateDependency(object, field);
-        }
+        context.updateDependency(object, field);
     }
 }

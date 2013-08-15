@@ -2,7 +2,9 @@ package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.form.client.form.ui.container.GAbstractFormContainer;
 import lsfusion.gwt.form.client.form.ui.toolbar.GCalculateSumButton;
 import lsfusion.gwt.form.client.form.ui.toolbar.GCountQuantityButton;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
@@ -24,7 +26,10 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     private GGridController grid;
     private GShowTypeView showTypeView;
 
-    private GClassViewType classView = GClassViewType.GRID;
+    private GClassViewType classViewType = GClassViewType.GRID;
+
+    // пустая панель внизу контейнера группы, которая расширяется при спрятанном гриде, прижимая тулбар и панельный контейнер кверху
+    private SimplePanel blankElement = new SimplePanel();
 
     private GCountQuantityButton quantityButton;
     private GCalculateSumButton sumButton;
@@ -38,10 +43,17 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
             grid.addToLayout(getFormLayout());
 
             GContainer gridContainer = groupObject.grid.container;
+            getFormLayout().setTableCellSize(gridContainer.container, gridContainer, "100%", true);
+            getFormLayout().setTableCellSize(gridContainer.container, gridContainer, "100%", false);
 
             showTypeView = new GShowTypeView(formController, groupObject);
             showTypeView.addToLayout(getFormLayout());
             showTypeView.setBanClassViews(groupObject.banClassView);
+
+            GAbstractFormContainer gridParentParent = getFormLayout().getFormContainer(groupObject.grid.container.container);
+            if (gridParentParent != null) {
+                gridParentParent.addDirectly(blankElement);
+            }
 
             configureToolbar();
         }
@@ -303,8 +315,8 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     public void setClassView(GClassViewType newClassView) {
-        if (newClassView != null && newClassView != classView) {
-            classView = newClassView;
+        if (newClassView != null && newClassView != classViewType) {
+            classViewType = newClassView;
         }
     }
 
@@ -345,14 +357,24 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
                 filter.setVisible(grid.isVisible());
             }
 
-            showTypeView.update(classView);
+            GContainer gridContainer = groupObject.grid.container;
+            if (grid.isVisible()) {
+                getFormLayout().setTableCellSize(gridContainer.container, gridContainer, "100%", false);
+                getFormLayout().setTableCellSize(gridContainer.container, blankElement, "auto", false);
+            } else {
+                getFormLayout().setTableCellSize(gridContainer.container, gridContainer, "auto", false);
+                getFormLayout().setTableCellSize(gridContainer.container, blankElement, "100%", false);
+            }
+            if (showTypeView != null) {
+                showTypeView.setClassView(classViewType);
+            }
         }
     }
 
     private void update() {
         updateGrid();
         panel.update();
-        panel.setVisible(classView != GClassViewType.HIDE);
+        panel.setVisible(classViewType != GClassViewType.HIDE);
     }
 
     public void beforeHidingGrid() {
@@ -374,7 +396,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     public boolean isInGridClassView() {
-        return classView == GClassViewType.GRID;
+        return classViewType == GClassViewType.GRID;
     }
 
     public boolean isGridEmpty() {
@@ -431,7 +453,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     public void modifyGroupObject(GGroupObjectValue key, boolean add) {
-        assert classView == GClassViewType.GRID;
+        assert classViewType == GClassViewType.GRID;
 
         grid.modifyGridObject(key, add);
     }

@@ -2,7 +2,6 @@ package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.form.client.form.ui.filter.GFilterController;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.shared.view.GObject;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.GRegularFilterGroup;

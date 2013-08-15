@@ -1,11 +1,11 @@
 package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
+import org.apache.log4j.Logger;
 import lsfusion.base.EProvider;
 import lsfusion.client.form.BusyDisplayer;
 import lsfusion.interop.remote.MethodInvocation;
 import lsfusion.interop.remote.PendingRemoteInterface;
-import org.apache.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implements PendingRemoteInterface {
     private static Logger logger = Logger.getLogger(RemoteFormProxy.class);
@@ -77,17 +76,6 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
 
     public boolean hasProperty(Object key) {
         return properties.containsKey(key);
-    }
-
-    protected <T> T callImmutableMethod(String methodName, Callable<T> callable) throws Exception {
-        logger.debug("Running immutable method: " + methodName);
-        if (hasProperty(methodName)) {
-            Object result = getProperty(methodName);
-            logger.debug("  Returning cached value: " + result);
-            return (T) result;
-        }
-        logger.debug("  Directly call immutable method:");
-        return callable.call();
     }
 
     protected void logRemoteMethodStartCall(String methodName) {

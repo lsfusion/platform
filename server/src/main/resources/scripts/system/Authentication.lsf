@@ -59,14 +59,8 @@ FORM customUser 'Пользователь'
 EXTEND DESIGN customUser {
     NEW container BEFORE functions.box {
         type = SPLITH;
-        fill = 1;
-        ADD u.box {
-            flex = 0.3;
-        };
-        u.panel.props {
-            type = COLUMNS;
-            columns = 1;
-        }
+        childConstraints = TO THE RIGHT;
+        ADD u.box;
     }
 }
 

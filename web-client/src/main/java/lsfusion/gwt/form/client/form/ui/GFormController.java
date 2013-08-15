@@ -36,7 +36,6 @@ import lsfusion.gwt.form.client.form.ui.classes.ClassChosenHandler;
 import lsfusion.gwt.form.client.form.ui.classes.GResizableClassDialog;
 import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalDialog;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.shared.actions.form.*;
 import lsfusion.gwt.form.shared.actions.navigator.GenerateID;
 import lsfusion.gwt.form.shared.actions.navigator.GenerateIDResult;
@@ -121,7 +120,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         dispatcher = new FormDispatchAsync(this);
 
-        formLayout = new GFormLayout(this, form.mainContainer);
+        formLayout = new GFormLayout(this, gForm.mainContainer);
 
         asyncTimer = new Timer() {
             @Override
@@ -727,6 +726,9 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
         dispatcher.execute(new SetTabVisible(tabbedPane.ID, visibleComponent.ID), new ServerResponseCallback());
+        if (formLayout != null && visibleComponent instanceof GContainer) {
+            formLayout.adjustContainerSizes((GContainer) visibleComponent);
+        }
         relayoutTables(visibleComponent);
     }
 
@@ -892,11 +894,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public int getPreferredWidth() {
-        return form.mainContainer.preferredWidth;
+        return formLayout.getMainKey().preferredWidth;
     }
 
     public int getPreferredHeight() {
-        return form.mainContainer.preferredHeight;
+        return formLayout.getMainKey().preferredHeight;
     }
 
     private GPropertyTable editingTable;
@@ -942,33 +944,37 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void setSelected(boolean selected) {
         if (selected) {
             if (!initialResizeProcessed) { // до чего-нибудь мог не успеть дойти onResize() при открытии (открытие сразу нескольких форм)
-                relayoutTables(form.mainContainer);
+                relayoutTables(formLayout.getMainKey());
                 initialResizeProcessed = true;
             }
             scheduleFocusFirstWidget();
-            restoreGridScrollPositions();
+            restoreGridScrollPosition();
         } else {
             // обходим баг Chrome со скроллингом
             // http://code.google.com/p/chromium/issues/detail?id=36428
-            storeGridScrollPositions();
+            // необходимо, чтобы нормально заработало следующее
+            // http://jsfiddle.net/sammy/RubNy/
+            storeGridScrollPosition();
         }
     }
 
-    public void storeGridScrollPositions() {
-        for (GGroupObjectController controller : controllers.values()) {
-            controller.beforeHidingGrid();
-        }
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.beforeHidingGrid();
+    public void storeGridScrollPosition() {
+        List<GGrid> grids = formLayout.getMainKey().getAllGrids();
+        for (GGrid grid : grids) {
+            GGroupObjectController goController = getGroupObjectController(grid.groupObject);
+            if (goController != null) {
+                goController.beforeHidingGrid();
+            }
         }
     }
 
-    public void restoreGridScrollPositions() {
-        for (GGroupObjectController controller : controllers.values()) {
-            controller.afterShowingGrid();
-        }
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.afterShowingGrid();
+    public void restoreGridScrollPosition() {
+        List<GGrid> grids = formLayout.getMainKey().getAllGrids();
+        for (GGrid grid : grids) {
+            GGroupObjectController goController = getGroupObjectController(grid.groupObject);
+            if (goController != null) {
+                goController.afterShowingGrid();
+            }
         }
     }
 

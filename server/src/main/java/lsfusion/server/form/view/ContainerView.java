@@ -1,6 +1,9 @@
 package lsfusion.server.form.view;
 
-import lsfusion.interop.form.layout.*;
+import lsfusion.interop.form.layout.AbstractContainer;
+import lsfusion.interop.form.layout.ContainerType;
+import lsfusion.interop.form.layout.SimplexConstraints;
+import lsfusion.interop.form.layout.SingleSimplexConstraint;
 import lsfusion.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -11,25 +14,10 @@ import java.util.List;
 
 public class ContainerView extends ComponentView implements AbstractContainer<ContainerView, ComponentView> {
 
-    public List<ComponentView> children = new ArrayList<ComponentView>();
-
     public String caption;
     public String description;
 
-    private ContainerType type = ContainerType.CONTAINERV;
-
-    public Alignment childrenAlignment = Alignment.LEADING;
-
-    public int gapX = 10;
-    public int gapY = 5;
-    public int columns = 5;
-
-    public ContainerView() {
-    }
-
-    public ContainerView(int ID) {
-        super(ID);
-    }
+    private byte type = ContainerType.CONTAINER;
 
     public void setCaption(String caption) {
         this.caption = caption;
@@ -39,37 +27,35 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         this.description = description;
     }
 
-    public ContainerType getType() {
+    public byte getType() {
         return type;
     }
 
-    public void setType(ContainerType type) {
+    public void setType(byte type) {
         this.type = type;
-        //todo: remove
         if (type == ContainerType.CONTAINERH) {
             constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         } else if (type == ContainerType.CONTAINERV) {
             constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
-        } else if (type == ContainerType.COLUMNS) {
+        } else if (type == ContainerType.CONTAINERVH) {
             constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
         }
     }
 
-    public void setChildrenAlignment(Alignment childrenAlignment) {
-        this.childrenAlignment = childrenAlignment;
+    public ContainerView() {
+
+    }
+    
+    public ContainerView(int ID) {
+        super(ID);
     }
 
-    public void setGapX(int gapX) {
-        this.gapX = gapX;
+    @Override
+    public SimplexConstraints<ComponentView> getDefaultConstraints() {
+        return SimplexConstraints.getContainerDefaultConstraints(super.getDefaultConstraints());
     }
 
-    public void setGapY(int gapY) {
-        this.gapY = gapY;
-    }
-
-    public void setColumns(int columns) {
-        this.columns = columns;
-    }
+    public List<ComponentView> children = new ArrayList<ComponentView>();
 
     @Override
     public ComponentView findById(int id) {
@@ -158,13 +144,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         pool.writeString(outStream, caption);
         pool.writeString(outStream, description);
 
-        pool.writeObject(outStream, type);
-
-        pool.writeObject(outStream, childrenAlignment);
-
-        outStream.writeInt(columns);
-        outStream.writeInt(gapX);
-        outStream.writeInt(gapY);
+        outStream.writeByte(type);
     }
 
     @Override
@@ -176,12 +156,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         caption = pool.readString(inStream);
         description = pool.readString(inStream);
 
-        type = pool.readObject(inStream);
-
-        childrenAlignment = pool.readObject(inStream);
-
-        columns = inStream.readInt();
-        gapX = inStream.readInt();
-        gapY = inStream.readInt();
+        type = inStream.readByte();
     }
 }

@@ -14,7 +14,6 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ModalityType;
-import lsfusion.interop.form.layout.Alignment;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -81,7 +80,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.logics.PropertyUtils.*;
-import static lsfusion.server.logics.scripted.AlignmentUtils.*;
 
 /**
  * User: DAle
@@ -2150,21 +2148,21 @@ public class ScriptingLogicsModule extends LogicsModule {
             window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), null, caption);
         }
 
-        Alignment hAlign = options.getHAlign();
-        Alignment vAlign = options.getVAlign();
-        Alignment thAlign = options.getTextHAlign();
-        Alignment tvAlign = options.getTextVAlign();
+        HAlign hAlign = options.getHAlign();
+        VAlign vAlign = options.getVAlign();
+        HAlign thAlign = options.getTextHAlign();
+        VAlign tvAlign = options.getTextVAlign();
         if (hAlign != null) {
-            window.alignmentX = asHorizontalToolbarAlign(hAlign);
+            window.alignmentX = hAlign.asToolbarAlign();
         }
         if (vAlign != null) {
-            window.alignmentY = asVerticalToolbarAlign(vAlign);
+            window.alignmentY = vAlign.asToolbarAlign();
         }
         if (thAlign != null) {
-            window.horizontalTextPosition = asHorizontalTextPosition(thAlign);
+            window.horizontalTextPosition = thAlign.asTextPosition();
         }
         if (tvAlign != null) {
-            window.verticalTextPosition = asVerticalTextPosition(tvAlign);
+            window.verticalTextPosition = tvAlign.asTextPosition();
         }
         return window;
     }

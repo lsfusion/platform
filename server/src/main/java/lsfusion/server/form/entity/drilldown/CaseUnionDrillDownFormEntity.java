@@ -2,7 +2,6 @@ package lsfusion.server.form.entity.drilldown;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.ContainerView;
@@ -81,7 +80,7 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
         valueContainer.add(design.get(implPropertyDraw));
         for (int i = propProperties.size()-1; i >= 0; i--) {
             ContainerView propsContainer = design.createContainer(getString("logics.property.drilldown.form.where") + " " + (i + 1));
-            propsContainer.setAlignment(FlexAlignment.STRETCH);
+            propsContainer.constraints.fillHorizontal = 1;
             propsContainer.add(design.get(propProperties.get(i)));
             propsContainer.add(design.get(whereProperties.get(i)));
             design.mainContainer.addAfter(propsContainer, valueContainer);

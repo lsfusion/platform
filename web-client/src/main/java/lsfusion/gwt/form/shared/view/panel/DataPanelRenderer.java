@@ -5,11 +5,10 @@ import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
+import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.GSinglePropertyTable;
@@ -25,16 +24,17 @@ import static lsfusion.gwt.form.client.HotkeyManager.Binding;
 public class DataPanelRenderer implements PanelRenderer {
     protected GPropertyDraw property;
 
-    private final FlexPanel panel;
-    private final ResizableSimplePanel gridPanel;
-
-    private final Label label;
-    private final GSinglePropertyTable valueTable;
+    protected final Label label;
+    protected final GSinglePropertyTable valueTable;
+    protected final CellPanel panel;
+    protected ResizableSimplePanel gridPanel;
 
     private String caption;
     private String tooltip;
 
     private EventTarget focusTargetAfterEdit;
+
+    private String componentWidth = null;
 
     public DataPanelRenderer(GFormController form, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
         this.property = iproperty;
@@ -64,6 +64,8 @@ public class DataPanelRenderer implements PanelRenderer {
             label.getElement().getStyle().setProperty("font", property.headerFont.getFullFont());
         }
 
+        int propertyPixelWidth = property.getPreferredPixelWidth();
+
         valueTable = new GSinglePropertyTable(form, property, columnKey) {
             @Override
             public void onEditFinished() {
@@ -85,21 +87,32 @@ public class DataPanelRenderer implements PanelRenderer {
         gridPanel.add(valueTable);
         valueTable.setSize("100%", "100%");
 
-        boolean vertical = property.panelLabelAbove;
-        panel = new FlexPanel(vertical);
+        panel = property.panelLabelAbove ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
         panel.addStyleName("dataPanelRendererPanel");
+        panel.setWidth("100%");
 
-        panel.add(label, GFlexAlignment.CENTER);
-        panel.add(gridPanel,
-                  vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER,
-                  1);
+        panel.add(label);
+        panel.setCellVerticalAlignment(label, HasVerticalAlignment.ALIGN_MIDDLE);
+        panel.setCellHorizontalAlignment(label, HasAlignment.ALIGN_CENTER);
 
-        gridPanel.setHeight(property.getPreferredHeight());
-        if (vertical) {
-            //т.к. flex-panel игнорирует stretch, если проставлен width
-            gridPanel.getElement().getStyle().setProperty("minWidth", property.getPreferredWidth());
+        panel.add(gridPanel);
+        panel.setCellWidth(gridPanel, "100%");
+        panel.setCellVerticalAlignment(gridPanel, HasVerticalAlignment.ALIGN_MIDDLE);
+
+        if (property.preferredHeight != -1) {
+            gridPanel.setHeight(property.preferredHeight + "px");
         } else {
-            gridPanel.setWidth(property.getPreferredWidth());
+            gridPanel.setHeight(property.getPreferredHeight());
+        }
+
+        if (property.preferredWidth != -1) {
+            gridPanel.setWidth(property.preferredWidth + "px");
+        } else if (property.fillHorizontal > 0) {
+            componentWidth =  property.container.getChildPercentSize(property, true);
+            // в этом случае при высте < 34px небольшой косяк в FF
+        } else {
+            valueTable.setTableWidth(propertyPixelWidth, Style.Unit.PX);
+            gridPanel.setWidth(propertyPixelWidth + "px");
         }
 
         valueTable.getElement().setPropertyObject("groupObject", property.groupObject);
@@ -112,27 +125,6 @@ public class DataPanelRenderer implements PanelRenderer {
                     return true;
                 }
             });
-        }
-    }
-
-    @Override
-    public void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex) {
-        if ((parent.isVertical() && flex > 0) || (parent.isHorizontal() && alignment == GFlexAlignment.STRETCH)) {
-            panel.setChildAlignment(gridPanel, GFlexAlignment.STRETCH);
-
-            gridPanel.getElement().getStyle().clearHeight();
-            gridPanel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
-
-            valueTable.setupFillParent();
-        }
-
-        if (alignment == GFlexAlignment.STRETCH && flex > 0) {
-            gridPanel.getElement().getStyle().clearWidth();
-            gridPanel.getElement().getStyle().clearHeight();
-            gridPanel.getElement().getStyle().clearProperty("minWidth");
-            gridPanel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
-
-            valueTable.setupFillParent();
         }
     }
 
@@ -181,5 +173,10 @@ public class DataPanelRenderer implements PanelRenderer {
     @Override
     public void focus() {
         valueTable.setFocus(true);
+    }
+
+    @Override
+    public String getWidth() {
+        return componentWidth;
     }
 }

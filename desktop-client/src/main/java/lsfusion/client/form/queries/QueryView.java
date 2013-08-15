@@ -66,7 +66,7 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 
         buttonPanel.add(applyButton);
-        buttonPanel.add(Box.createHorizontalStrut(2));
+        buttonPanel.add(Box.createHorizontalGlue());
         buttonPanel.add(addCondButton);
 
         condContainer = new JPanel();
@@ -205,6 +205,8 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
         for (QueryConditionView conditionView : condViews.values()) {
             conditionView.setJunctionVisible(Arrays.asList(condViews.values().toArray()).indexOf(conditionView) < condViews.size() - 1);
         }
+
+        controller.dropLayoutCaches();
     }
 
     @Override

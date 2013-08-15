@@ -1,6 +1,6 @@
 package lsfusion.client.descriptor.editor;
 
-import lsfusion.base.ReflectionUtils;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.context.IncrementView;
 import lsfusion.client.logics.ClientComponent;
 import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -35,11 +35,11 @@ public class ChildConstraintsEditor extends JPanel implements IncrementView {
     }
 
     private void updateField() {
-        ReflectionUtils.invokeSetter(constraints, field, editor.getConstraint());
+        BaseUtils.invokeSetter(constraints, field, editor.getConstraint());
     }
 
     public void update(Object updateObject, String updateField) {
-        DoNotIntersectSimplexConstraint value = (DoNotIntersectSimplexConstraint) ReflectionUtils.invokeGetter(updateObject, updateField);
+        DoNotIntersectSimplexConstraint value = (DoNotIntersectSimplexConstraint) BaseUtils.invokeGetter(updateObject, updateField);
         editor.setConstraint(value);
     }
 }

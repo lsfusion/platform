@@ -20,4 +20,8 @@ public class FormViewProxy extends ViewProxy<FormView> {
     public void setOverridePageWidth(Integer overridePageWidth) {
         target.overridePageWidth = overridePageWidth;
     }
+
+    public void setGwtAllowScrollSplits(boolean gwtAllowScrollSplits) {
+        target.gwtAllowScrollSplits = gwtAllowScrollSplits;
+    }
 }

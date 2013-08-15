@@ -1,24 +1,29 @@
 package lsfusion.gwt.form.client.form.ui;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 
-public class GCaptionPanel extends FlexPanel {
+public class GCaptionPanel extends ResizableVerticalPanel {
     public GCaptionPanel(String title, Widget content) {
-        super(true);
+        setStyleName("captionPanel");
+        setSize("100%", "100%");
 
-        setStyleName("captionPanelContainer");
+        ResizableVerticalPanel container = new ResizableVerticalPanel();
+        container.setSize("100%", "100%");
+        container.setStyleName("captionPanelContainer");
 
         Label legend = new Label(EscapeUtils.unicodeEscape(title));
         legend.setStyleName("captionPanelLegend");
 
-        getElement().getStyle().setOverflow(Style.Overflow.VISIBLE);
+        container.add(legend);
+        container.add(content);
 
-        add(legend);
-        add(content, GFlexAlignment.STRETCH, 1);
+        container.setCellHeight(content, "100%");
+        container.setCellWidth(content, "100%");
+
+        add(container);
+        setCellHeight(container, "100%");
     }
 }

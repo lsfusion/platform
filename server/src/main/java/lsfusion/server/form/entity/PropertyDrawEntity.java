@@ -371,10 +371,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return drawToToolbar;
     }
 
-    public boolean isForcedPanel() {
-        return forceViewType == ClassViewType.PANEL;
-    }
-
     public void setDrawToToolbar(boolean drawToToolbar) {
         this.drawToToolbar = drawToToolbar;
         if (drawToToolbar) {

@@ -133,6 +133,11 @@ public class ClientToolbar extends ClientComponent {
     }
 
     @Override
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return SimplexConstraints.getShowTypeDefaultConstraints(super.getDefaultConstraints());
+    }
+
+    @Override
     public String getCaption() {
         return ClientResourceBundle.getString("logics.toolbar");
     }
@@ -147,4 +152,8 @@ public class ClientToolbar extends ClientComponent {
         return new ToolbarEditor(this);
     }
 
+    @Override
+    public boolean shouldBeDeclared() {
+        return true;
+    }
 }

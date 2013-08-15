@@ -1,6 +1,5 @@
 package lsfusion.client.remote.proxy;
 
-import com.google.common.base.Throwables;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.RemoteFormInterface;
@@ -11,7 +10,6 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 public class RemoteFormProxy<T extends RemoteFormInterface>
         extends RemoteObjectProxy<T>
@@ -28,50 +26,23 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
 
     @ImmutableMethod
     public String getSID() throws RemoteException {
-        try {
-            return callImmutableMethod("getSID", new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    logRemoteMethodStartCall("getSID");
-                    String result = target.getSID();
-                    logRemoteMethodEndCall("getSID", result);
-                    return result;
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        logRemoteMethodStartCall("getSID");
+        String result = target.getSID();
+        logRemoteMethodEndCall("getSID", result);
+        return result;
     }
 
     @ImmutableMethod
     public FormUserPreferences getUserPreferences() throws RemoteException {
-        try {
-            return callImmutableMethod("getUserPreferences", new Callable<FormUserPreferences>() {
-                @Override
-                public FormUserPreferences call() throws Exception {
-                    return target.getUserPreferences();
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        return target.getUserPreferences();
     }
 
     @ImmutableMethod
     public byte[] getRichDesignByteArray() throws RemoteException {
-        try {
-            return callImmutableMethod("getRichDesignByteArray", new Callable<byte[]>() {
-                @Override
-                public byte[] call() throws Exception {
-                    logRemoteMethodStartCall("getRichDesignByteArray");
-                    byte[] result = target.getRichDesignByteArray();
-                    logRemoteMethodEndCall("getRichDesignByteArray", result);
-                    return result;
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        logRemoteMethodStartCall("getRichDesignByteArray");
+        byte[] result = target.getRichDesignByteArray();
+        logRemoteMethodEndCall("getRichDesignByteArray", result);
+        return result;
     }
 
     public ReportGenerationData getReportData(long requestIndex, Integer groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException {

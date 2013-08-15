@@ -1,7 +1,9 @@
 package lsfusion.gwt.form.client.form.ui;
 
+import com.google.gwt.user.client.ui.CellPanel;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.ResizableLayoutPanel;
+import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GFormChanges;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -13,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GTreeGroupController extends GAbstractGroupObjectController {
+public class GTreeGroupController extends GAbstractGroupObjectController implements DefaultFocusReceiver {
     private GTreeGroup treeGroup;
 
     private GTreeTable tree;
@@ -27,19 +29,22 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
 
         tree = new GTreeTable(iFormController, iForm, this);
 
-        TreeTableView treeTableView = new TreeTableView();
-        //todo: think more, commented only to be used in flex layout
-//        treeTableView.setSize("100%", "100%");
+        CellPanel treeTableView = new ResizableVerticalPanel();
+        treeTableView.setSize("100%", "100%");
 
         ResizableLayoutPanel panel = new ResizableLayoutPanel();
         panel.setStyleName("gridResizePanel");
-//        panel.setSize("100%", "100%");
+        panel.setSize("100%", "100%");
         panel.setWidget(tree);
 
-//        treeTableView.add(panel);
-//        getFormLayout().add(treeGroup, treeTableView);
+        treeTableView.add(panel);
+        treeTableView.setCellHeight(panel, "100%");
+        treeTableView.setCellWidth(panel, "100%");
 
-        getFormLayout().add(treeGroup, panel);
+        getFormLayout().add(treeGroup, treeTableView, 0);
+        if (treeGroup.defaultComponent) {
+            getFormLayout().addDefaultComponent(this);
+        }
 
         addFilterButton();
     }
@@ -118,18 +123,6 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
             tree.update();
         }
         panel.update();
-    }
-
-    public void beforeHidingGrid() {
-        if (tree != null) {
-            tree.beforeHiding();
-        }
-    }
-
-    public void afterShowingGrid() {
-        if (tree != null) {
-            tree.afterShowing();
-        }
     }
 
     @Override
@@ -268,10 +261,8 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         formController.changeFilter(treeGroup, conditions);
     }
 
-    private class TreeTableView extends ResizableLayoutPanel implements DefaultFocusReceiver {
-        @Override
-        public boolean focus() {
-            return focusFirstWidget();
-        }
+    @Override
+    public boolean focus() {
+        return focusFirstWidget();
     }
 }

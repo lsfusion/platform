@@ -31,6 +31,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public boolean isRecursive;
     public int pageSize = -1;
     public boolean needVerticalScroll;
+    public int tableRowsCount = -1;
 
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
 
@@ -122,6 +123,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         pool.serializeObject(outStream, toolbar);
         pool.serializeObject(outStream, filter);
         outStream.writeBoolean(needVerticalScroll);
+        outStream.writeInt(tableRowsCount);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -144,6 +146,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
             pageSize = ps;
         }
         needVerticalScroll = inStream.readBoolean();
+        tableRowsCount = inStream.readInt();
         sID = inStream.readUTF();
     }
 

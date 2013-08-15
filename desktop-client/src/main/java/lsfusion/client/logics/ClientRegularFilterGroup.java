@@ -3,6 +3,7 @@ package lsfusion.client.logics;
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.serialization.ClientSerializationPool;
+import lsfusion.interop.form.layout.SimplexConstraints;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -27,8 +28,8 @@ public class ClientRegularFilterGroup extends ClientComponent {
     }
 
     @Override
-    protected void initDefaultConstraints() {
-//        constraints.insetsSibling = new Insets(0, 4, 2, 4);
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return SimplexConstraints.getRegularFilterGroupDefaultConstraints(super.getDefaultConstraints());
     }
 
     @Override

@@ -1,7 +1,7 @@
 package lsfusion.server.form.view;
 
 import lsfusion.interop.form.layout.AbstractTreeGroup;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.layout.SimplexConstraints;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.TreeGroupEntity;
 import lsfusion.server.serialization.ServerIdentitySerializable;
@@ -36,9 +36,6 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
         toolbar = new ToolbarView(form.idGenerator.idShift());
         filter = new FilterView(form.idGenerator.idShift());
-
-        flex = 1;
-        alignment = FlexAlignment.STRETCH;
     }
 
     @Override
@@ -49,6 +46,11 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
     @Override
     public ComponentView getFilter() {
         return filter;
+    }
+
+    @Override
+    public SimplexConstraints<ComponentView> getDefaultConstraints() {
+        return SimplexConstraints.getTreeDefaultConstraints(super.getDefaultConstraints());
     }
 
     public void add(GroupObjectView group) {

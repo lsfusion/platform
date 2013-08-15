@@ -57,6 +57,8 @@ abstract class QueryController {
         toolbarButton.setIcon(getStateIcon());
 
         getView().setContentVisible(state == State.EXPANDED);
+
+        dropLayoutCaches();
     }
 
     private Icon getStateIcon() {
@@ -165,6 +167,10 @@ abstract class QueryController {
 
     public boolean hasAnyFilter() {
         return !conditions.isEmpty();
+    }
+
+    public void dropLayoutCaches() {
+        logicsSupplier.getForm().dropLayoutCaches();
     }
 
     protected abstract QueryView createView();
