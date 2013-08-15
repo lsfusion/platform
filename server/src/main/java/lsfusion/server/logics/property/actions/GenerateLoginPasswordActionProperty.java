@@ -4,7 +4,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.AuthenticationLogicsModule;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -25,7 +24,7 @@ public class GenerateLoginPasswordActionProperty extends ScriptingActionProperty
     private final ClassPropertyInterface customUserInterface;
 
     public GenerateLoginPasswordActionProperty(AuthenticationLogicsModule lm) {
-        super(lm, new ValueClass[]{lm.getClassByName("customUser")});
+        super(lm, new ValueClass[]{lm.getClassByName("CustomUser")});
 
         try {
             this.email = lm.findLCPByCompoundName("Contact.emailContact");
