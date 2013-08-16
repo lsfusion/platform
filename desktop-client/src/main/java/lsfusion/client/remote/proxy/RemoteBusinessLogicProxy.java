@@ -132,6 +132,13 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return result;
     }
 
+    @Override
+    public void runAction(String sid, String... params) throws RemoteException {
+        logRemoteMethodStartCall("runAction");
+        target.runAction(sid, params);
+        logRemoteMethodEndVoidCall("runAction");
+    }
+
     public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
         logRemoteMethodStartCall("checkDefaultViewPermission");
         boolean result = target.checkDefaultViewPermission(propertySid);
@@ -143,6 +150,14 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         logRemoteMethodStartCall("checkPropertyViewPermission");
         boolean result = target.checkPropertyViewPermission(userName, propertySID);
         logRemoteMethodEndVoidCall("checkPropertyViewPermission");
+        return result;
+    }
+
+    @Override
+    public boolean checkPropertyChangePermission(String userName, String propertySID) throws RemoteException {
+        logRemoteMethodStartCall("checkPropertyChangePermission");
+        boolean result = target.checkPropertyChangePermission(userName, propertySID);
+        logRemoteMethodEndVoidCall("checkPropertyChangePermission");
         return result;
     }
 

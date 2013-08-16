@@ -41,9 +41,13 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     byte[] readFile(String sid, String... params) throws RemoteException;
 
+    void runAction(String sid, String... params) throws RemoteException;
+
     boolean checkDefaultViewPermission(String propertySid) throws RemoteException;
 
     boolean checkPropertyViewPermission(String userName, String propertySID) throws RemoteException;
+
+    boolean checkPropertyChangePermission(String userName, String propertySID) throws RemoteException;
 
     boolean checkFormExportPermission(String formSid) throws RemoteException;
     

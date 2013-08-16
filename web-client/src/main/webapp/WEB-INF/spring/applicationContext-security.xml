@@ -12,8 +12,8 @@
 
     <!-- Security configuration -->
     <http auto-config="true" use-expressions="true" entry-point-ref="entryPoint">
-        <intercept-url pattern="/form.jsp" access="isAuthenticated()"/>
-        <intercept-url pattern="/form/*" access="isAuthenticated()"/>
+        <!--<intercept-url pattern="/form.jsp" access="isAuthenticated()"/>-->
+        <!--<intercept-url pattern="/form/*" access="isAuthenticated()"/>-->
 
         <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-url="/login.jsp?error=1"/>
         <access-denied-handler ref="accessDeniedHandler" />
@@ -22,17 +22,13 @@
         <anonymous enabled="false" />
 
         <custom-filter ref="expiredSessionFilter" before="SESSION_MANAGEMENT_FILTER" />
-        <custom-filter ref="propertyReadAccessFilter" before="FILTER_SECURITY_INTERCEPTOR"/>
+        <!--<custom-filter ref="propertyReadAccessFilter" before="FILTER_SECURITY_INTERCEPTOR"/>-->
     </http>
 
     <!-- Custom security filters -->
     <b:bean id="expiredSessionFilter" class="lsfusion.gwt.base.server.spring.ExpiredSessionFilter">
         <!-- фильтруем запросы к gwt-сервисам -->
         <b:property name="urlPattern" value="/(?!login\.).*/dispatch.*"/>
-    </b:bean>
-
-    <b:bean id="propertyReadAccessFilter" class="lsfusion.gwt.base.server.spring.PropertyReadAccessFilter">
-        <b:property name="URI" value="/readFile"/>
     </b:bean>
 
     <!-- Form login configuration -->
@@ -89,6 +85,8 @@
     <b:bean id="readFileHandler" class="lsfusion.gwt.base.server.spring.ReadFileRequestHandler"/>
 
     <b:bean id="readFormHandler" class="lsfusion.gwt.base.server.spring.ReadFormRequestHandler"/>
+
+    <b:bean id="runActionHandler" class="lsfusion.gwt.base.server.spring.RunActionRequestHandler"/>
 
     <b:bean id="propertyImageHandler" class="lsfusion.gwt.base.server.spring.GetPropertyImageRequestHandler" />
 

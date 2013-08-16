@@ -24,12 +24,12 @@
         <param-value>7652</param-value>
     </context-param>
     <context-param>
-        <param-name>exportUserLogin</param-name>
-        <param-value>exportUser</param-value>
+        <param-name>serviceUserLogin</param-name>
+        <param-value>serviceUser</param-value>
     </context-param>
     <context-param>
-        <param-name>exportUserPassword</param-name>
-        <param-value>exportPass</param-value>
+        <param-name>serviceUserPassword</param-name>
+        <param-value>servicePass</param-value>
     </context-param>
 
     <listener>
@@ -71,6 +71,15 @@
     <servlet-mapping>
         <servlet-name>readFormHandler</servlet-name>
         <url-pattern>/readForm</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>runActionHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>runActionHandler</servlet-name>
+        <url-pattern>/runAction</url-pattern>
     </servlet-mapping>
 
     <servlet>

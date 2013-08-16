@@ -564,15 +564,31 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     }
 
     public boolean checkPropertyViewPermission(String userName, String propertySID) {
-        boolean forbidView;
+        boolean permitView = false;
         try {
             User user = readUser(userName, createSession());
-            SecurityPolicy policy = user.getSecurityPolicy();
-            forbidView = policy.property.view.checkPermission(businessLogics.getProperty(propertySID));
+            if (user != null) {
+                SecurityPolicy policy = user.getSecurityPolicy();
+                permitView = policy.property.view.checkPermission(businessLogics.getProperty(propertySID));
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return forbidView;
+        return permitView;
+    }
+
+    public boolean checkPropertyChangePermission(String userName, String propertySID) {
+        boolean permitChange = false;
+        try {
+            User user = readUser(userName, createSession());
+            if (user != null) {
+                SecurityPolicy policy = user.getSecurityPolicy();
+                permitChange = policy.property.change.checkPermission(businessLogics.getProperty(propertySID));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return permitChange;
     }
 
     public boolean checkDefaultViewPermission(String propertySid) {

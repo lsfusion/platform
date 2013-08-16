@@ -1,12 +1,6 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.session.ApplyFilter;
-import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -15,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
@@ -25,6 +20,7 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.LogFormEntity;
@@ -44,7 +40,11 @@ import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.session.ApplyFilter;
 import lsfusion.server.session.DataSession;
+import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -1046,7 +1046,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return (LCP) LM.getLP(sID);
     }
 
-    protected LAP getLAP(String sID) {
+    public LAP getLAP(String sID) {
         return (LAP) LM.getLP(sID);
     }
 

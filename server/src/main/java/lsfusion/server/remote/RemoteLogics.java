@@ -18,12 +18,13 @@ import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.*;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.serialization.ServerSerializationPool;
@@ -310,6 +311,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
+    public boolean checkPropertyChangePermission(String userName, String propertySID) throws RemoteException {
+        return securityManager.checkPropertyChangePermission(userName, propertySID);
+    }
+
+    @Override
     public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
         return securityManager.checkDefaultViewPermission(propertySid);
     }
@@ -321,20 +327,61 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public byte[] readFile(String sid, String... params) throws RemoteException {
         LCP<PropertyInterface> property = businessLogics.getLCP(sid);
-        ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
-        DataObject[] objects = new DataObject[interfaces.size()];
-        byte[] fileBytes;
-        try {
-            DataSession session = createSession();
-            ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.ASIS);
-            for (int i = 0; i < interfaces.size(); i++) {
-                objects[i] = session.getDataObject(interfaceClasses.get(interfaces.get(i)), Integer.decode(params[i]));
+        if (property != null) {
+            if (!(property.property.getType() instanceof FileClass)) {
+                throw new RuntimeException("Property type is distinct from FileClass");
             }
-            fileBytes = (byte[]) property.read(session, objects);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
+            DataObject[] objects = new DataObject[interfaces.size()];
+            byte[] fileBytes;
+            try {
+                DataSession session = createSession();
+                ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.ASIS);
+                for (int i = 0; i < interfaces.size(); i++) {
+                    objects[i] = session.getDataObject(interfaceClasses.get(interfaces.get(i)), Integer.decode(params[i]));
+                }
+                fileBytes = (byte[]) property.read(session, objects);
+
+                if (fileBytes != null && !(property.property.getType() instanceof DynamicFormatFileClass)) {
+                    fileBytes = BaseUtils.mergeFileAndExtension(fileBytes, ((StaticFormatFileClass) property.property.getType()).getOpenExtension(fileBytes).getBytes());
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            return fileBytes;
+        } else {
+            throw new RuntimeException("Property was not found");
         }
-        return fileBytes;
+    }
+
+    @Override
+    public void runAction(String sid, String... params) throws RemoteException {
+        LAP property = businessLogics.getLAP(sid);
+        if (property != null) {
+            try {
+                DataSession session = createSession();
+                ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
+                ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.ASIS);
+
+                DataObject[] objects = new DataObject[interfaces.size()];
+                for (int i = 0; i < interfaces.size(); i++) {
+                    Object objectValue = null;
+                    ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
+                    if (valueClass instanceof CustomClass) {
+                        objectValue = Integer.parseInt(params[i]);
+                    } else if (valueClass instanceof DataClass) {
+                        objectValue = ((DataClass) valueClass).parseString(params[i]);
+                    }
+                    objects[i] = session.getDataObject(valueClass, objectValue);
+                }
+                property.execute(session, objects);
+                session.apply(businessLogics);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            throw new RuntimeException("Action was not found");
+        }
     }
 
     @Override

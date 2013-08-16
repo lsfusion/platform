@@ -52,8 +52,8 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
         try {
             RemoteLogicsInterface bl = blProvider.getLogics();
 
-            String exportUser = context.getInitParameter("exportUserLogin");
-            String exportPassword = context.getInitParameter("exportUserPassword");
+            String exportUser = context.getInitParameter("serviceUserLogin");
+            String exportPassword = context.getInitParameter("serviceUserPassword");
             RemoteNavigatorInterface navigator = bl.createNavigator(true, exportUser, exportPassword, bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", true);
 
             if (!bl.checkFormExportPermission(formSID)) {
