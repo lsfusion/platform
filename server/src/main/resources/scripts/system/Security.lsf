@@ -265,65 +265,68 @@ FORM securityPolicy 'Политика безопасности'
 ;
 
 EXTEND DESIGN securityPolicy {
-    main {
-        NEW container BEFORE functions.box {
+    NEW container {
+        fill = 1;
+        type = TABBED;
+
+        NEW defaultPolicy {
             type = TABBED;
+            caption = 'Политика по умолчанию';
 
-            NEW defaultPolicyContainer {
+            NEW defaultForms {
                 type = TABBED;
-                caption = 'Политика по умолчанию';
+                caption = 'Формы';
+                ADD treeDefaultForm.tree.box;
+                ADD df.box {
+                    caption = 'Таблица';
+                }
+            }
 
-                NEW defaultFormsContainer {
+            NEW defaultPropertyContainer {
+                type = TABBED;
+                caption = 'Свойства';
+                ADD treeDefaultProperty.tree.box;
+                ADD dpr.box {
+                    caption = 'Таблица';
+                };
+            }
+        }
+
+        NEW roles {
+            caption = 'Роли';
+            type = SPLITV;
+            ADD ur.box;
+
+            NEW rolePolicyContainer {
+                fill = 2;
+                type = TABBED;
+
+                NEW formsContainer {
                     type = TABBED;
                     caption = 'Формы';
-                    ADD treeDefaultForm.tree.box;
-                    ADD df.box {
+                    ADD treeFormObject.tree.box;
+                    ADD f.box {
                         caption = 'Таблица';
-                    };
+                    }
                 }
 
-                NEW defaultPropertyContainer {
+                NEW propertiesContainer {
                     type = TABBED;
                     caption = 'Свойства';
-                    ADD treeDefaultProperty.tree.box;
-                    ADD dpr.box {
+                    ADD treePropertyObject.tree.box;
+                    ADD pr.box {
                         caption = 'Таблица';
-                    };
-                }
-            }
-
-            NEW rolesContainer {
-                caption = 'Роли';
-                ADD ur.box;
-
-                NEW rolePolicyContainer {
-                    type = TABBED;
-
-                    NEW formsContainer {
-                        type = TABBED;
-                        caption = 'Формы';
-                        ADD treeFormObject.tree.box;
-                        ADD f.box {
-                            caption = 'Таблица';
-                        };
-                    }
-
-                    NEW propertiesContainer {
-                        type = TABBED;
-                        caption = 'Свойства';
-                        ADD treePropertyObject.tree.box;
-                        ADD pr.box {
-                            caption = 'Таблица';
-                        };
                     }
                 }
             }
+        }
 
-            ADD p.box {
-                caption = 'Дополнительные политики';
-            };
+        ADD p.box {
+            caption = 'Дополнительные политики';
         }
     }
+    
+    ADD functions.box;
 }
 
 FORM userRoles 'Роли'
@@ -342,23 +345,22 @@ FORM propertyPolicy 'Политика безопасности для свойс
 ;
 
 EXTEND DESIGN propertyPolicy {
-    main {
-        NEW container BEFORE functions.box {
-            NEW propertyContainer {
-                caption = 'Свойства';
-                ADD PROPERTY(captionProperty);
-                ADD PROPERTY(SIDProperty);
-            }
-            NEW permissionContainer {
-                caption = 'Доступ';
-                ADD PROPERTY(permitViewProperty);
-                ADD PROPERTY(forbidViewProperty);
-                ADD PROPERTY(permitChangeProperty);
-                ADD PROPERTY(forbidChangeProperty);
-            }
-            ADD ur.box;
-        }
+    NEW property {
+        type = CONTAINERH;
+        caption = 'Свойства';
+        ADD PROPERTY(captionProperty);
+        ADD PROPERTY(SIDProperty);
     }
+    NEW permission {
+        type = CONTAINERH;
+        caption = 'Доступ';
+        ADD PROPERTY(permitViewProperty);
+        ADD PROPERTY(forbidViewProperty);
+        ADD PROPERTY(permitChangeProperty);
+        ADD PROPERTY(forbidChangeProperty);
+    }
+    ADD ur.box;
+    ADD functions.box;
 }
 
 NAVIGATOR {
