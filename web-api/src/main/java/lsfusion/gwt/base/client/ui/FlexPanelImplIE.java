@@ -9,12 +9,12 @@ public class FlexPanelImplIE extends FlexPanelImpl {
 
     @Override
     protected String getDirectionAttrName() {
-        return "MsFlexDirection";
+        return "msFlexDirection";
     }
 
     @Override
     protected String getJustifyContentAttrName() {
-        return "MsFlexPack";
+        return "msFlexPack";
     }
 
     @Override
@@ -29,11 +29,11 @@ public class FlexPanelImplIE extends FlexPanelImpl {
 
     @Override
     protected String getAlignAttrName() {
-        return "MsFlexItemAlign";
+        return "msFlexItemAlign";
     }
 
     @Override
     protected String getFlexAttrName() {
-        return "MsFlex";
+        return "msFlex";
     }
 }
