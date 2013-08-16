@@ -363,7 +363,7 @@
                             <target>
                                 <java classpathref="maven.runtime.classpath" classname="lsfusion.client.Main" fork="true" clonevm="true" failonerror="true">
                                     <jvmarg value="-Xms512m" />
-                                    <jvmarg value="-Xmx1024m" />
+                                    <jvmarg value="-Xmx2000m" />
                                     <jvmarg value="-ea" />
                                 </java>
                             </target>

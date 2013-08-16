@@ -51,15 +51,6 @@ textarea {
     padding: 2px 3px 4px 5px;
 }
 
-.gwt-TabPanel {
-    padding-bottom: 0.4em;
-}
-
-.gwt-TabPanelBottom {
-    padding: 1px;
-    overflow: visible; /* вероятно помогает избежать непрерывной перерисовки в FF */
-}
-
 .gwt-DecoratorPanel .middleCenter {
     height: 100%;
     width: 100%;

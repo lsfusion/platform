@@ -7,8 +7,6 @@ import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
 
 public class GLinearContainerView extends GAbstractContainerView {
-    private final boolean vertical;
-
     private final FlexPanel panel;
 
     private final Widget view;
@@ -17,9 +15,8 @@ public class GLinearContainerView extends GAbstractContainerView {
         super(container);
 
         assert container.isLinear();
-        vertical = container.isVertical();
 
-        panel = new FlexPanel(vertical, container.getFlexJustify());
+        panel = new FlexPanel(container.isVertical(), container.getFlexJustify());
         panel.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
 
         view = wrapWithCaption(panel);

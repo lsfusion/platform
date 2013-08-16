@@ -1,25 +1,20 @@
 package lsfusion.gwt.form.client.form.ui.layout;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
-import lsfusion.gwt.base.client.ui.ResizableTabPanel;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
 
 import java.util.ArrayList;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.relativePosition;
 
 public class GTabbedContainerView extends GAbstractContainerView {
 
-    private final ResizableTabPanel tabsPanel;
+    private final GTabbedPane tabsPanel;
     private final Widget view;
 
     private final ArrayList<GComponent> visibleChildren = new ArrayList<GComponent>();
@@ -29,8 +24,7 @@ public class GTabbedContainerView extends GAbstractContainerView {
     public GTabbedContainerView(final GFormController formController, final GContainer container) {
         super(container);
 
-        tabsPanel = new ResizableTabPanel();
-        tabsPanel.getDeckPanel().setHeight("100%");
+        tabsPanel = new GTabbedPane();
 
         tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
@@ -42,8 +36,7 @@ public class GTabbedContainerView extends GAbstractContainerView {
             }
         });
 
-        view = new TabbedView();
-        view.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
+        view = tabsPanel;
     }
 
     @Override
@@ -77,9 +70,7 @@ public class GTabbedContainerView extends GAbstractContainerView {
                 if (index == -1) {
                     index = relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
-
-                    ResizableSimplePanel proxyPanel = ResizableSimplePanel.wrapPanel100(childView);
-                    tabsPanel.insert(proxyPanel, getTabTitle(child), index);
+                    tabsPanel.insert(FlexPanel.wrap(childView), getTabTitle(child), index);
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);
@@ -90,7 +81,7 @@ public class GTabbedContainerView extends GAbstractContainerView {
     }
 
     private void ensureTabSelection() {
-        if (tabsPanel.getTabBar().getSelectedTab() == -1 && tabsPanel.getWidgetCount() != 0) {
+        if (tabsPanel.getSelectedTab() == -1 && tabsPanel.getWidgetCount() != 0) {
             tabsPanel.selectTab(0);
             if (!initialTabSet) {
                 initialTabSet = true;
@@ -107,56 +98,5 @@ public class GTabbedContainerView extends GAbstractContainerView {
             tabCaption = "";
         }
         return tabCaption;
-    }
-
-    private class TabbedView extends ResizableSimplePanel implements FlexPanel.FlexAware {
-        private final ResizableSimplePanel innerPanel = new ResizableSimplePanel();
-
-        private TabbedView() {
-            add(tabsPanel);
-        }
-
-        @Override
-        public void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex) {
-            remove(tabsPanel);
-            add(innerPanel);
-
-            innerPanel.add(tabsPanel);
-
-            if (flex > 0 && alignment == GFlexAlignment.STRETCH) {
-                setupFillParent(getElement(), innerPanel.getElement());
-
-                Style tabsStyle = tabsPanel.getElement().getStyle();
-                tabsStyle.setPosition(Style.Position.ABSOLUTE);
-                tabsStyle.setWidth(100, Style.Unit.PCT);
-                tabsStyle.setHeight(100, Style.Unit.PCT);
-            } else if (flex > 0) {
-                parent.setChildAlignment(this, GFlexAlignment.STRETCH);
-
-                setupFillParent(getElement(), innerPanel.getElement());
-
-                Style tabsStyle = tabsPanel.getElement().getStyle();
-                tabsStyle.setPosition(Style.Position.ABSOLUTE);
-                if (alignment == GFlexAlignment.TRAILING) {
-                    tabsStyle.setRight(0, Style.Unit.PX);
-                }
-
-                if (parent.isVertical()) {
-                    tabsStyle.setHeight(100, Style.Unit.PCT);
-                } else {
-                    tabsStyle.setWidth(100, Style.Unit.PCT);
-                }
-            } else if (alignment == GFlexAlignment.STRETCH) {
-                Style tabsStyle = tabsPanel.getElement().getStyle();
-                if (parent.isVertical()) {
-                    tabsStyle.setWidth(100, Style.Unit.PCT);
-                } else {
-                    //todo: такой простой вариант на самом деле не работает - element не расширяется по вертикали...
-                    tabsStyle.setHeight(100, Style.Unit.PCT);
-                }
-            } else {
-                //flex == 0 alignment != STRETCH
-            }
-        }
     }
 }

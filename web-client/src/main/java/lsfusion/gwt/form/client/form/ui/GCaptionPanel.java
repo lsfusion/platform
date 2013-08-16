@@ -19,6 +19,6 @@ public class GCaptionPanel extends FlexPanel {
         getElement().getStyle().setOverflow(Style.Overflow.VISIBLE);
 
         add(legend);
-        add(content, GFlexAlignment.STRETCH, 1);
+        add(content, GFlexAlignment.STRETCH, 1, "auto");
     }
 }

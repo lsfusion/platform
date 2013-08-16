@@ -894,13 +894,15 @@ select {
     color: #999999;
 }
 .gwt-TabPanel {
+    padding-bottom: 0.4em;
 }
 .gwt-TabPanelBottom {
     border-color: #ccc;
     border-style: solid;
     border-width: 0px 1px 1px;
+    /*overflow: visible; *//* вероятно помогает избежать непрерывной перерисовки в FF */
     overflow: hidden;
-    padding: 6px;
+    padding: 1px;
 }
 .gwt-DecoratedTabBar {
     background: #ccc;

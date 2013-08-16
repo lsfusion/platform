@@ -85,6 +85,14 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex) {
+        add(widget, beforeIndex, alignment, flex, "0px");
+    }
+
+    public void add(Widget widget, GFlexAlignment alignment, double flex, String flexBasis) {
+        add(widget, getWidgetCount(), alignment, flex, flexBasis);
+    }
+
+    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, String flexBasis) {
         // Detach new child.
         widget.removeFromParent();
 
@@ -94,7 +102,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         // Physical attach.
         Element childElement = widget.getElement();
 
-        LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex);
+        LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis);
         widget.setLayoutData(layoutData);
 
         // Adopt.
@@ -145,16 +153,20 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
     }
 
+    public static Widget wrap(Widget childView) {
+        FlexPanel panel = new FlexPanel(false);
+        panel.add(childView, GFlexAlignment.STRETCH, 1, "auto");
+        return panel;
+    }
+
     public static enum Justify {
         LEADING, CENTER, TRAILING
     }
 
     public static final class LayoutData {
-        Element container;
         Element child;
 
-        public LayoutData(Element container, Element child) {
-            this.container = container;
+        public LayoutData(Element child) {
             this.child = child;
         }
     }
