@@ -15,7 +15,7 @@ import java.util.Stack;
  */
 
 public class ScriptParser {
-    public enum State {PRE, INIT, GROUP, CLASS, PROP, TABLE, INDEX}
+    public enum State {PRE, INIT, GROUP, CLASS, PROP, TABLE, INDEX, GENMETA}
 
     private State currentState = null;
     private Stack<ParserInfo> parsers = new Stack<ParserInfo>();

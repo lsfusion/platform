@@ -2867,7 +2867,14 @@ metaCodeStatement
 @after {
 	self.runMetaCode($id.sid, $list.ids, lineNumber);
 }
-	:	'@' id=compoundID '(' list=metaCodeIdList ')' ';'	
+	:	'@' id=compoundID '(' list=metaCodeIdList ')' 
+		('{' 	
+		{	ScriptParser.State oldState = parseState; }
+		{	if (oldState != ScriptParser.State.INIT) parseState = ScriptParser.State.GENMETA; }
+		statements 
+		{ 	parseState = oldState; } 
+		'}')? // for intellij plugin
+		';'	
 	;
 
 
