@@ -17,7 +17,7 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel, 
     public GTabbedPane() {
         FlexPanel panel = new FlexPanel(true);
         panel.add(tabBar, GFlexAlignment.STRETCH);
-        panel.add(deck, GFlexAlignment.STRETCH, 1);
+        panel.add(deck, GFlexAlignment.STRETCH, 1, "auto");
 
         tabBar.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
             @Override
@@ -222,7 +222,7 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel, 
             w.setVisible(false);
 
             tabBar.insertTab(tabWidget, beforeIndex);
-            add(w, beforeIndex, GFlexAlignment.STRETCH, 1);
+            add(w, beforeIndex, GFlexAlignment.STRETCH, 1, "auto");
         }
 
         public void showWidget(int index) {
