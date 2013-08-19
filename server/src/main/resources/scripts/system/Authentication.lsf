@@ -131,7 +131,7 @@ reloginLoginUser = ACTION () {
             IF isLockedCustomUser(user()) THEN {
                 MESSAGE 'Данный пользователь заблокирован';
             } ELSE {
-                IF TRUE IF NOT sha256PasswordCustomUser(user()) THEN {
+                IF NOT sha256PasswordCustomUser(user()) THEN {
                     IF passwordCustomUser(user())==chosenString('password') THEN {
                         EXEC reloginUser(user());
                         MESSAGE 'Пользователь изменён';
@@ -181,7 +181,7 @@ reloginPasswordUser = ACTION (customUser) {
         IF isLockedCustomUser(customUser) THEN {
             MESSAGE 'Данный пользователь заблокирован';
         }  ELSE {
-            IF TRUE IF NOT sha256PasswordCustomUser(customUser) THEN {
+            IF NOT sha256PasswordCustomUser(customUser) THEN {
                 IF passwordCustomUser(customUser)==chosenString('password') THEN {
                     EXEC reloginUser(customUser);
                     MESSAGE 'Пользователь изменён';
@@ -244,7 +244,7 @@ EXTEND DESIGN changePasswordUser {
 changePasswordUser = ACTION (customUser) {
     FORM changePasswordUser MODAL;
     IF formResult() == FormResult.ok THEN {
-        IF TRUE IF NOT sha256PasswordCustomUser(customUser) THEN {
+        IF NOT sha256PasswordCustomUser(customUser) THEN {
             IF  chosenString('old') != passwordCustomUser(customUser) THEN {
                 MESSAGE 'Неверный старый пароль';
                 BREAK;
