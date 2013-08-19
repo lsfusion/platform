@@ -224,7 +224,7 @@ statement
 		|	followsStatement
 		|	writeWhenStatement
 		|	eventStatement
-		|   showDepStatement
+		|	showDepStatement
 		|	globalEventStatement
 		|	aspectStatement
 		|	tableStatement
@@ -3267,6 +3267,6 @@ REL_OPERAND		: 	('<') | ('>') | ('<=') | ('>=');
 MINUS			:	'-';
 PLUS			:	'+';
 MULT_OPERAND	:	('*') | ('/');
-ADDOR_OPERAND	:	'(+)' | '('  {ahead("-)")}?=> '-)';
+ADDOR_OPERAND	:	'(+)' | {ahead("(-)")}?=> '(-)';
 CONCAT_OPERAND	:	'##';
 CONCAT_CAPITALIZE_OPERAND	:	'###';	
