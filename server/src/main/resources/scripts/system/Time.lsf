@@ -58,7 +58,7 @@ FORM months
 
 TABLE month (Month);
 
-numberMonth 'Номер месяца' = PARTITION SUM 1 IF m IS Month ORDER m;
+numberMonth 'Номер месяца' = PARTITION SUM 1 IF m IS Month ORDER m PERSISTENT;
 monthNumber 'Месяц (ИД)' (month) = GROUP AGGR month BY numberMonth(month);
 
 monthInDate 'Месяц (ИД)' (date) = monthNumber(numberMonthInDate(date));
@@ -82,7 +82,7 @@ FORM DOWs
 
 TABLE dow (DOW);
 
-numberDOW 'Номер дня недели' = PARTITION SUM 1 IF d IS DOW ORDER d (-) 1;
+numberDOW 'Номер дня недели' = (PARTITION SUM 1 IF d IS DOW ORDER d) - 1 PERSISTENT;
 DOWNumber 'День недели (ИД)' (dow) = GROUP AGGR dow BY numberDOW(dow);
 
 numberDOWInDate = FORMULA INTEGER '(extract(dow from ($1)))';
