@@ -12,8 +12,8 @@
 
     <!-- Security configuration -->
     <http auto-config="true" use-expressions="true" entry-point-ref="entryPoint">
-        <!--<intercept-url pattern="/form.jsp" access="isAuthenticated()"/>-->
-        <!--<intercept-url pattern="/form/*" access="isAuthenticated()"/>-->
+        <intercept-url pattern="/form.jsp" access="isAuthenticated()"/>
+        <intercept-url pattern="/form/*" access="isAuthenticated()"/>
 
         <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-url="/login.jsp?error=1"/>
         <access-denied-handler ref="accessDeniedHandler" />
