@@ -21,6 +21,8 @@ public class ScriptParser {
     private Stack<ParserInfo> parsers = new Stack<ParserInfo>();
     private ScriptingErrorLog errLog;
 
+    private boolean insideGeneratedMeta = false;
+    
     public ScriptParser(ScriptingErrorLog errLog) {
         this.errLog = errLog;
     }
@@ -54,7 +56,7 @@ public class ScriptParser {
         lexer.parseState = currentState;
 
         parser.self = LM;
-        parser.parseState = currentState;
+        parser.parseState = insideGeneratedMeta ? State.GENMETA : currentState;
 
         parsers.push(new ParserInfo(parser, metaCode, callString, lineNumber));
         parser.metaCodeParsingStatement();
@@ -79,6 +81,18 @@ public class ScriptParser {
         return code;
     }
 
+    public boolean enterGeneratedMetaState() {
+        if (!insideGeneratedMeta && currentState != State.INIT) {
+            insideGeneratedMeta = true;
+            return true;
+        }
+        return false;
+    }
+
+    public void leaveGeneratedMetaState() {
+        insideGeneratedMeta = false;
+    }
+    
     public boolean isInsideMetacode() {
         return parsers.size() > 1;
     }

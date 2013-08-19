@@ -86,6 +86,15 @@ grammar LsfLogics;
 	public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
 		self.getErrLog().displayRecognitionError(this, self.getParser(), "error", tokenNames, e);
 	}
+	
+	private boolean ahead(String text) {
+		for(int i = 0; i < text.length(); i++) {
+			if(input.LA(i + 1) != text.charAt(i)) {
+				return false;
+			}
+		}
+		return true;
+	}	
 }
 
 @members {
@@ -2863,16 +2872,24 @@ metaCodeDeclarationStatement
 metaCodeStatement
 @init {
 	int lineNumber = self.getParser().getCurrentParserLineNumber();
+	ScriptParser.State oldState = null; 
 }
 @after {
 	self.runMetaCode($id.sid, $list.ids, lineNumber);
 }
 	:	'@' id=compoundID '(' list=metaCodeIdList ')' 
 		('{' 	
-		{	ScriptParser.State oldState = parseState; }
-		{	if (oldState != ScriptParser.State.INIT) parseState = ScriptParser.State.GENMETA; }
+		{ 	if (self.getParser().enterGeneratedMetaState()) {  
+				oldState = parseState;
+				parseState = ScriptParser.State.GENMETA; 
+			}
+		}
 		statements 
-		{ 	parseState = oldState; } 
+		{ 	if (oldState != null) {
+				self.getParser().leaveGeneratedMetaState(); 
+				parseState = oldState;
+			}
+		} 
 		'}')? // for intellij plugin
 		';'	
 	;
@@ -3250,6 +3267,6 @@ REL_OPERAND		: 	('<') | ('>') | ('<=') | ('>=');
 MINUS			:	'-';
 PLUS			:	'+';
 MULT_OPERAND	:	('*') | ('/');
-ADDOR_OPERAND	:	'(+)' | '(-)';
+ADDOR_OPERAND	:	'(+)' | '('  {ahead("-)")}?=> '-)';
 CONCAT_OPERAND	:	'##';
 CONCAT_CAPITALIZE_OPERAND	:	'###';	
