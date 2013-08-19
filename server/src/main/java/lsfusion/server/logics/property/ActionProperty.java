@@ -1,12 +1,13 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.*;
+import lsfusion.base.FunctionSet;
+import lsfusion.base.Pair;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ActionClass;
@@ -281,6 +282,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public ActionPropertyMapImplement<?, P> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return getImplement();
     }
+
+    // если этот action используется как действие для редактирования свойства, проверять ли это свойство на readOnly
+    public boolean checkReadOnly = true;
 
     /**
      * возвращает тип для "простого" редактирования, когда этот action используется в качестве действия для редактирования </br>

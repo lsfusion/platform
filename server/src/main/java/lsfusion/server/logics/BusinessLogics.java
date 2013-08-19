@@ -571,6 +571,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                             LM.addMFAProp(LM.drillDownGroup, drillDownActionSID, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
 
                     ActionProperty formProperty = drillDownFormProperty.property;
+                    formProperty.checkReadOnly = false;
                     property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
                     property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getOrderInterfaces()));
                 }
@@ -594,6 +595,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                         setupPolicyForPropBySID, LM.addCProp(StringClass.get(propertySID.length()), propertySID));
 
                 ActionProperty setupPolicyAction = setupPolicyLAP.property;
+                setupPolicyAction.checkReadOnly = false;
                 property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
                 property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
             }
