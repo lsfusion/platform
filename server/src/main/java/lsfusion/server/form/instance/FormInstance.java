@@ -680,7 +680,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, ObjectValue pushChange, DataObject pushAdd, boolean pushConfirm) throws SQLException {
         ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
 
-        if (((ActionProperty) editAction.property).checkReadOnly && property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null) {
+        if (property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null && editAction != null && ((ActionProperty) editAction.property).checkReadOnly) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
         }
