@@ -52,9 +52,9 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return caption;
     }
 
-    public abstract DataClass getCompatible(DataClass compClass);
+    public abstract DataClass getCompatible(DataClass compClass, boolean or);
     public boolean compatibleEquals(Object object, DataClass compareClass, Object compareObject) {
-        DataClass compatible = getCompatible(compareClass);
+        DataClass compatible = getCompatible(compareClass, true);
         return compatible != null && compatible.read(object).equals(compatible.read(compareObject));
     }
 
@@ -70,14 +70,14 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     }
 
     public boolean isCompatibleParent(ValueClass remoteClass) {
-        return remoteClass instanceof DataClass && getCompatible((DataClass) remoteClass) == this;
+        return remoteClass instanceof DataClass && containsAll((DataClass) remoteClass, false);
     }
 
     public Type getCompatible(Type type) {
         if(!(type instanceof DataClass))
             return null;
 
-        return getCompatible((DataClass) type);
+        return getCompatible((DataClass) type, true);
     }
 
     public DataClass getUpSet() {
@@ -89,9 +89,9 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     }
 
     public DataClass and(AndClassSet node) {
-        if (node.isEmpty()) return this;
+        if (node.isEmpty()) return (DataClass) node;
 
-        DataClass compatible = getCompatible((DataClass) node);
+        DataClass compatible = getCompatible((DataClass) node, false);
         assert (compatible != null); // классы должны быть совместимы
         return compatible;
     }
@@ -100,12 +100,16 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return and((AndClassSet) node);
     }
 
-    public AndClassSet or(AndClassSet node) {
-        return and(node);
+    public DataClass or(AndClassSet node) {
+        if (node.isEmpty()) return this;
+
+        DataClass compatible = getCompatible((DataClass) node, true);
+        assert (compatible != null); // классы должны быть совместимы
+        return compatible;
     }
 
     public OrClassSet or(OrClassSet node) {
-        return and(node);
+        return or((AndClassSet)node);
     }
 
     public DataClass getRandom(Random randomizer) {
@@ -117,7 +121,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     }
 
     private boolean containsAll(DataClass node, boolean implicitCast) {
-        DataClass compatible = getCompatible((DataClass) node);
+        DataClass compatible = getCompatible((DataClass) node, true);
         if(implicitCast)
             return compatible != null;
         return compatible == this;

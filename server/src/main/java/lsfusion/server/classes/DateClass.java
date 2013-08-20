@@ -54,7 +54,7 @@ public class DateClass extends DataClass<Date> {
         return Data.DATE;
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof DateClass?this:null;
     }
 

@@ -33,7 +33,7 @@ public class ImageClass extends StaticFormatFileClass {
         return ServerResourceBundle.getString("classes.image");
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof ImageClass ? this : null;
     }
 

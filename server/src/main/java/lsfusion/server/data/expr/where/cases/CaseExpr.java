@@ -106,7 +106,7 @@ public class CaseExpr extends Expr {
                         return caseType;
                     type = caseType;
                 } else
-                    type = ((DataClass)type).getCompatible((DataClass) caseType); // для того чтобы выбрать максимальную по длине
+                    type = type.getCompatible(caseType); // для того чтобы выбрать максимальную по длине
             }
         }
         return type;

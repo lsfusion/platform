@@ -92,11 +92,11 @@ public class StringClass extends DataClass {
         return Data.STRING;
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         if (!(compClass instanceof StringClass)) return null;
 
         StringClass stringClass = (StringClass) compClass;
-        return get(blankPadded || stringClass.blankPadded, caseInsensitive || stringClass.caseInsensitive, length.max(stringClass.length));
+        return get(BaseUtils.cmp(blankPadded, stringClass.blankPadded, or), BaseUtils.cmp(caseInsensitive, stringClass.caseInsensitive, or), length.cmp(stringClass.length, or));
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {

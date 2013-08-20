@@ -2082,6 +2082,14 @@ public class BaseUtils {
         return a > b ? a : b;
     }
 
+    public static int cmp(int a, int b, boolean max) {
+        return max ? max(a, b) : min(a, b); 
+    }
+
+    public static boolean cmp(boolean a, boolean b, boolean max) {
+        return max ? a || b : a && b;
+    }
+
     private static SimpleAddValue<Object, Integer> addMinInt = new SymmAddValue<Object, Integer>() {
         public Integer addValue(Object key, Integer prevValue, Integer newValue) {
             return BaseUtils.min(prevValue, newValue);

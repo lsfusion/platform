@@ -33,7 +33,7 @@ public class DynamicFormatFileClass extends FileClass {
         return ServerResourceBundle.getString("classes.file");
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof DynamicFormatFileClass ? this : null;
     }
 

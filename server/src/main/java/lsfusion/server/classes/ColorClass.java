@@ -22,7 +22,7 @@ public class ColorClass extends DataClass {
     private ColorClass() { super(ServerResourceBundle.getString("classes.color")); }
 
     @Override
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof ColorClass ? this : null;
     }
 

@@ -92,7 +92,7 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         return mResult.immutableOrder();
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         if(!(compClass instanceof OrderClass)) return null;
 
         if(types.isEmpty())

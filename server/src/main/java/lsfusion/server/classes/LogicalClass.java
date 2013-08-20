@@ -50,7 +50,7 @@ public class LogicalClass extends DataClass<Boolean> {
         return Data.LOGICAL;
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof LogicalClass ?this:null;
     }
 

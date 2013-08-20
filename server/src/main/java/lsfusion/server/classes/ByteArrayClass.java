@@ -25,7 +25,7 @@ public class ByteArrayClass extends DataClass<byte[]> {
         return ServerResourceBundle.getString("classes.byte.array");
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof ByteArrayClass?this:null;
     }
 

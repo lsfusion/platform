@@ -17,7 +17,7 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
         return "CustomStaticFormatFileClass";
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass.equals(this) ? this : null;
     }
 

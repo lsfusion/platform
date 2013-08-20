@@ -32,7 +32,7 @@ public class ActionClass extends DataClass<Object> {
         return "Action";
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof ActionClass ? this : null;
     }
 

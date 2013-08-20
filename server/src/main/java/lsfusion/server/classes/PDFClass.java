@@ -33,7 +33,7 @@ public class PDFClass extends StaticFormatFileClass {
         return ServerResourceBundle.getString("classes.pdf.file");
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof PDFClass ? this : null;
     }
 

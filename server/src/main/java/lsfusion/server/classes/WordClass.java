@@ -33,7 +33,7 @@ public class WordClass extends StaticFormatFileClass {
         return ServerResourceBundle.getString("classes.word.file");
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof WordClass ? this : null;
     }
 

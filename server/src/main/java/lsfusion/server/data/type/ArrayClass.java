@@ -58,7 +58,7 @@ public class ArrayClass<T> extends DataClass<T[]> {
         return array;
     }
     
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         if(compClass.equals(this))
             return this;
         return null;

@@ -25,7 +25,7 @@ public class TimeClass extends DataClass<Time> {
 
     private TimeClass() { super(ServerResourceBundle.getString("classes.time")); }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof TimeClass ? this : null;
     }
 

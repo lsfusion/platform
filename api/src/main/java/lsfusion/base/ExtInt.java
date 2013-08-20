@@ -29,11 +29,26 @@ public class ExtInt {
         if(isUnlimited())
             return this;
         if(ext.isUnlimited())
-            return this;
+            return ext;
 
         if(getValue() > ext.getValue())
             return this;
         return ext;
+    }
+
+    public ExtInt min(ExtInt ext) {
+        if(isUnlimited())
+            return ext;
+        if(ext.isUnlimited())
+            return this;
+
+        if(getValue() < ext.getValue())
+            return this;
+        return ext;
+    }
+    
+    public ExtInt cmp(ExtInt ext, boolean or) {
+        return or ? max(ext) : min(ext); 
     }
 
     public boolean less(ExtInt ext) {

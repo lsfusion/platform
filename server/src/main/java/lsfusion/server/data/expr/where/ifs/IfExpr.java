@@ -151,7 +151,7 @@ public class IfExpr extends Expr {
         if(falseType==null)
             return trueType;
         else
-            return ((DataClass)trueType).getCompatible((DataClass)falseType);
+            return trueType.getCompatible(falseType);
     }
     public Stat getTypeStat(Where fullWhere) {
         return trueExpr.getTypeStat(fullWhere.and(ifWhere));

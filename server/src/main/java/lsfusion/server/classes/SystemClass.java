@@ -40,7 +40,7 @@ public class SystemClass extends DataClass<Integer> {
         return 0;
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof SystemClass?this:null; 
     }
 

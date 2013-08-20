@@ -36,7 +36,7 @@ public class ExcelClass extends StaticFormatFileClass {
         return ServerResourceBundle.getString("classes.excel.file");
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof ExcelClass ? this : null;
     }
 

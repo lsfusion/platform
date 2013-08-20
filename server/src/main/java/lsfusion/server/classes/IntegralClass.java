@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.BaseUtils;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.form.view.report.ReportDrawField;
@@ -45,18 +46,17 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     abstract int getWhole();
     abstract int getPrecision();
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         if(!(compClass instanceof IntegralClass)) return null;
 
         IntegralClass integralClass = (IntegralClass)compClass;
         if(getWhole()>=integralClass.getWhole() && getPrecision()>=integralClass.getPrecision())
-            return this;
+            return or ? this : integralClass;
         if(getWhole()<=integralClass.getWhole() && getPrecision()<=integralClass.getPrecision())
-            return integralClass;
-        if(getWhole()>integralClass.getWhole())
-            return NumericClass.get(getWhole()+integralClass.getPrecision(), integralClass.getPrecision());
-        else
-            return NumericClass.get(integralClass.getWhole()+getPrecision(), getPrecision());
+            return or ? integralClass : this;
+        int whole = BaseUtils.cmp(getWhole(), integralClass.getWhole(), or);
+        int precision = BaseUtils.cmp(getPrecision(), integralClass.getPrecision(), or);
+        return NumericClass.get(whole+precision, precision);
     }
 
     public boolean isSafeString(Object value) {

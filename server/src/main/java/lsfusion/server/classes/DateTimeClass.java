@@ -57,7 +57,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
         return Data.DATETIME;
     }
 
-    public DataClass getCompatible(DataClass compClass) {
+    public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof DateTimeClass ? this : null;
     }
 
