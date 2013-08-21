@@ -157,14 +157,16 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     @Override
     public ActionPropertyMapImplement<?, I> compileExtend() { // проталкивание FOR'ов
 
+        if(recursive)
+            return null;
+        
         ImSet<I> context = mapInterfaces.valuesSet();
-        assert recursive || innerInterfaces.size() > context.size();
-        boolean allNoInline = !recursive && (innerInterfaces.size() == context.size() + noInline.size() + (addObject !=null ? 1 : 0));
+        assert innerInterfaces.size() > context.size();
+        boolean allNoInline = (innerInterfaces.size() == context.size() + noInline.size() + (addObject != null ? 1 : 0));
 
         if(!allNoInline && noInline.size() > 0) {
             assert !noInline.intersect(context);
             assert orders.isEmpty();
-            assert !recursive;
 
             MList<ActionPropertyMapImplement<?, I>> mResult = ListFact.mList();
             ImSet<I> extNoInline = context.addExcl(noInline);
@@ -188,7 +190,6 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         }
 
         if (addObject != null) { // "компиляция" ADDOBJ
-            assert !recursive;
             // сначала проверим если первый в списке CHANGE CLASS, тогда заберем его в FOR
             ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
 
