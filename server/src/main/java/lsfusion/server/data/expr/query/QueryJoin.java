@@ -70,8 +70,11 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
         public InnerExpr getInnerExpr(WhereJoin join) {
             return QueryJoin.getInnerExpr(thisObj, join);
         }
-        public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
-            return InnerExpr.getExprFollows(thisObj, recursive);
+        public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+            return InnerExpr.getExprFollows(thisObj, includeInnerWithoutNotNull, recursive);
+        }
+        public boolean hasExprFollowsWithoutNotNull() {
+            return InnerExpr.hasExprFollowsWithoutNotNull(thisObj);
         }
         public InnerJoins getInnerJoins() {
             return InnerExpr.getInnerJoins(thisObj);
@@ -118,8 +121,11 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     public InnerExpr getInnerExpr(WhereJoin join) {
         return getOuter().getInnerExpr(join);
     }
-    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
-        return getOuter().getExprFollows(recursive);
+    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        return getOuter().getExprFollows(includeInnerWithoutNotNull, recursive);
+    }
+    public boolean hasExprFollowsWithoutNotNull() {
+        return getOuter().hasExprFollowsWithoutNotNull();
     }
     public InnerJoins getInnerJoins() {
         return getOuter().getInnerJoins();
@@ -134,7 +140,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
 
     // множественное наследование
     public static InnerExpr getInnerExpr(InnerJoin<?, ?> join, WhereJoin<?, ?> whereJoin) {
-        ImSet<InnerExpr> set = NotNullExpr.getInnerExprs(whereJoin.getExprFollows(true), null);
+        ImSet<InnerExpr> set = NotNullExpr.getInnerExprs(whereJoin.getExprFollows(NotNullExpr.INNERJOINS, true), null);
         for(int i=0,size=set.size();i<size;i++) {
             InnerExpr expr = set.get(i);
             if(BaseUtils.hashEquals(join,expr.getInnerJoin()))

@@ -42,8 +42,8 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
         return InnerExpr.getFollowJoins(this, upWheres, unionJoins);
     }
 
-    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
-        return InnerExpr.getExprFollows(this, recursive);
+    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
     }
 
     public ImMap<Integer, BaseExpr> getJoins() {
@@ -52,7 +52,7 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
 
     public static InnerJoins getInnerJoins(BaseExpr baseExpr) {
         InnerJoins result = InnerJoins.EMPTY;
-        ImSet<InnerExpr> innerExprs = NotNullExpr.getInnerExprs(baseExpr.getExprFollows(true, false), null);
+        ImSet<InnerExpr> innerExprs = NotNullExpr.getInnerExprs(baseExpr.getExprFollows(true, NotNullExpr.INNERJOINS, false), null);
         for(int i=0,size=innerExprs.size();i<size;i++)
             result = result.and(new InnerJoins(innerExprs.get(i).getInnerJoin()));
         return result;

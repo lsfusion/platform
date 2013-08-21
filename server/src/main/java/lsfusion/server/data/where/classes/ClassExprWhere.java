@@ -236,7 +236,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         for(And<VariableSingleClassExpr> where : wheres) {
             MSet<NotNullExpr> mResult = SetFact.mSet();
             for(int i=0,size=where.size();i<size;i++)
-                mResult.addAll(where.getKey(i).getExprFollows(true, true));
+                mResult.addAll(where.getKey(i).getExprFollows(true, NotNullExpr.FOLLOW, true));
             follows[num++] = mResult.immutable();
         }
         return SetFact.and(follows);

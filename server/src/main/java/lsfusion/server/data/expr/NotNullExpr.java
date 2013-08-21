@@ -30,19 +30,40 @@ public abstract class NotNullExpr extends VariableSingleClassExpr {
         }
     }
 
+    // особенность в том что логика следствий выражений, используется для булевой логики и для логики выполнения (определения Inner Join) 
+    // соответственно в одной "пустые" join'ы нужны, в другой нет
+    public final static boolean FOLLOW = false; // в булевой логике
+    public final static boolean INNERJOINS = true; // одновременно и при конструировании InnerJoins и проверке contains и при проталкивании InnerJoins (,впоследствии можно разделить)
+
+    // второй параметр, предполагается true при использовании в логике InnerJoins (при выяснении isInner в компиляции в CompiledQuery в основном), false - в булевой логике - логике следствий 
     private ImSet<NotNullExpr> exprThisFollows = null;
     @ManualLazy
-    public ImSet<NotNullExpr> getExprFollows(boolean includeThis, boolean recursive) {
+    public ImSet<NotNullExpr> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
         assert includeThis || recursive;
         if(recursive) {
-            if(includeThis && hasNotNull()) {
-                if(exprThisFollows==null)
-                    exprThisFollows = SetFact.addExcl(getExprFollows(true), this);
-                return exprThisFollows;
-            } else
-                return getExprFollows(true);
-        } else // не кэшируем так как редко используется
+            if(includeThis && (includeInnerWithoutNotNull || hasNotNull())) {
+                if(!includeInnerWithoutNotNull || !hasExprFollowsWithoutNotNull()) {
+                    if(exprThisFollows==null)
+                        exprThisFollows = SetFact.addExcl(getExprFollows(includeInnerWithoutNotNull, true), this);
+                    return exprThisFollows;
+                }
+                return SetFact.addExcl(getExprFollows(includeInnerWithoutNotNull, true), this);
+            }            
+            return getExprFollows(includeInnerWithoutNotNull, true);
+        } 
+        
+        // не кэшируем так как редко используется
+        if(includeInnerWithoutNotNull || hasNotNull())
             return SetFact.singleton(this);
+        else
+            return SetFact.EMPTY();
+    }
+
+    @Override
+    protected boolean hasExprFollowsWithoutNotNull() {
+        if(!hasNotNull())
+            return true;
+        return super.hasExprFollowsWithoutNotNull();
     }
 
     public void fillFollowSet(MSet<DataWhere> fillSet) {
@@ -50,11 +71,18 @@ public abstract class NotNullExpr extends VariableSingleClassExpr {
         fillSet.add((DataWhere)getNotNullWhere());
     }
 
-    public static ImSet<NotNullExpr> getExprFollows(ImCol<BaseExpr> exprs, boolean recursive) {
+    public static ImSet<NotNullExpr> getExprFollows(ImCol<BaseExpr> exprs, boolean includeInnerWithoutNotNull, boolean recursive) {
         MSet<NotNullExpr> set = SetFact.mSet();
         for(int i=0,size=exprs.size();i<size;i++)
-            set.addAll(exprs.get(i).getExprFollows(true, recursive));
+            set.addAll(exprs.get(i).getExprFollows(true, includeInnerWithoutNotNull, recursive));
         return set.immutable();
+    }
+
+    public static boolean hasExprFollowsWithoutNotNull(ImCol<BaseExpr> exprs) {
+        for(int i=0,size=exprs.size();i<size;i++)
+            if(exprs.get(i).hasExprFollowsWithoutNotNull())
+                return true;
+        return false;
     }
 
     public static ImSet<DataWhere> getFollows(ImSet<NotNullExpr> exprFollows) {
@@ -89,7 +117,7 @@ public abstract class NotNullExpr extends VariableSingleClassExpr {
             else {
                 if(mUnionJoins!=null && !(expr instanceof CurrentEnvironmentExpr))
                     mUnionJoins.add(((UnionExpr)expr).getBaseJoin());
-                mResult.addAll(getInnerExprs(expr.getExprFollows(false), unionJoins));
+                mResult.addAll(getInnerExprs(expr.getExprFollows(NotNullExpr.INNERJOINS, false), unionJoins));
             }
         }
 

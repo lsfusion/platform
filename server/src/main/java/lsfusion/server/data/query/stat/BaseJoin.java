@@ -7,7 +7,7 @@ import lsfusion.server.data.expr.NotNullExpr;
 
 public interface BaseJoin<K> {
 
-    ImSet<NotNullExpr> getExprFollows(boolean recursive);
+    ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive);
 
     ImMap<K, BaseExpr> getJoins();
     StatKeys<K> getStatKeys(KeyStat keyStat);

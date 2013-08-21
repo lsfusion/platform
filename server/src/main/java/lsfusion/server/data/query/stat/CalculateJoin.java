@@ -24,7 +24,11 @@ public abstract class CalculateJoin<K> extends TwinImmutableObject implements In
         return new StatKeys<K>(totalStat, new DistinctKeys<K>(distinct));
     }
 
-    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
-        return InnerExpr.getExprFollows(this, recursive);
+    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
+    }
+
+    public boolean hasExprFollowsWithoutNotNull() {
+        return InnerExpr.hasExprFollowsWithoutNotNull(this);
     }
 }

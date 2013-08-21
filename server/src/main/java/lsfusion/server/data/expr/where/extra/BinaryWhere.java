@@ -44,7 +44,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
     }
 
     public ImSet<DataWhere> calculateFollows() {
-        return NotNullExpr.getFollows(NotNullExpr.getExprFollows(SetFact.toSet(operator1, operator2), true));
+        return NotNullExpr.getFollows(NotNullExpr.getExprFollows(SetFact.toSet(operator1, operator2), NotNullExpr.FOLLOW, true));
     }
 
     protected abstract This createThis(BaseExpr operator1, BaseExpr operator2);

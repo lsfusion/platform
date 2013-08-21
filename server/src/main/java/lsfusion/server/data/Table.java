@@ -17,7 +17,6 @@ import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.expr.where.cases.MCaseList;
@@ -457,8 +456,12 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return lsfusion.server.data.expr.Expr.getWhere(joins);
         }
 
-        public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
-            return InnerExpr.getExprFollows(this, recursive);
+        public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+            return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
+        }
+
+        public boolean hasExprFollowsWithoutNotNull() {
+            return InnerExpr.hasExprFollowsWithoutNotNull(this);
         }
 
         public InnerJoins getInnerJoins() {
@@ -596,7 +599,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             }
 
             protected ImSet<DataWhere> calculateFollows() {
-                return NotNullExpr.getFollows(getExprFollows(true));
+                return NotNullExpr.getFollows(getExprFollows(NotNullExpr.FOLLOW, true));
             }
 
             public lsfusion.server.data.expr.Expr getFJExpr() {

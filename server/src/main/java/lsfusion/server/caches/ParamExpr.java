@@ -68,8 +68,14 @@ public abstract class ParamExpr extends VariableSingleClassExpr implements Inner
         return MapFact.EMPTY();
     }
 
-    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
-        return InnerExpr.getExprFollows(this, recursive);
+    @Override
+    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
+    }
+
+    @Override
+    public boolean hasExprFollowsWithoutNotNull() {
+        return InnerExpr.hasExprFollowsWithoutNotNull(this);
     }
 
     protected ImSet<ParamExpr> getKeys() {

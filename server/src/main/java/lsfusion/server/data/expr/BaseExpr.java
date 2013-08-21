@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
@@ -49,16 +48,28 @@ public abstract class BaseExpr extends Expr {
         return new ExprCaseList(SetFact.<ExprCase>singleton(new ExprCase(Where.TRUE, this)));
     }
 
-    public ImSet<NotNullExpr> getExprFollows(boolean includeThis, boolean recursive) {
+    public ImSet<NotNullExpr> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
         assert includeThis || recursive; // также предполагается что NotNullExpr includeThis отработал
-        return getExprFollows(recursive);
+        return getExprFollows(includeInnerWithoutNotNull, recursive);
     }
     private ImSet<NotNullExpr> exprFollows = null;
     @ManualLazy
-    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
-        if(exprFollows==null)
-            exprFollows = getBaseJoin().getExprFollows(recursive);
-        return exprFollows;
+    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        if(recursive && (!includeInnerWithoutNotNull || !hasExprFollowsWithoutNotNull())) {
+            if(exprFollows==null)
+                exprFollows = getBaseJoin().getExprFollows(includeInnerWithoutNotNull, recursive);
+            return exprFollows;
+        }
+        
+        return getBaseJoin().getExprFollows(includeInnerWithoutNotNull, recursive); 
+    }
+    
+    private Boolean hasExprFollowsWithoutNotNull; 
+    @ManualLazy
+    protected boolean hasExprFollowsWithoutNotNull() {
+        if(hasExprFollowsWithoutNotNull==null)
+            hasExprFollowsWithoutNotNull = getBaseJoin().hasExprFollowsWithoutNotNull();
+        return hasExprFollowsWithoutNotNull;        
     }
 
     public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {

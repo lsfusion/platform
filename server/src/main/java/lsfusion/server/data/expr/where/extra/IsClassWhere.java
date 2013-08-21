@@ -127,7 +127,7 @@ public class IsClassWhere extends DataWhere {
     }
 
     protected ImSet<DataWhere> calculateFollows() {
-        return NotNullExpr.getFollows(expr.getExprFollows(true, true));
+        return NotNullExpr.getFollows(expr.getExprFollows(true, NotNullExpr.FOLLOW, true));
     }
 
     //    public KeyEquals calculateKeyEquals() {

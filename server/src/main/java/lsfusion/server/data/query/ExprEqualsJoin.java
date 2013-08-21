@@ -49,8 +49,8 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
         return InnerExpr.getFollowJoins(this, upWheres, unionJoins);
     }
 
-    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
-        return InnerExpr.getExprFollows(this, recursive);
+    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
     }
 
     public ImMap<Integer, BaseExpr> getJoins() {

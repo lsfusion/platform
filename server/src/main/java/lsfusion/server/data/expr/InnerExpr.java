@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.data.expr.query.PropStat;
-import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.ExprStatJoin;
 import lsfusion.server.data.query.InnerJoin;
 import lsfusion.server.data.query.InnerJoins;
@@ -52,8 +51,12 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
     }
 
     // множественное наследование
-    public static <K> ImSet<NotNullExpr> getExprFollows(BaseJoin<K> join, boolean recursive) { // куда-то надо же положить
-        return getExprFollows(join.getJoins().values(), recursive);
+    public static <K> ImSet<NotNullExpr> getExprFollows(BaseJoin<K> join, boolean includeInnerWithoutNotNull, boolean recursive) { // куда-то надо же положить
+        return getExprFollows(join.getJoins().values(), includeInnerWithoutNotNull, recursive);
+    }
+
+    public static <K> boolean hasExprFollowsWithoutNotNull(BaseJoin<K> join) { // куда-то надо же положить
+        return hasExprFollowsWithoutNotNull(join.getJoins().values());
     }
 
     // множественное наследование
@@ -65,7 +68,7 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
     public static InnerJoins getFollowJoins(WhereJoin<?, ?> join, Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) { // куда-то надо же положить
         InnerJoins result = InnerJoins.EMPTY;
         ImMap<InnerJoin, Where> upResult = MapFact.EMPTY();
-        ImSet<InnerExpr> innerExprs = getInnerExprs(join.getExprFollows(false), unionJoins);
+        ImSet<InnerExpr> innerExprs = getInnerExprs(join.getExprFollows(NotNullExpr.INNERJOINS, false), unionJoins);
         for(int i=0,size=innerExprs.size();i<size;i++) {
             InnerExpr innerExpr = innerExprs.get(i);
             InnerJoin innerJoin = innerExpr.getInnerJoin();

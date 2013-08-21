@@ -75,7 +75,7 @@ public abstract class NotNullWhere extends DataWhere {
     }
 
     protected ImSet<DataWhere> calculateFollows() {
-        return NotNullExpr.getFollows(getExpr().getExprFollows(false, true));
+        return NotNullExpr.getFollows(getExpr().getExprFollows(false, NotNullExpr.FOLLOW, true));
     }
 
     public boolean twins(TwinImmutableObject o) {

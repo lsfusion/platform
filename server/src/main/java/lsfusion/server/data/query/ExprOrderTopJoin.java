@@ -59,10 +59,10 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
     }
 
     @Override
-    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
+    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         if(not)
             return SetFact.EMPTY();
-        return super.getExprFollows(recursive);
+        return super.getExprFollows(includeInnerWithoutNotNull, recursive);
     }
 
     @Override

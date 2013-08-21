@@ -23,7 +23,11 @@ public class ValueJoin implements InnerBaseJoin<Object> {
         return new StatKeys<Object>(SetFact.<Object>EMPTY(), Stat.ONE);
     }
 
-    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
-        return InnerExpr.getExprFollows(this, recursive);
+    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
+    }
+
+    public boolean hasExprFollowsWithoutNotNull() {
+        return InnerExpr.hasExprFollowsWithoutNotNull(this);
     }
 }
