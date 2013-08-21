@@ -122,7 +122,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.panelContainer.setChildrenAlignment(Alignment.LEADING);
 
         set.panelPropsContainer.setType(ContainerType.COLUMNS);
-        set.panelPropsContainer.setColumns(6);
+        set.panelPropsContainer.setColumns(4);
         set.panelPropsContainer.setGapX(10);
         set.panelPropsContainer.setGapY(5);
 
