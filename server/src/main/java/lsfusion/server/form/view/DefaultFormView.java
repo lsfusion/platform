@@ -402,7 +402,7 @@ public class DefaultFormView extends FormView {
                 //затем создаём контейнер для текущей группы
                 currentGroupContainer = createContainer(currentGroup.caption, null, currentGroupContainerSID);
                 currentGroupContainer.setType(ContainerType.COLUMNS);
-                currentGroupContainer.columns = 6;
+                currentGroupContainer.columns = 4;
 
                 panelContainers.get(groupObject).add(currentGroupContainer);
             }

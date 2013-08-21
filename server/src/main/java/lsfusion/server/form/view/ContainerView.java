@@ -22,7 +22,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public int gapX = 10;
     public int gapY = 5;
-    public int columns = 5;
+    public int columns = 4;
 
     public ContainerView() {
     }
