@@ -73,6 +73,15 @@ public class Words {
         sexMap.put(("number4"), true);
     }
 
+    private static final HashMap<String, Integer> numOfDigitsMap = new HashMap<String, Integer>(); //true - female, false - male
+
+    static {
+        numOfDigitsMap.put(("EUR"), 2);
+        numOfDigitsMap.put(("USD"), 2);
+        numOfDigitsMap.put(("RUB"), 2);
+        numOfDigitsMap.put(("BLR"), 2);
+    }
+
     private static String toString(Long value, String type, Integer numOfDigits, Boolean female) {
 
         long sum = value == null ? 0 : value;
@@ -121,7 +130,9 @@ public class Words {
                         //int sex = 1;
                         //if (isFractalPart != null)
                         //    sex = isFractalPart ? 1 : ("0".equals(a_power[i][0]) ? 0 : 1);
-                        Integer sex = "1".equals(a_power[i][0]) ? 1 : (type == null ? 0 : type.equals("number0") ? (female ? 1 : 0) : (sexMap.get(type) ? 1 : 0));
+                        String fullType = type + (numOfDigits==null ? "" : numOfDigits);
+                        Integer sex = "1".equals(a_power[i][0]) ? 1 : (type == null ? 0 : (fullType.equals("number0") ? (female ? 1 : 0)
+                                : (sexMap.containsKey (fullType) ? (sexMap.get(fullType) ? 1 : 0) : (sexMap.containsKey(type) ? (sexMap.get(type) ? 1 : 0) : 0))));
                         if (mny >= 1) result.append(digit[mny][(sex == null ? (female ? 1 : 0) : sex)]);
                     }
                     switch (mny) {
@@ -149,11 +160,13 @@ public class Words {
             if (numOfDigits != 0)
                 postfix = fractalPostfix.containsKey(type) ?
                         fractalPostfix.get(type)[getVariation(value)] :
-                        fractalPostfix.get("number3")[getVariation(value)];
+                        fractalPostfix.containsKey(type + numOfDigits) ?
+                                fractalPostfix.get(type + numOfDigits)[getVariation(value)] :
+                                fractalPostfix.get("number" + numOfDigits)[getVariation(value)];
             else
                 postfix = decPostfix;
         } else
-            postfix = type.equals("number") ? decimalPostfix.get("number0")[getVariation(value)] : decPostfix;
+            postfix = type.equals("number0") ? decimalPostfix.get("number0")[getVariation(value)] : decPostfix;
         return result.toString() + postfix;
     }
 
@@ -173,15 +186,30 @@ public class Words {
         }
     }
 
-    public static String getWord(String value, int index){
-        if((value==null)||(index<0))
+    public static String getWord(String value, int index) {
+        if ((value == null) || (index < 0))
             return "";
         String[] splitValue = value.split(",");
-        if(splitValue.length<=index)
+        if (splitValue.length <= index)
             return "";
         else return splitValue[index];
     }
-    
+
+    private static int getNumOfDigits(double num, String type) {
+        if (type != null) {
+            if (numOfDigitsMap.containsKey(type))
+                return numOfDigitsMap.get(type);
+            else if (type.matches(".*\\d"))
+                return Integer.parseInt(type.substring(type.length() - 1, type.length()));
+        }
+        int numOfDigits = 0;
+        while (Math.abs(num - Math.round(num)) > 1E-7) {
+            numOfDigits++;
+            num = num * 10;
+        }
+        return Math.min(numOfDigits, 4);
+    }
+
     //для лонга с типом
     public static String toString(Long number, String type) {
         if (decimalPostfix.containsKey(type))
@@ -212,17 +240,18 @@ public class Words {
 
     //для дабла с типом
     public static String toString(Double numObject, String type) {
-        if (decimalPostfix.containsKey(type) && fractalPostfix.containsKey(type + 2)) {
-            double num = numObject == null ? 0.0 : numObject;
-            long fract = Math.round(num * 100) - ((long) num) * 100;
+        double num = numObject == null ? 0.0 : numObject;
+        Integer numOfDigits = getNumOfDigits(num, type);
+        if (decimalPostfix.containsKey(type) && (fractalPostfix.containsKey(type) || fractalPostfix.containsKey(type + numOfDigits))) {
+            long fract = Math.round(num * Math.pow(10, numOfDigits) - ((long) num) * Math.pow(10, numOfDigits));
             String result;
             if (fract != 0)
-                result = toString((long) num, type, null, sexMap.get(type)) + toString(fract, type, 2, sexMap.get(type + 2));
+                result = toString((long) num, type, null, sexMap.get(type)) + toString(fract, type, numOfDigits, sexMap.get(type + numOfDigits));
             else
                 result = toString((int) num, type);
             return result;
         } else
-            return toString(numObject, 3, false);
+            return toString(numObject, numOfDigits, true);
     }
 
     //для дабла без типа
@@ -258,23 +287,23 @@ public class Words {
     }
 
     public static String toString(BigDecimal numObject, String type) {
-        if (numObject == null) return toString((Double)null, type);
+        if (numObject == null) return toString((Double) null, type);
         return toString(numObject.doubleValue(), type);
     }
 
     //для дабла без типа
     public static String toString(BigDecimal numObject, Integer numOfDigits, Boolean female) {
-        if (numObject == null) return toString((Double)null, numOfDigits, female);
+        if (numObject == null) return toString((Double) null, numOfDigits, female);
         return toString(numObject.doubleValue(), numOfDigits, female);
     }
 
     public static String toString(BigDecimal numObject, Integer numOfDigits) {
-        if (numObject == null) return toString((Double)null, numOfDigits);
+        if (numObject == null) return toString((Double) null, numOfDigits);
         return toString(numObject.doubleValue(), numOfDigits);
     }
 
     public static String toString(BigDecimal numObject, Boolean female) {
-        if (numObject == null) return toString((Double)null, female);
+        if (numObject == null) return toString((Double) null, female);
         return toString(numObject.doubleValue(), female);
     }
 
