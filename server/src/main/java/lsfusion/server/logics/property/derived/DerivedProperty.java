@@ -356,7 +356,7 @@ public class DerivedProperty {
         return createAnyGProp("ANY_" + prop.getSID()+"_"+groupInterfaces.toString("_"), "ANY " + prop.caption + " (" + groupInterfaces.toString(",") + ")", prop, groupInterfaces);
     }
     public static <T extends PropertyInterface, N extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(String sID, String caption, CalcProperty<T> prop, ImSet<T> groupInterfaces) {
-        if(!prop.getType().equals(LogicalClass.instance)) { // делаем Logical
+        if(!prop.getType().equals(LogicalClass.instance)) { // делаем Logical, может валиться по nullPointer, если в ACTION'е идут противоречивые условия (классы неправильные)
             CalcPropertyMapImplement<N, T> notNull = (CalcPropertyMapImplement<N, T>) DerivedProperty.createNotNull(prop.getImplement());
             return DerivedProperty.<N, T>createAnyGProp(sID, caption, notNull.property, notNull.mapping.filterInclValuesRev(groupInterfaces).keys()).map(notNull.mapping);
         }

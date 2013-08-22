@@ -1,5 +1,7 @@
 package lsfusion.server.form.entity.filter;
 
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.Instantiable;
@@ -19,5 +21,9 @@ public abstract class FilterEntity implements Instantiable<FilterInstance>, Serv
         Set<ObjectEntity> objects = new HashSet<ObjectEntity>();
         fillObjects(objects);
         return objects;
+    }
+
+    public GroupObjectEntity getToDraw(FormEntity form) {
+        return form.getApplyObject(getObjects());
     }
 }

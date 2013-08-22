@@ -1146,6 +1146,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         public ComponentSet addItem(ComponentView container) {
             return add(new ComponentSet(container));
         }
+        
+        public ComponentSet addAll(ComponentSet set) {
+            return add(set);            
+        }
     }
     @IdentityStrongLazy
     public ComponentSet getDrawTabContainers(GroupObjectEntity group) {
@@ -1162,6 +1166,21 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
                     return null;
                 result = result.addItem(drawContainer);
             }
+        MSet<GroupObjectEntity> mFixedGroupObjects = SetFact.mSetMax(fixedFilters.size());
+        for(FilterEntity filterEntity : fixedFilters) {
+            if(!group.getObjects().disjoint(SetFact.fromJavaSet(filterEntity.getObjects()))) { // для фильтров "зависящих" от группы
+                GroupObjectEntity drawGroup = filterEntity.getToDraw(this);
+                if(!drawGroup.equals(group))
+                    mFixedGroupObjects.add(drawGroup); 
+            }
+        }
+        for(GroupObjectEntity fixedGroupObject : mFixedGroupObjects.immutable()) {
+            ComponentSet drawContainers = getDrawTabContainers(fixedGroupObject);
+            if(drawContainers==null)
+                return null;
+                
+            result = result.addAll(drawContainers);
+        }
         return result;
     }
 
