@@ -364,9 +364,9 @@ public class BaseUtils {
 
     public static <K, T, VA, VB> Map<T, VA> splitInnerJoin(Map<T, K> mapTo, Map<K, VA> map1, Map<K, VB> map2, Map<T, VB> res2) {
         Map<T, VA> res1 = new HashMap<T, VA>();
-        for(Map.Entry<T, K> map : mapTo.entrySet()) {
+        for (Map.Entry<T, K> map : mapTo.entrySet()) {
             VA value1 = map1.get(map.getValue());
-            if(value1!=null)
+            if (value1 != null)
                 res1.put(map.getKey(), value1);
             else
                 res2.put(map.getKey(), map2.get(map.getValue()));
@@ -993,7 +993,7 @@ public class BaseUtils {
         OrderedMap<T, K> result = new OrderedMap<T, K>();
         for (T element : list) {
             K value = map.get(element);
-            if(value!=null)
+            if (value != null)
                 result.put(element, value);
         }
         return result;
@@ -1002,7 +1002,7 @@ public class BaseUtils {
     public static <BT, T extends BT> List<T> orderList(Set<T> map, Iterable<BT> list) {
         List<T> result = new ArrayList<T>();
         for (BT element : list)
-            if(map.contains(element))
+            if (map.contains(element))
                 result.add((T) element);
         return result;
     }
@@ -1045,7 +1045,7 @@ public class BaseUtils {
     }
 
     public static String nullToString(Object str) {
-        if (str==null) return "NULL";
+        if (str == null) return "NULL";
         else return str.toString();
     }
 
@@ -1060,11 +1060,11 @@ public class BaseUtils {
     }
 
     public static <K, V> void clearNotKeys(Map<K, V> map, ImSet<? extends K> keep) {
-        if(keep.isEmpty())
+        if (keep.isEmpty())
             map.clear();
         else {
-            for(Iterator<K> it = map.keySet().iterator();it.hasNext();)
-                if(!((ImSet<K>)keep).contains(it.next()))
+            for (Iterator<K> it = map.keySet().iterator(); it.hasNext(); )
+                if (!((ImSet<K>) keep).contains(it.next()))
                     it.remove();
         }
     }
@@ -1077,7 +1077,7 @@ public class BaseUtils {
         Map<G, Collection<K>> result = new HashMap<G, Collection<K>>();
         for (K key : keys) {
             G group = getter.group(key);
-            if(group!=null) {
+            if (group != null) {
                 Collection<K> groupList = result.get(group);
                 if (groupList == null) {
                     groupList = new ArrayList<K>();
@@ -1093,7 +1093,7 @@ public class BaseUtils {
         Map<G, List<K>> result = new HashMap<G, List<K>>();
         for (K key : keys) {
             G group = getter.group(key);
-            if(group!=null) {
+            if (group != null) {
                 List<K> groupList = result.get(group);
                 if (groupList == null) {
                     groupList = new ArrayList<K>();
@@ -1109,7 +1109,7 @@ public class BaseUtils {
         Map<G, Set<K>> result = new HashMap<G, Set<K>>();
         for (K key : keys) {
             G group = getter.group(key);
-            if(group!=null) {
+            if (group != null) {
                 Set<K> groupSet = result.get(group);
                 if (groupSet == null) {
                     groupSet = new HashSet<K>();
@@ -1157,7 +1157,7 @@ public class BaseUtils {
         SortedMap<G, Set<K>> result = new TreeMap<G, Set<K>>(comparator);
         for (K key : keys) {
             G group = getter.group(key);
-            if(group!=null) {
+            if (group != null) {
                 Set<K> groupSet = result.get(group);
                 if (groupSet == null) {
                     groupSet = new HashSet<K>();
@@ -1309,13 +1309,14 @@ public class BaseUtils {
 
     public static Integer[] toObjectArray(int[] a) {
         Integer[] result = new Integer[a.length];
-        for(int i=0;i<a.length;i++)
+        for (int i = 0; i < a.length; i++)
             result[i] = a[i];
         return result;
     }
+
     public static Integer[] toOneBasedArray(int[] a) {
         Integer[] result = new Integer[a.length];
-        for(int i=0;i<a.length;i++)
+        for (int i = 0; i < a.length; i++)
             result[i] = a[i] + 1;
         return result;
     }
@@ -1365,7 +1366,7 @@ public class BaseUtils {
 
     public static <T> T[] add(List<T> list1, T[] array2, ArrayInstancer<T> instancer) {
         T[] result = instancer.newArray(list1.size() + array2.length);
-        for(int i=0;i<list1.size();i++)
+        for (int i = 0; i < list1.size(); i++)
             result[i] = list1.get(i);
         System.arraycopy(array2, 0, result, list1.size(), array2.length);
         return result;
@@ -1373,12 +1374,13 @@ public class BaseUtils {
 
     public static class GenericTypeInstancer<T> implements ArrayInstancer<T> {
         private final Class arrayType;
+
         public GenericTypeInstancer(Class<T> arrayType) {
             this.arrayType = arrayType;
         }
 
         public T[] newArray(int size) {
-            return (T []) Array.newInstance(arrayType, size);
+            return (T[]) Array.newInstance(arrayType, size);
         }
     }
 
@@ -1454,7 +1456,7 @@ public class BaseUtils {
 
     public static int[] genArray(int element, int length) {
         int[] ints = new int[length];
-        for(int i=0;i<length;i++)
+        for (int i = 0; i < length; i++)
             ints[i] = element;
         return ints;
     }
@@ -1510,7 +1512,7 @@ public class BaseUtils {
 
     public static <K> List<K> toList(Iterable<K> col) {
         List<K> result = new ArrayList<K>();
-        for(K element : col)
+        for (K element : col)
             result.add(element);
         return result;
     }
@@ -1584,15 +1586,15 @@ public class BaseUtils {
 
     public static <K> List<Boolean> toBooleanList(boolean... elements) {
         List<Boolean> list = new ArrayList<Boolean>();
-        for(boolean element : elements)
+        for (boolean element : elements)
             list.add(element);
         return list;
     }
 
     public static <K> List<K> toListNoNull(K... elements) {
         List<K> list = new ArrayList<K>();
-        for(K element : elements)
-            if(element!=null)
+        for (K element : elements)
+            if (element != null)
                 list.add(element);
         return list;
     }
@@ -1635,7 +1637,7 @@ public class BaseUtils {
 
     // в отличии от padright дает нуж
     public static String padr(String string, int length) {
-        if(length == string.length())
+        if (length == string.length())
             return string;
 
         if (length > string.length())
@@ -1748,7 +1750,7 @@ public class BaseUtils {
 
         ImSet<K> freeKeys = null;
         ImOrderMap<C, ImSet<K>> classOrders = classParams.groupValues().sort(BaseUtils.<Comparator<C>>immutableCast(GlobalObject.comparator));
-        for (int i=0,size=classOrders.size();i<size;i++) {
+        for (int i = 0, size = classOrders.size(); i < size; i++) {
             freeKeys = classOrders.getValue(i);
             C groupClass = classOrders.getKey(i);
 
@@ -1803,7 +1805,8 @@ public class BaseUtils {
         return col.mapRevValues(new GetValue<Object, T>() {
             public Object getMapValue(T value) {
                 return new Object();
-            }});
+            }
+        });
     }
 
     public static void openFile(byte[] data, String extension) throws IOException {
@@ -1878,11 +1881,10 @@ public class BaseUtils {
 
     public static String[] monthsEnglish = new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
-    public static int getNumberOfMonthEnglish(String month)
-    {
-        for(int i=0; i<monthsEnglish.length; i++)
-            if(month.equals(monthsEnglish[i]))
-                return i+1;
+    public static int getNumberOfMonthEnglish(String month) {
+        for (int i = 0; i < monthsEnglish.length; i++)
+            if (month.equals(monthsEnglish[i]))
+                return i + 1;
         return 1;
     }
 
@@ -1979,7 +1981,7 @@ public class BaseUtils {
             if (multiple)
                 outStream.writeInt(files.length);
             for (File file : files) {
-                if(storeName) {
+                if (storeName) {
                     outStream.writeInt(file.getName().length());
                     outStream.writeBytes(file.getName());
                 }
@@ -1996,7 +1998,7 @@ public class BaseUtils {
                     outStream.writeInt(union.length);
                 outStream.write(union);
 
-                if(!multiple) // just in case
+                if (!multiple) // just in case
                     break;
             }
 
@@ -2083,7 +2085,7 @@ public class BaseUtils {
     }
 
     public static int cmp(int a, int b, boolean max) {
-        return max ? max(a, b) : min(a, b); 
+        return max ? max(a, b) : min(a, b);
     }
 
     public static boolean cmp(boolean a, boolean b, boolean max) {
@@ -2095,6 +2097,7 @@ public class BaseUtils {
             return BaseUtils.min(prevValue, newValue);
         }
     };
+
     public static <K> SimpleAddValue<K, Integer> addMinInt() {
         return (SimpleAddValue<K, Integer>) addMinInt;
     }
@@ -2109,8 +2112,8 @@ public class BaseUtils {
 
     public static List<Integer> consecutiveList(int i, int is) {
         List<Integer> result = new ArrayList<Integer>();
-        for(int j=0;j<i;j++)
-            result.add(j+is);
+        for (int j = 0; j < i; j++)
+            result.add(j + is);
         return result;
     }
 
@@ -2126,15 +2129,15 @@ public class BaseUtils {
 
     public static <K> FunctionSet<K> merge(FunctionSet<K>... sets) {
         FunctionSet<K> result = sets[0];
-        for(int i=1;i<sets.length;i++)
+        for (int i = 1; i < sets.length; i++)
             result = merge(result, sets[i]);
         return result;
     }
 
     public static <K> FunctionSet<K> merge(FunctionSet<K> set1, FunctionSet<K> set2) {
-        if(set1.isEmpty() || set2.isFull())
+        if (set1.isEmpty() || set2.isFull())
             return set2;
-        if(set2.isEmpty() || set1.isFull())
+        if (set2.isEmpty() || set1.isFull())
             return set1;
 //        if(set1 instanceof ImSet && set2 instanceof ImSet)
 //            return ((ImSet<K>)set1).merge((ImSet<K>)set2);
@@ -2142,21 +2145,21 @@ public class BaseUtils {
     }
 
     public static <T> FunctionSet<T> universal(boolean empty) {
-        if(empty)
+        if (empty)
             return SetFact.EMPTY();
         else
             return FullFunctionSet.instance();
     }
 
     public static <MK, K, V> void putUpdate(Map<MK, Map<K, V>> keyValues, MK key, Map<K, V> values, boolean update) {
-        if(update)
+        if (update)
             keyValues.put(key, BaseUtils.<K, K, K, V>override(keyValues.get(key), values));
         else
             keyValues.put(key, values);
     }
 
-    public static <K, V, M extends Map<K,V>> M getNearObject(V findValue, List<M> keys) {
-        if(keys.size()<=1)
+    public static <K, V, M extends Map<K, V>> M getNearObject(V findValue, List<M> keys) {
+        if (keys.size() <= 1)
             return null;
 
         M nearObject = null;
@@ -2170,15 +2173,16 @@ public class BaseUtils {
         return nearObject;
     }
 
-    public static <K, V, M extends Map<K,V>> V getNearValue(K findKey, V findValue, List<M> keys) {
+    public static <K, V, M extends Map<K, V>> V getNearValue(K findKey, V findValue, List<M> keys) {
         M nearObject = getNearObject(findValue, keys);
-        if(nearObject!=null)
+        if (nearObject != null)
             return nearObject.get(findKey);
         return null;
     }
 
     private static final char[] randomsymbols = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
     private final static SecureRandom random = new SecureRandom();
+
     public static String randomString(int len) {
         StringBuilder sb = new StringBuilder(len);
         for (int i = 0; i < len; i++) {
@@ -2187,7 +2191,7 @@ public class BaseUtils {
         return sb.toString();
     }
 
-    public static String calculateBase64Hash(String algorithm, String input, Object salt) throws RuntimeException{
+    public static String calculateBase64Hash(String algorithm, String input, Object salt) throws RuntimeException {
         try {
             return new String(Base64.encodeBase64(calculateHash(algorithm, input, salt).getBytes("UTF-8")), Charset.forName("UTF-8"));
         } catch (UnsupportedEncodingException e) {
@@ -2195,7 +2199,7 @@ public class BaseUtils {
         }
     }
 
-    public static String calculateHash(String algorithm, String input, Object salt) throws RuntimeException{
+    public static String calculateHash(String algorithm, String input, Object salt) throws RuntimeException {
         try {
             return new String(MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes("UTF-8")), Charset.forName("UTF-8"));
         } catch (NoSuchAlgorithmException e) {
@@ -2218,9 +2222,9 @@ public class BaseUtils {
 
     public static int compareInts(int a, int b) {
         return a < b
-               ? -1
-               : a > b
-                 ? 1 : 0;
+                ? -1
+                : a > b
+                ? 1 : 0;
     }
 
     public static void runLater(final int delay, final Runnable runnable) {
@@ -2235,12 +2239,27 @@ public class BaseUtils {
 
     public static <T> void addToOrderedList(List<T> orderedList, T element, int after, Comparator<T> compare) {
         assert after <= orderedList.size();
-        while(true) {
-            if(after >= orderedList.size() || compare.compare(orderedList.get(after), element) > 0) {
+        while (true) {
+            if (after >= orderedList.size() || compare.compare(orderedList.get(after), element) > 0) {
                 orderedList.add(after, element);
                 break;
             }
             after++;
         }
+    }
+
+    public static String convertBarcode12To13(String barcode) {
+        if (barcode!=null && barcode.length() == 12) {
+            int checkSum = 0;
+            for (int i = 0; i <= 10; i = i + 2) {
+                checkSum += Integer.valueOf(String.valueOf(barcode.charAt(i)));
+                checkSum += Integer.valueOf(String.valueOf(barcode.charAt(i + 1))) * 3;
+            }
+            checkSum %= 10;
+            if (checkSum != 0)
+                checkSum = 10 - checkSum;
+            return barcode.concat(String.valueOf(checkSum));
+        } else
+            return barcode;
     }
 }
