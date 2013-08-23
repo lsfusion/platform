@@ -12,6 +12,8 @@ public class GForm implements Serializable {
 
     public String caption;
 
+    public int autoRefresh;
+
     public GContainer mainContainer;
     public ArrayList<GTreeGroup> treeGroups = new ArrayList<GTreeGroup>();
     public ArrayList<GGroupObject> groupObjects = new ArrayList<GGroupObject>();
@@ -87,6 +89,15 @@ public class GForm implements Serializable {
             }
         }
         return prop;
+    }
+
+    public GPropertyDraw getProperty(String sid) {
+        for (GPropertyDraw property : propertyDraws) {
+            if (property.sID.equals(sid)) {
+                return property;
+            }
+        }
+        return null;
     }
 
     public void addFont(GFont font) {

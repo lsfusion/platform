@@ -4,6 +4,8 @@ import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.CGridArea;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
+import bibliothek.gui.dock.common.event.CDockableLocationEvent;
+import bibliothek.gui.dock.common.event.CDockableLocationListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import lsfusion.client.EditReportInvoker;
 import lsfusion.client.Main;
@@ -51,8 +53,16 @@ public class DockableManager {
         return control;
     }
 
-    private void openForm(ClientDockable page) {
+    private void openForm(final ClientDockable page) {
         page.addCDockableStateListener(new DockableVisibilityListener());
+        page.addCDockableLocationListener(new CDockableLocationListener() {
+            @Override
+            public void changed(CDockableLocationEvent event) {
+                if (event.getOldShowing() != event.getNewShowing()) {
+                    page.onShowingChanged(event.getOldShowing(), event.getNewShowing());
+                }
+            }
+        });
         page.setLocation(formArea.getStationLocation());
         control.addDockable(page);
         page.setVisible(true);

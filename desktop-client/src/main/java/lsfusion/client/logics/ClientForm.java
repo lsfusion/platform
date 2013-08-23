@@ -27,6 +27,8 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public String caption = "";
 
+    public int autoRefresh = 0;
+
     public static ClientGroupObject lastActiveGroupObject;
 
     // пока используется только для сериализации туда-назад
@@ -147,6 +149,15 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         return getIDProps().get(id);
     }
 
+    public ClientPropertyDraw getProperty(String sid) {
+        for (ClientPropertyDraw property : propertyDraws) {
+            if (property.getSID().equals(sid)) {
+                return property;
+            }
+        }
+        return null;
+    }
+
     public String getFullCaption() {
         if (keyStroke != null) {
             StringBuilder fullCaption = new StringBuilder(caption);
@@ -175,6 +186,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
         pool.writeInt(outStream, overridePageWidth);
+        outStream.writeInt(autoRefresh);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -194,6 +206,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         keyStroke = pool.readObject(inStream);
         caption = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
+        autoRefresh = inStream.readInt();
     }
 
     public boolean removePropertyDraw(ClientPropertyDraw clientPropertyDraw) {

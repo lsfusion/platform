@@ -100,6 +100,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private LoadingBlocker blocker = new LoadingBlocker(this);
 
+    private boolean blocked = false;
+    private boolean selected = true;
+    private boolean formHidden = false;
+
     private static final Comparator<GPropertyDraw> COMPARATOR_USERSORT = new Comparator<GPropertyDraw>() {
         @Override
         public int compare(GPropertyDraw c1, GPropertyDraw c2) {
@@ -145,6 +149,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         needToResize = true;
         applyRemoteChanges(form.initialFormChanges);
         form.initialFormChanges = null;
+
+        initializeAutoRefresh();
 
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
@@ -326,6 +332,25 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         }
         applyOrders(userOrders);
+    }
+
+    private void initializeAutoRefresh() {
+        if (form.autoRefresh > 0) {
+            final String FORM_REFRESH_PROPERTY_SID = "formRefresh";
+
+            Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
+                @Override
+                public boolean execute() {
+                    if (!isEditing() && selected && !blocked && !formHidden && !isDialog) {
+                        GPropertyDraw refreshProperty = form.getProperty(FORM_REFRESH_PROPERTY_SID);
+                        if (refreshProperty != null) {
+                            executeEditAction(refreshProperty, GGroupObjectValue.EMPTY, GEditBindingMap.CHANGE, new ServerResponseCallback());
+                        }
+                    }
+                    return !formHidden;
+                }
+            }, form.autoRefresh * 1000);
+        }
     }
 
     public void totalResize() {
@@ -517,7 +542,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void showModalDialog(GForm form, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
-        GResizableModalDialog.showDialog(formsController, form, initFilterEvent, handler);
+        WindowHiddenHandler dialogHiddenHandler = new WindowHiddenHandler() {
+            @Override
+            public void onHidden() {
+                blocked = false;
+                handler.onHidden();
+            }
+        };
+        GResizableModalDialog.showDialog(formsController, form, initFilterEvent, dialogHiddenHandler);
+        blocked = true;
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
@@ -873,7 +906,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         //do nothing by default
     }
 
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+        if (blocked) {
+            setFiltersVisible(true);
+        } else {
+            setFiltersVisible(selected);
+        }
+    }
+
     public void hideForm() {
+        formHidden = true;
         setFiltersVisible(false);
         dispatcher.execute(new FormHidden(), new ErrorHandlingCallback<VoidResult>());
         dispatcher.close();
@@ -940,6 +983,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void setSelected(boolean selected) {
+        this.selected = selected;
+        setFiltersVisible(selected && !blocked);
+
+        if (selected && blocked) { // чтобы автоматом не проставлять фокус под блокировку
+            return;
+        }
+
         if (selected) {
             if (!initialResizeProcessed) { // до чего-нибудь мог не успеть дойти onResize() при открытии (открытие сразу нескольких форм)
                 relayoutTables(form.mainContainer);

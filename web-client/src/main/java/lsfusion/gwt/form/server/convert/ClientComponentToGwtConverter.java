@@ -5,8 +5,8 @@ import lsfusion.client.form.EditBindingMap;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientActionClass;
 import lsfusion.client.logics.classes.ClientFileClass;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.base.client.ui.GAlignment;
+import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
@@ -453,6 +453,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         this.form = form;
 
         form.caption = clientForm.caption;
+        form.autoRefresh = clientForm.autoRefresh;
         form.mainContainer = convertOrCast(clientForm.mainContainer);
 
         for (ClientTreeGroup clientTreeGroup : clientForm.treeGroups) {

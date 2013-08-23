@@ -38,6 +38,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     public String title;
     public boolean isPrintForm;
     public ModalityType modalityType = ModalityType.DOCKED;
+    public int autoRefresh;
 
     public List<GroupObjectDescriptor> groupObjects = new ArrayList<GroupObjectDescriptor>();
     public List<TreeGroupDescriptor> treeGroups = new ArrayList<TreeGroupDescriptor>();
@@ -233,6 +234,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         pool.writeString(outStream, sID);
         outStream.writeBoolean(isPrintForm);
         outStream.writeUTF(modalityType.name());
+        outStream.writeInt(autoRefresh);
 
         pool.serializeCollection(outStream, groupObjects);
         pool.serializeCollection(outStream, treeGroups);
@@ -281,6 +283,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         sID = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
         modalityType = ModalityType.valueOf(inStream.readUTF());
+        autoRefresh = inStream.readInt();
 
         groupObjects = pool.deserializeList(inStream);
         treeGroups = pool.deserializeList(inStream);

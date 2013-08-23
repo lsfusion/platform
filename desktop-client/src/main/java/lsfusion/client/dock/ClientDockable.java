@@ -112,6 +112,10 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
         getContentPane().removeAll();
     }
 
+    public void onShowingChanged(boolean oldShowing, boolean newShowing) {
+        // nothing by default
+    }
+
     public void requestFocusInWindow() {
         if (defaultComponent != null) {
             defaultComponent.requestFocusInWindow();

@@ -90,6 +90,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public String title;
     public boolean isPrintForm;
     public ModalityType modalityType = ModalityType.DOCKED;
+    public int autoRefresh = 0;
 
     public boolean isSynchronizedApply = false;
 
@@ -951,6 +952,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.writeString(outStream, sID);
         outStream.writeBoolean(isPrintForm);
         outStream.writeUTF(modalityType.name());
+        outStream.writeInt(autoRefresh);
 
         pool.serializeCollection(outStream, groups);
         pool.serializeCollection(outStream, treeGroups);
@@ -999,6 +1001,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         sID = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
         modalityType = ModalityType.valueOf(inStream.readUTF());
+        autoRefresh = inStream.readInt();
 
         groups = pool.deserializeList(inStream);
         treeGroups = pool.deserializeList(inStream);

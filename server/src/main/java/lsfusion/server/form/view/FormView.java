@@ -40,6 +40,8 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     public Integer overridePageWidth;
 
+    public int autoRefresh = 0;
+
     // список деревеьев
     public List<TreeGroupView> treeGroups = new ArrayList<TreeGroupView>();
 
@@ -786,6 +788,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
         pool.writeInt(outStream, overridePageWidth);
+        outStream.writeInt(autoRefresh);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -804,6 +807,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         keyStroke = pool.readObject(inStream);
         caption = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
+        autoRefresh = inStream.readInt();
 
         entity = pool.context.entity;
 

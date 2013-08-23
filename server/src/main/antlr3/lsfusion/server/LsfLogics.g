@@ -386,12 +386,14 @@ formDeclaration returns [ScriptingFormEntity form]
 @init {
 	boolean isPrint = false;
 	ModalityType modalityType = null;
+	int autoRefresh = 0;
 }
 @after {
 	if (inPropParseState()) {
 		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, $title.val, $path.val);
 		$form.setIsPrintForm(isPrint);
 		$form.setModalityType(modalityType);
+		$form.setAutoRefresh(autoRefresh);
 	}
 }
 	:	'FORM' 
@@ -400,6 +402,7 @@ formDeclaration returns [ScriptingFormEntity form]
 		('PRINT' { isPrint = true; })?
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('IMAGE' path=stringLiteral)?
+		('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })?
 	;
 
 extendingFormDeclaration returns [ScriptingFormEntity form]

@@ -88,8 +88,6 @@ final class FormDockable {
     public static class ContentWidget extends LayoutPanel {
         private final Widget mask;
         private Widget content;
-        private boolean blocked = false;
-        private boolean selected = true;
 
         private ContentWidget(Widget content) {
             mask = new SimpleLayoutPanel();
@@ -115,31 +113,20 @@ final class FormDockable {
         }
 
         public void setBlocked(boolean blocked) {
-            this.blocked = blocked;
-
             if (blocked) {
-                if (content instanceof GFormController) {
-                    ((GFormController) content).setFiltersVisible(false);
-                }
-
                 addFullSizeChild(mask);
             } else {
                 remove(mask);
+            }
 
-                if (content instanceof GFormController) {
-                    ((GFormController) content).setFiltersVisible(selected);
-                }
+            if (content instanceof GFormController) {
+                ((GFormController) content).setBlocked(blocked);
             }
         }
 
         public void setSelected(boolean selected) {
-            this.selected = selected;
-
             if (content instanceof GFormController) {
-                ((GFormController) content).setFiltersVisible(selected && !blocked);
-                if (!selected || !blocked) { // чтобы автоматом не проставлять фокус под блокировку
-                    ((GFormController) content).setSelected(selected);
-                }
+                ((GFormController) content).setSelected(selected);
             }
         }
     }

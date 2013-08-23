@@ -4,10 +4,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.EProvider;
-import lsfusion.base.OrderedMap;
-import lsfusion.base.Pair;
+import lsfusion.base.*;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.client.EditReportInvoker;
@@ -41,6 +38,9 @@ import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -96,12 +96,16 @@ public class ClientFormController implements AsyncListener {
 
     private boolean blocked = false;
 
+    private boolean showing = true;
+
     private EditReportInvoker editReportInvoker = new EditReportInvoker() {
         @Override
         public void invokeEditReport() {
             runEditReport();
         }
     };
+
+    private ScheduledExecutorService autoRefreshScheduler;
 
     public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) {
         this(remoteForm, clientNavigator, false, false);
@@ -177,6 +181,8 @@ public class ClientFormController implements AsyncListener {
         initializeDefaultOrders();
 
         getRemoteChanges(false);
+
+        initializeAutoRefresh();
     }
 
     public List<ClientPropertyDraw> getPropertyDraws() {
@@ -217,6 +223,46 @@ public class ClientFormController implements AsyncListener {
                 createMultipleFilterComponent(filterGroup);
             }
         }
+    }
+
+    private void initializeAutoRefresh() {
+        if (form.autoRefresh > 0) {
+            final String FORM_REFRESH_PROPERTY_SID = "formRefresh";
+
+            autoRefreshScheduler = Executors.newScheduledThreadPool(1);
+            autoRefreshScheduler.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    if (!isEditing() && !blocked && showing && !isDialog && !isModalOrBeneathModalDialog()) {
+                        final ClientPropertyDraw property = form.getProperty(FORM_REFRESH_PROPERTY_SID);
+                        if (property != null) {
+                            SwingUtils.invokeLater(new ERunnable() {
+                                @Override
+                                public void run() throws Exception {
+                                    simpleDispatcher.dispatchResponse(executeEditAction(property, ClientGroupObjectValue.EMPTY, ServerResponse.CHANGE));
+                                }
+                            });
+                        }
+                    }
+                }
+            }, form.autoRefresh, form.autoRefresh, TimeUnit.SECONDS);
+        }
+    }
+
+    public boolean isModalOrBeneathModalDialog() {
+        Window[] windows = Window.getWindows();
+        boolean isModal = false;
+        List<ClientModalForm> formDialogs = new ArrayList<ClientModalForm>();
+        for (Window w : windows) {
+            if (w.isShowing() && w instanceof ClientModalForm && ((ClientModalForm) w).isModal()) {
+                ClientModalForm clientDialog = (ClientModalForm) w;
+                formDialogs.add(clientDialog);
+                if (clientDialog.form != null && clientDialog.form.equals(this)) {
+                    isModal = true;
+                }
+            }
+        }
+        return !formDialogs.isEmpty() && !isModal;
     }
 
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
@@ -1075,6 +1121,9 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void hideForm() {
+        if (autoRefreshScheduler != null) {
+            autoRefreshScheduler.shutdown();
+        }
         // здесь мы сбрасываем ссылку на remoteForm для того, чтобы сборщик мусора быстрее собрал удаленные объекты
         // это нужно, чтобы connection'ы на сервере закрывались как можно быстрее
         remoteForm = null;
@@ -1237,6 +1286,10 @@ public class ClientFormController implements AsyncListener {
 
     public void unblock() {
         blocked = false;
+    }
+
+    public void changeShowing(boolean newShowing) {
+        showing = newShowing;
     }
 
     private abstract class ProcessServerResponseRmiRequest extends RmiRequest<ServerResponse> {

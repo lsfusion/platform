@@ -541,6 +541,10 @@ public class ScriptingFormEntity {
         }
     }
 
+    public void setAutoRefresh(int autoRefresh) {
+        form.autoRefresh = autoRefresh;
+    }
+
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass valueClass = LM.findClassByCompoundName(className);
         if (!(valueClass instanceof CustomClass)) {

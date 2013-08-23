@@ -1,10 +1,10 @@
 package lsfusion.client.dock;
 
-import net.sf.jasperreports.engine.JRException;
 import lsfusion.client.MainFrame;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.RemoteFormInterface;
+import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 
@@ -65,5 +65,12 @@ public class ClientFormDockable extends ClientDockable {
 
         // на всякий случай
         System.gc();
+    }
+
+    @Override
+    public void onShowingChanged(boolean oldShowing, boolean newShowing) {
+        if (clientForm != null) {
+            clientForm.changeShowing(newShowing);
+        }
     }
 }
