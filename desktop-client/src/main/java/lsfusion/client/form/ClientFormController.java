@@ -49,6 +49,7 @@ import static lsfusion.interop.Order.*;
 public class ClientFormController implements AsyncListener {
 
     private static final ImageIcon loadingIcon = new ImageIcon(Main.class.getResource("/images/loading.gif"));
+    private static final String FORM_REFRESH_PROPERTY_SID = "formRefresh";
 
     private final TableManager tableManager = new TableManager(this);
 
@@ -227,8 +228,6 @@ public class ClientFormController implements AsyncListener {
 
     private void initializeAutoRefresh() {
         if (form.autoRefresh > 0) {
-            final String FORM_REFRESH_PROPERTY_SID = "formRefresh";
-
             autoRefreshScheduler = Executors.newScheduledThreadPool(1);
             autoRefreshScheduler.scheduleAtFixedRate(new Runnable() {
                 @Override
@@ -239,7 +238,7 @@ public class ClientFormController implements AsyncListener {
                             SwingUtils.invokeLater(new ERunnable() {
                                 @Override
                                 public void run() throws Exception {
-                                    simpleDispatcher.dispatchResponse(executeEditAction(property, ClientGroupObjectValue.EMPTY, ServerResponse.CHANGE));
+                                    simpleDispatcher.executeAction(property, ClientGroupObjectValue.EMPTY);
                                 }
                             });
                         }
@@ -249,7 +248,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public boolean isModalOrBeneathModalDialog() {
+    private boolean isModalOrBeneathModalDialog() {
         Window[] windows = Window.getWindows();
         boolean isModal = false;
         List<ClientModalForm> formDialogs = new ArrayList<ClientModalForm>();

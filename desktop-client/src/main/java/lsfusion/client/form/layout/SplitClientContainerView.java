@@ -68,10 +68,14 @@ public class SplitClientContainerView extends AbstractClientContainerView {
 
     public void setLeftComponent(ClientComponent child, Component view) {
         leftView = view;
+        wasLVisible = false;
+        hiddenHolderPanel.add(view);
     }
 
     public void setRightComponent(ClientComponent child, Component view) {
         rightView = view;
+        wasRVisible = false;
+        hiddenHolderPanel.add(view);
     }
 
     private void removeLeftComponent(ClientComponent child, Component view) {

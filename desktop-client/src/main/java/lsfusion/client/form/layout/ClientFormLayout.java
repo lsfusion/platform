@@ -67,7 +67,7 @@ public class ClientFormLayout extends JPanel {
         });
     }
 
-    // метод рекурсивно создает для каждого ClientContainer свой ClientFormContainer или ClientFormTabbedPane
+    // метод рекурсивно создает для каждого ClientContainer соответствующий ContainerView
     private void createContainerViews(ClientContainer container) {
         ClientContainerView containerView;
         if (container.isLinear()) {

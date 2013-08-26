@@ -34,6 +34,10 @@ public class SimpleChangePropertyDispatcher extends ClientFormActionDispatcher {
         }
     }
 
+    public boolean executeAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        return changeProperty(null, property, columnKey);
+    }
+
     @Override
     public Object execute(RequestUserInputClientAction action) {
         return new UserInputResult(value);
