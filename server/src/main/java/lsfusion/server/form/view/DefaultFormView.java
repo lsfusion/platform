@@ -11,12 +11,10 @@ import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.TreeGroupEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.property.actions.form.FormToolbarActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -133,14 +131,12 @@ public class DefaultFormView extends FormView {
         refreshFunction.drawAsync = true;
 
         PropertyDrawView applyFunction = get(entity.applyActionPropertyDraw);
-        applyFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);
         setupFormButton(applyFunction, KeyStrokes.getApplyKeyStroke(), null);
 
         PropertyDrawView cancelFunction = get(entity.cancelActionPropertyDraw);
         setupFormButton(cancelFunction, KeyStrokes.getCancelKeyStroke(), null);
 
         PropertyDrawView okFunction = get(entity.okActionPropertyDraw);
-        okFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);
         setupFormButton(okFunction, KeyStrokes.getOkKeyStroke(), null);
 
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
@@ -171,17 +167,15 @@ public class DefaultFormView extends FormView {
         formButtonContainer.add(rightControlsContainer);
     }
 
-    private void setupFormButton(PropertyDrawView printFunction, KeyStroke editKey, String iconPath) {
-        printFunction.editKey = editKey;
-        printFunction.focusable = false;
-        printFunction.entity.setEditType(PropertyEditType.EDITABLE);
+    private void setupFormButton(PropertyDrawView action, KeyStroke editKey, String iconPath) {
+        action.editKey = editKey;
+        action.focusable = false;
+        action.entity.setEditType(PropertyEditType.EDITABLE);
+        action.alignment = FlexAlignment.STRETCH;
 
         if (iconPath != null) {
-            printFunction.showEditKey = false;
-            printFunction.setFixedSize(FormToolbarActionProperty.BUTTON_SIZE);
-            printFunction.design.setIconPath(iconPath);
-        } else {
-            printFunction.preferredSize = FormToolbarActionProperty.BUTTON_SIZE;
+            action.showEditKey = false;
+            action.design.setIconPath(iconPath);
         }
     }
 
@@ -262,9 +256,8 @@ public class DefaultFormView extends FormView {
                 propertyContainer = getToolbarPropsContainer(mgroupObjects.get(groupObject));
             }
 
-            if (propertyDraw.preferredSize == null) {
-                propertyDraw.preferredSize = new Dimension(-1, 20);
-            }
+            propertyDraw.alignment = FlexAlignment.STRETCH;
+
             propertyContainer.add(propertyDraw);
         } else {
             addPropertyDrawToLayout(groupObjectView, propertyDraw);

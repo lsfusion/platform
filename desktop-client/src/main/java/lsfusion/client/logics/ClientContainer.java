@@ -25,7 +25,7 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
     private ContainerType type = ContainerType.CONTAINERH;
 
-    public Alignment childrenAlignment = Alignment.CENTER;
+    public Alignment childrenAlignment = Alignment.LEADING;
 
     public int gapX = 10;
     public int gapY = 5;

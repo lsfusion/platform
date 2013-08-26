@@ -54,36 +54,36 @@ public class TreeGroupContainerSet <C extends AbstractContainer<C, T>, T extends
         set.rightControlsContainer = factory.createContainer();
         set.rightControlsContainer.setSID(treeGroup.getSID() + CONTROLS_RIGHT_CONTAINER);
 
+        set.treeContainer.setType(ContainerType.CONTAINERV);
+        set.treeContainer.setFlex(1);
+        set.treeContainer.setAlignment(FlexAlignment.STRETCH);
         set.treeContainer.add((T) treeGroup);
         set.treeContainer.add((T) set.controlsContainer);
         set.treeContainer.add((T) treeGroup.getFilter());
 
+        set.controlsContainer.setType(ContainerType.CONTAINERH);
+        set.controlsContainer.setAlignment(FlexAlignment.STRETCH);
+        set.controlsContainer.setChildrenAlignment(Alignment.LEADING);
         set.controlsContainer.add((T) treeGroup.getToolbar());
         set.controlsContainer.add((T) set.rightControlsContainer);
 
+        set.rightControlsContainer.setType(ContainerType.CONTAINERH);
+        set.rightControlsContainer.setAlignment(FlexAlignment.CENTER);
+        set.rightControlsContainer.setChildrenAlignment(Alignment.TRAILING);
         set.rightControlsContainer.add((T) set.filtersContainer);
         set.rightControlsContainer.add((T) set.toolbarPropsContainer);
 
-        set.treeContainer.setType(ContainerType.CONTAINERV);
-        set.treeContainer.setFlex(1);
-        set.treeContainer.setAlignment(FlexAlignment.STRETCH);
-
-        treeGroup.setFlex(1);
-        treeGroup.setAlignment(FlexAlignment.STRETCH);
-        treeGroup.getFilter().setAlignment(FlexAlignment.STRETCH);
-
-        set.controlsContainer.setType(ContainerType.CONTAINERH);
-        set.controlsContainer.setAlignment(FlexAlignment.STRETCH);
-
-        set.rightControlsContainer.setType(ContainerType.CONTAINERH);
-        set.rightControlsContainer.setAlignment(FlexAlignment.STRETCH);
-        set.rightControlsContainer.setChildrenAlignment(Alignment.TRAILING);
-
         set.filtersContainer.setType(ContainerType.CONTAINERH);
-        set.filtersContainer.setAlignment(FlexAlignment.STRETCH);
+        set.filtersContainer.setAlignment(FlexAlignment.CENTER);
         set.filtersContainer.setChildrenAlignment(Alignment.TRAILING);
 
         set.toolbarPropsContainer.setType(ContainerType.CONTAINERH);
+        set.toolbarPropsContainer.setAlignment(FlexAlignment.CENTER);
+
+        treeGroup.setFlex(1);
+        treeGroup.setAlignment(FlexAlignment.STRETCH);
+
+        treeGroup.getFilter().setAlignment(FlexAlignment.STRETCH);
 
         return set;
     }

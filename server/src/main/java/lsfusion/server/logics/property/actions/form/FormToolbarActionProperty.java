@@ -9,7 +9,6 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
@@ -54,7 +53,6 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
     private void setupToolbarButton(FormEntity form, PropertyDrawEntity propertyDraw) {
         LCP propertyCaption = getShowIf();
         if (propertyCaption != null) {
-//            propertyDraw.propertyCaption = form.addPropertyObject(propertyCaption);
             propertyDraw.propertyShowIf = form.addPropertyObject(propertyCaption);
         }
     }

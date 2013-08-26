@@ -21,6 +21,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 import static javax.swing.SwingUtilities.isRightMouseButton;
+import static lsfusion.client.SwingUtils.overrideSize;
 
 public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher = new EditPropertyDispatcher(this);
@@ -175,18 +176,18 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(super.getPreferredSize().width, property.getPreferredHeight(this));
-    }
-
-    @Override
     public Dimension getMinimumSize() {
-        return new Dimension(super.getMinimumSize().width, property.getPreferredHeight(this));
+        return overrideSize(super.getMinimumSize(), property.minimumSize);
     }
 
     @Override
     public Dimension getMaximumSize() {
-        return new Dimension(super.getMaximumSize().width, property.getPreferredHeight(this));
+        return overrideSize(super.getMaximumSize(), property.maximumSize);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return overrideSize(super.getPreferredSize(), property.preferredSize);
     }
 
     @Override
