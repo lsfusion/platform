@@ -19,24 +19,31 @@ public class GTabbedContainerView extends GAbstractContainerView {
 
     private final ArrayList<GComponent> visibleChildren = new ArrayList<GComponent>();
 
-    private boolean initialTabSet = false;
+    private GComponent currentChild;
 
     public GTabbedContainerView(final GFormController formController, final GContainer container) {
         super(container);
 
         tabsPanel = new GTabbedPane();
+        view = tabsPanel;
+
+        if (container.children.size() > 0) {
+            currentChild = container.children.get(0);
+        }
 
         tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
             public void onSelection(SelectionEvent<Integer> e) {
-                if (initialTabSet) {
-                    int index = e.getSelectedItem();
-                    formController.setTabVisible(container, visibleChildren.get(index));
+                int index = e.getSelectedItem();
+                if (index >= 0) {
+                    GComponent selectedChild = visibleChildren.get(index);
+                    if (currentChild != selectedChild) {
+                        currentChild = selectedChild;
+                        formController.setTabVisible(container, selectedChild);
+                    }
                 }
             }
         });
-
-        view = tabsPanel;
     }
 
     @Override
@@ -83,9 +90,6 @@ public class GTabbedContainerView extends GAbstractContainerView {
     private void ensureTabSelection() {
         if (tabsPanel.getSelectedTab() == -1 && tabsPanel.getWidgetCount() != 0) {
             tabsPanel.selectTab(0);
-            if (!initialTabSet) {
-                initialTabSet = true;
-            }
         }
     }
 

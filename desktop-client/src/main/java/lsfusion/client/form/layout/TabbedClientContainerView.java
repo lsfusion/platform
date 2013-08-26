@@ -21,15 +21,15 @@ import static java.lang.Math.max;
 
 public class TabbedClientContainerView extends AbstractClientContainerView {
 
+    private final ClientFormController form;
+
     private final ContainerViewPanel panel;
     private final JPanel hiddenHolderPanel;
     private final TabbedPane tabbedPane;
 
-    private ClientFormController form;
+    private final List<ClientComponent> visibleChildren = new ArrayList<ClientComponent>();
 
     private ClientComponent currentChild;
-
-    private List<ClientComponent> visibleChildren = new ArrayList<ClientComponent>();
 
     public TabbedClientContainerView(ClientFormLayout formLayout, ClientContainer icontainer, ClientFormController iform) {
         super(formLayout, icontainer);
@@ -66,7 +66,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
                     ClientComponent selectedChild = visibleChildren.get(selectedIndex);
 
                     // вообще changeListener может вызваться при инициализации, но это проверка в том числе позволяет suppres'ить этот случай
-                    if (selectedChild != currentChild) {
+                    if (currentChild != selectedChild) {
                         try {
                             currentChild = selectedChild;
                             form.setTabVisible(container, currentChild);
