@@ -136,6 +136,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         addStyleName("formController");
 
+        if (form.sID != null) {
+            getElement().setAttribute("lsfusion-form", form.sID);
+        }
+
         add(formLayout);
 
         initializeUserPreferences();

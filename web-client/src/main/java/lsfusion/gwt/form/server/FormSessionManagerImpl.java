@@ -46,6 +46,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
 
         GForm gForm = new ClientComponentToGwtConverter().convertOrCast(clientForm);
 
+        gForm.sID = remoteForm.getSID();
         gForm.sessionID = nextFormSessionID();
 
         ProcessFormChangesClientAction clientAction = (ProcessFormChangesClientAction) remoteForm.getRemoteChanges(-1).actions[0];

@@ -147,6 +147,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         });
 
         getElement().setPropertyObject("groupObject", groupObject);
+        gridController.setForceHidden(true);
     }
 
     public void update() {

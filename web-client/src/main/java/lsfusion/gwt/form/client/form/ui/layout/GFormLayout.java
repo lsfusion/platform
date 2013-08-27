@@ -35,8 +35,6 @@ public class GFormLayout extends FlexPanel {
 
         mainContainerView = containerViews.get(imainContainer).getView();
 
-//        setSize("100%", "100%");
-
         setupFillParent(getElement());
         getElement().getStyle().setOverflow(Style.Overflow.AUTO);
 
@@ -62,7 +60,7 @@ public class GFormLayout extends FlexPanel {
         containerViews.put(container, containerView);
         Widget view = containerView.getView();
         if (container.sID != null) {
-            view.getElement().setAttribute("lsfusion-sid", container.sID);
+            view.getElement().setAttribute("lsfusion-container", container.sID);
         }
 
         if (container.container != null) {

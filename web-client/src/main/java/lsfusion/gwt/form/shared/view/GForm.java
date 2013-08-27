@@ -10,6 +10,8 @@ import java.util.LinkedHashMap;
 public class GForm implements Serializable {
     public String sessionID;
 
+    public String sID;
+
     public String caption;
 
     public int autoRefresh;

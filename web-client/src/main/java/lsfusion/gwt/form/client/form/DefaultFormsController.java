@@ -72,10 +72,6 @@ public abstract class DefaultFormsController extends SimpleLayoutPanel implement
 
             @Override
             public void success(GetFormResult result) {
-                if (!GWT.isScript() && formSID != null) {
-                    result.form.caption += "(" + formSID + ")";
-                }
-
                 openFormAfterFontsInitialization(dockable, result.form, modalityType, null);
             }
         });
@@ -96,6 +92,9 @@ public abstract class DefaultFormsController extends SimpleLayoutPanel implement
     }
 
     private void openForm(FormDockable dockable, GForm form, GModalityType modalityType, final WindowHiddenHandler hiddenHandler) {
+        if (!GWT.isScript()) {
+            form.caption += "(" + form.sID + ")";
+        }
         if (modalityType.isDialog()) {
             showModalForm(form, modalityType.isFullScreen(), hiddenHandler);
         } else {
