@@ -1,5 +1,6 @@
 package lsfusion.server.caches;
 
+import lsfusion.base.col.lru.ConcurrentLRUHashMap;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -62,20 +63,53 @@ public class CacheAspect {
         }
     }
 
-    private static Object lazyExecute(ImmutableObject object, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
-        Invocation invoke = new Invocation(thisJoinPoint,args);
-        MCacheMap caches = object.getCaches();
-        Object result;
-        synchronized (caches) {
-            result = caches.get(invoke);
-            if(result == null && !caches.containsKey(invoke)) {
-                result = execute(object, thisJoinPoint, args, changedArgs);
-                caches.exclAdd(invoke, result);
-            }
+    private static Object lazyExecute(Object object, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
+        LRUCacheKey key = new LRUCacheKey(object, thisJoinPoint, args);
+        
+        Object result = lruCache.get(key);
+        if (result == null) {
+            result = execute(object, thisJoinPoint, args, changedArgs);
+            lruCache.put(key, result == null ? ConcurrentLRUHashMap.Value.NULL : result);                        
+        }
+        if (result == ConcurrentLRUHashMap.Value.NULL) { 
+            result = null;
         }
         return result;
     }
 
+    static class LRUCacheKey {
+        final Object target;
+        final Method method;
+        final Object[] args;
+
+        public LRUCacheKey(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args) {
+            this.target = target;
+            this.method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
+            this.args = args;
+        }
+
+        @Override
+        public String toString() {
+            return method + "(" + Arrays.asList(args) + ')';
+        }
+
+        @Override
+        public boolean equals(Object o) { 
+            if (o == null) return false;
+            LRUCacheKey other = (LRUCacheKey) o;
+            return this.target != null && this.target == other.target && method.equals(other.method) && Arrays.equals(args, other.args);
+        }
+
+        @Override
+        public int hashCode() {
+            if (target != null) {
+                return 31 * (31 * System.identityHashCode(target) + method.hashCode()) + Arrays.hashCode(args);
+            } else {
+                return 31 * method.hashCode() + Arrays.hashCode(args);
+            }
+        }
+    }
+    
     static class IdentityInvocation {
         final WeakReference<Object> targetRef;
 
@@ -166,6 +200,8 @@ public class CacheAspect {
 
 //    public final static SoftHashMap<IdentityInvocation, Object> lazyIdentityExecute = new SoftHashMap<IdentityInvocation, Object>();
     public final static IdentityInvocationWeakMap lazyIdentityExecute = new IdentityInvocationWeakMap();
+    public final static ConcurrentLRUHashMap<LRUCacheKey, Object> lruCache = new ConcurrentLRUHashMap();
+    
     private static Object execute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
         if(changedArgs) {
             Object[] call = new Object[args.length+1];
@@ -180,8 +216,9 @@ public class CacheAspect {
         if(args.length>0 && args[0] instanceof NoCacheInterface)
             return execute(target, thisJoinPoint, args, changedArgs);
 
-        if(target instanceof ImmutableObject && !strong)
-            return lazyExecute((ImmutableObject) target, thisJoinPoint, args, changedArgs);
+        if (!strong) {
+            return lazyExecute(target, thisJoinPoint, args, changedArgs);     
+        }
 
         IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
         Object result = lazyIdentityExecute.get(invocation);
