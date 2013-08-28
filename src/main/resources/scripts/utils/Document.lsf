@@ -116,8 +116,8 @@ END
 
 META deriveDocumentHeaderTimePrefix (objectClass, prefix)
     WHEN SESSION SET(o IS objectClass) DO {
-        IF o IS objectClass AND NOT prefix###date##objectClass(o) THEN ASSIGN prefix###date##objectClass(o) <- currentDate();
-        IF o IS objectClass AND NOT prefix###time##objectClass(o) THEN ASSIGN prefix###time##objectClass(o) <- currentTime();
+        IF o IS objectClass AND NOT prefix###date##objectClass(o) THEN prefix###date##objectClass(o) <- currentDate();
+        IF o IS objectClass AND NOT prefix###time##objectClass(o) THEN prefix###time##objectClass(o) <- currentTime();
     };
 END
 
@@ -130,15 +130,18 @@ END
 META defineDocumentInterfaceHeaderTimePrefix(objectClass, prefix, caption)
     @defineDocumentAbstractHeaderTimePrefix(objectClass, prefix, caption);
     @defineDocumentHeaderTimePrefix(User##objectClass, prefix, caption);
-    @deriveDocumentHeaderTimePrefix(User##objectClass, prefix);
     prefix###date##objectClass(o) += prefix###dateUser##objectClass(o);
     prefix###time##objectClass(o) += prefix###timeUser##objectClass(o);
 END
 
 META defineDocumentHeaderTime (objectClass)
     @defineDocumentHeaderTimePrefix(objectClass, ,' документа');
+END
+
+META deriveDocumentHeaderTime (objectClass)
     @deriveDocumentHeaderTimePrefix(objectClass, );
 END
+
 META defineDocumentAbstractHeaderTime (objectClass)
     @defineDocumentAbstractHeaderTimePrefix(objectClass, ,' документа');
 END
@@ -179,7 +182,6 @@ END
 
 META defineDocumentTimePrefix (object, prefix, caption)
     @defineDocumentHeaderTimePrefix(###object, prefix, caption);
-    @deriveDocumentHeaderTimePrefix(###object, prefix);
     @defineDocumentDetailTimePrefix(object, prefix, caption);
 END
 META defineDocumentAbstractTimePrefix (object, prefix, caption)
