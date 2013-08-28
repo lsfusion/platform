@@ -17,6 +17,7 @@
         <any>
             <when-property-is name="user.agent" value="opera"/>
             <when-property-is name="user.agent" value="gecko1_8"/>
+            <when-property-is name="user.agent" value="safari"/>
         </any>
     </replace-with>
 
@@ -29,10 +30,11 @@
     </replace-with>
 
     <!-- Webkit FlexPanelImpl implementation. -->
+    <!-- it's not really used right now -->
     <replace-with class="lsfusion.gwt.base.client.ui.FlexPanelImplWebkit">
         <when-type-is class="lsfusion.gwt.base.client.ui.FlexPanelImpl"/>
         <any>
-            <when-property-is name="user.agent" value="safari"/>
+            <when-property-is name="user.agent" value="opera12"/>
         </any>
     </replace-with>
 </module>

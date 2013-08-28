@@ -84,7 +84,9 @@ public class GSplitPane {
             return;
         }
 
-        if (firstPixelSize >= offsetSize) {
+        if (firstPixelSize <= 0) {
+            firstPixelSize = 1;
+        } else if (firstPixelSize >= offsetSize) {
             //оставляем хотя бы по одному пикселу, чтобы значение flex не превратилось в 0
             firstPixelSize = offsetSize - 1;
         }
