@@ -1,11 +1,11 @@
 package lsfusion.gwt.form.server;
 
-import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
-import org.springframework.beans.factory.annotation.Autowired;
 import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.form.server.form.handlers.*;
 import lsfusion.gwt.form.server.navigator.handlers.*;
 import lsfusion.interop.RemoteLogicsInterface;
+import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogicsInterface> {
     @Autowired
@@ -15,6 +15,8 @@ public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogics
     protected void addHandlers(InstanceActionHandlerRegistry registry) {
         registry.addHandler(new GetNavigatorInfoHandler(this));
         registry.addHandler(new GenerateIDHandler(this));
+        registry.addHandler(new ShowDefaultFormsHandler(this));
+        registry.addHandler(new GetDefaultFormsHandler(this));
 
         registry.addHandler(new ChangeClassViewHandler(this));
         registry.addHandler(new ChangePropertyOrderHandler(this));

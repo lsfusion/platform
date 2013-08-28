@@ -44,10 +44,12 @@ public class GFont implements Serializable {
         return weight != null && weight.equals(BOLD);
     }
 
-    public boolean equalsForMetrics(GFont font) {
-        if (font == null) {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof GFont)) {
             return false;
         }
-        return GwtSharedUtils.nullEquals(style, font.style) && GwtSharedUtils.nullEquals(size, font.size) && GwtSharedUtils.nullEquals(weight, font.weight);
+        GFont font = (GFont) obj;
+        return GwtSharedUtils.nullEquals(family, font.family) && GwtSharedUtils.nullEquals(style, font.style) && GwtSharedUtils.nullEquals(size, font.size) && GwtSharedUtils.nullEquals(weight, font.weight);
     }
 }

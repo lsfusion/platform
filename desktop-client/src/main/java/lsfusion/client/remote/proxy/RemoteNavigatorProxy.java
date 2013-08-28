@@ -1,7 +1,7 @@
 package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.DefaultForms;
+import lsfusion.base.DefaultFormsType;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -107,11 +107,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @ImmutableMethod
-    public DefaultForms showDefaultForms() throws RemoteException {
+    public DefaultFormsType showDefaultForms() throws RemoteException {
         try {
-            return callImmutableMethod("showDefaultForms", new Callable<DefaultForms>() {
+            return callImmutableMethod("showDefaultForms", new Callable<DefaultFormsType>() {
                 @Override
-                public DefaultForms call() throws Exception {
+                public DefaultFormsType call() throws Exception {
                     return target.showDefaultForms();
                 }
             });

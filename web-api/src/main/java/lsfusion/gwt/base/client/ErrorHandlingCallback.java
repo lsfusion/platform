@@ -22,6 +22,10 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
 
         GwtClientUtils.removeLoaderFromHostedPage();
 
+        showErrorMessage(caught);
+    }
+
+    protected void showErrorMessage(Throwable caught) {
         String message = getServerMessage(caught);
         if (message != null) {
             DialogBoxHelper.showMessageBox(true, "Error: ", message, null);

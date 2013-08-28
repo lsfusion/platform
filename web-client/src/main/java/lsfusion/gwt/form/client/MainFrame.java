@@ -26,8 +26,10 @@ import lsfusion.gwt.form.client.navigator.GNavigatorController;
 import lsfusion.gwt.form.client.window.WindowsController;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.actions.navigator.*;
+import lsfusion.gwt.form.shared.view.GDefaultFormsType;
 import lsfusion.gwt.form.shared.view.actions.GFormAction;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
+import lsfusion.gwt.form.shared.view.window.GModalityType;
 import lsfusion.gwt.form.shared.view.window.GNavigatorWindow;
 
 import java.util.ArrayList;
@@ -108,7 +110,21 @@ public class MainFrame implements EntryPoint {
             }
         });
 
-        initCommonWindows();
+        dispatcher.execute(new ShowDefaultFormsAction(), new ErrorHandlingCallback<ShowDefaultFormsResult>() {
+            @Override
+            public void success(final ShowDefaultFormsResult result) {
+                if (result.defaultFormsType == GDefaultFormsType.DEFAULT) {
+                    dispatcher.execute(new GetDefaultFormsAction(), new ErrorHandlingCallback<GetDefaultFormsResult>() {
+                        @Override
+                        public void success(GetDefaultFormsResult formsResult) {
+                            initializeWindows(result.defaultFormsType, formsResult.defaultFormsSIDs);
+                        }
+                    });
+                } else {
+                    initializeWindows(result.defaultFormsType, new ArrayList<String>());
+                }
+            }
+        });
     }
 
     private void hackForGwtDnd() {
@@ -137,7 +153,7 @@ public class MainFrame implements EntryPoint {
         bodyStyle.setWidth(Window.getClientWidth(), Style.Unit.PX);
     }
 
-    private void initCommonWindows() {
+    private void initializeWindows(final GDefaultFormsType defaultFormsType, final ArrayList<String> defaultForms) {
         dispatcher.execute(new GetNavigatorInfo(), new ErrorHandlingCallback<GetNavigatorInfoResult>() {
             @Override
             public void success(GetNavigatorInfoResult result) {
@@ -160,12 +176,22 @@ public class MainFrame implements EntryPoint {
                 List<GAbstractWindow> allWindows = new ArrayList<GAbstractWindow>();
                 allWindows.addAll(result.navigatorWindows);
                 allWindows.addAll(commonWindows.keySet());
-                windowsController.initializeWindows(allWindows, formsWindow);
+
+                boolean fullScreenMode = defaultFormsType == GDefaultFormsType.DEFAULT && !defaultForms.isEmpty();
+                windowsController.initializeWindows(allWindows, formsWindow, fullScreenMode);
                 RootLayoutPanel.get().add(windowsController);
 
                 navigatorController.update();
+
+                openInitialForms(defaultForms);
             }
         });
+    }
+
+    private void openInitialForms(ArrayList<String> formsSIDs) {
+        for (final String formSID : formsSIDs) {
+            formsController.openForm(formSID, GModalityType.DOCKED, true);
+        }
     }
 
     private class GNavigatorActionDispatcher extends GwtActionDispatcher {

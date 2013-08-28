@@ -1,5 +1,5 @@
 package lsfusion.base;
 
-public enum DefaultForms {
+public enum DefaultFormsType {
     NONE, RESTORE, DEFAULT
 }

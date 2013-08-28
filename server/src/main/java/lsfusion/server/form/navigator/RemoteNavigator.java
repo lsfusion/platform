@@ -4,7 +4,7 @@ package lsfusion.server.form.navigator;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.DefaultForms;
+import lsfusion.base.DefaultFormsType;
 import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -550,7 +550,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    public DefaultForms showDefaultForms() throws RemoteException {
+    public DefaultFormsType showDefaultForms() throws RemoteException {
         return securityManager.showDefaultForms(user);
     }
 

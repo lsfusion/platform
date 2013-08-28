@@ -103,6 +103,8 @@ public class GForm implements Serializable {
     }
 
     public void addFont(GFont font) {
-        usedFonts.add(font);
+        if (!usedFonts.contains(font)) {
+            usedFonts.add(font);
+        }
     }
 }

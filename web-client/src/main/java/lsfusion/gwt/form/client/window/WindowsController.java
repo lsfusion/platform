@@ -14,12 +14,16 @@ public abstract class WindowsController extends SplitLayoutPanel {
     private LinkedHashMap<WindowElement, DockLayoutPanel.Direction> windowElements = new LinkedHashMap<WindowElement, Direction>();
     private Map<GAbstractWindow, WindowElement> allWindows = new HashMap<GAbstractWindow, WindowElement>();
 
+    private boolean fullScreenMode;
+
     private int rectX = 0,
             rectY = 0,
             rectHeightLeft = 100,
             rectWidthLeft = 100;
 
-    public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
+    public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow, boolean fullScreenMode) {
+        this.fullScreenMode = fullScreenMode;
+
         // сперва находим окна с идентичными координатами и кладём их в табы
         initializeTabs(allWindows);
         // затем распределяем остальные окна по WindowElement'ам, складывая их в сплиты при необходимости
@@ -258,13 +262,13 @@ public abstract class WindowsController extends SplitLayoutPanel {
 
     private boolean attachHorizontally(WindowElement window) {
         if (window.x == rectX) {
-            addWest(window.getView(), window.initialWidth);
+            addWest(window.getView(), fullScreenMode ? 0 : window.initialWidth);
             rectX += window.width;
             rectWidthLeft -= window.width;
             windowElements.put(window, Direction.WEST);
             return true;
         } else if (window.x + window.width == rectX + rectWidthLeft) {
-            addEast(window.getView(), window.initialWidth);
+            addEast(window.getView(), fullScreenMode ? 0 : window.initialWidth);
             rectWidthLeft -= window.width;
             windowElements.put(window, Direction.EAST);
             return true;
@@ -274,13 +278,13 @@ public abstract class WindowsController extends SplitLayoutPanel {
 
     private boolean attachVertically(WindowElement window) {
         if (window.y == rectY) {
-            addNorth(window.getView(), window.initialHeight);
+            addNorth(window.getView(), fullScreenMode ? 0 : window.initialHeight);
             rectY += window.height;
             rectHeightLeft -= window.height;
             windowElements.put(window, Direction.NORTH);
             return true;
         } else if (window.y + window.height == rectY + rectHeightLeft) {
-            addSouth(window.getView(), window.initialHeight);
+            addSouth(window.getView(), fullScreenMode ? 0 : window.initialHeight);
             rectHeightLeft -= window.height;
             windowElements.put(window, Direction.SOUTH);
             return true;
@@ -335,7 +339,7 @@ public abstract class WindowsController extends SplitLayoutPanel {
     public void setInitialSize(GAbstractWindow window, int width, int height) {
         WindowElement windowElement = allWindows.get(window);
         if (windowElement != null && windowElement.getView().isAttached()) {
-            if (width != 0 && height != 0) {
+            if (!fullScreenMode && width != 0 && height != 0) {
                 windowElement.changeInitialSize(width, height);
                 window.initialSizeSet = true;
             }

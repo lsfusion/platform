@@ -1,7 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.DefaultForms;
+import lsfusion.base.DefaultFormsType;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -421,19 +421,19 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
     }
 
-    public DefaultForms showDefaultForms(DataObject user) {
+    public DefaultFormsType showDefaultForms(DataObject user) {
         try {
             DataSession session = createSession();
 
             ObjectValue defaultForms = securityLM.defaultFormsUser.readClasses(session, user);
-            if (defaultForms instanceof NullValue) return DefaultForms.NONE;
+            if (defaultForms instanceof NullValue) return DefaultFormsType.NONE;
             else {
                 String name = (String) LM.getLCPByName("staticName").read(session, defaultForms);
                 if (name.contains("default"))
-                    return DefaultForms.DEFAULT;
+                    return DefaultFormsType.DEFAULT;
                 else if (name.contains("restore"))
-                    return DefaultForms.RESTORE;
-                else return DefaultForms.NONE;
+                    return DefaultFormsType.RESTORE;
+                else return DefaultFormsType.NONE;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -12,9 +12,7 @@ public class GFontMetrics {
     private static final int DEFAULT_FONT_PIXEL_SIZE = 11;
     public static final GFont DEFAULT_FONT = new GFont(null, null, DEFAULT_FONT_PIXEL_SIZE, DEFAULT_FONT_FAMILY);
 
-    public static ArrayList<GFont> registeredFonts = new ArrayList<GFont>();
-
-    private static int calculationsInProgress = 0;
+    private static HashMap<MetricsCallback, Integer> calculationsInProgress = new HashMap<MetricsCallback, Integer>();
 
     // все шрифты, с которыми приходилось работать на клиенте
     private static final HashMap<GFont, HashMap<String, Integer>> calculatedFonts = new HashMap<GFont, HashMap<String, Integer>>();
@@ -23,24 +21,29 @@ public class GFontMetrics {
         return INSTANCE;
     }
 
-    public static void registerFont(GFont font) {
-        for (GFont registeredFont : registeredFonts) {
-            if (registeredFont.equalsForMetrics(font)) {
-                return;
-            }
+    private static Integer getCalculationsCount(MetricsCallback callback) {
+        Integer count = calculationsInProgress.get(callback);
+        if (count == null) {
+            calculationsInProgress.put(callback, 0);
+            return 0;
         }
-        registeredFonts.add(font);
+        return count;
+    }
+
+    private static void setCalculationsCount(MetricsCallback callback, Integer count) {
+        calculationsInProgress.put(callback, count);
     }
 
     public static void calculateFontMetrics(ArrayList<GFont> fonts, MetricsCallback callback) {
         fonts.add(DEFAULT_FONT);
         for (GFont font : fonts) {
             if (!isCalculated(font)) {
-                calculationsInProgress++;
+                setCalculationsCount(callback, getCalculationsCount(callback) + 1);
                 getFontMetrics(font, font.family, font.size, font.isBold(), callback);
             }
         }
-        if (calculationsInProgress == 0) {
+        if (getCalculationsCount(callback) == 0) {
+            calculationsInProgress.remove(callback);
             callback.metricsCalculated();
         }
     }
@@ -71,9 +74,10 @@ public class GFontMetrics {
         measures.put(WIDTH_KEY, Integer.valueOf(width));
         measures.put(HEIGHT_KEY, Integer.valueOf(height));
         calculatedFonts.put(font, measures);
-        calculationsInProgress--;
+        setCalculationsCount(callback, getCalculationsCount(callback) - 1);
 
-        if (calculationsInProgress == 0) {
+        if (getCalculationsCount(callback) == 0) {
+            calculationsInProgress.remove(callback);
             callback.metricsCalculated();
         }
     }
@@ -101,7 +105,7 @@ public class GFontMetrics {
 
     private static HashMap<String, Integer> getMeasure(GFont ifont) {
         for (GFont font : calculatedFonts.keySet()) {
-            if (font.equalsForMetrics(ifont)) {
+            if (font.equals(ifont)) {
                 return calculatedFonts.get(font);
             }
         }

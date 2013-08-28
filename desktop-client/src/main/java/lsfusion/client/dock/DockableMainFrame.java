@@ -5,13 +5,16 @@ import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.CGrid;
 import bibliothek.gui.dock.common.SingleCDockable;
 import bibliothek.gui.dock.common.intern.CSetting;
-import bibliothek.gui.dock.common.menu.*;
+import bibliothek.gui.dock.common.menu.CLayoutChoiceMenuPiece;
+import bibliothek.gui.dock.common.menu.CPreferenceMenuPiece;
+import bibliothek.gui.dock.common.menu.CThemeMenuPiece;
+import bibliothek.gui.dock.common.menu.SingleCDockableListMenuPiece;
 import bibliothek.gui.dock.common.theme.ThemeMap;
 import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import com.google.common.base.Throwables;
-import lsfusion.base.DefaultForms;
+import lsfusion.base.DefaultFormsType;
 import lsfusion.client.*;
 import lsfusion.client.descriptor.view.LogicsDescriptorView;
 import lsfusion.client.form.ClientFormController;
@@ -123,7 +126,7 @@ public class DockableMainFrame extends MainFrame {
     public void focusPageIfNeeded() {
         try {
             ClientFormDockable pageToFocus = null;
-            DefaultForms showDefaultForms = remoteNavigator.showDefaultForms();
+            DefaultFormsType showDefaultForms = remoteNavigator.showDefaultForms();
             List<String> savedForms;
             switch (showDefaultForms) {
                 case DEFAULT:

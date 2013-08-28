@@ -1,6 +1,6 @@
 package lsfusion.interop.navigator;
 
-import lsfusion.base.DefaultForms;
+import lsfusion.base.DefaultFormsType;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.remote.ClientCallBackInterface;
@@ -33,7 +33,7 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     void close() throws RemoteException;
 
     // ???
-    DefaultForms showDefaultForms() throws RemoteException;
+    DefaultFormsType showDefaultForms() throws RemoteException;
 
     List<String> getDefaultForms() throws RemoteException;
 

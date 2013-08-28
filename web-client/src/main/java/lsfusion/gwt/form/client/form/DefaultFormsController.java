@@ -59,6 +59,10 @@ public abstract class DefaultFormsController extends SimpleLayoutPanel implement
     }
 
     public void openForm(final String formSID, final GModalityType modalityType) {
+        openForm(formSID, modalityType, false);
+    }
+
+    public void openForm(final String formSID, final GModalityType modalityType, final boolean suppressErrorMessages) {
         final FormDockable dockable = modalityType.isDialog() ? null : addDockable(new FormDockable());
 
         NavigatorDispatchAsync.Instance.get().execute(new GetForm(formSID, modalityType.isModal(), null), new ErrorHandlingCallback<GetFormResult>() {
@@ -68,6 +72,13 @@ public abstract class DefaultFormsController extends SimpleLayoutPanel implement
                     removeDockable(dockable);
                 }
                 super.failure(caught);
+            }
+
+            @Override
+            protected void showErrorMessage(Throwable caught) {
+                if (!suppressErrorMessages) {
+                    super.showErrorMessage(caught);
+                }
             }
 
             @Override
