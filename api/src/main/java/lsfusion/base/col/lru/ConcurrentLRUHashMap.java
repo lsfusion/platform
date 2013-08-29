@@ -132,8 +132,8 @@ public class ConcurrentLRUHashMap<K, V> {
 
     public int getSize() {
         int s = 0;
-        for (int i = 0; i < segments.length; ++i) {
-            s += segments[i].size;
+        for (Segment segment : segments) {
+            s += segment.size;
         }
         return s;
     }
@@ -226,7 +226,7 @@ public class ConcurrentLRUHashMap<K, V> {
                     final long end = Math.min(bufferPos.get(), bufferStart + BUFFER_SIZE);
                     for (long pos = bufferStart; pos < end; ++pos) {
                         final int bufPos = (int) (pos & BUFFER_MASK);
-                        MoveToLRUHead(buffer[bufPos]);
+                        moveToLRUHead(buffer[bufPos]);
                     }
                     bufferStart = end;
                 } finally {
@@ -235,7 +235,7 @@ public class ConcurrentLRUHashMap<K, V> {
             }
         }
 
-        private void MoveToLRUHead(final Entry<K,V> e) {
+        private void moveToLRUHead(final Entry<K, V> e) {
             if (e != head) {
                 e.removeFromLRU();
                 e.addBeforeLRU(head);
@@ -244,17 +244,29 @@ public class ConcurrentLRUHashMap<K, V> {
             head = e;
         }
 
+        private int LRUSize() {
+            Entry<K,V> cur = head;
+            int size = 0;
+            while (cur != tail) {
+                cur = cur.after;
+                ++size;
+            }
+            return size;
+        }
+        
         private void updateLRU() {
             if (head != tail && currentTime - tail.before.getTime() > LRU_TIME_LIMIT) {
                 try {
                     changeLock.lock();
                     Entry<K,V> last = tail.before;
                     while (head != tail && currentTime - last.getTime() > LRU_TIME_LIMIT) {
+                        assert last != tail;
                         removeHashEntry(last);
                         last.removeFromLRU();
                         last = last.before;
                         if (last == tail) {
                             head = tail;
+                            assert LRUSize() == 0;
                         }
                     }
                 } finally {
@@ -306,6 +318,7 @@ public class ConcurrentLRUHashMap<K, V> {
         }
 
         private void removeHashEntry(Entry<K,V> re) {
+            assert re.hash != -1;
             int i = indexFor(re.hash, table.length);
             Entry<K,V> prev = table[i];
             Entry<K,V> e = prev;
