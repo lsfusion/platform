@@ -92,7 +92,7 @@ META defineDocumentInterfaceRelation (object)
     @defineDocumentInterfaceRelation(object, ###object##Detail);
 END
 
-// Header
+// Итоги
 META defineDocumentHeaderCount (object, detailClass, caption)
     count##detailClass###object 'Кол-во строк'###caption (o) =
         GROUP SUM 1 BY object##detailClass(d) PERSISTENT IN documentSumGroup;
@@ -627,6 +627,332 @@ META defineDocumentInterface (object)
     @defineDocumentDetailActions(user###object);
 END
 
+// ------------------------------------- Дополнительные метакоды ------------------------------- //
+
+// -- Quantity
+META defineDocumentDetailQuantityCustomPrefix (detail, prefix, caption)
+    prefix###quantity###detail 'Кол-во'###caption = DATA NUMERIC[14,3] (###detail);
+END
+META defineDocumentAbstractDetailQuantityCustomPrefix (detail, prefix, caption)
+    prefix###quantity###detail 'Кол-во'###caption = ABSTRACT NUMERIC[14,3] (###detail) PERSISTENT;
+END
+META defineDocumentInterfaceDetailQuantityCustomPrefix (detail, prefix, caption)
+    @defineDocumentAbstractDetailQuantityCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailQuantityCustomPrefix (user###detail, prefix, caption);
+    prefix###quantity###detail (detail) += prefix###quantity###user###detail(detail);
+END
+
+META defineDocumentDetailQuantityCustom (detail)
+    @defineDocumentDetailQuantityCustomPrefix(detail, , );
+END
+META defineDocumentAbstractDetailQuantityCustom (detail)
+    @defineDocumentAbstractDetailQuantityCustomPrefix(detail, , );
+END
+META defineDocumentInterfaceDetailQuantityCustom (detail)
+    @defineDocumentInterfaceDetailQuantityCustomPrefix(detail, , );
+END
+
+META defineDocumentDetailQuantityPrefix (object, prefix, caption)
+    @defineDocumentDetailQuantityCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentAbstractDetailQuantityPrefix (object, prefix, caption)
+    @defineDocumentAbstractDetailQuantityCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailQuantityPrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailQuantityCustomPrefix(object##Detail, prefix, caption);
+END
+
+META defineDocumentDetailQuantity (object)
+    @defineDocumentDetailQuantityPrefix(object, , );
+END
+META defineDocumentAbstractDetailQuantity (object)
+    @defineDocumentAbstractDetailQuantityPrefix(object, , );
+END
+META defineDocumentInterfaceDetailQuantity (object)
+    @defineDocumentInterfaceDetailQuantityPrefix(object, , );
+END
+
+// Итоги
+
+META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
+    prefix###quantity###detail###object 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
+END
+META defineDocumentInterfaceHeaderQuantityCustomPrefix (object, detail, prefix, caption)
+    @defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption);
+    @defineDocumentHeaderQuantityCustomPrefix (user###object, user###detail, prefix, caption);
+END
+
+META defineDocumentHeaderQuantityCustom (object, detail)
+    @defineDocumentHeaderQuantityCustomPrefix(object, detail, , );
+END
+META defineDocumentInterfaceHeaderQuantityCustom (object, detail)
+    @defineDocumentHeaderQuantityCustom (object, detail)
+    @defineDocumentHeaderQuantityCustom (user###object, user###detail)
+END
+
+META defineDocumentHeaderQuantityPrefix (object, prefix, caption)
+    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceHeaderQuantityPrefix (object, prefix, caption)
+    @defineDocumentHeaderQuantityPrefix (object, prefix, caption)
+    @defineDocumentHeaderQuantityPrefix (user###object, prefix, caption)
+END
+
+META defineDocumentHeaderQuantity (object)
+    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, , );
+END
+META defineDocumentInterfaceHeaderQuantity (object)
+    @defineDocumentHeaderQuantity(object);
+    @defineDocumentHeaderQuantity(user###object);
+END
+
+// -- Price
+META defineDocumentDetailPriceCustomPrefix (detail, prefix, caption)
+    prefix###price###detail 'Цена'###caption = DATA NUMERIC[14,2] (###detail);
+END
+META defineDocumentAbstractDetailPriceCustomPrefix (detail, prefix, caption)
+    prefix###price###detail 'Цена'###caption = ABSTRACT NUMERIC[14,2] (###detail) PERSISTENT;
+END
+META defineDocumentInterfaceDetailPriceCustomPrefix (detail, prefix, caption)
+    @defineDocumentAbstractDetailPriceCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailPriceCustomPrefix(user###detail, prefix, caption);
+    prefix###price###detail (detail) += prefix###price###user###detail(detail);
+END
+
+META defineDocumentDetailPriceCustom (detail, caption)
+    @defineDocumentDetailPriceCustomPrefix(detail, , caption);
+END
+META defineDocumentDetailAbstractPriceCustom (detail, caption)
+    @defineDocumentAbstractDetailPriceCustomPrefix(detail, , caption);
+END
+META defineDocumentDetailInterfacePriceCustom (detail, caption)
+    @defineDocumentInterfaceDetailPriceCustomPrefix(detail, , caption);
+END
+
+META defineDocumentDetailPricePrefix (object, prefix, caption)
+    @defineDocumentDetailPriceCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentAbstractDetailPricePrefix (object, prefix, caption)
+    @defineDocumentAbstractDetailPriceCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailPricePrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailPriceCustomPrefix(object##Detail, prefix, caption);
+END
+
+META defineDocumentDetailPrice (object)
+    @defineDocumentDetailPricePrefix(object, ,);
+END
+META defineDocumentAbstractDetailPrice (object)
+    @defineDocumentAbstractDetailPricePrefix(object, ,);
+END
+META defineDocumentInterfaceDetailPrice (object)
+    @defineDocumentInterfaceDetailPricePrefix(object, ,);
+END
+
+// -- Sum
+META defineDocumentDetailSumCustom (detail, currencyProp)
+    sum###detail 'Сумма' (detail) = NUMERIC[16,2](roundPriceCurrency((quantity###detail(detail) * price###detail(detail)), currencyProp###detail(detail)));
+END
+META defineDocumentDetailSumCustom (detail)
+    @defineDocumentDetailSumCustom(detail, currency);
+END
+META defineDocumentInterfaceDetailSumCustom (detail, currencyProp)
+    @defineDocumentDetailSumCustom(detail, currencyProp);
+    @defineDocumentDetailSumCustom(user###detail, currencyProp);
+END
+
+META defineDocumentDetailSum (object, currencyProp)
+    @defineDocumentDetailSumCustom(object##Detail, currencyProp);
+END
+META defineDocumentDetailSum (object)
+    @defineDocumentDetailSum(object, currency);
+END
+
+META defineDocumentInterfaceDetailSum (object, currencyProp)
+    @defineDocumentInterfaceDetailSumCustom(object##Detail, currencyProp);
+END
+
+META defineDocumentInterfaceDetailSum (object)
+    @defineDocumentInterfaceDetailSum(object, currency);
+END
+
+META defineDocumentHeaderAndDetailSumCustomCaption (object, detail, caption, captionDetail)
+    @defineDocumentDetailPriceCustom(detail, captionDetail);
+    @defineDocumentDetailSumCustom (detail);
+    @defineDocumentHeaderSumCustom(object, detail, caption);
+END
+
+//--
+META defineDocumentDetailDataSumCustomPrefix (detail, prefix, caption)
+    prefix###sum###detail 'Сумма'###caption = DATA NUMERIC[16,2] (###detail);
+END
+META defineDocumentAbstractDetailDataSumCustomPrefix (detail, prefix, caption)
+    prefix###sum###detail 'Сумма'###caption = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT;
+END
+
+META defineDocumentInterfaceDetailDataSumCustomPrefix (detail, prefix, caption)
+    @defineDocumentAbstractDetailDataSumCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailDataSumCustomPrefix(user###detail, prefix, caption);
+    prefix###sum###detail (detail) += prefix###sum###user###detail(detail);
+END
+
+META defineDocumentInterfaceDetailDataSumPrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailDataSumCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailDataSum (object)
+    @defineDocumentInterfaceDetailDataSumPrefix(object, ,);
+END
+
+META defineDocumentDetailDataSum(object)
+    @defineDocumentDetailDataSumCustomPrefix(object##Detail, , );
+END
+
+META deriveDocumentDetailSumCustomPrefix(detail, prefix, currencyProp, quantityProp)
+    prefix###sum###detail (detail)  <- roundPriceCurrency(quantityProp###detail(detail) * prefix###price###detail(detail), currencyProp###detail(detail))
+                    WHEN DO CHANGED(quantityProp###detail(detail)) OR CHANGED (prefix###price###detail(detail)) OR CHANGED(currencyProp###detail(detail));
+END
+
+META deriveDocumentDetailSumPrefix(object, prefix, currencyProp, quantityProp)
+    @deriveDocumentDetailSumCustomPrefix(object##Detail, prefix, currencyProp, quantityProp);
+END
+META deriveDocumentDetailSum(object, currencyProp, quantityProp)
+    @deriveDocumentDetailSumPrefix(object, ,currencyProp, quantityProp);
+END
+META deriveDocumentDetailSum(object, quantityProp)
+    @deriveDocumentDetailSum(object, currency, quantityProp);
+END
+
+// Итоги
+META defineDocumentHeaderSumCustom (object, detail, caption)
+    sum###detail###object 'Сумма'###caption (object) = GROUP SUM sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
+META defineDocumentInterfaceHeaderSumCustom (object, detail, caption)
+    @defineDocumentHeaderSumCustom (object, detail, caption);
+    @defineDocumentHeaderSumCustom (user###object, user###detail, caption);
+END
+
+META defineDocumentHeaderSumCustom (object, detail)
+    @defineDocumentHeaderSumCustom(object, detail, );
+END
+META defineDocumentInterfaceHeaderSumCustom (object, detail)
+    @defineDocumentHeaderSumCustom(object, detail);
+    @defineDocumentHeaderSumCustom(user###object, user###detail);
+END
+
+META defineDocumentHeaderSum (object)
+    @defineDocumentHeaderSumCustom(object, object##Detail);
+END
+META defineDocumentInterfaceHeaderSum (object)
+    @defineDocumentHeaderSum(object);
+    @defineDocumentHeaderSum(user###object);
+END
+
+META defineDocumentHeaderSumCustomPrefix (object, detail, prefix, caption)
+    prefix###sum###detail###object 'Сумма'###caption (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
+META defineDocumentInterfaceHeaderSumCustomPrefix (object, detail, prefix, caption)
+    @defineDocumentHeaderSumCustomPrefix(object, detail, prefix, caption);
+    @defineDocumentHeaderSumCustomPrefix(user###object, user###detail, prefix, caption);
+END
+
+META defineDocumentHeaderSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderSumCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceHeaderSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderSumPrefix(object, prefix, caption);
+    @defineDocumentHeaderSumPrefix(user###object, prefix, caption);
+END
+
+META defineDocumentDetailDiffSumCustomPrefix (detail, prop, prefixA, prefixB, caption)
+    diff###prop###detail 'Сумма '###caption (detail) =  prefixA###prop###detail(detail) (-) prefixB###prop###detail(detail);
+END
+
+META defineDocumentInterfaceDetailDiffSumCustomPrefix (detail, prop, prefixA, prefixB, caption)
+    @defineDocumentDetailDiffSumCustomPrefix(detail, prop, prefixA, prefixB, caption);
+    @defineDocumentDetailDiffSumCustomPrefix(user###detail, prop, prefixA, prefixB, caption);
+
+END
+META defineDocumentInterfaceDetailDiffSumPrefix (object, prop, prefixA, prefixB, caption)
+    @defineDocumentInterfaceDetailDiffSumCustomPrefix(object##Detail, prop, prefixA, prefixB, caption);
+END
+
+// -- Markup
+META defineDocumentDetailMarkupCustomPrefix (detail, prefix, caption)
+    prefix###markup###detail 'Надбавка,%'###caption = DATA NUMERIC[8,3] (###detail);
+END
+META defineDocumentAbstractDetailMarkupCustomPrefix (detail, prefix, caption)
+    prefix###markup###detail 'Надбавка,%'###caption = ABSTRACT NUMERIC[8,3] (###detail) PERSISTENT;
+END
+META defineDocumentInterfaceDetailMarkupCustomPrefix (detail, prefix, caption)
+    @defineDocumentAbstractDetailMarkupCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailMarkupCustomPrefix(user###detail, prefix, caption);
+    prefix###markup###detail (detail) += prefix###markup###user###detail(detail);
+END
+
+META defineDocumentDetailMarkupPrefix (object, prefix, caption)
+    @defineDocumentDetailMarkupCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentAbstractDetailMarkupPrefix (object, prefix, caption)
+    @defineDocumentAbstractDetailMarkupCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailMarkupPrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailMarkupCustomPrefix(object##Detail, prefix, caption);
+END
+
+META defineDocumentDetailMarkupSumCustomPrefix (detail, prefix, caption)
+    prefix###markupSum###detail 'Сумма надбавки'###caption = DATA NUMERIC[16,2] (###detail);
+END
+META defineDocumentAbstractDetailMarkupSumCustomPrefix (detail, prefix, caption)
+    prefix###markupSum###detail 'Сумма надбавки'###caption = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT;
+END
+META defineDocumentInterfaceDetailMarkupSumCustomPrefix (detail, prefix, caption)
+    @defineDocumentAbstractDetailMarkupSumCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailMarkupSumCustomPrefix(user###detail, prefix, caption);
+    prefix###markupSum###detail (detail) += prefix###markupSum###user###detail(detail);
+END
+META defineDocumentInterfaceDetailMarkupSumPrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailMarkupSumCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailMarkupSumPrefix (object, prefix)
+    @defineDocumentInterfaceDetailMarkupSumPrefix(object, prefix, );
+END
+
+META deriveDocumentDetailMarkupSumCustomPrefix(detail, prefixA, prefixB, prefixC)
+    prefixA###markupSum###detail(detail) <- prefixB###sum###detail(detail) (-) prefixA###VATSum###detail (detail) (-) prefixC###sum###detail(detail)
+                    WHEN CHANGED(prefixB###sum###detail(detail)) OR CHANGED (prefixA###VATSum###detail (detail)) OR CHANGED (prefixC###sum###detail(detail));
+END
+META deriveDocumentDetailMarkupSumPrefix(object, prefixA, prefixB, prefixC)
+    @deriveDocumentDetailMarkupSumCustomPrefix(object##Detail, prefixA, prefixB, prefixC);
+END
+
+// Property
+META defineDocumentHeaderProperty(object, property, caption)
+    property###object caption (object) = DATA BOOLEAN(###object) IN documentPrmGroup;
+END
+META defineDocumentAbstractHeaderProperty(object, property, caption)
+    property###object caption (object) = ABSTRACT BOOLEAN(###object) PERSISTENT IN documentPrmGroup;
+END
+
+META defineDocumentInterfaceHeaderProperty (object, property, caption)
+    @defineDocumentAbstractHeaderProperty (object, property, caption);
+    @defineDocumentHeaderProperty (user###object, property, caption);
+    property###object (object) += property###user###object(object);
+END
+META defineDocumentDetailPropertyCustom(object, detail, property, caption)
+    property###detail caption (detail) = property###object(object###detail(detail)) PERSISTENT;
+END
+META defineDocumentInterfaceDetailPropertyCustom (object, detail, property, caption)
+    @defineDocumentDetailPropertyCustom (object, detail, property, caption);
+    @defineDocumentDetailPropertyCustom (user###object, user###detail, property, caption);
+END
+META defineDocumentInterfaceDetailProperty (object, property, caption)
+    @defineDocumentInterfaceDetailPropertyCustom (object, object##Detail, property, caption);
+END
+META defineDocumentInterfaceProperty (object, prop, caption)
+    @defineDocumentInterfaceHeaderProperty (object, prop, caption);
+    @defineDocumentInterfaceDetailProperty (object, prop, caption);
+END
+
 // ------------------------- Основной - агрегированный документы ---------------------------------- //
 
 META defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty)
@@ -718,4 +1044,17 @@ END
 // Description
 META defineDocumentAggregationHeaderDescription (primObject, aggrObject)
     description###aggrObject 'Название документа' (o) = description###primObject(primObject###aggrObject(o));
+END
+
+// Quantity
+META defineDocumentAggregationDetailQuantity (primObject, aggrObject)
+    quantity###aggrObject##Detail 'Кол-во' (detail) = quantity###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)) PERSISTENT;
+END
+
+// Property
+META defineDocumentAggregationDetailProperty (primObject, aggrObject, propertyPrim, propertyAggr, caption)
+    propertyAggr###aggrObject##Detail caption (detail) = propertyPrim###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)) PERSISTENT;
+END
+META defineDocumentAggregationDetailProperty (primObject, aggrObject, property, caption)
+    @defineDocumentAggregationDetailProperty (primObject, aggrObject, property, property, caption);
 END
