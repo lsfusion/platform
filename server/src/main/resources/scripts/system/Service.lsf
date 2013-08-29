@@ -31,6 +31,58 @@ FORM admin 'Администрирование'
                  toggleSQLLoggerDebugMode
 ;
 
+DESIGN admin FROM DEFAULT {
+    NEW pane {
+        type = COLUMNS;
+        columns = 3;
+        NEW current {
+            caption = 'Текущие значения';
+            ADD PROPERTY(currentDate);
+        }
+        NEW colors {
+            caption = 'Цвета';
+            ADD PROPERTY(defaultBackgroundColor);
+            ADD PROPERTY(defaultForegroundColor);
+        }
+        NEW administration {
+            caption = 'Запуск';
+            
+            ADD PROPERTY(restartServerAction);
+            ADD PROPERTY(cancelRestartServerAction);
+            ADD PROPERTY(serviceDBAction);
+        }
+        NEW recalculate {
+            caption = 'Исправление целостности базы данных';
+            ADD PROPERTY(recalculateClassesAction);
+            ADD PROPERTY(recalculateAction);
+            ADD PROPERTY(recalculateFollowsAction);
+        }
+        NEW check {
+            caption = 'Проверка целостности базы данных';
+            ADD PROPERTY(checkClassesAction);
+            ADD PROPERTY(checkAggregationsAction);
+        }
+        NEW database {
+            caption = 'База данных';
+            ADD PROPERTY(packAction);
+            ADD PROPERTY(analyzeDBAction);
+            ADD PROPERTY(toggleVolatileStats);
+        }
+        NEW virtualMachine {
+            caption = 'Виртуальная машина';
+            ADD PROPERTY(runGarbageCollector);
+            ADD PROPERTY(getVMInfo);
+        }
+        NEW log {
+            caption = 'Логирование';
+            ADD PROPERTY(toggleExplainAnalyzeMode);
+            ADD PROPERTY(toggleExplainMode);
+            ADD PROPERTY(toggleSQLLoggerDebugMode);
+        }
+    }
+    ADD functions.box;
+}
+
 NAVIGATOR {
     configuration {
         ADD Service.admin;
