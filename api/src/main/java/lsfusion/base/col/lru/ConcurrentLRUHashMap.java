@@ -226,7 +226,9 @@ public class ConcurrentLRUHashMap<K, V> {
                     final long end = Math.min(bufferPos.get(), bufferStart + BUFFER_SIZE);
                     for (long pos = bufferStart; pos < end; ++pos) {
                         final int bufPos = (int) (pos & BUFFER_MASK);
-                        moveToLRUHead(buffer[bufPos]);
+                        if (buffer[bufPos].after != null) {
+                            moveToLRUHead(buffer[bufPos]);
+                        }
                     }
                     bufferStart = end;
                 } finally {
@@ -242,32 +244,24 @@ public class ConcurrentLRUHashMap<K, V> {
             }
             e.setTime(currentTime);
             head = e;
+            assert tail.after == head && head.before == tail;
+            assert head != head.after || head == tail;
         }
 
-        private int LRUSize() {
-            Entry<K,V> cur = head;
-            int size = 0;
-            while (cur != tail) {
-                cur = cur.after;
-                ++size;
-            }
-            return size;
-        }
-        
         private void updateLRU() {
             if (head != tail && currentTime - tail.before.getTime() > LRU_TIME_LIMIT) {
+                changeLock.lock();
                 try {
-                    changeLock.lock();
                     Entry<K,V> last = tail.before;
                     while (head != tail && currentTime - last.getTime() > LRU_TIME_LIMIT) {
                         assert last != tail;
                         removeHashEntry(last);
+                        Entry<K,V> prev = last.before;
                         last.removeFromLRU();
-                        last = last.before;
-                        if (last == tail) {
+                        if (prev == tail) {
                             head = tail;
-                            assert LRUSize() == 0;
                         }
+                        last = prev;
                     }
                 } finally {
                     changeLock.unlock();
@@ -291,8 +285,8 @@ public class ConcurrentLRUHashMap<K, V> {
         public V put(K key, int hash, V value) {
             assert key != null;
             assert value != null;
+            changeLock.lock();
             try {
-                changeLock.lock();
                 int i = indexFor(hash, table.length);
                 for (Entry<K,V> e = table[i]; e != null; e = e.next) {
                     if (e.hash == hash && (e.key == key || e.key.equals(key))) {
@@ -304,8 +298,8 @@ public class ConcurrentLRUHashMap<K, V> {
                 }
                 addEntry(hash, key, value, i);
             } finally {
-                updateLRU();
                 changeLock.unlock();
+                updateLRU();
             }
             return null;
         }
@@ -331,12 +325,13 @@ public class ConcurrentLRUHashMap<K, V> {
                         table[i] = next;
                     else
                         prev.next = next;
-
+                    re.next = null;
                     return;
                 }
                 prev = e;
                 e = next;
             }
+            assert false;
         }
 
         private void resize(int newCapacity) {
@@ -377,6 +372,8 @@ public class ConcurrentLRUHashMap<K, V> {
             table[bucketIndex] = e;
             e.addBeforeLRU(head);
             head = e;
+            assert tail.after == head && head.before == tail;
+            assert head != head.after || head == tail;
         }
     }
 
@@ -440,6 +437,7 @@ public class ConcurrentLRUHashMap<K, V> {
         private void removeFromLRU() {
             before.after = after;
             after.before = before;
+            after = before = null;
         }
 
         private void addBeforeLRU(Entry<K,V> existingEntry) {
