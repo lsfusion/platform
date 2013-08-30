@@ -10,7 +10,6 @@ import lsfusion.client.form.renderer.DatePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
 
-import java.awt.*;
 import java.sql.Date;
 import java.text.DateFormat;
 import java.text.Format;
@@ -76,10 +75,5 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.date");
-    }
-
-    @Override
-    public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
-        return 68;
     }
 }
