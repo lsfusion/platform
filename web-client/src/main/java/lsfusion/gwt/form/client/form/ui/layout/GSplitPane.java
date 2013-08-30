@@ -3,8 +3,8 @@ package lsfusion.gwt.form.client.form.ui.layout;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.GFlexAlignment;
 
 public class GSplitPane {
     private final static int splitterSize = 8;

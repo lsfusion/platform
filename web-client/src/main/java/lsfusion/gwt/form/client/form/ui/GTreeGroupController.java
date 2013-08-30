@@ -27,19 +27,11 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
 
         tree = new GTreeTable(iFormController, iForm, this);
 
-        TreeTableView treeTableView = new TreeTableView();
-        //todo: think more, commented only to be used in flex layout
-//        treeTableView.setSize("100%", "100%");
+        TreeTableView treeView = new TreeTableView();
+        treeView.setStyleName("gridResizePanel");
+        treeView.setWidget(tree);
 
-        ResizableLayoutPanel panel = new ResizableLayoutPanel();
-        panel.setStyleName("gridResizePanel");
-//        panel.setSize("100%", "100%");
-        panel.setWidget(tree);
-
-//        treeTableView.add(panel);
-//        getFormLayout().add(treeGroup, treeTableView);
-
-        getFormLayout().add(treeGroup, panel);
+        getFormLayout().add(treeGroup, treeView);
 
         addFilterButton();
     }

@@ -8,11 +8,14 @@ import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
+
+import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackPreferredSize;
 
 /**
  * Browser support: http://caniuse.com/flexbox
  */
-public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize {
+public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasPreferredSize {
 
     private static FlexPanelImpl impl = GWT.create(FlexPanelImpl.class);
 
@@ -92,6 +95,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         add(widget, getWidgetCount(), alignment, flex, flexBasis);
     }
 
+    public void addFill(Widget widget) {
+        add(widget, GFlexAlignment.STRETCH, 1, "auto");
+    }
+
     public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, String flexBasis) {
         // Detach new child.
         widget.removeFromParent();
@@ -153,10 +160,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
     }
 
-    public static Widget wrap(Widget childView) {
-        FlexPanel panel = new FlexPanel(false);
-        panel.add(childView, GFlexAlignment.STRETCH, 1, "auto");
-        return panel;
+    @Override
+    public Dimension getPreferredSize() {
+        return calculateStackPreferredSize(this.iterator(), isVertical());
     }
 
     public static enum Justify {

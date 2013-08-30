@@ -1,9 +1,7 @@
 package lsfusion.gwt.form.client.form.ui.layout;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.client.form.ui.DefaultFocusReceiver;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GComponent;
@@ -13,14 +11,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
-
 public class GFormLayout extends FlexPanel {
     private GFormController form;
+
     private GContainer mainContainer;
 
     private Map<GContainer, GAbstractContainerView> containerViews = new HashMap<GContainer, GAbstractContainerView>();
-    private Widget mainContainerView;
 
     private ArrayList<DefaultFocusReceiver> defaultComponents = new ArrayList<DefaultFocusReceiver>();
 
@@ -33,12 +29,7 @@ public class GFormLayout extends FlexPanel {
 
         createContainerViews(imainContainer);
 
-        mainContainerView = containerViews.get(imainContainer).getView();
-
-        setupFillParent(getElement());
-        getElement().getStyle().setOverflow(Style.Overflow.AUTO);
-
-        add(mainContainerView, GFlexAlignment.STRETCH, 1);
+        addFill(containerViews.get(imainContainer).getView());
     }
 
     private void createContainerViews(GContainer container) {
@@ -151,20 +142,6 @@ public class GFormLayout extends FlexPanel {
     }
 
     public void totalResize() {
-        //todo: ??
-    }
-
-    public int getMainContainerWidth() {
-        if (mainContainerView != null) {
-            return mainContainerView.getOffsetWidth();
-        }
-        return -1;
-    }
-
-    public int getMainContainerHeight() {
-        if (mainContainerView != null) {
-            return mainContainerView.getOffsetHeight();
-        }
-        return -1;
+        onResize();
     }
 }

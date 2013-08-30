@@ -9,6 +9,7 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.base.client.ui.HasPreferredSize;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.Header;
 import lsfusion.gwt.cellview.client.cell.Cell;
@@ -26,7 +27,7 @@ import java.util.Map;
 import static java.lang.Math.max;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 
-public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> {
+public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasPreferredSize {
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
 
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();

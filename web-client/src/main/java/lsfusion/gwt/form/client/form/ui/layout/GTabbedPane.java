@@ -3,13 +3,19 @@ package lsfusion.gwt.form.client.form.ui.layout;
 import com.google.gwt.event.logical.shared.*;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.base.client.ui.HasPreferredSize;
 
 import java.util.Iterator;
 
+import static lsfusion.gwt.base.client.GwtClientUtils.maybeGetPreferredSize;
+
 /** Based on com.google.gwt.user.client.ui.TabPanel */
-public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel, HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, RequiresResize, ProvidesResize {
+public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel,
+                                                      HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>,
+                                                      RequiresResize, ProvidesResize, HasPreferredSize {
 
     private final GTabBar tabBar = new GTabBar();
     private final TabbedDeckPanel deck = new TabbedDeckPanel();
@@ -17,7 +23,7 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel, 
     public GTabbedPane() {
         FlexPanel panel = new FlexPanel(true);
         panel.add(tabBar, GFlexAlignment.STRETCH);
-        panel.add(deck, GFlexAlignment.STRETCH, 1, "auto");
+        panel.addFill(deck);
 
         tabBar.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
             @Override
@@ -185,6 +191,16 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel, 
      */
     public void selectTab(int index, boolean fireEvents) {
         tabBar.selectTab(index, fireEvents);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        int selected = getSelectedTab();
+        if (selected != -1) {
+            Dimension dimensions = maybeGetPreferredSize(getWidget(selected));
+            dimensions.height += tabBar.getOffsetHeight() + 5; //little extra for borders, etc.
+        }
+        return new Dimension(0, 0);
     }
 
     private class TabbedDeckPanel extends FlexPanel {

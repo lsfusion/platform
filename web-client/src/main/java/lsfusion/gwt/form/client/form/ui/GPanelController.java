@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
@@ -9,7 +10,9 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.panel.PanelRenderer;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GPanelController {
     private final GFormController form;
@@ -282,6 +285,11 @@ public class GPanelController {
                 for (PanelRenderer renderer : renderers.values()) {
                     renderer.addedToFlexPanel(parent, alignment, flex);
                 }
+            }
+
+            @Override
+            public Dimension getPreferredSize() {
+                return GwtClientUtils.getOffsetSize(this);
             }
         }
     }

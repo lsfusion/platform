@@ -116,15 +116,15 @@ public class ClientModalForm extends JDialog {
 
         // так как у нас есть только preferredSize самого contentPane, а нам нужен у JDialog
         // сколько будет занимать все "рюшечки" вокруг contentPane мы посчитать не можем, поскольку
-        if (undecorated) {
-            preferredSize.width += 10;
-            preferredSize.height += 40;
-        } else {
+        if (!undecorated) {
             preferredSize.width += 20;
-            preferredSize.height += 80;
+            preferredSize.height += 40;
         }
 
-        preferredSize.height += 35; // под отборы
+        if (form.hasVisibleGrid()) {
+            preferredSize.height += 40;
+            preferredSize.height += 35;  // под отборы
+        }
 
         return preferredSize;
     }

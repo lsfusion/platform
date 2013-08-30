@@ -12,11 +12,11 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.ui.HasPreferredSize;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.MissingResourceException;
+import java.util.*;
+
+import static java.lang.Math.max;
 
 public class GwtClientUtils {
     public static final String TIMEOUT_MESSAGE = "SESSION_TIMED_OUT";
@@ -219,5 +219,45 @@ public class GwtClientUtils {
         childStyle.setLeft(0, Style.Unit.PX);
         childStyle.setBottom(0, Style.Unit.PX);
         childStyle.setRight(0, Style.Unit.PX);
+    }
+
+    public static Dimension getOffsetSize(Widget widget) {
+        return new Dimension(widget.getElement().getOffsetWidth(), widget.getElement().getOffsetHeight());
+    }
+
+    public static Dimension maybeGetPreferredSize(Widget widget) {
+        return maybeGetPreferredSize(widget, true);
+    }
+
+    public static Dimension maybeGetPreferredSize(Widget widget, boolean useOffsetSize) {
+        if (widget instanceof HasPreferredSize) {
+            return ((HasPreferredSize) widget).getPreferredSize();
+        } else if (useOffsetSize) {
+            return new Dimension(widget.getOffsetWidth(), widget.getOffsetHeight());
+        }
+        return new Dimension(0, 0);
+    }
+
+    public static Dimension calculateStackPreferredSize(Iterator<Widget> widgets, boolean vertical) {
+        return calculateStackPreferredSize(widgets, vertical, false);
+    }
+
+    public static Dimension calculateStackPreferredSize(Iterator<Widget> widgets, boolean vertical, boolean useOffsetSize) {
+        int width = 0;
+        int height = 0;
+        while (widgets.hasNext()) {
+            Widget childView = widgets.next();
+            if (childView.isVisible()) {
+                Dimension childSize = maybeGetPreferredSize(childView, useOffsetSize);
+                if (vertical) {
+                    width = max(width, childSize.width);
+                    height += childSize.height;
+                } else {
+                    width += childSize.width;
+                    height = max(height, childSize.height);
+                }
+            }
+        }
+        return new Dimension(width, height);
     }
 }

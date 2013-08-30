@@ -10,34 +10,35 @@ import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
 
 public class GResizableModalDialog extends GResizableModalForm {
-    private static EditEvent initialFilterEvent;
+    private final EditEvent initFilterEvent;
 
-    public GResizableModalDialog(FormsController formsController, GForm form, final WindowHiddenHandler hiddenHandler) {
+    public GResizableModalDialog(FormsController formsController, GForm form, final WindowHiddenHandler hiddenHandler, EditEvent initFilterEvent) {
         super(formsController, form, hiddenHandler);
-    }
-
-    public static GResizableModalDialog showDialog(FormsController formsController, GForm form, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
-        initialFilterEvent = initFilterEvent;
-
-        GResizableModalDialog dlg = new GResizableModalDialog(formsController, form, hiddenHandler);
-        dlg.center();
-        return dlg;
+        this.initFilterEvent = initFilterEvent;
     }
 
     @Override
     public void initialFormChangesReceived() {
-        NativeEvent event = ((NativeEditEvent) initialFilterEvent).getNativeEvent();
-        if (initialFilterEvent != null && GKeyStroke.isPossibleStartFilteringEvent(event) && !GKeyStroke.isSpaceKeyEvent(event)) {
-            editorForm.getInitialFilterProperty(new ErrorHandlingCallback<NumberResult>() {
-                @Override
-                public void success(NumberResult result) {
-                    Integer initialFilterPropertyID = (Integer) result.value;
+        if (initFilterEvent != null) {
+            NativeEvent event = ((NativeEditEvent) initFilterEvent).getNativeEvent();
+            if (GKeyStroke.isPossibleStartFilteringEvent(event) && !GKeyStroke.isSpaceKeyEvent(event)) {
+                form.getInitialFilterProperty(new ErrorHandlingCallback<NumberResult>() {
+                    @Override
+                    public void success(NumberResult result) {
+                        Integer initialFilterPropertyID = (Integer) result.value;
 
-                    if (initialFilterPropertyID != null) {
-                        editorForm.quickFilter(initialFilterEvent, initialFilterPropertyID);
+                        if (initialFilterPropertyID != null) {
+                            form.quickFilter(initFilterEvent, initialFilterPropertyID);
+                        }
                     }
-                }
-            });
+                });
+            }
         }
+    }
+
+    public static GResizableModalDialog showDialog(FormsController formsController, GForm form, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
+        GResizableModalDialog dlg = new GResizableModalDialog(formsController, form, hiddenHandler, initFilterEvent);
+        dlg.justCenter();
+        return dlg;
     }
 }

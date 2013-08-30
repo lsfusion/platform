@@ -2,9 +2,7 @@ package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.Scheduler;
 import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.base.client.ui.ResizableLayoutPanel;
-import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.shared.view.GGrid;
 import lsfusion.gwt.form.shared.view.GGroupObject;
@@ -25,15 +23,16 @@ public class GGridController {
     public GGridController(GGrid igrid, GFormController iformController, GGroupObjectController igroupObject) {
         grid = igrid;
         groupController = igroupObject;
+
         gridView = new GridView();
+
         table = new GGridTable(iformController, igroupObject, this);
 
         ResizableLayoutPanel panel = new ResizableLayoutPanel();
         panel.setStyleName("gridResizePanel");
-        panel.setSize("100%", "100%");
 
         panel.setWidget(table);
-        gridView.add(panel, GFlexAlignment.STRETCH, 1);
+        gridView.addFill(panel);
     }
 
     public GGridTable getTable() {
@@ -134,7 +133,7 @@ public class GGridController {
             super(true);
         }
 
-    @Override
+        @Override
         public boolean focus() {
             Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
                 @Override

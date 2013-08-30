@@ -81,7 +81,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     private static final int PAGE_INCREMENT = 30;
     private static final int IGNORE_SCROLL_TIMEOUT = 40;
-    private static int nativeScrollbarWidth = AbstractNativeScrollbar.getNativeScrollbarWidth();
+    public static int nativeScrollbarWidth = AbstractNativeScrollbar.getNativeScrollbarWidth();
 
     private static FocusImpl focusImpl = FocusImpl.getFocusImplForPanel();
 

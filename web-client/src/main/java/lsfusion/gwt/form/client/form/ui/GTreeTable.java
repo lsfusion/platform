@@ -4,6 +4,7 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
@@ -41,6 +42,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private TreeTableKeyboardSelectionHandler keyboardSelectionHandler;
 
     private GTreeGroupController treeGroupController;
+
+    private int preferredWidth;
 
     public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController) {
         super(iformController);
@@ -97,6 +100,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         int index = tree.removeProperty(group, property);
         if (index > 0) {
             removeColumn(index);
+            preferredWidth -= property.getMinimumPixelWidth();
         }
     }
 
@@ -115,6 +119,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 createdFields.add(index, property.sID);
 
                 setColumnWidth(gridColumn, property.getMinimumWidth());
+
+                preferredWidth += property.getMinimumPixelWidth();
             }
         }
     }
@@ -473,6 +479,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void clearOrders(GGroupObject groupObject) {
         sortableHeaderManager.clearOrders(groupObject);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(
+                preferredWidth + nativeScrollbarWidth + 15,
+                Math.max(140, getRowCount() * getRowHeight() + 42)
+        );
     }
 
     public class TreeTableKeyboardSelectionHandler extends GridPropertyTableKeyboardSelectionHandler<GTreeGridRecord> {

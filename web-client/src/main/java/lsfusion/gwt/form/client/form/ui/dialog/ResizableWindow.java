@@ -51,7 +51,7 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
 
     private int contentWidth;
 
-    private boolean initialOnLoad = true;
+    protected boolean initialOnLoad = true;
 
     public ResizableWindow(String htmlCaption) {
         this(htmlCaption, null);
@@ -166,7 +166,6 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
 
     @Override
     protected void onLoad() {
-        super.onLoad();
         if (initialOnLoad && contentWidget.getOffsetHeight() != 0) {
             initialOnLoad = false;
             headerWidget.setPixelSize(headerWidget.getOffsetWidth(), headerWidget.getOffsetHeight());
@@ -180,8 +179,15 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
     }
 
     public void center() {
-        windowController.getBoundaryPanel().add(this);
+        attach();
+        justCenter();
+    }
 
+    protected void attach() {
+        windowController.getBoundaryPanel().add(this);
+    }
+
+    protected void justCenter() {
         int left = (Window.getClientWidth() - getOffsetWidth()) / 2;
         int top = (Window.getClientHeight() - getOffsetHeight()) / 2;
 

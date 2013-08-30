@@ -12,13 +12,14 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.WrapperAsyncCallbackEx;
 import lsfusion.gwt.base.client.jsni.Function2;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
+import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.base.shared.actions.NumberResult;
 import lsfusion.gwt.base.shared.actions.VoidResult;
@@ -61,7 +62,8 @@ import java.util.*;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.removeFromDoubleMap;
 
-public class GFormController extends ResizableSimplePanel implements ServerMessageProvider {
+//public class GFormController extends ResizableSimplePanel implements ServerMessageProvider {
+public class GFormController extends FlexPanel implements ServerMessageProvider {
 
     private final FormDispatchAsync dispatcher;
 
@@ -116,6 +118,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     };
 
     public GFormController(FormsController formsController, GForm gForm, final boolean isDialog) {
+        super(true);
+
         actionDispatcher = new GFormActionDispatcher(this);
         simpleDispatcher = new GSimpleChangePropertyDispatcher(this);
 
@@ -140,7 +144,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             getElement().setAttribute("lsfusion-form", form.sID);
         }
 
-        add(formLayout);
+        addFill(formLayout);
 
         initializeUserPreferences();
 
@@ -778,6 +782,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     // судя по документации, TabPanel криво работает в StandardsMode. в данном случае неправильно отображает
     // таблицы, кроме тех, что в первой вкладке. поэтому вынуждены сами вызывать onResize() для заголовков таблиц
     private void relayoutTables(GComponent component) {
+        //TODO: ПРОТЕСТИРОВАТЬ: после переписывания TabPanel на div'ы этот хак возможно не нужен...
         if (controllers.isEmpty() && treeControllers.isEmpty()) {
             return;
         }
@@ -938,12 +943,20 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         DialogBoxHelper.showMessageBox(isError, caption, message, callback);
     }
 
-    public int getPreferredWidth() {
-        return form.mainContainer.preferredWidth;
-    }
+    public Dimension getPreferredSize() {
+        int preferredWidth = form.mainContainer.preferredWidth;
+        int preferredHeight = form.mainContainer.preferredHeight;
+        if (preferredWidth == -1 || preferredHeight == -1) {
+            Dimension size = formLayout.getPreferredSize();
+            if (preferredWidth == -1) {
+                preferredWidth = size.width;
+            }
+            if (preferredHeight == -1) {
+                preferredHeight = size.height;
+            }
+        }
 
-    public int getPreferredHeight() {
-        return form.mainContainer.preferredHeight;
+        return new Dimension(preferredWidth, preferredHeight);
     }
 
     private GPropertyTable editingTable;

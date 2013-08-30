@@ -1,8 +1,10 @@
 package lsfusion.gwt.base.client.ui;
 
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.base.client.Dimension;
+import lsfusion.gwt.base.client.GwtClientUtils;
 
-public class ResizableLayoutPanel extends ResizeLayoutPanel implements RequiresResize, ProvidesResize {
+public class ResizableLayoutPanel extends ResizeLayoutPanel implements RequiresResize, ProvidesResize, HasPreferredSize {
     @Override
     public void onResize() {
         Widget child = getWidget();
@@ -20,9 +22,8 @@ public class ResizableLayoutPanel extends ResizeLayoutPanel implements RequiresR
         }
     }
 
-    public static ResizableLayoutPanel wrapPanel(Widget widget) {
-        ResizableLayoutPanel panel = new ResizableLayoutPanel();
-        panel.add(widget);
-        return panel;
+    @Override
+    public Dimension getPreferredSize() {
+        return GwtClientUtils.maybeGetPreferredSize(getWidget());
     }
 }

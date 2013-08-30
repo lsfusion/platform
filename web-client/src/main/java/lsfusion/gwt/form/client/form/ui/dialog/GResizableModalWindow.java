@@ -55,13 +55,12 @@ public class GResizableModalWindow extends ResizableWindow {
     }
 
     @Override
-    public void center() {
+    protected void attach() {
         if (modalMask == null) {
             modalMask = new ModalMask();
             modalMask.show();
         }
-
-        super.center();
+        super.attach();
     }
 
     private boolean eventTargetsPopup(NativeEvent event) {

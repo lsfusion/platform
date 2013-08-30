@@ -3,6 +3,9 @@ package lsfusion.gwt.form.client.form.ui;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
+import lsfusion.gwt.base.client.Dimension;
+import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.base.client.ui.HasPreferredSize;
 import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
@@ -12,7 +15,7 @@ import lsfusion.gwt.form.shared.view.GGroupObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GShowTypeView extends ResizableHorizontalPanel {
+public class GShowTypeView extends ResizableHorizontalPanel implements HasPreferredSize {
     private Button gridButton;
     private Button panelButton;
     private Button hideButton;
@@ -34,13 +37,12 @@ public class GShowTypeView extends ResizableHorizontalPanel {
     }
 
     private Button createShowTypeButton(String imagePath, final GClassViewType newClassView, String tooltipText) {
-        Button showTypeButton = new GToolbarButton(imagePath, tooltipText) {
+        return new GToolbarButton(imagePath, tooltipText) {
             @Override
             public void addListener() {
                 addClickHandler(new ChangeViewBtnClickHandler(newClassView));
             }
         };
-        return showTypeButton;
     }
 
     public boolean setClassView(GClassViewType newClassView) {
@@ -67,16 +69,17 @@ public class GShowTypeView extends ResizableHorizontalPanel {
         this.banClassViews = banClassViews;
     }
 
-    public boolean needToBeVisible() {
-        return banClassViews.size() < 2;
-    }
-
     public void addToLayout(GFormLayout formLayout) {
         formLayout.add(groupObject.showType, this);
     }
 
     public void update(GClassViewType classView) {
         setClassView(classView);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return GwtClientUtils.getOffsetSize(this);
     }
 
     private class ChangeViewBtnClickHandler implements ClickHandler {

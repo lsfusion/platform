@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.jsni.Function;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
@@ -62,7 +63,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private GGroupObjectController groupObjectController;
 
+    private int nextColumnID = 0;
+
     private int pageSize = 50;
+
+    private int preferredWidth;
 
     private static final Comparator<GPropertyDraw> COLUMN_ORDER_COMPARATOR = new Comparator<GPropertyDraw>() {
         public int compare(GPropertyDraw c1, GPropertyDraw c2) {
@@ -206,8 +211,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private void updatedColumnsImpl() {
         if (columnsUpdated) {
-            List<String> columnCaptions = new ArrayList<String>();
-
             columnProperties.clear();
             columnKeysList.clear();
 
@@ -230,6 +233,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             Collections.sort(columnProperties, COLUMN_ORDER_COMPARATOR);
 
             int rowHeight = 0;
+            preferredWidth = 0;
             NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>>();
             for (int i = 0; i < columnProperties.size(); ++i) {
                 GPropertyDraw property = columnProperties.get(i);
@@ -247,7 +251,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                     }
                 }
 
-                setColumnWidth(column, property.widthUser != null ? property.widthUser + "px" : property.getMinimumWidth());
+                int columnMinimumWidth = property.widthUser != null ? property.widthUser: property.getMinimumPixelWidth();
+                int columnMinimumHeight = property.widthUser != null ? property.widthUser: property.getMinimumPixelHeight();
+                setColumnWidth(column, columnMinimumWidth  + "px");
 
                 //дублирование логики изменения captions для оптимизации
                 String columnCaption = null;
@@ -267,7 +273,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 putToColumnsMap(newColumnsMap, property, columnKey, column);
 
-                rowHeight = Math.max(rowHeight, property.getMinimumPixelHeight());
+                rowHeight = Math.max(rowHeight, columnMinimumHeight);
+                preferredWidth += columnMinimumWidth;
             }
             setCellHeight(rowHeight);
 
@@ -713,14 +720,20 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         redrawColumns(singleton(column), false);
     }
 
-    private int nextColumnID = 0;
-
     public void clearGridOrders(GGroupObject groupObject) {
         sortableHeaderManager.clearOrders(groupObject);
     }
 
     public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {
         return sortableHeaderManager.getOrderDirections();
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(
+                preferredWidth + nativeScrollbarWidth + 15,
+                Math.max(140, getRowCount() * getRowHeight() + 42)
+        );
     }
 
     private class GridColumn extends Column<GridDataRecord, Object> {

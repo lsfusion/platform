@@ -77,7 +77,11 @@ public class GTabbedContainerView extends GAbstractContainerView {
                 if (index == -1) {
                     index = relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
-                    tabsPanel.insert(FlexPanel.wrap(childView), getTabTitle(child), index);
+
+                    FlexPanel proxyPanel = new FlexPanel(true);
+                    proxyPanel.addFill(childView);
+
+                    tabsPanel.insert(proxyPanel, getTabTitle(child), index);
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);

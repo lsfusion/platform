@@ -65,7 +65,6 @@ public final class WindowDragDropController {
             boundaryPanel.add(draggable);
             boundaryPanel.setWidgetPosition(draggable, draggableLeft, draggableTop);
         }
-
     }
 
     public final class ResizeDragController extends AbstractDragController {

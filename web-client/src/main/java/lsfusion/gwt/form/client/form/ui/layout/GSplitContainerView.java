@@ -2,7 +2,6 @@ package lsfusion.gwt.form.client.form.ui.layout;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
 
@@ -29,13 +28,6 @@ public class GSplitContainerView extends GAbstractContainerView {
             splitPane.addFirstWidget(view, child.flex);
         } else if (container.children.get(1) == child) {
             splitPane.addSecondWidget(view, child.flex);
-        }
-
-        if (child instanceof GContainer && view instanceof ResizableSimplePanel && ((GContainer) child).isTabbed()) {
-            Widget tabbedWidget = ((ResizableSimplePanel) view).getWidget();
-            if (tabbedWidget != null) {
-                tabbedWidget.setSize("100%", "100%");
-            }
         }
     }
 

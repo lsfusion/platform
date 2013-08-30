@@ -777,6 +777,15 @@ public class ClientFormController implements AsyncListener {
         return fullKey;
     }
 
+    public boolean hasVisibleGrid() {
+        for (GroupObjectController group : controllers.values()) {
+            if (group.grid != null && group.grid.isVisible()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public ServerResponse executeEditAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID) throws IOException {
         // При выполнение синхронных запросов, EDT блокируется. Если перед этим синхр. запросом был послан асинхронный, который возвращает DockedModal-FormAction,
         // то получается dead-lock: executeEditAction ждёт окончания предыдущего async-запроса и значит закрытия DockedModal формы,
