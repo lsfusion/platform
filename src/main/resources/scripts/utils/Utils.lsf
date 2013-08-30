@@ -85,11 +85,16 @@ FORM dialogDate 'Выбор даты'
 ;
 
 DESIGN dialogDate FROM DEFAULT {
-    PROPERTY (objValue) {
-        caption = 'Введите дату';
-        font = 'Tahoma bold 64';
-        panelLabelAbove = TRUE;
+    NEW date BEFORE functions.box {
+        fill = 1;
+        ADD PROPERTY (objValue) {
+            fill = 1;
+            caption = 'Введите дату';
+            font = 'Tahoma bold 64';
+            panelLabelAbove = TRUE;
+        }
     }
+
 }
 
 FORM dialogNumeric 'Выбор числа'
