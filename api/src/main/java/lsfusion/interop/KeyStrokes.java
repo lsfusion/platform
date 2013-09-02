@@ -51,6 +51,10 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_DOWN_MASK);
     }
 
+    public static KeyStroke getF6() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0);
+    }
+
     public static KeyStroke getF8() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
     }

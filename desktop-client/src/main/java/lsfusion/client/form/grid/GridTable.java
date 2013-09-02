@@ -313,6 +313,9 @@ public class GridTable extends ClientPropertyTable {
         actionMap.put(GOTO_FIRST_ACTION, new ScrollToEndAction(Scroll.HOME));
         actionMap.put(GOTO_LAST_ACTION, new ScrollToEndAction(Scroll.END));
 
+        //вырезаем default F8 action
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getF8(), "none");
+
         InputMap inputMap = getInputMap();
         inputMap.put(KeyStrokes.getCtrlHome(), GOTO_FIRST_ACTION);
         inputMap.put(KeyStrokes.getCtrlEnd(), GOTO_LAST_ACTION);

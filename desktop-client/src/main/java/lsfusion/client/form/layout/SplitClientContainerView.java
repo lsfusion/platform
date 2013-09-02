@@ -2,6 +2,7 @@ package lsfusion.client.form.layout;
 
 import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
+import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.form.layout.CachableLayout;
 
 import javax.swing.*;
@@ -152,6 +153,10 @@ public class SplitClientContainerView extends AbstractClientContainerView {
             setBorder(null);
 
             ((BasicSplitPaneUI) getUI()).getDivider().setBorder(BorderFactory.createEtchedBorder());
+
+            //удаляем default actions
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getF6(), "none");
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getF8(), "none");
         }
 
         @Override
