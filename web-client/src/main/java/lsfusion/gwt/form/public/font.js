@@ -201,6 +201,8 @@
    */
   Font.prototype.validate = function (target, zero, mark, font, timeout) {
     if (timeout !== false && timeout < 0 ) {
+      document.head.removeChild(zero);
+      document.body.removeChild(target);
       this.onerror("Requested system font '"+this.fontFamily+"' could not be loaded (it may not be installed).");
       return;
     }
@@ -461,7 +463,7 @@
 
   Font.prototype.bootstrapValidation = function (printChar, timeout) {
     // Create a stylesheet for using the zero-width font:
-    var tfName = this.fontFamily+" testfont";
+    var tfName = this.fontFamily;
     var zerowidth = document.createElement("style");
     zerowidth.setAttribute("type", "text/css");
     zerowidth.innerHTML =  "@font-face {\n" +

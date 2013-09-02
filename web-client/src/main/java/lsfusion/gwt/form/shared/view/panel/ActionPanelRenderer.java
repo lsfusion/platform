@@ -40,6 +40,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     private final GGroupObjectValue columnKey;
 
     private final ImageButton button;
+
     private boolean isValueTrue = true;
     private boolean readOnly = false;
     private boolean enabled = true;
@@ -55,14 +56,25 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         this.editDispatcher = new GEditPropertyDispatcher(form, this);
 
         button = new ImageButton(property.getEditCaption(), property.icon);
-        setTooltip(property.caption);
         button.addStyleName("panelActionProperty");
+
+        setTooltip(property.caption);
+
         if (property.getPreferredPixelHeight() > -1) {
             button.setHeight(property.getPreferredHeight());
         }
         if (property.font != null) {
             button.getLabel().getElement().getStyle().setProperty("font", property.font.getFullFont());
         }
+
+        button.getElement().setPropertyObject("groupObject", property.groupObject);
+
+        button.setFocusable(property.focusable);
+
+        initUIHandlers(iform);
+    }
+
+    private void initUIHandlers(GFormController iform) {
         button.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -82,7 +94,6 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             }
         }, ContextMenuEvent.getType());
 
-        button.getElement().setPropertyObject("groupObject", property.groupObject);
         if (property.editKey != null) {
             iform.addHotkeyBinding(property.groupObject, property.editKey, new Binding() {
                 @Override
@@ -91,7 +102,6 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
                 }
             });
         }
-        button.setFocusable(property.focusable);
     }
 
     private void onContextMenuItemSelected(String actionSID) {
@@ -201,8 +211,9 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex) {
-        //todo:
-
+        if ((parent.isVertical() && flex > 0) || (parent.isHorizontal() && alignment == GFlexAlignment.STRETCH)) {
+            button.getElement().getStyle().clearHeight();
+        }
     }
 
     @Override

@@ -17,7 +17,6 @@ button::-moz-focus-inner {  /*Remove button padding in FF*/
 /* ------------ Default gwt overrides ------------ */
 .gwt-Button {
     margin: 2px;
-    height: 30px;
     white-space: nowrap;
 }
 

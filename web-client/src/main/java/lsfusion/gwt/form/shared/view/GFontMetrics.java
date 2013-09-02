@@ -61,18 +61,18 @@ public class GFontMetrics {
         font.src = font.fontFamily;
         font.onload = function() {
             var fontMeasure = font.measureText("0", fontSize);
-            @lsfusion.gwt.form.shared.view.GFontMetrics::setFontMetrics(Llsfusion/gwt/form/shared/view/GFont;Ljava/lang/String;Ljava/lang/String;Llsfusion/gwt/form/shared/view/GFontMetrics$MetricsCallback;)(gfont, String(fontMeasure.width), String(fontMeasure.leading), callback);
+            @lsfusion.gwt.form.shared.view.GFontMetrics::setFontMetrics(Llsfusion/gwt/form/shared/view/GFont;DDLlsfusion/gwt/form/shared/view/GFontMetrics$MetricsCallback;)(gfont, fontMeasure.width, fontMeasure.leading, callback);
         }
 
-        font.onerror = function() {
+        font.onerror = function(errorMessage) {
             @lsfusion.gwt.form.shared.view.GFontMetrics::errorLoadingFont(Llsfusion/gwt/form/shared/view/GFont;Llsfusion/gwt/form/shared/view/GFontMetrics$MetricsCallback;)(gfont, callback);
         }
     }-*/;
 
-    public static void setFontMetrics(GFont font, String width, String height, MetricsCallback callback) {
+    public static void setFontMetrics(GFont font, double width, double height, MetricsCallback callback) {
         HashMap<String, Integer> measures = new HashMap<String, Integer>();
-        measures.put(WIDTH_KEY, Integer.valueOf(width));
-        measures.put(HEIGHT_KEY, Integer.valueOf(height));
+        measures.put(WIDTH_KEY, (int)Math.round(width));
+        measures.put(HEIGHT_KEY, (int)Math.round(height));
         calculatedFonts.put(font, measures);
         setCalculationsCount(callback, getCalculationsCount(callback) - 1);
 
@@ -83,8 +83,13 @@ public class GFontMetrics {
     }
 
     public static void errorLoadingFont(GFont font, MetricsCallback callback) {
-        // сталкивался лишь с ошибкой нераспознанной fontFamily
-        getFontMetrics(font, DEFAULT_FONT_FAMILY, font.size, font.isBold(), callback);
+        if (font.isBold()) {
+            //пытаемся подгрузить не-bold версию шрифта
+            getFontMetrics(font, font.family, font.size, false, callback);
+        } else {
+            //используем шрифт по умолчанию
+            getFontMetrics(font, DEFAULT_FONT_FAMILY, font.size, false, callback);
+        }
     }
 
     public static int getZeroSymbolWidth(GFont font) {
