@@ -52,7 +52,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         entities = new ObjectEntity[classes.length + 1];
 
         GroupObjectEntity paramsGroup = new GroupObjectEntity(0, "paramsGroup");
-        paramsGroup.setInitClassView(ClassViewType.PANEL);
+        paramsGroup.setSingleClassView(ClassViewType.PANEL);
 
         int index = 1;
         for (ValueClass valueClass : classes) {
