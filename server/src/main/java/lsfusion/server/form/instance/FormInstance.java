@@ -1024,13 +1024,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    public void changeObject(PropertyObjectInterfaceInstance objectInstance, ObjectValue objectValue) throws SQLException {
-        if (objectInstance instanceof ObjectInstance) {
-            ObjectInstance object = (ObjectInstance) objectInstance;
-
-            seekObject(object, objectValue);
-            fireObjectChanged(object); // запускаем все Action'ы, которые следят за этим объектом
-        }
+    public void changeObject(ObjectInstance object, ObjectValue objectValue) throws SQLException {
+        seekObject(object, objectValue);
+//        fireObjectChanged(object); // запускаем все Action'ы, которые следят за этим объектом
     }
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
