@@ -75,6 +75,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
     }
 
     private void updateRequestedValue(ExecutionContext context, ObjectValue requestedValue) throws SQLException {
+        context.setLastUserInput(requestedValue);
         requestedValueProperty.write(requestValueType, requestedValue, context);
         requestCanceledProperty.change((Object)null, context);
     }

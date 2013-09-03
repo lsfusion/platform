@@ -3,10 +3,7 @@ package lsfusion.server.logics.property;
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
 import lsfusion.base.SystemUtils;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -304,6 +301,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete);
         env.setLastUserInput(userInput);
         return userInput;
+    }
+
+    public void setLastUserInput(ObjectValue userInput) {
+        env.setLastUserInput(userInput);
     }
 
     // для подмены ввода и обеспечания WYSIWYG механизмов
