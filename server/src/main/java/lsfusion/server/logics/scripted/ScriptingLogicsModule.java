@@ -1198,7 +1198,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ObjectEntity object = form.getObject(objectName);
         if (object != null) {
             List<Object> resultParams = getParamsPlainList(singletonList(seekProp));
-            LAP lap = addOSAProp(object, resultParams.toArray());
+            LAP lap = addOSAProp(form, object, resultParams.toArray());
             return new LPWithParams(lap, seekProp.usedParams);
         } else {
             errLog.emitNotFoundError(parser, "оbject", objectName);

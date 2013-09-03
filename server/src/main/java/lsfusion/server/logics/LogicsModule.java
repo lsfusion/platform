@@ -1566,17 +1566,17 @@ public abstract class LogicsModule {
         return addProperty(null, new LCP<ClassPropertyInterface>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
 
-    protected LAP addOSAProp(ObjectEntity object, Object... params) {
-        return addOSAProp(null, "", object, params);
+    protected LAP addOSAProp(FormEntity form, ObjectEntity object, Object... params) {
+        return addOSAProp(null, "", form, object, params);
     }
 
-    protected LAP addOSAProp(AbstractGroup group, String caption, ObjectEntity object, Object... params) {
-        return addJoinAProp(group, genSID(), caption, addOSAProp(object), params);
+    protected LAP addOSAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity object, Object... params) {
+        return addJoinAProp(group, genSID(), caption, addOSAProp(form, object), params);
     }
 
     @IdentityStrongLazy // для ID
-    public LAP addOSAProp(ObjectEntity object) {
-        SeekActionProperty seekProperty = new SeekActionProperty((ScriptingLogicsModule)this, object);
+    public LAP addOSAProp(FormEntity form, ObjectEntity object) {
+        SeekActionProperty seekProperty = new SeekActionProperty((ScriptingLogicsModule)this, form, object);
         return addProperty(null, new LAP<ClassPropertyInterface>(seekProperty));
     }
 

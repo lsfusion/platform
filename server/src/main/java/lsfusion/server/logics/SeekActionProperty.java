@@ -7,6 +7,7 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ConcreteValueClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
@@ -28,8 +29,8 @@ public class SeekActionProperty extends ScriptingActionProperty {
         object = null;
     }
 
-    public SeekActionProperty(ScriptingLogicsModule lm, ObjectEntity object) {
-        super(lm, "seek_" + object.getSID(), "Найти объект (" + object.caption + ")", new ValueClass[]{object.baseClass});
+    public SeekActionProperty(ScriptingLogicsModule lm, FormEntity form, ObjectEntity object) {
+        super(lm, "seek_" + form.getSID() + "_" + object.getSID(), "Найти объект (" + object.caption + ")", new ValueClass[]{object.baseClass});
 
         this.object = object;
     }
