@@ -1443,6 +1443,10 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         return getCellParentElement(getKeyboardSelectedTableCellElement());
     }
 
+    protected final TableElement getTableElement() {
+        return tableData.tableElement;
+    }
+
     protected final TableSectionElement getTableBodyElement() {
         return tableData.getSection();
     }

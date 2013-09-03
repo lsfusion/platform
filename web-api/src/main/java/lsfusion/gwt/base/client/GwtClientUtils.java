@@ -222,7 +222,7 @@ public class GwtClientUtils {
     }
 
     public static Dimension getOffsetSize(Widget widget) {
-        return new Dimension(widget.getElement().getOffsetWidth(), widget.getElement().getOffsetHeight());
+        return new Dimension(widget.getOffsetWidth(), widget.getOffsetHeight());
     }
 
     public static Dimension maybeGetPreferredSize(Widget widget) {
@@ -239,7 +239,7 @@ public class GwtClientUtils {
     }
 
     public static Dimension calculateStackPreferredSize(Iterator<Widget> widgets, boolean vertical) {
-        return calculateStackPreferredSize(widgets, vertical, false);
+        return calculateStackPreferredSize(widgets, vertical, true);
     }
 
     public static Dimension calculateStackPreferredSize(Iterator<Widget> widgets, boolean vertical, boolean useOffsetSize) {

@@ -7,8 +7,10 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.base.client.ui.HasPreferredSize;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.form.ui.GFormController;
@@ -80,7 +82,7 @@ public class DataPanelRenderer implements PanelRenderer {
             valueTable.setTableFocusable(false);
         }
 
-        gridPanel = new ResizableSimplePanel();
+        gridPanel = new GridPanel();
         gridPanel.addStyleName("dataPanelRendererGridPanel");
         gridPanel.add(valueTable);
         valueTable.setSize("100%", "100%");
@@ -179,5 +181,12 @@ public class DataPanelRenderer implements PanelRenderer {
     @Override
     public void focus() {
         valueTable.setFocus(true);
+    }
+
+    private class GridPanel extends ResizableSimplePanel implements HasPreferredSize {
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(property.getPreferredPixelWidth() + 5, property.getPreferredPixelHeight() + 5);
+        }
     }
 }

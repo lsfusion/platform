@@ -8,7 +8,8 @@ public class GFontMetrics {
     private static final String WIDTH_KEY = "width";
     private static final String HEIGHT_KEY = "height";
 
-    private static final String DEFAULT_FONT_FAMILY = "Arial";
+//    private static final String DEFAULT_FONT_FAMILY = "Arial";
+    private static final String DEFAULT_FONT_FAMILY = "";
     private static final int DEFAULT_FONT_PIXEL_SIZE = 11;
     public static final GFont DEFAULT_FONT = new GFont(null, null, DEFAULT_FONT_PIXEL_SIZE, DEFAULT_FONT_FAMILY);
 

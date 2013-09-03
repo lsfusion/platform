@@ -13,6 +13,8 @@ import lsfusion.gwt.form.shared.view.grid.GridEditableCell;
 import java.text.ParseException;
 import java.util.Arrays;
 
+import static com.google.gwt.dom.client.Style.Unit;
+
 public class GSinglePropertyTable extends GPropertyTable<Object> {
     /**
      * Default style's overrides
@@ -60,6 +62,7 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
     public void setupFillParent() {
         GwtClientUtils.setupFillParent(getElement());
         GwtClientUtils.setupFillParent(getTableDataScroller().getContainerElement());
+        getTableElement().getStyle().setHeight(100, Unit.PCT);
         ((GSinglePropertyTableBuilder)getTableBuilder()).setStripCellHeight(true);
     }
 

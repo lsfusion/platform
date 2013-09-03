@@ -8,8 +8,10 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.base.client.ui.HasPreferredSize;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
@@ -19,6 +21,7 @@ import lsfusion.gwt.form.client.form.ui.GPropertyContextMenuPopup;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GKeyStroke;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.form.shared.view.ImageDescription;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.classes.GType;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
@@ -39,7 +42,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     private final GPropertyDraw property;
     private final GGroupObjectValue columnKey;
 
-    private final ImageButton button;
+    private final ActionButton button;
 
     private boolean isValueTrue = true;
     private boolean readOnly = false;
@@ -55,7 +58,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         this.columnKey = icolumnKey;
         this.editDispatcher = new GEditPropertyDispatcher(form, this);
 
-        button = new ImageButton(property.getEditCaption(), property.icon);
+        button = new ActionButton(property.getEditCaption(), property.icon);
         button.addStyleName("panelActionProperty");
 
         setTooltip(property.caption);
@@ -223,6 +226,17 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             focusTargetAfterEdit = null;
         } else {
             focus();
+        }
+    }
+
+    private class ActionButton extends ImageButton implements HasPreferredSize {
+        private ActionButton(String caption, ImageDescription imageDescription) {
+            super(caption, imageDescription);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(getOffsetWidth() + 4, getOffsetHeight() + 4);
         }
     }
 
