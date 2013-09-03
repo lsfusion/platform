@@ -315,8 +315,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     /**
      * Constructs a table with the given page size.
-     *
-     * @param pageSize the page size
      */
     public DataGrid() {
         this(getDefaultResources());
@@ -2322,8 +2320,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             containerElement.appendChild(tableElement);
             setFocusable(containerElement, true);
 
-//            containerElement.getStyle().setPosition(Position.RELATIVE);
-            tableElement.getStyle().setHeight(100.0, Unit.PCT);
             tableElement.getStyle().setPosition(Position.ABSOLUTE);
             GwtClientUtils.setupFillParent(tableElement);
 

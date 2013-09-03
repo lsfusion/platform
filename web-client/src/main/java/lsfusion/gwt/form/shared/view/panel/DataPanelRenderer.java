@@ -90,9 +90,7 @@ public class DataPanelRenderer implements PanelRenderer {
         panel.addStyleName("dataPanelRendererPanel");
 
         panel.add(label, GFlexAlignment.CENTER);
-        panel.add(gridPanel,
-                  vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER,
-                  1);
+        panel.add(gridPanel, vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER, 1, "auto");
 
         gridPanel.setHeight(property.getPreferredHeight());
         if (vertical) {

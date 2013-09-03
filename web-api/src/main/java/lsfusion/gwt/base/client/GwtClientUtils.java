@@ -194,7 +194,7 @@ public class GwtClientUtils {
 
     public static String getUserAgent() {
         return Window.Navigator.getUserAgent().toLowerCase();
-    };
+    }
 
     public static boolean isIEUserAgent() {
         return getUserAgent().contains("msie");

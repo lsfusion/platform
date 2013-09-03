@@ -171,7 +171,7 @@ public class GPanelController {
                 for (GGroupObjectValue columnKey : columnKeys) {
                     PanelRenderer renderer = renderers.get(columnKey);
                     if (renderer != null && renderer.getComponent().getParent() != renderersPanel) {
-                        renderersPanel.add(renderer.getComponent(), GFlexAlignment.STRETCH, 1);
+                        renderersPanel.add(renderer.getComponent(), GFlexAlignment.STRETCH, 1, "auto");
                     }
                 }
 
