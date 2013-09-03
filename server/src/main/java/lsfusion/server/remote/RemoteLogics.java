@@ -18,8 +18,11 @@ import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.*;
+import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.data.type.TypeSerializer;
+import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
 import lsfusion.server.logics.*;
@@ -37,6 +40,9 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -113,7 +119,25 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     public void lifecycleEvent(LifecycleEvent event) {
         if (LifecycleEvent.INIT.equals(event.getType())) {
             this.baseLM = businessLogics.LM;
+        } else if (LifecycleEvent.STARTED.equals(event.getType())) {
+            initOpenFormCountUpdate();
         }
+    }
+
+    private void initOpenFormCountUpdate() {
+        ScheduledExecutorService openFormUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "open-form-count-daemon-"));
+        openFormUpdateExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DataSession session = createSession();
+                    RemoteNavigator.updateOpenFormCount(businessLogics, session);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+        }, Settings.get().getUpdateFormCountPeriod(), Settings.get().getUpdateFormCountPeriod(), TimeUnit.MILLISECONDS);
     }
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) {

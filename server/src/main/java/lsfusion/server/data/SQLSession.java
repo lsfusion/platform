@@ -1,8 +1,5 @@
 package lsfusion.server.data;
 
-import lsfusion.server.classes.IntegerClass;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -11,7 +8,10 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.col.lru.LRUCache;
 import lsfusion.base.col.lru.MCacheMap;
 import lsfusion.server.Message;
@@ -32,12 +32,17 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import java.lang.ref.WeakReference;
 import java.sql.*;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,14 +65,23 @@ public class SQLSession extends MutableObject {
     public final TypePool typePool;
 
     public Connection getConnection() throws SQLException {
-        return privateConnection !=null ? privateConnection : connectionPool.getCommon(this);
+        temporaryTablesLock.lock();
+        if (privateConnection != null) {
+            Connection resultConnection = privateConnection;
+            temporaryTablesLock.unlock();
+            return resultConnection;
+        } else {
+            return connectionPool.getCommon(this);
+        }
     }
 
     private void returnConnection(Connection connection) throws SQLException {
         if(privateConnection !=null)
             assert privateConnection == connection;
-        else
+        else {
             connectionPool.returnCommon(this, connection);
+            temporaryTablesLock.unlock();
+        }
     }
 
     private Connection privateConnection = null;
@@ -79,6 +93,9 @@ public class SQLSession extends MutableObject {
     public final static String computerParam = "fjruwidskldsor";
     public final static String isDebugParam = "dsiljdsiowee";
     public final static String isFullClientParam = "fdfdijir";
+
+    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
+    private ReentrantLock temporaryTablesLock = new ReentrantLock(true);
 
     public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         this(adapter, -1);
@@ -128,8 +145,21 @@ public class SQLSession extends MutableObject {
         }
     }
 
+    private void lockRead() {
+        lock.readLock().lock();
+    }
+
+    private void unlockRead() {
+        lock.readLock().unlock();
+    }
+
+    public void unlockTemporary() {
+        temporaryTablesLock.unlock();
+    }
+
     private int prevIsolation;
     public void startTransaction() throws SQLException {
+        lock.writeLock().lock();
         if(Settings.get().isApplyVolatileStats())
             pushVolatileStats(null);
 
@@ -158,6 +188,9 @@ public class SQLSession extends MutableObject {
 
         if(Settings.get().isApplyVolatileStats())
             popVolatileStats(null);
+
+
+        lock.writeLock().unlock();
     }
 
     public void rollbackTransaction() throws SQLException {
@@ -184,17 +217,22 @@ public class SQLSession extends MutableObject {
 
     // удостоверивается что таблица есть
     public void ensureTable(Table table) throws SQLException {
+        lockRead();
         Connection connection = getConnection();
 
-        DatabaseMetaData metaData = connection.getMetaData();
-        ResultSet tables = metaData.getTables(null, null, table.name, new String[]{"TABLE"});
-        if (!tables.next()) {
-            createTable(table.name, table.keys);
-            for (PropertyField property : table.properties)
-                addColumn(table.name, property);
-        }
+        try {
+            DatabaseMetaData metaData = connection.getMetaData();
+            ResultSet tables = metaData.getTables(null, null, table.name, new String[]{"TABLE"});
+            if (!tables.next()) {
+                createTable(table.name, table.keys);
+                for (PropertyField property : table.properties)
+                    addColumn(table.name, property);
+            }
+        } finally {
+            returnConnection(connection);
 
-        returnConnection(connection);
+            unlockRead();
+        }
     }
 
     public void addExtraIndices(String table, ImOrderSet<KeyField> keys) throws SQLException {
@@ -334,53 +372,70 @@ public class SQLSession extends MutableObject {
     private final Set<String> transactionTables = SetFact.mAddRemoveSet();
 
     public String getTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable fill, Integer count, Result<Integer> actual, Object owner) throws SQLException {
+        lockRead();
+        temporaryTablesLock.lock();
+
         needPrivate();
 
-        removeUnusedTemporaryTables();
+        String table;
+        try {
+            removeUnusedTemporaryTables();
 
-        Result<Boolean> isNew = new Result<Boolean>();
-        String table = getSQLTemporaryPool().getTable(this, keys, properties, fill, count, actual, sessionTablesMap, isNew);
-        assert !sessionTablesMap.containsKey(table);
-        sessionTablesMap.put(table, new WeakReference<Object>(owner));
-        if(isNew.result && isInTransaction())
-            transactionTables.add(table);
+            Result<Boolean> isNew = new Result<Boolean>();
+            table = getSQLTemporaryPool().getTable(this, keys, properties, fill, count, actual, sessionTablesMap, isNew, owner);
+            if(isNew.result && isInTransaction())
+                transactionTables.add(table);
+        } finally {
+            unlockRead();
+        }
 
         return table;
     }
 
     private void removeUnusedTemporaryTables() throws SQLException {
-        synchronized (sessionTablesMap) {
-            for (Iterator<Map.Entry<String, WeakReference<Object>>> iterator = sessionTablesMap.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry<String, WeakReference<Object>> entry = iterator.next();
-                if (entry.getValue().get() == null) {
+        for (Iterator<Map.Entry<String, WeakReference<Object>>> iterator = sessionTablesMap.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry<String, WeakReference<Object>> entry = iterator.next();
+            if (entry.getValue().get() == null) {
 //                    dropTemporaryTableFromDB(entry.getKey());
-                    iterator.remove();
-                }
+                iterator.remove();
             }
         }
     }
 
     public void returnTemporaryTable(SessionTable table, Object owner) throws SQLException {
-        synchronized (sessionTablesMap) {
+        lockRead();
+        temporaryTablesLock.lock();
+
+        try {
             assert sessionTablesMap.containsKey(table.name);
             WeakReference<Object> removed = sessionTablesMap.remove(table.name);
             assert removed.get()==owner;
 
 //            dropTemporaryTableFromDB(table.name);
-        }
 
-        tryCommon();
+            tryCommon();
+        } finally {
+            temporaryTablesLock.unlock();
+            unlockRead();
+        }
     }
     
     public void rollReturnTemporaryTable(SessionTable table, Object owner) throws SQLException {
+        lockRead();
+        temporaryTablesLock.lock();
+
         needPrivate();
 
-        synchronized (sessionTablesMap) {
+        try {
             // assertion построен на том что между началом транзакции ее rollback'ом, все созданные таблицы в явную drop'ся, соответственно может нарушится если скажем открыта форма и не close'ута, или просто new IntegrationService идет
             // в принципе он не настолько нужен, но для порядка пусть будет
             // придется убрать так как чистых использований уже достаточно много, например ClassChange.materialize, DataSession.addObjects, правда что сейчас с assertion'ами делать неясно
             assert !sessionTablesMap.containsKey(table.name); // вернул назад
             sessionTablesMap.put(table.name, new WeakReference<Object>(owner));
+
+        } finally {
+            temporaryTablesLock.unlock();
+            unlockRead();
         }
     }
 
@@ -404,35 +459,58 @@ public class SQLSession extends MutableObject {
         executeDDL("ANALYZE " + table, ExecuteEnvironment.NOREADONLY);
     }
 
+    private int noReadOnly = 0;
+    private final Object noReadOnlyLock = new Object();
     public void pushNoReadOnly(Connection connection) throws SQLException {
-        if(inTransaction==0)
-            connection.setReadOnly(false);
+        synchronized (noReadOnlyLock) {
+            if(inTransaction == 0 && noReadOnly++ == 0) {
+                connection.setReadOnly(false);
+            }
+        }
     }
     public void popNoReadOnly(Connection connection) throws SQLException {
-        if(inTransaction==0)
-            connection.setReadOnly(true);
+        synchronized (noReadOnlyLock) {
+            if(inTransaction == 0 && --noReadOnly == 0) {
+                connection.setReadOnly(true);
+            }
+        }
     }
     
-    private int volatileStats = 0;
+    private AtomicInteger volatileStats = new AtomicInteger(0);
     public void pushVolatileStats(Connection connection) throws SQLException {
         if(syntax.noDynamicSampling())
-            if(volatileStats++==0) {
-                needPrivate();
+            if(volatileStats.getAndIncrement() == 0) {
+                temporaryTablesLock.lock();
+                try {
+                    needPrivate();
+                } finally {
+                    {
+                        temporaryTablesLock.unlock();
+                    }
+                }
 
                 executeDDL("SET enable_nestloop=off");
             }
     }
-    public void popVolatileStats(Connection connection) throws SQLException {
-        if(syntax.noDynamicSampling())
-            if(--volatileStats==0) {
-               executeDDL("SET enable_nestloop=on");
 
-               tryCommon();
+    public void popVolatileStats(Connection connection) throws SQLException {
+        if (syntax.noDynamicSampling())
+            if (volatileStats.decrementAndGet() == 0) {
+                executeDDL("SET enable_nestloop=on");
+
+                lockRead();
+                temporaryTablesLock.lock();
+                try {
+                    tryCommon();
+                } finally {
+                    temporaryTablesLock.unlock();
+                    unlockRead();
+                }
             }
     }
 
     public void toggleVolatileStats() throws SQLException {
-        if(volatileStats==0)
+        if(volatileStats.get() == 0)
             pushVolatileStats(null);
         else
             popVolatileStats(null);
@@ -451,6 +529,8 @@ public class SQLSession extends MutableObject {
     }
 
     private void executeDDL(String DDL, ExecuteEnvironment env) throws SQLException {
+        lockRead();
+
         Connection connection = getConnection();
 
         Statement statement = createSingleStatement(connection);
@@ -468,6 +548,7 @@ public class SQLSession extends MutableObject {
             statement.close();
 
             returnConnection(connection);
+            unlockRead();
         }
     }
 
@@ -545,6 +626,7 @@ public class SQLSession extends MutableObject {
 
     @Message("message.sql.execute")
     private int executeDML(@ParamMessage String command, ImMap<String, ParseInterface> paramObjects, ExecuteEnvironment env) throws SQLException {
+        lockRead();
         Connection connection = getConnection();
 
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
@@ -585,6 +667,7 @@ public class SQLSession extends MutableObject {
             returnStatement.result.proceed(statement, runTime);
 
             returnConnection(connection);
+            unlockRead();
         }
 
         return result;
@@ -592,6 +675,7 @@ public class SQLSession extends MutableObject {
 
     @Message("message.sql.execute")
     private int executeDML(@ParamMessage String command) throws SQLException {
+        lockRead();
         Connection connection = getConnection();
 
         int result = 0;
@@ -605,6 +689,7 @@ public class SQLSession extends MutableObject {
             statement.close();
 
             returnConnection(connection);
+            unlockRead();
         }
         return result;
     }
@@ -636,6 +721,8 @@ public class SQLSession extends MutableObject {
 
     @Message("message.sql.execute")
     public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(@ParamMessage String select, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException {
+        lockRead();
+
         Connection connection = getConnection();
 
         if(explainAnalyzeMode) {
@@ -685,12 +772,17 @@ public class SQLSession extends MutableObject {
             returnStatement.result.proceed(statement, runTime);
 
             returnConnection(connection);
+
+            unlockRead();
+
         }
 
         return mExecResult.immutableOrder();
     }
 
     public void insertBatchRecords(String table, ImOrderSet<KeyField> keys, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) throws SQLException {
+        lockRead();
+
         Connection connection = getConnection();
 
         ImOrderSet<PropertyField> properties = rows.getValue(0).keys().toOrderSet();
@@ -741,6 +833,9 @@ public class SQLSession extends MutableObject {
             statement.close();
 
             returnConnection(connection);
+
+            unlockRead();
+
         }
     }
 
@@ -936,6 +1031,9 @@ public class SQLSession extends MutableObject {
 
         String select = "SELECT " + SQLSession.stringExpr(readKeys, readProps) + " FROM " + syntax.getSessionTableName(table.name);
 
+
+        lockRead();
+
         Connection connection = getConnection();
 
         Statement statement = createSingleStatement(connection);
@@ -980,6 +1078,9 @@ public class SQLSession extends MutableObject {
             statement.close();
 
             returnConnection(connection);
+
+            unlockRead();
+
         }
     }
 

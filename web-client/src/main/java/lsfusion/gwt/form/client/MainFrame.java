@@ -113,16 +113,7 @@ public class MainFrame implements EntryPoint {
         dispatcher.execute(new ShowDefaultFormsAction(), new ErrorHandlingCallback<ShowDefaultFormsResult>() {
             @Override
             public void success(final ShowDefaultFormsResult result) {
-                if (result.defaultFormsType == GDefaultFormsType.DEFAULT) {
-                    dispatcher.execute(new GetDefaultFormsAction(), new ErrorHandlingCallback<GetDefaultFormsResult>() {
-                        @Override
-                        public void success(GetDefaultFormsResult formsResult) {
-                            initializeWindows(result.defaultFormsType, formsResult.defaultFormsSIDs);
-                        }
-                    });
-                } else {
-                    initializeWindows(result.defaultFormsType, new ArrayList<String>());
-                }
+                initializeWindows(result.defaultFormsType, result.defaultForms);
             }
         });
     }

@@ -103,8 +103,8 @@ public class IDTable extends GlobalTable {
 
         // возвращает первый, и резервирует себе еще count id'ков
     public int reserveIDs(int count, SQLSession dataSession, int idType) throws SQLException {
-        int freeID;
-        synchronized (this) {
+        int freeID = 0;
+        try {
             dataSession.startTransaction();
 
             freeID = (Integer) getGenerateQuery(idType).execute(dataSession).singleValue().get(value) + 1; // замещаем
@@ -114,6 +114,8 @@ public class IDTable extends GlobalTable {
             dataSession.updateRecords(new ModifyQuery(this, updateQuery.getQuery()));
 
             dataSession.commitTransaction();
+        } catch (SQLException e) {
+            dataSession.rollbackTransaction();
         }
         return freeID;
     }

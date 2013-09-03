@@ -8,8 +8,6 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 
@@ -25,13 +23,17 @@ public class RecalculateClassesActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         SQLSession sqlSession = context.getSession().sql;
 
-        sqlSession.startTransaction();
+        try {
+            sqlSession.startTransaction();
 
-        BusinessLogics BL = context.getBL();
-        BL.recalculateClasses(sqlSession);
-        context.getDbManager().packTables(sqlSession, BL.LM.tableFactory.getImplementTables());
+            BusinessLogics BL = context.getBL();
+            BL.recalculateClasses(sqlSession);
+            context.getDbManager().packTables(sqlSession, BL.LM.tableFactory.getImplementTables());
 
-        sqlSession.commitTransaction();
+            sqlSession.commitTransaction();
+        } catch (SQLException e) {
+            sqlSession.rollbackTransaction();
+        }
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculating.data.classes"), true));
     }

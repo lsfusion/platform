@@ -102,22 +102,26 @@ public class TableFactory {
 
     public void fillDB(SQLSession sql, BaseClass baseClass) throws SQLException {
 
-        sql.startTransaction();
+        try {
+            sql.startTransaction();
 
-        sql.ensureTable(IDTable.instance);
-        sql.ensureTable(StructTable.instance);
+            sql.ensureTable(IDTable.instance);
+            sql.ensureTable(StructTable.instance);
 
-        ImMap<Integer, Integer> counters = IDTable.getCounters();
-        for (int i = 0, size = counters.size(); i < size; i++)
-            sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), SystemClass.instance)), MapFact.singleton(IDTable.instance.value, (ObjectValue) new DataObject(counters.getValue(i), SystemClass.instance)));
+            ImMap<Integer, Integer> counters = IDTable.getCounters();
+            for (int i = 0, size = counters.size(); i < size; i++)
+                sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), SystemClass.instance)), MapFact.singleton(IDTable.instance.value, (ObjectValue) new DataObject(counters.getValue(i), SystemClass.instance)));
 
-        // создадим dumb
-        sql.ensureTable(DumbTable.instance);
-        sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1, SystemClass.instance)), MapFact.<PropertyField, ObjectValue>EMPTY());
+            // создадим dumb
+            sql.ensureTable(DumbTable.instance);
+            sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1, SystemClass.instance)), MapFact.<PropertyField, ObjectValue>EMPTY());
 
-        sql.ensureTable(EmptyTable.instance);
+            sql.ensureTable(EmptyTable.instance);
 
-        sql.commitTransaction();
+            sql.commitTransaction();
+        } catch (SQLException e) {
+            sql.rollbackTransaction();
+        }
     }
 
     @IdentityLazy

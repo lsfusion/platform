@@ -21,9 +21,14 @@ public class CheckAggregationsActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         SQLSession sqlSession = context.getSession().sql;
 
-        sqlSession.startTransaction();
-        String message = context.getDbManager().checkAggregations(sqlSession);
-        sqlSession.commitTransaction();
+        String message = null;
+        try {
+            sqlSession.startTransaction();
+            message = context.getDbManager().checkAggregations(sqlSession);
+            sqlSession.commitTransaction();
+        } catch(SQLException e) {
+            sqlSession.rollbackTransaction();
+        }
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.check.was.completed") + '\n' + '\n' + message, getString("logics.checking.aggregations"), true));
     }

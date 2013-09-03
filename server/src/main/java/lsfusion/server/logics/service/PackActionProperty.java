@@ -23,10 +23,14 @@ public class PackActionProperty extends ScriptingActionProperty {
         SQLSession sqlSession = context.getSession().sql;
 
         BusinessLogics BL = context.getBL();
-        
-        sqlSession.startTransaction();
-        context.getDbManager().packTables(sqlSession, BL.LM.tableFactory.getImplementTables());
-        sqlSession.commitTransaction();
+
+        try {
+            sqlSession.startTransaction();
+            context.getDbManager().packTables(sqlSession, BL.LM.tableFactory.getImplementTables());
+            sqlSession.commitTransaction();
+        } catch (SQLException e) {
+            sqlSession.rollbackTransaction();
+        }
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.tables.packing.completed"), getString("logics.tables.packing")));
     }

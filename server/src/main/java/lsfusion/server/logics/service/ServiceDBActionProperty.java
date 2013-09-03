@@ -24,19 +24,23 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
 
         BusinessLogics BL = context.getBL();
 
-        sqlSession.startTransaction();
-        BL.recalculateClasses(sqlSession);
-        sqlSession.commitTransaction();
+        try {
+            sqlSession.startTransaction();
+            BL.recalculateClasses(sqlSession);
+            sqlSession.commitTransaction();
 
-        sqlSession.startTransaction();
-        context.getDbManager().recalculateAggregations(sqlSession);
-        sqlSession.commitTransaction();
+            sqlSession.startTransaction();
+            context.getDbManager().recalculateAggregations(sqlSession);
+            sqlSession.commitTransaction();
 
-        BL.recalculateFollows(context.getSession());
+            BL.recalculateFollows(context.getSession());
 
-        sqlSession.startTransaction();
-        context.getDbManager().packTables(sqlSession, BL.LM.tableFactory.getImplementTables());
-        sqlSession.commitTransaction();
+            sqlSession.startTransaction();
+            context.getDbManager().packTables(sqlSession, BL.LM.tableFactory.getImplementTables());
+            sqlSession.commitTransaction();
+        } catch (SQLException e) {
+            sqlSession.rollbackTransaction();
+        }
 
         context.getDbManager().analyzeDB(sqlSession);
 

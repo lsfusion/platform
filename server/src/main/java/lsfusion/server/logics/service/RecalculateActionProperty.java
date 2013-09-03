@@ -24,9 +24,13 @@ public class RecalculateActionProperty extends ScriptingActionProperty {
         BusinessLogics BL = context.getBL();
         SQLSession sqlSession = context.getSession().sql;
 
-        sqlSession.startTransaction();
-        context.getDbManager().recalculateAggregations(sqlSession);
-        sqlSession.commitTransaction();
+        try {
+            sqlSession.startTransaction();
+            context.getDbManager().recalculateAggregations(sqlSession);
+            sqlSession.commitTransaction();
+        } catch (SQLException e){
+            sqlSession.rollbackTransaction();
+        }
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
     }

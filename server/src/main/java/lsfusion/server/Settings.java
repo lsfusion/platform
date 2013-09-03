@@ -434,6 +434,8 @@ public class Settings {
     private int limitApplyHintIncrementComplexity = 100;
     private int limitApplyHintIncrementStat = 1000;
 
+    private int updateFormCountPeriod = 5000;
+
     public boolean isNoExclusiveCompile() {
         return noExclusiveCompile;
     }
@@ -550,6 +552,14 @@ public class Settings {
     }
     public void setLimitMaterializeComplexity(int limitMaterializeComplexity) {
         this.limitMaterializeComplexity = limitMaterializeComplexity;
+    }
+
+    public int getUpdateFormCountPeriod() {
+        return updateFormCountPeriod;
+    }
+
+    public void setUpdateFormCountPeriod(int updateFormCountPeriod) {
+        this.updateFormCountPeriod = updateFormCountPeriod;
     }
 
     private boolean autoAnalyzeTempStats = true; // автоматически анализировать статистику после каждого заполнения временной таблицы (прикол в том что после удаления таблицы и добавления новых записей статистика сама увеличивается)

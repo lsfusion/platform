@@ -5,7 +5,9 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.MFilterSet;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -207,12 +209,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
     }
     private Transaction applyTransaction; // restore point
+    private boolean isInTransaction;
 
     private void startTransaction() throws SQLException {
+        assert !isInTransaction;
         sql.startTransaction();
+        isInTransaction = true;
     }
     private void checkTransaction() {
-        if(sql.isInTransaction() && applyTransaction==null)
+        if(isInTransaction() && applyTransaction==null)
             applyTransaction = new Transaction();
     }
     public void rollbackTransaction() throws SQLException {
@@ -221,6 +226,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             applyTransaction = null;
         }
         sql.rollbackTransaction();
+        isInTransaction = false;
 //        checkSessionTableMap();
     }
 /*    private void checkSessionTableMap() {
@@ -242,6 +248,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     private void commitTransaction() throws SQLException {
         applyTransaction = null;
         sql.commitTransaction();
+        isInTransaction = false;
     }
 
     private ImSet<CalcProperty<ClassPropertyInterface>> getClassChanges(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses) {
@@ -1549,7 +1556,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
 
     public boolean isInTransaction() {
-        return sql.isInTransaction();
+        return isInTransaction;
     }
 
     public void cancel() throws SQLException {

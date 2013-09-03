@@ -11,6 +11,7 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class ShowDefaultFormsHandler extends SimpleActionHandlerEx<ShowDefaultFormsAction, ShowDefaultFormsResult, RemoteLogicsInterface> {
     public ShowDefaultFormsHandler(LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) {
@@ -20,6 +21,11 @@ public class ShowDefaultFormsHandler extends SimpleActionHandlerEx<ShowDefaultFo
     @Override
     public ShowDefaultFormsResult executeEx(ShowDefaultFormsAction action, ExecutionContext context) throws DispatchException, IOException {
         DefaultFormsType dft = servlet.getNavigator().showDefaultForms();
-        return new ShowDefaultFormsResult(dft == null ? null : GDefaultFormsType.valueOf(dft.name()));
+
+        ArrayList<String> defaultForms = new ArrayList<String>();
+        if (dft == DefaultFormsType.DEFAULT) {
+            defaultForms = (ArrayList<String>) servlet.getNavigator().getDefaultForms();
+        }
+        return new ShowDefaultFormsResult(dft == null ? null : GDefaultFormsType.valueOf(dft.name()), defaultForms);
     }
 }

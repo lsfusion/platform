@@ -25,56 +25,61 @@ public class SQLTemporaryPool {
         return tables.isEmpty();
     }
 
-    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable data, Integer count, Result<Integer> resultActual, Map<String, WeakReference<Object>> used, Result<Boolean> isNew) throws SQLException {
+    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable data, Integer count, Result<Integer> resultActual, Map<String, WeakReference<Object>> used, Result<Boolean> isNew, Object owner) throws SQLException {
         FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
         resultActual.set(count);
 
-        synchronized(tables) {
-            Set<String> matchTables = tables.get(fieldStruct);
-            if(matchTables==null) {
-                matchTables = SetFact.mAddRemoveSet();
-                tables.put(fieldStruct, matchTables);
-            }
-
-            for(String matchTable : matchTables) // ищем нужную таблицу
-                if(!used.containsKey(matchTable)) { // если не используется
-                    session.truncate(matchTable); // удаляем старые данные
-                    Integer actual = data.fill(matchTable); // заполняем
-                    assert (actual!=null)==(count==null);
-                    if(Settings.get().isAutoAnalyzeTempStats())
-                        session.analyzeSessionTable(matchTable);
-                    else {
-                        Object actualStatistics = getDBStatistics(actual);
-                        if(!actualStatistics.equals(stats.get(matchTable))) {
-                            session.analyzeSessionTable(matchTable);
-                            stats.put(matchTable, actualStatistics);
-                        }
-                    }
-                    if(count==null)
-                        resultActual.set(actual);
-
-                    isNew.set(false);
-                    return matchTable;
-                }
-
-            // если нет, "создаем" таблицу
-            String table = "t_" + (counter++);
-            session.createTemporaryTable(table, keys, properties);
-            Integer actual = data.fill(table); // заполняем
-            assert (actual!=null)==(count==null);
-            session.analyzeSessionTable(table); // выполняем ее analyze, чтобы сказать постгре какие там будут записи
-            if(count==null) { // обновляем реальной статистикой
-                if(!Settings.get().isAutoAnalyzeTempStats())
-                    stats.put(table, getDBStatistics(actual));
-                resultActual.set(actual);
-            }
-            structs.put(table, fieldStruct);
-
-            matchTables.add(table);
-
-            isNew.set(true);
-            return table;
+        Set<String> matchTables = tables.get(fieldStruct);
+        if(matchTables==null) {
+            matchTables = SetFact.mAddRemoveSet();
+            tables.put(fieldStruct, matchTables);
         }
+
+        for(String matchTable : matchTables) // ищем нужную таблицу
+            if(!used.containsKey(matchTable)) { // если не используется
+                session.truncate(matchTable); // удаляем старые данные
+                assert !used.containsKey(matchTable);
+                used.put(matchTable, new WeakReference<Object>(owner));
+                session.unlockTemporary();
+                Integer actual = data.fill(matchTable); // заполняем
+                assert (actual!=null)==(count==null);
+                if(Settings.get().isAutoAnalyzeTempStats())
+                    session.analyzeSessionTable(matchTable);
+                else {
+                    Object actualStatistics = getDBStatistics(actual);
+                    if(!actualStatistics.equals(stats.get(matchTable))) {
+                        session.analyzeSessionTable(matchTable);
+                        stats.put(matchTable, actualStatistics);
+                    }
+                }
+                if(count==null)
+                    resultActual.set(actual);
+
+                isNew.set(false);
+                return matchTable;
+            }
+
+        // если нет, "создаем" таблицу
+        String table = "t_" + (counter++);
+        session.createTemporaryTable(table, keys, properties);
+        assert !used.containsKey(table);
+        used.put(table, new WeakReference<Object>(owner));
+        matchTables.add(table);
+        session.unlockTemporary();
+        Integer actual = data.fill(table); // заполняем
+        assert (actual!=null)==(count==null);
+        session.analyzeSessionTable(table); // выполняем ее analyze, чтобы сказать постгре какие там будут записи
+        if(count==null) { // обновляем реальной статистикой
+            if(!Settings.get().isAutoAnalyzeTempStats())
+                stats.put(table, getDBStatistics(actual));
+            resultActual.set(actual);
+        }
+        structs.put(table, fieldStruct);
+
+
+
+        isNew.set(true);
+        return table;
     }
 
     public void removeTable(String table) {

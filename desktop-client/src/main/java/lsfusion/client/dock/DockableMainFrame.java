@@ -1,10 +1,12 @@
 package lsfusion.client.dock;
 
+import bibliothek.gui.Dockable;
 import bibliothek.gui.dock.common.CContentArea;
 import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.CGrid;
 import bibliothek.gui.dock.common.SingleCDockable;
 import bibliothek.gui.dock.common.intern.CSetting;
+import bibliothek.gui.dock.common.intern.station.CSplitDockStation;
 import bibliothek.gui.dock.common.menu.CLayoutChoiceMenuPiece;
 import bibliothek.gui.dock.common.menu.CPreferenceMenuPiece;
 import bibliothek.gui.dock.common.menu.CThemeMenuPiece;
@@ -124,9 +126,10 @@ public class DockableMainFrame extends MainFrame {
     }
 
     public void focusPageIfNeeded() {
+        ClientFormDockable pageToFocus = null;
+        DefaultFormsType showDefaultForms = null;
         try {
-            ClientFormDockable pageToFocus = null;
-            DefaultFormsType showDefaultForms = remoteNavigator.showDefaultForms();
+            showDefaultForms = remoteNavigator.showDefaultForms();
             List<String> savedForms;
             switch (showDefaultForms) {
                 case DEFAULT:
@@ -147,11 +150,23 @@ public class DockableMainFrame extends MainFrame {
                     pageToFocus = page;
                 }
             }
-            if (pageToFocus != null) {
-                pageToFocus.intern().getController().getFocusController().setFocusedDockable(pageToFocus.intern(), null, true, true, true);
-            }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (pageToFocus != null) {
+                pageToFocus.intern().getController().getFocusController().setFocusedDockable(pageToFocus.intern(), null, true, true, true);
+
+                if (showDefaultForms == DefaultFormsType.DEFAULT) {
+                    CSplitDockStation splitStation = dockableManager.getFormArea().getStation();
+                    Dockable fullScreenDockable = pageToFocus.intern();
+                    while (fullScreenDockable.getDockParent() != null && !fullScreenDockable.getDockParent().asDockable().equals(splitStation)) {
+                        fullScreenDockable = fullScreenDockable.getDockParent().asDockable();
+                    }
+
+                    splitStation.setFullScreen(fullScreenDockable);
+                    mainControl.getContentArea().getCenter().setFullScreen(splitStation);
+                }
+            }
         }
     }
 

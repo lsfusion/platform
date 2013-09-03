@@ -31,9 +31,13 @@ public class RecalculateTableColumnActionProperty extends ScriptingActionPropert
         DataObject tableColumnObject = context.getDataKeyValue(tableColumnInterface);
         String propertySID = (String) context.getBL().reflectionLM.sidTableColumn.read(context, tableColumnObject);
 
-        sqlSession.startTransaction();
-        context.getDbManager().recalculateAggregationTableColumn(sqlSession, propertySID.trim());
-        sqlSession.commitTransaction();
+        try {
+            sqlSession.startTransaction();
+            context.getDbManager().recalculateAggregationTableColumn(sqlSession, propertySID.trim());
+            sqlSession.commitTransaction();
+        } catch (SQLException e) {
+            sqlSession.rollbackTransaction();
+        }
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
     }

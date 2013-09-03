@@ -5,6 +5,7 @@ package lsfusion.server.form.navigator;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DefaultFormsType;
+import lsfusion.base.Pair;
 import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -101,6 +102,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     private RemotePausableInvocation currentInvocation = null;
     
     private final Map<RemoteForm, Boolean> createdForms = Collections.synchronizedMap(new WeakHashMap<RemoteForm, Boolean>());
+
+    private static final List<Pair<DataObject, String>> recentlyOpenForms = Collections.synchronizedList(new ArrayList<Pair<DataObject, String>>());
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
     public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, String remoteAddress, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
@@ -333,37 +336,42 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         weakCurrentForm = new WeakReference<FormInstance<T>>(form);
     }
 
-    private void updateOpenFormCount(String sid) {
-        try {
-            DataObject connection = getConnection();
+    public static void updateOpenFormCount(BusinessLogics businessLogics, DataSession session) throws SQLException {
+        List<Pair<DataObject, String>> openForms = new ArrayList<Pair<DataObject, String>>(recentlyOpenForms);
+        recentlyOpenForms.clear();
 
-            if (connection != null) {
-                DataSession session = createSession();
+        for (Pair<DataObject, String> entry : openForms) {
+            DataObject connection = entry.first;
+            String sid = entry.second;
 
-                Integer formId = (Integer) businessLogics.reflectionLM.navigatorElementSID.read(session, new DataObject(sid, businessLogics.reflectionLM.navigatorElementSIDClass));
-                if (formId == null) {
-                    //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
-                    int ind = sid.indexOf('_');
-                    if (ind != -1) {
-                        sid = sid.substring(0, ind);
-                        formId = (Integer) businessLogics.reflectionLM.navigatorElementSID.read(session, new DataObject(sid, businessLogics.reflectionLM.navigatorElementSIDClass));
-                    }
-
-                    if (formId == null) {
-                        return;
-                    }
+            Integer formId = (Integer) businessLogics.reflectionLM.navigatorElementSID.read(session, new DataObject(sid, businessLogics.reflectionLM.navigatorElementSIDClass));
+            if (formId == null) {
+                //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
+                int ind = sid.indexOf('_');
+                if (ind != -1) {
+                    sid = sid.substring(0, ind);
+                    formId = (Integer) businessLogics.reflectionLM.navigatorElementSID.read(session, new DataObject(sid, businessLogics.reflectionLM.navigatorElementSIDClass));
                 }
 
-                DataObject formObject = new DataObject(formId, businessLogics.reflectionLM.navigatorElement);
-
-                int count = 1 + nvl((Integer) businessLogics.systemEventsLM.connectionFormCount.read(session, connection, formObject), 0);
-                businessLogics.systemEventsLM.connectionFormCount.change(count, session, connection, formObject);
-
-                session.apply(businessLogics);
-                session.close();
+                if (formId == null) {
+                    return;
+                }
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+
+            DataObject formObject = new DataObject(formId, businessLogics.reflectionLM.navigatorElement);
+
+            int count = 1 + nvl((Integer) businessLogics.systemEventsLM.connectionFormCount.read(session, connection, formObject), 0);
+            businessLogics.systemEventsLM.connectionFormCount.change(count, session, connection, formObject);
+
+            session.apply(businessLogics);
+            session.close();
+        }
+    }
+
+    private void formOpened(String sid) {
+        DataObject connection = getConnection();
+        if (connection != null) {
+            recentlyOpenForms.add(new Pair<DataObject, String>(connection, sid));
         }
     }
 
@@ -671,7 +679,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     @Override
     public void formCreated(RemoteForm form) {
-        updateOpenFormCount(form.getSID());
+        formOpened(form.getSID());
         createdForms.put(form, Boolean.TRUE);
     }
 
