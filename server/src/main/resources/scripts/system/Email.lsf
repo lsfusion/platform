@@ -69,26 +69,18 @@ FORM notification 'Почта'
         FILTER 'Только отмеченные' 'F9' inNotificationProperty(n, p)
 ;
 
-EXTEND DESIGN notification {
-    main {
-        NEW specContainer {
-            type = TABBED;
-            ADD n.box;
-            ADD p.box;
-            NEW textContainer {
-                caption = 'Текст письма';
-                childConstraints = TO THE BOTTOM;
-                fillHorizontal = 1;
-                fillVertical = 1;
-                ADD PROPERTY(textNotification(n)) {
-                    fillHorizontal = 1;
-                    preferredSize = ( -1, 600);
-                    panelLabelAbove = TRUE;
-                }
-            }
+DESIGN notification FROM DEFAULT {
+    ADD n.box;
+    NEW pane {
+        fill = 1;
+        type = CONTAINERH;
+        ADD p.box;
+        ADD PROPERTY(textNotification) {
+            fill = 1;
+            panelLabelAbove = TRUE;
         }
-        ADD functions.box;
     }
+    ADD functions.box;
 }
 
 NAVIGATOR {
