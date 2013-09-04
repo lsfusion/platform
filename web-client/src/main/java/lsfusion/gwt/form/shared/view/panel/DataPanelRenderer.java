@@ -95,12 +95,15 @@ public class DataPanelRenderer implements PanelRenderer {
         panel.add(gridPanel, vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER, 1, "auto");
 
         gridPanel.setHeight(property.getPreferredHeight());
-        if (vertical) {
-            //т.к. flex-panel игнорирует stretch, если проставлен width
-            gridPanel.getElement().getStyle().setProperty("minWidth", property.getPreferredWidth());
-        } else {
+        if (!vertical) {
             gridPanel.setWidth(property.getPreferredWidth());
+//        } else {
+//            //т.к. flex-panel игнорирует stretch, если проставлен width
+//            gridPanel.getElement().getStyle().setProperty("minWidth", property.getPreferredWidth());
         }
+
+        gridPanel.getElement().getStyle().setProperty("minHeight", property.getPreferredHeight());
+        gridPanel.getElement().getStyle().setProperty("minWidth", property.getPreferredWidth());
 
         valueTable.getElement().setPropertyObject("groupObject", property.groupObject);
         if (property.editKey != null) {
@@ -129,7 +132,8 @@ public class DataPanelRenderer implements PanelRenderer {
         if (alignment == GFlexAlignment.STRETCH && flex > 0) {
             gridPanel.getElement().getStyle().clearWidth();
             gridPanel.getElement().getStyle().clearHeight();
-            gridPanel.getElement().getStyle().clearProperty("minWidth");
+//            gridPanel.getElement().getStyle().clearProperty("minWidth");
+//            gridPanel.getElement().getStyle().clearProperty("minHeight");
             gridPanel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
 
             valueTable.setupFillParent();

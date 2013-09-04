@@ -145,7 +145,6 @@ public class GPanelController {
                 }
                 if (renderersPanel == null) {
                     renderersPanel = new ControllerPanel();
-                    renderersPanel.getElement().getStyle().setProperty("minHeight", "20px");
                 }
 
                 List<GGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
