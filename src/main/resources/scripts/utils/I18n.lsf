@@ -97,33 +97,26 @@ FORM translation 'Перевод'
 ;
 
 EXTEND DESIGN translation {
-    main {
-        NEW specContainer {
-            NEW textContainer {
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(nameLanguageFromTranslation());
-                ADD PROPERTY(nameLanguageToTranslation());
-                ADD PROPERTY(translationOriginal());
-                ADD PROPERTY(translationResult());
-                ADD PROPERTY(translateText());
-                fillHorizontal = 1;
-                fillVertical = 1;
-                PROPERTY (translationOriginal()) {
-                    fillHorizontal = 1;
-                    fillVertical = 0.5;
-                    preferredSize = ( -1, 200);
-                    panelLabelAbove = TRUE;
-                }
-                PROPERTY (translationResult()) {
-                    fillHorizontal = 1;
-                    fillVertical = 0.5;
-                    preferredSize = ( -1, 200);
-                    panelLabelAbove = TRUE;
-                }
-            }
-            ADD functions.box;
+    NEW languages {
+        caption = 'Языки';
+        type = CONTAINERH;
+        ADD PROPERTY(nameLanguageFromTranslation());
+        ADD PROPERTY(nameLanguageToTranslation());
+    }
+    NEW translation {
+        fill = 1;
+        type = CONTAINERH;
+        ADD PROPERTY(translationOriginal()) {
+            fill = 1;
+            panelLabelAbove = TRUE;
+        }
+        ADD PROPERTY(translationResult()) {
+            fill = 1;
+            panelLabelAbove = TRUE;
         }
     }
+    ADD PROPERTY(translateText()) { font = 'Tahoma bold 24'; }
+    ADD functions.box;
 }
 
 NAVIGATOR {
@@ -160,17 +153,19 @@ DESIGN dictionary FROM DEFAULT {
         ADD d.box;
         ADD e.box;
         NEW test {
-            childConstraints = TO THE RIGHT;
+            type = CONTAINERH;
             ADD PROPERTY(translationOriginalString) {
+                fill = 1;
                 caption = 'Фраза для перевода';
                 panelLabelAbove = TRUE;
                 font = 'Tahoma bold 24';
-            };
+            }
             ADD PROPERTY(translationResultString){
+                fill = 1;
                 caption = 'Перевод';
                 panelLabelAbove = TRUE;
                 font = 'Tahoma bold 24';
-            };
+            }
         }
         ADD functions.box;
     }

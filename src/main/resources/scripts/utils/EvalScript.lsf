@@ -8,7 +8,7 @@ scriptStorage 'Скрипт' () = DATA TEXT ();
 
 scriptExecution 'Выполнить скрипт' () = ACTION EVAL scriptStorage();
 
-actionBodyExecution 'Выполнить action' () = ACTION EVAL CONCAT ' ', 'run() = ACTION {', scriptStorage(), ';\n};';
+actionBodyExecution 'Выполнить действие' () = ACTION EVAL CONCAT ' ', 'run() = ACTION {', scriptStorage(), ';\n};';
 formExecution 'Показать форму' () = ACTION EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;';
 
 FORM mainForm 'Скрипт'
@@ -17,21 +17,18 @@ FORM mainForm 'Скрипт'
 ;
 
 DESIGN mainForm FROM DEFAULT {
-    main {
-        childConstraints = TO THE BOTTOM;
-        NEW south BEFORE functions.box {
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(scriptExecution);
-            ADD PROPERTY(actionBodyExecution);
-            ADD PROPERTY(formExecution);
-        }
-        ADD PROPERTY(scriptStorage) BEFORE south {
-            panelLabelAbove = TRUE;
-            preferredSize = ( -1, 600);
-            fillVertical = 1.0;
-            fillHorizontal = 1.0;
-        }
+    ADD PROPERTY(scriptStorage) {
+        panelLabelAbove = TRUE;    
+        fill = 1;
     }
+    NEW run {
+        caption = 'Запуск';
+        type = CONTAINERH;
+        ADD PROPERTY(scriptExecution) { font = 'Tahoma bold 24'; }
+        ADD PROPERTY(actionBodyExecution) { font = 'Tahoma bold 24'; }
+        ADD PROPERTY(formExecution) { font = 'Tahoma bold 24'; }
+    }
+    ADD functions.box;
 }
 
 NAVIGATOR {
