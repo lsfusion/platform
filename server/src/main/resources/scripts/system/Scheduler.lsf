@@ -93,22 +93,22 @@ FORM scheduledTask 'Планировщик'
 ;
 
 EXTEND DESIGN scheduledTask {
-    main {
-       NEW specContainer {
-            type = SPLITV;
-            ADD st.box;
-            NEW bottomContainer {
-                type = TABBED;
-                ADD p.box;
-                NEW logContainer {
-                    caption = 'Лог';
-                    ADD stl.box;
-                    ADD sctl.box;
-                }
+    NEW specContainer {
+        fill = 1; 
+        type = SPLITV;
+        ADD st.box;
+        NEW south {
+            fill = 2;
+            type = TABBED;
+            ADD p.box;
+            NEW logContainer {
+                caption = 'Лог';
+                ADD stl.box;
+                ADD sctl.box;
             }
-       }
-       ADD functions.box;
+        }
     }
+    ADD functions.box;
 }
 
 NAVIGATOR {
