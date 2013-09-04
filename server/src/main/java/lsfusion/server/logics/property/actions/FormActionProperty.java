@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.MessageClientAction;
@@ -44,6 +45,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     private final FormSessionScope sessionScope;
     private final ModalityType modalityType;
     private final boolean showDrop;
+    private final FormPrintType printType;
 
     private final ConcreteCustomClass formResultClass;
     private final LCP formResultProperty;
@@ -83,6 +85,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               ModalityType modalityType,
                               boolean checkOnOk,
                               boolean showDrop,
+                              FormPrintType printType,
                               ConcreteCustomClass formResultClass,
                               LCP formResultProperty,
                               AnyValuePropertyHolder chosenValueProperty,
@@ -97,6 +100,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.modalityType = modalityType;
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
+        this.printType = printType;
         this.sessionScope = sessionScope;
         this.startAction = startAction;
 
@@ -141,11 +145,11 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                                                                         sessionScope,
                                                                         checkOnOk,
                                                                         showDrop,
-                                                                        !form.isPrintForm,
+                                                                        printType == null,
                                                                         contextFilters,
                                                                         pullProps.result);
 
-        if (form.isPrintForm && !newFormInstance.areObjectsFound()) {
+        if (printType != null && !newFormInstance.areObjectsFound()) {
             context.requestUserInteraction(
                     new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
         } else {
@@ -160,8 +164,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             }
 
             RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
-            if (form.isPrintForm) {
-                context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), SystemProperties.isDebug));
+            if (printType != null) {
+                context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), printType, SystemProperties.isDebug));
             } else {
                 context.requestUserInteraction(new FormClientAction(newRemoteForm, modalityType));
             }

@@ -1,8 +1,5 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -14,10 +11,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.Compare;
-import lsfusion.interop.KeyStrokes;
-import lsfusion.interop.ModalityType;
+import lsfusion.interop.*;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
@@ -47,7 +41,10 @@ import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.EvalActionProperty;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
+import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -517,17 +514,29 @@ public abstract class LogicsModule {
     // ------------------- File action ----------------- //
 
     protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession, boolean isModal, boolean checkOnOk) {
+        return addFAProp(group, sID, caption, form, objectsToSet, startAction, newSession, isModal, checkOnOk, null);
+    }
+
+    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession, boolean isModal, boolean checkOnOk, FormPrintType printType) {
         return addFAProp(group, sID, caption, form, objectsToSet, startAction,
-                         newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
-                         isModal ? ModalityType.MODAL : ModalityType.DOCKED, checkOnOk);
+                newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
+                isModal ? ModalityType.MODAL : ModalityType.DOCKED, checkOnOk, printType);
     }
 
     protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk) {
         return addFAProp(group, sID, caption, form, objectsToSet, startAction, null, null, sessionScope, modalityType, checkOnOk, false);
     }
 
+    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, FormPrintType printType) {
+        return addFAProp(group, sID, caption, form, objectsToSet, startAction, null, null, sessionScope, modalityType, checkOnOk, false, printType);
+    }
+
     protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, ObjectEntity contextObject, CalcProperty contextProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop) {
-        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), contextObject, contextProperty)));
+        return addFAProp(group, sID, caption, form, objectsToSet, startAction, null, null, sessionScope, modalityType, checkOnOk, false, null);
+    }
+
+    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, ObjectEntity contextObject, CalcProperty contextProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType) {
+        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, showDrop, printType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), contextObject, contextProperty)));
     }
 
     // ------------------- Change Class action ----------------- //

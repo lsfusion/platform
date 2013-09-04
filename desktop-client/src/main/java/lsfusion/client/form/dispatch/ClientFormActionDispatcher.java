@@ -2,7 +2,9 @@ package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
 import lsfusion.client.Main;
+import lsfusion.client.ReportUtils;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ServerResponse;
@@ -63,10 +65,14 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     @Override
     public void execute(ReportClientAction action) {
         try {
-            if (action.isDebug) {
-                Main.frame.runReport(action.reportSID, action.isModal, action.generationData);
+            if (action.printType == FormPrintType.AUTO) {
+                ReportUtils.autoprintReport(action.generationData);
             } else {
-                Main.frame.runReport(action.reportSID, action.isModal, action.generationData, null);
+                if (action.isDebug) {
+                    Main.frame.runReport(action.reportSID, action.isModal, action.generationData);
+                } else {
+                    Main.frame.runReport(action.reportSID, action.isModal, action.generationData, null);
+                }
             }
         } catch (Exception e) {
             Throwables.propagate(e);

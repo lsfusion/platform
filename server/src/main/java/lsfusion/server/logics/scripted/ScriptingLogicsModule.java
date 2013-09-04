@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.server.ServerLoggers;
@@ -1771,7 +1772,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new Time(h, m, 0);
     }
 
-    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, String contextObjectName, LPWithParams contextProperty, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, String contextObjectName, LPWithParams contextProperty, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, FormPrintType printType) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + modalityType + ", " + sessionScope + ");");
 
         if (contextProperty != null) {
@@ -1789,7 +1790,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LAP property = addFAProp(null, genSID(), "", form, objects, null, contextObject,
                                  contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
-                                 sessionScope, modalityType, checkOnOk, showDrop);
+                                 sessionScope, modalityType, checkOnOk, showDrop, printType);
 
         if (mapping.size() > 0) {
             if (contextProperty != null) {

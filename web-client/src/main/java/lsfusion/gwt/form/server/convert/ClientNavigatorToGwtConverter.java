@@ -50,7 +50,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     @Converter(from = ClientNavigatorForm.class)
     public GNavigatorForm convertNavigatorForm(ClientNavigatorForm clientForm) {
         GNavigatorForm form = initNavigatorElement(clientForm, new GNavigatorForm());
-        form.isPrintForm = clientForm.isPrintForm;
         form.modalityType = GModalityType.valueOf(clientForm.modalityType.name());
         return form;
     }

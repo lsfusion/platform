@@ -531,10 +531,6 @@ public class ScriptingFormEntity {
         findCustomClassForFormSetup(className).setListForm(form, getObjectEntity(objectID));
     }
 
-    public void setIsPrintForm(boolean isPrintForm) {
-        form.isPrintForm = isPrintForm;
-    }
-
     public void setModalityType(ModalityType modalityType) {
         if (modalityType != null) {
             form.modalityType = modalityType;

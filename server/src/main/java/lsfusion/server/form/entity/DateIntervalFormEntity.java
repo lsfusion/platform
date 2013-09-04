@@ -12,13 +12,7 @@ public class DateIntervalFormEntity<T extends BusinessLogics<T>> extends FormEnt
     public ObjectEntity objDateTo;
 
     public DateIntervalFormEntity(BaseLogicsModule<?> LM, NavigatorElement<T> parent, String sID, String caption) {
-        super(parent, sID, caption);
-
-        addIntervalGroupObject(LM);
-    }
-
-    public DateIntervalFormEntity(BaseLogicsModule<?> LM, NavigatorElement<T> parent, String sID, String caption, boolean iisPrintForm) {
-        super(parent, sID, caption, null, iisPrintForm);
+        super(parent, sID, caption, null);
 
         addIntervalGroupObject(LM);
     }

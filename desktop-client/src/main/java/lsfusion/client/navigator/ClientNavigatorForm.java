@@ -7,7 +7,6 @@ import java.io.IOException;
 
 public class ClientNavigatorForm extends ClientNavigatorElement {
     
-    public boolean isPrintForm;
     public ModalityType modalityType;
 
     public ClientNavigatorForm() {
@@ -20,7 +19,6 @@ public class ClientNavigatorForm extends ClientNavigatorElement {
 
     public ClientNavigatorForm(DataInputStream inStream) throws IOException {
         super(inStream);
-        isPrintForm = inStream.readBoolean();
         modalityType = ModalityType.valueOf(inStream.readUTF());
     }
 }

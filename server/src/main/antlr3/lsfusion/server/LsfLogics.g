@@ -12,6 +12,7 @@ grammar LsfLogics;
 	import lsfusion.interop.form.layout.Alignment;
 	import lsfusion.interop.form.ServerResponse;
 	import lsfusion.interop.FormEventType;
+	import lsfusion.interop.FormPrintType;
 	import lsfusion.interop.ModalityType;
 	import lsfusion.server.form.instance.FormSessionScope;
 	import lsfusion.server.data.Union;
@@ -384,14 +385,12 @@ listFormDeclaration
 
 formDeclaration returns [ScriptingFormEntity form]
 @init {
-	boolean isPrint = false;
 	ModalityType modalityType = null;
 	int autoRefresh = 0;
 }
 @after {
 	if (inPropParseState()) {
 		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, $title.val, $path.val);
-		$form.setIsPrintForm(isPrint);
 		$form.setModalityType(modalityType);
 		$form.setAutoRefresh(autoRefresh);
 	}
@@ -399,7 +398,6 @@ formDeclaration returns [ScriptingFormEntity form]
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
 		('TITLE' title=stringLiteral)?
-		('PRINT' { isPrint = true; })?
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('IMAGE' path=stringLiteral)?
 		('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })?
@@ -1808,6 +1806,7 @@ formActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 	ModalityType modalityType = ModalityType.DOCKED;
 	boolean checkOnOk = false;
 	boolean showDrop = false;
+	FormPrintType printType = null;
 	List<String> objects = new ArrayList<String>();
 	List<LPWithParams> mapping = new ArrayList<LPWithParams>();
 	String contextObjectName = null;
@@ -1815,7 +1814,7 @@ formActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 	}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, modalityType, sessionScope, checkOnOk, showDrop);
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, modalityType, sessionScope, checkOnOk, showDrop, printType);
 	}
 }
 	:	'FORM' formName=compoundID 
@@ -1825,6 +1824,7 @@ formActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('CHECK' { checkOnOk = true; })?
 		('SHOWDROP' { showDrop = true; })?
+		(print = formPrintTypeLiteral { printType = $print.val; })?
 	;
 
 formActionObjectList[List<String> context, boolean dynamic] returns [List<String> objects = new ArrayList<String>(), List<LPWithParams> exprs = new ArrayList<LPWithParams>()]
@@ -3201,6 +3201,14 @@ modalityTypeLiteral returns [ModalityType val]
 	|	'MODAL' { $val = ModalityType.MODAL; }
 	|	'DOCKEDMODAL' { $val = ModalityType.DOCKED_MODAL; }
 	|	'FULLSCREEN' { $val = ModalityType.FULLSCREEN_MODAL; }
+	;
+	
+formPrintTypeLiteral returns [FormPrintType val]
+@init {
+	$val = FormPrintType.PRINT;
+} 
+	:	'PRINT'
+		('AUTO' { $val = FormPrintType.AUTO; })?
 	;
 
 formSessionScopeLiteral returns [FormSessionScope val]

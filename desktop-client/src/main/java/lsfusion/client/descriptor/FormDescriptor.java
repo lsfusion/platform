@@ -36,7 +36,6 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
     public String caption;
     public String title;
-    public boolean isPrintForm;
     public ModalityType modalityType = ModalityType.DOCKED;
     public int autoRefresh;
 
@@ -232,7 +231,6 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         pool.writeString(outStream, caption);
         pool.writeString(outStream, title);
         pool.writeString(outStream, sID);
-        outStream.writeBoolean(isPrintForm);
         outStream.writeUTF(modalityType.name());
         outStream.writeInt(autoRefresh);
 
@@ -281,7 +279,6 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         caption = pool.readString(inStream);
         title = pool.readString(inStream);
         sID = pool.readString(inStream);
-        isPrintForm = inStream.readBoolean();
         modalityType = ModalityType.valueOf(inStream.readUTF());
         autoRefresh = inStream.readInt();
 

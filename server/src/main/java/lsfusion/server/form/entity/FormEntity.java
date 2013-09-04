@@ -88,7 +88,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public OrderedMap<OrderEntity<?>, Boolean> fixedOrders = new OrderedMap<OrderEntity<?>, Boolean>();
 
     public String title;
-    public boolean isPrintForm;
     public ModalityType modalityType = ModalityType.DOCKED;
     public int autoRefresh = 0;
 
@@ -103,40 +102,23 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
     
     protected FormEntity(String sID, String caption, String icon) {
-        this(sID, caption, icon, false);
-    }
-
-    FormEntity(String sID, String caption, String icon, boolean iisPrintForm) {
-        this(null, sID, caption, null, icon, iisPrintForm);
+        this(null, sID, caption, icon);
     }
 
     public FormEntity(NavigatorElement<T> parent, String sID, String caption) {
-        this(parent, sID, caption, null, null, false);
+        this(parent, sID, caption, null, null);
     }
 
     public FormEntity(NavigatorElement<T> parent, String sID, String caption, String icon) {
-        this(parent, sID, caption, null, icon, false);
+        this(parent, sID, caption, null, icon);
     }
 
-    public FormEntity(NavigatorElement<T> parent, String sID, String caption, String title, String icon) {
-        this(parent, sID, caption, title, icon, false);
-    }
-
-    public FormEntity(NavigatorElement<T> parent, String sID, String caption, boolean iisPrintForm) {
-        this(parent, sID, caption, null, null, iisPrintForm);
-    }
-
-    public FormEntity(NavigatorElement<T> parent, String sID, String caption,  String icon, boolean iisPrintForm) {
-        this(parent, sID, caption, null, icon, iisPrintForm);
-    }
-
-    protected FormEntity(NavigatorElement<T> parent, String sID, String caption, String ititle, String icon, boolean iisPrintForm) {
+    public FormEntity(NavigatorElement<T> parent, String sID, String caption, String ititle, String icon) {
         super(parent, sID, caption, null);
         setImage(icon != null ? icon : "/images/form.png");
         logger.debug("Initializing form " + caption + "...");
 
         title = ititle;
-        isPrintForm = iisPrintForm;
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
@@ -950,7 +932,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.writeString(outStream, caption);
         pool.writeString(outStream, title);
         pool.writeString(outStream, sID);
-        outStream.writeBoolean(isPrintForm);
         outStream.writeUTF(modalityType.name());
         outStream.writeInt(autoRefresh);
 
@@ -999,7 +980,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         caption = pool.readString(inStream);
         title = pool.readString(inStream);
         sID = pool.readString(inStream);
-        isPrintForm = inStream.readBoolean();
         modalityType = ModalityType.valueOf(inStream.readUTF());
         autoRefresh = inStream.readInt();
 
@@ -1043,7 +1023,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
-        outStream.writeBoolean(isPrintForm);
         outStream.writeUTF(modalityType.name());
     }
 
