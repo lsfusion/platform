@@ -15,6 +15,6 @@ public class CancelRestartActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         context.getRestartManager().cancelRestart();
-        context.getBL().LM.formRefresh.execute(context);
+        context.getBL().LM.getFormRefresh().execute(context);
     }
 }

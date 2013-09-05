@@ -479,12 +479,6 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void updateCurrentClass(int currentClassId) {
-        if (clientNavigator != null) {
-            clientNavigator.relevantClassNavigator.updateCurrentClass(currentClassId);
-        }
-    }
-
     public void getRemoteChanges(boolean async) throws IOException {
         rmiQueue.syncRequestWithTimeOut(async ? 0 : RmiQueue.FOREVER, new ProcessServerResponseRmiRequest() {
             @Override
@@ -839,10 +833,6 @@ public class ClientFormController implements AsyncListener {
                         remoteForm.gainedFocus(requestIndex);
                     }
                 });
-
-                if (clientNavigator != null) {
-                    clientNavigator.relevantFormNavigator.currentFormChanged();
-                }
 
                 // если вдруг изменились данные в сессии
                 ClientExternalScreen.invalidate(getID());

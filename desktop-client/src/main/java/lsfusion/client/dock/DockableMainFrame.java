@@ -279,8 +279,6 @@ public class DockableMainFrame extends MainFrame {
         try {
             DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remoteNavigator.getCommonWindows()));
 
-            windows.put(new ClientAbstractWindow(inStream), mainNavigator.relevantFormNavigator);
-            windows.put(new ClientAbstractWindow(inStream), mainNavigator.relevantClassNavigator);
             windows.put(new ClientAbstractWindow(inStream), Log.recreateLogPanel());
             windows.put(new ClientAbstractWindow(inStream), status);
 

@@ -151,15 +151,11 @@ public class MainFrame implements EntryPoint {
                 GwtClientUtils.removeLoaderFromHostedPage();
 
                 formsWindow = result.forms;
-                commonWindows.put(result.relevantForms, new Label(result.relevantForms.caption));
-                commonWindows.put(result.relevantClasses, new Label(result.relevantClasses.caption));
                 commonWindows.put(result.log, GLog.createLogPanel(result.log.visible));
                 commonWindows.put(result.status, new Label(result.status.caption));
 
                 // пока прячем всё, что не поддерживается
                 result.status.visible = false;
-                result.relevantClasses.visible = false;
-                result.relevantForms.visible = false;
 
                 navigatorController.initializeNavigatorViews(result.navigatorWindows);
                 navigatorController.setRootElement(result.root);

@@ -91,10 +91,6 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         }
     }
 
-    public void execute(UpdateCurrentClassClientAction action) {
-        getFormController().updateCurrentClass(action.currentClassId);
-    }
-
     public void execute(EditNotPerformedClientAction action) {
     }
 

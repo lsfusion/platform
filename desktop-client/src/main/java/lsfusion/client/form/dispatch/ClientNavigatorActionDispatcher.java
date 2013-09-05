@@ -1,7 +1,6 @@
 package lsfusion.client.form.dispatch;
 
 import lsfusion.client.navigator.ClientNavigator;
-import lsfusion.interop.action.UpdateCurrentClassClientAction;
 import lsfusion.interop.form.ServerResponse;
 
 import java.io.IOException;
@@ -22,10 +21,5 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
     @Override
     protected void throwInServerInvocation(Exception ex) throws IOException {
         clientNavigator.remoteNavigator.throwInNavigatorAction(ex);
-    }
-
-    @Override
-    public void execute(UpdateCurrentClassClientAction action) {
-        clientNavigator.relevantClassNavigator.updateCurrentClass(action.currentClassId);
     }
 }

@@ -14,7 +14,6 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUCache;
 import lsfusion.base.col.lru.MCacheMap;
 import lsfusion.interop.Data;
-import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.caches.ManualLazy;
@@ -26,7 +25,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.CustomObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
-import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.*;
@@ -269,26 +267,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         outStream.writeInt(children.size());
         for (CustomClass cls : children)
             cls.serialize(outStream);
-    }
-
-    private List<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
-    public void addRelevant(NavigatorElement element) {
-        relevantElements.add(element);
-    }
-
-    public List<NavigatorElement> getRelevantElements(BaseLogicsModule LM, SecurityPolicy securityPolicy) {
-        MSet<CustomClass> mUpParents = SetFact.mSet();
-        fillParents(mUpParents);
-        ImSet<CustomClass> upParents = mUpParents.immutable();
-
-        List<NavigatorElement> result = new ArrayList<NavigatorElement>();
-        for(CustomClass parent : upParents)
-            for (NavigatorElement element : parent.relevantElements)
-                if (securityPolicy.navigator.checkPermission(element))
-                    result.add(element);
-        for(CustomClass parent : upParents)
-            result.add(parent.getBaseClassForm(LM));
-        return result;
     }
 
     private FormEntity baseClassForm = null;

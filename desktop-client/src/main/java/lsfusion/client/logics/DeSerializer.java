@@ -9,7 +9,10 @@ import lsfusion.client.navigator.ClientNavigatorWindow;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DeSerializer {
 
@@ -66,7 +69,7 @@ public class DeSerializer {
     public static List<ClientAbstractWindow> deserializeListClientNavigatorWindow(byte[] state) throws IOException {
         List<ClientAbstractWindow> windows = new ArrayList<ClientAbstractWindow>();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(state));
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             windows.add(new ClientAbstractWindow(dataStream));
         }
         return windows;

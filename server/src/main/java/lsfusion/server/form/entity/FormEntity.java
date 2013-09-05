@@ -122,15 +122,15 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
-        printActionPropertyDraw = addPropertyDraw(baseLM.formPrint);
-        editActionPropertyDraw = addPropertyDraw(baseLM.formEdit);
-        xlsActionPropertyDraw = addPropertyDraw(baseLM.formXls);
-        refreshActionPropertyDraw = addPropertyDraw(baseLM.formRefresh);
-        applyActionPropertyDraw = addPropertyDraw(baseLM.formApply);
-        cancelActionPropertyDraw = addPropertyDraw(baseLM.formCancel);
-        okActionPropertyDraw = addPropertyDraw(baseLM.formOk);
-        closeActionPropertyDraw = addPropertyDraw(baseLM.formClose);
-        dropActionPropertyDraw = addPropertyDraw(baseLM.formDrop);
+        printActionPropertyDraw = addPropertyDraw(baseLM.getFormPrint());
+        editActionPropertyDraw = addPropertyDraw(baseLM.getFormEdit());
+        xlsActionPropertyDraw = addPropertyDraw(baseLM.getFormXls());
+        refreshActionPropertyDraw = addPropertyDraw(baseLM.getFormRefresh());
+        applyActionPropertyDraw = addPropertyDraw(baseLM.getFormApply());
+        cancelActionPropertyDraw = addPropertyDraw(baseLM.getFormCancel());
+        okActionPropertyDraw = addPropertyDraw(baseLM.getFormOk());
+        closeActionPropertyDraw = addPropertyDraw(baseLM.getFormClose());
+        dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop());
 
         addActionsOnEvent(FormEventType.QUERYOK, true, (ActionPropertyObjectEntity)okActionPropertyDraw.propertyObject);
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, (ActionPropertyObjectEntity)closeActionPropertyDraw.propertyObject);
@@ -921,8 +921,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
         return groupHierarchy;
     }
-
-    public ArrayList<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
 
     public byte getTypeID() {
         return 0;

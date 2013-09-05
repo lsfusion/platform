@@ -11,16 +11,10 @@ public abstract class ClientNavigator {
     public final ClientNavigatorElement rootElement;
     public final Map<String, ClientNavigatorWindow> windows;
 
-    public final RelevantFormNavigatorPanel relevantFormNavigator;
-    public final RelevantClassNavigatorPanel relevantClassNavigator;
-
     public ClientNavigator(RemoteNavigatorInterface remoteNavigator, ClientNavigatorElement rootElement, Map<String, ClientNavigatorWindow> windows) {
         this.remoteNavigator = remoteNavigator;
         this.rootElement = rootElement;
         this.windows = windows;
-
-        relevantFormNavigator = new RelevantFormNavigatorPanel(this);
-        relevantClassNavigator = new RelevantClassNavigatorPanel(this);
     }
 
     public void openModalForm(ClientNavigatorForm form) throws ClassNotFoundException, IOException {

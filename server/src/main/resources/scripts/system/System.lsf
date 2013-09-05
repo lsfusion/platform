@@ -83,3 +83,43 @@ END
 
 @defineAnyValue(requested, );
 @defineAnyValue(chosen, STRING[100]);
+
+META applicationForm(sid, name)
+    FORM sid name;
+    
+    DESIGN sid FROM DEFAULT {
+        main {
+            NEW pane BEFORE functions.box {
+                type = TABBED;
+                flex = 1;
+                align = STRETCH;
+                NEW commons {
+                    caption = 'Общие';
+                }
+            }
+        }
+    }
+END
+
+@applicationForm(options, 'Настройки');
+@applicationForm(integrationData, 'Интеграция');
+@applicationForm(migrationData, 'Миграция');
+
+WINDOW TOOLBAR root 'Корень' HORIZONTAL POSITION(0, 0, 100, 6) VALIGN (CENTER) HIDETITLE HIDESCROLLBARS;
+WINDOW TOOLBAR toolbar 'Тулбар' VERTICAL POSITION(0, 6, 20, 64) HIDETITLE;
+WINDOW TREE tree 'Дерево' POSITION(0, 6, 20, 64) HIDETITLE;
+
+NAVIGATOR {
+    NEW root 'Формы' TO root {
+        NEW administration 'Администрирование' TO toolbar IMAGE '/images/tools.png' {
+            NEW application 'Приложение' {
+                ADD options;
+                ADD integrationData;
+                ADD migrationData;
+            }
+            NEW configuration 'Система';
+            NEW systemEvents 'Просмотр событий';
+            NEW objects 'Объекты' TO tree; 
+        }
+    }
+}

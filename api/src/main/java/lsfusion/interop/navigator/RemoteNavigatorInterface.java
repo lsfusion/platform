@@ -12,9 +12,6 @@ import java.util.Map;
 
 public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
-    public static final String NAVIGATORGROUP_RELEVANTFORM = "_NAV_RELEVANTFORM_";
-    public static final String NAVIGATORGROUP_RELEVANTCLASS = "_NAV_RELEVANTCLASS_";
-
     byte[] getNavigatorTree() throws RemoteException;
 
     // окна лог, релевантные классы, статус и т.п.

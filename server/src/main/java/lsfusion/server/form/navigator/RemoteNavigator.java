@@ -268,29 +268,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public byte[] getElementsByteArray(String groupSID) {
 
-        List<NavigatorElement> navigatorElements = null;
-        if (groupSID.equals(RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM)) {
-            FormInstance<T> currentForm = getCurrentForm();
-            if (currentForm != null) {
-                navigatorElements = new ArrayList<NavigatorElement>(currentForm.entity.relevantElements);
-            }
-        } else if (groupSID.equals(RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS)) {
-            if (currentClass != null) {
-                navigatorElements = currentClass.getRelevantElements(businessLogics.LM, securityPolicy);
-            }
-        } else {
-            NavigatorElement singleElement = businessLogics.LM.root.getNavigatorElement(groupSID);
-            navigatorElements = singleElement == null
-                                ? Collections.singletonList(singleElement)
-                                : new ArrayList<NavigatorElement>(singleElement.getChildren(false));
-        }
+        NavigatorElement singleElement = businessLogics.LM.root.getNavigatorElement(groupSID);
+        List<NavigatorElement> navigatorElements = singleElement == null
+                ? Collections.singletonList(singleElement)
+                : new ArrayList<NavigatorElement>(singleElement.getChildren(false));
 
         List<NavigatorElement> resultElements = new ArrayList();
-        if (navigatorElements != null) {
-            for (NavigatorElement element1 : navigatorElements) {
-                if (securityPolicy.navigator.checkPermission(element1)) {
-                    resultElements.add(element1);
-                }
+        for (NavigatorElement element1 : navigatorElements) {
+            if (securityPolicy.navigator.checkPermission(element1)) {
+                resultElements.add(element1);
             }
         }
 
@@ -609,8 +595,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            businessLogics.LM.windows.relevantForms.serialize(dataStream);
-            businessLogics.LM.windows.relevantClassForms.serialize(dataStream);
             businessLogics.LM.windows.log.serialize(dataStream);
             businessLogics.LM.windows.status.serialize(dataStream);
             businessLogics.LM.windows.forms.serialize(dataStream);

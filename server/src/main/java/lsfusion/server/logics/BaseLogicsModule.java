@@ -13,47 +13,33 @@ import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.Compare;
-import lsfusion.interop.form.layout.ContainerType;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
-import lsfusion.server.data.Union;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.form.entity.ClassFormEntity;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
-import lsfusion.server.form.view.ContainerView;
-import lsfusion.server.form.view.DefaultFormView;
-import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.form.window.NavigatorWindow;
 import lsfusion.server.form.window.ToolBarNavigatorWindow;
-import lsfusion.server.form.window.TreeNavigatorWindow;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.*;
-import lsfusion.server.logics.property.actions.flow.ApplyActionProperty;
+import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
 import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
-import lsfusion.server.logics.property.actions.flow.CancelActionProperty;
 import lsfusion.server.logics.property.actions.flow.ReturnActionProperty;
-import lsfusion.server.logics.property.actions.form.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.PropertySet;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.TableFactory;
-import lsfusion.server.session.ApplyFilter;
 import org.antlr.runtime.RecognitionException;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -105,15 +91,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     public LCP minus;
 
-    public LAP formPrint;
-    public LAP formEdit;
-    public LAP formXls;
-    public LAP formDrop;
-    public LAP formRefresh;
-    public LAP formApply;
-    public LAP formCancel;
-    public LAP formOk;
-    public LAP formClose;
+    private LAP formPrint;
+    private LAP formEdit;
+    private LAP formXls;
+    private LAP formDrop;
+    private LAP formRefresh;
+    private LAP formApply;
+    private LAP formCancel;
+    private LAP formOk;
+    private LAP formClose;
 
     public LAP seek;
 
@@ -163,6 +149,51 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         super(AuthenticationLogicsModule.class.getResourceAsStream("/scripts/system/System.lsf"), null, BL);
         setBaseLogicsModule(this);
         this.BL = BL;
+    }
+
+    @IdentityLazy
+    public LAP getFormPrint() {
+        return formPrint = getLAPByName("formPrint");
+    }
+
+    @IdentityLazy
+    public LAP getFormEdit() {
+        return formEdit = getLAPByName("formEdit");
+    }
+
+    @IdentityLazy
+    public LAP getFormXls() {
+        return formXls = getLAPByName("formXls");
+    }
+
+    @IdentityLazy
+    public LAP getFormDrop() {
+        return formDrop = getLAPByName("formDrop");
+    }
+
+    @IdentityLazy
+    public LAP getFormRefresh() {
+        return formRefresh = getLAPByName("formRefresh");
+    }
+
+    @IdentityLazy
+    public LAP getFormApply() {
+        return formApply = getLAPByName("formApply");
+    }
+
+    @IdentityLazy
+    public LAP getFormCancel() {
+        return formCancel = getLAPByName("formCancel");
+    }
+
+    @IdentityLazy
+    public LAP getFormOk() {
+        return formOk = getLAPByName("formOk");
+    }
+
+    @IdentityLazy
+    public LAP getFormClose() {
+        return formClose = getLAPByName("formClose");
     }
 
     public LP getLP(String sID) {
@@ -309,17 +340,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         // Операции с целыми числами
         subtractInteger = getLCPByName("subtractInteger");
-
-        // Действия на форме
-        formApply = getLAPByName("formApply");
-        formCancel = getLAPByName("formCancel");
-        formPrint = getLAPByName("formPrint");
-        formEdit = getLAPByName("formEdit");
-        formXls = getLAPByName("formXls");
-        formDrop = getLAPByName("formDrop");
-        formRefresh = getLAPByName("formRefresh");
-        formOk = getLAPByName("formOk");
-        formClose = getLAPByName("formClose");
 
         seek = getLAPByName("seek");
         
@@ -565,8 +585,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         public AbstractWindow forms;
         public AbstractWindow log;
         public AbstractWindow status;
-        public AbstractWindow relevantForms;
-        public AbstractWindow relevantClassForms;
     }
 
     public Windows windows;
@@ -588,16 +606,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         // Окна
         windows = new Windows();
-        windows.root = addWindow(new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "root", getString("logics.window.root"), 0, 0, 100, 6));
-        windows.root.alignmentY = JToolBar.CENTER_ALIGNMENT;
-        windows.root.titleShown = false;
-        windows.root.drawScrollBars = false;
+        windows.root = (ToolBarNavigatorWindow) getWindowByName("root");
 
-        windows.toolbar = addWindow(new ToolBarNavigatorWindow(JToolBar.VERTICAL, "toolbar", getString("logics.window.toolbar"), 0, 6, 20, 64));
-        windows.toolbar.titleShown = false;
+        windows.toolbar = (NavigatorWindow) getWindowByName("toolbar");
 
-        windows.tree = addWindow(new TreeNavigatorWindow("tree", getString("logics.window.tree"), 0, 6, 20, 64));
-        windows.tree.titleShown = false;
+        windows.tree = (NavigatorWindow) getWindowByName("tree");
 
         windows.forms = addWindow(new AbstractWindow("forms", getString("logics.window.forms"), 20, 20, 80, 79));
 
@@ -606,33 +619,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         windows.status = addWindow(new AbstractWindow("status", getString("logics.window.status"), 0, 99, 100, 1));
         windows.status.titleShown = false;
 
-        // временно не показываем
-        windows.relevantForms = addWindow(new AbstractWindow("relevantForms", getString("logics.forms.relevant.forms"), 0, 70, 20, 29));
-        windows.relevantForms.visible = false;
-
-        windows.relevantClassForms = addWindow(new AbstractWindow("relevantClassForms", getString("logics.forms.relevant.class.forms"), 0, 70, 20, 29));
-        windows.relevantClassForms.visible = false;
-
         // todo : перенести во внутренний класс Navigator, как в Windows
         // Навигатор
-        root = addNavigatorElement("root", getString("logics.forms"), null);
-        root.window = windows.root;
+        root = getNavigatorElementByName("root");
 
-        administration = addNavigatorElement(root, "administration", getString("logics.administration"));
-        administration.window = windows.toolbar;
-        administration.setImage("/images/tools.png");
+        administration = getNavigatorElementByName("administration");
 
-        application = addNavigatorElement(administration, "application", getString("logics.administration.application"));
-        addFormEntity(new OptionsFormEntity(application, "options"));
-        addFormEntity(new IntegrationDataFormEntity(application, "integrationData"));
-        addFormEntity(new MigrationDataFormEntity(application, "migrationData"));
+        application = getNavigatorElementByName("application");
 
-        configuration = addNavigatorElement(administration, "configuration", getString("logics.administration.config"));
+        configuration = getNavigatorElementByName("configuration");
 
-        systemEvents = addNavigatorElement(administration, "systemEvents", getString("logics.administration.events"));
+        systemEvents = getNavigatorElementByName("systemEvents");
 
-        objects = addNavigatorElement(administration, "objects", getString("logics.object"));
-        objects.window = windows.tree;
+        objects = getNavigatorElementByName("objects");
     }
 
     public void initClassForms() {
@@ -796,52 +795,5 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
                 form.form, new ObjectEntity[]{form.object}, !oldSession);
         setEditFormActionProperties(property);
         return property;
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////
-    /// Forms
-    //////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////
-
-    private class ApplicationFormEntity extends FormEntity {
-        public ApplicationFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
-
-            ContainerView pane = design.createContainer(null, null, "pane");
-            pane.setType(ContainerType.TABBED_PANE);
-
-            pane.flex = 1;
-            pane.alignment = FlexAlignment.STRETCH;
-
-            design.mainContainer.addBefore(pane, design.formButtonContainer);
-
-            pane.add(design.createContainer(getString("logics.application.commons"), null, "commons"));
-
-            return design;
-        }
-    }
-
-    private class OptionsFormEntity extends ApplicationFormEntity {
-        private OptionsFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.application.options"));
-        }
-    }
-
-    private class IntegrationDataFormEntity extends ApplicationFormEntity {
-        private IntegrationDataFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.application.integrationData"));
-        }
-    }
-
-    private class MigrationDataFormEntity extends ApplicationFormEntity {
-        private MigrationDataFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.application.migrationData"));
-        }
     }
 }

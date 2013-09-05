@@ -2187,7 +2187,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public NavigatorElement createScriptedNavigatorElement(String name, String caption, NavigatorElement<?> parentElement, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName, String actionName, String icon) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedNavigatorElement(" + name + ", " + caption + ");");
 
-        assert name != null && caption != null && parentElement != null;
+        assert name != null && caption != null;
 
         checkDuplicateNavigatorElement(name);
 

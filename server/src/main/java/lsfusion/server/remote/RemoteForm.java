@@ -1,7 +1,6 @@
 package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
-import org.apache.log4j.Logger;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ERunnable;
 import lsfusion.base.col.ListFact;
@@ -16,13 +15,11 @@ import lsfusion.interop.Order;
 import lsfusion.interop.Scroll;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
-import lsfusion.interop.action.UpdateCurrentClassClientAction;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.FilterInstance;
@@ -35,6 +32,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -210,8 +208,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
                 groupObject.change(form.session, valueToSet, form);
 
-                updateCurrentClass = groupObject.objects.iterator().next();
-
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
                     logger.trace("   keys: ");
@@ -267,12 +263,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             public void run() throws Exception {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
                 form.changeGroupObject(groupObject, Scroll.deserialize(changeType));
-                updateCurrentClass = groupObject.objects.iterator().next();
             }
         });
     }
-
-    private ObjectInstance updateCurrentClass = null;
 
     public ServerResponse pasteExternalTable(long requestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values) throws RemoteException {
         return processPausableRMIRequest(requestIndex, new ERunnable() {
@@ -597,16 +590,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
         List<ClientAction> resultActions = new ArrayList<ClientAction>();
         resultActions.add(new ProcessFormChangesClientAction(formChanges));
-
-        if (updateCurrentClass != null) {
-            ConcreteCustomClass currentClass = form.getObjectClass(updateCurrentClass);
-            RemoteFormListener remoteFormListener = getRemoteFormListener();
-            if (currentClass != null && remoteFormListener != null && remoteFormListener.currentClassChanged(currentClass)) {
-                resultActions.add(new UpdateCurrentClassClientAction(currentClass.ID));
-            }
-
-            updateCurrentClass = null;
-        }
 
         resultActions.addAll(pendingActions);
 
