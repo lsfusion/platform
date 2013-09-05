@@ -10,10 +10,9 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.base.col.lru.MCacheMap;
 
 // дублируем HSet
-public class HMap<K, V> extends AMRevMap<K, V> implements MCacheMap<K, V> {
+public class HMap<K, V> extends AMRevMap<K, V> {
     public int size;
     public Object[] table;
     protected Object[] vtable;

@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.server.caches.hash.HashCodeValues;
 import lsfusion.server.caches.hash.HashMapValues;
 import lsfusion.server.caches.hash.HashValues;
@@ -108,10 +109,14 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
         return new BaseUtils.HashComponents<Value>(translator.translateValuesMapKeys(components.map), components.hash);
     }
     private BaseUtils.HashComponents<Value> aspectGetValueComponents() {
-        U from = getFrom();
-        MapValuesTranslate translator = getTranslator();
-        if(from!=null && translator!=null) // объект не ушел
-            return translate(from.getValueComponents(), translator);
+//        U from = getFrom();
+//        MapValuesTranslate translator = getTranslator();
+//        if(from!=null && translator!=null) // объект не ушел
+//            return translate(from.getValueComponents(), translator);
+        LRUWVWSMap.Value<MapValuesTranslate, U> fromPair = getFromValue();
+        MapValuesTranslate translator = fromPair.getLRUKey();
+        if(translator!=null)
+            return translate(fromPair.getLRUValue().getValueComponents(), translator);
 
         return calculateValueComponents();
     }

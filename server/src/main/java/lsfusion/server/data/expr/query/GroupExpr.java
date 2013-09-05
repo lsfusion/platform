@@ -14,8 +14,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.col.lru.LRUCache;
-import lsfusion.base.col.lru.MCacheMap;
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.*;
@@ -252,7 +252,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
 
     private Collection<ClassExprWhere> packNoChange = ListFact.mAddRemoveCol(); // потому как remove нужен
-    private MCacheMap<ClassExprWhere, Expr> packClassExprs = LRUCache.mSmall(LRUCache.EXP_RARE);
+    private static final LRUWSVSMap<GroupExpr, ClassExprWhere, Expr> packClassExprs = new LRUWSVSMap<GroupExpr, ClassExprWhere, Expr>(LRUUtil.L2);
 
     @ManualLazy
     @Override
@@ -291,7 +291,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 if(packed.means(packClasses, OrWhere.implicitCast)) // если более общим пакуем
                     return thisExpr;
 
-            Expr packResult = thisExpr.packClassExprs.get(packClasses);
+            Expr packResult = packClassExprs.get(thisExpr, packClasses);
             if(packResult!=null)
                 return packResult;
         }
@@ -321,7 +321,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
             Expr result = createInner(packOuterInner, packQuery, pack);
             if(thisExpr!=null)
-                thisExpr.packClassExprs.exclAdd(packClasses, result);
+                packClassExprs.put(thisExpr, packClasses, result);
             return result;
         }
     }
@@ -343,7 +343,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     private static <K> Expr create(final ImMap<K, ? extends Expr> inner, Query query, ImMap<K, ? extends Expr> outer, final PullExpr noPull) {
-        ImMap<Object, ParamExpr> pullKeys = BaseUtils.<ImSet<ParamExpr>>immutableCast(getOuterKeys(inner.values()).merge(query.getOuterKeys())).filterFn(new SFunctionSet<ParamExpr>() {
+        ImMap<Object, ParamExpr> pullKeys = BaseUtils.<ImSet<ParamExpr>>immutableCast(getOuterColKeys(inner.values()).merge(query.getOuterKeys())).filterFn(new SFunctionSet<ParamExpr>() {
             public boolean contains(ParamExpr key) {
                 return key instanceof PullExpr && !((ImMap<K,Expr>)inner).containsValue(key) && !key.equals(noPull);
             }}).mapRevKeys(new GetStaticValue<Object>() {
@@ -543,7 +543,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     protected static ImSet<KeyExpr> getKeys(Query query, ImMap<Expr, BaseExpr> group) {
-        return BaseUtils.immutableCast(getOuterKeys(group.keys()).merge(query.getOuterKeys()));
+        return BaseUtils.immutableCast(getOuterSetKeys(group.keys()).merge(query.getOuterKeys()));
     }
 
     private static <K> Where getFullWhere(Query query, ImMap<K, ? extends Expr> mapInner) {

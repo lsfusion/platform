@@ -7,7 +7,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMap;
@@ -16,7 +15,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.base.col.lru.MCacheMap;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.hash.HashCodeKeys;
 import lsfusion.server.caches.hash.HashContext;
@@ -98,13 +96,13 @@ public class AutoHintsAspect {
         public ImSet<ParamExpr> getKeys() {
             if(joinImplement==null)
                 return SetFact.EMPTY();
-            return AbstractOuterContext.getOuterKeys(joinImplement.values());
+            return AbstractOuterContext.getOuterColKeys(joinImplement.values());
         }
 
         public ImSet<Value> getValues() {
             ImSet<Value> result = usedChanges.getContextValues().merge(MapValuesIterable.getContextValues(usedPrereads));
             if(joinImplement!=null)
-                result = AbstractOuterContext.getOuterValues(joinImplement.values()).merge(result);
+                result = AbstractOuterContext.getOuterColValues(joinImplement.values()).merge(result);
             return result;
         }
 
@@ -120,12 +118,12 @@ public class AutoHintsAspect {
         }
     }
 
-    public <P extends PropertyInterface> Object callAutoHint(ProceedingJoinPoint thisJoinPoint, CalcProperty<P> property, ImMap<P, Expr> joinImplement, MCacheMap<Integer, MAddCol<MapCacheAspect.CacheResult<AutoHintImplement, Hint>>> exprCaches, Modifier modifier) throws Throwable {
+    public <P extends PropertyInterface> Object callAutoHint(ProceedingJoinPoint thisJoinPoint, CalcProperty<P> property, ImMap<P, Expr> joinImplement, Modifier modifier) throws Throwable {
         if(!Settings.get().isDisableAutoHints() && modifier instanceof SessionModifier) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
             SessionModifier sessionModifier = (SessionModifier) modifier;
 
             Result<Hint> resultHint = new Result<Hint>();
-            Object result = proceedCached(thisJoinPoint, property, joinImplement, exprCaches, sessionModifier, resultHint);
+            Object result = proceedCached(thisJoinPoint, property, joinImplement, sessionModifier, resultHint);
             if(result!=null)
                 return result;
 
@@ -147,21 +145,12 @@ public class AutoHintsAspect {
             return thisJoinPoint.proceed();
     }
 
-    private <P extends PropertyInterface> Object proceedCached(ProceedingJoinPoint thisJoinPoint, CalcProperty<P> property, ImMap<P, Expr> joinImplement, MCacheMap<Integer, MAddCol<MapCacheAspect.CacheResult<AutoHintImplement, Hint>>> exprCaches, SessionModifier sessionModifier, Result<Hint> resultHint) throws Throwable {
+    private <P extends PropertyInterface> Object proceedCached(ProceedingJoinPoint thisJoinPoint, CalcProperty<P> property, ImMap<P, Expr> joinImplement, SessionModifier sessionModifier, Result<Hint> resultHint) throws Throwable {
         if(Settings.get().isDisableAutoHintCaches())
             return proceed(thisJoinPoint, sessionModifier, resultHint);
 
         AutoHintImplement<P> implement = new AutoHintImplement<P>(property, joinImplement, sessionModifier);
-        MAddCol<MapCacheAspect.CacheResult<AutoHintImplement,Hint>> hashCaches;
-        synchronized(exprCaches) {
-            int hashImplement = implement.getInnerComponents(true).hash;
-            hashCaches = exprCaches.get(hashImplement);
-            if(hashCaches==null) {
-                hashCaches = ListFact.mAddCol();
-                exprCaches.exclAdd(hashImplement, hashCaches);
-            }
-        }
-
+        MAddCol<MapCacheAspect.CacheResult<AutoHintImplement,Hint>> hashCaches = MapCacheAspect.getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.AUTOHINT);
         synchronized(hashCaches) {
             Hint cacheHint = null;
             for(MapCacheAspect.CacheResult<AutoHintImplement,Hint> cache : hashCaches.it()) {
@@ -210,11 +199,11 @@ public class AutoHintsAspect {
 
     @Around("execution(* lsfusion.server.logics.property.CalcProperty.getExpr(lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.session.Modifier, lsfusion.server.data.where.WhereBuilder)) && target(property) && args(map, modifier, changedWhere)")
     public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, ImMap map, Modifier modifier, WhereBuilder changedWhere) throws Throwable {
-        return callAutoHint(thisJoinPoint, property, map, ((MapCacheAspect.MapPropertyInterface) property).getAutoHintCache(), modifier);
+        return callAutoHint(thisJoinPoint, property, map, modifier);
     }
     @Around("execution(* lsfusion.server.logics.property.CalcProperty.getIncrementChange(lsfusion.server.session.Modifier)) && target(property) && args(modifier)")
     public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, CalcProperty property, Modifier modifier) throws Throwable {
-        return callAutoHint(thisJoinPoint, property, null, ((MapCacheAspect.MapPropertyInterface) property).getAutoHintCache(), modifier);
+        return callAutoHint(thisJoinPoint, property, null, modifier);
     }
 
     @Around("execution(* lsfusion.server.logics.property.CalcProperty.getQuery(boolean,lsfusion.server.session.PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,*)) && target(property) && args(propClasses, propChanges, queryType, interfaceValues)")
@@ -317,7 +306,7 @@ public class AutoHintsAspect {
         }
 
         public ImSet<Value> getValues() {
-            return AbstractOuterContext.getOuterValues(values.values());
+            return AbstractOuterContext.getOuterColValues(values.values());
         }
 
         protected PrereadHint translate(MapValuesTranslate translator) {

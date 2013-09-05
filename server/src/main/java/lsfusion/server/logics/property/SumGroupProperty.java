@@ -106,7 +106,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
             Result<ImRevMap<I, KeyExpr>> mapKeys = new Result<ImRevMap<I, KeyExpr>>(); Result<ImMap<I, Expr>> mapValueKeys = new Result<ImMap<I, Expr>>();
             Where valueWhere = getGroupKeys(propertyChange, mapKeys, mapValueKeys);
 
-            PropertyChanges mapChanges = new PropertyChanges(nullImplement.property, propertyChange.map(nullImplement.mapping));
+            PropertyChanges mapChanges = new PropertyChanges(nullImplement.property, propertyChange.mapChange(nullImplement.mapping));
 
             Where nullWhere = propertyChange.getWhere(getGroupImplements(mapValueKeys.result, propChanges)).and(groupProperty.mapExpr(mapValueKeys.result, propChanges).getWhere()); // where чтобы за null'ить
             if(!nullWhere.isFalse())

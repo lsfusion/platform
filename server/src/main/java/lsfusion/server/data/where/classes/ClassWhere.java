@@ -89,7 +89,7 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         super(mapSets);
     }
 
-    public ClassExprWhere map(ImMap<K, BaseExpr> map) {
+    public ClassExprWhere mapClasses(ImMap<K, BaseExpr> map) {
         ClassExprWhere result = ClassExprWhere.FALSE;
         for(And<K> andWhere : wheres) {
             ClassExprWhere joinWhere = ClassExprWhere.TRUE;

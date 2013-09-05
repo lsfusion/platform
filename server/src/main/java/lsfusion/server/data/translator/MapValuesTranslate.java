@@ -20,7 +20,7 @@ public interface MapValuesTranslate extends MapObject {
 
     MapValuesTranslate filter(ImSet<? extends Value> values);
 
-    MapValuesTranslate map(MapValuesTranslate map);
+    MapValuesTranslate mapTrans(MapValuesTranslate map);
 
     <K,U extends ValuesContext<U>> ImMap<K, U> translateValues(ImMap<K, U> map);
     <K1,U1 extends ValuesContext<U1>,K2,U2 extends ValuesContext<U2>> ImMap<ImMap<K1,U1>,ImMap<K2,U2>> translateMapKeyValues(ImMap<ImMap<K1,U1>,ImMap<K2,U2>> map);

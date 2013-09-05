@@ -614,7 +614,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return new GroupJoinsWheres(Join.this, this, noWhere);
             }
             public ClassExprWhere calculateClassWhere() {
-                return classes.map(joins).and(getJoinsWhere().getClassWhere());
+                return classes.mapClasses(joins).and(getJoinsWhere().getClassWhere());
             }
 
             public boolean twins(TwinImmutableObject o) {
@@ -693,7 +693,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 }
 
                 public ClassExprWhere calculateClassWhere() {
-                    return propertyClasses.get(property).map(MapFact.addExcl(joins, property, Expr.this)).and(Join.this.getJoinsWhere().getClassWhere());
+                    return propertyClasses.get(property).mapClasses(MapFact.addExcl(joins, property, Expr.this)).and(Join.this.getJoinsWhere().getClassWhere());
                 }
             }
 

@@ -3,9 +3,6 @@ package lsfusion.server.data.translator;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.col.lru.LRUCache;
-import lsfusion.base.col.lru.MCacheMap;
-import lsfusion.server.caches.AbstractTranslateContext;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.TranslateContext;
@@ -117,12 +114,4 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
             }});
     }
 
-    private final MCacheMap<AbstractTranslateContext, AbstractTranslateContext> caches = LRUCache.mSmall(LRUCache.EXP_QUICK);
-
-    public AbstractTranslateContext aspectGetCache(AbstractTranslateContext context) {
-        return caches.get(context);
-    }
-    public void aspectSetCache(AbstractTranslateContext context, AbstractTranslateContext result) {
-        caches.exclAdd(context, result);
-    }
 }

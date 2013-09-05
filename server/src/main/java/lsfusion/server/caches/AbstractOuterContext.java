@@ -12,11 +12,11 @@ import lsfusion.server.data.translator.MapTranslate;
 public abstract class AbstractOuterContext<T extends OuterContext<T>> extends AbstractKeysValuesContext<T> implements OuterContext<T> {
 
     public static ImSet<ParamExpr> getOuterKeys(OuterContext<?> context) {
-        return getOuterKeys(context.getOuterDepends());
+        return getOuterSetKeys(context.getOuterDepends());
     }
 
     public static ImSet<Value> getOuterValues(OuterContext<?> context) {
-        return getOuterValues(context.getOuterDepends());
+        return getOuterColValues(context.getOuterDepends());
     }
 
     public static ImSet<StaticValueExpr> getOuterStaticValues(OuterContext<?> context) {
@@ -30,21 +30,21 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
         return complexity;
     }
 
-    public static ImSet<ParamExpr> getOuterKeys(ImCol<? extends OuterContext> array) {
+    public static ImSet<ParamExpr> getOuterColKeys(ImCol<? extends OuterContext> array) {
         MSet<ParamExpr> mResult = SetFact.mSet();
         for(OuterContext<?> element : array)
             mResult.addAll(element.getOuterKeys());
         return mResult.immutable();
     }
 
-    public static ImSet<ParamExpr> getOuterKeys(ImSet<? extends OuterContext> array) {
+    public static ImSet<ParamExpr> getOuterSetKeys(ImSet<? extends OuterContext> array) {
         MSet<ParamExpr> mResult = SetFact.mSet();
         for(int i=0,size=array.size();i<size;i++)
             mResult.addAll(array.get(i).getOuterKeys());
         return mResult.immutable();
     }
 
-    public static ImSet<Value> getOuterValues(ImCol<? extends OuterContext> set) {
+    public static ImSet<Value> getOuterColValues(ImCol<? extends OuterContext> set) {
         MSet<Value> mResult = SetFact.mSet();
         for(int i=0,size=set.size();i<size;i++)
             mResult.addAll(set.get(i).getOuterValues());

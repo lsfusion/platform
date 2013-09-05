@@ -78,7 +78,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
 
     public ImSet<CalcProperty> getChangedProps(ImSet<CustomClass> add, ImSet<CustomClass> remove, ImSet<ConcreteObjectClass> old, ImSet<ConcreteObjectClass> newc, ImSet<DataProperty> data) {
-        return SetFact.<CalcProperty>addExcl(getClassChanges(add, remove, old, newc), data);
+        return SetFact.<CalcProperty>addExclSet(getClassChanges(add, remove, old, newc), data);
     }
     public ImSet<CalcProperty> getChangedProps() {
         return getChangedProps(SetFact.fromJavaSet(add), SetFact.fromJavaSet(remove), SetFact.fromJavaSet(usedOldClasses), SetFact.fromJavaSet(usedNewClasses), SetFact.fromJavaSet(data.keySet()));

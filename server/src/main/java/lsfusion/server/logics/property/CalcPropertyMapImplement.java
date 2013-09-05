@@ -33,7 +33,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     }
 
     public DataChanges mapDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        return property.getDataChanges(change.map(mapping), propChanges, changedWhere);
+        return property.getDataChanges(change.mapChange(mapping), propChanges, changedWhere);
     }
 
     public CalcPropertyMapImplement<P, T> mapOld(PrevScope event) {
@@ -61,7 +61,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     }
 
     public void change(ExecutionEnvironment env, PropertyChange<T> change) throws SQLException {
-        env.change(property, change.map(mapping));
+        env.change(property, change.mapChange(mapping));
     }
 
     public ImMap<T,ValueClass> mapInterfaceClasses(ClassType type) {

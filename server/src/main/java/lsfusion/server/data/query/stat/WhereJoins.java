@@ -365,7 +365,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             reduced.remove(it);
 
             Result<ImMap<InnerJoin, Where>> reduceFollowUpWheres = new Result<ImMap<InnerJoin, Where>>();
-            for(InnerJoin joinFollow : reduceJoin.getJoinFollows(reduceFollowUpWheres, null)) { // пытаемся заменить reduceJoin, на его joinFollows
+            for(InnerJoin joinFollow : reduceJoin.getJoinFollows(reduceFollowUpWheres, null).it()) { // пытаемся заменить reduceJoin, на его joinFollows
                 boolean found = false;
                 for(WhereJoin andJoin : reduced)
                     if(containsAll(andJoin, joinFollow)) {
@@ -470,7 +470,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 
 
     public Where getPartitionPushWhere(ImMap<KeyExpr, BaseExpr> joinMap, ImSet<Expr> partitions, ImMap<WhereJoin, Where> upWheres, QueryJoin<KeyExpr, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
-        joinMap = joinMap.filterIncl(BaseUtils.<ImSet<KeyExpr>>immutableCast(AbstractOuterContext.getOuterKeys(partitions))); // так как в partitions могут быть не все ключи, то в явную добавим условия на не null для таких ключей
+        joinMap = joinMap.filterIncl(BaseUtils.<ImSet<KeyExpr>>immutableCast(AbstractOuterContext.getOuterSetKeys(partitions))); // так как в partitions могут быть не все ключи, то в явную добавим условия на не null для таких ключей
         Where pushWhere = getPushWhere(joinMap, upWheres, skipJoin, keyStat, currentStat, currentJoinStat);
         if(pushWhere!=null) {
             ImMap<Expr, Expr> partMap = partitions.toMap();

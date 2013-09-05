@@ -130,7 +130,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     }
 
     public Where calculateOrWhere() {
-        return getInner().getFullWhere().map(group); //query.type.canBeNull() ? Where.TRUE : getInner().getFullWhere().map(group);
+        return getInner().getFullWhere().mapWhere(group); //query.type.canBeNull() ? Where.TRUE : getInner().getFullWhere().map(group);
     }
 
     public Where calculateNotNullWhere() {
@@ -183,7 +183,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     }
 
     public static Expr create(final PartitionType partitionType, final ImList<Expr> exprs, final ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, final ImSet<? extends Expr> partitions, final ImMap<KeyExpr, ? extends Expr> group, final PullExpr noPull) {
-        ImMap<KeyExpr, KeyExpr> pullKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterKeys(exprs.getCol()).merge(getOuterKeys(orders.keys())).merge(getOuterKeys(partitions))).filterFn(new SFunctionSet<KeyExpr>() {
+        ImMap<KeyExpr, KeyExpr> pullKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterColKeys(exprs.getCol()).merge(getOuterSetKeys(orders.keys())).merge(getOuterSetKeys(partitions))).filterFn(new SFunctionSet<KeyExpr>() {
             public boolean contains(KeyExpr key) {
                 return key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull);
             }}).toMap();

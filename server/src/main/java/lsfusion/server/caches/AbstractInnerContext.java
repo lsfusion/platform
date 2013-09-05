@@ -3,6 +3,7 @@ package lsfusion.server.caches;
 import lsfusion.base.*;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.server.caches.hash.*;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.translator.MapTranslate;
@@ -65,10 +66,17 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         return new BaseUtils.HashComponents<ParamExpr>(translator.translateExprKeys(components.map), components.hash);
     }
     private BaseUtils.HashComponents<ParamExpr> aspectGetInnerComponents(boolean values) {
-        I from = getFrom();
-        MapTranslate translator = getTranslator();
-        if(from!=null && translator!=null && (values || translator.identityValues(from.getInnerValues()))) // объект не ушел
-            return translate(from.getInnerComponents(values), translator);
+//        I from = getFrom();
+//        MapTranslate translator = getTranslator();
+//        if(from!=null && translator!=null && (values || translator.identityValues(from.getInnerValues()))) // объект не ушел
+//            return translate(from.getInnerComponents(values), translator);
+        LRUWVWSMap.Value<MapTranslate, I> fromPair = getFromValue();
+        MapTranslate translator = fromPair.getLRUKey();
+        if(translator!=null) {
+            I from = fromPair.getLRUValue();
+            if(values || translator.identityValues(from.getInnerValues()))
+                return translate(from.getInnerComponents(values), translator);
+        }
 
         return calculateInnerComponents(values);
     }
@@ -114,10 +122,14 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         return new BaseUtils.HashComponents<Value>(translator.translateValuesMapKeys(components.map), components.hash);
     }
     private BaseUtils.HashComponents<Value> aspectGetValueComponents() {
-        I from = getFrom();
-        MapTranslate translator = getTranslator();
-        if(from!=null && translator!=null) // объект не ушел
-            return translate(translator, from.getValueComponents());
+//        I from = getFrom();
+//        MapTranslate translator = getTranslator();
+//        if(from!=null && translator!=null) // объект не ушел
+//            return translate(translator, from.getValueComponents());
+        LRUWVWSMap.Value<MapTranslate, I> fromPair = getFromValue();
+        MapTranslate translator = fromPair.getLRUKey();
+        if(translator!=null)
+            return translate(translator, fromPair.getLRUValue().getValueComponents());
 
         return calculateValueComponents();
     }

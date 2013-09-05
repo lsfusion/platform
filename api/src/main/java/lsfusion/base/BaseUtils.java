@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import java.awt.*;
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
@@ -933,6 +934,7 @@ public class BaseUtils {
 
         return true;
     }
+
 
     public static <T> int hashSet(T[] array) {
         int hash = 0;
@@ -2108,6 +2110,10 @@ public class BaseUtils {
 
     public static long max(long a, long b) {
         return a > b ? a : b;
+    }
+
+    public static double min(double a, double b) {
+        return a > b ? b : a;
     }
 
     public static List<Integer> consecutiveList(int i, int is) {

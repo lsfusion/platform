@@ -18,7 +18,6 @@ import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.expr.query.QueryJoin;
 import lsfusion.server.data.query.ExprEnumerator;
@@ -38,7 +37,7 @@ public class UnionJoin extends CalculateJoin<Integer> {
 
     @IdentityLazy
     public ImSet<ParamExpr> getLostKeys() {
-        return AbstractOuterContext.getOuterKeys(exprs).removeIncl(AbstractOuterContext.getOuterKeys(getJoins().values()));
+        return AbstractOuterContext.getOuterSetKeys(exprs).removeIncl(AbstractOuterContext.getOuterColKeys(getJoins().values()));
     }
 
     @IdentityLazy

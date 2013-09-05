@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
@@ -101,6 +102,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        LRUUtil.initLRUTuner();
     }
 
     @Override

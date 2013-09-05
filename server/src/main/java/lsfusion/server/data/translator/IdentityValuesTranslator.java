@@ -41,7 +41,7 @@ public class IdentityValuesTranslator extends MapValuesTranslator {
         return true;
     }
 
-    public MapValuesTranslate map(MapValuesTranslate map) {
+    public MapValuesTranslate mapTrans(MapValuesTranslate map) {
         return map;
     }
 

@@ -81,7 +81,7 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
         }
 
         public ImSet<lsfusion.server.caches.OuterContext> calculateOuterDepends() {
-            return SetFact.<lsfusion.server.caches.OuterContext>merge(keys(), BaseUtils.<ImSet<OuterContext>>immutableCast(values().toSet()));
+            return SetFact.<lsfusion.server.caches.OuterContext>mergeSet(keys(), BaseUtils.<ImSet<OuterContext>>immutableCast(values().toSet()));
         }
 
         public MeanClassWheres getThis() {

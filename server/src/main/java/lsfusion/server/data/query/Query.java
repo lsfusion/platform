@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.server.Message;
 import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
@@ -51,12 +52,9 @@ public class Query<K,V> extends IQuery<K,V> {
         this(KeyExpr.getMapKeys(keys));
     }
 
-    private ImMap<K, DataObject> mapValues;
-
     public Query(ImRevMap<K,KeyExpr> mapKeys, Where where, ImMap<K, DataObject> mapValues, ImMap<V, Expr> properties) {
         this(mapKeys, properties, where.and(CompareWhere.compareValues(mapKeys.filterInclRev(mapValues.keys()), mapValues)));
 
-        this.mapValues = mapValues;
         assert mapKeys.keys().containsAll(mapValues.keys());
     }
 
@@ -111,7 +109,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public ImSet<Value> getValues() {
-        return AbstractOuterContext.getOuterValues(properties.values()).merge(where.getOuterValues());
+        return AbstractOuterContext.getOuterColValues(properties.values()).merge(where.getOuterValues());
     }
 
     public ImSet<StaticValueExpr> getInnerStaticValues() { // можно было бы вынести в общий интерфейс InnerContext, но нужен только для компиляции запросов
@@ -547,19 +545,35 @@ public class Query<K,V> extends IQuery<K,V> {
     }
     public static class MultiParamsContext<K,V> extends AbstractInnerContext<MultiParamsContext<?,?>> {
 
-        public MultiParamsContext<?, ?> getFrom() {
-            super.getFrom();
+//        public MultiParamsContext<?, ?> getFrom() {
+//            super.getFrom();
+//
+//            Query<K, V> from = (Query<K, V>) thisObj.getFrom();
+//            if(from!=null)
+//                return from.getMultiParamsContext();
+//            return null;
+//        }
+//
+//        public MapTranslate getTranslator() {
+//            super.getTranslator();
+//
+//            return thisObj.getTranslator();
+//        }
+        
+        
+        public LRUWVWSMap.Value<MapTranslate, MultiParamsContext<?, ?>> getFromValue() {
+            final LRUWVWSMap.Value<MapTranslate, Query<K, V>> from = BaseUtils.immutableCast(thisObj.getFromValue());
+            return new LRUWVWSMap.Value<MapTranslate, MultiParamsContext<?, ?>>() {
+                @Override
+                public MapTranslate getLRUKey() {
+                    return from.getLRUKey();
+                }
 
-            Query<K, V> from = (Query<K, V>) thisObj.getFrom();
-            if(from!=null)
-                return from.getMultiParamsContext();
-            return null;
-        }
-
-        public MapTranslate getTranslator() {
-            super.getTranslator();
-
-            return thisObj.getTranslator();
+                @Override
+                public MultiParamsContext<?, ?> getLRUValue() {
+                    return from.getLRUValue().getMultiParamsContext();
+                }
+            };
         }
 
         private final Query<K,V> thisObj;

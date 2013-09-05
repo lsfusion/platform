@@ -1,8 +1,6 @@
 package lsfusion.server.data.translator;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -10,11 +8,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.TranslateValues;
 import lsfusion.server.caches.ValuesContext;
-import lsfusion.server.caches.hash.HashCodeValues;
-import lsfusion.server.caches.hash.HashTranslateValues;
-import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.data.Value;
-import lsfusion.server.data.expr.ValueExpr;
 
 import java.util.Map;
 
@@ -117,7 +111,7 @@ public abstract class MapValuesTranslator extends AbstractMapTranslator implemen
     }
 
     public MapTranslate mapValues(MapValuesTranslate translate) {
-        return map(translate).mapKeys();
+        return mapTrans(translate).mapKeys();
     }
 
     public MapTranslate filterValues(ImSet<? extends Value> values) {

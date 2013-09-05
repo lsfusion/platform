@@ -134,7 +134,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         }
 
         public ImSet<ParamExpr> getKeys() {
-            return getOuterKeys(thisObj.group.keys()).merge(thisObj.query.getOuterKeys());
+            return getOuterSetKeys(thisObj.group.keys()).merge(thisObj.query.getOuterKeys());
         }
 
         public ImSet<KeyExpr> getQueryKeys() {
@@ -142,7 +142,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         }
 
         public ImSet<Value> getValues() {
-            return getOuterValues(thisObj.group.keys()).merge(thisObj.query.getOuterValues());
+            return getOuterColValues(thisObj.group.keys()).merge(thisObj.query.getOuterValues());
         }
 
         public ImSet<StaticValueExpr> getInnerStaticValues() { // можно было бы вынести в общий интерфейс InnerContext, но нужен только для компиляции запросов

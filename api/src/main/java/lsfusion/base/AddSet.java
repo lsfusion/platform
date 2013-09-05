@@ -2,9 +2,27 @@ package lsfusion.base;
 
 import java.util.Iterator;
 
-public abstract class AddSet<T,This extends AddSet<T,This>> extends TwinImmutableObject implements Iterable<T> {
+public abstract class AddSet<T,This extends AddSet<T,This>> extends TwinImmutableObject {
 
-    @Override
+    public Iterable<T> it() {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    int i=0;
+                    public boolean hasNext() {
+                        return i<wheres.length;
+                    }
+                    public T next() {
+                        return wheres[i++];
+                    }
+                    public void remove() {
+                        throw new RuntimeException("not supported");
+                    }
+                };
+            }
+        };
+    }
+/*    @Override
     public Iterator<T> iterator() {
         return new Iterator<T>() {
             int i=0;
@@ -18,7 +36,7 @@ public abstract class AddSet<T,This extends AddSet<T,This>> extends TwinImmutabl
                 throw new RuntimeException("not supported");
             }
         };
-    }
+    }*/
 
     protected final T[] wheres;
 

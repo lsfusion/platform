@@ -1053,7 +1053,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         FormEntity.ComponentSet containers = entity.getDrawTabContainers(group.entity);
         if (containers == null) // cheat / оптимизация, иначе пришлось бы в isHidden и еще в нескольких местах явную проверку на null
             return false;
-        for (ComponentView component : containers)
+        for (ComponentView component : containers.it())
             if (!isHidden(component))
                 return false;
         return true;

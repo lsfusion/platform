@@ -106,7 +106,7 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
     @Override
     protected DataChanges calculateDataChanges(PropertyChange<Interface<P>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         ImRevMap<P, Interface<P>> mapInterfaces = getMapInterfaces();
-        PropertyChange<P> mapChange = change.map(mapInterfaces);
+        PropertyChange<P> mapChange = change.mapChange(mapInterfaces);
         ImMap<P, Expr> mapExprs = mapChange.getMapExprs();
 
         Where reverseWhere = reverse.mapExpr(mapExprs, propChanges).getWhere();

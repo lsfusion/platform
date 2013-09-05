@@ -41,7 +41,7 @@ public class RemapValuesTranslator extends MapValuesTranslator {
         return mapValues.filterInclRev(values).identity();
     }
 
-    public MapValuesTranslate map(MapValuesTranslate map) {
+    public MapValuesTranslate mapTrans(MapValuesTranslate map) {
         return new RemapValuesTranslator(map.translateMapValues(mapValues));
     }
 

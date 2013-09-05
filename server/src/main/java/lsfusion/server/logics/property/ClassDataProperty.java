@@ -50,7 +50,7 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
         return (Table.Join.Expr) getStoredExpr(MapFact.singleton(interfaces.single(), expr));
     }
 
-    public ObjectValueClassSet getSet() {
+    public ObjectValueClassSet getObjectSet() {
         return set;
     }
 

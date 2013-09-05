@@ -105,7 +105,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     Where translateOuter(MapTranslate translator);
 
-    Where map(ImMap<KeyExpr, ? extends Expr> map);
+    Where mapWhere(ImMap<KeyExpr, ? extends Expr> map);
 
     Where getKeepWhere(KeyExpr expr);
 

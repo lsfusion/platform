@@ -11,8 +11,8 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.col.lru.LRUCache;
-import lsfusion.base.col.lru.MCacheMap;
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.interop.Data;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
@@ -143,24 +143,23 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return result.immutable();
     }
 
-    private final MCacheMap<CustomClass,ImSet<CustomClass>> cacheChilds = LRUCache.mSmall(LRUCache.EXP_RARE);
+    private final static LRUWSVSMap<CustomClass, CustomClass, ImSet<CustomClass>> cacheChilds = new LRUWSVSMap<CustomClass, CustomClass, ImSet<CustomClass>>(LRUUtil.G2);
 
     // получает классы у которого есть оба интерфейса
     public ImSet<CustomClass> commonChilds(CustomClass toCommon) {
         ImSet<CustomClass> result;
-        synchronized (cacheChilds) {
-            result = cacheChilds.get(toCommon);
-            if(result!=null) return result;
+        
+        result = cacheChilds.get(this, toCommon);
+        if(result!=null) return result;
 
-            commonClassSet1(false);
-            toCommon.commonClassSet2(false,null,false);
+        commonClassSet1(false);
+        toCommon.commonClassSet2(false,null,false);
 
-            MSet<CustomClass> mResult = SetFact.mSet();
-            commonClassSet3(mResult,null,false);
-            result = mResult.immutable();
+        MSet<CustomClass> mResult = SetFact.mSet();
+        commonClassSet3(mResult,null,false);
+        result = mResult.immutable();
 
-            cacheChilds.exclAdd(toCommon, result);
-        }
+        cacheChilds.put(this, toCommon, result);
         return result;
     }
 
@@ -480,7 +479,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public static ImSet<CalcProperty<ClassPropertyInterface>> getProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses) {
-        return SetFact.addExcl(getProperties(addClasses.merge(removeClasses)), getDataProperties(BaseUtils.<ImSet<ConcreteCustomClass>>immutableCast(oldClasses.merge(newClasses).filterFn(new SFunctionSet<ConcreteObjectClass>() {
+        return SetFact.addExclSet(getProperties(addClasses.merge(removeClasses)), getDataProperties(BaseUtils.<ImSet<ConcreteCustomClass>>immutableCast(oldClasses.merge(newClasses).filterFn(new SFunctionSet<ConcreteObjectClass>() {
             public boolean contains(ConcreteObjectClass element) {
                 return element instanceof ConcreteCustomClass;
             }

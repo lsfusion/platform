@@ -1,6 +1,5 @@
 package lsfusion.server.classes;
 
-import lsfusion.server.data.GlobalTable;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.logics.table.ImplementTable;
@@ -207,7 +206,7 @@ public class BaseClass extends AbstractCustomClass {
     public ObjectValueClassSet getSet(ImSet<ClassField> classTables) {
         ObjectValueClassSet set = OrObjectClassSet.FALSE;
         for(ClassField classTable : classTables)
-            set = (ObjectValueClassSet) set.or(classTable.getSet());
+            set = (ObjectValueClassSet) set.or(classTable.getObjectSet());
         return set;
     }
     @IdentityLazy

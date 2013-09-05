@@ -146,7 +146,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     }
 
     public ImSet<Value> getValues() {
-        return expr.getOuterValues().merge(where.getOuterValues()).merge(AbstractOuterContext.getOuterValues(DataObject.getMapExprs(mapValues).values()));
+        return expr.getOuterValues().merge(where.getOuterValues()).merge(AbstractOuterContext.getOuterColValues(DataObject.getMapExprs(mapValues).values()));
     }
 
     public PropertyChange<T> and(Where andWhere) {
@@ -156,7 +156,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return new PropertyChange<T>(mapValues, mapKeys, expr, where.and(andWhere));
     }
 
-    public <P extends PropertyInterface> PropertyChange<P> map(ImRevMap<P,T> mapping) {
+    public <P extends PropertyInterface> PropertyChange<P> mapChange(ImRevMap<P, T> mapping) {
         return new PropertyChange<P>(mapping.rightJoin(mapValues), mapping.rightJoin(mapKeys),expr,where);
     }
 

@@ -1,6 +1,8 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWSSVSMap;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.translator.RemapValuesTranslator;
 import lsfusion.server.logics.table.ImplementTable;
@@ -8,7 +10,6 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.DeclareParents;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.ListFact;
@@ -17,15 +18,12 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
-import lsfusion.base.col.lru.LRUCache;
-import lsfusion.base.col.lru.MCacheMap;
 import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashCodeKeys;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
@@ -62,12 +60,12 @@ public class MapCacheAspect {
         }
 
         public ImSet<ParamExpr> getKeys() {
-            return AbstractOuterContext.getOuterKeys(exprs.values());
+            return AbstractOuterContext.getOuterColKeys(exprs.values());
         }
 
         public ImSet<Value> getValues() {
             // нельзя из values так как вообще не его контекст
-            return AbstractOuterContext.getOuterValues(exprs.values()).merge(mapValues.getValues());
+            return AbstractOuterContext.getOuterColValues(exprs.values()).merge(mapValues.getValues());
         }
 
         protected boolean isComplex() {
@@ -78,29 +76,34 @@ public class MapCacheAspect {
         }
 
         protected JoinImplement<K> translate(MapTranslate translate) {
-            return new JoinImplement<K>(translate.translate(exprs), mapValues.map(translate.mapValues()));
+            return new JoinImplement<K>(translate.translate(exprs), mapValues.mapTrans(translate.mapValues()));
         }
 
         public boolean equalsInner(JoinImplement<K> object) {
             return BaseUtils.hashEquals(exprs,object.exprs) && BaseUtils.hashEquals(mapValues,object.mapValues);
         }
     }
+    
+    public static enum Type {
+        JOIN, DATACHANGES, QUERY, JOINEXPR, INCCHANGE, READSAVE, AUTOHINT
+    }
+    private static LRUWSSVSMap<Object, Integer, Type, MAddCol<CacheResult>> mapCaches = new LRUWSSVSMap<Object, Integer, Type, MAddCol<CacheResult>>(LRUUtil.G2);
+    public static <K extends ValuesContext, V extends TranslateValues> MAddCol<CacheResult<K, V>> getCachedCol(Object object, Integer mapParamHash, Type type) {
+        MAddCol<CacheResult> cacheCol = mapCaches.get(object, mapParamHash, type);
+        if(cacheCol == null) {
+            cacheCol = ListFact.mAddCol();
+            mapCaches.put(object, mapParamHash, type, cacheCol);                    
+        }
+        return (MAddCol)cacheCol;            
+    }
 
-    private <K,V> Join<V> join(Query<K,V> query, ImMap<K, ? extends Expr> joinExprs, MapValuesTranslate joinValues, final MCacheMap<Integer, MAddCol<CacheResult<JoinImplement<K>, Join<V>>>> joinCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    private <K,V> Join<V> join(Query<K, V> query, ImMap<K, ? extends Expr> joinExprs, MapValuesTranslate joinValues, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 //        assert BaseUtils.onlyObjects(joinExprs.keySet()); он вообщем то не нужен, так как hashCaches хранится для Query, а он уже хранит K
         assert ((QueryCacheAspect.QueryCacheInterface)query).getCacheTwin() == query;
 
         JoinImplement<K> joinImplement = new JoinImplement<K>(joinExprs,joinValues);
 
-        MAddCol<CacheResult<JoinImplement<K>, Join<V>>> hashCaches;
-        synchronized(joinCaches) {
-            int hashImplement = joinImplement.getInnerComponents(true).hash;
-            hashCaches = joinCaches.get(hashImplement);
-            if(hashCaches==null) {
-                hashCaches = ListFact.mAddCol();
-                joinCaches.exclAdd(hashImplement, hashCaches);
-            }
-        }
+        MAddCol<CacheResult<JoinImplement<K>, Join<V>>> hashCaches = getCachedCol(query, joinImplement.getInnerComponents(true).hash, Type.JOIN);
         synchronized(hashCaches) {
             for(CacheResult<JoinImplement<K>, Join<V>> cache : hashCaches.it()) {
                 MapTranslate translator;
@@ -134,54 +137,8 @@ public class MapCacheAspect {
 
     @Around("execution(lsfusion.server.data.query.Join lsfusion.server.data.query.Query.joinExprs(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.data.translator.MapValuesTranslate)) && target(query) && args(joinExprs,mapValues)")
     public Object callJoin(ProceedingJoinPoint thisJoinPoint, Query query, ImMap joinExprs, MapValuesTranslate mapValues) throws Throwable {
-        return join(query, joinExprs, mapValues, ((QueryCacheAspect.QueryCacheInterface) query).getJoinCache(), thisJoinPoint);
+        return join(query, joinExprs, mapValues, thisJoinPoint);
     }
-
-    public interface MapPropertyInterface {
-        MCacheMap getExprCache();
-        MCacheMap getJoinExprCache();
-        MCacheMap getDataChangesCache();
-        MCacheMap getIncChangeCache();
-        MCacheMap getAutoHintCache();
-    }
-    public static class MapPropertyInterfaceImplement implements MapPropertyInterface {
-        private MCacheMap<Integer,MAddCol<CacheResult<JoinExprInterfaceImplement,Query>>> exprCache;
-        public MCacheMap getExprCache() {
-            if(exprCache==null)
-                exprCache = LRUCache.mSmall(LRUCache.EXP_RARE);
-            return exprCache;
-        }
-
-        private MCacheMap<Integer,MAddCol<CacheResult<QueryInterfaceImplement,Query>>> joinExprCache;
-        public MCacheMap getJoinExprCache() {
-            if(joinExprCache==null)
-                joinExprCache = LRUCache.mSmall(LRUCache.EXP_RARE);
-            return joinExprCache;
-        }
-
-        private MCacheMap<Integer,MAddCol<CacheResult<DataChangesInterfaceImplement,DataChangesResult>>> dataChangesCache;
-        public MCacheMap getDataChangesCache() {
-            if(dataChangesCache==null)
-                dataChangesCache = LRUCache.mSmall(LRUCache.EXP_RARE);
-            return dataChangesCache;
-        }
-
-        private MCacheMap<Integer,MAddCol<CacheResult<PropertyChanges, PropertyChange>>> incChangeCache;
-        public MCacheMap getIncChangeCache() {
-            if(incChangeCache==null)
-                incChangeCache = LRUCache.mSmall(LRUCache.EXP_RARE);
-            return incChangeCache;
-        }
-
-        private MCacheMap<Integer,MAddCol<CacheResult<PropertyChanges, PropertyChange>>> autoHintCache;
-        public MCacheMap getAutoHintCache() {
-            if(autoHintCache==null)
-                autoHintCache = LRUCache.mSmall(LRUCache.EXP_RARE);
-            return autoHintCache;
-        }
-    }
-    @DeclareParents(value="lsfusion.server.logics.property.CalcProperty",defaultImpl= MapPropertyInterfaceImplement.class)
-    private MapPropertyInterface mapPropertyInterface;
 
     public static boolean checkCaches = false;
 
@@ -266,20 +223,11 @@ public class MapCacheAspect {
         }
     }
 
-    public <K extends PropertyInterface> DataChanges getDataChanges(CalcProperty<K> property, PropertyChange<K> change, WhereBuilder changedWheres, PropertyChanges propChanges, MCacheMap<Integer,MAddCol<CacheResult<DataChangesInterfaceImplement,DataChangesResult>>> dataChangesCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> DataChanges getDataChanges(CalcProperty<K> property, PropertyChange<K> change, WhereBuilder changedWheres, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         DataChangesInterfaceImplement<K> implement = new DataChangesInterfaceImplement<K>(property,change,propChanges,changedWheres!=null);
 
-        MAddCol<CacheResult<DataChangesInterfaceImplement, DataChangesResult>> hashCaches;
-        synchronized(dataChangesCaches) {
-            int hashImplement = implement.getInnerComponents(true).hash;
-            hashCaches = dataChangesCaches.get(hashImplement);
-            if(hashCaches==null) {
-                hashCaches = ListFact.mAddCol();
-                dataChangesCaches.exclAdd(hashImplement, hashCaches);
-            }
-        }
-
+        MAddCol<CacheResult<DataChangesInterfaceImplement, DataChangesResult>> hashCaches = getCachedCol(property, implement.getInnerComponents(true).hash, Type.DATACHANGES);
         synchronized(hashCaches) {
             for(CacheResult<DataChangesInterfaceImplement, DataChangesResult> cache : hashCaches.it()) {
                 MapTranslate translator;
@@ -316,7 +264,7 @@ public class MapCacheAspect {
             "&& target(property) && args(change,propChanges,changedWhere)")
     public Object callGetDataChanges(ProceedingJoinPoint thisJoinPoint, CalcProperty property, PropertyChange change, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
-        return getDataChanges(property, change, changedWhere, propChanges, ((MapPropertyInterface)property).getDataChangesCache(), thisJoinPoint);
+        return getDataChanges(property, change, changedWhere, propChanges, thisJoinPoint);
     }
 
     public static class QueryInterfaceImplement<K extends PropertyInterface> extends AbstractValuesContext<QueryInterfaceImplement<K>> {
@@ -348,7 +296,7 @@ public class MapCacheAspect {
         }
 
         public ImSet<Value> getValues() {
-            return AbstractOuterContext.getOuterValues(values.values()).merge(usedChanges.getContextValues());
+            return AbstractOuterContext.getOuterColValues(values.values()).merge(usedChanges.getContextValues());
         }
 
         QueryInterfaceImplement(QueryInterfaceImplement<K> implement, MapValuesTranslate translator) {
@@ -363,7 +311,7 @@ public class MapCacheAspect {
         }
     }
 
-    public <K extends PropertyInterface> IQuery<K, String> getQuery(CalcProperty<K> property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<K, ? extends Expr> interfaceValues, MCacheMap<Integer, MAddCol<CacheResult<QueryInterfaceImplement<K>, ValuesContext>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> IQuery<K, String> getQuery(CalcProperty<K> property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<K, ? extends Expr> interfaceValues, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         // assert что в interfaceValues только values
 
         if(disableCaches)
@@ -373,18 +321,9 @@ public class MapCacheAspect {
 
         QueryInterfaceImplement<K> implement = new QueryInterfaceImplement<K>(property,propClasses,propChanges,queryType,interfaceValues);
 
-        MAddCol<CacheResult<QueryInterfaceImplement<K>, ValuesContext>> hashCaches;
-        synchronized(exprCaches) {
-            int hashImplement = implement.getValueComponents().hash;
-            hashCaches = exprCaches.get(hashImplement);
-            if(hashCaches==null) {
-                hashCaches = ListFact.mAddCol();
-                exprCaches.exclAdd(hashImplement, hashCaches);
-            }
-        }
-
         ValuesContext query = null;
         ValuesContext cacheQuery = null;
+        MAddCol<CacheResult<QueryInterfaceImplement<K>, ValuesContext>> hashCaches = getCachedCol(property, implement.getValueComponents().hash, Type.QUERY);
         synchronized(hashCaches) {
             for(CacheResult<QueryInterfaceImplement<K>, ValuesContext> cache : hashCaches.it()) {
                 for(MapValuesTranslate mapValues : new MapValuesIterable(cache.implement, implement)) {
@@ -421,7 +360,7 @@ public class MapCacheAspect {
             "&& target(property) && args(propClasses,propChanges,queryType,interfaceValues)")
     public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, ImMap interfaceValues) throws Throwable {
         // сначала target в аспекте должен быть
-        return getQuery(property, propClasses, propChanges, queryType, interfaceValues, ((MapPropertyInterface) property).getJoinExprCache(), thisJoinPoint);
+        return getQuery(property, propClasses, propChanges, queryType, interfaceValues, thisJoinPoint);
     }
 
     public static class JoinExprInterfaceImplement<P extends PropertyInterface> extends AbstractInnerContext<JoinExprInterfaceImplement<P>> {
@@ -449,11 +388,11 @@ public class MapCacheAspect {
         }
 
         public ImSet<ParamExpr> getKeys() {
-            return AbstractOuterContext.getOuterKeys(joinImplement.values());
+            return AbstractOuterContext.getOuterColKeys(joinImplement.values());
         }
 
         public ImSet<Value> getValues() {
-            return AbstractOuterContext.getOuterValues(joinImplement.values()).merge(usedChanges.getContextValues());
+            return AbstractOuterContext.getOuterColValues(joinImplement.values()).merge(usedChanges.getContextValues());
         }
 
         private JoinExprInterfaceImplement(JoinExprInterfaceImplement<P> implement, MapTranslate translator) {
@@ -492,7 +431,7 @@ public class MapCacheAspect {
 
     public static boolean disableCaches = false;
 
-    public <K extends PropertyInterface> Expr getJoinExpr(CalcProperty<K> property, ImMap<K, Expr> joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWheres, MCacheMap<Integer, MAddCol<CacheResult<JoinExprInterfaceImplement, ExprResult>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> Expr getJoinExpr(CalcProperty<K> property, ImMap<K, Expr> joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         // здесь по идее на And не надо проверять
         if(disableCaches || property instanceof FormulaProperty)
@@ -502,16 +441,7 @@ public class MapCacheAspect {
 
         JoinExprInterfaceImplement<K> implement = new JoinExprInterfaceImplement<K>(property,joinExprs,propClasses,propChanges,changedWheres!=null);
 
-        MAddCol<CacheResult<JoinExprInterfaceImplement, ExprResult>> hashCaches;
-        synchronized(exprCaches) {
-            int hashImplement = implement.getInnerComponents(true).hash;
-            hashCaches = exprCaches.get(hashImplement);
-            if(hashCaches==null) {
-                hashCaches = ListFact.mAddCol();
-                exprCaches.exclAdd(hashImplement, hashCaches);
-            }
-        }
-
+        MAddCol<CacheResult<JoinExprInterfaceImplement, ExprResult>> hashCaches = getCachedCol(property, implement.getInnerComponents(true).hash, Type.JOINEXPR);
         synchronized(hashCaches) {
             Expr cacheResult = null;
             for(CacheResult<JoinExprInterfaceImplement, ExprResult> cache : hashCaches.it()) {
@@ -551,28 +481,19 @@ public class MapCacheAspect {
             "&& target(property) && args(joinExprs,propClasses,propChanges,changedWhere)")
     public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, ImMap joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
-        return getJoinExpr(property, joinExprs, propClasses, propChanges, changedWhere, ((MapPropertyInterface) property).getExprCache(), thisJoinPoint);
+        return getJoinExpr(property, joinExprs, propClasses, propChanges, changedWhere, thisJoinPoint);
     }
 
-    public <K extends PropertyInterface> PropertyChange<K> getIncrementChange(CalcProperty<K> property, PropertyChanges propChanges, MCacheMap<Integer, MAddCol<CacheResult<PropertyChanges, PropertyChange<K>>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> PropertyChange<K> getIncrementChange(CalcProperty<K> property, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         // assert что в interfaceValues только values
         if(disableCaches)
             return (PropertyChange<K>) thisJoinPoint.proceed();
 
         PropertyChanges implement = property.getUsedChanges(propChanges);
 
-        MAddCol<CacheResult<PropertyChanges, PropertyChange<K>>> hashCaches;
-        synchronized(exprCaches) {
-            int hashImplement = implement.getValueComponents().hash;
-            hashCaches = exprCaches.get(hashImplement);
-            if(hashCaches==null) {
-                hashCaches = ListFact.mAddCol();
-                exprCaches.exclAdd(hashImplement, hashCaches);
-            }
-        }
-
         PropertyChange<K> change;
         PropertyChange<K> cacheChange = null;
+        MAddCol<CacheResult<PropertyChanges, PropertyChange<K>>> hashCaches = getCachedCol(property, implement.getValueComponents().hash, Type.INCCHANGE);
         synchronized(hashCaches) {
             for(CacheResult<PropertyChanges, PropertyChange<K>> cache : hashCaches.it()) {
                 for(MapValuesTranslate mapValues : new MapValuesIterable(cache.implement, implement)) {
@@ -607,25 +528,10 @@ public class MapCacheAspect {
     @Around("execution(* lsfusion.server.logics.property.CalcProperty.getIncrementChange(lsfusion.server.session.PropertyChanges)) " +
             "&& target(property) && args(propChanges)")
     public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, CalcProperty property, PropertyChanges propChanges) throws Throwable {
-        return getIncrementChange(property, propChanges, ((MapPropertyInterface) property).getIncChangeCache(), thisJoinPoint);
+        return getIncrementChange(property, propChanges, thisJoinPoint);
     }
 
     // read save cache
-
-    public interface MapTableInterface {
-        MCacheMap getReadSaveCache();
-    }
-    public static class MapTableInterfaceImplement implements MapTableInterface {
-        private MCacheMap<Integer,MAddCol<CacheResult<ReadSaveInterfaceImplement,IQuery>>> readSaveCache;
-        public MCacheMap getReadSaveCache() {
-            if(readSaveCache==null)
-                readSaveCache = LRUCache.mSmall(LRUCache.EXP_RARE);
-            return readSaveCache;
-        }
-    }
-    @DeclareParents(value="lsfusion.server.logics.table.ImplementTable",defaultImpl= MapTableInterfaceImplement.class)
-    private MapTableInterface mapTableInterface;
-
     static class ReadSaveInterfaceImplement extends AbstractValuesContext<ReadSaveInterfaceImplement> {
         private final ImSet<CalcProperty> properties;
         private final PropertyChanges usedChanges;
@@ -664,25 +570,16 @@ public class MapCacheAspect {
         }
     }
 
-    public <K extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImplementTable table, ImSet<CalcProperty> properties, PropertyChanges propChanges, MCacheMap<Integer, MAddCol<CacheResult<ReadSaveInterfaceImplement, IQuery<KeyField, CalcProperty>>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImplementTable table, ImSet<CalcProperty> properties, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         // assert что в interfaceValues только values
         if(disableCaches)
             return (IQuery<KeyField, CalcProperty>) thisJoinPoint.proceed();
 
         ReadSaveInterfaceImplement implement = new ReadSaveInterfaceImplement(properties, propChanges);
 
-        MAddCol<CacheResult<ReadSaveInterfaceImplement, IQuery<KeyField, CalcProperty>>> hashCaches;
-        synchronized(exprCaches) {
-            int hashImplement = implement.getValueComponents().hash;
-            hashCaches = exprCaches.get(hashImplement);
-            if(hashCaches==null) {
-                hashCaches = ListFact.mAddCol();
-                exprCaches.exclAdd(hashImplement, hashCaches);
-            }
-        }
-
         IQuery<KeyField, CalcProperty> query;
         IQuery<KeyField, CalcProperty> cacheQuery = null;
+        MAddCol<CacheResult<ReadSaveInterfaceImplement, IQuery<KeyField, CalcProperty>>> hashCaches = getCachedCol(table, implement.getValueComponents().hash, Type.READSAVE);
         synchronized(hashCaches) {
             for(CacheResult<ReadSaveInterfaceImplement, IQuery<KeyField, CalcProperty>> cache : hashCaches.it()) {
                 for(MapValuesTranslate mapValues : new MapValuesIterable(cache.implement, implement)) {
@@ -716,6 +613,6 @@ public class MapCacheAspect {
     @Around("execution(* lsfusion.server.logics.table.ImplementTable.getReadSaveQuery(lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.session.PropertyChanges)) " +
             "&& target(table) && args(properties, propChanges)")
     public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, ImplementTable table, ImSet properties, PropertyChanges propChanges) throws Throwable {
-        return getReadSaveQuery(table, properties, propChanges, ((MapTableInterface) table).getReadSaveCache(), thisJoinPoint);
+        return getReadSaveQuery(table, properties, propChanges, thisJoinPoint);
     }
 }

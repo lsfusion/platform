@@ -174,7 +174,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
             }});
 
         RecursiveTable recTable = new RecursiveTable(name, recKeys.keys(), recProps.valuesSet(),
-                classWhere.map(recKeys), statKeys.mapBack(recKeys));
+                classWhere.mapClasses(recKeys), statKeys.mapBack(recKeys));
 
         return new RemapJoin<String, PropertyField>(recTable.join(recKeys.join(getFullMapIterate())), recProps); // mapp'им на предыдушие ключи
     }
@@ -188,7 +188,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         });
     }
     public Where getIsClassWhere() {
-        return getClassWhere().map(group.keys().toRevMap()).getWhere(getFullMapIterate());
+        return getClassWhere().mapClasses(group.keys().toRevMap()).getWhere(getFullMapIterate());
     }
 
     public StatKeys<KeyExpr> getStatKeys(KeyStat keyStat) {

@@ -210,7 +210,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         }
         return transWhere;
     }
-    public <K> ClassWhere<K> map(ImRevMap<K, ? extends VariableSingleClassExpr> map) {
+    public <K> ClassWhere<K> mapClasses(ImRevMap<K, ? extends VariableSingleClassExpr> map) {
         ClassWhere<K> transWhere = ClassWhere.FALSE();
         for(And<VariableSingleClassExpr> andWhere : wheres)
             transWhere = transWhere.or(new ClassWhere<K>(andWhere.mapBack(map)));

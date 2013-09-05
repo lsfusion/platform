@@ -5,6 +5,8 @@ import org.apache.log4j.Logger;
 import lsfusion.interop.remote.ZipSocketFactory;
 
 import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;

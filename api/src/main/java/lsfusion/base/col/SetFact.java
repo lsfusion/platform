@@ -1,6 +1,7 @@
 package lsfusion.base.col;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ImmutableObject;
 import lsfusion.base.col.implementations.*;
 import lsfusion.base.col.implementations.order.ArOrderSet;
 import lsfusion.base.col.implementations.order.HOrderSet;
@@ -30,11 +31,16 @@ public class SetFact {
     }
 
     public static <T> ImSet<T> singleton(T element) {
+//        if(element instanceof ImmutableObject)
+//            return BaseUtils.immutableCast(element);
         return new SingletonSet<T>(element);
     }
 
     public static <T> ImOrderSet<T> singletonOrder(T element) {
-        return new SingletonOrderSet<T>(element);
+//        if(element instanceof ImmutableObject)
+//            return BaseUtils.immutableCast(element);
+        return new SingletonSet<T>(element);
+//        return new SingletonOrderSet<T>(element);
     }
 
     public static <T> ImSet<T> toSet(T... elements) {
@@ -115,7 +121,7 @@ public class SetFact {
         return ((ImSet<T>)set).merge(element);
     }
 
-    public static <T> ImSet<T> merge(ImSet<? extends T> set, ImSet<? extends T> merge) {
+    public static <T> ImSet<T> mergeSet(ImSet<? extends T> set, ImSet<? extends T> merge) {
         return ((ImSet<T>)set).merge(merge);
     }
 
@@ -123,7 +129,7 @@ public class SetFact {
         return ((ImSet<T>)set).addExcl(element);
     }
 
-    public static <T> ImSet<T> addExcl(ImSet<? extends T> set1, ImSet<? extends T> set2) {
+    public static <T> ImSet<T> addExclSet(ImSet<? extends T> set1, ImSet<? extends T> set2) {
         return ((ImSet<T>)set1).addExcl(set2);
     }
 

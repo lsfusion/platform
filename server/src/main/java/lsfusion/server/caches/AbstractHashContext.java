@@ -1,8 +1,7 @@
 package lsfusion.server.caches;
 
 import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.lru.LRUCache;
-import lsfusion.base.col.lru.MCacheMap;
+import lsfusion.base.col.lru.*;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.hash.HashCodeKeys;
 import lsfusion.server.caches.hash.HashCodeValues;
@@ -20,6 +19,8 @@ public abstract class AbstractHashContext<H extends HashObject> extends TwinImmu
 
 //    private Integer globalHash;
     private Object hashes;
+    
+    private final static LRUWSVSMap<AbstractHashContext, HashObject, Integer> cacheHashes = new LRUWSVSMap<AbstractHashContext, HashObject, Integer>(LRUUtil.L1);
     @ManualLazy
     protected int aspectHash(H hash) {
         if(isComplex()) {
@@ -33,13 +34,13 @@ public abstract class AbstractHashContext<H extends HashObject> extends TwinImmu
                         hashes = hash(hash);
                     return (Integer)hashes;
                 } else {
-                    MCacheMap<H, Integer> mapHashes = (MCacheMap<H, Integer>)hashes;
+                    hash = aspectContextHash(hash);
+
+/*                    MCacheMap<H, Integer> mapHashes = (MCacheMap<H, Integer>)hashes;
                     if(mapHashes==null) {
                         mapHashes = LRUCache.mSmall(LRUCache.EXP_QUICK);
                         hashes = mapHashes;
                     }
-
-                    hash = aspectContextHash(hash);
                     Integer result;
                     synchronized (mapHashes) {
                         result = mapHashes.get(hash);
@@ -47,7 +48,14 @@ public abstract class AbstractHashContext<H extends HashObject> extends TwinImmu
                             result = hash(hash);
                             mapHashes.exclAdd(hash, result);
                         }
-                    }
+                    }*/
+
+                    Integer result = cacheHashes.get(this, hash);
+                    if(result==null) {
+                        result = hash(hash);
+                        cacheHashes.put(this, hash, result);
+                    }                    
+                    
                     return result;
                 }
             } else {

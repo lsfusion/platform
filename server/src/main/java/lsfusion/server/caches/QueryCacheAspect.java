@@ -1,6 +1,8 @@
 package lsfusion.server.caches;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.lru.LRUSVSMap;
+import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.server.data.translator.RemapValuesTranslator;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -14,8 +16,6 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
-import lsfusion.base.col.lru.LRUCache;
-import lsfusion.base.col.lru.MCacheMap;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.MapQuery;
@@ -28,16 +28,10 @@ public class QueryCacheAspect {
     private final static Logger logger = Logger.getLogger(QueryCacheAspect.class);
 
     public interface QueryCacheInterface {
-        MCacheMap getJoinCache();
-        
         IQuery getCacheTwin();
         void setCacheTwin(IQuery query);
     }
     public static class QueryCacheInterfaceImplement implements QueryCacheInterface {
-        MCacheMap joinCache = LRUCache.mSmall(LRUCache.EXP_RARE);
-
-        public MCacheMap getJoinCache() { return joinCache; }
-
         IQuery cacheTwin;
         public IQuery getCacheTwin() {
             return cacheTwin;
@@ -61,7 +55,7 @@ public class QueryCacheAspect {
         return null;
     }
 
-    final static MCacheMap<Integer, MAddCol<Query>> hashTwins = LRUCache.mBig();
+    final static LRUSVSMap<Integer, MAddCol<Query>> hashTwins = new LRUSVSMap<Integer, MAddCol<Query>>(LRUUtil.G2);
 
     <K,V> IQuery<K,V> cacheTwin(Query<K,V> query) throws Throwable {
         IQuery<K, V> result = ((QueryCacheInterface)query).getCacheTwin();
@@ -69,13 +63,11 @@ public class QueryCacheAspect {
             return result;
 
         MAddCol<Query> hashCaches;
-        synchronized(hashTwins) {
-            int hashQuery = query.getMultiParamsContext().getInnerComponents(true).hash;
-            hashCaches = hashTwins.get(hashQuery);
-            if(hashCaches==null) {
-                hashCaches = ListFact.mAddCol();
-                hashTwins.exclAdd(hashQuery, hashCaches);
-            }
+        int hashQuery = query.getMultiParamsContext().getInnerComponents(true).hash;
+        hashCaches = hashTwins.get(hashQuery);
+        if(hashCaches==null) {
+            hashCaches = ListFact.mAddCol();
+            hashTwins.put(hashQuery, hashCaches);
         }
         synchronized(hashCaches) {
             for(Query<?,?> cache : hashCaches.it()) {

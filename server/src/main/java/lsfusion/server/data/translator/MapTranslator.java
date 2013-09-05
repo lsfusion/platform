@@ -68,7 +68,7 @@ public class MapTranslator extends AbstractMapTranslator {
     }
 
     public MapTranslate mapValues(MapValuesTranslate translate) {
-        MapValuesTranslate mapValues = values.map(translate);
+        MapValuesTranslate mapValues = values.mapTrans(translate);
         if(mapValues==values)
             return this;
 

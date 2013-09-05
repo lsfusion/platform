@@ -159,7 +159,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     }
 
     private BaseClass getBaseClass() {
-        return classTables.get(0).getSet().getBaseClass();
+        return classTables.get(0).getObjectSet().getBaseClass();
     }
 
     @ParamLazy
@@ -173,7 +173,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
             if(exprClasses != null)
                 tables = tables.filterFn(new SFunctionSet<ClassField>() {
                 public boolean contains(ClassField element) {
-                    return !element.getSet().and(exprClasses).isEmpty();
+                    return !element.getObjectSet().and(exprClasses).isEmpty();
                 }});
         }
         return tables;
@@ -188,17 +188,17 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
 
     public static boolean inSet(ConcreteObjectClass staticClass, ImSet<ClassField> classTables) {
         for(ClassField classTable : classTables)
-            if(staticClass.inSet(classTable.getSet()))
+            if(staticClass.inSet(classTable.getObjectSet()))
                 return true;
         return false;
     }
 
-    private ObjectValueClassSet getSet() {
+    private ObjectValueClassSet getObjectSet() {
         return getBaseClass().getSet(classTables);
     }
 
     public Where calculateNotNullWhere() {
-        return expr.isClass(getSet(), type.isInconsistent());
+        return expr.isClass(getObjectSet(), type.isInconsistent());
     }
 
     protected int hash(HashContext hashContext) {
@@ -214,7 +214,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     }
 
     public Stat getStatValue() {
-        return new Stat(getSet().getClassCount());
+        return new Stat(getObjectSet().getClassCount());
     }
 
     public PropStat getStatValue(KeyStat keyStat) {

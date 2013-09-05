@@ -1,5 +1,9 @@
 package lsfusion.server.data;
 
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWSVSMap;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -12,8 +16,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.base.col.lru.LRUCache;
-import lsfusion.base.col.lru.MCacheMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.server.Message;
 import lsfusion.server.ParamMessage;
 import lsfusion.server.ServerLoggers;
@@ -450,7 +453,7 @@ public class SQLSession extends MutableObject {
 
         if(keys.size()==0)
             keys = SetFact.singletonOrder(KeyField.dumb);
-        String createString = SetFact.addExcl(keys.getSet(), properties).toString(this.<Field>getDeclare(env), ",");
+        String createString = SetFact.addExclSet(keys.getSet(), properties).toString(this.<Field>getDeclare(env), ",");
         createString = createString + "," + getConstraintDeclare(name, keys);
         executeDDL(syntax.getCreateSessionTable(name, createString), ExecuteEnvironment.NOREADONLY);
     }
@@ -1242,7 +1245,7 @@ public class SQLSession extends MutableObject {
         }
     }
 
-    private MCacheMap<ParseStatement, ParsedStatement> statementPool = LRUCache.mBig();
+    private static final LRUWSVSMap<SQLSession, ParseStatement, ParsedStatement> statementPool = new LRUWSVSMap<SQLSession, ParseStatement, ParsedStatement>(LRUUtil.G1);
 
     private static interface ReturnStatement {
         void proceed(PreparedStatement statement, long runTime) throws SQLException;
@@ -1273,7 +1276,7 @@ public class SQLSession extends MutableObject {
 
         ParsedStatement parsed = null;
         if(poolPrepared)
-            parsed = statementPool.get(parse);
+            parsed = statementPool.get(this, parse);
         if(parsed==null) {
             parsed = parseStatement(parse, connection, syntax);
             if(poolPrepared) {
@@ -1281,7 +1284,7 @@ public class SQLSession extends MutableObject {
                 returnStatement.set(new ReturnStatement() {
                     public void proceed(PreparedStatement statement, long runTime) throws SQLException {
                         if(runTime > Settings.get().getQueryPrepareRunTime())
-                            statementPool.exclAdd(parse, fParsed);
+                            statementPool.put(SQLSession.this, parse, fParsed);
                         else
                             statement.close();
                     }

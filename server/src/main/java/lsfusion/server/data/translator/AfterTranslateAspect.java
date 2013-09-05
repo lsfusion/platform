@@ -1,5 +1,6 @@
 package lsfusion.server.data.translator;
 
+import lsfusion.base.col.lru.LRUWVWSMap;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -27,10 +28,14 @@ public class AfterTranslateAspect {
 
     @Around("execution(lsfusion.server.data.where.Where lsfusion.server.data.expr.Expr.calculateWhere()) && target(expr)")
     public Object callCalculateWhere(ProceedingJoinPoint thisJoinPoint, Expr expr) throws Throwable {
-        Expr from = expr.getFrom();
-        MapTranslate translator = expr.getTranslator();
-        if(from!=null && translator!=null) { // объект не ушел
-            Where fromResult = from.getWhere();
+//        Expr from = expr.getFrom();
+//        MapTranslate translator = expr.getTranslator();
+//        if(from!=null && translator!=null) { // объект не ушел
+//            Where fromResult = from.getWhere();
+        LRUWVWSMap.Value<MapTranslate, Expr> fromPair = expr.getFromValue();
+        MapTranslate translator = fromPair.getLRUKey();
+        if(translator!=null) {
+            Where fromResult = fromPair.getLRUValue().getWhere();
             if(expr instanceof NotNullExpr && ((NotNullExpr) expr).hasNotNull()) { // если результат использует сам объект, то вычисляем а затем в явную проставляем транслятор от основного объекта (если тот был посчитан или всегда)
                 AbstractTranslateContext calcObject = (AbstractTranslateContext) thisJoinPoint.proceed();
                 calcObject.initTranslate(fromResult, translator);
@@ -43,30 +48,42 @@ public class AfterTranslateAspect {
 
     @Around("execution(lsfusion.server.data.where.classes.ClassExprWhere lsfusion.server.data.where.AbstractWhere.calculateClassWhere()) && target(where)")
     public Object callCalculateClassWhere(ProceedingJoinPoint thisJoinPoint, AbstractWhere where) throws Throwable {
-        Where from = where.getFrom();
-        MapTranslate translator = where.getTranslator();
-        if(from!=null && translator!=null)
-            return from.getClassWhere().translateOuter(translator);
+//        Where from = where.getFrom();
+//        MapTranslate translator = where.getTranslator();
+//        if(from!=null && translator!=null)
+//            return from.getClassWhere().translateOuter(translator);
+        LRUWVWSMap.Value<MapTranslate, Where> fromPair = where.getFromValue();
+        MapTranslate translator = fromPair.getLRUKey();
+        if(translator!=null)
+            return fromPair.getLRUValue().getClassWhere().translateOuter(translator);
         else
             return thisJoinPoint.proceed();
     }
 
     @Around("execution(lsfusion.server.data.where.classes.ClassExprWhere lsfusion.server.data.where.AbstractWhere.calculateClassWhere()) && target(where)")
     public Object callCalculateMeanClassWheres(ProceedingJoinPoint thisJoinPoint, AbstractWhere where) throws Throwable {
-        Where from = where.getFrom();
-        MapTranslate translator = where.getTranslator();
-        if(from!=null && translator!=null)
-            return from.groupMeanClassWheres(true).translateOuter(translator);
+//        Where from = where.getFrom();
+//        MapTranslate translator = where.getTranslator();
+//        if(from!=null && translator!=null)
+//            return from.groupMeanClassWheres(true).translateOuter(translator);
+        LRUWVWSMap.Value<MapTranslate, Where> fromPair = where.getFromValue();
+        MapTranslate translator = fromPair.getLRUKey();
+        if(translator!=null)
+            return fromPair.getLRUValue().groupMeanClassWheres(true).translateOuter(translator);
         else
             return thisJoinPoint.proceed();
     }
 
     @Around("execution(lsfusion.server.data.query.innerjoins.KeyEquals lsfusion.server.data.where.AbstractWhere.calculateKeyEquals()) && target(where)")
     public Object callCalculateKeyEquals(ProceedingJoinPoint thisJoinPoint, AbstractWhere where) throws Throwable {
-        Where from = where.getFrom();
-        MapTranslate translator = where.getTranslator();
-        if(from!=null && translator!=null)
-            return from.getKeyEquals().translateOuter(translator);
+//        Where from = where.getFrom();
+//        MapTranslate translator = where.getTranslator();
+//        if(from!=null && translator!=null)
+//            return from.getKeyEquals().translateOuter(translator);
+        LRUWVWSMap.Value<MapTranslate, Where> fromPair = where.getFromValue();
+        MapTranslate translator = fromPair.getLRUKey();
+        if(translator!=null)
+            return fromPair.getLRUValue().getKeyEquals().translateOuter(translator);
         else
             return thisJoinPoint.proceed();
     }
@@ -74,20 +91,28 @@ public class AfterTranslateAspect {
 
     @Around("execution(lsfusion.server.data.where.classes.ClassExprWhere lsfusion.server.data.where.classes.MeanClassWheres.calculateClassWhere()) && target(wheres)")
     public Object callMeanCalculateClassWhere(ProceedingJoinPoint thisJoinPoint, MeanClassWheres wheres) throws Throwable {
-        MeanClassWheres.OuterContext from = wheres.getOuter().getFrom();
-        MapTranslate translator = wheres.getOuter().getTranslator();
-        if(from!=null && translator!=null)
-            return from.getThis().getClassWhere().translateOuter(translator);
+//        MeanClassWheres.OuterContext from = wheres.getOuter().getFrom();
+//        MapTranslate translator = wheres.getOuter().getTranslator();
+//        if(from!=null && translator!=null)
+//            return from.getThis().getClassWhere().translateOuter(translator);
+        LRUWVWSMap.Value<MapTranslate, MeanClassWheres.OuterContext> fromPair = wheres.getOuter().getFromValue();
+        MapTranslate translator = fromPair.getLRUKey();
+        if(translator!=null)
+            return fromPair.getLRUValue().getThis().getClassWhere().translateOuter(translator);
         else
             return thisJoinPoint.proceed();
     }
 
     @Around("execution(* lsfusion.server.data.where.AbstractWhere.getFullStatKeys(lsfusion.base.col.interfaces.immutable.ImSet)) && target(where) && args(groups)")
     public Object callFullStatKeys(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, ImSet groups) throws Throwable {
-        Where from = where.getFrom();
-        MapTranslate translator = where.getTranslator();
-        if(from!=null && translator!=null)
-            return StatKeys.translateOuter(from.getFullStatKeys(translator.reverseMap().translateDirect(groups)), translator);
+//        Where from = where.getFrom();
+//        MapTranslate translator = where.getTranslator();
+//        if(from!=null && translator!=null)
+//            return StatKeys.translateOuter(from.getFullStatKeys(translator.reverseMap().translateDirect(groups)), translator);
+        LRUWVWSMap.Value<MapTranslate, Where> fromPair = where.getFromValue();
+        MapTranslate translator = fromPair.getLRUKey();
+        if(translator!=null)
+            return StatKeys.translateOuter(fromPair.getLRUValue().getFullStatKeys(translator.reverseMap().translateDirect(groups)), translator);
         else
             return thisJoinPoint.proceed();
     }
@@ -98,10 +123,14 @@ public class AfterTranslateAspect {
     }
 
     private Object test(ProceedingJoinPoint thisJoinPoint, PropertyChange change) throws Throwable {
-        PropertyChange from = (PropertyChange) change.getFrom();
-        MapTranslate translator = (MapTranslate) change.getTranslator();
-        if(from!=null && translator!=null) {
-            IQuery<?, ?> query = from.getQuery();
+//        PropertyChange from = (PropertyChange) change.getFrom();
+//        MapTranslate translator = (MapTranslate) change.getTranslator();
+//        if(from!=null && translator!=null) {
+//            IQuery<?, ?> query = from.getQuery();
+        LRUWVWSMap.Value<MapTranslate, PropertyChange> fromPair = change.getFromValue();
+        MapTranslate translator = fromPair.getLRUKey();
+        if(translator!=null) {
+            IQuery<?, ?> query = fromPair.getLRUValue().getQuery();
             return query.translateInner(translator.filterValues(query.getInnerValues()));
         } else
             return thisJoinPoint.proceed();

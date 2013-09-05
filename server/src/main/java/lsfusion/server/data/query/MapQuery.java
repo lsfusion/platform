@@ -71,11 +71,11 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {
         assert joinValues.assertValuesContains(getInnerValues());
-        return new RemapJoin<V,MV>(query.join(mapKeys.crossJoin(joinImplement),mapValues.map(joinValues)),mapProps);
+        return new RemapJoin<V,MV>(query.join(mapKeys.crossJoin(joinImplement),mapValues.mapTrans(joinValues)),mapProps);
     }
     public Join<V> joinExprs(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {
         assert joinValues.assertValuesContains(getInnerValues());
-        return new RemapJoin<V,MV>(query.joinExprs(mapKeys.crossJoin(joinImplement),mapValues.map(joinValues)),mapProps);
+        return new RemapJoin<V,MV>(query.joinExprs(mapKeys.crossJoin(joinImplement),mapValues.mapTrans(joinValues)),mapProps);
     }
 
     public PullValues<K, V> pullValues() {
@@ -105,14 +105,14 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
     }
 
     public <RMK, RMV> IQuery<RMK, RMV> map(ImRevMap<RMK, K> remapKeys, ImRevMap<RMV, V> remapProps, MapValuesTranslate translate) {
-        return new MapQuery<RMK, RMV, MK, MV>(query, remapProps.join(mapProps), remapKeys.join(mapKeys), mapValues.map(translate));
+        return new MapQuery<RMK, RMV, MK, MV>(query, remapProps.join(mapProps), remapKeys.join(mapKeys), mapValues.mapTrans(translate));
     }
 
     public MapQuery<K, V, ?, ?> translateMap(MapValuesTranslate translate) {
-        return new MapQuery<K,V,MK,MV>(query, mapProps, mapKeys, mapValues.map(translate));
+        return new MapQuery<K,V,MK,MV>(query, mapProps, mapKeys, mapValues.mapTrans(translate));
     }
     public IQuery<K, V> translateQuery(MapTranslate translate) {
-        return new MapQuery<K,V,MK,MV>(query.translateQuery(translate.onlyKeys()), mapProps, mapKeys, mapValues.map(translate.mapValues()));
+        return new MapQuery<K,V,MK,MV>(query.translateQuery(translate.onlyKeys()), mapProps, mapKeys, mapValues.mapTrans(translate.mapValues()));
     }
 
     protected ImSet<ParamExpr> getKeys() {

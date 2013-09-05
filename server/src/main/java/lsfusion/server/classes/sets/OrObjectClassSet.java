@@ -351,7 +351,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
 
     public ImSet<ConcreteCustomClass> getSetConcreteChildren() {
         assert !unknown;
-        return SetFact.addExcl(up.getSetConcreteChildren(), set);
+        return SetFact.addExclSet(up.getSetConcreteChildren(), set);
     }
 
     public static ObjectValueClassSet fromSetConcreteChildren(ImSet<ConcreteCustomClass> set) {

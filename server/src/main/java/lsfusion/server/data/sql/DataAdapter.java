@@ -1,12 +1,12 @@
 package lsfusion.server.data.sql;
 
+import lsfusion.base.col.lru.LRUSVSMap;
+import lsfusion.base.col.lru.LRUUtil;
 import org.apache.log4j.Logger;
 import org.springframework.util.PropertyPlaceholderHelper;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.col.lru.LRUCache;
-import lsfusion.base.col.lru.MCacheMap;
 import lsfusion.server.data.AbstractConnectionPool;
 import lsfusion.server.data.TypePool;
 import lsfusion.server.data.query.TypeEnvironment;
@@ -396,7 +396,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     protected String recursionString;
 
-    private MCacheMap<ImList<Type>, Boolean> ensuredRecursion = LRUCache.mBig();
+    private LRUSVSMap<ImList<Type>, Boolean> ensuredRecursion = new LRUSVSMap<ImList<Type>, Boolean>(LRUUtil.G2);
 
     public synchronized void ensureRecursion(ImList<Type> types) throws SQLException {
 
@@ -420,6 +420,6 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
         executeEnsure(stringResolver.replacePlaceholders(recursionString, properties));
 
-        ensuredRecursion.exclAdd(types, true);
+        ensuredRecursion.put(types, true);
     }
 }

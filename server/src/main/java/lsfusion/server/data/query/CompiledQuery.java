@@ -160,7 +160,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         keyNames = query.mapKeys.mapRevValues(new GenNameIndex("jkey", ""));
         propertyNames = query.properties.mapRevValues(new GenNameIndex("jprop",""));
-        params = SetFact.addExcl(query.getInnerValues(), query.getInnerStaticValues()).mapRevValues(new GenNameIndex("qwer", "ffd"));
+        params = SetFact.addExclSet(query.getInnerValues(), query.getInnerStaticValues()).mapRevValues(new GenNameIndex("qwer", "ffd"));
 
         env = new ExecuteEnvironment();
 
@@ -426,7 +426,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         // получает условия следующие из логики inner join'ов SQL
         private Where getInnerWhere() {
             Where result = innerWhere;
-            for(InnerJoin innerJoin : getInnerJoins()) {
+            for(InnerJoin innerJoin : getInnerJoins().it()) {
                 JoinSelect joinSelect = getJoinSelect(innerJoin);
                 if(joinSelect!=null)
                     result = result.and(joinSelect.getInnerWhere());
@@ -942,7 +942,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 String recursionName = null;
                 if(useRecursionFunction) {
                     ImSet<OuterContext> outerContext = SetFact.<OuterContext>merge(queries.valuesSet(), initialWhere);
-                    ImSet<ParseValue> values = SetFact.addExcl(AbstractOuterContext.getOuterValues(outerContext), AbstractOuterContext.getOuterStaticValues(outerContext));
+                    ImSet<ParseValue> values = SetFact.addExclSet(AbstractOuterContext.getOuterColValues(outerContext), AbstractOuterContext.getOuterStaticValues(outerContext));
                     outerParams = "";
                     ImRevValueMap<ParseValue, String> mvInnerParams = values.mapItRevValues(); // "совместная" обработка / последействие
                     MList<Type> mTypes = ListFact.mListMax(values.size());

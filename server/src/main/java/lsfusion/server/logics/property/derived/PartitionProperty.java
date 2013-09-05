@@ -147,7 +147,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     }
 
     private Where getPartitionWhere(Where where, ImMap<CalcPropertyInterfaceImplement<T>,Expr> partitionImplements, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, ImMap<KeyExpr, Expr> mapExprs) {
-        return GroupExpr.create(partitionImplements, where.and(Expr.getWhere(exprs)).and(AggrExpr.getOrderWhere(orders, ordersNotNull)), partitionImplements).getWhere().map(mapExprs);
+        return GroupExpr.create(partitionImplements, where.and(Expr.getWhere(exprs)).and(AggrExpr.getOrderWhere(orders, ordersNotNull)), partitionImplements).getWhere().mapWhere(mapExprs);
     }
 
     @Override

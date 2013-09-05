@@ -3,7 +3,6 @@ package lsfusion.server.logics;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import lsfusion.base.SystemUtils;
-import lsfusion.base.col.lru.LRUCache;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
@@ -60,12 +59,12 @@ public class BusinessLogicsBootstrap {
         });
     }
 
-    private static void initLRUCaches() {
+/*    private static void initLRUCaches() {
         Settings settings = logicsInstance.getSettings();
         LRUCache.init(new int[]{settings.getLRUOftenCleanPeriod(), settings.getLRURareCleanPeriod()},
                       new int[]{settings.getLRUOftenExpireSecond(), settings.getLRURareExpireSecond()},
                       new int[]{settings.getLRUOftenProceedBucket(), settings.getLRURareProceedBucket()});
-    }
+    }*/
 
     public synchronized static void stop() {
         if (!stopped) {

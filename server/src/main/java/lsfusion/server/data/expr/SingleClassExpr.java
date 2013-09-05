@@ -30,7 +30,7 @@ public abstract class SingleClassExpr extends VariableClassExpr {
         return IsClassExpr.create(this, classes, type);
     }
 
-    private OrClassSet getSet() {
+    private OrClassSet getOrSet() {
         assert !isTrueWhere();
         OrClassSet result = null;
         for(ImMap<VariableSingleClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds()) {
@@ -60,7 +60,7 @@ public abstract class SingleClassExpr extends VariableClassExpr {
             if(!intersect(set)) // если не пересекается то false
                 return Where.FALSE;
             if(!isTrueWhere())
-                if(set.getOr().containsAll(getSet(), true)) // если set содержит все элементы, то достаточно просто что не null (implicit cast'ы подходят)
+                if(set.getOr().containsAll(getOrSet(), true)) // если set содержит все элементы, то достаточно просто что не null (implicit cast'ы подходят)
                     return getWhere();
         }
         return IsClassWhere.create(this, set, inconsistent);

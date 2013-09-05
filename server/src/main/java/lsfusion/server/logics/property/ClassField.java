@@ -10,5 +10,5 @@ public interface ClassField {
 
     Table.Join.Expr getStoredExpr(Expr expr);
 
-    ObjectValueClassSet getSet();
+    ObjectValueClassSet getObjectSet();
 }

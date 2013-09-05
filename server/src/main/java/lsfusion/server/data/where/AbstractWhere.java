@@ -243,7 +243,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return not().getExprValues(false);
     }
 
-    public Where map(ImMap<KeyExpr, ? extends Expr> map) {
+    public Where mapWhere(ImMap<KeyExpr, ? extends Expr> map) {
         return new Query<KeyExpr,Object>(map.keys().toRevMap(),this).join(map).getWhere();
     }
 
