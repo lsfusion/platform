@@ -28,11 +28,16 @@ FORM backup 'Резервное копирование'
 ;
 
 DESIGN backup FROM DEFAULT {
-    PROPERTY(logBackup(b)) {
-        fillHorizontal = 1;
-        fillVertical = 1;
-        panelLabelAbove = TRUE;
+    NEW pane {
+        fill = 1;
+        type = CONTAINERH;
+        ADD b.box;
+        ADD PROPERTY(logBackup(b)) {
+            fill = 1;
+            panelLabelAbove = TRUE;
+        }
     }
+    ADD functions.box;
 }
 
 NAVIGATOR {
