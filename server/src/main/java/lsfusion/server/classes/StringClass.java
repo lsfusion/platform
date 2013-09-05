@@ -209,6 +209,10 @@ public class StringClass extends DataClass {
         return getv(true, length);
     }
 
+    public static StringClass get(boolean blankPadded, boolean caseInsensitive, final int length) {
+        return get(blankPadded, caseInsensitive, new ExtInt(length));
+    }
+
     public static StringClass get(boolean blankPadded, boolean caseInsensitive, final ExtInt length) {
         return getCached(strings, length, blankPadded, caseInsensitive);
     }

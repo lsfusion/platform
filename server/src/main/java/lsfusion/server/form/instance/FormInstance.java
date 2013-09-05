@@ -347,7 +347,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             DataObject userObject = dataSession.getDataObject(BL.authenticationLM.user, BL.authenticationLM.currentUser.read(dataSession));
             for (GroupObjectUserPreferences groupObjectPreferences : preferences.getGroupObjectUserPreferencesList()) {
                 for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectPreferences.getColumnUserPreferences().entrySet()) {
-                    ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementSIDPropertyDraw.readClasses(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
+                    ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementSIDPropertyDraw.readClasses(dataSession, 
+                            new DataObject(entity.getSID(), StringClass.get(false, false, 50)), 
+                            new DataObject(entry.getKey(), StringClass.get(false, false, 100)));
                     if (propertyDrawObjectValue instanceof DataObject) {
                         DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
                         Integer idShow = null;
