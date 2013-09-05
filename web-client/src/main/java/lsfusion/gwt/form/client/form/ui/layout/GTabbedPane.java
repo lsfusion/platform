@@ -199,6 +199,7 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel,
         if (selected != -1) {
             Dimension dimensions = maybeGetPreferredSize(getWidget(selected));
             dimensions.height += tabBar.getOffsetHeight() + 5; //little extra for borders, etc.
+            return dimensions;
         }
         return new Dimension(0, 0);
     }
