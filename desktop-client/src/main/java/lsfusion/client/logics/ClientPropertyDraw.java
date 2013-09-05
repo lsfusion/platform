@@ -41,6 +41,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public FooterReader footerReader = new FooterReader();
     public ReadOnlyReader readOnlyReader = new ReadOnlyReader();
 
+    public ClientPropertyDraw quickFilterProperty;
+
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
     public ClientType baseType;
     public ClientClass returnClass;
@@ -368,6 +370,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         checkEquals = inStream.readBoolean();
         clearText = inStream.readBoolean();
+
+        quickFilterProperty = pool.deserializeObject(inStream);
 
         tableName = pool.readString(inStream);
 

@@ -31,8 +31,6 @@ public class GGroupObject implements Serializable {
     public GRowBackgroundReader rowBackgroundReader;
     public GRowForegroundReader rowForegroundReader;
 
-    public GPropertyDraw filterProperty;
-
     public boolean hasUserPreferences;
 
     public String getCaption() {

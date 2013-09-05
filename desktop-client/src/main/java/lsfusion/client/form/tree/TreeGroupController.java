@@ -148,10 +148,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
 
     @Override
     public ClientPropertyDraw getSelectedProperty() {
-        ClientPropertyDraw defaultProperty = lastGroupObject.filterProperty;
-        return defaultProperty != null
-                ? defaultProperty
-                : tree.getCurrentProperty();
+        return tree.getCurrentProperty();
     }
 
     @Override

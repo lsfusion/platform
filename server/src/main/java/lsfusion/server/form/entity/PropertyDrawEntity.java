@@ -71,6 +71,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public CalcPropertyObjectEntity<?> propertyBackground;
     public CalcPropertyObjectEntity<?> propertyForeground;
 
+    public PropertyDrawEntity quickFilterProperty;
+
     public PropertyDrawEntity() {
     }
 

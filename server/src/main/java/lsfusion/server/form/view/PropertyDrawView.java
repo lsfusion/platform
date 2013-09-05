@@ -233,6 +233,8 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(entity.propertyObject.property.checkEquals());
         outStream.writeBoolean(clearText);
 
+        pool.serializeObject(outStream, pool.context.view.get(entity.quickFilterProperty));
+
         MapKeysTable<? extends PropertyInterface> mapTable = entity.propertyObject.property instanceof CalcProperty ?
                         ((CalcProperty<?>)entity.propertyObject.property).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.name : null);

@@ -235,10 +235,7 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
 
     @Override
     public GPropertyDraw getSelectedProperty() {
-        GPropertyDraw defaultProperty = lastGroupObject.filterProperty;
-        return defaultProperty != null
-                ? defaultProperty
-                : tree.getCurrentProperty();
+        return tree.getCurrentProperty();
     }
 
     @Override

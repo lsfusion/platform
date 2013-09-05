@@ -37,8 +37,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     private int ID;
 
-    public PropertyDrawEntity filterProperty;
-
     public TreeGroupEntity treeGroup;
 
     public CalcPropertyObjectEntity<?> reportPathProp;
@@ -105,7 +103,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         pool.serializeObject(outStream, treeGroup);
         pool.serializeObject(outStream, propertyBackground);
         pool.serializeObject(outStream, propertyForeground);
-        pool.serializeObject(outStream, filterProperty);
         outStream.writeBoolean(isParent != null);
         if (isParent != null) {
             pool.serializeMap(outStream, isParent.toJavaMap());
@@ -121,7 +118,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         treeGroup = pool.deserializeObject(inStream);
         propertyBackground = pool.deserializeObject(inStream);
         propertyForeground = pool.deserializeObject(inStream);
-        filterProperty = pool.deserializeObject(inStream);
         if (inStream.readBoolean()) {
             isParent = MapFact.fromJavaMap(pool.<ObjectEntity, CalcPropertyObjectEntity<?>>deserializeMap(inStream));
         }

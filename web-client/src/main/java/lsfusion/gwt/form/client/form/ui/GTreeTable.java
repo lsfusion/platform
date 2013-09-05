@@ -429,8 +429,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public void quickFilter(EditEvent event) {
-        treeGroupController.quickEditFilter(event);
+    public void quickFilter(EditEvent event, GPropertyDraw filterProperty) {
+        treeGroupController.quickEditFilter(event, filterProperty);
     }
 
     @Override

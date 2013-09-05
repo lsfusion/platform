@@ -28,7 +28,6 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
     private PropertyObjectDescriptor propertyBackground;
     private PropertyObjectDescriptor propertyForeground;
     private PropertyObjectDescriptor reportPathProperty;
-    private PropertyDrawDescriptor filterProperty;
 
     public List<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
 
@@ -118,16 +117,6 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         updateDependency(this, "propertyForeground");
     }
 
-    public PropertyDrawDescriptor getFilterProperty() {
-        return filterProperty;
-    }
-
-    public void setFilterProperty(PropertyDrawDescriptor filterProperty) {
-        this.filterProperty = filterProperty;
-        this.client.filterProperty = filterProperty == null ? null : filterProperty.client;
-        updateDependency(this, "filterProperty");
-    }
-
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, objects);
         pool.writeInt(outStream, initClassView.ordinal());
@@ -135,7 +124,6 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         pool.serializeObject(outStream, parent);
         pool.serializeObject(outStream, propertyBackground);
         pool.serializeObject(outStream, propertyForeground);
-        pool.serializeObject(outStream, filterProperty);
         outStream.writeBoolean(!isParent.isEmpty());
         if (!isParent.isEmpty()) {
             pool.serializeMap(outStream, isParent);
@@ -151,7 +139,6 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         parent = pool.deserializeObject(inStream);
         propertyBackground = pool.deserializeObject(inStream);
         propertyForeground = pool.deserializeObject(inStream);
-        filterProperty = pool.deserializeObject(inStream);
         if (inStream.readBoolean()) {
             isParent = pool.deserializeMap(inStream);
         }

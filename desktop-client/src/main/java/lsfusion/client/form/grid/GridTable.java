@@ -753,8 +753,12 @@ public class GridTable extends ClientPropertyTable {
         boolean edited = super.editCellAt(row, column, editEvent);
         if (!editPerformed) {
             assert !edited;
+            ClientPropertyDraw currentProperty = getCurrentProperty();
+            ClientPropertyDraw filterProperty = currentProperty != null && currentProperty.quickFilterProperty != null
+                                                ? currentProperty.quickFilterProperty
+                                                : null;
             if (KeyStrokes.isSuitableStartFilteringEvent(editEvent)) {
-                groupController.quickEditFilter((KeyEvent) editEvent);
+                groupController.quickEditFilter((KeyEvent) editEvent, filterProperty);
             }
 
             return false;

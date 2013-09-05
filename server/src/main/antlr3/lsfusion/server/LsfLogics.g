@@ -556,7 +556,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	:	(	editType = propertyEditTypeLiteral { $options.setEditType($editType.val); }
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
-		|   'TOOLBAR' { $options.setDrawToToolbar(true); }
+		|	'TOOLBAR' { $options.setDrawToToolbar(true); }
 		|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
 		|	'SHOWIF' propObj=formCalcPropertyObject { $options.setShowIf($propObj.property); }
 		|	'READONLYIF' propObj=formCalcPropertyObject { $options.setReadOnlyIf($propObj.property); }
@@ -568,6 +568,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
+		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
 		|	'ON' 'EDIT' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.EDIT_OBJECT, $prop.action); }
 		|	'ON' 'CHANGE' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.CHANGE, $prop.action); }
 		|	'ON' 'CHANGEWYS' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.CHANGE_WYS, $prop.action); }
@@ -577,7 +578,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	;
 
 formPropertyDraw returns [PropertyDrawEntity property]
-	:	id=ID 				{ if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($id.text); }
+	:	id=ID               { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($id.text); }
 	|	prop=mappedProperty { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping); }
 	;
 

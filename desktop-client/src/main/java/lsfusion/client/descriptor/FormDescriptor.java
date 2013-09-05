@@ -390,20 +390,6 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         addDependency("objects", columnGroupConstraint);
         addDependency(this, "groupObjects", columnGroupConstraint); // порядок тоже важен
 
-        // fitlerProperty.
-        IncrementView filterPropertyConstraint = new IncrementView() {
-            public void update(Object updateObject, String updateField) {
-                for (GroupObjectDescriptor group : groupObjects) {
-                    PropertyDrawDescriptor filterProperty = group.getFilterProperty();
-                    if (filterProperty == null || !getGroupPropertyDraws(group).contains(filterProperty)) {
-                        group.setFilterProperty(null);
-                    }
-                }
-            }
-        };
-        addDependency("propertyDraws", filterPropertyConstraint);
-        addDependency(this, "groupObjects", filterPropertyConstraint);
-
         containerMover = new ContainerMover();
         addDependency("groupObjects", containerMover);
         addDependency("toDraw", containerMover);

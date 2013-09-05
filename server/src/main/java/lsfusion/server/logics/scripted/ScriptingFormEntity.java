@@ -299,6 +299,8 @@ public class ScriptingFormEntity {
 
         property.propertyShowIf = options.getShowIf();
 
+        property.quickFilterProperty = options.getQuickFilterPropertyDraw();
+
         CalcPropertyObjectEntity backgroundProperty = options.getBackground();
         if (backgroundProperty != null && !backgroundProperty.property.getType().equals(ColorClass.instance)) {
             property.propertyBackground = addGroundPropertyObject(backgroundProperty, true);

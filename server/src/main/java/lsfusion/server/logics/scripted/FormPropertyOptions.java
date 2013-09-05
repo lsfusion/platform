@@ -33,6 +33,7 @@ public class FormPropertyOptions {
     private Map<String, ActionPropertyObjectEntity> editActions;
     private String eventId;
     private PropertyDrawEntity neighbourPropertyDraw;
+    private PropertyDrawEntity quickFilterPropertyDraw;
     private String neighbourPropertyText;
     private Boolean isRightNeighbour;
 
@@ -199,6 +200,14 @@ public class FormPropertyOptions {
         this.neighbourPropertyText = propText;
     }
 
+    public PropertyDrawEntity getQuickFilterPropertyDraw() {
+        return quickFilterPropertyDraw;
+    }
+
+    public void setQuickFilterPropertyDraw(PropertyDrawEntity quickFilterPropertyDraw) {
+        this.quickFilterPropertyDraw = quickFilterPropertyDraw;
+    }
+
     public Boolean isRightNeighbour() {
         return isRightNeighbour;
     }
@@ -236,6 +245,7 @@ public class FormPropertyOptions {
         merged.setEventId(nvl(overrides.getEventId(), eventId));
         merged.setNeighbourPropertyDraw(nvl(overrides.getNeighbourPropertyDraw(), neighbourPropertyDraw), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
         merged.setNeighbourType(nvl(overrides.isRightNeighbour(), isRightNeighbour));
+        merged.setQuickFilterPropertyDraw(nvl(overrides.getQuickFilterPropertyDraw(), quickFilterPropertyDraw));
         return merged;
     }
 }

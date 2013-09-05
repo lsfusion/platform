@@ -284,6 +284,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
 
+        propertyDraw.quickFilterProperty = convertOrCast(clientPropertyDraw.quickFilterProperty);
+
         propertyDraw.minimumCharWidth = clientPropertyDraw.minimumCharWidth;
         propertyDraw.maximumCharWidth = clientPropertyDraw.maximumCharWidth;
         propertyDraw.preferredCharWidth = clientPropertyDraw.preferredCharWidth;
@@ -427,8 +429,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         groupObject.rowBackgroundReader = convertRowBackgroundReader(clientGroupObject.rowBackgroundReader);
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
-
-        groupObject.filterProperty = convertOrCast(clientGroupObject.filterProperty);
 
         groupObject.hasUserPreferences = clientGroupObject.hasUserPreferences;
 

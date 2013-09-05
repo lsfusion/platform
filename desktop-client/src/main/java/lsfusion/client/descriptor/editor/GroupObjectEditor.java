@@ -42,17 +42,6 @@ public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
                     }
                 }));
 
-        TitledPanel filterPropertyPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.view.default.view.for.filter"), new JComboBox(new IncrementSingleListSelectionModel(group, "filterProperty", true) {
-            public List<?> getSingleList() {
-                return form.getGroupPropertyDraws(group);
-            }
-
-            @Override
-            public void fillListDependencies() {
-                form.addDependency(form, "propertyDraws", this);
-            }
-        }));
-
         TitledPanel propertyBackgroundPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.selection.property.background"), new PropertyObjectEditor(group, "propertyBackground", form, group));
 
         TitledPanel propertyForegroundPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.selection.property.foreground"), new PropertyObjectEditor(group, "propertyForeground", form, group));
@@ -70,10 +59,10 @@ public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
         DefaultOrdersEditor defaultOrdersPanel = new DefaultOrdersEditor(form, group);
 
         if (group.getParent() != null){
-            addTab(ClientResourceBundle.getString("descriptor.editor.view.common"), new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyBackgroundPanel, propertyForegroundPanel, filterPropertyPanel, pageSizePanel, new IsParentEditor()));
+            addTab(ClientResourceBundle.getString("descriptor.editor.view.common"), new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyBackgroundPanel, propertyForegroundPanel, pageSizePanel, new IsParentEditor()));
         }
         else{
-            addTab(ClientResourceBundle.getString("descriptor.editor.view.common"), new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyBackgroundPanel, propertyForegroundPanel, filterPropertyPanel, pageSizePanel));
+            addTab(ClientResourceBundle.getString("descriptor.editor.view.common"), new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyBackgroundPanel, propertyForegroundPanel, pageSizePanel));
         }
         addTab(ClientResourceBundle.getString("descriptor.properties"), new NorthBoxPanel(groupPropertyObjectPanel));
         addTab(ClientResourceBundle.getString("descriptor.editor.view.display"), new NorthBoxPanel(propertiesPanel));

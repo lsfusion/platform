@@ -62,6 +62,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
 
+    public GPropertyDraw quickFilterProperty;
+
     public int minimumCharWidth;
     public int maximumCharWidth;
     public int preferredCharWidth;

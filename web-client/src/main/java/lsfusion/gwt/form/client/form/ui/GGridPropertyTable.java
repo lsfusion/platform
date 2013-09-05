@@ -77,13 +77,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         } else if (GKeyStroke.isPossibleStartFilteringEvent(event)) {
             EditEventFilter editEventFilter = null;
             GPropertyDraw currentProperty = getSelectedProperty();
-            if (currentProperty.changeType != null) {
+            if (currentProperty != null && currentProperty.changeType != null) {
                 editEventFilter = currentProperty.changeType.getEditEventFilter();
             }
 
             if ((editEventFilter != null && !editEventFilter.accept(event)) || !isEditable(getCurrentCellContext())) {
                 stopPropagation(event);
-                quickFilter(new NativeEditEvent(event));
+                GPropertyDraw filterProperty = currentProperty != null && currentProperty.quickFilterProperty != null
+                                                    ? currentProperty.quickFilterProperty
+                                                    : null;
+                quickFilter(new NativeEditEvent(event), filterProperty);
             }
         } else if (BrowserEvents.KEYDOWN.equals(event.getType()) && KeyCodes.KEY_ESCAPE == event.getKeyCode()) {
             GAbstractGroupObjectController goController = getGroupController();
@@ -155,7 +158,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public abstract GGroupObjectValue getCurrentKey();
     public abstract GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler();
-    public abstract void quickFilter(EditEvent event);
+    public abstract void quickFilter(EditEvent event, GPropertyDraw filterProperty);
     public abstract GAbstractGroupObjectController getGroupController();
     abstract String getCellBackground(GridDataRecord rowValue, int row, int column);
     abstract String getCellForeground(GridDataRecord rowValue, int row, int column);

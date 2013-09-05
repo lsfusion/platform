@@ -25,8 +25,6 @@ import java.util.Map;
 
 public class ClientGroupObject extends IdentityObject implements ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
 
-    public ClientPropertyDraw filterProperty;
-
     public ClientTreeGroup parent;
     public boolean isRecursive;
     public int pageSize = -1;
@@ -135,8 +133,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         showType = pool.deserializeObject(inStream);
         toolbar = pool.deserializeObject(inStream);
         filter = pool.deserializeObject(inStream);
-
-        filterProperty = pool.deserializeObject(inStream);
 
         isRecursive = inStream.readBoolean();
         Integer ps = pool.readInt(inStream);

@@ -695,8 +695,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     }
 
     @Override
-    public void quickFilter(EditEvent event) {
-        groupObjectController.quickEditFilter(event);
+    public void quickFilter(EditEvent event, GPropertyDraw filterProperty) {
+        groupObjectController.quickEditFilter(event, filterProperty);
     }
 
     public void selectProperty(GPropertyDraw propertyDraw) {

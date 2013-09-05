@@ -419,10 +419,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
 
     @Override
     public GPropertyDraw getSelectedProperty() {
-        GPropertyDraw defaultProperty = groupObject.filterProperty;
-        return defaultProperty != null
-                ? defaultProperty
-                : grid.getCurrentProperty();
+        return grid.getCurrentProperty();
     }
 
     @Override

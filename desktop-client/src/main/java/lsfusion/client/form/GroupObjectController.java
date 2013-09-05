@@ -401,24 +401,16 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public ClientPropertyDraw getSelectedProperty() {
-        ClientPropertyDraw defaultProperty = groupObject.filterProperty;
-        return defaultProperty != null
-                ? defaultProperty
-                : grid.getCurrentProperty();
+        return grid.getCurrentProperty();
     }
 
     public Object getSelectedValue(ClientPropertyDraw cell, ClientGroupObjectValue columnKey) {
         return grid.getSelectedValue(cell, columnKey);
     }
 
-    public void quickEditFilter(KeyEvent initFilterKeyEvent) {
-        quickEditFilter(initFilterKeyEvent, null);
-    }
-
     public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw) {
         if (filter != null) {
             filter.quickEditFilter(initFilterKeyEvent, propertyDraw);
-            grid.selectProperty(propertyDraw);
         }
     }
 
