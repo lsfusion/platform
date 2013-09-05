@@ -1,6 +1,7 @@
 package lsfusion.client.logics.classes;
 
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.EditBindingMap;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.cell.PanelView;
@@ -52,4 +53,6 @@ public interface ClientType {
     Compare[] getFilterCompares();
 
     Compare getDefaultCompare();
+
+    EditBindingMap.EditEventFilter getEditEventFilter();
 }

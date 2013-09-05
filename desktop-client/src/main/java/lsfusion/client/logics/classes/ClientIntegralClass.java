@@ -6,8 +6,18 @@ import lsfusion.client.form.renderer.IntegerPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import java.text.*;
+import java.util.EventObject;
+
+import static lsfusion.client.form.EditBindingMap.EditEventFilter;
+import static lsfusion.interop.KeyStrokes.isSuitableNumberEditEvent;
 
 abstract public class ClientIntegralClass extends ClientDataClass {
+
+    public static final EditEventFilter numberEditEventFilter = new EditEventFilter() {
+        public boolean accept(EventObject e) {
+            return isSuitableNumberEditEvent(e);
+        }
+    };
 
     protected ClientIntegralClass() {
     }
@@ -38,6 +48,12 @@ abstract public class ClientIntegralClass extends ClientDataClass {
         }; // временно так чтобы устранить баг, но теряется locale, NumberFormat.getInstance()
         format.setGroupingUsed(true);
         return format;
+    }
+
+
+    @Override
+    public EditEventFilter getEditEventFilter() {
+        return numberEditEventFilter;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

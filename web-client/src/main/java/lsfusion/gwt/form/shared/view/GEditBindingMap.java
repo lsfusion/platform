@@ -18,6 +18,17 @@ public class GEditBindingMap implements Serializable {
     public static final String EDIT_OBJECT = "editObject";
     public static final String CHANGE_WYS = "change_wys";
 
+    public static interface EditEventFilter {
+        public boolean accept(NativeEvent e);
+    }
+
+    public static final transient EditEventFilter numberEventFilter = new GEditBindingMap.EditEventFilter() {
+        @Override
+        public boolean accept(NativeEvent e) {
+            return isPossibleNumberEditEvent(e);
+        }
+    };
+
     private HashMap<GKeyStroke, String> keyBindingMap;
     private LinkedHashMap<String, String> contextMenuBindingMap;
     private String mouseBinding;
@@ -32,6 +43,10 @@ public class GEditBindingMap implements Serializable {
     }
 
     public String getAction(EditEvent event) {
+        return getAction(event, null);
+    }
+
+    public String getAction(EditEvent event, EditEventFilter editEventFilter) {
         if (event instanceof NativeEditEvent) {
             NativeEvent nativeEvent = ((NativeEditEvent) event).getNativeEvent();
             String eventType = nativeEvent.getType();
@@ -42,6 +57,10 @@ public class GEditBindingMap implements Serializable {
 
                 if (actionSID != null) {
                     return actionSID;
+                }
+
+                if (editEventFilter != null && !editEventFilter.accept(nativeEvent)) {
+                    return null;
                 }
 
                 if (isCommonEditKeyEvent(nativeEvent)) {
@@ -98,5 +117,19 @@ public class GEditBindingMap implements Serializable {
                 || CHANGE_WYS.equals(actionSID)
                 || EDIT_OBJECT.equals(actionSID)
                 || GROUP_CHANGE.equals(actionSID);
+    }
+
+    public static String getPropertyEditActionSID(EditEvent e, GPropertyDraw property, GEditBindingMap overrideMap) {
+        EditEventFilter eventFilter = property.changeType == null ? null : property.changeType.getEditEventFilter();
+
+        String actionSID = null;
+        if (property.editBindingMap != null) {
+            actionSID = property.editBindingMap.getAction(e, eventFilter);
+        }
+
+        if (actionSID == null) {
+            actionSID = overrideMap.getAction(e, eventFilter);
+        }
+        return actionSID;
     }
 }

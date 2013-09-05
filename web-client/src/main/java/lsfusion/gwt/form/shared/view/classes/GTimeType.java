@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -44,5 +45,10 @@ public class GTimeType extends GDataType {
     @Override
     public String toString() {
         return "Время";
+    }
+
+    @Override
+    public GEditBindingMap.EditEventFilter getEditEventFilter() {
+        return GEditBindingMap.numberEventFilter;
     }
 }

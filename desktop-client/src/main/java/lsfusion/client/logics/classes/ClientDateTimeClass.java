@@ -2,7 +2,6 @@ package lsfusion.client.logics.classes;
 
 import lsfusion.base.DateConverter;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.Main;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.DateTimePropertyEditor;
@@ -16,6 +15,8 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 
 public class ClientDateTimeClass extends ClientDataClass implements ClientTypeClass {
     public final static ClientDateTimeClass instance = new ClientDateTimeClass();
@@ -72,5 +73,10 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
     @Override
     public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
         return 115;
+    }
+
+    @Override
+    public EditEventFilter getEditEventFilter() {
+        return ClientIntegralClass.numberEditEventFilter;
     }
 }

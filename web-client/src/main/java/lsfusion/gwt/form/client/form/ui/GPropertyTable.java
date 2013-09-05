@@ -20,6 +20,7 @@ import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import static lsfusion.gwt.base.client.GwtClientUtils.removeAllChildren;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.cellview.client.cell.Cell.Context;
+import static lsfusion.gwt.form.shared.view.GEditBindingMap.getPropertyEditActionSID;
 import static lsfusion.gwt.form.shared.view.GEditBindingMap.isEditableAwareEditEvent;
 
 public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManager, GEditPropertyHandler {
@@ -123,46 +124,34 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
         GPropertyDraw property = getProperty(editContext);
 
-        String actionSID = getEditAction(property, editEvent);
+        String actionSID = getPropertyEditActionSID(editEvent, property, editBindingMap);
+        if (actionSID == null) {
+            return;
+        }
 
         if (isEditableAwareEditEvent(actionSID) && !isEditable(editContext)) {
             return;
         }
 
-        if (actionSID != null) {
-            editEvent.stopPropagation();
+        editEvent.stopPropagation();
 
-            this.editCell = editCell;
-            this.editEvent = editEvent;
-            this.editContext = editContext;
-            this.editCellParent = editCellParent;
+        this.editCell = editCell;
+        this.editEvent = editEvent;
+        this.editContext = editContext;
+        this.editCellParent = editCellParent;
 
-            GGroupObjectValue columnKey = getColumnKey(editContext);
-            Object oldValue = getValueAt(editContext);
+        GGroupObjectValue columnKey = getColumnKey(editContext);
+        Object oldValue = getValueAt(editContext);
 
-            //убираем фокус, чтобы не ловить последующие нажатия
-            setFocus(false);
+        //убираем фокус, чтобы не ловить последующие нажатия
+        setFocus(false);
 
-            editDispatcher.setLatestEditEvent(editEvent);
-            editDispatcher.executePropertyEditAction(property, columnKey, actionSID, oldValue);
-        }
+        editDispatcher.setLatestEditEvent(editEvent);
+        editDispatcher.executePropertyEditAction(property, columnKey, actionSID, oldValue);
     }
 
     protected void onContextMenuEvent(Context context, String actionSID) {
         editCellAt(context.getIndex(), context.getColumn(), actionSID);
-    }
-
-    protected String getEditAction(GPropertyDraw property, EditEvent event) {
-        String actionSID = null;
-        if (property.editBindingMap != null) {
-            actionSID = property.editBindingMap.getAction(event);
-        }
-
-        if (actionSID == null) {
-            actionSID = editBindingMap.getAction(event);
-        }
-
-        return actionSID;
     }
 
     public void editCellAt(int row, int column, String actionSID) {

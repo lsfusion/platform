@@ -41,6 +41,7 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static lsfusion.client.form.EditBindingMap.getPropertyEditActionSID;
 import static lsfusion.client.form.EditBindingMap.isEditableAwareEditEvent;
 
 public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface, EditPropertyHandler {
@@ -581,7 +582,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                     Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells = singletonMap(property, singletonList(currentPath));
                     form.pasteMulticellValue(cells, table.get(0).get(0));
                 } catch (IOException e) {
-                    Throwables.propagate(e);
+                    throw Throwables.propagate(e);
                 }
             }
         }
@@ -668,18 +669,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return currentEditValue;
     }
 
-    private String getEditActionSID(EventObject e, ClientPropertyDraw property) {
-        String actionSID = null;
-        if (property.editBindingMap != null) {
-            actionSID = property.editBindingMap.getAction(e);
-        }
-
-        if (actionSID == null) {
-            actionSID = editBindingMap.getAction(e);
-        }
-        return actionSID;
-    }
-
     public boolean editCellAt(int row, int column, EventObject e){
         if (!form.commitCurrentEditing()) {
             return false;
@@ -708,7 +697,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return false;
         }
 
-        String actionSID = getEditActionSID(e, property);
+        String actionSID = getPropertyEditActionSID(e, property, editBindingMap);
+        if (actionSID == null) {
+            return false;
+        }
+
         if (isEditableAwareEditEvent(actionSID) && !isCellEditable(row, column)) {
             return false;
         }
@@ -717,20 +710,16 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return false;
         }
 
-        if (actionSID != null) {
-            editRow = row;
-            editCol = column;
-            editEvent = e;
-            commitingValue = false;
+        editRow = row;
+        editCol = column;
+        editEvent = e;
+        commitingValue = false;
 
-            //здесь немного запутанная схема...
-            //executePropertyEditAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
-            //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
-            editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID, getValueAt(row, column));
-            return editorComp != null;
-        }
-
-        return false;
+        //здесь немного запутанная схема...
+        //executePropertyEditAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
+        //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
+        editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID, getValueAt(row, column));
+        return editorComp != null;
     }
 
     public boolean requestValue(ClientType valueType, Object oldValue) {

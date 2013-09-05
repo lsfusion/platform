@@ -3,6 +3,7 @@ package lsfusion.client.logics.classes;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.EditBindingMap;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.cell.DataPanelView;
 import lsfusion.client.form.cell.PanelView;
@@ -132,5 +133,10 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     @Override
     public Compare getDefaultCompare() {
         return EQUALS;
+    }
+
+    @Override
+    public EditBindingMap.EditEventFilter getEditEventFilter() {
+        return null;
     }
 }

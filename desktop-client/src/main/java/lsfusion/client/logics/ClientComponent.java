@@ -7,17 +7,19 @@ import lsfusion.client.descriptor.editor.ComponentEditor;
 import lsfusion.client.descriptor.nodes.ComponentNode;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.ComponentDesign;
-import lsfusion.interop.form.layout.*;
+import lsfusion.interop.form.layout.AbstractComponent;
+import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
+import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Map;
 
-public abstract class ClientComponent extends ContextIdentityObject implements Serializable, IdentitySerializable<ClientSerializationPool>, AbstractComponent<ClientContainer, ClientComponent> {
+public abstract class ClientComponent extends ContextIdentityObject implements IdentitySerializable<ClientSerializationPool>, AbstractComponent<ClientContainer, ClientComponent> {
 
     public ComponentDesign design;
 

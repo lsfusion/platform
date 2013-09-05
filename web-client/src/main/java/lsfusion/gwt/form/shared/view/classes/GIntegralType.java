@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.shared.view.classes;
 
+import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
@@ -18,5 +19,10 @@ public abstract class GIntegralType extends GDataType {
     @Override
     public String getPreferredMask() {
         return "99 999 999";
+    }
+
+    @Override
+    public GEditBindingMap.EditEventFilter getEditEventFilter() {
+        return GEditBindingMap.numberEventFilter;
     }
 }

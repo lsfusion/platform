@@ -1,7 +1,6 @@
 package lsfusion.client.logics.classes;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.Main;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.TimePropertyEditor;
@@ -15,6 +14,8 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 
 public class ClientTimeClass extends ClientDataClass implements ClientTypeClass {
 
@@ -68,5 +69,10 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
     @Override
     public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
         return 65;
+    }
+
+    @Override
+    public EditEventFilter getEditEventFilter() {
+        return ClientIntegralClass.numberEditEventFilter;
     }
 }

@@ -1,5 +1,6 @@
 package lsfusion.client.form;
 
+import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.form.ServerResponse;
 
@@ -21,6 +22,10 @@ public class EditBindingMap {
     }
 
     public String getAction(EventObject editEvent) {
+        return getAction(editEvent, null);
+    }
+
+    public String getAction(EventObject editEvent, EditEventFilter editEventFilter) {
         if (editEvent instanceof KeyEvent) {
             KeyEvent keyEvent = (KeyEvent) editEvent;
 
@@ -37,6 +42,10 @@ public class EditBindingMap {
             return mouseBinding;
         } else if (editEvent instanceof InternalEditEvent) {
             return ((InternalEditEvent) editEvent).action;
+        }
+
+        if (editEventFilter != null && !editEventFilter.accept(editEvent)) {
+            return null;
         }
 
         return ServerResponse.CHANGE;
@@ -71,5 +80,23 @@ public class EditBindingMap {
                 || ServerResponse.CHANGE_WYS.equals(actionSID)
                 || ServerResponse.EDIT_OBJECT.equals(actionSID)
                 || ServerResponse.GROUP_CHANGE.equals(actionSID);
+    }
+
+    public static String getPropertyEditActionSID(EventObject e, ClientPropertyDraw property, EditBindingMap overrideMap) {
+        EditEventFilter eventFilter = property.changeType == null ? null : property.changeType.getEditEventFilter();
+
+        String actionSID = null;
+        if (property.editBindingMap != null) {
+            actionSID = property.editBindingMap.getAction(e, eventFilter);
+        }
+
+        if (actionSID == null) {
+            actionSID = overrideMap.getAction(e, eventFilter);
+        }
+        return actionSID;
+    }
+
+    public static interface EditEventFilter {
+        public boolean accept(EventObject e);
     }
 }

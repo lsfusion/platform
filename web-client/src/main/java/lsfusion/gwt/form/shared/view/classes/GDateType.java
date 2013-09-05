@@ -2,6 +2,7 @@ package lsfusion.gwt.form.shared.view.classes;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.DateGridCellEditor;
@@ -53,5 +54,10 @@ public class GDateType extends GDataType {
     @Override
     public String toString() {
         return "Дата";
+    }
+
+    @Override
+    public GEditBindingMap.EditEventFilter getEditEventFilter() {
+        return GEditBindingMap.numberEventFilter;
     }
 }

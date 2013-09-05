@@ -16,6 +16,8 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import static lsfusion.client.form.EditBindingMap.EditEventFilter;
+
 public class ClientDateClass extends ClientDataClass implements ClientTypeClass {
 
     public final static ClientDateClass instance = new ClientDateClass();
@@ -75,5 +77,10 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.date");
+    }
+
+    @Override
+    public EditEventFilter getEditEventFilter() {
+        return ClientIntegralClass.numberEditEventFilter;
     }
 }

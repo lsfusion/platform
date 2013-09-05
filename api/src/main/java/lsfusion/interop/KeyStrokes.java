@@ -177,6 +177,11 @@ public class KeyStrokes {
         return isKeyEvent(event, KeyEvent.VK_ESCAPE);
     }
 
+    public static boolean isDigitKeyEvent(KeyEvent keyEvent) {
+        int keyCode = keyEvent.getKeyCode();
+        return keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9;
+    }
+
     public static boolean isObjectEditorDialogEvent(EventObject event) {
         return event instanceof KeyEvent && getKeyStrokeForEvent((KeyEvent) event).equals(getObjectEditorDialogEvent());
     }
@@ -204,6 +209,12 @@ public class KeyStrokes {
         return true;
     }
 
+    public static boolean isSuitableNumberEditEvent(EventObject event) {
+        return isSuitableEditKeyEvent(event) && (
+                isDigitKeyEvent((KeyEvent) event) ||
+                isDeleteEvent(event)
+        );
+    }
 
     public static KeyStroke getKeyStrokeForEvent(KeyEvent e) {
         return e.getID() == KeyEvent.KEY_TYPED

@@ -26,6 +26,7 @@ import java.util.Map;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.form.shared.view.GEditBindingMap.EditEventFilter;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasPreferredSize {
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
@@ -74,7 +75,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         } else if (GKeyStroke.isReplaceFilterEvent(event)) {
             getGroupController().replaceFilter();
         } else if (GKeyStroke.isPossibleStartFilteringEvent(event)) {
-            if (!isEditable(getCurrentCellContext())) {
+            EditEventFilter editEventFilter = null;
+            GPropertyDraw currentProperty = getSelectedProperty();
+            if (currentProperty.changeType != null) {
+                editEventFilter = currentProperty.changeType.getEditEventFilter();
+            }
+
+            if ((editEventFilter != null && !editEventFilter.accept(event)) || !isEditable(getCurrentCellContext())) {
                 stopPropagation(event);
                 quickFilter(new NativeEditEvent(event));
             }

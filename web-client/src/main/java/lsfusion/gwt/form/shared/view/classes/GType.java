@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.form.client.form.ui.GFormController;
+import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
@@ -46,5 +47,9 @@ public abstract class GType implements Serializable {
 
     public int getPreferredPixelHeight(GFont font) {
         return getMinimumPixelHeight(font);
+    }
+
+    public GEditBindingMap.EditEventFilter getEditEventFilter() {
+        return null;
     }
 }

@@ -2,7 +2,6 @@ package lsfusion.gwt.form.shared.view;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.KeyCodes;
 
 import java.io.Serializable;
 
@@ -23,6 +22,9 @@ public class GKeyStroke implements Serializable {
     public static final int KEY_F10 = KEY_F1 + 9;
     public static final int KEY_F11 = KEY_F1 + 10;
     public static final int KEY_F12 = KEY_F1 + 11;
+
+    public static final int KEY_0 = 48;
+    public static final int KEY_9 = 57;
 
     public static final int KEY_SPACE = 32;
     public static final int KEY_INSERT = 45;
@@ -131,9 +133,21 @@ public class GKeyStroke implements Serializable {
         if (KEYPRESS.equals(eventType)) {
             return isChangeKey(keyCode, event.getCharCode());
         } else if (KEYDOWN.equals(eventType)) {
-            return keyCode == KeyCodes.KEY_DELETE;
+            return keyCode == KEY_DELETE;
         }
         return false;
+    }
+
+    public static boolean isDigitKeyEvent(NativeEvent event) {
+        int charCode = event.getCharCode();
+        return KEYPRESS.equals(event.getType()) && charCode >= KEY_0 && charCode <= KEY_9;
+    }
+
+    public static boolean isPossibleNumberEditEvent(NativeEvent event) {
+        return isCommonEditKeyEvent(event) && (
+                isDigitKeyEvent(event) ||
+                event.getKeyCode() == KEY_DELETE
+        );
     }
 
     public static boolean isPossibleEditKeyEvent(NativeEvent event) {

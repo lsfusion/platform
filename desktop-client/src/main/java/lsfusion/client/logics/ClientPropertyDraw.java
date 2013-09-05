@@ -65,8 +65,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean drawAsync; // рисовать асинхронность на этой кнопке
 
-    public EditBindingMap editBindingMap;
-
     public Boolean focusable;
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
@@ -79,6 +77,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public int maximumCharWidth;
     public int preferredCharWidth;
 
+    public transient EditBindingMap editBindingMap;
     private transient PropertyRenderer renderer;
 
     protected Format format;

@@ -26,6 +26,7 @@ import java.awt.event.MouseListener;
 import java.text.ParseException;
 import java.util.EventObject;
 
+import static lsfusion.client.form.EditBindingMap.getPropertyEditActionSID;
 import static lsfusion.client.form.EditBindingMap.isEditableAwareEditEvent;
 
 public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface, EditPropertyHandler {
@@ -80,7 +81,11 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         ClientPropertyDraw property = getProperty(row, column);
         ClientGroupObjectValue columnKey = getColumnKey(row, column);
 
-        String actionSID = getEditActionSID(e, property);
+        String actionSID = getPropertyEditActionSID(e, property, editBindingMap);
+
+        if (actionSID == null) {
+            return false;
+        }
 
         if (isEditableAwareEditEvent(actionSID) && !isCellEditable(row, column)) {
             return false;
@@ -88,32 +93,16 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
         quickLog("formTable.editCellAt: " + e);
 
-        if (actionSID != null) {
-            editRow = row;
-            editCol = column;
-            editEvent = e;
-            commitingValue = false;
+        editRow = row;
+        editCol = column;
+        editEvent = e;
+        commitingValue = false;
 
-            //здесь немного запутанная схема...
-            //executePropertyEditAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
-            //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
-            editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID, getValueAt(row, column));
-            return editorComp != null;
-        }
-
-        return false;
-    }
-
-    private String getEditActionSID(EventObject e, ClientPropertyDraw property) {
-        String actionSID = null;
-        if (property.editBindingMap != null) {
-            actionSID = property.editBindingMap.getAction(e);
-        }
-
-        if (actionSID == null) {
-            actionSID = editBindingMap.getAction(e);
-        }
-        return actionSID;
+        //здесь немного запутанная схема...
+        //executePropertyEditAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
+        //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
+        editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID, getValueAt(row, column));
+        return editorComp != null;
     }
 
     public abstract int getCurrentRow();
