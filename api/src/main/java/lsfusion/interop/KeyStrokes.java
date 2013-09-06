@@ -179,7 +179,7 @@ public class KeyStrokes {
 
     public static boolean isDigitKeyEvent(KeyEvent keyEvent) {
         int keyCode = keyEvent.getKeyCode();
-        return keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9;
+        return keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9 || keyCode >= KeyEvent.VK_NUMPAD0 && keyCode <= KeyEvent.VK_NUMPAD9;
     }
 
     public static boolean isObjectEditorDialogEvent(EventObject event) {
