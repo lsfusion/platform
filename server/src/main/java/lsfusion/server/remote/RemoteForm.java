@@ -7,8 +7,10 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Order;
@@ -39,6 +41,7 @@ import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -283,11 +286,25 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public ServerResponse pasteMulticellValue(long requestIndex, final Map<Integer, List<Map<Integer, Object>>> keys, final Map<Integer, byte[]> values) throws RemoteException {
+    public ServerResponse pasteMulticellValue(long requestIndex, final Map<Integer, List<byte[]>> bkeys, final Map<Integer, byte[]> bvalues) throws RemoteException {
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
-                form.pasteMulticellValue(keys, values);
+                Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> keysValues
+                        = new HashMap<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>>();
+                for (Map.Entry<Integer, List<byte[]>> e : bkeys.entrySet()) {
+                    PropertyDrawInstance propertyDraw = form.getPropertyDraw(e.getKey());
+                    Object propValue = deserializeObject(bvalues.get(e.getKey()));
+
+                    MOrderMap<ImMap<ObjectInstance, DataObject>, Object> propKeys = MapFact.mOrderMap();
+                    for (byte[] bkey : e.getValue()) {
+                        propKeys.add(deserializePropertyKeys(propertyDraw, bkey), propValue);
+                    }
+
+                    keysValues.put(propertyDraw, propKeys.immutableOrder());
+                }
+
+                form.pasteMulticellValue(keysValues);
             }
         });
     }

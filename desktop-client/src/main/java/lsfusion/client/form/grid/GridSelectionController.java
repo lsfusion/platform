@@ -267,15 +267,19 @@ public class GridSelectionController {
         return value;
     }
 
-    public Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>> getSelectedCells() {
-        Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>> cellsMap = new HashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>>();
-        for (Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn : selectedCells.keySet()) {
-            List<ClientGroupObjectValue> keys = new ArrayList<ClientGroupObjectValue>();
-            for (ClientGroupObjectValue key : selectedCells.get(propertyColumn).keySet()) {
-                keys.add(key);
+    public Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Pair<List<ClientGroupObjectValue>, List<Object>>> getSelectedCells() {
+        Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Pair<List<ClientGroupObjectValue>, List<Object>>> cellsMap
+                = new HashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Pair<List<ClientGroupObjectValue>, List<Object>>>();
+        for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Map<ClientGroupObjectValue, Object>> e : selectedCells.entrySet()) {
+            Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn = e.getKey();
+            List<ClientGroupObjectValue> keysValues = new ArrayList<ClientGroupObjectValue>();
+            List<Object> oldValues = new ArrayList<Object>();
+            for (Map.Entry<ClientGroupObjectValue, Object> columnValue : e.getValue().entrySet()) {
+                keysValues.add(columnValue.getKey());
+                oldValues.add(columnValue.getValue());
             }
-            if (!keys.isEmpty()) {
-                cellsMap.put(propertyColumn, keys);
+            if (!keysValues.isEmpty()) {
+                cellsMap.put(propertyColumn, new Pair<List<ClientGroupObjectValue>, List<Object>>(keysValues, oldValues));
             }
         }
         return cellsMap;

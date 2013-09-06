@@ -256,15 +256,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return sID;
     }
 
-    public Object parseChangeValue(String s) throws ParseException {
+    public Object parseChangeValueOrNull(String s) {
         if (changeWYSType == null) {
-            throw new ParseException("parsing isn't supported for that property", 0);
+            return null;
         }
-        return changeWYSType.parseString(s);
+        try {
+            return changeWYSType.parseString(s);
+        } catch (ParseException pe) {
+            return null;
+        }
     }
 
     public Object parseBaseValue(String s) throws ParseException {
         return baseType.parseString(s);
+    }
+
+    public boolean canUsePasteValueForRendering() {
+        return changeWYSType != null && baseType.getTypeClass() == changeWYSType.getTypeClass();
     }
 
     public String formatString(Object obj) throws ParseException {

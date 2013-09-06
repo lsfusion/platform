@@ -96,10 +96,9 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     private boolean internalDispatchResponse(ServerResponse response) throws IOException {
         assert response != null;
 
-        ClientType editType = null;
         super.dispatchResponse(response);
         if (readType != null) {
-            editType = readType;
+            ClientType editType = readType;
             readType = null;
             if (!internalRequestValue(editType)) {
                 cancelEdit();
@@ -107,7 +106,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             return true;
         }
 
-        return editType != null || response.resumeInvocation || editPerformed;
+        return response.resumeInvocation || editPerformed;
     }
 
     private boolean internalRequestValue(ClientType readType) throws IOException {
@@ -121,7 +120,12 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         if (simpleChangeProperty != null) {
             if (!inputResult.isCanceled()) {
                 try {
-                    getFormController().changeProperty(handler, simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
+                    //только в этом случае можно асинхронно посланное значение использовать в качестве текущего
+                    boolean canUseNewValueForRendering = simpleChangeProperty.changeType.getTypeClass() == simpleChangeProperty.baseType.getTypeClass();
+                    if (canUseNewValueForRendering) {
+                        handler.updateEditValue(inputResult.getValue());
+                    }
+                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue, canUseNewValueForRendering);
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }

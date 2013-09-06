@@ -35,6 +35,7 @@ import java.util.List;
 import static java.lang.Math.max;
 import static lsfusion.base.BaseUtils.override;
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.form.ClientFormController.PasteData;
 
 public class GridTable extends ClientPropertyTable {
 
@@ -670,7 +671,8 @@ public class GridTable extends ClientPropertyTable {
         }
 
         try {
-            if (singleV) {
+            if (singleV && !singleC) {
+                //т.е. вставляем в одну ячейку, но не одно значение
                 int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
 
                 List<ClientPropertyDraw> propertyList = new ArrayList<ClientPropertyDraw>();
@@ -683,29 +685,55 @@ public class GridTable extends ClientPropertyTable {
 
                 form.pasteExternalTable(propertyList, columnKeys, table, columnsToInsert);
             } else {
-                Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
-                for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, List<ClientGroupObjectValue>> e : selectionController.getSelectedCells().entrySet()) {
-                    ClientPropertyDraw property = e.getKey().first;
-                    ClientGroupObjectValue columnKey = e.getKey().second;
+                //вставляем в несколько ячеек, используем только 1е значение
+                String sPasteValue = table.get(0).get(0);
 
-                    List<ClientGroupObjectValue> cellKeys;
+                Map<ClientPropertyDraw, PasteData> paste = new HashMap<ClientPropertyDraw, PasteData>();
+
+                for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Pair<List<ClientGroupObjectValue>, List<Object>>> e : selectionController.getSelectedCells().entrySet()) {
+                    Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn = e.getKey();
+                    List<ClientGroupObjectValue> rowKeys = e.getValue().first;
+                    List<Object> oldValues = e.getValue().second;
+
+                    ClientPropertyDraw property = propertyColumn.first;
+                    ClientGroupObjectValue columnKey = propertyColumn.second;
+
+                    List<ClientGroupObjectValue> keys;
                     if (columnKey.isEmpty()) {
-                        cellKeys = e.getValue();
+                        keys = rowKeys;
                     } else {
-                        cellKeys = new ArrayList<ClientGroupObjectValue>();
-                        for (ClientGroupObjectValue rowKey : e.getValue()) {
-                            ClientGroupObjectValue fullKey = rowKey.isEmpty() ? columnKey : new ClientGroupObjectValue(rowKey, columnKey);
-                            cellKeys.add(fullKey);
+                        keys = new ArrayList<ClientGroupObjectValue>();
+                        for (ClientGroupObjectValue rowKey : rowKeys) {
+                            keys.add(rowKey.isEmpty() ? columnKey : new ClientGroupObjectValue(rowKey, columnKey));
                         }
                     }
-                    cells.put(property, cellKeys);
+
+                    Object newValue = property.parseChangeValueOrNull(sPasteValue);
+                    if (property.canUsePasteValueForRendering()) {
+                        for (ClientGroupObjectValue key : keys) {
+                            Map<ClientGroupObjectValue, Object> propValues = values.get(property);
+                            if (propValues.containsKey(key)) {
+                                propValues.put(key, newValue);
+                            }
+                        }
+                    }
+
+                    PasteData pasteData = paste.get(property);
+                    if (pasteData == null) {
+                        pasteData = new PasteData(newValue, keys, oldValues);
+                        paste.put(property, pasteData);
+                    } else {
+                        pasteData.keys.addAll(keys);
+                        pasteData.oldValues.addAll(oldValues);
+                    }
                 }
 
-                form.pasteMulticellValue(cells, table.get(0).get(0));
+                form.pasteMulticellValue(paste);
                 selectionController.resetSelection();
             }
+            updateTable();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            Throwables.propagate(e);
         }
     }
 

@@ -130,7 +130,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public ServerResponse pasteMulticellValue(long requestIndex, Map<Integer, List<Map<Integer, Object>>> keys, Map<Integer, byte[]> values) throws RemoteException {
+    public ServerResponse pasteMulticellValue(long requestIndex, Map<Integer, List<byte[]>> keys, Map<Integer, byte[]> values) throws RemoteException {
         logRemoteMethodStartCall("pasteMulticellValue");
         ServerResponse result = target.pasteMulticellValue(requestIndex, keys, values);
         logRemoteMethodEndCall("pasteMulticellValue", result);

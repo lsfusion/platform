@@ -35,7 +35,6 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -86,10 +85,9 @@ public class ClientFormController implements AsyncListener {
 
     private final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
 
-    private final OrderedMap<Long, ModifyObject> lastModifyObjectRequests = new OrderedMap<Long, ModifyObject>();
-    private final Map<ClientGroupObject, Long> lastChangeCurrentObjectsRequestIndices = Maps.newHashMap();
-    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Long> lastChangePropertyRequestIndices = HashBasedTable.create();
-    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Pair<Object, Object>> lastChangePropertyRequestValues = HashBasedTable.create();
+    private final OrderedMap<Long, ModifyObject> pendingModifyObjectRequests = new OrderedMap<Long, ModifyObject>();
+    private final Map<ClientGroupObject, Long> pendingChangeCurrentObjectsRequests = Maps.newHashMap();
+    private final Table<ClientPropertyDraw, ClientGroupObjectValue, PropertyChange> pendingChangePropertyRequests = HashBasedTable.create();
 
     private Timer asyncTimer;
     private PanelView asyncView;
@@ -533,7 +531,7 @@ public class ClientFormController implements AsyncListener {
     private void modifyFormChangesWithChangeCurrentObjectAsyncs(ClientFormChanges formChanges) {
         long currentDispatchingRequestIndex = rmiQueue.getCurrentDispatchingRequestIndex();
 
-        for (Iterator<Map.Entry<ClientGroupObject, Long>> iterator = lastChangeCurrentObjectsRequestIndices.entrySet().iterator(); iterator.hasNext(); ) {
+        for (Iterator<Map.Entry<ClientGroupObject, Long>> iterator = pendingChangeCurrentObjectsRequests.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<ClientGroupObject, Long> entry = iterator.next();
 
             if (entry.getValue() <= currentDispatchingRequestIndex) {
@@ -547,14 +545,14 @@ public class ClientFormController implements AsyncListener {
     private void modifyFormChangesWithChangePropertyAsyncs(ClientFormChanges formChanges) {
         long currentDispatchingRequestIndex = rmiQueue.getCurrentDispatchingRequestIndex();
 
-        for (Iterator<Table.Cell<ClientPropertyDraw, ClientGroupObjectValue, Long>> iterator = lastChangePropertyRequestIndices.cellSet().iterator(); iterator.hasNext(); ) {
-            Table.Cell<ClientPropertyDraw, ClientGroupObjectValue, Long> cell = iterator.next();
-            if (cell.getValue() <= currentDispatchingRequestIndex) {
+        for (Iterator<Table.Cell<ClientPropertyDraw, ClientGroupObjectValue, PropertyChange>> iterator = pendingChangePropertyRequests.cellSet().iterator(); iterator.hasNext(); ) {
+            Table.Cell<ClientPropertyDraw, ClientGroupObjectValue, PropertyChange> cell = iterator.next();
+            PropertyChange change = cell.getValue();
+            if (change.requestIndex <= currentDispatchingRequestIndex) {
                 iterator.remove();
 
                 ClientPropertyDraw propertyDraw = cell.getRowKey();
                 ClientGroupObjectValue keys = cell.getColumnKey();
-                Pair<Object, Object> change = lastChangePropertyRequestValues.remove(propertyDraw, keys);
 
                 Map<ClientGroupObjectValue, Object> propertyValues = formChanges.properties.get(propertyDraw);
                 if (propertyValues == null) { // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
@@ -563,16 +561,20 @@ public class ClientFormController implements AsyncListener {
                     formChanges.updateProperties.add(propertyDraw);
                 }
 
-                if(formChanges.updateProperties.contains(propertyDraw) && !propertyValues.containsKey(keys))
-                    propertyValues.put(keys, change.second);
+                if (formChanges.updateProperties.contains(propertyDraw) && !propertyValues.containsKey(keys)) {
+                    propertyValues.put(keys, change.oldValue);
+                }
             }
         }
 
-        for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Pair<Object, Object>>> e : lastChangePropertyRequestValues.rowMap().entrySet()) {
+        for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyChange>> e : pendingChangePropertyRequests.rowMap().entrySet()) {
             Map<ClientGroupObjectValue, Object> propertyValues = formChanges.properties.get(e.getKey());
             if (propertyValues != null) {
-                for (Map.Entry<ClientGroupObjectValue, Pair<Object, Object>> keyValue : e.getValue().entrySet()) {
-                    propertyValues.put(keyValue.getKey(), keyValue.getValue().first);
+                for (Map.Entry<ClientGroupObjectValue, PropertyChange> keyValue : e.getValue().entrySet()) {
+                    PropertyChange change = keyValue.getValue();
+                    if (change.canUseNewValueForRendering) {
+                        propertyValues.put(keyValue.getKey(), change.newValue);
+                    }
                 }
             }
         }
@@ -581,13 +583,13 @@ public class ClientFormController implements AsyncListener {
     private void modifyFormChangesWithModifyObjectAsyncs(ClientFormChanges formChanges) {
         long currentDispatchingRequestIndex = rmiQueue.getCurrentDispatchingRequestIndex();
 
-        for (Iterator<Map.Entry<Long,ModifyObject>> iterator = lastModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
+        for (Iterator<Map.Entry<Long,ModifyObject>> iterator = pendingModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<Long, ModifyObject> cell = iterator.next();
             if(cell.getKey() <= currentDispatchingRequestIndex)
                 iterator.remove();
         }
 
-        for (Map.Entry<Long, ModifyObject> e : lastModifyObjectRequests.entrySet()) {
+        for (Map.Entry<Long, ModifyObject> e : pendingModifyObjectRequests.entrySet()) {
             List<ClientGroupObjectValue> gridObjects = formChanges.gridObjects.get(e.getValue().object.groupObject);
             if(gridObjects!=null) {
                 if(e.getValue().add)
@@ -640,7 +642,7 @@ public class ClientFormController implements AsyncListener {
                     @Override
                     public void onAsyncRequest(long requestIndex) {
 //                        System.out.println("!!Async changing group object with req#: " + requestIndex + " on " + objectValue);
-                        lastChangeCurrentObjectsRequestIndices.put(group, requestIndex);
+                        pendingChangeCurrentObjectsRequests.put(group, requestIndex);
                     }
 
                     @Override
@@ -663,8 +665,8 @@ public class ClientFormController implements AsyncListener {
         return fullCurrentKey.serialize();
     }
 
-    public void changeProperty(final EditPropertyHandler handler,
-                               final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final Object value, final Object oldValue) throws IOException {
+    public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey,
+                               final Object newValue, final Object oldValue, final boolean canUseNewValueForRendering) throws IOException {
         assert !isEditing();
 
         commitOrCancelCurrentEditing();
@@ -677,20 +679,21 @@ public class ClientFormController implements AsyncListener {
 //                System.out.println("!!Async changing property with req#: " + requestIndex);
 //                ExceptionUtils.dumpStack();
 //                System.out.println("------------------------");
-                handler.updateEditValue(value);
+
                 GroupObjectController controller = controllers.get(property.groupObject);
 
                 ClientGroupObjectValue propertyKey = controller != null && !controller.hasPanelProperty(property)
                                                      ? new ClientGroupObjectValue(controller.getCurrentObject(), columnKey)
                                                      : columnKey;
 
-                lastChangePropertyRequestIndices.put(property, propertyKey, requestIndex);
-                lastChangePropertyRequestValues.put(property, propertyKey, new Pair<Object, Object>(value, oldValue));
+                pendingChangePropertyRequests.put(property, propertyKey,
+                                                    new PropertyChange(requestIndex, newValue, oldValue, property.changeType.getTypeClass() == property.baseType.getTypeClass())
+                );
             }
 
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {
-                return remoteForm.changeProperty(requestIndex, property.getID(), fullCurrentKey, serializeObject(value), null);
+                return remoteForm.changeProperty(requestIndex, property.getID(), fullCurrentKey, serializeObject(newValue), null);
             }
 
             @Override
@@ -738,8 +741,8 @@ public class ClientFormController implements AsyncListener {
             protected void onAsyncRequest(long requestIndex) {
                 controller.modifyGroupObject(value, add); // сначала посылаем запрос, так как getFullCurrentKey может измениться
 
-                lastChangeCurrentObjectsRequestIndices.put(object.groupObject, requestIndex); // так как по сути такой execute сам меняет groupObject
-                lastModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value));
+                pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex); // так как по сути такой execute сам меняет groupObject
+                pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value));
             }
 
             @Override
@@ -861,13 +864,7 @@ public class ClientFormController implements AsyncListener {
             for (int i = 0; i < rowLength; i++) {
                 ClientPropertyDraw property = propertyList.get(i);
                 String sCell = sRow.get(i);
-                Object oCell = null;
-                if (sCell != null) {
-                    try {
-                        oCell = property.parseChangeValue(sCell);
-                    } catch (ParseException ignore) {
-                    }
-                }
+                Object oCell = sCell == null ? null : property.parseChangeValueOrNull(sCell);
                 valueRow.add(serializeObject(oCell));
             }
             values.add(valueRow);
@@ -881,7 +878,7 @@ public class ClientFormController implements AsyncListener {
         for (ClientGroupObjectValue key : columnKeys) {
             serializedColumnKeys.add(key.serialize());
         }
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest() {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest() {
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {
                 return remoteForm.pasteExternalTable(requestIndex, propertyIdList, serializedColumnKeys, values);
@@ -889,39 +886,47 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void pasteMulticellValue(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> keys, final String sValue) throws IOException {
-        if (keys.isEmpty()) {
+    public void pasteMulticellValue(final Map<ClientPropertyDraw, PasteData> paste) throws IOException {
+        if (paste.isEmpty()) {
             return;
         }
 
-        final Map<Integer, List<Map<Integer, Object>>> mKeys = new HashMap<Integer, List<Map<Integer, Object>>>();
+        final Map<Integer, List<byte[]>> mKeys = new HashMap<Integer, List<byte[]>>();
         final Map<Integer, byte[]> mValues = new HashMap<Integer, byte[]>();
 
-        for (Map.Entry<ClientPropertyDraw, List<ClientGroupObjectValue>> keysEntry : keys.entrySet()) {
+        for (Map.Entry<ClientPropertyDraw, PasteData> keysEntry : paste.entrySet()) {
             ClientPropertyDraw property = keysEntry.getKey();
-            List<ClientGroupObjectValue> propKeys = keysEntry.getValue();
+            PasteData pasteData = keysEntry.getValue();
 
-            List<Map<Integer, Object>> propMKeys = new ArrayList<Map<Integer, Object>>();
-            for (ClientGroupObjectValue key : propKeys) {
-                Map<Integer, Object> mKey = new HashMap<Integer, Object>();
-                for (Map.Entry<ClientObject, Object> keyPart : key.entrySet()) {
-                    mKey.put(keyPart.getKey().getID(), keyPart.getValue());
-                }
-
-                propMKeys.add(mKey);
-            }
-
-            Object parsedValue = null;
-            try {
-                parsedValue = property.parseChangeValue(sValue);
-            } catch (ParseException ignore) {
+            List<byte[]> propMKeys = new ArrayList<byte[]>();
+            for (int i = 0; i < pasteData.keys.size(); ++i) {
+                propMKeys.add(getFullCurrentKey(pasteData.keys.get(i)));
             }
 
             mKeys.put(property.getID(), propMKeys);
-            mValues.put(property.getID(), serializeObject(parsedValue));
+            mValues.put(property.getID(), serializeObject(pasteData.newValue));
         }
 
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest() {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest() {
+            @Override
+            protected void onAsyncRequest(long requestIndex) {
+                for (Map.Entry<ClientPropertyDraw, PasteData> e : paste.entrySet()) {
+                    ClientPropertyDraw property = e.getKey();
+                    PasteData pasteData = e.getValue();
+                    Object newValue = pasteData.newValue;
+                    boolean canUseNewValueForRendering = property.canUsePasteValueForRendering();
+
+                    for (int i = 0; i < pasteData.keys.size(); ++i) {
+                        ClientGroupObjectValue key = pasteData.keys.get(i);
+                        Object oldValue = pasteData.oldValues.get(i);
+                        pendingChangePropertyRequests.put(property,
+                                                          key,
+                                                          new PropertyChange(requestIndex, newValue, oldValue, canUseNewValueForRendering)
+                        );
+                    }
+                }
+            }
+
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {
                 return remoteForm.pasteMulticellValue(requestIndex, mKeys, mValues);
@@ -1316,6 +1321,34 @@ public class ClientFormController implements AsyncListener {
             this.object = object;
             this.add = add;
             this.value = value;
+        }
+    }
+
+    private static class PropertyChange {
+        final long requestIndex;
+
+        final Object newValue;
+        final Object oldValue;
+        final boolean canUseNewValueForRendering;
+
+        private PropertyChange(long requestIndex, Object newValue, Object oldValue, boolean canUseNewValueForRendering) {
+            this.requestIndex = requestIndex;
+            this.newValue = canUseNewValueForRendering ? newValue : null;
+            this.oldValue = oldValue;
+            this.canUseNewValueForRendering = canUseNewValueForRendering;
+        }
+    }
+
+    public final static class PasteData {
+        public final Object newValue;
+
+        public final List<ClientGroupObjectValue> keys;
+        public final List<Object> oldValues;
+
+        public PasteData(Object newValue, List<ClientGroupObjectValue> keys, List<Object> oldValues) {
+            this.newValue = newValue;
+            this.keys = keys;
+            this.oldValues = oldValues;
         }
     }
 }

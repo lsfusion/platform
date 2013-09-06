@@ -12,10 +12,10 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static lsfusion.client.form.ClientFormController.PasteData;
 
 public abstract class SingleCellTable extends ClientPropertyTable {
 
@@ -67,8 +67,15 @@ public abstract class SingleCellTable extends ClientPropertyTable {
     public void pasteTable(List<List<String>> table) {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
             try {
-                Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells = singletonMap(model.getProperty(), singletonList(model.getColumnKey()));
-                getForm().pasteMulticellValue(cells, table.get(0).get(0));
+                ClientPropertyDraw property = model.getProperty();
+                Object newValue = property.parseChangeValueOrNull(table.get(0).get(0));
+                if (property.canUsePasteValueForRendering()) {
+                    setValue(newValue);
+                }
+
+                getForm().pasteMulticellValue(
+                        singletonMap(property, new PasteData(newValue, singletonList(model.getColumnKey()), singletonList(model.getValue())))
+                );
             } catch (IOException e) {
                 Throwables.propagate(e);
             }

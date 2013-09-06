@@ -727,25 +727,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private ImOrderSet<ImMap<ObjectInstance, DataObject>> readObjects(List<Map<Integer, Object>> keyIds) throws SQLException {
-
-        MOrderExclSet<ImMap<ObjectInstance, DataObject>> mResult = SetFact.mOrderExclSet(keyIds.size());
-        for(Map<Integer, Object> keyId : keyIds) {
-            MExclMap<ObjectInstance, DataObject> mKey = MapFact.mExclMap(keyIds.size());
-            for (Entry<Integer, Object> objectId : keyId.entrySet()) {
-                ObjectInstance objectInstance = getObjectInstance(objectId.getKey());
-                mKey.exclAdd(objectInstance, session.getDataObject(objectInstance.getBaseClass(), objectId.getValue()));
-            }
-            mResult.exclAdd(mKey.immutable());
-        }
-        return mResult.immutableOrder();
-    }
-
-    public void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Map<Integer, byte[]> values) throws SQLException, IOException {
-        for (Integer propertyId : cells.keySet()) { // бежим по ячейкам
-            PropertyDrawInstance property = getPropertyDraw(propertyId);
-            Object value = deserializeObject(values.get(propertyId));
-            executePasteAction(property, null, readObjects(cells.get(propertyId)).toOrderMap(value));
+    public void pasteMulticellValue(Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> cellsValues) throws SQLException, IOException {
+        for (Entry<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> e : cellsValues.entrySet()) { // бежим по ячейкам
+            PropertyDrawInstance property = e.getKey();
+            executePasteAction(property, null, e.getValue());
         }
     }
 

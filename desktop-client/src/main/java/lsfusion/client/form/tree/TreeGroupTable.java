@@ -41,6 +41,7 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static lsfusion.client.form.ClientFormController.PasteData;
 import static lsfusion.client.form.EditBindingMap.getPropertyEditActionSID;
 import static lsfusion.client.form.EditBindingMap.isEditableAwareEditEvent;
 
@@ -579,8 +580,14 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             final ClientPropertyDraw property = getProperty(row, column);
             if (property != null) {
                 try {
-                    Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells = singletonMap(property, singletonList(currentPath));
-                    form.pasteMulticellValue(cells, table.get(0).get(0));
+                    Object newValue = property.parseChangeValueOrNull(table.get(0).get(0));
+                    if (property.canUsePasteValueForRendering()) {
+                        model.setValueAt(newValue, row, column);
+                    }
+
+                    form.pasteMulticellValue(
+                            singletonMap(property, new PasteData(newValue, singletonList(currentPath), singletonList(getValueAt(row, column))))
+                    );
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }
