@@ -91,7 +91,7 @@ public class LRUUtil {
                                         long used = tenuredGenPool.getUsage().getUsed();
                                         if(used > longCriticalMem) { // если все еще used вырезаем еще
                                             double cleanMem = 1.0 - (averageMem / used);
-                                            System.out.println("REMOVED / RESCHEDULE " + cleanMem + " " + (long) (100 * cleanMem / memGCIn100Millis));
+//                                            System.out.println("REMOVED / RESCHEDULE " + cleanMem + " " + (long) (100 * cleanMem / memGCIn100Millis));
 
                                             ALRUMap.forceRemoveAllLRU(cleanMem);
                                             scheduler.schedule(this, (long) (100 * cleanMem / memGCIn100Millis), TimeUnit.MILLISECONDS);
@@ -125,11 +125,11 @@ public class LRUUtil {
                 if(used!=lastCollected) { // прошла сборка мусора
                     if (used > lastCollected && used > upAverageMem) { // память растет и мы ниже критического предела, ускоряем сборку LRU
                         multiplier /= adjustLRU;
-                        System.out.println("DEC MULTI " + multiplier);
+//                        System.out.println("DEC MULTI " + multiplier);
                     }
                     if (used < lastCollected && used < downAverageMem && multiplier < MAX_MULTIPLIER) { // память уменьшается и мы выше критического предела, замедляем сборку LRU
                         multiplier *= adjustLRU;
-                        System.out.println("INC MULTI " + multiplier);
+//                        System.out.println("INC MULTI " + multiplier);
                     }
 
                     lastCollected = used;
