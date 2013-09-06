@@ -1145,6 +1145,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             sql.commitTransaction();
         } catch (SQLException e) {
             sql.rollbackTransaction();
+            throw new RuntimeException("Error while synchronizing DB : ", e);
         }
 
         DataSession session = createSession();
