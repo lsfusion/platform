@@ -457,10 +457,10 @@ META defineDocumentInterfaceHeaderNumber(objectClass)
     series##objectClass(o) += seriesObject(o) IF o IS User##objectClass;
 END
 
-META defineDocumentDetailNumber (object, detailClass, group)
-    number##detailClass 'Номер' (d) = numberObject(object##detailClass(d)) IN group;
-    series##detailClass 'Серия' (d) = seriesObject(object##detailClass(d)) IN group;
-    seriesNumber##detailClass 'Серия/номер' (d) = seriesNumberObject(object##detailClass(d));
+META defineDocumentAbstractDetailNumber (object, detailClass)
+    number##detailClass 'Номер' (d) = number###object(object##detailClass(d));
+    series##detailClass 'Серия' (d) = series###object(object##detailClass(d));
+    seriesNumber##detailClass 'Серия/номер' (d) = seriesNumber###object(object##detailClass(d));
 END
 
 META defineDocumentDetailNumber (object, detailClass)
@@ -469,18 +469,18 @@ META defineDocumentDetailNumber (object, detailClass)
     seriesNumber##detailClass 'Серия/номер' (d) = seriesNumberObject(object##detailClass(d));
 END
 
-META defineDocumentDetailNumber (object)
-    @defineDocumentDetailNumber(object, ###object##Detail);
+META defineDocumentInterfaceDetailNumber (object, detailClass)
+    @defineDocumentAbstractDetailNumber(object, detailClass);
+    @defineDocumentDetailNumber(user###object, User###detailClass);
 END
 
 META defineDocumentAbstractNumber(object, detailClass)
     @defineDocumentAbstractHeaderNumber(###object);
-    @defineDocumentDetailNumber(object, detailClass);
+    @defineDocumentAbstractDetailNumber(object, detailClass);
 END
 META defineDocumentInterfaceNumber(object, detailClass)
     @defineDocumentInterfaceHeaderNumber(###object);
-    @defineDocumentDetailNumber(object, detailClass);
-    @defineDocumentDetailNumber(user###object, User##detailClass, recognize);
+    @defineDocumentInterfaceDetailNumber(object, detailClass);
 END
 
 META defineDocumentAbstractNumber(object)
