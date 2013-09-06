@@ -251,8 +251,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                     }
                 }
 
-                int columnMinimumWidth = property.widthUser != null ? property.widthUser: property.getMinimumPixelWidth();
-                int columnMinimumHeight = property.widthUser != null ? property.widthUser: property.getMinimumPixelHeight();
+                int columnMinimumWidth = property.widthUser != null ? property.widthUser : property.getMinimumPixelWidth();
+                int columnMinimumHeight = property.getMinimumPixelHeight();
                 setColumnWidth(column, columnMinimumWidth  + "px");
 
                 //дублирование логики изменения captions для оптимизации
