@@ -120,7 +120,7 @@ public class SQLSession extends MutableObject {
 
     private void tryCommon() throws SQLException { // пытается вернуться к
         removeUnusedTemporaryTables();
-        if(inTransaction == 0 && getSQLTemporaryPool().isEmpty(sessionTablesMap)) { // вернемся к commonConnection'у
+        if(inTransaction == 0 && volatileStats.get() == 0 && getSQLTemporaryPool().isEmpty(sessionTablesMap)) { // вернемся к commonConnection'у
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
         }

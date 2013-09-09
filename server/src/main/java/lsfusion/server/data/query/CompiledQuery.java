@@ -329,6 +329,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         int aliasNum=0;
         MList<JoinSelect> mJoins = ListFact.mList();
         ImList<JoinSelect> joins;
+        MList<String> mExplicitWheres = ListFact.mList();
         MList<String> mImplicitJoins = ListFact.mList();
         MOrderExclSet<JoinSelect> mOuterPendingJoins = SetFact.mOrderExclSet();
 
@@ -391,6 +392,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                                 stackTranslate.peek().revAdd(keySource, keyString);
                             for(int j=0,sizeJ=mImplicitJoins.size();j<sizeJ;j++)
                                 mImplicitJoins.set(j, mImplicitJoins.get(j).replace(keySource, keyString));
+                            for(int j=0,sizeJ=mExplicitWheres.size();j<sizeJ;j++)
+                                mExplicitWheres.set(j, mExplicitWheres.get(j).replace(keySource, keyString));
                             for(int j=0,sizeJ=mOuterPendingJoins.size();j<sizeJ;j++) {
                                 JoinSelect pendingJoin = mOuterPendingJoins.get(j);
                                 pendingJoin.join = pendingJoin.join.replace(keySource, keyString);
@@ -414,10 +417,20 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         public void fillInnerJoins(MCol<String> whereSelect) { // заполним Inner Joins, чтобы keySelect'ы были
-            innerWhere = whereJoins.fillInnerJoins(upWheres, whereSelect, this);
+            stackUsedPendingKeys.push(SetFact.<KeyExpr>mSet()); stackTranslate.push(MapFact.<String, String>mRevMap()); stackUsedOuterPendingJoins.push(new Result<Boolean>());
+            
+            innerWhere = whereJoins.fillInnerJoins(upWheres, mExplicitWheres, this);
+
+            MSet<KeyExpr> usedKeys = stackUsedPendingKeys.pop();
+            MRevMap<String, String> translate = stackTranslate.pop();
+            stackUsedOuterPendingJoins.pop();
+            assert usedKeys.size() == translate.size();
+
+            whereSelect.addAll(mExplicitWheres.immutableList().getCol());
             whereSelect.addAll(mImplicitJoins.immutableList().getCol());
             mJoins.addAll(mOuterPendingJoins.immutableOrder());
             assert pending.isEmpty();
+            mExplicitWheres = null;
             mImplicitJoins = null;
             mOuterPendingJoins = null;
         }

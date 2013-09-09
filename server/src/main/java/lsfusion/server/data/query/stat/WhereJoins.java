@@ -541,7 +541,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return result.immutable();
     }
 
-    public Where fillInnerJoins(ImMap<WhereJoin, Where> upWheres, MCol<String> whereSelect, CompileSource source) {
+    public Where fillInnerJoins(ImMap<WhereJoin, Where> upWheres, MList<String> whereSelect, CompileSource source) {
         Where innerWhere = Where.TRUE;
         for (WhereJoin where : wheres)
             if(!(where instanceof ExprOrderTopJoin && ((ExprOrderTopJoin)where).givesNoKeys())) {
