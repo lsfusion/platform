@@ -20,6 +20,8 @@ public class ContextObject implements ApplicationContextHolder {
     }
 
     public void updateDependency(Object object, String field) {
-        context.updateDependency(object, field);
+        if (context != null) {
+            context.updateDependency(object, field);
+        }
     }
 }

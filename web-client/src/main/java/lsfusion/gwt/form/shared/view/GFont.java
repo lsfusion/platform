@@ -1,47 +1,59 @@
 package lsfusion.gwt.form.shared.view;
 
-import lsfusion.gwt.base.shared.GwtSharedUtils;
+import com.google.gwt.dom.client.Style;
 
 import java.io.Serializable;
 
-public class GFont implements Serializable {
-    public static final String BOLD = "bold";
-    public static final String ITALIC = "italic";
+import static lsfusion.gwt.base.shared.GwtSharedUtils.nullEquals;
 
-    public String style;
-    public String weight;
-    public Integer size;
+public class GFont implements Serializable {
     public String family;
+    public Integer size;
+    public boolean bold;
+    public boolean italic;
 
     public GFont() {
     }
 
-    public GFont(String style, String weight, Integer size, String family) {
-        this.style = style;
-        this.weight = weight;
-        this.size = size;
+    public GFont(String family, Integer size, boolean bold, boolean italic) {
         this.family = family;
+        this.size = size;
+        this.bold = bold;
+        this.italic = italic;
     }
 
-    public String getFullFont() {
-        String font = "";
-        if (style != null) {
-            font += style + " ";
-        }
-        if (weight != null) {
-            font += weight + " ";
+    public void apply(Style style) {
+        if (family != null) {
+            style.setProperty("fontFamily", family);
         }
         if (size != null) {
-            font += size + "px ";
+            style.setFontSize(size, Style.Unit.PX);
         }
-        if (family != null) {
-            font += family;
-        }
-        return font;
+        style.setFontStyle(italic ? Style.FontStyle.ITALIC : Style.FontStyle.NORMAL);
+        style.setFontWeight(bold ? Style.FontWeight.BOLD : Style.FontWeight.NORMAL);
     }
 
     public boolean isBold() {
-        return weight != null && weight.equals(BOLD);
+        return bold;
+    }
+
+    public boolean isItalic() {
+        return italic;
+    }
+
+    transient private int hash;
+    transient private boolean hashComputed;
+
+    @Override
+    public int hashCode() {
+        if (hashComputed) {
+            hash = family != null ? family.hashCode() : 0;
+            hash = 31 * hash + (size != null ? size : 0);
+            hash = 31 * hash + (bold ? 1 : 0);
+            hash = 31 * hash + (italic ? 1 : 0);
+            hashComputed = true;
+        }
+        return hash;
     }
 
     @Override
@@ -50,6 +62,9 @@ public class GFont implements Serializable {
             return false;
         }
         GFont font = (GFont) obj;
-        return GwtSharedUtils.nullEquals(family, font.family) && GwtSharedUtils.nullEquals(style, font.style) && GwtSharedUtils.nullEquals(size, font.size) && GwtSharedUtils.nullEquals(weight, font.weight);
+        return bold == font.bold &&
+               italic == font.italic &&
+               nullEquals(family, font.family) &&
+               nullEquals(size, font.size);
     }
 }

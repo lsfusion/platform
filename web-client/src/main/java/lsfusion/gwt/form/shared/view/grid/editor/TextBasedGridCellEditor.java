@@ -137,7 +137,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
             font = ((GGridPropertyTable) table).font;
         }
         if (font != null) {
-            inputStyle.setProperty("font", font.getFullFont());
+            font.apply(inputStyle);
         }
         if (font == null || font.size == null) {
             inputStyle.setFontSize(8, Style.Unit.PT);

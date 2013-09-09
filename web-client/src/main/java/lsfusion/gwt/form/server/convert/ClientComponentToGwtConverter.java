@@ -13,13 +13,13 @@ import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
 import lsfusion.gwt.form.shared.view.classes.GClass;
 import lsfusion.gwt.form.shared.view.reader.*;
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.FontInfo;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -70,12 +70,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             component.foreground = new ColorDTO(Integer.toHexString(clientComponent.design.getForeground().getRGB()).substring(2, 8));
         }
 
-        Font clientFont = clientComponent.design.getFont();
+        FontInfo clientFont = clientComponent.design.getFont();
         if (clientFont != null) {
             component.font = convertFont(clientFont);
         }
 
-        Font headerFont = clientComponent.design.getHeaderFont();
+        FontInfo headerFont = clientComponent.design.getHeaderFont();
         if (headerFont != null) {
             component.headerFont = convertFont(headerFont);
         }
@@ -102,12 +102,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         throw new IllegalStateException("Unknown alignment");
     }
 
-    private GFont convertFont(Font headerFont) {
+    private GFont convertFont(FontInfo clientFont) {
         GFont font = new GFont(
-                ((headerFont.getStyle() & Font.ITALIC) != 0 ? GFont.ITALIC : null),
-                ((headerFont.getStyle() & Font.BOLD) != 0 ? GFont.BOLD : null),
-                headerFont.getSize(),
-                headerFont.getFamily()
+                clientFont.getFontFamily(),
+                clientFont.getFontSize(),
+                clientFont.isBold(),
+                clientFont.isItalic()
         );
         form.addFont(font);
         return font;
@@ -263,7 +263,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
-        propertyDraw.icon= FileUtils.createImage(clientPropertyDraw.design.getImageHolder(), clientPropertyDraw.design.iconPath, "property", canIconBeDisabled);
+        propertyDraw.icon = FileUtils.createImage(clientPropertyDraw.design.getImageHolder(), clientPropertyDraw.design.iconPath, "property", canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 

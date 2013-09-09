@@ -46,10 +46,10 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
 
         GFont font = property.font;
         if (font == null && table instanceof GGridPropertyTable) {
-            font = ((GGridPropertyTable) table).font;    
+            font = ((GGridPropertyTable) table).font;
         }
         if (font != null) {
-            divStyle.setProperty("font", font.getFullFont());    
+            font.apply(divStyle);
         }
         divStyle.clearProperty("lineHeight");
 

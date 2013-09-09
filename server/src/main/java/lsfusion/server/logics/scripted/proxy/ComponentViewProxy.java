@@ -1,12 +1,13 @@
 package lsfusion.server.logics.scripted.proxy;
 
+import lsfusion.interop.ComponentDesign;
+import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.logics.scripted.Bounds;
 
-import javax.swing.*;
 import java.awt.*;
 
 public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
@@ -158,12 +159,47 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
 
     /* ========= design properties ========= */
 
-    public void setFont(Font font) {
-        target.design.font = font;
+    public void setHeaderFont(FontInfo headerFont) {
+        target.design.setHeaderFont(headerFont);
     }
 
-    public void setHeaderFont(Font headerFont) {
-        target.design.headerFont = headerFont;
+    public void setFont(FontInfo font) {
+        target.design.setFont(font);
+    }
+
+    public void setFontSize(int fontSize) {
+        ComponentDesign design = target.design;
+
+        FontInfo font = design.font != null ? design.font.derive(fontSize) : new FontInfo(fontSize);
+
+        design.setFont(font);
+    }
+
+    public void setFontStyle(String fontStyle) {
+        boolean bold;
+        boolean italic;
+        //чтобы не заморачиваться с лишним типом для стиля просто перечисляем все варианты...
+        if ("bold".equals(fontStyle)) {
+            bold = true;
+            italic = false;
+        } else if ("italic".equals(fontStyle)) {
+            bold = false;
+            italic = true;
+        } else if ("bold italic".equals(fontStyle) || "italic bold".equals(fontStyle)) {
+            bold = true;
+            italic = true;
+        } else if ("".equals(fontStyle)) {
+            bold = false;
+            italic = false;
+        } else {
+            throw new IllegalArgumentException("fontStyle value must be a combination of strings bold and italic");
+        }
+
+        ComponentDesign design = target.design;
+
+        FontInfo font = design.font != null ? design.font.derive(bold, italic) : new FontInfo(bold, italic);
+
+        design.setFont(font);
     }
 
     public void setBackground(Color background) {
@@ -175,8 +211,6 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
     }
 
     public void setIconPath(String iconPath) {
-        target.design.iconPath = iconPath;
-        target.design.setImage(new ImageIcon(ComponentView.class.getResource("/images/" + iconPath)));
+        target.design.setIconPath(iconPath);
     }
-
 }

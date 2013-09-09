@@ -1,28 +1,31 @@
 package lsfusion.gwt.form.shared.view;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.RootPanel;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GFontMetrics {
-    private final GFontMetrics INSTANCE = new GFontMetrics();
-    private static final String WIDTH_KEY = "width";
-    private static final String HEIGHT_KEY = "height";
+    public static final GFont DEFAULT_FONT = new GFont("", 11, false, false);
 
-//    private static final String DEFAULT_FONT_FAMILY = "Arial";
-    private static final String DEFAULT_FONT_FAMILY = "";
-    private static final int DEFAULT_FONT_PIXEL_SIZE = 11;
-    public static final GFont DEFAULT_FONT = new GFont(null, null, DEFAULT_FONT_PIXEL_SIZE, DEFAULT_FONT_FAMILY);
-
-    private static HashMap<MetricsCallback, Integer> calculationsInProgress = new HashMap<MetricsCallback, Integer>();
+    private static final HashMap<MetricsCallback, Integer> calculationsInProgress = new HashMap<MetricsCallback, Integer>();
 
     // все шрифты, с которыми приходилось работать на клиенте
-    private static final HashMap<GFont, HashMap<String, Integer>> calculatedFonts = new HashMap<GFont, HashMap<String, Integer>>();
+    private static final HashMap<GFont, FontMeasure> calculatedFonts = new HashMap<GFont, FontMeasure>();
 
-    public GFontMetrics get() {
-        return INSTANCE;
+    private static boolean isCalculated(GFont font) {
+        return calculatedFonts.containsKey(font);
     }
 
-    private static Integer getCalculationsCount(MetricsCallback callback) {
+    private static FontMeasure getMeasure(GFont font) {
+        return calculatedFonts.get(font);
+    }
+
+    private static int getCalculationsCount(MetricsCallback callback) {
         Integer count = calculationsInProgress.get(callback);
         if (count == null) {
             calculationsInProgress.put(callback, 0);
@@ -31,50 +34,11 @@ public class GFontMetrics {
         return count;
     }
 
-    private static void setCalculationsCount(MetricsCallback callback, Integer count) {
+    private static void setCalculationsCount(MetricsCallback callback, int count) {
         calculationsInProgress.put(callback, count);
     }
 
-    public static void calculateFontMetrics(ArrayList<GFont> fonts, MetricsCallback callback) {
-        fonts.add(DEFAULT_FONT);
-        for (GFont font : fonts) {
-            if (!isCalculated(font)) {
-                setCalculationsCount(callback, getCalculationsCount(callback) + 1);
-                getFontMetrics(font, font.family, font.size, font.isBold(), callback);
-            }
-        }
-        if (getCalculationsCount(callback) == 0) {
-            calculationsInProgress.remove(callback);
-            callback.metricsCalculated();
-        }
-    }
-
-    private static boolean isCalculated(GFont font) {
-        return getMeasure(font) != null;
-    }
-
-    private static native void getFontMetrics(GFont gfont, String fontFamily, int fontSize, boolean bold, MetricsCallback callback) /*-{
-        var font = new $wnd.Font();
-        font.fontFamily = fontFamily;
-        if (bold) {
-            font.fontFamily += " bold";
-        }
-        font.src = font.fontFamily;
-        font.onload = function() {
-            var fontMeasure = font.measureText("0", fontSize);
-            @lsfusion.gwt.form.shared.view.GFontMetrics::setFontMetrics(Llsfusion/gwt/form/shared/view/GFont;DDLlsfusion/gwt/form/shared/view/GFontMetrics$MetricsCallback;)(gfont, fontMeasure.width, fontMeasure.leading, callback);
-        }
-
-        font.onerror = function(errorMessage) {
-            @lsfusion.gwt.form.shared.view.GFontMetrics::errorLoadingFont(Llsfusion/gwt/form/shared/view/GFont;Llsfusion/gwt/form/shared/view/GFontMetrics$MetricsCallback;)(gfont, callback);
-        }
-    }-*/;
-
-    public static void setFontMetrics(GFont font, double width, double height, MetricsCallback callback) {
-        HashMap<String, Integer> measures = new HashMap<String, Integer>();
-        measures.put(WIDTH_KEY, (int)Math.round(width));
-        measures.put(HEIGHT_KEY, (int)Math.round(height));
-        calculatedFonts.put(font, measures);
+    private static void calculationFinished(MetricsCallback callback) {
         setCalculationsCount(callback, getCalculationsCount(callback) - 1);
 
         if (getCalculationsCount(callback) == 0) {
@@ -83,39 +47,88 @@ public class GFontMetrics {
         }
     }
 
-    public static void errorLoadingFont(GFont font, MetricsCallback callback) {
-        if (font.isBold()) {
-            //пытаемся подгрузить не-bold версию шрифта
-            getFontMetrics(font, font.family, font.size, false, callback);
-        } else {
-            //используем шрифт по умолчанию
-            getFontMetrics(font, DEFAULT_FONT_FAMILY, font.size, false, callback);
+    private static void calculationStarted(MetricsCallback callback) {
+        setCalculationsCount(callback, getCalculationsCount(callback) + 1);
+    }
+
+    public static void calculateFontMetrics(ArrayList<GFont> fonts, MetricsCallback callback) {
+        fonts.add(DEFAULT_FONT);
+
+        boolean allCalculated = true;
+        for (GFont font : fonts) {
+            if (!isCalculated(font)) {
+                allCalculated = false;
+                calculate(font, callback);
+                calculationStarted(callback);
+            }
+        }
+        if (allCalculated) {
+            callback.metricsCalculated();
+        }
+    }
+
+    private static void calculate(final GFont font, final MetricsCallback callback) {
+        final Element element = DOM.createSpan();
+
+        Style style = element.getStyle();
+
+        style.setDisplay(Style.Display.INLINE);
+        style.setMargin(0, Style.Unit.PX);
+        style.setBorderWidth(0, Style.Unit.PX);
+        style.setPadding(0, Style.Unit.PX);
+        style.setVisibility(Style.Visibility.HIDDEN);
+        style.setPosition(Style.Position.ABSOLUTE);
+        style.setWhiteSpace(Style.WhiteSpace.PRE);
+
+        font.apply(style);
+
+        final String text = "0";
+        DOM.setInnerText(element, text);
+
+        final Element body = RootPanel.getBodyElement();
+        DOM.appendChild(body, element);
+
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                finishCalculate(font, text, element, callback);
+            }
+        });
+    }
+
+    private static void finishCalculate(GFont font, String text, final Element element, MetricsCallback callback) {
+        try {
+            final int width = element.getOffsetWidth() / text.length();
+            final int height = element.getOffsetHeight();
+
+            calculatedFonts.put(font, new FontMeasure((int)Math.round((double) width), (int)Math.round((double) height)));
+
+            calculationFinished(callback);
+        } finally {
+            // dont want element to remain regardless whether or not
+            // measurements succeeded.
+            element.getParentElement().removeChild(element);
         }
     }
 
     public static int getZeroSymbolWidth(GFont font) {
-        HashMap<String, Integer> measure = getMeasure(font == null ? DEFAULT_FONT : font);
-        if (measure != null) {
-            return measure.get(WIDTH_KEY);
-        }
-        return 0;
+        FontMeasure measure = getMeasure(font == null ? DEFAULT_FONT : font);
+        return measure != null ? measure.width : 0;
     }
 
     public static int getSymbolHeight(GFont font) {
-        HashMap<String, Integer> measure = getMeasure(font == null ? DEFAULT_FONT : font);
-        if (measure != null) {
-            return measure.get(HEIGHT_KEY);
-        }
-        return 0;
+        FontMeasure measure = getMeasure(font == null ? DEFAULT_FONT : font);
+        return measure != null ? measure.height : 0;
     }
 
-    private static HashMap<String, Integer> getMeasure(GFont ifont) {
-        for (GFont font : calculatedFonts.keySet()) {
-            if (font.equals(ifont)) {
-                return calculatedFonts.get(font);
-            }
+    private static class FontMeasure {
+        final int width;
+        final int height;
+
+        private FontMeasure(int width, int height) {
+            this.width = width;
+            this.height = height;
         }
-        return null;
     }
 
     public interface MetricsCallback {

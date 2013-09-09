@@ -3,6 +3,7 @@ package lsfusion.server.form.view;
 import lsfusion.base.OrderedMap;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
+import lsfusion.interop.FontInfo;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.layout.AbstractForm;
 import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -430,79 +431,77 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         return result;
     }
 
-    public void setFont(Font font) {
+    public void setFont(FontInfo font) {
 
         for (PropertyDrawView property : getProperties()) {
             setFont(property, font);
         }
     }
 
-    public void setFont(AbstractGroup group, Font font) {
+    public void setFont(AbstractGroup group, FontInfo font) {
 
         for (PropertyDrawView property : getProperties(group)) {
             setFont(property, font);
         }
     }
 
-    public void setFont(AbstractGroup group, Font font, GroupObjectEntity groupObject) {
+    public void setFont(AbstractGroup group, FontInfo font, GroupObjectEntity groupObject) {
         
         for (PropertyDrawView property : getProperties(group, groupObject)) {
             setFont(property, font);
         }
     }
 
-    public void setFont(Font font, GroupObjectEntity groupObject) {
+    public void setFont(FontInfo font, GroupObjectEntity groupObject) {
 
         for (PropertyDrawView property : getProperties(groupObject)) {
             setFont(property, font);
         }
     }
 
-    public void setFont(LP property, Font font, GroupObjectEntity groupObject) {
+    public void setFont(LP property, FontInfo font, GroupObjectEntity groupObject) {
         setFont(property.property, font, groupObject);
     }
 
-    public void setFont(Property property, Font font, GroupObjectEntity groupObject) {
+    public void setFont(Property property, FontInfo font, GroupObjectEntity groupObject) {
 
         for (PropertyDrawView propertyView : getProperties(property, groupObject)) {
             setFont(propertyView, font);
         }
     }
 
-    public void setFont(LP property, Font font) {
+    public void setFont(LP property, FontInfo font) {
         setFont(property.property, font);
     }
 
-    public void setFont(Property property, Font font) {
+    public void setFont(Property property, FontInfo font) {
 
         for (PropertyDrawView propertyView : getProperties(property)) {
             setFont(propertyView, font);
         }
     }
 
-    public void setFont(PropertyDrawView property, Font font) {
-        property.design.font = font;
+    public void setFont(PropertyDrawView property, FontInfo font) {
+        property.design.setFont(font);
     }
 
-
-    public void setHeaderFont(Font font) {
+    public void setHeaderFont(FontInfo headerFont) {
         for (PropertyDrawView property : getProperties()) {
-            setHeaderFont(property, font);
+            setHeaderFont(property, headerFont);
         }
     }
 
-    public void setHeaderFont(Font font, GroupObjectEntity groupObject) {
+    public void setHeaderFont(FontInfo headerFont, GroupObjectEntity groupObject) {
         for (PropertyDrawView property : getProperties(groupObject)) {
-            setHeaderFont(property, font);
+            setHeaderFont(property, headerFont);
         }
     }
 
-    public void setHeaderFont(PropertyDrawView property, Font font) {
-        property.design.headerFont = font;
+    public void setHeaderFont(PropertyDrawView property, FontInfo headerFont) {
+        property.design.setHeaderFont(headerFont);
     }
 
     public void setBackground(AbstractGroup group, Color background, GroupObjectEntity groupObject) {
-
         for (PropertyDrawView property : getProperties(group, groupObject)) {
             setBackground(property, background);
         }

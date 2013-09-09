@@ -99,7 +99,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         rootNode = model.getRoot();
         
         if (treeGroup.design.font != null) {
-            setFont(treeGroup.design.font);
+            setFont(treeGroup.design.getFont(this));
         }
 
         sortableHeaderManager = new TableSortableHeaderManager<ClientPropertyDraw>(this, true) {

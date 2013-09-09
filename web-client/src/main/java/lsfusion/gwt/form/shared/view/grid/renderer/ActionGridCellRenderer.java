@@ -50,7 +50,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
                 font = ((GGridPropertyTable) table).font;
             }
             if (font != null) {
-                label.getStyle().setProperty("font", font.getFullFont());
+                font.apply(label.getStyle());
             }
             
             label.getStyle().setBottom(-GFontMetrics.getSymbolHeight(font) / 2, Style.Unit.PX);

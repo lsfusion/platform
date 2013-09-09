@@ -226,7 +226,7 @@ public class GridController {
     }
     
     public Font getFont() {
-        return clientGrid.design.font;
+        return clientGrid.design.getFont(table);
     }
 
     public void addView(ClientFormLayout formLayout) {

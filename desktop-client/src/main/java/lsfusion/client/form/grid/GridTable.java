@@ -104,8 +104,8 @@ public class GridTable extends ClientPropertyTable {
         setAutoCreateColumnsFromModel(false);
         setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
-        if (gridController.getFont() != null) {
-            setFont(gridController.getFont());
+        if (groupObject.grid.design.font != null) {
+            setFont(groupObject.grid.design.getFont(this));
         }
 
         sortableHeaderManager = new TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>>(this) {

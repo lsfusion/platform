@@ -4,6 +4,8 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
+import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 public class TextGridCellRenderer extends TextBasedGridCellRenderer {
@@ -22,8 +24,12 @@ public class TextGridCellRenderer extends TextBasedGridCellRenderer {
         divStyle.setProperty("wordWrap", "break-word");
         divStyle.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
 
-        if (property.font != null) {
-            divStyle.setProperty("font", property.font.getFullFont());
+        GFont font = property.font;
+        if (font == null && table instanceof GGridPropertyTable) {
+            font = ((GGridPropertyTable) table).font;
+        }
+        if (font != null) {
+            font.apply(divStyle);
         }
 
         updateElement(cellElement, value);

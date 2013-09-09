@@ -1,19 +1,19 @@
 package lsfusion.server.logics.scripted.proxy;
 
+import lsfusion.base.SoftHashMap;
+import lsfusion.interop.FontInfo;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.converters.FontInfoConverter;
+import lsfusion.server.logics.scripted.converters.KeyStrokeConverter;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.PropertyUtils;
-import lsfusion.base.SoftHashMap;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.logics.scripted.converters.FontConverter;
-import lsfusion.server.logics.scripted.converters.KeyStrokeConverter;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class ViewProxyUtil {
     static {
-        ConvertUtils.register(new FontConverter(), Font.class);
+        ConvertUtils.register(new FontInfoConverter(), FontInfo.class);
         ConvertUtils.register(new KeyStrokeConverter(), KeyStroke.class);
     }
 

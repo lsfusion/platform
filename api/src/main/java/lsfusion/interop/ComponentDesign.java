@@ -9,18 +9,15 @@ import java.io.Serializable;
 
 public class ComponentDesign extends ContextObject implements Serializable {
 
-    public Font font;
+    public FontInfo font;
 
-    public Font getFont(JComponent comp) {
-        return (font == null ? comp.getFont() : font);
-    }
-
-    public Font headerFont;
+    public FontInfo headerFont;
 
     public Color background;
     public Color foreground;
-    private SerializableImageIconHolder imageHolder;
+
     public String iconPath;
+    private SerializableImageIconHolder imageHolder;
 
     public ComponentDesign() {
     }
@@ -57,29 +54,28 @@ public class ComponentDesign extends ContextObject implements Serializable {
         }
     }
 
-    public void designComponent(JComponent comp, Color defaultBackground) {
+    private void designComponent(JComponent comp, Color defaultBackground) {
 
         if (font != null) {
-            comp.setFont(font);
+            comp.setFont(getFont(comp));
         }
 
         if (background != null) {
             comp.setBackground(background);
             comp.setOpaque(true);
-        } else if (defaultBackground != null)
+        } else if (defaultBackground != null) {
             comp.setBackground(defaultBackground);
+        }
 
-        if (foreground != null)
+        if (foreground != null) {
             comp.setForeground(foreground);
-    }
-
-    public boolean isDefaultDesign() {
-        return font == null && headerFont == null && background == null && foreground == null;
+        }
     }
 
     public void designHeader(Component comp) {
-        if (headerFont != null)
-            comp.setFont(headerFont);
+        if (headerFont != null) {
+            comp.setFont(getHeaderFont(comp));
+        }
     }
 
     public Color getBackground() {
@@ -100,52 +96,47 @@ public class ComponentDesign extends ContextObject implements Serializable {
         updateDependency(this, "foreground");
     }
 
-    public Font getFont() {
+    public Font getFont(Component component) {
+        return getOrDeriveComponentFont(font, component);
+    }
+
+    public Font getHeaderFont(Component component) {
+        return getOrDeriveComponentFont(headerFont, component);
+    }
+
+    public FontInfo getFont() {
         return font;
     }
 
-    public void setFont(Font font) {
+    public void setFont(FontInfo font) {
         this.font = font;
         updateDependency(this, "font");
     }
 
-    public Font getHeaderFont() {
+    public FontInfo getHeaderFont() {
         return headerFont;
     }
 
-    public void setHeaderFont(Font font) {
+    public void setHeaderFont(FontInfo font) {
         this.headerFont = font;
         updateDependency(this, "headerFont");
     }
 
-    public String getCodeBackground(String name) {
-        return "design.setBackground(" + name + ", new Color(" + background.getRed() + ", " + background.getGreen() + ", " + background.getBlue() + "));\n";
-    }
-
-    public String getCodeForeground(String name) {
-        return "design.setForeground(" + name + ", new Color(" + foreground.getRed() + ", " + foreground.getGreen() + ", " + foreground.getBlue() + "));\n";
-    }
-
-    public String getCodeFont(String name) {
-        return "design.setFont(" + name + ", new Font(\"" + font.getName() + "\", " + getFontStyle(font) + ", " + font.getSize() + "));\n";
-    }
-
-    public String getCodeHeaderFont(String name) {
-        return "design.setHeaderFont(" + name + ", new Font(\"" + headerFont.getName() + "\", " + getFontStyle(headerFont) + ", " + headerFont.getSize() + "));\n";
-    }
-
-    public String getFontStyle(Font font) {
-        String strStyle = "";
-        int style = font.getStyle();
-        if (style == 0) {
-            strStyle = "Font.PLAIN";
-        } else {
-            if ((style & Font.BOLD) != 0) {
-                strStyle += "Font.BOLD";
-            }
-            if ((style & Font.ITALIC) != 0) strStyle += (((style & Font.BOLD) != 0) ? " | " : "") + "Font.ITALIC";
+    private Font getOrDeriveComponentFont(FontInfo fontInfo, Component component) {
+        if (fontInfo == null) {
+            return component.getFont();
         }
-        return strStyle;
+
+        Object oFont = component instanceof JComponent ? ((JComponent) component).getClientProperty(fontInfo) : null;
+        if (oFont instanceof Font) {
+            return (Font) oFont;
+        }
+
+        Font cFont = font.deriveFrom(component);
+        if (component instanceof JComponent) {
+            ((JComponent) component).putClientProperty(fontInfo, cFont);
+        }
+        return cFont;
     }
 
     public void setIconPath(String iconPath) {

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.scripted.converters;
 
+import lsfusion.interop.FontInfo;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.converters.AbstractConverter;
 import org.apache.commons.lang.math.NumberUtils;
@@ -7,19 +8,22 @@ import org.apache.commons.lang.math.NumberUtils;
 import java.awt.*;
 
 /**
- * <p>Конвертирует значение в значение типа Font. </p>
- * <p>Переданное значение конвертируется в строку, затем она парсится в Font.</p>
+ * <p>Конвертирует значение в значение типа FontInfo. </p>
+ * <p>Переданное значение конвертируется в строку, затем она парсится в FontInfo.</p>
  * <p>Формат строки задаётся просто перечислением слов через пробел.
  * При этом слова italic, bold - добавляют к стилю ITALIC и BOLD соответственно,
  * число интерпретируется как размер,
  * оставшееся слово - как имя шрифта.
  * При присутствии нескольких токенов для представления размера или имени - выбрасывается ConversionException. </p>
+ * Имя шрифта из нескольких слов можно указывать в кавычках
  * <p>Примеры:</p>
- * <p>"Tahoma bold italic 12"</p>
- * <p>"12 bold Tahoma"</p>
- * <p>"Tahoma 15"</p>
+ * <p>Tahoma bold italic 12</p>
+ * <p>12 bold Tahoma</p>
+ * <p>Tahoma 15</p>
+ * <p>15 italic "MS Sans Serif"</p>
+ * <p>37</p>
  */
-public class FontConverter extends AbstractConverter {
+public class FontInfoConverter extends AbstractConverter {
     @Override
     protected Object convertToType(Class type, Object value) throws Throwable {
         if (value instanceof Font) {
@@ -29,33 +33,35 @@ public class FontConverter extends AbstractConverter {
         String name = null;
 
         // Название шрифта состоит из нескольких слов
-        if(value.toString().contains("\"")) {
-            int start = value.toString().indexOf('"');
-            int end = value.toString().lastIndexOf('"') + 1;
-            name = value.toString().substring(start+1, end-1);
-            value = value.toString().substring(0,start) + value.toString().substring(end, value.toString().length());
+        String sValue = value.toString();
+        if(sValue.contains("\"")) {
+            int start = sValue.indexOf('"');
+            int end = sValue.indexOf('"', start + 1) + 1;
+            name = sValue.substring(start + 1, end - 1);
+            sValue = sValue.substring(0, start) + sValue.substring(end);
         }
 
-        int style = 0;
-        int size = -1;
-        for (String part : value.toString().split(" ")) {
+        int size = 0;
+        boolean bold = false;
+        boolean italic = false;
+        for (String part : sValue.split(" ")) {
             if (part.length() == 0) {
                 continue;
             }
 
             if (part.equalsIgnoreCase("italic")) {
-                style |= Font.ITALIC;
+                italic = true;
             } else if (part.equalsIgnoreCase("bold")) {
-                style |= Font.BOLD;
+                bold = true;
             } else {
                 int sz = NumberUtils.toInt(part, -1);
                 if (sz != -1) {
                     //числовой токен
 
-                    if (sz < 0) {
+                    if (sz <= 0) {
                         throw new ConversionException("Size must be > 0");
                     }
-                    if (size != -1) {
+                    if (size != 0) {
                         //уже просетали size
                         throw new ConversionException("Incorrect format: several number tokens specified");
                     }
@@ -73,25 +79,17 @@ public class FontConverter extends AbstractConverter {
             }
         }
 
-        if (name == null) {
-            throw new ConversionException("Incorrect format: font name isn't specified");
-        }
-
-        if (size == -1) {
-            throw new ConversionException("Incorrect format: font size isn't specified");
-        }
-
-        return new Font(name, style, size);
+        return new FontInfo(name, size, bold, italic);
     }
 
     @Override
     protected String convertToString(Object value) throws Throwable {
-        if (value instanceof Font) {
-            Font f = (Font) value;
-            return f.getName()
+        if (value instanceof FontInfo) {
+            FontInfo f = (FontInfo) value;
+            return f.getFontFamily()
                    + (f.isBold() ? " bold" : "")
                    + (f.isItalic() ? " italic" : "")
-                   + " " + f.getSize();
+                   + " " + f.getFontSize();
         } else {
             return super.convertToString(value);
         }
@@ -99,6 +97,6 @@ public class FontConverter extends AbstractConverter {
 
     @Override
     protected Class getDefaultType() {
-        return Font.class;
+        return FontInfo.class;
     }
 }

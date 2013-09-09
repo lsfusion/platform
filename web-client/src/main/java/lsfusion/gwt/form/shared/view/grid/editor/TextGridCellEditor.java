@@ -41,7 +41,7 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
             font = ((GGridPropertyTable) table).font;
         }
         if (font != null) {
-            textareaStyle.setProperty("font", font.getFullFont());
+            font.apply(textareaStyle);
         }
         textareaStyle.setFontSize(8, Style.Unit.PT);
 

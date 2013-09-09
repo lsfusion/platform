@@ -63,7 +63,7 @@ public class DataPanelRenderer implements PanelRenderer {
         });
 
         if (property.headerFont != null) {
-            label.getElement().getStyle().setProperty("font", property.headerFont.getFullFont());
+            property.headerFont.apply(label.getElement().getStyle());
         }
 
         valueTable = new GSinglePropertyTable(form, property, columnKey) {

@@ -4,6 +4,7 @@ import lsfusion.client.descriptor.FormDescriptor;
 import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
 import lsfusion.interop.form.layout.SimplexConstraints;
 import lsfusion.interop.form.layout.SingleSimplexConstraint;
@@ -173,15 +174,23 @@ public class GenerateCodeDialog extends JDialog {
     }
 
     private String getFont(ClientComponent component, int offset) {
-        Font font = component.design.getFont();
-        return font == null ? "" : String.format("%sfont = '\"%s\"%s%s %d';\n", getOffset(offset), font.getName(),
-                font.isBold() ? " bold " : "", font.isItalic() ? " italic " : "", font.getSize());
+        FontInfo font = component.design.getFont();
+        return font == null ? "" : String.format("%sfont = '\"%s\" %s %s %d';\n", getOffset(offset),
+                                                 font.getFontFamily(),
+                                                 font.isBold() ? "bold" : "",
+                                                 font.isItalic() ? "italic" : "",
+                                                 font.getFontSize()
+        );
     }
 
     private String getHeaderFont(ClientComponent component, int offset) {
-        Font font = component.design.getHeaderFont();
-        return font == null ? "" : String.format("%sheaderFont = '\"%s\"%s%s %d';\n", getOffset(offset), font.getName(),
-                font.isBold() ? " bold " : "", font.isItalic() ? " italic " : "", font.getSize());
+        FontInfo font = component.design.getHeaderFont();
+        return font == null ? "" : String.format("%sheaderFont = '\"%s\" %s %s %d';\n", getOffset(offset),
+                                                 font.getFontFamily(),
+                                                 font.isBold() ? "bold" : "",
+                                                 font.isItalic() ? "italic" : "",
+                                                 font.getFontSize()
+        );
     }
 
     private String getBackground(ClientComponent component, int offset) {
