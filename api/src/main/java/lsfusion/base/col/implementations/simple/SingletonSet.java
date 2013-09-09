@@ -387,10 +387,6 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return getter.getMapValue(0, key);
     }
 
-    public <V> ImList<V> map(ImMap<? extends K, ? extends V> map) {
-        return ListFact.singleton(((ImMap<K, V>) map).get(key));
-    }
-
     public List<K> toJavaList() {
         return Collections.<K>singletonList(key);
     }

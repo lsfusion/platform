@@ -33,7 +33,7 @@ public enum PartitionType implements AggrType {
         mTokens.exclAddAll(params.reverse());
 
         ImRevMap<String, PartitionToken> castParams = BaseUtils.immutableCast(params);
-        ImList<PartitionToken> exprs = sourceExprs.map(castParams);
+        ImList<PartitionToken> exprs = sourceExprs.mapList(castParams);
         ImOrderMap<PartitionToken, CompileOrder> orders = sourceOrders.map(castParams);
         ImSet<PartitionToken> partitions = sourcePartitions.mapRev(castParams);
 

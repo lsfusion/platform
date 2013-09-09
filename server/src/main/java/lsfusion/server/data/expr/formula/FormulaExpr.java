@@ -135,7 +135,7 @@ public class FormulaExpr extends StaticClassExpr {
                 return i;
             }
         });
-        ImList<Expr> exprs = keys.map(params);
+        ImList<Expr> exprs = keys.mapList(params);
 
         return create(new CustomFormulaImpl(formula, mapParams, valueClass), exprs);
     }

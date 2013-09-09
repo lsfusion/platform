@@ -106,7 +106,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             ImOrderMap<Expr, CompileOrder> compileOrders = query.getCompileOrders(orders);
             if(ordersNotNull) // если notNull, то все пометим
                 compileOrders = CompileOrder.setNotNull(compileOrders);
-            return type.getSource(exprs.map(fromPropertySelect), compileOrders.map(fromPropertySelect), resultType, syntax, typeEnv);
+            return type.getSource(exprs.mapList(fromPropertySelect), compileOrders.map(fromPropertySelect), resultType, syntax, typeEnv);
         }
     }
 

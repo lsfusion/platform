@@ -209,10 +209,6 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         return mResult.immutableRev();
     }
 
-    public <V> ImList<V> map(ImMap<? extends K, ? extends V> imMap) {
-        return mapListValues(((ImMap<K, V>)imMap).fnGetValue());
-    }
-
     public <V> ImList<V> mapList(ImMap<? extends K, ? extends V> imMap) {
         return mapListValues(((ImMap<K, V>)imMap).fnGetValue());
     }

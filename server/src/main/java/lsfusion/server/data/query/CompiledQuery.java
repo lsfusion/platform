@@ -707,7 +707,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 for(int i=0,size=queries.size();i<size;i++) {
                     PartitionExpr.Query query = queries.getValue(i);
                     PartitionCalc calc = query.type.createAggr(mTokens,
-                            query.exprs.map(fromPropertySelect.result),
+                            query.exprs.mapList(fromPropertySelect.result),
                             subQuery.getCompileOrders(query.orders).map(fromPropertySelect.result),
                             query.partitions.map(fromPropertySelect.result).toSet());
                     mResultNames.mapValue(i, calc);
