@@ -34,6 +34,8 @@ public class ClientAbstractCellEditor extends AbstractCellEditor implements Prop
 
         Component component = propertyEditor.getComponent(computeAbsoluteLocation(jTable), jTable.getCellRect(row, column, false), null);
 
+        component.setFont(property.design.getFont(jTable));
+
         assert component != null;
 
         return component;

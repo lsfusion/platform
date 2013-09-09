@@ -46,7 +46,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private int preferredWidth;
 
     public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController) {
-        super(iformController);
+        super(iformController, treeGroupController.getFont());
 
         this.treeGroupController = treeGroupController;
 
@@ -100,7 +100,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         int index = tree.removeProperty(group, property);
         if (index > 0) {
             removeColumn(index);
-            preferredWidth -= property.getMinimumPixelWidth();
+            preferredWidth -= property.getMinimumPixelWidth(font);
         }
     }
 
@@ -118,9 +118,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 insertColumn(index, gridColumn, header);
                 createdFields.add(index, property.sID);
 
-                setColumnWidth(gridColumn, property.getMinimumWidth());
+                setColumnWidth(gridColumn, property.getMinimumWidth(font));
 
-                preferredWidth += property.getMinimumPixelWidth();
+                preferredWidth += property.getMinimumPixelWidth(font);
             }
         }
     }
@@ -267,7 +267,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 header.setToolTip(property.getTooltipText(value));
                 needsHeaderRefresh = true;
             }
-            rowHeight = Math.max(rowHeight, property.getMinimumPixelHeight());
+            rowHeight = Math.max(rowHeight, property.getMinimumPixelHeight(font));
         }
         setCellHeight(rowHeight);
         if (needsHeaderRefresh) {

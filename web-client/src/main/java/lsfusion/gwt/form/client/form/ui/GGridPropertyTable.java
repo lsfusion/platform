@@ -14,6 +14,7 @@ import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.Header;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
+import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GKeyStroke;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -43,6 +44,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected int oldRowScrollTop;
 
     public GGridSortableHeaderManager sortableHeaderManager;
+    
+    public GFont font;
 
     public interface GGridPropertyTableResource extends Resources {
         @Source("GGridPropertyTable.css")
@@ -53,8 +56,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public static final GGridPropertyTableResource GGRID_RESOURCES = GWT.create(GGridPropertyTableResource.class);
 
-    public GGridPropertyTable(GFormController iform) {
+    public GGridPropertyTable(GFormController iform, GFont font) {
         super(iform, GGRID_RESOURCES);
+        
+        this.font = font;
 
         setTableBuilder(new GGridPropertyTableBuilder<T>(this));
     }

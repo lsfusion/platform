@@ -1,11 +1,12 @@
 package lsfusion.gwt.form.shared.view.grid.renderer;
 
-import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
+import lsfusion.gwt.form.shared.view.GFont;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 public class ActionGridCellRenderer extends AbstractGridCellRenderer {
@@ -16,7 +17,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     private GPropertyDraw property;
 
     @Override
-    public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
+    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
         divStyle.setBackgroundColor("#F1F1F1");
         divStyle.setBorderColor("#BBB #BBB #A0A0A0");
@@ -25,17 +26,36 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
         divStyle.setProperty("borderRadius", 3, Style.Unit.PX);
         divStyle.setWidth(100, Style.Unit.PCT);
 
-        DivElement innerDiv = cellElement.appendChild(Document.get().createDivElement());
-        innerDiv.setAttribute("align", "center");
         // избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой
         cellElement.addClassName("boxSized");
-        innerDiv.getStyle().setMarginBottom(-2, Style.Unit.PX);
+
+        DivElement innerTop = cellElement.appendChild(Document.get().createDivElement());
+        innerTop.getStyle().setHeight(50, Style.Unit.PCT);
+        innerTop.getStyle().setPosition(Style.Position.RELATIVE);
+        innerTop.setAttribute("align", "center");
+
+        DivElement innerBottom = cellElement.appendChild(Document.get().createDivElement());
+        innerBottom.getStyle().setHeight(50, Style.Unit.PCT);
 
         if (property.icon != null) {
-            ImageElement img = innerDiv.appendChild(Document.get().createImageElement());
+            ImageElement img = innerTop.appendChild(Document.get().createImageElement());
+            img.getStyle().setPosition(Style.Position.ABSOLUTE);
+            img.getStyle().setLeft(50, Style.Unit.PCT);
             setImage(img, value);
         } else {
-            innerDiv.setInnerText("...");
+            LabelElement label = innerTop.appendChild(Document.get().createLabelElement());
+
+            GFont font = property.font;
+            if (font == null && table instanceof GGridPropertyTable) {
+                font = ((GGridPropertyTable) table).font;
+            }
+            if (font != null) {
+                label.getStyle().setProperty("font", font.getFullFont());
+            }
+            
+            label.getStyle().setBottom(-GFontMetrics.getSymbolHeight(font) / 2, Style.Unit.PX);
+            
+            label.setInnerText("...");
         }
     }
 
@@ -57,10 +77,11 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
         int height = property.icon.height;
         if (height != -1) {
             img.setHeight(height);
-            img.getStyle().setMarginBottom(height > 12 ? -2 : height > 10 ? -1 : 0, Style.Unit.PX);
+            img.getStyle().setBottom(- height / 2, Style.Unit.PX);
         }
         if (property.icon.width != -1) {
             img.setWidth(property.icon.width);
+            img.getStyle().setMarginLeft(- property.icon.width / 2, Style.Unit.PX);
         }
     }
 }

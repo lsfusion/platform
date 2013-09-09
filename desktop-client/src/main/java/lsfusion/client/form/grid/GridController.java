@@ -18,6 +18,7 @@ import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -222,6 +223,10 @@ public class GridController {
 
     public GridView getGridView() {
         return view;
+    }
+    
+    public Font getFont() {
+        return clientGrid.design.font;
     }
 
     public void addView(ClientFormLayout formLayout) {

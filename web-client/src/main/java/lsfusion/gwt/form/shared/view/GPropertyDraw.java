@@ -206,27 +206,27 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return editType == GPropertyEditType.READONLY;
     }
 
-    public String getMinimumWidth() {
-        return getMinimumPixelWidth() + "px";
+    public String getMinimumWidth(GFont parentFont) {
+        return getMinimumPixelWidth(parentFont) + "px";
     }
 
-    public int getMinimumPixelWidth() {
+    public int getMinimumPixelWidth(GFont parentFont) {
         if (minimumWidth != -1) {
             return minimumWidth;
         } else {
-            return baseType.getMinimumPixelWidth(minimumCharWidth, font);
+            return baseType.getMinimumPixelWidth(minimumCharWidth, font != null ? font : parentFont);
         }
     }
 
     public String getMinimumHeight() {
-        return getMinimumPixelHeight() + "px";
+        return getMinimumPixelHeight(null) + "px";
     }
 
-    public int getMinimumPixelHeight() {
+    public int getMinimumPixelHeight(GFont parentFont) {
         if (minimumHeight != -1) {
             return minimumHeight;
         } else {
-            return baseType.getMinimumPixelHeight(font);
+            return baseType.getMinimumPixelHeight(font != null ? font : parentFont);
         }
     }
 

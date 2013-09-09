@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalWindow;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
@@ -45,7 +46,7 @@ public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DivElement cellParent, Object value) {
+    public void renderDom(Cell.Context context, DataGrid table, DivElement cellParent, Object value) {
     }
 
     @Override

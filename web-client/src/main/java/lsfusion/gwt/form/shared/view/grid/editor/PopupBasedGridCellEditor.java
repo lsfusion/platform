@@ -10,6 +10,7 @@ import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
@@ -81,7 +82,7 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DivElement cellParent, Object value) {
+    public void renderDom(Cell.Context context, DataGrid table, DivElement cellParent, Object value) {
         //NOP
     }
 

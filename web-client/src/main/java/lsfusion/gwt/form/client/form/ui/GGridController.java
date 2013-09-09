@@ -4,10 +4,7 @@ import com.google.gwt.core.client.Scheduler;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.ResizableLayoutPanel;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
-import lsfusion.gwt.form.shared.view.GGrid;
-import lsfusion.gwt.form.shared.view.GGroupObject;
-import lsfusion.gwt.form.shared.view.GOrder;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 
 import java.util.List;
@@ -49,6 +46,10 @@ public class GGridController {
 
     public void setForceHidden(boolean hidden) {
         forceHidden = hidden;
+    }
+    
+    public GFont getFont() {
+        return grid.font;
     }
 
     public boolean isVisible() {

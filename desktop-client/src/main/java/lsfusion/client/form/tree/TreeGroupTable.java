@@ -39,6 +39,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 
+import static java.lang.Math.max;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static lsfusion.client.form.ClientFormController.PasteData;
@@ -96,6 +97,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         setAutoCreateColumnsFromModel(false);
 
         rootNode = model.getRoot();
+        
+        if (treeGroup.design.font != null) {
+            setFont(treeGroup.design.font);
+        }
 
         sortableHeaderManager = new TableSortableHeaderManager<ClientPropertyDraw>(this, true) {
             protected void orderChanged(ClientPropertyDraw columnKey, Order modiType) {
@@ -428,6 +433,14 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 getColumn(i).setModelIndex(i);
             }
         }
+        
+        int rowHeight = 0;
+        for (ClientPropertyDraw columnProperty : model.columnProperties) {
+            rowHeight = max(rowHeight, columnProperty.getPreferredHeight(this));
+        }
+        if (rowHeight != getRowHeight()) {
+            setRowHeight(rowHeight);
+        }
     }
 
     private void setupHierarhicalColumn() {
@@ -442,6 +455,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     private void createNewColumn(ClientPropertyDraw property, int pos) {
         TableColumnExt tableColumn = getColumnFactory().createAndConfigureTableColumn(getModel(), pos);
         if (tableColumn != null) {
+            int rowHeight = getRowHeight();
             int currentSelectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
             int min = property.getMinimumWidth(this);
@@ -449,6 +463,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             int pref = property.getPreferredWidth(this);
 
             setColumnSizes(tableColumn, min, max, pref);
+
+            rowHeight = max(rowHeight, property.getPreferredHeight(this));
 
             addColumn(tableColumn);
             moveColumn(getColumnCount() - 1, pos);
@@ -463,6 +479,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             }
 
             tableColumn.setToolTipText(property.getTooltipText(model.getColumnName(pos)));
+
+            if (getRowHeight() != rowHeight) {
+                setRowHeight(rowHeight);
+            }
         }
     }
 

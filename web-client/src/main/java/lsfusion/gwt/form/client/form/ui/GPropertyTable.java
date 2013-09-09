@@ -189,7 +189,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
             //рендерим эдитор
             if (cellEditor.replaceCellRenderer()) {
                 removeAllChildren(editCellParent);
-                cellEditor.renderDom(editContext, editCellParent.<DivElement>cast(), oldValue);
+                cellEditor.renderDom(editContext, this, editCellParent.<DivElement>cast(), oldValue);
             }
             cellEditor.startEditing(event, editContext, editCellParent, oldValue);
         } else {

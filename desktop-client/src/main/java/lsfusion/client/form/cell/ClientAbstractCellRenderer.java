@@ -7,8 +7,8 @@ import lsfusion.client.logics.ClientPropertyDraw;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 // приходится наследоваться от JComponent только для того, чтобы поддержать updateUI
 public class ClientAbstractCellRenderer extends JComponent implements TableCellRenderer {
@@ -56,6 +56,10 @@ public class ClientAbstractCellRenderer extends JComponent implements TableCellR
         Color foregroundColor = cellTable.getForegroundColor(row, column);
         if (foregroundColor != null) {
             comp.setForeground(foregroundColor);
+        }
+        
+        if (property != null) {
+            comp.setFont(property.design.getFont(table));
         }
 
         renderers.add(comp);

@@ -5,12 +5,13 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
+import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
 
 public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
-    public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
+    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
         boolean checked = value != null && (Boolean) value;
 
         cellElement.setAttribute("align", "center");

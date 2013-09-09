@@ -79,7 +79,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     };
 
     public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController) {
-        super(iform);
+        super(iform, gridController.getFont());
 
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
@@ -251,8 +251,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                     }
                 }
 
-                int columnMinimumWidth = property.widthUser != null ? property.widthUser : property.getMinimumPixelWidth();
-                int columnMinimumHeight = property.getMinimumPixelHeight();
+                int columnMinimumWidth = property.widthUser != null ? property.widthUser : property.getMinimumPixelWidth(font);
+                int columnMinimumHeight = property.getMinimumPixelHeight(font);
                 setColumnWidth(column, columnMinimumWidth  + "px");
 
                 //дублирование логики изменения captions для оптимизации

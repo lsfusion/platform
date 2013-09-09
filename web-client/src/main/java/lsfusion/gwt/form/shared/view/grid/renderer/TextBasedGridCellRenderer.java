@@ -4,7 +4,10 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.base.client.EscapeUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
+import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
@@ -23,7 +26,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
     }
 
     @Override
-    public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
+    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
         if (textAlign != null) {
             divStyle.setTextAlign(textAlign);
@@ -41,9 +44,14 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
 //        divStyle.setOverflow(Style.Overflow.HIDDEN);
 //        divStyle.setTextOverflow(Style.TextOverflow.ELLIPSIS);
 
-        if (property.font != null) {
-            divStyle.setProperty("font", property.font.getFullFont());
+        GFont font = property.font;
+        if (font == null && table instanceof GGridPropertyTable) {
+            font = ((GGridPropertyTable) table).font;    
         }
+        if (font != null) {
+            divStyle.setProperty("font", font.getFullFont());    
+        }
+        divStyle.clearProperty("lineHeight");
 
         updateElement(cellElement, value);
     }

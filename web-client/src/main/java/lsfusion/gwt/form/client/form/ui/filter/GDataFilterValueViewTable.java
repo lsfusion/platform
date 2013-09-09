@@ -75,7 +75,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     public void setProperty(GPropertyDraw property) {
         this.property = property;
 
-        int minimumPixelHeight = property.getMinimumPixelHeight();
+        int minimumPixelHeight = property.getMinimumPixelHeight(null);
 
         setTableWidth(property.getPreferredPixelWidth(), Unit.PX);
         setHeight(property.getMinimumHeight());
@@ -172,7 +172,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             }
 
             GridCellRenderer cellRenderer = property.getGridCellRenderer();
-            cellRenderer.renderDom(context, cellElement, value);
+            cellRenderer.renderDom(context, GDataFilterValueViewTable.this, cellElement, value);
         }
 
         @Override
@@ -230,7 +230,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
             removeAllChildren(parent);
 
-            cellEditor.renderDom(context, parent.<DivElement>cast(), value);
+            cellEditor.renderDom(context, GDataFilterValueViewTable.this, parent.<DivElement>cast(), value);
             cellEditor.startEditing(event, context, parent == null ? getElement().getParentElement() : parent, value);
         }
 

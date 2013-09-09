@@ -6,11 +6,12 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
 
 public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     @Override
-    public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
+    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
         cellElement.setAttribute("align", "center");
 
         ImageElement img = cellElement.appendChild(Document.get().createImageElement());

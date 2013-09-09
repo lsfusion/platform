@@ -3,12 +3,13 @@ package lsfusion.gwt.form.shared.view.grid.renderer;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.base.client.EscapeUtils;
+import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
 
 public class ColorGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
-    public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
+    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
         String color = getColorValue(value);
 
         cellElement.setInnerText(EscapeUtils.UNICODE_NBSP);

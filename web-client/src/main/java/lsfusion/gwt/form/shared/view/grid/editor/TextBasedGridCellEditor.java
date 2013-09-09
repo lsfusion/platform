@@ -4,7 +4,10 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
+import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
+import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
@@ -113,7 +116,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DivElement cellParent, Object value) {
+    public void renderDom(Cell.Context context, DataGrid table, DivElement cellParent, Object value) {
         InputElement input = Document.get().createTextInputElement();
         input.setTabIndex(-1);
         input.setValue(currentText);
@@ -129,10 +132,14 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         inputStyle.setWidth(100, Style.Unit.PCT);
         inputStyle.setHeight(100, Style.Unit.PCT);
 
-        if (property.font != null) {
-            inputStyle.setProperty("font", property.font.getFullFont());
+        GFont font = property.font;
+        if (font == null && table instanceof GGridPropertyTable) {
+            font = ((GGridPropertyTable) table).font;
         }
-        if (property.font == null || property.font.size == null) {
+        if (font != null) {
+            inputStyle.setProperty("font", font.getFullFont());
+        }
+        if (font == null || font.size == null) {
             inputStyle.setFontSize(8, Style.Unit.PT);
         }
         cellParent.getStyle().setProperty("height", cellParent.getParentElement().getStyle().getHeight());

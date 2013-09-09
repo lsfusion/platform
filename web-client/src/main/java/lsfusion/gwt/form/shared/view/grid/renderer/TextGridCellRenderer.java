@@ -2,6 +2,8 @@ package lsfusion.gwt.form.shared.view.grid.renderer;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Style;
+import lsfusion.gwt.cellview.client.DataGrid;
+import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 public class TextGridCellRenderer extends TextBasedGridCellRenderer {
@@ -10,7 +12,7 @@ public class TextGridCellRenderer extends TextBasedGridCellRenderer {
     }
 
     @Override
-    public void renderDom(lsfusion.gwt.cellview.client.cell.Cell.Context context, DivElement cellElement, Object value) {
+    public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
         Style divStyle = cellElement.getStyle();
         divStyle.setPaddingRight(4, Style.Unit.PX);
         divStyle.setPaddingLeft(4, Style.Unit.PX);
