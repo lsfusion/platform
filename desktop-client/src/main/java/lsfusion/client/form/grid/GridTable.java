@@ -33,7 +33,6 @@ import java.util.*;
 import java.util.List;
 
 import static java.lang.Math.max;
-import static lsfusion.base.BaseUtils.override;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.form.ClientFormController.PasteData;
 
@@ -871,7 +870,9 @@ public class GridTable extends ClientPropertyTable {
         if (!update || propValues == null) {
             this.values.put(property, values);
         } else {
-            this.values.put(property, override(propValues, values));
+            propValues = new HashMap<ClientGroupObjectValue, Object>(propValues);
+            propValues.putAll(values);
+            this.values.put(property, propValues);
         }
     }
 

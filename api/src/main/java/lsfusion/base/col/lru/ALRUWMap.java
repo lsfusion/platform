@@ -1,7 +1,5 @@
 package lsfusion.base.col.lru;
 
-import lsfusion.base.BaseUtils;
-
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
@@ -50,7 +48,7 @@ public abstract class ALRUWMap<W, E extends ALRUWMap.AEntry<W, E>, S extends ALR
 
     static abstract class AEntry<W, E extends AEntry<W, E>> extends WeakReference<W> implements ALRUMap.AEntry<E> {
         protected E next;
-        private E before, after;
+        protected E before, after;
                 
         public int time;
 

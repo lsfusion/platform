@@ -8,7 +8,7 @@ public abstract class ALRUSMap<E extends ALRUSMap.AEntry<E>, S extends ALRUMap.A
 
     static abstract class AEntry<E extends AEntry<E>> implements ALRUMap.AEntry<E> {
         protected E next;
-        private E before, after;
+        protected E before, after;
 
         public int time;
 

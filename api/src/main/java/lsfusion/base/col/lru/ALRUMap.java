@@ -149,7 +149,7 @@ public abstract class ALRUMap<E extends ALRUMap.AEntry<E>, S extends ALRUMap.ASe
         private int threshold;
         private final float loadFactor;
 
-        private int size;
+        protected int size;
         protected E[] table;
 
         private final E[] buffer;
