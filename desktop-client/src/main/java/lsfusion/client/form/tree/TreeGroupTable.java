@@ -438,7 +438,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         for (ClientPropertyDraw columnProperty : model.columnProperties) {
             rowHeight = max(rowHeight, columnProperty.getPreferredHeight(this));
         }
-        if (rowHeight != getRowHeight()) {
+        if (rowHeight != getRowHeight() && rowHeight > 0) {
             setRowHeight(rowHeight);
         }
     }
@@ -480,7 +480,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
             tableColumn.setToolTipText(property.getTooltipText(model.getColumnName(pos)));
 
-            if (getRowHeight() != rowHeight) {
+            if (getRowHeight() != rowHeight && rowHeight > 0) {
                 setRowHeight(rowHeight);
             }
         }
