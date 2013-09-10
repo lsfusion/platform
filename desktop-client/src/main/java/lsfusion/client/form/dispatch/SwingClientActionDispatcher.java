@@ -71,7 +71,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                             dispatchResult = action.dispatch(this);
                         } catch (Exception ex) {
                             ex.printStackTrace();
-                            throwInServerInvocation(ex);
+                            if (serverResponse.resumeInvocation) {
+                                throwInServerInvocation(ex);
+                            } else {
+                                throw ex;
+                            }
                             break;
                         }
 
