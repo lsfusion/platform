@@ -38,6 +38,9 @@ public class ReportGenerator {
     // имя должно быть, как строковая константа, в двойных кавычках
     private final String repeatPropertyFieldName = "REPORT_REPEAT_FIELD";
 
+    public static final String SIDES_PROPERTY_NAME = "print-sides";
+    public static final String TRAY_PROPERTY_NAME = "print-tray";
+
     public static class SourcesGenerationOutput {
         public Map<String, ClientReportData> data;
         // данные для свойств с группами в колонках
@@ -78,7 +81,11 @@ public class ReportGenerator {
         Pair<Map<String, Object>, JRDataSource> compileParams = prepareReportSources();
 
         JasperReport report = JasperCompileManager.compileReport(designs.get(rootID));
-        return JasperFillManager.fillReport(report, compileParams.first, compileParams.second);
+        
+        JasperPrint print = JasperFillManager.fillReport(report, compileParams.first, compileParams.second);
+        print.setProperty(SIDES_PROPERTY_NAME, designs.get(rootID).getProperty(SIDES_PROPERTY_NAME));
+        print.setProperty(TRAY_PROPERTY_NAME, designs.get(rootID).getProperty(TRAY_PROPERTY_NAME));
+        return print;
     }
 
     private Pair<Map<String, Object>, JRDataSource> prepareReportSources() throws JRException {
