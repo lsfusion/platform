@@ -43,7 +43,7 @@ public class ClientDialog extends ClientModalForm {
     }
 
     @Override
-    public void windowActivatedFirstTime() {
+    public void beforeShowDialog() {
         int initialFilterPropertyDrawID = -1;
         try {
             Integer filterPropertyDraw = remoteDialog.getInitFilterPropertyDraw();
@@ -61,7 +61,7 @@ public class ClientDialog extends ClientModalForm {
                 KeyStrokes.isSuitableStartFilteringEvent(initFilterKeyEvent)) {
             form.quickEditFilter(initFilterKeyEvent, initialFilterPropertyDrawID);
         } else {
-            KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
+            super.beforeShowDialog();
         }
     }
 }

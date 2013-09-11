@@ -53,7 +53,7 @@
 
         <spring.version>3.0.5.RELEASE</spring.version>
         <cglib.version>2.2.2</cglib.version>
-        <aspectj.version>1.6.11</aspectj.version>
+        <aspectj.version>1.7.3</aspectj.version>
 
         <servlet.api.version>2.5</servlet.api.version>
         <jcaptcha.version>1.0</jcaptcha.version>
@@ -85,11 +85,11 @@
 
         <!-- used by compiler -->
         <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
 
         <!-- used by AspectJ-->
-        <mojo.java.target>1.6</mojo.java.target>
-        <project.build.java.target>1.6</project.build.java.target>
+        <mojo.java.target>${maven.compiler.source}</mojo.java.target>
+        <project.build.java.target>${maven.compiler.target}</project.build.java.target>
 
         <!-- assemble properties -->
         <assemble.finalName>base</assemble.finalName>
@@ -461,12 +461,17 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.1</version>
+                    <version>2.5.1</version>
+                    <!--в новой версии plugina баг, ломающий инкрементную компиляцию... -->
+                    <!--<version>3.1</version>-->
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>aspectj-maven-plugin</artifactId>
-                    <version>1.4</version>
+                    <version>1.5</version>
+                    <configuration>
+                        <complianceLevel>${maven.compiler.source}</complianceLevel>
+                    </configuration>
                     <executions>
                         <execution>
                             <goals>

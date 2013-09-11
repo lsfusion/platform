@@ -1,5 +1,6 @@
 package lsfusion.client.form.queries;
 
+import lsfusion.client.CaptureKeyEventsDispatcher;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.logics.ClientDataFilterValue;
@@ -57,11 +58,11 @@ public abstract class DataFilterValueView extends FilterValueView {
 
     public void startEditing(KeyEvent initFilterKeyEvent) {
         valueTable.editCellAt(0, 0);
-        Component editor = valueTable.getEditorComponent();
+        final Component editor = valueTable.getEditorComponent();
         if (editor != null) {
             editor.requestFocusInWindow();
             if (initFilterKeyEvent != null && editor instanceof JTextField) {
-                ((JTextField) editor).setText("" + initFilterKeyEvent.getKeyChar());
+                CaptureKeyEventsDispatcher.get().setCapture(editor);
             }
         }
     }

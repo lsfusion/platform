@@ -733,7 +733,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setScriptedEditAction(LP property, String actionType, LPWithParams action) {
         List<Object> params = getParamsPlainList(Arrays.asList(action));
-        ImList<ActionPropertyMapImplement> actionImplements = readActionImplements(property.listInterfaces, params.toArray());
+        ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
         property.property.setEditAction(actionType, actionImplements.get(0));
     }
 
@@ -2037,9 +2037,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkActionProperty(actionProp.property);
         checkActionProperty(mainProp);
 
+        LAP<PropertyInterface> mainActionLP = (LAP<PropertyInterface>) mainProp;
+
         List<Object> params = getParamsPlainList(Arrays.asList(actionProp));
-        ImList<ActionPropertyMapImplement> actionImplements = readActionImplements(mainProp.listInterfaces, params.toArray());
-        addAspectEvent((ActionProperty) mainProp.property, actionImplements.get(0), before);
+        ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(mainActionLP.listInterfaces, params.toArray());
+        addAspectEvent((ActionProperty) mainActionLP.property, actionImplements.get(0), before);
     }
 
     public void addScriptedTable(String name, List<String> classIds) throws ScriptingErrorLog.SemanticErrorException {

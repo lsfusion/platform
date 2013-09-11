@@ -53,15 +53,6 @@ public class ClientModalForm extends JDialog {
 
     private void createUIHandlers() {
         addWindowListener(new WindowAdapter() {
-            public void windowActivated(WindowEvent e) {
-                windowActivatedFirstTime();
-
-                //чтобы только для 1й активации...
-                ClientModalForm.this.removeWindowListener(this);
-            }
-        });
-
-        addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 form.closePressed();
@@ -82,10 +73,6 @@ public class ClientModalForm extends JDialog {
         });
     }
 
-    protected void windowActivatedFirstTime() {
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
-    }
-
     public final void hideDialog() {
         setVisible(false);
     }
@@ -95,6 +82,10 @@ public class ClientModalForm extends JDialog {
     }
 
     public void showDialog(boolean showFullScreen, Point onScreen) {
+        //вызов pack() делает диалог displayable, что позволяет нормально отрабатывать focus-логике,
+        //в частности обработка клавиш происходит в этом диалоге, а не в верхнем окне
+        pack();
+
         setSize(clipToScreen(showFullScreen
                              ? new Dimension(10000, 10000)
                              : calculatePreferredSize(isUndecorated())));
@@ -105,7 +96,13 @@ public class ClientModalForm extends JDialog {
             setLocationRelativeTo(null);
         }
 
+        beforeShowDialog();
+
         setVisible(true);
+    }
+
+    protected void beforeShowDialog() {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
     }
 
     public Dimension calculatePreferredSize(boolean undecorated) {
