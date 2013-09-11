@@ -73,7 +73,7 @@ public class GColumnsContainerView extends GAbstractContainerView {
         }
 
 //        columns[colIndex].add(view, GFlexAlignment.STRETCH, 0);
-        columns[colIndex].add(view, rowIndex, GFlexAlignment.STRETCH, 0);
+        columns[colIndex].add(view, rowIndex, GFlexAlignment.LEADING, 0);
         columnChildren.add(rowIndex, child);
     }
 
