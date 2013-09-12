@@ -1,16 +1,15 @@
 package lsfusion.client.dock;
 
-import bibliothek.gui.Dockable;
 import bibliothek.gui.dock.common.CContentArea;
 import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.CGrid;
 import bibliothek.gui.dock.common.SingleCDockable;
 import bibliothek.gui.dock.common.intern.CSetting;
-import bibliothek.gui.dock.common.intern.station.CSplitDockStation;
 import bibliothek.gui.dock.common.menu.CLayoutChoiceMenuPiece;
 import bibliothek.gui.dock.common.menu.CPreferenceMenuPiece;
 import bibliothek.gui.dock.common.menu.CThemeMenuPiece;
 import bibliothek.gui.dock.common.menu.SingleCDockableListMenuPiece;
+import bibliothek.gui.dock.common.mode.ExtendedMode;
 import bibliothek.gui.dock.common.theme.ThemeMap;
 import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
@@ -157,14 +156,7 @@ public class DockableMainFrame extends MainFrame {
                 pageToFocus.intern().getController().getFocusController().setFocusedDockable(pageToFocus.intern(), null, true, true, true);
 
                 if (showDefaultForms == DefaultFormsType.DEFAULT) {
-                    CSplitDockStation splitStation = dockableManager.getFormArea().getStation();
-                    Dockable fullScreenDockable = pageToFocus.intern();
-                    while (fullScreenDockable.getDockParent() != null && !fullScreenDockable.getDockParent().asDockable().equals(splitStation)) {
-                        fullScreenDockable = fullScreenDockable.getDockParent().asDockable();
-                    }
-
-                    splitStation.setFullScreen(fullScreenDockable);
-                    mainControl.getContentArea().getCenter().setFullScreen(splitStation);
+                    pageToFocus.setExtendedMode(ExtendedMode.MAXIMIZED);
                 }
             }
         }

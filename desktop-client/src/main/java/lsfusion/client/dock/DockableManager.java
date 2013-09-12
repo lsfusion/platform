@@ -7,6 +7,7 @@ import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.event.CDockableLocationEvent;
 import bibliothek.gui.dock.common.event.CDockableLocationListener;
 import bibliothek.gui.dock.common.intern.CDockable;
+import bibliothek.gui.dock.common.mode.ExtendedMode;
 import lsfusion.client.EditReportInvoker;
 import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
@@ -27,6 +28,9 @@ public class DockableManager {
     private CGridArea formArea;
 
     private DockableRepository forms;
+    
+    private ExtendedMode mode = ExtendedMode.NORMALIZED;
+    private boolean internalModeChangeOnSetVisible = false;
 
     public DockableManager(CControl control, ClientNavigator mainNavigator) {
         this.control = control;
@@ -63,9 +67,15 @@ public class DockableManager {
                 }
             }
         });
+        
         page.setLocation(formArea.getStationLocation());
         control.addDockable(page);
+        
+        internalModeChangeOnSetVisible = true;
         page.setVisible(true);
+        internalModeChangeOnSetVisible = false;
+        
+        page.setExtendedMode(mode);
         page.toFront();
         page.requestFocusInWindow();
     }
@@ -139,6 +149,20 @@ public class DockableManager {
                 control.removeDockable(dockable) ;
 
                 dockable.onClosed();
+            }
+        }
+
+        @Override
+        public void maximized(CDockable dockable) {
+            if (!internalModeChangeOnSetVisible) {
+                DockableManager.this.mode = !forms.getFormsList().isEmpty() ? ExtendedMode.MAXIMIZED : ExtendedMode.NORMALIZED;
+            }
+        }
+
+        @Override
+        public void normalized(CDockable dockable) {
+            if (!internalModeChangeOnSetVisible) {
+                DockableManager.this.mode = ExtendedMode.NORMALIZED;
             }
         }
     }
