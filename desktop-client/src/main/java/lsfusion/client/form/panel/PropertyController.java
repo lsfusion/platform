@@ -42,7 +42,7 @@ public class PropertyController {
         this.property = property;
 
         if (property.editKey != null) {
-            form.getComponent().addKeyBinding(property.editKey, property.groupObject, new KeyAdapter() {
+            form.getLayout().addKeyBinding(property.editKey, property.groupObject, new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
                     forceEdit();

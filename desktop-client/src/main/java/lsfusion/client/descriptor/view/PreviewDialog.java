@@ -32,9 +32,9 @@ public class PreviewDialog extends JDialog {
                     super.hideForm();
                 }
             };
-            controller.getComponent().setFocusTraversalPolicyProvider(true);
+            controller.getLayout().setFocusTraversalPolicyProvider(true);
 
-            add(controller.getComponent(), BorderLayout.CENTER);
+            add(controller.getLayout(), BorderLayout.CENTER);
         } catch (Exception e) {
             throw new RuntimeException(ClientResourceBundle.getString("descriptor.view.can.not.create.form"), e);
         }

@@ -438,7 +438,7 @@ public class GridTable extends ClientPropertyTable {
             boolean samePropAsPrevious = i != 0 && cell == model.getColumnProperty(i - 1);
             final int index = i;
             if (!samePropAsPrevious && cell.editKey != null) {
-                form.getComponent().addKeyBinding(cell.editKey, cell.groupObject, new KeyAdapter() {
+                form.getLayout().addKeyBinding(cell.editKey, cell.groupObject, new KeyAdapter() {
                     @Override
                     public void keyPressed(KeyEvent e) {
                         int leadRow = getSelectionModel().getLeadSelectionIndex();
@@ -667,7 +667,7 @@ public class GridTable extends ClientPropertyTable {
         }
         boolean singleC = table.size() == 1 && tableColumns == 1;
         if (!singleV || !singleC) {
-            int answer = SwingUtils.showConfirmDialog(form.getComponent(), getString("form.grid.sure.to.paste.multivalue"), "", JOptionPane.QUESTION_MESSAGE, 1);
+            int answer = SwingUtils.showConfirmDialog(form.getLayout(), getString("form.grid.sure.to.paste.multivalue"), "", JOptionPane.QUESTION_MESSAGE, 1);
             if (answer == JOptionPane.NO_OPTION) {
                 return;
             }

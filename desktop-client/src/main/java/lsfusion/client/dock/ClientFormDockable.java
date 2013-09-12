@@ -46,7 +46,7 @@ public class ClientFormDockable extends ClientDockable {
             }
         };
 
-        setContent(clientForm.getCaption(), clientForm.getComponent());
+        setContent(clientForm.getCaption(), clientForm.getLayout());
     }
 
     @Override

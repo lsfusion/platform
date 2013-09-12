@@ -36,7 +36,7 @@ public class ClientModalForm extends JDialog {
 
         setTitle(form.getCaption());
 
-        add(form.getComponent(), BorderLayout.CENTER);
+        add(form.getLayout(), BorderLayout.CENTER);
 
         createUIHandlers();
     }
@@ -102,14 +102,24 @@ public class ClientModalForm extends JDialog {
     }
 
     protected void beforeShowDialog() {
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowActivated(WindowEvent e) {
+                Component defaultComponent = form.getLayout().getFocusTraversalPolicy().getDefaultComponent(form.getLayout());
+                if (defaultComponent != null) {
+                    defaultComponent.requestFocusInWindow();
+                }
+
+                removeWindowListener(this);
+            }
+        });
     }
 
     public Dimension calculatePreferredSize(boolean undecorated) {
         //сначала нужно провалидейтать все компоненты, чтобы отработала логика autohide
-        form.getComponent().preValidateMainContainer();
+        form.getLayout().preValidateMainContainer();
 
-        Dimension preferredSize = form.getComponent().getPreferredSize();
+        Dimension preferredSize = form.getLayout().getPreferredSize();
 
         // так как у нас есть только preferredSize самого contentPane, а нам нужен у JDialog
         // сколько будет занимать все "рюшечки" вокруг contentPane мы посчитать не можем, поскольку

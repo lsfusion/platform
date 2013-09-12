@@ -161,7 +161,7 @@ public class ClientFormController implements AsyncListener {
         return form.getFullCaption();
     }
 
-    public ClientFormLayout getComponent() {
+    public ClientFormLayout getLayout() {
         return formLayout;
     }
 

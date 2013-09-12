@@ -198,7 +198,7 @@ public class GridController {
                         int rowIndex = table.getSelectedRow();
                         int columnIndex = table.getSelectedColumn();
                         if (rowIndex == -1 || columnIndex == -1)
-                            JOptionPane.showMessageDialog(form.getComponent(), "Не выбрано ни одной колонки", "Сообщение", 0);
+                            JOptionPane.showMessageDialog(form.getLayout(), "Не выбрано ни одной колонки", "Сообщение", 0);
                         else
                             table.editCellAt(rowIndex, columnIndex, new InternalEditEvent(table, ServerResponse.GROUP_CHANGE));
                     }

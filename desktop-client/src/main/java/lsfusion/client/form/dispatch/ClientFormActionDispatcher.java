@@ -19,7 +19,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
 
     @Override
     protected Container getDialogParentContainer() {
-        return getFormController().getComponent();
+        return getFormController().getLayout();
     }
 
     @Override
