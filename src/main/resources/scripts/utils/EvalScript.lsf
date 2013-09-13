@@ -11,12 +11,12 @@ scriptExecution 'Выполнить скрипт' () = ACTION EVAL scriptStorage
 actionBodyExecution 'Выполнить действие' () = ACTION EVAL CONCAT ' ', 'run() = ACTION {', scriptStorage(), ';\n};';
 formExecution 'Показать форму' () = ACTION EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;';
 
-FORM mainForm 'Скрипт'
+FORM script 'Скрипт'
     PROPERTIES() scriptStorage,
                  scriptExecution, actionBodyExecution, formExecution
 ;
 
-DESIGN mainForm FROM DEFAULT {
+DESIGN script FROM DEFAULT {
     ADD PROPERTY(scriptStorage) {
         panelLabelAbove = TRUE;    
         fill = 1;
@@ -33,7 +33,7 @@ DESIGN mainForm FROM DEFAULT {
 
 NAVIGATOR {
     configuration {
-        ADD mainForm;
+        ADD script;
     }
 }
 

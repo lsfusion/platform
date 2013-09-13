@@ -23,7 +23,6 @@ computerClosed(postedObject) <- currentComputer() WHEN SET(postedObject IS Poste
 // Логика нумерирования документов
 
 CLASS ABSTRACT NumeratedDocument 'Нумерируемый документ' : NumeratedObject;
-@defineNumeratedObjectDefault(NumeratedDocument, 'Нумератор для документов', 'ДК');
 
 // Стандартные группы
 GROUP documentHeaderGroup 'Шапка документа' : base;
@@ -447,36 +446,34 @@ END
 // ------- Number ----- //
 
 META defineDocumentAbstractHeaderNumber(objectClass)
-    number##objectClass 'Номер' = ABSTRACT STRING[18] (objectClass) IN base MINCHARWIDTH 7 PERSISTENT;
-    series##objectClass 'Серия' = ABSTRACT STRING[2] (objectClass) IN base FIXEDCHARWIDTH 3 PERSISTENT;
-    seriesNumber##objectClass 'Серия/Номер' (o) = CONCAT '', series##objectClass(o), number##objectClass(o) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
-END
-META defineDocumentInterfaceHeaderNumber(objectClass)
-    @defineDocumentAbstractHeaderNumber(objectClass);
-    number##objectClass(o) += numberObject(o) IF o IS User##objectClass;
-    series##objectClass(o) += seriesObject(o) IF o IS User##objectClass;
+    @defineNumberedObjectAbstract(objectClass);
 END
 
-META defineDocumentAbstractDetailNumber (object, detailClass)
+META defineDocumentHeaderNumber (objectClass)
+    @defineNumberedObject(objectClass);
+END
+
+META defineDocumentInterfaceHeaderNumber(objectClass)
+    @defineDocumentAbstractHeaderNumber(objectClass);
+    @defineDocumentHeaderNumber(User###objectClass);
+    number###objectClass(o) += numberUser###objectClass(o);
+    series###objectClass(o) += seriesUser###objectClass(o);
+END
+
+META defineDocumentDetailNumber (object, detailClass)
     number##detailClass 'Номер' (d) = number###object(object##detailClass(d));
     series##detailClass 'Серия' (d) = series###object(object##detailClass(d));
     seriesNumber##detailClass 'Серия/номер' (d) = seriesNumber###object(object##detailClass(d));
 END
 
-META defineDocumentDetailNumber (object, detailClass)
-    number##detailClass 'Номер' (d) = numberObject(object##detailClass(d));
-    series##detailClass 'Серия' (d) = seriesObject(object##detailClass(d));
-    seriesNumber##detailClass 'Серия/номер' (d) = seriesNumberObject(object##detailClass(d));
-END
-
 META defineDocumentInterfaceDetailNumber (object, detailClass)
-    @defineDocumentAbstractDetailNumber(object, detailClass);
+    @defineDocumentDetailNumber(object, detailClass);
     @defineDocumentDetailNumber(user###object, User###detailClass);
 END
 
 META defineDocumentAbstractNumber(object, detailClass)
     @defineDocumentAbstractHeaderNumber(###object);
-    @defineDocumentAbstractDetailNumber(object, detailClass);
+    @defineDocumentDetailNumber(object, detailClass);
 END
 META defineDocumentInterfaceNumber(object, detailClass)
     @defineDocumentInterfaceHeaderNumber(###object);
@@ -519,25 +516,18 @@ META defineDocumentInterfaceDetailSkip(object, postfix, caption)
 END
 
 // ----- Description ----- //
-META defineDocumentHeaderDescription(objectClass, numberProp, caption)
+META defineDocumentHeaderDescription(objectClass, caption)
     description##objectClass 'Название документа' (o) =
         [FORMULA VARSTRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
-        caption, numberProp(o), date##objectClass(o)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+        caption, seriesNumber##objectClass(o), date##objectClass(o)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
 META defineDocumentAbstractHeaderDescription(objectClass)
     description##objectClass 'Название документа' = ABSTRACT VARSTRING[200] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 END
-META defineDocumentInterfaceHeaderDescription(objectClass, numberProp, caption)
-    @defineDocumentAbstractHeaderDescription(objectClass);
-    @defineDocumentHeaderDescription(User##objectClass, numberProp, caption);
-    description##objectClass (o) += descriptionUser##objectClass(o);
-END
-
-META defineDocumentHeaderDescription(objectClass, caption)
-    @defineDocumentHeaderDescription(objectClass, seriesNumberObject, caption);
-END
 META defineDocumentInterfaceHeaderDescription(objectClass, caption)
-    @defineDocumentInterfaceHeaderDescription(objectClass, seriesNumberObject, caption);
+    @defineDocumentAbstractHeaderDescription(objectClass);
+    @defineDocumentHeaderDescription(User##objectClass, caption);
+    description##objectClass (o) += descriptionUser##objectClass(o);
 END
 
 META defineDocumentDetailDescription(object, detailClass)
@@ -548,28 +538,28 @@ META defineDocumentDetailDescription(object, detailClass)
             index##detailClass(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
 
-META defineDocumentDescription(object, detailClass, numberProp, caption)
-    @defineDocumentHeaderDescription(###object, numberProp, caption);
+META defineDocumentDescription(object, detailClass, caption)
+    @defineDocumentHeaderDescription(###object, caption);
     @defineDocumentDetailDescription(object, detailClass);
 END
 META defineDocumentAbstractDescription(object, detailClass)
     @defineDocumentAbstractHeaderDescription(###object);
     @defineDocumentDetailDescription(object, detailClass);
 END
-META defineDocumentInterfaceDescription(object, detailClass, numberProp, caption)
-    @defineDocumentInterfaceHeaderDescription(###object, numberProp, caption);
+META defineDocumentInterfaceDescription(object, detailClass, caption)
+    @defineDocumentInterfaceHeaderDescription(###object, caption);
     @defineDocumentDetailDescription(object, detailClass);
     @defineDocumentDetailDescription(user###object, User##detailClass);
 END
 
 META defineDocumentDescription (object, caption)
-    @defineDocumentDescription(object, ###object##Detail, seriesNumberObject, caption);
+    @defineDocumentDescription(object, ###object##Detail, caption);
 END
 META defineDocumentAbstractDescription (object)
     @defineDocumentAbstractDescription(object, ###object##Detail);
 END
 META defineDocumentInterfaceDescription (object, caption)
-    @defineDocumentInterfaceDescription(object, ###object##Detail, seriesNumberObject, caption);
+    @defineDocumentInterfaceDescription(object, ###object##Detail, caption);
 END
 
 // ----- Is ----- //
@@ -1032,13 +1022,6 @@ END
 
 META defineDocumentAggregationHeaderNumber (primObject, aggrObject)
     @defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, Object);
-END
-
-META deriveDocumentAggregationHeaderNumber (primObject, aggrObject)
-    initValueNumberObject (o) += [PREV(numberObject(o))](primObject###aggrObject(o));
-    initValueSeriesObject (o) += [PREV(seriesObject(o))](primObject###aggrObject(o));
-
-    initWhenNumberedObject(o) += CHANGED(primObject###aggrObject(o));
 END
 
 // Description
