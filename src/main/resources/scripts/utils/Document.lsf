@@ -20,10 +20,6 @@ timeClosed(postedObject) <- currentDateTime() WHEN SET(postedObject IS PostedObj
 userClosed(postedObject) <- currentUser() WHEN SET(postedObject IS PostedObject);
 computerClosed(postedObject) <- currentComputer() WHEN SET(postedObject IS PostedObject);
 
-// Логика нумерирования документов
-
-CLASS ABSTRACT NumeratedDocument 'Нумерируемый документ' : NumeratedObject;
-
 // Стандартные группы
 GROUP documentHeaderGroup 'Шапка документа' : base;
 GROUP documentSumGroup 'Суммы документа': public;

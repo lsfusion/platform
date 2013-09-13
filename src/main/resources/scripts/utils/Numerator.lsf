@@ -76,54 +76,9 @@ NAVIGATOR {
     }
 }
 
-// ---------------------------------------------- Нумерованные объекты ----------------------------------------------- //
+// --------------------------------------------- Макрос по объявлению нумерируемого объекта ---------------------------- //
 
 GROUP numberedGroup 'Нумератор' : recognize;
-
-CLASS ABSTRACT NumberedObject 'Нумерованный объект';
-TABLE numberedObject (NumberedObject);
-
-numberObject 'Номер' = DATA STRING[18] (NumberedObject) IN numberedGroup MINCHARWIDTH 7;
-seriesObject 'Серия' = DATA STRING[2] (NumberedObject) IN numberedGroup FIXEDCHARWIDTH 3;
-//
-//seriesNumberObject 'Серия/Номер' (numberedObject) = CONCAT '', seriesObject(numberedObject), numberObject(numberedObject) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
-//
-//initValueNumberObject = ABSTRACT STRING[18] (NumberedObject);
-//initValueSeriesObject = ABSTRACT STRING[2] (NumberedObject);
-//
-//initWhenNumberedObject = ABSTRACT BOOLEAN (NumberedObject);
-//
-//numberObject (object) <- initValueNumberObject(object) WHEN initWhenNumberedObject(object);
-//seriesObject (object) <- initValueSeriesObject(object) WHEN initWhenNumberedObject(object);
-//
-CLASS ABSTRACT NumeratedObject 'Нумерируемый объект' : NumberedObject;
-
-numeratorObject 'Нумератор (ИД)' = DATA Numerator (NumeratedObject);
-//nameNumeratorObject 'Нумератор' (numeratedObject) = nameNumerator(numeratorObject(numeratedObject)) IN numberedGroup MINCHARWIDTH 7 PREFCHARWIDTH 15;
-
-//initValueNumeratorObject = ABSTRACT Numerator (NumeratedObject);
-//initWhenNumeratorObject = ABSTRACT BOOLEAN (NumeratedObject);
-//
-//numeratorObject (object) <- initValueNumeratorObject (object) WHEN initWhenNumeratorObject(object);
-//
-//setValueNumeratedObject 'Сгенерировать номер' = ACTION (numeratedObject) {
-//    ASSIGN numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
-//    ASSIGN seriesObject(numeratedObject) <- seriesNumerator(numeratorObject(numeratedObject));
-//    EXEC incrementValueNumerator(numeratorObject(numeratedObject));
-//}
-//
-//setValueSessionNumeratedObject 'Сгенерировать номер' = ACTION (numeratedObject) {
-//    ASSIGN numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
-//    ASSIGN seriesObject(numeratedObject) <- seriesNumerator(numeratorObject(numeratedObject));
-//    EXEC incrementValueSessionNumerator(numeratorObject(numeratedObject));
-//}
-//
-//WHEN CHANGED(numeratorObject(numeratedObject)) AND
-//     NOT CHANGED(numberObject(numeratedObject)) AND
-//     NOT CHANGED(seriesObject(numeratedObject))
-//     DO EXEC setValueSessionNumeratedObject(numeratedObject) ;
-
-// --------------------------------------------- Макрос по объявлению нумерируемого объекта ---------------------------- //
 
 META defineNumberedObjectAbstract(class)
     number###class 'Номер' = ABSTRACT STRING[18] (class) IN numberedGroup PERSISTENT MINCHARWIDTH 7;
