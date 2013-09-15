@@ -7,7 +7,7 @@ REQUIRE System, MasterData, DefaultData;
 CLASS Numerator 'Нумератор';
 TABLE numerator (Numerator);
 
-nameNumerator 'Наименование' = DATA VARISTRING[100](Numerator);
+nameNumerator 'Наименование' = DATA VARISTRING[100](Numerator) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 seriesNumerator 'Серия' = DATA STRING[2] (Numerator) IN recognize FIXEDCHARWIDTH 3;
 
@@ -121,10 +121,12 @@ META defineNumeratedObjectDefault(class, caption, series)
     @defineNumeratedObjectDefault(class, caption, series, );
 END
 
+GROUP defaultNumeratorGroup 'Нумераторы по умолчанию' : public;
+
 META defineNumeratedObjectDefault(class, caption, series, prefix)
 
     prefix###defaultNumerator###class = DATA Numerator ();
-    name###prefix##DefaultNumerator###class caption = nameNumerator(prefix###defaultNumerator###class());
+    name###prefix##DefaultNumerator###class caption = nameNumerator(prefix###defaultNumerator###class()) IN defaultNumeratorGroup;
 
     numerator###class(o) <- prefix###defaultNumerator###class() WHEN SET(o IS class);
 
@@ -134,15 +136,9 @@ META defineNumeratedObjectDefault(class, caption, series, prefix)
     EXTEND FORM defaultNumerators
         PROPERTIES() name###prefix##DefaultNumerator###class
     ;
-    EXTEND DESIGN defaultNumerators {
-        defaultContainer {
-            ADD PROPERTY(name###prefix##DefaultNumerator###class);
-        }
-    }
-
+    
     loadDefaultNumerators() += ACTION () {
-        ADDOBJ Numerator;
-        FOR n == addedObject() DO {
+        FOR ADDOBJ n = Numerator DO {
             ASSIGN nameNumerator(n) <- caption;
             ASSIGN seriesNumerator(n) <- series;
             ASSIGN minValueNumerator(n) <- 1L;
