@@ -216,6 +216,8 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     public void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex) {
         if ((parent.isVertical() && flex > 0) || (parent.isHorizontal() && alignment == GFlexAlignment.STRETCH)) {
             button.getElement().getStyle().clearHeight();
+            button.getElement().getStyle().clearProperty("maxWidth");
+            button.getElement().getStyle().clearProperty("maxHeight");
         }
     }
 

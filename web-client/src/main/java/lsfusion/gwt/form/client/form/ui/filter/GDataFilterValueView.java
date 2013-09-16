@@ -20,7 +20,19 @@ public class GDataFilterValueView extends GFilterValueView {
         this.filterValue = filterValue;
         this.logicsSupplier = logicsSupplier;
 
-        valueTable = new GDataFilterValueViewTable(this, property);
+        valueTable = new GDataFilterValueViewTable(this, property) {
+            @Override
+            protected void onFocus() {
+                super.onFocus();
+                tablePanel.addStyleName("blueBorder");
+            }
+
+            @Override
+            protected void onBlur() {
+                super.onBlur();
+                tablePanel.removeStyleName("blueBorder");
+            }
+        };
 
         tablePanel = new ResizableLayoutPanel();
         tablePanel.addStyleName("dataFilterValueTablePanel");

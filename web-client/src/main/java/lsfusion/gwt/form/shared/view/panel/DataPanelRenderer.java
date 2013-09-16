@@ -25,7 +25,7 @@ import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
 import static lsfusion.gwt.form.client.HotkeyManager.Binding;
 
 public class DataPanelRenderer implements PanelRenderer {
-    protected GPropertyDraw property;
+    private final GPropertyDraw property;
 
     private final FlexPanel panel;
     private final ResizableSimplePanel gridPanel;
@@ -40,6 +40,7 @@ public class DataPanelRenderer implements PanelRenderer {
 
     public DataPanelRenderer(GFormController form, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
         this.property = iproperty;
+
         label = new Label(caption = property.getEditCaption());
         tooltip = property.getTooltipText(property.getCaptionOrEmpty());
 
@@ -66,17 +67,7 @@ public class DataPanelRenderer implements PanelRenderer {
             property.headerFont.apply(label.getElement().getStyle());
         }
 
-        valueTable = new GSinglePropertyTable(form, property, columnKey) {
-            @Override
-            public void onEditFinished() {
-                if (focusTargetAfterEdit != null) {
-                    Element.as(focusTargetAfterEdit).focus();
-                    focusTargetAfterEdit = null;
-                } else {
-                    setFocus(true);
-                }
-            }
-        };
+        valueTable = new ValueTable(form, columnKey);
 
         if (!property.focusable) {
             valueTable.setTableFocusable(false);
@@ -94,16 +85,18 @@ public class DataPanelRenderer implements PanelRenderer {
         panel.add(label, GFlexAlignment.CENTER);
         panel.add(gridPanel, vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER, 1, "auto");
 
-        gridPanel.setHeight(property.getPreferredHeight());
+        String preferredHeight = property.getPreferredHeight();
+        String preferredWidth = property.getPreferredWidth();
+
+        gridPanel.setHeight(preferredHeight);
         if (!vertical) {
-            gridPanel.setWidth(property.getPreferredWidth());
-//        } else {
-//            //т.к. flex-panel игнорирует stretch, если проставлен width
-//            gridPanel.getElement().getStyle().setProperty("minWidth", property.getPreferredWidth());
+            gridPanel.setWidth(preferredWidth);
         }
 
-        gridPanel.getElement().getStyle().setProperty("minHeight", property.getPreferredHeight());
-        gridPanel.getElement().getStyle().setProperty("minWidth", property.getPreferredWidth());
+        gridPanel.getElement().getStyle().setProperty("minHeight", preferredHeight);
+        gridPanel.getElement().getStyle().setProperty("minWidth", preferredWidth);
+        gridPanel.getElement().getStyle().setProperty("maxHeight", preferredHeight);
+        gridPanel.getElement().getStyle().setProperty("maxWidth", preferredWidth);
 
         valueTable.getElement().setPropertyObject("groupObject", property.groupObject);
         if (property.editKey != null) {
@@ -124,6 +117,8 @@ public class DataPanelRenderer implements PanelRenderer {
             panel.setChildAlignment(gridPanel, GFlexAlignment.STRETCH);
 
             gridPanel.getElement().getStyle().clearHeight();
+            gridPanel.getElement().getStyle().clearProperty("maxWidth");
+            gridPanel.getElement().getStyle().clearProperty("maxHeight");
             gridPanel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
 
             valueTable.setupFillParent();
@@ -132,8 +127,8 @@ public class DataPanelRenderer implements PanelRenderer {
         if (alignment == GFlexAlignment.STRETCH && flex > 0) {
             gridPanel.getElement().getStyle().clearWidth();
             gridPanel.getElement().getStyle().clearHeight();
-//            gridPanel.getElement().getStyle().clearProperty("minWidth");
-//            gridPanel.getElement().getStyle().clearProperty("minHeight");
+            gridPanel.getElement().getStyle().clearProperty("maxWidth");
+            gridPanel.getElement().getStyle().clearProperty("maxHeight");
             gridPanel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
 
             valueTable.setupFillParent();
@@ -191,6 +186,34 @@ public class DataPanelRenderer implements PanelRenderer {
         @Override
         public Dimension getPreferredSize() {
             return new Dimension(property.getPreferredPixelWidth() + 5, property.getPreferredPixelHeight() + 5);
+        }
+    }
+
+    private class ValueTable extends GSinglePropertyTable {
+        public ValueTable(GFormController form, GGroupObjectValue columnKey) {
+            super(form, DataPanelRenderer.this.property, columnKey);
+        }
+
+        @Override
+        protected void onFocus() {
+            super.onFocus();
+            gridPanel.addStyleName("blueBorder");
+        }
+
+        @Override
+        protected void onBlur() {
+            super.onBlur();
+            gridPanel.removeStyleName("blueBorder");
+        }
+
+        @Override
+        public void onEditFinished() {
+            if (focusTargetAfterEdit != null) {
+                Element.as(focusTargetAfterEdit).focus();
+                focusTargetAfterEdit = null;
+            } else {
+                setFocus(true);
+            }
         }
     }
 }

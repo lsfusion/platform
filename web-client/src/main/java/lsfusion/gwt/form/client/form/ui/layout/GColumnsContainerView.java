@@ -1,9 +1,12 @@
 package lsfusion.gwt.form.client.form.ui.layout;
 
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.base.client.ui.ResizableComplexPanel;
+import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
 
@@ -11,28 +14,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GColumnsContainerView extends GAbstractContainerView {
-    private final FlexPanel panel;
-
-    private final Widget view;
+    private final static String COLUMN_PROXY_KEY = "columnsProxy";
 
     private final int columnsCount;
-    private final FlexPanel[] columns;
+
+    private final FlexPanel panel;
+
+    //в идеале здесь должны быть FlexPanel'и, но пока слишком тормозит в FF
+    //    private final FlexPanel[] columns;
+    private final ResizableComplexPanel[] columns;
+
     private final List<GComponent>[] columnsChildren;
+
+    private final Widget view;
 
     public GColumnsContainerView(GContainer container) {
         super(container);
 
         assert container.isColumns();
 
-        panel = new FlexPanel(false, FlexPanel.Justify.LEADING);
+        panel = new FlexPanel();
 
         columnsCount = container.columns;
 
-        columns = new FlexPanel[columnsCount];
+        columns = new ResizableComplexPanel[columnsCount];
         columnsChildren = new List[columnsCount];
         for (int i = 0; i < columnsCount; ++i) {
-            FlexPanel column = new FlexPanel(true, FlexPanel.Justify.LEADING);
-            panel.add(column, GFlexAlignment.STRETCH, 0);
+            ResizableComplexPanel column = new ResizableComplexPanel();
+            panel.add(column);
 
             columns[i] = column;
             columnsChildren[i] = new ArrayList<GComponent>();
@@ -72,9 +81,10 @@ public class GColumnsContainerView extends GAbstractContainerView {
             }
         }
 
-//        columns[colIndex].add(view, GFlexAlignment.STRETCH, 0);
-        columns[colIndex].add(view, rowIndex, GFlexAlignment.LEADING, 0);
         columnChildren.add(rowIndex, child);
+
+        columns[colIndex].insert(new ProxyPanel(view), 2 * rowIndex);
+        columns[colIndex].insert(new Clear(), 2 * rowIndex + 1);
     }
 
     @Override
@@ -83,17 +93,40 @@ public class GColumnsContainerView extends GAbstractContainerView {
         int childIndex = container.children.indexOf(child);
         int colIndex = childIndex % columnsCount;
         columnsChildren[colIndex].remove(child);
-        columns[colIndex].remove(view);
 
-//        int childIndex = container.children.indexOf(child);
-//        int colIndex = childIndex % columnsCount;
-//        columns[colIndex].remove(view);
+        Object columnsProxy = view.getElement().getPropertyObject(COLUMN_PROXY_KEY);
+        if (!(columnsProxy instanceof ProxyPanel)) {
+            throw new IllegalStateException("Trying to delete something, that wasn't added");
+        }
 
-//        view.removeFromParent();
+        ResizableComplexPanel column = columns[colIndex];
+        int proxyIndex = column.getWidgetIndex((Widget) columnsProxy);
+
+        column.remove(proxyIndex + 1);
+        column.remove(proxyIndex);
     }
 
     @Override
     public Widget getView() {
         return view;
+    }
+
+    private static final class ProxyPanel extends ResizableSimplePanel {
+        private ProxyPanel(Widget child) {
+            setWidget(child);
+
+            child.getElement().setPropertyObject(COLUMN_PROXY_KEY, this);
+
+            getElement().getStyle().setFloat(Style.Float.LEFT);
+        }
+    }
+
+    private static final class Clear extends Widget {
+        private Clear() {
+            DivElement divElement = Document.get().createDivElement();
+            divElement.getStyle().setClear(Style.Clear.BOTH);
+
+            setElement(divElement);
+        }
     }
 }

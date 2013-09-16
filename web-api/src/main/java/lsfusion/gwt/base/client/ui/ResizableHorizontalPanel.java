@@ -1,8 +1,11 @@
 package lsfusion.gwt.base.client.ui;
 
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.base.client.Dimension;
 
-public class ResizableHorizontalPanel extends HorizontalPanel implements RequiresResize, ProvidesResize {
+import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackPreferredSize;
+
+public class ResizableHorizontalPanel extends HorizontalPanel implements RequiresResize, ProvidesResize, HasPreferredSize {
     @Override
     public void onResize() {
         for (Widget child : this) {
@@ -19,5 +22,10 @@ public class ResizableHorizontalPanel extends HorizontalPanel implements Require
             this.visible = visible;
             super.setVisible(visible);
         }
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return calculateStackPreferredSize(this.iterator(), false);
     }
 }

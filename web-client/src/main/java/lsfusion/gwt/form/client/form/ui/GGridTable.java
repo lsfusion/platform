@@ -683,14 +683,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public void onResize() {
         super.onResize();
 
-        int tableHeight = getOffsetHeight();
-        if (tableHeight == 0) {
-            return;
-        }
-        int newPageSize = tableHeight / getRowHeight() + 1;
-        if (newPageSize != pageSize) {
-            form.changePageSizeAfterUnlock(groupObject, newPageSize);
-            pageSize = newPageSize;
+        if (isVisible()) {
+            int tableHeight = getOffsetHeight();
+            if (tableHeight == 0) {
+                return;
+            }
+            int newPageSize = tableHeight / getRowHeight() + 1;
+            if (newPageSize != pageSize) {
+                form.changePageSizeAfterUnlock(groupObject, newPageSize);
+                pageSize = newPageSize;
+            }
         }
     }
 

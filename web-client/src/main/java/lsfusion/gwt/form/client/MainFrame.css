@@ -267,6 +267,10 @@ textarea {
     min-height: 16px !important;
 }
 
+.blueBorder {
+    border: 1px solid blue;
+}
+
 .filterDialogHeader {
     height: 18px;
     padding: 4px 5px 4px 4px !important;

@@ -33,4 +33,8 @@ public class ResizableComplexPanel extends ComplexPanel implements RequiresResiz
             super.setVisible(visible);
         }
     }
+
+    public void insert(Widget w, int beforeIndex) {
+        super.insert(w, getElement(), beforeIndex, true);
+    }
 }
