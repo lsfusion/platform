@@ -583,4 +583,9 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     public Set<K> toJavaSet() {
         return Collections.<K>singleton(key);
     }
+
+    @Override
+    public String toString() {
+        return toString(",");
+    }
 }
