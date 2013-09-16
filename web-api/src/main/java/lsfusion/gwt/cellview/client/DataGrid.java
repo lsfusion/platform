@@ -79,7 +79,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         return DEFAULT_RESOURCES;
     }
 
-    private static final int PAGE_INCREMENT = 30;
     private static final int IGNORE_SCROLL_TIMEOUT = 40;
     public static int nativeScrollbarWidth = AbstractNativeScrollbar.getNativeScrollbarWidth();
 
@@ -311,6 +310,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     private int rowHeight = 16;
 
+    private int pageIncrement = 30;
+
     private boolean nullHeader;
 
     /**
@@ -438,6 +439,14 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     public int getRowHeight() {
         return rowHeight;
+    }
+
+    public int getPageIncrement() {
+        return pageIncrement;
+    }
+
+    public void setPageIncrement(int pageIncrement) {
+        this.pageIncrement = Math.max(1, pageIncrement);
     }
 
     @Override
@@ -2445,10 +2454,10 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                 case KeyCodes.KEY_UP:
                     return nextRow(false);
                 case KeyCodes.KEY_PAGEDOWN:
-                    display.setKeyboardSelectedRow(display.getKeyboardSelectedRow() + PAGE_INCREMENT);
+                    display.setKeyboardSelectedRow(display.getKeyboardSelectedRow() + display.pageIncrement);
                     return true;
                 case KeyCodes.KEY_PAGEUP:
-                    display.setKeyboardSelectedRow(display.getKeyboardSelectedRow() - PAGE_INCREMENT);
+                    display.setKeyboardSelectedRow(display.getKeyboardSelectedRow() - display.pageIncrement);
                     return true;
                 case KeyCodes.KEY_HOME:
                     display.setKeyboardSelectedRow(0);
