@@ -1081,12 +1081,7 @@ public class ClientFormController implements AsyncListener {
             rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest() {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remotForm) throws Exception {
-                    RemoteFormInterface form = remoteForm;
-                    if (form != null) {
-                        return remoteForm.changePageSize(requestIndex, groupObject.getID(), pageSize);
-                    } else {
-                        return ServerResponse.empty;
-                    }
+                    return remotForm.changePageSize(requestIndex, groupObject.getID(), pageSize);
                 }
             });
         }
