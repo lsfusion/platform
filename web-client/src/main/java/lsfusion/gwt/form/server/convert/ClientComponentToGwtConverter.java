@@ -141,18 +141,16 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         container.gapY = clientContainer.gapY;
         container.columns = clientContainer.columns;
 
-        if (clientContainer.childrenAlignment == Alignment.LEADING && container.isVertical()) {
-            boolean convertToColumns = true;
-            for (ClientComponent child : clientContainer.children) {
-                GComponent childComponent = convertOrCast(child);
-                container.children.add(childComponent);
+        boolean convertToColumns = clientContainer.childrenAlignment == Alignment.LEADING && container.isVertical();
+        for (ClientComponent child : clientContainer.children) {
+            GComponent childComponent = convertOrCast(child);
+            container.children.add(childComponent);
 
-                convertToColumns = convertToColumns && childComponent.alignment == GFlexAlignment.LEADING;
-            }
-            if (convertToColumns) {
-                container.columns = 1;
-                container.type = GContainerType.COLUMNS;
-            }
+            convertToColumns = convertToColumns && childComponent.alignment == GFlexAlignment.LEADING;
+        }
+        if (convertToColumns) {
+            container.columns = 1;
+            container.type = GContainerType.COLUMNS;
         }
 
         return container;
