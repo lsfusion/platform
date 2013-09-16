@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.text.shared.SafeHtmlRenderer;
 import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.cellview.client.DataGrid;
@@ -15,6 +16,9 @@ import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
     protected final SafeHtmlRenderer<String> renderer = SimpleSafeHtmlRenderer.getInstance();
@@ -60,7 +64,12 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
             popup.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
                 @Override
                 public void setPosition(int offsetWidth, int offsetHeight) {
-                    popup.setPopupPosition(parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
+                    int wndHeight = Window.getClientHeight();
+                    int wndWidth =  Window.getClientHeight();
+                    int left = max(0, min(parent.getAbsoluteLeft(), wndWidth - offsetHeight));
+                    int top = max(0, min(parent.getAbsoluteBottom(), wndHeight - offsetHeight));
+
+                    popup.setPopupPosition(left, top);
                 }
             });
         }
