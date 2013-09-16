@@ -115,7 +115,7 @@ EXTEND DESIGN translation {
             panelLabelAbove = TRUE;
         }
     }
-    ADD PROPERTY(translateText()) { font = 'Tahoma bold 24'; }
+    ADD PROPERTY(translateText()) { font = 'bold 24'; }
     ADD functions.box;
 }
 
@@ -158,13 +158,13 @@ DESIGN dictionary FROM DEFAULT {
                 fill = 1;
                 caption = 'Фраза для перевода';
                 panelLabelAbove = TRUE;
-                font = 'Tahoma bold 24';
+                font = 'bold 24';
             }
             ADD PROPERTY(translationResultString){
                 fill = 1;
                 caption = 'Перевод';
                 panelLabelAbove = TRUE;
-                font = 'Tahoma bold 24';
+                font = 'bold 24';
             }
         }
         ADD functions.box;

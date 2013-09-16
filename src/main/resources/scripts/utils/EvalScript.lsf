@@ -24,9 +24,9 @@ DESIGN script FROM DEFAULT {
     NEW run {
         caption = 'Запуск';
         type = CONTAINERH;
-        ADD PROPERTY(scriptExecution) { font = 'Tahoma bold 24'; }
-        ADD PROPERTY(actionBodyExecution) { font = 'Tahoma bold 24'; }
-        ADD PROPERTY(formExecution) { font = 'Tahoma bold 24'; }
+        ADD PROPERTY(scriptExecution) { font = 'bold 24'; }
+        ADD PROPERTY(actionBodyExecution) { font = 'bold 24'; }
+        ADD PROPERTY(formExecution) { font = 'bold 24'; }
     }
     ADD functions.box;
 }

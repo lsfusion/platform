@@ -91,7 +91,7 @@ DESIGN dialogDate FROM DEFAULT {
         ADD PROPERTY (objValue) {
             fill = 1;
             caption = 'Введите дату';
-            font = 'Tahoma bold 64';
+            font = 'bold 64';
             panelLabelAbove = TRUE;
         }
     }
@@ -106,7 +106,7 @@ FORM dialogNumeric 'Выбор числа'
 DESIGN dialogNumeric FROM DEFAULT {
     PROPERTY (objValue) {
         caption = 'Введите число';
-        font = 'Tahoma bold 64';
+        font = 'bold 64';
         panelLabelAbove = TRUE;
     }
 }
