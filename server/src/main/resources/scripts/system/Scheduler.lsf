@@ -103,6 +103,7 @@ EXTEND DESIGN scheduledTask {
             ADD p.box;
             NEW logContainer {
                 caption = 'Лог';
+                type = CONTAINERH;
                 ADD stl.box;
                 ADD sctl.box;
             }
