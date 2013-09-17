@@ -220,14 +220,14 @@ public class AutoHintsAspect {
         assert property.isFull();
 
         SessionModifier catchHint = catchAutoHint.get();
-        if(catchHint!=null && catchHint.allowPrereadValues(property,interfaceValues)) // если есть не "прочитанные" параметры - значения, вычисляем
+        if(!propClasses && catchHint!=null && catchHint.allowPrereadValues(property,interfaceValues)) // если есть не "прочитанные" параметры - значения, вычисляем
             throw new HintException(new PrereadHint(property, interfaceValues));
 
         IQuery<?, String> result = (IQuery) thisJoinPoint.proceed();
         if(queryType == PropertyQueryType.RECURSIVE)
             return result;
 
-        if(catchHint != null && catchHint.allowHintIncrement(property)) { // неправильно так как может быть не changed
+        if(!propClasses && catchHint != null && catchHint.allowHintIncrement(property)) { // неправильно так как может быть не changed
             Where changed = null;
             if(queryType.needChange())
                 changed = result.getExpr("changed").getWhere();
@@ -272,7 +272,7 @@ public class AutoHintsAspect {
     public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses,  ImMap joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
 
-        if(!property.isFull())
+        if(!property.isFull() || propClasses)
             return thisJoinPoint.proceed();
 
         SessionModifier catchHint = catchAutoHint.get();
