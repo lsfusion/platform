@@ -149,7 +149,7 @@ FORM dictionary 'Словарь'
 
 DESIGN dictionary FROM DEFAULT {
     main {
-        childConstraints = TO THE BOTTOM;
+        type = CONTAINERV;
         ADD d.box;
         ADD e.box;
         NEW test {

@@ -46,15 +46,15 @@ FORM template 'Шаблон Excel'
 DESIGN template FROM DEFAULT{
     main{
         preferredSize = (1024, 768);
-        childConstraints = TO THE BOTTOM;
+        type = CONTAINERV;
         ADD t.box {
-            childConstraints = TO THE RIGHT;
+            type = CONTAINERH;
             NEW row1 {
                 ADD PROPERTY(nameTemplate);
                 ADD PROPERTY(idTemplate);
             };
             NEW row2 {
-                childConstraints = TO THE RIGHT;
+                type = CONTAINERH;
                 ADD PROPERTY(loadFileTemplate);
                 ADD PROPERTY(openFileTemplate);
             };
