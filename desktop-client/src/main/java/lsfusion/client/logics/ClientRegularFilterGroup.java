@@ -27,11 +27,6 @@ public class ClientRegularFilterGroup extends ClientComponent {
     }
 
     @Override
-    protected void initDefaultConstraints() {
-//        constraints.insetsSibling = new Insets(0, 4, 2, 4);
-    }
-
-    @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 

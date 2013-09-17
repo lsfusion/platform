@@ -46,7 +46,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         hiddenHolderPanel = new JPanel(null);
 
-        panel = new ContainerViewPanel(new BorderLayout(), false);
+        panel = new ContainerViewPanel(new BorderLayout());
         panel.add(tabbedPane, BorderLayout.CENTER);
         panel.add(hiddenHolderPanel, BorderLayout.SOUTH);
 

@@ -15,8 +15,6 @@ public class GContainer extends GComponent {
     public GContainerType type;
     public GAlignment childrenAlignment;
 
-    public int gapX;
-    public int gapY;
     public int columns;
 
     public ArrayList<GComponent> children = new ArrayList<GComponent>();

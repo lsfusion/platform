@@ -90,7 +90,7 @@ FORM editProfile 'Редактировать профиль' IMAGE '/images/edit
 
 EXTEND DESIGN editProfile {
     main{
-        childConstraints = TO THE RIGHT;
+        type = CONTAINERH;
     }
 }
 

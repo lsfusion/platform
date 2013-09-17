@@ -41,8 +41,14 @@ public class DataPanelRenderer implements PanelRenderer {
     public DataPanelRenderer(GFormController form, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
         this.property = iproperty;
 
-        label = new Label(caption = property.getEditCaption());
+        boolean vertical = property.panelLabelAbove;
+
         tooltip = property.getTooltipText(property.getCaptionOrEmpty());
+
+        label = new Label(caption = property.getEditCaption());
+        if (!vertical) {
+            label.getElement().getStyle().setMarginRight(4, Style.Unit.PX);
+        }
 
         label.addMouseOverHandler(new MouseOverHandler() {
             @Override
@@ -78,9 +84,10 @@ public class DataPanelRenderer implements PanelRenderer {
         gridPanel.add(valueTable);
         valueTable.setSize("100%", "100%");
 
-        boolean vertical = property.panelLabelAbove;
         panel = new FlexPanel(vertical);
         panel.addStyleName("dataPanelRendererPanel");
+
+        property.installMargins(panel);
 
         panel.add(label, GFlexAlignment.CENTER);
         panel.add(gridPanel, vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER, 1, "auto");
@@ -185,7 +192,9 @@ public class DataPanelRenderer implements PanelRenderer {
     private class GridPanel extends ResizableSimplePanel implements HasPreferredSize {
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(property.getPreferredPixelWidth() + 5, property.getPreferredPixelHeight() + 5);
+            //+2 for border
+            return new Dimension(property.getPreferredPixelWidth() + 2 + property.getHorizontalMargin(),
+                                 property.getPreferredPixelHeight() + 2 + property.getVerticalMargin());
         }
     }
 

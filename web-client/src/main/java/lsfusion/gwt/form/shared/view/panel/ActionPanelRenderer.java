@@ -59,7 +59,8 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         this.editDispatcher = new GEditPropertyDispatcher(form, this);
 
         button = new ActionButton(property.getEditCaption(), property.icon);
-        button.addStyleName("panelActionProperty");
+        button.addStyleName("actionPanelRenderer");
+        property.installMargins(button);
 
         setTooltip(property.caption);
 
@@ -238,7 +239,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(getOffsetWidth() + 4, getOffsetHeight() + 4);
+            return property.getOffsetSize(this);
         }
     }
 

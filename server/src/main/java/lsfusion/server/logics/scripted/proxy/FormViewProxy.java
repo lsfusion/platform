@@ -78,16 +78,28 @@ public class FormViewProxy extends ViewProxy<FormView> {
         mainContainerProxy.setFixedWidth(width);
     }
 
-    public void setGapY(int gapY) {
-        mainContainerProxy.setGapY(gapY);
-    }
-
-    public void setGapX(int gapX) {
-        mainContainerProxy.setGapX(gapX);
-    }
-
     public void setColumns(int columns) {
         mainContainerProxy.setColumns(columns);
+    }
+
+    public void setMarginTop(int marginTop) {
+        mainContainerProxy.setMarginTop(marginTop);
+    }
+
+    public void setMarginBottom(int marginBottom) {
+        mainContainerProxy.setMarginBottom(marginBottom);
+    }
+
+    public void setMarginLeft(int marginLeft) {
+        mainContainerProxy.setMarginLeft(marginLeft);
+    }
+
+    public void setMarginRight(int marginRight) {
+        mainContainerProxy.setMarginRight(marginRight);
+    }
+
+    public void setMargin(int margin) {
+        mainContainerProxy.setMargin(margin);
     }
 
     public void setChildrenAlignment(FlexAlignment falign) {

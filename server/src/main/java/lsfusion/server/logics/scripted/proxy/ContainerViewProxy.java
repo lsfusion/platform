@@ -1,6 +1,8 @@
 package lsfusion.server.logics.scripted.proxy;
 
-import lsfusion.interop.form.layout.*;
+import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.layout.ContainerType;
+import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.view.ContainerView;
 
 public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
@@ -35,24 +37,5 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
 
     public void setColumns(int columns) {
         target.columns = columns;
-    }
-
-    public void setGapX(int gapX) {
-        target.gapX = gapX;
-    }
-
-    public void setGapY(int gapY) {
-        target.gapY = gapY;
-    }
-
-    //todo: remove
-    public void setChildConstraints(DoNotIntersectSimplexConstraint childConstraints) {
-        if (childConstraints == SingleSimplexConstraint.TOTHE_BOTTOM) {
-            setType(ContainerType.CONTAINERV);
-        } else if (childConstraints == SingleSimplexConstraint.TOTHE_RIGHT) {
-            setType(ContainerType.CONTAINERH);
-        } else if (childConstraints == SingleSimplexConstraint.TOTHE_RIGHTBOTTOM) {
-            setType(ContainerType.CONTAINERH);
-        }
     }
 }

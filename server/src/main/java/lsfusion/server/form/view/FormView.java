@@ -6,7 +6,6 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.layout.AbstractForm;
-import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
@@ -318,13 +317,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     public ContainerView getMainContainer() {
         return mainContainer;
-    }
-
-    public void addIntersection(ComponentView comp1, ComponentView comp2, DoNotIntersectSimplexConstraint cons) {
-
-        if (comp1.container != comp2.container)
-            throw new RuntimeException(ServerResourceBundle.getString("form.view.forbidden.to.create.the.intersection.of.objects.in.different.containers"));
-        comp1.constraints.intersects.put(comp2, cons);
     }
 
     public GroupObjectView getGroupObject(GroupObjectEntity entity) {

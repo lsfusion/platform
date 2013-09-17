@@ -8,9 +8,6 @@ public interface AbstractContainer<C extends AbstractContainer<C, T>, T extends 
     void setType(ContainerType type);
     void setChildrenAlignment(Alignment childrenAlignment);
     void setColumns(int columns);
-    void setGapX(int gapX);
-    void setGapY(int gapY);
-
 
     void add(T child);
 }

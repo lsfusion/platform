@@ -419,14 +419,18 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void updateSelectionInfo(int quantity, String sum, String avg) {
-        toolbarView.updateSelectionInfo(quantity, sum, avg);
+        if (toolbarView != null) {
+            toolbarView.updateSelectionInfo(quantity, sum, avg);
+        }
     }
 
     private void update() {
         if (groupObject != null) {
             grid.update();
 
-            toolbarView.setVisible(grid.isVisible());
+            if (toolbarView != null) {
+                toolbarView.setVisible(grid.isVisible());
+            }
 
             if (filter != null) {
                 filter.setVisible(grid.isVisible());

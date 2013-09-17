@@ -6,7 +6,6 @@ grammar LsfLogics;
 	import lsfusion.base.OrderedMap;
 	import lsfusion.interop.ClassViewType;
 	import lsfusion.interop.PropertyEditType;
-	import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
 	import lsfusion.interop.form.layout.ContainerType;
 	import lsfusion.interop.form.layout.FlexAlignment;
 	import lsfusion.interop.form.layout.Alignment;
@@ -57,7 +56,6 @@ grammar LsfLogics;
 	import java.sql.Date;
 
 	import static java.util.Arrays.asList;
-	import static lsfusion.interop.form.layout.SingleSimplexConstraint.*;
 	import static lsfusion.server.logics.scripted.ScriptingLogicsModule.WindowType.*;
 }
 
@@ -2694,7 +2692,6 @@ extendDesignDeclaration returns [ScriptingFormView view]
 componentStatementBody [Object propertyReceiver, ComponentView parentComponent]
 	:	'{'
 			(	setObjectPropertyStatement[propertyReceiver]
-			|	positionComponentsStatement[parentComponent]
 			|	setupComponentStatement
 			|	setupGroupObjectStatement
 			|	newComponentStatement[parentComponent]
@@ -2816,20 +2813,6 @@ propertySelector returns [PropertyDrawView propertyView = null]
 		}
 	;
 
-positionComponentsStatement[ComponentView parentComponent]
-@init {
-	boolean hasSecondComponent = false;
-}
-	:	'POSITION' compSelector1=componentSelector constraint=simplexConstraintLiteral ( compSelector2=componentSelector  { hasSecondComponent = true; } )? ';'
-		{
-			if (inPropParseState()) {
-				$designStatement::design.addIntersection($compSelector1.component,
-															$constraint.val,
-															hasSecondComponent ? $compSelector2.component : parentComponent);
-			}
-		}
-	;
-
 setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object value]
 	:	ID '=' componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }
 	;
@@ -2841,7 +2824,6 @@ componentPropertyValue returns [Object value]
 	|	d=doubleLiteral { $value = $d.val; }
 	|	dim=dimensionLiteral { $value = $dim.val; }
 	|	b=booleanLiteral { $value = $b.val; }
-	|	cons=simplexConstraintLiteral { $value = $cons.val; }
 	|	intB=boundsIntLiteral { $value = $intB.val; }
 	|	doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   contType=containerTypeLiteral { $value = $contType.val; }
@@ -3156,14 +3138,6 @@ boundsDoubleLiteral returns [Bounds val]
 	:	'(' top=doubleLiteral ',' left=doubleLiteral ',' bottom=doubleLiteral ',' right=doubleLiteral ')' { $val = new Bounds($top.val, $left.val, $bottom.val, $right.val); }
 	;
 	
-simplexConstraintLiteral returns [DoNotIntersectSimplexConstraint val]
-	:	'TO' 'THE' 'LEFT' { $val = TOTHE_LEFT; }
-	|	'TO' 'THE' 'RIGHT' { $val = TOTHE_RIGHT; }
-	|	'TO' 'THE' 'BOTTOM' { $val = TOTHE_BOTTOM; }
-	|	'TO' 'THE' 'RIGHTBOTTOM' { $val = TOTHE_RIGHTBOTTOM; }
-	|	'TO' 'NOT' 'INTERSECT' { $val = DO_NOT_INTERSECT; }
-	;
-
 insertRelativePositionLiteral returns [InsertPosition val]
 	:	'BEFORE' { $val = InsertPosition.BEFORE; }
 	|	'AFTER' { $val = InsertPosition.AFTER; }

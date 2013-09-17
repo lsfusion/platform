@@ -22,7 +22,7 @@ public class ShowTypeController {
         this.logicsSupplier = logicsSupplier;
         this.form = form;
 
-        view = new ShowTypeView(this, groupObject.banClassView);
+        view = new ShowTypeView(this, showType, groupObject.banClassView);
     }
 
     public void addView(ClientFormLayout layout) {

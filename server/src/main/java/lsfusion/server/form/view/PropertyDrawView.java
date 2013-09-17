@@ -73,6 +73,7 @@ public class PropertyDrawView extends ComponentView {
     public PropertyDrawView(PropertyDrawEntity entity) {
         super(entity.ID);
         this.entity = entity;
+        setMargin(2);
     }
 
     public Type getType() {

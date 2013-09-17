@@ -4,7 +4,6 @@ import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.descriptor.editor.ComponentEditor;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.io.DataInputStream;

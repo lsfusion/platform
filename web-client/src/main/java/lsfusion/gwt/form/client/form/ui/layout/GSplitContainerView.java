@@ -18,7 +18,7 @@ public class GSplitContainerView extends GAbstractContainerView {
 
         splitPane = new GSplitPane(container.isVerticalSplit());
 
-        view = wrapWithCaption(splitPane.getComponent());
+        view = wrapWithCaptionAndSetMargins(splitPane.getComponent());
         view.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
     }
 

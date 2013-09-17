@@ -36,7 +36,6 @@ public class ContainerEditor extends JTabbedPane implements NodeEditor {
 
         addTab(getString("descriptor.editor.arrangement"),
                new NorthBoxPanel(
-//                       new ComponentIntersectsEditor(getString("descriptor.editor.mutual.arrangement.of.the.components"), container, "intersects"),
                        new ContainerConstraintsEditor(container)
                ));
 

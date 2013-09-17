@@ -8,16 +8,17 @@ import lsfusion.client.descriptor.nodes.ComponentNode;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.ComponentDesign;
 import lsfusion.interop.form.layout.AbstractComponent;
-import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Map;
+
+import static javax.swing.BorderFactory.createCompoundBorder;
+import static javax.swing.BorderFactory.createEmptyBorder;
 
 public abstract class ClientComponent extends ContextIdentityObject implements IdentitySerializable<ClientSerializationPool>, AbstractComponent<ClientContainer, ClientComponent> {
 
@@ -32,10 +33,12 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public double flex = 0;
     public FlexAlignment alignment = FlexAlignment.LEADING;
 
-    public boolean defaultComponent = false;
+    public int marginTop;
+    public int marginBottom;
+    public int marginLeft;
+    public int marginRight;
 
-    //todo: remove after .lsf refactoring
-    public SimplexConstraints<ClientComponent> constraints = new SimplexConstraints<ClientComponent>();
+    public boolean defaultComponent = false;
 
     public ClientComponent() {
     }
@@ -53,8 +56,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     protected void initAggregateObjects(ApplicationContext context) {
         design = new ComponentDesign(context);
 
-        constraints.setContext(context);
-
         initDefaultConstraints();
     }
 
@@ -71,6 +72,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
 
         outStream.writeDouble(flex);
         pool.writeObject(outStream, alignment);
+        outStream.writeInt(marginTop);
+        outStream.writeInt(marginBottom);
+        outStream.writeInt(marginLeft);
+        outStream.writeInt(marginRight);
 
         outStream.writeBoolean(defaultComponent);
 
@@ -88,6 +93,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
 
         flex = inStream.readDouble();
         alignment = pool.readObject(inStream);
+        marginTop = inStream.readInt();
+        marginBottom = inStream.readInt();
+        marginLeft = inStream.readInt();
+        marginRight = inStream.readInt();
 
         defaultComponent = inStream.readBoolean();
 
@@ -100,29 +109,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
 
     public JComponent getPropertiesEditor() {
         return new ComponentEditor(this);
-    }
-
-    //todo: remove
-    public SimplexConstraints<ClientComponent> getConstraints() {
-        return constraints;
-    }
-
-    public void setConstraints(SimplexConstraints<ClientComponent> constraints) {
-        this.constraints = constraints;
-        updateDependency(this, "constraints");
-    }
-
-    public Map<ClientComponent, DoNotIntersectSimplexConstraint> getIntersects() {
-        return constraints.intersects;
-    }
-
-    public void setIntersects(Map<ClientComponent, DoNotIntersectSimplexConstraint> intersects) {
-        constraints.intersects = intersects;
-        updateDependency(this.constraints, "intersects");
-    }
-
-    public DoNotIntersectSimplexConstraint getChildConstraints() {
-        return constraints.getChildConstraints();
     }
 
     public void setDefaultComponent(boolean defaultComponent) {
@@ -222,6 +208,57 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public void setAlignment(FlexAlignment alignment) {
         this.alignment = alignment;
         updateDependency(this, "alignment");
+    }
+
+    public int getMarginTop() {
+        return marginTop;
+    }
+
+    public void setMarginTop(int marginTop) {
+        this.marginTop = marginTop;
+        updateDependency(this, "marginTop");
+    }
+
+    public int getMarginBottom() {
+        return marginBottom;
+    }
+
+    public void setMarginBottom(int marginBottom) {
+        this.marginBottom = marginBottom;
+        updateDependency(this, "marginBottom");
+    }
+
+    public int getMarginLeft() {
+        return marginLeft;
+    }
+
+    public void setMarginLeft(int marginLeft) {
+        this.marginLeft = marginLeft;
+        updateDependency(this, "marginLeft");
+    }
+
+    public int getMarginRight() {
+        return marginRight;
+    }
+
+    public void setMarginRight(int marginRight) {
+        this.marginRight = marginRight;
+        updateDependency(this, "marginRight");
+    }
+
+    public void setMargin(int margin) {
+        setMarginTop(margin);
+        setMarginBottom(margin);
+        setMarginLeft(margin);
+        setMarginRight(margin);
+    }
+
+    public void installMargins(JComponent view) {
+        if (marginTop != 0 || marginLeft != 0 || marginBottom != 0 || marginRight != 0) {
+            Border marginBorder = createEmptyBorder(marginTop, marginLeft, marginBottom, marginRight);
+            Border originalBorder = view.getBorder();
+            view.setBorder(createCompoundBorder(marginBorder, originalBorder));
+        }
     }
 
     public abstract String getCaption();

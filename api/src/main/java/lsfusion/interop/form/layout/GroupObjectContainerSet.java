@@ -133,11 +133,11 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
 
         set.panelPropsContainer.setType(ContainerType.COLUMNS);
         set.panelPropsContainer.setColumns(4);
-        set.panelPropsContainer.setGapX(10);
-        set.panelPropsContainer.setGapY(5);
 
         group.getToolbar().setAlignment(FlexAlignment.CENTER);
+        group.getToolbar().setMargin(2);
         group.getShowType().setAlignment(FlexAlignment.CENTER);
+        group.getShowType().setMargin(2);
 
         return set;
     }

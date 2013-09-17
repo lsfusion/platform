@@ -45,7 +45,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
 
         hiddenHolderPanel = new JPanel(null);
 
-        panel = new ContainerViewPanel(new BorderLayout(), false);
+        panel = new ContainerViewPanel(new BorderLayout());
         panel.add(hiddenHolderPanel, BorderLayout.SOUTH);
     }
 

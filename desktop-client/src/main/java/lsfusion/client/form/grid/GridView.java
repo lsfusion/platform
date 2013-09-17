@@ -48,6 +48,8 @@ public class GridView extends JPanel {
 
         gridTable.configureWheelScrolling(pane);
 
+        grid.installMargins(this);
+
         add(pane, BorderLayout.CENTER);
     }
 

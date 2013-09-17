@@ -13,11 +13,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>lpsolve</groupId>
-            <artifactId>lpsolve</artifactId>
-            <version>5.5.1</version>
-        </dependency>
-        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
         </dependency>

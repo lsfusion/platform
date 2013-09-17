@@ -18,19 +18,21 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class GAbstractGroupObjectController implements GGroupObjectLogicsSupplier {
-    protected GFormController formController;
-    protected GPanelController panel;
-    protected GToolbarView toolbar;
+    protected final GFormController formController;
+    protected final GPanelController panel;
+    protected final GToolbarView toolbarView;
     public GFilterController filter;
 
-    public GAbstractGroupObjectController(GFormController formController, GToolbar iToolbar) {
+    public GAbstractGroupObjectController(GFormController formController, GToolbar toolbar) {
         this.formController = formController;
 
         panel = new GPanelController(formController);
 
-        toolbar = new GToolbarView();
-        if (iToolbar != null && iToolbar.visible) {
-            getFormLayout().add(iToolbar, toolbar);
+        if (toolbar == null || !toolbar.visible) {
+            toolbarView = null;
+        } else {
+            toolbarView = new GToolbarView(toolbar);
+            getFormLayout().add(toolbar, toolbarView);
         }
     }
 
@@ -43,7 +45,9 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
     }
 
     public void addToToolbar(Widget tool) {
-        toolbar.addTool(tool);
+        if (toolbarView != null) {
+            toolbarView.addTool(tool);
+        }
     }
 
     public void addFilterButton() {

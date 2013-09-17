@@ -84,6 +84,7 @@ public class TreeGroupContainerSet <C extends AbstractContainer<C, T>, T extends
         treeGroup.setAlignment(FlexAlignment.STRETCH);
 
         treeGroup.getFilter().setAlignment(FlexAlignment.STRETCH);
+        treeGroup.getToolbar().setMargin(2);
 
         return set;
     }

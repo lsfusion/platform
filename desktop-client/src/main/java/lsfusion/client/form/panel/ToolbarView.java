@@ -2,6 +2,7 @@ package lsfusion.client.form.panel;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.StartupProperties;
+import lsfusion.client.logics.ClientToolbar;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,9 +12,10 @@ public class ToolbarView extends JPanel {
 
     private JLabel infoLabel;
 
-    public ToolbarView() {
+    public ToolbarView(ClientToolbar toolbar) {
         super(new BorderLayout());
         initBottomContainer();
+        toolbar.installMargins(this);
     }
 
     private void initBottomContainer() {

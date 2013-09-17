@@ -29,8 +29,8 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
         columnsChildren = new List[columnsCount];
         for (int i = 0; i < columnsCount; ++i) {
             JPanel column = new JPanel();
-            column.setLayout(new ColumnsLayout(column, 1, 0, 5));
-            panel.add(column, new FlexConstraints(FlexAlignment.STRETCH, 0));
+            column.setLayout(new ColumnsLayout(column, 1));
+            panel.add(column, new FlexConstraints());
 
             columns[i] = column;
             columnsChildren[i] = new ArrayList<ClientComponent>();

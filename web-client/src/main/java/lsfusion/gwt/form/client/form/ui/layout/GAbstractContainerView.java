@@ -2,6 +2,7 @@ package lsfusion.gwt.form.client.form.ui.layout;
 
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
@@ -69,8 +70,10 @@ public abstract class GAbstractContainerView {
         return (!isTopContainerView() && !container.container.isTabbed()) && container.caption != null;
     }
 
-    protected Widget wrapWithCaption(Widget view) {
-        return needCaption() ? new GCaptionPanel(container.caption, view) : view;
+    protected FlexPanel wrapWithCaptionAndSetMargins(FlexPanel view) {
+        view = needCaption() ? new GCaptionPanel(container.caption, view) : view;
+        view.setMargins(container.marginTop, container.marginBottom, container.marginLeft, container.marginRight);
+        return view;
     }
 
     public void onResize() {

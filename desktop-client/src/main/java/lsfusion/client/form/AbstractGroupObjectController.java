@@ -24,8 +24,10 @@ public abstract class AbstractGroupObjectController implements GroupObjectLogics
         this.logicsSupplier = logicsSupplier;
         this.formLayout = formLayout;
 
-        toolbarView = new ToolbarView();
-        if (toolbar != null && toolbar.visible) {
+        if (toolbar == null || !toolbar.visible) {
+            toolbarView = null;
+        } else {
+            toolbarView = new ToolbarView(toolbar);
             formLayout.add(toolbar, toolbarView);
         }
     }

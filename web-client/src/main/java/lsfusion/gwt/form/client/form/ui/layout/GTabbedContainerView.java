@@ -3,6 +3,8 @@ package lsfusion.gwt.form.client.form.ui.layout;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
+import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GComponent;
@@ -15,7 +17,6 @@ import static lsfusion.gwt.base.shared.GwtSharedUtils.relativePosition;
 public class GTabbedContainerView extends GAbstractContainerView {
 
     private final GTabbedPane tabsPanel;
-    private final Widget view;
 
     private final ArrayList<GComponent> visibleChildren = new ArrayList<GComponent>();
 
@@ -24,8 +25,8 @@ public class GTabbedContainerView extends GAbstractContainerView {
     public GTabbedContainerView(final GFormController formController, final GContainer container) {
         super(container);
 
-        tabsPanel = new GTabbedPane();
-        view = tabsPanel;
+        tabsPanel = new TabbedPane(container);
+        container.installMargins(tabsPanel);
 
         if (container.children.size() > 0) {
             currentChild = container.children.get(0);
@@ -62,7 +63,7 @@ public class GTabbedContainerView extends GAbstractContainerView {
 
     @Override
     public Widget getView() {
-        return view;
+        return tabsPanel;
     }
 
     @Override
@@ -106,5 +107,18 @@ public class GTabbedContainerView extends GAbstractContainerView {
             tabCaption = "";
         }
         return tabCaption;
+    }
+
+    private static class TabbedPane extends GTabbedPane {
+        private final GContainer container;
+
+        public TabbedPane(GContainer container) {
+            this.container = container;
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return GwtClientUtils.enlargeDimension(super.getPreferredSize(), container.getHorizontalMargin(), container.getVerticalMargin());
+        }
     }
 }

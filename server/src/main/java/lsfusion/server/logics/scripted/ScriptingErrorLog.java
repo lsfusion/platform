@@ -152,10 +152,6 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "can't remove main container");
     }
 
-    public void emitIntersectionInDifferentContainersError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "forbidden to create the intersection of objects in different containers");
-    }
-
     public void emitUnableToSetPropertyError(ScriptParser parser, String propertyName, String cause) throws SemanticErrorException {
         emitSimpleError(parser, "unable to set property '" + propertyName + "'. Cause: " + cause);
     }

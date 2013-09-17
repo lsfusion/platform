@@ -63,8 +63,6 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
 
         set.noGroupPanelPropsContainer.setType(ContainerType.COLUMNS);
         set.noGroupPanelPropsContainer.setColumns(2);
-        set.noGroupPanelPropsContainer.setGapX(10);
-        set.noGroupPanelPropsContainer.setGapY(5);
 
         return set;
     }

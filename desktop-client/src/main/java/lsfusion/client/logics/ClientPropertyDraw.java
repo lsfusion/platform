@@ -117,11 +117,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super(ID, context);
     }
 
-    @Override
-    protected void initDefaultConstraints() {
-//        constraints.insetsSibling = new Insets(0, 0, 2, 2);
-    }
-
     public KeyStroke getEditKey() {
         return editKey;
     }

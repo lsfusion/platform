@@ -8,26 +8,14 @@ public class ColumnsLayout extends CachableLayout<ColumnsConstraints> {
 
     //assert columns != 0
     int columns = 4;
-    int gapX = 10;
-    int gapY = 5;
 
-    public ColumnsLayout(Container target, int columns, int gapX, int gapY) {
+    public ColumnsLayout(Container target, int columns) {
         super(target);
         if (columns <= 0) {
             throw new IllegalArgumentException("columns count shold be > 0");
         }
 
-        if (gapX < 0) {
-            throw new IllegalArgumentException("gapX count shold be >= 0");
-        }
-
-        if (gapY < 0) {
-            throw new IllegalArgumentException("gapY count shold be >= 0");
-        }
-
         this.columns = columns;
-        this.gapX = gapX;
-        this.gapY = gapY;
     }
 
 
@@ -85,11 +73,9 @@ public class ColumnsLayout extends CachableLayout<ColumnsConstraints> {
                 columnWidth = max(columnWidth, limitedSum(contentWidth, labelsWidth));
 
                 width = limitedSum(width, columnWidth);
-                height = max(height, limitedSum(contentHeight, gapY * (rowsCnt - 1)));
+                height = max(height, contentHeight);
             }
         }
-
-        width = limitedSum(width, gapX * (visibleColumnsCnt - 1));
 
         return new Dimension(width, height);
     }
@@ -162,11 +148,11 @@ public class ColumnsLayout extends CachableLayout<ColumnsConstraints> {
 
                         child.setBounds(childLeft, currentY, columnWidth, prefSize.height);
 
-                        currentY += prefSize.height + gapY;
+                        currentY += prefSize.height;
                     }
                 }
             }
-            currentX += columnWidth + gapX;
+            currentX += columnWidth;
         }
     }
 }

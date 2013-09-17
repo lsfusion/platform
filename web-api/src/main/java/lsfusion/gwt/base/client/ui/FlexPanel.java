@@ -9,8 +9,10 @@ import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
+import lsfusion.gwt.base.client.GwtClientUtils;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackPreferredSize;
+import static lsfusion.gwt.base.client.GwtClientUtils.enlargeDimension;
 
 /**
  * Browser support: http://caniuse.com/flexbox
@@ -26,6 +28,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     private final Justify justify;
 
     private boolean visible = true;
+
+    protected int marginTop;
+    protected int marginBottom;
+    protected int marginLeft;
+    protected int marginRight;
 
     public FlexPanel() {
         this(Justify.LEADING);
@@ -48,6 +55,15 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         impl.setupParentDiv(parentElement, vertical, justify);
 
         setElement(parentElement);
+    }
+
+    public void setMargins(int marginTop, int marginBottom, int marginLeft, int marginRight) {
+        this.marginTop = marginTop;
+        this.marginBottom = marginBottom;
+        this.marginLeft = marginLeft;
+        this.marginRight = marginRight;
+
+        GwtClientUtils.installMargins(this, marginTop, marginBottom, marginLeft, marginRight);
     }
 
     public Justify getJustify() {
@@ -162,7 +178,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     @Override
     public Dimension getPreferredSize() {
-        return calculateStackPreferredSize(this.iterator(), isVertical());
+        return enlargeDimension(calculateStackPreferredSize(this.iterator(), isVertical()), marginLeft + marginRight, marginTop + marginBottom);
     }
 
     public static enum Justify {

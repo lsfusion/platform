@@ -3,10 +3,8 @@ package lsfusion.server.logics.scripted.proxy;
 import lsfusion.interop.ComponentDesign;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.layout.ContainerType;
-import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.view.ComponentView;
-import lsfusion.server.logics.scripted.Bounds;
 
 import java.awt.*;
 
@@ -129,32 +127,32 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         }
     }
 
-    //todo: remove
-    public void setInsetsInside(Insets insetsInside) {
-//        target.constraints.insetsInside = insetsInside;
-    }
-
-    //todo: rename to gap ?
-    public void setInsetsSibling(Insets insetsSibling) {
-//        target.constraints.insetsSibling = insetsSibling;
-    }
-
-    //todo: remove after removed from lsfs
-    public void setDirections(Bounds directions) {
-//        target.constraints.directions = new SimplexComponentDirections(directions.top, directions.left, directions.bottom, directions.right);
-    }
-
-    //todo: remove after removed from lsfs
-    public void setChildConstraints(DoNotIntersectSimplexConstraint childConstraints) {
-//        target.constraints.childConstraints = childConstraints;
-    }
-
     public void setAlign(FlexAlignment alignment) {
         setAlignment(alignment);
     }
 
     public void setAlignment(FlexAlignment alignment) {
         target.setAlignment(alignment);
+    }
+
+    public void setMarginTop(int marginTop) {
+        target.setMarginTop(marginTop);
+    }
+
+    public void setMarginBottom(int marginBottom) {
+        target.setMarginBottom(marginBottom);
+    }
+
+    public void setMarginLeft(int marginLeft) {
+        target.setMarginLeft(marginLeft);
+    }
+
+    public void setMarginRight(int marginRight) {
+        target.setMarginRight(marginRight);
+    }
+
+    public void setMargin(int margin) {
+        target.setMargin(margin);
     }
 
     /* ========= design properties ========= */

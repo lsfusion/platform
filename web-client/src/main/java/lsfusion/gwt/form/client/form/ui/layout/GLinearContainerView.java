@@ -19,7 +19,7 @@ public class GLinearContainerView extends GAbstractContainerView {
         panel = new FlexPanel(container.isVertical(), container.getFlexJustify());
         panel.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
 
-        view = wrapWithCaption(panel);
+        view = wrapWithCaptionAndSetMargins(panel);
     }
 
     @Override

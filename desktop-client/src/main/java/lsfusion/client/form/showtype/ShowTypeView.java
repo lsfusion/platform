@@ -2,6 +2,7 @@ package lsfusion.client.form.showtype;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.queries.ToolbarGridButton;
+import lsfusion.client.logics.ClientShowType;
 import lsfusion.interop.ClassViewType;
 
 import javax.swing.*;
@@ -23,7 +24,7 @@ public class ShowTypeView extends JPanel {
 
     private ClassViewType classView = ClassViewType.HIDE;
 
-    public ShowTypeView(ShowTypeController controller, List<ClassViewType> banClassView) {
+    public ShowTypeView(ShowTypeController controller, ClientShowType showType, List<ClassViewType> banClassView) {
         this.controller = controller;
         this.banClassView = banClassView;
 
@@ -34,6 +35,8 @@ public class ShowTypeView extends JPanel {
         add(hideButton = createShowTypeButton(ClassViewType.HIDE, hideIcon));
 
         setPreferredSize(new Dimension((ToolbarGridButton.DEFAULT_SIZE.width + 1) * 3, ToolbarGridButton.DEFAULT_SIZE.height));
+
+        showType.installMargins(this);
     }
 
     private JButton createShowTypeButton(ClassViewType newClassView, ImageIcon icon) {

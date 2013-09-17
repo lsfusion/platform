@@ -12,6 +12,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import static java.lang.Math.max;
+
 public class ComponentView extends IdentityObject implements ServerIdentitySerializable, AbstractComponent<ContainerView, ComponentView> {
 
     public ComponentDesign design = new ComponentDesign();
@@ -22,10 +24,13 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public Dimension maximumSize;
     public Dimension preferredSize;
 
-    public SimplexConstraints<ComponentView> constraints = getDefaultConstraints();
-
     public double flex = 0;
     public FlexAlignment alignment = FlexAlignment.LEADING;
+
+    public int marginTop;
+    public int marginBottom;
+    public int marginLeft;
+    public int marginRight;
 
     public boolean defaultComponent = false;
 
@@ -42,20 +47,35 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         preferredSize = size;
     }
 
-    public SimplexConstraints<ComponentView> getDefaultConstraints() {
-        return new SimplexConstraints<ComponentView>();
-    }
-
-    public SimplexConstraints<ComponentView> getConstraints() {
-        return constraints;
-    }
-
     public void setFlex(double flex) {
         this.flex = flex;
     }
 
     public void setAlignment(FlexAlignment alignment) {
         this.alignment = alignment;
+    }
+
+    public void setMarginTop(int marginTop) {
+        this.marginTop = max(0, marginTop);
+    }
+
+    public void setMarginBottom(int marginBottom) {
+        this.marginBottom = max(0, marginBottom);
+    }
+
+    public void setMarginLeft(int marginLeft) {
+        this.marginLeft = max(0, marginLeft);
+    }
+
+    public void setMarginRight(int marginRight) {
+        this.marginRight = max(0, marginRight);
+    }
+
+    public void setMargin(int margin) {
+        setMarginTop(margin);
+        setMarginBottom(margin);
+        setMarginLeft(margin);
+        setMarginRight(margin);
     }
 
     public ComponentView findById(int id) {
@@ -100,6 +120,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         outStream.writeDouble(flex);
         pool.writeObject(outStream, alignment);
+        outStream.writeInt(marginTop);
+        outStream.writeInt(marginBottom);
+        outStream.writeInt(marginLeft);
+        outStream.writeInt(marginRight);
 
         outStream.writeBoolean(defaultComponent);
 
@@ -117,6 +141,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         flex = inStream.readDouble();
         alignment = pool.readObject(inStream);
+        marginTop = inStream.readInt();
+        marginBottom = inStream.readInt();
+        marginLeft = inStream.readInt();
+        marginRight = inStream.readInt();
 
         defaultComponent = inStream.readBoolean();
 

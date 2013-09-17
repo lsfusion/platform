@@ -48,7 +48,7 @@ public class GColumnsContainerView extends GAbstractContainerView {
         }
         panel.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
 
-        view = wrapWithCaption(panel);
+        view = wrapWithCaptionAndSetMargins(panel);
     }
 
     @Override

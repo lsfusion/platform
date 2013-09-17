@@ -5,7 +5,6 @@ import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,27 +88,21 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         }
 
         public ContainerViewPanel(LayoutManager layout) {
-            this(layout, true);
-        }
-
-        public ContainerViewPanel(LayoutManager layout, boolean initBorder) {
             super(layout);
-            if (initBorder) {
-                initBorder();
-            }
+            initBorder();
         }
 
         private void initBorder() {
-            if (isTopContainerView() || !(container.container.isTabbed())) {
+            boolean isTabbed = container.isTabbed();
+            boolean isInTabbed = container.container != null && container.container.isTabbed();
+            if (!isTabbed && !isInTabbed) {
                 String caption = container.getRawCaption();
                 if (caption != null) {
-                    super.setBorder(new TitledBorder(caption));
+                    setBorder(new TitledBorder(caption));
                 }
             }
-        }
 
-        @Override
-        public void setBorder(Border border) {
+            container.installMargins(this);
         }
 
         @Override

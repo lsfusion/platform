@@ -5,9 +5,6 @@ import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.FontInfo;
-import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
-import lsfusion.interop.form.layout.SimplexConstraints;
-import lsfusion.interop.form.layout.SingleSimplexConstraint;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,8 +42,6 @@ public class GenerateCodeDialog extends JDialog {
                         getContainerCaption((ClientContainer) child, offset + 1),
                         getType((ClientContainer) child, offset + 1),
                         getFlex(child, offset + 1),
-                        getInsets(child, offset + 1),
-                        getDirection(child, offset + 1),
                         getSize(child, offset + 1),
                         getChildrenDesign((ClientContainer) child, offset + 1),
                         getFont(child, offset + 1),
@@ -59,8 +54,6 @@ public class GenerateCodeDialog extends JDialog {
                         getImage((ClientPropertyDraw) child, offset + 1) +
                         getEditKey((ClientPropertyDraw) child, offset + 1) +
                         getFlex(child, offset + 1) +
-                        getInsets(child, offset + 1) +
-                        getDirection(child, offset + 1) +
                         getFont(child, offset + 1) +
                         getHeaderFont(child, offset + 1) +
                         getBackground(child, offset + 1) +
@@ -147,32 +140,6 @@ public class GenerateCodeDialog extends JDialog {
         return result;
     }
 
-    private String getInsets(ClientComponent component, int offset) {
-        String result = "";
-        String insetsInsideTop = component.getConstraints().getInsetsInsideTop();
-        String insetsInsideLeft = component.getConstraints().getInsetsInsideLeft();
-        String insetsInsideBottom = component.getConstraints().getInsetsInsideBottom();
-        String insetsInsideRight = component.getConstraints().getInsetsInsideRight();
-        String insetsSiblingTop = component.getConstraints().getInsetsSiblingTop();
-        String insetsSiblingLeft = component.getConstraints().getInsetsSiblingLeft();
-        String insetsSiblingBottom = component.getConstraints().getInsetsSiblingBottom();
-        String insetsSiblingRight = component.getConstraints().getInsetsSiblingRight();
-        if (!SimplexConstraints.DEFAULT_INSETS_SIBLING.equals(component.getConstraints().insetsSibling))
-            result += getOffset(offset) + String.format("insetsSibling = (%s, %s, %s, %s);\n", insetsSiblingTop, insetsSiblingLeft, insetsSiblingBottom, insetsSiblingRight);
-
-        return result;
-    }
-
-    private String getDirection(ClientComponent component, int offset) {
-        String directionTop = component.getConstraints().getDirectionsTop();
-        String directionLeft = component.getConstraints().getDirectionsLeft();
-        String directionBottom = component.getConstraints().getDirectionsBottom();
-        String directionRight = component.getConstraints().getDirectionsRight();
-        if (!SimplexConstraints.DEFAULT_DIRECTIONS.equals(component.getConstraints().directions))
-            return getOffset(offset) + String.format("directions = (%s, %s, %s, %s);\n", directionTop, directionLeft, directionBottom, directionRight);
-        else return "";
-    }
-
     private String getFont(ClientComponent component, int offset) {
         FontInfo font = component.design.getFont();
         return font == null ? "" : String.format("%sfont = '\"%s\" %s %s %d';\n", getOffset(offset),
@@ -215,40 +182,31 @@ public class GenerateCodeDialog extends JDialog {
 
     private String getType(ClientContainer container, int offset) {
         String type;
-        DoNotIntersectSimplexConstraint constraints = container.getConstraints().childConstraints;
-        if (constraints.equals(SingleSimplexConstraint.TOTHE_BOTTOM))
-            type = "CONTAINERV";
-        else if (constraints.equals(SingleSimplexConstraint.TOTHE_RIGHT))
-            type = "CONTAINERH";
-        else if (constraints.equals(SingleSimplexConstraint.TOTHE_RIGHTBOTTOM))
-            type = "COLUMNS";
-        else {
-            switch (container.getType()) {
-                case CONTAINERH:
-                    type = "CONTAINERH";
-                    break;
-                case CONTAINERV:
-                    type = "CONTAINERV";
-                    break;
-                case COLUMNS:
-                    type = "COLUMNS";
-                    break;
-                case TABBED_PANE:
-                    type = "TABBED";
-                    break;
-                case VERTICAL_SPLIT_PANE:
-                    type = "SPLITV";
-                    break;
-                case HORIZONTAL_SPLIT_PANE:
-                    type = "SPLITH";
-                    break;
-                case SCROLL:
-                    throw new IllegalStateException("SCROLL container isn't yet supported");
-                case FLOW:
-                    throw new IllegalStateException("FLOW container isn't yet supported");
-                default:
-                    throw new IllegalStateException("shouldn't happen");
-            }
+        switch (container.getType()) {
+            case CONTAINERH:
+                type = "CONTAINERH";
+                break;
+            case CONTAINERV:
+                type = "CONTAINERV";
+                break;
+            case COLUMNS:
+                type = "COLUMNS";
+                break;
+            case TABBED_PANE:
+                type = "TABBED";
+                break;
+            case VERTICAL_SPLIT_PANE:
+                type = "SPLITV";
+                break;
+            case HORIZONTAL_SPLIT_PANE:
+                type = "SPLITH";
+                break;
+            case SCROLL:
+                throw new IllegalStateException("SCROLL container isn't yet supported");
+            case FLOW:
+                throw new IllegalStateException("FLOW container isn't yet supported");
+            default:
+                throw new IllegalStateException("shouldn't happen");
         }
         return getOffset(offset) + "type = " + type + ";\n";
     }

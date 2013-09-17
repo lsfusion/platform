@@ -1,6 +1,8 @@
 package lsfusion.server.form.view;
 
-import lsfusion.interop.form.layout.*;
+import lsfusion.interop.form.layout.AbstractContainer;
+import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -20,8 +22,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public Alignment childrenAlignment = Alignment.LEADING;
 
-    public int gapX = 10;
-    public int gapY = 5;
     public int columns = 4;
 
     public ContainerView() {
@@ -45,26 +45,10 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public void setType(ContainerType type) {
         this.type = type;
-        //todo: remove
-        if (type == ContainerType.CONTAINERH) {
-            constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-        } else if (type == ContainerType.CONTAINERV) {
-            constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
-        } else if (type == ContainerType.COLUMNS) {
-            constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
-        }
     }
 
     public void setChildrenAlignment(Alignment childrenAlignment) {
         this.childrenAlignment = childrenAlignment;
-    }
-
-    public void setGapX(int gapX) {
-        this.gapX = gapX;
-    }
-
-    public void setGapY(int gapY) {
-        this.gapY = gapY;
     }
 
     public void setColumns(int columns) {
@@ -163,8 +147,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         pool.writeObject(outStream, childrenAlignment);
 
         outStream.writeInt(columns);
-        outStream.writeInt(gapX);
-        outStream.writeInt(gapY);
     }
 
     @Override
@@ -181,7 +163,5 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         childrenAlignment = pool.readObject(inStream);
 
         columns = inStream.readInt();
-        gapX = inStream.readInt();
-        gapY = inStream.readInt();
     }
 }

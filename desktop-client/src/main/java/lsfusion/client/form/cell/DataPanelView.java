@@ -70,6 +70,8 @@ public class DataPanelView extends JPanel implements PanelView, HasLabels {
         setOpaque(false);
         setToolTip(property.getCaption());
 
+        property.installMargins(this);
+
         if (property.eventID != null) {
             valueEventListener = new ValueEventListener() {
                 @Override

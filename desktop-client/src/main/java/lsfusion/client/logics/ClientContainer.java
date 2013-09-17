@@ -7,7 +7,9 @@ import lsfusion.client.descriptor.editor.ComponentEditor;
 import lsfusion.client.descriptor.nodes.ComponentNode;
 import lsfusion.client.descriptor.nodes.ContainerNode;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.interop.form.layout.*;
+import lsfusion.interop.form.layout.AbstractContainer;
+import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.layout.ContainerType;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -27,8 +29,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
     public Alignment childrenAlignment = Alignment.LEADING;
 
-    public int gapX = 10;
-    public int gapY = 5;
     public int columns = 4;
 
     public List<ClientComponent> children = new ArrayList<ClientComponent>();
@@ -60,8 +60,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         pool.writeObject(outStream, childrenAlignment);
 
         outStream.writeInt(columns);
-        outStream.writeInt(gapX);
-        outStream.writeInt(gapY);
     }
 
     @Override
@@ -78,8 +76,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         childrenAlignment = pool.readObject(inStream);
 
         columns = inStream.readInt();
-        gapX = inStream.readInt();
-        gapY = inStream.readInt();
     }
 
     @Override
@@ -183,24 +179,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
     public void setChildrenAlignment(Alignment childrenAlignment) {
         this.childrenAlignment = childrenAlignment;
         updateDependency(this, "childrenAlignment");
-    }
-
-    public int getGapX() {
-        return gapX;
-    }
-
-    public void setGapX(int gapX) {
-        this.gapX = gapX;
-        updateDependency(this, "gapX");
-    }
-
-    public int getGapY() {
-        return gapY;
-    }
-
-    public void setGapY(int gapY) {
-        this.gapY = gapY;
-        updateDependency(this, "gapY");
     }
 
     public int getColumns() {

@@ -19,6 +19,8 @@ public class TreeView extends JPanel {
 
         groupTree = new TreeGroupTable(form, treeGroup);
 
+        treeGroup.installMargins(this);
+
         add(new JScrollPane(groupTree));
     }
 

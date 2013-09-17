@@ -89,6 +89,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         panel = new JPanel(null);
         panel.setLayout(new FlexLayout(panel, true));
         panel.add(this, new FlexConstraints(property.alignment, 1));
+        property.installMargins(panel);
     }
 
     private void showContextMenu(Point point) {

@@ -132,6 +132,7 @@ public class GGridController {
     private class GridView extends FlexPanel implements DefaultFocusReceiver {
         public GridView() {
             super(true);
+            setMargins(grid.marginTop, grid.marginBottom, grid.marginLeft, grid.marginRight);
         }
 
         @Override

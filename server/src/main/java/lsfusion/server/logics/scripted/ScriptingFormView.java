@@ -1,6 +1,5 @@
 package lsfusion.server.logics.scripted;
 
-import lsfusion.interop.form.layout.DoNotIntersectSimplexConstraint;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.*;
@@ -53,18 +52,6 @@ public class ScriptingFormView {
         } catch (Exception e) {
             errLog.emitUnableToSetPropertyError(parser, propertyName, e.getMessage());
         }
-    }
-
-    public void addIntersection(ComponentView comp1, DoNotIntersectSimplexConstraint cons, ComponentView comp2) throws ScriptingErrorLog.SemanticErrorException {
-        if (comp1 == null || comp2 == null) {
-            errLog.emitComponentIsNullError(parser, "can't add intersection:");
-        }
-
-        if (comp1.getContainer() != comp2.getContainer()) {
-            errLog.emitIntersectionInDifferentContainersError(parser);
-        }
-
-        view.addIntersection(comp2, comp1, cons);
     }
 
     public ContainerView createNewComponent(String sid, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {

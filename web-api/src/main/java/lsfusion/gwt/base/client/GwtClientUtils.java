@@ -222,11 +222,21 @@ public class GwtClientUtils {
     }
 
     public static Dimension getOffsetSize(Widget widget) {
-        return new Dimension(widget.getOffsetWidth(), widget.getOffsetHeight());
+        return getOffsetSize(widget, 0, 0);
+    }
+
+    public static Dimension getOffsetSize(Widget widget, int widthExtra, int heightExtra) {
+        return new Dimension(widget.getOffsetWidth() + widthExtra, widget.getOffsetHeight() + heightExtra);
     }
 
     public static Dimension maybeGetPreferredSize(Widget widget) {
         return maybeGetPreferredSize(widget, true);
+    }
+
+    public static Dimension enlargeDimension(Dimension dim, int extraWidth, int extraHeight) {
+        dim.width += extraWidth;
+        dim.height += extraHeight;
+        return dim;
     }
 
     public static Dimension maybeGetPreferredSize(Widget widget, boolean useOffsetSize) {
@@ -259,5 +269,13 @@ public class GwtClientUtils {
             }
         }
         return new Dimension(width, height);
+    }
+
+    public static void installMargins(Widget widget, int marginTop, int marginBottom, int marginLeft, int marginRight) {
+        Style style = widget.getElement().getStyle();
+        style.setMarginTop(marginTop, Style.Unit.PX);
+        style.setMarginBottom(marginBottom, Style.Unit.PX);
+        style.setMarginLeft(marginLeft, Style.Unit.PX);
+        style.setMarginRight(marginRight, Style.Unit.PX);
     }
 }

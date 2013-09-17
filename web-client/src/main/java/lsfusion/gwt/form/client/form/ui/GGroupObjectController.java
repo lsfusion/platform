@@ -340,7 +340,9 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     private void updateGrid() {
         if (groupObject != null) {
             grid.update();
-            toolbar.setVisible(grid.isVisible());
+            if (toolbarView != null) {
+                toolbarView.setVisible(grid.isVisible());
+            }
             if (filter != null) {
                 filter.setVisible(grid.isVisible());
             }

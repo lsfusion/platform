@@ -61,6 +61,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         component.flex = clientComponent.flex;
         component.alignment = convertFlexAlignment(clientComponent.alignment);
+        component.marginTop = clientComponent.marginTop;
+        component.marginBottom = clientComponent.marginBottom;
+        component.marginLeft = clientComponent.marginLeft;
+        component.marginRight = clientComponent.marginRight;
 
         if (clientComponent.design.getBackground() != null) {
             component.background = new ColorDTO(Integer.toHexString(clientComponent.design.getBackground().getRGB()).substring(2, 8));
@@ -137,8 +141,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         container.caption = clientContainer.getRawCaption();
         container.type = convertContainerType(clientContainer.getType());
         container.childrenAlignment = convertAlignment(clientContainer.childrenAlignment);
-        container.gapX = clientContainer.gapX;
-        container.gapY = clientContainer.gapY;
         container.columns = clientContainer.columns;
 
         boolean convertToColumns = clientContainer.childrenAlignment == Alignment.LEADING && container.isVertical();

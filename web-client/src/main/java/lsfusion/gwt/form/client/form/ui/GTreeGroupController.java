@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.client.form.ui;
 
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.ResizableLayoutPanel;
 import lsfusion.gwt.form.shared.view.*;
@@ -12,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static lsfusion.gwt.base.client.GwtClientUtils.enlargeDimension;
 
 public class GTreeGroupController extends GAbstractGroupObjectController {
     private GTreeGroup treeGroup;
@@ -30,6 +33,8 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         TreeTableView treeView = new TreeTableView();
         treeView.setStyleName("gridResizePanel");
         treeView.setWidget(tree);
+
+        treeGroup.installMargins(treeView);
 
         getFormLayout().add(treeGroup, treeView);
 
@@ -265,6 +270,11 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         @Override
         public boolean focus() {
             return focusFirstWidget();
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return enlargeDimension(super.getPreferredSize(), treeGroup.getHorizontalMargin(), treeGroup.getVerticalMargin());
         }
     }
 }
