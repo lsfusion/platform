@@ -66,8 +66,6 @@ CLASS YesNo 'Логическое' {
     no 'НЕТ'
 };
 
-classSIDToYesNo 'Да/нет по ИД'(string) = GROUP AGGR yesNo BY staticName (yesNo) WHERE yesNo IS YesNo;
-
 META defineHistorizableYesNo(property, defaultProperty, caption, object1, object1Identity, object2, object2Identity, group)
     @defineHistorizableCustomDefault(property, defaultProperty, caption, YesNo, staticCaption,
         object1, object1Identity, object2, object2Identity, 7, group);
