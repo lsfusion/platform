@@ -1,6 +1,8 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.AuthenticationLogicsModule;
 import lsfusion.server.logics.DataObject;
@@ -18,8 +20,8 @@ import java.util.Random;
 public class GenerateLoginPasswordActionProperty extends ScriptingActionProperty {
 
     private LCP email;
-    private LCP userLogin;
-    private LCP userPassword;
+    private LCP loginCustomUser;
+    private LCP sha256PasswordCustomUser;
 
     private final ClassPropertyInterface customUserInterface;
 
@@ -31,8 +33,8 @@ public class GenerateLoginPasswordActionProperty extends ScriptingActionProperty
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
         }
-        this.userLogin = lm.getLCPByName("loginCustomUser");
-        this.userPassword = lm.getLCPByName("passwordCustomUser");
+        this.loginCustomUser = lm.getLCPByName("loginCustomUser");
+        this.sha256PasswordCustomUser = lm.getLCPByName("sha256PasswordCustomUser");
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         customUserInterface = i.next();
@@ -56,13 +58,14 @@ public class GenerateLoginPasswordActionProperty extends ScriptingActionProperty
         for(int i=0;i<8;i++)
             password += chars.charAt(rand.nextInt(chars.length()));
 
-        if (userLogin.read(context, userObject) == null)
-            userLogin.change(login, context, userObject);
-        userPassword.change(password, context, userObject);
+        if (loginCustomUser.read(context, userObject) == null)
+            loginCustomUser.change(login, context, userObject);
+        String sha256Password = BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt);
+        sha256PasswordCustomUser.change(sha256Password, context, userObject);
     }
 
     @Override
     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        return getChangeProps((CalcProperty)userLogin.property, (CalcProperty)userPassword.property);
+        return getChangeProps((CalcProperty) loginCustomUser.property, (CalcProperty) sha256PasswordCustomUser.property);
     }
 }

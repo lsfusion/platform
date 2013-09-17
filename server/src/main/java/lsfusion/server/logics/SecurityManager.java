@@ -487,12 +487,6 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 DataObject userObject = new DataObject(userId, authenticationLM.customUser);
                 String password = (String) authenticationLM.sha256PasswordCustomUser.read(session, userObject);
                 Boolean isLocked = (Boolean) authenticationLM.isLockedCustomUser.read(session, userObject);
-                if (password == null) {
-                    String plainPassword = (String) authenticationLM.passwordCustomUser.read(session, userObject);
-                    if (plainPassword == null) plainPassword = "";
-                    plainPassword = plainPassword.trim();
-                    password = BaseUtils.calculateBase64Hash("SHA-256", plainPassword, UserInfo.salt);
-                }
                 if (password != null)
                     password = password.trim();
 

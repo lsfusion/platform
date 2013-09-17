@@ -1,6 +1,5 @@
 package lsfusion.server.logics;
 
-import org.antlr.runtime.RecognitionException;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.logics.linear.LAP;
@@ -8,12 +7,10 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CurrentComputerFormulaProperty;
 import lsfusion.server.logics.property.CurrentUserFormulaProperty;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
-
-import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 
 public class AuthenticationLogicsModule extends ScriptingLogicsModule{
@@ -27,7 +24,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP isLockedCustomUser;
     public LCP loginCustomUser;
     public LCP customUserLogin;
-    public LCP passwordCustomUser;
     public LCP sha256PasswordCustomUser;
     public LCP calculatedHash;
     public LCP currentUser;
@@ -77,9 +73,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         loginCustomUser = getLCPByName("loginCustomUser");
         customUserLogin = getLCPByName("customUserLogin");
-
-        passwordCustomUser = getLCPByName("passwordCustomUser");
-        passwordCustomUser.setEchoSymbols(true);
 
         sha256PasswordCustomUser = getLCPByName("sha256PasswordCustomUser");
         sha256PasswordCustomUser.setEchoSymbols(true);

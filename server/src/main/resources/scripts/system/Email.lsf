@@ -44,7 +44,7 @@ disableEmail 'Отключить отсылку почты' = DATA BOOLEAN() IN 
 FORM remindUserPass 'Напоминание пароля'
 
     OBJECTS u=CustomUser FIXED PANEL
-    PROPERTIES(u) READONLY loginCustomUser, passwordCustomUser, nameContact
+    PROPERTIES(u) READONLY loginCustomUser, nameContact
 ;
 
 emailUserPassUser 'Напоминание пароля' (user) = ACTION EMAIL

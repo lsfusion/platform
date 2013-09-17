@@ -31,7 +31,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static lsfusion.base.BaseUtils.nullEquals;
 import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -149,20 +148,13 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
                 DataObject userObject = new DataObject(user.ID, businessLogics.authenticationLM.customUser);
 
-                if( businessLogics.authenticationLM.isLockedCustomUser.read(session, userObject)!=null)
+                if (businessLogics.authenticationLM.isLockedCustomUser.read(session, userObject) != null)
                     throw new LockedException();
 
                 if (!isUniversalPasswordUsed) {
                     String hashPassword = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, userObject);
-                    if (hashPassword != null) {
-                        if (!hashPassword.trim().equals(BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt))) {
-                            throw new LoginException();
-                        }
-                    } else {
-                        String correctPassword = (String) businessLogics.authenticationLM.passwordCustomUser.read(session, userObject);
-                        if (!nullEquals(nullTrim(correctPassword), nullTrim(password))) {
-                            throw new LoginException();
-                        }
+                    if (hashPassword == null || !hashPassword.trim().equals(BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt))) {
+                        throw new LoginException();
                     }
                 }
             }

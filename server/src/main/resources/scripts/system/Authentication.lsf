@@ -25,7 +25,6 @@ hostnameCurrentComputer 'Текущий компьютер' () = hostnameCompute
 isLockedCustomUser 'Заблокирован' = DATA BOOLEAN (CustomUser);
 loginCustomUser 'Логин' = DATA STRING[30] (CustomUser);
 customUserLogin 'Обычный пользователь' (login) = GROUP AGGR customUser BY loginCustomUser(customUser) WHERE customUser IS CustomUser;
-passwordCustomUser 'Пароль' = DATA STRING[30] (CustomUser) ECHO;
 sha256PasswordCustomUser 'Хэш пароля' = DATA VARSTRING[100] (CustomUser) ECHO;
 calculatedHash 'Значение хэш' = DATA SESSION VARSTRING[100] ();
 forbidChangePasswordCustomUser 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
@@ -131,22 +130,12 @@ reloginLoginUser = ACTION () {
             IF isLockedCustomUser(user()) THEN {
                 MESSAGE 'Данный пользователь заблокирован';
             } ELSE {
-                IF NOT sha256PasswordCustomUser(user()) THEN {
-                    IF passwordCustomUser(user())==chosenString('password') THEN {
-                        EXEC reloginUser(user());
-                        MESSAGE 'Пользователь изменён';
-                    } ELSE {
-                        MESSAGE 'Неверный пароль';
-                    }
-                }
-                ELSE {
-                    EXEC calculateBase64Hash('SHA-256', chosenString('password'));
-                    IF sha256PasswordCustomUser(user()) == calculatedHash() THEN {
-                        EXEC reloginUser(user());
-                        MESSAGE 'Пользователь изменён (хэш)';
-                    } ELSE {
-                        MESSAGE 'Неверный пароль (хэш)';
-                    }
+                EXEC calculateBase64Hash('SHA-256', chosenString('password'));
+                IF sha256PasswordCustomUser(user()) == calculatedHash() THEN {
+                    EXEC reloginUser(user());
+                    MESSAGE 'Пользователь изменён (хэш)';
+                } ELSE {
+                    MESSAGE 'Неверный пароль (хэш)';
                 }
             }
         } ELSE {
@@ -181,15 +170,6 @@ reloginPasswordUser = ACTION (customUser) {
         IF isLockedCustomUser(customUser) THEN {
             MESSAGE 'Данный пользователь заблокирован';
         }  ELSE {
-            IF NOT sha256PasswordCustomUser(customUser) THEN {
-                IF passwordCustomUser(customUser)==chosenString('password') THEN {
-                    EXEC reloginUser(customUser);
-                    MESSAGE 'Пользователь изменён';
-                } ELSE {
-                    MESSAGE 'Неверный пароль';
-                }
-            }
-            ELSE {
                 EXEC calculateBase64Hash('SHA-256', chosenString('password'));
                 IF sha256PasswordCustomUser(customUser)==calculatedHash() THEN {
                     EXEC reloginUser(customUser);
@@ -197,7 +177,6 @@ reloginPasswordUser = ACTION (customUser) {
                 } ELSE {
                     MESSAGE 'Неверный пароль (хэш)';
                 }
-            }
         }
     }
 }
@@ -244,19 +223,11 @@ EXTEND DESIGN changePasswordUser {
 changePasswordUser = ACTION (customUser) {
     FORM changePasswordUser MODAL;
     IF formResult() == FormResult.ok THEN {
-        IF NOT sha256PasswordCustomUser(customUser) THEN {
-            IF  chosenString('old') != passwordCustomUser(customUser) THEN {
-                MESSAGE 'Неверный старый пароль';
-                BREAK;
-            }
-        }
-        ELSE {
             EXEC calculateBase64Hash('SHA-256', chosenString('old'));
             IF  calculatedHash() != sha256PasswordCustomUser(customUser) THEN {
                 MESSAGE 'Неверный старый пароль (хэш)';
                 BREAK;
             }
-        }
 
         IF chosenString('new1') != chosenString('new2') THEN {
             MESSAGE 'Введённые пароли не совпадают';
