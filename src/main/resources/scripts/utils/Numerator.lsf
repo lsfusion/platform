@@ -110,7 +110,7 @@ META defineNumeratedObject(class)
         incrementValueSessionNumerator(numerator###class(o));
     }
     
-    WHEN CHANGED(numerator###class(o)) AND
+    WHEN SETCHANGED(numerator###class(o)) AND
          NOT CHANGED(number###class(o)) AND
          NOT CHANGED(series###class(o))
          DO generateSeriesNumber###class(o) ;
