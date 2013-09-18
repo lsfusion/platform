@@ -205,6 +205,45 @@ FORM userRole 'Роль'
     EDIT UserRole OBJECT ur
 ;
 
+// ---------------------------------------- Копирование роли ----------------------- //
+overCopyUserRole = ABSTRACT ACTION LIST (UserRole, UserRole);
+
+copyDataUserRole = ACTION (userRole, ur) {
+    ASSIGN nameUserRole(ur) <- nameUserRole(userRole);
+    ASSIGN permitViewAllPropertyUserRole(ur) <- permitViewAllPropertyUserRole(userRole);
+    ASSIGN forbidViewAllPropertyUserRole(ur) <- forbidViewAllPropertyUserRole(userRole);
+    ASSIGN permitChangeAllPropertyUserRole(ur) <- permitChangeAllPropertyUserRole(userRole);
+    ASSIGN forbidChangeAllPropertyUserRole(ur) <- forbidChangeAllPropertyUserRole(userRole);
+    ASSIGN defaultFormsUserRole(ur) <- defaultFormsUserRole(userRole);
+    ASSIGN permitAllFormsUserRole(ur) <- permitAllFormsUserRole(userRole);
+    ASSIGN forbidAllFormsUserRole(ur) <- forbidAllFormsUserRole(userRole);
+
+    ASSIGN dataPermitViewUserRoleProperty(ur, property) <- dataPermitViewUserRoleProperty(userRole, property);
+    ASSIGN dataForbidViewUserRoleProperty(ur, property) <- dataForbidViewUserRoleProperty(userRole, property);
+    ASSIGN dataPermitChangeUserRoleProperty(ur, property) <- dataPermitChangeUserRoleProperty(userRole, property);
+    ASSIGN dataForbidChangeUserRoleProperty(ur, property) <- dataForbidChangeUserRoleProperty(userRole, property);
+    
+    ASSIGN dataPermitViewUserRolePropertyGroup(ur, propertyGroup) <- dataPermitViewUserRolePropertyGroup(userRole, propertyGroup);
+    ASSIGN dataForbidViewUserRolePropertyGroup(ur, propertyGroup) <- dataForbidViewUserRolePropertyGroup(userRole, propertyGroup);
+    ASSIGN dataPermitChangeUserRolePropertyGroup(ur, propertyGroup) <- dataPermitChangeUserRolePropertyGroup(userRole, propertyGroup);
+    ASSIGN dataForbidChangeUserRolePropertyGroup(ur, propertyGroup) <- dataForbidChangeUserRolePropertyGroup(userRole, propertyGroup);
+    
+    ASSIGN defaultNumberUserRoleNavigatorElement(ur, navigatorElement) <- defaultNumberUserRoleNavigatorElement(userRole, navigatorElement);
+    ASSIGN permitUserRoleNavigatorElement(ur, navigatorElement) <- permitUserRoleNavigatorElement(userRole, navigatorElement);
+    ASSIGN forbidUserRoleNavigatorElement(ur, navigatorElement) <- forbidUserRoleNavigatorElement(userRole, navigatorElement);
+    
+    ASSIGN orderUserRolePolicy(ur, userPolicy) <- orderUserRolePolicy(userRole, userPolicy);
+            
+    EXEC overCopyUserRole(userRole, ur);
+}
+
+copyUserRole 'Копировать' = ACTION (userRole) NEWSESSION {
+    FOR ADDOBJ ur = UserRole DO {
+        EXEC copyDataUserRole(userRole, ur);
+        FORM userRole OBJECTS ur = ur MANAGESESSION DOCKEDMODAL;
+    }
+} TOOLBAR;
+
 FORM securityPolicy 'Политика безопасности'
 
     OBJECTS ur=UserRole
@@ -332,6 +371,7 @@ EXTEND DESIGN securityPolicy {
 FORM userRoles 'Роли'
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY nameUserRole, sidUserRole
+    PROPERTIES(ur) copyUserRole FORCE PANEL
     PROPERTIES(ur) ADDFORM, EDITFORM, DELETE
     DIALOG UserRole OBJECT ur
 ;
