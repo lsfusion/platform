@@ -351,15 +351,11 @@ END
 // Closed
 META defineDocumentHeaderClosed (objectClass)
     isClosed##objectClass 'Закрыт' = DATA BOOLEAN (objectClass);
-    isOpened##objectClass 'Не закрыт' (o) = isPosted##objectClass(o) AND NOT isClosed##objectClass(o) PERSISTENT;
+    isOpened##objectClass 'Не закрыт' (o) = o IS objectClass AND NOT isClosed##objectClass(o) PERSISTENT;
 
-    close##objectClass 'Закрыть' (o) = ACTION NEWSESSION AUTOAPPLY {
-                                            IF isPosted##objectClass(o) AND NOT isClosed##objectClass(o) THEN ASSIGN isClosed##objectClass(o) <- TRUE;
-                                       } TOOLBAR CONFIRM;
+    close##objectClass 'Закрыть' (o) = ACTION NEWSESSION AUTOAPPLY { isClosed##objectClass(o) <- TRUE; } TOOLBAR CONFIRM;
 
-    open##objectClass 'Открыть' (o) = ACTION NEWSESSION AUTOAPPLY {
-                                            IF isClosed##objectClass(o) THEN ASSIGN isClosed##objectClass(o) <- NULL;
-                                      } TOOLBAR CONFIRM;
+    open##objectClass 'Открыть' (o) = ACTION NEWSESSION AUTOAPPLY { isClosed##objectClass(o) <- NULL; } TOOLBAR CONFIRM;
 END
 
 META defineDocumentAbstractHeaderClosed (objectClass)
@@ -1002,6 +998,20 @@ END
 META defineDocumentAggregationPosted (primObject, aggrObject)
     @defineDocumentAggregationHeaderPosted(primObject, aggrObject);
     @defineDocumentAggregationDetailPosted(primObject, aggrObject);
+END
+
+// Closed
+META defineDocumentAggregationHeaderClosed (primObject, aggrObject)
+    isClosed###aggrObject 'Закрыт' (o) = isClosed###primObject(primObject###aggrObject(o));
+END
+
+META defineDocumentAggregationDetailClosed (primObject, aggrObject)
+    isClosed###aggrObject##Detail 'Закрыт' (o) = isClosed###primObject##Detail(primObject##Detail###aggrObject##Detail(o));
+END
+
+META defineDocumentAggregationClosed (primObject, aggrObject)
+    @defineDocumentAggregationHeaderClosed(primObject, aggrObject);
+    @defineDocumentAggregationDetailClosed(primObject, aggrObject);
 END
 
 // Note
