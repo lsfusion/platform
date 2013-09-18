@@ -52,6 +52,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private boolean drawToToolbar = false;
 
+    public boolean optimisticAsync;
+
     public boolean askConfirm;
     public String askConfirmMessage;
 
@@ -84,16 +86,20 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public DataClass getRequestInputType(FormEntity form) {
-        return getRequestInputType(CHANGE, form);
+        return getRequestInputType(CHANGE, form, optimisticAsync);
     }
 
-    public DataClass getRequestInputType(String actionSID, FormEntity form) {
+    public DataClass getWYSRequestInputType(FormEntity form) {
+        return getRequestInputType(CHANGE_WYS, form, false);
+    }
+
+    public DataClass getRequestInputType(String actionSID, FormEntity form, boolean optimistic) {
         Type type = null;
         if (propertyObject instanceof CalcPropertyObjectEntity) {
             ActionPropertyObjectEntity<?> changeAction = getEditAction(actionSID, form);
 
             if (changeAction != null) {
-                type = changeAction.property.getSimpleRequestInputType();
+                type = changeAction.property.getSimpleRequestInputType(optimistic);
             }
         }
 

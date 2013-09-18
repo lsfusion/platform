@@ -29,7 +29,7 @@ public class LoadActionProperty extends SystemExplicitActionProperty {
     }
 
     @Override
-    public Type getSimpleRequestInputType() {
+    public Type getSimpleRequestInputType(boolean optimistic) {
         return getReadType();
     }
 

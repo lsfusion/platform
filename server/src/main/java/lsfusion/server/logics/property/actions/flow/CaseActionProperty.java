@@ -166,13 +166,14 @@ public class CaseActionProperty extends ListCaseActionProperty {
     }
 
     @Override
-    public Type getSimpleRequestInputType() {
+    public Type getSimpleRequestInputType(boolean optimistic) {
         Type type = null;
         ImList<ActionPropertyMapImplement<?, PropertyInterface>> actions = getListActions();
         for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
-            Type actionRequestType = action.property.getSimpleRequestInputType();
-//            if (actionRequestType == null) // не будем пока блокировать асинхронное выполнение, так как по сравнению с simpleAdd это не настолько часто заметно
-//                return null;
+            Type actionRequestType = action.property.getSimpleRequestInputType(optimistic);
+            if (!optimistic && actionRequestType == null) {
+                return null;
+            }
 
             if (type == null) {
                 type = actionRequestType;

@@ -43,7 +43,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
     }
 
     @Override
-    public Type getSimpleRequestInputType() {
+    public Type getSimpleRequestInputType(boolean optimistic) {
         Type type = getImplementType();
         if (type instanceof DataClass) {
             return type;

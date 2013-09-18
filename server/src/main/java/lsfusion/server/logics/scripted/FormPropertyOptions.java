@@ -20,6 +20,7 @@ public class FormPropertyOptions {
     private Boolean hintNoUpdate;
     private Boolean hintTable;
     private Boolean drawToToolbar;
+    private Boolean optimisticAsync;
     private List<GroupObjectEntity> columns;
     private CalcPropertyObjectEntity showIf;
     private CalcPropertyObjectEntity readOnlyIf;
@@ -141,6 +142,14 @@ public class FormPropertyOptions {
         this.drawToToolbar = drawToToolbar;
     }
 
+    public Boolean getOptimisticAsync() {
+        return optimisticAsync;
+    }
+
+    public void setOptimisticAsync(Boolean optimisticAsync) {
+        this.optimisticAsync = optimisticAsync;
+    }
+
     public void addEditAction(String actionSID, ActionPropertyObjectEntity action) {
         if (action != null) {
             if (editActions == null) {
@@ -231,6 +240,7 @@ public class FormPropertyOptions {
         merged.setHintNoUpdate(nvl(overrides.getHintNoUpdate(), hintNoUpdate));
         merged.setHintTable(nvl(overrides.getHintTable(), hintTable));
         merged.setDrawToToolbar(nvl(overrides.getDrawToToolbar(), drawToToolbar));
+        merged.setOptimisticAsync(nvl(overrides.getOptimisticAsync(), optimisticAsync));
         merged.setColumns(nvl(overrides.getColumns(), columns));
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));
         merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));

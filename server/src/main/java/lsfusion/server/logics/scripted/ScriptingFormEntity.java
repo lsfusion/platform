@@ -338,6 +338,11 @@ public class ScriptingFormEntity {
             property.setDrawToToolbar(true);
         }
 
+        Boolean optimisticAsync = options.getOptimisticAsync();
+        if (optimisticAsync != null && optimisticAsync) {
+            property.optimisticAsync = true;
+        }
+
         Map<String, ActionPropertyObjectEntity> editActions = options.getEditActions();
         if (editActions != null) {
             for (Map.Entry<String, ActionPropertyObjectEntity> e : editActions.entrySet()) {

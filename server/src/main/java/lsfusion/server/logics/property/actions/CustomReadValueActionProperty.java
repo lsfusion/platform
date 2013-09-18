@@ -33,7 +33,7 @@ public abstract class CustomReadValueActionProperty extends UserActionProperty {
     }
 
     @Override
-    public Type getSimpleRequestInputType() {
+    public Type getSimpleRequestInputType(boolean optimistic) {
         return getReadType();
     }
 

@@ -34,7 +34,7 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
     }
 
     @Override
-    public Type getSimpleRequestInputType() {
+    public Type getSimpleRequestInputType(boolean optimistic) {
         Type type = aggProp.getType();
         return type instanceof DataClass ? type : null;
     }

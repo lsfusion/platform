@@ -45,7 +45,7 @@ public class RequestUserDataActionProperty extends SystemExplicitActionProperty 
     }
 
     @Override
-    public Type getSimpleRequestInputType() {
+    public Type getSimpleRequestInputType(boolean optimistic) {
         return dataClass;
     }
 }

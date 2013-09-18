@@ -289,8 +289,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     /**
      * возвращает тип для "простого" редактирования, когда этот action используется в качестве действия для редактирования </br>
      * assert, что тип будет DataClass, т.к. для остальных такое редактирование невозможно...
+     * @param optimistic - если true, то если для некоторых случаев нельзя вывести тип, то эти случае будут игнорироваться
      */
-    public Type getSimpleRequestInputType() {
+    public Type getSimpleRequestInputType(boolean optimistic) {
         return null;
     }
 

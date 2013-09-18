@@ -30,7 +30,6 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
-import static lsfusion.interop.form.ServerResponse.CHANGE_WYS;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class PropertyDrawView extends ComponentView {
@@ -85,7 +84,7 @@ public class PropertyDrawView extends ComponentView {
     }
     
     public Type getChangeWYSType(FormEntity form) {
-        return entity.getRequestInputType(CHANGE_WYS, form);
+        return entity.getWYSRequestInputType(form);
     }
 
     public Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {

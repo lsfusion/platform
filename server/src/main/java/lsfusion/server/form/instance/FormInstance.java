@@ -745,7 +745,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 Object oValue = pasteRows.getValue(i);
                 ObjectValue value = NullValue.instance;
                 if (oValue != null) {
-                    DataClass changeType = property.entity.getRequestInputType(CHANGE_WYS, entity);
+                    DataClass changeType = property.entity.getWYSRequestInputType(entity);
                     if (changeType != null) {
                         value = session.getObjectValue(changeType, oValue);
                     }

@@ -555,6 +555,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
 		|	'TOOLBAR' { $options.setDrawToToolbar(true); }
+		|	'OPTIMISTICASYNC' { $options.setOptimisticAsync(true); }
 		|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
 		|	'SHOWIF' propObj=formCalcPropertyObject { $options.setShowIf($propObj.property); }
 		|	'READONLYIF' propObj=formCalcPropertyObject { $options.setReadOnlyIf($propObj.property); }
