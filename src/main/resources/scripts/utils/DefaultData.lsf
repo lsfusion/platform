@@ -11,14 +11,10 @@ FORM defaultData 'Стандартные данные'
 ;
 DESIGN defaultData FROM DEFAULT {
     NEW pane BEFORE functions.box {
+        fill = 1;
         type = TABBED;
-
-        fillVertical = 1.0;
-        fillHorizontal = 1.0;
-
         NEW commons {
             caption = 'Общие';
-
             ADD PROPERTY(loadDefaultData);
         }
     }
