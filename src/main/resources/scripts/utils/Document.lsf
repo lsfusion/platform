@@ -299,20 +299,26 @@ END
 
 // Posted
 META defineDocumentHeaderPosted(objectClass)
-    isDraft##objectClass 'Не проведен' (o) = o IS objectClass AND NOT o IS objectClass##Posted PERSISTENT;
-    isPosted##objectClass 'Проведен' (o) = o IS objectClass##Posted PERSISTENT;
+    isPosted##objectClass 'Проведен' (o) = DATA BOOLEAN (objectClass);
+    isDraft##objectClass 'Не проведен' (o) = o IS objectClass AND NOT isPosted##objectClass(o) PERSISTENT;
 
-    prePost##objectClass 'Провести' (o) = ACTION IF o IS objectClass AND NOT o IS objectClass##Posted
-                                                    THEN CHANGECLASS o TO objectClass##Posted;
+    postedTime##objectClass 'Время проведения' = DATA DATETIME (objectClass) IN postedGroup;
+    postedTime##objectClass(o) <- currentDateTime() WHEN SET(isPosted##objectClass(o));
+    
+    postedUser##objectClass = DATA CustomUser (objectClass);
+    postedUser##objectClass(o) <- currentUser() WHEN SET(isPosted##objectClass(o));
+    postedNameUser##objectClass 'Проведен пользователем' (o) = nameContact(postedUser##objectClass(o)) IN postedGroup;
 
+    postedComputer##objectClass = DATA Computer (objectClass);
+    postedComputer##objectClass(o) <- currentComputer() WHEN SET(isPosted##objectClass(o));
+    postedHostnameComputer##objectClass 'Проведен на компьютере' (o) = hostnameComputer(postedComputer##objectClass(o)) IN postedGroup;
 
-    post##objectClass 'Провести' (o) = ACTION NEWSESSION AUTOAPPLY {
-                                            IF o IS objectClass AND NOT o IS objectClass##Posted THEN CHANGECLASS o TO objectClass##Posted;
-                                       } TOOLBAR CONFIRM;
+    prePost##objectClass 'Провести' (o) = ACTION isPosted##objectClass(o) <- TRUE;
+    post##objectClass 'Провести' (o) = 
+        ACTION NEWSESSION AUTOAPPLY { isPosted##objectClass(o) <- TRUE; } TOOLBAR CONFIRM;
 
-    unpost##objectClass 'Распровести' (o) = ACTION NEWSESSION AUTOAPPLY {
-                                                IF o IS objectClass##Posted THEN CHANGECLASS o TO objectClass;
-                                            } TOOLBAR CONFIRM;
+    unpost##objectClass 'Распровести' (o) = 
+        ACTION NEWSESSION AUTOAPPLY { isPosted##objectClass(o) <- NULL; } TOOLBAR CONFIRM;
 END
 
 META defineDocumentAbstractHeaderPosted (objectClass)
