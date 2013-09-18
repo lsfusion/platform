@@ -8,8 +8,8 @@ import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.GUserInputResult;
-import lsfusion.gwt.form.shared.view.actions.GUpdateEditValueAction;
 import lsfusion.gwt.form.shared.view.actions.GRequestUserInputAction;
+import lsfusion.gwt.form.shared.view.actions.GUpdateEditValueAction;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.classes.GType;
 
@@ -119,7 +119,10 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
 
         if (simpleChangeProperty != null) {
             if (!inputResult.isCanceled()) {
-                form.changeProperty(editHandler, simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
+                if (simpleChangeProperty.canUseChangeValueForRendering()) {
+                    editHandler.updateEditValue(inputResult.getValue());
+                }
+                form.changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
                 editHandler.onEditFinished();
             }
             return;

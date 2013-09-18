@@ -46,7 +46,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                         dispatchResult = action == null ? null : action.dispatch(this);
                     } catch (Exception ex) {
                         Log.error("Error dispatching gwt client action: ", ex);
-                        throwInServerInvocation(ex);
+                        if (response.resumeInvocation) {
+                            throwInServerInvocation(ex);
+                        } else {
+                            throw ex;
+                        }
                         break;
                     }
 

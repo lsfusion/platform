@@ -23,6 +23,6 @@ public class StringGridCellEditor extends TextBasedGridCellEditor {
             return "";
         }
 
-        return isVarString ? (String)value : GwtSharedUtils.rtrim((String)value);
+        return isVarString ? (String)value : GwtSharedUtils.rtrim(value.toString());
     }
 }

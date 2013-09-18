@@ -666,7 +666,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey,
-                               final Object newValue, final Object oldValue, final boolean canUseNewValueForRendering) throws IOException {
+                               final Object newValue, final Object oldValue) throws IOException {
         assert !isEditing();
 
         commitOrCancelCurrentEditing();
@@ -687,7 +687,7 @@ public class ClientFormController implements AsyncListener {
                                                      : columnKey;
 
                 pendingChangePropertyRequests.put(property, propertyKey,
-                                                    new PropertyChange(requestIndex, newValue, oldValue, property.changeType.getTypeClass() == property.baseType.getTypeClass())
+                                                    new PropertyChange(requestIndex, newValue, oldValue, property.canUseChangeValueForRendering())
                 );
             }
 

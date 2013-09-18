@@ -30,7 +30,6 @@ import lsfusion.gwt.form.client.dispatch.FormDispatchAsync;
 import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.form.client.form.FormsController;
 import lsfusion.gwt.form.client.form.ServerMessageProvider;
-import lsfusion.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import lsfusion.gwt.form.client.form.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.form.client.form.dispatch.GSimpleChangePropertyDispatcher;
 import lsfusion.gwt.form.client.form.ui.classes.ClassChosenHandler;
@@ -64,6 +63,7 @@ import static lsfusion.gwt.base.shared.GwtSharedUtils.removeFromDoubleMap;
 
 //public class GFormController extends ResizableSimplePanel implements ServerMessageProvider {
 public class GFormController extends FlexPanel implements ServerMessageProvider {
+    private static final int ASYNC_TIME_OUT = 50;
 
     private final FormDispatchAsync dispatcher;
 
@@ -83,17 +83,15 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
     private final Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
     private final Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<GTreeGroup, GTreeGroupController>();
 
-    private final LinkedHashMap<Integer, ModifyObject> lastModifyObjectRequests = new LinkedHashMap<Integer, ModifyObject>();
-    private final NativeHashMap<GGroupObject, Integer> lastChangeCurrentObjectsRequestIndices = new NativeHashMap<GGroupObject, Integer>();
-    private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Integer>> lastChangePropertyRequestIndices = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Integer>>();
-    private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> lastChangePropertyRequestValues = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>();
+    private final LinkedHashMap<Integer, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<Integer, ModifyObject>();
+    private final NativeHashMap<GGroupObject, Integer> pendingChangeCurrentObjectsRequests = new NativeHashMap<GGroupObject, Integer>();
+    private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>();
 
     private boolean defaultOrdersInitialized = false;
     private boolean hasColumnGroupObjects;
 
     private Timer asyncTimer;
     private PanelRenderer asyncView;
-    private final int ASYNC_TIME_OUT = 50;
     private boolean needToResize = false;
 
     private boolean initialResizeProcessed = false;
@@ -452,14 +450,14 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
     private void modifyFormChangesWithModifyObjectAsyncs(GFormChanges fc) {
         int currentDispatchingRequestIndex = dispatcher.getCurrentDispatchingRequestIndex();
 
-        for (Iterator<Map.Entry<Integer, ModifyObject>> iterator = lastModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
+        for (Iterator<Map.Entry<Integer, ModifyObject>> iterator = pendingModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<Integer, ModifyObject> cell = iterator.next();
             if (cell.getKey() <= currentDispatchingRequestIndex) {
                 iterator.remove();
             }
         }
 
-        for (Map.Entry<Integer, ModifyObject> e : lastModifyObjectRequests.entrySet()) {
+        for (Map.Entry<Integer, ModifyObject> e : pendingModifyObjectRequests.entrySet()) {
             ArrayList<GGroupObjectValue> gridObjects = fc.gridObjects.get(e.getValue().object.groupObject);
             if (gridObjects != null) {
                 if (e.getValue().add) {
@@ -474,11 +472,11 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
     private void modifyFormChangesWithChangeCurrentObjectAsyncs(final GFormChanges fc) {
         final int currentDispatchingRequestIndex = dispatcher.getCurrentDispatchingRequestIndex();
 
-        lastChangeCurrentObjectsRequestIndices.foreachEntry(new Function2<GGroupObject, Integer>() {
+        pendingChangeCurrentObjectsRequests.foreachEntry(new Function2<GGroupObject, Integer>() {
             @Override
             public void apply(GGroupObject group, Integer requestIndex) {
                 if (requestIndex <= currentDispatchingRequestIndex) {
-                    lastChangeCurrentObjectsRequestIndices.remove(group);
+                    pendingChangeCurrentObjectsRequests.remove(group);
                 } else {
                     fc.objects.remove(group);
                 }
@@ -489,16 +487,16 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
     private void modifyFormChangesWithChangePropertyAsyncs(final GFormChanges fc) {
         final int currentDispatchingRequestIndex = dispatcher.getCurrentDispatchingRequestIndex();
 
-        lastChangePropertyRequestIndices.foreachEntry(new Function2<GPropertyDraw, NativeHashMap<GGroupObjectValue, Integer>>() {
+        pendingChangePropertyRequests.foreachEntry(new Function2<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>() {
             @Override
-            public void apply(final GPropertyDraw property, NativeHashMap<GGroupObjectValue, Integer> values) {
-                values.foreachEntry(new Function2<GGroupObjectValue, Integer>() {
+            public void apply(final GPropertyDraw property, NativeHashMap<GGroupObjectValue, Change> values) {
+                values.foreachEntry(new Function2<GGroupObjectValue, Change>() {
                     @Override
-                    public void apply(GGroupObjectValue keys, Integer requestIndex) {
+                    public void apply(GGroupObjectValue keys, Change change) {
+                        int requestIndex = change.requestIndex;
                         if (requestIndex <= currentDispatchingRequestIndex) {
 
-                            removeFromDoubleMap(lastChangePropertyRequestIndices, property, keys);
-                            Change change = removeFromDoubleMap(lastChangePropertyRequestValues, property, keys);
+                            removeFromDoubleMap(pendingChangePropertyRequests, property, keys);
 
                             HashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
                             if (propertyValues == null) {
@@ -517,7 +515,7 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
             }
         });
 
-        lastChangePropertyRequestValues.foreachEntry(new Function2<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>() {
+        pendingChangePropertyRequests.foreachEntry(new Function2<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>() {
             @Override
             public void apply(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Change> values) {
                 final HashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
@@ -525,7 +523,9 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
                     values.foreachEntry(new Function2<GGroupObjectValue, Change>() {
                         @Override
                         public void apply(GGroupObjectValue group, Change change) {
-                            propertyValues.put(group, change.newValue);
+                            if (change.canUseNewValueForRendering) {
+                                propertyValues.put(group, change.newValue);
+                            }
                         }
                     });
                 }
@@ -572,7 +572,7 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
                 DeferredRunner.get().commitDelayedGroupObjectChange(group);
             }
         });
-        lastChangeCurrentObjectsRequestIndices.put(group, requestIndex);
+        pendingChangeCurrentObjectsRequests.put(group, requestIndex);
     }
 
     public void changeGroupObjectLater(final GGroupObject group, final GGroupObjectValue key) {
@@ -684,9 +684,7 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
                 : null;
     }
 
-    public void changeProperty(GEditPropertyHandler editHandler, GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
-        editHandler.updateEditValue(value);
-
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
         int requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(columnKey), value, null), new ServerResponseCallback());
 
         GGroupObjectLogicsSupplier controller = getGroupObjectLogicsSupplier(property.groupObject);
@@ -697,8 +695,7 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
                                             : controller.getCurrentKey()
                                         : columnKey;
 
-        putToDoubleNativeMap(lastChangePropertyRequestIndices, property, propertyKey, requestIndex);
-        putToDoubleNativeMap(lastChangePropertyRequestValues, property, propertyKey, new Change(value, oldValue));
+        putToDoubleNativeMap(pendingChangePropertyRequests, property, propertyKey, new Change(requestIndex, value, oldValue, property.canUseChangeValueForRendering()));
     }
 
     public boolean isAsyncModifyObject(GPropertyDraw property) {
@@ -737,8 +734,8 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
         controllers.get(object.groupObject).modifyGroupObject(value, add);
 
         int requestIndex = dispatcher.execute(new ChangeProperty(property.ID, fullCurrentKey, null, add ? ID : null), new ServerResponseCallback());
-        lastChangeCurrentObjectsRequestIndices.put(object.groupObject, requestIndex);
-        lastModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value));
+        pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
+        pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value));
     }
 
     public void changeClassView(GGroupObject groupObject, GClassViewType newClassView) {
@@ -1049,12 +1046,16 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
     }
 
     private static final class Change {
-        public Object newValue;
-        public Object oldValue;
+        public final int requestIndex;
+        public final Object newValue;
+        public final Object oldValue;
+        public final boolean canUseNewValueForRendering;
 
-        private Change(Object newValue, Object oldValue) {
+        private Change(int requestIndex, Object newValue, Object oldValue, boolean canUseNewValueForRendering) {
+            this.requestIndex = requestIndex;
             this.newValue = newValue;
             this.oldValue = oldValue;
+            this.canUseNewValueForRendering = canUseNewValueForRendering;
         }
     }
 

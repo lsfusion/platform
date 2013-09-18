@@ -270,6 +270,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return changeWYSType != null && baseType.getTypeClass() == changeWYSType.getTypeClass();
     }
 
+    public boolean canUseChangeValueForRendering() {
+        return changeType != null && baseType.getTypeClass() == changeType.getTypeClass();
+    }
+
     public String formatString(Object obj) throws ParseException {
       return baseType.formatString(obj);
     }

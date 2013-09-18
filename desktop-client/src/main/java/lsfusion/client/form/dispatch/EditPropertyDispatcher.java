@@ -121,11 +121,10 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             if (!inputResult.isCanceled()) {
                 try {
                     //только в этом случае можно асинхронно посланное значение использовать в качестве текущего
-                    boolean canUseNewValueForRendering = simpleChangeProperty.changeType.getTypeClass() == simpleChangeProperty.baseType.getTypeClass();
-                    if (canUseNewValueForRendering) {
+                    if (simpleChangeProperty.canUseChangeValueForRendering()) {
                         handler.updateEditValue(inputResult.getValue());
                     }
-                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue, canUseNewValueForRendering);
+                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }

@@ -2,7 +2,6 @@ package lsfusion.server.logics.scripted.proxy;
 
 import lsfusion.interop.ComponentDesign;
 import lsfusion.interop.FontInfo;
-import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.view.ComponentView;
 
@@ -104,27 +103,6 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
 
     public void setFlex(double flex) {
         target.flex = flex;
-    }
-
-    //todo: remove after refactoring to flex + stretch is complete
-    public void setFillHorizontal(double fillX) {
-        if (target.getContainer() != null) {
-            if (target.getContainer().getType() == ContainerType.CONTAINERV) {
-                setAlignment(fillX == 0 ? FlexAlignment.LEADING : FlexAlignment.STRETCH);
-            } else if (target.getContainer().getType() == ContainerType.CONTAINERH) {
-                setFlex(fillX);
-            }
-        }
-    }
-
-    public void setFillVertical(double fillY) {
-        if (target.getContainer() != null) {
-            if (target.getContainer().getType() == ContainerType.CONTAINERV) {
-                setFlex(fillY);
-            } else if (target.getContainer().getType() == ContainerType.CONTAINERH) {
-                setAlignment(fillY == 0 ? FlexAlignment.LEADING : FlexAlignment.STRETCH);
-            }
-        }
     }
 
     public void setAlign(FlexAlignment alignment) {
