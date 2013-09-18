@@ -2,24 +2,6 @@ MODULE Document;
 
 REQUIRE System, Numerator, Authentication, Time;
 
-// Логика проведения документов
-
-CLASS ABSTRACT PostedObject 'Объект с возможностью закрытия';
-TABLE postedObject (PostedObject);
-
-GROUP postedGroup 'Информация о закрытии' : base;
-
-timeClosed 'Время закрытия' = DATA DATETIME (PostedObject) IN postedGroup;
-userClosed 'Проведен пользователем' = DATA CustomUser (PostedObject);
-computerClosed 'Проведен на компьютере' = DATA Computer (PostedObject);
-
-nameUserClosed 'Проведен пользователем' (postedObject) = nameContact(userClosed(postedObject)) IN postedGroup;
-hostnameComputerClosed 'Проведен на компьютере' (postedObject) = hostnameComputer(computerClosed(postedObject)) IN postedGroup;
-
-timeClosed(postedObject) <- currentDateTime() WHEN SET(postedObject IS PostedObject);
-userClosed(postedObject) <- currentUser() WHEN SET(postedObject IS PostedObject);
-computerClosed(postedObject) <- currentComputer() WHEN SET(postedObject IS PostedObject);
-
 // Стандартные группы
 GROUP documentHeaderGroup 'Шапка документа' : base;
 GROUP documentSumGroup 'Суммы документа': public;
@@ -298,6 +280,8 @@ META defineDocumentInterfaceDetailNote(detailClass)
 END
 
 // Posted
+GROUP postedGroup 'Проведен' : base;
+
 META defineDocumentHeaderPosted(objectClass)
     isPosted##objectClass 'Проведен' (o) = DATA BOOLEAN (objectClass);
     isDraft##objectClass 'Не проведен' (o) = o IS objectClass AND NOT isPosted##objectClass(o) PERSISTENT;
