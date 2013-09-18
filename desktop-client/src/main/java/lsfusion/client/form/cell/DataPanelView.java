@@ -247,7 +247,7 @@ public class DataPanelView extends JPanel implements PanelView, HasLabels {
 
             int tableSpace = width;
             int tableLeft = in.left;
-            int tableTop = 0;
+            int tableTop = in.top;
             int tableHeight = height;
             if (vertical) {
                 tableHeight -= labelPref.height;
