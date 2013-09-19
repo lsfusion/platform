@@ -1,5 +1,7 @@
 package lsfusion.server.data.sql;
 
+import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
@@ -22,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 
 public class PostgreDataAdapter extends DataAdapter {
@@ -202,8 +205,9 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String backupDB(String dumpFileName) throws IOException, InterruptedException {
+    public String backupDB(ExecutionContext context, String dumpFileName) throws IOException, InterruptedException {
         if (isRedundantString(dumpDir) || isRedundantString(binPath)) {
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.backup.path.not.specified"), getString("logics.backup.error")));
             return null;
         }
 

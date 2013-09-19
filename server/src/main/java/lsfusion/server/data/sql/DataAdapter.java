@@ -2,6 +2,7 @@ package lsfusion.server.data.sql;
 
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.log4j.Logger;
 import org.springframework.util.PropertyPlaceholderHelper;
 import lsfusion.base.col.MapFact;
@@ -261,7 +262,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         throw new RuntimeException("unknown");
     }
 
-    public String backupDB(String dumpFileName) throws IOException, InterruptedException {
+    public String backupDB(ExecutionContext context, String dumpFileName) throws IOException, InterruptedException {
         return null;
     }
 

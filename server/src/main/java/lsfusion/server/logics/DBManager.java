@@ -1358,8 +1358,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         indexes.put(index, lps[0].property.getType() instanceof DataClass);
     }
 
-    public String backupDB(String dumpFileName) throws IOException, InterruptedException {
-        return adapter.backupDB(dumpFileName);
+    public String backupDB(ExecutionContext context, String dumpFileName) throws IOException, InterruptedException {
+        return adapter.backupDB(context, dumpFileName);
     }
 
     public void analyzeDB(SQLSession session) throws SQLException {
