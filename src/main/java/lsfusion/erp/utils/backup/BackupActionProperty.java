@@ -33,7 +33,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
             long currentTime = currentDate.getTime();
             String backupFileName = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(currentDate);
 
-            String backupFilePath = context.getDbManager().backupDB(backupFileName);
+            String backupFilePath = context.getDbManager().backupDB(context, backupFileName);
             if (backupFilePath != null) {
                 String backupFileLogPath = backupFilePath + ".log";
                 String backupFileExtension = backupFilePath.substring(backupFilePath.lastIndexOf("."), backupFilePath.length());
@@ -53,7 +53,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
                 LM.findLCPByCompoundName("backupFileName").change(backupFileName + backupFileExtension, context.getSession());
             }
         } catch (Exception e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
         }
     }
 
