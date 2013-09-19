@@ -69,12 +69,13 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                         Object dispatchResult;
                         try {
                             dispatchResult = action.dispatch(this);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+                        } catch (Throwable t) {
+                            t.printStackTrace();
                             if (serverResponse.resumeInvocation) {
-                                throwInServerInvocation(ex);
+                                throwInServerInvocation(t);
                             } else {
-                                throw ex;
+                                Throwables.propagateIfPossible(t, IOException.class);
+                                throw Throwables.propagate(t);
                             }
                             break;
                         }
@@ -114,7 +115,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         Throwables.propagateIfPossible(e, IOException.class);
     }
 
-    protected abstract void throwInServerInvocation(Exception ex) throws IOException;
+    protected abstract void throwInServerInvocation(Throwable t) throws IOException;
     protected abstract ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException;
 
     public void pauseDispatching() {

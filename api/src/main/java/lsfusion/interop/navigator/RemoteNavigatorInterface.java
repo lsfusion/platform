@@ -21,7 +21,7 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     ServerResponse continueNavigatorAction(Object[] actionResults) throws RemoteException;
 
-    ServerResponse throwInNavigatorAction(Exception clientException) throws RemoteException;
+    ServerResponse throwInNavigatorAction(Throwable clientThrowable) throws RemoteException;
 
     RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) throws RemoteException;
 

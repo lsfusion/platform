@@ -639,8 +639,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    public ServerResponse throwInNavigatorAction(Exception clientException) throws RemoteException {
-        return currentInvocation.resumeWithException(clientException);
+    public ServerResponse throwInNavigatorAction(Throwable clientThrowable) throws RemoteException {
+        return currentInvocation.resumeWithThrowable(clientThrowable);
     }
 
     public void close() throws RemoteException {

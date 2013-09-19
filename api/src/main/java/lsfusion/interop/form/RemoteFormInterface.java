@@ -21,7 +21,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException;
 
-    public ServerResponse throwInServerInvocation(Exception clientException) throws RemoteException;
+    public ServerResponse throwInServerInvocation(Throwable clientThrowable) throws RemoteException;
 
     // события формы
 

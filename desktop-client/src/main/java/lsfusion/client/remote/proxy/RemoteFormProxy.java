@@ -262,9 +262,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public ServerResponse throwInServerInvocation(Exception clientException) throws RemoteException {
+    public ServerResponse throwInServerInvocation(Throwable clientThrowable) throws RemoteException {
         logRemoteMethodStartCall("throwInServerInvocation");
-        ServerResponse result = target.throwInServerInvocation(clientException);
+        ServerResponse result = target.throwInServerInvocation(clientThrowable);
         logRemoteMethodEndCall("throwInServerInvocation", result);
         return result;
     }

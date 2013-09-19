@@ -639,8 +639,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return currentInvocation.resumeAfterUserInteraction(actionResults);
     }
 
-    public ServerResponse throwInServerInvocation(Exception clientException) throws RemoteException {
-        return currentInvocation.resumeWithException(clientException);
+    public ServerResponse throwInServerInvocation(Throwable clientThrowable) throws RemoteException {
+        return currentInvocation.resumeWithThrowable(clientThrowable);
     }
 
     String getLogMessage() {

@@ -183,7 +183,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @Override
-    public ServerResponse throwInNavigatorAction(Exception clientException) throws RemoteException {
-        return target.throwInNavigatorAction(clientException);
+    public ServerResponse throwInNavigatorAction(Throwable clientThrowable) throws RemoteException {
+        return target.throwInNavigatorAction(clientThrowable);
     }
 }

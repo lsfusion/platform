@@ -19,7 +19,7 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
     }
 
     @Override
-    protected void throwInServerInvocation(Exception ex) throws IOException {
-        clientNavigator.remoteNavigator.throwInNavigatorAction(ex);
+    protected void throwInServerInvocation(Throwable t) throws IOException {
+        clientNavigator.remoteNavigator.throwInNavigatorAction(t);
     }
 }

@@ -816,11 +816,11 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public ServerResponse throwInServerInvocation(Exception ex) throws RemoteException {
+    public ServerResponse throwInServerInvocation(Throwable t) throws RemoteException {
         BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
         busyDisplayer.start();
         try {
-            return remoteForm.throwInServerInvocation(ex);
+            return remoteForm.throwInServerInvocation(t);
         } finally {
             busyDisplayer.stop();
         }

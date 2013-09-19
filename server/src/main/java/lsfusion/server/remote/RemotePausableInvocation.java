@@ -41,7 +41,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     private int neededActionResultsCnt = -1;
 
     private Object[] actionResults;
-    private Exception clientException;
+    private Throwable clientThrowable;
 
     public final String getLogMessage() {
         String result = "";
@@ -93,10 +93,10 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
             throw new RuntimeException("Interaction " + sid + " was interrupted");
         }
 
-        if (clientException != null) {
-            Exception ex = clientException;
-            clientException = null;
-            Throwables.propagate(ex);
+        if (clientThrowable != null) {
+            Throwable t = clientThrowable;
+            clientThrowable = null;
+            throw Throwables.propagate(t);
         }
 
         return Arrays.copyOfRange(actionResults, actionResults.length - neededActionResultsCnt, actionResults.length);
@@ -116,12 +116,12 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         return resume();
     }
 
-    public final ServerResponse resumeWithException(Exception clientException) throws RemoteException {
+    public final ServerResponse resumeWithThrowable(Throwable clientThrowable) throws RemoteException {
         Preconditions.checkState(isPaused(), "can't resume after user interaction - wasn't paused for user interaction");
 
-        logger.debug("Interaction " + sid + " thrown client exception: ", clientException);
+        logger.debug("Interaction " + sid + " thrown client exception: ", clientThrowable);
 
-        this.clientException = clientException;
+        this.clientThrowable = clientThrowable;
         return resume();
     }
 
