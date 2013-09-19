@@ -19,7 +19,7 @@ import lsfusion.gwt.base.client.WrapperAsyncCallbackEx;
 import lsfusion.gwt.base.client.jsni.Function2;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.base.shared.actions.NumberResult;
 import lsfusion.gwt.base.shared.actions.VoidResult;
@@ -58,11 +58,11 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import java.io.Serializable;
 import java.util.*;
 
+import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.removeFromDoubleMap;
 
-//public class GFormController extends ResizableSimplePanel implements ServerMessageProvider {
-public class GFormController extends FlexPanel implements ServerMessageProvider {
+public class GFormController extends ResizableSimplePanel implements ServerMessageProvider {
     private static final int ASYNC_TIME_OUT = 50;
 
     private final FormDispatchAsync dispatcher;
@@ -116,8 +116,6 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
     };
 
     public GFormController(FormsController formsController, GForm gForm, final boolean isDialog) {
-        super(true);
-
         actionDispatcher = new GFormActionDispatcher(this);
         simpleDispatcher = new GSimpleChangePropertyDispatcher(this);
 
@@ -142,7 +140,8 @@ public class GFormController extends FlexPanel implements ServerMessageProvider 
             getElement().setAttribute("lsfusion-form", form.sID);
         }
 
-        addFill(formLayout);
+        add(formLayout);
+        setupFillParent(getElement(), formLayout.getElement());
 
         initializeUserPreferences();
 

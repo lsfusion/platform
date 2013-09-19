@@ -148,10 +148,33 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         container.childrenAlignment = convertAlignment(clientContainer.childrenAlignment);
         container.columns = clientContainer.columns;
 
+        // если stack-container не растягивается по основной оси, то не надо растягивать и его потомков => child.flex = 0;
+        // вообще говоря это не должно быть нужно, но иначе не работает в IE
+        GContainer parent = container.container;
+        boolean autoSizedOnMainAxis = false;
+        if (parent != null) {
+            if (parent.isTabbed()) {
+                container.flex = 1;
+                container.alignment = GFlexAlignment.STRETCH;
+            }
+
+            if (parent.isVertical()) {
+                autoSizedOnMainAxis = container.isVertical() && container.flex == 0 ||
+                                      container.isHorizontal() && container.alignment != GFlexAlignment.STRETCH;
+            } else {
+                autoSizedOnMainAxis = container.isHorizontal() && container.flex == 0 ||
+                                      container.isVertical() && container.alignment != GFlexAlignment.STRETCH;
+            }
+        }
+
         boolean convertToColumns = clientContainer.childrenAlignment == Alignment.LEADING && container.isVertical();
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);
             container.children.add(childComponent);
+
+            if (autoSizedOnMainAxis) {
+                childComponent.flex = 0;
+            }
 
             convertToColumns = convertToColumns && childComponent.alignment == GFlexAlignment.LEADING;
         }
