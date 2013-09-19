@@ -20,6 +20,7 @@ import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -67,11 +68,11 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.marginRight = clientComponent.marginRight;
 
         if (clientComponent.design.getBackground() != null) {
-            component.background = new ColorDTO(Integer.toHexString(clientComponent.design.getBackground().getRGB()).substring(2, 8));
+            component.background = convertColor(clientComponent.design.getBackground());
         }
 
         if (clientComponent.design.getForeground() != null) {
-            component.foreground = new ColorDTO(Integer.toHexString(clientComponent.design.getForeground().getRGB()).substring(2, 8));
+            component.foreground = convertColor(clientComponent.design.getForeground());
         }
 
         FontInfo clientFont = clientComponent.design.getFont();
@@ -85,6 +86,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
 
         return component;
+    }
+
+    private ColorDTO convertColor(Color color) {
+        return new ColorDTO(Integer.toHexString(color.getRGB()).substring(2, 8));
     }
 
     private GAlignment convertAlignment(Alignment alignment) {

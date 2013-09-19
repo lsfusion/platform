@@ -6,12 +6,10 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.base.client.ui.HasPreferredSize;
-import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
+import lsfusion.gwt.base.client.ui.*;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.GSinglePropertyTable;
@@ -28,7 +26,8 @@ public class DataPanelRenderer implements PanelRenderer {
     private final GPropertyDraw property;
 
     private final FlexPanel panel;
-    private final ResizableSimplePanel gridPanel;
+    private final GridPanel gridPanel;
+    private final SimplePanel focusPanel;
 
     private final Label label;
     private final GSinglePropertyTable valueTable;
@@ -79,13 +78,23 @@ public class DataPanelRenderer implements PanelRenderer {
             valueTable.setTableFocusable(false);
         }
 
+        focusPanel = new SimplePanel();
+        focusPanel.addStyleName("dataPanelRendererFocusPanel");
+        focusPanel.setVisible(false);
+
         gridPanel = new GridPanel();
         gridPanel.addStyleName("dataPanelRendererGridPanel");
+        gridPanel.add(focusPanel);
         gridPanel.add(valueTable);
+
         valueTable.setSize("100%", "100%");
 
         panel = new FlexPanel(vertical);
         panel.addStyleName("dataPanelRendererPanel");
+
+        // Рамка фокуса сделана как абсолютно позиционированный div с border-width: 2px,
+        // который выходит за пределы панели, поэтому убираем overflow: hidden
+        panel.getElement().getStyle().clearOverflow();
 
         property.installMargins(panel);
 
@@ -189,7 +198,7 @@ public class DataPanelRenderer implements PanelRenderer {
         valueTable.setFocus(true);
     }
 
-    private class GridPanel extends ResizableSimplePanel implements HasPreferredSize {
+    private class GridPanel extends ResizableComplexPanel implements HasPreferredSize {
         @Override
         public Dimension getPreferredSize() {
             //+2 for border
@@ -206,13 +215,13 @@ public class DataPanelRenderer implements PanelRenderer {
         @Override
         protected void onFocus() {
             super.onFocus();
-            gridPanel.addStyleName("blueBorder");
+            focusPanel.setVisible(true);
         }
 
         @Override
         protected void onBlur() {
             super.onBlur();
-            gridPanel.removeStyleName("blueBorder");
+            focusPanel.setVisible(false);
         }
 
         @Override

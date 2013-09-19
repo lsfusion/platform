@@ -8,20 +8,9 @@ body, html {
     margin: 0;
 }
 
-button::-moz-focus-inner {  /*Remove button padding in FF*/
-    border: 0;
-    padding: 0;
-    margin: 0;
-}
-
 /* ------------ Default gwt overrides ------------ */
 .gwt-Button {
     white-space: nowrap;
-}
-
-.gwt-TextBox {
-    margin: 2px;
-    height: 15px;
 }
 
 input[type=checkbox] {
@@ -158,16 +147,26 @@ textarea {
 }
 
 /* ------------ Panel Renderer related styles ------------ */
-.dataPanelRendererGridPanel {
-    border: 1px solid #808080;
-}
-
 .dataPanelRendererPanel {
     white-space: nowrap;
 }
 
+.dataPanelRendererGridPanel {
+    border: 1px solid #808080;
+    position: relative;
+}
+
+.dataPanelRendererFocusPanel {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    left: -2px;
+    right: -2px;
+    border: 2px solid #4567FF;
+}
+
 .actionPanelRenderer {
-    padding: 1px 5px;
+    padding: 0px 5px;
     display: block; /*убираем лишние пикселы снизу при нахождении в ячейке таблицы*/
 }
 
@@ -256,10 +255,6 @@ textarea {
     border: 1px solid black;
     margin: 2px;
     min-height: 16px !important;
-}
-
-.blueBorder {
-    border: 1px solid blue;
 }
 
 .filterDialogHeader {
