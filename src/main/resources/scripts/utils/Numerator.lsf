@@ -80,7 +80,7 @@ NAVIGATOR {
 
 GROUP numberedGroup 'Нумератор' : recognize;
 
-META defineNumberedObjectAbstract(class)
+META defineNumberedAbstract(class)
     number###class 'Номер' = ABSTRACT STRING[18] (class) IN numberedGroup PERSISTENT MINCHARWIDTH 7;
     series###class 'Серия' = ABSTRACT STRING[2] (class) IN numberedGroup PERSISTENT FIXEDCHARWIDTH 3; 
 
@@ -90,7 +90,7 @@ META defineNumberedObjectAbstract(class)
         
 END
 
-META defineNumberedObject(class)
+META defineNumbered(class)
     number###class 'Номер' = DATA STRING[18] (class) IN numberedGroup MINCHARWIDTH 7;
     series###class 'Серия' = DATA STRING[2] (class) IN numberedGroup FIXEDCHARWIDTH 3; 
 
@@ -100,7 +100,7 @@ META defineNumberedObject(class)
         
 END
 
-META defineNumeratedObject(class)
+META defineNumerated(class)
     numerator###class 'Нумератор (ИД)' = DATA Numerator (class);
     nameNumerator###class 'Нумератор' (o) = nameNumerator(numerator###class(o)) IN numberedGroup MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
@@ -116,14 +116,14 @@ META defineNumeratedObject(class)
          DO generateSeriesNumber###class(o) ;
 END
 
-META defineNumeratedObjectDefault(class, caption, series)
-    @defineNumeratedObject(class);
-    @defineNumeratedObjectDefault(class, caption, series, );
+META defineNumeratedDefault(class, caption, series)
+    @defineNumerated(class);
+    @defineNumeratedDefault(class, caption, series, );
 END
 
 GROUP defaultNumeratorGroup 'Нумераторы по умолчанию' : public;
 
-META defineNumeratedObjectDefault(class, caption, series, prefix)
+META defineNumeratedDefault(class, caption, series, prefix)
 
     prefix###defaultNumerator###class = DATA Numerator ();
     name###prefix##DefaultNumerator###class caption = nameNumerator(prefix###defaultNumerator###class()) IN defaultNumeratorGroup;
@@ -153,7 +153,7 @@ END
 
 //------------------------------------------ Для двух объектов ---------------------------------------------//
 
-META defineNumeratedObject(object1, object2)
+META defineNumerated(object1, object2)
 
     number###object1###object2 'Номер' = DATA STRING[18] (###object1, ###object2) MINCHARWIDTH 7;
     series###object1###object2 'Серия' = DATA STRING[2] (###object1, ###object2) FIXEDCHARWIDTH 3;
@@ -175,7 +175,7 @@ META defineNumeratedObject(object1, object2)
 
 END
 
-META defineNumeratedObjectDefault (object1, object2, property, caption, series)
+META defineNumeratedDefault (object1, object2, property, caption, series)
 
     defaultNumerator###object1###object2 = DATA Numerator ();
     nameDefaultNumerator###object1###object2 caption = nameNumerator(defaultNumerator###object1###object2());

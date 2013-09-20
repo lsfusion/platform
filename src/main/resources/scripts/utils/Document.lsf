@@ -438,11 +438,11 @@ END
 // ------- Number ----- //
 
 META defineDocumentAbstractHeaderNumber(objectClass)
-    @defineNumberedObjectAbstract(objectClass);
+    @defineNumberedAbstract(objectClass);
 END
 
 META defineDocumentHeaderNumber (objectClass)
-    @defineNumberedObject(objectClass);
+    @defineNumbered(objectClass);
 END
 
 META defineDocumentInterfaceHeaderNumber(objectClass)
