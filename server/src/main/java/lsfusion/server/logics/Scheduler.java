@@ -265,6 +265,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             businessLogics.schedulerLM.resultScheduledTaskLog.change(String.valueOf(e), afterFinishLogSession, currentScheduledTaskLogFinishObject);
             businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, currentScheduledTaskLogFinishObject);
             afterFinishLogSession.apply(businessLogics);
+            logger.error(e);
             return false;
         }
     }
