@@ -3,9 +3,9 @@ MODULE Document;
 REQUIRE System, Numerator, Authentication, Time;
 
 // Стандартные группы
-GROUP documentHeaderGroup 'Шапка документа' : base;
-GROUP documentSumGroup 'Суммы документа': public;
-GROUP documentPrmGroup 'Параметры документа': public;
+GROUP documentHeader 'Шапка документа' : base;
+GROUP documentSum 'Суммы документа': public;
+GROUP documentPrm 'Параметры документа': public;
 
 // Макросы по созданию документов
 
@@ -72,7 +72,7 @@ END
 // Итоги
 META defineDocumentHeaderCount (object, detailClass, caption)
     count##detailClass###object 'Кол-во строк'###caption (o) =
-        GROUP SUM 1 BY object##detailClass(d) PERSISTENT IN documentSumGroup;
+        GROUP SUM 1 BY object##detailClass(d) PERSISTENT IN documentSum;
 END
 
 META defineDocumentHeaderCount (object, detailClass)
@@ -86,8 +86,8 @@ END
 // ----- Time ----- //
 
 META defineDocumentHeaderTimePrefix (objectClass, prefix, caption)
-    prefix###date##objectClass 'Дата'##caption = DATA DATE (objectClass) IN documentHeaderGroup;
-    prefix###time##objectClass 'Время'##caption = DATA TIME (objectClass) IN documentHeaderGroup;
+    prefix###date##objectClass 'Дата'##caption = DATA DATE (objectClass) IN documentHeader;
+    prefix###time##objectClass 'Время'##caption = DATA TIME (objectClass) IN documentHeader;
     prefix###dateTime##objectClass 'Дата/время'##caption (o) = dateTimeToDateTime(prefix###date##objectClass(o), prefix###time##objectClass(o)) PERSISTENT;
 END
 
@@ -99,8 +99,8 @@ META deriveDocumentHeaderTimePrefix (objectClass, prefix)
 END
 
 META defineDocumentAbstractHeaderTimePrefix (objectClass, prefix, caption)
-    prefix###date##objectClass 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeaderGroup PERSISTENT;
-    prefix###time##objectClass 'Время'##caption = ABSTRACT TIME (objectClass) IN documentHeaderGroup PERSISTENT;
+    prefix###date##objectClass 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeader PERSISTENT;
+    prefix###time##objectClass 'Время'##caption = ABSTRACT TIME (objectClass) IN documentHeader PERSISTENT;
     prefix###dateTime##objectClass 'Дата/время'##caption (o) = dateTimeToDateTime(prefix###date##objectClass(o), prefix###time##objectClass(o)) PERSISTENT;
 END
 
@@ -228,10 +228,10 @@ END
 
 //-- Дата
 META defineDocumentHeaderDatePrefix (objectClass, prefix, caption)
-    prefix###date##objectClass 'Дата'##caption = DATA DATE (objectClass) IN documentHeaderGroup;
+    prefix###date##objectClass 'Дата'##caption = DATA DATE (objectClass) IN documentHeader;
 END
 META defineDocumentAbstractHeaderDatePrefix (objectClass, prefix, caption)
-    prefix###date##objectClass 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeaderGroup PERSISTENT;
+    prefix###date##objectClass 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeader PERSISTENT;
 END
 META defineDocumentInterfaceHeaderDatePrefix(objectClass, prefix, caption)
     @defineDocumentAbstractHeaderDatePrefix(objectClass, prefix, caption);
@@ -256,10 +256,10 @@ END
 
 // Примечание
 META defineDocumentHeaderNote (objectClass)
-    note##objectClass 'Примечание' = DATA VARSTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN documentPrmGroup PERSISTENT;
+    note##objectClass 'Примечание' = DATA VARSTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN documentPrm PERSISTENT;
 END
 META defineDocumentAbstractHeaderNote (objectClass)
-    note##objectClass 'Примечание' = ABSTRACT VARSTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN documentPrmGroup PERSISTENT;
+    note##objectClass 'Примечание' = ABSTRACT VARSTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN documentPrm PERSISTENT;
 END
 META defineDocumentInterfaceHeaderNote(objectClass)
     @defineDocumentAbstractHeaderNote(objectClass);
@@ -290,22 +290,22 @@ META defineDocumentInterfaceHeaderCreated(objectClass)
 END
 
 // Posted
-GROUP postedGroup 'Проведен' : base;
+GROUP posted 'Проведен' : base;
 
 META defineDocumentHeaderPosted(objectClass)
     isPosted##objectClass 'Проведен' (o) = DATA BOOLEAN (objectClass);
     isDraft##objectClass 'Не проведен' (o) = o IS objectClass AND NOT isPosted##objectClass(o) PERSISTENT;
 
-    postedTime##objectClass 'Время проведения' = DATA DATETIME (objectClass) IN postedGroup;
+    postedTime##objectClass 'Время проведения' = DATA DATETIME (objectClass) IN posted;
     postedTime##objectClass(o) <- currentDateTime() WHEN SET(isPosted##objectClass(o));
     
     postedUser##objectClass = DATA CustomUser (objectClass);
     postedUser##objectClass(o) <- currentUser() WHEN SET(isPosted##objectClass(o));
-    postedNameUser##objectClass 'Проведен пользователем' (o) = nameContact(postedUser##objectClass(o)) IN postedGroup;
+    postedNameUser##objectClass 'Проведен пользователем' (o) = nameContact(postedUser##objectClass(o)) IN posted;
 
     postedComputer##objectClass = DATA Computer (objectClass);
     postedComputer##objectClass(o) <- currentComputer() WHEN SET(isPosted##objectClass(o));
-    postedHostnameComputer##objectClass 'Проведен на компьютере' (o) = hostnameComputer(postedComputer##objectClass(o)) IN postedGroup;
+    postedHostnameComputer##objectClass 'Проведен на компьютере' (o) = hostnameComputer(postedComputer##objectClass(o)) IN posted;
 
     prePost##objectClass 'Провести' (o) = ACTION isPosted##objectClass(o) <- TRUE;
     post##objectClass 'Провести' (o) = 
@@ -420,7 +420,7 @@ META defineDocumentDetailActionsCustom (object, detailClass)
         //FOR object##detailClass (d) == o DO {
         DELETE d WHERE object##detailClass (d) == o;
         //}
-    } IN documentPrmGroup TOOLBAR CONFIRM;
+    } IN documentPrm TOOLBAR CONFIRM;
 END
 
 META defineDocumentDetailActions (object, detailClass)
@@ -428,7 +428,7 @@ META defineDocumentDetailActions (object, detailClass)
         //FOR object##detailClass (d) == o DO {
         DELETE d WHERE object##detailClass (d) == o;
         //}
-    } IN documentPrmGroup TOOLBAR CONFIRM;
+    } IN documentPrm TOOLBAR CONFIRM;
 END
 
 META defineDocumentDetailActions (object)
@@ -481,7 +481,7 @@ END
 
 // -- Skip -- //
 META defineDocumentHeaderSkip(objectClass, postfix, caption)
-    skip###postfix##objectClass caption = DATA BOOLEAN(objectClass) IN documentPrmGroup;
+    skip###postfix##objectClass caption = DATA BOOLEAN(objectClass) IN documentPrm;
 END
 META defineDocumentAbstractHeaderSkip(objectClass, postfix, caption)
     skip###postfix##objectClass caption = ABSTRACT BOOLEAN(objectClass);
@@ -661,7 +661,7 @@ END
 // Итоги
 
 META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
-    prefix###quantity###detail###object 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
+    prefix###quantity###detail###object 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity###detail(idetail) BY object###detail(idetail) IN documentSum PERSISTENT;
 END
 META defineDocumentInterfaceHeaderQuantityCustomPrefix (object, detail, prefix, caption)
     @defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption);
@@ -810,7 +810,7 @@ END
 
 // Итоги
 META defineDocumentHeaderSumCustom (object, detail, caption)
-    sum###detail###object 'Сумма'###caption (object) = GROUP SUM sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    sum###detail###object 'Сумма'###caption (object) = GROUP SUM sum###detail(idetail) BY object###detail(idetail) IN documentSum;
 END
 META defineDocumentInterfaceHeaderSumCustom (object, detail, caption)
     @defineDocumentHeaderSumCustom (object, detail, caption);
@@ -834,7 +834,7 @@ META defineDocumentInterfaceHeaderSum (object)
 END
 
 META defineDocumentHeaderSumCustomPrefix (object, detail, prefix, caption)
-    prefix###sum###detail###object 'Сумма'###caption (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    prefix###sum###detail###object 'Сумма'###caption (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) IN documentSum;
 END
 META defineDocumentInterfaceHeaderSumCustomPrefix (object, detail, prefix, caption)
     @defineDocumentHeaderSumCustomPrefix(object, detail, prefix, caption);
@@ -913,10 +913,10 @@ END
 
 // Property
 META defineDocumentHeaderProperty(object, property, caption)
-    property###object caption (object) = DATA BOOLEAN(###object) IN documentPrmGroup;
+    property###object caption (object) = DATA BOOLEAN(###object) IN documentPrm;
 END
 META defineDocumentAbstractHeaderProperty(object, property, caption)
-    property###object caption (object) = ABSTRACT BOOLEAN(###object) PERSISTENT IN documentPrmGroup;
+    property###object caption (object) = ABSTRACT BOOLEAN(###object) PERSISTENT IN documentPrm;
 END
 
 META defineDocumentInterfaceHeaderProperty (object, property, caption)

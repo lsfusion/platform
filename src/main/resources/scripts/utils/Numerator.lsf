@@ -78,11 +78,11 @@ NAVIGATOR {
 
 // --------------------------------------------- Макрос по объявлению нумерируемого объекта ---------------------------- //
 
-GROUP numberedGroup 'Нумератор' : recognize;
+GROUP numbered 'Нумератор' : recognize;
 
 META defineNumberedAbstract(class)
-    number###class 'Номер' = ABSTRACT STRING[18] (class) IN numberedGroup PERSISTENT MINCHARWIDTH 7;
-    series###class 'Серия' = ABSTRACT STRING[2] (class) IN numberedGroup PERSISTENT FIXEDCHARWIDTH 3; 
+    number###class 'Номер' = ABSTRACT STRING[18] (class) IN numbered PERSISTENT MINCHARWIDTH 7;
+    series###class 'Серия' = ABSTRACT STRING[2] (class) IN numbered PERSISTENT FIXEDCHARWIDTH 3; 
 
     seriesNumber###class 'Серия/Номер' (o) = 
         CONCAT '', series###class(o), number###class(o) 
@@ -91,8 +91,8 @@ META defineNumberedAbstract(class)
 END
 
 META defineNumbered(class)
-    number###class 'Номер' = DATA STRING[18] (class) IN numberedGroup MINCHARWIDTH 7;
-    series###class 'Серия' = DATA STRING[2] (class) IN numberedGroup FIXEDCHARWIDTH 3; 
+    number###class 'Номер' = DATA STRING[18] (class) IN numbered MINCHARWIDTH 7;
+    series###class 'Серия' = DATA STRING[2] (class) IN numbered FIXEDCHARWIDTH 3; 
 
     seriesNumber###class 'Серия/Номер' (o) = 
         CONCAT '', series###class(o), number###class(o) 
@@ -102,7 +102,7 @@ END
 
 META defineNumerated(class)
     numerator###class 'Нумератор (ИД)' = DATA Numerator (class);
-    nameNumerator###class 'Нумератор' (o) = nameNumerator(numerator###class(o)) IN numberedGroup MINCHARWIDTH 7 PREFCHARWIDTH 15;
+    nameNumerator###class 'Нумератор' (o) = nameNumerator(numerator###class(o)) IN numbered MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
     generateSeriesNumber###class 'Сгенерировать номер' = ACTION (o) {
         number###class(o) <- curStringValueNumerator(numerator###class(o));
@@ -121,12 +121,12 @@ META defineNumeratedDefault(class, caption, series)
     @defineNumeratedDefault(class, caption, series, );
 END
 
-GROUP defaultNumeratorGroup 'Нумераторы по умолчанию' : public;
+GROUP defaultNumerator 'Нумераторы по умолчанию' : public;
 
 META defineNumeratedDefault(class, caption, series, prefix)
 
     prefix###defaultNumerator###class = DATA Numerator ();
-    name###prefix##DefaultNumerator###class caption = nameNumerator(prefix###defaultNumerator###class()) IN defaultNumeratorGroup;
+    name###prefix##DefaultNumerator###class caption = nameNumerator(prefix###defaultNumerator###class()) IN defaultNumerator;
 
     numerator###class(o) <- prefix###defaultNumerator###class() WHEN SET(o IS class);
 
