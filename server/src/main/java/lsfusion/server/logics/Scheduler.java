@@ -235,14 +235,13 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
     }
 
     private boolean executeLAP(LAP lap, DataObject scheduledTask) throws SQLException {
+        DataSession beforeStartLogSession = dbManager.createSession();
+        currentScheduledTaskLogStartObject = beforeStartLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
         afterFinishLogSession = dbManager.createSession();
-
         currentScheduledTaskLogFinishObject = afterFinishLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
 
         try {
 
-            DataSession beforeStartLogSession = dbManager.createSession();
-            currentScheduledTaskLogStartObject = beforeStartLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
             businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) beforeStartLogSession, currentScheduledTaskLogStartObject);
             businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", beforeStartLogSession, currentScheduledTaskLogStartObject);
             businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), beforeStartLogSession, currentScheduledTaskLogStartObject);
