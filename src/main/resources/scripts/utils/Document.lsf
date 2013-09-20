@@ -279,6 +279,16 @@ META defineDocumentInterfaceDetailNote(detailClass)
     note##detailClass(d) += note##User##detailClass(d);
 END
 
+// Created
+
+META defineDocumentHeaderCreated(objectClass)
+    @defineCreated(objectClass);
+END
+
+META defineDocumentInterfaceHeaderCreated(objectClass)
+    @defineDocumentHeaderCreated(User##objectClass);
+END
+
 // Posted
 GROUP postedGroup 'Проведен' : base;
 
@@ -572,6 +582,8 @@ META defineDocument (object)
 
     @defineDocumentIs(###object);
 
+    @defineDocumentHeaderCreated(###object);
+    
     @defineDocumentDetailActions(object);
 END
 META defineDocumentAbstract (object)
@@ -595,6 +607,8 @@ META defineDocumentInterface (object)
     @defineDocumentInterfaceHeaderNote(###object);
 
     @defineDocumentInterfaceIs(###object);
+
+    @defineDocumentInterfaceHeaderCreated(###object);
 
     @defineDocumentDetailActions(user###object);
 END

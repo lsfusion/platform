@@ -2,21 +2,30 @@ MODULE Historizable;
 
 REQUIRE System, Authentication, Time;
 
-CLASS Historizable 'Объект с историей создания' ;
-TABLE historizable (Historizable);
+GROUP createdGroup 'Создан' : public;
 
-GROUP historyGroup 'История' : public;
+META defineCreated(objectClass)
+    createdTime##objectClass 'Время создания'= DATA DATETIME (objectClass) IN createdGroup;
+    createdTime##objectClass (o) <- currentDateTime() WHEN SET(o IS objectClass);
+    
+    createdUser##objectClass = DATA CustomUser (objectClass);
+    createdNameUser##objectClass 'Создан пользователем' (o) = nameContact(createdUser##objectClass(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN createdGroup;
+    createdUser##objectClass (o) <- currentUser() WHEN SET(o IS objectClass);
+    
+    createdComputer##objectClass = DATA Computer (objectClass);
+    createdHostnameComputer##objectClass 'Создан на компьютере' (o) = hostnameComputer(createdComputer##objectClass(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN createdGroup;
+    createdComputer##objectClass (o) <- currentComputer() WHEN SET(o IS objectClass);
+END
 
-timeCreatedHistorizable 'Время создания'= DATA DATETIME (Historizable) IN historyGroup;
-timeCreatedHistorizable (object) <- currentDateTime() WHEN SET(object IS Historizable);
-
-userCreatedHistorizable = DATA CustomUser (Historizable);
-nameUserCreatedHistorizable 'Пользователь' (historizable) = nameContact (userCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN historyGroup;
-userCreatedHistorizable (object) <- currentUser() WHEN SET(object IS Historizable);
-
-computerCreatedHistorizable = DATA Computer (Historizable);
-hostnameComputerCreatedHistorizable 'Компьютер' (historizable) = hostnameComputer (computerCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN historyGroup;
-computerCreatedHistorizable (object) <- currentComputer() WHEN SET(object IS Historizable);
+META defineCreatedAbstract(objectClass)
+    createdTime##objectClass 'Время создания'= ABSTRACT DATETIME (objectClass) IN createdGroup;
+    
+    createdUser##objectClass = ABSTRACT CustomUser (objectClass);
+    createdNameUser##objectClass 'Создан пользователем' (o) = nameContact(createdUser##objectClass(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN createdGroup;
+    
+    createdComputer##objectClass = ABSTRACT Computer (objectClass);
+    createdHostnameComputer##objectClass 'Создан на компьютере' (o) = hostnameComputer(createdComputer##objectClass(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN createdGroup;
+END
 
 META defineHistorizable(property, caption, type, object, objectIdentity, group)
     data###property##Date caption = DATA type (###object, DATE) IN group;
