@@ -46,6 +46,7 @@
     <bean id="logicsInstance" class="lsfusion.server.logics.LogicsInstance">
         <property name="lifecycle" ref="lifecycleManager"/>
         <property name="businessLogics" ref="businessLogics"/>
+        <property name="rmiManager" ref="rmiManager"/>
         <property name="navigatorsManager" ref="navigatorsManager"/>
         <property name="restartManager" ref="restartManager"/>
         <property name="securityManager" ref="securityManager"/>
