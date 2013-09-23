@@ -14,6 +14,7 @@ public class RefreshActionProperty extends FormToolbarActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.getFormInstance().formRefresh();
+        if (context.getFormInstance() != null)
+            context.getFormInstance().formRefresh();
     }
 }
