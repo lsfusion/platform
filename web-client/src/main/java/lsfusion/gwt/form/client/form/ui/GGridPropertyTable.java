@@ -86,7 +86,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 editEventFilter = currentProperty.changeType.getEditEventFilter();
             }
 
-            if ((editEventFilter != null && !editEventFilter.accept(event)) || !isEditable(getCurrentCellContext())) {
+            if ((editEventFilter != null && !editEventFilter.accept(event) && !form.isEditing()) || !isEditable(getCurrentCellContext())) {
                 stopPropagation(event);
                 GPropertyDraw filterProperty = currentProperty != null && currentProperty.quickFilterProperty != null
                                                     ? currentProperty.quickFilterProperty
