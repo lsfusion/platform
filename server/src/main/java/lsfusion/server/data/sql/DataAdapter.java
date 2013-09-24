@@ -270,6 +270,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "";
     }
 
+    public String getVacuumDB(){
+        return "";
+    }
+
     public void useDLL(){
         /*try {
             Class.forName("net.sourceforge.jtds.jdbc.Driver");

@@ -1366,6 +1366,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         session.executeDDL(adapter.getAnalyze());
     }
 
+    public void vacuumDB(SQLSession session) throws SQLException {
+        session.executeDDL(adapter.getVacuumDB());
+    }
+
     public void packTables(SQLSession session, ImCol<ImplementTable> tables) throws SQLException {
         for (Table table : tables) {
             logger.debug(getString("logics.info.packing.table") + " (" + table + ")... ");

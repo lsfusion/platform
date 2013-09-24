@@ -269,6 +269,11 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
+    public String getVacuumDB() {
+        return "VACUUM FULL";
+    }
+
+    @Override
     public String getBPTextType() {
         return "bpchar";
     }
