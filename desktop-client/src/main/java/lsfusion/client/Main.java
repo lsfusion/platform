@@ -37,6 +37,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.TimeZone;
 import java.util.TimerTask;
@@ -63,6 +64,9 @@ public class Main {
 
     public static int computerId;
     public static TimeZone timeZone;
+    public static DateFormat dateFormat;
+    public static DateFormat timeFormat;
+    public static DateFormat dateTimeFormat;
 
     public static MainFrame frame;
 
@@ -144,7 +148,7 @@ public class Main {
                             remoteNavigator = loginAction.getRemoteNavigator();
                             computerId = loginAction.getComputerId();
 
-                            timeZone = remoteLogics.getTimeZone();
+                            setupTimeZone();
 
                             configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
 
@@ -199,6 +203,19 @@ public class Main {
             }
         };
         mainThread.start();
+    }
+
+    private static void setupTimeZone() throws RemoteException {
+        timeZone = remoteLogics.getTimeZone();
+
+        dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+        dateFormat.setTimeZone(timeZone);
+
+//        timeFormat = new SimpleDateFormat("HH:mm:ss");
+        timeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+
+//        dateTimeFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+        dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
     }
 
     private static void initRmiLogging() {

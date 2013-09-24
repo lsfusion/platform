@@ -25,7 +25,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor {
     SimpleDateFormat format;
 
     public DatePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
-        super(null, null, format.toPattern(), new DatePropertyEditorComponent(format, "##.##.##", ' '));
+        super(null, null, format.toPattern(), new DatePropertyEditorComponent(format));
         this.format = format;
 
         if (value != null) {
@@ -126,18 +126,16 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor {
     }
 
     private static class DatePropertyEditorComponent extends JTextFieldDateEditor {
-
-        public DatePropertyEditorComponent(SimpleDateFormat format, String maskPattern, char placeholder) {
-            super(format.toPattern(), maskPattern, placeholder);
+        public DatePropertyEditorComponent(SimpleDateFormat format) {
+            super(format.toPattern(), null, ' ');
             this.dateFormatter = format;
             setBorder(new EmptyBorder(0, 1, 0, 0));
         }
 
         @Override
         public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-
-            // не ловим ввод, чтобы его словил сам JTable и обработал
-            return ke.getKeyCode() != KeyEvent.VK_ENTER && super.processKeyBinding(ks, ke, condition, pressed);
+            // не ловим ESC & Enter, чтобы его словил сам JTable и обработал
+            return ke.getKeyCode() != KeyEvent.VK_ESCAPE && ke.getKeyCode() != KeyEvent.VK_ENTER && super.processKeyBinding(ks, ke, condition, pressed);
         }
 
         //а вот так будем дурить их protected метод
@@ -152,11 +150,5 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor {
                 return null;
             }
         }
-
-/*    @Override
-    public void focusLost(FocusEvent focusEvent) {
-        super.focusLost(focusEvent);
-    }*/
-
     }
 }

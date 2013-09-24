@@ -27,27 +27,29 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         return Data.DOUBLE;
     }
 
-    public Format getDefaultFormat() {
-        DecimalFormat format = (DecimalFormat) super.getDefaultFormat();
+    public NumberFormat getDefaultFormat() {
+        NumberFormat format = super.getDefaultFormat();
         format.setMaximumFractionDigits(10);
-        DecimalFormatSymbols dfs = format.getDecimalFormatSymbols();
-        if ((dfs.getGroupingSeparator() != '.') && StartupProperties.dotSeparator)
-            dfs.setDecimalSeparator('.');
-        format.setDecimalFormatSymbols(dfs);
+
+        if (StartupProperties.dotSeparator) {
+            DecimalFormat decimalFormat = (DecimalFormat) format;
+            DecimalFormatSymbols dfs = decimalFormat.getDecimalFormatSymbols();
+            if (dfs.getGroupingSeparator() != '.') {
+                dfs.setDecimalSeparator('.');
+            }
+            decimalFormat.setDecimalFormatSymbols(dfs);
+        }
+
         return format;
     }
 
     public Object parseString(String s) throws ParseException {
         try {
-            return NumberFormat.getInstance().parse(s).doubleValue();
+            Number n = parseWithDefaultFormat(s);
+            return n.doubleValue();
         } catch (NumberFormatException nfe) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.double"), 0);
         }
-    }
-
-    @Override
-    public String formatString(Object obj) {
-        return NumberFormat.getInstance().format(obj);
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {

@@ -16,7 +16,7 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
 
     public final static ClientColorClass instance = new ClientColorClass();
 
-    private final String sID = "TimeClass";
+    private final String sID = "ColorClass";
 
     @Override
     public String getPreferredMask() {

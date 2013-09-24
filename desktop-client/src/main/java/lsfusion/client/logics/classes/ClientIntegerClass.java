@@ -24,19 +24,25 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
         return Data.INTEGER;
     }
 
-    public Object parseString(String s) throws ParseException {
-        try {
-            if (!"".equals(s))
-                return Integer.parseInt(s);
-            else return null;
-        } catch (NumberFormatException nfe) {
-            throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.integer"), 0);
-        }
+    @Override
+    public NumberFormat getDefaultFormat() {
+        NumberFormat format = super.getDefaultFormat();
+        format.setParseIntegerOnly(true);
+        return format;
     }
 
     @Override
-    public String formatString(Object obj) {
-        return obj.toString();
+    public Object parseString(String s) throws ParseException {
+        try {
+            Number n = parseWithDefaultFormat(s);
+            long val = n.longValue();
+            if (val > (long)Integer.MAX_VALUE) {
+                throw new NumberFormatException("Integer " + val + " is out of range");
+            }
+            return (int)val;
+        } catch (NumberFormatException nfe) {
+            throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.double"), 0);
+        }
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {

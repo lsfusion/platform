@@ -17,7 +17,7 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
         formatter.setValueClass(valueClass);
         formatter.setAllowsInvalid(false);
 
-        this.setHorizontalAlignment(JTextField.RIGHT);
+        setHorizontalAlignment(JTextField.RIGHT);
 
         setFormatterFactory(new DefaultFormatterFactory(formatter));
 

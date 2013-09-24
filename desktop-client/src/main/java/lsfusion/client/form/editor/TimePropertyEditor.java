@@ -12,7 +12,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.Time;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.EventObject;
@@ -122,14 +121,6 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
 
             public Comparable getMaximum() {
                 return model.getEnd();
-            }
-
-            @Override
-            public Object stringToValue(String text) throws ParseException {
-                if (text.endsWith("  :  :  ")) {
-                    return null;
-                }
-                return super.stringToValue(text);
             }
         }
 

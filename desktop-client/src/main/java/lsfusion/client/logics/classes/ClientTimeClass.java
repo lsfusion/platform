@@ -15,6 +15,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static lsfusion.base.DateConverter.safeDateToSql;
+import static lsfusion.client.Main.timeFormat;
 import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 
 public class ClientTimeClass extends ClientDataClass implements ClientTypeClass {
@@ -24,7 +26,11 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
     private final String sID = "TimeClass";
 
     public String getPreferredMask() {
-        return "00:00:00";
+        try {
+            return formatString(safeDateToSql(new java.util.Date()));
+        } catch (ParseException pe) {
+            throw new IllegalStateException("shouldn't happen", pe);
+        }
     }
 
     protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
@@ -36,7 +42,7 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
     }
 
     public Format getDefaultFormat() {
-        return new SimpleDateFormat("HH:mm:ss");
+        return timeFormat;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
@@ -45,7 +51,7 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
 
     public Time parseString(String s) throws ParseException {
         try {
-            return new Time(((Date) getDefaultFormat().parseObject(s)).getTime());
+            return new Time(((Date) timeFormat.parseObject(s)).getTime());
         } catch (Exception e) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.time"), 0);
         }
@@ -53,7 +59,7 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
 
     public String formatString(Object obj) throws ParseException {
         if (obj != null) {
-            return getDefaultFormat().format(obj);
+            return timeFormat.format(obj);
         }
         else return "";
     }

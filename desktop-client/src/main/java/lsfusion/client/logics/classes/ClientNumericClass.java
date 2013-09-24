@@ -9,7 +9,6 @@ import lsfusion.interop.Data;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
@@ -63,9 +62,8 @@ public class ClientNumericClass extends ClientDoubleClass {
         outStream.writeInt(precision);
     }
 
-    public Format getDefaultFormat() {
-        NumberFormat format = (NumberFormat) super.getDefaultFormat();
-
+    public NumberFormat getDefaultFormat() {
+        NumberFormat format = super.getDefaultFormat();
         format.setMaximumIntegerDigits(length - precision - ((precision > 0) ? 1 : 0));
         format.setMaximumFractionDigits(precision);
         return format;
@@ -82,12 +80,9 @@ public class ClientNumericClass extends ClientDoubleClass {
 
     @Override
     public Object parseString(String s) throws ParseException {
-        return commonParseString(s);
-    }
-
-    public static Object commonParseString(String s) throws ParseException {
         try {
-            return BigDecimal.valueOf(NumberFormat.getInstance().parse(s).doubleValue());
+            Number n = parseWithDefaultFormat(s);
+            return BigDecimal.valueOf(n.doubleValue());
         } catch (NumberFormatException nfe) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.big.decimal"), 0);
         }

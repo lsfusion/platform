@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.server.form.handlers;
 
+import lsfusion.client.ClientResourceBundle;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.client.form.TableTransferHandler;
@@ -13,6 +14,8 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.classes.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +77,7 @@ public class PasteExternalTableHandler extends ServerResponseActionHandler<Paste
             } else if (property.baseType instanceof GTimeType) {
                 return ClientTimeClass.instance.parseString(s);
             } else if (property.baseType instanceof GNumericType) {
-                return ClientNumericClass.commonParseString(s.replaceAll(" ", ""));
+                return commonParseString(s.replaceAll(" ", ""));
             } else if (property.baseType instanceof GDoubleType) {
                 return ClientDoubleClass.instance.parseString(s.replaceAll(" ", ""));
             } else if (property.baseType instanceof GColorType) {
@@ -86,4 +89,13 @@ public class PasteExternalTableHandler extends ServerResponseActionHandler<Paste
             return null;
         }
     }
+
+    public static Object commonParseString(String s) throws ParseException {
+        try {
+            return BigDecimal.valueOf(NumberFormat.getInstance().parse(s).doubleValue());
+        } catch (NumberFormatException nfe) {
+            throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.big.decimal"), 0);
+        }
+    }
+
 }

@@ -1,6 +1,5 @@
 package lsfusion.client.logics.classes;
 
-import lsfusion.base.DateConverter;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
@@ -11,11 +10,13 @@ import lsfusion.interop.Data;
 
 import java.awt.*;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static lsfusion.base.DateConverter.*;
+import static lsfusion.client.Main.dateTimeFormat;
 import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 
 public class ClientDateTimeClass extends ClientDataClass implements ClientTypeClass {
@@ -34,11 +35,15 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
 
     @Override
     public String getPreferredMask() {
-        return "01.01.2001 00:00:00"; // пока так, хотя надо будет переделать в зависимости от Locale
+        try {
+            return formatString(dateToStamp(new java.util.Date()));
+        } catch (ParseException pe) {
+            throw new IllegalStateException("shouldn't happen", pe);
+        }
     }
 
     public Format getDefaultFormat() {
-        return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+        return dateTimeFormat;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
@@ -46,21 +51,21 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new DateTimePropertyEditor(value, (SimpleDateFormat) property.getFormat(), property.design);
+        return new DateTimePropertyEditor(value, createDateTimeEditFormat((DateFormat) property.getFormat()), property.design);
     }
 
     public Object parseString(String s) throws ParseException {
         try {
-            return DateConverter.dateToStamp((Date) getDefaultFormat().parseObject(s));
+            return dateToStamp((Date) dateTimeFormat.parseObject(s));
         } catch (Exception e) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }
     }
 
     @Override
-    public String formatString(Object obj) {
+    public String formatString(Object obj) throws ParseException {
         if (obj != null) {
-            return getDefaultFormat().format(DateConverter.stampToDate((Timestamp) obj));
+            return dateTimeFormat.format(stampToDate((Timestamp) obj));
         }
         else return "";
     }

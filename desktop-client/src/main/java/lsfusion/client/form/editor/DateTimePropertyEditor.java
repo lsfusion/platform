@@ -23,7 +23,7 @@ import java.util.EventObject;
 public class DateTimePropertyEditor extends JDateChooser implements PropertyEditor {
 
     public DateTimePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
-        super(null, null, format.toPattern(), new DateTimePropertyEditorComponent(format.toPattern(), "##.##.##", ' '));
+        super(null, null, format.toPattern(), new DateTimePropertyEditorComponent(format));
 
         if (value != null) {
             setDate(DateConverter.stampToDate((Timestamp) value));
@@ -106,16 +106,32 @@ public class DateTimePropertyEditor extends JDateChooser implements PropertyEdit
     }
 
     private static class DateTimePropertyEditorComponent extends JTextFieldDateEditor {
-        public DateTimePropertyEditorComponent(String datePattern, String maskPattern, char placeholder) {
-            super(datePattern, maskPattern, placeholder);
-
+        public DateTimePropertyEditorComponent(SimpleDateFormat format) {
+            super(format.toPattern(), null, ' ');
             setBorder(new EmptyBorder(0, 1, 0, 0));
         }
 
         @Override
+        public String createMaskFromDatePattern(String datePattern) {
+            String symbols = "GyMdkHmsSEDFwWhKzZ";
+            String mask = "";
+            for (int i = 0; i < datePattern.length(); i++) {
+                char ch = datePattern.charAt(i);
+                if (ch == 'a') {
+                    mask += 'U';
+                } else if (symbols.indexOf(ch) != -1) {
+                    mask += '#';
+                } else {
+                    mask += ch;
+                }
+            }
+            return mask;
+        }
+
+        @Override
         public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-            // не ловим ввод, чтобы его словил сам JTable и обработал
-            return ke.getKeyCode() != KeyEvent.VK_ENTER && super.processKeyBinding(ks, ke, condition, pressed);
+            // не ловим ESC & Enter, чтобы его словил сам JTable и обработал
+            return ke.getKeyCode() != KeyEvent.VK_ESCAPE && ke.getKeyCode() != KeyEvent.VK_ENTER && super.processKeyBinding(ks, ke, condition, pressed);
         }
 
         //а вот так будем дурить их protected метод
@@ -124,14 +140,55 @@ public class DateTimePropertyEditor extends JDateChooser implements PropertyEdit
         }
 
         public Date getDate() {
+            String dateText = getText();
             try {
-                String dateText = getText();
-                if (dateText.endsWith("  :  :  ")) {
-                    dateText = dateText.substring(0, dateText.length() - 8) + "12:00:00";
-                }
                 return dateFormatter.parse(dateText);
             } catch (ParseException e) {
-                return null;
+                //чтобы была возможность не вводить всё значение времени
+                //ищем в паттерне символы, которые парсятся в значения time-полей и заменяем их на 1, если они отсутствуют
+
+                if (dateText.isEmpty() || maskPattern.length() != datePattern.length()) {
+                    return null;
+                }
+
+                int textLength = dateText.length();
+
+                assert textLength == maskPattern.length();
+
+                StringBuilder dateBuilder = new StringBuilder(dateText);
+
+                String hourSymbols = "HhKk";
+                String otherTimeSymbols = "sm";
+
+                for (int i = 1; i < textLength - 1; ++i) {
+                    char patternCh = datePattern.charAt(i);
+                    //благодаря преобразованию через createDateTimeEditFormat, мы точно знаем, что символы в паттерне повторятся
+                    if (patternCh == 'S') {
+                        ifMatchThenReplace(dateText, dateBuilder, "   ", "111", i);
+                        i += 2;
+                    } else if (patternCh == 'a') {
+                        ifMatchThenReplace(dateText, dateBuilder, "  ", "PM", i);
+                        i ++;
+                    } else if (hourSymbols.indexOf(patternCh) != -1) {
+                        ifMatchThenReplace(dateText, dateBuilder, "  ", "11", i);
+                        i ++;
+                    } else if (otherTimeSymbols.indexOf(patternCh) != -1) {
+                        ifMatchThenReplace(dateText, dateBuilder, "  ", "00", i);
+                        i ++;
+                    }
+                }
+
+                try {
+                    return dateFormatter.parse(dateBuilder.toString());
+                } catch (ParseException pe) {
+                    return null;
+                }
+            }
+        }
+
+        private void ifMatchThenReplace(String src, StringBuilder dest, String match, String replace, int offset) {
+            if (src.regionMatches(offset, match, 0, match.length())) {
+                dest.replace(offset, offset + match.length(), replace);
             }
         }
     }
