@@ -2,10 +2,7 @@ package lsfusion.server.data.sql;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.logics.property.ExecutionContext;
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.Executor;
-import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.exec.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.data.query.TypeEnvironment;
@@ -251,7 +248,17 @@ public class PostgreDataAdapter extends DataAdapter {
             executor.setStreamHandler(new PumpStreamHandler(logStream));
             executor.setExitValue(0);
 
-            int result = executor.execute(commandLine, env);
+            int result;
+            
+            try {
+                result = executor.execute(commandLine, env);
+            } catch (ExecuteException e) {
+                logger.error("Error while dumping the database : " + commandLine);
+                throw e;
+            } catch (IOException e) {
+                logger.error("Error while dumping the database : " + commandLine);
+                throw e;
+            }
 
             if (result != 0) {
                 throw new IOException("Error executing pg_dump - process returned code: " + result);
