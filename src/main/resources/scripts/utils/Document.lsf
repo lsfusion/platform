@@ -918,22 +918,32 @@ END
 META defineDocumentAbstractHeaderProperty(object, property, caption)
     property###object caption (object) = ABSTRACT BOOLEAN(###object) PERSISTENT IN documentPrm;
 END
-
 META defineDocumentInterfaceHeaderProperty (object, property, caption)
     @defineDocumentAbstractHeaderProperty (object, property, caption);
     @defineDocumentHeaderProperty (user###object, property, caption);
     property###object (object) += property###user###object(object);
 END
-META defineDocumentDetailPropertyCustom(object, detail, property, caption)
+
+META defineDocumentDetailProperty(object, detail, property, caption)
     property###detail caption (detail) = property###object(object###detail(detail)) PERSISTENT;
 END
-META defineDocumentInterfaceDetailPropertyCustom (object, detail, property, caption)
-    @defineDocumentDetailPropertyCustom (object, detail, property, caption);
-    @defineDocumentDetailPropertyCustom (user###object, user###detail, property, caption);
+META defineDocumentInterfaceDetailProperty(object, detail, property, caption)
+    @defineDocumentDetailProperty(object, detail, property, caption);
+    @defineDocumentDetailProperty(user###object, user###detail, property, caption);
+END
+
+META defineDocumentDetailProperty(object, property, caption)
+    @defineDocumentDetailProperty(object, object##Detail, property, caption);
 END
 META defineDocumentInterfaceDetailProperty (object, property, caption)
-    @defineDocumentInterfaceDetailPropertyCustom (object, object##Detail, property, caption);
+    @defineDocumentInterfaceDetailProperty(object, object##Detail, property, caption);
 END
+
+META defineDocumentAbstractProperty (object, prop, caption)
+    @defineDocumentAbstractHeaderProperty (object, prop, caption);
+    @defineDocumentDetailProperty (object, prop, caption);
+END
+
 META defineDocumentInterfaceProperty (object, prop, caption)
     @defineDocumentInterfaceHeaderProperty (object, prop, caption);
     @defineDocumentInterfaceDetailProperty (object, prop, caption);
