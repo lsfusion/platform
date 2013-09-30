@@ -1,28 +1,28 @@
 ##!/bin/sh
 # chkconfig: 2345 99 50
-# description: fusion management script
+# description: lsFusion management script
 #
 # Adapt the following lines to your configuration
-FUSION_HOME=/usr/local/fusion
-JAVA_HOME=/usr/java/latest/jre
-PID_FILE=/var/run/jsvc-fusion.pid
+LSFUSION_HOME=/usr/lsfusion
+JAVA_HOME=/usr/java/latest
+PID_FILE=/var/run/jsvc-lsfusion.pid
 
-FUSION_OPTS="-Xms512m -Xmx8192m"
+LSFUSION_OPTS="-Xms512m -Xmx4096m"
 
-CLASSPATH=.:server.jar
+CLASSPATH=.:lsfusion-server-1.0.0-SNAPSHOT.jar
 
-cd $FUSION_HOME
+cd $LSFUSION_HOME
 
 case "$1" in
   start)
     /usr/bin/jsvc \
     -home $JAVA_HOME \
     -jvm server \
-    -cwd $FUSION_HOME \
+    -cwd $LSFUSION_HOME \
     -pidfile $PID_FILE \
-    -outfile $FUSION_HOME/logs/stdout.log \
-    -errfile $FUSION_HOME/logs/stderr.log \
-    $FUSION_OPTS \
+    -outfile $LSFUSION_HOME/logs/stdout.log \
+    -errfile $LSFUSION_HOME/logs/stderr.log \
+    $LSFUSION_OPTS \
     -cp $CLASSPATH \
     lsfusion.server.logics.BusinessLogicsBootstrap
     exit $?
@@ -38,6 +38,6 @@ case "$1" in
     ;;
 
   *)
-    echo "Usage fusion.sh start/stop"
+    echo "Usage lsfusion.sh start/stop"
     exit 1;;
 esac
