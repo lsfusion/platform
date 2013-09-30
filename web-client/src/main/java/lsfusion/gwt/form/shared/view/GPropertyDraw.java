@@ -97,7 +97,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public boolean canUseChangeValueForRendering() {
-        return changeType != null && baseType == changeType;
+        return changeType != null && baseType.getClass() == changeType.getClass();
     }
 
     public PanelRenderer createPanelRenderer(GFormController form, GGroupObjectValue columnKey) {
