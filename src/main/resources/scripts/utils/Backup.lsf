@@ -3,7 +3,7 @@ MODULE Backup;
 REQUIRE System;
 
 makeBackup 'Сделать резервное копирование'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' TOOLBAR;
-saveBackup 'Скачать резервную копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.ClientBackupActionProperty' TOOLBAR;
+saveBackup 'Скачать резервную копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' TOOLBAR;
 deleteBackup 'Удалить резервную копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' CONFIRM;
 
 CLASS Backup 'Резервная копия';
