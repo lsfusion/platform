@@ -3,7 +3,7 @@ MODULE Backup;
 REQUIRE System;
 
 makeBackup 'Сделать резервное копирование'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' TOOLBAR;
-makeClientBackup 'Скачать резервную копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.ClientBackupActionProperty' TOOLBAR;
+saveBackup 'Скачать резервную копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.ClientBackupActionProperty' TOOLBAR;
 deleteBackup 'Удалить резервную копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' CONFIRM;
 
 CLASS Backup 'Резервная копия';
@@ -22,7 +22,8 @@ backupFilePath 'Файл резервной копии' = DATA SESSION VARSTRING
 
 FORM backup 'Резервное копирование'
     OBJECTS b = Backup
-    PROPERTIES() makeBackup TODRAW b FORCE PANEL, makeClientBackup TODRAW b FORCE PANEL
+    PROPERTIES() makeBackup TODRAW b FORCE PANEL
+    PROPERTIES(b) saveBackup TODRAW b FORCE PANEL
     PROPERTIES(b) READONLY dateBackup, timeBackup, fileBackup, fileDeletedBackup, logBackup FORCE PANEL
     PROPERTIES(b) deleteBackup
 ;
