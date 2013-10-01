@@ -8,8 +8,10 @@ import java.awt.*;
 import java.text.Format;
 
 
-public class TextPropertyRenderer extends JTextArea implements PropertyRenderer {
+public class TextPropertyRenderer extends JEditorPane implements PropertyRenderer {
 
+    String contentType;
+    
     Format format;
 
     private Color defaultBackground = Color.WHITE;
@@ -17,10 +19,10 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRenderer 
     public TextPropertyRenderer(ClientPropertyDraw property) {
         super();
 
+        contentType = property.contentType;
+        
         format = property.getFormat();
         setOpaque(true);
-        setLineWrap(true);
-        setWrapStyleWord(true);
         setFont(new Font("Tahoma", Font.PLAIN, 10));
 
         if (property.design != null) {
@@ -53,6 +55,8 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRenderer 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null) {
             setText(value.toString());
+            if(contentType!=null)
+            setContentType(contentType);
             setForeground(UIManager.getColor("TextField.foreground"));
         }
         else {

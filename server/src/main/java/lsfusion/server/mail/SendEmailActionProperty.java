@@ -2,6 +2,7 @@ package lsfusion.server.mail;
 
 import jasperapi.ReportGenerator;
 import jasperapi.ReportHTMLExporter;
+import lsfusion.server.logics.NullValue;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
@@ -52,12 +53,12 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
  * Time: 11:53
  */
 
-public class EmailActionProperty extends SystemExplicitActionProperty {
+public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private final static Logger logger = ServerLoggers.mailLogger;
 
     public static enum FormStorageType {INLINE, ATTACH}
 
-    private CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddress;
+    private CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddressAccount;
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> subject;
 
     private List<CalcPropertyInterfaceImplement<ClassPropertyInterface>> recipients = new ArrayList<CalcPropertyInterfaceImplement<ClassPropertyInterface>>();
@@ -69,7 +70,7 @@ public class EmailActionProperty extends SystemExplicitActionProperty {
     private final List<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>> mapObjects = new ArrayList<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>>();
     private final List<CalcPropertyInterfaceImplement> attachmentProps = new ArrayList<CalcPropertyInterfaceImplement>();
 
-    public EmailActionProperty(String sID, String caption, ValueClass[] classes) {
+    public SendEmailActionProperty(String sID, String caption, ValueClass[] classes) {
         super(sID, caption, classes);
 
         askConfirm = true;
@@ -81,8 +82,8 @@ public class EmailActionProperty extends SystemExplicitActionProperty {
         return true;
     }
 
-    public void setFromAddress(CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddress) {
-        this.fromAddress = fromAddress;
+    public void setFromAddressAccount(CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddressAccount) {
+        this.fromAddressAccount = fromAddressAccount;
     }
 
     public void setSubject(CalcPropertyInterfaceImplement<ClassPropertyInterface> subject) {
@@ -113,12 +114,12 @@ public class EmailActionProperty extends SystemExplicitActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         EmailLogicsModule emailLM = context.getBL().emailLM;
         try {
-            if (emailLM.disableEmail.read(context) != null) {
-                logger.error(getString("mail.sending.disabled"));
+            if (emailLM.disableAccount.read(context) != null) {
+                logger.error(getString("mail.disabled"));
                 return;
             }
 
-            assert subject != null && fromAddress != null;
+            assert subject != null && fromAddressAccount != null;
 
             List<EmailSender.AttachmentProperties> attachments = new ArrayList<EmailSender.AttachmentProperties>();
             List<String> inlineForms = new ArrayList<String>();
@@ -149,15 +150,19 @@ public class EmailActionProperty extends SystemExplicitActionProperty {
 
             Map<String, Message.RecipientType> recipients = getRecipientEmails(context);
 
-            String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionType.read(context);
-            String smtpHost = (String) emailLM.smtpHost.read(context);
-            String smtpPort = (String) emailLM.smtpPort.read(context);
-            String fromAddress = (String) this.fromAddress.read(context, context.getKeys());
-            String subject = (String) this.subject.read(context, context.getKeys());
-            String userName = (String) emailLM.emailAccount.read(context);
-            String password = (String) emailLM.emailPassword.read(context);
+            ObjectValue defaultAccount = emailLM.defaultAccount.readClasses(context.getSession());
 
-            sendEmail(context, smtpHost, smtpPort, userName, password, encryptedConnectionType, fromAddress, subject, recipients, inlineForms, attachments, attachmentFiles);
+            if (!(defaultAccount instanceof NullValue)) {
+                String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionTypeAccount.read(context, defaultAccount);
+                String smtpHostAccount = (String) emailLM.smtpHostAccount.read(context, defaultAccount);
+                String smtpPortAccount = (String) emailLM.smtpPortAccount.read(context, defaultAccount);
+                String fromAddressAccount = (String) this.fromAddressAccount.read(context, context.getKeys());
+                String subject = (String) this.subject.read(context, context.getKeys());
+                String nameAccount = (String) emailLM.nameAccount.read(context, defaultAccount);
+                String passwordAccount = (String) emailLM.passwordAccount.read(context, defaultAccount);
+
+                sendEmail(context, smtpHostAccount, smtpPortAccount, nameAccount, passwordAccount, encryptedConnectionType, fromAddressAccount, subject, recipients, inlineForms, attachments, attachmentFiles);
+            }
         } catch (Exception e) {
             String errorMessage = getString("mail.failed.to.send.mail") + " : " + e.toString();
             logger.error(errorMessage);
@@ -168,8 +173,8 @@ public class EmailActionProperty extends SystemExplicitActionProperty {
         }
     }
 
-    private void sendEmail(ExecutionContext context, String smtpHost, String smtpPort, String userName, String password, String encryptedConnectionType, String fromAddress, String subject, Map<String, Message.RecipientType> recipientEmails, List<String> inlineForms, List<EmailSender.AttachmentProperties> attachments, Map<ByteArray, String> attachmentFiles) throws MessagingException, IOException {
-        if (smtpHost == null || fromAddress == null) {
+    private void sendEmail(ExecutionContext context, String smtpHostAccount, String smtpPortAccount, String userName, String password, String encryptedConnectionType, String fromAddressAccount, String subject, Map<String, Message.RecipientType> recipientEmails, List<String> inlineForms, List<EmailSender.AttachmentProperties> attachments, Map<ByteArray, String> attachmentFiles) throws MessagingException, IOException {
+        if (smtpHostAccount == null || fromAddressAccount == null) {
             logError(context, getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent"));
             return;
         }
@@ -180,10 +185,10 @@ public class EmailActionProperty extends SystemExplicitActionProperty {
         }
 
         EmailSender sender = new EmailSender(
-                nullTrim(smtpHost),
-                nullTrim(smtpPort),
+                nullTrim(smtpHostAccount),
+                nullTrim(smtpPortAccount),
                 nullTrim(encryptedConnectionType),
-                nullTrim(fromAddress),
+                nullTrim(fromAddressAccount),
                 nullTrim(userName),
                 nullTrim(password),
                 recipientEmails

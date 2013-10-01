@@ -34,6 +34,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.echoSymbols = echoSymbols;
     }
 
+    public void setContentType(String contentType) {
+        target.contentType = contentType;
+    }
+
     public void setMinimumCharWidth(int minimumCharWidth) {
         target.setMinimumCharWidth(minimumCharWidth);
     }

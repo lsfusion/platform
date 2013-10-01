@@ -54,8 +54,8 @@ import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.mail.AttachmentFormat;
-import lsfusion.server.mail.EmailActionProperty;
-import lsfusion.server.mail.EmailActionProperty.FormStorageType;
+import lsfusion.server.mail.SendEmailActionProperty;
+import lsfusion.server.mail.SendEmailActionProperty.FormStorageType;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
@@ -968,16 +968,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
 
         LAP<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, "", "", eaClasses, null, null);
-        EmailActionProperty eaProp = (EmailActionProperty) eaPropLP.property;
+        SendEmailActionProperty eaProp = (SendEmailActionProperty) eaPropLP.property;
 
         ImList<CalcPropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);
 
         int i = 0;
         if (fromProp != null) {
-            eaProp.setFromAddress(allImplements.get(i++));
+            eaProp.setFromAddressAccount(allImplements.get(i++));
         } else {
-            // по умолчанию используем стандартный fromAddress
-            eaProp.setFromAddress(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.getLCPByName("fromAddress").property));
+            // по умолчанию используем стандартный fromAddressAccount
+            eaProp.setFromAddressAccount(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.getLCPByName("fromAddressDefaultNotificationAccount").property));
         }
         eaProp.setSubject(allImplements.get(i++));
 

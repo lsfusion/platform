@@ -46,23 +46,23 @@ public class EmailSender {
         }
     }
 
-    public EmailSender(String smtpHost, String fromAddress, Map<String, Message.RecipientType> targets) {
+    public EmailSender(String smtpHostAccount, String fromAddressAccount, Map<String, Message.RecipientType> targets) {
         //mailProps.setProperty("mail.debug", "true");
-        mailProps.setProperty("mail.smtp.host", smtpHost);
-        mailProps.setProperty("mail.from", fromAddress);
+        mailProps.setProperty("mail.smtp.host", smtpHostAccount);
+        mailProps.setProperty("mail.from", fromAddressAccount);
         emails = targets;
     }
 
-    public EmailSender(String smtpHost, String smtpPort, String encryptedConnectionType, String fromAddress, String userName, String password, Map<String, Message.RecipientType> targets) {
-        this(smtpHost, fromAddress, targets);
+    public EmailSender(String smtpHostAccount, String smtpPortAccount, String encryptedConnectionType, String fromAddressAccount, String userName, String password, Map<String, Message.RecipientType> targets) {
+        this(smtpHostAccount, fromAddressAccount, targets);
 
-        if (!smtpPort.isEmpty()) {
-            mailProps.put("mail.smtp.port", smtpPort);
+        if (!smtpPortAccount.isEmpty()) {
+            mailProps.put("mail.smtp.port", smtpPortAccount);
         }
         if ("TLS".equals(encryptedConnectionType))
             mailProps.setProperty("mail.smtp.starttls.enable", "true");
         if ("SSL".equals(encryptedConnectionType)) {
-            mailProps.put("mail.smtp.socketFactory.port", smtpPort);
+            mailProps.put("mail.smtp.socketFactory.port", smtpPortAccount);
             mailProps.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         }
 

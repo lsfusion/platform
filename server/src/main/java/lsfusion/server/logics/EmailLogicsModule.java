@@ -1,6 +1,5 @@
 package lsfusion.server.logics;
 
-import org.antlr.runtime.RecognitionException;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.StringClass;
@@ -15,7 +14,8 @@ import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.mail.AttachmentFormat;
-import lsfusion.server.mail.EmailActionProperty;
+import lsfusion.server.mail.SendEmailActionProperty;
+import org.antlr.runtime.RecognitionException;
 
 import javax.mail.Message;
 import javax.mail.internet.MimeMessage;
@@ -28,21 +28,22 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOfRange;
 import static lsfusion.base.BaseUtils.consecutiveList;
 import static lsfusion.server.logics.PropertyUtils.readCalcImplements;
-import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public ConcreteCustomClass notification;
-
-    public LCP encryptedConnectionType;
-    public LCP nameEncryptedConnectionType;
-    public LCP smtpHost;
-    public LCP smtpPort;
-    public LCP emailAccount;
-    public LCP emailPassword;
-    public LCP emailBlindCarbonCopy;
-    public LCP fromAddress;
-    public LCP disableEmail;
+    
+    public LCP defaultAccount;
+    public LCP nameEncryptedConnectionTypeAccount;
+    public LCP smtpHostAccount;
+    public LCP smtpPortAccount;
+    public LCP pop3HostAccount;
+    public LCP nameAccount;
+    public LCP passwordAccount;
+    public LCP deleteMessagesAccount;
+    public LCP blindCarbonCopyAccount;
+    public LCP fromAddressAccount;
+    public LCP disableAccount;
 
     public LAP emailUserPassUser;
 
@@ -73,19 +74,23 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         // ------- Управление почтой ------ //
 
         // Настройки почтового сервера
-        nameEncryptedConnectionType = getLCPByName("nameEncryptedConnectionType");
+        defaultAccount = getLCPByName("defaultAccount");
+        
+        nameEncryptedConnectionTypeAccount = getLCPByName("nameEncryptedConnectionTypeAccount");
 
-        smtpHost = getLCPByName("smtpHost");
-        smtpPort = getLCPByName("smtpPort");
+        smtpHostAccount = getLCPByName("smtpHostAccount");
+        smtpPortAccount = getLCPByName("smtpPortAccount");
+        pop3HostAccount = getLCPByName("pop3HostAccount");
 
-        emailAccount = getLCPByName("emailAccount");
-        emailPassword = getLCPByName("emailPassword");
-        emailBlindCarbonCopy = getLCPByName("emailBlindCarbonCopy");
+        nameAccount = getLCPByName("nameAccount");
+        passwordAccount = getLCPByName("passwordAccount");
+        deleteMessagesAccount = getLCPByName("deleteMessagesAccount");
+        blindCarbonCopyAccount = getLCPByName("blindCarbonCopyAccount");
 
-        disableEmail = getLCPByName("disableEmail");
+        disableAccount = getLCPByName("disableAccount");
 
-        emailUserPassUser = getLAPByName("emailUserPassUser");
-
+        emailUserPassUser = getLAPByName("emailUserPassUser");      
+        
         // Уведомления
         isEventNotification = getLCPByName("isEventNotification");
         emailFromNotification = getLCPByName("emailFromNotification");
@@ -96,31 +101,31 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         subjectNotification = getLCPByName("subjectNotification");
         inNotificationProperty = getLCPByName("inNotificationProperty");
 
-        fromAddress = getLCPByName("fromAddress");
+        fromAddressAccount = getLCPByName("fromAddressAccount");
     }
 
     public LAP addEAProp(ValueClass... params) {
         return addEAProp((String) null, params);
     }
 
-    public LAP addEAProp(LCP fromAddress, ValueClass... params) {
-        return addEAProp(null, fromAddress, emailBlindCarbonCopy, params);
+    public LAP addEAProp(LCP fromAddressAccount, ValueClass... params) {
+        return addEAProp(null, fromAddressAccount, blindCarbonCopyAccount, params);
     }
 
     public LAP addEAProp(String subject, ValueClass... params) {
-        return addEAProp(subject, getLCPByName("fromAddress"), emailBlindCarbonCopy, params);
+        return addEAProp(subject, getLCPByName("fromAddressAccount"), blindCarbonCopyAccount, params);
     }
 
-    public LAP addEAProp(LCP fromAddress, LCP emailBlindCarbonCopy, ValueClass... params) {
-        return addEAProp(null, fromAddress, emailBlindCarbonCopy, params);
+    public LAP addEAProp(LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
+        return addEAProp(null, fromAddressAccount, blindCarbonCopyAccount, params);
     }
 
-    public LAP addEAProp(String subject, LCP fromAddress, LCP emailBlindCarbonCopy, ValueClass... params) {
-        return addEAProp(null, genSID(), "emailContact", subject, fromAddress, emailBlindCarbonCopy, params);
+    public LAP addEAProp(String subject, LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
+        return addEAProp(null, genSID(), "emailContact", subject, fromAddressAccount, blindCarbonCopyAccount, params);
     }
 
-    public LAP addEAProp(AbstractGroup group, String name, String caption, String subject, LCP fromAddress, LCP emailBlindCarbonCopy, ValueClass... params) {
-        Object[] fromImplement = new Object[] {fromAddress};
+    public LAP addEAProp(AbstractGroup group, String name, String caption, String subject, LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
+        Object[] fromImplement = new Object[] {fromAddressAccount};
         Object[] subjImplement;
         if (subject != null) {
             subjImplement = new Object[] {addCProp(StringClass.get(subject.length()), subject)};
@@ -135,17 +140,17 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         }
 
         LAP eaPropLP = addEAProp(group, name, caption, params, fromImplement, subjImplement);
-        addEARecipientsType(eaPropLP, Message.RecipientType.BCC, emailBlindCarbonCopy);
+        addEARecipientsType(eaPropLP, Message.RecipientType.BCC, blindCarbonCopyAccount);
 
         return eaPropLP;
     }
 
-    public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, String name, String caption, ValueClass[] params, Object[] fromAddress, Object[] subject) {
-        EmailActionProperty eaProp = new EmailActionProperty(name, caption, params);
+    public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, String name, String caption, ValueClass[] params, Object[] fromAddressAccount, Object[] subject) {
+        SendEmailActionProperty eaProp = new SendEmailActionProperty(name, caption, params);
         LAP<ClassPropertyInterface> eaPropLP = addProperty(group, new LAP<ClassPropertyInterface>(eaProp));
 
-        if (fromAddress != null) {
-            eaProp.setFromAddress(readCalcImplements(eaPropLP.listInterfaces, fromAddress).single());
+        if (fromAddressAccount != null) {
+            eaProp.setFromAddressAccount(readCalcImplements(eaPropLP.listInterfaces, fromAddressAccount).single());
         }
 
         if (subject != null) {
@@ -159,7 +164,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         ImList<CalcPropertyInterfaceImplement<ClassPropertyInterface>> recipImpls = readCalcImplements(eaProp.listInterfaces, params);
 
         for (CalcPropertyInterfaceImplement<ClassPropertyInterface> recipImpl : recipImpls) {
-            ((EmailActionProperty) eaProp.property).addRecipient(recipImpl, type);
+            ((SendEmailActionProperty) eaProp.property).addRecipient(recipImpl, type);
         }
     }
 
@@ -168,7 +173,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     }
 
     public void addInlineEAForm(LAP eaProp, FormEntity form, Object... params) {
-        ((EmailActionProperty) eaProp.property).addInlineForm(form, readObjectImplements(eaProp, params));
+        ((SendEmailActionProperty) eaProp.property).addInlineForm(form, readObjectImplements(eaProp, params));
     }
 
     /**
@@ -211,7 +216,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
             attachNameImpl = readCalcImplements(eaProp.listInterfaces, copyOfRange(params, 0, attachNameParamsCnt)).single();
             params = copyOfRange(params, attachNameParamsCnt, params.length);
         }
-        ((EmailActionProperty) eaProp.property).addAttachmentForm(form, format, readObjectImplements(eaProp, params), attachNameImpl);
+        ((SendEmailActionProperty) eaProp.property).addAttachmentForm(form, format, readObjectImplements(eaProp, params), attachNameImpl);
     }
 
     private <P extends PropertyInterface> Map<ObjectEntity, CalcPropertyInterfaceImplement<P>> readObjectImplements(LAP<P> eaProp, Object[] params) {

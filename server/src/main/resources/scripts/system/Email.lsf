@@ -14,9 +14,6 @@ FORM encryptedConnectionTypeStatuses
     DIALOG EncryptedConnectionTypeStatus OBJECT s
 ;
 
-encryptedConnectionType 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus();
-nameEncryptedConnectionType 'Тип шифрованного подключения' = staticCaption(encryptedConnectionType()) PREFCHARWIDTH 3 IN email;
-
 CLASS Notification 'Уведомление';
 TABLE notification (Notification);
 TABLE notificationProperty (Notification, Property);
@@ -30,16 +27,74 @@ textNotification 'Текст письма' = DATA TEXT (Notification);
 subjectNotification 'Тема письма'= DATA VARSTRING[100] (Notification);
 inNotificationProperty 'Вкл.' = DATA BOOLEAN (Notification, Property);
 
-fromAddress 'Адрес отправителя' = DATA VARSTRING[50] () IN email;
+CLASS Account 'E-mail аккаунт';
+TABLE account (Account);
 
-smtpHost 'SMTP хост' = DATA VARSTRING[50]() IN email;
-smtpPort 'SMTP порт' = DATA VARSTRING[10]() IN email;
+nameAccount 'Имя аккаунта' = DATA VARSTRING[50](Account);
+passwordAccount 'Пароль' = DATA VARSTRING[50](Account) ECHO;
+fromAddressAccount 'Адрес отправителя' = DATA VARSTRING[50] (Account);
 
-emailAccount 'Имя аккаунта' = DATA VARSTRING[50]() IN email;
-emailPassword 'Пароль' = DATA VARSTRING[50]() IN email;
-emailBlindCarbonCopy 'Копия (BCC)'= DATA VARSTRING[50]() IN email;
-disableEmail 'Отключить отсылку почты' = DATA BOOLEAN() IN email;
+isDefaultNotificationAccount 'Использовать для отправки уведомлений' = DATA BOOLEAN (Account);
+defaultNotificationAccount 'E-mail аккаунт для отправки уведомлений' = GROUP MAX account IF isDefaultNotificationAccount(account);
+fromAddressDefaultNotificationAccount 'Адрес для отправки уведомлений по умолчанию' () = fromAddressAccount(defaultNotificationAccount());
 
+isDefaultInboxAccount 'Использовать для получения сообщений' = DATA BOOLEAN (Account);
+defaultInboxAccount 'E-mail аккаунт для получения сообщений' = GROUP MAX account IF isDefaultInboxAccount(account);
+
+smtpHostAccount 'SMTP хост' = DATA VARSTRING[50](Account);
+smtpPortAccount 'SMTP порт' = DATA VARSTRING[10](Account);
+pop3HostAccount 'POP3 хост' = DATA VARSTRING[50](Account);
+blindCarbonCopyAccount 'Копия (BCC)'= DATA VARSTRING[50](Account);
+deleteMessagesAccount 'Удалять сообщения с сервера' = DATA BOOLEAN(Account);
+disableAccount 'Отключить отсылку и получение почты' = DATA BOOLEAN(Account);
+
+encryptedConnectionTypeAccount 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus(Account);
+nameEncryptedConnectionTypeAccount 'Тип шифрованного подключения' (account) = staticCaption(encryptedConnectionTypeAccount(account)) PREFCHARWIDTH 3;
+
+CLASS Email 'Письмо';
+TABLE email(Email);
+
+idEmail = DATA VARSTRING[100] (Email);  
+emailId = GROUP AGGR email BY idEmail (email) WHERE email IS Email; 
+accountEmail = DATA Account (Email);
+
+subjectEmail 'Тема' = DATA VARSTRING[100] (Email);
+fromAddressEmail 'От' = DATA VARSTRING[100] (Email);
+toAddressEmail 'Кому' = DATA VARSTRING[100] (Email);
+dateTimeSentEmail 'Дата отправки' = DATA DATETIME (Email);
+dateTimeReceivedEmail 'Дата получения' = DATA DATETIME (Email);
+messageEmail 'Сообщение' = DATA TEXT (Email);
+
+receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty';
+
+FORM account 'E-mail аккаунт'
+    OBJECTS a = Account FIXED PANEL
+    PROPERTIES(a) nameAccount, passwordAccount, fromAddressAccount, smtpHostAccount, smtpPortAccount, pop3HostAccount,
+                  nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
+                  isDefaultNotificationAccount, isDefaultInboxAccount, disableAccount
+    EDIT Account OBJECT a
+;
+
+FORM accounts 'E-mail аккаунты'
+   
+    OBJECTS a = Account
+    PROPERTIES(a) nameAccount, passwordAccount, fromAddressAccount, smtpHostAccount, smtpPortAccount, pop3HostAccount,
+                  nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
+                  isDefaultNotificationAccount, disableAccount
+    PROPERTIES(a) ADDFORM, EDITFORM, DELETE TOOLBAR
+
+    DIALOG Account OBJECT a
+;
+
+CLASS AttachmentEmail 'Вложение';
+TABLE attachmentEmail(AttachmentEmail);
+
+idAttachmentEmail = DATA VARSTRING[100] (AttachmentEmail);  
+emailAttachmentEmail = DATA Email (AttachmentEmail);
+attachmentEmailIdEmail (id, email) = GROUP AGGR attachment BY idAttachmentEmail (attachment), idEmail(emailAttachmentEmail(attachment)) WHERE attachment IS AttachmentEmail; 
+nameAttachmentEmail 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
+fileAttachmentEmail 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
+openFileAttachmentEmail 'Файл' (attachmentEmail) = ACTION OPENFILE fileAttachmentEmail(attachmentEmail);
 
 FORM remindUserPass 'Напоминание пароля'
 
@@ -52,40 +107,89 @@ emailUserPassUser 'Напоминание пароля' (user) = ACTION EMAIL
                                TO emailContact(user)
                                INLINE remindUserPass OBJECTS u = user;
 
-FORM notification 'Почта'
+FORM mail 'Почта' 
 
-    PROPERTIES() smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, emailAccount, emailPassword,
-                                     emailBlindCarbonCopy, disableEmail
+    OBJECTS a=Account
 
+    PROPERTIES(a) nameAccount, smtpHostAccount, smtpPortAccount, pop3HostAccount, nameEncryptedConnectionTypeAccount,
+                  fromAddressAccount, passwordAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
+                  isDefaultNotificationAccount, isDefaultInboxAccount, disableAccount 
+    PROPERTIES(a) FORCE PANEL ADDOBJ, DELETE TOOLBAR
+    
+    OBJECTS e=Email
+  
+    PROPERTIES(e) subjectEmail, fromAddressEmail, toAddressEmail, dateTimeSentEmail, 
+                   dateTimeReceivedEmail, messageEmail READONLY FORCE PANEL
+    PROPERTIES(e) DELETE
+    PROPERTIES() FORCE PANEL receiveEmailAction TODRAW e 
+    FILTERS accountEmail(e)==a
+                    
+    OBJECTS ae=AttachmentEmail
+    
+    PROPERTIES(ae) nameAttachmentEmail READONLY, openFileAttachmentEmail
+    FILTERS emailAttachmentEmail(ae)==e
+    
     OBJECTS n=Notification
     OBJECTS p=Property
-
+        
     PROPERTIES(n, p) inNotificationProperty
     PROPERTIES(n) subjectNotification, textNotification FORCE PANEL, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isEventNotification, ADDOBJ
     PROPERTIES(p) READONLY captionProperty, SIDProperty
     ORDER BY SIDProperty
-
+        
     FILTERGROUP emailFilter
         FILTER 'Только отмеченные' 'F9' inNotificationProperty(n, p)
 ;
 
-DESIGN notification FROM DEFAULT {
-    ADD n.box;
-    NEW pane {
-        fill = 1;
-        type = CONTAINERH;
-        ADD p.box;
-        ADD PROPERTY(textNotification) {
+EXTEND DESIGN mail {
+    main {
+        NEW specContainer {
             fill = 1;
-            panelLabelAbove = TRUE;
+            ADD a.box;
+            NEW mailContainer {
+                fill = 3;
+                type = TABBED;    
+                NEW emailContainer {
+                    caption = 'Входящие';
+                    ADD e.box;
+                    NEW tabbedContainer {
+                        fill = 1;
+                        type=TABBED;
+                        NEW textContainer {
+                            caption = 'Сообщение';
+                            type = CONTAINERV;        
+                            ADD PROPERTY(messageEmail(e)) {
+                                contentType = 'text/html';
+                                fill = 1;
+                                preferredSize = ( -1, 200);
+                                panelLabelAbove = TRUE;
+                            }
+                        }
+                        ADD ae.box {caption = 'Вложения';}
+                    }
+                }
+                NEW notificationContainer {
+                    caption = 'Уведомления';
+                    ADD n.box;
+                    NEW pane {
+                        fill = 1;
+                        type = CONTAINERH;
+                        ADD p.box;
+                        ADD PROPERTY(textNotification) {
+                            fill = 1;
+                            panelLabelAbove = TRUE;
+                        }
+                    }
+                }
+            }
+            ADD functions.box;
         }
     }
-    ADD functions.box;
 }
 
 NAVIGATOR {
     //ADD remindUserPass;
     configuration {
-        ADD Email.notification;
+        ADD Email.mail;
     }
 }

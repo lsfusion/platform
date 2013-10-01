@@ -1,5 +1,6 @@
 package lsfusion.server.mail;
 
+import lsfusion.server.logics.NullValue;
 import org.apache.log4j.Logger;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
@@ -65,8 +66,8 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        if (emailLM.disableEmail.read(context) != null) {
-            logger.error(ServerResourceBundle.getString("mail.sending.disabled"));
+        if (emailLM.disableAccount.read(context) != null) {
+            logger.error(ServerResourceBundle.getString("mail.disabled"));
             return;
         }
 
@@ -116,27 +117,30 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
         List<EmailSender.AttachmentProperties> attachmentForms = new ArrayList<EmailSender.AttachmentProperties>();
         Map<ByteArray, String> attachmentFiles = new HashMap<ByteArray, String>();
 
-        String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionType.read(context);
-        String smtpHost = (String) emailLM.smtpHost.read(context);
-        String smtpPort = (String) emailLM.smtpPort.read(context);
-        String userName = (String) emailLM.emailAccount.read(context);
-        String password = (String) emailLM.emailPassword.read(context);
+        ObjectValue defaultAccount = emailLM.defaultAccount.readClasses(context.getSession());
 
-        if (smtpHost == null || emailFromNotification == null) {
-            String errorMessage = ServerResourceBundle.getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent");
-            logger.error(errorMessage);
-            context.delayUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
-        } else {
-            EmailSender sender = new EmailSender(smtpHost.trim(),BaseUtils.nullTrim(smtpPort), encryptedConnectionType.trim(), emailFromNotification.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
-            try {
-                sender.sendPlainMail(subjectNotification, currentText, attachmentForms, attachmentFiles);
-            } catch (Exception e) {
-                String errorMessage = ServerResourceBundle.getString("mail.failed.to.send.mail") + " : " + e.toString();
+        if (!(defaultAccount instanceof NullValue)) {
+            String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionTypeAccount.read(context);
+            String smtpHostAccount = (String) emailLM.smtpHostAccount.read(context);
+            String smtpPortAccount = (String) emailLM.smtpPortAccount.read(context);
+            String nameAccount = (String) emailLM.nameAccount.read(context);
+            String password = (String) emailLM.passwordAccount.read(context);
+
+            if (smtpHostAccount == null || emailFromNotification == null) {
+                String errorMessage = ServerResourceBundle.getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent");
                 logger.error(errorMessage);
                 context.delayUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
-                e.printStackTrace();
+            } else {
+                EmailSender sender = new EmailSender(smtpHostAccount.trim(), BaseUtils.nullTrim(smtpPortAccount), encryptedConnectionType.trim(), emailFromNotification.trim(), BaseUtils.nullTrim(nameAccount), BaseUtils.nullTrim(password), recipientEmails);
+                try {
+                    sender.sendPlainMail(subjectNotification, currentText, attachmentForms, attachmentFiles);
+                } catch (Exception e) {
+                    String errorMessage = ServerResourceBundle.getString("mail.failed.to.send.mail") + " : " + e.toString();
+                    logger.error(errorMessage);
+                    context.delayUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
+                    e.printStackTrace();
+                }
             }
         }
-
     }
 }
