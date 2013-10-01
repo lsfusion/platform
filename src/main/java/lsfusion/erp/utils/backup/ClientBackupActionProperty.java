@@ -20,7 +20,6 @@ public class ClientBackupActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
-            new BackupActionProperty(LM).executeCustom(context);
 
             String lastBackupFilePath = (String) LM.findLCPByCompoundName("backupFilePath").read(context.getSession());
             String backupFileName = ((String) LM.findLCPByCompoundName("backupFileName").read(context.getSession())).trim();

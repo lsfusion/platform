@@ -51,6 +51,8 @@ public class BackupActionProperty extends ScriptingActionProperty {
 
                 LM.findLCPByCompoundName("backupFilePath").change(backupFilePath, context.getSession());
                 LM.findLCPByCompoundName("backupFileName").change(backupFileName + backupFileExtension, context.getSession());
+
+                LM.findLAPByCompoundName("formRefresh").execute(context);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
