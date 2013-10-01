@@ -34,7 +34,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.GroupingType;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.LPWithParams;
-	import lsfusion.server.mail.EmailActionProperty.FormStorageType;
+	import lsfusion.server.mail.SendEmailActionProperty.FormStorageType;
 	import lsfusion.server.mail.AttachmentFormat;
 	import lsfusion.server.logics.property.actions.flow.Inline;
 	import lsfusion.server.logics.property.actions.SystemEvent;
