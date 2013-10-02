@@ -337,7 +337,11 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 initialTable.getProperties().get(index).orderUser = visibleListModel.getSize() + i;
                 initialTable.getProperties().get(index).hideUser = true;
             }
-            initialTable.setFont(initialTable.getFont().deriveFont(getFontStyle(), getFontSize(initialTable.getFont().getSize())));
+            int newFontSize = getFontSize(initialTable.getFont().getSize());
+            if (newFontSize == 0)
+                initialTable.setFont(initialTable.getFont().deriveFont(getFontStyle()));
+            else
+                initialTable.setFont(initialTable.getFont().deriveFont(getFontStyle(), newFontSize));
             fontSize = initialTable.getFont().getSize();
             isFontBold = initialTable.getFont().isBold();
             isFontItalic = initialTable.getFont().isItalic();
@@ -370,7 +374,12 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             }
             if (initialTable.getProperties().size() != 0) {
                 List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
-                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(preferences, initialTable.getProperties().get(0).groupObject.getSID(), getFontInfo(false), true));
+                FontInfo fontInfo = getFontInfo(false);
+                if (fontInfo.fontSize == 0) {
+                    fontInfo = fontInfo.derive(initialTable.getFont().getSize());
+                    fontSizeField.setText(String.valueOf(initialTable.getFont().getSize()));
+                }
+                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(preferences, initialTable.getProperties().get(0).groupObject.getSID(), fontInfo, true));
                 form.saveUserPreferences(new FormUserPreferences(groupObjectUserPreferencesList), forAllUsers);
             }
             JOptionPane.showMessageDialog(this, getString("form.grid.hide.save.settings.successfully.complete"), getString("form.grid.hide.save.complete"), JOptionPane.INFORMATION_MESSAGE);
