@@ -321,8 +321,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     boolean found = false;
                     Object hasUserPreferences = values.get("hasUserPreferencesOverrideGroupObjectCustomUser");
                     Integer fontSize = (Integer) values.get("fontSizeOverrideGroupObjectCustomUser");
-                    Boolean isFontBold = values.get("isFontBoldOverrideGroupObjectCustomUser") != null;
-                    Boolean isFontItalic = values.get("isFontItalicOverrideGroupObjectCustomUser") != null;
+                    boolean isFontBold = values.get("isFontBoldOverrideGroupObjectCustomUser") != null;
+                    boolean isFontItalic = values.get("isFontItalicOverrideGroupObjectCustomUser") != null;
                     for (GroupObjectUserPreferences groupObjectPreferences : preferences) {
                         if (groupObjectPreferences.groupObjectSID.equals(groupObjectSID.trim())) {
                             groupObjectPreferences.getColumnUserPreferences().put(propertyDrawSID, pref);
@@ -336,7 +336,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     if (!found) {
                         Map preferencesMap = new HashMap<String, ColumnUserPreferences>();
                         preferencesMap.put(propertyDrawSID, pref);
-                        preferences.add(new GroupObjectUserPreferences(preferencesMap, groupObjectSID.trim(), new FontInfo(null, fontSize, isFontBold, isFontItalic), hasUserPreferences != null));
+                        preferences.add(new GroupObjectUserPreferences(preferencesMap, 
+                                                                       groupObjectSID.trim(), 
+                                                                       new FontInfo(null, fontSize == null ? 0 : fontSize, isFontBold, isFontItalic), 
+                                                                       hasUserPreferences != null));
                     }
                 }
             }
