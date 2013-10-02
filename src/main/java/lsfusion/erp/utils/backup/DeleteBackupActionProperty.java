@@ -39,6 +39,9 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
                 LM.findLCPByCompoundName("fileDeletedBackup").change(true, session, backupObject);
             }
             session.apply(context.getBL());
+
+            LM.findLAPByCompoundName("formRefresh").execute(context);
+            
         } catch (Exception e) {
             Throwables.propagate(e);
         }
