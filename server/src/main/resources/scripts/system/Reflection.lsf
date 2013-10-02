@@ -262,7 +262,7 @@ FORM properties 'Свойства'
     OBJECTS p=Property
     PROPERTIES(p) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
-    TREE treePropertiesObject tps=PropertyGroup, ps=Property PARENT parentPropertyGroup
+    TREE treePropertiesObject tps=PropertyGroup PARENT parentPropertyGroup, ps=Property
     PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, parentPropertyGroup, numberPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup
     PROPERTIES(ps) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
