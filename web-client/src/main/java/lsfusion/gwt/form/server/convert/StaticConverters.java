@@ -13,6 +13,9 @@ public class StaticConverters {
     }
 
     public static GFont convertFont(FontInfo clientFont) {
+        if (clientFont == null) {
+            return null;
+        }
         return new GFont(
                 clientFont.getFontFamily(),
                 clientFont.getFontSize(),

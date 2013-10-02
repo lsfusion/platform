@@ -109,6 +109,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GFont convertFont(FontInfo clientFont) {
         GFont font = StaticConverters.convertFont(clientFont);
+        if (font == null) {
+            return null;
+        }
         form.addFont(font);
         return font;
     }
