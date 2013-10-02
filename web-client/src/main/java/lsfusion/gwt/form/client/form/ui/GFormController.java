@@ -283,6 +283,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 GGroupObject groupObject = form.getGroupObject(groupObjectUP.getGroupObjectSID());
                 if (groupObject != null) {
                     groupObject.hasUserPreferences = groupObjectUP.hasUserPreferences();
+                    groupObject.fontInfo = groupObjectUP.getFontInfo();
                 }
 
             }

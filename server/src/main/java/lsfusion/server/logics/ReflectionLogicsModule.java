@@ -85,6 +85,15 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP hasUserPreferencesGroupObject;
     public LCP hasUserPreferencesGroupObjectCustomUser;
     public LCP hasUserPreferencesOverrideGroupObjectCustomUser;
+    public LCP fontSizeGroupObject;
+    public LCP fontSizeGroupObjectCustomUser;
+    public LCP fontSizeOverrideGroupObjectCustomUser;
+    public LCP isFontBoldGroupObject;
+    public LCP isFontBoldGroupObjectCustomUser;
+    public LCP isFontBoldOverrideGroupObjectCustomUser;
+    public LCP isFontItalicGroupObject;
+    public LCP isFontItalicGroupObjectCustomUser;
+    public LCP isFontItalicOverrideGroupObjectCustomUser;
 
     public LCP sidTable;
     public LCP tableSID;
@@ -224,6 +233,18 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         hasUserPreferencesGroupObjectCustomUser = getLCPByName("hasUserPreferencesGroupObjectCustomUser");
         hasUserPreferencesGroupObject = getLCPByName("hasUserPreferencesGroupObject");
         hasUserPreferencesOverrideGroupObjectCustomUser = getLCPByName("hasUserPreferencesOverrideGroupObjectCustomUser");
+
+        fontSizeGroupObjectCustomUser = getLCPByName("fontSizeGroupObjectCustomUser");
+        fontSizeGroupObject = getLCPByName("fontSizeGroupObject");
+        fontSizeOverrideGroupObjectCustomUser = getLCPByName("fontSizeOverrideGroupObjectCustomUser");
+
+        isFontBoldGroupObjectCustomUser = getLCPByName("isFontBoldGroupObjectCustomUser");
+        isFontBoldGroupObject = getLCPByName("isFontBoldGroupObject");
+        isFontBoldOverrideGroupObjectCustomUser = getLCPByName("isFontBoldOverrideGroupObjectCustomUser");
+
+        isFontItalicGroupObjectCustomUser = getLCPByName("isFontItalicGroupObjectCustomUser");
+        isFontItalicGroupObject = getLCPByName("isFontItalicGroupObject");
+        isFontItalicOverrideGroupObjectCustomUser = getLCPByName("isFontItalicOverrideGroupObjectCustomUser");
 
         // ------------------------------------------------- Физическая модель ------------------------------------ //
 

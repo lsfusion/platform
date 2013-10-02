@@ -90,4 +90,8 @@ public final class FontInfo implements Serializable {
     public FontInfo derive(int fontSize) {
         return new FontInfo(fontFamily, fontSize, bold, italic);
     }
+
+    public int getStyle() {
+        return (bold ? Font.BOLD : Font.PLAIN) | (italic ? Font.ITALIC : Font.PLAIN);
+    }
 }

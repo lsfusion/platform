@@ -416,8 +416,12 @@ public class ClientFormController implements AsyncListener {
             }
             for (ClientGroupObject groupObject : form.groupObjects) {
                 for (GroupObjectUserPreferences groupObjectPreferences : preferences.getGroupObjectUserPreferencesList()) {
-                    if (groupObject.getSID().equals(groupObjectPreferences.groupObjectSID))
+                    if (groupObject.getSID().equals(groupObjectPreferences.groupObjectSID)) {
                         groupObject.hasUserPreferences = groupObjectPreferences.hasUserPreferences;
+                        groupObject.fontInfo = groupObjectPreferences.fontInfo;
+                        
+                    }
+                    
                 }
             }
         }
@@ -1117,7 +1121,7 @@ public class ClientFormController implements AsyncListener {
                 for (ClientPropertyDraw property : controller.getPropertyDraws()) {
                     columnPreferences.put(property.getSID(), new ColumnUserPreferences(needToHideProperty(property), property.widthUser, property.orderUser, property.sortUser, property.ascendingSortUser));
                 }
-                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(columnPreferences, controller.getGroupObject().getSID(), controller.getGroupObject().hasUserPreferences));
+                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(columnPreferences, controller.getGroupObject().getSID(), controller.getGroupObject().fontInfo, controller.getGroupObject().hasUserPreferences));
             }
         }
         return new FormUserPreferences(groupObjectUserPreferencesList);

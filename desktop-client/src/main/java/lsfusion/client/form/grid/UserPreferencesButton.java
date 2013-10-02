@@ -10,6 +10,7 @@ import lsfusion.client.form.queries.FilterView;
 import lsfusion.client.form.queries.ToolbarGridButton;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
@@ -33,8 +34,15 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
 
     public HideSettingsDialog dialog;
 
-    public UserPreferencesButton(boolean hasUserPreferences) {
+    public int fontSize;
+    public boolean isFontBold;
+    public boolean isFontItalic;
+
+    public UserPreferencesButton(boolean hasUserPreferences, FontInfo fontInfo) {
         super(hasUserPreferences ? savedIcon : unsavedIcon, getString("form.grid.user.preferences"));
+        this.fontSize = fontInfo == null ? 0 : fontInfo.getFontSize();
+        this.isFontBold = fontInfo != null && fontInfo.isBold();
+        this.isFontItalic = fontInfo != null && fontInfo.isItalic();
     }
 
     public abstract void addListener();
@@ -45,6 +53,10 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
         private Map<String, Integer> orderMap = new HashMap<String, Integer>();
         DefaultListModel visibleListModel, invisibleListModel;
         JList visibleList, invisibleList;
+        JLabel fontSizeLabel;
+        JTextField fontSizeField;
+        JCheckBox isFontBoldCheckBox;
+        JCheckBox isFontItalicCheckBox;
 
 
         public HideSettingsDialog(Frame owner, final GridTable initialTable, ClientFormController form) throws IOException {
@@ -71,7 +83,6 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 if (properties.get(i).orderUser == null)
                     properties.get(i).orderUser = i;
                 propertyOrderMap.put(properties.get(i), properties.get(i).orderUser);
-
             }
             ValueComparator valueComparator = new ValueComparator(propertyOrderMap);
             TreeMap<ClientPropertyDraw, Integer> propertyOrderTreeMap = new TreeMap(valueComparator);
@@ -95,6 +106,13 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 i++;
             }
 
+            fontSize = fontSize == 0 ? initialTable.getFont().getSize() : fontSize;
+            fontSizeLabel = new JLabel(getString("descriptor.editor.font.size") + ": ");
+            fontSizeField = new JTextField(String.valueOf(fontSize), 2);
+            isFontBold = isFontBold ? initialTable.getFont().isBold() : isFontBold;
+            isFontBoldCheckBox = new JCheckBox(getString("descriptor.editor.font.style.bold"), isFontBold);
+            isFontItalic = isFontItalic ? initialTable.getFont().isItalic() : isFontItalic;
+            isFontItalicCheckBox = new JCheckBox(getString("descriptor.editor.font.style.italic"), isFontItalic);
             visibleList = new JList(visibleListModel);
             visibleList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
             visibleList.setTransferHandler(arrayListHandler);
@@ -239,6 +257,16 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             currentUserPanel.add(applyButton, BorderLayout.NORTH);
             currentUserPanel.add(resetButton, BorderLayout.SOUTH);
 
+            Box fontAndApplyResetPanel = new Box(BoxLayout.Y_AXIS);
+
+            TitledPanel fontPanel = new TitledPanel(getString("form.grid.hide.font.settings"));
+            fontPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+            fontPanel.add(fontSizeLabel);
+            fontPanel.add(fontSizeField);
+            fontPanel.add(isFontBoldCheckBox);
+            fontPanel.add(isFontItalicCheckBox);
+            fontAndApplyResetPanel.add(fontPanel);
+
             JPanel applyResetButtonsPanel = new JPanel();
             applyResetButtonsPanel.add(currentUserPanel, BorderLayout.WEST);
 
@@ -277,11 +305,12 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 allUsersPanelPanel.add(applyForAllButton, BorderLayout.NORTH);
                 allUsersPanelPanel.add(resetForAllButton, BorderLayout.SOUTH);
                 applyResetButtonsPanel.add(allUsersPanelPanel, BorderLayout.EAST);
+                fontAndApplyResetPanel.add(applyResetButtonsPanel);
             }
 
             JPanel bottomPanel = new JPanel();
             bottomPanel.setLayout(new BorderLayout());
-            bottomPanel.add(applyResetButtonsPanel, BorderLayout.NORTH);
+            bottomPanel.add(fontAndApplyResetPanel, BorderLayout.NORTH);
             bottomPanel.add(buttonsPanel, BorderLayout.EAST);
 
             JPanel mainPanel = new JPanel();
@@ -308,16 +337,20 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 initialTable.getProperties().get(index).orderUser = visibleListModel.getSize() + i;
                 initialTable.getProperties().get(index).hideUser = true;
             }
+            initialTable.setFont(initialTable.getFont().deriveFont(getFontStyle(), getFontSize(initialTable.getFont().getSize())));
+            fontSize = initialTable.getFont().getSize();
+            isFontBold = initialTable.getFont().isBold();
+            isFontItalic = initialTable.getFont().isItalic();
 
             dialog.setVisible(false);
             dispose();
         }
 
         private void applyButtonPressed(Boolean forAllUsers) throws IOException {
-            Map<Pair<ClientPropertyDraw,ClientGroupObjectValue>, Boolean> orderDirections = initialTable.getOrderDirections();
+            Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orderDirections = initialTable.getOrderDirections();
             Map<ClientPropertyDraw, Pair<Boolean, Integer>> sortDirections = new HashMap<ClientPropertyDraw, Pair<Boolean, Integer>>();
             int j = 1;
-            for(Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> entry : orderDirections.entrySet()){
+            for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> entry : orderDirections.entrySet()) {
                 sortDirections.put(entry.getKey().first, new Pair<Boolean, Integer>(entry.getValue(), j));
                 j++;
             }
@@ -337,7 +370,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             }
             if (initialTable.getProperties().size() != 0) {
                 List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
-                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(preferences, initialTable.getProperties().get(0).groupObject.getSID(), true));
+                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(preferences, initialTable.getProperties().get(0).groupObject.getSID(), getFontInfo(false), true));
                 form.saveUserPreferences(new FormUserPreferences(groupObjectUserPreferencesList), forAllUsers);
             }
             JOptionPane.showMessageDialog(this, getString("form.grid.hide.save.settings.successfully.complete"), getString("form.grid.hide.save.complete"), JOptionPane.INFORMATION_MESSAGE);
@@ -369,7 +402,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             }
             if (initialTable.getProperties().size() != 0) {
                 List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
-                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(preferences, initialTable.getProperties().get(0).groupObject.getSID(), false));
+                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(preferences, initialTable.getProperties().get(0).groupObject.getSID(), getFontInfo(true), false));
                 form.saveUserPreferences(new FormUserPreferences(groupObjectUserPreferencesList), forAllUsers);
             }
             initialTable.updateTable();
@@ -384,11 +417,36 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 else
                     invisibleListModel.addElement(caption);
             }
+            initialTable.setFont(initialTable.getFont().deriveFont(Font.PLAIN, 11));
+            fontSizeField.setText("11");
+            isFontBoldCheckBox.setSelected(false);
+            isFontItalicCheckBox.setSelected(false);
 
             JOptionPane.showMessageDialog(this, getString("form.grid.hide.reset.settings.successfully.complete"), getString("form.grid.hide.reset.complete"), JOptionPane.INFORMATION_MESSAGE);
             if (forAllUsers) {
                 setIcon(unsavedIcon);
             }
+        }
+
+        private FontInfo getFontInfo(boolean reset) {
+            Font font = initialTable.getFont();
+            return new FontInfo(font.getFamily(), reset ? font.getSize() : getFontSize(font.getSize()),
+                    reset ? font.isBold() : isFontBoldCheckBox.isSelected(),
+                    reset ? font.isItalic() : isFontItalicCheckBox.isSelected());
+        }
+
+        private int getFontStyle() {
+            return (isFontBoldCheckBox.isSelected() ? Font.BOLD : Font.PLAIN) | (isFontItalicCheckBox.isSelected() ? Font.ITALIC : Font.PLAIN);
+        }
+
+        private int getFontSize(int oldSize) {
+            int fontSize;
+            try {
+                fontSize = Integer.parseInt(fontSizeField.getText());
+            } catch (Exception e) {
+                return oldSize;
+            }
+            return fontSize;
         }
 
         private ColumnUserPreferences resetPropertyUserPreferences(ClientPropertyDraw property) {

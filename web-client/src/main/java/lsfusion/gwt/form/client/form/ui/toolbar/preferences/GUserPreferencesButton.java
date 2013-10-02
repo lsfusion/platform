@@ -232,7 +232,7 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
 
             if (grid.getProperties().size() != 0) {
                 List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GGroupObjectUserPreferences>();
-                groupObjectUserPreferencesList.add(new GGroupObjectUserPreferences(preferences, grid.getGroupObject().getSID(), false));
+                groupObjectUserPreferencesList.add(new GGroupObjectUserPreferences(preferences, grid.getGroupObject().getSID(), grid.getGroupObject().fontInfo, false));
                 savePreferences(groupObjectUserPreferencesList, forAllUsers, true, "Сброс настроек успешно завершен");
             }
 
@@ -279,7 +279,7 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
 
             if (grid.getProperties().size() != 0) {
                 List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GGroupObjectUserPreferences>();
-                groupObjectUserPreferencesList.add(new GGroupObjectUserPreferences(columnPreferences, grid.getGroupObject().getSID(), true));
+                groupObjectUserPreferencesList.add(new GGroupObjectUserPreferences(columnPreferences, grid.getGroupObject().getSID(), grid.getGroupObject().fontInfo, true));
                 savePreferences(groupObjectUserPreferencesList, forAllUsers, false, "Сохранение настроек успешно завершено");
             }
         }

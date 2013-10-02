@@ -4,6 +4,7 @@ import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
 import lsfusion.gwt.form.shared.view.reader.GRowBackgroundReader;
 import lsfusion.gwt.form.shared.view.reader.GRowForegroundReader;
+import lsfusion.interop.FontInfo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -31,7 +32,8 @@ public class GGroupObject implements Serializable {
     public GRowBackgroundReader rowBackgroundReader;
     public GRowForegroundReader rowForegroundReader;
 
-    public boolean hasUserPreferences;
+    public boolean hasUserPreferences;    
+    public FontInfo fontInfo;
 
     public String getCaption() {
         if (objects.isEmpty()) {

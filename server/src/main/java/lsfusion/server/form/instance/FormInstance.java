@@ -9,10 +9,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.Compare;
-import lsfusion.interop.FormEventType;
-import lsfusion.interop.Scroll;
+import lsfusion.interop.*;
 import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.HideFormClientAction;
@@ -294,6 +291,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             query.addProperty("groupObjectPropertyDraw", groupObjectPropertyDrawExpr);
             query.addProperty("sIDGroupObjectPropertyDraw", BL.reflectionLM.sidGroupObject.getExpr(groupObjectPropertyDrawExpr));
             query.addProperty("hasUserPreferencesOverrideGroupObjectCustomUser", hasPrefsExpr);
+            query.addProperty("fontSizeOverrideGroupObjectCustomUser", BL.reflectionLM.fontSizeOverrideGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
+            query.addProperty("isFontBoldOverrideGroupObjectCustomUser", BL.reflectionLM.isFontBoldOverrideGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
+            query.addProperty("isFontItalicOverrideGroupObjectCustomUser", BL.reflectionLM.isFontItalicOverrideGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
 
             query.and(BL.reflectionLM.formPropertyDraw.getExpr(propertyDrawExpr).compare(formObject.getExpr(), Compare.EQUALS));
             query.and(hasPrefsExpr.getWhere());
@@ -320,18 +320,23 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     ColumnUserPreferences pref = new ColumnUserPreferences(needToHide, width, order, sort, ascendingSort != null ? ascendingSort : (sort != null ? false : null));
                     boolean found = false;
                     Object hasUserPreferences = values.get("hasUserPreferencesOverrideGroupObjectCustomUser");
+                    Integer fontSize = (Integer) values.get("fontSizeOverrideGroupObjectCustomUser");
+                    Boolean isFontBold = values.get("isFontBoldOverrideGroupObjectCustomUser") != null;
+                    Boolean isFontItalic = values.get("isFontItalicOverrideGroupObjectCustomUser") != null;
                     for (GroupObjectUserPreferences groupObjectPreferences : preferences) {
                         if (groupObjectPreferences.groupObjectSID.equals(groupObjectSID.trim())) {
                             groupObjectPreferences.getColumnUserPreferences().put(propertyDrawSID, pref);
                             if (!groupObjectPreferences.hasUserPreferences)
                                 groupObjectPreferences.hasUserPreferences = hasUserPreferences != null;
+                            if(groupObjectPreferences.fontInfo==null)
+                                groupObjectPreferences.fontInfo = new FontInfo(null, fontSize, isFontBold, isFontItalic);
                             found = true;
                         }
                     }
                     if (!found) {
                         Map preferencesMap = new HashMap<String, ColumnUserPreferences>();
                         preferencesMap.put(propertyDrawSID, pref);
-                        preferences.add(new GroupObjectUserPreferences(preferencesMap, groupObjectSID.trim(), hasUserPreferences != null));
+                        preferences.add(new GroupObjectUserPreferences(preferencesMap, groupObjectSID.trim(), new FontInfo(null, fontSize, isFontBold, isFontItalic), hasUserPreferences != null));
                     }
                 }
             }
@@ -377,6 +382,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject, userObject);
                 if (forAllUsers) {
                     BL.reflectionLM.hasUserPreferencesGroupObject.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject);
+                }
+                BL.reflectionLM.fontSizeGroupObjectCustomUser.change(groupObjectPreferences.fontInfo.fontSize, dataSession, groupObjectObject, userObject);
+                if (forAllUsers) {
+                    BL.reflectionLM.fontSizeGroupObject.change(groupObjectPreferences.fontInfo.getFontSize(), dataSession, groupObjectObject);
+                }
+                BL.reflectionLM.isFontBoldGroupObjectCustomUser.change(groupObjectPreferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject, userObject);
+                if (forAllUsers) {
+                    BL.reflectionLM.isFontBoldGroupObject.change(groupObjectPreferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject);
+                }
+                BL.reflectionLM.isFontItalicGroupObjectCustomUser.change(groupObjectPreferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject, userObject);
+                if (forAllUsers) {
+                    BL.reflectionLM.isFontItalicGroupObject.change(groupObjectPreferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject);
                 }
             }
             dataSession.apply(BL);

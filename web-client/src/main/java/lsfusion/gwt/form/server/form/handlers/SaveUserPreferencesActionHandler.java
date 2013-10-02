@@ -32,7 +32,7 @@ public class SaveUserPreferencesActionHandler extends FormActionHandler<SaveUser
                 GColumnUserPreferences gColumnUP = entry.getValue();
                 columnUPMap.put(entry.getKey(), new ColumnUserPreferences(gColumnUP.isNeedToHide(), gColumnUP.getWidthUser(), gColumnUP.getOrderUser(), gColumnUP.getSortUser(), gColumnUP.getAscendingSortUser()));
             }
-            GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gGroupObjectUP.hasUserPreferences());
+            GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gGroupObjectUP.getFontInfo(), gGroupObjectUP.hasUserPreferences());
             groupObjectUPList.add(groupObjectUP);
         }
         FormUserPreferences userPreferences = new FormUserPreferences(groupObjectUPList);

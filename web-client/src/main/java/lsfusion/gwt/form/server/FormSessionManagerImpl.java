@@ -64,7 +64,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
                 ColumnUserPreferences columnUP = entry.getValue();
                 gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.isNeedToHide(), columnUP.getWidthUser(), columnUP.getOrderUser(), columnUP.getSortUser(), columnUP.getAscendingSortUser()));
             }
-            gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, groupObjectUP.hasUserPreferences));
+            gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, groupObjectUP.fontInfo, groupObjectUP.hasUserPreferences));
         }
         }
         gForm.userPreferences = new GFormUserPreferences(gGroupObjectUPList);

@@ -468,6 +468,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
 
         groupObject.hasUserPreferences = clientGroupObject.hasUserPreferences;
+        groupObject.fontInfo = clientGroupObject.fontInfo;
 
         return groupObject;
     }

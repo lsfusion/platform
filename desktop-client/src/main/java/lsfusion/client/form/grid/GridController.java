@@ -55,6 +55,10 @@ public class GridController {
 
         view = new GridView(this, form, clientGrid.tabVertical, clientGrid.groupObject.needVerticalScroll);
         table = view.getTable();
+
+        if (groupController.getGroupObject() != null && groupController.getGroupObject().fontInfo != null) {
+            table.setFont(table.getFont().deriveFont(groupController.getGroupObject().fontInfo.getStyle(), groupController.getGroupObject().fontInfo.fontSize));
+        }
     }
 
     public UserPreferencesButton createHideSettingsButton() {
@@ -67,7 +71,7 @@ public class GridController {
             }
         });
 
-        return new UserPreferencesButton(groupController.getGroupObject().hasUserPreferences) {
+        return new UserPreferencesButton(groupController.getGroupObject().hasUserPreferences, groupController.getGroupObject().fontInfo) {
             public void addListener() {
                 addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
