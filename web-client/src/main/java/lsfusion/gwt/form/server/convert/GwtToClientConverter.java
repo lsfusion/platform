@@ -5,12 +5,14 @@ import lsfusion.base.DateConverter;
 import lsfusion.gwt.base.server.spring.BusinessLogicsProvider;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.GClassViewType;
+import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GUserInputResult;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
 import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
 import lsfusion.gwt.form.shared.view.changes.dto.GFilesDTO;
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.UserInputResult;
 import sun.util.calendar.BaseCalendar;
 import sun.util.calendar.CalendarSystem;
@@ -53,6 +55,11 @@ public class GwtToClientConverter extends ObjectConverter {
         BaseCalendar.Date date = (BaseCalendar.Date) calendar.newCalendarDate(blProvider.getTimeZone());
         date = date.setNormalizedDate(gDate.year + 1900, gDate.month + 1, gDate.day);
         return new java.sql.Date(calendar.getTime(date));
+    }
+
+    @Converter(from = GFont.class)
+    public FontInfo convertFont(GFont fontInfo) {
+        return new FontInfo(fontInfo.family, fontInfo.size != null ? fontInfo.size : -1, fontInfo.bold, fontInfo.italic);
     }
 
     @Converter(from = GFilesDTO.class)

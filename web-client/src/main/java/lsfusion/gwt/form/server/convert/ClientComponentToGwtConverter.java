@@ -9,7 +9,6 @@ import lsfusion.gwt.base.client.ui.GAlignment;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.*;
-import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
 import lsfusion.gwt.form.shared.view.classes.GClass;
 import lsfusion.gwt.form.shared.view.reader.*;
 import lsfusion.interop.ClassViewType;
@@ -20,13 +19,14 @@ import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static lsfusion.gwt.form.server.convert.StaticConverters.convertColor;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientComponentToGwtConverter extends CachedObjectConverter {
@@ -88,10 +88,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return component;
     }
 
-    private ColorDTO convertColor(Color color) {
-        return new ColorDTO(Integer.toHexString(color.getRGB()).substring(2, 8));
-    }
-
     private GAlignment convertAlignment(Alignment alignment) {
         switch (alignment) {
             case LEADING: return GAlignment.LEADING;
@@ -111,13 +107,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         throw new IllegalStateException("Unknown alignment");
     }
 
-    private GFont convertFont(FontInfo clientFont) {
-        GFont font = new GFont(
-                clientFont.getFontFamily(),
-                clientFont.getFontSize(),
-                clientFont.isBold(),
-                clientFont.isItalic()
-        );
+    public GFont convertFont(FontInfo clientFont) {
+        GFont font = StaticConverters.convertFont(clientFont);
         form.addFont(font);
         return font;
     }
@@ -468,7 +459,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
 
         groupObject.hasUserPreferences = clientGroupObject.hasUserPreferences;
-        groupObject.fontInfo = clientGroupObject.fontInfo;
+        groupObject.fontInfo = convertFont(clientGroupObject.fontInfo);
 
         return groupObject;
     }

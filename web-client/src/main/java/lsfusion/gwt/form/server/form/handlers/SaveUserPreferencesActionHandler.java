@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.server.form.handlers;
 
+import lsfusion.gwt.form.server.convert.GwtToClientConverter;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.gwt.base.shared.actions.VoidResult;
@@ -18,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SaveUserPreferencesActionHandler extends FormActionHandler<SaveUserPreferencesAction, VoidResult> {
+    private final static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
+
     public SaveUserPreferencesActionHandler(FormDispatchServlet servlet) {
         super(servlet);
     }
@@ -32,7 +35,7 @@ public class SaveUserPreferencesActionHandler extends FormActionHandler<SaveUser
                 GColumnUserPreferences gColumnUP = entry.getValue();
                 columnUPMap.put(entry.getKey(), new ColumnUserPreferences(gColumnUP.isNeedToHide(), gColumnUP.getWidthUser(), gColumnUP.getOrderUser(), gColumnUP.getSortUser(), gColumnUP.getAscendingSortUser()));
             }
-            GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gGroupObjectUP.getFontInfo(), gGroupObjectUP.hasUserPreferences());
+            GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gwtConverter.convertFont(gGroupObjectUP.getFontInfo()), gGroupObjectUP.hasUserPreferences());
             groupObjectUPList.add(groupObjectUP);
         }
         FormUserPreferences userPreferences = new FormUserPreferences(groupObjectUPList);

@@ -136,7 +136,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
     @Converter(from = Color.class)
     public ColorDTO convertColor(Color color) {
-        return new ColorDTO(Integer.toHexString(color.getRGB()).substring(2, 8));
+        return StaticConverters.convertColor(color);
     }
 
     @Converter(from = ClientGroupObjectValue.class)

@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Collections.synchronizedMap;
+import static lsfusion.gwt.form.server.convert.StaticConverters.convertFont;
 
 public class FormSessionManagerImpl implements FormSessionManager, InitializingBean, DisposableBean, InvalidateListener {
     @Autowired
@@ -64,7 +65,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
                 ColumnUserPreferences columnUP = entry.getValue();
                 gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.isNeedToHide(), columnUP.getWidthUser(), columnUP.getOrderUser(), columnUP.getSortUser(), columnUP.getAscendingSortUser()));
             }
-            gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, groupObjectUP.fontInfo, groupObjectUP.hasUserPreferences));
+            gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, convertFont(groupObjectUP.fontInfo), groupObjectUP.hasUserPreferences));
         }
         }
         gForm.userPreferences = new GFormUserPreferences(gGroupObjectUPList);
