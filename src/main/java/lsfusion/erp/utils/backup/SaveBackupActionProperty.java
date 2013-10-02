@@ -3,6 +3,7 @@ package lsfusion.erp.utils.backup;
 import com.google.common.base.Throwables;
 import lsfusion.base.IOUtils;
 import lsfusion.interop.action.ExportFileClientAction;
+import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -36,7 +37,11 @@ public class SaveBackupActionProperty extends ScriptingActionProperty {
                 File file = new File(fileBackup);
                 if (file.exists()) {
                     context.delayUserInterfaction(new ExportFileClientAction(fileBackup, IOUtils.getFileBytes(file)));
+                } else {
+                    context.delayUserInterfaction(new MessageClientAction("Файл не найден", "Ошибка"));
                 }
+            } else {
+                context.delayUserInterfaction(new MessageClientAction("Файл был удалён", "Ошибка"));
             }
         } catch (Exception e) {
             Throwables.propagate(e);
