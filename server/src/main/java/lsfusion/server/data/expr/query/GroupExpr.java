@@ -10,6 +10,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
@@ -27,10 +28,13 @@ import lsfusion.server.data.expr.where.pull.ExclExprPullWheres;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.*;
+import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
 import lsfusion.server.data.query.innerjoins.GroupStatType;
 import lsfusion.server.data.query.innerjoins.GroupStatWhere;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
@@ -238,15 +242,36 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     @IdentityInstanceLazy
     public GroupJoin getInnerJoin() {
         StatKeys<Expr> statKeys;
+        Where queryWhere = query.getWhere();
         if(query.type.hasAdd()) {
             statKeys = new StatKeys<Expr>(group.keys());
-            for(GroupStatWhere<Expr> join : getSplitJoins(query.getWhere(), query.type, getRevGroup().reverse(), true))
+            for(GroupStatWhere<Expr> join : getSplitJoins(queryWhere, query.type, getRevGroup().reverse(), true))
                 statKeys = statKeys.or(join.stats);
         } else
-            statKeys = query.getWhere().getStatExprs(group.keys());
-        return new GroupJoin(getInner().getQueryKeys(), getInner().getInnerValues(), getInner().getInnerKeyTypes(),
-                query.type.nullsNotAllowed() ? query.getWhere() :
-                (query.type.hasAdd() && query.type.splitExprCases()? query.exprs.single().getBaseWhere():Where.TRUE),
+            statKeys = queryWhere.getStatExprs(group.keys());
+
+        ImSet<KeyExpr> innerKeys = getInner().getQueryKeys();
+
+        Where groupWhere;
+        WhereJoins groupJoins;
+        if(query.type.nullsNotAllowed()) {
+            groupWhere = queryWhere;
+            groupJoins = WhereJoins.EMPTY;
+        } else {
+            int groupJoinLevel = Settings.get().getGroupJoinLevel() - group.size();
+            if(groupJoinLevel >= 0) { // оптимизация
+                MSet<WhereJoin> mGroupJoins = SetFact.mSet();
+                for(GroupJoinsWhere queryJoin : queryWhere.getWhereJoins(false, innerKeys, SetFact.<Expr>EMPTYORDER()).first)
+                    mGroupJoins.addAll(queryJoin.getLevelJoins(groupJoinLevel));
+                groupJoins = new WhereJoins(mGroupJoins.immutable());
+            } else
+                groupJoins = WhereJoins.EMPTY;        
+            
+            groupWhere = query.type.hasAdd() && query.type.splitExprCases() ? query.exprs.single().getBaseWhere() : Where.TRUE;
+        }
+
+        return new GroupJoin(innerKeys, getInner().getInnerValues(), getInner().getInnerKeyTypes(),
+                groupWhere, groupJoins,
                 statKeys, group);
     }
 

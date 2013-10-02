@@ -620,6 +620,16 @@ public class Settings {
     public void setEnablePrevWrapComplexity(boolean enablePrevWrapComplexity) {
         this.enablePrevWrapComplexity = enablePrevWrapComplexity;
     }
+    
+    private int groupJoinLevel = 1; // -1 отключить
+
+    public int getGroupJoinLevel() {
+        return groupJoinLevel;
+    }
+
+    public void setGroupJoinLevel(int groupJoinLevel) {
+        this.groupJoinLevel = groupJoinLevel;
+    }
 
     public boolean applyVolatileStats = false;
 

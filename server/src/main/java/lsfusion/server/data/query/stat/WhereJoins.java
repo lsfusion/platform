@@ -32,8 +32,10 @@ import java.util.*;
 
 public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWheres.Interface<WhereJoins>, OuterContext<WhereJoins> {
 
-    public WhereJoins() {
+    private WhereJoins() {
     }
+    
+    public static WhereJoins EMPTY = new WhereJoins(); 
 
     public WhereJoins(WhereJoin[] wheres) {
         super(wheres);
@@ -428,7 +430,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             }
 
             if(remove) {
-                removeJoins = new WhereJoins();
+                removeJoins = WhereJoins.EMPTY;
                 removeUpWheres.set(MapFact.<WhereJoin, Where>EMPTY());
             } else
                 removeJoins = joinFollows.removeJoin(removeJoin,

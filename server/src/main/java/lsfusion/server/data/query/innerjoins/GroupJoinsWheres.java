@@ -153,7 +153,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }
 
     public GroupJoinsWheres(Where where, boolean noWhere) {
-        this(new WhereJoins(), new Value(where), noWhere);
+        this(WhereJoins.EMPTY, new Value(where), noWhere);
     }
 
     public GroupJoinsWheres(WhereJoin join, ObjectWhere where, boolean noWhere) {
