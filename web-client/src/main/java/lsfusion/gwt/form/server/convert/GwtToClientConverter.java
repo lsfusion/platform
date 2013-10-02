@@ -59,6 +59,9 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GFont.class)
     public FontInfo convertFont(GFont fontInfo) {
+        if (fontInfo == null) {
+            return null;
+        }
         return new FontInfo(fontInfo.family, fontInfo.size != null ? fontInfo.size : -1, fontInfo.bold, fontInfo.italic);
     }
 
