@@ -57,7 +57,10 @@ public class GridController {
         table = view.getTable();
 
         if (groupController.getGroupObject() != null && groupController.getGroupObject().fontInfo != null) {
-            table.setFont(table.getFont().deriveFont(groupController.getGroupObject().fontInfo.getStyle(), groupController.getGroupObject().fontInfo.fontSize));
+            if (groupController.getGroupObject().fontInfo.fontSize == 0)
+                table.setFont(table.getFont().deriveFont(groupController.getGroupObject().fontInfo.getStyle()));
+            else
+                table.setFont(table.getFont().deriveFont(groupController.getGroupObject().fontInfo.getStyle(), groupController.getGroupObject().fontInfo.fontSize));
         }
     }
 
@@ -228,7 +231,7 @@ public class GridController {
     public GridView getGridView() {
         return view;
     }
-    
+
     public Font getFont() {
         return clientGrid.design.getFont(table);
     }
