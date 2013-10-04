@@ -8,6 +8,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ActionClass;
@@ -28,6 +29,7 @@ import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
+import java.util.Set;
 
 public abstract class ActionProperty<P extends PropertyInterface> extends Property<P> {
 
@@ -165,24 +167,34 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         if(getEvents().isEmpty()) // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
             return SetFact.EMPTY();
 
-        LinkType linkType = hasFlow(ChangeFlowType.NEWSESSION) ? LinkType.RECUSED : LinkType.USEDACTION;
-
         MCol<Pair<Property<?>, LinkType>> mResult = ListFact.mCol();
         ImMap<CalcProperty, Boolean> used = getUsedExtProps();
-        for(int i=0,size=used.size();i<size;i++)
-            mResult.add(new Pair<Property<?>, LinkType>(used.getKey(i), used.getValue(i) ? LinkType.RECUSED : LinkType.USEDACTION));
-        mResult.add(new Pair<Property<?>, LinkType>(getWhereProperty().property, linkType));
-        CalcProperty depend = getStrongUsed();
-        if(depend!=null)
-            mResult.add(new Pair<Property<?>, LinkType>(depend, LinkType.EVENTACTION));
+        for(int i=0,size=used.size();i<size;i++) {
+            CalcProperty<?> property = used.getKey(i);
+            Boolean rec = used.getValue(i);
+            
+            // эвристика : усилим связи к session calc, предполагается 
+            ImSet<SessionCalcProperty> calcDepends = property.getSessionCalcDepends(true);
+            for(int j=0,sizeJ=calcDepends.size();j<sizeJ;j++)
+                mResult.add(new Pair<Property<?>, LinkType>(calcDepends.get(j), rec ? LinkType.RECEVENT : LinkType.EVENTACTION));
+  
+            mResult.add(new Pair<Property<?>, LinkType>(property, rec ? LinkType.RECUSED : LinkType.USEDACTION));
+        }
+
+//        раньше зачем-то было, но зачем непонятно
+//        mResult.add(new Pair<Property<?>, LinkType>(getWhereProperty().property, hasFlow(ChangeFlowType.NEWSESSION) ? LinkType.RECUSED : LinkType.USEDACTION));
+        
+        ImSet<CalcProperty> depend = getStrongUsed();
+        for(int i=0,size=depend.size();i<size;i++)
+            mResult.add(new Pair<Property<?>, LinkType>(depend.get(i), LinkType.DEPEND));
         return mResult.immutableCol();
     }
     
-    public CalcProperty strongUsed = null;
-    public void setStrongUsed(CalcProperty property) { // чисто для лексикографики
-        strongUsed = property;
+    public ImSet<CalcProperty> strongUsed = SetFact.EMPTY();
+    public void addStrongUsed(ImSet<CalcProperty> properties) { // чисто для лексикографики
+        strongUsed = strongUsed.merge(properties);
     }
-    public CalcProperty getStrongUsed() {
+    public ImSet<CalcProperty> getStrongUsed() {
         return strongUsed;
     }
 

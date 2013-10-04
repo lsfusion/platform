@@ -377,8 +377,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return forms;
     }
 
-    public Event createScriptedEvent(BaseEvent base, List<String> formIds) throws ScriptingErrorLog.SemanticErrorException {
-        return new Event(base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<FormEntity>(findFormsByCompoundName(formIds)))) : SessionEnvEvent.ALWAYS);
+    public Event createScriptedEvent(BaseEvent base, List<String> formIds, List<String> afterIds) throws ScriptingErrorLog.SemanticErrorException {
+        return new Event(base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<FormEntity>(findFormsByCompoundName(formIds)))) : SessionEnvEvent.ALWAYS, afterIds == null? null : SetFact.fromJavaSet(findPropsByCompoundName(afterIds)));
     }
 
     public MetaCodeFragment findMetaCodeFragmentByCompoundName(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
@@ -1988,14 +1988,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         ((LCP)mainProp).setEventChange(this, action, params.toArray());
     }
 
-    public Set<LCP> findLCPsByCompoundName(List<String> ids) throws ScriptingErrorLog.SemanticErrorException {
+    public Set<CalcProperty> findPropsByCompoundName(List<String> ids) throws ScriptingErrorLog.SemanticErrorException {
         if(ids==null)
             return null;
 
-        Set<LCP> prevStart = new HashSet<LCP>(); // функционально из-за exception'а не сделаешь
+        Set<CalcProperty> props = new HashSet<CalcProperty>(); // функционально из-за exception'а не сделаешь
         for(String id : ids)
-            prevStart.add(findLCPByCompoundName(id));
-        return prevStart;
+            props.add(findLCPByCompoundName(id).property);
+        return props;
     }
 
     public final static GetValue<CalcProperty, LCP> getProp = new GetValue<CalcProperty, LCP>() {

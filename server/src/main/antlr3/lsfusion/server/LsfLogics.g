@@ -2412,14 +2412,16 @@ baseEvent returns [Event event]
 @init {
 	SystemEvent baseEvent = SystemEvent.APPLY;
 	List<String> ids = null;
+	List<String> idAfters = null;
 }
 @after {
 	if (inPropParseState()) {
-		$event = self.createScriptedEvent(baseEvent, ids);
+		$event = self.createScriptedEvent(baseEvent, ids, idAfters);
 	}
 }
 	:	('APPLY' { baseEvent = SystemEvent.APPLY; } | 'SESSION'	{ baseEvent = SystemEvent.SESSION; })?
 	    ('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
+	    ('GOAFTER' (nePropIdList=nonEmptyCompoundIdList { idAfters = $nePropIdList.ids; }) )?
 	;
 
 inlineStatement[List<String> context] returns [List<LPWithParams> noInline = new ArrayList<LPWithParams>(), boolean forceInline = false]

@@ -1649,7 +1649,7 @@ public abstract class LogicsModule {
                     DerivedProperty.createIfAction(innerInterfaces, whereImplement, actionProperty, null).property :
                     DerivedProperty.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty, null, false, noInline, forceInline).property;
 
-        action.setStrongUsed(whereImplement.property); // добавить сильную связь
+//        action.setStrongUsed(whereImplement.property); // добавить сильную связь, уже не надо поддерживается более общий механизм - смотреть на Session Calc
 //        action.caption = "WHEN " + whereImplement.property + " " + actionProperty;
         addProp(action);
 
@@ -1658,6 +1658,8 @@ public abstract class LogicsModule {
 
     public <P extends PropertyInterface> void addBaseEvent(ActionProperty<P> action, Event event, boolean resolve, boolean single) {
         action.addEvent(event.base, event.session);
+        if(event.after != null)
+            action.addStrongUsed(event.after);
         action.singleApply = single;
         action.resolve = resolve;
     }
