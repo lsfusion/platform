@@ -41,6 +41,7 @@ public class GSinglePropertyTableBuilder extends GPropertyTableBuilder<Object> {
     protected void updateTD(int rowIndex, Object rowValue, TableCellElement td, int columnIndex, boolean updateCellHeight) {
         if (stripCellHeight) {
             super.updateTD(rowIndex, rowValue, td, columnIndex, false);
+            td.getStyle().setHeight(100, Style.Unit.PCT);
             td.getStyle().setVerticalAlign(Style.VerticalAlign.TOP);
         } else {
             super.updateTD(rowIndex, rowValue, td, columnIndex, updateCellHeight);

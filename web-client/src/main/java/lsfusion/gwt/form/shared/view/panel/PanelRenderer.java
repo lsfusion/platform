@@ -1,8 +1,7 @@
 package lsfusion.gwt.form.shared.view.panel;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.form.client.form.ui.GPanelController;
 
 public interface PanelRenderer {
     Widget getComponent();
@@ -17,5 +16,5 @@ public interface PanelRenderer {
 
     void focus();
 
-    void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex);
+    void setupLayout(GPanelController.GPropertyController gPropertyController);
 }

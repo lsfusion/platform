@@ -3,8 +3,8 @@ package lsfusion.gwt.form.client.form.ui.layout;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.ResizableComplexPanel;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.shared.view.GComponent;
@@ -13,27 +13,25 @@ import lsfusion.gwt.form.shared.view.GContainer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GColumnsContainerView extends GAbstractContainerView {
-    private final static String COLUMN_PROXY_KEY = "columnsProxy";
+public abstract class ColumnsContainerView<P extends Panel> extends GAbstractContainerView {
+    protected final static String COLUMN_PROXY_KEY = "columnsProxy";
 
-    private final int columnsCount;
+    protected final int columnsCount;
 
-    private final FlexPanel panel;
+    protected final P panel;
 
-    //в идеале здесь должны быть FlexPanel'и, но пока слишком тормозит в FF
-    //    private final FlexPanel[] columns;
-    private final ResizableComplexPanel[] columns;
+    protected final ResizableComplexPanel[] columns;
 
-    private final List<GComponent>[] columnsChildren;
+    protected final List<GComponent>[] columnsChildren;
 
-    private final Widget view;
+    protected final Widget view;
 
-    public GColumnsContainerView(GContainer container) {
+    public ColumnsContainerView(GContainer container) {
         super(container);
 
         assert container.isColumns();
 
-        panel = new FlexPanel();
+        panel = createHorizontalPanel();
 
         columnsCount = container.columns;
 
@@ -48,8 +46,11 @@ public class GColumnsContainerView extends GAbstractContainerView {
         }
         panel.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
 
-        view = wrapWithCaptionAndSetMargins(panel);
+        view = wrapWithCaption(panel);
     }
+
+    protected abstract P createHorizontalPanel();
+    protected abstract Widget wrapWithCaption(P panel);
 
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {

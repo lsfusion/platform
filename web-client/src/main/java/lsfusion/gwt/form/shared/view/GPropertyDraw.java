@@ -286,7 +286,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     @Override
     public String toString() {
         return "GPropertyDraw{" +
-                ", sID='" + sID + '\'' +
+                "sID='" + sID + '\'' +
                 ", caption='" + caption + '\'' +
                 ", baseType=" + baseType +
                 ", changeType=" + changeType +

@@ -1,26 +1,31 @@
 package lsfusion.gwt.form.client.form.ui.layout;
 
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
 
-public class GSplitContainerView extends GAbstractContainerView {
+public abstract class SplitContainerView<P extends Panel> extends GAbstractContainerView {
 
-    private final GSplitPane splitPane;
+    private final SplitPanelBase<P> splitPane;
 
     private final Widget view;
 
-    public GSplitContainerView(GContainer container) {
+    public SplitContainerView(GContainer container) {
         super(container);
 
         assert container.isSplit();
 
-        splitPane = new GSplitPane(container.isVerticalSplit());
+        splitPane = createSplitPanel(container.isVerticalSplit());
 
-        view = wrapWithCaptionAndSetMargins(splitPane.getComponent());
+        view = wrawpWithCaption(splitPane.asWidget());
+
         view.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
     }
+
+    protected abstract SplitPanelBase<P> createSplitPanel(boolean vertical);
+    protected abstract Widget wrawpWithCaption(P panel);
 
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {

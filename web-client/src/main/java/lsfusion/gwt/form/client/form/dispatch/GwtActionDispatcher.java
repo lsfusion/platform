@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
@@ -85,8 +86,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     protected void handleDispatchException(Exception e) {
-        DialogBoxHelper.showMessageBox(true, "Error", e.getMessage(), null);
+        GWT.log("Error dispatching ServerResponseResult: ", e);
         Log.error("Error dispatching ServerResponseResult: ", e);
+        DialogBoxHelper.showMessageBox(true, "Error", e.getMessage(), null);
     }
 
     protected abstract void throwInServerInvocation(Exception ex);

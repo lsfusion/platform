@@ -7,7 +7,6 @@ import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.SimpleLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
@@ -21,7 +20,7 @@ import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GForm;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
 
-public abstract class DefaultFormsController extends SimpleLayoutPanel implements FormsController {
+public abstract class DefaultFormsController implements FormsController {
     private final TabLayoutPanel tabsPanel;
 
     public DefaultFormsController() {
@@ -41,9 +40,11 @@ public abstract class DefaultFormsController extends SimpleLayoutPanel implement
             }
         });
 
-        add(tabsPanel);
-
         quickOpenForm();
+    }
+
+    public Widget getView() {
+        return tabsPanel;
     }
 
     private void quickOpenForm() {

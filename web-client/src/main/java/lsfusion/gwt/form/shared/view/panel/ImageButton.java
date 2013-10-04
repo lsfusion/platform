@@ -1,13 +1,10 @@
 package lsfusion.gwt.form.shared.view.panel;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.ImageDescription;
 
@@ -15,7 +12,7 @@ public class ImageButton extends Button {
     private final Image image;
     private final Label label;
     private final Widget strut;
-    private final FlexPanel panel;
+    private final CellPanel panel;
 
     private String imagePath;
     private String text = "";
@@ -44,7 +41,8 @@ public class ImageButton extends Button {
     }
 
     public ImageButton(String caption, String imagePath, boolean vertical) {
-        panel = new FlexPanel(vertical, FlexPanel.Justify.CENTER);
+        panel = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
+
         image = new Image();
         image.setVisible(false);
         image.addStyleName("displayBlock");
@@ -53,11 +51,20 @@ public class ImageButton extends Button {
 
         label = new Label();
 
-        panel.add(image, GFlexAlignment.CENTER);
+        panel.add(image);
         if (!vertical) {
             panel.add(strut);
         }
-        panel.add(label, GFlexAlignment.CENTER);
+        panel.add(label);
+
+        if (vertical) {
+            panel.setCellHorizontalAlignment(image, HasHorizontalAlignment.ALIGN_CENTER);
+            panel.setCellHorizontalAlignment(label, HasHorizontalAlignment.ALIGN_CENTER);
+        } else {
+            panel.setCellVerticalAlignment(image, HasAlignment.ALIGN_MIDDLE);
+            panel.setCellVerticalAlignment(label, HasAlignment.ALIGN_MIDDLE);
+        }
+        panel.getElement().getStyle().setProperty("margin", "auto");
 
         setText(caption);
         setModuleImagePath(imagePath);

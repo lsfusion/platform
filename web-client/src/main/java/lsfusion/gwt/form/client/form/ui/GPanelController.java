@@ -2,9 +2,8 @@ package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.panel.PanelRenderer;
@@ -14,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 public class GPanelController {
+    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
+
     private final GFormController form;
 
     private final Map<GPropertyDraw, GPropertyController> propertyControllers = new HashMap<GPropertyDraw, GPropertyController>();
@@ -112,11 +113,26 @@ public class GPanelController {
         return true;
     }
 
-    private class GPropertyController {
+    public interface RenderersPanel {
+
+        void remove(PanelRenderer renderer);
+
+        void add(PanelRenderer renderer);
+
+        int getWidgetCount();
+
+        Widget asWidget();
+    }
+
+    public class GPropertyController {
         private boolean addedToLayout = false;
         private boolean columnsUpdated = true;
 
-        private GPropertyDraw property;
+        public GPropertyDraw property;
+
+        public Map<GGroupObjectValue, PanelRenderer> renderers;
+
+        public RenderersPanel renderersPanel;
 
         private List<GGroupObjectValue> columnKeys;
         private Map<GGroupObjectValue, Object> values;
@@ -126,16 +142,13 @@ public class GPanelController {
         private Map<GGroupObjectValue, Object> cellBackgroundValues;
         private Map<GGroupObjectValue, Object> cellForegroundValues;
 
-        private Map<GGroupObjectValue, PanelRenderer> renderers;
-
-        private ControllerPanel renderersPanel;
 
         public GPropertyController(GPropertyDraw property) {
             this.property = property;
         }
 
         public Widget getView() {
-            return renderersPanel;
+            return renderersPanel.asWidget();
         }
 
         public void update() {
@@ -144,7 +157,7 @@ public class GPanelController {
                     renderers = new HashMap<GGroupObjectValue, PanelRenderer>();
                 }
                 if (renderersPanel == null) {
-                    renderersPanel = new ControllerPanel();
+                    renderersPanel = layoutImpl.createRenderersPanel();
                 }
 
                 List<GGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
@@ -158,29 +171,38 @@ public class GPanelController {
                     } else {
                         PanelRenderer renderer = renderers.remove(columnKey);
                         if (renderer != null) {
-                            renderersPanel.remove(renderer.getComponent());
+                            renderersPanel.remove(renderer);
                         }
 
                     }
                 }
 
-//                renderersPanel.clear();
-
                 for (GGroupObjectValue columnKey : columnKeys) {
                     PanelRenderer renderer = renderers.get(columnKey);
                     if (renderer != null && renderer.getComponent().getParent() != renderersPanel) {
-                        renderersPanel.add(renderer.getComponent(), GFlexAlignment.STRETCH, 1, "auto");
+                        renderersPanel.add(renderer);
                     }
                 }
 
-                if (isViewVisible()) {
+                if (renderersPanel.getWidgetCount() > 0) {
                     if (!addedToLayout) {
-                        form.formLayout.add(property, renderersPanel);
+                        form.formLayout.add(property, renderersPanel.asWidget(), new DefaultFocusReceiver() {
+                            @Override
+                            public boolean focus() {
+                                return focusFirstWidget();
+                            }
+                        });
+
+                        //донастройка рендереров в лэйауте
+                        for (PanelRenderer renderer : renderers.values()) {
+                            renderer.setupLayout(this);
+                        }
+
                         addedToLayout = true;
                     }
                 } else {
                     if (addedToLayout) {
-                        form.formLayout.remove(property, renderersPanel);
+                        form.formLayout.remove(property, renderersPanel.asWidget());
                         addedToLayout = false;
                     }
                 }
@@ -230,10 +252,6 @@ public class GPanelController {
             return false;
         }
 
-        public boolean isViewVisible() {
-            return renderersPanel.getWidgetCount() > 0;
-        }
-
         public void setPropertyValues(Map<GGroupObjectValue, Object> valueMap, boolean updateKeys) {
             if (updateKeys) {
                 values.putAll(valueMap);
@@ -270,20 +288,6 @@ public class GPanelController {
 
         public void setCellForegroundValues(Map<GGroupObjectValue, Object> cellForegroundValues) {
             this.cellForegroundValues = cellForegroundValues;
-        }
-
-        private class ControllerPanel extends FlexPanel implements DefaultFocusReceiver, FlexPanel.FlexAware {
-            @Override
-            public boolean focus() {
-                return focusFirstWidget();
-            }
-
-            @Override
-            public void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex) {
-                for (PanelRenderer renderer : renderers.values()) {
-                    renderer.addedToFlexPanel(parent, alignment, flex);
-                }
-            }
         }
     }
 }

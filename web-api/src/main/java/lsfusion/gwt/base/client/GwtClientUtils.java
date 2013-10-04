@@ -1,6 +1,7 @@
 package lsfusion.gwt.base.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
@@ -9,6 +10,7 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.http.client.UrlBuilder;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -277,5 +279,16 @@ public class GwtClientUtils {
         style.setMarginBottom(marginBottom, Style.Unit.PX);
         style.setMarginLeft(marginLeft, Style.Unit.PX);
         style.setMarginRight(marginRight, Style.Unit.PX);
+    }
+
+    public static void scheduleOnResize(final Widget widget) {
+        if (widget instanceof RequiresResize) {
+            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                    ((RequiresResize)widget).onResize();
+                }
+            });
+        }
     }
 }

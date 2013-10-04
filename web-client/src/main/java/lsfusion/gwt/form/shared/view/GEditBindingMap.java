@@ -25,7 +25,7 @@ public class GEditBindingMap implements Serializable {
     public static final transient EditEventFilter numberEventFilter = new GEditBindingMap.EditEventFilter() {
         @Override
         public boolean accept(NativeEvent e) {
-            return isPossibleNumberEditEvent(e);
+            return isCommonNumberEditEvent(e);
         }
     };
 

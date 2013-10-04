@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.client.navigator;
 
-import lsfusion.gwt.form.client.form.DefaultFormsController;
 import lsfusion.gwt.form.client.form.FormsController;
 import lsfusion.gwt.form.shared.view.GNavigatorElement;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
@@ -14,7 +13,7 @@ public abstract class GNavigatorController implements GINavigatorController {
     private GNavigatorElement root;
     private LinkedHashMap<GNavigatorWindow, GNavigatorView> views = new LinkedHashMap<GNavigatorWindow, GNavigatorView>();
 
-    public GNavigatorController(DefaultFormsController formsController) {
+    public GNavigatorController(FormsController formsController) {
         this.formsController = formsController;
     }
 

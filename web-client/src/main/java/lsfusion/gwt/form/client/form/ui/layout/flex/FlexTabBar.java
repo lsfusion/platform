@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.layout;
+package lsfusion.gwt.form.client.form.ui.layout.flex;
 
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.*;
@@ -10,9 +10,10 @@ import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.form.client.form.ui.layout.TabbedPanelBase;
 
 /** based on from com.google.gwt.user.client.ui.TabBar */
-public class GTabBar extends Composite implements HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer> {
+public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, TabbedPanelBase.TabBar {
     private static final String STYLENAME_DEFAULT = "gwt-TabBarItem";
 
     public interface Tab extends HasAllKeyHandlers, HasClickHandlers {
@@ -22,7 +23,7 @@ public class GTabBar extends Composite implements HasBeforeSelectionHandlers<Int
 
     private Widget selectedTab;
 
-    public GTabBar() {
+    public FlexTabBar() {
         initWidget(panel);
 
         sinkEvents(Event.ONCLICK);
@@ -305,12 +306,12 @@ public class GTabBar extends Composite implements HasBeforeSelectionHandlers<Int
             // No need for call to super.
             switch (DOM.eventGetType(event)) {
                 case Event.ONCLICK:
-                    GTabBar.this.selectTabByTabWidget(this);
+                    FlexTabBar.this.selectTabByTabWidget(this);
                     break;
 
                 case Event.ONKEYDOWN:
                     if (((char) DOM.eventGetKeyCode(event)) == KeyCodes.KEY_ENTER) {
-                        GTabBar.this.selectTabByTabWidget(this);
+                        FlexTabBar.this.selectTabByTabWidget(this);
                     }
                     break;
             }

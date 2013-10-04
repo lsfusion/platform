@@ -12,12 +12,10 @@ public class ResizableComplexPanel extends ComplexPanel implements RequiresResiz
     }
 
     @Override
-    public void add(Widget child) {
-        add(child, getElement());
-    }
-
-    @Override
     public void onResize() {
+        if (!visible) {
+            return;
+        }
         for (Widget child : this) {
             if (child instanceof RequiresResize) {
                 ((RequiresResize) child).onResize();
@@ -32,6 +30,11 @@ public class ResizableComplexPanel extends ComplexPanel implements RequiresResiz
             this.visible = visible;
             super.setVisible(visible);
         }
+    }
+
+    @Override
+    public void add(Widget child) {
+        add(child, getElement());
     }
 
     public void insert(Widget w, int beforeIndex) {

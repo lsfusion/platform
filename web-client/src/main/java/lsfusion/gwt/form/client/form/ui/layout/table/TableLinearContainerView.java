@@ -1,0 +1,189 @@
+package lsfusion.gwt.form.client.form.ui.layout.table;
+
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.base.client.ui.*;
+import lsfusion.gwt.base.client.ui.DivWidget;
+import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
+import lsfusion.gwt.form.shared.view.GComponent;
+import lsfusion.gwt.form.shared.view.GContainer;
+
+import static com.google.gwt.user.client.ui.HasHorizontalAlignment.*;
+import static com.google.gwt.user.client.ui.HasVerticalAlignment.*;
+
+public class TableLinearContainerView extends GAbstractContainerView {
+    protected final CellPanel panel;
+
+    protected final Widget view;
+    protected final FlexPanel.Justify justify;
+    protected final boolean vertical;
+
+    protected final DivWidget startFill = new DivWidget();
+    protected final DivWidget endFill = new DivWidget();
+
+    protected boolean startFillAdded = false;
+    protected boolean endFillAdded = false;
+
+    public TableLinearContainerView(GContainer container) {
+        super(container);
+
+        assert container.isLinear();
+
+        vertical = container.isVertical();
+        justify = container.getFlexJustify();
+
+        panel = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
+        panel.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
+
+        view = wrapWithCaptionAndSetMargins(panel);
+    }
+
+    protected Widget wrapWithCaptionAndSetMargins(CellPanel view) {
+        return  needCaption() ? new TableCaptionPanel(container.caption, view) : view;
+    }
+
+    @Override
+    protected void addImpl(int index, GComponent child, Widget view) {
+//        ProxyPanel proxyPanel = new ProxyPanel(view);
+//        panel.insert(proxyPanel, index);
+        if (startFillAdded) {
+            index++;
+        }
+        ((InsertPanel)panel).insert(view, index);
+        updateLayout();
+    }
+
+    @Override
+    protected void removeImpl(int index, GComponent child, Widget view) {
+//        ProxyPanel proxyPanel = (ProxyPanel) view.getElement().getPropertyObject(CELL_PROXY_KEY);
+//        panel.remove(proxyPanel);
+        panel.remove(view);
+    }
+
+    @Override
+    public Widget getView() {
+        return view;
+    }
+
+    @Override
+    public void updateLayout() {
+        int childCnt = childrenViews.size();
+        double sumFlex = 0;
+        for (int i = 0; i < childCnt; i++) {
+            GComponent child = children.get(i);
+            Widget childView = childrenViews.get(i);
+            if (childView.isVisible()) {
+                sumFlex += child.flex;
+            }
+        }
+
+        if (sumFlex == 0) {
+            if (!startFillAdded && justify != FlexPanel.Justify.LEADING) {
+                ((InsertPanel)panel).insert(startFill, 0);
+                setCellMainSize(startFill, "100%");
+                startFillAdded = true;
+            }
+            if (!endFillAdded && justify != FlexPanel.Justify.TRAILING) {
+                panel.add(endFill);
+                setCellMainSize(endFill, "100%");
+                endFillAdded = true;
+            }
+        } else {
+            if (startFillAdded) {
+                panel.remove(startFill);
+                startFillAdded = false;
+            }
+            if (endFillAdded) {
+                panel.remove(endFill);
+                endFillAdded = false;
+            }
+        }
+
+        for (int i = 0; i < childCnt; i++) {
+            GComponent child = children.get(i);
+            Widget childView = childrenViews.get(i);
+            if (childView.isVisible()) {
+                if (child.flex > 0) {
+                    setCellMainSize(childView, child.flex / sumFlex * 100 + "%");
+                    setMainSize(childView, "100%");
+                } else {
+                    setCellMainSize(childView, "auto");
+                }
+
+                if (child.alignment == GFlexAlignment.STRETCH) {
+                    setCellSecondarySize(childView, "100%");
+                    setSecondarySize(childView, "100%");
+                } else {
+                    setCellSecondarySize(childView, "auto");
+
+                    if (vertical) {
+                        if (child.alignment == GFlexAlignment.TRAILING) {
+                            childView.getElement().getStyle().setFloat(Style.Float.RIGHT);
+                        } else if (child.alignment == GFlexAlignment.CENTER) {
+                            //todo: might be done using div { display:inline-block; } + td align='..' {font-size: 0; } to remove extra margin
+                            childView.getElement().getStyle().setProperty("margin", "auto");
+                        } else if (child.alignment == GFlexAlignment.LEADING) {
+                            childView.getElement().getStyle().setFloat(Style.Float.LEFT);
+                        }
+//                        panel.setCellHorizontalAlignment(childView, getCellHorzAlignment(child.alignment));
+                    } else {
+                        panel.setCellVerticalAlignment(childView, getCellVertAlignment(child.alignment));
+                    }
+                }
+            } else {
+                setCellMainSize(childView, "0px");
+            }
+        }
+    }
+
+    public VerticalAlignmentConstant getCellVertAlignment(GFlexAlignment alignment) {
+        switch (alignment) {
+            case LEADING: return ALIGN_TOP;
+            case CENTER: return ALIGN_MIDDLE;
+            case TRAILING: return ALIGN_BOTTOM;
+        }
+        return ALIGN_MIDDLE;
+    }
+
+    public HorizontalAlignmentConstant getCellHorzAlignment(GFlexAlignment alignment) {
+        switch (alignment) {
+            case LEADING: return ALIGN_LEFT;
+            case CENTER: return ALIGN_CENTER;
+            case TRAILING: return ALIGN_RIGHT;
+        }
+        return ALIGN_CENTER;
+    }
+
+    private void setMainSize(Widget child, String size) {
+        setChildSize(vertical, child, size);
+    }
+
+    private void setSecondarySize(Widget child, String size) {
+        setChildSize(!vertical, child, size);
+    }
+
+    private void setChildSize(boolean height, Widget child, String size) {
+        if (height) {
+            child.setHeight(size);
+        } else {
+            child.setWidth(size);
+        }
+    }
+
+    private void setCellMainSize(Widget child, String size) {
+        setCellSize(vertical, child, size);
+    }
+
+    private void setCellSecondarySize(Widget child, String size) {
+        setCellSize(!vertical, child, size);
+    }
+
+    private void setCellSize(boolean height, Widget child, String size) {
+        //this will not work in IE for some cases: https://code.google.com/p/google-web-toolkit/issues/detail?id=2065
+        if (height) {
+            panel.setCellHeight(child, size);
+        } else {
+            panel.setCellWidth(child, size);
+        }
+    }
+}

@@ -131,69 +131,47 @@ public class GKeyStroke implements Serializable {
         String eventType = event.getType();
         int keyCode = event.getKeyCode();
         if (KEYPRESS.equals(eventType)) {
-            return isChangeKey(keyCode, event.getCharCode());
+            return keyCode != KEY_ENTER && keyCode != KEY_ESCAPE && event.getCharCode() != 0;
         } else if (KEYDOWN.equals(eventType)) {
             return keyCode == KEY_DELETE;
         }
         return false;
     }
 
-    public static boolean isDigitKeyEvent(NativeEvent event) {
+    public static boolean isCommonNumberEditEvent(NativeEvent event) {
+        return isCommonEditKeyEvent(event) &&
+               (isDigitKeyEvent(event) || event.getKeyCode() == KEY_DELETE);
+    }
+
+    private static boolean isDigitKeyEvent(NativeEvent event) {
         int charCode = event.getCharCode();
         return KEYPRESS.equals(event.getType()) && charCode >= KEY_0 && charCode <= KEY_9;
     }
 
-    public static boolean isPossibleNumberEditEvent(NativeEvent event) {
-        return isCommonEditKeyEvent(event) && (
-                isDigitKeyEvent(event) ||
-                event.getKeyCode() == KEY_DELETE
-        );
-    }
-
     public static boolean isPossibleEditKeyEvent(NativeEvent event) {
+        if (isCommonEditKeyEvent(event)) {
+            return true;
+        }
+
         String eventType = event.getType();
         int keyCode = event.getKeyCode();
         if (KEYDOWN.equals(eventType)) {
-            return isChangeKey(keyCode, 0) ||
-                    keyCode == KEY_DELETE ||
-                    keyCode == KEY_BACKSPACE ||
-                    keyCode == KEY_INSERT ||
-                    keyCode == KEY_ESCAPE ||
-                    keyCode == KEY_ENTER||
+            return (keyCode != KEY_TAB
+                    && keyCode != KEY_HOME
+                    && keyCode != KEY_END
+                    && keyCode != KEY_PAGEUP
+                    && keyCode != KEY_PAGEDOWN
+                    && keyCode != KEY_LEFT
+                    && keyCode != KEY_RIGHT
+                    && keyCode != KEY_UP
+                    && keyCode != KEY_DOWN) ||
                     (KEY_F1 <= keyCode && keyCode <= KEY_F12);
-        } else if (KEYPRESS.equals(eventType)) {
-            return !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() &&
-                    (isChangeKey(keyCode, event.getCharCode()));
         }
         return false;
     }
 
     public static boolean isPossibleStartFilteringEvent(NativeEvent event) {
-        if (KEYPRESS.equals(event.getType())) {
-            int keyCode = event.getKeyCode();
-            int charCode = event.getCharCode();
-            return  !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() &&
-                    isChangeKey(keyCode, charCode) &&
-                    // и специально для FF:
-                    keyCode != KEY_DELETE &&
-                    keyCode != KEY_BACKSPACE &&
-                    keyCode != KEY_INSERT;
-        }
-        return false;
-    }
-
-    public static boolean isChangeKey(int keyCode, int charCode) { // смотрим и на чаркод, т.к. в хроме получаем пересечение с символами '!', '%', '(', '#' и пр.
-        return keyCode != KEY_ENTER &&
-                (keyCode != KEY_ESCAPE
-                && keyCode != KEY_TAB
-                && keyCode != KEY_HOME
-                && keyCode != KEY_END
-                && keyCode != KEY_PAGEUP
-                && keyCode != KEY_PAGEDOWN
-                && keyCode != KEY_LEFT
-                && keyCode != KEY_RIGHT
-                && keyCode != KEY_UP
-                && keyCode != KEY_DOWN || charCode != 0) ;
+        return isCommonEditKeyEvent(event) && event.getKeyCode() != KEY_DELETE;
     }
 
     public static boolean isReplaceFilterEvent(NativeEvent event) {

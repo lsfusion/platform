@@ -218,6 +218,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
+    @Override
+    public void onResize() {
+        if (isVisible()) {
+            super.onResize();
+        }
+    }
+
     protected void updatePropertyReaders() {
         if (currentRecords != null &&
                 //раскраска в дереве - редкое явление, поэтому сразу проверяем есть ли она

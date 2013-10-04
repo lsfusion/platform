@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
+import lsfusion.gwt.form.client.form.ui.layout.table.TableCaptionPanel;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
 
@@ -76,6 +77,10 @@ public abstract class GAbstractContainerView {
         return view;
     }
 
+    protected Widget wrapWithTableCaption(Widget content) {
+        return  needCaption() ? new TableCaptionPanel(container.caption, content) : content;
+    }
+
     public void onResize() {
         Widget view = getView();
         if (view instanceof RequiresResize) {
@@ -83,11 +88,12 @@ public abstract class GAbstractContainerView {
         }
     }
 
-    void updateLayout() {
+    public void updateLayout() {
         //do nothing by default
     }
 
     protected abstract void addImpl(int index, GComponent child, Widget view);
     protected abstract void removeImpl(int index, GComponent child, Widget view);
     public abstract Widget getView();
+
 }

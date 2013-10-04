@@ -1,18 +1,23 @@
 package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.Scheduler;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.ResizableLayoutPanel;
+import com.google.gwt.user.client.ui.Panel;
+import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
+import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 
 import java.util.List;
 import java.util.Map;
 
+import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
+
 public class GGridController {
+    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
+    
     private GGrid grid;
-    private GridView gridView;
+    private Panel gridView;
     private GGridTable table;
     private GGroupObjectController groupController;
     private boolean forceHidden = false;
@@ -21,15 +26,18 @@ public class GGridController {
         grid = igrid;
         groupController = igroupObject;
 
-        gridView = new GridView();
-
         table = new GGridTable(iformController, igroupObject, this);
 
-        ResizableLayoutPanel panel = new ResizableLayoutPanel();
-        panel.setStyleName("gridResizePanel");
+//        ResizableLayoutPanel panel = new ResizableLayoutPanel();
+//        panel.setStyleName("gridResizePanel");
+//        panel.setWidget(table);
 
+        ResizableSimplePanel panel = new ResizableSimplePanel();
+        panel.setStyleName("gridResizePanel");
         panel.setWidget(table);
-        gridView.addFill(panel);
+        setupFillParent(panel.getElement(), table.getElement());
+
+        gridView = layoutImpl.createGridView(grid, panel);
     }
 
     public GGridTable getTable() {
@@ -61,7 +69,6 @@ public class GGridController {
         boolean oldGridVisibilityState = gridView.isVisible();
         if (oldGridVisibilityState != isVisible()) {
             gridView.setVisible(isVisible());
-            groupController.formController.setNeedToResize(true);
         }
     }
 
@@ -78,7 +85,18 @@ public class GGridController {
     }
 
     public void addToLayout(GFormLayout formLayout) {
-        formLayout.add(grid, gridView);
+        formLayout.add(grid, gridView, new DefaultFocusReceiver() {
+            @Override
+            public boolean focus() {
+                Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                    @Override
+                    public void execute() {
+                        table.setFocus(true);
+                    }
+                });
+                return true;
+            }
+        });
     }
 
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
@@ -127,23 +145,5 @@ public class GGridController {
 
     public void clearGridOrders(GGroupObject groupObject) {
         table.clearGridOrders(groupObject);
-    }
-
-    private class GridView extends FlexPanel implements DefaultFocusReceiver {
-        public GridView() {
-            super(true);
-            setMargins(grid.marginTop, grid.marginBottom, grid.marginLeft, grid.marginRight);
-        }
-
-        @Override
-        public boolean focus() {
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    table.setFocus(true);
-                }
-            });
-            return true;
-        }
     }
 }

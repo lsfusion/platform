@@ -3,7 +3,6 @@ package lsfusion.gwt.form.client.form.ui;
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
@@ -126,26 +125,23 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 int selectedRow = getKeyboardSelectedRow();
                 GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
                 if (selectedRecord != null) {
-                    TableRowElement childElement = getChildElement(selectedRow);
-                    if (childElement != null) {
-                        int oldRowScrollTop = childElement.getAbsoluteTop() - getTableDataScroller().getAbsoluteTop();
-                        int scrollerHeight = getTableDataScroller().getClientHeight();
-                        if (oldRowScrollTop < 0) {
-                            int newRow = selectedRow + Math.abs(oldRowScrollTop / getRowHeight());
-                            if (selectedRow == newRow) {
-                                setKeyboardSelectedRow(++newRow, false);
-                                setDesiredVerticalScrollPosition(getTableDataScroller().getVerticalScrollPosition() + (getRowHeight() + oldRowScrollTop));
-                            } else {
-                                setKeyboardSelectedRow(newRow, false);
-                            }
-                        } else if (oldRowScrollTop + getRowHeight() > scrollerHeight) {
-                            int newRow = selectedRow - (oldRowScrollTop - scrollerHeight) / getRowHeight() - 1;
-                            setKeyboardSelectedRow(newRow, false);
+                    int rowHeight = getRowHeight();
 
-                            if (oldRowScrollTop < scrollerHeight) {
-                                setDesiredVerticalScrollPosition(getTableDataScroller().getVerticalScrollPosition() - (scrollerHeight - oldRowScrollTop));
-                            }
-                        }
+                    int scrollHeight = getTableDataScroller().getClientHeight();
+                    int scrollTop = getTableDataScroller().getVerticalScrollPosition();
+
+                    int rowTop = selectedRow * rowHeight;
+                    int rowBottom = rowTop + rowHeight;
+
+                    int newRow = -1;
+                    if (rowBottom > scrollTop + scrollHeight) {
+                        newRow = (scrollTop + scrollHeight - rowHeight) / rowHeight;
+                    }
+                    if (rowTop < scrollTop) {
+                        newRow = scrollTop / rowHeight + 1;
+                    }
+                    if (newRow != -1) {
+                        setKeyboardSelectedRow(newRow, false);
                     }
                 }
             }
@@ -325,7 +321,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         columnsUpdated = true;
         dataUpdated = true;
         updatedColumnsImpl();
-//        updateRowsImpl();
         updateDataImpl();
     }
 

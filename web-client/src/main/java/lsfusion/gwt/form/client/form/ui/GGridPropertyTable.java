@@ -62,6 +62,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         this.font = font;
 
         setTableBuilder(new GGridPropertyTableBuilder<T>(this));
+        setFixedHeaderHeight(36);
     }
 
     @Override
@@ -74,10 +75,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 form.okPressed();
             }
         } else if (GKeyStroke.isAddFilterEvent(event)) {
+            stopPropagation(event);
             getGroupController().addFilter();
         } else if (GKeyStroke.isRemoveAllFiltersEvent(event)) {
+            stopPropagation(event);
             getGroupController().removeFilters();
         } else if (GKeyStroke.isReplaceFilterEvent(event)) {
+            stopPropagation(event);
             getGroupController().replaceFilter();
         } else if (GKeyStroke.isPossibleStartFilteringEvent(event)) {
             EditEventFilter editEventFilter = null;
@@ -191,7 +195,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             oldKey = selectedRecord.getKey();
             TableRowElement childElement = getChildElement(selectedRow);
             if (childElement != null) {
-                oldRowScrollTop = childElement.getAbsoluteTop() - getTableDataScroller().getAbsoluteTop();
+                oldRowScrollTop = selectedRow * getRowHeight() - getTableDataScroller().getVerticalScrollPosition();
             }
         }
     }
@@ -201,8 +205,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             int currentInd = getKeyboardSelectedRow();
             GGroupObjectValue currentKey = getCurrentKey();
             if (currentKey != null && currentKey.equals(oldKey) && isRowWithinBounds(currentInd)) {
-                int rowTop = currentInd * getRowHeight();
-                int newVerticalScrollPosition = max(0, rowTop - oldRowScrollTop);
+                int newVerticalScrollPosition = max(0, currentInd * getRowHeight() - oldRowScrollTop);
 
                 setDesiredVerticalScrollPosition(newVerticalScrollPosition);
 

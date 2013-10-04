@@ -2,7 +2,7 @@ package lsfusion.gwt.form.client.form.ui;
 
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.ResizableLayoutPanel;
+import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GFormChanges;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.enlargeDimension;
+import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
 
 public class GTreeGroupController extends GAbstractGroupObjectController {
     private GTreeGroup treeGroup;
@@ -33,10 +34,16 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         TreeTableView treeView = new TreeTableView();
         treeView.setStyleName("gridResizePanel");
         treeView.setWidget(tree);
+        setupFillParent(treeView.getElement(), tree.getElement());
 
         treeGroup.installMargins(treeView);
 
-        getFormLayout().add(treeGroup, treeView);
+        getFormLayout().add(treeGroup, treeView, new DefaultFocusReceiver() {
+            @Override
+            public boolean focus() {
+                return focusFirstWidget();
+            }
+        });
 
         addFilterButton();
     }
@@ -266,12 +273,7 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         formController.changeFilter(treeGroup, conditions);
     }
 
-    private class TreeTableView extends ResizableLayoutPanel implements DefaultFocusReceiver {
-        @Override
-        public boolean focus() {
-            return focusFirstWidget();
-        }
-
+    private class TreeTableView extends ResizableSimplePanel {
         @Override
         public Dimension getPreferredSize() {
             return enlargeDimension(super.getPreferredSize(), treeGroup.getHorizontalMargin(), treeGroup.getVerticalMargin());

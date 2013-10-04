@@ -1,17 +1,18 @@
-package lsfusion.gwt.form.client.form.ui.layout;
+package lsfusion.gwt.form.client.form.ui.layout.flex;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
 
-public class GLinearContainerView extends GAbstractContainerView {
+public class FlexLinearContainerView extends GAbstractContainerView {
     private final FlexPanel panel;
 
     private final Widget view;
 
-    public GLinearContainerView(GContainer container) {
+    public FlexLinearContainerView(GContainer container) {
         super(container);
 
         assert container.isLinear();

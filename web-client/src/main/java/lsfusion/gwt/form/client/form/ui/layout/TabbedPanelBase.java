@@ -4,26 +4,49 @@ import com.google.gwt.event.logical.shared.*;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.base.client.ui.HasPreferredSize;
-
-import java.util.Iterator;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.maybeGetPreferredSize;
 
-/** Based on com.google.gwt.user.client.ui.TabPanel */
-public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel,
-                                                      HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>,
-                                                      RequiresResize, ProvidesResize, HasPreferredSize {
+public class TabbedPanelBase extends Composite implements IndexedPanel,
+                                                          HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>,
+                                                          RequiresResize, ProvidesResize, HasPreferredSize {
+    public interface TabBar {
+        Widget asWidget();
 
-    private final GTabBar tabBar = new GTabBar();
-    private final TabbedDeckPanel deck = new TabbedDeckPanel();
+        void removeTab(int idx);
+        void insertTab(Widget tabWidget, int beforeIndex);
 
-    public GTabbedPane() {
-        FlexPanel panel = new FlexPanel(true);
-        panel.add(tabBar, GFlexAlignment.STRETCH);
-        panel.addFill(deck);
+        int getSelectedTab();
+        boolean selectTab(int index);
+
+        HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<Integer> beforeSelectionHandler);
+        HandlerRegistration addSelectionHandler(SelectionHandler<Integer> selectionHandler);
+    }
+
+    public interface TabDeck extends RequiresResize {
+        void showWidget(int tabIndex);
+
+        void insert(Widget widget, int beforeIndex);
+
+        boolean remove(int index);
+
+        int getWidgetCount();
+
+        int getWidgetIndex(Widget widget);
+
+        Widget getWidget(int index);
+    }
+
+    protected TabBar tabBar;
+    protected TabDeck deck;
+
+    public TabbedPanelBase() {
+    }
+
+    protected void initTabbedPanel(TabBar tabBar, TabDeck deck, Widget panel) {
+        this.tabBar = tabBar;
+        this.deck = deck;
 
         tabBar.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
             @Override
@@ -39,9 +62,6 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel,
         });
 
         initWidget(panel);
-
-        setStyleName("gwt-TabPanel");
-        deck.setStyleName("gwt-TabPanelBottom");
     }
 
     @Override
@@ -50,7 +70,7 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel,
     }
 
     private void onBeforeTabSelected(BeforeSelectionEvent<Integer> event) {
-        BeforeSelectionEvent<Integer> panelEvent = BeforeSelectionEvent.fire(GTabbedPane.this, event.getItem());
+        BeforeSelectionEvent<Integer> panelEvent = BeforeSelectionEvent.fire(this, event.getItem());
         if (panelEvent != null && panelEvent.isCanceled()) {
             event.cancel();
         }
@@ -74,16 +94,7 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel,
 
     @Override
     public void onResize() {
-        for (Widget child : this) {
-            if (child instanceof RequiresResize) {
-                ((RequiresResize) child).onResize();
-            }
-        }
-    }
-
-    @Override
-    public void add(Widget w) {
-        throw new UnsupportedOperationException("A tabText parameter must be specified with add().");
+        deck.onResize();
     }
 
     /**
@@ -127,19 +138,27 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel,
     }
 
     public void insert(Widget widget, Widget tabWidget, int beforeIndex) {
-        // Delegate updates to the TabBar to our DeckPanel implementation
-        deck.insertProtected(widget, tabWidget, beforeIndex);
+        // Check to see if the TabPanel already contains the Widget. If so,
+        // remove it and see if we need to shift the position to the left.
+        int ind = getWidgetIndex(widget);
+        if (ind != -1) {
+            remove(ind);
+            if (ind < beforeIndex) {
+                beforeIndex--;
+            }
+        }
+        tabBar.insertTab(tabWidget, beforeIndex);
+        deck.insert(widget, beforeIndex);
     }
 
     @Override
-    public void clear() {
-        while (getWidgetCount() > 0) {
-            remove(getWidget(0));
+    public boolean remove(int index) {
+        if (index != -1) {
+            tabBar.removeTab(index);
+            return deck.remove(index);
         }
-    }
 
-    public int getSelectedTab() {
-        return tabBar.getSelectedTab();
+        return false;
     }
 
     @Override
@@ -157,23 +176,8 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel,
         return deck.getWidgetIndex(widget);
     }
 
-    @Override
-    public Iterator<Widget> iterator() {
-        // The Iterator returned by DeckPanel supports removal and will invoke
-        // TabbedDeckPanel.remove(), which is an active function.
-        return deck.iterator();
-    }
-
-    @Override
-    public boolean remove(int index) {
-        // Delegate updates to the TabBar to our DeckPanel implementation
-        return deck.remove(index);
-    }
-
-    @Override
-    public boolean remove(Widget widget) {
-        // Delegate updates to the TabBar to our DeckPanel implementation
-        return deck.remove(widget);
+    public int getSelectedTab() {
+        return tabBar.getSelectedTab();
     }
 
     /**
@@ -181,16 +185,7 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel,
      * @param index the index of the tab to be selected
      */
     public void selectTab(int index) {
-        selectTab(index, true);
-    }
-
-    /**
-     * Programmatically selects the specified tab.
-     * @param index      the index of the tab to be selected
-     * @param fireEvents true to fire events, false not to
-     */
-    public void selectTab(int index, boolean fireEvents) {
-        tabBar.selectTab(index, fireEvents);
+        tabBar.selectTab(index);
     }
 
     @Override
@@ -198,62 +193,9 @@ public class GTabbedPane extends Composite implements HasWidgets, IndexedPanel,
         int selected = getSelectedTab();
         if (selected != -1) {
             Dimension dimensions = maybeGetPreferredSize(getWidget(selected));
-            dimensions.height += tabBar.getOffsetHeight() + 5; //little extra for borders, etc.
+            dimensions.height += tabBar.asWidget().getOffsetHeight() + 5; //little extra for borders, etc.
             return dimensions;
         }
         return new Dimension(0, 0);
-    }
-
-    private class TabbedDeckPanel extends FlexPanel {
-        private Widget visibleWidget;
-
-        private TabbedDeckPanel() {
-            super(true);
-        }
-
-        @Override
-        public boolean remove(Widget w) {
-            // Removal of items from the TabBar is delegated to the DeckPanel to ensure consistency
-            int idx = getWidgetIndex(w);
-            if (idx != -1) {
-                tabBar.removeTab(idx);
-                if (visibleWidget == w) {
-                    visibleWidget = null;
-                }
-                return super.remove(w);
-            }
-
-            return false;
-        }
-
-        protected void insertProtected(Widget w, Widget tabWidget, int beforeIndex) {
-            // Check to see if the TabPanel already contains the Widget. If so,
-            // remove it and see if we need to shift the position to the left.
-            int idx = getWidgetIndex(w);
-            if (idx != -1) {
-                remove(w);
-                if (idx < beforeIndex) {
-                    beforeIndex--;
-                }
-            }
-            w.setVisible(false);
-
-            tabBar.insertTab(tabWidget, beforeIndex);
-            add(w, beforeIndex, GFlexAlignment.STRETCH, 1, "auto");
-        }
-
-        public void showWidget(int index) {
-            checkIndexBoundsForAccess(index);
-
-            Widget oldWidget = visibleWidget;
-            visibleWidget = getWidget(index);
-
-            if (visibleWidget != oldWidget) {
-                visibleWidget.setVisible(true);
-                if (oldWidget != null) {
-                    oldWidget.setVisible(false);
-                }
-            }
-        }
     }
 }

@@ -4,14 +4,18 @@ import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
+import lsfusion.gwt.base.client.GwtClientUtils;
 
-public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize {
+public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, HasPreferredSize {
     @Override
     public void onResize() {
-        for (Widget child : this) {
-            if (child instanceof RequiresResize) {
-                ((RequiresResize) child).onResize();
-            }
+        if (!visible) {
+            return;
+        }
+        Widget child  = getWidget();
+        if (child instanceof RequiresResize) {
+            ((RequiresResize) child).onResize();
         }
     }
 
@@ -24,10 +28,8 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
         }
     }
 
-    public static ResizableSimplePanel wrapPanel100(Widget widget) {
-        widget.setSize("100%", "100%");
-        ResizableSimplePanel outerPanel = new ResizableSimplePanel();
-        outerPanel.add(widget);
-        return outerPanel;
+    @Override
+    public Dimension getPreferredSize() {
+        return GwtClientUtils.maybeGetPreferredSize(getWidget());
     }
 }

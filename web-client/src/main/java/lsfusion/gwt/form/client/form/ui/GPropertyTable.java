@@ -168,7 +168,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     }
 
     private Element getCellParent(int row, int column) {
-        ensureCellRendered(row, column);
         TableCellElement td = getChildElement(row).getCells().getItem(column);
         return getCellParentElement(td);
     }

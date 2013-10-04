@@ -10,6 +10,8 @@ import static com.google.gwt.dom.client.Style.Overflow;
 public class DataGridScrollPanel extends ScrollPanel {
     public DataGridScrollPanel(Widget child) {
         super(child);
+        //FF makes overflow:auto elements focusable, so get rid of it
+        getScrollableElement().setTabIndex(-1);
     }
 
     public void removeScrollbars() {

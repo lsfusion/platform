@@ -45,6 +45,20 @@ textarea {
     padding: 2px 3px 4px 5px;
 }
 
+.SplitPanelBase-hdragger {
+    position: absolute;
+    background-color: black;
+    opacity: 0.5;
+    cursor: col-resize;
+}
+
+.SplitPanelBase-vdragger {
+    position: absolute;
+    background-color: black;
+    opacity: 0.5;
+    cursor: row-resize;
+}
+
 .gwt-DecoratorPanel .middleCenter {
     height: 100%;
     width: 100%;
@@ -57,7 +71,6 @@ textarea {
     margin-left: 2px;
     border: 0;
     border-radius: 3px;
-    -moz-border-radius: 3px;
     background: transparent;
     color: #000000;
     font-size: 8pt;
@@ -195,6 +208,47 @@ textarea {
     top: -1.0em;
     left: 0.25em;
     white-space: nowrap;
+    padding: 0 0.25em;
+    background-color: white;
+}
+
+.captionPanelLabel {
+    position: absolute;
+    top: -12px;
+    left: 0.75em;
+    white-space: nowrap;
+    padding: 0 0.25em;
+    background-color: white;
+}
+
+.captionPanelBorder {
+    position: absolute;
+    top: -4px;
+    bottom: -1px;
+    left: -1px;
+    right: -1px;
+    border: 2px groove threedface;
+    border-radius: 5px;
+}
+
+
+.tableCaptionPanel {
+    padding-top: 0.8em;
+    padding-bottom: 0.15em;
+}
+
+.tableCaptionPanelContainer {
+    border: 2px groove threedface;
+    position: relative;
+    padding: 0.1em 0.1em 0.1em 0;
+    border-radius: 5px;
+}
+
+.tableCaptionPanelLegend {
+    white-space: nowrap;
+    left: 0.5em;
+    top: -0.9em;
+    position: absolute;
     padding: 0 0.25em;
     background-color: white;
 }

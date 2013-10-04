@@ -11,15 +11,15 @@ import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.base.client.ui.HasPreferredSize;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import lsfusion.gwt.form.client.form.ui.GFormController;
+import lsfusion.gwt.form.client.form.ui.GPanelController;
 import lsfusion.gwt.form.client.form.ui.GPropertyContextMenuPopup;
+import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GKeyStroke;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
@@ -37,13 +37,15 @@ import static lsfusion.gwt.form.client.HotkeyManager.Binding;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {
 
+    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
+
     private final GFormController form;
     private final GEditPropertyDispatcher editDispatcher;
     private final EditManager editManager = new ActionEditManager();
     private final GPropertyContextMenuPopup contextMenuPopup = new GPropertyContextMenuPopup();
     private final GPropertyDraw property;
-    private final GGroupObjectValue columnKey;
 
+    private final GGroupObjectValue columnKey;
     private final ActionButton button;
 
     private boolean isValueTrue = true;
@@ -215,13 +217,13 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         button.setFocus(true);
     }
 
+    public ImageButton getButton() {
+        return button;
+    }
+
     @Override
-    public void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex) {
-        if ((parent.isVertical() && flex > 0) || (parent.isHorizontal() && alignment == GFlexAlignment.STRETCH)) {
-            button.getElement().getStyle().clearHeight();
-            button.getElement().getStyle().clearProperty("maxWidth");
-            button.getElement().getStyle().clearProperty("maxHeight");
-        }
+    public void setupLayout(GPanelController.GPropertyController controller) {
+        layoutImpl.setupActionPanelRenderer(controller, this);
     }
 
     @Override

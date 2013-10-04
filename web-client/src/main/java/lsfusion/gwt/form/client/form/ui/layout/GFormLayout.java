@@ -1,7 +1,7 @@
 package lsfusion.gwt.form.client.form.ui.layout;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.client.form.ui.DefaultFocusReceiver;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GComponent;
@@ -11,47 +11,38 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GFormLayout extends FlexPanel {
+public class GFormLayout extends ResizableSimplePanel {
+    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
+
     private GFormController form;
 
     private GContainer mainContainer;
 
     private Map<GContainer, GAbstractContainerView> containerViews = new HashMap<GContainer, GAbstractContainerView>();
 
-    private ArrayList<DefaultFocusReceiver> defaultComponents = new ArrayList<DefaultFocusReceiver>();
+    private ArrayList<GComponent> defaultComponents = new ArrayList<GComponent>();
+    private ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<DefaultFocusReceiver>();
 
     public GFormLayout(GFormController iform, GContainer imainContainer) {
-        super(true);
-
         this.form = iform;
 
         mainContainer = imainContainer;
 
         createContainerViews(imainContainer);
 
-        addFill(containerViews.get(imainContainer).getView());
+        add(containerViews.get(imainContainer).getView());
+
+        layoutImpl.setupMainContainer(containerViews.get(imainContainer).getView());
     }
 
     private void createContainerViews(GContainer container) {
-        GAbstractContainerView containerView;
-        if (container.isLinear()) {
-            containerView = new GLinearContainerView(container);
-        } else if (container.isSplit()) {
-            containerView = new GSplitContainerView(container);
-        } else if (container.isTabbed()) {
-            containerView = new GTabbedContainerView(form, container);
-        } else if (container.isColumns()) {
-            //todo:
-            containerView = new GColumnsContainerView(container);
-//            containerView = new GLinearContainerView(container);
-        } else {
-            throw new IllegalStateException("Incorrect container type");
-        }
+        GAbstractContainerView containerView = layoutImpl.createContainerView(form, container);
 
         containerViews.put(container, containerView);
         Widget view = containerView.getView();
         if (container.sID != null) {
             view.getElement().setAttribute("lsfusion-container", container.sID);
+            view.getElement().setAttribute("lsfusion-container-type", container.type.name());
         }
 
         if (container.container != null) {
@@ -66,12 +57,16 @@ public class GFormLayout extends FlexPanel {
     }
 
     public boolean add(GComponent key, Widget view) {
+        return add(key, view, null);
+    }
+
+    public boolean add(GComponent key, Widget view, DefaultFocusReceiver focusReceiver) {
         if (key != null) {
             GAbstractContainerView containerView = containerViews.get(key.container);
             if (containerView != null && !containerView.hasChild(key)) {
                 containerView.add(key, view);
 
-                maybeAddDefaultComponent(key, view);
+                maybeAddDefaultFocusReceiver(key, focusReceiver);
 
                 return true;
             }
@@ -85,7 +80,7 @@ public class GFormLayout extends FlexPanel {
             if (containerView != null && containerView.hasChild(key)) {
                 containerView.remove(key);
 
-                maybeRemoveDefaultComponent(key, view);
+                maybeRemoveDefaultFocusReceiver(key);
 
                 return true;
             }
@@ -93,20 +88,23 @@ public class GFormLayout extends FlexPanel {
         return false;
     }
 
-    private void maybeAddDefaultComponent(GComponent key, Widget component) {
-        if (key.defaultComponent && (component instanceof DefaultFocusReceiver)) {
-            defaultComponents.add((DefaultFocusReceiver) component);
+    private void maybeAddDefaultFocusReceiver(GComponent key, DefaultFocusReceiver focusReceiver) {
+        if (key.defaultComponent && focusReceiver != null) {
+            defaultComponents.add(key);
+            defaultFocusReceivers.add(focusReceiver);
         }
     }
 
-    private void maybeRemoveDefaultComponent(GComponent key, Widget component) {
-        if (component instanceof DefaultFocusReceiver) {
-            defaultComponents.remove(component);
+    private void maybeRemoveDefaultFocusReceiver(GComponent key) {
+        int index = defaultComponents.indexOf(key);
+        if (index != -1) {
+            defaultComponents.remove(index);
+            defaultFocusReceivers.remove(index);
         }
     }
 
     public boolean focusDefaultWidget() {
-        for (DefaultFocusReceiver dc : defaultComponents) {
+        for (DefaultFocusReceiver dc : defaultFocusReceivers) {
             if (dc.focus()) {
                 return true;
             }
@@ -139,9 +137,5 @@ public class GFormLayout extends FlexPanel {
         }
         containerView.getView().setVisible(hasVisible);
         containerView.updateLayout();
-    }
-
-    public void totalResize() {
-        onResize();
     }
 }

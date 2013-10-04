@@ -8,6 +8,9 @@ import com.google.gwt.user.client.ui.Widget;
 public class ResizableFocusPanel extends FocusPanel implements RequiresResize, ProvidesResize {
     @Override
     public void onResize() {
+        if (!visible) {
+            return;
+        }
         for (Widget child : this) {
             if (child instanceof RequiresResize) {
                 ((RequiresResize) child).onResize();

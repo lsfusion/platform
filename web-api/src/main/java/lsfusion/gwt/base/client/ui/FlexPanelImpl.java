@@ -98,28 +98,34 @@ public class FlexPanelImpl {
     }
 
     public FlexPanel.LayoutData insertChild(Element parent, Element child, int beforeIndex, GFlexAlignment alignment, double flex, String flexBasis) {
-        child.getStyle().setProperty(getAlignAttrName(), getAlignmentValue(alignment));
+        FlexPanel.LayoutData layoutData = new FlexPanel.LayoutData(child, alignment, flex, flexBasis);
 
-        String flexValue = flex > 0
-                           ? flex + " 0 " + flexBasis
-                           : "0 0 auto";
-
-        child.getStyle().setProperty(getFlexAttrName(), flexValue);
+        setFlex(layoutData, child, flex, flexBasis);
+        setAlignment(layoutData, child, alignment);
 
         DOM.insertChild(parent.<com.google.gwt.user.client.Element>cast(), child.<com.google.gwt.user.client.Element>cast(), beforeIndex);
 
-        return new FlexPanel.LayoutData(child);
+        return layoutData;
     }
 
     public void removeChild(FlexPanel.LayoutData layoutData) {
         layoutData.child.removeFromParent();
     }
 
-    public void setFlex(DivElement parent, Element child, int index, double flex) {
-        child.getStyle().setProperty(getFlexAttrName(), String.valueOf(flex));
+    public void setFlex(FlexPanel.LayoutData layoutData, Element child, double flex, String flexBasis) {
+        layoutData.flex = flex;
+        layoutData.flexBasis = flexBasis;
+        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(flex, flexBasis));
     }
 
-    public void setAlignment(DivElement parentElement, Element child, int index, GFlexAlignment alignment) {
+    private String getFlexValue(double flex, String flexBasis) {
+        return flex > 0
+               ? flex + " 0 " + flexBasis
+               : "0 0 auto";
+    }
+
+    public void setAlignment(FlexPanel.LayoutData layoutData, Element child, GFlexAlignment alignment) {
+        layoutData.alignment = alignment;
         child.getStyle().setProperty(getAlignAttrName(), getAlignmentValue(alignment));
     }
 }

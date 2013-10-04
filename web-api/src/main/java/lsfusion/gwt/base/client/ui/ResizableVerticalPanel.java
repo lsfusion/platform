@@ -11,6 +11,9 @@ import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackPreferredSiz
 public class ResizableVerticalPanel extends VerticalPanel implements RequiresResize, ProvidesResize, HasPreferredSize {
     @Override
     public void onResize() {
+        if (!visible) {
+            return;
+        }
         for (Widget child : this) {
             if (child instanceof RequiresResize) {
                 ((RequiresResize) child).onResize();

@@ -1,6 +1,5 @@
 package lsfusion.gwt.base.client.ui;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -9,17 +8,15 @@ import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.GwtClientUtils;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackPreferredSize;
-import static lsfusion.gwt.base.client.GwtClientUtils.enlargeDimension;
+import static lsfusion.gwt.base.client.GwtClientUtils.*;
 
 /**
  * Browser support: http://caniuse.com/flexbox
  */
 public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasPreferredSize {
 
-    private static FlexPanelImpl impl = GWT.create(FlexPanelImpl.class);
+    private static FlexPanelImpl impl = FlexPanelImpl.get();
 
     private final DivElement parentElement;
 
@@ -63,7 +60,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         this.marginLeft = marginLeft;
         this.marginRight = marginRight;
 
-        GwtClientUtils.installMargins(this, marginTop, marginBottom, marginLeft, marginRight);
+        installMargins(this, marginTop, marginBottom, marginLeft, marginRight);
     }
 
     public Justify getJustify() {
@@ -104,7 +101,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex) {
-        add(widget, beforeIndex, alignment, flex, "0px");
+        add(widget, beforeIndex, alignment, flex, "auto");
     }
 
     public void add(Widget widget, GFlexAlignment alignment, double flex, String flexBasis) {
@@ -112,7 +109,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void addFill(Widget widget) {
-        add(widget, GFlexAlignment.STRETCH, 1, "auto");
+        addFill(widget, getWidgetCount());
+    }
+
+    public void addFill(Widget widget, int beforeIndex) {
+        add(widget, beforeIndex, GFlexAlignment.STRETCH, 1, "auto");
     }
 
     public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, String flexBasis) {
@@ -130,32 +131,44 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         // Adopt.
         adopt(widget);
-        if (widget instanceof FlexAware) {
-            ((FlexAware) widget).addedToFlexPanel(this, alignment, flex);
-        }
     }
 
-    public void setChildConstraints(Widget w, GFlexAlignment alignment, double flex) {
+    public void setChildConstraints(Widget w, GFlexAlignment alignment, double flex, String flexBasis) {
         int index = getWidgetIndex(w);
         if (index != -1) {
+            LayoutData layoutData = (LayoutData) w.getLayoutData();
             Element childElement = w.getElement();
-            impl.setFlex(parentElement, childElement, index, flex);
-            impl.setAlignment(parentElement, childElement, index, alignment);
+            impl.setFlex(layoutData, childElement, flex, flexBasis);
+            impl.setAlignment(layoutData, childElement, alignment);
         }
     }
 
     public void setChildFlex(Widget w, double flex) {
+        setChildFlex(w, flex, "auto");
+    }
+
+    public void setChildFlex(Widget w, double flex, String flexBasis) {
         int index = getWidgetIndex(w);
         if (index != -1) {
-            impl.setFlex(parentElement, w.getElement(), index, flex);
+            impl.setFlex((LayoutData) w.getLayoutData(), w.getElement(), flex, flexBasis);
         }
     }
 
     public void setChildAlignment(Widget w, GFlexAlignment alignment) {
         int index = getWidgetIndex(w);
         if (index != -1) {
-            impl.setAlignment(parentElement, w.getElement(), index, alignment);
+            impl.setAlignment((LayoutData) w.getLayoutData(), w.getElement(), alignment);
         }
+    }
+
+    public double getChildFlex(Widget child) {
+        assert child.getParent() == this;
+        return ((LayoutData)child.getLayoutData()).flex;
+    }
+
+    public GFlexAlignment getChildAlignment(Widget child) {
+        assert child.getParent() == this;
+        return ((LayoutData)child.getLayoutData()).alignment;
     }
 
     @Override
@@ -169,6 +182,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     @Override
     public void onResize() {
+        if (!visible) {
+            return;
+        }
         for (Widget child : getChildren()) {
             if (child instanceof RequiresResize) {
                 ((RequiresResize) child).onResize();
@@ -187,13 +203,15 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     public static final class LayoutData {
         Element child;
+        GFlexAlignment alignment;
+        double flex;
+        String flexBasis;
 
-        public LayoutData(Element child) {
+        public LayoutData(Element child, GFlexAlignment alignment, double flex, String flexBasis) {
             this.child = child;
+            this.alignment = alignment;
+            this.flex = flex;
+            this.flexBasis = flexBasis;
         }
-    }
-
-    public static interface FlexAware {
-        public void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex);
     }
 }

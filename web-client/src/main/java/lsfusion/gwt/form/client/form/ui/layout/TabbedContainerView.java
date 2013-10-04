@@ -2,49 +2,67 @@ package lsfusion.gwt.form.client.form.ui.layout;
 
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
 
 import java.util.ArrayList;
 
+import static lsfusion.gwt.base.client.GwtClientUtils.scheduleOnResize;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.relativePosition;
 
-public class GTabbedContainerView extends GAbstractContainerView {
+public class TabbedContainerView extends GAbstractContainerView {
 
-    private final GTabbedPane tabsPanel;
+    protected interface TabbedDelegate {
+        HandlerRegistration addSelectionHandler(SelectionHandler<Integer> selectionHandler);
 
-    private final ArrayList<GComponent> visibleChildren = new ArrayList<GComponent>();
+        boolean remove(int index);
 
-    private GComponent currentChild;
+        void insertTab(Widget child, String tabTitle, int index);
 
-    public GTabbedContainerView(final GFormController formController, final GContainer container) {
+        int getSelectedTab();
+
+        int getWidgetCount();
+
+        void selectTab(int i);
+
+        Widget asWidget();
+    }
+
+    protected final TabbedDelegate tabbedDelegate;
+
+    protected final ArrayList<GComponent> visibleChildren = new ArrayList<GComponent>();
+
+    protected GComponent currentChild;
+
+    public TabbedContainerView(final GFormController formController, final GContainer container, final TabbedDelegate delegate) {
         super(container);
 
-        tabsPanel = new TabbedPane(container);
-        container.installMargins(tabsPanel);
+        tabbedDelegate = delegate;
 
         if (container.children.size() > 0) {
             currentChild = container.children.get(0);
         }
 
-        tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
+        tabbedDelegate.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
             public void onSelection(SelectionEvent<Integer> e) {
-                int index = e.getSelectedItem();
-                if (index >= 0) {
-                    GComponent selectedChild = visibleChildren.get(index);
-                    if (currentChild != selectedChild) {
-                        currentChild = selectedChild;
-                        formController.setTabVisible(container, selectedChild);
-                    }
-                }
+                onTabSelected(e.getSelectedItem(), formController, container);
+                scheduleOnResize(tabbedDelegate.asWidget());
             }
         });
+    }
+
+    protected void onTabSelected(int selectedIndex, GFormController formController, GContainer container) {
+        if (selectedIndex >= 0) {
+            GComponent selectedChild = visibleChildren.get(selectedIndex);
+            if (currentChild != selectedChild) {
+                currentChild = selectedChild;
+                formController.setTabVisible(container, selectedChild);
+            }
+        }
     }
 
     @Override
@@ -56,18 +74,18 @@ public class GTabbedContainerView extends GAbstractContainerView {
     protected void removeImpl(int index, GComponent child, Widget view) {
         int visibleIndex = visibleChildren.indexOf(child);
         if (visibleIndex != -1) {
-            tabsPanel.remove(visibleIndex);
+            tabbedDelegate.remove(visibleIndex);
             visibleChildren.remove(visibleIndex);
         }
     }
 
     @Override
     public Widget getView() {
-        return tabsPanel;
+        return tabbedDelegate.asWidget();
     }
 
     @Override
-    void updateLayout() {
+    public void updateLayout() {
         int childCnt = childrenViews.size();
         for (int i = 0; i < childCnt; i++) {
             GComponent child = children.get(i);
@@ -78,27 +96,23 @@ public class GTabbedContainerView extends GAbstractContainerView {
                 if (index == -1) {
                     index = relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
-
-                    FlexPanel proxyPanel = new FlexPanel(true);
-                    proxyPanel.addFill(childView);
-
-                    tabsPanel.insert(proxyPanel, getTabTitle(child), index);
+                    tabbedDelegate.insertTab(childView, getTabTitle(child), index);
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);
-                tabsPanel.remove(index);
+                tabbedDelegate.remove(index);
             }
         }
         ensureTabSelection();
     }
 
     private void ensureTabSelection() {
-        if (tabsPanel.getSelectedTab() == -1 && tabsPanel.getWidgetCount() != 0) {
-            tabsPanel.selectTab(0);
+        if (tabbedDelegate.getSelectedTab() == -1 && tabbedDelegate.getWidgetCount() != 0) {
+            tabbedDelegate.selectTab(0);
         }
     }
 
-    private String getTabTitle(GComponent child) {
+    protected static String getTabTitle(GComponent child) {
         String tabCaption = null;
         if (child instanceof GContainer) {
             tabCaption = ((GContainer) child).caption;
@@ -107,18 +121,5 @@ public class GTabbedContainerView extends GAbstractContainerView {
             tabCaption = "";
         }
         return tabCaption;
-    }
-
-    private static class TabbedPane extends GTabbedPane {
-        private final GContainer container;
-
-        public TabbedPane(GContainer container) {
-            this.container = container;
-        }
-
-        @Override
-        public Dimension getPreferredSize() {
-            return GwtClientUtils.enlargeDimension(super.getPreferredSize(), container.getHorizontalMargin(), container.getVerticalMargin());
-        }
     }
 }

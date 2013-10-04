@@ -32,8 +32,6 @@ import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import com.google.gwt.user.client.ui.impl.FocusImpl;
-import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.Cell.Context;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
@@ -42,7 +40,6 @@ import lsfusion.gwt.cellview.client.cell.HasCell;
 import java.util.*;
 
 import static com.google.gwt.dom.client.Style.OutlineStyle;
-import static com.google.gwt.dom.client.Style.Position;
 import static com.google.gwt.dom.client.TableCellElement.TAG_TD;
 import static com.google.gwt.dom.client.TableCellElement.TAG_TH;
 import static java.lang.Math.min;
@@ -79,10 +76,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         return DEFAULT_RESOURCES;
     }
 
-    private static final int IGNORE_SCROLL_TIMEOUT = 40;
     public static int nativeScrollbarWidth = AbstractNativeScrollbar.getNativeScrollbarWidth();
-
-    private static FocusImpl focusImpl = FocusImpl.getFocusImplForPanel();
 
     /**
      * A ClientBundle that provides images for this widget.
@@ -256,8 +250,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     protected final Resources resources;
     protected final Style style;
 
-    private final boolean partialRendering;
-
     private String selectedRowStyle;
     private String selectedRowCellStyle;
     private String focusedCellStyle;
@@ -300,19 +292,16 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private final Element tableHeaderScroller;
 
     private int renderedRowCount = 0;
-    private int minRenderedRow = 0;
 
     //focused cell indices local to table (aka real indices in rendered portion of the data)
     int oldLocalSelectedRow = -1;
     int oldLocalSelectedCol = -1;
 
-    double lastScrollTime = 0;
-
     private int rowHeight = 16;
 
     private int pageIncrement = 30;
 
-    private boolean nullHeader;
+    private boolean nullHeaders;
 
     /**
      * Constructs a table with the given page size.
@@ -325,24 +314,18 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         this(resources, false);
     }
 
-    public DataGrid(Resources resources, boolean nullHeader) {
-        this(resources, nullHeader, false);
-    }
+    public DataGrid(Resources resources, boolean nullHeaders) {
+        this.nullHeaders = nullHeaders;
 
-    public DataGrid(final Resources resources, boolean nullHeader, final boolean partialRendering) {
-        this.nullHeader = nullHeader;
+        headerPanel = !nullHeaders ? new HeaderPanel() : new HeaderPanel(0, 0);
 
-        if (!nullHeader) {
-            initWidget(new HeaderPanel());
-        }
+        initWidget(headerPanel);
 
         this.state = new State<T>();
 
         this.resources = resources;
         this.style = resources.style();
         this.style.ensureInjected();
-
-        this.partialRendering = partialRendering;
 
         // Create the header and footer widgets..
         tableHeader = new HeaderWidget();
@@ -358,14 +341,16 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         tableDataScroller = new DataGridScrollPanel(tableData);
         tableDataScroller.setHeight("100%");
+        tableDataScroller.getElement().getStyle().setOutlineStyle(OutlineStyle.NONE);
 
-        if (!nullHeader) {
-            headerPanel = (HeaderPanel) getWidget();
+        setTableFocusable(true);
 
+        headerPanel.setContentWidget(tableDataScroller);
+
+        if (!nullHeaders) {
             headerPanel.setHeaderWidget(tableHeaderContainer);
             headerPanel.setFooterWidget(tableFooterContainer);
 
-            headerPanel.setContentWidget(tableDataScroller);
 
             // Get the element that wraps the container so we can adjust its scroll position.
             tableHeaderScroller = tableHeaderContainer.getElement().getParentElement();
@@ -378,8 +363,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             setNonNullHeadersCount(0);
             setNonNullFootersCount(0);
         } else {
-            initWidget(tableDataScroller);
-            headerPanel = null;
             tableHeaderScroller = null;
             tableFooterScroller = null;
         }
@@ -421,10 +404,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                 if (tableFooterScroller != null) {
                     tableFooterScroller.setScrollLeft(scrollLeft);
                 }
-                lastScrollTime = Duration.currentTimeMillis();
-                if (partialRendering) {
-                    ensurePendingState();
-                }
             }
         });
 
@@ -439,6 +418,14 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     public int getRowHeight() {
         return rowHeight;
+    }
+
+    public void setFixedHeaderHeight(int fixedHeaderHeight) {
+        headerPanel.setFixedHeaderHeight(fixedHeaderHeight);
+    }
+
+    public void setFixedFooterHeight(int fixedFooterHeight) {
+        headerPanel.setFixedFooterHeight(fixedFooterHeight);
     }
 
     public int getPageIncrement() {
@@ -465,10 +452,9 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     @Override
     public void setFocus(boolean focused) {
         Element focusHolderElement = getFocusHolderElement();
-        com.google.gwt.user.client.Element focusable = focusHolderElement.cast();
 
         if (focused) {
-            getFocusHolderElement().focus();
+            focusHolderElement.focus();
         } else {
             focusHolderElement.blur();
         }
@@ -628,14 +614,13 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         TableSectionElement targetTableSection = null;
         TableCellElement targetTableCell = null;
+        String eventType = event.getType();
 
         if (target == getFocusHolderElement()) {
             // forward events bubbled on table container to current cell,
             // but don't forward blur or focus events on the container itself
-            if (!BrowserEvents.BLUR.equals(event.getType()) && !BrowserEvents.FOCUS.equals(event.getType())) {
+            if (!BrowserEvents.BLUR.equals(eventType) && !BrowserEvents.FOCUS.equals(eventType)) {
                 targetTableSection = tbody;
-
-                ensureCellRendered(getKeyboardSelectedRow(), getKeyboardSelectedColumn());
 
                 targetTableCell = getKeyboardSelectedTableCellElement();
                 if (targetTableCell != null) {
@@ -700,7 +685,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
          * Forward the event to the associated header, footer, or column.
          */
         TableRowElement targetTableRow = targetTableCell.getParentElement().cast();
-        String eventType = event.getType();
 
         int col = targetTableCell.getCellIndex();
         if (targetTableSection == thead || targetTableSection == tfoot) {
@@ -802,19 +786,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      * @return true if row is rendered, false if not
      */
     protected boolean isRowRendered(int row) {
-        return row >= minRenderedRow && row < minRenderedRow + renderedRowCount;
-    }
-
-    /**
-     * Scrolls to row and renders it
-     */
-    protected void ensureCellRendered(int row, int column) {
-        if (!isRowRendered(row)) {
-            State<T> state = getCurrentState();
-            beforeUpdateTableData(state, row, column);
-            updateTableData(state);
-            afterUpdateTableData(state);
-        }
+        return row >= 0 && row < renderedRowCount;
     }
 
     @Override
@@ -831,23 +803,13 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      */
     protected static void setFocusable(Element elem, boolean focusable) {
         if (focusable) {
-            FocusImpl focusImpl = FocusImpl.getFocusImplForWidget();
-            com.google.gwt.user.client.Element rowElem = elem.cast();
-            focusImpl.setTabIndex(rowElem, 0);
+            elem.setTabIndex(0);
         } else {
             // Chrome: Elements remain focusable after removing the tabIndex, so set it to -1 first.
             elem.setTabIndex(-1);
             elem.removeAttribute("tabIndex");
             elem.removeAttribute("accessKey");
         }
-    }
-
-    /**
-     * Check if a column consumes events.
-     */
-    private static boolean isColumnInteractive(HasCell<?, ?> column) {
-        Set<String> consumedEvents = column.getCell().getConsumedEvents();
-        return consumedEvents != null && consumedEvents.size() > 0;
     }
 
     /**
@@ -949,7 +911,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     public void insertColumn(int beforeIndex, Column<T, ?> col, Header<?> header, Header<?> footer) {
-        if (nullHeader && header != null) {
+        if (nullHeaders && header != null) {
             throw new UnsupportedOperationException("the table isn't allowed to have header");
         }
 
@@ -1164,7 +1126,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     private void setNonNullHeadersCount(int count) {
         nonNullHeadersCount = count;
-        if (!nullHeader) {
+        if (!nullHeaders) {
             SimplePanel headerWidgetToSet = count != 0 ? tableHeaderContainer : null;
             if (headerPanel.getHeaderWidget() != headerWidgetToSet) {
                 headerPanel.setHeaderWidget(headerWidgetToSet);
@@ -1174,7 +1136,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     private void setNonNullFootersCount(int count) {
         nonNullFootersCount = count;
-        if (!nullHeader) {
+        if (!nullHeaders) {
             SimplePanel foooterWidgetToSet = count != 0 ? tableFooterContainer : null;
             if (headerPanel.getFooterWidget() != foooterWidgetToSet) {
                 headerPanel.setFooterWidget(foooterWidgetToSet);
@@ -1445,7 +1407,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             return null;
         }
 
-        return getTableBodyElement().getRows().getItem(row - minRenderedRow);
+        return getTableBodyElement().getRows().getItem(row);
     }
 
     private Element getKeyboardSelectedElement() {
@@ -1482,20 +1444,15 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     @Override
     public void onResize() {
-        if (!nullHeader) {
+        if (!nullHeaders) {
             headerPanel.onResize();
         } else {
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    ((DataGridScrollPanel) getWidget()).onResize();
-                }
-            });
+            tableDataScroller.onResize();
         }
     }
 
     protected DivElement getFocusHolderElement() {
-        return tableData.containerElement;
+        return tableDataScroller.getElement().cast();
     }
 
     /**
@@ -1742,10 +1699,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
 
         isResolvingState = true;
-
-        int rowToShow = pendingState.keyboardSelectedRowSet ? pendingState.keyboardSelectedRow : -1;
-        int colToShow = pendingState.keyboardSelectedColumnSet ? pendingState.keyboardSelectedColumn : -1;
-        beforeUpdateTableData(pendingState, rowToShow, colToShow);
     }
 
     protected void resolvePendingStateUpdate() {
@@ -1758,7 +1711,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         if (columnsChanged || headersChanged) {
             updateHeadersImpl(columnsChanged);
-            onResize();
         }
 
         boolean stealFocus = pendingState.keyboardStealFocus;
@@ -1773,7 +1725,11 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     protected void preResolvePendingStateAfterUpdate() {
-        pendingState.pendingTableElementWidth = tableData.tableElement.getOffsetWidth();
+        int rowToShow = pendingState.keyboardSelectedRowSet ? pendingState.keyboardSelectedRow : -1;
+        int colToShow = pendingState.keyboardSelectedColumnSet ? pendingState.keyboardSelectedColumn : -1;
+
+        //force browser-flush
+        preAfterUpdateTableData(pendingState, rowToShow, colToShow);
     }
 
     protected void resolvePendingStateAfterUpdate() {
@@ -1803,37 +1759,21 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         isResolvingState = false;
     }
 
-    private void afterUpdateTableData(State<T> pendingState) {
-        // there're might be a case after updating, when horizontal scrollbar is gone,
-        // so clientHeight will become bigger,
-        // so we can't use clientHeight from before data update
-//        if (pendingState.pendingTableHeight < tableDataScroller.getClientHeight()) {
-//            pendingState.pendingTableHeight = tableDataScroller.getClientHeight();
-//        }
-        tableData.update(pendingState.pendingNewTableTop, pendingState.pendingTableHeight, pendingState.pendingTableElementWidth);
-
-        if (pendingState.pendingScrollTop != pendingState.pendingCurrentScrollTop) {
-            tableDataScroller.setVerticalScrollPosition(pendingState.pendingScrollTop);
-        }
-
-        if (pendingState.pendingScrollLeft != pendingState.pendingCurrentScrollLeft) {
-            tableDataScroller.setHorizontalScrollPosition(pendingState.pendingScrollLeft);
-        }
-    }
-
-    private void beforeUpdateTableData(State<T> pendingState, int rowToShow, int colToShow) {
-
+    private void preAfterUpdateTableData(State<T> pendingState, int rowToShow, int colToShow) {
         int rowCount = pendingState.rowData.size();
         int colCount = getColumnCount();
 
-        int offsetHeight = tableDataScroller.getOffsetHeight();
-        int scrollHeight = tableDataScroller.getClientHeight();
+        int tableHeight = rowCount * rowHeight;
+
+        int offsetWidth = tableDataScroller.getOffsetWidth();
+
         int scrollWidth = tableDataScroller.getClientWidth();
+        int scrollHeight = tableDataScroller.getClientHeight();
+
+        boolean hasVerticalScroll = scrollWidth != offsetWidth;
 
         int currentScrollLeft = tableDataScroller.getHorizontalScrollPosition();
         int currentScrollTop = tableDataScroller.getVerticalScrollPosition();
-
-        int tableHeight = rowCount * rowHeight;
 
         int scrollTop = pendingState.desiredVerticalScrollPosition;
 
@@ -1878,51 +1818,46 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             }
         }
 
-        int newMinRenderedRow = 0;
-        int newRenderedRowCnt = rowCount;
-        int newTableTop = 0;
-        if (partialRendering) {
-            int scrollBottom = scrollTop + offsetHeight;
-            int newBottomRowCount = scrollBottom / rowHeight;
-            if (newBottomRowCount * rowHeight != scrollBottom) {
-                newBottomRowCount++;
-            }
-
-            if (newBottomRowCount > rowCount) {
-                newBottomRowCount = rowCount;
-            }
-            newMinRenderedRow = scrollTop / rowHeight ;
-            newRenderedRowCnt = newBottomRowCount - newMinRenderedRow;
-            newTableTop = newMinRenderedRow * rowHeight;
-        }
-
         pendingState.pendingScrollTop = scrollTop;
         pendingState.pendingScrollLeft = scrollLeft;
         pendingState.pendingCurrentScrollTop = currentScrollTop;
         pendingState.pendingCurrentScrollLeft = currentScrollLeft;
-        pendingState.pendingTableHeight = tableHeight < scrollHeight ? scrollHeight : tableHeight;
-        pendingState.pendingNewMinRow = newMinRenderedRow;
-        pendingState.pendingNewRowCnt = newRenderedRowCnt;
-        pendingState.pendingNewTableTop = newTableTop;
-        pendingState.pendingHasVerticalScroll = tableHeight > offsetHeight;
+        pendingState.pendingHasVerticalScroll = hasVerticalScroll;
+    }
+
+    boolean hasPadding = false;
+    private void afterUpdateTableData(State<T> pendingState) {
+        if (pendingState.pendingHasVerticalScroll) {
+            if (!hasPadding) {
+                tableHeader.tableElement.getStyle().setPaddingRight(nativeScrollbarWidth, Unit.PX);
+                hasPadding =  true;
+            }
+        } else {
+            if (hasPadding) {
+                tableHeader.tableElement.getStyle().clearPaddingRight();
+                hasPadding = false;
+            }
+        }
+
+        if (pendingState.pendingScrollTop != pendingState.pendingCurrentScrollTop) {
+            tableDataScroller.setVerticalScrollPosition(pendingState.pendingScrollTop);
+        }
+
+        if (pendingState.pendingScrollLeft != pendingState.pendingCurrentScrollLeft) {
+            tableDataScroller.setHorizontalScrollPosition(pendingState.pendingScrollLeft);
+        }
     }
 
     private void updateTableData(State<T> pendingState) {
-        if (pendingState.pendingHasVerticalScroll) {
-            tableHeader.tableElement.getStyle().setPaddingRight(nativeScrollbarWidth, Unit.PX);
-        } else {
-            tableHeader.tableElement.getStyle().clearPaddingRight();
-        }
-
-        if (pendingState.needRedraw() || columnsChanged || minRenderedRow != pendingState.pendingNewMinRow || renderedRowCount != pendingState.pendingNewRowCnt) {
-            tableBuilder.update(tableData.getSection(), pendingState.rowData, pendingState.pendingNewMinRow, pendingState.pendingNewRowCnt, columnsChanged);
-            minRenderedRow = pendingState.pendingNewMinRow;
-            renderedRowCount = pendingState.pendingNewRowCnt;
+        int pendingNewRowCnt = pendingState.getRowCount();
+        if (pendingState.needRedraw() || columnsChanged || renderedRowCount != pendingNewRowCnt) {
+            tableBuilder.update(tableData.getSection(), pendingState.rowData, 0, pendingNewRowCnt, columnsChanged);
+            renderedRowCount = pendingNewRowCnt;
         }
     }
 
     private void updateSelectedRowStyles() {
-        int newLocalSelectedRow = getKeyboardSelectedRow() - minRenderedRow;
+        int newLocalSelectedRow = getKeyboardSelectedRow();
         int newLocalSelectedCol = getKeyboardSelectedColumn();
 
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();
@@ -2005,7 +1940,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     public void setTableFocusable(boolean focusable) {
         this.focusable = focusable;
-        tableData.setTableFocusable(focusable);
+        setFocusable(getFocusHolderElement(), focusable);
     }
 
     /**
@@ -2037,13 +1972,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         int pendingScrollLeft;
         int pendingCurrentScrollTop;
         int pendingCurrentScrollLeft;
-        int pendingTableHeight;
-        int pendingNewMinRow;
-        int pendingNewRowCnt;
-        int pendingNewTableTop;
         boolean pendingWasFocused;
         boolean pendingHasVerticalScroll;
-        int pendingTableElementWidth;
 
         public State() {
             this(new ArrayList<T>());
@@ -2321,22 +2251,20 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     private class TableWidget extends TableWrapperWidget implements RequiresResize {
-        int tableTop = 0;
-        int tableHeight = 0;
-        int tableWidth = 0;
-
-        private final DivElement containerElement;
+//        private final DivElement containerElement;
 
         public TableWidget() {
-            containerElement = Document.get().createDivElement();
-            containerElement.getStyle().setOutlineStyle(OutlineStyle.NONE);
-            containerElement.appendChild(tableElement);
-            setFocusable(containerElement, true);
+//            containerElement = Document.get().createDivElement();
+//            containerElement.getStyle().setOutlineStyle(OutlineStyle.NONE);
+//            containerElement.appendChild(tableElement);
+//
+////            setFocusable(containerElement, true);
+//
+////            GwtClientUtils.setupFillParent(tableElement);
+//
+//            setElement(containerElement);
 
-            tableElement.getStyle().setPosition(Position.ABSOLUTE);
-            GwtClientUtils.setupFillParent(tableElement);
-
-            setElement(containerElement);
+            setElement(tableElement);
         }
 
         @Override
@@ -2351,29 +2279,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             } else {
                 return tableElement.appendChild(Document.get().createTBodyElement());
             }
-        }
-
-        public void update(int newTableTop, int newTableHeight, int newTableWidth) {
-            if (newTableTop != tableTop) {
-                tableTop = newTableTop;
-                tableElement.getStyle().setTop(newTableTop, Unit.PX);
-            }
-            if (newTableHeight != tableHeight) {
-                tableHeight = newTableHeight;
-                containerElement.getStyle().setHeight(tableHeight, Unit.PX);
-            }
-            if (newTableWidth != tableWidth) {
-                tableWidth = newTableWidth;
-                if (tableWidth >=0) {
-                    containerElement.getStyle().setWidth(tableWidth, Unit.PX);
-                } else {
-                    containerElement.getStyle().clearWidth();
-                }
-            }
-        }
-
-        public void setTableFocusable(boolean focusable) {
-            setFocusable(containerElement, focusable);
         }
     }
 
@@ -2472,9 +2377,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         protected boolean nextRow(boolean down) {
             double currentTime = Duration.currentTimeMillis();
             //ignore key stroke, if we need to scroll too often
-            if (display.partialRendering && currentTime - display.lastScrollTime < IGNORE_SCROLL_TIMEOUT) {
-                return true;
-            }
 
             int rowIndex = getDisplay().getKeyboardSelectedRow();
 

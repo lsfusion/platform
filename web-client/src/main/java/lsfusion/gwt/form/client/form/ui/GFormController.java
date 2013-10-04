@@ -92,7 +92,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private Timer asyncTimer;
     private PanelRenderer asyncView;
-    private boolean needToResize = false;
 
     private boolean initialResizeProcessed = false;
 
@@ -151,7 +150,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         initializeDefaultOrders();
 
-        needToResize = true;
         applyRemoteChanges(form.initialFormChanges);
         form.initialFormChanges = null;
 
@@ -359,15 +357,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void totalResize() {
-        formLayout.totalResize();
-        needToResize = false;
-    }
-
-    public void setNeedToResize(boolean needToResize) {
-        this.needToResize = needToResize;
-    }
-
     private void applyOrders(LinkedHashMap<GPropertyDraw, Boolean> orders) {
         Set<GGroupObject> wasOrder = new HashSet<GGroupObject>();
         for (Map.Entry<GPropertyDraw, Boolean> entry : orders.entrySet()) {
@@ -430,9 +419,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
 
         formLayout.hideEmptyContainerViews();
-        if (!fc.classViews.isEmpty() || needToResize) {
-            totalResize();
-        }
+        onResize();
 
         // в конце скроллим все таблицы к текущим ключам
         applyScrollPositions();

@@ -9,11 +9,16 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.*;
+import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.base.client.ui.HasPreferredSize;
+import lsfusion.gwt.base.client.ui.ResizableComplexPanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.form.ui.GFormController;
+import lsfusion.gwt.form.client.form.ui.GPanelController;
 import lsfusion.gwt.form.client.form.ui.GSinglePropertyTable;
 import lsfusion.gwt.form.client.form.ui.TooltipManager;
+import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GKeyStroke;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
@@ -23,14 +28,16 @@ import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
 import static lsfusion.gwt.form.client.HotkeyManager.Binding;
 
 public class DataPanelRenderer implements PanelRenderer {
-    private final GPropertyDraw property;
+    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
 
-    private final FlexPanel panel;
-    private final GridPanel gridPanel;
+    public final GPropertyDraw property;
+
+    public final FlexPanel panel;
+    public final ResizableComplexPanel gridPanel;
     private final SimplePanel focusPanel;
 
-    private final Label label;
-    private final GSinglePropertyTable valueTable;
+    public final Label label;
+    public final GSinglePropertyTable valueTable;
 
     private String caption;
     private String tooltip;
@@ -74,17 +81,19 @@ public class DataPanelRenderer implements PanelRenderer {
 
         valueTable = new ValueTable(form, columnKey);
 
-        if (!property.focusable) {
-            valueTable.setTableFocusable(false);
-        }
-
-        focusPanel = new SimplePanel();
-        focusPanel.addStyleName("dataPanelRendererFocusPanel");
-        focusPanel.setVisible(false);
-
         gridPanel = new GridPanel();
         gridPanel.addStyleName("dataPanelRendererGridPanel");
-        gridPanel.add(focusPanel);
+
+        if (property.focusable) {
+            focusPanel = new SimplePanel();
+            focusPanel.addStyleName("dataPanelRendererFocusPanel");
+            focusPanel.setVisible(false);
+            gridPanel.add(focusPanel);
+        } else {
+            valueTable.setTableFocusable(false);
+            focusPanel = null;
+        }
+
         gridPanel.add(valueTable);
 
         valueTable.setSize("100%", "100%");
@@ -128,27 +137,8 @@ public class DataPanelRenderer implements PanelRenderer {
     }
 
     @Override
-    public void addedToFlexPanel(FlexPanel parent, GFlexAlignment alignment, double flex) {
-        if ((parent.isVertical() && flex > 0) || (parent.isHorizontal() && alignment == GFlexAlignment.STRETCH)) {
-            panel.setChildAlignment(gridPanel, GFlexAlignment.STRETCH);
-
-            gridPanel.getElement().getStyle().clearHeight();
-            gridPanel.getElement().getStyle().clearProperty("maxWidth");
-            gridPanel.getElement().getStyle().clearProperty("maxHeight");
-            gridPanel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
-
-            valueTable.setupFillParent();
-        }
-
-        if (alignment == GFlexAlignment.STRETCH && flex > 0) {
-            gridPanel.getElement().getStyle().clearWidth();
-            gridPanel.getElement().getStyle().clearHeight();
-            gridPanel.getElement().getStyle().clearProperty("maxWidth");
-            gridPanel.getElement().getStyle().clearProperty("maxHeight");
-            gridPanel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
-
-            valueTable.setupFillParent();
-        }
+    public void setupLayout(GPanelController.GPropertyController controller) {
+        layoutImpl.setupDataPanelRenderer(controller, this);
     }
 
     @Override
@@ -215,13 +205,17 @@ public class DataPanelRenderer implements PanelRenderer {
         @Override
         protected void onFocus() {
             super.onFocus();
-            focusPanel.setVisible(true);
+            if (property.focusable) {
+                focusPanel.setVisible(true);
+            }
         }
 
         @Override
         protected void onBlur() {
             super.onBlur();
-            focusPanel.setVisible(false);
+            if (property.focusable) {
+                focusPanel.setVisible(false);
+            }
         }
 
         @Override

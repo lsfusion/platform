@@ -7,6 +7,9 @@ import lsfusion.gwt.base.client.GwtClientUtils;
 public class ResizableLayoutPanel extends ResizeLayoutPanel implements RequiresResize, ProvidesResize, HasPreferredSize {
     @Override
     public void onResize() {
+        if (!visible) {
+            return;
+        }
         Widget child = getWidget();
         if (child instanceof RequiresResize) {
             ((RequiresResize) child).onResize();

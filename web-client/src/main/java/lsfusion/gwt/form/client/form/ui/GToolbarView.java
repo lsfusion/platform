@@ -2,10 +2,10 @@ package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.form.shared.view.GToolbar;
 
-public class GToolbarView extends FlexPanel {
+public class GToolbarView extends ResizableHorizontalPanel {
     private final GToolbar toolbar;
 
     public GToolbarView(GToolbar toolbar) {

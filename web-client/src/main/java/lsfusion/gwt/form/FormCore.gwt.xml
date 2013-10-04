@@ -25,4 +25,20 @@
 
     <source path='client'/>
     <source path='shared'/>
+
+    <!-- Default tables-based GFormLayout implementation. -->
+    <replace-with class="lsfusion.gwt.form.client.form.ui.layout.table.TableFormLayoutImpl">
+        <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
+    </replace-with>
+
+    <!-- Standard GFormLayout implementation using flex css syntax. -->
+    <replace-with class="lsfusion.gwt.form.client.form.ui.layout.flex.FlexFormLayoutImpl">
+        <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
+        <any>
+            <!--<when-property-is name="user.agent" value="gecko1_8"/>-->
+            <!--<when-property-is name="user.agent" value="safari"/>-->
+            <when-property-is name="user.agent" value="opera"/>
+            <when-property-is name="user.agent" value="ie10"/>
+        </any>
+    </replace-with>
 </module>

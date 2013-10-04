@@ -81,7 +81,7 @@ public class MainFrame implements EntryPoint {
             public Widget getWindowView(GAbstractWindow window) {
                 Widget view;
                 if (window.equals(formsWindow)) {
-                    view = formsController;
+                    view = formsController.getView();
                 } else if (window instanceof GNavigatorWindow) {
                     view = navigatorController.getNavigatorView((GNavigatorWindow) window).getView();
                 } else {
