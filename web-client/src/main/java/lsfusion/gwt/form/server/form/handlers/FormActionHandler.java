@@ -27,4 +27,8 @@ public abstract class FormActionHandler<A extends Action<R>, R extends Result> e
     public FormSessionObject getFormSessionObject(String formSessionID) throws RuntimeException {
         return getFormSessionManager().getFormSessionObject(formSessionID);
     }
+
+    public FormSessionObject getFormSessionObjectOrNull(String formSessionID) throws RuntimeException {
+        return getFormSessionManager().getFormSessionObjectOrNull(formSessionID);
+    }
 }

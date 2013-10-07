@@ -1,26 +1,25 @@
 package lsfusion.client.descriptor.increment.editor;
 
 import lsfusion.base.ReflectionUtils;
+import lsfusion.base.context.ApplicationContextProvider;
+import lsfusion.base.context.IncrementView;
 import lsfusion.client.descriptor.editor.FontChooser;
-import lsfusion.base.context.*;
 import lsfusion.client.descriptor.editor.base.FlatButton;
 import lsfusion.client.descriptor.editor.base.TitledPanel;
+import lsfusion.interop.FontInfo;
 
-import java.awt.*;
-import java.util.Map;
-
-public class IncrementFontEditor extends TitledPanel implements IncrementView {
+public class IncrementFontInfoEditor extends TitledPanel implements IncrementView {
     private final Object object;
     private final String field;
-    private Font font;
-    FontFlatButton fontButton = new FontFlatButton();
+    private FontInfo font;
 
-    public IncrementFontEditor(String title, ApplicationContextProvider object, String field) {
+    public IncrementFontInfoEditor(String title, ApplicationContextProvider object, String field) {
         super(title);
         this.object = object;
         this.field = field;
         object.getContext().addDependency(object, field, this);
 
+        FontFlatButton fontButton = new FontFlatButton();
         add(fontButton);
         if (font != null) {
             fontButton.retypeText();
@@ -36,15 +35,15 @@ public class IncrementFontEditor extends TitledPanel implements IncrementView {
     }
 
     public void update(Object updateObject, String updateField) {
-        font = (Font) ReflectionUtils.invokeGetter(object, field);
+        font = (FontInfo) ReflectionUtils.invokeGetter(object, field);
     }
 
     private class FontFlatButton extends FlatButton {
 
         public void onClick() {
-            FontChooser chooser = new FontChooser(null, font);
+            FontChooser chooser = new FontChooser(null, font == null ? null : font.deriveFrom(this));
             if (chooser.showDialog()) {
-                font = chooser.getFont();
+                font = FontInfo.createFrom(chooser.getFont());
             }
             if (font != null) {
                 retypeText();
@@ -55,9 +54,7 @@ public class IncrementFontEditor extends TitledPanel implements IncrementView {
         private void retypeText() {
             setText("AaBbCc АаБбВв 123");
 
-            Map attributes = font.getAttributes();
-            Font tempFont = new Font(font.getFontName(), font.getStyle(), 0).deriveFont(attributes);
-            setFont(tempFont);
+            setFont(font.deriveFrom(this));
 
             reValidate();
         }

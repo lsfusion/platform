@@ -94,7 +94,9 @@ public class TabbedPanelBase extends Composite implements IndexedPanel,
 
     @Override
     public void onResize() {
-        deck.onResize();
+        if (isVisible()) {
+            deck.onResize();
+        }
     }
 
     /**

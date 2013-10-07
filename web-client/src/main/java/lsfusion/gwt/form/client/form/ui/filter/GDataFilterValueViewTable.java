@@ -196,7 +196,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             if (isInEditingState) {
                 cellEditor.onBrowserEvent(context, parent, value, event);
             }
-            if (event.getKeyCode() == KeyCodes.KEY_ENTER) {
+            if (GKeyStroke.isApplyFilterEvent(event)) {
                 valueView.applyFilter();
             }
             if (GKeyStroke.isCopyToClipboardEvent(event)) {

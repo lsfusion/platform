@@ -79,8 +79,8 @@ public abstract class SplitPanelBase<P extends Panel> {
         }
     }
 
-    private int getAvailableSize() {
-        return (vertical ? panel.getOffsetHeight() : panel.getOffsetWidth()) - splitterSize;
+    protected int getAvailableSize() {
+        return (vertical ? panel.getOffsetHeight() : panel.getOffsetWidth()) - (splitter.isVisible() ? splitterSize : 0);
     }
 
     public P asWidget() {
@@ -113,9 +113,9 @@ public abstract class SplitPanelBase<P extends Panel> {
         if (firstWidget == null && secondWidget == null) {
             return;
         }
-        if (firstWidget == null) {
+        if (firstWidget == null || !firstWidget.isVisible()) {
             setChildrenRatio(0);
-        } else if (secondWidget == null) {
+        } else if (secondWidget == null || !secondWidget.isVisible()) {
             setChildrenRatio(1);
         } else {
             if (currentRatio <= 0) {

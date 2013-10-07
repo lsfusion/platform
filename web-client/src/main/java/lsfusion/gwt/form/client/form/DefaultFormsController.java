@@ -51,9 +51,11 @@ public abstract class DefaultFormsController implements FormsController {
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
             public void execute() {
-                String formSID = GwtClientUtils.getPageParameter("formSID");
-                if (formSID != null) {
-                    openForm(formSID, GModalityType.DOCKED);
+                String formSIDs = GwtClientUtils.getPageParameter("formSID");
+                if (formSIDs != null) {
+                    for (String formSID : formSIDs.split(",")) {
+                        openForm(formSID, GModalityType.DOCKED);
+                    }
                 }
             }
         });

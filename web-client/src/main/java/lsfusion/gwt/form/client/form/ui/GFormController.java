@@ -419,6 +419,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
 
         formLayout.hideEmptyContainerViews();
+
         onResize();
 
         // в конце скроллим все таблицы к текущим ключам
@@ -752,7 +753,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
         dispatcher.execute(new SetTabVisible(tabbedPane.ID, visibleComponent.ID), new ServerResponseCallback());
-        relayoutTables(visibleComponent);
+        onResize();
     }
 
     public void closePressed() {
@@ -992,10 +993,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
 
         if (selected) {
-            if (!initialResizeProcessed) { // до чего-нибудь мог не успеть дойти onResize() при открытии (открытие сразу нескольких форм)
-                relayoutTables(form.mainContainer);
-                initialResizeProcessed = true;
-            }
             scheduleFocusFirstWidget();
             restoreGridScrollPositions();
         } else {
@@ -1066,6 +1063,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
             public void execute() {
+                onResize();
                 focusFirstWidget();
             }
         });

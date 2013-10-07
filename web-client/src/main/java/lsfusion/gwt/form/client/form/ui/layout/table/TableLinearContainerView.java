@@ -108,6 +108,11 @@ public class TableLinearContainerView extends GAbstractContainerView {
                     setMainSize(childView, "100%");
                 } else {
                     setCellMainSize(childView, "auto");
+                    if (vertical) {
+                        // по-хорошему это не нужно,
+                        // но в Chrome иначе не хотят расширяться внутренние элементы этого childView (если childView - контейнер)
+                        setMainSize(childView, "100%");
+                    }
                 }
 
                 if (child.alignment == GFlexAlignment.STRETCH) {

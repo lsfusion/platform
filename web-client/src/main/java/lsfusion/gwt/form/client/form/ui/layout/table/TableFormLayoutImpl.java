@@ -26,7 +26,6 @@ public class TableFormLayoutImpl extends GFormLayoutImpl {
         if (container.isLinear()) {
             return new TableLinearContainerView(container);
         } else if (container.isSplit()) {
-//            return new TableLinearContainerView(container);
             return new TableSplitContainerView(container);
         } else if (container.isTabbed()) {
             return new TableTabbedContainerView(form, container);
@@ -64,7 +63,7 @@ public class TableFormLayoutImpl extends GFormLayoutImpl {
     @Override
     public void setupActionPanelRenderer(GPanelController.GPropertyController controller, ActionPanelRenderer actionRenderer) {
         Element parentElement = controller.renderersPanel.asWidget().getElement().getParentElement();
-        if ("td".equalsIgnoreCase(parentElement.getTagName())) {
+        if (parentElement != null && "td".equalsIgnoreCase(parentElement.getTagName())) {
             String width = parentElement.getAttribute("width");
             String height = parentElement.getAttribute("height");
             boolean horzStretched = width != null && width.trim().endsWith("%");
@@ -83,7 +82,7 @@ public class TableFormLayoutImpl extends GFormLayoutImpl {
     @Override
     public void setupDataPanelRenderer(GPanelController.GPropertyController controller, DataPanelRenderer dataRenderer) {
         Element parentElement = controller.renderersPanel.asWidget().getElement().getParentElement();
-        if ("td".equalsIgnoreCase(parentElement.getTagName())) {
+        if (parentElement != null && "td".equalsIgnoreCase(parentElement.getTagName())) {
             String width = parentElement.getAttribute("width");
             String height = parentElement.getAttribute("height");
             boolean horzStretched = width != null && width.trim().endsWith("%");

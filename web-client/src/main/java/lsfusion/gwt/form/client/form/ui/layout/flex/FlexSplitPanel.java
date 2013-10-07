@@ -1,41 +1,102 @@
 package lsfusion.gwt.form.client.form.ui.layout.flex;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.client.form.ui.layout.SplitPanelBase;
 
 public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
 
     public FlexSplitPanel(boolean vertical) {
-        super(vertical, new FlexPanel(vertical));
+        super(vertical, new Panel());
+        ((Panel)panel).setSplitPanel(this);
+        panel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
     }
 
     @Override
     protected void addSplitterImpl(Splitter splitter) {
-        panel.add(splitter, GFlexAlignment.STRETCH);
+        Style splitterStyle = splitter.getElement().getStyle();
+        splitterStyle.setPosition(Style.Position.ABSOLUTE);
+        if (vertical) {
+            splitterStyle.setLeft(0, Style.Unit.PX);
+            splitterStyle.setRight(0, Style.Unit.PX);
+        } else {
+            splitterStyle.setTop(0, Style.Unit.PX);
+            splitterStyle.setBottom(0, Style.Unit.PX);
+        }
+        panel.add(splitter);
     }
 
     @Override
     protected void addFirstWidgetImpl(Widget widget) {
-        panel.add(firstWidget, 0, GFlexAlignment.STRETCH, flex1, "0px");
+        Style style = widget.getElement().getStyle();
+        style.setPosition(Style.Position.ABSOLUTE);
+        style.setTop(0, Style.Unit.PX);
+        style.setLeft(0, Style.Unit.PX);
+        if (vertical) {
+            style.setRight(0, Style.Unit.PX);
+        } else {
+            style.setBottom(0, Style.Unit.PX);
+        }
+        panel.add(firstWidget, 0);
     }
 
     @Override
-    protected void addSecondWidgetImpl(Widget secondWidget) {
+    protected void addSecondWidgetImpl(Widget widget) {
+        Style style = widget.getElement().getStyle();
+        style.setPosition(Style.Position.ABSOLUTE);
+        style.setBottom(0, Style.Unit.PX);
+        style.setRight(0, Style.Unit.PX);
+        if (vertical) {
+            style.setLeft(0, Style.Unit.PX);
+        } else {
+            style.setTop(0, Style.Unit.PX);
+        }
+
         int index = firstWidget == null ? 1 : 2;
-        panel.add(secondWidget, index, GFlexAlignment.STRETCH, flex2, "0px");
+        panel.add(widget, index);
     }
 
     @Override
     protected void setChildrenRatio(double ratio) {
-        double f1 = flexSum * ratio;
+        int availableSize = getAvailableSize();
+
+        int size1 = (int) Math.max(0, availableSize * ratio);
+
+        if (vertical) {
+            splitter.getElement().getStyle().setTop(size1, Style.Unit.PX);
+        } else {
+            splitter.getElement().getStyle().setLeft(size1, Style.Unit.PX);
+        }
+
         if (firstWidget != null) {
-            panel.setChildFlex(firstWidget, f1, "0px");
+            if (vertical) {
+                firstWidget.getElement().getStyle().setHeight(size1, Style.Unit.PX);
+            } else {
+                firstWidget.getElement().getStyle().setWidth(size1, Style.Unit.PX);
+            }
         }
         if (secondWidget != null) {
-            double f2 = flexSum - f1;
-            panel.setChildFlex(secondWidget, f2, "0px");
+            int size2 = Math.max(0, availableSize - size1);
+            if (vertical) {
+                secondWidget.getElement().getStyle().setHeight(size2, Style.Unit.PX);
+            } else {
+                secondWidget.getElement().getStyle().setWidth(size2, Style.Unit.PX);
+            }
+        }
+    }
+
+    private static class Panel extends FlexPanel {
+        FlexSplitPanel splitPanel;
+
+        private void setSplitPanel(FlexSplitPanel splitPanel) {
+            this.splitPanel = splitPanel;
+        }
+
+        @Override
+        public void onResize() {
+            splitPanel.update();
+            super.onResize();
         }
     }
 }

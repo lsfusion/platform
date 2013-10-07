@@ -16,7 +16,6 @@
  */
 package lsfusion.gwt.cellview.client;
 
-import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
@@ -2375,13 +2374,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
 
         protected boolean nextRow(boolean down) {
-            double currentTime = Duration.currentTimeMillis();
-            //ignore key stroke, if we need to scroll too often
-
             int rowIndex = getDisplay().getKeyboardSelectedRow();
-
             display.setKeyboardSelectedRow(down ? rowIndex + 1 : rowIndex - 1);
-
             return true;
         }
 

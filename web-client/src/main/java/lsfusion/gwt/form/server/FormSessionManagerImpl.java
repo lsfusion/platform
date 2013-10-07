@@ -89,13 +89,18 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
     }
 
     public FormSessionObject getFormSessionObject(String formSessionID) {
-        FormSessionObject formObject = currentForms.get(formSessionID);
+        FormSessionObject formObject = getFormSessionObjectOrNull(formSessionID);
 
         if (formObject == null) {
             throw new RuntimeException("Форма не найдена.");
         }
 
         return formObject;
+    }
+
+    @Override
+    public FormSessionObject getFormSessionObjectOrNull(String formSessionID) {
+        return currentForms.get(formSessionID);
     }
 
     public FormSessionObject removeFormSessionObject(String formSessionID) {

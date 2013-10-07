@@ -10,6 +10,8 @@ import java.io.IOException;
 public interface FormSessionManager {
     public GForm createForm(RemoteFormInterface remoteForm, LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) throws IOException;
 
+    public FormSessionObject getFormSessionObjectOrNull(String formSessionID);
+
     public FormSessionObject getFormSessionObject(String formSessionID);
 
     public FormSessionObject removeFormSessionObject(String formSessionID);

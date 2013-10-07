@@ -4,7 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.descriptor.editor.base.NorthBoxPanel;
 import lsfusion.client.descriptor.editor.base.TitledPanel;
 import lsfusion.client.descriptor.increment.editor.IncrementColorEditor;
-import lsfusion.client.descriptor.increment.editor.IncrementFontEditor;
+import lsfusion.client.descriptor.increment.editor.IncrementFontInfoEditor;
 import lsfusion.interop.ComponentDesign;
 
 import javax.swing.*;
@@ -22,8 +22,8 @@ public class ComponentDesignEditor extends TitledPanel {
 
         JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayout(1, 2, 5, 5));
-        panel2.add(new IncrementFontEditor(ClientResourceBundle.getString("descriptor.editor.header.font")+": ", design, "headerFont"));
-        panel2.add(new IncrementFontEditor(ClientResourceBundle.getString("descriptor.editor.font")+": ", design, "font"));
+        panel2.add(new IncrementFontInfoEditor(ClientResourceBundle.getString("descriptor.editor.header.font")+": ", design, "headerFont"));
+        panel2.add(new IncrementFontInfoEditor(ClientResourceBundle.getString("descriptor.editor.font")+": ", design, "font"));
 
         add(new NorthBoxPanel(panel1, panel2));
     }

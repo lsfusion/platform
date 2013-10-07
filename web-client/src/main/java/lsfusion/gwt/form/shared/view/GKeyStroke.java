@@ -186,6 +186,10 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F2 && event.getShiftKey();
     }
 
+    public static boolean isApplyFilterEvent(NativeEvent event) {
+        return KEYPRESS.equals(event.getType()) && event.getKeyCode() == KEY_ENTER;
+    }
+
     public static boolean isCopyToClipboardEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) &&
                 ((event.getKeyCode() == KEY_C && event.getCtrlKey()) ||

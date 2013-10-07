@@ -94,4 +94,8 @@ public final class FontInfo implements Serializable {
     public int getStyle() {
         return (bold ? Font.BOLD : Font.PLAIN) | (italic ? Font.ITALIC : Font.PLAIN);
     }
+
+    public static FontInfo createFrom(Font font) {
+        return new FontInfo(font.getFamily(), font.getSize(), font.isBold(), font.isItalic());
+    }
 }
