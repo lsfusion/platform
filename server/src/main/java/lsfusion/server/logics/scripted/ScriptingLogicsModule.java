@@ -17,6 +17,7 @@ import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
@@ -626,9 +627,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (property.property instanceof CalcProperty) {
-            checkPropertyValue(property);
-            if (!alwaysNullProperties.isEmpty()) {
-                showAlwaysNullErrors();
+            
+            if (Settings.get().isCheckAlwaysNull()) {
+                checkPropertyValue(property);
+                if (!alwaysNullProperties.isEmpty()) {
+                    showAlwaysNullErrors();
+                }
             }
 
             checkClassWhere((LCP) property, name);

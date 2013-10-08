@@ -782,4 +782,14 @@ public class Settings {
     public void setModifySessionTableInsteadOfRewrite(boolean modifySessionTableInsteadOfRewrite) {
         this.modifySessionTableInsteadOfRewrite = modifySessionTableInsteadOfRewrite;
     }
+    
+    private boolean checkAlwaysNull = true;
+
+    public boolean isCheckAlwaysNull() {
+        return checkAlwaysNull;
+    }
+
+    public void setCheckAlwaysNull(boolean checkAlwaysNull) {
+        this.checkAlwaysNull = checkAlwaysNull;
+    }
 }
