@@ -635,7 +635,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
             }
 
-            checkClassWhere((LCP) property, name);
+            if (Settings.get().isCheckClassWhere()) {
+                checkClassWhere((LCP) property, name);
+            }
         }
         addNamedParams(property.property.getSID(), namedParams);
     }

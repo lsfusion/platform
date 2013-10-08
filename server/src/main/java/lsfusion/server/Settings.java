@@ -792,4 +792,14 @@ public class Settings {
     public void setCheckAlwaysNull(boolean checkAlwaysNull) {
         this.checkAlwaysNull = checkAlwaysNull;
     }
+
+    private boolean checkClassWhere = true;
+
+    public boolean isCheckClassWhere() {
+        return checkClassWhere;
+    }
+
+    public void setCheckClassWhere(boolean checkClassWhere) {
+        this.checkClassWhere = checkClassWhere;
+    }
 }
