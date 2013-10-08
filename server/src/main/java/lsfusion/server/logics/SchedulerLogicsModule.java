@@ -18,10 +18,11 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP periodScheduledTask;
     public LCP schedulerStartTypeScheduledTask;
     public LCP activeScheduledTask;
-    public LCP inScheduledTaskProperty;
-    public LCP activeScheduledTaskProperty;
-    public LCP orderScheduledTaskProperty;
+    public LCP activeScheduledTaskDetail;
+    public LCP orderScheduledTaskDetail;
 
+    public LCP SIDPropertyScheduledTaskDetail;
+    
     public LCP resultScheduledTaskLog;
     public LCP propertyScheduledTaskLog;
     public LCP dateScheduledTaskLog;
@@ -52,10 +53,11 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
         periodScheduledTask = getLCPByName("periodScheduledTask");
         schedulerStartTypeScheduledTask = getLCPByName("schedulerStartTypeScheduledTask");
         activeScheduledTask = getLCPByName("activeScheduledTask");
-        inScheduledTaskProperty = getLCPByName("inScheduledTaskProperty");
-        activeScheduledTaskProperty = getLCPByName("activeScheduledTaskProperty");
-        orderScheduledTaskProperty = getLCPByName("orderScheduledTaskProperty");
+        activeScheduledTaskDetail = getLCPByName("activeScheduledTaskDetail");
+        orderScheduledTaskDetail = getLCPByName("orderScheduledTaskDetail");
 
+        SIDPropertyScheduledTaskDetail = getLCPByName("SIDPropertyScheduledTaskDetail");
+        
         resultScheduledTaskLog = getLCPByName("resultScheduledTaskLog");
         propertyScheduledTaskLog = getLCPByName("propertyScheduledTaskLog");
         dateScheduledTaskLog = getLCPByName("dateScheduledTaskLog");

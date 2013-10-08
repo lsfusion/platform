@@ -185,23 +185,22 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             Integer period = (Integer) value.get("periodScheduledTask");
             Object schedulerStartType = value.get("schedulerStartTypeScheduledTask");
 
-            KeyExpr propertyExpr = new KeyExpr("property");
+            KeyExpr scheduledTaskDetailExpr = new KeyExpr("scheduledTaskDetail");
             KeyExpr scheduledTaskExpr = new KeyExpr("scheduledTask");
-            ImRevMap<Object, KeyExpr> propertyKeys = MapFact.<Object, KeyExpr>toRevMap("property", propertyExpr, "scheduledTask", scheduledTaskExpr);
+            ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.<Object, KeyExpr>toRevMap("scheduledTaskDetail", scheduledTaskDetailExpr, "scheduledTask", scheduledTaskExpr);
 
-            QueryBuilder<Object, Object> propertyQuery = new QueryBuilder<Object, Object>(propertyKeys);
-            propertyQuery.addProperty("SIDProperty", businessLogics.reflectionLM.SIDProperty.getExpr(propertyExpr));
-            propertyQuery.addProperty("orderScheduledTaskProperty", businessLogics.schedulerLM.orderScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr));
-            propertyQuery.and(businessLogics.schedulerLM.inScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
-            propertyQuery.and(businessLogics.schedulerLM.activeScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
-            propertyQuery.and(scheduledTaskExpr.compare(currentScheduledTaskObject, Compare.EQUALS));
+            QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<Object, Object>(scheduledTaskDetailKeys);
+            scheduledTaskDetailQuery.addProperty("SIDPropertyScheduledTaskDetail", businessLogics.schedulerLM.SIDPropertyScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
+            scheduledTaskDetailQuery.addProperty("orderScheduledTaskDetail", businessLogics.schedulerLM.orderScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
+            scheduledTaskDetailQuery.and(businessLogics.schedulerLM.activeScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).getWhere());
+            scheduledTaskDetailQuery.and(scheduledTaskExpr.compare(currentScheduledTaskObject, Compare.EQUALS));
 
             TreeMap<Integer, LAP> propertySIDMap = new TreeMap<Integer, LAP>();
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = propertyQuery.execute(session.sql);
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session.sql);
             int defaultOrder = propertyResult.size() + 100;
             for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
-                String sidProperty = (String) propertyValues.get("SIDProperty");
-                Integer orderProperty = (Integer) propertyValues.get("orderScheduledTaskProperty");
+                String sidProperty = (String) propertyValues.get("SIDPropertyScheduledTaskDetail");
+                Integer orderProperty = (Integer) propertyValues.get("orderScheduledTaskDetail");
                 if (sidProperty != null) {
                     if (orderProperty == null) {
                         orderProperty = defaultOrder;

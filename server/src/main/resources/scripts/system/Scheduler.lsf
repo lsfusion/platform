@@ -24,7 +24,6 @@ EXTEND DESIGN schedulerStartTypes {
 
 CLASS ScheduledTask 'Задание планировщика';
 TABLE scheduledTask (ScheduledTask);
-TABLE scheduledTaskProperty (ScheduledTask, Property);
 
 nameScheduledTask 'Имя' = DATA VARSTRING[100] (ScheduledTask);
 runAtStartScheduledTask 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
@@ -33,9 +32,20 @@ periodScheduledTask 'Повторять каждые (секунд)' = DATA INTE
 schedulerStartTypeScheduledTask 'Отсчёт времени' = DATA SchedulerStartType (ScheduledTask);
 nameSchedulerStartTypeScheduledTask 'Отсчёт времени' = staticCaption(schedulerStartTypeScheduledTask(ScheduledTask));
 activeScheduledTask 'Активно' = DATA BOOLEAN (ScheduledTask);
-inScheduledTaskProperty 'Вкл.' = DATA BOOLEAN (ScheduledTask, Property);
-activeScheduledTaskProperty 'Активно' = DATA BOOLEAN (ScheduledTask, Property);
-orderScheduledTaskProperty 'Порядок' = DATA INTEGER (ScheduledTask, Property);
+
+CLASS ScheduledTaskDetail 'Строка задания планировщика';
+TABLE scheduledTaskDetail (ScheduledTaskDetail);
+
+activeScheduledTaskDetail 'Активно' = DATA BOOLEAN (ScheduledTaskDetail);
+orderScheduledTaskDetail 'Порядок' = DATA INTEGER (ScheduledTaskDetail);
+
+scheduledTaskScheduledTaskDetail = DATA ScheduledTask (ScheduledTaskDetail);
+propertyScheduledTaskDetail = DATA Property (ScheduledTaskDetail);
+captionPropertyScheduledTaskDetail 'Свойство' (scheduledTaskDetail) = captionProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
+SIDPropertyScheduledTaskDetail 'Код свойства' (scheduledTaskDetail) = SIDProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
+classPropertyScheduledTaskDetail 'Класс свойства' (scheduledTaskDetail) = classProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
+returnPropertyScheduledTaskDetail 'Возвращаемый класс' (scheduledTaskDetail) = returnProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
+signaturePropertyScheduledTaskDetail 'Сигнатура' (scheduledTaskDetail) = signatureProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 
 CLASS ScheduledTaskLog 'Лог планировщика';
 TABLE scheduledTaskLog (ScheduledTaskLog);
@@ -56,61 +66,68 @@ messageScheduledClientTaskLog 'Сообщение'= DATA VARSTRING[200] (Schedul
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty';
 
 WHEN [GROUP SUM 1 IF
-    ((CHANGED (runAtStartScheduledTask(scheduledTask)) AND activeScheduledTaskProperty(scheduledTask, property)) OR
-    (CHANGED (startDateScheduledTask(scheduledTask)) AND activeScheduledTaskProperty(scheduledTask, property)) OR
-    (CHANGED (periodScheduledTask(scheduledTask)) AND activeScheduledTaskProperty(scheduledTask, property)) OR
-    (CHANGED (schedulerStartTypeScheduledTask(scheduledTask)) AND activeScheduledTaskProperty(scheduledTask, property)) OR
-    (CHANGED (activeScheduledTask(scheduledTask)) AND activeScheduledTaskProperty(scheduledTask, property)) OR
-    CHANGED (inScheduledTaskProperty(scheduledTask, property)) OR
-    CHANGED (activeScheduledTaskProperty(scheduledTask, property)) OR
-    CHANGED (orderScheduledTaskProperty(scheduledTask, property)))] ()
+    ((CHANGED (runAtStartScheduledTask(scheduledTask)) AND activeScheduledTaskDetail(scheduledTaskDetail)) OR
+    (CHANGED (startDateScheduledTask(scheduledTask)) AND activeScheduledTaskDetail(scheduledTaskDetail)) OR
+    (CHANGED (periodScheduledTask(scheduledTask)) AND activeScheduledTaskDetail(scheduledTaskDetail)) OR
+    (CHANGED (schedulerStartTypeScheduledTask(scheduledTask)) AND activeScheduledTaskDetail(scheduledTaskDetail)) OR
+    (CHANGED (activeScheduledTask(scheduledTask)) AND activeScheduledTaskDetail(scheduledTaskDetail)) OR
+    CHANGED (activeScheduledTaskDetail(scheduledTaskDetail)) OR
+    CHANGED (orderScheduledTaskDetail(scheduledTaskDetail)))] ()
         DO EXEC runSetupScheduler();
 
 FORM scheduledTask 'Планировщик'
 
-    OBJECTS st=ScheduledTask
-    PROPERTIES (st) activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask,
+    OBJECTS t=ScheduledTask
+    PROPERTIES (t) activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask,
                     nameSchedulerStartTypeScheduledTask, runAtStartScheduledTask
+    PROPERTIES (t) ADDOBJ, DELETESESSION
+         
+    OBJECTS td=ScheduledTaskDetail
+    PROPERTIES (td) activeScheduledTaskDetail, orderScheduledTaskDetail, captionPropertyScheduledTaskDetail, 
+                    SIDPropertyScheduledTaskDetail, classPropertyScheduledTaskDetail, returnPropertyScheduledTaskDetail
+    PROPERTIES (td) ADDOBJ, DELETESESSION
+    
+    OBJECTS tl=ScheduledTaskLog
+    PROPERTIES (tl) READONLY propertyScheduledTaskLog, resultScheduledTaskLog, dateScheduledTaskLog
 
-    OBJECTS p=Property
-    PROPERTIES (st, p) inScheduledTaskProperty, activeScheduledTaskProperty, orderScheduledTaskProperty
-    PROPERTIES (st) ADDOBJ, DELETESESSION
-    PROPERTIES (p) READONLY captionProperty, SIDProperty, classProperty, returnProperty
+    OBJECTS ctl=ScheduledClientTaskLog
+    PROPERTIES (ctl) READONLY messageScheduledClientTaskLog
 
-    OBJECTS stl=ScheduledTaskLog
-    PROPERTIES (stl) READONLY propertyScheduledTaskLog, resultScheduledTaskLog, dateScheduledTaskLog
-
-    OBJECTS sctl=ScheduledClientTaskLog
-    PROPERTIES (sctl) READONLY messageScheduledClientTaskLog
-
-    FILTERS scheduledTaskScheduledTaskLog(stl) == st,
-            scheduledTaskLogScheduledClientTaskLog(sctl) == stl,
-            signatureProperty(p) == '',
-            returnProperty(p) == 'ActionClass'
+    FILTERS scheduledTaskScheduledTaskDetail(td)==t,
+            scheduledTaskScheduledTaskLog(tl) == t,
+            scheduledTaskLogScheduledClientTaskLog(ctl) == tl
 
     FILTERGROUP filtersScheduler
-            FILTER 'Только отмеченные' 'F9' inScheduledTaskProperty(st, p)
+            FILTER 'Только активные' 'F9' activeScheduledTaskDetail(td)
 ;
 
 EXTEND DESIGN scheduledTask {
     NEW specContainer {
         fill = 1; 
         type = SPLITV;
-        ADD st.box;
+        ADD t.box;
         NEW south {
             fill = 2;
             type = TABBED;
-            ADD p.box;
+            ADD td.box {caption = 'Свойства';}
             NEW logContainer {
                 caption = 'Лог';
                 type = CONTAINERH;
-                ADD stl.box;
-                ADD sctl.box;
+                ADD tl.box;
+                ADD ctl.box;
             }
         }
     }
     ADD functions.box;
 }
+
+FORM scheduledTaskProperties 'Свойства'
+    OBJECTS p = Property
+    PROPERTIES(p) READONLY captionProperty, SIDProperty, classProperty, returnProperty
+    FILTERS signatureProperty(p) == '',
+            returnProperty(p) == 'ActionClass'
+    DIALOG Property OBJECT p
+;
 
 NAVIGATOR {
     configuration {
