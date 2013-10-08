@@ -190,8 +190,7 @@ META defineNumeratedDefault (object1, object2, property, caption, series)
     }
 
     loadDefaultNumerators() += ACTION () {
-        ADDOBJ Numerator;
-        FOR n == addedObject() DO {
+        FOR ADDOBJ n = Numerator DO {
             ASSIGN nameNumerator(n) <- caption;
             ASSIGN seriesNumerator(n) <- series;
             ASSIGN minValueNumerator(n) <- 1L;
