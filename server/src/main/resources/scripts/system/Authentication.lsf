@@ -16,10 +16,10 @@ CLASS CustomUser 'Обычный пользователь' : User, Contact;
 TABLE customUser (CustomUser);
 TABLE loginSID (STRING[30], STRING[30]);
 
-currentUser = NATIVE;
+currentUser = NATIVE User ();
 currentUserName 'Имя Тек. Польз.' () = nameContact(currentUser());
 
-currentComputer = NATIVE;
+currentComputer = NATIVE Computer ();
 hostnameCurrentComputer 'Текущий компьютер' () = hostnameComputer(currentComputer());
 
 isLockedCustomUser 'Заблокирован' = DATA BOOLEAN (CustomUser);

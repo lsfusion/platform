@@ -7,10 +7,10 @@ weekInDate = FORMULA INTEGER '(extract(week from ($1)))';
 numberMonthInDate = FORMULA INTEGER '(extract(month from ($1)))';
 yearInDate = FORMULA INTEGER '(extract(year from ($1)))';
 
-currentDateTime = NATIVE;
-currentMinute = NATIVE;
-currentHour = NATIVE;
-currentEpoch = NATIVE;
+currentDateTime = NATIVE DATETIME ();
+currentMinute = NATIVE INTEGER ();
+currentHour = NATIVE INTEGER ();
+currentEpoch = NATIVE LONG ();
 
 currentDate 'Тек. дата' = DATA DATE ();
 currentMonth 'Тек. месяц' = numberMonthInDate (currentDate());

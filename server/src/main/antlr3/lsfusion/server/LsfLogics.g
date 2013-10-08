@@ -834,7 +834,7 @@ propertyStatement
 		'=' 
 		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; }
 		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); property = $expr.property.property; } }
-		|   'NATIVE' { property = null; }
+		|   'NATIVE' classId '(' classIdList ')' { property = null; }
 		)
 		propertyOptions[property, $declaration.name, $declaration.caption, context]
 		( {!self.semicolonNeeded()}?=>  | ';')
@@ -1838,7 +1838,7 @@ customActionPropertyDefinitionBody returns [LP property]
 		$property = self.addScriptedCustomActionProp($classN.val);	
 	}
 }
-	:	'CUSTOM' classN = stringLiteral 
+	:	'CUSTOM' classN = stringLiteral ('(' classIdList ')')? 
 	;
 
 

@@ -9,7 +9,8 @@ CLASS FormResult 'Результат вызова формы' {
 }
 
 CLASS NATIVE Object;
-objectClass = NATIVE; 
+CLASS NATIVE CustomObjectClass;
+objectClass = NATIVE CustomObjectClass (Object); 
 
 GROUP root 'Корневая группа';
 GROUP public 'Пользовательские свойства' : root;
