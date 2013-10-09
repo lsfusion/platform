@@ -2,46 +2,56 @@ package lsfusion.client.form.renderer;
 
 import lsfusion.client.logics.ClientPropertyDraw;
 
-import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
 public class ImagePropertyRenderer extends FilePropertyRenderer {
-
-    private byte[] value;
 
     public ImagePropertyRenderer(ClientPropertyDraw property) {
         super(property);
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        this.value = (byte[]) value;
+        setIcon(value == null ? null : new ImageIcon((byte[]) value));
         setSelected(isSelected, hasFocus);
     }
 
     @Override
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        int width = getWidth();
+        int height = getHeight();
 
-        if (value != null) {
-            Image image = null;
-            try {
-                image = ImageIO.read(new ByteArrayInputStream(value));
-                if (getWidth() != 0 && getHeight() != 0) {
-                    double coef = Math.max((double)image.getWidth(null) / getWidth(), (double)image.getHeight(null) / getHeight());
-                    image = coef > 1 ? image.getScaledInstance((int) (image.getWidth(null) / coef), (int) (image.getHeight(null) / coef), Image.SCALE_FAST) : image;
-                }
-            } catch (IOException ignored) {
+        if (width == 0 || height == 0) {
+            return;
+        }
+
+        ImageIcon icon = (ImageIcon) getIcon();
+        if (icon != null) {
+            Image img = icon.getImage();
+
+            int imageWidth = icon.getIconWidth();
+            int imageHeight = icon.getIconHeight();
+            if (imageWidth == 0 || imageHeight == 0) {
+                return;
             }
 
-            if (image != null) {
-                g.clearRect(0, 0, getWidth(), getHeight());
-                int deltaWidth = (getWidth() - image.getWidth(null)) / 2;
-                int deltaHeight = (getHeight() - image.getHeight(null)) / 2;
-                g.drawImage(image, deltaWidth, deltaHeight, deltaWidth + image.getWidth(null), deltaHeight + image.getHeight(null),
-                        0, 0, image.getWidth(null), image.getHeight(null), null);
+            double cf = imageWidth / (double)imageHeight;
+
+            if (cf * height <= width) {
+                //влезли по высоте
+                imageHeight = height;
+                imageWidth = (int) (cf * height);
+            } else {
+                imageWidth = width;
+                imageHeight = (int) (width / cf);
             }
+
+            int dx = (width - imageWidth) / 2;
+            int dy = (height - imageHeight) / 2;
+
+            g.drawImage(img, dx, dy, imageWidth, imageHeight, this);
+        } else {
+            super.paintComponent(g);
         }
     }
 }
