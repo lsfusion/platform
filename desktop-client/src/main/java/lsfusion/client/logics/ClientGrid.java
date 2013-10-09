@@ -15,6 +15,7 @@ public class ClientGrid extends ClientComponent {
 
     public boolean tabVertical = false;
     public boolean autoHide;
+    public boolean quickSearch;
 
     public ClientGroupObject groupObject;
 
@@ -37,6 +38,7 @@ public class ClientGrid extends ClientComponent {
 
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(autoHide);
+        outStream.writeBoolean(quickSearch);
 
         pool.serializeObject(outStream, groupObject);
     }
@@ -47,6 +49,7 @@ public class ClientGrid extends ClientComponent {
 
         tabVertical = inStream.readBoolean();
         autoHide = inStream.readBoolean();
+        quickSearch = inStream.readBoolean();
 
         groupObject = pool.deserializeObject(inStream);
     }

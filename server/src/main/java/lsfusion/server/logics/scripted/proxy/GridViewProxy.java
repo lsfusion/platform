@@ -14,4 +14,8 @@ public class GridViewProxy extends ComponentViewProxy<GridView> {
     public void setAutoHide(boolean autoHide) {
         target.autoHide = autoHide;
     }
+
+    public void setQuickSearch(boolean quickSearch) {
+        target.setQuickSearch(quickSearch);
+    }
 }

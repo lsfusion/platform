@@ -11,6 +11,7 @@ public class GridView extends ComponentView {
 
     public boolean tabVertical = false;
     public boolean autoHide = false;
+    private boolean quickSearch = false;
 
     public GroupObjectView groupObject;
 
@@ -25,12 +26,20 @@ public class GridView extends ComponentView {
         alignment = FlexAlignment.STRETCH;
     }
 
+    //todo: формально временное решение:
+    //todo: метод дизайна, который изменяет энтити => должно быть перенсено на уровень энтити
+    public void setQuickSearch(boolean quickSearch) {
+        this.quickSearch = quickSearch;
+        groupObject.entity.pageSize = 0;
+    }
+
     @Override
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(autoHide);
+        outStream.writeBoolean(quickSearch);
 
         pool.serializeObject(outStream, groupObject);
     }
@@ -41,6 +50,7 @@ public class GridView extends ComponentView {
 
         tabVertical = inStream.readBoolean();
         autoHide = inStream.readBoolean();
+        quickSearch = inStream.readBoolean();
 
         groupObject = pool.deserializeObject(inStream);
     }

@@ -33,6 +33,7 @@ import java.util.*;
 import java.util.List;
 
 import static java.lang.Math.max;
+import static java.lang.String.valueOf;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.form.ClientFormController.PasteData;
 
@@ -40,6 +41,11 @@ public class GridTable extends ClientPropertyTable {
 
     public static final String GOTO_LAST_ACTION = "gotoLastRow";
     public static final String GOTO_FIRST_ACTION = "gotoFirstRow";
+
+    private static final long QUICK_SEARCH_MAX_DELAY = 900;
+    private String lastQuickSearchPrefix = "";
+    private long lastQuickSearchTime = 0;
+    private EventObject lastQuickSearchEvent;
 
     private final List<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
 
@@ -156,17 +162,19 @@ public class GridTable extends ClientPropertyTable {
 
                 // Listener срабатывает в самом начале, когда компонент еще не расположен
                 // В таком случае нет смысла вызывать изменение pageSize
-                if (getParent().getHeight() == 0) {
-                    return;
-                }
+                if (groupObject.pageSize != 0) {
+                    if (getParent().getHeight() == 0) {
+                        return;
+                    }
 
-                int newPageSize = getParent().getHeight() / getRowHeight() + 1;
-                if (newPageSize != pageSize) {
-                    try {
-                        form.changePageSize(groupObject, newPageSize);
-                        pageSize = newPageSize;
-                    } catch (IOException e) {
-                        throw new RuntimeException(getString("errors.error.changing.page.size"), e);
+                    int newPageSize = getParent().getHeight() / getRowHeight() + 1;
+                    if (newPageSize != pageSize) {
+                        try {
+                            form.changePageSize(groupObject, newPageSize);
+                            pageSize = newPageSize;
+                        } catch (IOException e) {
+                            throw new RuntimeException(getString("errors.error.changing.page.size"), e);
+                        }
                     }
                 }
             }
@@ -784,18 +792,61 @@ public class GridTable extends ClientPropertyTable {
         boolean edited = super.editCellAt(row, column, editEvent);
         if (!editPerformed) {
             assert !edited;
-            ClientPropertyDraw currentProperty = getCurrentProperty();
-            ClientPropertyDraw filterProperty = currentProperty != null && currentProperty.quickFilterProperty != null
-                                                ? currentProperty.quickFilterProperty
-                                                : null;
-            if (KeyStrokes.isSuitableStartFilteringEvent(editEvent)) {
-                groupController.quickEditFilter((KeyEvent) editEvent, filterProperty);
+
+            if (groupObject.grid.quickSearch) {
+                quickSearch(editEvent);
+            } else {
+                quickFilter(editEvent);
             }
 
             return false;
         }
 
         return edited;
+    }
+
+    private void quickSearch(EventObject editEvent) {
+        // здесь делаем дополнительную проверку на то, что мы ещё не обработывали данный ивент,
+        // т.к. в JRE7 генерируется дополнительный KeyStoke с тем же ивентом для extended символов (в т.ч. для русских)
+        if (editEvent != lastQuickSearchEvent && getRowCount() > 0 && getColumnCount() > 0 && KeyStrokes.isSuitableStartFilteringEvent(editEvent)) {
+            assert editEvent instanceof KeyEvent;
+
+            char ch = ((KeyEvent)editEvent).getKeyChar();
+
+            long currentTime = System.currentTimeMillis();
+            lastQuickSearchPrefix = (lastQuickSearchTime + QUICK_SEARCH_MAX_DELAY < currentTime) ? valueOf(ch) : (lastQuickSearchPrefix + ch);
+
+            int searchColumn = 0;
+            if (!sortableHeaderManager.getOrderDirections().isEmpty()) {
+                for (int i = 0; i < getColumnCount(); ++i) {
+                    if (sortableHeaderManager.getSortDirection(i) != null) {
+                        searchColumn = i;
+                        break;
+                    }
+                }
+            }
+
+            for (int i = 0; i < getRowCount(); ++i) {
+                Object value = model.getValueAt(i, searchColumn);
+                if (value != null && value.toString().regionMatches(true, 0, lastQuickSearchPrefix, 0, lastQuickSearchPrefix.length())) {
+                    selectRow(i);
+                    break;
+                }
+            }
+
+            lastQuickSearchEvent = editEvent;
+            lastQuickSearchTime = currentTime;
+        }
+    }
+
+    private void quickFilter(EventObject editEvent) {
+        if (KeyStrokes.isSuitableStartFilteringEvent(editEvent)) {
+            ClientPropertyDraw currentProperty = getCurrentProperty();
+            ClientPropertyDraw filterProperty = currentProperty != null && currentProperty.quickFilterProperty != null
+                                                ? currentProperty.quickFilterProperty
+                                                : null;
+            groupController.quickEditFilter((KeyEvent) editEvent, filterProperty);
+        }
     }
 
     @Override
