@@ -3,8 +3,11 @@ package lsfusion.gwt.form.client.form.ui.layout;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
+
+import java.util.Map;
 
 public abstract class SplitContainerView<P extends Panel> extends GAbstractContainerView {
 
@@ -30,9 +33,9 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
         if (container.children.get(0) == child) {
-            splitPane.addFirstWidget(view, child.flex);
+            splitPane.addFirstWidget(child, view, child.flex);
         } else if (container.children.get(1) == child) {
-            splitPane.addSecondWidget(view, child.flex);
+            splitPane.addSecondWidget(child, view, child.flex);
         }
     }
 
@@ -48,5 +51,18 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
 
     public void updateLayout() {
         splitPane.update();
+    }
+
+    @Override
+    public Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
+        Dimension pref = getChildrenStackSize(containerViews, container.isVerticalSplit());
+
+        if (container.isVerticalSplit()) {
+            pref.height += splitPane.getSplitterSize();
+        } else {
+            pref.width += splitPane.getSplitterSize();
+        }
+
+        return pref;
     }
 }

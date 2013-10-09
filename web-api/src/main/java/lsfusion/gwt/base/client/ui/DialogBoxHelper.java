@@ -74,8 +74,7 @@ public class DialogBoxHelper {
         private MessageBox(String caption, Widget contents, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
             this.contents = contents;
 
-            ResizableSimplePanel contentsContainer = new ResizableSimplePanel();
-            contentsContainer.setWidget(this.contents);
+            ResizableSimplePanel contentsContainer = new ResizableSimplePanel(this.contents);
             contentsContainer.addStyleName("messageBox-messageContainer");
             Style contentsContainerStyle = contentsContainer.getElement().getStyle();
             contentsContainerStyle.setProperty("maxWidth", (Window.getClientWidth() * 0.75) + "px");

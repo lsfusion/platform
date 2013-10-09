@@ -193,11 +193,6 @@ public class GPanelController {
                             }
                         });
 
-                        //донастройка рендереров в лэйауте
-                        for (PanelRenderer renderer : renderers.values()) {
-                            renderer.setupLayout(this);
-                        }
-
                         addedToLayout = true;
                     }
                 } else {

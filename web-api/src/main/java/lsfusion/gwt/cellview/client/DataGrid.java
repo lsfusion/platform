@@ -76,6 +76,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     public static int nativeScrollbarWidth = AbstractNativeScrollbar.getNativeScrollbarWidth();
+    public static int nativeScrollbarHeight = AbstractNativeScrollbar.getNativeScrollbarHeight();
 
     /**
      * A ClientBundle that provides images for this widget.

@@ -10,16 +10,12 @@ import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.HasPreferredSize;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.client.form.ui.GPanelController;
 import lsfusion.gwt.form.client.form.ui.GPropertyContextMenuPopup;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GKeyStroke;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
@@ -36,8 +32,6 @@ import static lsfusion.gwt.base.shared.GwtSharedUtils.nullEquals;
 import static lsfusion.gwt.form.client.HotkeyManager.Binding;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {
-
-    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
 
     private final GFormController form;
     private final GEditPropertyDispatcher editDispatcher;
@@ -64,7 +58,6 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
         button = new ActionButton(property.getEditCaption(), property.icon);
         button.addStyleName("actionPanelRenderer");
-        property.installMargins(button);
 
         setTooltip(property.caption);
 
@@ -79,7 +72,18 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
         button.setFocusable(property.focusable);
 
+        finishLayoutSetup();
+
         initUIHandlers(iform);
+    }
+
+    private void finishLayoutSetup() {
+        if (property.isVerticallyStretched()) {
+            button.getElement().getStyle().clearHeight();
+        }
+        if (property.isHorizontallyStretched()) {
+            button.getElement().getStyle().clearWidth();
+        }
     }
 
     private void initUIHandlers(GFormController iform) {
@@ -222,11 +226,6 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     }
 
     @Override
-    public void setupLayout(GPanelController.GPropertyController controller) {
-        layoutImpl.setupActionPanelRenderer(controller, this);
-    }
-
-    @Override
     public void onEditFinished() {
         if (focusTargetAfterEdit != null) {
             Element.as(focusTargetAfterEdit).focus();
@@ -236,7 +235,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         }
     }
 
-    private class ActionButton extends ImageButton implements HasPreferredSize {
+    private class ActionButton extends ImageButton {
         private ActionButton(String caption, ImageDescription imageDescription) {
             super(caption, imageDescription);
             sinkEvents(Event.ONBLUR | Event.ONFOCUS);
@@ -258,11 +257,6 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             } else if (BrowserEvents.BLUR.equals(eventType)) {
                 getElement().getStyle().clearBorderColor();
             }
-        }
-
-        @Override
-        public Dimension getPreferredSize() {
-            return property.getOffsetSize(this);
         }
     }
 

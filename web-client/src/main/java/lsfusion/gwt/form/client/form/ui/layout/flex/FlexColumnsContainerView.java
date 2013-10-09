@@ -16,6 +16,6 @@ public class FlexColumnsContainerView extends ColumnsContainerView<FlexPanel> {
 
     @Override
     protected Widget wrapWithCaption(FlexPanel panel) {
-        return wrapWithCaptionAndSetMargins(panel);
+        return wrapWithFlexCaption(panel);
     }
 }

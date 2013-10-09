@@ -27,6 +27,6 @@ public class ResizableLayoutPanel extends ResizeLayoutPanel implements RequiresR
 
     @Override
     public Dimension getPreferredSize() {
-        return GwtClientUtils.maybeGetPreferredSize(getWidget());
+        return GwtClientUtils.calculatePreferredSize(getWidget());
     }
 }

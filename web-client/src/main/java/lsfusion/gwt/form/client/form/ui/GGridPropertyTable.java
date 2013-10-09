@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.HasPreferredSize;
 import lsfusion.gwt.cellview.client.DataGrid;
@@ -46,6 +47,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public GGridSortableHeaderManager sortableHeaderManager;
     
     public GFont font;
+
+    protected int preferredWidth;
 
     public interface GGridPropertyTableResource extends Resources {
         @Source("GGridPropertyTable.css")
@@ -110,6 +113,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public Cell.Context getCurrentCellContext() {
         return new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), getKeyboardSelectedRowValue());
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(
+                preferredWidth + nativeScrollbarWidth + 17,
+                max(140, getRowCount() * getRowHeight() + 30) + nativeScrollbarHeight
+        );
     }
 
     @Override

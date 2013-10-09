@@ -32,9 +32,8 @@ public class GGridController {
 //        panel.setStyleName("gridResizePanel");
 //        panel.setWidget(table);
 
-        ResizableSimplePanel panel = new ResizableSimplePanel();
+        ResizableSimplePanel panel = new ResizableSimplePanel(table);
         panel.setStyleName("gridResizePanel");
-        panel.setWidget(table);
         setupFillParent(panel.getElement(), table.getElement());
 
         gridView = layoutImpl.createGridView(grid, panel);

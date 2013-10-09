@@ -2,15 +2,20 @@ package lsfusion.gwt.form.client.form.ui.layout;
 
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
+import lsfusion.gwt.form.client.form.ui.layout.flex.FlexCaptionPanel;
 import lsfusion.gwt.form.client.form.ui.layout.table.TableCaptionPanel;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import static java.lang.Math.max;
+import static lsfusion.gwt.base.client.GwtClientUtils.calculatePreferredSize;
+import static lsfusion.gwt.base.client.GwtClientUtils.enlargeDimension;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.relativePosition;
 
 public abstract class GAbstractContainerView {
@@ -63,18 +68,49 @@ public abstract class GAbstractContainerView {
         return childrenViews.get(index);
     }
 
+    public Widget getChildView(GComponent child) {
+        int index = children.indexOf(child);
+        return index != -1 ? childrenViews.get(index) : null;
+    }
+
     protected boolean isTopContainerView() {
         return container.container == null;
+    }
+
+    protected Dimension getChildPreferredSize(Map<GContainer, GAbstractContainerView> containerViews, int index) {
+        return getChildPreferredSize(containerViews, getChild(index));
+    }
+
+    protected Dimension getChildPreferredSize(Map<GContainer, GAbstractContainerView> containerViews, GComponent child) {
+        Dimension dimensions = child instanceof GContainer
+                               ? containerViews.get(child).getPreferredSize(containerViews)
+                               : calculatePreferredSize(getChildView(child));
+        return enlargeDimension(dimensions, child.getHorizontalMargin(), child.getVerticalMargin());
+    }
+
+    protected Dimension getChildrenStackSize(Map<GContainer, GAbstractContainerView> containerViews, boolean vertical) {
+        int width = 0;
+        int height = 0;
+        int chCnt = children.size();
+        for (int i = 0; i < chCnt; ++i) {
+            Dimension childSize = getChildPreferredSize(containerViews, i);
+            if (vertical) {
+                width = max(width, childSize.width);
+                height += childSize.height;
+            } else {
+                width += childSize.width;
+                height = max(height, childSize.height);
+            }
+        }
+        return new Dimension(width, height);
     }
 
     protected boolean needCaption() {
         return (!isTopContainerView() && !container.container.isTabbed()) && container.caption != null;
     }
 
-    protected FlexPanel wrapWithCaptionAndSetMargins(FlexPanel view) {
-        view = needCaption() ? new GCaptionPanel(container.caption, view) : view;
-        view.setMargins(container.marginTop, container.marginBottom, container.marginLeft, container.marginRight);
-        return view;
+    protected FlexPanel wrapWithFlexCaption(FlexPanel view) {
+        return needCaption() ? new FlexCaptionPanel(container.caption, view) : view;
     }
 
     protected Widget wrapWithTableCaption(Widget content) {
@@ -95,5 +131,5 @@ public abstract class GAbstractContainerView {
     protected abstract void addImpl(int index, GComponent child, Widget view);
     protected abstract void removeImpl(int index, GComponent child, Widget view);
     public abstract Widget getView();
-
+    public abstract Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews);
 }

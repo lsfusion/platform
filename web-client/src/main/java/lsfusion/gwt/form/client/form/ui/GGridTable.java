@@ -66,8 +66,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private int pageSize = 50;
 
-    private int preferredWidth;
-
     private static final Comparator<GPropertyDraw> COLUMN_ORDER_COMPARATOR = new Comparator<GPropertyDraw>() {
         public int compare(GPropertyDraw c1, GPropertyDraw c2) {
             if (c1.orderUser == null || c2.orderUser == null)
@@ -724,14 +722,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {
         return sortableHeaderManager.getOrderDirections();
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(
-                preferredWidth + nativeScrollbarWidth + 15,
-                Math.max(140, getRowCount() * getRowHeight() + 42)
-        );
     }
 
     private class GridColumn extends Column<GridDataRecord, Object> {

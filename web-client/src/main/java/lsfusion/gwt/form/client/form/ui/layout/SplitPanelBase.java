@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.form.shared.view.GComponent;
 
 public abstract class SplitPanelBase<P extends Panel> {
     private final static int splitterSize = 8;
@@ -40,7 +41,7 @@ public abstract class SplitPanelBase<P extends Panel> {
         addSplitterImpl(splitter);
     }
 
-    public void addFirstWidget(Widget w, double flex) {
+    public void addFirstWidget(GComponent child, Widget w, double flex) {
         if (firstWidget != null) {
             remove(firstWidget);
         }
@@ -50,10 +51,10 @@ public abstract class SplitPanelBase<P extends Panel> {
         flex1 = flex <= 0 ? 1 : flex;
         flexSum = flex1 + flex2;
 
-        addFirstWidgetImpl(w);
+        addFirstWidgetImpl(child, w);
     }
 
-    public void addSecondWidget(Widget w, double flex) {
+    public void addSecondWidget(GComponent child, Widget w, double flex) {
         if (secondWidget != null) {
             remove(secondWidget);
         }
@@ -62,7 +63,7 @@ public abstract class SplitPanelBase<P extends Panel> {
         flex2 = flex <= 0 ? 1 : flex;
         flexSum = flex1 + flex2;
 
-        addSecondWidgetImpl(w);
+        addSecondWidgetImpl(child, w);
     }
 
     public void remove(Widget child) {
@@ -81,6 +82,10 @@ public abstract class SplitPanelBase<P extends Panel> {
 
     protected int getAvailableSize() {
         return (vertical ? panel.getOffsetHeight() : panel.getOffsetWidth()) - (splitter.isVisible() ? splitterSize : 0);
+    }
+
+    public int getSplitterSize() {
+        return splitterSize;
     }
 
     public P asWidget() {
@@ -126,8 +131,8 @@ public abstract class SplitPanelBase<P extends Panel> {
     }
 
     protected abstract void addSplitterImpl(Splitter splitter);
-    protected abstract void addFirstWidgetImpl(Widget widget);
-    protected abstract void addSecondWidgetImpl(Widget secondWidget);
+    protected abstract void addFirstWidgetImpl(GComponent child, Widget widget);
+    protected abstract void addSecondWidgetImpl(GComponent child, Widget secondWidget);
     protected abstract void setChildrenRatio(double ratio);
 
     protected abstract class Splitter extends Widget {

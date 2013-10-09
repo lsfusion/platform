@@ -1,7 +1,7 @@
 package lsfusion.gwt.form.shared.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
@@ -40,9 +40,9 @@ public class GComponent implements Serializable {
         String className = this.getClass().getName();
         className = className.substring(className.lastIndexOf('.') + 1);
         return className + "{" +
-                "sID='" + sID + '\'' +
-                ", defaultComponent=" + defaultComponent +
-                '}';
+               "sID='" + sID + '\'' +
+               ", defaultComponent=" + defaultComponent +
+               '}';
     }
 
     public int getAbsoluteWidth() {
@@ -59,6 +59,39 @@ public class GComponent implements Serializable {
         return -1;
     }
 
+    public boolean isVerticallyStretched() {
+        if (container != null) {
+            if (container.isTabbed() || container.isSplit()) {
+                return true;
+            } else if (container.isColumns()) {
+                return false;
+            }
+
+            assert container.isLinear();
+            return container.isVertical() && flex > 0 || container.isHorizontal() && alignment == GFlexAlignment.STRETCH;
+
+        }
+        return false;
+    }
+
+    public boolean isHorizontallyStretched() {
+        if (container != null) {
+            if (container.isTabbed() || container.isSplit()) {
+                return true;
+            } else if (container.isColumns()) {
+                return false;
+            }
+
+            assert container.isLinear();
+            return container.isHorizontal() && flex > 0 || container.isVertical() && alignment == GFlexAlignment.STRETCH;
+        }
+        return false;
+    }
+
+    public boolean hasMargins() {
+        return marginTop != 0 || marginBottom != 0 || marginLeft != 0 || marginRight != 0;
+    }
+
     public int getVerticalMargin() {
         return marginTop + marginBottom;
     }
@@ -67,11 +100,15 @@ public class GComponent implements Serializable {
         return marginLeft + marginRight;
     }
 
-    public void installMargins(Widget widget) {
-        GwtClientUtils.installMargins(widget, marginTop, marginBottom, marginLeft, marginRight);
+    public int getMargins(boolean vertical) {
+        return vertical ? getVerticalMargin() : getHorizontalMargin();
     }
 
-    public Dimension getOffsetSize(Widget widget) {
-        return GwtClientUtils.getOffsetSize(widget, getHorizontalMargin(), getVerticalMargin());
+    public void installPaddings(Widget widget) {
+        installPaddings(widget.getElement());
+    }
+
+    public void installPaddings(Element element) {
+        GwtClientUtils.installPaddings(element, marginTop, marginBottom, marginLeft, marginRight);
     }
 }

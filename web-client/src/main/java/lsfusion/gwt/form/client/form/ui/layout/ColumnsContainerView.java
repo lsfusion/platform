@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.ResizableComplexPanel;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.shared.view.GComponent;
@@ -12,6 +13,7 @@ import lsfusion.gwt.form.shared.view.GContainer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public abstract class ColumnsContainerView<P extends Panel> extends GAbstractContainerView {
     protected final static String COLUMN_PROXY_KEY = "columnsProxy";
@@ -84,7 +86,7 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
 
         columnChildren.add(rowIndex, child);
 
-        columns[colIndex].insert(new ProxyPanel(view), 2 * rowIndex);
+        columns[colIndex].insert(new ProxyPanel(child, view), 2 * rowIndex);
         columns[colIndex].insert(new Clear(), 2 * rowIndex + 1);
     }
 
@@ -112,13 +114,33 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
         return view;
     }
 
+    @Override
+    public Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
+        int width = 0;
+        int height = 0;
+        for (int i = 0; i < columnsCount; ++i) {
+            int columnHeight = 0;
+            int columnWidth = 0;
+            for (GComponent child : columnsChildren[i]) {
+                Dimension childPref = getChildPreferredSize(containerViews, child);
+                columnHeight += childPref.height;
+                columnWidth = Math.max(columnWidth, childPref.width);
+            }
+            width += columnWidth;
+            height = Math.max(height, columnHeight);
+        }
+        return new Dimension(width, height);
+    }
+
     private static final class ProxyPanel extends ResizableSimplePanel {
-        private ProxyPanel(Widget child) {
-            setWidget(child);
+        private ProxyPanel(GComponent component, Widget child) {
+            super(child);
 
             child.getElement().setPropertyObject(COLUMN_PROXY_KEY, this);
 
             getElement().getStyle().setFloat(Style.Float.LEFT);
+
+            component.installPaddings(this);
         }
     }
 

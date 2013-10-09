@@ -2,11 +2,15 @@ package lsfusion.gwt.form.client.form.ui.layout.table;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.base.client.Dimension;
+import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.*;
 import lsfusion.gwt.base.client.ui.DivWidget;
 import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
+
+import java.util.Map;
 
 import static com.google.gwt.user.client.ui.HasHorizontalAlignment.*;
 import static com.google.gwt.user.client.ui.HasVerticalAlignment.*;
@@ -35,28 +39,19 @@ public class TableLinearContainerView extends GAbstractContainerView {
         panel = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
         panel.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
 
-        view = wrapWithCaptionAndSetMargins(panel);
-    }
-
-    protected Widget wrapWithCaptionAndSetMargins(CellPanel view) {
-        return  needCaption() ? new TableCaptionPanel(container.caption, view) : view;
+        view = wrapWithTableCaption(panel);
     }
 
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
-//        ProxyPanel proxyPanel = new ProxyPanel(view);
-//        panel.insert(proxyPanel, index);
         if (startFillAdded) {
             index++;
         }
         ((InsertPanel)panel).insert(view, index);
-        updateLayout();
     }
 
     @Override
     protected void removeImpl(int index, GComponent child, Widget view) {
-//        ProxyPanel proxyPanel = (ProxyPanel) view.getElement().getPropertyObject(CELL_PROXY_KEY);
-//        panel.remove(proxyPanel);
         panel.remove(view);
     }
 
@@ -103,6 +98,8 @@ public class TableLinearContainerView extends GAbstractContainerView {
             GComponent child = children.get(i);
             Widget childView = childrenViews.get(i);
             if (childView.isVisible()) {
+                setCellPaddings(childView, child.marginTop, child.marginBottom, child.marginLeft, child.marginRight);
+
                 if (child.flex > 0) {
                     setCellMainSize(childView, child.flex / sumFlex * 100 + "%");
                     setMainSize(childView, "100%");
@@ -137,8 +134,13 @@ public class TableLinearContainerView extends GAbstractContainerView {
                 }
             } else {
                 setCellMainSize(childView, "0px");
+                setCellPaddings(childView, 0, 0, 0, 0);
             }
         }
+    }
+
+    private void setCellPaddings(Widget childView, int marginTop, int marginBottom, int marginLeft, int marginRight) {
+        GwtClientUtils.installPaddings(childView.getElement().getParentElement(), marginTop, marginBottom, marginLeft, marginRight);
     }
 
     public VerticalAlignmentConstant getCellVertAlignment(GFlexAlignment alignment) {
@@ -190,5 +192,10 @@ public class TableLinearContainerView extends GAbstractContainerView {
         } else {
             panel.setCellWidth(child, size);
         }
+    }
+
+    @Override
+    public Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
+        return getChildrenStackSize(containerViews, vertical);
     }
 }

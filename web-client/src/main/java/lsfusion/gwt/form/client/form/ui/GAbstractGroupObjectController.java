@@ -31,7 +31,7 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
         if (toolbar == null || !toolbar.visible) {
             toolbarView = null;
         } else {
-            toolbarView = new GToolbarView(toolbar);
+            toolbarView = new GToolbarView();
             getFormLayout().add(toolbar, toolbarView);
         }
     }

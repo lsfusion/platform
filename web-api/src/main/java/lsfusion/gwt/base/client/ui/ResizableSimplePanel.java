@@ -8,6 +8,13 @@ import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.GwtClientUtils;
 
 public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, HasPreferredSize {
+    public ResizableSimplePanel() {
+    }
+
+    public ResizableSimplePanel(Widget child) {
+        super(child);
+    }
+
     @Override
     public void onResize() {
         if (!visible) {
@@ -30,6 +37,6 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
 
     @Override
     public Dimension getPreferredSize() {
-        return GwtClientUtils.maybeGetPreferredSize(getWidget());
+        return GwtClientUtils.calculatePreferredSize(getWidget());
     }
 }

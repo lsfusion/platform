@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.client.form.ui.layout;
 
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.client.form.ui.DefaultFocusReceiver;
 import lsfusion.gwt.form.client.form.ui.GFormController;
@@ -137,5 +138,10 @@ public class GFormLayout extends ResizableSimplePanel {
         }
         containerView.getView().setVisible(hasVisible);
         containerView.updateLayout();
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return containerViews.get(mainContainer).getPreferredSize(containerViews);
     }
 }

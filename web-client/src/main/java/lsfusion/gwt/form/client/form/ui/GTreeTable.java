@@ -43,8 +43,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private GTreeGroupController treeGroupController;
 
-    private int preferredWidth;
-
     public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController) {
         super(iformController, treeGroupController.getFont());
 
@@ -486,14 +484,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void clearOrders(GGroupObject groupObject) {
         sortableHeaderManager.clearOrders(groupObject);
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(
-                preferredWidth + nativeScrollbarWidth + 15,
-                Math.max(140, getRowCount() * getRowHeight() + 42)
-        );
     }
 
     public class TreeTableKeyboardSelectionHandler extends GridPropertyTableKeyboardSelectionHandler<GTreeGridRecord> {

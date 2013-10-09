@@ -4,13 +4,15 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
 
 import java.util.ArrayList;
+import java.util.Map;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.scheduleOnResize;
+import static lsfusion.gwt.base.client.GwtClientUtils.*;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.relativePosition;
 
 public class TabbedContainerView extends GAbstractContainerView {
@@ -20,7 +22,7 @@ public class TabbedContainerView extends GAbstractContainerView {
 
         boolean remove(int index);
 
-        void insertTab(Widget child, String tabTitle, int index);
+        void insertTab(GComponent child, Widget childView, String tabTitle, int index);
 
         int getSelectedTab();
 
@@ -29,6 +31,8 @@ public class TabbedContainerView extends GAbstractContainerView {
         void selectTab(int i);
 
         Widget asWidget();
+
+        int getTabBarHeight();
     }
 
     protected final TabbedDelegate tabbedDelegate;
@@ -96,7 +100,7 @@ public class TabbedContainerView extends GAbstractContainerView {
                 if (index == -1) {
                     index = relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
-                    tabbedDelegate.insertTab(childView, getTabTitle(child), index);
+                    tabbedDelegate.insertTab(child, childView, getTabTitle(child), index);
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);
@@ -104,6 +108,17 @@ public class TabbedContainerView extends GAbstractContainerView {
             }
         }
         ensureTabSelection();
+    }
+
+    @Override
+    public Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
+        int selected = tabbedDelegate.getSelectedTab();
+        if (selected != -1) {
+            Dimension dimensions = getChildPreferredSize(containerViews, selected);
+            dimensions.height += tabbedDelegate.getTabBarHeight() + 5; //little extra for borders, etc.
+            return dimensions;
+        }
+        return new Dimension(0, 0);
     }
 
     private void ensureTabSelection() {

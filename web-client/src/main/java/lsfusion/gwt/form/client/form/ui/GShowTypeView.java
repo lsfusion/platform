@@ -3,8 +3,6 @@ package lsfusion.gwt.form.client.form.ui;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.HasPreferredSize;
 import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
@@ -14,7 +12,7 @@ import lsfusion.gwt.form.shared.view.GGroupObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GShowTypeView extends ResizableHorizontalPanel implements HasPreferredSize {
+public class GShowTypeView extends ResizableHorizontalPanel {
     private Button gridButton;
     private Button panelButton;
     private Button hideButton;
@@ -27,8 +25,6 @@ public class GShowTypeView extends ResizableHorizontalPanel implements HasPrefer
     public GShowTypeView(final GFormController iform, final GGroupObject igroupObject) {
         form = iform;
         groupObject = igroupObject;
-
-        groupObject.showType.installMargins(this);
 
         add(gridButton = createShowTypeButton("view_grid.png", GClassViewType.GRID, "Таблица"));
         add(panelButton = createShowTypeButton("view_panel.png", GClassViewType.PANEL, "Панель"));
@@ -74,11 +70,6 @@ public class GShowTypeView extends ResizableHorizontalPanel implements HasPrefer
 
     public void update(GClassViewType classView) {
         setClassView(classView);
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return groupObject.showType.getOffsetSize(this);
     }
 
     private class ChangeViewBtnClickHandler implements ClickHandler {

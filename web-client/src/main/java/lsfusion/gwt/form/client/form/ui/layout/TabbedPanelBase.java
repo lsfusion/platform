@@ -3,14 +3,10 @@ package lsfusion.gwt.form.client.form.ui.layout;
 import com.google.gwt.event.logical.shared.*;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.HasPreferredSize;
-
-import static lsfusion.gwt.base.client.GwtClientUtils.maybeGetPreferredSize;
 
 public class TabbedPanelBase extends Composite implements IndexedPanel,
                                                           HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>,
-                                                          RequiresResize, ProvidesResize, HasPreferredSize {
+                                                          RequiresResize, ProvidesResize {
     public interface TabBar {
         Widget asWidget();
 
@@ -182,22 +178,13 @@ public class TabbedPanelBase extends Composite implements IndexedPanel,
         return tabBar.getSelectedTab();
     }
 
-    /**
-     * Programmatically selects the specified tab and fires events.
-     * @param index the index of the tab to be selected
-     */
+    @SuppressWarnings("UnusedDeclaration")
     public void selectTab(int index) {
         tabBar.selectTab(index);
     }
 
-    @Override
-    public Dimension getPreferredSize() {
-        int selected = getSelectedTab();
-        if (selected != -1) {
-            Dimension dimensions = maybeGetPreferredSize(getWidget(selected));
-            dimensions.height += tabBar.asWidget().getOffsetHeight() + 5; //little extra for borders, etc.
-            return dimensions;
-        }
-        return new Dimension(0, 0);
+    @SuppressWarnings("UnusedDeclaration")
+    public int getTabBarHeight() {
+        return tabBar.asWidget().getOffsetHeight() + 5; //little extra for borders, etc.
     }
 }

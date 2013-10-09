@@ -18,6 +18,7 @@ public class ImageButton extends Button {
     private String text = "";
 
     private boolean focusable = true;
+    private boolean vertical;
 
     public ImageButton() {
         this(null, null, false);
@@ -41,6 +42,8 @@ public class ImageButton extends Button {
     }
 
     public ImageButton(String caption, String imagePath, boolean vertical) {
+        this.vertical = vertical;
+
         panel = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
 
         image = new Image();
@@ -51,17 +54,15 @@ public class ImageButton extends Button {
 
         label = new Label();
 
-        panel.add(image);
+//        panel.add(image);
         if (!vertical) {
             panel.add(strut);
         }
         panel.add(label);
 
         if (vertical) {
-            panel.setCellHorizontalAlignment(image, HasHorizontalAlignment.ALIGN_CENTER);
             panel.setCellHorizontalAlignment(label, HasHorizontalAlignment.ALIGN_CENTER);
         } else {
-            panel.setCellVerticalAlignment(image, HasAlignment.ALIGN_MIDDLE);
             panel.setCellVerticalAlignment(label, HasAlignment.ALIGN_MIDDLE);
         }
         panel.getElement().getStyle().setProperty("margin", "auto");
@@ -92,13 +93,24 @@ public class ImageButton extends Button {
         setAbsoluteImagePath(imagePath == null ? null : GwtClientUtils.getWebAppBaseURL() + imagePath);
     }
 
-    public void setAbsoluteImagePath(String imagePath) {
+    private void setAbsoluteImagePath(String imagePath) {
         if (!GwtSharedUtils.nullEquals(this.imagePath, imagePath)) {
             image.setUrl(imagePath == null ? "" : imagePath);
 
             if ((this.imagePath == null && imagePath != null) || (this.imagePath != null && imagePath == null)) {
                 image.setVisible(imagePath != null);
                 updateStrut();
+
+                if (imagePath == null) {
+                    image.removeFromParent();
+                } else {
+                    ((InsertPanel)panel).insert(image, 0);
+                    if (vertical) {
+                        panel.setCellHorizontalAlignment(image, HasHorizontalAlignment.ALIGN_CENTER);
+                    } else {
+                        panel.setCellVerticalAlignment(image, HasAlignment.ALIGN_MIDDLE);
+                    }
+                }
             }
 
             this.imagePath = imagePath;

@@ -11,25 +11,21 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.base.client.ui.HasPreferredSize;
 import lsfusion.gwt.base.client.ui.ResizableComplexPanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.client.form.ui.GPanelController;
 import lsfusion.gwt.form.client.form.ui.GSinglePropertyTable;
 import lsfusion.gwt.form.client.form.ui.TooltipManager;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GKeyStroke;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
 
+import static lsfusion.gwt.base.client.GwtClientUtils.getOffsetSize;
 import static lsfusion.gwt.form.client.HotkeyManager.Binding;
 
 public class DataPanelRenderer implements PanelRenderer {
-    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
-
     public final GPropertyDraw property;
 
     public final FlexPanel panel;
@@ -81,7 +77,7 @@ public class DataPanelRenderer implements PanelRenderer {
 
         valueTable = new ValueTable(form, columnKey);
 
-        gridPanel = new GridPanel();
+        gridPanel = new ResizableComplexPanel();
         gridPanel.addStyleName("dataPanelRendererGridPanel");
 
         if (property.focusable) {
@@ -98,14 +94,13 @@ public class DataPanelRenderer implements PanelRenderer {
 
         valueTable.setSize("100%", "100%");
 
-        panel = new FlexPanel(vertical);
+        panel = new Panel(vertical);
         panel.addStyleName("dataPanelRendererPanel");
 
         // Рамка фокуса сделана как абсолютно позиционированный div с border-width: 2px,
         // который выходит за пределы панели, поэтому убираем overflow: hidden
         panel.getElement().getStyle().clearOverflow();
-
-        property.installMargins(panel);
+        gridPanel.getElement().getStyle().clearOverflow();
 
         panel.add(label, GFlexAlignment.CENTER);
         panel.add(gridPanel, vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER, 1, "auto");
@@ -123,6 +118,8 @@ public class DataPanelRenderer implements PanelRenderer {
         gridPanel.getElement().getStyle().setProperty("maxHeight", preferredHeight);
         gridPanel.getElement().getStyle().setProperty("maxWidth", preferredWidth);
 
+        finishLayoutSetup();
+
         valueTable.getElement().setPropertyObject("groupObject", property.groupObject);
         if (property.editKey != null) {
             form.addHotkeyBinding(property.groupObject, property.editKey, new Binding() {
@@ -136,9 +133,23 @@ public class DataPanelRenderer implements PanelRenderer {
         }
     }
 
-    @Override
-    public void setupLayout(GPanelController.GPropertyController controller) {
-        layoutImpl.setupDataPanelRenderer(controller, this);
+    private void finishLayoutSetup() {
+        if (property.isVerticallyStretched()) {
+            panel.setChildAlignment(gridPanel, GFlexAlignment.STRETCH);
+
+            gridPanel.getElement().getStyle().clearHeight();
+            gridPanel.getElement().getStyle().clearProperty("minHeight");
+            gridPanel.getElement().getStyle().clearProperty("maxHeight");
+            gridPanel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
+
+            valueTable.setupFillParent();
+        }
+
+        if (property.isHorizontallyStretched()) {
+            gridPanel.getElement().getStyle().clearWidth();
+            gridPanel.getElement().getStyle().clearProperty("minWidth");
+            gridPanel.getElement().getStyle().clearProperty("maxWidth");
+        }
     }
 
     @Override
@@ -188,12 +199,28 @@ public class DataPanelRenderer implements PanelRenderer {
         valueTable.setFocus(true);
     }
 
-    private class GridPanel extends ResizableComplexPanel implements HasPreferredSize {
+    private class Panel extends FlexPanel {
+        public Panel(boolean vertical) {
+            super(vertical);
+        }
+
         @Override
         public Dimension getPreferredSize() {
-            //+2 for border
-            return new Dimension(property.getPreferredPixelWidth() + 2 + property.getHorizontalMargin(),
-                                 property.getPreferredPixelHeight() + 2 + property.getVerticalMargin());
+            Dimension pref = getOffsetSize(label);
+
+            //+extra for borders and margins
+            int width = property.getPreferredPixelWidth() + 5;
+            int height = property.getPreferredPixelHeight() + 5;
+
+            if (isVertical()) {
+                pref.width = Math.max(pref.width, width);
+                pref.height += height;
+            } else {
+                pref.width += width;
+                pref.height = Math.max(pref.height, height);
+            }
+
+            return pref;
         }
     }
 

@@ -231,36 +231,21 @@ public class GwtClientUtils {
         return new Dimension(widget.getOffsetWidth() + widthExtra, widget.getOffsetHeight() + heightExtra);
     }
 
-    public static Dimension maybeGetPreferredSize(Widget widget) {
-        return maybeGetPreferredSize(widget, true);
-    }
-
-    public static Dimension enlargeDimension(Dimension dim, int extraWidth, int extraHeight) {
-        dim.width += extraWidth;
-        dim.height += extraHeight;
-        return dim;
-    }
-
-    public static Dimension maybeGetPreferredSize(Widget widget, boolean useOffsetSize) {
+    public static Dimension calculatePreferredSize(Widget widget) {
         if (widget instanceof HasPreferredSize) {
             return ((HasPreferredSize) widget).getPreferredSize();
-        } else if (useOffsetSize) {
+        } else {
             return new Dimension(widget.getOffsetWidth(), widget.getOffsetHeight());
         }
-        return new Dimension(0, 0);
     }
 
     public static Dimension calculateStackPreferredSize(Iterator<Widget> widgets, boolean vertical) {
-        return calculateStackPreferredSize(widgets, vertical, true);
-    }
-
-    public static Dimension calculateStackPreferredSize(Iterator<Widget> widgets, boolean vertical, boolean useOffsetSize) {
         int width = 0;
         int height = 0;
         while (widgets.hasNext()) {
             Widget childView = widgets.next();
             if (childView.isVisible()) {
-                Dimension childSize = maybeGetPreferredSize(childView, useOffsetSize);
+                Dimension childSize = calculatePreferredSize(childView);
                 if (vertical) {
                     width = max(width, childSize.width);
                     height += childSize.height;
@@ -273,12 +258,18 @@ public class GwtClientUtils {
         return new Dimension(width, height);
     }
 
-    public static void installMargins(Widget widget, int marginTop, int marginBottom, int marginLeft, int marginRight) {
-        Style style = widget.getElement().getStyle();
-        style.setMarginTop(marginTop, Style.Unit.PX);
-        style.setMarginBottom(marginBottom, Style.Unit.PX);
-        style.setMarginLeft(marginLeft, Style.Unit.PX);
-        style.setMarginRight(marginRight, Style.Unit.PX);
+    public static Dimension enlargeDimension(Dimension dim, int extraWidth, int extraHeight) {
+        dim.width += extraWidth;
+        dim.height += extraHeight;
+        return dim;
+    }
+
+    public static void installPaddings(Element element, int paddingTop, int paddingBottom, int paddingLeft, int paddingRight) {
+        Style style = element.getStyle();
+        style.setPaddingTop(paddingTop, Style.Unit.PX);
+        style.setPaddingBottom(paddingBottom, Style.Unit.PX);
+        style.setPaddingLeft(paddingLeft, Style.Unit.PX);
+        style.setPaddingRight(paddingRight, Style.Unit.PX);
     }
 
     public static void scheduleOnResize(final Widget widget) {

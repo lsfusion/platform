@@ -1,7 +1,6 @@
 package lsfusion.gwt.form.shared.view.panel;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.form.client.form.ui.GPanelController;
 
 public interface PanelRenderer {
     Widget getComponent();
@@ -15,6 +14,4 @@ public interface PanelRenderer {
     void updateCellForegroundValue(Object value);
 
     void focus();
-
-    void setupLayout(GPanelController.GPropertyController gPropertyController);
 }
