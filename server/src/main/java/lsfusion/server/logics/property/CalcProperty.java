@@ -402,12 +402,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getPullDataChanges(changes, toNull).add(changes);
     }
 
-    private ImSet<CalcProperty> recDepends;
-    @ManualLazy
+    @IdentityLazy
     public ImSet<CalcProperty> getRecDepends() {
-        if(recDepends==null)
-            recDepends = calculateRecDepends();
-        return recDepends;
+        return calculateRecDepends();
     }
 
     public ImSet<CalcProperty> calculateRecDepends() {
