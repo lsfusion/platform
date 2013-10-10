@@ -24,8 +24,6 @@
     overflow: hidden;
     white-space: nowrap;
     cursor: default;
-
-    position: relative;
 }
 
 .dataGridCellInnerDiv {

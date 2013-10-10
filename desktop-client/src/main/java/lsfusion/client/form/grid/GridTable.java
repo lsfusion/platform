@@ -42,7 +42,7 @@ public class GridTable extends ClientPropertyTable {
     public static final String GOTO_LAST_ACTION = "gotoLastRow";
     public static final String GOTO_FIRST_ACTION = "gotoFirstRow";
 
-    private static final long QUICK_SEARCH_MAX_DELAY = 900;
+    private static final long QUICK_SEARCH_MAX_DELAY = 1000;
     private String lastQuickSearchPrefix = "";
     private long lastQuickSearchTime = 0;
     private EventObject lastQuickSearchEvent;

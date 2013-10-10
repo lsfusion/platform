@@ -8,22 +8,39 @@ import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
 
 public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     @Override
     public void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value) {
-        cellElement.setAttribute("align", "center");
-
         ImageElement img = cellElement.appendChild(Document.get().createImageElement());
-        img.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
-        if (value instanceof String) {
-            img.setSrc(imageSrc(value));
+
+        Style imgStyle = img.getStyle();
+        imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
+        imgStyle.setProperty("maxWidth", "100%");
+        imgStyle.setProperty("maxHeight", "100%");
+        imgStyle.setProperty("margin", "auto");
+
+        imgStyle.setPosition(Style.Position.ABSOLUTE);
+        imgStyle.setTop(0, Style.Unit.PX);
+        imgStyle.setLeft(0, Style.Unit.PX);
+        imgStyle.setBottom(0, Style.Unit.PX);
+        imgStyle.setRight(0, Style.Unit.PX);
+
+        if (table instanceof GGridPropertyTable) {
+            cellElement.getStyle().setPosition(Style.Position.RELATIVE);
         }
+
+        setImageSrc(img, value);
     }
 
     @Override
     public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
         ImageElement img = cellElement.getFirstChild().cast();
+        setImageSrc(img, value);
+    }
+
+    private void setImageSrc(ImageElement img, Object value) {
         if (value instanceof String) {
             img.setSrc(imageSrc(value));
         } else {
