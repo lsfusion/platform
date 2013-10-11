@@ -227,11 +227,11 @@ FORM forms 'Формы'
     PROPERTIES(tf) READONLY sidNavigatorElement, captionNavigatorElement
 
     OBJECTS u=CustomUser FIXED PANEL
-    PROPERTIES(u) READONLY firstNameContact, lastNameContact, loginCustomUser
+    PROPERTIES(u) SELECTOR firstNameContact, lastNameContact, loginCustomUser
 
     OBJECTS g=GroupObject
-    PROPERTIES(g) READONLY sidGroupObject, fontSizeGroupObject, isFontBoldGroupObject, isFontItalicGroupObject, hasUserPreferencesGroupObject
-    PROPERTIES(g,u) READONLY fontSizeGroupObjectCustomUser, isFontBoldGroupObjectCustomUser, isFontItalicGroupObjectCustomUser, hasUserPreferencesGroupObjectCustomUser
+    PROPERTIES(g) sidGroupObject READONLY, fontSizeGroupObject, isFontBoldGroupObject, isFontItalicGroupObject, hasUserPreferencesGroupObject
+    PROPERTIES(g,u) fontSizeGroupObjectCustomUser, isFontBoldGroupObjectCustomUser, isFontItalicGroupObjectCustomUser, hasUserPreferencesGroupObjectCustomUser
 
     OBJECTS p=PropertyDraw
     PROPERTIES(p) READONLY sidPropertyDraw, captionPropertyDraw
@@ -249,8 +249,7 @@ FORM forms 'Формы'
 
     FILTERS
         navigatorElementGroupObject(g)==tf,
-        formPropertyDraw(p)==tf,
-        currentUser()==u
+        formPropertyDraw(p)==tf
 
     FILTERGROUP filtersForm
         FILTER 'Свойства только текущей группы объектов' 'F8' groupObjectPropertyDraw(p)==g
