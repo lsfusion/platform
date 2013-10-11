@@ -42,7 +42,7 @@ public class GridTable extends ClientPropertyTable {
     public static final String GOTO_LAST_ACTION = "gotoLastRow";
     public static final String GOTO_FIRST_ACTION = "gotoFirstRow";
 
-    private static final long QUICK_SEARCH_MAX_DELAY = 1000;
+    private static final long QUICK_SEARCH_MAX_DELAY = 2000;
     private String lastQuickSearchPrefix = "";
     private long lastQuickSearchTime = 0;
     private EventObject lastQuickSearchEvent;
@@ -358,30 +358,6 @@ public class GridTable extends ClientPropertyTable {
             selectionController.keysChanged(viewMoveInterval < 0);
         }
 
-        //todo: сложно оттестить, но по идее всё это не нужно... убрать, когда подтвердится, что всё ок
-//        // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
-//        // приходится это делать за него, а то JViewPort смотрит именно на getHeight()
-//        setSize(getSize().width, getRowHeight() * getRowCount());
-//
-//        adjustSelection();
-//
-//        setPreferredScrollableViewportSize(getPreferredSize());
-//
-//        if (groupObject.grid.minimumSize != null) {
-//            gridView.pane.setMinimumSize(
-//                    overrideSize(gridView.pane.getMinimumSize(), groupObject.grid.minimumSize));
-//        }
-//
-//        if (groupObject.grid.preferredSize != null) {
-//            gridView.pane.setPreferredSize(
-//                    overrideSize(gridView.pane.getPreferredSize(), groupObject.grid.preferredSize));
-//        }
-//
-//        if (groupObject.grid.maximumSize != null) {
-//            gridView.pane.setMaximumSize(
-//                    overrideSize(gridView.pane.getMaximumSize(), groupObject.grid.maximumSize));
-//        }
-
         adjustSelection();
 
         previousSelectedRow = getCurrentRow();
@@ -504,7 +480,7 @@ public class GridTable extends ClientPropertyTable {
     }
 
     protected void selectRow(int rowNumber) {
-        if (rowNumber < 0 || rowNumber > getRowCount()) {
+        if (rowNumber < 0 || rowNumber >= getRowCount()) {
             return;
         }
 
@@ -526,6 +502,20 @@ public class GridTable extends ClientPropertyTable {
             }
             getSelectionModel().setLeadSelectionIndex(rowNumber);
         }
+    }
+
+    protected void centerAndSelectRow(int rowNumber) {
+        assert rowNumber >= 0 && rowNumber < getRowCount();
+
+        int rowTop = rowNumber * getRowHeight();
+
+        Rectangle viewRect = ((JViewport) getParent()).getViewRect();
+
+        viewRect.y = max(0, rowTop - max(0, (viewRect.height - getRowHeight()) / 2));
+
+        ((JViewport) getParent()).setViewPosition(viewRect.getLocation());
+
+        selectRow(rowNumber);
     }
 
     public void setRowKeys(List<ClientGroupObjectValue> irowKeys) {
@@ -829,7 +819,7 @@ public class GridTable extends ClientPropertyTable {
             for (int i = 0; i < getRowCount(); ++i) {
                 Object value = model.getValueAt(i, searchColumn);
                 if (value != null && value.toString().regionMatches(true, 0, lastQuickSearchPrefix, 0, lastQuickSearchPrefix.length())) {
-                    selectRow(i);
+                    centerAndSelectRow(i);
                     break;
                 }
             }
