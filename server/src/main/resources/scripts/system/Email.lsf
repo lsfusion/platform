@@ -64,6 +64,8 @@ toAddressEmail 'Кому' = DATA VARSTRING[100] (Email);
 dateTimeSentEmail 'Дата отправки' = DATA DATETIME (Email);
 dateTimeReceivedEmail 'Дата получения' = DATA DATETIME (Email);
 messageEmail 'Сообщение' = DATA TEXT (Email);
+emlFileEmail 'Файл EML' = DATA CUSTOMFILE (Email);
+openEMLFileEmail 'Открыть файл EML' (email) = ACTION OPENFILE emlFileEmail (email);
 
 receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty';
 
@@ -119,7 +121,7 @@ FORM mail 'Почта'
     OBJECTS e=Email
   
     PROPERTIES(e) subjectEmail, fromAddressEmail, toAddressEmail, dateTimeSentEmail, 
-                   dateTimeReceivedEmail, messageEmail READONLY FORCE PANEL
+                   dateTimeReceivedEmail, openEMLFileEmail, messageEmail READONLY FORCE PANEL
     PROPERTIES(e) DELETE
     PROPERTIES() FORCE PANEL receiveEmailAction TODRAW e 
     FILTERS accountEmail(e)==a

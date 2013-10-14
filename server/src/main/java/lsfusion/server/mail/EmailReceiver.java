@@ -17,10 +17,7 @@ import org.apache.log4j.Logger;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMultipart;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -91,7 +88,11 @@ public class EmailReceiver {
         ImportField messageEmailField = new ImportField(LM.findLCPByCompoundName("messageEmail"));
         props.add(new ImportProperty(messageEmailField, LM.findLCPByCompoundName("messageEmail").getMapping(emailKey)));
         fields.add(messageEmailField);
-
+        
+        ImportField emlFileEmailField = new ImportField(LM.findLCPByCompoundName("emlFileEmail"));
+        props.add(new ImportProperty(emlFileEmailField, LM.findLCPByCompoundName("emlFileEmail").getMapping(emailKey)));
+        fields.add(emlFileEmailField);
+        
         ImportTable table = new ImportTable(fields, data);
 
         DataSession session = context.createSession();
@@ -168,8 +169,9 @@ public class EmailReceiver {
             String idEmail = String.valueOf(dateTimeSentEmail.getTime()) + fromAddressEmail;
             String subjectEmail = message.getSubject();
             MultipartBody messageEmail = getMultipartBody((Multipart) message.getContent());
+            byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
             dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
-                    fromAddressEmail, nameAccount, subjectEmail, messageEmail.message));
+                    fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
             int counter = 1;
             for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
                 dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
@@ -181,6 +183,12 @@ public class EmailReceiver {
         emailStore.close();
 
         return Arrays.asList(dataEmails, dataAttachments);
+    }
+
+    private byte[] getEMLByteArray (Message msg) throws IOException, MessagingException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        msg.writeTo(out); //вообще, out сначала необходимо MimeUtility.encode, а при открытии - decode, чтобы всё сохранялось корректно
+        return out.toByteArray();
     }
 
     private MultipartBody getMultipartBody(Multipart mp) throws IOException, MessagingException {
