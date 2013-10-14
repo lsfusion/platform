@@ -305,8 +305,9 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 allUsersPanelPanel.add(applyForAllButton, BorderLayout.NORTH);
                 allUsersPanelPanel.add(resetForAllButton, BorderLayout.SOUTH);
                 applyResetButtonsPanel.add(allUsersPanelPanel, BorderLayout.EAST);
-                fontAndApplyResetPanel.add(applyResetButtonsPanel);
             }
+
+            fontAndApplyResetPanel.add(applyResetButtonsPanel);
 
             JPanel bottomPanel = new JPanel();
             bottomPanel.setLayout(new BorderLayout());
