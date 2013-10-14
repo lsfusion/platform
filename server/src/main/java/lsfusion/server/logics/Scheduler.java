@@ -157,8 +157,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
     public void setupScheduledTasks(DataSession session) throws SQLException, ScriptingErrorLog.SemanticErrorException {
 
-        KeyExpr scheduledTask1Expr = new KeyExpr("scheduledTask");
-        ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTask1Expr);
+        KeyExpr scheduledTaskExpr = new KeyExpr("scheduledTask");
+        ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTaskExpr);
 
         QueryBuilder<Object, Object> scheduledTaskQuery = new QueryBuilder<Object, Object>(scheduledTaskKeys);
         scheduledTaskQuery.addProperty("runAtStartScheduledTask", businessLogics.schedulerLM.runAtStartScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
@@ -166,7 +166,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         scheduledTaskQuery.addProperty("periodScheduledTask", businessLogics.schedulerLM.periodScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
         scheduledTaskQuery.addProperty("schedulerStartTypeScheduledTask", businessLogics.schedulerLM.schedulerStartTypeScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
 
-        scheduledTaskQuery.and(businessLogics.schedulerLM.activeScheduledTask.getExpr(scheduledTask1Expr).getWhere());
+        scheduledTaskQuery.and(businessLogics.schedulerLM.activeScheduledTask.getExpr(scheduledTaskExpr).getWhere());
 
         if(daemonTasksExecutor!=null)
             daemonTasksExecutor.shutdown();
@@ -186,14 +186,13 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             Object schedulerStartType = value.get("schedulerStartTypeScheduledTask");
 
             KeyExpr scheduledTaskDetailExpr = new KeyExpr("scheduledTaskDetail");
-            KeyExpr scheduledTaskExpr = new KeyExpr("scheduledTask");
-            ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.<Object, KeyExpr>toRevMap("scheduledTaskDetail", scheduledTaskDetailExpr, "scheduledTask", scheduledTaskExpr);
+            ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTaskDetail", scheduledTaskDetailExpr);
 
             QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<Object, Object>(scheduledTaskDetailKeys);
             scheduledTaskDetailQuery.addProperty("SIDPropertyScheduledTaskDetail", businessLogics.schedulerLM.SIDPropertyScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
             scheduledTaskDetailQuery.addProperty("orderScheduledTaskDetail", businessLogics.schedulerLM.orderScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
             scheduledTaskDetailQuery.and(businessLogics.schedulerLM.activeScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).getWhere());
-            scheduledTaskDetailQuery.and(scheduledTaskExpr.compare(currentScheduledTaskObject, Compare.EQUALS));
+            scheduledTaskDetailQuery.and(businessLogics.schedulerLM.scheduledTaskScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).compare(currentScheduledTaskObject, Compare.EQUALS));
 
             TreeMap<Integer, LAP> propertySIDMap = new TreeMap<Integer, LAP>();
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session.sql);

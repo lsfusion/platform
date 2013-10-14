@@ -65,16 +65,14 @@ messageScheduledClientTaskLog 'Сообщение'= DATA VARSTRING[200] (Schedul
 
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty';
 
-WHEN [GROUP SUM 1 IF
-    ((CHANGED (runAtStartScheduledTask(scheduledTask)) AND activeScheduledTaskDetail(scheduledTaskDetail)) OR
-    (CHANGED (startDateScheduledTask(scheduledTask)) AND activeScheduledTaskDetail(scheduledTaskDetail)) OR
-    (CHANGED (periodScheduledTask(scheduledTask)) AND activeScheduledTaskDetail(scheduledTaskDetail)) OR
-    (CHANGED (schedulerStartTypeScheduledTask(scheduledTask)) AND activeScheduledTaskDetail(scheduledTaskDetail)) OR
-    (CHANGED (activeScheduledTask(scheduledTask)) AND activeScheduledTaskDetail(scheduledTaskDetail)) OR
-    CHANGED (activeScheduledTaskDetail(scheduledTaskDetail)) OR
-    CHANGED (orderScheduledTaskDetail(scheduledTaskDetail)))] ()
-        DO EXEC runSetupScheduler();
-
+WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (periodScheduledTask(t)) 
+    OR CHANGED (schedulerStartTypeScheduledTask(t)) OR CHANGED (schedulerStartTypeScheduledTask(t))) AND activeScheduledTask(t))
+ DO EXEC runSetupScheduler();
+ 
+ WHEN ((CHANGED (activeScheduledTaskDetail(td)) OR CHANGED (orderScheduledTaskDetail(td)) 
+    OR CHANGED (scheduledTaskScheduledTaskDetail(td)) OR CHANGED (propertyScheduledTaskDetail(td))) AND activeScheduledTask(scheduledTaskScheduledTaskDetail(td)))
+  DO EXEC runSetupScheduler();
+           
 FORM scheduledTask 'Планировщик'
 
     OBJECTS t=ScheduledTask

@@ -20,6 +20,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP activeScheduledTask;
     public LCP activeScheduledTaskDetail;
     public LCP orderScheduledTaskDetail;
+    public LCP scheduledTaskScheduledTaskDetail;
 
     public LCP SIDPropertyScheduledTaskDetail;
     
@@ -55,6 +56,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
         activeScheduledTask = getLCPByName("activeScheduledTask");
         activeScheduledTaskDetail = getLCPByName("activeScheduledTaskDetail");
         orderScheduledTaskDetail = getLCPByName("orderScheduledTaskDetail");
+        scheduledTaskScheduledTaskDetail = getLCPByName("scheduledTaskScheduledTaskDetail");
 
         SIDPropertyScheduledTaskDetail = getLCPByName("SIDPropertyScheduledTaskDetail");
         
