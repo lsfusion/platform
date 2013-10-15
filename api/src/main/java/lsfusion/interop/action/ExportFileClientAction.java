@@ -7,6 +7,7 @@ import java.util.Map;
 
 public class ExportFileClientAction extends ExecuteClientAction {
 
+    // в качестве ключей - имена файлов, не пути к ним
     public Map<String, byte[]> files;
 
     public ExportFileClientAction(String fileName, String fileText, String charsetName) {
