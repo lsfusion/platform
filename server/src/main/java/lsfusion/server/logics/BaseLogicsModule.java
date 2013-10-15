@@ -146,7 +146,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private final T BL;
 
     public BaseLogicsModule(T BL) throws IOException {
-        super(AuthenticationLogicsModule.class.getResourceAsStream("/scripts/system/System.lsf"), null, BL);
+        super(BaseLogicsModule.class.getResourceAsStream("/scripts/system/System.lsf"), null, BL);
         setBaseLogicsModule(this);
         this.BL = BL;
     }

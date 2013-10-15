@@ -13,6 +13,7 @@
         <property name="scriptFilePaths" value="${logics.includedPaths}"/>
         <property name="excludedScriptFilePaths" value="${logics.excludedPaths:}"/>
 
-        <property name="overridingModulesList" value="${logics.overridingModulesList:}"/>
+        <property name="topModulesList" value="${logics.topModulesList:}"/>
+        <property name="orderDependencies" value="${logics.orderDependencies:}"/>
     </bean>
 </beans>

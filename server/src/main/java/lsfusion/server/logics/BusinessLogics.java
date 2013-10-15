@@ -87,7 +87,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private Boolean dialogUndecorated = false;
 
-    private String overridingModulesList;
+    private String topModulesList;
+
+    private String orderDependencies;
 
     //чтобы можно было использовать один инстанс логики с несколькими инстансами, при этом инициализировать только один раз
     private final AtomicBoolean initialized = new AtomicBoolean();
@@ -96,8 +98,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         super(LOGICS_ORDER);
     }
 
-    public void setOverridingModulesList(String overridingModulesList) {
-        this.overridingModulesList = overridingModulesList;
+    public void setTopModulesList(String topModulesList) {
+        this.topModulesList = topModulesList;
+    }
+
+    public void setOrderDependencies(String orderDependencies) {
+        this.orderDependencies = orderDependencies;
     }
 
     @Override
@@ -269,10 +275,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private Map<String, List<String>> buildModuleGraph() {
-        Map<String, List<String>> graph = new HashMap<String, List<String>>();
+    private Map<String, Set<String>> buildModuleGraph() {
+        Map<String, Set<String>> graph = new HashMap<String, Set<String>>();
         for (LogicsModule module : logicModules) {
-            graph.put(module.getName(), new ArrayList<String>());
+            graph.put(module.getName(), new HashSet<String>());
         }
 
         for (LogicsModule module : logicModules) {
@@ -286,28 +292,36 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return graph;
     }
 
-    private void checkCycles(String cur, LinkedList<String> way, Set<String> used, Map<String, List<String>> graph) {
+    private String checkCycles(String cur, LinkedList<String> way, Set<String> used, Map<String, Set<String>> graph) {
         way.add(cur);
         used.add(cur);
         for (String next : graph.get(cur)) {
             if (!used.contains(next)) {
-                checkCycles(next, way, used, graph);
+                String foundCycle = checkCycles(next, way, used, graph);
+                if (foundCycle != null) {
+                    return foundCycle;
+                }
             } else if (way.contains(next)) {
-                String errMsg = next;
+                String foundCycle = next;
                 do {
-                    errMsg = errMsg + " <- " + way.peekLast();
+                    foundCycle = foundCycle + " <- " + way.peekLast();
                 } while (!way.pollLast().equals(next));
-                throw new RuntimeException("[error]:\tthere is a circular dependency: " + errMsg);
+                return foundCycle;
             }
         }
+
         way.removeLast();
+        return null;
     }
 
-    private void checkCycles(Map<String, List<String>> graph) {
+    private void checkCycles(Map<String, Set<String>> graph, String errorMessage) {
         Set<String> used = new HashSet<String>();
-        for (Map.Entry<String, List<String>> vertex : graph.entrySet()) {
+        for (Map.Entry<String, Set<String>> vertex : graph.entrySet()) {
             if (!used.contains(vertex.getKey())) {
-                checkCycles(vertex.getKey(), new LinkedList<String>(), used, graph);
+                String foundCycle = checkCycles(vertex.getKey(), new LinkedList<String>(), used, graph);
+                if (foundCycle != null) {
+                    throw new RuntimeException("[error]:\t" + errorMessage + ": " + foundCycle);
+                }
             }
         }
     }
@@ -332,11 +346,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private List<LogicsModule> orderModules() {
-        fillNameToModules();
-        Map<String, List<String>> graph = buildModuleGraph();
+    private List<LogicsModule> orderModules(String orderDependencies) {
 //        outDotFile();
-        checkCycles(graph);
+
+        //для обеспечения детерменированности сортируем модули по имени
+        Collections.sort(logicModules, new Comparator<LogicsModule>() {
+            @Override
+            public int compare(LogicsModule m1, LogicsModule m2) {
+                return m1.getName().compareTo(m2.getName());
+            }
+        });
+
+        fillNameToModules();
+
+        Map<String, Set<String>> graph = buildModuleGraph();
+
+        checkCycles(graph, "there is a circular dependency between requred modules");
+
+        if (!isRedundantString(orderDependencies)) {
+            addOrderDependencies(orderDependencies, graph);
+            checkCycles(graph, "there is a circular dependency introduced by order dependencies");
+        }
 
         Map<String, Integer> degree = new HashMap<String, Integer>();
         for (LogicsModule module : logicModules) {
@@ -356,6 +386,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
         }
         return new ArrayList<LogicsModule>(usedModules);
+    }
+
+    private void addOrderDependencies(String orderDependencies, Map<String, Set<String>> graph) {
+        for (String dependencyList : orderDependencies.split(";\\s*")) {
+            String dependencies[] = dependencyList.split(",\\s*");
+            for (int i = 0; i < dependencies.length; ++i) {
+                String moduleName2 = dependencies[i];
+                if (graph.get(moduleName2) == null) {
+                    throw new RuntimeException(String.format("[error]:\torder dependencies' module '%s' was not found", moduleName2));
+                }
+
+                if (i > 0) {
+                    String moduleName1 = dependencies[i - 1];
+                    graph.get(moduleName1).add(moduleName2);
+                }
+            }
+        }
     }
 
     private void overrideModulesList(String startModulesList) {
@@ -395,12 +442,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 module.initModuleDependencies();
             }
 
-            if (!isRedundantString(overridingModulesList)) {
-                overrideModulesList(overridingModulesList);
+            if (!isRedundantString(topModulesList)) {
+                overrideModulesList(topModulesList);
+                //добавляем topModules к списку доп. зависимостей
+                orderDependencies = isRedundantString(orderDependencies) ? topModulesList : orderDependencies + ";" + topModulesList;
             }
 
             logger.info("Initializing modules.");
-            List<LogicsModule> orderedModules = orderModules();
+            List<LogicsModule> orderedModules = orderModules(orderDependencies);
 
             for (LogicsModule module : orderedModules) {
                 String namespace = module.getNamespace();
