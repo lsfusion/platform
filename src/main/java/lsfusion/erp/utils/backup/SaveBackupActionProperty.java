@@ -31,12 +31,13 @@ public class SaveBackupActionProperty extends ScriptingActionProperty {
             DataObject backupObject = context.getDataKeyValue(backupInterface);
 
             String fileBackup = ((String) LM.findLCPByCompoundName("fileBackup").read(context.getSession(), backupObject));
+            String fileBackupName = ((String) LM.findLCPByCompoundName("nameBackup").read(context.getSession(), backupObject));
             boolean fileDeletedBackup = LM.findLCPByCompoundName("fileDeletedBackup").read(context.getSession(), backupObject) != null;
             if (fileBackup != null && !fileDeletedBackup) {
-               fileBackup = fileBackup.trim();
-                File file = new File(fileBackup);
+                assert fileBackupName != null;
+                File file = new File(fileBackup.trim());
                 if (file.exists()) {
-                    context.delayUserInterfaction(new ExportFileClientAction(fileBackup, IOUtils.getFileBytes(file)));
+                    context.delayUserInterfaction(new ExportFileClientAction(fileBackupName.trim(), IOUtils.getFileBytes(file)));
                 } else {
                     context.delayUserInterfaction(new MessageClientAction("Файл не найден", "Ошибка"));
                 }
