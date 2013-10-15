@@ -38,7 +38,11 @@ public class DateTimeGridCellEditor extends PopupBasedGridCellEditor {
         datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {
             @Override
             public void onValueChange(ValueChangeEvent<Date> event) {
-                editBox.setValue(format.format(datePicker.getValue()));
+                Date value = datePicker.getValue();
+                value.setHours(0);
+                value.setMinutes(0);
+                value.setSeconds(0);
+                editBox.setValue(format.format(value));
                 editBox.getElement().focus();
             }
         });
@@ -113,14 +117,12 @@ public class DateTimeGridCellEditor extends PopupBasedGridCellEditor {
         try {
             if (value.split("\\.").length == 2) {
                 Date date = dateOnlyFormat.parse(value + "." + (new Date().getYear() - 100));
-                date.setHours(12);
                 result = new Timestamp(date.getTime());
             } else {
                 result = value.isEmpty() ? null : new Timestamp(format.parse(value).getTime());
             }
         } catch (IllegalArgumentException e) {
             Date date = dateOnlyFormat.parse(value);
-            date.setHours(12);
             result = new Timestamp(date.getTime());
         }
 

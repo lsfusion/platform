@@ -14,11 +14,14 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.EventObject;
+import java.util.GregorianCalendar;
 
 public class DateTimePropertyEditor extends JDateChooser implements PropertyEditor {
 
@@ -34,6 +37,21 @@ public class DateTimePropertyEditor extends JDateChooser implements PropertyEdit
             design.designCell(this);
         }
     }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals("day")) {
+            if (popup.isVisible()) {
+                dateSelected = true;
+                popup.setVisible(false);
+                Calendar calendar = jcalendar.getCalendar();
+                setCalendar(new GregorianCalendar(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0));
+            }
+        } else {
+            super.propertyChange(evt);
+        }
+    }
+    
 
     @Override
     public boolean requestFocusInWindow() {
@@ -157,8 +175,7 @@ public class DateTimePropertyEditor extends JDateChooser implements PropertyEdit
 
                 StringBuilder dateBuilder = new StringBuilder(dateText);
 
-                String hourSymbols = "HhKk";
-                String otherTimeSymbols = "sm";
+                String timeSymbols = "HhKksm";
 
                 for (int i = 1; i < textLength - 1; ++i) {
                     char patternCh = datePattern.charAt(i);
@@ -169,10 +186,7 @@ public class DateTimePropertyEditor extends JDateChooser implements PropertyEdit
                     } else if (patternCh == 'a') {
                         ifMatchThenReplace(dateText, dateBuilder, "  ", "PM", i);
                         i ++;
-                    } else if (hourSymbols.indexOf(patternCh) != -1) {
-                        ifMatchThenReplace(dateText, dateBuilder, "  ", "11", i);
-                        i ++;
-                    } else if (otherTimeSymbols.indexOf(patternCh) != -1) {
+                    } else if (timeSymbols.indexOf(patternCh) != -1) {
                         ifMatchThenReplace(dateText, dateBuilder, "  ", "00", i);
                         i ++;
                     }
