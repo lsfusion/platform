@@ -5,7 +5,7 @@ import lsfusion.interop.action.ClientAction;
 import java.io.Serializable;
 
 public class ServerResponse implements Serializable {
-    public static final ServerResponse empty = new ServerResponse(null, false);
+    public static final ServerResponse EMPTY = new ServerResponse(null, false);
 
     public static final String CHANGE = "change";
     public static final String GROUP_CHANGE = "groupChange";

@@ -1,10 +1,7 @@
 package lsfusion.client.form;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.Callback;
-import lsfusion.base.ERunnable;
-import lsfusion.base.Provider;
-import lsfusion.base.Result;
+import lsfusion.base.*;
 import lsfusion.client.SwingUtils;
 import lsfusion.interop.DaemonThreadFactory;
 
@@ -44,8 +41,6 @@ public class RmiQueue {
      * @return <code>false</code> if timed out
      */
     public <T> boolean syncRequestWithTimeOut(long timeOut, final RmiRequest<T> request) {
-        long startTime = System.currentTimeMillis();
-
         if (timeOut >= FOREVER) {
             syncRequest(request);
             return true;
@@ -56,6 +51,7 @@ public class RmiQueue {
         boolean timedOut = true;
         //если timeout <=0 то даже не ждём, сразу выходим, т.к. чисто асинхронный вызов
         if (timeOut > 0) {
+            long startTime = System.currentTimeMillis();
             timedOut = false;
             for (RmiFuture rmiFuture : rmiFutures) {
                 long currentExecutionTime = System.currentTimeMillis() - startTime;
@@ -86,8 +82,6 @@ public class RmiQueue {
 
     public <T> T syncRequest(final RmiRequest<T> request) {
 //        System.out.println("----Sync request # " + nextRmiRequestIndex);
-        BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
-        busyDisplayer.start();
 
         try {
             final Result<T> result = new Result<T>();
@@ -100,27 +94,24 @@ public class RmiQueue {
                 }
             });
 
-            syncStarted = true;
-
             forceProcessAllRequests();
-
-            syncStarted = false;
 
             return result.result;
         } catch (Exception e) {
             throw Throwables.propagate(e);
-        } finally {
-            busyDisplayer.stop();
         }
     }
 
     private void forceProcessAllRequests() {
+        syncStarted = true;
         try {
             while (!rmiFutures.isEmpty()) {
                 execNextFutureCallback();
             }
         } catch (Exception e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
+        } finally {
+            syncStarted = false;
         }
     }
 
@@ -139,7 +130,6 @@ public class RmiQueue {
     private void flushCompletedRequests() {
         SwingUtils.assertDispatchThread();
 
-        // если чегонить редактируем, то не обрабатываем результат пока не закончим
         if (tableManager.isEditing()) {
             //не обрабатываем результат, пока не закончится редактирование и не вызовется this.editingStopped()
         } else {
@@ -202,7 +192,23 @@ public class RmiQueue {
         public void execCallback() throws Exception {
             SwingUtils.assertDispatchThread();
 
-            callback.done(get());
+            T result;
+
+            if (isDone()) {
+                result = get();
+            } else {
+                BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
+                busyDisplayer.start();
+
+                try {
+
+                    result = get();
+                } finally {
+                    busyDisplayer.stop();
+                }
+            }
+
+            callback.done(result);
         }
     }
 }

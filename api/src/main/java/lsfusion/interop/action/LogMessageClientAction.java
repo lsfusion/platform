@@ -26,4 +26,9 @@ public class LogMessageClientAction extends ExecuteClientAction {
     public void execute(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);
     }
+
+    @Override
+    public String toString() {
+        return "LogMessageClientAction[msg: " + message + ", data: " + data + "]";
+    }
 }

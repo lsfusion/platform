@@ -19,4 +19,9 @@ public class FormClientAction extends ExecuteClientAction {
     public void execute(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);
     }
+
+    @Override
+    public String toString() {
+        return "FormClientAction[modalitType: " + modalityType.name() + "]";
+    }
 }

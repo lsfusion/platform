@@ -16,4 +16,9 @@ public class ConfirmClientAction implements ClientAction {
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
     }
+
+    @Override
+    public String toString() {
+        return "ConfirmClientAction[caption: " + caption + ", msg: " + message + "]";
+    }
 }

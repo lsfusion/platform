@@ -24,16 +24,25 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
+
+    public static Comparator<ClientPropertyDraw> COMPARATOR_USERSORT = new Comparator<ClientPropertyDraw>() {
+        public int compare(ClientPropertyDraw c1, ClientPropertyDraw c2) {
+            if (c1.ascendingSortUser != null && c2.ascendingSortUser != null) {
+                return c1.sortUser - c2.sortUser;
+            } else {
+                return 0;
+            }
+        }
+    };
+
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
     public BackgroundReader backgroundReader = new BackgroundReader();

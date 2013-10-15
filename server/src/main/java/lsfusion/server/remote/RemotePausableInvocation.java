@@ -38,8 +38,6 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     protected boolean delayedGetRemoteChanges = false;
     protected boolean delayedHideForm = false;
 
-    private int neededActionResultsCnt = -1;
-
     private Object[] actionResults;
     private Throwable clientThrowable;
 
@@ -84,7 +82,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
             logger.debug("Interaction " + sid + " called pauseForUserInteraction: " + Arrays.toString(actions));
         }
 
-        neededActionResultsCnt = actions.length;
+        int neededActionResultsCnt = actions.length;
         Collections.addAll(delayedActions, actions);
 
         try {

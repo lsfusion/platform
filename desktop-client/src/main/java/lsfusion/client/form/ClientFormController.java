@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.logics.ClientPropertyDraw.COMPARATOR_USERSORT;
 import static lsfusion.interop.Order.*;
 
 public class ClientFormController implements AsyncListener {
@@ -225,41 +226,37 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void initializeAutoRefresh() {
-        if (form.autoRefresh > 0) {
+        final ClientPropertyDraw property = form.getProperty(FORM_REFRESH_PROPERTY_SID);
+        if (property != null && form.autoRefresh > 0) {
+            SwingUtils.assertDispatchThread();
+
+            // т.к. модальные диалоги запускают новый EDT для обработки событий, то возможен случай,
+            // когда авторефреш для этой формы попробует выполниться, когда форма заблокирована, что есс-но приведёт к dead-lock,
+            // поэтому добавляем проверку на корректный поток
+            final Thread executingEdtThread = Thread.currentThread();
             autoRefreshScheduler = Executors.newScheduledThreadPool(1);
             autoRefreshScheduler.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
-                    if (!isEditing() && !blocked && showing && !isDialog && !isModalOrBeneathModalDialog()) {
-                        final ClientPropertyDraw property = form.getProperty(FORM_REFRESH_PROPERTY_SID);
-                        if (property != null) {
-                            SwingUtils.invokeLater(new ERunnable() {
-                                @Override
-                                public void run() throws Exception {
-                                    simpleDispatcher.executeAction(property, ClientGroupObjectValue.EMPTY);
-                                }
-                            });
+                    SwingUtils.invokeLater(new ERunnable() {
+                        @Override
+                        public void run() throws Exception {
+                            if (remoteForm != null &&
+                                !blocked &&
+                                showing &&
+                                !isModal &&
+                                !isEditing() &&
+                                !rmiQueue.isSyncStarted()
+                                && Thread.currentThread() == executingEdtThread) {
+
+                                simpleDispatcher.executeAction(property, ClientGroupObjectValue.EMPTY);
+                            }
                         }
-                    }
+                    });
                 }
+
             }, form.autoRefresh, form.autoRefresh, TimeUnit.SECONDS);
         }
-    }
-
-    private boolean isModalOrBeneathModalDialog() {
-        Window[] windows = Window.getWindows();
-        boolean isModal = false;
-        List<ClientModalForm> formDialogs = new ArrayList<ClientModalForm>();
-        for (Window w : windows) {
-            if (w.isShowing() && w instanceof ClientModalForm && ((ClientModalForm) w).isModal()) {
-                ClientModalForm clientDialog = (ClientModalForm) w;
-                formDialogs.add(clientDialog);
-                if (clientDialog.form != null && clientDialog.form.equals(this)) {
-                    isModal = true;
-                }
-            }
-        }
-        return !formDialogs.isEmpty() && !isModal;
     }
 
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
@@ -350,7 +347,7 @@ public class ClientFormController implements AsyncListener {
         commitOrCancelCurrentEditing();
         rmiQueue.syncRequest(new RmiVoidRequest() {
             @Override
-            protected void doExecute(long requestIndex) throws RemoteException {
+            protected void doExecute(long requestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 remoteForm.saveUserPreferences(requestIndex, preferences, forAllUsers);
             }
         });
@@ -636,30 +633,22 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void changeGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
-        if (objectValue == null || remoteForm == null) {
-            // remoteForm может равняться null, если к моменту вызова форму уже закрыли
+        if (objectValue == null) {
             return;
         }
 
-        rmiQueue.asyncRequest(
-                new RmiRequest<ServerResponse>() {
-                    @Override
-                    public void onAsyncRequest(long requestIndex) {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest() {
+            @Override
+            protected void onAsyncRequest(long requestIndex) {
 //                        System.out.println("!!Async changing group object with req#: " + requestIndex + " on " + objectValue);
-                        pendingChangeCurrentObjectsRequests.put(group, requestIndex);
-                    }
+                pendingChangeCurrentObjectsRequests.put(group, requestIndex);
+            }
 
-                    @Override
-                    protected ServerResponse doRequest(long requestIndex) throws Exception {
-                        return remoteForm.changeGroupObject(requestIndex, group.getID(), objectValue.serialize());
-                    }
-
-                    @Override
-                    protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
-                        processServerResponse(result);
-                    }
-                }
-        );
+            @Override
+            protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
+                return remoteForm.changeGroupObject(requestIndex, group.getID(), objectValue.serialize());
+            }
+        });
     }
 
     private byte[] getFullCurrentKey(ClientGroupObjectValue columnKey) throws IOException {
@@ -677,7 +666,7 @@ public class ClientFormController implements AsyncListener {
 
         final byte[] fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
 
-        rmiQueue.asyncRequest(new RmiRequest<ServerResponse>() {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest() {
             @Override
             protected void onAsyncRequest(long requestIndex) {
 //                System.out.println("!!Async changing property with req#: " + requestIndex);
@@ -696,7 +685,7 @@ public class ClientFormController implements AsyncListener {
             }
 
             @Override
-            protected ServerResponse doRequest(long requestIndex) throws Exception {
+            protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
                 return remoteForm.changeProperty(requestIndex, property.getID(), fullCurrentKey, serializeObject(newValue), null);
             }
 
@@ -740,7 +729,7 @@ public class ClientFormController implements AsyncListener {
 
         final byte[] fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
 
-        rmiQueue.syncRequestWithTimeOut(Main.asyncTimeOut, new RmiRequest<ServerResponse>() {
+        rmiQueue.syncRequestWithTimeOut(Main.asyncTimeOut, new ProcessServerResponseRmiRequest() {
             @Override
             protected void onAsyncRequest(long requestIndex) {
                 controller.modifyGroupObject(value, add); // сначала посылаем запрос, так как getFullCurrentKey может измениться
@@ -750,13 +739,8 @@ public class ClientFormController implements AsyncListener {
             }
 
             @Override
-            protected ServerResponse doRequest(long requestIndex) throws Exception {
+            protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
                 return remoteForm.changeProperty(requestIndex, property.getID(), fullCurrentKey, null, add ? ID : null);
-            }
-
-            @Override
-            protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
-                processServerResponse(result);
             }
         });
     }
@@ -795,16 +779,19 @@ public class ClientFormController implements AsyncListener {
         // а если сначала была показана форма, а затем на текущей форме сработало редактирование - то мы его отменяем
 
         if (blocked) {
-            return ServerResponse.empty;
+            return ServerResponse.EMPTY;
         }
 
         commitOrCancelCurrentEditing();
 
         SwingUtils.commitDelayedGroupObjectChange(property.getGroupObject());
 
-        return rmiQueue.syncRequest(new RmiRequest<ServerResponse>() {
+        return rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>() {
             @Override
-            protected ServerResponse doRequest(long requestIndex) throws Exception {
+            protected ServerResponse defaultValue() { return ServerResponse.EMPTY; }
+
+            @Override
+            protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
                 return remoteForm.executeEditAction(requestIndex, property.getID(), columnKey.serialize(), actionSID);
             }
         });
@@ -831,22 +818,19 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void gainedFocus() {
-        //remoteForm может быть == null, если сработал closed, и тогда ничего вызывать не надо
-        if (!isEditing() && remoteForm != null) {
-            try {
-                rmiQueue.asyncRequest(new RmiVoidRequest() {
-                    @Override
-                    protected void doExecute(long requestIndex) throws Exception {
-                        remoteForm.gainedFocus(requestIndex);
-                    }
-                });
+        try {
+            rmiQueue.asyncRequest(new RmiVoidRequest() {
+                @Override
+                protected void doExecute(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
+                    remoteForm.gainedFocus(requestIndex);
+                }
+            });
 
-                // если вдруг изменились данные в сессии
-                ClientExternalScreen.invalidate(getID());
-                ClientExternalScreen.repaintAll(getID());
-            } catch (Exception e) {
-                throw new RuntimeException(getString("form.error.form.activation"), e);
-            }
+            // если вдруг изменились данные в сессии
+            ClientExternalScreen.invalidate(getID());
+            ClientExternalScreen.repaintAll(getID());
+        } catch (Exception e) {
+            throw new RuntimeException(getString("form.error.form.activation"), e);
         }
     }
 
@@ -1081,14 +1065,12 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void changePageSize(final ClientGroupObject groupObject, final Integer pageSize) throws IOException {
-        if (!tableManager.isEditing()) {
-            rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest() {
-                @Override
-                protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
-                    return remoteForm.changePageSize(requestIndex, groupObject.getID(), pageSize);
-                }
-            });
-        }
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest() {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
+                return remoteForm.changePageSize(requestIndex, groupObject.getID(), pageSize);
+            }
+        });
     }
 
     public void moveGroupObject(final ClientGroupObject parentGroup, final ClientGroupObjectValue parentKey, final ClientGroupObject childGroup, final ClientGroupObjectValue childKey, final int index) throws IOException {
@@ -1299,33 +1281,42 @@ public class ClientFormController implements AsyncListener {
         showing = newShowing;
     }
 
-    private abstract class ProcessServerResponseRmiRequest extends RmiRequest<ServerResponse> {
-        @Override
-        protected ServerResponse doRequest(long requestIndex) throws Exception {
+    private abstract class RmiCheckNullFormRequest<T> extends RmiRequest<T> {
+        protected final T doRequest(long requestIndex) throws Exception {
             RemoteFormInterface form = remoteForm;
             if (form != null) {
                 return doRequest(requestIndex, form);
             }
-            return ServerResponse.empty;
+            return defaultValue();
         }
 
-        protected abstract ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception;
+        protected abstract T defaultValue();
+
+        protected abstract T doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception;
+    }
+
+    private abstract class RmiVoidRequest extends RmiCheckNullFormRequest<Void> {
+        @Override
+        protected Void defaultValue() { return null; }
+
+        @Override
+        protected Void doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
+            doExecute(requestIndex, remoteForm);
+            return null;
+        }
+
+        protected abstract void doExecute(long requestIndex, RemoteFormInterface remoteForm) throws Exception;
+    }
+
+    private abstract class ProcessServerResponseRmiRequest extends RmiCheckNullFormRequest<ServerResponse> {
+        @Override
+        protected ServerResponse defaultValue() { return ServerResponse.EMPTY; }
 
         @Override
         protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
             processServerResponse(result);
         }
     }
-
-    private static Comparator<ClientPropertyDraw> COMPARATOR_USERSORT = new Comparator<ClientPropertyDraw>() {
-        public int compare(ClientPropertyDraw c1, ClientPropertyDraw c2) {
-            if (c1.ascendingSortUser != null && c2.ascendingSortUser != null) {
-                return c1.sortUser - c2.sortUser;
-            } else {
-                return 0;
-            }
-        }
-    };
 
     private static class ModifyObject {
         public final ClientObject object;

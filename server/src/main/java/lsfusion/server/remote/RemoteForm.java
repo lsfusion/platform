@@ -513,7 +513,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public ServerResponse executeEditAction(long requestIndex, final int propertyID, final byte[] columnKey, final String actionSID) throws RemoteException {
         if (!isEditing.compareAndSet(false, true)) {
-            return ServerResponse.empty;
+            return ServerResponse.EMPTY;
         }
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override

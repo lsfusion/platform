@@ -21,4 +21,9 @@ public class MessageClientAction extends ExecuteClientAction {
     public void execute(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);
     }
+
+    @Override
+    public String toString() {
+        return "MessageClientAction[caption: " + caption + ", msg: " + message + ", ext: " + extended + "]";
+    }
 }
