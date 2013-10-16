@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.Compare;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.WrapperContext;
@@ -168,7 +169,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
         scheduledTaskQuery.and(businessLogics.schedulerLM.activeScheduledTask.getExpr(scheduledTaskExpr).getWhere());
 
-        if(daemonTasksExecutor!=null)
+        if (daemonTasksExecutor != null)
             daemonTasksExecutor.shutdown();
 
         daemonTasksExecutor = Executors.newScheduledThreadPool(3, new ContextAwareDaemonThreadFactory(new SchedulerContext(), "-scheduler-daemon-"));
@@ -221,7 +222,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                         int periods = (int) (System.currentTimeMillis() - start) / (period) + 1;
                         start += periods * period;
                     }
-                    if(afterFinish.equals(schedulerStartType))
+                    if (afterFinish.equals(schedulerStartType))
                         daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), period, TimeUnit.MILLISECONDS);
                     else
                         daemonTasksExecutor.scheduleAtFixedRate(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), period, TimeUnit.MILLISECONDS);
@@ -245,7 +246,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), beforeStartLogSession, currentScheduledTaskLogStartObject);
             businessLogics.schedulerLM.resultScheduledTaskLog.change("Запущено", beforeStartLogSession, currentScheduledTaskLogStartObject);
             beforeStartLogSession.apply(businessLogics);
-            
+
             DataSession mainSession = dbManager.createSession();
             lap.execute(mainSession);
             String applyResult = mainSession.applyMessage(businessLogics);
@@ -299,20 +300,23 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
         @Override
         public void delayUserInteraction(ClientAction action) {
-            if (action instanceof MessageClientAction) {
+            String message = null;
+            if (action instanceof LogMessageClientAction) {
+                message = ((LogMessageClientAction) action).message;
+            } else if (action instanceof MessageClientAction) {
+                message = ((MessageClientAction) action).message;
+            }
+            if (message != null) {
                 try {
                     DataObject scheduledClientTaskLogObject = afterFinishLogSession.addObject(businessLogics.schedulerLM.scheduledClientTaskLog);
-
                     businessLogics.schedulerLM.scheduledTaskLogScheduledClientTaskLog
                             .change(currentScheduledTaskLogFinishObject, (ExecutionEnvironment) afterFinishLogSession, scheduledClientTaskLogObject);
-                    businessLogics.schedulerLM.messageScheduledClientTaskLog
-                            .change(((MessageClientAction) action).message, afterFinishLogSession, scheduledClientTaskLogObject);
+                    businessLogics.schedulerLM.messageScheduledClientTaskLog.change(message, afterFinishLogSession, scheduledClientTaskLogObject);
                 } catch (SQLException e) {
                     Throwables.propagate(e);
                 }
-            } else {
-                super.delayUserInteraction(action);
             }
+            super.delayUserInteraction(action);
         }
     }
 }
