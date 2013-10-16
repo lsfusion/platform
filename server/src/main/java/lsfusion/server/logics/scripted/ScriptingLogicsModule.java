@@ -1,5 +1,6 @@
 package lsfusion.server.logics.scripted;
 
+import com.google.common.collect.Sets;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.base.IOUtils;
@@ -2775,7 +2776,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void initScriptingModule(String name, String namespace, List<String> requiredModules, List<String> namespacePriority) {
         setModuleName(name);
         setNamespace(namespace == null ? name : namespace);
-        setRequiredModules(requiredModules);
+        setRequiredModules(new HashSet<String>(requiredModules));
         this.namespacePriority = namespacePriority;
     }
 

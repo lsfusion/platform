@@ -49,10 +49,7 @@ import org.apache.log4j.Logger;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Arrays.copyOfRange;
 import static lsfusion.base.BaseUtils.add;
@@ -133,10 +130,10 @@ public abstract class LogicsModule {
     }
 
     public LogicsModule(String name, String namespace) {
-        this(name, namespace, new ArrayList<String>());
+        this(name, namespace, new HashSet<String>());
     }
 
-    public LogicsModule(String name, String namespace, List<String> requiredModules) {
+    public LogicsModule(String name, String namespace, Set<String> requiredModules) {
         this.name = name;
         this.namespace = namespace;
         this.requiredModules = requiredModules;
@@ -144,7 +141,7 @@ public abstract class LogicsModule {
 
     private String name;
     private String namespace;
-    private List<String> requiredModules;
+    private Set<String> requiredModules;
 
     public String getName() {
         return name;
@@ -1858,11 +1855,11 @@ public abstract class LogicsModule {
         this.namespace = namespace;
     }
 
-    public List<String> getRequiredModules() {
+    public Set<String> getRequiredModules() {
         return requiredModules;
     }
 
-    public void setRequiredModules(List<String> requiredModules) {
+    public void setRequiredModules(Set<String> requiredModules) {
         this.requiredModules = requiredModules;
     }
 

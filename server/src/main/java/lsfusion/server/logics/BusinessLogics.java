@@ -316,9 +316,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private void checkCycles(Map<String, Set<String>> graph, String errorMessage) {
         Set<String> used = new HashSet<String>();
-        for (Map.Entry<String, Set<String>> vertex : graph.entrySet()) {
-            if (!used.contains(vertex.getKey())) {
-                String foundCycle = checkCycles(vertex.getKey(), new LinkedList<String>(), used, graph);
+        for (String vertex : graph.keySet()) {
+            if (!used.contains(vertex)) {
+                String foundCycle = checkCycles(vertex, new LinkedList<String>(), used, graph);
                 if (foundCycle != null) {
                     throw new RuntimeException("[error]:\t" + errorMessage + ": " + foundCycle);
                 }
@@ -370,7 +370,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         Map<String, Integer> degree = new HashMap<String, Integer>();
         for (LogicsModule module : logicModules) {
-            degree.put(module.getName(), module.getRequiredModules().size());
+            degree.put(module.getName(), 0);
+        }
+
+        for (Map.Entry<String, Set<String>> e : graph.entrySet()) {
+            for (String nextModule : e.getValue()) {
+                degree.put(nextModule, degree.get(nextModule) + 1);
+            }
         }
 
         Set<LogicsModule> usedModules = new LinkedHashSet<LogicsModule>();
