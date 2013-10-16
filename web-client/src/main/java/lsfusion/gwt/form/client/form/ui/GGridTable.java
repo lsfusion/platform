@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
-import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.jsni.Function;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
@@ -216,7 +215,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
                 for (GGroupObjectValue columnKey : propertyColumnKeys) {
-                    Boolean needToHide = property.hideUser != null && property.hideUser;
+                    Boolean needToHide = (property.orderUser == null && groupObject.hasUserPreferences) || (property.hideUser != null && property.hideUser);
                     if ((propShowIfs == null || propShowIfs.get(columnKey) != null) && !needToHide) {
                         columnProperties.add(property);
                         columnKeysList.add(columnKey);

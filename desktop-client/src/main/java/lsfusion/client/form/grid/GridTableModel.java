@@ -74,7 +74,8 @@ public class GridTableModel extends AbstractTableModel {
     public void updateColumns(List<ClientPropertyDraw> columnProperties,
                               Map<ClientPropertyDraw, List<ClientGroupObjectValue>> mapColumnKeys,
                               Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnCaptions,
-                              Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnShowIfs) {
+                              Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnShowIfs,
+                              boolean hasUserPreferences) {
         List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
         List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
 
@@ -85,7 +86,7 @@ public class GridTableModel extends AbstractTableModel {
                 Map<ClientGroupObjectValue, Object> columnShowIf = columnShowIfs.get(property);
                 for (ClientGroupObjectValue key : mapColumnKeys.get(property)) {
                     //не показываем колонку, если propertyCaption равно null
-                    Boolean needToHide = property.hideUser == null ? property.hide : property.hideUser;
+                    Boolean needToHide = (property.orderUser == null && hasUserPreferences) || (property.hideUser == null ? property.hide : property.hideUser);
                     if ((columnShowIf == null || columnShowIf.get(key) != null) && !needToHide) {
                         columnKeysList.add(key);
                         columnPropsList.add(property);
@@ -186,10 +187,10 @@ public class GridTableModel extends AbstractTableModel {
 
     private static Comparator<ClientPropertyDraw> COMPARATOR = new Comparator<ClientPropertyDraw>() {
         public int compare(ClientPropertyDraw c1, ClientPropertyDraw c2) {
-            if (c1.orderUser == null || c2.orderUser == null)
-                return 0;
+            if (c1.orderUser == null)
+                return c2.orderUser == null ? 0 : -1;
             else
-                return c1.orderUser - c2.orderUser;
+                return c2.orderUser == null ? 1 : (c1.orderUser - c2.orderUser);
         }
     };
 

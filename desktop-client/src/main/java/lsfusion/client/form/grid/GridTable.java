@@ -348,7 +348,7 @@ public class GridTable extends ClientPropertyTable {
     }
 
     public void updateTable() {
-        model.updateColumns(properties, columnKeys, captions, showIfs);
+        model.updateColumns(properties, columnKeys, captions, showIfs, groupObject.hasUserPreferences);
 
         model.updateRows(rowKeys, values, readOnlyValues, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues);
 

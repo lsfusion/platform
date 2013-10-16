@@ -25,6 +25,8 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
     private static final String PREFERENCES_SAVED_ICON = "userPreferencesSaved.png";
     private static final String PREFERENCES_UNSAVED_ICON = "userPreferences.png";
     private static final String CSS_USER_PREFERENCES_DUAL_LIST = "userPreferencesDualList";
+    
+    boolean hasUserPreferences;
 
     public UserPreferencesDialog dialog;
 
@@ -32,6 +34,7 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
 
     public GUserPreferencesButton(boolean hasUserPreferences) {
         super(hasUserPreferences ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON, "Настройка таблицы");
+        this.hasUserPreferences = hasUserPreferences;
     }
 
     public class UserPreferencesDialog extends GResizableModalWindow {
@@ -165,10 +168,12 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
             HashMap<GPropertyDraw, Integer> propertyOrderMap = new HashMap<GPropertyDraw, Integer>();
             ArrayList<GPropertyDraw> properties = grid.getProperties();
             for (int i = 0; i < properties.size(); i++) {
-                if (properties.get(i).orderUser == null)
-                    properties.get(i).orderUser = i;
+                if (properties.get(i).orderUser == null) {
+                    if (hasUserPreferences)
+                        properties.get(i).hideUser = true;
+                    properties.get(i).orderUser = hasUserPreferences ? (Integer.MAX_VALUE - i) : i;
                 propertyOrderMap.put(properties.get(i), properties.get(i).orderUser);
-
+                }
             }
             ColumnsOrderComparator columnsOrderComparator = new ColumnsOrderComparator(propertyOrderMap);
             TreeMap<GPropertyDraw, Integer> propertyOrderTreeMap = new TreeMap<GPropertyDraw, Integer>(columnsOrderComparator);
@@ -320,11 +325,10 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
         }
 
         public int compare(Object a, Object b) {
-
-            if (base.get(a) < base.get(b))
-                return -1;
+            if (base.get(a) == null)
+                return base.get(b) == null ? 0 : -1;
             else
-                return 1;
+                return base.get(b) == null ? 1 : ((Integer) base.get(a) - (Integer) base.get(b));
         }
     }
 }

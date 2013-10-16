@@ -34,12 +34,15 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
 
     public HideSettingsDialog dialog;
 
+    boolean hasUserPreferences;
+
     public int fontSize;
     public boolean isFontBold;
     public boolean isFontItalic;
 
     public UserPreferencesButton(boolean hasUserPreferences, FontInfo fontInfo) {
         super(hasUserPreferences ? savedIcon : unsavedIcon, getString("form.grid.user.preferences"));
+        this.hasUserPreferences = hasUserPreferences;
         this.fontSize = fontInfo == null ? 0 : fontInfo.getFontSize();
         this.isFontBold = fontInfo != null && fontInfo.isBold();
         this.isFontItalic = fontInfo != null && fontInfo.isItalic();
@@ -80,8 +83,11 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             Map<ClientPropertyDraw, Integer> propertyOrderMap = new HashMap<ClientPropertyDraw, Integer>();
             List<ClientPropertyDraw> properties = initialTable.getProperties();
             for (int i = 0; i < properties.size(); i++) {
-                if (properties.get(i).orderUser == null)
-                    properties.get(i).orderUser = i;
+                if (properties.get(i).orderUser == null) {
+                    if (hasUserPreferences)
+                        properties.get(i).hideUser = true;
+                    properties.get(i).orderUser = hasUserPreferences ? (Integer.MAX_VALUE - i) : i;
+                }
                 propertyOrderMap.put(properties.get(i), properties.get(i).orderUser);
             }
             ValueComparator valueComparator = new ValueComparator(propertyOrderMap);
@@ -476,11 +482,10 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             }
 
             public int compare(Object a, Object b) {
-
-                if ((Integer) base.get(a) < (Integer) base.get(b))
-                    return -1;
+                if (base.get(a) == null)
+                    return base.get(b) == null ? 0 : -1;
                 else
-                    return 1;
+                    return base.get(b) == null ? 1 : ((Integer) base.get(a) - (Integer) base.get(b));
             }
         }
     }
