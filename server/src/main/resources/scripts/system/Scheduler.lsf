@@ -66,7 +66,8 @@ messageScheduledClientTaskLog 'Сообщение'= DATA VARSTRING[200] (Schedul
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty';
 
 WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (periodScheduledTask(t)) 
-    OR CHANGED (schedulerStartTypeScheduledTask(t)) OR CHANGED (schedulerStartTypeScheduledTask(t))) AND activeScheduledTask(t))
+    OR CHANGED (schedulerStartTypeScheduledTask(t)) OR CHANGED (schedulerStartTypeScheduledTask(t))) AND activeScheduledTask(t)
+    OR CHANGED (activeScheduledTask(t)))
  DO EXEC runSetupScheduler();
  
  WHEN ((CHANGED (activeScheduledTaskDetail(td)) OR CHANGED (orderScheduledTaskDetail(td)) 
