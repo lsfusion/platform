@@ -18,7 +18,7 @@ public class FlexSplitContainerView extends SplitContainerView<FlexPanel> {
     }
 
     @Override
-    protected Widget wrawpWithCaption(FlexPanel panel) {
+    protected Widget wrapWithCaption(FlexPanel panel) {
         return wrapWithFlexCaption(panel);
     }
 }

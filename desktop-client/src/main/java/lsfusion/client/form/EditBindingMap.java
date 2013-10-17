@@ -17,15 +17,10 @@ public class EditBindingMap {
     private String mouseBinding;
 
     public EditBindingMap() {
-        setKeyAction(KeyStrokes.getObjectEditorDialogEvent(), ServerResponse.EDIT_OBJECT);
         setMouseAction(ServerResponse.CHANGE);
     }
 
-    public String getAction(EventObject editEvent) {
-        return getAction(editEvent, null);
-    }
-
-    public String getAction(EventObject editEvent, EditEventFilter editEventFilter) {
+    public String getAction(EventObject editEvent, EditEventFilter editEventFilter, boolean hasEditAction) {
         if (editEvent instanceof KeyEvent) {
             KeyEvent keyEvent = (KeyEvent) editEvent;
 
@@ -33,6 +28,10 @@ public class EditBindingMap {
             String actionSID = keyBindingMap.get(ks);
             if (actionSID != null) {
                 return actionSID;
+            }
+
+            if (hasEditAction && KeyStrokes.isEditObjectEvent(editEvent)) {
+                return ServerResponse.EDIT_OBJECT;
             }
 
             if (!KeyStrokes.isSuitableEditKeyEvent(editEvent)) {
@@ -87,11 +86,11 @@ public class EditBindingMap {
 
         String actionSID = null;
         if (property.editBindingMap != null) {
-            actionSID = property.editBindingMap.getAction(e, eventFilter);
+            actionSID = property.editBindingMap.getAction(e, eventFilter, property.hasEditAction);
         }
 
         if (actionSID == null) {
-            actionSID = overrideMap.getAction(e, eventFilter);
+            actionSID = overrideMap.getAction(e, eventFilter, property.hasEditAction);
         }
         return actionSID;
     }

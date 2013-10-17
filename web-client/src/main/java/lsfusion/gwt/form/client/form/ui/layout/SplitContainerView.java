@@ -22,13 +22,13 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
 
         splitPane = createSplitPanel(container.isVerticalSplit());
 
-        view = wrawpWithCaption(splitPane.asWidget());
+        view = wrapWithCaption(splitPane.asWidget());
 
         view.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
     }
 
     protected abstract SplitPanelBase<P> createSplitPanel(boolean vertical);
-    protected abstract Widget wrawpWithCaption(P panel);
+    protected abstract Widget wrapWithCaption(P panel);
 
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
@@ -63,6 +63,6 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
             pref.width += splitPane.getSplitterSize();
         }
 
-        return pref;
+        return addCaptionDimensions(pref);
     }
 }

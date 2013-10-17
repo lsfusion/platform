@@ -123,6 +123,10 @@ public class GKeyStroke implements Serializable {
         return event.getKeyCode() == KEY_SPACE;
     }
 
+    public static boolean isEditObjectEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_BACKSPACE;
+    }
+
     public static boolean isCommonEditKeyEvent(NativeEvent event) {
         if (event.getCtrlKey() || event.getAltKey() || event.getMetaKey()) {
             return false;
@@ -133,14 +137,14 @@ public class GKeyStroke implements Serializable {
         if (KEYPRESS.equals(eventType)) {
             return keyCode != KEY_ENTER && keyCode != KEY_ESCAPE && event.getCharCode() != 0;
         } else if (KEYDOWN.equals(eventType)) {
-            return keyCode == KEY_DELETE;
+            return keyCode == KEY_DELETE || keyCode == KEY_BACKSPACE;
         }
         return false;
     }
 
     public static boolean isCommonNumberEditEvent(NativeEvent event) {
         return isCommonEditKeyEvent(event) &&
-               (isDigitKeyEvent(event) || event.getKeyCode() == KEY_DELETE);
+               (isDigitKeyEvent(event) || event.getKeyCode() == KEY_DELETE || event.getKeyCode() == KEY_BACKSPACE);
     }
 
     private static boolean isDigitKeyEvent(NativeEvent event) {
@@ -156,7 +160,7 @@ public class GKeyStroke implements Serializable {
         String eventType = event.getType();
         int keyCode = event.getKeyCode();
         if (KEYDOWN.equals(eventType)) {
-            return (keyCode != KEY_TAB
+            return keyCode != KEY_TAB
                     && keyCode != KEY_HOME
                     && keyCode != KEY_END
                     && keyCode != KEY_PAGEUP
@@ -164,14 +168,13 @@ public class GKeyStroke implements Serializable {
                     && keyCode != KEY_LEFT
                     && keyCode != KEY_RIGHT
                     && keyCode != KEY_UP
-                    && keyCode != KEY_DOWN) ||
-                    (KEY_F1 <= keyCode && keyCode <= KEY_F12);
+                    && keyCode != KEY_DOWN;
         }
         return false;
     }
 
     public static boolean isPossibleStartFilteringEvent(NativeEvent event) {
-        return isCommonEditKeyEvent(event) && event.getKeyCode() != KEY_DELETE;
+        return isCommonEditKeyEvent(event) && event.getKeyCode() != KEY_DELETE && event.getKeyCode() != KEY_BACKSPACE;
     }
 
     public static boolean isReplaceFilterEvent(NativeEvent event) {

@@ -42,11 +42,7 @@ public class GEditBindingMap implements Serializable {
         this.mouseBinding = mouseBinding;
     }
 
-    public String getAction(EditEvent event) {
-        return getAction(event, null);
-    }
-
-    public String getAction(EditEvent event, EditEventFilter editEventFilter) {
+    public String getAction(EditEvent event, EditEventFilter editEventFilter, boolean hasEditAction) {
         if (event instanceof NativeEditEvent) {
             NativeEvent nativeEvent = ((NativeEditEvent) event).getNativeEvent();
             String eventType = nativeEvent.getType();
@@ -61,6 +57,10 @@ public class GEditBindingMap implements Serializable {
 
                 if (editEventFilter != null && !editEventFilter.accept(nativeEvent)) {
                     return null;
+                }
+
+                if (hasEditAction && isEditObjectEvent(nativeEvent)) {
+                    return EDIT_OBJECT;
                 }
 
                 if (isCommonEditKeyEvent(nativeEvent)) {
@@ -124,11 +124,11 @@ public class GEditBindingMap implements Serializable {
 
         String actionSID = null;
         if (property.editBindingMap != null) {
-            actionSID = property.editBindingMap.getAction(e, eventFilter);
+            actionSID = property.editBindingMap.getAction(e, eventFilter, property.hasEditAction);
         }
 
         if (actionSID == null) {
-            actionSID = overrideMap.getAction(e, eventFilter);
+            actionSID = overrideMap.getAction(e, eventFilter, property.hasEditAction);
         }
         return actionSID;
     }

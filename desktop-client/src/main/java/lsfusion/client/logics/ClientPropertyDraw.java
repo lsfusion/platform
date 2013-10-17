@@ -63,6 +63,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean askConfirm;
     public String askConfirmMessage;
 
+    public boolean hasEditAction;
+
     public String[] interfacesCaptions;
     public ClientClass[] interfacesTypes;
 
@@ -378,6 +380,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         askConfirm = inStream.readBoolean();
         if(askConfirm)
             askConfirmMessage = pool.readString(inStream);
+        hasEditAction = inStream.readBoolean();
 
         sID = pool.readString(inStream);
 

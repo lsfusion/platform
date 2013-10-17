@@ -21,6 +21,7 @@ import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.FormEntity;
@@ -31,6 +32,7 @@ import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.serialization.ServerIdentitySerializable;
@@ -44,8 +46,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import static lsfusion.interop.form.ServerResponse.CHANGE_WYS;
-import static lsfusion.interop.form.ServerResponse.GROUP_CHANGE;
+import static lsfusion.interop.form.ServerResponse.*;
 
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements ServerIdentitySerializable {
     public static final GetIndex<PropertyInterface> genInterface = new GetIndex<PropertyInterface>() {
@@ -287,6 +288,20 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public boolean isChangeWYSOverriden() {
         return getEditActions().containsKey(CHANGE_WYS);
+    }
+
+    public boolean isEditObjectActionDefined() {
+        if (getEditActions().containsKey(EDIT_OBJECT)) {
+            return true;
+        }
+
+        ActionPropertyMapImplement<?, T> editObjectAction = getDefaultEditAction(EDIT_OBJECT, null);
+        if (editObjectAction.property instanceof DefaultChangeActionProperty) {
+            DefaultChangeActionProperty defaultEditAction = (DefaultChangeActionProperty) editObjectAction.property;
+            return defaultEditAction.getImplementType() instanceof ObjectType;
+        }
+
+        return false;
     }
 
     public abstract ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty);

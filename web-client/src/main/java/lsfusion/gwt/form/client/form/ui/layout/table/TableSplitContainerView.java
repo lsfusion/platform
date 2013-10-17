@@ -16,7 +16,7 @@ public class TableSplitContainerView extends SplitContainerView<CellPanel> {
     }
 
     @Override
-    protected Widget wrawpWithCaption(CellPanel panel) {
+    protected Widget wrapWithCaption(CellPanel panel) {
         return wrapWithTableCaption(panel);
     }
 }

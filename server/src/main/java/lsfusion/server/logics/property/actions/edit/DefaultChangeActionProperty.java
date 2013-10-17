@@ -51,7 +51,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
         return null;
     }
 
-    private Type getImplementType() {
+    public Type getImplementType() {
         return implement.property.getType();
     }
 

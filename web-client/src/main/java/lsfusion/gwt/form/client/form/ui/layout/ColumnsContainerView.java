@@ -122,9 +122,11 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
             int columnHeight = 0;
             int columnWidth = 0;
             for (GComponent child : columnsChildren[i]) {
-                Dimension childPref = getChildPreferredSize(containerViews, child);
-                columnHeight += childPref.height;
-                columnWidth = Math.max(columnWidth, childPref.width);
+                if (getChildView(child).isVisible()) {
+                    Dimension childPref = getChildPreferredSize(containerViews, child);
+                    columnHeight += childPref.height;
+                    columnWidth = Math.max(columnWidth, childPref.width);
+                }
             }
             width += columnWidth;
             height = Math.max(height, columnHeight);

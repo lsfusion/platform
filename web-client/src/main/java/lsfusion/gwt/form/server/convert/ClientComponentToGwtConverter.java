@@ -291,6 +291,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
         propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;
 
+        propertyDraw.hasEditAction = clientPropertyDraw.hasEditAction;
+
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;

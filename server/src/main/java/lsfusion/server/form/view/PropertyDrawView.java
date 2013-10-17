@@ -220,6 +220,7 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(entity.askConfirm);
         if(entity.askConfirm)
             pool.writeString(outStream, getAskConfirmMessage());
+        outStream.writeBoolean(entity.hasEditAction());
 
         pool.writeString(outStream, entity.getSID());
         pool.writeString(outStream, entity.propertyObject.property.toolTip);

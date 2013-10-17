@@ -149,8 +149,8 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0);
     }
 
-    public static KeyStroke getObjectEditorDialogEvent() {
-        return getBackspace();
+    public static boolean isEditObjectEvent(EventObject event) {
+        return isBackSpaceEvent(event);
     }
 
     public static boolean isKeyEvent(EventObject event, int keyCode) {
@@ -182,10 +182,6 @@ public class KeyStrokes {
         return keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9 || keyCode >= KeyEvent.VK_NUMPAD0 && keyCode <= KeyEvent.VK_NUMPAD9;
     }
 
-    public static boolean isObjectEditorDialogEvent(EventObject event) {
-        return event instanceof KeyEvent && getKeyStrokeForEvent((KeyEvent) event).equals(getObjectEditorDialogEvent());
-    }
-
     public static boolean isSuitableStartFilteringEvent(EventObject event) {
         if (event instanceof KeyEvent) {
             KeyEvent keyEvent = (KeyEvent) event;
@@ -212,7 +208,8 @@ public class KeyStrokes {
     public static boolean isSuitableNumberEditEvent(EventObject event) {
         return isSuitableEditKeyEvent(event) && (
                 isDigitKeyEvent((KeyEvent) event) ||
-                isDeleteEvent(event)
+                isDeleteEvent(event) ||
+                isBackSpaceEvent(event)
         );
     }
 

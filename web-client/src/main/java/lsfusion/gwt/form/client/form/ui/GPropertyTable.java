@@ -1,7 +1,6 @@
 package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.dom.client.*;
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
@@ -50,7 +49,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         this.editDispatcher = new GEditPropertyDispatcher(form, this);
         this.editBindingMap = new GEditBindingMap();
         this.editBindingMap.setMouseAction(GEditBindingMap.CHANGE);
-        this.editBindingMap.setKeyAction(new GKeyStroke(KeyCodes.KEY_BACKSPACE), GEditBindingMap.EDIT_OBJECT);
 
         sinkEvents(Event.ONPASTE);
     }

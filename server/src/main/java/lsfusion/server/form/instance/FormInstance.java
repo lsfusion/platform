@@ -17,7 +17,6 @@ import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
-import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.server.Message;
 import lsfusion.server.ParamMessage;
@@ -68,7 +67,7 @@ import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.interop.ClassViewType.GRID;
 import static lsfusion.interop.ClassViewType.HIDE;
 import static lsfusion.interop.Order.*;
-import static lsfusion.interop.form.ServerResponse.CHANGE_WYS;
+import static lsfusion.interop.form.ServerResponse.*;
 import static lsfusion.server.form.instance.GroupObjectInstance.*;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -702,7 +701,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         if (editAction != null && securityPolicy.property.change.checkPermission(editAction.property)) {
-            if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) { //ask confirm logics...
+            if (editActionSID.equals(CHANGE) || editActionSID.equals(GROUP_CHANGE)) { //ask confirm logics...
                 PropertyDrawEntity propertyDraw = property.getEntity();
                 if (!pushConfirm && propertyDraw.askConfirm) {
                     int result = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion",

@@ -175,7 +175,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         RemoteDialogInterface dialog = new RemoteDialogProxy(action.dialog);
 
         ClientDialog dlg;
-        if (KeyStrokes.isSpaceEvent(currentEvent) || KeyStrokes.isObjectEditorDialogEvent(currentEvent)) {
+        if (KeyStrokes.isSpaceEvent(currentEvent) || KeyStrokes.isEditObjectEvent(currentEvent)) {
             dlg = new ClientNavigatorDialog(owner, dialog);
         } else {
             dlg = new ClientDialog(owner, dialog, currentEvent);

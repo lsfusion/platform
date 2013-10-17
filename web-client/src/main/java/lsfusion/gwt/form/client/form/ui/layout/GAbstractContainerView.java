@@ -93,16 +93,25 @@ public abstract class GAbstractContainerView {
         int height = 0;
         int chCnt = children.size();
         for (int i = 0; i < chCnt; ++i) {
-            Dimension childSize = getChildPreferredSize(containerViews, i);
-            if (vertical) {
-                width = max(width, childSize.width);
-                height += childSize.height;
-            } else {
-                width += childSize.width;
-                height = max(height, childSize.height);
+            if (childrenViews.get(i).isVisible()) {
+                Dimension childSize = getChildPreferredSize(containerViews, i);
+                if (vertical) {
+                    width = max(width, childSize.width);
+                    height += childSize.height;
+                } else {
+                    width += childSize.width;
+                    height = max(height, childSize.height);
+                }
             }
         }
-        return new Dimension(width, height);
+
+        return addCaptionDimensions(new Dimension(width, height));
+    }
+
+    protected Dimension addCaptionDimensions(Dimension dimension) {
+        dimension.width += 10;
+        dimension.height += 8;
+        return dimension;
     }
 
     protected boolean needCaption() {
@@ -114,7 +123,7 @@ public abstract class GAbstractContainerView {
     }
 
     protected Widget wrapWithTableCaption(Widget content) {
-        return  needCaption() ? new TableCaptionPanel(container.caption, content) : content;
+        return needCaption() ? new TableCaptionPanel(container.caption, content) : content;
     }
 
     public void onResize() {
