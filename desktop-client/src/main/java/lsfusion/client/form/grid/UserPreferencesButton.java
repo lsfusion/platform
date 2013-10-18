@@ -54,6 +54,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
         private GridTable initialTable;
         private ClientFormController form;
         private Map<String, Integer> orderMap = new HashMap<String, Integer>();
+        private Map<String, String> sidCaptionMap = new HashMap<String, String>();
         DefaultListModel visibleListModel, invisibleListModel;
         JList visibleList, invisibleList;
         JLabel fontSizeLabel;
@@ -86,7 +87,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 if (properties.get(i).orderUser == null) {
                     if (hasUserPreferences)
                         properties.get(i).hideUser = true;
-                    properties.get(i).orderUser = hasUserPreferences ? (Integer.MAX_VALUE - i) : i;
+                    properties.get(i).orderUser = hasUserPreferences ? (Short.MAX_VALUE + i) : i;
                 }
                 propertyOrderMap.put(properties.get(i), properties.get(i).orderUser);
             }
@@ -100,9 +101,11 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             invisibleListModel = new DefaultListModel();
 
             int i = 0;
+            Map<String, Integer> clientPropertyDrawCountMap = new HashMap<String, Integer>();
             for (Map.Entry<ClientPropertyDraw, Integer> entry : propertyOrderTreeMap.entrySet()) {
-                String caption = BaseUtils.nullTrim(entry.getKey().getCaption());
-                orderMap.put(caption, i);
+                String caption = modifyCaption(clientPropertyDrawCountMap, BaseUtils.nullTrim(entry.getKey().getCaption()));
+                orderMap.put(entry.getKey().getSID(), i);
+                sidCaptionMap.put(caption, entry.getKey().getSID());
 
                 Boolean needToHide = entry.getKey().hideUser == null ? entry.getKey().hide : entry.getKey().hideUser;
                 if (!needToHide)
@@ -335,12 +338,12 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
         private void okButtonPressed() throws IOException {
 
             for (int i = 0; i < visibleListModel.getSize(); i++) {
-                int index = orderMap.get(visibleListModel.get(i));
+                int index = orderMap.get(sidCaptionMap.get(visibleListModel.get(i)));
                 initialTable.getProperties().get(index).orderUser = i;
                 initialTable.getProperties().get(index).hideUser = false;
             }
             for (int i = 0; i < invisibleListModel.getSize(); i++) {
-                int index = orderMap.get(invisibleListModel.get(i));
+                int index = orderMap.get(sidCaptionMap.get(invisibleListModel.get(i)));
                 initialTable.getProperties().get(index).orderUser = visibleListModel.getSize() + i;
                 initialTable.getProperties().get(index).hideUser = true;
             }
@@ -368,13 +371,13 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
 
             Map<String, ColumnUserPreferences> preferences = new HashMap<String, ColumnUserPreferences>();
             for (int i = 0; i < visibleListModel.getSize(); i++) {
-                int index = orderMap.get(visibleListModel.get(i));
-                ClientPropertyDraw property = initialTable.getProperties().get(index);
+                int index = orderMap.get(sidCaptionMap.get(visibleListModel.get(i)));
+                ClientPropertyDraw property = initialTable.getProperties().get(index);                           
                 preferences.put(property.getSID(), refreshPropertyUserPreferences(property, false, i, sortDirections));
             }
 
             for (int i = 0; i < invisibleListModel.getSize(); i++) {
-                int index = orderMap.get(invisibleListModel.get(i));
+                int index = orderMap.get(sidCaptionMap.get(invisibleListModel.get(i)));
                 ClientPropertyDraw property = initialTable.getProperties().get(index);
                 int propertyOrder = visibleListModel.getSize() + i;
                 preferences.put(property.getSID(), refreshPropertyUserPreferences(property, true, propertyOrder, sortDirections));
@@ -399,20 +402,20 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             Integer sortIndex = sortDirections.containsKey(property) ? sortDirections.get(property).second : null;
             property.hideUser = hide;
             property.orderUser = propertyOrder;
-            orderMap.put(property.caption, propertyOrder);
+            orderMap.put(property.getSID(), propertyOrder);
             return new ColumnUserPreferences(hide, property.widthUser, propertyOrder, sortDirection != null ? sortIndex : null, sortDirection);
         }
 
         private void resetButtonPressed(Boolean forAllUsers) throws IOException {
             Map<String, ColumnUserPreferences> preferences = new HashMap<String, ColumnUserPreferences>();
             for (int i = 0; i < visibleListModel.getSize(); i++) {
-                int index = orderMap.get(visibleListModel.get(i));
+                int index = orderMap.get(sidCaptionMap.get(visibleListModel.get(i)));
                 ClientPropertyDraw property = initialTable.getProperties().get(index);
                 preferences.put(property.getSID(), resetPropertyUserPreferences(property));
             }
 
             for (int i = 0; i < invisibleListModel.getSize(); i++) {
-                int index = orderMap.get(invisibleListModel.get(i));
+                int index = orderMap.get(sidCaptionMap.get(invisibleListModel.get(i)));
                 ClientPropertyDraw property = initialTable.getProperties().get(index);
                 preferences.put(property.getSID(), resetPropertyUserPreferences(property));
             }
@@ -424,10 +427,11 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             initialTable.updateTable();
             visibleListModel.clear();
             invisibleListModel.clear();
+            Map<String, Integer> clientPropertyDrawCountMap = new HashMap<String, Integer>();
             for (int i = 0; i < initialTable.getProperties().size(); i++) {
                 ClientPropertyDraw property = initialTable.getProperties().get(i);
-                String caption = BaseUtils.nullTrim(property.getCaption());
-                orderMap.put(caption, i);
+                String caption = modifyCaption(clientPropertyDrawCountMap, BaseUtils.nullTrim(property.getCaption()));
+                orderMap.put(property.getSID(), i);
                 if (!property.hide)
                     visibleListModel.addElement(caption);
                 else
@@ -442,6 +446,14 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             if (forAllUsers) {
                 setIcon(unsavedIcon);
             }
+        }
+        
+        private String modifyCaption(Map<String, Integer> clientPropertyDrawCountMap, String caption) {
+            Integer count = clientPropertyDrawCountMap.get(caption);
+            clientPropertyDrawCountMap.put(caption, (count == null ? 0 : count) + 1);
+            if (count != null)
+                caption += " (" + (count + 1) + ")";
+            return caption;
         }
 
         private FontInfo getFontInfo(boolean reset) {
@@ -483,9 +495,9 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
 
             public int compare(Object a, Object b) {
                 if (base.get(a) == null)
-                    return base.get(b) == null ? 0 : -1;
+                    return base.get(b) == null ? 0 : 1;
                 else
-                    return base.get(b) == null ? 1 : ((Integer) base.get(a) - (Integer) base.get(b));
+                    return base.get(b) == null ? -1 : ((Integer) base.get(a) - (Integer) base.get(b));
             }
         }
     }

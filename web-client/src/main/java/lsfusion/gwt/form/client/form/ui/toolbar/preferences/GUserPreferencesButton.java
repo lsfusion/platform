@@ -30,7 +30,7 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
 
     public UserPreferencesDialog dialog;
 
-    private Map<String, Integer> orderMap = new HashMap<String, Integer>();
+    //private Map<String, Integer> orderMap = new HashMap<String, Integer>();
 
     public GUserPreferencesButton(boolean hasUserPreferences) {
         super(hasUserPreferences ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON, "Настройка таблицы");
@@ -171,7 +171,7 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
                 if (properties.get(i).orderUser == null) {
                     if (hasUserPreferences)
                         properties.get(i).hideUser = true;
-                    properties.get(i).orderUser = hasUserPreferences ? (Integer.MAX_VALUE - i) : i;
+                    properties.get(i).orderUser = hasUserPreferences ? (Short.MAX_VALUE + i) : i;
                 propertyOrderMap.put(properties.get(i), properties.get(i).orderUser);
                 }
             }
@@ -181,8 +181,8 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
 
             int i = 0;
             for (Map.Entry<GPropertyDraw, Integer> entry : propertyOrderTreeMap.entrySet()) {
-                String caption = GwtSharedUtils.nullTrim(entry.getKey().getNotEmptyCaption());
-                orderMap.put(caption, i);
+                //String caption = GwtSharedUtils.nullTrim(entry.getKey().getNotEmptyCaption());
+                //orderMap.put(caption, i);
 
                 Boolean needToHide = entry.getKey().hideUser == null ? false : entry.getKey().hideUser;
                 if (!needToHide)
@@ -326,9 +326,9 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
 
         public int compare(Object a, Object b) {
             if (base.get(a) == null)
-                return base.get(b) == null ? 0 : -1;
+                return base.get(b) == null ? 0 : 1;
             else
-                return base.get(b) == null ? 1 : ((Integer) base.get(a) - (Integer) base.get(b));
+                return base.get(b) == null ? -1 : ((Integer) base.get(a) - (Integer) base.get(b));
         }
     }
 }

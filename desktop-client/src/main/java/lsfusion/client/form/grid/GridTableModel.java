@@ -188,9 +188,9 @@ public class GridTableModel extends AbstractTableModel {
     private static Comparator<ClientPropertyDraw> COMPARATOR = new Comparator<ClientPropertyDraw>() {
         public int compare(ClientPropertyDraw c1, ClientPropertyDraw c2) {
             if (c1.orderUser == null)
-                return c2.orderUser == null ? 0 : -1;
+                return c2.orderUser == null ? 0 : 1;
             else
-                return c2.orderUser == null ? 1 : (c1.orderUser - c2.orderUser);
+                return c2.orderUser == null ? -1 : (c1.orderUser - c2.orderUser);
         }
     };
 
