@@ -79,7 +79,8 @@ public class GridTableModel extends AbstractTableModel {
         List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
         List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
 
-        Collections.sort(columnProperties, COMPARATOR);
+        if (hasUserPreferences)
+            Collections.sort(columnProperties, COMPARATOR);
 
         for (ClientPropertyDraw property : columnProperties) {
             if (mapColumnKeys.containsKey(property)) {
@@ -110,8 +111,8 @@ public class GridTableModel extends AbstractTableModel {
         for (int i = 0; i < columnNames.length; ++i) {
             Map<ClientGroupObjectValue, Object> propColumnCaptions = columnCaptions.get(columnProps[i]);
             columnNames[i] = propColumnCaptions != null ?
-                                       columnProps[i].getDynamicCaption(propColumnCaptions.get(columnKeys[i])) :
-                                       toCaption(columnProps[i].getCaption());
+                    columnProps[i].getDynamicCaption(propColumnCaptions.get(columnKeys[i])) :
+                    toCaption(columnProps[i].getCaption());
         }
     }
 
