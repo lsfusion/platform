@@ -140,6 +140,10 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         if (updateCellHeight) {
             td.getStyle().setHeight(cellHeight, Style.Unit.PX);
             td.getStyle().setLineHeight(cellHeight, Style.Unit.PX);
+            Element divElement = td.getFirstChildElement();
+            if (divElement != null) {
+                divElement.getStyle().setHeight(cellHeight, Style.Unit.PX);
+            }
         }
 
         String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);

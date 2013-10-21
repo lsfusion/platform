@@ -35,7 +35,7 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
+    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
         ImageElement img = cellElement.getFirstChild().cast();
         setImageSrc(img, value);
     }

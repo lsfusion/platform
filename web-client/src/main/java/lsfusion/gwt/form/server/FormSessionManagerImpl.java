@@ -8,10 +8,7 @@ import lsfusion.gwt.base.server.spring.BusinessLogicsProvider;
 import lsfusion.gwt.base.server.spring.InvalidateListener;
 import lsfusion.gwt.form.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.form.server.convert.ClientFormChangesToGwtConverter;
-import lsfusion.gwt.form.shared.view.GColumnUserPreferences;
-import lsfusion.gwt.form.shared.view.GForm;
-import lsfusion.gwt.form.shared.view.GFormUserPreferences;
-import lsfusion.gwt.form.shared.view.GGroupObjectUserPreferences;
+import lsfusion.gwt.form.shared.view.*;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.form.ColumnUserPreferences;
@@ -59,14 +56,16 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
         FormUserPreferences formUP = remoteForm.getUserPreferences();
         ArrayList<GGroupObjectUserPreferences> gGroupObjectUPList = new ArrayList<GGroupObjectUserPreferences>();
         if (formUP != null) {
-        for (GroupObjectUserPreferences groupObjectUP : formUP.getGroupObjectUserPreferencesList()) {
-            HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<String, GColumnUserPreferences>();
-            for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectUP.getColumnUserPreferences().entrySet()) {
-                ColumnUserPreferences columnUP = entry.getValue();
-                gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.isNeedToHide(), columnUP.getWidthUser(), columnUP.getOrderUser(), columnUP.getSortUser(), columnUP.getAscendingSortUser()));
+            for (GroupObjectUserPreferences groupObjectUP : formUP.getGroupObjectUserPreferencesList()) {
+                HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<String, GColumnUserPreferences>();
+                for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectUP.getColumnUserPreferences().entrySet()) {
+                    ColumnUserPreferences columnUP = entry.getValue();
+                    gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.isNeedToHide(), columnUP.getWidthUser(), columnUP.getOrderUser(), columnUP.getSortUser(), columnUP.getAscendingSortUser()));
+                }
+                GFont userFont = convertFont(groupObjectUP.fontInfo);
+                gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, userFont, groupObjectUP.hasUserPreferences));
+                gForm.addFont(userFont); // добавляем к используемым шрифтам с целью подготовить FontMetrics
             }
-            gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, convertFont(groupObjectUP.fontInfo), groupObjectUP.hasUserPreferences));
-        }
         }
         gForm.userPreferences = new GFormUserPreferences(gGroupObjectUPList);
 

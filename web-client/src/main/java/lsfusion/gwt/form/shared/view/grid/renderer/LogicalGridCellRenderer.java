@@ -22,7 +22,7 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
+    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
         ImageElement img = cellElement
                 .getFirstChild().cast();
         img.setSrc(getCBImagePath(value));

@@ -4,8 +4,10 @@ import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
+import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
@@ -13,13 +15,13 @@ import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.GGridTable;
 import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalWindow;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
-import lsfusion.gwt.form.shared.view.GColumnUserPreferences;
-import lsfusion.gwt.form.shared.view.GFormUserPreferences;
-import lsfusion.gwt.form.shared.view.GGroupObjectUserPreferences;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 
 import java.util.*;
+
+import static lsfusion.gwt.form.shared.view.GFont.DEFAULT_FONT_FAMILY;
+import static lsfusion.gwt.form.shared.view.GFont.DEFAULT_FONT_SIZE;
 
 public abstract class GUserPreferencesButton extends GToolbarButton {
     private static final String PREFERENCES_SAVED_ICON = "userPreferencesSaved.png";
@@ -29,8 +31,6 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
     boolean hasUserPreferences;
 
     public UserPreferencesDialog dialog;
-
-    //private Map<String, Integer> orderMap = new HashMap<String, Integer>();
 
     public GUserPreferencesButton(boolean hasUserPreferences) {
         super(hasUserPreferences ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON, "Настройка таблицы");
@@ -43,7 +43,11 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
 
         private FocusPanel focusPanel;
 
-        ColumnsDualListBox columnsDualListBox;
+        private ColumnsDualListBox columnsDualListBox;
+
+        private TextBox sizeBox;
+        private CheckBox boldBox;
+        private CheckBox italicBox;
 
         public UserPreferencesDialog(GGridTable grid, GFormController form) {
             super("Настройка таблицы");
@@ -62,6 +66,29 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
             preferencesPanel.add(columnsDualListBox);
             preferencesPanel.setCellHeight(columnsDualListBox, "100%");
 
+            preferencesPanel.add(GwtClientUtils.createVerticalStrut(3));
+
+            // font settings
+            Label sizeLabel = new Label("Размер: ");
+            sizeBox = new TextBox();
+            sizeBox.addStyleName("userPreferencesFontSizeTextBox");
+            
+            boldBox = new CheckBox("Полужирный");
+            italicBox = new CheckBox("Курсив");
+            
+            FlexPanel fontPanel = new FlexPanel(FlexPanel.Justify.CENTER);
+            fontPanel.add(sizeLabel, GFlexAlignment.CENTER);
+            fontPanel.add(sizeBox, GFlexAlignment.CENTER);
+            fontPanel.add(GwtClientUtils.createHorizontalStrut(3));
+            fontPanel.add(boldBox, GFlexAlignment.CENTER);
+            fontPanel.add(GwtClientUtils.createHorizontalStrut(3));
+            fontPanel.add(italicBox, GFlexAlignment.CENTER);
+            
+            GCaptionPanel fontSettingsPanel = new GCaptionPanel("Настройки шрифта", fontPanel);
+            preferencesPanel.add(fontSettingsPanel);
+            
+            preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
+            
             //save/reset buttons
             HorizontalPanel saveResetButtons = new HorizontalPanel();
 
@@ -118,6 +145,8 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
             preferencesPanel.add(srbContainer);
             preferencesPanel.setCellHorizontalAlignment(srbContainer, HasAlignment.ALIGN_CENTER);
 
+            preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
+
             // ok/cancel buttons
             Button okButton = new Button("OK");
             okButton.setWidth("6em");
@@ -165,6 +194,9 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
 
 
 
+            GFont initialFont = grid.font;
+            displayFont(initialFont);
+
             HashMap<GPropertyDraw, Integer> propertyOrderMap = new HashMap<GPropertyDraw, Integer>();
             ArrayList<GPropertyDraw> properties = grid.getProperties();
             for (int i = 0; i < properties.size(); i++) {
@@ -172,8 +204,8 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
                     if (hasUserPreferences)
                         properties.get(i).hideUser = true;
                     properties.get(i).orderUser = hasUserPreferences ? (Short.MAX_VALUE + i) : i;
-                propertyOrderMap.put(properties.get(i), properties.get(i).orderUser);
                 }
+                propertyOrderMap.put(properties.get(i), properties.get(i).orderUser);
             }
             ColumnsOrderComparator columnsOrderComparator = new ColumnsOrderComparator(propertyOrderMap);
             TreeMap<GPropertyDraw, Integer> propertyOrderTreeMap = new TreeMap<GPropertyDraw, Integer>(columnsOrderComparator);
@@ -181,9 +213,6 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
 
             int i = 0;
             for (Map.Entry<GPropertyDraw, Integer> entry : propertyOrderTreeMap.entrySet()) {
-                //String caption = GwtSharedUtils.nullTrim(entry.getKey().getNotEmptyCaption());
-                //orderMap.put(caption, i);
-
                 Boolean needToHide = entry.getKey().hideUser == null ? false : entry.getKey().hideUser;
                 if (!needToHide)
                     columnsDualListBox.addVisible(entry.getKey());
@@ -216,12 +245,31 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
                 property.hideUser = true;
                 i++;
             }
+            
+            grid.font = getUserFont();
 
             grid.columnsPreferencesChanged();
 
             dialog.hide();
         }
-
+        
+        private GFont getUserFont() {
+            Integer size;
+            try {
+                size = Integer.parseInt(sizeBox.getValue());
+            } catch(NumberFormatException e) {
+                size = grid.font == null ? DEFAULT_FONT_SIZE : grid.font.size;
+            }
+            
+            return new GFont(grid.font == null ? DEFAULT_FONT_FAMILY : grid.font.family, size, boldBox.getValue(), italicBox.getValue());
+        }
+        
+        private void displayFont(GFont font) {
+            sizeBox.setValue((font == null || font.size == null) ? DEFAULT_FONT_SIZE.toString() : font.size.toString());
+            boldBox.setValue(font != null && font.bold);
+            italicBox.setValue(font != null && font.italic);    
+        }
+        
         private void resetPressed(boolean forAllUsers) {
             Map<String, GColumnUserPreferences> preferences = new HashMap<String, GColumnUserPreferences>();
 
@@ -235,11 +283,19 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
                 preferences.put(property.sID, resetPropertyUserPreferences(property));
             }
 
+            GFont initialFont = grid.getDesignFont();
+            if (initialFont == null) {
+                initialFont = new GFont(grid.font.family, DEFAULT_FONT_SIZE, false, false);
+            }
+            grid.font = initialFont;
+
             if (grid.getProperties().size() != 0) {
                 List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GGroupObjectUserPreferences>();
-                groupObjectUserPreferencesList.add(new GGroupObjectUserPreferences(preferences, grid.getGroupObject().getSID(), grid.getGroupObject().fontInfo, false));
+                groupObjectUserPreferencesList.add(new GGroupObjectUserPreferences(preferences, grid.getGroupObject().getSID(), new GFont(null, null, false, false), false));
                 savePreferences(groupObjectUserPreferencesList, forAllUsers, true, "Сброс настроек успешно завершен");
             }
+
+            displayFont(initialFont);
 
             columnsDualListBox.clearLists();
             for (int i = 0; i < grid.getProperties().size(); i++) {
@@ -284,7 +340,8 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
 
             if (grid.getProperties().size() != 0) {
                 List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GGroupObjectUserPreferences>();
-                groupObjectUserPreferencesList.add(new GGroupObjectUserPreferences(columnPreferences, grid.getGroupObject().getSID(), grid.getGroupObject().fontInfo, true));
+                grid.font = getUserFont();
+                groupObjectUserPreferencesList.add(new GGroupObjectUserPreferences(columnPreferences, grid.getGroupObject().getSID(), getUserFont(), true));
                 savePreferences(groupObjectUserPreferencesList, forAllUsers, false, "Сохранение настроек успешно завершено");
             }
         }

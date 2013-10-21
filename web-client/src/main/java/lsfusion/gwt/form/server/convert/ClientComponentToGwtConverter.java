@@ -76,14 +76,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
 
         FontInfo clientFont = clientComponent.design.getFont();
-        if (clientFont != null) {
-            component.font = convertFont(clientFont);
-        }
+        component.font = convertFont(clientFont);
 
         FontInfo headerFont = clientComponent.design.getHeaderFont();
-        if (headerFont != null) {
-            component.headerFont = convertFont(headerFont);
-        }
+        component.headerFont = convertFont(headerFont);
 
         return component;
     }
@@ -464,7 +460,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
 
         groupObject.hasUserPreferences = clientGroupObject.hasUserPreferences;
-        groupObject.fontInfo = convertFont(clientGroupObject.fontInfo);
+        
 
         return groupObject;
     }

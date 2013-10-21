@@ -60,7 +60,19 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
+    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
+        if (property.icon == null) {
+            
+            LabelElement label = cellElement.getFirstChild().getFirstChild().cast();
+            GFont font = property.font;
+            if (font == null && table instanceof GGridPropertyTable) {
+                font = ((GGridPropertyTable) table).font;
+            }
+            if (font != null) {
+                font.apply(label.getStyle());
+            }   
+        }
+        
         if (property.icon != null) {
             ImageElement img = cellElement
                     .getFirstChild()

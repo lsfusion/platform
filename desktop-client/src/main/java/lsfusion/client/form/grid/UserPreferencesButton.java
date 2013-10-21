@@ -36,16 +36,9 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
 
     boolean hasUserPreferences;
 
-    public int fontSize;
-    public boolean isFontBold;
-    public boolean isFontItalic;
-
-    public UserPreferencesButton(boolean hasUserPreferences, FontInfo fontInfo) {
+    public UserPreferencesButton(boolean hasUserPreferences) {
         super(hasUserPreferences ? savedIcon : unsavedIcon, getString("form.grid.user.preferences"));
         this.hasUserPreferences = hasUserPreferences;
-        this.fontSize = fontInfo == null ? 0 : fontInfo.getFontSize();
-        this.isFontBold = fontInfo != null && fontInfo.isBold();
-        this.isFontItalic = fontInfo != null && fontInfo.isItalic();
     }
 
     public abstract void addListener();
@@ -115,13 +108,11 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 i++;
             }
 
-            fontSize = fontSize == 0 ? initialTable.getFont().getSize() : fontSize;
+            Font initialFont = initialTable.getFont();
             fontSizeLabel = new JLabel(getString("descriptor.editor.font.size") + ": ");
-            fontSizeField = new JTextField(String.valueOf(fontSize), 2);
-            isFontBold = isFontBold ? initialTable.getFont().isBold() : isFontBold;
-            isFontBoldCheckBox = new JCheckBox(getString("descriptor.editor.font.style.bold"), isFontBold);
-            isFontItalic = isFontItalic ? initialTable.getFont().isItalic() : isFontItalic;
-            isFontItalicCheckBox = new JCheckBox(getString("descriptor.editor.font.style.italic"), isFontItalic);
+            fontSizeField = new JTextField(String.valueOf(initialFont.getSize()), 2);
+            isFontBoldCheckBox = new JCheckBox(getString("descriptor.editor.font.style.bold"), initialFont.isBold());
+            isFontItalicCheckBox = new JCheckBox(getString("descriptor.editor.font.style.italic"), initialFont.isItalic());
             visibleList = new JList(visibleListModel);
             visibleList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
             visibleList.setTransferHandler(arrayListHandler);
@@ -347,20 +338,19 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 initialTable.getProperties().get(index).orderUser = visibleListModel.getSize() + i;
                 initialTable.getProperties().get(index).hideUser = true;
             }
-            int newFontSize = getFontSize(initialTable.getFont().getSize());
+            
+            Font tableFont = getInitialFont();
+            int newFontSize = getFontSize(tableFont.getSize());
             if (newFontSize == 0)
-                initialTable.setFont(initialTable.getFont().deriveFont(getFontStyle()));
+                initialTable.setFont(tableFont.deriveFont(getFontStyle()));
             else
-                initialTable.setFont(initialTable.getFont().deriveFont(getFontStyle(), newFontSize));
-            fontSize = initialTable.getFont().getSize();
-            isFontBold = initialTable.getFont().isBold();
-            isFontItalic = initialTable.getFont().isItalic();
+                initialTable.setFont(tableFont.deriveFont(getFontStyle(), newFontSize));
 
             dialog.setVisible(false);
             dispose();
         }
 
-        private void applyButtonPressed(Boolean forAllUsers) throws IOException {
+        private void applyButtonPressed(boolean forAllUsers) throws IOException {
             Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orderDirections = initialTable.getOrderDirections();
             Map<ClientPropertyDraw, Pair<Boolean, Integer>> sortDirections = new HashMap<ClientPropertyDraw, Pair<Boolean, Integer>>();
             int j = 1;
@@ -382,16 +372,18 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 int propertyOrder = visibleListModel.getSize() + i;
                 preferences.put(property.getSID(), refreshPropertyUserPreferences(property, true, propertyOrder, sortDirections));
             }
+
+            Font font = getInitialFont();
+            FontInfo fontInfo = new FontInfo(font.getFamily(), getFontSize(font.getSize()), isFontBoldCheckBox.isSelected(), isFontItalicCheckBox.isSelected());
             if (initialTable.getProperties().size() != 0) {
                 List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
-                FontInfo fontInfo = getFontInfo(false);
                 if (fontInfo.fontSize == 0) {
-                    fontInfo = fontInfo.derive(initialTable.getFont().getSize());
-                    fontSizeField.setText(String.valueOf(initialTable.getFont().getSize()));
+                    fontSizeField.setText(String.valueOf(fontInfo.fontSize));
                 }
                 groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(preferences, initialTable.getProperties().get(0).groupObject.getSID(), fontInfo, true));
                 form.saveUserPreferences(new FormUserPreferences(groupObjectUserPreferencesList), forAllUsers);
             }
+            initialTable.setFont(fontInfo.deriveFrom(initialTable));
             JOptionPane.showMessageDialog(this, getString("form.grid.hide.save.settings.successfully.complete"), getString("form.grid.hide.save.complete"), JOptionPane.INFORMATION_MESSAGE);
             setIcon(savedIcon);
         }
@@ -406,7 +398,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             return new ColumnUserPreferences(hide, property.widthUser, propertyOrder, sortDirection != null ? sortIndex : null, sortDirection);
         }
 
-        private void resetButtonPressed(Boolean forAllUsers) throws IOException {
+        private void resetButtonPressed(boolean forAllUsers) throws IOException {
             Map<String, ColumnUserPreferences> preferences = new HashMap<String, ColumnUserPreferences>();
             for (int i = 0; i < visibleListModel.getSize(); i++) {
                 int index = orderMap.get(sidCaptionMap.get(visibleListModel.get(i)));
@@ -421,7 +413,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             }
             if (initialTable.getProperties().size() != 0) {
                 List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
-                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(preferences, initialTable.getProperties().get(0).groupObject.getSID(), getFontInfo(true), false));
+                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(preferences, initialTable.getProperties().get(0).groupObject.getSID(), new FontInfo(null, -1, false, false), false));
                 form.saveUserPreferences(new FormUserPreferences(groupObjectUserPreferencesList), forAllUsers);
             }
             initialTable.updateTable();
@@ -437,15 +429,25 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 else
                     invisibleListModel.addElement(caption);
             }
-            initialTable.setFont(initialTable.getFont().deriveFont(Font.PLAIN, 11));
-            fontSizeField.setText("11");
-            isFontBoldCheckBox.setSelected(false);
-            isFontItalicCheckBox.setSelected(false);
+            Font font = getInitialFont();
+            FontInfo fontInfo = FontInfo.createFrom(font);
+            initialTable.setFont(font);
+            fontSizeField.setText(fontInfo.getFontSize() + "");
+            isFontBoldCheckBox.setSelected(fontInfo.bold);
+            isFontItalicCheckBox.setSelected(fontInfo.italic);
 
             JOptionPane.showMessageDialog(this, getString("form.grid.hide.reset.settings.successfully.complete"), getString("form.grid.hide.reset.complete"), JOptionPane.INFORMATION_MESSAGE);
             if (forAllUsers) {
                 setIcon(unsavedIcon);
             }
+        }
+        
+        private Font getInitialFont() {
+            FontInfo designFont = initialTable.getDesignFont();
+            if (designFont == null) {
+                return new Font(initialTable.getFont().getFontName(), Font.PLAIN, FontInfo.DEFAULT_FONT_SIZE);
+            }
+            return new Font(designFont.fontFamily, designFont.getStyle(), designFont.fontSize);
         }
         
         private String modifyCaption(Map<String, Integer> clientPropertyDrawCountMap, String caption) {
@@ -454,13 +456,6 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             if (count != null)
                 caption += " (" + (count + 1) + ")";
             return caption;
-        }
-
-        private FontInfo getFontInfo(boolean reset) {
-            Font font = initialTable.getFont();
-            return new FontInfo(font.getFamily(), reset ? font.getSize() : getFontSize(font.getSize()),
-                    reset ? font.isBold() : isFontBoldCheckBox.isSelected(),
-                    reset ? font.isItalic() : isFontItalicCheckBox.isSelected());
         }
 
         private int getFontStyle() {

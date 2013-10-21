@@ -13,6 +13,7 @@ import lsfusion.client.logics.ClientForm;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.interop.FontInfo;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.Order;
 import lsfusion.interop.Scroll;
@@ -1252,5 +1253,9 @@ public class GridTable extends ClientPropertyTable {
 
     public Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> getOrderDirections() {
         return sortableHeaderManager.getOrderDirections();
+    }
+    
+    public FontInfo getDesignFont() {
+        return groupObject.grid.design.getFont();
     }
 }

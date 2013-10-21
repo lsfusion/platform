@@ -458,7 +458,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    public void saveUserPreferences(long requestIndex, final FormUserPreferences preferences, final Boolean forAllUsers) throws RemoteException {
+    public void saveUserPreferences(long requestIndex, final FormUserPreferences preferences, final boolean forAllUsers) throws RemoteException {
         processRMIRequest(requestIndex, new Callable<Void>() {
             @Override
             public Void call() throws Exception {

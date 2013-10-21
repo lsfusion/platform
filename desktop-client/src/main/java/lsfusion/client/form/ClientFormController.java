@@ -4,7 +4,10 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.EProvider;
+import lsfusion.base.ERunnable;
+import lsfusion.base.OrderedMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.client.EditReportInvoker;
@@ -343,7 +346,7 @@ public class ClientFormController implements AsyncListener {
                 : null;
     }
 
-    public void saveUserPreferences(final FormUserPreferences preferences, final Boolean forAllUsers) throws RemoteException {
+    public void saveUserPreferences(final FormUserPreferences preferences, final boolean forAllUsers) throws RemoteException {
         commitOrCancelCurrentEditing();
         rmiQueue.syncRequest(new RmiVoidRequest() {
             @Override

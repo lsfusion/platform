@@ -345,7 +345,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new FormUserPreferences(preferences);
     }
 
-    public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) {
+    public void saveUserPreferences(FormUserPreferences preferences, boolean forAllUsers) {
         try {
             DataSession dataSession = session.createSession();
             DataObject userObject = dataSession.getDataObject(BL.authenticationLM.user, BL.authenticationLM.currentUser.read(dataSession));
@@ -376,19 +376,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 }
                 DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(dataSession, new DataObject(groupObjectPreferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
                 BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject, userObject);
-                if (forAllUsers) {
-                    BL.reflectionLM.hasUserPreferencesGroupObject.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject);
-                }
-                BL.reflectionLM.fontSizeGroupObjectCustomUser.change(groupObjectPreferences.fontInfo.fontSize, dataSession, groupObjectObject, userObject);
-                if (forAllUsers) {
-                    BL.reflectionLM.fontSizeGroupObject.change(groupObjectPreferences.fontInfo.getFontSize(), dataSession, groupObjectObject);
-                }
+                BL.reflectionLM.fontSizeGroupObjectCustomUser.change(groupObjectPreferences.fontInfo.fontSize != -1 ? groupObjectPreferences.fontInfo.fontSize : null, dataSession, groupObjectObject, userObject);
                 BL.reflectionLM.isFontBoldGroupObjectCustomUser.change(groupObjectPreferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject, userObject);
-                if (forAllUsers) {
-                    BL.reflectionLM.isFontBoldGroupObject.change(groupObjectPreferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject);
-                }
                 BL.reflectionLM.isFontItalicGroupObjectCustomUser.change(groupObjectPreferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject, userObject);
                 if (forAllUsers) {
+                    BL.reflectionLM.hasUserPreferencesGroupObject.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject);
+                    BL.reflectionLM.fontSizeGroupObject.change(groupObjectPreferences.fontInfo.fontSize != -1 ? groupObjectPreferences.fontInfo.fontSize : null, dataSession, groupObjectObject);
+                    BL.reflectionLM.isFontBoldGroupObject.change(groupObjectPreferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject);
                     BL.reflectionLM.isFontItalicGroupObject.change(groupObjectPreferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject);
                 }
             }

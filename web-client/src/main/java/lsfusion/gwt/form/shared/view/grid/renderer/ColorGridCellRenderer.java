@@ -20,7 +20,7 @@ public class ColorGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     @Override
-    public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
+    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
         String color = getColorValue(value);
         updateElement(cellElement, color);
     }

@@ -201,7 +201,7 @@ textarea {
     border: 2px groove threedface;
     border-radius: 5px;
     margin-top: 0.5em;
-    padding-top: 0.3em;
+    padding: 0.4em 0.1em 0.1em;
 }
 
 .captionPanelLegend {
@@ -449,6 +449,12 @@ textarea {
 
 .userPreferencesDualList .dragdrop-movable-panel {
     opacity: 0.5;
+}
+
+.userPreferencesFontSizeTextBox {
+    padding: 2px;
+    text-align: right;
+    width: 3em;    
 }
 
 /* ------------ Other components  ------------ */

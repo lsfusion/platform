@@ -74,7 +74,7 @@ public class GridController {
             }
         });
 
-        return new UserPreferencesButton(groupController.getGroupObject().hasUserPreferences, groupController.getGroupObject().fontInfo) {
+        return new UserPreferencesButton(groupController.getGroupObject().hasUserPreferences) {
             public void addListener() {
                 addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {

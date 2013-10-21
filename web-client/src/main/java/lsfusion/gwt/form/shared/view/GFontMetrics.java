@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GFontMetrics {
-    public static final GFont DEFAULT_FONT = new GFont("", 11, false, false);
-
     private static final HashMap<MetricsCallback, Integer> calculationsInProgress = new HashMap<MetricsCallback, Integer>();
 
     // все шрифты, с которыми приходилось работать на клиенте
@@ -52,11 +50,11 @@ public class GFontMetrics {
     }
 
     public static void calculateFontMetrics(ArrayList<GFont> fonts, MetricsCallback callback) {
-        fonts.add(DEFAULT_FONT);
+        fonts.add(GFont.DEFAULT_FONT);
 
         boolean allCalculated = true;
         for (GFont font : fonts) {
-            if (!isCalculated(font)) {
+            if (font != null && !isCalculated(font)) {
                 allCalculated = false;
                 calculate(font, callback);
                 calculationStarted(callback);
@@ -112,12 +110,12 @@ public class GFontMetrics {
     }
 
     public static int getZeroSymbolWidth(GFont font) {
-        FontMeasure measure = getMeasure(font == null ? DEFAULT_FONT : font);
+        FontMeasure measure = getMeasure(font == null ? GFont.DEFAULT_FONT : font);
         return measure != null ? measure.width : 0;
     }
 
     public static int getSymbolHeight(GFont font) {
-        FontMeasure measure = getMeasure(font == null ? DEFAULT_FONT : font);
+        FontMeasure measure = getMeasure(font == null ? GFont.DEFAULT_FONT : font);
         return measure != null ? measure.height : 0;
     }
 

@@ -75,7 +75,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     };
 
     public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController) {
-        super(iform, gridController.getFont());
+        super(iform, igroupController.groupObject.fontInfo != null ? igroupController.groupObject.fontInfo : gridController.getFont());
 
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
@@ -223,7 +223,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 }
             }
 
-            Collections.sort(columnProperties, COLUMN_ORDER_COMPARATOR);
+            if (groupObject.hasUserPreferences) {
+                Collections.sort(columnProperties, COLUMN_ORDER_COMPARATOR);
+            }
 
             int rowHeight = 0;
             preferredWidth = 0;
@@ -317,8 +319,20 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public void columnsPreferencesChanged() {
         columnsUpdated = true;
         dataUpdated = true;
-        updatedColumnsImpl();
-        updateDataImpl();
+
+        ArrayList<GFont> fonts = new ArrayList<GFont>();
+        fonts.add(font);
+        GFontMetrics.calculateFontMetrics(fonts, new GFontMetrics.MetricsCallback() {
+            @Override
+            public void metricsCalculated() {
+                updatedColumnsImpl();
+                updateDataImpl();
+            }
+        });
+    }
+    
+    public GFont getDesignFont() {
+        return gridController.getFont();
     }
 
     public static void putToColumnsMap(NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column, GridColumn value) {

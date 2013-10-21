@@ -4,6 +4,8 @@ import java.awt.*;
 import java.io.Serializable;
 
 public final class FontInfo implements Serializable {
+    public static final Integer DEFAULT_FONT_SIZE = 11;
+    
     public final String fontFamily;
     public final int fontSize;
     public final boolean bold;

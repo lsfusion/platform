@@ -57,7 +57,14 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
     }
 
     @Override
-    public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
+    public void updateDom(DivElement cellElement, DataGrid table, Cell.Context context, Object value) {
+        GFont font = property.font;
+        if (font == null && table instanceof GGridPropertyTable) {
+            font = ((GGridPropertyTable) table).font;
+        }
+        if (font != null) {
+            font.apply(cellElement.getStyle());
+        }
         updateElement(cellElement, value);
     }
 

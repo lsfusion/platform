@@ -180,7 +180,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             assert !isInEditingState;
 
             GridCellRenderer cellRenderer = property.getGridCellRenderer();
-            cellRenderer.updateDom(cellElement, context, value);
+            cellRenderer.updateDom(cellElement, GDataFilterValueViewTable.this, context, value);
         }
 
         @Override

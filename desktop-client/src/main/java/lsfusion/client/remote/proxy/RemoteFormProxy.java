@@ -202,7 +202,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public void saveUserPreferences(long requestIndex, FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException {
+    public void saveUserPreferences(long requestIndex, FormUserPreferences preferences, boolean forAllUsers) throws RemoteException {
         target.saveUserPreferences(requestIndex, preferences, forAllUsers);
     }
 

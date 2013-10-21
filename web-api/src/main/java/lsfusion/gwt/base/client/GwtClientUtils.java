@@ -192,6 +192,12 @@ public class GwtClientUtils {
         SimplePanel strut = new SimplePanel();
         strut.setWidth(size + "px");
         return strut;
+    }    
+    
+    public static Widget createVerticalStrut(int size) {
+        SimplePanel strut = new SimplePanel();
+        strut.setHeight(size + "px");
+        return strut;
     }
 
     public static String getUserAgent() {

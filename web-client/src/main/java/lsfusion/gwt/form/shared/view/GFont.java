@@ -7,6 +7,10 @@ import java.io.Serializable;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.nullEquals;
 
 public class GFont implements Serializable {
+    public static final Integer DEFAULT_FONT_SIZE = 11;
+    public static final String DEFAULT_FONT_FAMILY = "";
+    public static final GFont DEFAULT_FONT = new GFont(DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, false, false);
+    
     public String family;
     public Integer size;
     public boolean bold;
