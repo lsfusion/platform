@@ -63,6 +63,18 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
                     gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.isNeedToHide(), columnUP.getWidthUser(), columnUP.getOrderUser(), columnUP.getSortUser(), columnUP.getAscendingSortUser()));
                 }
                 GFont userFont = convertFont(groupObjectUP.fontInfo);
+                GGroupObject groupObj = gForm.getGroupObject(groupObjectUP.groupObjectSID);
+                if (groupObj != null && groupObj.grid.font != null && groupObj.grid.font.size != 0) {
+                    if (userFont.size == 0) {
+                        userFont.size = groupObj.grid.font.size;
+                    }
+                    userFont.family = groupObj.grid.font.family;
+                } else {
+                    if (userFont.size == 0) {
+                        userFont.size = GFont.DEFAULT_FONT_SIZE;
+                    }
+                    userFont.family = GFont.DEFAULT_FONT_FAMILY;
+                }
                 gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, userFont, groupObjectUP.hasUserPreferences));
                 gForm.addFont(userFont); // добавляем к используемым шрифтам с целью подготовить FontMetrics
             }

@@ -246,7 +246,16 @@ public abstract class GUserPreferencesButton extends GToolbarButton {
                 i++;
             }
             
-            grid.font = getUserFont();
+            GFont userFont = getUserFont();
+            if (userFont.size == 0) {
+                GFont designFont = grid.getDesignFont();
+                if (designFont != null && designFont.size != 0) {
+                    userFont.size = designFont.size;
+                } else {
+                    userFont.size = (grid.font != null && grid.font.size != 0) ? grid.font.size : DEFAULT_FONT_SIZE;
+                }
+            }
+            grid.font = userFont;
 
             grid.columnsPreferencesChanged();
 
