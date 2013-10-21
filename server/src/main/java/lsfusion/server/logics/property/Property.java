@@ -296,7 +296,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         }
 
         ActionPropertyMapImplement<?, T> editObjectAction = getDefaultEditAction(EDIT_OBJECT, null);
-        if (editObjectAction.property instanceof DefaultChangeActionProperty) {
+        if (editObjectAction != null && editObjectAction.property instanceof DefaultChangeActionProperty) {
             DefaultChangeActionProperty defaultEditAction = (DefaultChangeActionProperty) editObjectAction.property;
             return defaultEditAction.getImplementType() instanceof ObjectType;
         }
