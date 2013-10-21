@@ -15,7 +15,7 @@
     </security>
     <resources>
         <property name="jnlp.packEnabled" value="true"/>
-        <j2se version="1.6+" initial-heap-size="32m" max-heap-size="1024m"/>
+        <j2se version="1.6+" initial-heap-size="32m" max-heap-size="800m"/>
         <property name="lsfusion.client.hostname" value="${jnlp.registryHost}"/>
         <property name="lsfusion.client.hostport" value="${jnlp.registryPort}"/>
         <property name="lsfusion.client.exportname" value="${jnlp.exportName}"/>
