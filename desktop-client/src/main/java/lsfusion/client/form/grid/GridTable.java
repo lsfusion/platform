@@ -465,7 +465,7 @@ public class GridTable extends ClientPropertyTable {
             }
 
             int currentRowTop = currentRow * getRowHeight();
-            int currentRowBottom = currentRowTop + getRowHeight() - 1;
+            int currentRowBottom = currentRowTop + getRowHeight();
 
             if (currentRowTop < viewRect.getMinY()) {
                 viewRect.y = currentRowTop;
@@ -539,8 +539,9 @@ public class GridTable extends ClientPropertyTable {
             rowKeys.add(rowKey);
             setCurrentObject(rowKey);
         } else {
-            if (currentObject.equals(rowKey))
+            if (currentObject.equals(rowKey)) {
                 setCurrentObject(BaseUtils.getNearObject(BaseUtils.singleValue(rowKey), rowKeys));
+            }
             rowKeys.remove(rowKey);
         }
     }
