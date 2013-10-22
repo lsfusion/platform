@@ -1,16 +1,14 @@
 package lsfusion.server.logics;
 
-import org.apache.log4j.Logger;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 import lsfusion.base.SystemUtils;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
+import org.apache.log4j.Logger;
+import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class BusinessLogicsBootstrap {
     private static final Logger logger = ServerLoggers.systemLogger;
-
-    private static FileSystemXmlApplicationContext springContext;
 
     private static LogicsInstance logicsInstance;
 
@@ -26,7 +24,7 @@ public class BusinessLogicsBootstrap {
 
         boolean instanceCreated = false;
         try {
-            springContext = new FileSystemXmlApplicationContext(SystemProperties.settingsPath);
+            AbstractXmlApplicationContext springContext = new ClassPathXmlApplicationContext(SystemProperties.settingsPath);
             logicsInstance = (LogicsInstance) springContext.getBean("logicsInstance");
             instanceCreated = true;
         } catch (Throwable t) {

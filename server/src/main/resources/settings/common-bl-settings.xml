@@ -7,7 +7,95 @@
            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
        default-lazy-init="true">
 
-    <bean id="settings" class="lsfusion.server.Settings"/>
+    <bean id="settings" class="lsfusion.server.Settings">
+        <property name="properties">
+            <map>
+                <entry key="innerGroupExprs" value="${settings.innerGroupExprs:}"/>
+                <entry key="packOnCacheComplexity" value="${settings.packOnCacheComplexity:}"/>
+                <entry key="LRUOftenCleanPeriod" value="${settings.LRUOftenCleanPeriod:}"/>
+                <entry key="LRUOftenExpireSecond" value="${settings.LRUOftenExpireSecond:}"/>
+                <entry key="LRUOftenProceedBucket" value="${settings.LRUOftenProceedBucket:}"/>
+                <entry key="LRURareCleanPeriod" value="${settings.LRURareCleanPeriod:}"/>
+                <entry key="LRURareExpireSecond" value="${settings.LRURareExpireSecond:}"/>
+                <entry key="LRURareProceedBucket" value="${settings.LRURareProceedBucket:}"/>
+                <entry key="cacheInnerHashes" value="${settings.cacheInnerHashes:}"/>
+                <entry key="mapInnerMaxIterations" value="${settings.mapInnerMaxIterations:}"/>
+                <entry key="enableApplySingleStored" value="${settings.enableApplySingleStored:}"/>
+                <entry key="pushOrderWhere" value="${settings.pushOrderWhere:}"/>
+                <entry key="splitSelectGroupInnerJoins" value="${settings.splitSelectGroupInnerJoins:}"/>
+                <entry key="splitGroupStatInnerJoins" value="${settings.splitGroupStatInnerJoins:}"/>
+                <entry key="useFJInsteadOfUnion" value="${settings.useFJInsteadOfUnion:}"/>
+                <entry key="simpleCheckCompare" value="${settings.simpleCheckCompare:}"/>
+                <entry key="editLogicalOnSingleClick" value="${settings.editLogicalOnSingleClick:}"/>
+                <entry key="editActionOnSingleClick" value="${settings.editActionOnSingleClick:}"/>
+                <entry key="checkFollowsWhenObjects" value="${settings.checkFollowsWhenObjects:}"/>
+                <entry key="restructWhereOnMeans" value="${settings.restructWhereOnMeans:}"/>
+                <entry key="splitGroupSelectExprcases" value="${settings.splitGroupSelectExprcases:}"/>
+                <entry key="calculateGroupDataChanged" value="${settings.calculateGroupDataChanged:}"/>
+                <entry key="noIncrementMaxGroupProperty" value="${settings.noIncrementMaxGroupProperty:}"/>
+                <entry key="compileMeans" value="${settings.compileMeans:}"/>
+                <entry key="freeConnections" value="${settings.freeConnections:}"/>
+                <entry key="commonUnique" value="${settings.commonUnique:}"/>
+                <entry key="disablePoolConnections" value="${settings.disablePoolConnections:}"/>
+                <entry key="disablePoolPreparedStatements" value="${settings.disablePoolPreparedStatements:}"/>
+                <entry key="disableWhenCalcDo" value="${settings.disableWhenCalcDo:}"/>
+                <entry key="disablePrereadValues" value="${settings.disablePrereadValues:}"/>
+                <entry key="disableSumGroupNotZero" value="${settings.disableSumGroupNotZero:}"/>
+                <entry key="usedChangesCacheLimit" value="${settings.usedChangesCacheLimit:}"/>
+                <entry key="locale" value="${settings.locale:}"/>
+                <entry key="splitIncrementApply" value="${settings.splitIncrementApply:}"/>
+                <entry key="statDegree" value="${settings.statDegree:}"/>
+                <entry key="barcodeLength" value="${settings.barcodeLength:}"/>
+                <entry key="useUniPass" value="${settings.useUniPass:}"/>
+                <entry key="useSingleJoins" value="${settings.useSingleJoins:}"/>
+                <entry key="useQueryExpr" value="${settings.useQueryExpr:}"/>
+                <entry key="noExclusiveCompile" value="${settings.noExclusiveCompile:}"/>
+                <entry key="limitWhereJoinsCount" value="${settings.limitWhereJoinsCount:}"/>
+                <entry key="limitWhereJoinsComplexity" value="${settings.limitWhereJoinsComplexity:}"/>
+                <entry key="limitClassWhereCount" value="${settings.limitClassWhereCount:}"/>
+                <entry key="limitClassWhereComplexity" value="${settings.limitClassWhereComplexity:}"/>
+                <entry key="limitWhereJoinPack" value="${settings.limitWhereJoinPack:}"/>
+                <entry key="limitHintIncrementComplexity" value="${settings.limitHintIncrementComplexity:}"/>
+                <entry key="noApplyIncrement" value="${settings.noApplyIncrement:}"/>
+                <entry key="limitApplyHintIncrementComplexity" value="${settings.limitApplyHintIncrementComplexity:}"/>
+                <entry key="limitHintIncrementStat" value="${settings.limitHintIncrementStat:}"/>
+                <entry key="limitApplyHintIncrementStat" value="${settings.limitApplyHintIncrementStat:}"/>
+                <entry key="limitHintNoUpdateComplexity" value="${settings.limitHintNoUpdateComplexity:}"/>
+                <entry key="limitWrapComplexity" value="${settings.limitWrapComplexity:}"/>
+                <entry key="limitGrowthIncrementComplexity" value="${settings.limitGrowthIncrementComplexity:}"/>
+                <entry key="limitExclusiveCount" value="${settings.limitExclusiveCount:}"/>
+                <entry key="limitExclusiveSimpleCount" value="${settings.limitExclusiveSimpleCount:}"/>
+                <entry key="limitExclusiveSimpleComplexity" value="${settings.limitExclusiveSimpleComplexity:}"/>
+                <entry key="limitExclusiveComplexity" value="${settings.limitExclusiveComplexity:}"/>
+                <entry key="limitMaterializeComplexity" value="${settings.limitMaterializeComplexity:}"/>
+                <entry key="updateFormCountPeriod" value="${settings.updateFormCountPeriod:}"/>
+                <entry key="autoAnalyzeTempStats" value="${settings.autoAnalyzeTempStats:}"/>
+                <entry key="useGreaterEquals" value="${settings.useGreaterEquals:}"/>
+                <entry key="disableAutoHints" value="${settings.disableAutoHints:}"/>
+                <entry key="disableAutoHintCaches" value="${settings.disableAutoHintCaches:}"/>
+                <entry key="disableWrapComplexity" value="${settings.disableWrapComplexity:}"/>
+                <entry key="enablePrevWrapComplexity" value="${settings.enablePrevWrapComplexity:}"/>
+                <entry key="groupJoinLevel" value="${settings.groupJoinLevel:}"/>
+                <entry key="applyVolatileStats" value="${settings.applyVolatileStats:}"/>
+                <entry key="useEventValuePrevHeuristic" value="${settings.useEventValuePrevHeuristic:}"/>
+                <entry key="disableTabbedOptimization" value="${settings.disableTabbedOptimization:}"/>
+                <entry key="checkUniqueEvent" value="${settings.checkUniqueEvent:}"/>
+                <entry key="disableChangeModifierAllHints" value="${settings.disableChangeModifierAllHints:}"/>
+                <entry key="disableValueAllHints" value="${settings.disableValueAllHints:}"/>
+                <entry key="defaultOrdersNotNull" value="${settings.defaultOrdersNotNull:}"/>
+                <entry key="commandLengthVolatileStats" value="${settings.commandLengthVolatileStats:}"/>
+                <entry key="disableReadSingleValues" value="${settings.disableReadSingleValues:}"/>
+                <entry key="reserveIDStep" value="${settings.reserveIDStep:}"/>
+                <entry key="mergeUpClassSets" value="${settings.mergeUpClassSets:}"/>
+                <entry key="queryPrepareLength" value="${settings.queryPrepareLength:}"/>
+                <entry key="queryPrepareRunTime" value="${settings.queryPrepareRunTime:}"/>
+                <entry key="disableSimpleAddRemoveInNonExclCase" value="${settings.disableSimpleAddRemoveInNonExclCase:}"/>
+                <entry key="modifySessionTableInsteadOfRewrite" value="${settings.modifySessionTableInsteadOfRewrite:}"/>
+                <entry key="checkAlwaysNull" value="${settings.checkAlwaysNull:}"/>
+                <entry key="checkClassWhere" value="${settings.checkClassWhere:}"/>
+            </map>
+        </property>
+    </bean>
 
     <bean id="dataAdapter" class="lsfusion.server.data.sql.PostgreDataAdapter">
         <constructor-arg value="${db.name}"/>

@@ -9,7 +9,7 @@ public class SystemProperties {
 
     public static final boolean isDebug = "true".equals(System.getProperty("lsfusion.server.isdebug"));
 
-    public static final String settingsPath = System.getProperty("lsfusion.server.settingsPath", "conf/settings.xml");
+    public static final String settingsPath = System.getProperty("lsfusion.server.settingsPath", "lsfusion.xml");
 
     public static final boolean doNotCalculateStats = "true".equals(System.getProperty("lsfusion.server.logics.donotcalculatestats"));
 
