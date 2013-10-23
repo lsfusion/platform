@@ -1,7 +1,6 @@
 package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
@@ -11,6 +10,8 @@ import lsfusion.gwt.form.shared.view.panel.PanelRenderer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 
 public class GPanelController {
     private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
@@ -240,7 +241,7 @@ public class GPanelController {
             }
 
             PanelRenderer toFocus = columnKeys == null ? renderers.values().iterator().next() : renderers.get(columnKeys.get(0));
-            if (GwtClientUtils.isVisible(toFocus.getComponent())) {
+            if (isShowing(toFocus.getComponent())) {
                 toFocus.focus();
                 return true;
             }

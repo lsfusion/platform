@@ -16,6 +16,7 @@ import lsfusion.gwt.form.shared.view.reader.*;
 
 import java.util.*;
 
+import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.containsAny;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
@@ -436,7 +437,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     public boolean focusFirstWidget() {
-        if (grid != null && !grid.getTable().isEmpty() && GwtClientUtils.isVisible(grid.getTable())) {
+        if (grid != null && !grid.getTable().isEmpty() && isShowing(grid.getTable())) {
             grid.getTable().setFocus(true);
             return true;
         }

@@ -10,10 +10,7 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.http.client.UrlBuilder;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.ui.HasPreferredSize;
 
 import java.util.*;
@@ -26,6 +23,7 @@ public class GwtClientUtils {
     public static final String GWT_DEVMODE_PARAM = "gwt.codesvr";
 
     public static final BaseMessages baseMessages = BaseMessages.Instance.get();
+    public static final com.google.gwt.user.client.Element rootElement = RootPanel.get().getElement();
 
     public static void removeLoaderFromHostedPage() {
         RootPanel p = RootPanel.get("loadingWrapper");
@@ -208,11 +206,20 @@ public class GwtClientUtils {
         return getUserAgent().contains("msie");
     }
 
-    public static boolean isVisible(Widget w) {
-        if (w.getParent() == null) {
-            return w.isVisible();
+    public static boolean isShowing(Widget widget) {
+        if (widget == null) {
+            return false;
         }
-        return w.isVisible() && isVisible(w.getParent());
+        Element el = widget.getElement();
+        while (el != null && el != rootElement) {
+            if (!UIObject.isVisible(el)) {
+                return false;
+            }
+
+            el = el.getParentElement();
+        }
+
+        return el == rootElement;
     }
 
     public static void setupFillParent(Element parent, Element child) {
@@ -287,16 +294,5 @@ public class GwtClientUtils {
                 }
             });
         }
-    }
-
-    public static boolean isShowing(Widget widget) {
-        RootPanel rootPanel = RootPanel.get();
-        while (widget != null && widget != rootPanel) {
-            if (!widget.isVisible()) {
-                return false;
-            }
-            widget = widget.getParent();
-        }
-        return widget == rootPanel;
     }
 }

@@ -9,7 +9,6 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.HasPreferredSize;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.Header;
@@ -27,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.lang.Math.max;
+import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.form.shared.view.GEditBindingMap.EditEventFilter;
 
@@ -184,7 +184,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     abstract String getCellForeground(GridDataRecord rowValue, int row, int column);
 
     public void beforeHiding() {
-        if (GwtClientUtils.isVisible(this)) {
+        if (isShowing(this)) {
             storeScrollPosition();
             needToRestoreScrollPosition = true;
         }

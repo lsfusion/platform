@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.client.form.ui;
 
-import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GFormChanges;
@@ -13,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
 
 public class GTreeGroupController extends GAbstractGroupObjectController {
@@ -256,7 +256,7 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
     }
 
     public boolean focusFirstWidget() {
-        if (GwtClientUtils.isVisible(tree)) {
+        if (isShowing(tree)) {
             tree.setFocus(true);
             return true;
         }

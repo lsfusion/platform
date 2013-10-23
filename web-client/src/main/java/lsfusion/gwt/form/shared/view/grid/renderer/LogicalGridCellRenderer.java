@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
 
 public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
 
@@ -18,7 +19,20 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
 
         ImageElement img = cellElement.appendChild(Document.get().createImageElement());
         img.setSrc(getCBImagePath(checked));
-        img.getStyle().setVerticalAlign(Style.VerticalAlign.TEXT_BOTTOM);
+
+        Style imgStyle = img.getStyle();
+        imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
+        imgStyle.setProperty("margin", "auto");
+
+        imgStyle.setPosition(Style.Position.ABSOLUTE);
+        imgStyle.setTop(0, Style.Unit.PX);
+        imgStyle.setLeft(0, Style.Unit.PX);
+        imgStyle.setBottom(0, Style.Unit.PX);
+        imgStyle.setRight(0, Style.Unit.PX);
+
+        if (table instanceof GGridPropertyTable) {
+            cellElement.getStyle().setPosition(Style.Position.RELATIVE);
+        }
     }
 
     @Override
