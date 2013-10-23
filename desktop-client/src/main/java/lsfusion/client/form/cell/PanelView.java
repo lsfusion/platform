@@ -7,7 +7,7 @@ public interface PanelView {
     JComponent getComponent();
     void setValue(Object ivalue);
     void setReadOnly(boolean readOnly);
-    void forceEdit();
+    boolean forceEdit();
     void setCaption(String caption);
     void setToolTip(String caption);
     void setBackgroundColor(Color background);

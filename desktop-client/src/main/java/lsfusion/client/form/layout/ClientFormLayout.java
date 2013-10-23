@@ -12,17 +12,23 @@ import lsfusion.client.logics.ClientGroupObject;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ClientFormLayout extends JPanel {
+
+    public interface KeyBinding {
+        public boolean keyPressed(KeyEvent ke);
+    }
 
     private final ClientFormController form;
     private final ClientContainer mainContainer;
 
     private FormFocusTraversalPolicy policy;
 
-    private Map<KeyStroke, Map<ClientGroupObject, KeyListener>> bindings = new HashMap<KeyStroke, Map<ClientGroupObject, KeyListener>>();
+    private Map<KeyStroke, Map<ClientGroupObject, List<KeyBinding>>> bindings = new HashMap<KeyStroke, Map<ClientGroupObject, List<KeyBinding>>>();
     private Map<ClientContainer, ClientContainerView> containerViews = new HashMap<ClientContainer, ClientContainerView>();
 
     @SuppressWarnings({"FieldCanBeLocal"})
@@ -181,11 +187,20 @@ public class ClientFormLayout extends JPanel {
         getActionMap().put(resultId, resultAction);
     }
 
-    public void addKeyBinding(KeyStroke ks, ClientGroupObject groupObject, KeyListener run) {
-        if (!bindings.containsKey(ks)) {
-            bindings.put(ks, new HashMap<ClientGroupObject, KeyListener>());
+    public void addKeyBinding(KeyStroke ks, ClientGroupObject groupObject, KeyBinding binding) {
+        Map<ClientGroupObject, List<KeyBinding>> groupBindings = bindings.get(ks);
+        if (groupBindings == null) {
+            groupBindings = new HashMap<ClientGroupObject, List<KeyBinding>>();
+            bindings.put(ks, groupBindings);
         }
-        bindings.get(ks).put(groupObject, run);
+
+        List<KeyBinding> bindings = groupBindings.get(groupObject);
+        if (bindings == null) {
+            bindings = new ArrayList<KeyBinding>();
+            groupBindings.put(groupObject, bindings);
+        }
+
+        bindings.add(binding);
     }
 
     @Override
@@ -196,32 +211,42 @@ public class ClientFormLayout extends JPanel {
 
     // реализуем "обратную" обработку нажатий кнопок
     @Override
-    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-        Map<ClientGroupObject, KeyListener> keyBinding = bindings.get(ks);
-        if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT && keyBinding != null) {
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+        Map<ClientGroupObject, List<KeyBinding>> keyBinding = bindings.get(ks);
+        if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT && keyBinding != null && !keyBinding.isEmpty()) {
             // делаем так, чтобы первым нажатия клавиш обрабатывал GroupObject, у которого стоит фокус
             // хотя конечно идиотизм это делать таким образом
 
-            Component comp = e.getComponent();
+            Component comp = ke.getComponent();
             while (comp != null && !(comp instanceof Window) && comp != this) {
                 if (comp instanceof JComponent) {
                     ClientGroupObject groupObject = (ClientGroupObject) ((JComponent) comp).getClientProperty("groupObject");
                     if (groupObject != null) {
-                        if (keyBinding.containsKey(groupObject)) {
-                            keyBinding.get(groupObject).keyPressed(e);
-                            return true;
+                        List<KeyBinding> groupBindings = keyBinding.get(groupObject);
+                        if (groupBindings != null) {
+                            for (KeyBinding binding : groupBindings) {
+                                if (binding.keyPressed(ke)) {
+                                    return true;
+                                }
+                            }
                         }
                         break;
                     }
                 }
                 comp = comp.getParent();
             }
-            if (!keyBinding.isEmpty()) {
-                keyBinding.values().iterator().next().keyPressed(e);
-                return true;
+
+            for (List<KeyBinding> groupBindings : keyBinding.values()) {
+                for (KeyBinding binding : groupBindings) {
+                    if (binding.keyPressed(ke)) {
+                        return true;
+                    }
+                }
             }
+
+            return true;
         }
 
-        return super.processKeyBinding(ks, e, condition, pressed);
+        return super.processKeyBinding(ks, ke, condition, pressed);
     }
 }

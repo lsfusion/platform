@@ -10,7 +10,6 @@ import lsfusion.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.List;
@@ -42,10 +41,10 @@ public class PropertyController {
         this.property = property;
 
         if (property.editKey != null) {
-            form.getLayout().addKeyBinding(property.editKey, property.groupObject, new KeyAdapter() {
+            form.getLayout().addKeyBinding(property.editKey, property.groupObject, new ClientFormLayout.KeyBinding() {
                 @Override
-                public void keyPressed(KeyEvent e) {
-                    forceEdit();
+                public boolean keyPressed(KeyEvent e) {
+                    return forceEdit();
                 }
             });
         }
@@ -55,10 +54,11 @@ public class PropertyController {
         viewsPanel = new ViewsPanel();
     }
 
-    public void forceEdit() {
+    public boolean forceEdit() {
         if (views != null && !views.isEmpty()) {
-            views.values().iterator().next().forceEdit();
+            return views.values().iterator().next().forceEdit();
         }
+        return false;
     }
 
     public boolean requestFocusInWindow() {

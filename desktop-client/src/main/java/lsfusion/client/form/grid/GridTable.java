@@ -7,6 +7,7 @@ import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.ClientPropertyTable;
 import lsfusion.client.form.GroupObjectController;
+import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.sort.MultiLineHeaderRenderer;
 import lsfusion.client.form.sort.TableSortableHeaderManager;
 import lsfusion.client.logics.ClientForm;
@@ -423,14 +424,19 @@ public class GridTable extends ClientPropertyTable {
             boolean samePropAsPrevious = i != 0 && cell == model.getColumnProperty(i - 1);
             final int index = i;
             if (!samePropAsPrevious && cell.editKey != null) {
-                form.getLayout().addKeyBinding(cell.editKey, cell.groupObject, new KeyAdapter() {
+                form.getLayout().addKeyBinding(cell.editKey, cell.groupObject, new ClientFormLayout.KeyBinding() {
                     @Override
-                    public void keyPressed(KeyEvent e) {
-                        int leadRow = getSelectionModel().getLeadSelectionIndex();
-                        if (leadRow != -1 && !isEditing()) {
-                            keyController.stopRecording();
-                            editCellAt(leadRow, index);
+                    public boolean keyPressed(KeyEvent e) {
+                        if (isShowing()) {
+                            int leadRow = getSelectionModel().getLeadSelectionIndex();
+                            if (leadRow != -1 && !isEditing()) {
+                                keyController.stopRecording();
+                                editCellAt(leadRow, index);
+                            }
+                            //даже если редактирование не произошло, всё равно съедаем нажатие клавиши, для единообразия
+                            return true;
                         }
+                        return false;
                     }
                 });
             }

@@ -288,4 +288,15 @@ public class GwtClientUtils {
             });
         }
     }
+
+    public static boolean isShowing(Widget widget) {
+        RootPanel rootPanel = RootPanel.get();
+        while (widget != null && widget != rootPanel) {
+            if (!widget.isVisible()) {
+                return false;
+            }
+            widget = widget.getParent();
+        }
+        return widget == rootPanel;
+    }
 }

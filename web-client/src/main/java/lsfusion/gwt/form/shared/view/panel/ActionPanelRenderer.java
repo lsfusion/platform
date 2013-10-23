@@ -27,6 +27,7 @@ import lsfusion.gwt.form.shared.view.grid.editor.DialogBasedGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.PopupBasedGridCellEditor;
 
+import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.nullEquals;
 import static lsfusion.gwt.form.client.HotkeyManager.Binding;
@@ -110,7 +111,11 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             iform.addHotkeyBinding(property.groupObject, property.editKey, new Binding() {
                 @Override
                 public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                    return enabled && click(event.getEventTarget());
+                    if (isShowing(button) && enabled) {
+                        click(event.getEventTarget());
+                        return true;
+                    }
+                    return false;
                 }
             });
         }
@@ -122,13 +127,11 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         }
     }
 
-    private boolean click(EventTarget ifocusTargetAfterEdit) {
+    private void click(EventTarget ifocusTargetAfterEdit) {
         if (!form.isEditing()) {
             focusTargetAfterEdit = ifocusTargetAfterEdit;
             editDispatcher.executePropertyEditAction(property, columnKey, GEditBindingMap.CHANGE, null);
-            return true;
         }
-        return false;
     }
 
     @Override

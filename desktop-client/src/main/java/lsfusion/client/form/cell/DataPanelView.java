@@ -157,14 +157,18 @@ public class DataPanelView extends JPanel implements PanelView, HasLabels {
     }
 
     @SuppressWarnings("deprecation")
-    public void forceEdit() {
-        if (!table.isEditing()) {
-            table.editCellAt(0, 0, null);
-            Component editorComponent = table.getEditorComponent();
-            if (editorComponent instanceof JComponent) {
-                ((JComponent) editorComponent).setNextFocusableComponent(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
+    public boolean forceEdit() {
+        if (table.isShowing()) {
+            if (!table.isEditing()) {
+                table.editCellAt(0, 0, null);
+                Component editorComponent = table.getEditorComponent();
+                if (editorComponent instanceof JComponent) {
+                    ((JComponent) editorComponent).setNextFocusableComponent(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
+                }
             }
+            return true;
         }
+        return false;
     }
 
     public void setCaption(String caption) {

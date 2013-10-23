@@ -136,10 +136,12 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         setEnabled(value != null && !readOnly);
     }
 
-    public void forceEdit() {
+    public boolean forceEdit() {
         if (isShowing()) {
             doClick(20);
+            return true;
         }
+        return false;
     }
 
     public void setCaption(String caption) {

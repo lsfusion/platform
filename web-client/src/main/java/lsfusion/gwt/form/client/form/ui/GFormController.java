@@ -58,6 +58,7 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import java.io.Serializable;
 import java.util.*;
 
+import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.removeFromDoubleMap;
@@ -196,8 +197,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             addHotkeyBinding(filterGroup.groupObject, filter.key, new HotkeyManager.Binding() {
                 @Override
                 public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                    filterCheck.setValue(!filterCheck.getValue(), true);
-                    return true;
+                    if (isShowing(filterCheck)) {
+                        filterCheck.setValue(!filterCheck.getValue(), true);
+                        return true;
+                    }
+                    return false;
                 }
             });
         }
@@ -218,9 +222,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 addHotkeyBinding(filterGroup.groupObject, filter.key, new HotkeyManager.Binding() {
                     @Override
                     public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                        filterBox.setSelectedIndex(filterIndex + 1);
-                        setRegularFilter(filterGroup, filterIndex);
-                        return true;
+                        if (isShowing(filterBox)) {
+                            filterBox.setSelectedIndex(filterIndex + 1);
+                            setRegularFilter(filterGroup, filterIndex);
+                            return true;
+                        }
+                        return false;
                     }
                 });
             }

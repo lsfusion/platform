@@ -23,6 +23,7 @@ import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.getOffsetSize;
+import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.form.client.HotkeyManager.Binding;
 
 public class DataPanelRenderer implements PanelRenderer {
@@ -125,9 +126,12 @@ public class DataPanelRenderer implements PanelRenderer {
             form.addHotkeyBinding(property.groupObject, property.editKey, new Binding() {
                 @Override
                 public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                    focusTargetAfterEdit = event.getEventTarget();
-                    valueTable.editCellAt(0, 0, GEditBindingMap.CHANGE);
-                    return true;
+                    if (isShowing(panel)) {
+                        focusTargetAfterEdit = event.getEventTarget();
+                        valueTable.editCellAt(0, 0, GEditBindingMap.CHANGE);
+                        return true;
+                    }
+                    return false;
                 }
             });
         }

@@ -10,9 +10,12 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.form.shared.view.GGroupObject;
 import lsfusion.gwt.form.shared.view.GKeyStroke;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.base.shared.GwtSharedUtils.getFromDoubleMap;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.putToDoubleMap;
 import static lsfusion.gwt.form.shared.view.GKeyStroke.isPossibleEditKeyEvent;
 
@@ -21,7 +24,7 @@ public class HotkeyManager {
         public boolean onKeyPress(NativeEvent event, GKeyStroke key);
     }
 
-    private final HashMap<GKeyStroke, HashMap<GGroupObject, Binding>> bindings = new HashMap<GKeyStroke, HashMap<GGroupObject, Binding>>();
+    private final HashMap<GKeyStroke, HashMap<GGroupObject, List<Binding>>> bindings = new HashMap<GKeyStroke, HashMap<GGroupObject, List<Binding>>>();
 
     public void install(Widget rootWidget) {
         rootWidget.addDomHandler(new KeyDownHandler() {
@@ -35,7 +38,13 @@ public class HotkeyManager {
     public void addHotkeyBinding(GGroupObject groupObject, GKeyStroke key, Binding binding) {
         assert key != null && binding != null;
 
-        putToDoubleMap(bindings, key, groupObject, binding);
+        List<Binding> groupBindings = getFromDoubleMap(bindings, key, groupObject);
+        if (groupBindings == null) {
+            groupBindings = new ArrayList<Binding>();
+            putToDoubleMap(bindings, key, groupObject, groupBindings);
+        }
+
+        groupBindings.add(binding);
     }
 
     private void handleKeyEvent(NativeEvent nativeEvent) {
@@ -51,28 +60,34 @@ public class HotkeyManager {
 
             GKeyStroke key = GKeyStroke.getKeyStroke(nativeEvent);
 
-            HashMap<GGroupObject, Binding> binding = bindings.get(key);
-            if (binding != null) {
+            HashMap<GGroupObject, List<Binding>> binding = bindings.get(key);
+            if (binding != null && !binding.isEmpty()) {
                 Binding bindingToUse = null;
 
                 while (elementTarget != null) {     // пытаемся найти GroupObject, к которому относится элемент с фокусом
                     GGroupObject targetGO = (GGroupObject) elementTarget.getPropertyObject("groupObject");
                     if (targetGO != null) {
-                        if (binding.containsKey(targetGO)) {
-                            bindingToUse = binding.get(targetGO);
+                        List<Binding> groupBindings = binding.get(targetGO);
+                        if (groupBindings != null) {
+                            for (Binding b : groupBindings) {
+                                if (b.onKeyPress(nativeEvent, key)) {
+                                    stopPropagation(nativeEvent);
+                                    return;
+                                }
+                            }
                         }
                         break;
                     }
                     elementTarget = elementTarget.getParentElement();
                 }
 
-                if (bindingToUse != null) {
-                    if (bindingToUse.onKeyPress(nativeEvent, key)) {
-                        stopPropagation(nativeEvent);
-                    }
-                } else if (!binding.isEmpty()) {  // если подходящий GroupObject не нашли, используём любой биндинг к этим клавишам в рамках формы
-                    if (binding.values().iterator().next().onKeyPress(nativeEvent, key)) {
-                        stopPropagation(nativeEvent);
+                // если подходящий GroupObject не нашли, используём любой биндинг к этим клавишам в рамках формы
+                for (List<Binding> groupBindings : binding.values()) {
+                    for (Binding b : groupBindings) {
+                        if (b.onKeyPress(nativeEvent, key)) {
+                            stopPropagation(nativeEvent);
+                            return;
+                        }
                     }
                 }
             }
