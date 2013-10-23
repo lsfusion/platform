@@ -79,8 +79,7 @@ public class GridTableModel extends AbstractTableModel {
         List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
         List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
 
-        if (hasUserPreferences)
-            Collections.sort(columnProperties, COMPARATOR);
+        Collections.sort(columnProperties, COMPARATOR);
 
         for (ClientPropertyDraw property : columnProperties) {
             if (mapColumnKeys.containsKey(property)) {

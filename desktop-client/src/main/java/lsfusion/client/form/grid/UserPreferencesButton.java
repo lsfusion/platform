@@ -477,7 +477,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             property.widthUser = null;
             property.sortUser = null;
             property.ascendingSortUser = null;
-            property.orderUser = property.getID();
+            property.orderUser = null;
             return new ColumnUserPreferences(null, null, null, null, null);
         }
 
