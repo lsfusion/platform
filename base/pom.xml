@@ -734,11 +734,6 @@
                 <artifactId>stax</artifactId>
                 <version>${stax.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.jdbf</groupId>
-                <artifactId>jdbf</artifactId>
-                <version>${jdbf.version}</version>
-            </dependency>
 
             <!-- Spring libraries -->
             <dependency>
