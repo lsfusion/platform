@@ -197,6 +197,7 @@
                                     <manifestEntries>
                                         <Main-Class>${assemble.mainClass}</Main-Class>
                                         <SCM-Version>${lsfusion.revision}</SCM-Version>
+                                        <Permissions>all-permissions</Permissions>
                                     </manifestEntries>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">

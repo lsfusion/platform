@@ -47,12 +47,20 @@ public final class LoginAction {
     private RemoteNavigatorInterface remoteNavigator;
 
     private LoginAction() {
-        autoLogin = Boolean.getBoolean(LSFUSION_CLIENT_AUTOLOGIN);
-        loginInfo = new LoginInfo(System.getProperty(LSFUSION_CLIENT_HOSTNAME), System.getProperty(LSFUSION_CLIENT_HOSTPORT),
-                System.getProperty(LSFUSION_CLIENT_EXPORTNAME), System.getProperty(LSFUSION_CLIENT_USER),
-                System.getProperty(LSFUSION_CLIENT_PASSWORD));
+        autoLogin = Boolean.parseBoolean(getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_AUTOLOGIN));
+        String serverHost = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTNAME);
+        String serverPort = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTPORT);
+        String serverDB = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_EXPORTNAME);
+        String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
+        String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
+        loginInfo = new LoginInfo(serverHost, serverPort, serverDB, userName, password);
 
         loginDialog = new LoginDialog(loginInfo);
+    }
+
+    public String getSystemPropertyWithJNLPFallback(String propertyName) {
+        String value = System.getProperty(propertyName);
+        return value != null ? value : System.getProperty("jnlp." + propertyName);
     }
 
     public boolean login() throws MalformedURLException, NotBoundException, RemoteException {
