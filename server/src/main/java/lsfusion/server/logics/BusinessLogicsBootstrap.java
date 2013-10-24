@@ -51,8 +51,10 @@ public class BusinessLogicsBootstrap {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                logger.info("Executing shutdown hook.");
-                BusinessLogicsBootstrap.stop();
+                if (!stopped) {
+                    logger.info("Executing shutdown hook.");
+                    BusinessLogicsBootstrap.stop();
+                }
             }
         });
     }
@@ -68,7 +70,13 @@ public class BusinessLogicsBootstrap {
         if (!stopped) {
             logger.info("Server is stopping...");
 
-            logicsInstance.stop();
+            boolean forceExit = false;
+            try {
+                logicsInstance.stop();
+            } catch (Throwable ignored) {
+                //не можем завершиться gracefully - форсируем выход
+                forceExit = true;
+            }
 
             stopped = true;
 
@@ -77,6 +85,10 @@ public class BusinessLogicsBootstrap {
             SystemUtils.killRmiThread();
 
             logger.info("Server has stopped...");
+
+            if (forceExit) {
+                System.exit(0);
+            }
         }
    }
 

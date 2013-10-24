@@ -1,12 +1,10 @@
 package lsfusion.base;
 
 import com.google.common.base.Throwables;
-import org.apache.log4j.Logger;
 import lsfusion.interop.remote.ZipSocketFactory;
+import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
