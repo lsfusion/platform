@@ -50,7 +50,6 @@
         <edireader.version>4.7.3</edireader.version>
         <jna.version>3.2.3</jna.version>
         <stax.version>1.2.0</stax.version>
-        <jdbf.version>1.1</jdbf.version>
         
         <spring.version>3.0.5.RELEASE</spring.version>
         <cglib.version>2.2.2</cglib.version>
