@@ -16,9 +16,9 @@
     <resources>
         <property name="jnlp.packEnabled" value="true"/>
         <j2se version="1.6+" initial-heap-size="32m" max-heap-size="800m"/>
-        <property name="lsfusion.client.hostname" value="${jnlp.registryHost}"/>
-        <property name="lsfusion.client.hostport" value="${jnlp.registryPort}"/>
-        <property name="lsfusion.client.exportname" value="${jnlp.exportName}"/>
+        <property name="jnlp.lsfusion.client.hostname" value="${jnlp.registryHost}"/>
+        <property name="jnlp.lsfusion.client.hostport" value="${jnlp.registryPort}"/>
+        <property name="jnlp.lsfusion.client.exportname" value="${jnlp.exportName}"/>
         <jar href="lsfusion-client-1.1.0-SNAPSHOT.jar"/>
     </resources>
     <application-desc/>
