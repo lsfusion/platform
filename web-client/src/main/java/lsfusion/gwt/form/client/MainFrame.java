@@ -165,8 +165,7 @@ public class MainFrame implements EntryPoint {
                 allWindows.addAll(commonWindows.keySet());
 
                 boolean fullScreenMode = defaultFormsType == GDefaultFormsType.DEFAULT && !defaultForms.isEmpty();
-                windowsController.initializeWindows(allWindows, formsWindow, fullScreenMode);
-                RootLayoutPanel.get().add(windowsController);
+                RootLayoutPanel.get().add(windowsController.initializeWindows(allWindows, formsWindow, fullScreenMode));
 
                 navigatorController.update();
 

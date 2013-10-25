@@ -1,11 +1,9 @@
 package lsfusion.gwt.form.client.window;
 
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public abstract class WindowElement {
-    public WindowElement parent;
+    protected WindowElement parent;
     protected WindowsController main;
 
     public int x;
@@ -16,29 +14,18 @@ public abstract class WindowElement {
     public double initialWidth;
     public double initialHeight;
 
-    public WindowElement(WindowsController main) {
+    public WindowElement(WindowsController main, int x, int y, int width, int height) {
         this.main = main;
-    }
-
-    public void setPosition(int x, int y, int width, int height) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        initialWidth = Window.getClientWidth() / 100 * width;
-        initialHeight = Window.getClientHeight() / 100 * height;
     }
 
     public void setVisible(boolean visible) {
-        if (visible) {
-            if (parent == null) {
-                main.setWindowVisible(this);
-            } else {
+        if (parent != null) {
+            if (visible) {
                 parent.setWindowVisible(this);
-            }
-        } else {
-            if (parent == null) {
-                main.setWindowInvisible(this);
             } else {
                 parent.setWindowInvisible(this);
             }
@@ -47,29 +34,30 @@ public abstract class WindowElement {
 
     public void setWindowVisible(WindowElement window) {}
     public void setWindowInvisible(WindowElement window) {}
+    protected void changeInitialSize(WindowElement child) {}
 
+    public abstract void addElement(WindowElement window);
+    public abstract String getCaption();
+    public abstract Widget initializeView();
     public abstract Widget getView();
-
-    public void changeInitialSize(int width, int height) {
-        if (parent == null) {
-            if (width > initialWidth) {
-                initialWidth = width;
-            }
-            if (height > initialHeight) {
-                initialHeight = height;
-            }
-            resize();
-        }
+    
+    protected double getInitialHeight() {
+        return (main.isFullScreenMode() && parent != null && parent.parent == null) ? 0 : initialHeight;
     }
 
-    // пока подгонка размера работает только для тулбарных и панельных навигаторов, лежащих в главном окне
-    private void resize() {
-        DockLayoutPanel.Direction direction = main.getWidgetDirection(getView());
-        if (direction == DockLayoutPanel.Direction.NORTH || direction == DockLayoutPanel.Direction.SOUTH) {
-            main.setWidgetSize(getView(), initialHeight);
+    protected double getInitialWidth() {
+        return (main.isFullScreenMode() && parent != null && parent.parent == null) ? 0 : initialWidth;
+    }
+
+    public void changeInitialSize(int width, int height) {
+        if (width > initialWidth) {
+            initialWidth = width;
         }
-        if (direction == DockLayoutPanel.Direction.EAST || direction == DockLayoutPanel.Direction.WEST) {
-            main.setWidgetSize(getView(), initialWidth);
+        if (height > initialHeight) {
+            initialHeight = height;
+        }
+        if (parent != null) {
+            parent.changeInitialSize(this);
         }
     }
 }
