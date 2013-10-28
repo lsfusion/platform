@@ -142,6 +142,12 @@ public class GFormLayout extends ResizableSimplePanel {
 
     @Override
     public Dimension getPreferredSize() {
-        return containerViews.get(mainContainer).getPreferredSize(containerViews);
+        Dimension result = containerViews.get(mainContainer).getPreferredSize(containerViews);
+//        setDebugDimensionsAttributes(containerViews.get(mainContainer).getView(), result);
+        return result;
+    }
+
+    public static void setDebugDimensionsAttributes(Widget w, Dimension result) {
+        w.getElement().setAttribute("lsfusion-size", "(" + result.width + ", " + result.height + ")");
     }
 }

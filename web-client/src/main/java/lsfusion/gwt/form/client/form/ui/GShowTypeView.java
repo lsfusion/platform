@@ -3,6 +3,7 @@ package lsfusion.gwt.form.client.form.ui;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
+import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
@@ -11,6 +12,8 @@ import lsfusion.gwt.form.shared.view.GGroupObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static lsfusion.gwt.base.client.GwtClientUtils.getOffsetSize;
 
 public class GShowTypeView extends ResizableHorizontalPanel {
     private Button gridButton;
@@ -70,6 +73,11 @@ public class GShowTypeView extends ResizableHorizontalPanel {
 
     public void update(GClassViewType classView) {
         setClassView(classView);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return getOffsetSize(this);
     }
 
     private class ChangeViewBtnClickHandler implements ClickHandler {
