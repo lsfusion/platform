@@ -84,6 +84,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private final Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
     private final Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<GTreeGroup, GTreeGroupController>();
 
+    private final Map<GGroupObject, List<Widget>> filterViews = new HashMap<GGroupObject, List<Widget>>();
+
     private final LinkedHashMap<Integer, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<Integer, ModifyObject>();
     private final NativeHashMap<GGroupObject, Integer> pendingChangeCurrentObjectsRequests = new NativeHashMap<GGroupObject, Integer>();
     private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>();
@@ -186,7 +188,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         });
         filterCheck.addStyleName("checkBoxFilter");
-        addFilterComponent(filterGroup, filterCheck);
+        addFilterView(filterGroup, filterCheck);
 
         if (filterGroup.defaultFilterIndex >= 0) {
             filterCheck.setValue(true, false);
@@ -243,9 +245,33 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         filterBox.addStyleName("comboBoxFilter");
 
-        addFilterComponent(filterGroup, filterBox);
+        addFilterView(filterGroup, filterBox);
         if (filterGroup.defaultFilterIndex >= 0) {
             filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + 1);
+        }
+    }
+
+    private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {
+        formLayout.add(filterGroup, filterWidget);
+
+        if (filterGroup.groupObject == null) {
+            return;
+        }
+
+        List<Widget> groupFilters = filterViews.get(filterGroup.groupObject);
+        if (groupFilters == null) {
+            groupFilters = new ArrayList<Widget>();
+            filterViews.put(filterGroup.groupObject, groupFilters);
+        }
+        groupFilters.add(filterWidget);
+    }
+
+    public void setFiltersVisible(GGroupObject groupObject, boolean visible) {
+        List<Widget> groupFilters = filterViews.get(groupObject);
+        if (groupFilters != null) {
+            for (Widget filterView : groupFilters) {
+                filterView.setVisible(visible);
+            }
         }
     }
 
@@ -255,13 +281,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private void setRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
         setRemoteRegularFilter(filterGroup, filter);
-    }
-
-    private void addFilterComponent(GRegularFilterGroup filterGroup, Widget filterWidget) {
-        GGroupObjectLogicsSupplier logicsSupplier = getGroupObjectLogicsSupplier(filterGroup.groupObject);
-        if (logicsSupplier != null) {
-            logicsSupplier.addFilterComponent(filterGroup, filterWidget);
-        }
     }
 
     private void initializeUserPreferences() {

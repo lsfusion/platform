@@ -338,22 +338,23 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         panel.addProperty(property);
     }
 
-    private void updateGrid() {
+    private void update() {
         if (groupObject != null) {
             grid.update();
+
             if (toolbarView != null) {
                 toolbarView.setVisible(grid.isVisible());
             }
+
             if (filter != null) {
                 filter.setVisible(grid.isVisible());
             }
 
+            formController.setFiltersVisible(groupObject, grid.isVisible());
+
             showTypeView.update(classView);
         }
-    }
 
-    private void update() {
-        updateGrid();
         panel.update();
         panel.setVisible(classView != GClassViewType.HIDE);
     }

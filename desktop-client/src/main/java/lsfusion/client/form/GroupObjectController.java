@@ -436,6 +436,8 @@ public class GroupObjectController extends AbstractGroupObjectController {
                 filter.setVisible(grid.isVisible());
             }
 
+            form.setFiltersVisible(groupObject, grid.isVisible());
+
             for (ClientObject object : groupObject.objects) {
                 objects.get(object).setVisible(grid.isVisible());
             }

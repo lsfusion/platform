@@ -5,7 +5,6 @@ import lsfusion.gwt.form.client.form.ui.filter.GFilterController;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.shared.view.GObject;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.GRegularFilterGroup;
 import lsfusion.gwt.form.shared.view.GToolbar;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.filter.GPropertyFilter;
@@ -82,10 +81,6 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
     @Override
     public List<GPropertyDraw> getPropertyDraws() {
         return formController.getPropertyDraws();
-    }
-
-    public void addFilterComponent(GRegularFilterGroup filterGroup, Widget filterWidget) {
-        getFormLayout().add(filterGroup, filterWidget);
     }
 
     protected boolean showFilter() {

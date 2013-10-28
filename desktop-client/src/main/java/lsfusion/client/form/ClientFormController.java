@@ -77,8 +77,10 @@ public class ClientFormController implements AsyncListener {
 
     private ClientFormLayout formLayout;
 
-    public Map<ClientGroupObject, GroupObjectController> controllers;
-    public Map<ClientTreeGroup, TreeGroupController> treeControllers;
+    private final Map<ClientGroupObject, GroupObjectController> controllers = new HashMap<ClientGroupObject, GroupObjectController>();
+    private final Map<ClientTreeGroup, TreeGroupController> treeControllers = new HashMap<ClientTreeGroup, TreeGroupController>();
+
+    private final Map<ClientGroupObject, List<JComponent>> filterViews = new HashMap<ClientGroupObject, List<JComponent>>();
 
     private boolean defaultOrdersInitialized = false;
 
@@ -193,13 +195,10 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void initializeControllers() throws IOException {
-        treeControllers = new HashMap<ClientTreeGroup, TreeGroupController>();
         for (ClientTreeGroup treeGroup : form.treeGroups) {
             TreeGroupController controller = new TreeGroupController(treeGroup, form, this, formLayout);
             treeControllers.put(treeGroup, controller);
         }
-
-        controllers = new HashMap<ClientGroupObject, GroupObjectController>();
 
         for (ClientGroupObject group : form.groupObjects) {
             if (group.parent == null) {
@@ -289,7 +288,7 @@ public class ClientFormController implements AsyncListener {
             }
         });
 
-        formLayout.add(filterGroup, comboBox);
+        addFilterView(filterGroup, comboBox);
     }
 
     private void createSingleFilterComponent(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter singleFilter) {
@@ -313,12 +312,38 @@ public class ClientFormController implements AsyncListener {
                 }
             }
         });
-        formLayout.add(filterGroup, checkBox);
+
+        addFilterView(filterGroup, checkBox);
+
         formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.getID() + singleFilter.getID(), new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 checkBox.setSelected(!checkBox.isSelected());
             }
         });
+    }
+
+    private void addFilterView(ClientRegularFilterGroup filterGroup, JComponent filterView) {
+        formLayout.add(filterGroup, filterView);
+
+        if (filterGroup.groupObject == null) {
+            return;
+        }
+
+        List<JComponent> groupFilters = filterViews.get(filterGroup.groupObject);
+        if (groupFilters == null) {
+            groupFilters = new ArrayList<JComponent>();
+            filterViews.put(filterGroup.groupObject, groupFilters);
+        }
+        groupFilters.add(filterView);
+    }
+
+    public void setFiltersVisible(ClientGroupObject groupObject, boolean visible) {
+        List<JComponent> groupFilters = filterViews.get(groupObject);
+        if (groupFilters != null) {
+            for (JComponent filterView : groupFilters) {
+                filterView.setVisible(visible);
+            }
+        }
     }
 
     public void quickEditFilter(KeyEvent initFilterKeyEvent, int initialFilterPropertyDrawID) {

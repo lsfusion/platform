@@ -28,5 +28,4 @@ public interface GGroupObjectLogicsSupplier {
     List<GPropertyDraw> getPropertyDraws();
     GPropertyDraw getSelectedProperty();
     Object getSelectedValue(GPropertyDraw property);
-    void addFilterComponent(GRegularFilterGroup filterGroup, Widget filterWidget);
 }
