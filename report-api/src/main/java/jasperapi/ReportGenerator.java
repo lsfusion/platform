@@ -8,8 +8,11 @@ import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.export.JExcelApiExporter;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 
+import javax.print.attribute.standard.MediaTray;
+import javax.print.attribute.standard.Sides;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
@@ -40,6 +43,24 @@ public class ReportGenerator {
 
     public static final String SIDES_PROPERTY_NAME = "print-sides";
     public static final String TRAY_PROPERTY_NAME = "print-tray";
+
+    public static final Map<String, Sides> SIDES_VALUES = new HashMap<String, Sides>();
+    public static final Map<String, MediaTray> TRAY_VALUES = new HashMap<String, MediaTray>();
+
+    static {
+        SIDES_VALUES.put("one-sided", Sides.ONE_SIDED);
+        SIDES_VALUES.put("two-sided-long-edge", Sides.TWO_SIDED_LONG_EDGE);
+        SIDES_VALUES.put("two-sided-short-edge", Sides.TWO_SIDED_SHORT_EDGE);
+
+        TRAY_VALUES.put("top", MediaTray.TOP);
+        TRAY_VALUES.put("middle", MediaTray.MIDDLE);
+        TRAY_VALUES.put("bottom", MediaTray.BOTTOM);
+        TRAY_VALUES.put("envelope", MediaTray.ENVELOPE);
+        TRAY_VALUES.put("manual", MediaTray.MANUAL);
+        TRAY_VALUES.put("large-capacity", MediaTray.LARGE_CAPACITY);
+        TRAY_VALUES.put("main", MediaTray.MAIN);
+        TRAY_VALUES.put("side", MediaTray.SIDE);
+    }
 
     public static class SourcesGenerationOutput {
         public Map<String, ClientReportData> data;
@@ -363,21 +384,42 @@ public class ReportGenerator {
         }
     }
 
-    private static File exportToExcel(ReportGenerationData generationData, TimeZone timeZone) throws IOException, ClassNotFoundException, JRException {
-        File tempFile = File.createTempFile("lsf", ".xls");
+    public static void exportToPdfAndOpen(ReportGenerationData generationData, TimeZone timeZone) {
+        try {
+            File tempFile = exportToPdf(generationData, timeZone);
 
-        JExcelApiExporter xlsExporter = new JExcelApiExporter();
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(tempFile);
+            }
+
+            tempFile.deleteOnExit();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при экспорте в PDF", e);
+        }
+    }
+
+    private static File exportToExcel(ReportGenerationData generationData, TimeZone timeZone) throws IOException, ClassNotFoundException, JRException {
+        return exportToFile(generationData, new JExcelApiExporter(), "xls", timeZone);
+    }
+    
+    private static File exportToPdf(ReportGenerationData generationData, TimeZone timeZone) throws IOException, ClassNotFoundException, JRException {
+        return exportToFile(generationData, new JRPdfExporter(), "pdf", timeZone);
+    }
+    
+    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, TimeZone timeZone) throws IOException, JRException, ClassNotFoundException {
+        File tempFile = File.createTempFile("lsf", "." + extension);
 
         ReportGenerator report = new ReportGenerator(generationData, timeZone);
 
         JasperPrint print = report.createReport(true, null);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
-        xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
-        xlsExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
-        xlsExporter.exportReport();
+        exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
+        exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+        exporter.exportReport();
 
-        return tempFile;
+        return tempFile;    
     }
 
     public static byte[] exportToExcelByteArray(ReportGenerationData generationData, TimeZone timeZone) {

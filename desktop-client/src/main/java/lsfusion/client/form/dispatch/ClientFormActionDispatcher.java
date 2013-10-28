@@ -1,6 +1,7 @@
 package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
+import jasperapi.ReportGenerator;
 import lsfusion.client.ClientReportUtils;
 import lsfusion.client.Main;
 import lsfusion.client.form.ClientFormController;
@@ -67,6 +68,10 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         try {
             if (action.printType == FormPrintType.AUTO) {
                 ClientReportUtils.autoprintReport(action.generationData);
+            } else if (action.printType == FormPrintType.XLS) {
+                ReportGenerator.exportToExcelAndOpen(action.generationData, Main.timeZone);    
+            } else if (action.printType == FormPrintType.PDF) {
+                ReportGenerator.exportToPdfAndOpen(action.generationData, Main.timeZone);
             } else {
                 if (action.isDebug) {
                     Main.frame.runReport(action.reportSID, action.isModal, action.generationData);
