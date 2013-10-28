@@ -150,10 +150,6 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
     }
 
 
-    public Dimension getPreferredSize() {
-        return new Dimension(super.getPreferredSize().width, QueryConditionView.PREFERRED_HEIGHT);
-    }
-
     @Override
     public Dimension getMaximumSize() {
         return getPreferredSize();

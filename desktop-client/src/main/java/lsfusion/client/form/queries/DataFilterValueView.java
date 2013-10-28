@@ -26,9 +26,6 @@ public abstract class DataFilterValueView extends FilterValueView {
         // непосредственно объект для изменения значения свойств
         valueTable = new DataFilterValueViewTable(this, property, ilogicsSupplier);
 
-        // приходится в явную указывать RowHeight, поскольку это JTable и он сам не растянется
-        valueTable.setRowHeight(QueryConditionView.PREFERRED_HEIGHT);
-
         add(valueTable, BorderLayout.CENTER);
     }
 
@@ -39,6 +36,11 @@ public abstract class DataFilterValueView extends FilterValueView {
     @Override
     public Dimension getMinimumSize() {
         return new Dimension(30, getPreferredSize().height);
+    }
+
+    @Override
+    public Dimension getMaximumSize() {
+        return getPreferredSize();
     }
 
     public void propertyChanged(ClientPropertyDraw property) {
