@@ -770,10 +770,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void expandGroupObject(GGroupObject group, GGroupObjectValue value) {
+        DeferredRunner.get().commitDelayedGroupObjectChange(group);
         syncDispatch(new ExpandGroupObject(group.ID, value), new ServerResponseCallback());
     }
 
     public void collapseGroupObject(GGroupObject group, GGroupObjectValue value) {
+        DeferredRunner.get().commitDelayedGroupObjectChange(group);
         syncDispatch(new CollapseGroupObject(group.ID, value), new ServerResponseCallback());
     }
 
