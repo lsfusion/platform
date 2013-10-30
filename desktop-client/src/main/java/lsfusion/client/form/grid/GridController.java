@@ -264,8 +264,8 @@ public class GridController {
         table.removeProperty(property);
     }
 
-    public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
-        table.setRowKeys(gridObjects);
+    public void setRowKeysAndCurrentObject(List<ClientGroupObjectValue> gridObjects, ClientGroupObjectValue newCurrentObject) {
+        table.setRowKeysAndCurrentObject(gridObjects, newCurrentObject);
     }
 
     public void modifyGridObject(ClientGroupObjectValue gridObject, boolean add) {
@@ -302,10 +302,6 @@ public class GridController {
 
     public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
         table.updateRowForegroundValues(rowForeground);
-    }
-
-    public void setCurrentObject(ClientGroupObjectValue currentObject) {
-        table.setCurrentObject(currentObject);
     }
 
     public ClientGroupObjectValue getCurrentObject() {

@@ -36,6 +36,7 @@ import java.util.List;
 
 import static java.lang.Math.max;
 import static java.lang.String.valueOf;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.form.ClientFormController.PasteData;
 
@@ -363,6 +364,8 @@ public class GridTable extends ClientPropertyTable {
         adjustSelection();
 
         previousSelectedRow = getCurrentRow();
+
+        revalidate();
     }
 
     private void changeCurrentObjectLater() {
@@ -444,7 +447,6 @@ public class GridTable extends ClientPropertyTable {
 
         if (model.getColumnCount() != 0) {
 
-            //дополнительная проверка, чтобы не было лишнего layout'а
             if (getRowHeight() != rowHeight) {
                 setRowHeight(rowHeight);
             }
@@ -525,15 +527,27 @@ public class GridTable extends ClientPropertyTable {
         selectRow(rowNumber);
     }
 
-    public void setRowKeys(List<ClientGroupObjectValue> irowKeys) {
+    public void setRowKeysAndCurrentObject(List<ClientGroupObjectValue> irowKeys, ClientGroupObjectValue newCurrentObject) {
+        //сначала пытаемся спозиционировать старый объект на том же месте
         int oldIndex = rowKeys.indexOf(currentObject);
         int newIndex = irowKeys.indexOf(currentObject);
 
-        rowKeys = irowKeys;
+        if ((oldIndex == -1 || newIndex == -1) && newCurrentObject != null) {
+            //если старого объекта не нашли, то позиционируем новый
+            oldIndex = rowKeys.indexOf(newCurrentObject);
+            newIndex = irowKeys.indexOf(newCurrentObject);
+        }
 
         if (oldIndex != -1 && newIndex != -1) {
             viewMoveInterval = newIndex - oldIndex;
         }
+
+        rowKeys = irowKeys;
+
+        if (newCurrentObject != null) {
+            setCurrentObject(newCurrentObject);
+        }
+
         if (newIndex == -1) {
             selectionController.resetSelection();
             updateSelectionInfo();
@@ -542,17 +556,13 @@ public class GridTable extends ClientPropertyTable {
 
     public void modifyGroupObject(ClientGroupObjectValue rowKey, boolean add) {
         if (add) {
-            rowKeys.add(rowKey);
-            setCurrentObject(rowKey);
+            setRowKeysAndCurrentObject(BaseUtils.add(rowKeys, rowKey), rowKey);
         } else {
-            if (currentObject.equals(rowKey)) {
-                setCurrentObject(BaseUtils.getNearObject(BaseUtils.singleValue(rowKey), rowKeys));
-            }
-            rowKeys.remove(rowKey);
+            setRowKeysAndCurrentObject(removeList(rowKeys, rowKey), currentObject.equals(rowKey) ? getNearObject(singleValue(rowKey), rowKeys) : null);
         }
     }
 
-    public void setCurrentObject(ClientGroupObjectValue value) {
+    private void setCurrentObject(ClientGroupObjectValue value) {
         assert value == null || rowKeys.isEmpty() || rowKeys.contains(value);
         currentObject = value;
     }
@@ -870,7 +880,7 @@ public class GridTable extends ClientPropertyTable {
     public boolean addProperty(final ClientPropertyDraw property) {
         if (!properties.contains(property)) {
             // конечно кривовато определять порядок по номеру в листе, но потом надо будет сделать по другому
-            int ins = BaseUtils.relativePosition(property, form.getPropertyDraws(), properties);
+            int ins = relativePosition(property, form.getPropertyDraws(), properties);
             properties.add(ins, property);
             selectionController.addProperty(property);
             return true;

@@ -176,13 +176,8 @@ public class GroupObjectController extends AbstractGroupObjectController {
         // Затем подгружаем новые данные
 
         if (classView == ClassViewType.GRID) {
-            // Сначала новые объекты
             if (fc.gridObjects.containsKey(groupObject)) {
-                setGridObjects(fc.gridObjects.get(groupObject));
-            }
-
-            if (fc.objects.containsKey(groupObject)) {
-                setCurrentObject(fc.objects.get(groupObject));
+                setRowKeysAndCurrentObject(fc.gridObjects.get(groupObject), fc.objects.get(groupObject));
             }
         }
 
@@ -243,8 +238,8 @@ public class GroupObjectController extends AbstractGroupObjectController {
         panel.removeProperty(property);
     }
 
-    public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
-        grid.setGridObjects(gridObjects);
+    public void setRowKeysAndCurrentObject(List<ClientGroupObjectValue> gridObjects, ClientGroupObjectValue newCurrentObject) {
+        grid.setRowKeysAndCurrentObject(gridObjects, newCurrentObject);
 
         if (groupObject.grid.autoHide) {
             setClassView(gridObjects.size() != 0 ? ClassViewType.GRID : ClassViewType.HIDE);
@@ -259,10 +254,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
         assert !groupObject.grid.autoHide;
         grid.update();
-    }
-
-    public void setCurrentObject(ClientGroupObjectValue value) {
-        grid.setCurrentObject(value);
     }
 
     public ClientGroupObjectValue getCurrentObject() {
