@@ -24,6 +24,8 @@ public class MFormChanges {
     // value.keySet() из key, или пустой если root
     public MExclMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects = MapFact.mExclMap();
 
+    public MExclMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Boolean>> expandables = MapFact.mExclMap();
+
     public MExclMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties = MapFact.mExclMap();
 
     public MExclSet<PropertyDrawInstance> panelProperties = SetFact.mExclSet();
@@ -36,6 +38,7 @@ public class MFormChanges {
                 objects.immutable(),
                 gridObjects.immutable(),
                 parentObjects.immutable(),
+                expandables.immutable(),
                 properties.immutable(),
                 panelProperties.immutable(),
                 dropProperties.immutable()

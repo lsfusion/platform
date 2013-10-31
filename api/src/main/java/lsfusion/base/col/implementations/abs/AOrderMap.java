@@ -212,6 +212,17 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         return SetFact.imOrderFilter(mResult, this);
     }
 
+    @Override
+    public ImOrderMap<K, V> filterOrderValuesMap(FunctionSet<V> set) {
+        MOrderFilterMap<K, V> mResult = MapFact.mOrderFilter(this);
+        for(int i=0,size=size();i<size;i++) {
+            V value = getValue(i);
+            if(set.contains(value))
+                mResult.keep(getKey(i), value);
+        }
+        return MapFact.imOrderFilter(mResult, this);
+    }
+
     public ImOrderMap<K, V> replaceValues(final V[] values) {
         return mapOrderValues(new GetIndex<V>() {
             public V getMapValue(int i) {

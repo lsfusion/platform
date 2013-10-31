@@ -63,6 +63,6 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
             pref.width += splitPane.getSplitterSize();
         }
 
-        return addCaptionDimensions(pref);
+        return pref;
     }
 }

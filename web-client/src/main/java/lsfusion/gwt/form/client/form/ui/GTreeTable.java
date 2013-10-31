@@ -132,8 +132,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         };
     }
 
-    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents) {
-        tree.setKeys(group, keys, parents);
+    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, HashMap<GGroupObjectValue, Boolean> expandable) {
+        tree.setKeys(group, keys, parents, expandable);
         dataUpdated = true;
         needToRestoreScrollPosition = true;
     }
@@ -465,7 +465,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public boolean keyboardNodeChangeState(boolean open) {
         GTreeTableNode node = tree.getNodeByRecord(selectedRecord);
-        if (node == null || (node.getGroup() != null && !node.getGroup().mayHaveChildren())) {
+        if (node == null || !node.isExpandable()) {
             return false;
         }
         if (open) {

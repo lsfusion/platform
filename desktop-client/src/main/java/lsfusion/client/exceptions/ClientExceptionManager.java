@@ -32,6 +32,7 @@ public class ClientExceptionManager {
     }
 
     private static void handleRemoteException(Throwable initial, RemoteException remote) {
+        logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server"), initial);
         if (remote instanceof ConnectIOException || remote instanceof ConnectException) {
             //при этих RemoteException'ах возможно продолжение работы
             ConnectionLostManager.connectionLost(false);
@@ -39,7 +40,6 @@ public class ClientExceptionManager {
             //при остальных RemoteException'ах нужно релогиниться
             ConnectionLostManager.connectionLost(true);
         }
-        logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server"), initial);
     }
 
     private static void handleClientException(Throwable e) {

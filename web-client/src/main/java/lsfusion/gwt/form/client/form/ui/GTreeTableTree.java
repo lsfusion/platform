@@ -65,7 +65,7 @@ public class GTreeTableTree {
         return ind + 1;
     }
 
-    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents) {
+    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, Map<GGroupObjectValue, Boolean> expandable) {
         Map<GGroupObjectValue, List<GGroupObjectValue>> childTree = new HashMap<GGroupObjectValue, List<GGroupObjectValue>>();
 
         for (int i = 0; i < keys.size(); i++) {
@@ -89,11 +89,11 @@ public class GTreeTableTree {
         }
 
         for (GTreeTableNode groupNode : getGroupNodes(group.getUpTreeGroup())) {
-            synchronize(groupNode, group, childTree);
+            synchronize(groupNode, group, childTree, expandable);
         }
     }
 
-    void synchronize(GTreeTableNode parent, GGroupObject syncGroup, Map<GGroupObjectValue, List<GGroupObjectValue>> tree) {
+    void synchronize(GTreeTableNode parent, GGroupObject syncGroup, Map<GGroupObjectValue, List<GGroupObjectValue>> tree, Map<GGroupObjectValue, Boolean> expandables) {
         List<GGroupObjectValue> syncChilds = tree.get(parent.getKey());
         if (syncChilds == null) {
             syncChilds = new ArrayList<GGroupObjectValue>();
@@ -114,7 +114,6 @@ public class GTreeTableTree {
                     removeFromGroupNodes(child);
                 } else {
                     thisGroupChildren[index] = child;
-                    synchronize(child, syncGroup, tree);
                 }
             } else {
                 allChildren.add(child);
@@ -122,17 +121,25 @@ public class GTreeTableTree {
         }
 
         for (int i = 0; i < syncChilds.size(); ++i) {
-            if (thisGroupChildren[i] == null) {
-                GTreeTableNode newNode = new GTreeTableNode(syncGroup, syncChilds.get(i));
-                thisGroupChildren[i] = newNode;
-                parent.addNode(newNode);
+            GGroupObjectValue key = syncChilds.get(i);
+            GTreeTableNode child = thisGroupChildren[i];
 
-                getGroupNodes(syncGroup).add(newNode);
+            if (child == null) {
+                thisGroupChildren[i] = child = new GTreeTableNode(syncGroup, key);
 
-                if (syncGroup.mayHaveChildren()) {
-                    newNode.addNode(new ExpandingTreeTableNode());
-                }
+                parent.addNode(child);
+
+                getGroupNodes(syncGroup).add(child);
             }
+
+            boolean expandable = false;
+            if (syncGroup.mayHaveChildren()) {
+                Boolean e = expandables.get(key);
+                expandable = e == null || e;
+            }
+            child.setExpandable(expandable);
+
+            synchronize(child, syncGroup, tree, expandables);
         }
 
         if (parent.getGroup() == syncGroup) {
@@ -147,10 +154,8 @@ public class GTreeTableTree {
             parent.addNode(child);
         }
 
-        if (parent.getChildren().isEmpty()) {
-            if (parent.getGroup() != null && parent.getGroup().mayHaveChildren()) {
-                parent.addNode(new ExpandingTreeTableNode());
-            }
+        if (parent.getChildren().isEmpty() && parent.isExpandable()) {
+            parent.addNode(new ExpandingTreeTableNode());
         }
     }
 

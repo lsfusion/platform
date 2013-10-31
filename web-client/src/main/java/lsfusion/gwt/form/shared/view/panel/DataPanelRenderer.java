@@ -41,7 +41,7 @@ public class DataPanelRenderer implements PanelRenderer {
 
     private EventTarget focusTargetAfterEdit;
 
-    public DataPanelRenderer(GFormController form, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
+    public DataPanelRenderer(final GFormController form, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
         this.property = iproperty;
 
         boolean vertical = property.panelLabelAbove;
@@ -126,7 +126,7 @@ public class DataPanelRenderer implements PanelRenderer {
             form.addHotkeyBinding(property.groupObject, property.editKey, new Binding() {
                 @Override
                 public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                    if (isShowing(panel)) {
+                    if (!form.isEditing() && isShowing(panel)) {
                         focusTargetAfterEdit = event.getEventTarget();
                         valueTable.editCellAt(0, 0, GEditBindingMap.CHANGE);
                         return true;

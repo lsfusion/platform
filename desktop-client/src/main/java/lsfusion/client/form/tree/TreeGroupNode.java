@@ -13,6 +13,7 @@ import java.util.Map;
 class TreeGroupNode extends DefaultMutableTreeTableNode {
     public final ClientGroupObject group;
     public final ClientGroupObjectValue key;
+    private boolean expandable;
 
     private final GroupTreeTableModel model;
 
@@ -62,5 +63,13 @@ class TreeGroupNode extends DefaultMutableTreeTableNode {
 
     public boolean hasOnlyExpandningNodeAsChild() {
         return getChildCount() == 1 && getChildAt(0) instanceof ExpandingTreeTableNode;
+    }
+
+    public boolean isExpandable() {
+        return expandable;
+    }
+
+    public void setExpandable(boolean expandable) {
+        this.expandable = expandable;
     }
 }

@@ -51,7 +51,7 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
     public void processFormChanges(GFormChanges fc) {
         for (GGroupObject group : treeGroup.groups) {
             if (fc.gridObjects.containsKey(group)) {
-                tree.setKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group));
+                tree.setKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group), fc.expandables.get(group));
             }
 
             for (GPropertyReader propertyReader : fc.properties.keySet()) {

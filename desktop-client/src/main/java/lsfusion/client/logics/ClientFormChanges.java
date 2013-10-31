@@ -22,9 +22,11 @@ public class ClientFormChanges {
     // так же может быть ObjectInstance из этого ключа если GroupObject - отображается рекурсивно (тогда надо цеплять к этому GroupObjectValue, иначе к верхнему)
     public Map<ClientGroupObject, List<ClientGroupObjectValue>> parentObjects;
 
+    public final Map<ClientGroupObject, Map<ClientGroupObjectValue, Boolean>> expandables;
+
     public final Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> properties;
     public final Set<ClientPropertyDraw> updateProperties; // пришедшие значения на обновление, а не изменение
-    
+
     public final Set<ClientPropertyDraw> panelProperties;
     public final Set<ClientPropertyDraw> dropProperties;
 
@@ -46,6 +48,21 @@ public class ClientFormChanges {
         gridObjects = readGridObjectsMap(inStream, clientForm);
         parentObjects = readGridObjectsMap(inStream, clientForm);
 
+        expandables = new HashMap<ClientGroupObject, Map<ClientGroupObjectValue, Boolean>>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; ++i) {
+            ClientGroupObject groupObject = clientForm.getGroupObject(inStream.readInt());
+            Map<ClientGroupObjectValue, Boolean> groupExpandables = new HashMap<ClientGroupObjectValue, Boolean>();
+            int cnt = inStream.readInt();
+            for (int j = 0; j < cnt; ++j) {
+                ClientGroupObjectValue key = new ClientGroupObjectValue(inStream, clientForm);
+                boolean expandable = inStream.readBoolean();
+                groupExpandables.put(key, expandable);
+            }
+
+            expandables.put(groupObject, groupExpandables);
+        }
+
         properties = new HashMap<ClientPropertyReader, Map<ClientGroupObjectValue, Object>>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
@@ -60,7 +77,7 @@ public class ClientFormChanges {
 
             properties.put(clientPropertyRead, propertyValues);
         }
-        
+
         updateProperties = new HashSet<ClientPropertyDraw>();
 
         //PanelProperties

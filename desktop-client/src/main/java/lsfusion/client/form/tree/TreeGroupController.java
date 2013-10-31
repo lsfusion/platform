@@ -66,7 +66,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
         tree.saveVisualState();
         for (ClientGroupObject group : treeGroup.groups) {
             if (fc.gridObjects.containsKey(group)) {
-                view.updateKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group));
+                view.updateKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group), fc.expandables.get(group));
             }
 
             // добавляем новые свойства

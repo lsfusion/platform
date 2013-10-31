@@ -199,7 +199,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             addHotkeyBinding(filterGroup.groupObject, filter.key, new HotkeyManager.Binding() {
                 @Override
                 public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                    if (isShowing(filterCheck)) {
+                    if (!isEditing() && isShowing(filterCheck)) {
                         filterCheck.setValue(!filterCheck.getValue(), true);
                         return true;
                     }
@@ -224,7 +224,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 addHotkeyBinding(filterGroup.groupObject, filter.key, new HotkeyManager.Binding() {
                     @Override
                     public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                        if (isShowing(filterBox)) {
+                        if (!isEditing() && isShowing(filterBox)) {
                             filterBox.setSelectedIndex(filterIndex + 1);
                             setRegularFilter(filterGroup, filterIndex);
                             return true;

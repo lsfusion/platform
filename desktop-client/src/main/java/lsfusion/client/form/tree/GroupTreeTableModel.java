@@ -188,7 +188,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
         return nodes;
     }
 
-    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parents) {
+    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parents, Map<ClientGroupObjectValue, Boolean> expandables) {
         // приводим переданную структуру в нормальную - child -> parent
         OrderedMap<ClientGroupObjectValue, ClientGroupObjectValue> parentTree = new OrderedMap<ClientGroupObjectValue, ClientGroupObjectValue>();
         for (int i = 0; i < keys.size(); i++) {
@@ -202,11 +202,11 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
 
         Map<ClientGroupObjectValue, List<ClientGroupObjectValue>> childTree = BaseUtils.groupList(parentTree);
         for (TreeGroupNode groupNode : getGroupNodes(group.getUpTreeGroup())) {
-            synchronize(groupNode, group, childTree);
+            synchronize(groupNode, group, childTree, expandables);
         }
     }
 
-    void synchronize(TreeGroupNode parent, ClientGroupObject syncGroup, Map<ClientGroupObjectValue, List<ClientGroupObjectValue>> tree) {
+    void synchronize(TreeGroupNode parent, ClientGroupObject syncGroup, Map<ClientGroupObjectValue, List<ClientGroupObjectValue>> tree, Map<ClientGroupObjectValue, Boolean> expandables) {
         final List<ClientGroupObjectValue> syncChilds = tree.containsKey(parent.key)
                                                         ? tree.get(parent.key)
                                                         : new ArrayList<ClientGroupObjectValue>();
@@ -226,9 +226,9 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
                 if (index == -1) {
                     parent.removeChild(child);
                     removeFromGroupNodes(syncGroup, child);
-                } else { // помечаем что был, и рекурсивно синхронизируем child
+                } else {
+                    // помечаем что был
                     thisGroupChildren[index] = child;
-                    synchronize(child, syncGroup, tree);
                 }
             } else {
                 allChildren.add(child);
@@ -236,17 +236,25 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
         }
 
         for (int i = 0; i < syncChilds.size(); ++i) {
-            if (thisGroupChildren[i] == null) {
-                TreeGroupNode newNode = new TreeGroupNode(this, syncGroup, syncChilds.get(i));
-                thisGroupChildren[i] = newNode;
-                parent.addChild(newNode);
+            ClientGroupObjectValue key = syncChilds.get(i);
+            TreeGroupNode child = thisGroupChildren[i];
 
-                getGroupNodes(syncGroup).add(newNode);
+            if (child == null) {
+                thisGroupChildren[i] = child = new TreeGroupNode(this, syncGroup, key);
 
-                if (syncGroup.mayHaveChildren()) {
-                    newNode.addChild(new ExpandingTreeTableNode());
-                }
+                parent.addChild(child);
+
+                getGroupNodes(syncGroup).add(child);
             }
+
+            boolean expandable = false;
+            if (syncGroup.mayHaveChildren()) {
+                Boolean e = expandables.get(key);
+                expandable = e == null || e;
+            }
+            child.setExpandable(expandable);
+
+            synchronize(child, syncGroup, tree, expandables);
         }
 
         if (parent.group == syncGroup) {
@@ -261,10 +269,8 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
             parent.addChild(child);
         }
 
-        if (parent.getChildCount() == 0) {
-            if (parent.group != null && parent.group.mayHaveChildren()) {
-                parent.addChild(new ExpandingTreeTableNode());
-            }
+        if (parent.getChildCount() == 0 && parent.isExpandable()) {
+            parent.addChild(new ExpandingTreeTableNode());
         }
     }
 

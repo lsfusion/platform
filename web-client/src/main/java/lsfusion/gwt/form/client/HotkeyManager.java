@@ -62,7 +62,6 @@ public class HotkeyManager {
 
             HashMap<GGroupObject, List<Binding>> binding = bindings.get(key);
             if (binding != null && !binding.isEmpty()) {
-                Binding bindingToUse = null;
 
                 while (elementTarget != null) {     // пытаемся найти GroupObject, к которому относится элемент с фокусом
                     GGroupObject targetGO = (GGroupObject) elementTarget.getPropertyObject("groupObject");

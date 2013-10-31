@@ -131,7 +131,7 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
             width += columnWidth;
             height = Math.max(height, columnHeight);
         }
-        return new Dimension(width, height);
+        return addCaptionDimensions(new Dimension(width, height));
     }
 
     private static final class ProxyPanel extends ResizableSimplePanel {

@@ -17,6 +17,7 @@ public class GFormChanges {
     public final HashMap<GGroupObject, GGroupObjectValue> objects = new HashMap<GGroupObject, GGroupObjectValue>();
     public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> gridObjects = new HashMap<GGroupObject, ArrayList<GGroupObjectValue>>();
     public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> parentObjects = new HashMap<GGroupObject, ArrayList<GGroupObjectValue>>();
+    public final HashMap<GGroupObject, HashMap<GGroupObjectValue, Boolean>> expandables = new HashMap<GGroupObject, HashMap<GGroupObjectValue, Boolean>>();
     public final HashMap<GPropertyReader, HashMap<GGroupObjectValue, Object>> properties = new HashMap<GPropertyReader, HashMap<GGroupObjectValue, Object>>();
     public final HashSet<GPropertyReader> panelProperties = new HashSet<GPropertyReader>();
     public final HashSet<GPropertyDraw> dropProperties = new HashSet<GPropertyDraw>();
@@ -40,6 +41,10 @@ public class GFormChanges {
 
         for (int i = 0; i < dto.parentObjectsGroupIds.length; i++) {
             remapped.parentObjects.put(form.getGroupObject(dto.parentObjectsGroupIds[i]), dto.parentObjects[i]);
+        }
+
+        for (int i = 0; i < dto.expandablesGroupIds.length; i++) {
+            remapped.expandables.put(form.getGroupObject(dto.expandablesGroupIds[i]), dto.expandables[i]);
         }
 
         for (int i = 0; i < dto.properties.length; i++) {

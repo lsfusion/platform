@@ -48,6 +48,7 @@ public interface ImOrderMap<K,V> {
 
     ImOrderMap<K, V> filterOrder(FunctionSet<K> set);
     ImOrderSet<K> filterOrderValues(FunctionSet<V> set);
+    ImOrderMap<K, V> filterOrderValuesMap(FunctionSet<V> set);
 
     <M> ImOrderValueMap<K, M> mapItOrderValues();
 

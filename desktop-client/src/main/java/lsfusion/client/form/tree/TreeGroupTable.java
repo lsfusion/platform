@@ -360,8 +360,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
     }
 
-    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parents) {
-        model.updateKeys(group, keys, parents);
+    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parents, Map<ClientGroupObjectValue, Boolean> expandables) {
+        model.updateKeys(group, keys, parents, expandables);
     }
 
     public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> readOnlyValues) {

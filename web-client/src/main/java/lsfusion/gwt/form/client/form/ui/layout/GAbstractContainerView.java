@@ -86,7 +86,7 @@ public abstract class GAbstractContainerView {
                                ? containerViews.get(child).getPreferredSize(containerViews)
                                : calculatePreferredSize(getChildView(child));
         Dimension result = enlargeDimension(dimensions, child.getHorizontalMargin(), child.getVerticalMargin());
-//        GFormLayout.setDebugDimensionsAttributes(getChildView(child), result);
+        GFormLayout.setDebugDimensionsAttributes(getChildView(child), result);
         return result;
     }
 
@@ -113,7 +113,7 @@ public abstract class GAbstractContainerView {
     protected Dimension addCaptionDimensions(Dimension dimension) {
         if (needCaption()) {
             dimension.width += 10;
-            dimension.height += 8;
+            dimension.height += 18;
         }
         return dimension;
     }

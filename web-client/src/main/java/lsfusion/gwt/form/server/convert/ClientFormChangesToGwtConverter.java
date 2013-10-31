@@ -87,6 +87,19 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             dto.parentObjects[i++] = keys;
         }
 
+        dto.expandablesGroupIds = new int[changes.expandables.size()];
+        dto.expandables = new HashMap[changes.expandables.size()];
+        i = 0;
+        for (Map.Entry<ClientGroupObject, Map<ClientGroupObjectValue, Boolean>> entry : changes.expandables.entrySet()) {
+            HashMap<GGroupObjectValue, Boolean> expandables = new HashMap<GGroupObjectValue, Boolean>();
+            for (Map.Entry<ClientGroupObjectValue, Boolean> expandable : entry.getValue().entrySet()) {
+                GGroupObjectValue groupObjectValue = convertOrCast(expandable.getKey(), blProvider);
+                expandables.put(groupObjectValue, expandable.getValue());
+            }
+            dto.expandablesGroupIds[i] = entry.getKey().ID;
+            dto.expandables[i++] = expandables;
+        }
+
         dto.properties = new GPropertyReaderDTO[changes.properties.size()];
         dto.propertiesValues = new HashMap[changes.properties.size()];
         i = 0;

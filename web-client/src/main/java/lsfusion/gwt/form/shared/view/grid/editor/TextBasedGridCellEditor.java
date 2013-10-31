@@ -47,7 +47,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         if (editEvent instanceof NativeEditEvent) {
             NativeEvent nativeEvent = ((NativeEditEvent) editEvent).getNativeEvent();
             String eventType = nativeEvent.getType();
-            if (KEYDOWN.equals(eventType) && nativeEvent.getKeyCode() == KeyCodes.KEY_DELETE) {
+            if (KEYDOWN.equals(eventType) && (nativeEvent.getKeyCode() == KeyCodes.KEY_DELETE || nativeEvent.getKeyCode() == KeyCodes.KEY_BACKSPACE)) {
                 currentText = "";
                 selectAll = false;
             } else if (KEYPRESS.equals(eventType)) {

@@ -1,7 +1,6 @@
 package lsfusion.server.form.instance;
 
 import com.google.common.base.Throwables;
-import org.apache.log4j.Logger;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -9,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ClassViewType;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import org.apache.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -30,16 +30,24 @@ public class FormChanges {
     // value.keySet() из key, или пустой если root
     private final ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects;
 
+    private final ImMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Boolean>> expandables;
+
     private final ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties;
 
     private final ImSet<PropertyDrawInstance> panelProperties;
     private final ImSet<PropertyDrawInstance> dropProperties;
 
-    public FormChanges(ImMap<GroupObjectInstance, ClassViewType> classViews, ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects, ImMap<GroupObjectInstance, ImOrderSet<ImMap<ObjectInstance, DataObject>>> gridObjects, ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects, ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties, ImSet<PropertyDrawInstance> panelProperties, ImSet<PropertyDrawInstance> dropProperties) {
+    public FormChanges(ImMap<GroupObjectInstance, ClassViewType> classViews, ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects,
+                       ImMap<GroupObjectInstance, ImOrderSet<ImMap<ObjectInstance, DataObject>>> gridObjects,
+                       ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects,
+                       ImMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Boolean>> expandables,
+                       ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties,
+                       ImSet<PropertyDrawInstance> panelProperties, ImSet<PropertyDrawInstance> dropProperties) {
         this.classViews = classViews;
         this.objects = objects;
         this.gridObjects = gridObjects;
         this.parentObjects = parentObjects;
+        this.expandables = expandables;
         this.properties = properties;
         this.panelProperties = panelProperties;
         this.dropProperties = dropProperties;
@@ -99,6 +107,18 @@ public class FormChanges {
 
         serializeKeyObjectsMap(outStream, gridObjects);
         serializeKeyObjectsMap(outStream, parentObjects);
+
+        outStream.writeInt(expandables.size());
+        for (int i = 0; i < expandables.size(); ++i) {
+            outStream.writeInt(expandables.getKey(i).getID());
+
+            ImMap<ImMap<ObjectInstance, DataObject>, Boolean> groupExpandables = expandables.getValue(i);
+            outStream.writeInt(groupExpandables.size());
+            for (int j = 0; j < groupExpandables.size(); ++j) {
+                serializeGroupObjectValue(outStream, groupExpandables.getKey(j));
+                outStream.writeBoolean(groupExpandables.getValue(j));
+            }
+        }
 
         outStream.writeInt(properties.size());
         for (int i=0,size=properties.size();i<size;i++) {

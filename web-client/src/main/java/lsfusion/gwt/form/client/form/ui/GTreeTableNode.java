@@ -12,6 +12,7 @@ public class GTreeTableNode {
     private GTreeTableNode parent;
     private List<GTreeTableNode> children;
     private boolean open = false;
+    private boolean expandable = true;
 
     public GTreeTableNode() {
         this(null, GGroupObjectValue.EMPTY);
@@ -74,6 +75,19 @@ public class GTreeTableNode {
     }
 
     public void setOpen(boolean open) {
-        this.open = open;
+        if (expandable) {
+            this.open = open;
+        }
+    }
+
+    public boolean isExpandable() {
+        return expandable;
+    }
+
+    public void setExpandable(boolean expandable) {
+        this.expandable = expandable;
+        if (!expandable) {
+            open = false;
+        }
     }
 }

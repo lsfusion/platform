@@ -111,11 +111,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             iform.addHotkeyBinding(property.groupObject, property.editKey, new Binding() {
                 @Override
                 public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                    if (isShowing(button) && enabled) {
-                        click(event.getEventTarget());
-                        return true;
-                    }
-                    return false;
+                    return isShowing(button) && enabled && click(event.getEventTarget());
                 }
             });
         }
@@ -127,11 +123,13 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         }
     }
 
-    private void click(EventTarget ifocusTargetAfterEdit) {
+    private boolean click(EventTarget ifocusTargetAfterEdit) {
         if (!form.isEditing()) {
             focusTargetAfterEdit = ifocusTargetAfterEdit;
             editDispatcher.executePropertyEditAction(property, columnKey, GEditBindingMap.CHANGE, null);
+            return true;
         }
+        return false;
     }
 
     @Override
