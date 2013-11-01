@@ -594,7 +594,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     for(K key : innerJoins.keyIt()) // проталкивание по одному ключу
                         if((pushWhere = whereJoins.getGroupPushWhere(MapFact.singleton(key, innerJoin.group.get(key)), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.distinct.get(key)))!=null)
                             fullWhere = fullWhere.and(pushWhere);
-                if(fullWhere.pack().isFalse()) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                if(fullWhere.pack().getKeyEquals().isEmpty()) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                    // getKeyEquals - для надежности, так как идет перетранслирование ключей и условие может стать false, а это критично, так как в emptySelect есть cast'ы, а скажем в GroupSelect, может придти EMPTY, ключи NULL и "Class Cast'ы" будут
                     empty.set(getEmptySelect(groupWhere));
                     return null;
                 }
@@ -689,8 +690,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     Where pushWhere;
                     if((pushWhere = whereJoins.getPartitionPushWhere(innerJoin.getJoins(), innerJoin.getPartitions(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
                         fullWhere = fullWhere.and(pushWhere);
-                    if(fullWhere.pack().isFalse()) // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                    if(fullWhere.pack().getKeyEquals().isEmpty()) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                        // getKeyEquals - для надежности, так как идет перетранслирование ключей и условие может стать false, а это критично, так как в emptySelect есть cast'ы, а скажем в GroupSelect, может придти EMPTY, ключи NULL и "Class Cast'ы" будут
                         return getEmptySelect(innerWhere);
+                    }
                     if(pushWhere!=null && checkRecursivePush(fullWhere))
                         fullWhere = innerWhere;
                 }
