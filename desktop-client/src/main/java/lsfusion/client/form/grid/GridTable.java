@@ -864,9 +864,8 @@ public class GridTable extends ClientPropertyTable {
                     new ClientGroupObjectValue(rowKeys.get(row), model.getColumnKey(column)),
                     value
             );
+            super.setValueAt(value, row, column);
         }
-
-        super.setValueAt(value, row, column);
     }
 
     private void moveToFocusableCellIfNeeded() {
