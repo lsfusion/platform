@@ -26,7 +26,7 @@ META defineDocumentRelation (object, detailClass, caption)
 END
 
 META defineDocumentRelation(object, objectClass, detailClass, caption)
-    object##detailClass = DATA objectClass (detailClass) NOT NULL DELETE;
+    object##detailClass = DATA objectClass (detailClass) NOT NULL DELETE INDEXED;
     in###object##detailClass(o, d) = object##detailClass(d) == o;
 
     @defineDocumentHeaderCount(object, detailClass);
