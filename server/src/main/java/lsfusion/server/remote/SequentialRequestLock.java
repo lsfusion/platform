@@ -1,12 +1,13 @@
 package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.thavam.util.concurrent.BlockingHashMap;
 import org.thavam.util.concurrent.BlockingMap;
-import lsfusion.server.ServerLoggers;
 
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
 
 public class SequentialRequestLock {
     private final static Logger logger = ServerLoggers.pausablesInvocationLogger;
@@ -56,5 +57,16 @@ public class SequentialRequestLock {
         } catch (InterruptedException e) {
             Throwables.propagate(e);
         }
+    }
+
+    public void skipRequestLock(ExecutorService pausablesExecutor, final String ownerSID, final long requestIndex) {
+        logger.debug("Skipping request lock for " + ownerSID + " for request #" + requestIndex);
+        pausablesExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                acquireRequestLock(ownerSID, requestIndex);
+                releaseRequestLock(ownerSID, requestIndex);
+            }
+        });
     }
 }
