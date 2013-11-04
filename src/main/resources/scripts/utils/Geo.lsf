@@ -1,6 +1,6 @@
 MODULE Geo;
 
-REQUIRE Country;
+REQUIRE System;
 
 CLASS ABSTRACT POI 'POI';
 TABLE POI(POI);
@@ -24,8 +24,7 @@ nameUserMapProvider 'Использовать карты' () = staticCaption(use
 
 namePOI 'Название'= ABSTRACT VARISTRING[200] (POI) PERSISTENT;
 
-countryPOI = ABSTRACT Country (POI) PERSISTENT;
-nameCountryPOI 'Страна' (poi) = nameCountry(countryPOI(poi));
+nameCountryPOI 'Страна' (poi) = ABSTRACT VARISTRING[50] (POI) PERSISTENT;
 
 addressPOI 'Адрес' = ABSTRACT VARISTRING[100] (POI) PERSISTENT;
 
@@ -46,7 +45,7 @@ changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
     ASSIGN longitudePOI(POI) <- readLongitude();
 
 }
-WHEN SESSION (SETCHANGED(countryPOI(POI)) OR SETCHANGED(addressPOI(POI))) AND autoSynchronizeCoordinates() DO EXEC changeCoordinatesPOI(POI);
+WHEN SESSION (SETCHANGED(nameCountryPOI(POI)) OR SETCHANGED(addressPOI(POI))) AND autoSynchronizeCoordinates() DO EXEC changeCoordinatesPOI(POI);
 
 // Показать на карте одну точку
 showOnMapMapProvider 'Показать на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapActionProperty';
@@ -67,7 +66,7 @@ startPathPOI 'Место старта'= DATA SESSION POI();
 calculatePath 'Рассчитать путь'= ACTION CUSTOM 'lsfusion.erp.utils.geo.CalculatePathActionProperty';
 
 EXTEND FORM options
-PROPERTIES() autoSynchronizeCoordinates, nameUserMapProvider
+    PROPERTIES() autoSynchronizeCoordinates, nameUserMapProvider
 ;
 
 EXTEND DESIGN options {
