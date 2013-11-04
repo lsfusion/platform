@@ -92,7 +92,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     // пользовательские настройки
 
-    void saveUserPreferences(long requestIndex, FormUserPreferences preferences, boolean forAllUsers) throws RemoteException;
+    void saveUserPreferences(long requestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException;
 
     FormUserPreferences getUserPreferences() throws RemoteException;
 }

@@ -9,5 +9,5 @@ public class GToolbar extends GComponent {
     public boolean showGroup;
     public boolean showPrintGroupButton;
     public boolean showPrintGroupXlsButton;
-    public boolean showHideSettings;
+    public boolean showGridSettings;
 }

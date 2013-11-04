@@ -12,7 +12,6 @@ import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.ClassViewType;
-import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.interop.form.layout.AbstractGroupObject;
 import lsfusion.interop.form.layout.GroupObjectContainerSet;
@@ -42,10 +41,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public RowBackgroundReader rowBackgroundReader = new RowBackgroundReader();
     public RowForegroundReader rowForegroundReader = new RowForegroundReader();
-
-    public boolean hasUserPreferences = false;
-    
-    public FontInfo fontInfo;
 
     public boolean mayHaveChildren() {
         return isRecursive || (parent != null && parent.groups.indexOf(this) != parent.groups.size() - 1);

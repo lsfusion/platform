@@ -5,7 +5,6 @@ import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 import java.util.ArrayList;
 
@@ -42,7 +41,7 @@ public abstract class ColumnsListBox extends Composite {
         this.dragController = dragController;
     }
 
-    public void add(GPropertyDraw property) {
+    public void add(PropertyListItem property) {
         add(createLabel(property));
     }
 
@@ -50,11 +49,11 @@ public abstract class ColumnsListBox extends Composite {
         setWidget(getItemCount(), widget);
     }
 
-    public void add(int position, GPropertyDraw property) {
+    public void add(int position, PropertyListItem property) {
         setWidget(position, createLabel(property));
     }
 
-    private PropertyLabel createLabel(GPropertyDraw property) {
+    private PropertyLabel createLabel(PropertyListItem property) {
         PropertyLabel label = new PropertyLabel(property);
         return label;
     }

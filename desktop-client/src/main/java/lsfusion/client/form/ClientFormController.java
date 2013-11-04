@@ -17,6 +17,7 @@ import lsfusion.client.SwingUtils;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.dispatch.SimpleChangePropertyDispatcher;
+import lsfusion.client.form.grid.GridUserPreferences;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.tree.TreeGroupController;
 import lsfusion.client.logics.*;
@@ -46,7 +47,6 @@ import java.util.concurrent.TimeUnit;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.client.logics.ClientPropertyDraw.COMPARATOR_USERSORT;
 import static lsfusion.interop.Order.*;
 
 public class ClientFormController implements AsyncListener {
@@ -177,8 +177,6 @@ public class ClientFormController implements AsyncListener {
     private void initializeForm() throws Exception {
         formLayout = new ClientFormLayout(this, form.mainContainer);
 
-        applyUserProperties();
-
         initializeControllers();
 
         initializeRegularFilters();
@@ -195,6 +193,8 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void initializeControllers() throws IOException {
+        FormUserPreferences preferences = remoteForm.getUserPreferences();
+        
         for (ClientTreeGroup treeGroup : form.treeGroups) {
             TreeGroupController controller = new TreeGroupController(treeGroup, form, this, formLayout);
             treeControllers.put(treeGroup, controller);
@@ -202,18 +202,44 @@ public class ClientFormController implements AsyncListener {
 
         for (ClientGroupObject group : form.groupObjects) {
             if (group.parent == null) {
-                GroupObjectController controller = new GroupObjectController(group, form, this, formLayout);
+                GroupObjectController controller = new GroupObjectController(group, form, this, formLayout, extractGridUserPreferences(preferences, group));
                 controllers.put(group, controller);
             }
         }
 
         for (ClientPropertyDraw properties : form.getPropertyDraws()) {
             if (properties.groupObject == null) {
-                GroupObjectController controller = new GroupObjectController(null, form, this, formLayout);
+                GroupObjectController controller = new GroupObjectController(form, this, formLayout);
                 controllers.put(null, controller);
                 break;
             }
         }
+    }
+    
+    private GridUserPreferences[] extractGridUserPreferences(FormUserPreferences formPreferences, ClientGroupObject groupObject) {
+        if (formPreferences != null) {
+            GridUserPreferences[] gridPreferences = new GridUserPreferences[2];
+            gridPreferences[0] = findGridUserPreferences(formPreferences.getGroupObjectGeneralPreferencesList(), groupObject);
+            gridPreferences[1] = findGridUserPreferences(formPreferences.getGroupObjectUserPreferencesList(), groupObject);
+            return gridPreferences;
+        }
+        return null;
+    }
+    
+    private GridUserPreferences findGridUserPreferences(List<GroupObjectUserPreferences> groupObjectUserPreferences, ClientGroupObject groupObject) {
+        for (GroupObjectUserPreferences groupPreferences : groupObjectUserPreferences) {
+            if (groupObject.getSID().equals(groupPreferences.groupObjectSID)) {
+                Map<ClientPropertyDraw, ColumnUserPreferences> columnPreferences = new HashMap<ClientPropertyDraw, ColumnUserPreferences>();
+                for (Map.Entry<String, ColumnUserPreferences> entry : groupPreferences.getColumnUserPreferences().entrySet()) {
+                    ClientPropertyDraw property = form.getProperty(entry.getKey());
+                    if (property != null) {
+                        columnPreferences.put(property, entry.getValue());
+                    }
+                }
+                return new GridUserPreferences(groupObject, columnPreferences, groupPreferences.fontInfo, groupPreferences.hasUserPreferences);
+            }
+        }
+        return null;
     }
 
     private void initializeRegularFilters() {
@@ -371,12 +397,12 @@ public class ClientFormController implements AsyncListener {
                 : null;
     }
 
-    public void saveUserPreferences(final FormUserPreferences preferences, final boolean forAllUsers) throws RemoteException {
+    public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers) throws RemoteException {
         commitOrCancelCurrentEditing();
         rmiQueue.syncRequest(new RmiVoidRequest() {
             @Override
             protected void doExecute(long requestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                remoteForm.saveUserPreferences(requestIndex, preferences, forAllUsers);
+                remoteForm.saveUserPreferences(requestIndex, gridPreferences.convertPreferences(), forAllUsers);
             }
         });
     }
@@ -414,45 +440,7 @@ public class ClientFormController implements AsyncListener {
         return simpleDispatcher;
     }
 
-    private void applyUserProperties() throws Exception {
-        commitOrCancelCurrentEditing();
-
-        //не посылаем в rmiQueue, т.к. ImmutableMethod и значит не будет rmi-call'а
-        FormUserPreferences preferences = remoteForm.getUserPreferences();
-        if (preferences != null) {
-            for (ClientPropertyDraw property : form.getPropertyDraws()) {
-                String propertySID = property.getSID();
-                for (GroupObjectUserPreferences groupObjectPreferences : preferences.getGroupObjectUserPreferencesList()) {
-                    Map<String, ColumnUserPreferences> columnUserPreferences = groupObjectPreferences.getColumnUserPreferences();
-                    if (columnUserPreferences.containsKey(propertySID)) {
-                        property.hideUser = columnUserPreferences.get(propertySID).isNeedToHide();
-                        if (columnUserPreferences.get(propertySID).getWidthUser() != null) {
-                            property.widthUser = columnUserPreferences.get(propertySID).getWidthUser();
-                        }
-                        if (columnUserPreferences.get(propertySID).getOrderUser() != null) {
-                            property.orderUser = columnUserPreferences.get(propertySID).getOrderUser();
-                        }
-                        if (columnUserPreferences.get(propertySID).getSortUser() != null) {
-                            property.sortUser = columnUserPreferences.get(propertySID).getSortUser();
-                            property.ascendingSortUser = columnUserPreferences.get(propertySID).getAscendingSortUser();
-                        }
-                    }
-                }
-            }
-            for (ClientGroupObject groupObject : form.groupObjects) {
-                for (GroupObjectUserPreferences groupObjectPreferences : preferences.getGroupObjectUserPreferencesList()) {
-                    if (groupObject.getSID().equals(groupObjectPreferences.groupObjectSID)) {
-                        groupObject.hasUserPreferences = groupObjectPreferences.hasUserPreferences;
-                        groupObject.fontInfo = groupObjectPreferences.fontInfo;
-                        
-                    }
-                    
-                }
-            }
-        }
-    }
-
-    private void initializeDefaultOrders() throws IOException {
+    public void initializeDefaultOrders() throws IOException {
         getRemoteChanges(false);
         try {
             //применяем все свойства по умолчанию
@@ -462,20 +450,7 @@ public class ClientFormController implements AsyncListener {
             //применяем пользовательские свойства
             OrderedMap<ClientPropertyDraw, Boolean> userOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
             for (GroupObjectController controller : controllers.values()) {
-                boolean userPreferencesEmpty = true;
-                boolean hasUserPreferences = controller.getGroupObject() != null && controller.getGroupObject().hasUserPreferences;
-                if (hasUserPreferences) {
-                    List<ClientPropertyDraw> clientPropertyDrawList = controller.getPropertyDraws();
-                    Collections.sort(clientPropertyDrawList, COMPARATOR_USERSORT);
-                    for (ClientPropertyDraw property : controller.getPropertyDraws()) {
-                        if (property.sortUser != null && property.ascendingSortUser != null) {
-                            userOrders.put(property, property.ascendingSortUser);
-                            userPreferencesEmpty = false;
-                        }
-                    }
-                }
-                if (userPreferencesEmpty && hasUserPreferences)
-                    controller.clearOrders();
+                userOrders.putAll(controller.getUserOrders());
             }
             applyOrders(userOrders);
         } catch (IOException e) {
@@ -483,7 +458,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    private void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders) throws IOException {
+    public void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders) throws IOException {
         Set<ClientGroupObject> wasOrder = new HashSet<ClientGroupObject>();
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet()) {
             ClientPropertyDraw property = entry.getKey();
@@ -1119,22 +1094,14 @@ public class ClientFormController implements AsyncListener {
     public void closed() {
     }
 
-    public Boolean needToHideProperty(ClientPropertyDraw property){
-        return property.hideUser == null ? property.hide : property.hideUser;
-    }
-
     public FormUserPreferences getUserPreferences() {
         List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
         for (GroupObjectController controller : controllers.values()) {
             if (controller.getGroupObject() != null) {
-                Map<String, ColumnUserPreferences> columnPreferences = new HashMap<String, ColumnUserPreferences>();
-                for (ClientPropertyDraw property : controller.getPropertyDraws()) {
-                    columnPreferences.put(property.getSID(), new ColumnUserPreferences(needToHideProperty(property), property.widthUser, property.orderUser, property.sortUser, property.ascendingSortUser));
-                }
-                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(columnPreferences, controller.getGroupObject().getSID(), controller.getGroupObject().fontInfo, controller.getGroupObject().hasUserPreferences));
+                groupObjectUserPreferencesList.add(controller.grid.table.getCurrentPreferences().convertPreferences());
             }
         }
-        return new FormUserPreferences(groupObjectUserPreferencesList);
+        return new FormUserPreferences(groupObjectUserPreferencesList, null);
     }
 
     public void hideForm() {

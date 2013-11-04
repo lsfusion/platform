@@ -70,12 +70,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public int preferredCharWidth;
 
     public boolean panelLabelAbove;
-
-    public Boolean hideUser;
-    public Integer widthUser;
-    public Integer orderUser;
-    public Integer sortUser;
-    public Boolean ascendingSortUser;
+    
+    public boolean hide;
 
     private transient GridCellRenderer cellRenderer;
 

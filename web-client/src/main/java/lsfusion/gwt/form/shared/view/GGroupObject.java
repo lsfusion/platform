@@ -31,9 +31,6 @@ public class GGroupObject implements Serializable {
     public GRowBackgroundReader rowBackgroundReader;
     public GRowForegroundReader rowForegroundReader;
 
-    public boolean hasUserPreferences;    
-    public GFont fontInfo;
-
     public String getCaption() {
         if (objects.isEmpty()) {
             //todo: локализовать попозже через GWT-шный Messages interface

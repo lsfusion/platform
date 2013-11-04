@@ -221,7 +221,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         toolbar.showGroup = clientToolbar.showGroupReport;
         toolbar.showPrintGroupButton = clientToolbar.showPrint;
         toolbar.showPrintGroupXlsButton = clientToolbar.showXls;
-        toolbar.showHideSettings = clientToolbar.showSettings;
+        toolbar.showGridSettings = clientToolbar.showSettings;
         return toolbar;
     }
 
@@ -320,6 +320,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.preferredCharWidth = clientPropertyDraw.preferredCharWidth;
 
         propertyDraw.panelLabelAbove = clientPropertyDraw.panelLabelAbove;
+        
+        propertyDraw.hide = clientPropertyDraw.hide;
 
         return propertyDraw;
     }
@@ -458,9 +460,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         groupObject.rowBackgroundReader = convertRowBackgroundReader(clientGroupObject.rowBackgroundReader);
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
-
-        groupObject.hasUserPreferences = clientGroupObject.hasUserPreferences;
-        
 
         return groupObject;
     }

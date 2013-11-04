@@ -1,17 +1,24 @@
 package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Label;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 public class PropertyLabel extends Label {
-    private GPropertyDraw property;
+    private PropertyListItem propertyItem;
 
-    public PropertyLabel(GPropertyDraw property) {
-        super(property.getNotEmptyCaption(), false);
-        this.property = property;
+    public PropertyLabel(PropertyListItem propertyItem) {
+        super(propertyItem.toString(), false);
+        this.propertyItem = propertyItem;
+        
+        Style itemStyle = getElement().getStyle();
+        if (propertyItem.inGrid == null || !propertyItem.inGrid) {
+            itemStyle.setColor("lightgrey");
+        } else {
+            itemStyle.setColor("black");
+        }
     }
 
-    public GPropertyDraw getProperty() {
-        return property;
+    public PropertyListItem getPropertyItem() {
+        return propertyItem;
     }
 }

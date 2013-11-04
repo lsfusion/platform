@@ -6,15 +6,18 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
+import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.jsni.Function;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.KeyboardRowChangedEvent;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
+import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
@@ -60,26 +63,32 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private GridTableKeyboardSelectionHandler keyboardSelectionHandler;
 
     private GGroupObjectController groupObjectController;
+    
+    private GGridUserPreferences generalGridPreferences;
+    private GGridUserPreferences userGridPreferences;
+    private GGridUserPreferences currentGridPreferences;
 
     private int nextColumnID = 0;
 
     private int pageSize = 50;
 
-    private static final Comparator<GPropertyDraw> COLUMN_ORDER_COMPARATOR = new Comparator<GPropertyDraw>() {
-        public int compare(GPropertyDraw c1, GPropertyDraw c2) {
-            if (c1.orderUser == null || c2.orderUser == null)
-                return 0;
-            else
-                return c1.orderUser - c2.orderUser;
-        }
-    };
-
-    public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController) {
-        super(iform, igroupController.groupObject.fontInfo != null ? igroupController.groupObject.fontInfo : gridController.getFont());
+    public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController, GGridUserPreferences[] iuserPreferences) {
+        super(iform, null);
 
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
         this.gridController = gridController;
+
+        generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GGridUserPreferences(groupObject);
+        userGridPreferences = iuserPreferences != null && iuserPreferences[1] != null ? iuserPreferences[1] : new GGridUserPreferences(groupObject);
+        resetCurrentPreferences(true);
+
+        if (currentGridPreferences.font != null) {
+            font = currentGridPreferences.font;
+        }
+        if (font == null) {
+            font = gridController.getFont();
+        }
 
         keyboardSelectionHandler =  new GridTableKeyboardSelectionHandler(this);
         setKeyboardSelectionHandler(keyboardSelectionHandler);
@@ -207,7 +216,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             columnProperties.clear();
             columnKeysList.clear();
 
-            for (GPropertyDraw property : properties) {
+            List<GPropertyDraw> orderedVisibleProperties = getOrderedVisibleProperties(properties); 
+            
+            for (GPropertyDraw property : orderedVisibleProperties) {
                 List<GGroupObjectValue> propertyColumnKeys = columnKeys.get(property);
                 if (propertyColumnKeys == null) {
                     propertyColumnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
@@ -215,16 +226,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
                 for (GGroupObjectValue columnKey : propertyColumnKeys) {
-                    Boolean needToHide = (property.orderUser == null && groupObject.hasUserPreferences) || (property.hideUser != null && property.hideUser);
-                    if ((propShowIfs == null || propShowIfs.get(columnKey) != null) && !needToHide) {
+                    if ((propShowIfs == null || propShowIfs.get(columnKey) != null)) {
                         columnProperties.add(property);
                         columnKeysList.add(columnKey);
                     }
                 }
-            }
-
-            if (groupObject.hasUserPreferences) {
-                Collections.sort(columnProperties, COLUMN_ORDER_COMPARATOR);
             }
 
             int rowHeight = 0;
@@ -246,7 +252,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                     }
                 }
 
-                int columnMinimumWidth = property.widthUser != null ? property.widthUser : property.getMinimumPixelWidth(font);
+                int columnMinimumWidth = getUserWidth(property) != null ? getUserWidth(property) : property.getMinimumPixelWidth(font);
                 int columnMinimumHeight = property.getMinimumPixelHeight(font);
                 setColumnWidth(column, columnMinimumWidth  + "px");
 
@@ -294,6 +300,35 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             columnsUpdated = false;
             captionsUpdated = false;
         }
+    }
+    
+    public boolean containsProperty(GPropertyDraw property) {
+        return properties.contains(property);
+    }
+
+    public List<GPropertyDraw> getOrderedVisibleProperties(List<GPropertyDraw> propertiesList) {
+        List<GPropertyDraw> result = new ArrayList<GPropertyDraw>();
+
+        for (GPropertyDraw property : propertiesList) {
+            if (hasUserPreferences()) {
+                Boolean userHide = getUserHide(property);
+                if (userHide == null || !userHide) {
+                    if (getUserOrder(property) == null) {
+                        setUserHide(property, true);
+                        setUserOrder(property, Short.MAX_VALUE + propertiesList.indexOf(property));
+                    } else {
+                        result.add(property);
+                    }
+                }
+            } else if (!property.hide) {
+                result.add(property);
+            }
+        }
+
+        if (hasUserPreferences()) {
+            Collections.sort(result, getCurrentPreferences().getUserOrderComparator());
+        }
+        return result;
     }
 
     public void updateCaptionsImpl() {
@@ -622,7 +657,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public void changeOrder(GPropertyDraw property, GOrder modiType) {
         int ind = getMinPropertyIndex(property);
         HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<GPropertyDraw, GGroupObjectValue>();
-        key.put(property, ind == -1 ? GGroupObjectValue.EMPTY : columnKeys.get(property).get(ind));
+        key.put(property, ind == -1 ? GGroupObjectValue.EMPTY : columnKeysList.get(ind));
         sortableHeaderManager.changeOrder(key, modiType);
     }
 
@@ -735,6 +770,118 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {
         return sortableHeaderManager.getOrderDirections();
+    }
+
+    public boolean userPreferencesSaved() {
+        return userGridPreferences.hasUserPreferences();
+    }
+
+    public boolean generalPreferencesSaved() {
+        return generalGridPreferences.hasUserPreferences();
+    }
+
+    public void resetCurrentPreferences(boolean initial) {
+        currentGridPreferences = new GGridUserPreferences(userGridPreferences.hasUserPreferences() ? userGridPreferences : generalGridPreferences);
+        
+        if (!initial) {
+            gridController.clearGridOrders(groupObject);
+            if (!currentGridPreferences.hasUserPreferences()) {
+                form.initializeDefaultOrders();
+            } else {
+                groupObjectController.applyUserOrders();
+            }
+        }
+    }
+
+    public void resetPreferences(boolean forAllUsers, ErrorHandlingCallback<VoidResult> callback) {
+        currentGridPreferences.resetPreferences();
+        (forAllUsers ? generalGridPreferences : userGridPreferences).resetPreferences();
+
+        if (!properties.isEmpty()) {
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, callback);
+        }
+
+        resetCurrentPreferences(false);
+    }
+
+    public void saveCurrentPreferences(boolean forAllUsers, ErrorHandlingCallback<VoidResult> callback) {
+        currentGridPreferences.setHasUserPreferences(true);
+
+        if (getProperties().size() != 0) {
+            if (forAllUsers) {
+                generalGridPreferences = new GGridUserPreferences(currentGridPreferences);
+            } else {
+                userGridPreferences = new GGridUserPreferences(currentGridPreferences);
+            }
+
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, callback);
+
+            resetCurrentPreferences(false);
+        }
+    }
+
+    public GGridUserPreferences getCurrentPreferences() {
+        return currentGridPreferences;
+    }
+
+    public boolean hasUserPreferences() {
+        return currentGridPreferences.hasUserPreferences();
+    }
+
+    public void setHasUserPreferences(boolean hasUserPreferences) {
+        currentGridPreferences.setHasUserPreferences(hasUserPreferences);
+    }
+
+    public GFont getUserFont() {
+        return currentGridPreferences.font;
+    }
+
+    public Boolean getUserHide(GPropertyDraw property) {
+        return currentGridPreferences.getUserHide(property);
+    }
+
+    public Integer getUserWidth(GPropertyDraw property) {
+        return currentGridPreferences.getUserWidth(property);
+    }
+
+    public Integer getUserOrder(GPropertyDraw property) {
+        return currentGridPreferences.getUserOrder(property);
+    }
+
+    public Integer getUserSort(GPropertyDraw property) {
+        return currentGridPreferences.getUserSort(property);
+    }
+
+    public Boolean getUserAscendingSort(GPropertyDraw property) {
+        return currentGridPreferences.getUserAscendingSort(property);
+    }
+
+    public void setUserFont(GFont userFont) {
+        currentGridPreferences.font = userFont;
+    }
+
+    public void setUserHide(GPropertyDraw property, Boolean userHide) {
+        currentGridPreferences.setUserHide(property, userHide);
+    }
+
+    public void setUserWidth(GPropertyDraw property, Integer userWidth) {
+        currentGridPreferences.setUserWidth(property, userWidth);
+    }
+
+    public void setUserOrder(GPropertyDraw property, Integer userOrder) {
+        currentGridPreferences.setUserOrder(property, userOrder);
+    }
+
+    public void setUserSort(GPropertyDraw property, Integer userSort) {
+        currentGridPreferences.setUserSort(property, userSort);
+    }
+
+    public void setUserAscendingSort(GPropertyDraw property, Boolean userAscendingSort) {
+        currentGridPreferences.setUserAscendingSort(property, userAscendingSort);
+    }
+
+    public Comparator<GPropertyDraw> getUserSortComparator() {
+        return getCurrentPreferences().getUserSortComparator();
     }
 
     private class GridColumn extends Column<GridDataRecord, Object> {

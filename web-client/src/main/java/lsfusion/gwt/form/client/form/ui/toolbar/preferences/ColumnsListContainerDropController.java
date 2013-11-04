@@ -15,7 +15,7 @@ public class ColumnsListContainerDropController extends AbstractDropController {
     @Override
     public void onDrop(DragContext context) {
         for (Widget w : context.selectedWidgets) {
-            listContainer.getListBox().add(((PropertyLabel) w).getProperty());
+            listContainer.getListBox().add(((PropertyLabel) w).getPropertyItem());
         }
     }
 }

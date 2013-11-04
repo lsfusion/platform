@@ -25,6 +25,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.synchronizedMap;
@@ -54,37 +55,43 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
         );
 
         FormUserPreferences formUP = remoteForm.getUserPreferences();
-        ArrayList<GGroupObjectUserPreferences> gGroupObjectUPList = new ArrayList<GGroupObjectUserPreferences>();
+        
         if (formUP != null) {
-            for (GroupObjectUserPreferences groupObjectUP : formUP.getGroupObjectUserPreferencesList()) {
-                HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<String, GColumnUserPreferences>();
-                for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectUP.getColumnUserPreferences().entrySet()) {
-                    ColumnUserPreferences columnUP = entry.getValue();
-                    gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.isNeedToHide(), columnUP.getWidthUser(), columnUP.getOrderUser(), columnUP.getSortUser(), columnUP.getAscendingSortUser()));
-                }
-                GFont userFont = convertFont(groupObjectUP.fontInfo);
-                GGroupObject groupObj = gForm.getGroupObject(groupObjectUP.groupObjectSID);
-                if (groupObj != null && groupObj.grid.font != null && groupObj.grid.font.size != 0) {
-                    if (userFont.size == 0) {
-                        userFont.size = groupObj.grid.font.size;
-                    }
-                    userFont.family = groupObj.grid.font.family;
-                } else {
-                    if (userFont.size == 0) {
-                        userFont.size = GFont.DEFAULT_FONT_SIZE;
-                    }
-                    userFont.family = GFont.DEFAULT_FONT_FAMILY;
-                }
-                gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, userFont, groupObjectUP.hasUserPreferences));
-                gForm.addFont(userFont); // добавляем к используемым шрифтам с целью подготовить FontMetrics
-            }
+            gForm.userPreferences = new GFormUserPreferences(convertUserPreferences(gForm, formUP.getGroupObjectGeneralPreferencesList()), 
+                                                            convertUserPreferences(gForm, formUP.getGroupObjectUserPreferencesList()));
         }
-        gForm.userPreferences = new GFormUserPreferences(gGroupObjectUPList);
 
         currentForms.put(gForm.sessionID, new FormSessionObject(clientForm, remoteForm));
 
         return gForm;
     }
+    
+    private List<GGroupObjectUserPreferences> convertUserPreferences(GForm gForm,  List<GroupObjectUserPreferences> groupObjectUserPreferences) {
+        ArrayList<GGroupObjectUserPreferences> gGroupObjectUPList = new ArrayList<GGroupObjectUserPreferences>();
+        for (GroupObjectUserPreferences groupObjectUP : groupObjectUserPreferences) {
+            HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<String, GColumnUserPreferences>();
+            for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectUP.getColumnUserPreferences().entrySet()) {
+                ColumnUserPreferences columnUP = entry.getValue();
+                gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.userHide, columnUP.userWidth, columnUP.userOrder, columnUP.userSort, columnUP.userAscendingSort));
+            }
+            GFont userFont = convertFont(groupObjectUP.fontInfo);
+            GGroupObject groupObj = gForm.getGroupObject(groupObjectUP.groupObjectSID);
+            if (groupObj != null && groupObj.grid.font != null && groupObj.grid.font.size != 0) {
+                if (userFont.size == 0) {
+                    userFont.size = groupObj.grid.font.size;
+                }
+                userFont.family = groupObj.grid.font.family;
+            } else {
+                if (userFont.size == 0) {
+                    userFont.size = GFont.DEFAULT_FONT_SIZE;
+                }
+                userFont.family = GFont.DEFAULT_FONT_FAMILY;
+            }
+            gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, userFont, groupObjectUP.hasUserPreferences));
+            gForm.addFont(userFont); // добавляем к используемым шрифтам с целью подготовить FontMetrics
+        }
+        return gGroupObjectUPList;
+    } 
 
     private String nextFormSessionID() {
         return "form" + nextFormId++ ;

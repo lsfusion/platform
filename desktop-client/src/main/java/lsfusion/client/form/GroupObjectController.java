@@ -5,6 +5,7 @@ import lsfusion.base.OrderedMap;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Main;
 import lsfusion.client.form.grid.GridController;
+import lsfusion.client.form.grid.GridUserPreferences;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.panel.PanelController;
 import lsfusion.client.form.queries.FilterController;
@@ -19,10 +20,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -37,7 +36,11 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public ClassViewType classView = ClassViewType.GRID;
 
-    public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
+    public GroupObjectController(LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
+        this(null, ilogicsSupplier, iform, formLayout, null);
+    }
+
+    public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout, GridUserPreferences[] userPreferences) throws IOException {
         super(iform, ilogicsSupplier, formLayout, igroupObject == null ? null : igroupObject.toolbar);
         groupObject = igroupObject;
 
@@ -70,7 +73,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
             }
 
             // GRID идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
-            grid = new GridController(this, form);
+            grid = new GridController(this, form, userPreferences);
             addGroupObjectActions(grid.getGridView());
             if (filter != null) {
                 filter.getView().addActionsToInputMap(grid.table);
@@ -112,7 +115,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
 
         if (groupObject.toolbar.showCalculateSum) {
-            addToToolbar(grid.craeteCalculateSumButton());
+            addToToolbar(grid.createCalculateSumButton());
         }
 
         if (groupObject.toolbar.showGroupReport) {
@@ -132,7 +135,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
 
         if (groupObject.toolbar.showSettings) {
-            addToToolbar(grid.createHideSettingsButton());
+            addToToolbar(grid.createGridSettingsButton());
             addToToolbar(Box.createHorizontalStrut(5));
         }
     }
@@ -346,6 +349,29 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
     }
 
+    public OrderedMap<ClientPropertyDraw, Boolean> getUserOrders() throws IOException {
+        OrderedMap<ClientPropertyDraw, Boolean> userOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
+        boolean userPreferencesEmpty = true;
+        boolean hasUserPreferences = grid != null && grid.table.hasUserPreferences();
+        if (hasUserPreferences) {
+            List<ClientPropertyDraw> clientPropertyDrawList = getPropertyDraws();
+            Collections.sort(clientPropertyDrawList, grid.table.getUserSortComparator());
+            for (ClientPropertyDraw property : getPropertyDraws()) {
+                if (grid.table.getUserSort(property) != null && grid.table.getUserAscendingSort(property) != null) {
+                    userOrders.put(property, grid.table.getUserAscendingSort(property));
+                    userPreferencesEmpty = false;
+                }
+            }
+        }
+        if (userPreferencesEmpty && hasUserPreferences)
+            clearOrders();
+        return userOrders;
+    }
+
+    public void applyUserOrders() throws IOException {
+        form.applyOrders(getUserOrders());
+    }
+
     // приходится делать именно так, так как логика отображения одного GroupObject может не совпадать с логикой Container-Component
     void addGroupObjectActions(JComponent comp) {
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getSwitchClassViewKeyStroke(), "switchClassView");
@@ -389,6 +415,14 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
 
         return properties;
+    }
+    
+    public boolean isPropertyInGrid(ClientPropertyDraw property) {
+        return grid != null && grid.containsProperty(property);
+    }
+    
+    public boolean isPropertyInPanel(ClientPropertyDraw property) {
+        return panel.containsProperty(property);
     }
 
     public ClientPropertyDraw getSelectedProperty() {

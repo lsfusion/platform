@@ -5,7 +5,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 import java.util.ArrayList;
 
@@ -113,11 +112,11 @@ public class ColumnsDualListBox extends AbsolutePanel {
         dragController.registerDropController(leftPanelDropController);
     }
 
-    public void addVisible(GPropertyDraw property) {
+    public void addVisible(PropertyListItem property) {
         left.add(property);
     }
 
-    public void addInvisible(GPropertyDraw property) {
+    public void addInvisible(PropertyListItem property) {
         right.add(property);
     }
 
@@ -140,6 +139,18 @@ public class ColumnsDualListBox extends AbsolutePanel {
 
     public ArrayList<Widget> getInvisibleWidgets() {
         return right.widgetList();
+    }
+    
+    public int getVisibleCount() {
+        return left.getItemCount();
+    }
+    
+    public int getVisibleIndex(Widget w) {
+        return left.widgetList().indexOf(w);
+    }
+
+    public int getInvisibleIndex(Widget w) {
+        return right.widgetList().indexOf(w);
     }
 
     public void clearLists() {

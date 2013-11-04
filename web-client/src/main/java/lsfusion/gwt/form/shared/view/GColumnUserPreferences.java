@@ -3,42 +3,26 @@ package lsfusion.gwt.form.shared.view;
 import java.io.Serializable;
 
 public class GColumnUserPreferences implements Serializable {
-    private Boolean needToHide;
-    private Integer widthUser;
-    private Integer orderUser;
-    private Integer sortUser;
-    private Boolean ascendingSortUser;
+    public Boolean userHide;
+    public Integer userWidth;
+    public Integer userOrder;
+    public Integer userSort;
+    public Boolean userAscendingSort;
 
     @SuppressWarnings("UnusedDeclaration")
     public GColumnUserPreferences() {
     }
 
-    public GColumnUserPreferences(Boolean needToHide, Integer width, Integer orderUser,
-                                 Integer sortUser, Boolean ascendingSortUser) {
-        this.needToHide = needToHide;
-        this.widthUser = width;
-        this.orderUser = orderUser;
-        this.sortUser = sortUser;
-        this.ascendingSortUser = ascendingSortUser;
+    public GColumnUserPreferences(GColumnUserPreferences prefs) {
+        this(prefs.userHide, prefs.userWidth, prefs.userOrder, prefs.userSort, prefs.userAscendingSort);
     }
 
-    public Boolean isNeedToHide() {
-        return needToHide;
-    }
-
-    public Integer getWidthUser() {
-        return widthUser;
-    }
-
-    public Integer getOrderUser() {
-        return orderUser;
-    }
-
-    public Integer getSortUser() {
-        return sortUser;
-    }
-
-    public Boolean getAscendingSortUser() {
-        return ascendingSortUser;
+    public GColumnUserPreferences(Boolean userHide, Integer width, Integer userOrder,
+                                 Integer userSort, Boolean userAscendingSort) {
+        this.userHide = userHide;
+        this.userWidth = width;
+        this.userOrder = userOrder;
+        this.userSort = userSort;
+        this.userAscendingSort = userAscendingSort;
     }
 }

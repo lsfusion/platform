@@ -13,6 +13,7 @@ import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientIntegralClass;
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.FontInfo;
 import lsfusion.interop.Order;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.form.screen.ExternalScreenComponent;
@@ -30,11 +31,11 @@ import java.util.Map;
 
 public class GridController {
 
-    private static final ImageIcon printXlsIcon = new ImageIcon(FilterView.class.getResource("/images/excelbw.png"));
+    private static final ImageIcon PRINT_XLS_ICON = new ImageIcon(FilterView.class.getResource("/images/excelbw.png"));
 
-    private static final ImageIcon printGroupIcon = new ImageIcon(FilterView.class.getResource("/images/reportbw.png"));
+    private static final ImageIcon PRINT_GROUP_ICON = new ImageIcon(FilterView.class.getResource("/images/reportbw.png"));
 
-    private static final ImageIcon groupChangeIcon = new ImageIcon(FilterView.class.getResource("/images/groupchange.png"));
+    private static final ImageIcon GROUP_CHANGE_ICON = new ImageIcon(FilterView.class.getResource("/images/groupchange.png"));
 
     private final ClientGrid clientGrid;
 
@@ -48,51 +49,42 @@ public class GridController {
 
     private boolean forceHidden = false;
 
-    public GridController(GroupObjectController igroupController, ClientFormController iform) {
+    public GridController(GroupObjectController igroupController, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         groupController = igroupController;
         clientGrid = groupController.getGroupObject().grid;
         form = iform;
 
-        view = new GridView(this, form, clientGrid.tabVertical, clientGrid.groupObject.needVerticalScroll);
+        view = new GridView(this, form, iuserPreferences, clientGrid.tabVertical, clientGrid.groupObject.needVerticalScroll);
         table = view.getTable();
 
-        if (groupController.getGroupObject() != null && groupController.getGroupObject().fontInfo != null) {
-            if (groupController.getGroupObject().fontInfo.fontSize == 0)
-                table.setFont(table.getFont().deriveFont(groupController.getGroupObject().fontInfo.getStyle()));
+        FontInfo userFont = table.getUserFont();
+        if (groupController.getGroupObject() != null && userFont != null) {
+            if (userFont.fontSize == 0)
+                table.setFont(table.getFont().deriveFont(userFont.getStyle()));
             else
-                table.setFont(table.getFont().deriveFont(groupController.getGroupObject().fontInfo.getStyle(), groupController.getGroupObject().fontInfo.fontSize));
+                table.setFont(table.getFont().deriveFont(userFont.getStyle(), userFont.fontSize));
         }
     }
+    
+    public boolean containsProperty(ClientPropertyDraw property) {
+        return table.containsProperty(property);
+    }
 
-    public UserPreferencesButton createHideSettingsButton() {
+    public ToolbarGridButton createGridSettingsButton() {
         table.getTableHeader().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 for (int i = 0; i < table.getTableModel().getColumnCount(); ++i) {
-                    table.getTableModel().getColumnProperty(i).widthUser = table.getColumnModel().getColumn(i).getWidth();
+                    table.setUserWidth(table.getTableModel().getColumnProperty(i), table.getColumnModel().getColumn(i).getWidth());
                 }
             }
         });
 
-        return new UserPreferencesButton(groupController.getGroupObject().hasUserPreferences) {
-            public void addListener() {
-                addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            dialog = new HideSettingsDialog(Main.frame, table, form);
-                            dialog.setVisible(true);
-                            form.getRemoteChanges(false);
-                        } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    }
-                });
-            }
-        };
+        return new UserPreferencesButton(table, groupController);
     }
 
     public ToolbarGridButton createPrintGroupXlsButton() {
-        return new ToolbarGridButton(printXlsIcon, ClientResourceBundle.getString("form.grid.export.to.xls")) {
+        return new ToolbarGridButton(PRINT_XLS_ICON, ClientResourceBundle.getString("form.grid.export.to.xls")) {
             @Override
             public void addListener() {
                 addActionListener(new ActionListener() {
@@ -105,7 +97,7 @@ public class GridController {
     }
 
     public ToolbarGridButton createPrintGroupButton() {
-        return new ToolbarGridButton(printGroupIcon, ClientResourceBundle.getString("form.grid.print.grid")) {
+        return new ToolbarGridButton(PRINT_GROUP_ICON, ClientResourceBundle.getString("form.grid.print.grid")) {
             @Override
             public void addListener() {
                 addActionListener(new ActionListener() {
@@ -155,7 +147,7 @@ public class GridController {
         };
     }
 
-    public CalculateSumButton craeteCalculateSumButton() {
+    public CalculateSumButton createCalculateSumButton() {
         return new CalculateSumButton() {
             public void addListener() {
                 addActionListener(new ActionListener() {
@@ -196,7 +188,7 @@ public class GridController {
     }
 
     public ToolbarGridButton createGroupChangeButton() {
-        ToolbarGridButton groupChangeButton = new ToolbarGridButton(groupChangeIcon, ClientResourceBundle.getString("form.grid.group.groupchange") + " (F12)") {
+        ToolbarGridButton groupChangeButton = new ToolbarGridButton(GROUP_CHANGE_ICON, ClientResourceBundle.getString("form.grid.group.groupchange") + " (F12)") {
             @Override
             public void addListener() {
                 addActionListener(new ActionListener() {

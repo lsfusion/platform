@@ -1,18 +1,18 @@
 package lsfusion.gwt.form.shared.actions.form;
 
 import lsfusion.gwt.base.shared.actions.VoidResult;
-import lsfusion.gwt.form.shared.view.GFormUserPreferences;
+import lsfusion.gwt.form.shared.view.GGroupObjectUserPreferences;
 
 public class SaveUserPreferencesAction extends FormRequestIndexCountingAction<VoidResult> {
-    public GFormUserPreferences formUserPreferences;
+    public GGroupObjectUserPreferences groupObjectUserPreferences;
     public boolean forAllUsers;
 
     @SuppressWarnings("Unused")
     public SaveUserPreferencesAction() {
     }
 
-    public SaveUserPreferencesAction(GFormUserPreferences userPreferences, boolean forAllUsers) {
-        this.formUserPreferences = userPreferences;
+    public SaveUserPreferencesAction(GGroupObjectUserPreferences userPreferences, boolean forAllUsers) {
+        this.groupObjectUserPreferences = userPreferences;
         this.forAllUsers = forAllUsers;
     }
 }

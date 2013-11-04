@@ -1,13 +1,5 @@
 package lsfusion.server.form.view.report;
 
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.design.*;
-import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
-import net.sf.jasperreports.engine.type.OrientationEnum;
-import net.sf.jasperreports.engine.type.PositionTypeEnum;
-import net.sf.jasperreports.engine.type.StretchTypeEnum;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
@@ -19,6 +11,14 @@ import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.GroupObjectView;
 import lsfusion.server.form.view.ObjectView;
 import lsfusion.server.form.view.PropertyDrawView;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.design.*;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import net.sf.jasperreports.engine.type.OrientationEnum;
+import net.sf.jasperreports.engine.type.PositionTypeEnum;
+import net.sf.jasperreports.engine.type.StretchTypeEnum;
 
 import java.awt.*;
 import java.util.*;
@@ -126,12 +126,12 @@ public class ReportDesignGenerator {
                 for (GroupObjectUserPreferences groupObjectPreferences : userPreferences.getGroupObjectUserPreferencesList())
                     if (groupObjectPreferences.getColumnUserPreferences().containsKey(property.getSID()))
                         columnUserPreferences = groupObjectPreferences.getColumnUserPreferences().get(property.getSID());
-            boolean hidden = columnUserPreferences != null && columnUserPreferences.isNeedToHide();
+            boolean hidden = columnUserPreferences != null && columnUserPreferences.userHide;
 
             if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup) && !hidden) {
                 ReportDrawField reportField = property.getReportDrawField();
                 if (reportField != null && (backgroundProp == null || backgroundProp.property != property.entity.propertyObject.property)) {
-                    Integer widthUser = columnUserPreferences == null ? null : columnUserPreferences.getWidthUser();
+                    Integer widthUser = columnUserPreferences == null ? null : columnUserPreferences.userWidth;
                     if (widthUser != null)
                         reportField.setWidthUser(widthUser);
                     fields.add(reportField);

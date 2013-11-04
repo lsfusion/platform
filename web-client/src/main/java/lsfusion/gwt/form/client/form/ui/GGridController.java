@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
+import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 
@@ -22,11 +23,11 @@ public class GGridController {
     private GGroupObjectController groupController;
     private boolean forceHidden = false;
 
-    public GGridController(GGrid igrid, GFormController iformController, GGroupObjectController igroupObject) {
+    public GGridController(GGrid igrid, GFormController iformController, GGroupObjectController igroupObject, GGridUserPreferences[] userPreferences) {
         grid = igrid;
         groupController = igroupObject;
 
-        table = new GGridTable(iformController, igroupObject, this);
+        table = new GGridTable(iformController, igroupObject, this, userPreferences);
 
 //        ResizableLayoutPanel panel = new ResizableLayoutPanel();
 //        panel.setStyleName("gridResizePanel");
@@ -45,6 +46,10 @@ public class GGridController {
 
     public GPropertyDraw getCurrentProperty() {
         return table.getCurrentProperty();
+    }
+    
+    public boolean containsProperty(GPropertyDraw property) {
+        return table.containsProperty(property);
     }
 
     public Object getSelectedValue(GPropertyDraw property) {

@@ -6,6 +6,7 @@ import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.form.client.form.ui.toolbar.GCalculateSumButton;
 import lsfusion.gwt.form.client.form.ui.toolbar.GCountQuantityButton;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
+import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GUserPreferencesButton;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GFormChanges;
@@ -20,6 +21,9 @@ import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.containsAny;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
+    public static final String PREFERENCES_SAVED_ICON = "userPreferencesSaved.png";
+    public static final String PREFERENCES_UNSAVED_ICON = "userPreferences.png";
+    
     public GGroupObject groupObject;
 
     private GGridController grid;
@@ -30,12 +34,16 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     private GCountQuantityButton quantityButton;
     private GCalculateSumButton sumButton;
 
-    public GGroupObjectController(GFormController iformController, GGroupObject igroupObject) {
+    public GGroupObjectController(GFormController iformController) {
+        this(iformController, null, null);
+    }
+
+    public GGroupObjectController(GFormController iformController, GGroupObject igroupObject, GGridUserPreferences[] userPreferences) {
         super(iformController, igroupObject == null ? null : igroupObject.toolbar);
         groupObject = igroupObject;
 
         if (groupObject != null) {
-            grid = new GGridController(groupObject.grid, formController, this);
+            grid = new GGridController(groupObject.grid, formController, this, userPreferences);
             grid.addToLayout(getFormLayout());
 
             GContainer gridContainer = groupObject.grid.container;
@@ -46,6 +54,10 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
 
             configureToolbar();
         }
+    }
+    
+    public GGridController getGrid() {
+        return grid;
     }
 
     private void configureToolbar() {
@@ -134,20 +146,9 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
             });
         }
 
-        if (groupObject.toolbar.showHideSettings) {
+        if (groupObject.toolbar.showGridSettings) {
             addToToolbar(GwtClientUtils.createHorizontalStrut(5));
-            addToToolbar(new GUserPreferencesButton(groupObject.hasUserPreferences) {
-                @Override
-                public void addListener() {
-                    addClickHandler(new ClickHandler() {
-                        @Override
-                        public void onClick(ClickEvent event) {
-                            dialog = new UserPreferencesDialog(grid.getTable(), formController);
-                            dialog.showDialog();
-                        }
-                    });
-                }
-            });
+            addToToolbar(new GUserPreferencesButton(grid.getTable(), this));
         }
     }
 
@@ -405,6 +406,30 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         }
     }
 
+    public LinkedHashMap<GPropertyDraw, Boolean> getUserOrders() {
+        LinkedHashMap<GPropertyDraw, Boolean> userOrders = new LinkedHashMap<GPropertyDraw, Boolean>();
+        boolean userPreferencesEmpty = true;
+        boolean hasUserPreferences = getGrid() != null && getGrid().getTable().hasUserPreferences();
+        if (hasUserPreferences) {
+            List<GPropertyDraw> propertyDrawList = getPropertyDraws();
+            Collections.sort(propertyDrawList, getGrid().getTable().getUserSortComparator());
+            for (GPropertyDraw property : getPropertyDraws()) {
+                if (getGrid().getTable().getUserSort(property) != null && getGrid().getTable().getUserAscendingSort(property) != null) {
+                    userOrders.put(property, getGrid().getTable().getUserAscendingSort(property));
+                    userPreferencesEmpty = false;
+                }
+            }
+        }
+        if (userPreferencesEmpty && hasUserPreferences) {
+            clearOrders(groupObject);
+        }
+        return userOrders;
+    }
+    
+    public void applyUserOrders() {
+        formController.applyOrders(getUserOrders());    
+    }
+
     @Override
     public GGroupObject getSelectedGroupObject() {
         return groupObject;
@@ -420,7 +445,15 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         }
         return properties;
     }
-
+    
+    public boolean isPropertyInGrid(GPropertyDraw property) {
+        return grid != null && grid.containsProperty(property);
+    }
+    
+    public boolean isPropertyInPanel(GPropertyDraw property) {
+        return panel.containsProperty(property);
+    }
+    
     @Override
     public GPropertyDraw getSelectedProperty() {
         return grid.getCurrentProperty();

@@ -17,10 +17,7 @@ import lsfusion.interop.Order;
 import lsfusion.interop.Scroll;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
-import lsfusion.interop.form.FormUserPreferences;
-import lsfusion.interop.form.RemoteFormInterface;
-import lsfusion.interop.form.ReportGenerationData;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.form.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.form.instance.*;
@@ -458,7 +455,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    public void saveUserPreferences(long requestIndex, final FormUserPreferences preferences, final boolean forAllUsers) throws RemoteException {
+    public void saveUserPreferences(long requestIndex, final GroupObjectUserPreferences preferences, final boolean forAllUsers) throws RemoteException {
         processRMIRequest(requestIndex, new Callable<Void>() {
             @Override
             public Void call() throws Exception {

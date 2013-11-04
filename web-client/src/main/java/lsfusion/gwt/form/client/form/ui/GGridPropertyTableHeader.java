@@ -239,20 +239,26 @@ public class GGridPropertyTableHeader extends Header<String> {
                 int propertyMaxWidth = property != null ? property.getMaximumPixelWidth() : Integer.MAX_VALUE;
                 if (property == null || (newLeftWidth >= propertyMinWidth && newLeftWidth <= propertyMaxWidth)) {
                     table.setColumnWidth(leftColumn, newLeftWidth + "px");
-                    property.widthUser = (int) newLeftWidth;
+                    if (table instanceof GGridTable) {
+                        ((GGridTable) table).setUserWidth(property, (int) newLeftWidth);
+                    }
                     table.onResize();
                 }
             } else {
                 if (newLeftWidth > 0) {
                     table.setColumnWidth(leftColumn, newLeftWidth + "px");
                     GPropertyDraw leftProperty = table.getProperty(leftColumn);
-                    leftProperty.widthUser = (int) newLeftWidth;
+                    if (table instanceof GGridTable) {
+                        ((GGridTable) table).setUserWidth(leftProperty, (int) newLeftWidth);
+                    }
 
                     for (int i = 0; i < rightColumns.length; i++) {
                         double newWidth = rightInitialWidths[i] - (rightCoeffs[i] != 0.0 ? dragColumnWidth * rightCoeffs[i] : dragColumnWidth / rightCoeffs.length);
                         table.setColumnWidth(rightColumns[i], newWidth + "px");
                         GPropertyDraw property = table.getProperty(rightColumns[i]);
-                        property.widthUser = (int) newWidth;
+                        if (table instanceof GGridTable) {
+                            ((GGridTable) table).setUserWidth(property, (int) newLeftWidth);
+                        }
                     }
                     table.onResize();
                 }

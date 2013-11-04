@@ -15,14 +15,14 @@ public class GridView extends JPanel {
     private final GridTable gridTable;
     private final GridController gridController;
 
-    public GridView(GridController igridController, ClientFormController form, boolean tabVertical, boolean verticalScroll) {
+    public GridView(GridController igridController, ClientFormController form, GridUserPreferences[] iuserPreferences, boolean tabVertical, boolean verticalScroll) {
         super(new BorderLayout());
 
         gridController = igridController;
 
         grid = gridController.getGroupController().getGroupObject().grid;
 
-        gridTable = new GridTable(this, form);
+        gridTable = new GridTable(this, form, iuserPreferences);
 
         gridTable.setTabVertical(tabVertical);
 

@@ -29,6 +29,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
@@ -96,7 +97,11 @@ public class GridTable extends ClientPropertyTable {
     private GridSelectionController selectionController = new GridSelectionController(this);
     private KeyController keyController = new KeyController(this);
 
-    public GridTable(GridView igridView, ClientFormController iform) {
+    private GridUserPreferences generalGridPreferences;
+    private GridUserPreferences userGridPreferences;
+    private GridUserPreferences currentGridPreferences;
+
+    public GridTable(GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         super(new GridTableModel());
 
         form = iform;
@@ -104,6 +109,10 @@ public class GridTable extends ClientPropertyTable {
         gridController = gridView.getGridController();
         groupController = gridController.getGroupController();
         groupObject = groupController.getGroupObject();
+
+        generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GridUserPreferences(groupObject);
+        userGridPreferences = iuserPreferences != null && iuserPreferences[1] != null ? iuserPreferences[1] : new GridUserPreferences(groupObject);
+        resetCurrentPreferences(true);
 
         setName(groupObject.toString());
 
@@ -351,7 +360,7 @@ public class GridTable extends ClientPropertyTable {
     }
 
     public void updateTable() {
-        model.updateColumns(properties, columnKeys, captions, showIfs, groupObject.hasUserPreferences);
+        model.updateColumns(getOrderedVisibleProperties(properties), columnKeys, captions, showIfs);
 
         model.updateRows(rowKeys, values, readOnlyValues, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues);
 
@@ -366,6 +375,35 @@ public class GridTable extends ClientPropertyTable {
         previousSelectedRow = getCurrentRow();
 
         revalidate();
+    }
+    
+    public boolean containsProperty(ClientPropertyDraw property) {
+        return properties.contains(property);
+    }
+    
+    public List<ClientPropertyDraw> getOrderedVisibleProperties(List<ClientPropertyDraw> propertiesList) {
+        List<ClientPropertyDraw> result = new ArrayList<ClientPropertyDraw>();
+
+        for (ClientPropertyDraw property : propertiesList) {
+            if (hasUserPreferences()) {
+                Boolean userHide = getUserHide(property);
+                if (userHide == null || !userHide) {
+                    if (getUserOrder(property) == null) {
+                        setUserHide(property, true);
+                        setUserOrder(property, Short.MAX_VALUE + propertiesList.indexOf(property));
+                    } else {
+                        result.add(property);
+                    }
+                }
+            } else if (!property.hide) {
+                result.add(property);
+            }
+        }
+        
+        if (hasUserPreferences()) {
+            Collections.sort(result, getCurrentPreferences().getUserOrderComparator());
+        }
+        return result;
     }
 
     private void changeCurrentObjectLater() {
@@ -414,7 +452,7 @@ public class GridTable extends ClientPropertyTable {
             TableColumn column = getColumnModel().getColumn(i);
 
             column.setMinWidth(cell.getMinimumWidth(this));
-            column.setPreferredWidth(cell.widthUser != null ? cell.widthUser :
+            column.setPreferredWidth(getUserWidth(cell) != null ? getUserWidth(cell) :
                     ((getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) ? cell.getMinimumWidth(this) : cell.getPreferredWidth(this)));
             column.setMaxWidth(cell.getMaximumWidth(this));
 
@@ -1092,6 +1130,125 @@ public class GridTable extends ClientPropertyTable {
                 }
             });
         }
+    }
+    
+    public boolean userPreferencesSaved() {
+        return userGridPreferences.hasUserPreferences();
+    }
+    
+    public boolean generalPreferencesSaved() {
+        return generalGridPreferences.hasUserPreferences();
+    }
+    
+    public void resetCurrentPreferences(boolean initial) {
+        currentGridPreferences = new GridUserPreferences(userGridPreferences.hasUserPreferences() ? userGridPreferences : generalGridPreferences);
+        if (!initial) {
+            try {
+                gridController.clearGridOrders(groupObject);
+                if (!currentGridPreferences.hasUserPreferences()) {
+                    form.initializeDefaultOrders();   
+                } else {
+                    gridController.getGroupController().applyUserOrders();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    public void resetPreferences(boolean forAllUsers) throws RemoteException {
+        currentGridPreferences.resetPreferences();
+        (forAllUsers ? generalGridPreferences : userGridPreferences).resetPreferences();
+        
+        if (!properties.isEmpty()) {
+            form.saveUserPreferences(currentGridPreferences, forAllUsers);
+        }
+
+        resetCurrentPreferences(false);
+    }
+    
+    public void saveCurrentPreferences(boolean forAllUsers) throws RemoteException {
+        currentGridPreferences.setHasUserPreferences(true);
+        
+        if (getProperties().size() != 0) {
+            if (forAllUsers) {
+                generalGridPreferences = new GridUserPreferences(currentGridPreferences);
+            } else {
+                userGridPreferences = new GridUserPreferences(currentGridPreferences);
+            }
+            
+            if (!properties.isEmpty()) {
+                form.saveUserPreferences(currentGridPreferences, forAllUsers);
+            }
+            
+            if (forAllUsers) {
+                resetCurrentPreferences(false);
+            }
+        }
+    }
+    
+    public GridUserPreferences getCurrentPreferences() {
+        return currentGridPreferences;
+    }
+
+    public boolean hasUserPreferences() {
+        return currentGridPreferences.hasUserPreferences();
+    }
+    
+    public void setHasUserPreferences(boolean hasUserPreferences) {
+        currentGridPreferences.setHasUserPreferences(hasUserPreferences);
+    } 
+
+    public FontInfo getUserFont() {
+        return currentGridPreferences.fontInfo;
+    }
+    
+    public Boolean getUserHide(ClientPropertyDraw property) {
+        return currentGridPreferences.getUserHide(property);
+    }
+    
+    public Integer getUserWidth(ClientPropertyDraw property) {
+        return currentGridPreferences.getUserWidth(property);
+    }
+
+    public Integer getUserOrder(ClientPropertyDraw property) {
+        return currentGridPreferences.getUserOrder(property);
+    }
+
+    public Integer getUserSort(ClientPropertyDraw property) {
+        return currentGridPreferences.getUserSort(property);
+    }
+
+    public Boolean getUserAscendingSort(ClientPropertyDraw property) {
+        return currentGridPreferences.getUserAscendingSort(property);
+    }
+    
+    public void setUserFont(Font userFont) {
+        currentGridPreferences.fontInfo = FontInfo.createFrom(userFont);
+    }
+    
+    public void setUserHide(ClientPropertyDraw property, Boolean userHide) {
+        currentGridPreferences.setUserHide(property, userHide);
+    }
+    
+    public void setUserWidth(ClientPropertyDraw property, Integer userWidth) {
+        currentGridPreferences.setUserWidth(property, userWidth);
+    }
+    
+    public void setUserOrder(ClientPropertyDraw property, Integer userOrder) {
+        currentGridPreferences.setUserOrder(property, userOrder);
+    }
+
+    public void setUserSort(ClientPropertyDraw property, Integer userSort) {
+        currentGridPreferences.setUserSort(property, userSort);
+    }
+
+    public void setUserAscendingSort(ClientPropertyDraw property, Boolean userAscendingSort) {
+        currentGridPreferences.setUserAscendingSort(property, userAscendingSort);
+    }
+    
+    public Comparator<ClientPropertyDraw> getUserSortComparator() {
+        return getCurrentPreferences().getUserSortComparator();
     }
 
     public void setLayouting(boolean isLayouting) {

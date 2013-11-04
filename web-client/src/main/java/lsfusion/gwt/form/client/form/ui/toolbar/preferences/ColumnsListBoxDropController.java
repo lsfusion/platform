@@ -60,7 +60,7 @@ public class ColumnsListBoxDropController extends AbstractDropController {
         int i = 1;
         for (Widget widget : context.selectedWidgets) {
             if (widget.getParent().getParent() == from) {
-                mouseListBox.add(targetRow + i, ((PropertyLabel) widget).getProperty());
+                mouseListBox.add(targetRow + i, ((PropertyLabel) widget).getPropertyItem());
                 i++;
             }
         }

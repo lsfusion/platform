@@ -6,7 +6,7 @@ import java.util.Map;
 public class GGroupObjectUserPreferences implements Serializable {
     private Map<String, GColumnUserPreferences> columnUserPreferences;
     private String groupObjectSID;
-    private GFont fontInfo;
+    private GFont font;
     private  boolean hasUserPreferences;
 
     @SuppressWarnings("UnusedDeclaration")
@@ -14,10 +14,10 @@ public class GGroupObjectUserPreferences implements Serializable {
     }
 
     public GGroupObjectUserPreferences(Map<String, GColumnUserPreferences> columnUserPreferences,
-                                      String groupObjectSID, GFont fontInfo, boolean hasUserPreferences) {
+                                      String groupObjectSID, GFont font, boolean hasUserPreferences) {
         this.columnUserPreferences = columnUserPreferences;
         this.groupObjectSID = groupObjectSID;
-        this.fontInfo = fontInfo;
+        this.font = font;
         this.hasUserPreferences = hasUserPreferences;
     }
 
@@ -29,8 +29,8 @@ public class GGroupObjectUserPreferences implements Serializable {
         return groupObjectSID;
     }
 
-    public GFont getFontInfo() {
-        return fontInfo;
+    public GFont getFont() {
+        return font;
     }
     
     public boolean hasUserPreferences() {

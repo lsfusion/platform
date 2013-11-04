@@ -1,12 +1,12 @@
 package lsfusion.server.logics;
 
-import org.antlr.runtime.RecognitionException;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
 
@@ -68,32 +68,27 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     public LCP showPropertyDraw;
     public LCP showPropertyDrawCustomUser;
-    public LCP nameShowOverridePropertyDrawCustomUser;
+    
+    public LCP nameShowPropertyDraw;
+    public LCP nameShowPropertyDrawCustomUser;
 
     public LCP columnWidthPropertyDrawCustomUser;
     public LCP columnWidthPropertyDraw;
-    public LCP columnWidthOverridePropertyDrawCustomUser;
     public LCP columnOrderPropertyDrawCustomUser;
     public LCP columnOrderPropertyDraw;
-    public LCP columnOrderOverridePropertyDrawCustomUser;
     public LCP columnSortPropertyDrawCustomUser;
     public LCP columnSortPropertyDraw;
-    public LCP columnSortOverridePropertyDrawCustomUser;
     public LCP columnAscendingSortPropertyDrawCustomUser;
     public LCP columnAscendingSortPropertyDraw;
-    public LCP columnAscendingSortOverridePropertyDrawCustomUser;
     public LCP hasUserPreferencesGroupObject;
     public LCP hasUserPreferencesGroupObjectCustomUser;
     public LCP hasUserPreferencesOverrideGroupObjectCustomUser;
     public LCP fontSizeGroupObject;
     public LCP fontSizeGroupObjectCustomUser;
-    public LCP fontSizeOverrideGroupObjectCustomUser;
     public LCP isFontBoldGroupObject;
     public LCP isFontBoldGroupObjectCustomUser;
-    public LCP isFontBoldOverrideGroupObjectCustomUser;
     public LCP isFontItalicGroupObject;
     public LCP isFontItalicGroupObjectCustomUser;
-    public LCP isFontItalicOverrideGroupObjectCustomUser;
 
     public LCP sidTable;
     public LCP tableSID;
@@ -212,23 +207,20 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         showPropertyDraw = getLCPByName("showPropertyDraw");
         showPropertyDrawCustomUser = getLCPByName("showPropertyDrawCustomUser");
 
-        nameShowOverridePropertyDrawCustomUser = getLCPByName("nameShowOverridePropertyDrawCustomUser");
+        nameShowPropertyDraw = getLCPByName("nameShowPropertyDraw");
+        nameShowPropertyDrawCustomUser = getLCPByName("nameShowPropertyDrawCustomUser");
 
         columnWidthPropertyDrawCustomUser = getLCPByName("columnWidthPropertyDrawCustomUser");
         columnWidthPropertyDraw = getLCPByName("columnWidthPropertyDraw");
-        columnWidthOverridePropertyDrawCustomUser = getLCPByName("columnWidthOverridePropertyDrawCustomUser");
 
         columnOrderPropertyDrawCustomUser = getLCPByName("columnOrderPropertyDrawCustomUser");
         columnOrderPropertyDraw = getLCPByName("columnOrderPropertyDraw");
-        columnOrderOverridePropertyDrawCustomUser = getLCPByName("columnOrderOverridePropertyDrawCustomUser");
 
         columnSortPropertyDrawCustomUser = getLCPByName("columnSortPropertyDrawCustomUser");
         columnSortPropertyDraw = getLCPByName("columnSortPropertyDraw");
-        columnSortOverridePropertyDrawCustomUser = getLCPByName("columnSortOverridePropertyDrawCustomUser");
 
         columnAscendingSortPropertyDrawCustomUser = getLCPByName("columnAscendingSortPropertyDrawCustomUser");
         columnAscendingSortPropertyDraw = getLCPByName("columnAscendingSortPropertyDraw");
-        columnAscendingSortOverridePropertyDrawCustomUser = getLCPByName("columnAscendingSortOverridePropertyDrawCustomUser");
 
         hasUserPreferencesGroupObjectCustomUser = getLCPByName("hasUserPreferencesGroupObjectCustomUser");
         hasUserPreferencesGroupObject = getLCPByName("hasUserPreferencesGroupObject");
@@ -236,15 +228,12 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         fontSizeGroupObjectCustomUser = getLCPByName("fontSizeGroupObjectCustomUser");
         fontSizeGroupObject = getLCPByName("fontSizeGroupObject");
-        fontSizeOverrideGroupObjectCustomUser = getLCPByName("fontSizeOverrideGroupObjectCustomUser");
 
         isFontBoldGroupObjectCustomUser = getLCPByName("isFontBoldGroupObjectCustomUser");
         isFontBoldGroupObject = getLCPByName("isFontBoldGroupObject");
-        isFontBoldOverrideGroupObjectCustomUser = getLCPByName("isFontBoldOverrideGroupObjectCustomUser");
 
         isFontItalicGroupObjectCustomUser = getLCPByName("isFontItalicGroupObjectCustomUser");
         isFontItalicGroupObject = getLCPByName("isFontItalicGroupObject");
-        isFontItalicOverrideGroupObjectCustomUser = getLCPByName("isFontItalicOverrideGroupObjectCustomUser");
 
         // ------------------------------------------------- Физическая модель ------------------------------------ //
 

@@ -2,10 +2,7 @@ package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
 import lsfusion.interop.ClassViewType;
-import lsfusion.interop.form.FormUserPreferences;
-import lsfusion.interop.form.RemoteFormInterface;
-import lsfusion.interop.form.ReportGenerationData;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.form.*;
 
 import java.rmi.RemoteException;
 import java.util.HashMap;
@@ -202,7 +199,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public void saveUserPreferences(long requestIndex, FormUserPreferences preferences, boolean forAllUsers) throws RemoteException {
+    public void saveUserPreferences(long requestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException {
         target.saveUserPreferences(requestIndex, preferences, forAllUsers);
     }
 

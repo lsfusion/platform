@@ -72,27 +72,21 @@ propertyDrawSIDNavigatorElementSIDPropertyDraw 'Код формы' (str1, str2) 
 
 showPropertyDraw 'Показ свойства' = DATA PropertyDrawShowStatus (PropertyDraw);
 showPropertyDrawCustomUser 'Показ свойства для пользователя' = DATA PropertyDrawShowStatus (PropertyDraw, CustomUser);
-showOverridePropertyDrawCustomUser 'Показ свойства' (propertyDraw, customUser) = OVERRIDE showPropertyDraw (propertyDraw) IF customUser IS CustomUser, showPropertyDrawCustomUser (propertyDraw, customUser);
 
 nameShowPropertyDraw 'Показ свойства' (propertyDraw) = staticName(showPropertyDraw (propertyDraw)) PREFCHARWIDTH 50;
 nameShowPropertyDrawCustomUser 'Показ свойства для пользователя' (propertyDraw, customUser) = staticName(showPropertyDrawCustomUser(propertyDraw, customUser)) PREFCHARWIDTH 50;
-nameShowOverridePropertyDrawCustomUser (propertyDraw, customUser) = staticName(showOverridePropertyDrawCustomUser (propertyDraw, customUser));
 
 columnWidthPropertyDrawCustomUser 'Ширина для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
 columnWidthPropertyDraw 'Ширина' = DATA INTEGER (PropertyDraw);
-columnWidthOverridePropertyDrawCustomUser 'Ширина' (propertyDraw, customUser) = OVERRIDE columnWidthPropertyDraw (propertyDraw) IF customUser IS CustomUser, columnWidthPropertyDrawCustomUser(propertyDraw, customUser);
 
 columnOrderPropertyDrawCustomUser 'Порядок для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
 columnOrderPropertyDraw 'Порядок' = DATA INTEGER (PropertyDraw);
-columnOrderOverridePropertyDrawCustomUser 'Порядок' (propertyDraw, customUser) = OVERRIDE columnOrderPropertyDraw (propertyDraw) IF customUser IS CustomUser, columnOrderPropertyDrawCustomUser (propertyDraw, customUser);
 
 columnSortPropertyDrawCustomUser 'Сортировка для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
 columnSortPropertyDraw 'Сортировка' = DATA INTEGER (PropertyDraw);
-columnSortOverridePropertyDrawCustomUser 'Сортировка' (propertyDraw, customUser) = OVERRIDE columnSortPropertyDraw (propertyDraw) IF customUser IS CustomUser, columnSortPropertyDrawCustomUser (propertyDraw, customUser);
 
 columnAscendingSortPropertyDrawCustomUser 'Восходящая сортировка для пользователя' = DATA BOOLEAN (PropertyDraw, CustomUser);
 columnAscendingSortPropertyDraw 'Восходящая сортировка' = DATA BOOLEAN (PropertyDraw);
-columnAscendingSortOverridePropertyDrawCustomUser 'Восходящая сортировка' (propertyDraw, customUser) = OVERRIDE columnAscendingSortPropertyDraw (propertyDraw) IF customUser IS CustomUser, columnAscendingSortPropertyDrawCustomUser(propertyDraw, customUser);
 
 hasUserPreferencesGroupObjectCustomUser 'Настройки сохранены для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
 hasUserPreferencesGroupObject 'Настройки сохранены' = DATA BOOLEAN (GroupObject);
@@ -100,15 +94,12 @@ hasUserPreferencesOverrideGroupObjectCustomUser 'Настройки сохран
 
 fontSizeGroupObjectCustomUser 'Размер шрифта для пользователя'= DATA INTEGER (GroupObject, CustomUser);
 fontSizeGroupObject 'Размер шрифта' = DATA INTEGER (GroupObject);
-fontSizeOverrideGroupObjectCustomUser 'Размер шрифта' (groupObject, customUser) = OVERRIDE fontSizeGroupObject(groupObject) IF customUser IS CustomUser, fontSizeGroupObjectCustomUser(groupObject, customUser);
 
 isFontBoldGroupObjectCustomUser 'Полужирный шрифт для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
 isFontBoldGroupObject 'Полужирный шрифт' = DATA BOOLEAN (GroupObject);
-isFontBoldOverrideGroupObjectCustomUser 'Полужирный шрифт' (groupObject, customUser) = OVERRIDE isFontBoldGroupObject(groupObject) IF customUser IS CustomUser, isFontBoldGroupObjectCustomUser(groupObject, customUser);
 
 isFontItalicGroupObjectCustomUser 'Курсивный шрифт для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
 isFontItalicGroupObject 'Курсивный шрифт' = DATA BOOLEAN (GroupObject);
-isFontItalicOverrideGroupObjectCustomUser 'Курсивный шрифт' (groupObject, customUser) = OVERRIDE isFontItalicGroupObject(groupObject) IF customUser IS CustomUser, isFontItalicGroupObjectCustomUser(groupObject, customUser);
 
 CLASS Table 'Таблица';
 TABLE tables (Table);

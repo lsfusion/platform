@@ -264,7 +264,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public FormUserPreferences loadUserPreferences() {
-        List<GroupObjectUserPreferences> preferences = new ArrayList<GroupObjectUserPreferences>();
+        List<GroupObjectUserPreferences> goUserPreferences = new ArrayList<GroupObjectUserPreferences>();
+        List<GroupObjectUserPreferences> goGeneralPreferences = new ArrayList<GroupObjectUserPreferences>();
         try {
 
             ObjectValue formValue = BL.reflectionLM.navigatorElementSID.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
@@ -282,109 +283,131 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             ImRevMap<String, KeyExpr> newKeys = MapFact.singletonRev("propertyDraw", propertyDrawExpr);
 
             QueryBuilder<String, String> query = new QueryBuilder<String, String>(newKeys);
-            query.addProperty("sidPropertyDraw", BL.reflectionLM.sidPropertyDraw.getExpr(propertyDrawExpr));
-            query.addProperty("nameShowOverridePropertyDrawCustomUser", BL.reflectionLM.nameShowOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
-            query.addProperty("columnWidthOverridePropertyDrawCustomUser", BL.reflectionLM.columnWidthOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
-            query.addProperty("columnOrderOverridePropertyDrawCustomUser", BL.reflectionLM.columnOrderOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
-            query.addProperty("columnSortOverridePropertyDrawCustomUser", BL.reflectionLM.columnSortOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
-            query.addProperty("columnAscendingSortOverridePropertyDrawCustomUser", BL.reflectionLM.columnAscendingSortOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             Expr groupObjectPropertyDrawExpr = BL.reflectionLM.groupObjectPropertyDraw.getExpr(propertyDrawExpr);
-            Expr hasPrefsExpr = BL.reflectionLM.hasUserPreferencesOverrideGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr);
-            query.addProperty("groupObjectPropertyDraw", groupObjectPropertyDrawExpr);
-            query.addProperty("sIDGroupObjectPropertyDraw", BL.reflectionLM.sidGroupObject.getExpr(groupObjectPropertyDrawExpr));
-            query.addProperty("hasUserPreferencesOverrideGroupObjectCustomUser", hasPrefsExpr);
-            query.addProperty("fontSizeOverrideGroupObjectCustomUser", BL.reflectionLM.fontSizeOverrideGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
-            query.addProperty("isFontBoldOverrideGroupObjectCustomUser", BL.reflectionLM.isFontBoldOverrideGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
-            query.addProperty("isFontItalicOverrideGroupObjectCustomUser", BL.reflectionLM.isFontItalicOverrideGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
+            
+            query.addProperty("propertySID", BL.reflectionLM.sidPropertyDraw.getExpr(propertyDrawExpr));
+            query.addProperty("groupObject", groupObjectPropertyDrawExpr);
+            query.addProperty("groupObjectSID", BL.reflectionLM.sidGroupObject.getExpr(groupObjectPropertyDrawExpr));
+
+            query.addProperty("generalShowPropertyName", BL.reflectionLM.nameShowPropertyDraw.getExpr(propertyDrawExpr));
+            query.addProperty("generalWidth", BL.reflectionLM.columnWidthPropertyDraw.getExpr(propertyDrawExpr));
+            query.addProperty("generalOrder", BL.reflectionLM.columnOrderPropertyDraw.getExpr(propertyDrawExpr));
+            query.addProperty("generalSort", BL.reflectionLM.columnSortPropertyDraw.getExpr(propertyDrawExpr));
+            query.addProperty("generalAscendingSort", BL.reflectionLM.columnAscendingSortPropertyDraw.getExpr(propertyDrawExpr));
+            query.addProperty("generalHasUserPreferences", BL.reflectionLM.hasUserPreferencesGroupObject.getExpr(groupObjectPropertyDrawExpr));
+            query.addProperty("generalFontSize", BL.reflectionLM.fontSizeGroupObject.getExpr(groupObjectPropertyDrawExpr));
+            query.addProperty("generalIsFontBold", BL.reflectionLM.isFontBoldGroupObject.getExpr(groupObjectPropertyDrawExpr));
+            query.addProperty("generalIsFontItalic", BL.reflectionLM.isFontItalicGroupObject.getExpr(groupObjectPropertyDrawExpr));
+
+            query.addProperty("userShowPropertyName", BL.reflectionLM.nameShowPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.addProperty("userWidth", BL.reflectionLM.columnWidthPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.addProperty("userOrder", BL.reflectionLM.columnOrderPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.addProperty("userSort", BL.reflectionLM.columnSortPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.addProperty("userAscendingSort", BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.addProperty("userHasUserPreferences", BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
+            query.addProperty("userFontSize", BL.reflectionLM.fontSizeGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
+            query.addProperty("userIsFontBold", BL.reflectionLM.isFontBoldGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
+            query.addProperty("userIsFontItalic", BL.reflectionLM.isFontItalicGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
 
             query.and(BL.reflectionLM.formPropertyDraw.getExpr(propertyDrawExpr).compare(formObject.getExpr(), Compare.EQUALS));
-            query.and(hasPrefsExpr.getWhere());
+            query.and(BL.reflectionLM.hasUserPreferencesOverrideGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr).getWhere());
 
             ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = query.execute(this);
 
             for (ImMap<String, Object> values : result.valueIt()) {
-                String propertyDrawSID = values.get("sidPropertyDraw").toString().trim();
-                String hide = (String) values.get("nameShowOverridePropertyDrawCustomUser");
-                Boolean needToHide = hide == null ? null : hide.trim().endsWith("Hide");
-                Integer width = (Integer) values.get("columnWidthOverridePropertyDrawCustomUser");
-                Integer order = (Integer) values.get("columnOrderOverridePropertyDrawCustomUser");
-                Integer sort = (Integer) values.get("columnSortOverridePropertyDrawCustomUser");
-                Boolean ascendingSort = (Boolean) values.get("columnAscendingSortOverridePropertyDrawCustomUser");
-                Integer groupObjectPropertyDraw = (Integer) values.get("groupObjectPropertyDraw");
-                if (groupObjectPropertyDraw != null) {
-                    String groupObjectSID = (String) values.get("sIDGroupObjectPropertyDraw");
-                    ColumnUserPreferences pref = new ColumnUserPreferences(needToHide, width, order, sort, ascendingSort != null ? ascendingSort : (sort != null ? false : null));
-                    boolean found = false;
-                    Object hasUserPreferences = values.get("hasUserPreferencesOverrideGroupObjectCustomUser");
-                    Integer fontSize = (Integer) values.get("fontSizeOverrideGroupObjectCustomUser");
-                    boolean isFontBold = values.get("isFontBoldOverrideGroupObjectCustomUser") != null;
-                    boolean isFontItalic = values.get("isFontItalicOverrideGroupObjectCustomUser") != null;
-                    for (GroupObjectUserPreferences groupObjectPreferences : preferences) {
-                        if (groupObjectPreferences.groupObjectSID.equals(groupObjectSID.trim())) {
-                            groupObjectPreferences.getColumnUserPreferences().put(propertyDrawSID, pref);
-                            if (!groupObjectPreferences.hasUserPreferences)
-                                groupObjectPreferences.hasUserPreferences = hasUserPreferences != null;
-                            if (groupObjectPreferences.fontInfo == null)
-                                groupObjectPreferences.fontInfo = new FontInfo(null, fontSize, isFontBold, isFontItalic);
-                            found = true;
-                        }
-                    }
-                    if (!found) {
-                        Map preferencesMap = new HashMap<String, ColumnUserPreferences>();
-                        preferencesMap.put(propertyDrawSID, pref);
-                        preferences.add(new GroupObjectUserPreferences(preferencesMap,
-                                groupObjectSID.trim(),
-                                new FontInfo(null, fontSize == null ? 0 : fontSize, isFontBold, isFontItalic),
-                                hasUserPreferences != null));
-                    }
-                }
+                readPreferencesValues(values, goGeneralPreferences, true);
+                readPreferencesValues(values, goUserPreferences, false);
             }
         } catch (SQLException e) {
             Throwables.propagate(e);
         }
-        return new FormUserPreferences(preferences);
+        
+        return new FormUserPreferences(goGeneralPreferences, goUserPreferences);
+    }
+    
+    public void readPreferencesValues(ImMap<String, Object> values, List<GroupObjectUserPreferences> goPreferences, boolean general) {
+        String prefix = general ? "general" : "user";
+        String propertyDrawSID = values.get("propertySID").toString().trim();
+        Integer groupObjectPropertyDraw = (Integer) values.get("groupObject");
+
+        if (groupObjectPropertyDraw != null) {
+            String groupObjectSID = (String) values.get("groupObjectSID");
+
+            String hide = (String) values.get(prefix + "ShowPropertyName");
+            Boolean needToHide = hide == null ? null : hide.trim().endsWith("Hide");
+            Integer width = (Integer) values.get(prefix + "Width");
+            Integer order = (Integer) values.get(prefix + "Order");
+            Integer sort = (Integer) values.get(prefix + "Sort");
+            Boolean userAscendingSort = (Boolean) values.get(prefix + "AscendingSort");
+            ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, width, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null));
+
+            Object hasPreferences = values.get(prefix + "HasUserPreferences");
+            Integer fontSize = (Integer) values.get(prefix + "FontSize");
+            boolean isFontBold = values.get(prefix + "IsFontBold") != null;
+            boolean isFontItalic = values.get(prefix + "IsFontItalic") != null;
+
+            boolean prefsFound = false;
+            for (GroupObjectUserPreferences groupObjectPreferences : goPreferences) {
+                if (groupObjectPreferences.groupObjectSID.equals(groupObjectSID.trim())) {
+                    groupObjectPreferences.getColumnUserPreferences().put(propertyDrawSID, columnPrefs);
+                    if (!groupObjectPreferences.hasUserPreferences)
+                        groupObjectPreferences.hasUserPreferences = hasPreferences != null;
+                    if (groupObjectPreferences.fontInfo == null)
+                        groupObjectPreferences.fontInfo = new FontInfo(null, fontSize, isFontBold, isFontItalic);
+                    prefsFound = true;
+                }
+            }
+            if (!prefsFound) {
+                Map preferencesMap = new HashMap<String, ColumnUserPreferences>();
+                preferencesMap.put(propertyDrawSID, columnPrefs);
+                goPreferences.add(new GroupObjectUserPreferences(preferencesMap,
+                        groupObjectSID.trim(),
+                        new FontInfo(null, fontSize == null ? 0 : fontSize, isFontBold, isFontItalic),
+                        hasPreferences != null));
+            }
+        }    
     }
 
-    public void saveUserPreferences(FormUserPreferences preferences, boolean forAllUsers) {
+    public void saveUserPreferences(GroupObjectUserPreferences preferences, boolean forAllUsers) {
         try {
             DataSession dataSession = session.createSession();
             DataObject userObject = dataSession.getDataObject(BL.authenticationLM.user, BL.authenticationLM.currentUser.read(dataSession));
-            for (GroupObjectUserPreferences groupObjectPreferences : preferences.getGroupObjectUserPreferencesList()) {
-                for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectPreferences.getColumnUserPreferences().entrySet()) {
-                    ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementSIDPropertyDraw.readClasses(dataSession,
-                            new DataObject(entity.getSID(), StringClass.get(false, false, 50)),
-                            new DataObject(entry.getKey(), StringClass.get(false, false, 100)));
-                    if (propertyDrawObjectValue instanceof DataObject) {
-                        DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
-                        ColumnUserPreferences columnPreferences = entry.getValue();
-                        Integer idShow = columnPreferences.isNeedToHide() == null ? null : BL.reflectionLM.propertyDrawShowStatus.getObjectID(columnPreferences.isNeedToHide() ? "Hide" : "Show");
-                        if (forAllUsers) {
-                            BL.reflectionLM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject, userObject);
-                            BL.reflectionLM.columnWidthPropertyDraw.change(columnPreferences.getWidthUser(), dataSession, propertyDrawObject);
-                            BL.reflectionLM.columnOrderPropertyDraw.change(columnPreferences.getOrderUser(), dataSession, propertyDrawObject);
-                            BL.reflectionLM.columnSortPropertyDraw.change(columnPreferences.getSortUser(), dataSession, propertyDrawObject, userObject);
-                            BL.reflectionLM.columnAscendingSortPropertyDraw.change(columnPreferences.getAscendingSortUser(), dataSession, propertyDrawObject, userObject);
-                        }
-                        BL.reflectionLM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnWidthPropertyDrawCustomUser.change(columnPreferences.getWidthUser(), dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.getOrderUser(), dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.getSortUser(), dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.getAscendingSortUser(), dataSession, propertyDrawObject, userObject);
+            for (Map.Entry<String, ColumnUserPreferences> entry : preferences.getColumnUserPreferences().entrySet()) {
+                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementSIDPropertyDraw.readClasses(dataSession,
+                        new DataObject(entity.getSID(), StringClass.get(false, false, 50)),
+                        new DataObject(entry.getKey(), StringClass.get(false, false, 100)));
+                if (propertyDrawObjectValue instanceof DataObject) {
+                    DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
+                    ColumnUserPreferences columnPreferences = entry.getValue();
+                    Integer idShow = columnPreferences.userHide == null ? null : BL.reflectionLM.propertyDrawShowStatus.getObjectID(columnPreferences.userHide ? "Hide" : "Show");
+                    if (forAllUsers) {
+                        BL.reflectionLM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject, userObject);
+                        BL.reflectionLM.columnWidthPropertyDraw.change(columnPreferences.userWidth, dataSession, propertyDrawObject);
+                        BL.reflectionLM.columnOrderPropertyDraw.change(columnPreferences.userOrder, dataSession, propertyDrawObject);
+                        BL.reflectionLM.columnSortPropertyDraw.change(columnPreferences.userSort, dataSession, propertyDrawObject, userObject);
+                        BL.reflectionLM.columnAscendingSortPropertyDraw.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, userObject);
                     } else {
-                        throw new RuntimeException("Объект " + entry.getKey() + " (" + entity.getSID() + ") не найден");
+                        BL.reflectionLM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
+                        BL.reflectionLM.columnWidthPropertyDrawCustomUser.change(columnPreferences.userWidth, dataSession, propertyDrawObject, userObject);
+                        BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.userOrder, dataSession, propertyDrawObject, userObject);
+                        BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.userSort, dataSession, propertyDrawObject, userObject);
+                        BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, userObject);
                     }
+                } else {
+                    throw new RuntimeException("Объект " + entry.getKey() + " (" + entity.getSID() + ") не найден");
                 }
-                DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(dataSession, new DataObject(groupObjectPreferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
-                BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject, userObject);
-                BL.reflectionLM.fontSizeGroupObjectCustomUser.change(groupObjectPreferences.fontInfo.fontSize != -1 ? groupObjectPreferences.fontInfo.fontSize : null, dataSession, groupObjectObject, userObject);
-                BL.reflectionLM.isFontBoldGroupObjectCustomUser.change(groupObjectPreferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject, userObject);
-                BL.reflectionLM.isFontItalicGroupObjectCustomUser.change(groupObjectPreferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject, userObject);
-                if (forAllUsers) {
-                    BL.reflectionLM.hasUserPreferencesGroupObject.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject);
-                    BL.reflectionLM.fontSizeGroupObject.change(groupObjectPreferences.fontInfo.fontSize != -1 ? groupObjectPreferences.fontInfo.fontSize : null, dataSession, groupObjectObject);
-                    BL.reflectionLM.isFontBoldGroupObject.change(groupObjectPreferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject);
-                    BL.reflectionLM.isFontItalicGroupObject.change(groupObjectPreferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject);
-                }
+            }
+            DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(dataSession, new DataObject(preferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
+            if (forAllUsers) {
+                BL.reflectionLM.hasUserPreferencesGroupObject.change(preferences.hasUserPreferences ? true : null, dataSession, groupObjectObject);
+                BL.reflectionLM.fontSizeGroupObject.change(preferences.fontInfo.fontSize != -1 ? preferences.fontInfo.fontSize : null, dataSession, groupObjectObject);
+                BL.reflectionLM.isFontBoldGroupObject.change(preferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject);
+                BL.reflectionLM.isFontItalicGroupObject.change(preferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject);
+            } else {
+                BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.change(preferences.hasUserPreferences ? true : null, dataSession, groupObjectObject, userObject);
+                BL.reflectionLM.fontSizeGroupObjectCustomUser.change(preferences.fontInfo.fontSize != -1 ? preferences.fontInfo.fontSize : null, dataSession, groupObjectObject, userObject);
+                BL.reflectionLM.isFontBoldGroupObjectCustomUser.change(preferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject, userObject);
+                BL.reflectionLM.isFontItalicGroupObjectCustomUser.change(preferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject, userObject);
             }
             dataSession.apply(BL);
         } catch (SQLException e) {

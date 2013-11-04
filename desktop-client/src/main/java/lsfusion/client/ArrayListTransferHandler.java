@@ -6,6 +6,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ArrayListTransferHandler extends TransferHandler {
     DataFlavor localArrayListFlavor, serialArrayListFlavor;
@@ -167,15 +168,7 @@ public class ArrayListTransferHandler extends TransferHandler {
             if (values == null || values.length == 0) {
                 return null;
             }
-            ArrayList alist = new ArrayList(values.length);
-            for (int i = 0; i < values.length; i++) {
-                Object o = values[i];
-                String str = o.toString();
-                if (str == null)
-                    str = "";
-                alist.add(str);
-            }
-            return new ArrayListTransferable(alist);
+            return new ArrayListTransferable(new ArrayList(Arrays.asList(values)));
         }
         return null;
     }

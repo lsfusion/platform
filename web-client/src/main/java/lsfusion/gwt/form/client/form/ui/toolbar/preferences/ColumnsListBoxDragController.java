@@ -89,7 +89,7 @@ public class ColumnsListBoxDragController extends PickupDragController {
         };
         proxyMouseListBox.setWidth(DOMUtil.getClientWidth(draggableList.getElement()) + "px");
         for (Widget widget : context.selectedWidgets) {
-            proxyMouseListBox.add(((PropertyLabel) widget).getProperty());
+            proxyMouseListBox.add(((PropertyLabel) widget).getPropertyItem());
         }
         return proxyMouseListBox;
     }

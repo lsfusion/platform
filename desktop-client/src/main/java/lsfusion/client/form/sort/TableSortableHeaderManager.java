@@ -1,6 +1,7 @@
 package lsfusion.client.form.sort;
 
 import lsfusion.base.OrderedMap;
+import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Order;
@@ -45,7 +46,9 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
             }
             if (width > 0) {
                 columnModel.getColumn(column).setPreferredWidth(width + 5);
-                getColumnProperty(column).widthUser = width + 5;
+                if (table instanceof GridTable) {
+                    ((GridTable) table).setUserWidth(getColumnProperty(column), width + 5);
+                }
             }
             int totalPreferredWidth = 0;
             for (int c = 0; c < columnModel.getColumnCount(); c++) {
@@ -57,7 +60,10 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
                 if (c != column) {
                     int newWidth = (int) (columnModel.getColumn(c).getPreferredWidth() * coef);
                     columnModel.getColumn(c).setPreferredWidth(newWidth);
-                    getColumnProperty(c).widthUser = newWidth;
+                    columnModel.getColumn(column).setPreferredWidth(width + 5);
+                    if (table instanceof GridTable) {
+                        ((GridTable) table).setUserWidth(getColumnProperty(c), newWidth);
+                    }
                 }
             }
 
