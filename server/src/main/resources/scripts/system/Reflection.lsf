@@ -76,6 +76,9 @@ showPropertyDrawCustomUser 'Показ свойства для пользова�
 nameShowPropertyDraw 'Показ свойства' (propertyDraw) = staticName(showPropertyDraw (propertyDraw)) PREFCHARWIDTH 50;
 nameShowPropertyDrawCustomUser 'Показ свойства для пользователя' (propertyDraw, customUser) = staticName(showPropertyDrawCustomUser(propertyDraw, customUser)) PREFCHARWIDTH 50;
 
+captionShowPropertyDraw 'Показ свойства' (propertyDraw) = staticCaption(showPropertyDraw (propertyDraw)) PREFCHARWIDTH 20;
+captionShowPropertyDrawCustomUser 'Показ свойства для пользователя' (propertyDraw, customUser) = staticCaption(showPropertyDrawCustomUser(propertyDraw, customUser)) PREFCHARWIDTH 20;
+
 columnWidthPropertyDrawCustomUser 'Ширина для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
 columnWidthPropertyDraw 'Ширина' = DATA INTEGER (PropertyDraw);
 
@@ -227,13 +230,13 @@ FORM forms 'Формы'
     OBJECTS p=PropertyDraw
     PROPERTIES(p) READONLY sidPropertyDraw, captionPropertyDraw
 
-    PROPERTIES(p)nameShowPropertyDraw
-    PROPERTIES(p,u) nameShowPropertyDrawCustomUser
-    PROPERTIES(p)columnWidthPropertyDraw
+    PROPERTIES(p) captionShowPropertyDraw
+    PROPERTIES(p,u) captionShowPropertyDrawCustomUser
+    PROPERTIES(p) columnWidthPropertyDraw
     PROPERTIES(p,u) columnWidthPropertyDrawCustomUser
-    PROPERTIES(p)columnOrderPropertyDraw
+    PROPERTIES(p) columnOrderPropertyDraw
     PROPERTIES(p,u) columnOrderPropertyDrawCustomUser
-    PROPERTIES(p)columnSortPropertyDraw
+    PROPERTIES(p) columnSortPropertyDraw
     PROPERTIES(p) columnAscendingSortPropertyDraw
     PROPERTIES(p,u) columnSortPropertyDrawCustomUser
     PROPERTIES(p,u) columnAscendingSortPropertyDrawCustomUser
