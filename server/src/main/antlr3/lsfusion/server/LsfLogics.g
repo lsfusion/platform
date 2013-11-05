@@ -1139,6 +1139,7 @@ groupingType returns [GroupingType type]
 	|	'MIN' 	{ $type = GroupingType.MIN; }
 	|	'CONCAT' { $type = GroupingType.CONCAT; }
 	|	'AGGR' { $type = GroupingType.AGGR; }
+	|	'NAGGR' { $type = GroupingType.NAGGR; }
 	|	'EQUAL'	{ $type = GroupingType.EQUAL; }	
 	|	'LAST'	{ $type = GroupingType.LAST; }
 	;
