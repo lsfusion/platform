@@ -19,4 +19,33 @@ public class FormUserPreferences implements Serializable {
     public List<GroupObjectUserPreferences> getGroupObjectGeneralPreferencesList() {
         return groupObjectGeneralPreferencesList;
     }
+    
+    public GroupObjectUserPreferences getGeneralPreferences(String groupObjectSID) {
+        for (GroupObjectUserPreferences groupPrefs : groupObjectGeneralPreferencesList) {
+            if (groupObjectSID.equals(groupPrefs.groupObjectSID)) {
+                return groupPrefs;
+            }
+        }
+        return null;
+    }
+
+    public GroupObjectUserPreferences getUserPreferences(String groupObjectSID) {
+        for (GroupObjectUserPreferences groupPrefs : groupObjectUserPreferencesList) {
+            if (groupObjectSID.equals(groupPrefs.groupObjectSID)) {
+                return groupPrefs;
+            }
+        }
+        return null;
+    }
+    
+    public GroupObjectUserPreferences getUsedPreferences(String groupObjectSID) {
+        GroupObjectUserPreferences groupPrefs = getUserPreferences(groupObjectSID);
+        if (groupPrefs == null || !groupPrefs.hasUserPreferences) {
+            groupPrefs = getGeneralPreferences(groupObjectSID);
+        }
+        if (groupPrefs == null || !groupPrefs.hasUserPreferences) {
+            return null;
+        }
+        return groupPrefs;
+    }
 }

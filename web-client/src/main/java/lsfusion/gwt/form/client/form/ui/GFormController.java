@@ -849,8 +849,20 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
 
-    public void runSingleGroupReport(int groupObjectID, final boolean toExcel) {
-        syncDispatch(new SingleGroupReport(groupObjectID, toExcel), new ErrorHandlingCallback<StringResult>() {
+    public GFormUserPreferences getUserPreferences() {
+        List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GGroupObjectUserPreferences>();
+        List<GGroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<GGroupObjectUserPreferences>();
+        for (GGroupObjectController controller : controllers.values()) {
+            if (controller.groupObject != null) {
+                groupObjectUserPreferencesList.add(controller.getUserGridPreferences());
+                groupObjectGeneralPreferencesList.add(controller.getGeneralGridPreferences());
+            }
+        }
+        return new GFormUserPreferences(groupObjectGeneralPreferencesList, groupObjectUserPreferencesList);
+    }
+
+    public void runGroupReport(Integer groupObjectID, final boolean toExcel) {
+        syncDispatch(new GroupReport(groupObjectID, toExcel, getUserPreferences()), new ErrorHandlingCallback<StringResult>() {
             @Override
             public void success(StringResult result) {
                 openReportWindow(result.get());

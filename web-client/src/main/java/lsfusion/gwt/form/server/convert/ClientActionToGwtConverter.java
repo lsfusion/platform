@@ -134,13 +134,13 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = RunPrintReportClientAction.class)
-    public GReportAction convertAction(RunPrintReportClientAction action, FormSessionObject form) throws IOException {
-        return new GReportAction(FileUtils.exportReport(false, form.remoteForm.getReportData(-1, null, false, null)));
+    public GRunOpenReportAction convertAction(RunPrintReportClientAction action, FormSessionObject form) throws IOException {
+        return new GRunOpenReportAction(false);
     }
 
     @Converter(from = RunOpenInExcelClientAction.class)
-    public GReportAction convertAction(RunOpenInExcelClientAction action, FormSessionObject form) throws IOException {
-        return new GReportAction(FileUtils.exportReport(true, form.remoteForm.getReportData(-1, null, true, null)));
+    public GRunOpenReportAction convertAction(RunOpenInExcelClientAction action, FormSessionObject form) throws IOException {
+        return new GRunOpenReportAction(true);
     }
 
     @Converter(from = UpdateEditValueClientAction.class)

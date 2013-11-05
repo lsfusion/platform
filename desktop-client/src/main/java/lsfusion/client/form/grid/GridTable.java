@@ -18,6 +18,7 @@ import lsfusion.interop.FontInfo;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.Order;
 import lsfusion.interop.Scroll;
+import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.ServerResponse;
 
 import javax.swing.*;
@@ -1138,6 +1139,17 @@ public class GridTable extends ClientPropertyTable {
     
     public boolean generalPreferencesSaved() {
         return generalGridPreferences.hasUserPreferences();
+    }
+    
+    public GroupObjectUserPreferences getCurrentUserGridPreferences() {
+        if (currentGridPreferences.hasUserPreferences()) {
+            return currentGridPreferences.convertPreferences();
+        } 
+        return userGridPreferences.convertPreferences();
+    }
+
+    public GroupObjectUserPreferences getGeneralGridPreferences() {
+        return generalGridPreferences.convertPreferences();
     }
     
     public void resetCurrentPreferences(boolean initial) {

@@ -74,6 +74,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
+    public void execute(GRunOpenReportAction action) {
+        form.runGroupReport(null, action.openInExcel);
+    }
+
+    @Override
     public Object execute(GChooseClassAction action) {
         pauseDispatching();
         form.showClassDialog(action.baseClass, action.defaultClass, action.concreate, new ClassChosenHandler() {

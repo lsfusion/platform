@@ -41,7 +41,7 @@ public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogics
         registry.addHandler(new SetUserFiltersHandler(this));
         registry.addHandler(new CountRecordsHandler(this));
         registry.addHandler(new CalculateSumHandler(this));
-        registry.addHandler(new SingleGroupReportHandler(this));
+        registry.addHandler(new GroupReportHandler(this));
         registry.addHandler(new PasteExternalTableHandler(this));
         registry.addHandler(new ChangePageSizeHandler(this));
         registry.addHandler(new GetInitialFilterPropertyHandler(this));

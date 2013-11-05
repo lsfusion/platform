@@ -14,6 +14,7 @@ import lsfusion.client.logics.*;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.Order;
+import lsfusion.interop.form.GroupObjectUserPreferences;
 
 import javax.swing.*;
 import java.awt.*;
@@ -370,6 +371,14 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public void applyUserOrders() throws IOException {
         form.applyOrders(getUserOrders());
+    }
+    
+    public GroupObjectUserPreferences getUserGridPreferences() {
+        return grid.table.getCurrentUserGridPreferences();
+    }
+
+    public GroupObjectUserPreferences getGeneralGridPreferences() {
+        return grid.table.getGeneralGridPreferences();
     }
 
     // приходится делать именно так, так как логика отображения одного GroupObject может не совпадать с логикой Container-Component

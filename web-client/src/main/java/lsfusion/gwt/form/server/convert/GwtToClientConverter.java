@@ -4,15 +4,16 @@ import com.google.common.base.Throwables;
 import lsfusion.base.DateConverter;
 import lsfusion.gwt.base.server.spring.BusinessLogicsProvider;
 import lsfusion.gwt.form.server.FileUtils;
-import lsfusion.gwt.form.shared.view.GClassViewType;
-import lsfusion.gwt.form.shared.view.GFont;
-import lsfusion.gwt.form.shared.view.GUserInputResult;
+import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
 import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
 import lsfusion.gwt.form.shared.view.changes.dto.GFilesDTO;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FontInfo;
+import lsfusion.interop.form.ColumnUserPreferences;
+import lsfusion.interop.form.FormUserPreferences;
+import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.UserInputResult;
 import sun.util.calendar.BaseCalendar;
 import sun.util.calendar.CalendarSystem;
@@ -21,7 +22,10 @@ import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 
@@ -97,5 +101,32 @@ public class GwtToClientConverter extends ObjectConverter {
         }
 
         return outStream.toByteArray();
+    }
+    
+    @Converter(from = GFormUserPreferences.class)
+    public FormUserPreferences convertFormUserPreferences(GFormUserPreferences gprefs) {
+        java.util.List<GroupObjectUserPreferences> generalPrefs = new ArrayList<GroupObjectUserPreferences>();
+        java.util.List<GroupObjectUserPreferences> userPrefs = new ArrayList<GroupObjectUserPreferences>();
+        for (GGroupObjectUserPreferences prefs : gprefs.getGroupObjectGeneralPreferencesList()) {
+            generalPrefs.add(convertGroupObjectPreferences(prefs));
+        }
+        for (GGroupObjectUserPreferences prefs : gprefs.getGroupObjectUserPreferencesList()) {
+            userPrefs.add(convertGroupObjectPreferences(prefs));
+        }
+        return new FormUserPreferences(generalPrefs, userPrefs);    
+    }
+    
+    @Converter(from = GGroupObjectUserPreferences.class)
+    public GroupObjectUserPreferences convertGroupObjectPreferences(GGroupObjectUserPreferences gprefs) {
+        Map<String, ColumnUserPreferences> columnUPs = new HashMap<String, ColumnUserPreferences>();
+        for (Map.Entry<String, GColumnUserPreferences> entry : gprefs.getColumnUserPreferences().entrySet()) {
+            columnUPs.put(entry.getKey(), convertColumnPreferences(entry.getValue()));
+        }
+        return new GroupObjectUserPreferences(columnUPs, gprefs.getGroupObjectSID(), convertFont(gprefs.getFont()), gprefs.hasUserPreferences());        
+    }
+    
+    @Converter(from = GColumnUserPreferences.class)
+    public ColumnUserPreferences convertColumnPreferences(GColumnUserPreferences gprefs) {
+        return new ColumnUserPreferences(gprefs.userHide, gprefs.userWidth, gprefs.userOrder, gprefs.userSort, gprefs.userAscendingSort);
     }
 }

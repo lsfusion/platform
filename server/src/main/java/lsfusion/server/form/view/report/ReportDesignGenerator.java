@@ -1,5 +1,7 @@
 package lsfusion.server.form.view.report;
 
+import lsfusion.base.Pair;
+import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
@@ -117,27 +119,51 @@ public class ReportDesignGenerator {
         List<ReportDrawField> fields = new ArrayList<ReportDrawField>();
         PropertyObjectEntity backgroundProp = group.propertyBackground;
 
+        GroupObjectUserPreferences groupObjectPreferences = null;
+        if (userPreferences != null) {
+            groupObjectPreferences = userPreferences.getUsedPreferences(group.getSID());
+        }
+        
+        List<Pair<PropertyDrawView, ColumnUserPreferences>> properties = new ArrayList<Pair<PropertyDrawView, ColumnUserPreferences>>();
+        
         for (PropertyDrawView property : formView.properties) {
-            GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.groups);
-            GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
-
             ColumnUserPreferences columnUserPreferences = null;
-            if (userPreferences != null)
-                for (GroupObjectUserPreferences groupObjectPreferences : userPreferences.getGroupObjectUserPreferencesList())
-                    if (groupObjectPreferences.getColumnUserPreferences().containsKey(property.getSID()))
-                        columnUserPreferences = groupObjectPreferences.getColumnUserPreferences().get(property.getSID());
-            boolean hidden = columnUserPreferences != null && columnUserPreferences.userHide;
-
+            if (groupObjectPreferences != null && groupObjectPreferences.getColumnUserPreferences().containsKey(property.getSID())) {
+                columnUserPreferences = groupObjectPreferences.getColumnUserPreferences().get(property.getSID());
+            }
+            
+            properties.add(new Pair<PropertyDrawView, ColumnUserPreferences>(property, columnUserPreferences));
+            
+        }
+        
+        Collections.sort(properties, new Comparator<Pair<PropertyDrawView, ColumnUserPreferences>>() {
+            @Override
+            public int compare(Pair<PropertyDrawView, ColumnUserPreferences> o1, Pair<PropertyDrawView, ColumnUserPreferences> o2) {
+                if (o1.second == null || o1.second.userOrder == null)
+                    return o2.second == null || o2.second.userOrder == null ? 0 : 1;
+                else
+                    return o2.second == null || o2.second.userOrder == null ? -1 : (o1.second.userOrder - o2.second.userOrder);
+            }
+        });
+        
+        for (Pair<PropertyDrawView, ColumnUserPreferences> prop : properties) {
+            GroupObjectEntity applyGroup = prop.first.entity.propertyObject.getApplyObject(formView.entity.groups);
+            GroupObjectEntity drawGroup = prop.first.entity.getToDraw(formView.entity);
+            
+            boolean hidden = prop.second != null && prop.second.userHide != null && prop.second.userHide;
+            
             if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup) && !hidden) {
-                ReportDrawField reportField = property.getReportDrawField();
-                if (reportField != null && (backgroundProp == null || backgroundProp.property != property.entity.propertyObject.property)) {
-                    Integer widthUser = columnUserPreferences == null ? null : columnUserPreferences.userWidth;
-                    if (widthUser != null)
+                ReportDrawField reportField = prop.first.getReportDrawField();
+                if (reportField != null && (backgroundProp == null || backgroundProp.property != prop.first.entity.propertyObject.property)) {
+                    Integer widthUser = prop.second == null ? null : prop.second.userWidth;
+                    if (widthUser != null) {
                         reportField.setWidthUser(widthUser);
+                    }
                     fields.add(reportField);
                 }
             }
         }
+        
         return fields;
     }
 
@@ -177,6 +203,12 @@ public class ReportDesignGenerator {
                 addDesignField(design, reportField);
                 backgroundPropertySID = reportField.sID;
             }
+            
+            GroupObjectUserPreferences groupPreferences = userPreferences != null ? userPreferences.getUsedPreferences(group.getSID()) : null;
+            FontInfo font = groupPreferences != null ? groupPreferences.fontInfo : null;
+            if (font == null) {
+                font = formView.get(group).getGrid().design.getFont();
+            }
 
             if (!hiddenGroup) {
                 boolean detail = hierarchy.isLeaf(node) && (group == groups.get(groups.size()-1));
@@ -212,6 +244,13 @@ public class ReportDesignGenerator {
                 } else {
                     groupCellStyle = DesignStyles.getGroupStyle(groups.indexOf(group), groupsCnt, minGroupLevel, treeGroupLevel, treeGroupLevel);
                 }
+                
+                if (font != null) {
+                    groupCellStyle.setFontSize(font.fontSize);
+                    groupCellStyle.setBold(font.isBold());
+                    groupCellStyle.setItalic(font.isItalic());
+                }
+                
                 design.addStyle(groupCellStyle);
                 JRDesignStyle groupCaptionStyle = groupCellStyle;
                 if (backgroundPropertySID != null) {

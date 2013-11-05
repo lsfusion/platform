@@ -125,7 +125,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
                     addClickHandler(new ClickHandler() {
                         @Override
                         public void onClick(ClickEvent event) {
-                            formController.runSingleGroupReport(groupObject.ID, false);
+                            formController.runGroupReport(groupObject.ID, false);
                         }
                     });
                 }
@@ -139,7 +139,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
                     addClickHandler(new ClickHandler() {
                         @Override
                         public void onClick(ClickEvent event) {
-                            formController.runSingleGroupReport(groupObject.ID, true);
+                            formController.runGroupReport(groupObject.ID, true);
                         }
                     });
                 }
@@ -428,6 +428,14 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     
     public void applyUserOrders() {
         formController.applyOrders(getUserOrders());    
+    }
+
+    public GGroupObjectUserPreferences getUserGridPreferences() {
+        return grid.getTable().getCurrentUserGridPreferences();
+    }
+
+    public GGroupObjectUserPreferences getGeneralGridPreferences() {
+        return grid.getTable().getGeneralGridPreferences();
     }
 
     @Override

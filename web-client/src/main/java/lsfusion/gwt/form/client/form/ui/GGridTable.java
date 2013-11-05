@@ -780,6 +780,17 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         return generalGridPreferences.hasUserPreferences();
     }
 
+    public GGroupObjectUserPreferences getCurrentUserGridPreferences() {
+        if (currentGridPreferences.hasUserPreferences()) {
+            return currentGridPreferences.convertPreferences();
+        }
+        return userGridPreferences.convertPreferences();
+    }
+
+    public GGroupObjectUserPreferences getGeneralGridPreferences() {
+        return generalGridPreferences.convertPreferences();
+    }
+
     public void resetCurrentPreferences(boolean initial) {
         currentGridPreferences = new GGridUserPreferences(userGridPreferences.hasUserPreferences() ? userGridPreferences : generalGridPreferences);
         

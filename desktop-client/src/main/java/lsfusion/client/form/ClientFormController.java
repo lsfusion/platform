@@ -1096,12 +1096,14 @@ public class ClientFormController implements AsyncListener {
 
     public FormUserPreferences getUserPreferences() {
         List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
+        List<GroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<GroupObjectUserPreferences>();
         for (GroupObjectController controller : controllers.values()) {
             if (controller.getGroupObject() != null) {
-                groupObjectUserPreferencesList.add(controller.grid.table.getCurrentPreferences().convertPreferences());
+                groupObjectUserPreferencesList.add(controller.getUserGridPreferences());
+                groupObjectGeneralPreferencesList.add(controller.getGeneralGridPreferences());
             }
         }
-        return new FormUserPreferences(groupObjectUserPreferencesList, null);
+        return new FormUserPreferences(groupObjectGeneralPreferencesList, groupObjectUserPreferencesList);
     }
 
     public void hideForm() {
