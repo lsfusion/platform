@@ -45,10 +45,14 @@ public class CaptureKeyEventsDispatcher implements KeyEventDispatcher, FocusList
         capture = newCapture;
     }
 
+    public void releaseCapture() {
+        setCapture(null);
+    }
+
     @Override
     public void focusGained(FocusEvent e) {
         if (e.getSource() == capture) {
-            setCapture(null);
+            releaseCapture();
         }
     }
 
@@ -58,7 +62,11 @@ public class CaptureKeyEventsDispatcher implements KeyEventDispatcher, FocusList
     @Override
     public boolean dispatchKeyEvent(KeyEvent e) {
         if (capture != null) {
-            e.setSource(capture);
+            if (!capture.isDisplayable()) {
+                releaseCapture();
+            } else {
+                e.setSource(capture);
+            }
         }
         return false;
     }

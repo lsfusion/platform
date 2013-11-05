@@ -174,7 +174,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         ClassViewType newClassView = fc.classViews.get(groupObject);
         if (newClassView != null && classView != newClassView) {
             setClassView(newClassView);
-            requestFocusInWindow();
+//            requestFocusInWindow();
         }
 
         // Затем подгружаем новые данные
@@ -201,6 +201,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void requestFocusInWindow() {
+        //todo: remove later...
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (classView == ClassViewType.GRID) {
