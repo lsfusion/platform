@@ -90,10 +90,17 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return wheres.length==0 || (where instanceof AndWhere && (BaseUtils.hashEquals(this, where) || (substractWheres(((AndWhere)where).wheres,wheres,instancer)!=null)));
     }
 
-    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
-        GroupJoinsWheres result = new GroupJoinsWheres(TRUE, noWhere);
-        for(Where where : wheres)
-            result = result.and(where.groupJoinsWheres(keepStat, keyStat, orderTop, noWhere));
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+        GroupJoinsWheres result = new GroupJoinsWheres(TRUE, type);
+        for(int i=0;i<wheres.length;i++) {
+            // приходится и промежуточные группировать, так как при большом количестве операндов, complexity может до миллиона дорасти
+            if(result.size() > Settings.get().getLimitWhereJoinsCount() || result.getComplexity(true) > Settings.get().getLimitWhereJoinsComplexity()) {
+                OrObjectWhere[] procWheres = newArray(i + 1);
+                System.arraycopy(wheres, 0, procWheres, 0, i+1);
+                result = compactHeuristic(result, type, keepStat, keyStat, toWhere(procWheres));
+            }
+            result = result.and(wheres[i].groupJoinsWheres(keepStat, keyStat, orderTop, type));
+        }
         return result;
     }
     public KeyEquals calculateGroupKeyEquals() {
@@ -104,14 +111,17 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     }
     public MeanClassWheres calculateGroupMeanClassWheres(boolean useNots) {
         MeanClassWheres result = new MeanClassWheres(MeanClassWhere.TRUE, TRUE);
-        for(Where where : wheres) {
+        for(int i=0;i<wheres.length;i++) {
             if(result.size() > Settings.get().getLimitClassWhereCount() || result.getComplexity(true) > Settings.get().getLimitClassWhereComplexity()) {
                 if(useNots)
                     return groupMeanClassWheres(false);
-                else // приходится и промежуточные группировать, так как при большом количестве операндов, complexity может до миллиона дорасти
-                    result = new MeanClassWheres(new MeanClassWhere(result.getClassWhere()), this);
+                else { // приходится и промежуточные группировать, так как при большом количестве операндов, complexity может до миллиона дорасти
+                    OrObjectWhere[] procWheres = newArray(i + 1);
+                    System.arraycopy(wheres, 0, procWheres, 0, i+1);
+                    result = compactHeuristic(result, toWhere(procWheres));
+                }
             }
-            result = result.and(where.groupMeanClassWheres(useNots));
+            result = result.and(wheres[i].groupMeanClassWheres(useNots));
         }
         return result;
     }

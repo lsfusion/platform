@@ -4,6 +4,7 @@ import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.session.Modifier;
 
 public interface Updated {
 
@@ -11,7 +12,7 @@ public interface Updated {
     boolean classUpdated(ImSet<GroupObjectInstance> gridGroups);
     // изменилось что-то использующее в getExpr конкретные value (один из верхних объектов)
     boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups);
-    boolean dataUpdated(FunctionSet<CalcProperty> changedProps);
+    boolean dataUpdated(ChangedData changedProps, Modifier modifier);
     
     void fillProperties(MSet<CalcProperty> properties);
 

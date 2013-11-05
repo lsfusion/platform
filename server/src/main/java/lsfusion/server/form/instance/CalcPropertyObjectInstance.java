@@ -1,12 +1,14 @@
 package lsfusion.server.form.instance;
 
-import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyValueImplement;
@@ -41,14 +43,25 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         return property.getValueClass();
     }
 
-    public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier) {
+    private Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, WhereBuilder whereBuilder) {
 
         ImMap<P, Expr> joinImplement = mapping.mapValues(new GetValue<Expr, PropertyObjectInterfaceInstance>() {
             public Expr getMapValue(PropertyObjectInterfaceInstance value) {
                 return value.getExpr(classSource, modifier);
             }});
-        return property.getExpr(joinImplement, modifier);
+        return property.getExpr(joinImplement, modifier, whereBuilder);
     }
+
+    public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier) {
+        return getExpr(classSource, modifier, null);        
+    }
+    
+    public boolean isReallyChanged(Modifier modifier) {
+        ImRevMap<ObjectInstance,KeyExpr> keys = KeyExpr.getMapKeys(getObjectInstances().toSet());
+        WhereBuilder changedWhere = new WhereBuilder();
+        getExpr(keys, modifier, changedWhere);
+        return !changedWhere.toWhere().isFalse();
+    } 
 
     // проверяет на то что изменился верхний объект
     public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) {
@@ -70,7 +83,13 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         properties.add(property);
     }
 
-    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {
-        return changedProps.contains(property);
+    public boolean dataUpdated(ChangedData changedProps, Modifier modifier) {
+        if(!changedProps.props.contains(property))
+            return false;
+        
+        if(changedProps.wasRestart)
+            return true;
+        
+        return isReallyChanged(modifier); // cache пока не используем так как за многим надо следить
     }
 }

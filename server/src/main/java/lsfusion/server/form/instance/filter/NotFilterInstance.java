@@ -1,14 +1,11 @@
 package lsfusion.server.form.instance.filter;
 
-import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.GroupObjectInstance;
-import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.Modifier;
 
@@ -37,8 +34,8 @@ public class NotFilterInstance extends FilterInstance {
         return filter.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {
-        return filter.dataUpdated(changedProps);
+    public boolean dataUpdated(ChangedData changedProps, Modifier modifier) {
+        return filter.dataUpdated(changedProps, modifier);
     }
 
     public void fillProperties(MSet<CalcProperty> properties) {

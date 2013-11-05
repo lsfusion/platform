@@ -39,14 +39,14 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
 
     public abstract class NotNull extends NotNullExpr.NotNull {
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
             WhereJoin join = InnerExpr.this.getInnerJoin();
 
             PropStat statValue = InnerExpr.this.getStatValue(keyStat);
             if(statValue.notNull!=null && statValue.notNull.less(join.getStatKeys(keyStat).rows))
                 join = new ExprStatJoin(InnerExpr.this, statValue.notNull); // сама статистика тут не важна, важно наличие join'а
 
-            return new GroupJoinsWheres(join, this, noWhere);
+            return new GroupJoinsWheres(join, this, type);
         }
     }
 

@@ -85,11 +85,11 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return new ExprEqualsJoin(operator1, operator2);
         return null;        
     }
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         WhereJoin exprJoin = groupJoinsWheres(orderTop, false);
         if(exprJoin!=null)
-            return new GroupJoinsWheres(exprJoin, this, noWhere);
-        return getOperandWhere().groupJoinsWheres(keepStat, keyStat, orderTop, noWhere).and(new GroupJoinsWheres(this, noWhere));
+            return new GroupJoinsWheres(exprJoin, this, type);
+        return getOperandWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(new GroupJoinsWheres(this, type));
     }
 
     @IdentityLazy

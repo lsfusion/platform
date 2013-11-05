@@ -78,7 +78,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironment {
+public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironment implements CacheReallyChanged {
 
     public final LogicsInstance logicsInstance;
 
@@ -1053,6 +1053,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     protected Map<PropertyDrawInstance, Boolean> isInInterface = new HashMap<PropertyDrawInstance, Boolean>();
     protected Map<PropertyDrawInstance, Boolean> isShown = new HashMap<PropertyDrawInstance, Boolean>();
 
+    // кэш на изменение
+    protected Map<CalcPropertyObjectInstance, Boolean> isReallyChanged = new HashMap<CalcPropertyObjectInstance, Boolean>();
+    public Boolean getReallyChanged(CalcPropertyObjectInstance instance) {
+        return isReallyChanged.get(instance);
+    }
+    public Boolean putReallyChanged(CalcPropertyObjectInstance instance, boolean value) {
+        return isReallyChanged.put(instance, value);
+    }
+
     // проверки видимости (для оптимизации pageframe'ов)
     protected Set<PropertyReaderInstance> pendingHidden = SetFact.mAddRemoveSet();
 
@@ -1112,7 +1121,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return updated.objectUpdated(groupObjects);
     }
 
-    private boolean propertyUpdated(CalcPropertyObjectInstance updated, ImSet<GroupObjectInstance> groupObjects, FunctionSet<CalcProperty> changedProps) {
+    private boolean propertyUpdated(CalcPropertyObjectInstance updated, ImSet<GroupObjectInstance> groupObjects, ChangedData changedProps) {
         return dataUpdated(updated, changedProps)
                 || groupUpdated(groupObjects, UPDATED_KEYS)
                 || objectUpdated(updated, groupObjects);
@@ -1125,8 +1134,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return false;
     }
 
-    private boolean dataUpdated(Updated updated, FunctionSet<CalcProperty> changedProps) {
-        return updated.dataUpdated(changedProps);
+    private boolean dataUpdated(Updated updated, ChangedData changedProps) {
+        return updated.dataUpdated(changedProps, getModifier());
     }
 
     void applyFilters() {
@@ -1171,10 +1180,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private void updateData(Result<FunctionSet<CalcProperty>> mChangedProps) throws SQLException {
+    private void updateData(Result<ChangedData> mChangedProps) throws SQLException {
         if (dataChanged) {
             session.executeSessionEvents(this);
-            mChangedProps.set(BaseUtils.merge(mChangedProps.result, CalcProperty.getDependsOnSet(session.update(this))));
+            
+            ChangedData update = session.update(this);
+            if(update.wasRestart) // очищаем кэш при рестарте
+                isReallyChanged.clear();
+            mChangedProps.set(mChangedProps.result.merge(update));
             dataChanged = false;
         }
 
@@ -1194,7 +1207,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         QueryEnvironment queryEnv = getQueryEnv();
 
         // если изменились данные, применяем изменения
-        Result<FunctionSet<CalcProperty>> mChangedProps = new Result<FunctionSet<CalcProperty>>(SetFact.<CalcProperty>EMPTY());  // так как могут еще измениться свойства созданные при помощи операторов форм
+        Result<ChangedData> mChangedProps = new Result<ChangedData>(ChangedData.EMPTY);  // так как могут еще измениться свойства созданные при помощи операторов форм
         updateData(mChangedProps);
 
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
@@ -1228,7 +1241,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return result.immutable();
     }
 
-    private ImMap<ShowIfReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> readShowIfs(Map<PropertyDrawInstance, Boolean> newIsShown, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids, FunctionSet<CalcProperty> changedProps) throws SQLException {
+    private ImMap<ShowIfReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> readShowIfs(Map<PropertyDrawInstance, Boolean> newIsShown, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids, ChangedData changedProps) throws SQLException {
         final MOrderExclMap<ShowIfReaderInstance, ImSet<GroupObjectInstance>> mShowIfs = MapFact.mOrderExclMap();
         for (PropertyDrawInstance<?> drawProperty : properties) {
             ClassViewType curClassView = drawProperty.getCurClassView();
@@ -1253,7 +1266,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             rowColumnGrids.put(drawProperty, propRowColumnGrids);
             newIsShown.put(drawProperty, newInInterface);
 
-            Boolean oldInInterface = isInInterface.get(drawProperty);
+            Boolean oldInInterface = isInInterface.put(drawProperty, newInInterface);
             if (newInInterface != null && drawProperty.propertyShowIf != null) {
                 boolean read = refresh || !newInInterface.equals(oldInInterface) // если изменилось представление
                         || groupUpdated(drawProperty.getColumnGroupObjects(), UPDATED_CLASSVIEW); // изменились группы в колонки (так как отбираются только GRID)
@@ -1293,7 +1306,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return immShowIfs;
     }
 
-    private void fillChangedDrawProps(MFormChanges result, FunctionSet<CalcProperty> changedProps) throws SQLException {
+    private void fillChangedDrawProps(MFormChanges result, ChangedData changedProps) throws SQLException {
         //1е чтение - читаем showIfs
         HashMap<PropertyDrawInstance, Boolean> newIsShown = new HashMap<PropertyDrawInstance, Boolean>();
         HashMap<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids = new HashMap<PropertyDrawInstance, ImSet<GroupObjectInstance>>();
@@ -1376,7 +1389,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private void fillChangedReader(CalcPropertyObjectInstance<?> drawProperty, PropertyReaderInstance propertyReader, ImSet<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean read, MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> readProperties, FunctionSet<CalcProperty> changedProps) {
+    private void fillChangedReader(CalcPropertyObjectInstance<?> drawProperty, PropertyReaderInstance propertyReader, ImSet<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean read, MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> readProperties, ChangedData changedProps) {
         if (drawProperty != null && (read || (!hidden && pendingHidden.contains(propertyReader)) || propertyUpdated(drawProperty, columnGroupGrids, changedProps))) {
             if (hidden)
                 pendingHidden.add(propertyReader);

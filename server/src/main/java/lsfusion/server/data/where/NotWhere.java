@@ -75,11 +75,11 @@ public class NotWhere extends ObjectWhere {
         where.fillDataJoinWheres(joins, andWhere);
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         WhereJoin exprJoin;
         if(where instanceof BinaryWhere && (exprJoin=((BinaryWhere)where).groupJoinsWheres(orderTop, true))!=null)
-            return new GroupJoinsWheres(exprJoin, this, noWhere);
-        return new GroupJoinsWheres(this, noWhere);
+            return new GroupJoinsWheres(exprJoin, this, type);
+        return new GroupJoinsWheres(this, type);
     }
 
     public MeanClassWheres calculateMeanClassWheres(boolean useNots) {

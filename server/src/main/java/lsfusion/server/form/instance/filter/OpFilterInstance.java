@@ -1,17 +1,15 @@
 package lsfusion.server.form.instance.filter;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.form.instance.CustomObjectInstance;
-import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.GroupObjectInstance;
+import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyValueImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.session.Modifier;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -42,8 +40,8 @@ public abstract class OpFilterInstance extends FilterInstance {
         return op1.objectUpdated(gridGroups) || op2.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {
-        return op1.dataUpdated(changedProps) || op2.dataUpdated(changedProps);
+    public boolean dataUpdated(ChangedData changedProps, Modifier modifier) {
+        return op1.dataUpdated(changedProps, modifier) || op2.dataUpdated(changedProps, modifier);
     }
 
     public void fillProperties(MSet<CalcProperty> properties) {

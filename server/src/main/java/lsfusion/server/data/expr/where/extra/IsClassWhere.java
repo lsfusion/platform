@@ -138,13 +138,13 @@ public class IsClassWhere extends DataWhere {
         return ((ObjectValueClassSet)classes).getBaseClass();
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         if(classes instanceof ObjectValueClassSet) { // "модифицируем" статистику classExpr'а чтобы "уточнить статистику" по объектам
             // тут правда есть нюанс, что статистика по классам считается одним механизмом, а по join'ами другим
             Stat stat = classExpr.getStatValue().mult(new Stat(((ObjectValueClassSet) classes).getClassCount())).div(classExpr.getInnerJoin().getStatKeys(keyStat).rows);
-            return new GroupJoinsWheres(new ExprStatJoin(classExpr, stat), this, noWhere);
+            return new GroupJoinsWheres(new ExprStatJoin(classExpr, stat), this, type);
         }
-        return expr.getWhere().groupJoinsWheres(keepStat, keyStat, orderTop, noWhere).and(new GroupJoinsWheres(this, noWhere));
+        return expr.getWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(new GroupJoinsWheres(this, type));
     }
     public ClassExprWhere calculateClassWhere() {
         return expr.getClassWhere(inconsistent ? getBaseClass().getUpSet() : classes).and(expr.getWhere().getClassWhere());

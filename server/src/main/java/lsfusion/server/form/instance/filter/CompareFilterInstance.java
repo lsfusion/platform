@@ -63,8 +63,8 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {
-        return super.dataUpdated(changedProps) || value.dataUpdated(changedProps);
+    public boolean dataUpdated(ChangedData changedProps, Modifier modifier) {
+        return super.dataUpdated(changedProps, modifier) || value.dataUpdated(changedProps, modifier);
     }
 
     @Override

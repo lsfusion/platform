@@ -765,11 +765,11 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
-        MMap<WhereJoins, GroupJoinsWheres.Value> result = MapFact.mMap(GroupJoinsWheres.getAddValue(noWhere));
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+        MMap<WhereJoins, GroupJoinsWheres.Value> result = MapFact.mMap(GroupJoinsWheres.getAddValue(type.noWhere()));
         for(Where where : wheres)
-            result.addAll(where.groupJoinsWheres(keepStat, keyStat, orderTop, noWhere));
-        return new GroupJoinsWheres(result.immutable(), noWhere);
+            result.addAll(where.groupJoinsWheres(keepStat, keyStat, orderTop, type));
+        return new GroupJoinsWheres(result.immutable(), type);
     }
     public KeyEquals calculateGroupKeyEquals() {
         MMap<KeyEqual, Where> result = MapFact.mMap(AbstractWhere.<KeyEqual>addOr());

@@ -527,7 +527,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     
     @Message("message.form.update.group.keys")
     @ThisMessage
-    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<FunctionSet<CalcProperty>> changedProps) throws SQLException {
+    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<ChangedData> changedProps) throws SQLException {
         if (refresh || (updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.exclAdd(this, curClassView);
         }
@@ -578,7 +578,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
         if (!updateFilters) // изменились данные по фильтрам
             for (FilterInstance filt : filters)
-                if (filt.dataUpdated(changedProps.result)) {
+                if (filt.dataUpdated(changedProps.result, modifier)) {
                     updateFilters = true;
                     break;
                 }
@@ -594,7 +594,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
             environmentIncrement.add(filterProperty.property, new PropertyChange<ClassPropertyInterface>(filterProperty.mapping.join(mapKeys), ValueExpr.TRUE, getWhere(mapKeys, modifier)));
 
-            changedProps.set(BaseUtils.merge(changedProps.result, CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)filterProperty.property))));
+            changedProps.set(changedProps.result.merge(new ChangedData(CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)filterProperty.property)), false)));
         }
 
         boolean updateOrders = false;
@@ -635,7 +635,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 }
         if (!updateOrders && (!updateFilters || orderProperty!=null)) // изменились данные по порядкам
             for (OrderInstance order : orders.keyIt())
-                if (order.dataUpdated(changedProps.result)) {
+                if (order.dataUpdated(changedProps.result, modifier)) {
                     updateOrders = true;
                     break;
                 }
@@ -658,7 +658,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             }
             environmentIncrement.add(orderProperty.property, change);
 
-            changedProps.set(BaseUtils.merge(changedProps.result, CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)orderProperty.property))));
+            changedProps.set(changedProps.result.merge(new ChangedData(CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty) orderProperty.property)), false)));
         }
 
         boolean updateKeys = updateFilters || updateOrders;

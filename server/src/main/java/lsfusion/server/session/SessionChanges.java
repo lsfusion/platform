@@ -4,6 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
@@ -27,7 +28,7 @@ public interface SessionChanges {
     public DataObject getDataObject(ValueClass valueClass, Object value) throws SQLException;
 
     // узнает список изменений произошедших без него
-    public ImSet<CalcProperty> update(FormInstance<?> toUpdate) throws SQLException;
+    public ChangedData update(FormInstance<?> toUpdate) throws SQLException;
 
     public String applyMessage(BusinessLogics<?> BL) throws SQLException;
 }

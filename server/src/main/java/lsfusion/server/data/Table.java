@@ -610,8 +610,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return exprFJ + " IS NOT NULL";
             }
 
-            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<lsfusion.server.data.expr.Expr> orderTop, boolean noWhere) {
-                return new GroupJoinsWheres(Join.this, this, noWhere);
+            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<lsfusion.server.data.expr.Expr> orderTop, GroupJoinsWheres.Type type) {
+                return new GroupJoinsWheres(Join.this, this, type);
             }
             public ClassExprWhere calculateClassWhere() {
                 return classes.mapClasses(joins).and(getJoinsWhere().getClassWhere());

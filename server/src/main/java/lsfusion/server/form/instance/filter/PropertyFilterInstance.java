@@ -1,6 +1,5 @@
 package lsfusion.server.form.instance.filter;
 
-import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -11,6 +10,7 @@ import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.session.Modifier;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -43,8 +43,8 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         return property.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {
-        return property.dataUpdated(changedProps);
+    public boolean dataUpdated(ChangedData changedProps, Modifier modifier) {
+        return property.dataUpdated(changedProps, modifier);
     }
 
     public void fillProperties(MSet<CalcProperty> properties) {

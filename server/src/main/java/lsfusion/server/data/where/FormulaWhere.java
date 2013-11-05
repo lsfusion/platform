@@ -15,6 +15,7 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.StatKeysJoin;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
@@ -122,20 +123,30 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return checkTrue;
     }
 
-    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere);
+    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type);
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
-        GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat, orderTop, noWhere);
+    protected static <K extends BaseExpr> GroupJoinsWheres compactHeuristic(GroupJoinsWheres result, GroupJoinsWheres.Type type, ImSet<K> keepStat, KeyStat keyStat, Where where) {
+        if(type.isStat())
+            return new GroupJoinsWheres(new StatKeysJoin<K>(result.getStatKeys(keepStat, keyStat)), where, type);
+        return result.compileMeans(keepStat, keyStat);        
+    }   
+    
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+        GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat, orderTop, type);
         if(result.size() > Settings.get().getLimitWhereJoinsCount() || result.getComplexity(true) > Settings.get().getLimitWhereJoinsComplexity())
-            result = result.compileMeans(keepStat, keyStat);
+            result = compactHeuristic(result, type, keepStat, keyStat, this);
         return result;
+    }
+
+    protected static MeanClassWheres compactHeuristic(MeanClassWheres result, Where where) {
+        return new MeanClassWheres(new MeanClassWhere(result.getClassWhere()), where);
     }
 
     protected abstract MeanClassWheres calculateGroupMeanClassWheres(boolean useNots);
     public MeanClassWheres calculateMeanClassWheres(boolean useNots) {
         MeanClassWheres result = calculateGroupMeanClassWheres(useNots);
         if(!useNots && (result.size() > Settings.get().getLimitClassWhereCount() || result.getComplexity(true) > Settings.get().getLimitClassWhereComplexity()))
-            result = new MeanClassWheres(new MeanClassWhere(result.getClassWhere()), this);
+            result = compactHeuristic(result, this);
         return result;
     }
 

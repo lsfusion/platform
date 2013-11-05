@@ -148,12 +148,12 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
         return where;
     }
 
-    public <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(ImSet<K> keepStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
+    public <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(ImSet<K> keepStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         MCol<GroupJoinsWhere> result = ListFact.mCol();
         for(int i=0,size=size();i<size;i++) {
             KeyEqual keyEqual = getKey(i); // keyEqual закидывается в статистику так как keepStat не всегда translate'ся
             Where where = getValue(i);
-            where.groupJoinsWheres(keepStat, keyEqual.getKeyStat(where), orderTop, noWhere).compileMeans().fillList(keyEqual, result);
+            where.groupJoinsWheres(keepStat, keyEqual.getKeyStat(where), orderTop, type).compileMeans().fillList(keyEqual, result);
         }
         return result.immutableCol();
     }
@@ -192,7 +192,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
     }
 
     public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop) {
-        ImCol<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, orderTop, false);
+        ImCol<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, orderTop, GroupJoinsWheres.Type.WHEREJOINS);
         if(!tryExclusive || whereJoins.size()<=1 || whereJoins.size() > Settings.get().getLimitExclusiveCount())
             return new Pair<ImCol<GroupJoinsWhere>, Boolean>(whereJoins, whereJoins.size()<=1);
         ImList<GroupJoinsWhere> sortedWhereJoins = GroupWhere.sort(whereJoins);
@@ -217,7 +217,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
     }
 
     public <K extends BaseExpr> ImCol<GroupStatWhere<K>> getStatJoins(final ImSet<K> keepStat, boolean noWhere) {
-        return getWhereJoins(keepStat, SetFact.<Expr>EMPTYORDER(), noWhere).mapColValues(new GetValue<GroupStatWhere<K>, GroupJoinsWhere>() {
+        return getWhereJoins(keepStat, SetFact.<Expr>EMPTYORDER(), noWhere ? GroupJoinsWheres.Type.STAT_ONLY : GroupJoinsWheres.Type.STAT_WITH_WHERE).mapColValues(new GetValue<GroupStatWhere<K>, GroupJoinsWhere>() {
             public GroupStatWhere<K> getMapValue(GroupJoinsWhere whereJoin) {
                 return new GroupStatWhere<K>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat), whereJoin.where);
             }

@@ -42,7 +42,7 @@ public class NotNullKeyExpr extends ParamExpr {
             return ClassExprWhere.TRUE;
         }
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
             throw new RuntimeException("not supported");
         }
     }

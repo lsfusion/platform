@@ -91,7 +91,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     // группировки в ДНФ, protected по сути
     KeyEquals getKeyEquals();
-    <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere);
+    <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type);
     MeanClassWheres groupMeanClassWheres(boolean useNots);
 
     abstract public ClassExprWhere getClassWhere();

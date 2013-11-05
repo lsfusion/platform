@@ -28,6 +28,7 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.navigator.ComputerController;
@@ -924,16 +925,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
 
     // узнает список изменений произошедших без него
-    public ImSet<CalcProperty> update(FormInstance<?> form) throws SQLException {
+    public ChangedData update(FormInstance<?> form) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
         assert activeForms.containsKey(form);
 
         UpdateChanges incrementChange = incrementChanges.get(form);
+        boolean wasRestart = false;
         if(incrementChange!=null) // если не было restart
             //    to -> from или from = changes, to = пустому
             updateChanges.get(form).add(incrementChange);
             //    возвращаем to
         else { // иначе
+            wasRestart = true;
             incrementChange = appliedChanges.remove(form);
             if(incrementChange==null) // совсем не было
                 incrementChange = new UpdateChanges();
@@ -945,7 +948,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
         incrementChanges.put(form,new UpdateChanges());
 
-        return incrementChange.properties;
+        return new ChangedData(CalcProperty.getDependsOnSet(incrementChange.properties), wasRestart);
     }
 
     public String applyMessage(BusinessLogics<?> BL) throws SQLException {

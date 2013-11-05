@@ -1,6 +1,5 @@
 package lsfusion.server.form.instance;
 
-import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -11,7 +10,6 @@ import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.SessionChanges;
 
 import java.lang.ref.WeakReference;
@@ -103,8 +101,8 @@ public class CustomObjectInstance extends ObjectInstance {
         }
     }
 
-    public boolean classChanged(FunctionSet<CalcProperty> changedProps) {
-        return changedProps.contains(gridClass.getProperty());
+    public boolean classChanged(ChangedData changedProps) {
+        return changedProps.props.contains(gridClass.getProperty());
     }
 
     public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {

@@ -12,6 +12,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.PackInterface;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.where.DNFWheres;
@@ -24,6 +25,18 @@ import java.util.Map;
 // используется только в groupJoinWheres, по сути protected класс
 public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Value, GroupJoinsWheres> implements PackInterface<GroupJoinsWheres> {
 
+    public static enum Type {
+        WHEREJOINS, STAT_WITH_WHERE, STAT_ONLY;
+        
+        public boolean noWhere() {
+            return this == STAT_ONLY;            
+        }
+        
+        public boolean isStat() {
+            return this != WHEREJOINS;
+        }
+    }
+    
     private static class WriteMap extends SymmAddValue<WhereJoins, Value> {
         private final boolean noWhere;
 
@@ -58,8 +71,8 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             this(MapFact.<WhereJoin, Where>EMPTY(), where);
         }
 
-        public Value(WhereJoin join, ObjectWhere where) {
-            this(MapFact.<WhereJoin, Where>singleton(join, (Where) where), where);
+        public Value(WhereJoin join, Where where) {
+            this(MapFact.<WhereJoin, Where>singleton(join, where), where);
         }
 
         public Value(ImMap<WhereJoin, Where> upWheres, Where where) {
@@ -100,6 +113,10 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     public GroupJoinsWheres(ImMap<WhereJoins, Value> map, boolean noWhere) {
         super(map);
         this.noWhere = noWhere;
+    }
+
+    public GroupJoinsWheres(ImMap<WhereJoins, Value> map, Type type) {
+        this(map, type.noWhere());
     }
 
     // keepStat нужен чтобы можно было гарантировать что не образуется case с недостающим WhereJoin существенно влияющим на статистику
@@ -145,19 +162,26 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             col.add(new GroupJoinsWhere(keyEqual, getKey(i), value.upWheres, value.where));
         }
     }
+    
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> keepStat, KeyStat keyStat) {
+        StatKeys<K> result = new StatKeys<K>(keepStat);
+        for(WhereJoins whereJoins : keyIt())
+            result = result.or(whereJoins.getStatKeys(keepStat, keyStat));
+        return result;    
+    }
 
     private final boolean noWhere;
-    private GroupJoinsWheres(WhereJoins inner, Value where, boolean noWhere) {
+    private GroupJoinsWheres(WhereJoins inner, Value where, Type type) {
         super(inner, where);
-        this.noWhere = noWhere;
+        this.noWhere = type.noWhere();
     }
 
-    public GroupJoinsWheres(Where where, boolean noWhere) {
-        this(WhereJoins.EMPTY, new Value(where), noWhere);
+    public GroupJoinsWheres(Where where, Type type) {
+        this(WhereJoins.EMPTY, new Value(where), type);
     }
 
-    public GroupJoinsWheres(WhereJoin join, ObjectWhere where, boolean noWhere) {
-        this(new WhereJoins(join), new Value(join, where), noWhere);
+    public GroupJoinsWheres(WhereJoin join, Where where, Type type) {
+        this(new WhereJoins(join), new Value(join, where), type);
     }
 
     public GroupJoinsWheres pack() {

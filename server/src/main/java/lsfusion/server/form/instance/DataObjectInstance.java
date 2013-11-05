@@ -1,7 +1,6 @@
 package lsfusion.server.form.instance;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.DataClass;
@@ -10,7 +9,6 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.SessionChanges;
 
 import java.sql.SQLException;
@@ -48,7 +46,7 @@ public class DataObjectInstance extends ObjectInstance {
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
     }
 
-    public boolean classChanged(FunctionSet<CalcProperty> changedProps) {
+    public boolean classChanged(ChangedData changedProps) {
         return false;
     }
 

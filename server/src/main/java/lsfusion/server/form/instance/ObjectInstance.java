@@ -1,6 +1,5 @@
 package lsfusion.server.form.instance;
 
-import lsfusion.base.FunctionSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -67,7 +66,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException;
 
-    public abstract boolean classChanged(FunctionSet<CalcProperty> changedProps);
+    public abstract boolean classChanged(ChangedData changedProps);
 
     public abstract Type getType();
 
@@ -76,7 +75,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     }
 
     public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) { return !objectInGrid(gridGroups) && (updated & UPDATED_OBJECT)!=0; }
-    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) { return false; }
+    public boolean dataUpdated(ChangedData changedProps, Modifier modifier) { return false; }
     public void fillProperties(MSet<CalcProperty> properties) { }
 
     protected Expr getExpr() {
