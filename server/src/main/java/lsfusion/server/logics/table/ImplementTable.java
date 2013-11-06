@@ -167,7 +167,7 @@ public class ImplementTable extends GlobalTable {
                     checks.add(item);
                     include(item.parents,relation==COMPARE_UP,checks);
                 }
-                if(relation==COMPARE_UP || relation==COMPARE_EQUAL) toAdd = false;
+                if(relation==COMPARE_UP) toAdd = false;
             }
         }
 
