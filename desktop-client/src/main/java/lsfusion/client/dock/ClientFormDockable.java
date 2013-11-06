@@ -70,7 +70,7 @@ public class ClientFormDockable extends ClientDockable {
     @Override
     public void onShowingChanged(boolean oldShowing, boolean newShowing) {
         if (clientForm != null) {
-            clientForm.changeShowing(newShowing);
+            clientForm.setSelected(newShowing);
         }
     }
 }

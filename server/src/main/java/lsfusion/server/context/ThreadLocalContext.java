@@ -8,15 +8,14 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
-import lsfusion.server.form.instance.DialogInstance;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
-import lsfusion.server.remote.RemoteDialog;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 
@@ -69,20 +68,16 @@ public class ThreadLocalContext {
         return get().getFormInstance();
     }
 
-    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps) throws SQLException {
-        return get().createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, pullProps);
+    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException {
+        return get().createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
     }
 
     public static RemoteForm createRemoteForm(FormInstance formInstance) {
         return get().createRemoteForm(formInstance);
     }
 
-    public static RemoteDialog createRemoteDialog(DialogInstance dialogInstance) {
-        return get().createRemoteDialog(dialogInstance);
-    }
-
-    public static ObjectValue requestUserObject(ExecutionContext.RequestDialog requestDialog) throws SQLException {
-        return get().requestUserObject(requestDialog);
+    public static ObjectValue requestUserObject(DialogRequest dialogRequest) throws SQLException {
+        return get().requestUserObject(dialogRequest);
     }
 
     public static ObjectValue requestUserData(DataClass dataClass, Object oldValue) {

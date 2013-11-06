@@ -11,7 +11,6 @@ public class RemoteContextAspect {
     private static final String executions =
             "(execution(* lsfusion.interop.RemoteLogicsInterface.*(..))" +
                     " || execution(* lsfusion.interop.form.RemoteFormInterface.*(..))" +
-                    " || execution(* lsfusion.interop.form.RemoteDialogInterface.*(..))" +
                     " || execution(* lsfusion.interop.navigator.RemoteNavigatorInterface.*(..))" +
                     " || execution(* lsfusion.interop.remote.PendingRemoteInterface.getRemoteActionMessage(..)))";
 

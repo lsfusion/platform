@@ -10,16 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class RemoteFormProxy<T extends RemoteFormInterface>
-        extends RemoteObjectProxy<T>
-        implements RemoteFormInterface {
+public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> implements RemoteFormInterface {
 
     public static final Map<String, byte[]> cachedRichDesign = new HashMap<String, byte[]>();
     public static void dropCaches() {
         cachedRichDesign.clear();
     }
 
-    public RemoteFormProxy(T target) {
+    public RemoteFormProxy(RemoteFormInterface target) {
         super(target);
     }
 
@@ -71,6 +69,23 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         }
     }
 
+    @ImmutableMethod
+    public Integer getInitFilterPropertyDraw() throws RemoteException {
+        try {
+            return callImmutableMethod("getInitFilterPropertyDraw", new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    logRemoteMethodStartCall("getInitFilterPropertyDraw");
+                    Integer result = target.getInitFilterPropertyDraw();
+                    logRemoteMethodEndCall("getInitFilterPropertyDraw", result);
+                    return result;
+                }
+            });
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public ReportGenerationData getReportData(long requestIndex, Integer groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException {
         return target.getReportData(requestIndex, groupId, toExcel, userPreferences);
     }
@@ -79,9 +94,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return target.getReportPath(requestIndex, toExcel, groupId, userPreferences);
     }
 
-    public ServerResponse getRemoteChanges(long requestIndex) throws RemoteException {
+    public ServerResponse getRemoteChanges(long requestIndex, boolean refresh) throws RemoteException {
         logRemoteMethodStartCall("getRemoteChanges");
-        ServerResponse result = target.getRemoteChanges(requestIndex);
+        ServerResponse result = target.getRemoteChanges(requestIndex, refresh);
         logRemoteMethodEndCall("getRemoteChanges", result);
         return result;
     }

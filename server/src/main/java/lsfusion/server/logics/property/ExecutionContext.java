@@ -18,6 +18,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.*;
@@ -264,10 +265,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         return env.getQueryEnv();
     }
 
-    public interface RequestDialog {
-        DialogInstance createDialog() throws SQLException;
-    }
-
     public void delayUserInteraction(ClientAction action) {
         ThreadLocalContext.delayUserInteraction(action);
     }
@@ -285,7 +282,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
 
     // чтение пользователя
-    public ObjectValue requestUserObject(RequestDialog dialog) throws SQLException { // null если canceled
+    public ObjectValue requestUserObject(DialogRequest dialog) throws SQLException { // null если canceled
         ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserObject(dialog);
         env.setLastUserInput(userInput);
         return userInput;
@@ -316,12 +313,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters)  throws SQLException {
-        return createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, null);
+        return createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, null, null);
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps)  throws SQLException {
-        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, pullProps);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps)  throws SQLException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {

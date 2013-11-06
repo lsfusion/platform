@@ -13,7 +13,6 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.instance.DialogInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
@@ -47,12 +46,9 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
         if (type instanceof DataClass) {
             readValue = context.requestUserData((DataClass) type, null);
         } else {
-            context.requestUserObject(new ExecutionContext.RequestDialog() {
-                @Override
-                public DialogInstance createDialog() throws SQLException {
-                    return context.getFormInstance().createObjectDialog((CustomClass) aggProp.getValueClass());
-                }
-            });
+            context.requestUserObject(
+                    context.getFormInstance().createObjectDialogRequest((CustomClass) aggProp.getValueClass())
+            );
         }
 
         if (readValue != null) {

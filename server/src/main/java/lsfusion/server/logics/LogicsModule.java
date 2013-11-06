@@ -525,15 +525,15 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, FormPrintType printType) {
-        return addFAProp(group, sID, caption, form, objectsToSet, startAction, null, null, sessionScope, modalityType, checkOnOk, false, printType);
+        return addFAProp(group, sID, caption, form, objectsToSet, startAction, null, null, null, sessionScope, modalityType, checkOnOk, false, printType);
     }
 
     protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, ObjectEntity contextObject, CalcProperty contextProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop) {
-        return addFAProp(group, sID, caption, form, objectsToSet, startAction, null, null, sessionScope, modalityType, checkOnOk, false, null);
+        return addFAProp(group, sID, caption, form, objectsToSet, startAction, null, null, null, sessionScope, modalityType, checkOnOk, false, null);
     }
 
-    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, ObjectEntity contextObject, CalcProperty contextProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType) {
-        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, showDrop, printType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), contextObject, contextProperty)));
+    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType) {
+        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, showDrop, printType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty)));
     }
 
     // ------------------- Change Class action ----------------- //

@@ -15,9 +15,11 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     String getSID() throws RemoteException;
 
+    Integer getInitFilterPropertyDraw() throws RemoteException;
+
     // синхронное общение с сервером
 
-    public ServerResponse getRemoteChanges(long requestIndex) throws RemoteException;
+    public ServerResponse getRemoteChanges(long requestIndex, boolean refresh) throws RemoteException;
 
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException;
 

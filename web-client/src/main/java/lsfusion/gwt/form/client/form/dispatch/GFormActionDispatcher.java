@@ -7,10 +7,10 @@ import lsfusion.gwt.form.client.form.ui.classes.ClassChosenHandler;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.form.client.log.GLog;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.actions.*;
 import lsfusion.gwt.form.shared.view.classes.GObjectClass;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
+import lsfusion.gwt.form.shared.view.window.GModalityType;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {
     protected final GFormController form;
@@ -42,33 +42,19 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(final GFormAction action) {
+        if (form.isModal() && action.modalityType == GModalityType.DOCKED_MODAL) {
+            action.modalityType = GModalityType.MODAL;
+        }
+
         if (action.modalityType.isModal()) {
             pauseDispatching();
         }
-        form.openForm(action.form, action.modalityType, new WindowHiddenHandler() {
+        form.openForm(action.form, action.modalityType, latestEditEvent, new WindowHiddenHandler() {
             @Override
             public void onHidden() {
                 if (action.modalityType.isModal()) {
                     continueDispatching();
                 }
-            }
-        });
-    }
-
-    @Override
-    public void execute(final GDialogAction action) {
-        pauseDispatching();
-
-        // перед открытием формы необходимо рассчитать размеры используемых шрифтов
-        GFontMetrics.calculateFontMetrics(action.dialog.usedFonts, new GFontMetrics.MetricsCallback() {
-            @Override
-            public void metricsCalculated() {
-                form.showModalDialog(action.dialog, latestEditEvent, new WindowHiddenHandler() {
-                    @Override
-                    public void onHidden() {
-                        continueDispatching();
-                    }
-                });
             }
         });
     }

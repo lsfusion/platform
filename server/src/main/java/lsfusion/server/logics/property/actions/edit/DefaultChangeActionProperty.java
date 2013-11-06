@@ -15,7 +15,6 @@ import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.instance.DialogInstance;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
@@ -83,19 +82,15 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
                     changeValue = context.requestUserData((DataClass) changeType, oldValue);
                 } else if (changeType instanceof ObjectType) {
                     if (ServerResponse.EDIT_OBJECT.equals(editActionSID)) {
-                        context.requestUserObject(new ExecutionContext.RequestDialog() {
-                            public DialogInstance createDialog() throws SQLException {
-                                return formInstance.createObjectEditorDialog(propertyValues);
-                            }
-                        });
+                        context.requestUserObject(
+                                formInstance.createObjectEditorDialogRequest(propertyValues)
+                        );
                         return;
                     }
 
-                    changeValue = context.requestUserObject(new ExecutionContext.RequestDialog() {
-                        public DialogInstance createDialog() throws SQLException {
-                            return formInstance.createChangeEditorDialog(propertyValues, context.getChangingPropertyToDraw(), filterProperty);
-                        }
-                    });
+                    changeValue = context.requestUserObject(
+                            formInstance.createChangeEditorDialogRequest(propertyValues, context.getChangingPropertyToDraw(), filterProperty)
+                    );
 
                     if(filterProperty!=null && changeValue!=null) {
                         Object updatedValue = filterProperty.read(

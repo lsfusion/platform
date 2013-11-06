@@ -8,18 +8,13 @@ import lsfusion.client.Log;
 import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.form.ClientDialog;
 import lsfusion.client.form.ClientModalForm;
-import lsfusion.client.form.ClientNavigatorDialog;
 import lsfusion.client.form.classes.ClassDialog;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
-import lsfusion.client.remote.proxy.RemoteDialogProxy;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
-import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
-import lsfusion.interop.form.RemoteDialogInterface;
 import lsfusion.interop.form.ServerResponse;
 
 import javax.sound.sampled.AudioInputStream;
@@ -141,7 +136,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     public void execute(FormClientAction action) {
         RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm);
-        if (action.modalityType == ModalityType.DOCKED_MODAL) {
+        ModalityType modality = action.modalityType;
+        if (modality == ModalityType.DOCKED_MODAL) {
             pauseDispatching();
             beforeShowDockedModalForm();
             Main.frame.runForm(remoteForm, new MainFrame.FormCloseListener() {
@@ -151,8 +147,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                     continueDispatching();
                 }
             });
-        } else if (action.modalityType.isModal()) {
-            new ClientModalForm(Main.frame, remoteForm).showDialog(action.modalityType.isFullScreen());
+        } else if (modality.isModal()) {
+            Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+            AWTEvent currentEvent = EventQueue.getCurrentEvent();
+            new ClientModalForm(owner, remoteForm, modality.isDialog(), currentEvent).showDialog(modality.isFullScreen());
         } else {
             Main.frame.runForm(remoteForm, null);
         }
@@ -165,23 +163,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(ReportClientAction action) {
-    }
-
-    public void execute(DialogClientAction action) {
-        AWTEvent currentEvent = EventQueue.getCurrentEvent();
-
-        Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-
-        RemoteDialogInterface dialog = new RemoteDialogProxy(action.dialog);
-
-        ClientDialog dlg;
-        if (KeyStrokes.isSpaceEvent(currentEvent) || KeyStrokes.isEditObjectEvent(currentEvent)) {
-            dlg = new ClientNavigatorDialog(owner, dialog);
-        } else {
-            dlg = new ClientDialog(owner, dialog, currentEvent);
-        }
-
-        dlg.showDialog(false);
     }
 
     public Object execute(RuntimeClientAction action) {

@@ -1,29 +1,38 @@
 package lsfusion.client.form;
 
+import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
+import java.rmi.RemoteException;
+import java.util.EventObject;
 
 import static lsfusion.client.SwingUtils.*;
 
 public class ClientModalForm extends JDialog {
 
-    protected ClientFormController form;
-    protected final RemoteFormInterface remoteForm;
+    private final KeyEvent initFilterKeyEvent;
+
+    private final RemoteFormInterface remoteForm;
+
+    private ClientFormController form;
 
     public ClientModalForm(Component owner, final RemoteFormInterface remoteForm) {
         this(owner, remoteForm, false);
     }
 
     public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean isDialog) {
+        this(owner, remoteForm, isDialog, null);
+    }
+
+    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean isDialog, EventObject initFilterEvent) {
         super(getWindow(owner), ModalityType.DOCUMENT_MODAL);
 
         this.remoteForm = remoteForm;
+
+        this.initFilterKeyEvent = initFilterEvent instanceof KeyEvent ? (KeyEvent) initFilterEvent : null;
 
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
@@ -102,17 +111,35 @@ public class ClientModalForm extends JDialog {
     }
 
     protected void beforeShowDialog() {
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowActivated(WindowEvent e) {
-                Component defaultComponent = form.getLayout().getFocusTraversalPolicy().getDefaultComponent(form.getLayout());
-                if (defaultComponent != null) {
-                    defaultComponent.requestFocusInWindow();
-                }
-
-                removeWindowListener(this);
+        int initialFilterPropertyDrawID = -1;
+        try {
+            Integer filterPropertyDraw = remoteForm.getInitFilterPropertyDraw();
+            if (filterPropertyDraw != null) {
+                initialFilterPropertyDrawID = filterPropertyDraw;
             }
-        });
+        } catch (RemoteException ignored) {
+        }
+
+        if (initialFilterPropertyDrawID > 0) {
+            form.selectProperty(initialFilterPropertyDrawID);
+        }
+
+        if (initFilterKeyEvent != null && initialFilterPropertyDrawID > 0 &&
+            KeyStrokes.isSuitableStartFilteringEvent(initFilterKeyEvent)) {
+            form.quickEditFilter(initFilterKeyEvent, initialFilterPropertyDrawID);
+        } else {
+            addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowActivated(WindowEvent e) {
+                    Component defaultComponent = form.getLayout().getFocusTraversalPolicy().getDefaultComponent(form.getLayout());
+                    if (defaultComponent != null) {
+                        defaultComponent.requestFocusInWindow();
+                    }
+
+                    removeWindowListener(this);
+                }
+            });
+        }
     }
 
     public Dimension calculatePreferredSize(boolean undecorated) {

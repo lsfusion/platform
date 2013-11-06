@@ -42,7 +42,7 @@ final class FormDockable {
         tabWidget.setTitle(gForm.caption);
         tabWidget.setBlocked(false);
 
-        form = new GFormController(formsController, gForm, false) {
+        form = new GFormController(formsController, gForm) {
             @Override
             public void hideForm() {
                 super.hideForm();

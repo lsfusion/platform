@@ -11,9 +11,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.TimeZone;
 
-public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
-        extends RemoteObjectProxy<T>
-        implements RemoteLogicsInterface {
+public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends RemoteObjectProxy<T> implements RemoteLogicsInterface {
 
     public RemoteBusinessLogicProxy(T target) {
         super(target);

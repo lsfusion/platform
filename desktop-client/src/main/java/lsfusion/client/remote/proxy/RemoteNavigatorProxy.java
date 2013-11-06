@@ -13,9 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
-        extends RemoteObjectProxy<T>
-        implements RemoteNavigatorInterface {
+public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends RemoteObjectProxy<T> implements RemoteNavigatorInterface {
 
     public RemoteNavigatorProxy(T target) {
         super(target);

@@ -9,15 +9,14 @@ import lsfusion.server.context.AbstractContext;
 import lsfusion.server.context.Context;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
-import lsfusion.server.form.instance.DialogInstance;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
-import lsfusion.server.remote.RemoteDialog;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 
@@ -39,20 +38,16 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getFormInstance();
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps) throws SQLException {
-        return wrappedContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, pullProps);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException {
+        return wrappedContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {
         return wrappedContext.createRemoteForm(formInstance);
     }
 
-    public RemoteDialog createRemoteDialog(DialogInstance dialogInstance) {
-        return wrappedContext.createRemoteDialog(dialogInstance);
-    }
-
-    public ObjectValue requestUserObject(ExecutionContext.RequestDialog requestDialog) throws SQLException {
-        return wrappedContext.requestUserObject(requestDialog);
+    public ObjectValue requestUserObject(DialogRequest dialogRequest) throws SQLException {
+        return wrappedContext.requestUserObject(dialogRequest);
     }
 
     public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {

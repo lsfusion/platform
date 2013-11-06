@@ -34,7 +34,6 @@ import lsfusion.gwt.form.client.form.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.form.client.form.dispatch.GSimpleChangePropertyDispatcher;
 import lsfusion.gwt.form.client.form.ui.classes.ClassChosenHandler;
 import lsfusion.gwt.form.client.form.ui.classes.GResizableClassDialog;
-import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalDialog;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
@@ -76,6 +75,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private final GForm form;
     protected final GFormLayout formLayout;
+
+    private final boolean isModal;
     private final boolean isDialog;
 
     private final HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects = new HashMap<GGroupObject, List<GGroupObjectValue>>();
@@ -107,12 +108,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private boolean selected = true;
     private boolean formHidden = false;
 
-    public GFormController(FormsController formsController, GForm gForm, final boolean isDialog) {
+    public GFormController(FormsController formsController, GForm gForm) {
+        this(formsController, gForm, false, false);
+    }
+
+    public GFormController(FormsController formsController, GForm gForm, final boolean isModal, boolean isDialog) {
         actionDispatcher = new GFormActionDispatcher(this);
         simpleDispatcher = new GSimpleChangePropertyDispatcher(this);
 
         this.formsController = formsController;
         this.form = gForm;
+        this.isModal = isModal;
         this.isDialog = isDialog;
 
         dispatcher = new FormDispatchAsync(this);
@@ -334,21 +340,28 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private void initializeAutoRefresh() {
         if (form.autoRefresh > 0) {
-            final String FORM_REFRESH_PROPERTY_SID = "formRefresh";
-
-            Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
-                @Override
-                public boolean execute() {
-                    if (!isEditing() && selected && !blocked && !formHidden && !isDialog) {
-                        GPropertyDraw refreshProperty = form.getProperty(FORM_REFRESH_PROPERTY_SID);
-                        if (refreshProperty != null) {
-                            executeEditAction(refreshProperty, GGroupObjectValue.EMPTY, GEditBindingMap.CHANGE, new ServerResponseCallback());
-                        }
-                    }
-                    return !formHidden;
-                }
-            }, form.autoRefresh * 1000);
+            scheduleRefresh();
         }
+    }
+
+    private void scheduleRefresh() {
+        Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
+            @Override
+            public boolean execute() {
+                if (!formHidden) {
+                    dispatcher.execute(new GetRemoteChanges(true), new ServerResponseCallback() {
+                        @Override
+                        public void success(ServerResponseResult response) {
+                            super.success(response);
+                            if (!formHidden) {
+                                scheduleRefresh();
+                            }
+                        }
+                    });
+                }
+                return false;
+            }
+        }, form.autoRefresh * 1000);
     }
 
     public void applyOrders(LinkedHashMap<GPropertyDraw, Boolean> orders) {
@@ -515,32 +528,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
 
-    public void openForm(GForm form, GModalityType modalityType, final WindowHiddenHandler handler) {
-        if (isDialog && !modalityType.isDialog()) {
-            modalityType = GModalityType.MODAL;
-        } else if (modalityType == GModalityType.DOCKED_MODAL) {
+    public void openForm(GForm form, GModalityType modalityType, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
+        if (modalityType == GModalityType.DOCKED_MODAL) {
             block();
         }
 
-        formsController.openForm(form, modalityType, new WindowHiddenHandler() {
+        formsController.openForm(form, modalityType, initFilterEvent, new WindowHiddenHandler() {
             @Override
             public void onHidden() {
                 unblock();
                 handler.onHidden();
             }
         });
-    }
-
-    public void showModalDialog(GForm form, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
-        WindowHiddenHandler dialogHiddenHandler = new WindowHiddenHandler() {
-            @Override
-            public void onHidden() {
-                blocked = false;
-                handler.onHidden();
-            }
-        };
-        GResizableModalDialog.showDialog(formsController, form, initFilterEvent, dialogHiddenHandler);
-        blocked = true;
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
@@ -963,6 +962,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public boolean isEditing() {
         return editingTable != null;
+    }
+
+    public boolean isModal() {
+        return isModal;
     }
 
     public boolean isDialog() {

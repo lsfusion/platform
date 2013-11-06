@@ -14,10 +14,7 @@ import lsfusion.interop.action.ReportClientAction;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.form.entity.ActionPropertyObjectEntity;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
@@ -55,6 +52,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     private final ObjectEntity contextObject;
     private final CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> contextPropertyImplement;
 
+    private final PropertyDrawEntity initFilterProperty;
+
     private static ValueClass[] getValueClasses(ObjectEntity[] objects, CalcProperty contextProperty) {
         ValueClass[] valueClasses = new ValueClass[objects.length + (contextProperty == null ? 0 : contextProperty.interfaces.size())];
         for (int i = 0; i < objects.length; i++) {
@@ -90,7 +89,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               LCP formResultProperty,
                               AnyValuePropertyHolder chosenValueProperty,
                               ObjectEntity contextObject,
-                              CalcProperty contextProperty) {
+                              CalcProperty contextProperty,
+                              PropertyDrawEntity initFilterProperty) {
         super(sID, caption, getValueClasses(objectsToSet, contextProperty));
 
         this.formResultClass = formResultClass;
@@ -105,6 +105,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.startAction = startAction;
 
         this.contextObject = contextObject;
+        this.initFilterProperty = initFilterProperty;
 
         this.contextPropertyImplement = contextProperty == null ? null : contextProperty.getImplement(
                 getOrderInterfaces().subOrder(objectsToSet.length, interfaces.size())
@@ -147,6 +148,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                                                                         showDrop,
                                                                         printType == null,
                                                                         contextFilters,
+                                                                        initFilterProperty,
                                                                         pullProps.result);
 
         if (printType != null && !newFormInstance.areObjectsFound()) {

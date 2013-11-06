@@ -4,17 +4,15 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.action.ChooseClassClientAction;
-import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.DialogClientAction;
-import lsfusion.interop.action.RequestUserInputClientAction;
+import lsfusion.interop.ModalityType;
+import lsfusion.interop.action.*;
 import lsfusion.interop.form.UserInputResult;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
-import lsfusion.server.form.instance.DialogInstance;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
@@ -22,9 +20,8 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
-import lsfusion.server.remote.RemoteDialog;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 
@@ -47,18 +44,17 @@ public abstract class AbstractContext implements Context {
         return null;
     }
 
-    public ObjectValue requestUserObject(ExecutionContext.RequestDialog dialog) throws SQLException { // null если canceled
-        DialogInstance<?> dialogInstance = dialog.createDialog();
+    public ObjectValue requestUserObject(DialogRequest dialog) throws SQLException { // null если canceled
+        FormInstance dialogInstance = dialog.createDialog();
         if (dialogInstance == null) {
             return null;
         }
 
-        RemoteDialog remoteDialog = createRemoteDialog(dialogInstance);
-        requestUserInteraction(new DialogClientAction(remoteDialog));
+        requestUserInteraction(new FormClientAction(createRemoteForm(dialogInstance), ModalityType.DIALOG_MODAL));
         if (dialogInstance.getFormResult() == FormCloseType.CLOSE) {
             return null;
         }
-        return dialogInstance.getFormResult() == FormCloseType.DROP ? NullValue.instance : dialogInstance.getDialogObjectValue();
+        return dialogInstance.getFormResult() == FormCloseType.DROP ? NullValue.instance : dialog.getValue();
     }
 
     public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
@@ -109,16 +105,12 @@ public abstract class AbstractContext implements Context {
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException {
         throw new UnsupportedOperationException("createFormInstance is not supported");
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {
         throw new UnsupportedOperationException("createRemoteForm is not supported");
-    }
-
-    public RemoteDialog createRemoteDialog(DialogInstance dialogInstance) {
-        throw new UnsupportedOperationException("createRemoteDialog is not supported");
     }
 
     public void setActionMessage(String message) {

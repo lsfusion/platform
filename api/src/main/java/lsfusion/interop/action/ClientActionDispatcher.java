@@ -7,8 +7,6 @@ public interface ClientActionDispatcher {
 
     public void execute(ReportClientAction action);
 
-    public void execute(DialogClientAction action);
-
     public Object execute(RuntimeClientAction action);
 
     public void execute(ExportFileClientAction action);

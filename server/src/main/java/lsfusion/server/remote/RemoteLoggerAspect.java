@@ -13,7 +13,6 @@ public class RemoteLoggerAspect {
 
     @Around("(execution(* lsfusion.interop.RemoteLogicsInterface.*(..))" +
             " || execution(* lsfusion.interop.form.RemoteFormInterface.*(..))" +
-            " || execution(* lsfusion.interop.form.RemoteDialogInterface.*(..))" +
             " || execution(* lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)))" +
             " && !execution(* *.ping(..))" +
             "")

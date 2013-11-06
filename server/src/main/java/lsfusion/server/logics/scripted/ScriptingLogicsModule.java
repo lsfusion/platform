@@ -1,6 +1,5 @@
 package lsfusion.server.logics.scripted;
 
-import com.google.common.collect.Sets;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.base.IOUtils;
@@ -32,10 +31,7 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.AbstractClassWhere;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.GroupObjectProp;
-import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.DefaultFormView;
@@ -85,6 +81,7 @@ import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.scripted.AlignmentUtils.*;
+import static lsfusion.server.logics.scripted.ScriptingFormEntity.getPropertyDraw;
 
 /**
  * User: DAle
@@ -1779,7 +1776,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new Time(h, m, 0);
     }
 
-    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, String contextObjectName, LPWithParams contextProperty, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, FormPrintType printType) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping,
+                                          String contextObjectName, LPWithParams contextProperty,
+                                          String initFilterPropertyName, List<String> initFilterPropertyMapping,
+                                          ModalityType modalityType, FormSessionScope sessionScope,
+                                          boolean checkOnOk, boolean showDrop, FormPrintType printType) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + modalityType + ", " + sessionScope + ");");
 
         if (contextProperty != null) {
@@ -1795,8 +1796,16 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ObjectEntity contextObject = contextObjectName == null ? null : findObjectEntity(form, contextObjectName);
 
+        PropertyDrawEntity initFilterProperty = null;
+        if (initFilterPropertyName != null) {
+            initFilterProperty = initFilterPropertyMapping == null
+                                 ? getPropertyDraw(this, form, initFilterPropertyName)
+                                 : getPropertyDraw(this, form, initFilterPropertyName, initFilterPropertyMapping);
+        }
+
         LAP property = addFAProp(null, genSID(), "", form, objects, null, contextObject,
                                  contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
+                                 initFilterProperty,
                                  sessionScope, modalityType, checkOnOk, showDrop, printType);
 
         if (mapping.size() > 0) {

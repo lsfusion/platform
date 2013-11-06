@@ -1812,20 +1812,30 @@ formActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 	List<LPWithParams> mapping = new ArrayList<LPWithParams>();
 	String contextObjectName = null;
 	LPWithParams contextProperty = null;
+	String initFilterPropertyName = null;
+	List<String> initFilterPropertyMapping = null;
 	}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, modalityType, sessionScope, checkOnOk, showDrop, printType);
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, printType);
 	}
 }
 	:	'FORM' formName=compoundID 
 		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })?
 		('CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; })?
+		(initFilter = initFilterDefinition { initFilterPropertyName = $initFilter.propertyName; initFilterPropertyMapping = $initFilter.mapping; })?
 		(sessScope = formSessionScopeLiteral { sessionScope = $sessScope.val; })?
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('CHECK' { checkOnOk = true; })?
 		('SHOWDROP' { showDrop = true; })?
 		(print = formPrintTypeLiteral { printType = $print.val; })?
+	;
+
+initFilterDefinition returns [String propertyName, List<String> mapping]
+	:	'INITFILTER'
+	    (   pname=ID { $propertyName = $ID.text; }
+	    |	mappedProp=mappedProperty { $propertyName = $mappedProp.name; $mapping = $mappedProp.mapping; }
+        )
 	;
 
 formActionObjectList[List<String> context, boolean dynamic] returns [List<String> objects = new ArrayList<String>(), List<LPWithParams> exprs = new ArrayList<LPWithParams>()]

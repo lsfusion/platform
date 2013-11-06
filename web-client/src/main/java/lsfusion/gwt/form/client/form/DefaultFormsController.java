@@ -18,6 +18,7 @@ import lsfusion.gwt.form.shared.actions.GetForm;
 import lsfusion.gwt.form.shared.actions.GetFormResult;
 import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GForm;
+import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
 
 public abstract class DefaultFormsController implements FormsController {
@@ -66,7 +67,7 @@ public abstract class DefaultFormsController implements FormsController {
     }
 
     public void openForm(final String formSID, final GModalityType modalityType, final boolean suppressErrorMessages) {
-        final FormDockable dockable = modalityType.isDialog() ? null : addDockable(new FormDockable());
+        final FormDockable dockable = modalityType.isModalWindow() ? null : addDockable(new FormDockable());
 
         NavigatorDispatchAsync.Instance.get().execute(new GetForm(formSID, modalityType.isModal(), null), new ErrorHandlingCallback<GetFormResult>() {
             @Override
@@ -86,31 +87,31 @@ public abstract class DefaultFormsController implements FormsController {
 
             @Override
             public void success(GetFormResult result) {
-                openFormAfterFontsInitialization(dockable, result.form, modalityType, null);
+                openFormAfterFontsInitialization(dockable, result.form, modalityType, null, null);
             }
         });
     }
 
-    public void openForm(GForm form, GModalityType modalityType, WindowHiddenHandler hiddenHandler) {
-        openFormAfterFontsInitialization(null, form, modalityType, hiddenHandler);
+    public void openForm(GForm form, GModalityType modalityType, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
+        openFormAfterFontsInitialization(null, form, modalityType, initFilterEvent, hiddenHandler);
     }
 
-    private void openFormAfterFontsInitialization(final FormDockable dockable, final GForm form, final GModalityType modalityType, final WindowHiddenHandler hiddenHandler) {
+    private void openFormAfterFontsInitialization(final FormDockable dockable, final GForm form, final GModalityType modalityType, final EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
         // перед открытием формы необходимо рассчитать размеры используемых шрифтов
         GFontMetrics.calculateFontMetrics(form.usedFonts, new GFontMetrics.MetricsCallback() {
             @Override
             public void metricsCalculated() {
-                openForm(dockable, form, modalityType, hiddenHandler);
+                openForm(dockable, form, modalityType, initFilterEvent, hiddenHandler);
             }
         });
     }
 
-    private void openForm(FormDockable dockable, GForm form, GModalityType modalityType, final WindowHiddenHandler hiddenHandler) {
+    private void openForm(FormDockable dockable, GForm form, GModalityType modalityType, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
         if (!GWT.isScript()) {
             form.caption += "(" + form.sID + ")";
         }
-        if (modalityType.isDialog()) {
-            showModalForm(form, modalityType.isFullScreen(), hiddenHandler);
+        if (modalityType.isModalWindow()) {
+            showModalForm(form, modalityType, initFilterEvent, hiddenHandler);
         } else {
             if (dockable == null) {
                 dockable = addDockable(new FormDockable(this, form));
@@ -131,6 +132,12 @@ public abstract class DefaultFormsController implements FormsController {
         }
     }
 
+    private void showModalForm(GForm form, GModalityType modality, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
+        assert modality.isModalWindow();
+
+        GResizableModalForm.showForm(this, form, modality.isDialog(), initFilterEvent, handler);
+    }
+
     private FormDockable addDockable(FormDockable dockable) {
         tabsPanel.add(dockable.getContentWidget(), dockable.getTabWidget());
         tabsPanel.selectTab(dockable.getContentWidget());
@@ -139,11 +146,6 @@ public abstract class DefaultFormsController implements FormsController {
 
     private void removeDockable(FormDockable dockable) {
         tabsPanel.remove(dockable.getContentWidget());
-    }
-
-    public void showModalForm(GForm form, boolean isFullScreen, final WindowHiddenHandler handler) {
-        //todo: use isFullScreen
-        GResizableModalForm.showForm(this, form, handler);
     }
 
     @Override

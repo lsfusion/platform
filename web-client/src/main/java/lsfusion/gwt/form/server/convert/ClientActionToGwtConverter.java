@@ -64,11 +64,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GConfirmAction(action.message, action.caption);
     }
 
-    @Converter(from = DialogClientAction.class)
-    public GDialogAction convertAction(DialogClientAction action, FormDispatchServlet servlet) throws IOException {
-        return new GDialogAction(servlet.getFormSessionManager().createForm(action.dialog, servlet));
-    }
-
     @Converter(from = FormClientAction.class)
     public GFormAction convertAction(FormClientAction action, FormDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
@@ -82,6 +77,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             case MODAL: return GModalityType.MODAL;
             case FULLSCREEN_MODAL: return GModalityType.FULLSCREEN_MODAL;
             case DOCKED_MODAL: return GModalityType.DOCKED_MODAL;
+            case DIALOG_MODAL: return GModalityType.DIALOG_MODAL;
         }
         return null;
     }

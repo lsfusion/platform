@@ -104,10 +104,6 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
 
     @Override
     public void execute(AsyncGetRemoteChangesClientAction action) {
-        try {
-            getFormController().getRemoteChanges(true);
-        } catch (IOException e) {
-            Throwables.propagate(e);
-        }
+        getFormController().getRemoteChanges(true);
     }
 }

@@ -85,8 +85,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     protected LogicsInstance logicsInstance;
 
-    private Boolean dialogUndecorated = false;
-
     private String topModulesList;
 
     private String orderDependencies;
@@ -134,14 +132,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public LogicsModule getModule(String name) {
         return nameToModule.get(name);
-    }
-
-    public Boolean isDialogUndecorated() {
-        return dialogUndecorated;
-    }
-
-    public void setDialogUndecorated(Boolean dialogUndecorated) {
-        this.dialogUndecorated = dialogUndecorated;
     }
 
     public ConcreteClass getDataClass(Object object, Type type) {

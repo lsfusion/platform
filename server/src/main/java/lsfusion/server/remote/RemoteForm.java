@@ -106,7 +106,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     /**
-     * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается, что он отработаывает как ImmutableMethod через createAndExecute
+     * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается,
+     * что он отработаывает как ImmutableMethod через createAndExecute
      */
     public byte[] getRichDesignByteArray() {
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
@@ -118,6 +119,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             throw new RuntimeException(e);
         }
         return outStream.toByteArray();
+    }
+
+    /**
+     * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается,
+     * что он отработаывает как ImmutableMethod через createAndExecute
+     */
+    public Integer getInitFilterPropertyDraw() throws RemoteException {
+        return form.initFilterPropertyDraw == null ? null : form.initFilterPropertyDraw.getID();
     }
 
     public ServerResponse changePageSize(long requestIndex, final int groupID, final Integer pageSize) throws RemoteException {
@@ -154,11 +163,13 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public ServerResponse getRemoteChanges(long requestIndex) throws RemoteException {
+    public ServerResponse getRemoteChanges(long requestIndex, final boolean refresh) throws RemoteException {
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
-                //ничего не делаем, просто даём по завершению выполниться prepareRemoteChangesResponse
+                if (refresh) {
+                    form.refreshData();
+                }
             }
         });
     }

@@ -1,7 +1,7 @@
 package lsfusion.gwt.form.shared.view.window;
 
 public enum GModalityType {
-    DOCKED, MODAL, DOCKED_MODAL, FULLSCREEN_MODAL;
+    DOCKED, MODAL, DOCKED_MODAL, FULLSCREEN_MODAL, DIALOG_MODAL;
 
     public boolean isModal() {
         return this != DOCKED;
@@ -11,7 +11,11 @@ public enum GModalityType {
         return this == FULLSCREEN_MODAL;
     }
 
+    public boolean isModalWindow() {
+        return this == MODAL || this == FULLSCREEN_MODAL || this == DIALOG_MODAL;
+    }
+
     public boolean isDialog() {
-        return this == MODAL || this == FULLSCREEN_MODAL;
+        return this == DIALOG_MODAL;
     }
 }

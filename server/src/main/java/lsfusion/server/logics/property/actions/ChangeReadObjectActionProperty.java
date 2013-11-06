@@ -37,11 +37,9 @@ public class ChangeReadObjectActionProperty extends SystemExplicitActionProperty
                 ObjectValue changeValue;
                 if (objectInstance instanceof CustomObjectInstance) {
                     final CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
-                    changeValue = context.requestUserObject(new ExecutionContext.RequestDialog() {
-                        public DialogInstance createDialog() throws SQLException {
-                            return formInstance.createChangeObjectDialog(customObjectInstance.getBaseClass(), oldValue, customObjectInstance.groupTo, filterProperty);
-                        }
-                    });
+                    changeValue = context.requestUserObject(
+                            formInstance.createChangeObjectDialogRequest(customObjectInstance.getBaseClass(), oldValue, customObjectInstance.groupTo, filterProperty)
+                    );
                 } else {
                     changeValue = context.requestUserData(((DataObjectInstance) objectInstance).getBaseClass(), oldValue.getValue());
                 }

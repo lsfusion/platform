@@ -25,7 +25,6 @@ public class RemoteExceptionsAspect {
     // аспектами ловим все RuntimeException которые доходят до внешней границы сервера и оборачиваем их
     @Around("execution(public * lsfusion.interop.RemoteLogicsInterface.*(..)) ||" +
             "execution(public * lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)) ||" +
-            "execution(public * lsfusion.interop.form.RemoteDialogInterface.*(..)) ||" +
             "execution(public * lsfusion.interop.form.RemoteFormInterface.*(..))")
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         try {

@@ -52,7 +52,6 @@ import static lsfusion.interop.Order.*;
 public class ClientFormController implements AsyncListener {
 
     private static final ImageIcon loadingIcon = new ImageIcon(Main.class.getResource("/images/loading.gif"));
-    private static final String FORM_REFRESH_PROPERTY_SID = "formRefresh";
 
     private final TableManager tableManager = new TableManager(this);
 
@@ -101,7 +100,7 @@ public class ClientFormController implements AsyncListener {
 
     private boolean blocked = false;
 
-    private boolean showing = true;
+    private boolean selected = true;
 
     private EditReportInvoker editReportInvoker = new EditReportInvoker() {
         @Override
@@ -254,37 +253,35 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void initializeAutoRefresh() {
-        final ClientPropertyDraw property = form.getProperty(FORM_REFRESH_PROPERTY_SID);
-        if (property != null && form.autoRefresh > 0) {
-            SwingUtils.assertDispatchThread();
-
-            // т.к. модальные диалоги запускают новый EDT для обработки событий, то возможен случай,
-            // когда авторефреш для этой формы попробует выполниться, когда форма заблокирована, что есс-но приведёт к dead-lock,
-            // поэтому добавляем проверку на корректный поток
-            final Thread executingEdtThread = Thread.currentThread();
+        if (form.autoRefresh > 0) {
             autoRefreshScheduler = Executors.newScheduledThreadPool(1);
-            autoRefreshScheduler.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    SwingUtils.invokeLater(new ERunnable() {
-                        @Override
-                        public void run() throws Exception {
-                            if (remoteForm != null &&
-                                !blocked &&
-                                showing &&
-                                !isModal &&
-                                !isEditing() &&
-                                !rmiQueue.isSyncStarted()
-                                && Thread.currentThread() == executingEdtThread) {
-
-                                simpleDispatcher.executeAction(property, ClientGroupObjectValue.EMPTY);
-                            }
-                        }
-                    });
-                }
-
-            }, form.autoRefresh, form.autoRefresh, TimeUnit.SECONDS);
+            scheduleRefresh();
         }
+    }
+
+    private void scheduleRefresh() {
+        autoRefreshScheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                SwingUtils.invokeLater(new ERunnable() {
+                    @Override
+                    public void run() throws Exception {
+                        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest() {
+                            @Override
+                            protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
+                                return remoteForm.getRemoteChanges(requestIndex, true);
+                            }
+
+                            @Override
+                            protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                                super.onResponse(requestIndex, result);
+                                scheduleRefresh();
+                            }
+                        });
+                    }
+                });
+            }
+        }, form.autoRefresh, TimeUnit.SECONDS);
     }
 
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
@@ -481,11 +478,11 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void getRemoteChanges(boolean async) throws IOException {
+    public void getRemoteChanges(boolean async) {
         rmiQueue.syncRequestWithTimeOut(async ? 0 : RmiQueue.FOREVER, new ProcessServerResponseRmiRequest() {
             @Override
             protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
-                return remoteForm.getRemoteChanges(requestIndex);
+                return remoteForm.getRemoteChanges(requestIndex, false);
             }
         });
     }
@@ -1274,8 +1271,8 @@ public class ClientFormController implements AsyncListener {
         blocked = false;
     }
 
-    public void changeShowing(boolean newShowing) {
-        showing = newShowing;
+    public void setSelected(boolean newSelected) {
+        selected = newSelected;
     }
 
     private abstract class RmiCheckNullFormRequest<T> extends RmiRequest<T> {

@@ -196,7 +196,7 @@ public class MainFrame implements EntryPoint {
             if (action.modalityType.isModal()) {
                 pauseDispatching();
             }
-            formsController.openForm(action.form, action.modalityType, new WindowHiddenHandler() {
+            formsController.openForm(action.form, action.modalityType, null, new WindowHiddenHandler() {
                 @Override
                 public void onHidden() {
                     if (action.modalityType.isModal()) {

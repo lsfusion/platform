@@ -116,9 +116,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GReportAction action) {
     }
 
-    public void execute(GDialogAction action) {
-    }
-
     @Override
     public void execute(GRunOpenReportAction action) {
     }
