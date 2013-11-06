@@ -512,7 +512,7 @@ public class GridTable extends ClientPropertyTable {
             }
 
             int currentRowTop = currentRow * getRowHeight();
-            int currentRowBottom = currentRowTop + getRowHeight();
+            int currentRowBottom = currentRowTop + getRowHeight() - 1;
 
             if (currentRowTop < viewRect.getMinY()) {
                 viewRect.y = currentRowTop;
@@ -527,7 +527,7 @@ public class GridTable extends ClientPropertyTable {
         viewMoveInterval = 0;
     }
 
-    protected void selectRow(int rowNumber) {
+    private void selectRow(int rowNumber) {
         if (rowNumber < 0 || rowNumber >= getRowCount()) {
             return;
         }
@@ -537,7 +537,7 @@ public class GridTable extends ClientPropertyTable {
         // scrollRectToVisible обязательно должен идти до setLeadSelectionIndex
         // иначе, если объект за пределами текущего "окна", сработает JViewport.changeListener
         // и он изменит текущий объект на другой (firstRow или lastRow)
-        scrollRectToVisible(getCellRect(rowNumber, (colSel == -1) ? 0 : colSel, true));
+        scrollRectToVisible(getCellRect(rowNumber, (colSel == -1) ? 0 : colSel, false));
 
         if (colSel == -1) {
             isInternalNavigating = true;

@@ -4,22 +4,8 @@
     <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
         <param name="target" value="System.out"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} %t - %m%n"/>
         </layout>
-        <filter class="org.apache.log4j.varia.LevelRangeFilter">
-            <param name="LevelMin" value="ALL"/>
-            <param name="LevelMax" value="INFO"/>
-        </filter>
-    </appender>
-
-    <appender name="stderr" class="org.apache.log4j.ConsoleAppender">
-        <param name="target" value="System.err"/>
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
-        </layout>
-        <filter class="org.apache.log4j.varia.LevelRangeFilter">
-            <param name="LevelMin" value="WARN"/>
-        </filter>
     </appender>
 
     <appender name="clientlog" class="org.apache.log4j.rolling.RollingFileAppender">
@@ -37,7 +23,7 @@
         </layout>
     </appender>
 
-    <appender name="errorlog" class="org.apache.log4j.rolling.RollingFileAppender">
+    <appender name="clienterr" class="org.apache.log4j.rolling.RollingFileAppender">
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
             <param name="maxIndex" value="5"/>
@@ -66,22 +52,30 @@
             <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
         </triggeringPolicy>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n"/>
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} %t - %m%n"/>
         </layout>
     </appender>
 
-<!--
-    <category name="lsfusion.client.remote.proxy" additivity="false">
+    <category name="SystemLogger">
+        <priority value="ALL"/>
+    </category>
+
+    <!--<category name="RemoteLogger" additivity="false">-->
+        <!--<priority value="INFO"/>-->
+        <!--<appender-ref ref="remotelog"/>-->
+    <!--</category>-->
+
+    <category name="InvocationsLogger" additivity="false">
+        <!--<priority value="OFF"/>-->
         <priority value="DEBUG"/>
         <appender-ref ref="remotelog"/>
+        <!--<appender-ref ref="stdout"/>-->
     </category>
--->
 
     <root>
         <priority value="ERROR"/>
         <appender-ref ref="stdout"/>
-        <appender-ref ref="stderr"/>
         <appender-ref ref="clientlog"/>
-        <appender-ref ref="errorlog"/>
+        <appender-ref ref="clienterr"/>
     </root>
 </log4j:configuration>

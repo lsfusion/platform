@@ -19,15 +19,11 @@ public class ClientModalForm extends JDialog {
 
     private ClientFormController form;
 
-    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm) {
-        this(owner, remoteForm, false);
+    public ClientModalForm(String formSID, Component owner, final RemoteFormInterface remoteForm) {
+        this(formSID, owner, remoteForm, false, null);
     }
 
-    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean isDialog) {
-        this(owner, remoteForm, isDialog, null);
-    }
-
-    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean isDialog, EventObject initFilterEvent) {
+    public ClientModalForm(String formSID, Component owner, final RemoteFormInterface remoteForm, boolean isDialog, EventObject initFilterEvent) {
         super(getWindow(owner), ModalityType.DOCUMENT_MODAL);
 
         this.remoteForm = remoteForm;
@@ -41,23 +37,19 @@ public class ClientModalForm extends JDialog {
         // делаем, чтобы не выглядел как диалог
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
-        form = createFormController(isDialog);
-
-        setTitle(form.getCaption());
-
-        add(form.getLayout(), BorderLayout.CENTER);
-
-        createUIHandlers();
-    }
-
-    protected ClientFormController createFormController(boolean isDialog) {
-        return new ClientFormController(remoteForm, null, true, isDialog) {
+        form = new ClientFormController(formSID, ClientModalForm.this.remoteForm, null, true, isDialog) {
             @Override
             public void hideForm() {
                 hideDialog();
                 super.hideForm();
             }
         };
+
+        setTitle(form.getCaption());
+
+        add(form.getLayout(), BorderLayout.CENTER);
+
+        createUIHandlers();
     }
 
     private void createUIHandlers() {

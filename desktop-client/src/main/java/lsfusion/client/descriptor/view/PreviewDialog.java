@@ -25,7 +25,7 @@ public class PreviewDialog extends JDialog {
         try {
             RemoteFormInterface remoteForm = navigator.remoteNavigator.createPreviewForm(form.serialize());
 
-            ClientFormController controller = new ClientFormController(remoteForm, navigator) {
+            ClientFormController controller = new ClientFormController(form.getSID(), remoteForm, navigator) {
                 @Override
                 public void hideForm() {
                     setVisible(false);

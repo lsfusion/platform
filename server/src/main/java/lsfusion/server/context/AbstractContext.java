@@ -50,7 +50,7 @@ public abstract class AbstractContext implements Context {
             return null;
         }
 
-        requestUserInteraction(new FormClientAction(createRemoteForm(dialogInstance), ModalityType.DIALOG_MODAL));
+        requestUserInteraction(new FormClientAction(dialogInstance.entity.getSID(), createRemoteForm(dialogInstance), ModalityType.DIALOG_MODAL));
         if (dialogInstance.getFormResult() == FormCloseType.CLOSE) {
             return null;
         }

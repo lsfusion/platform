@@ -7,12 +7,14 @@ import java.io.IOException;
 
 public class FormClientAction extends ExecuteClientAction {
 
-    public ModalityType modalityType;
+    public String formSID;
     public RemoteFormInterface remoteForm;
+    public ModalityType modalityType;
 
-    public FormClientAction(RemoteFormInterface remoteForm, ModalityType modalityType) {
-        this.modalityType = modalityType;
+    public FormClientAction(String formSID, RemoteFormInterface remoteForm, ModalityType modalityType) {
+        this.formSID = formSID;
         this.remoteForm = remoteForm;
+        this.modalityType = modalityType;
     }
 
     @Override

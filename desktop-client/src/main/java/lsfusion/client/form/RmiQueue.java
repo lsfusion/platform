@@ -1,21 +1,28 @@
 package lsfusion.client.form;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.*;
+import lsfusion.base.Callback;
+import lsfusion.base.ERunnable;
+import lsfusion.base.Provider;
+import lsfusion.base.Result;
+import lsfusion.client.ClientLoggers;
 import lsfusion.client.SwingUtils;
 import lsfusion.interop.DaemonThreadFactory;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.*;
 
 public class RmiQueue {
+    private static final Logger logger = ClientLoggers.invocationLogger;
+
     public static final long FOREVER = 3L*24L*60L*60L*1000L;
 
     private RmiFuture currentDispatchingFuture;
 
     private final Queue<RmiFuture> rmiFutures = new ArrayDeque<RmiFuture>();
-    private final ExecutorService rmiExecutor = Executors.newCachedThreadPool(new DaemonThreadFactory("-client-dispatch-"));
+    private final ExecutorService rmiExecutor;
 
     private final TableManager tableManager;
     private final Provider<String> serverMessageProvider;
@@ -25,10 +32,12 @@ public class RmiQueue {
 
     private long nextRmiRequestIndex = 0;
 
-    public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider, AsyncListener asyncListener) {
+    public RmiQueue(String name, TableManager tableManager, Provider<String> serverMessageProvider, AsyncListener asyncListener) {
         this.serverMessageProvider = serverMessageProvider;
         this.tableManager = tableManager;
         this.asyncListener = asyncListener;
+
+        rmiExecutor = Executors.newCachedThreadPool(new DaemonThreadFactory("-rmi-queue-" + name));
     }
 
     public <T> void asyncRequest(RmiRequest<T> request) {
@@ -81,7 +90,6 @@ public class RmiQueue {
     }
 
     public <T> T syncRequest(final RmiRequest<T> request) {
-//        System.out.println("----Sync request # " + nextRmiRequestIndex);
 
         try {
             final Result<T> result = new Result<T>();
@@ -93,6 +101,10 @@ public class RmiQueue {
                     request.done(r);
                 }
             });
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Sync request: " + request);
+            }
 
             forceProcessAllRequests();
 
@@ -116,10 +128,13 @@ public class RmiQueue {
     }
 
     private <T> void execRmiRequestInternal(RmiRequest<T> request, Callback<T> callback) {
-//        System.out.println("----Async request # " + nextRmiRequestIndex);
         SwingUtils.assertDispatchThread();
 
         request.setRequestIndex(nextRmiRequestIndex++);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Sync request: " + request);
+        }
 
         RmiFuture<T> rmiFuture = new RmiFuture<T>(request, callback);
 
@@ -191,6 +206,11 @@ public class RmiQueue {
 
         public void execCallback() throws Exception {
             SwingUtils.assertDispatchThread();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("executing RmiFutureCallback: " + request);
+            }
+
 
             T result;
 

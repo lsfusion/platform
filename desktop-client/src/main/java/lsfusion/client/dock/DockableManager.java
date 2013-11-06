@@ -93,7 +93,7 @@ public class DockableManager {
     }
 
     public void openModalForm(String formSID, ClientNavigator navigator, boolean showFullScreen) throws IOException, ClassNotFoundException {
-        new ClientModalForm(Main.frame, navigator.remoteNavigator.createForm(formSID, null, true, true)).showDialog(showFullScreen);
+        new ClientModalForm(formSID, Main.frame, navigator.remoteNavigator.createForm(formSID, null, true, true)).showDialog(showFullScreen);
     }
 
     public void openReport(String reportSID, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {

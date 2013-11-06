@@ -2,6 +2,7 @@ package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.EProvider;
+import lsfusion.client.ClientLoggers;
 import lsfusion.client.form.BusyDisplayer;
 import lsfusion.interop.remote.MethodInvocation;
 import lsfusion.interop.remote.PendingRemoteInterface;
@@ -19,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implements PendingRemoteInterface {
-    private static Logger logger = Logger.getLogger(RemoteFormProxy.class);
+    private static Logger logger = ClientLoggers.remoteLogger;
 
     protected final T target;
 

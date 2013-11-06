@@ -239,7 +239,7 @@ public class DockableMainFrame extends MainFrame {
         EditReportInvoker editInvoker = new EditReportInvoker() {
             @Override
             public void invokeEditReport() throws RemoteException {
-                new ClientFormController(Main.remoteNavigator.createForm(reportSID, null, false, true), mainNavigator).runEditReport();
+                new ClientFormController(reportSID, Main.remoteNavigator.createForm(reportSID, null, false, true), mainNavigator).runEditReport();
             }
         };
 

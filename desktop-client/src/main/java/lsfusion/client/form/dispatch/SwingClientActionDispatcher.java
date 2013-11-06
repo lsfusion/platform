@@ -150,7 +150,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         } else if (modality.isModal()) {
             Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
             AWTEvent currentEvent = EventQueue.getCurrentEvent();
-            new ClientModalForm(owner, remoteForm, modality.isDialog(), currentEvent).showDialog(modality.isFullScreen());
+            new ClientModalForm(action.formSID, owner, remoteForm, modality.isDialog(), currentEvent).showDialog(modality.isFullScreen());
         } else {
             Main.frame.runForm(remoteForm, null);
         }

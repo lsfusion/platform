@@ -23,7 +23,7 @@ public class ClientFormDockable extends ClientDockable {
     private ClientFormDockable(ClientNavigator navigator, String formSID, RemoteFormInterface remoteForm, DockableManager dockableManager, final MainFrame.FormCloseListener closeListener) throws IOException {
         super(formSID, dockableManager);
 
-        clientForm = new ClientFormController(remoteForm, navigator) {
+        clientForm = new ClientFormController(formSID, remoteForm, navigator) {
             @Override
             public void hideForm() {
                 if (closeListener != null) {
