@@ -541,4 +541,21 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
         return this;
     }
+    
+    public void saveToDBForDebug(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+        SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL();
+        
+        dbSql.startTransaction();
+        dbSql.ensureTable(this);
+        dbSql.insertBatchRecords(name, keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass).getMap());
+        dbSql.commitTransaction();
+        
+        dbSql.close();
+    }
+    
+    public static void saveToDBForDebug(ImSet<? extends Value> values, SQLSession sql) throws SQLException, IllegalAccessException, ClassNotFoundException, InstantiationException {
+        for(Value value : values)
+            if(value instanceof SessionTable)
+                ((SessionTable)value).saveToDBForDebug(sql);
+    }
 }

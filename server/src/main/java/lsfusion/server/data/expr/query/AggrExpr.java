@@ -74,7 +74,11 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
         }
         
         protected Where calculateWhere() { // чтобы с аспектами проще было
-            return type.getWhere(exprs).and(getOrderWhere(orders, ordersNotNull));
+            return type.getWhere(exprs).and(getOrderWhere());
+        }
+        
+        public Where getOrderWhere() { // редкое использование поэтому не кэшируем
+            return AggrExpr.getOrderWhere(orders, ordersNotNull); 
         }
 
         public Expr getMainExpr() {
