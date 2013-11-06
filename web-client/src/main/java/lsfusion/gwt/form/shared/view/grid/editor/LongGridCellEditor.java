@@ -18,4 +18,14 @@ public class LongGridCellEditor extends TextBasedGridCellEditor {
             throw new TextBasedGridCellEditor.ParseException();
         }
     }
+
+    @Override
+    protected boolean isStringValid(String string) {
+        try {
+            Long.parseLong(string);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 }

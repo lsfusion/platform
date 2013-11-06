@@ -3,11 +3,15 @@ package lsfusion.gwt.form.shared.view.grid.editor;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.form.client.form.ui.CopyPasteUtils;
 import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
 import lsfusion.gwt.form.shared.view.GFont;
+import lsfusion.gwt.form.shared.view.GKeyStroke;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
@@ -47,13 +51,14 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         if (editEvent instanceof NativeEditEvent) {
             NativeEvent nativeEvent = ((NativeEditEvent) editEvent).getNativeEvent();
             String eventType = nativeEvent.getType();
-            if (KEYDOWN.equals(eventType) && (nativeEvent.getKeyCode() == KeyCodes.KEY_DELETE || nativeEvent.getKeyCode() == KeyCodes.KEY_BACKSPACE)) {
+            if (KEYDOWN.equals(eventType) && (GKeyStroke.isDeleteKeyEvent(nativeEvent) || GKeyStroke.isBackspaceKeyEvent(nativeEvent))) {
                 currentText = "";
                 selectAll = false;
             } else if (KEYPRESS.equals(eventType)) {
                 int charCode = nativeEvent.getCharCode();
                 if (charCode != 0) {
-                    currentText = String.valueOf((char)charCode);
+                    String input = String.valueOf((char)charCode);
+                    currentText = checkInputValidity(parent, input) ? input : "";
                     selectAll = false;
                 }
             }
@@ -86,7 +91,12 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
             } else if (keyDown && keyCode == KeyCodes.KEY_UP) {
                 arrowPressed(event, parent, false);
             } else {
-                currentText = getCurrentText(parent);
+                if (GKeyStroke.isCommonEditKeyEvent(event) && (!GKeyStroke.isDeleteKeyEvent(event) || keyPress) && !GKeyStroke.isBackspaceKeyEvent(event) &&
+                        !checkInputValidity(parent, String.valueOf((char) event.getCharCode()))) {
+                    stopPropagation(event);
+                } else {
+                    currentText = getCurrentText(parent);
+                }
             }
         } else if (BLUR.equals(type)) {
             // Cancel the change. Ensure that we are blurring the input element and
@@ -99,6 +109,21 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
                 }
             }
         }
+    }
+    
+    private boolean checkInputValidity(Element parent, String stringToAdd) {
+        InputElement input = getInputElement(parent);
+        int cursorPosition = textBoxImpl.getCursorPos((com.google.gwt.user.client.Element) (Element) input);
+        int selectionLength = textBoxImpl.getSelectionLength((com.google.gwt.user.client.Element) (Element) input);
+        String currentValue = input.getValue();
+        String firstPart = currentValue.substring(0, cursorPosition);
+        String secondPart = currentValue.substring(cursorPosition + selectionLength);
+        
+        return isStringValid(firstPart + stringToAdd + secondPart);
+    }
+    
+    protected boolean isStringValid(String string) {
+        return true;
     }
 
     protected String renderToString(Object value) {
@@ -116,8 +141,21 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     @Override
-    public void renderDom(Cell.Context context, DataGrid table, DivElement cellParent, Object value) {
-        InputElement input = Document.get().createTextInputElement();
+    public void renderDom(Cell.Context context, DataGrid table, final DivElement cellParent, Object value) {
+        final InputElement input = Document.get().createTextInputElement();
+        
+        Event.sinkEvents(input, Event.ONPASTE);
+        Event.setEventListener(input, new EventListener() {
+            @Override
+            public void onBrowserEvent(Event event) {
+                if (event.getTypeInt() == Event.ONPASTE) {
+                    if (!checkInputValidity(cellParent, CopyPasteUtils.getClipboardData(event))) {
+                        stopPropagation(event);
+                    }
+                }
+            }
+        });
+        
         input.setTabIndex(-1);
         input.setValue(currentText);
         input.addClassName("boxSized");

@@ -15,6 +15,7 @@ import com.google.gwt.user.datepicker.client.DatePicker;
 import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.form.shared.view.GKeyStroke;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
@@ -81,7 +82,7 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
         if (editEvent instanceof NativeEditEvent) {
             NativeEvent nativeEvent = ((NativeEditEvent) editEvent).getNativeEvent();
             String eventType = nativeEvent.getType();
-            if (KEYDOWN.equals(eventType) && nativeEvent.getKeyCode() == KeyCodes.KEY_DELETE) {
+            if (KEYDOWN.equals(eventType) && GKeyStroke.isDeleteKeyEvent(nativeEvent)) {
                 input = "";
                 selectAll = false;
             } else if (KEYPRESS.equals(eventType)) {
@@ -108,6 +109,8 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
         editBox.getElement().focus();
         if (selectAll) {
             editBox.setSelectionRange(0, editBox.getValue().length());
+        } else {
+            editBox.setSelectionRange(editBox.getValue().length(), 0);
         }
     }
 

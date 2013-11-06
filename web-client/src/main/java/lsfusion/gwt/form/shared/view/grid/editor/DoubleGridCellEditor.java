@@ -37,4 +37,14 @@ public class DoubleGridCellEditor extends TextBasedGridCellEditor {
     protected Object parseNotNullString(String doubleString) {
         return format.parse(doubleString);
     }
+
+    @Override
+    protected boolean isStringValid(String string) {
+        try {
+            format.parse(string);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 }

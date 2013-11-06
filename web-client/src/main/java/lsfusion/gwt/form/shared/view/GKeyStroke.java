@@ -122,9 +122,17 @@ public class GKeyStroke implements Serializable {
     public static boolean isSpaceKeyEvent(NativeEvent event) {
         return event.getKeyCode() == KEY_SPACE;
     }
+    
+    public static boolean isBackspaceKeyEvent(NativeEvent event) {
+        return event.getKeyCode() == KEY_BACKSPACE;
+    }
+    
+    public static boolean isDeleteKeyEvent(NativeEvent event) {
+        return event.getKeyCode() == KEY_DELETE;
+    }
 
     public static boolean isEditObjectEvent(NativeEvent event) {
-        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_BACKSPACE;
+        return KEYDOWN.equals(event.getType()) && isBackspaceKeyEvent(event);
     }
 
     public static boolean isCommonEditKeyEvent(NativeEvent event) {
@@ -144,7 +152,7 @@ public class GKeyStroke implements Serializable {
 
     public static boolean isCommonNumberEditEvent(NativeEvent event) {
         return isCommonEditKeyEvent(event) &&
-               (isDigitKeyEvent(event) || event.getKeyCode() == KEY_DELETE || event.getKeyCode() == KEY_BACKSPACE);
+               (isDigitKeyEvent(event) || (isDeleteKeyEvent(event) && KEYDOWN.equals(event.getType())) || isBackspaceKeyEvent(event));
     }
 
     private static boolean isDigitKeyEvent(NativeEvent event) {
@@ -174,7 +182,7 @@ public class GKeyStroke implements Serializable {
     }
 
     public static boolean isPossibleStartFilteringEvent(NativeEvent event) {
-        return isCommonEditKeyEvent(event) && event.getKeyCode() != KEY_DELETE && event.getKeyCode() != KEY_BACKSPACE;
+        return isCommonEditKeyEvent(event) && (!isDeleteKeyEvent(event) || KEYPRESS.equals(event.getType())) && !isBackspaceKeyEvent(event);
     }
 
     public static boolean isReplaceFilterEvent(NativeEvent event) {

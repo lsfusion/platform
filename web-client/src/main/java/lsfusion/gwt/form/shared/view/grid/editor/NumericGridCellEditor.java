@@ -14,4 +14,14 @@ public class NumericGridCellEditor extends DoubleGridCellEditor {
     protected Object parseNotNullString(String numericString) {
         return BigDecimal.valueOf(format.parse(numericString));
     }
+
+    @Override
+    protected boolean isStringValid(String string) {
+        try {
+            BigDecimal.valueOf(format.parse(string));
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 }

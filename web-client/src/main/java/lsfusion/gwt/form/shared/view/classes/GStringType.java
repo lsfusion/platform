@@ -92,7 +92,7 @@ public class GStringType extends GDataType {
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
         if(length.isUnlimited())
             return new TextGridCellEditor(editManager, editProperty);
-        return new StringGridCellEditor(editManager, editProperty, !blankPadded);
+        return new StringGridCellEditor(editManager, editProperty, !blankPadded, length.getValue());
     }
 
     @Override

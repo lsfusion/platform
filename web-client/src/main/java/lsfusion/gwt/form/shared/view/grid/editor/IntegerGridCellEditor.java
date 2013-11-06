@@ -18,4 +18,14 @@ public class IntegerGridCellEditor extends TextBasedGridCellEditor {
             throw new ParseException();
         }
     }
+
+    @Override
+    protected boolean isStringValid(String string) {
+        try {
+            Integer.parseInt(string);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 }
