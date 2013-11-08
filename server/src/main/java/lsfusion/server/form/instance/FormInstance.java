@@ -109,7 +109,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public final boolean showDrop;
 
-    private final boolean interactive; // важно для assertion'а в endApply
+    private boolean interactive = true; // важно для assertion'а в endApply
 
     private ImSet<ObjectInstance> objects;
 
