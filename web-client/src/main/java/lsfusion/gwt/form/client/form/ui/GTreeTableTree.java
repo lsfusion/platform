@@ -78,14 +78,12 @@ public class GTreeTableTree {
 
             GGroupObjectValue parentPath = parentPathBuilder.toGroupObjectValue();
 
-            if (childTree.containsKey(parentPath)) {
-                childTree.get(parentPath).add(key);
-            } else {
-
-                List<GGroupObjectValue> children = new ArrayList<GGroupObjectValue>();
-                children.add(key);
+            List<GGroupObjectValue> children = childTree.get(parentPath);
+            if (children == null) {
+                children = new ArrayList<GGroupObjectValue>();
                 childTree.put(parentPath, children);
             }
+            children.add(key);
         }
 
         for (GTreeTableNode groupNode : getGroupNodes(group.getUpTreeGroup())) {
@@ -107,6 +105,7 @@ public class GTreeTableTree {
         GTreeTableNode[] thisGroupChildren = new GTreeTableNode[syncChilds.size()];
 
         for (GTreeTableNode child : new ArrayList<GTreeTableNode>(parent.getChildren())) {
+
             if (child.getGroup().equals(syncGroup)) {
                 int index = syncChilds.indexOf(child.getKey());
                 if (index == -1) {
@@ -206,7 +205,9 @@ public class GTreeTableTree {
     public ArrayList<GTreeGridRecord> getUpdatedRecords() {
         nodeCounter = 0;
         ArrayList<GTreeGridRecord> result = new ArrayList<GTreeGridRecord>();
-        result.addAll(getNodeChildrenRecords(root, 0, null));
+        if (!hasOnlyExpandningNodeAsChild(root)) {
+            result.addAll(getNodeChildrenRecords(root, 0, null));
+        }
         return result;
     }
 

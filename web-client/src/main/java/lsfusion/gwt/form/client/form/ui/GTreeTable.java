@@ -325,6 +325,17 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
+    private void expandNode(GTreeTableNode node) {
+        if (expandedNodes != null && expandedNodes.contains(node) && !tree.hasOnlyExpandningNodeAsChild(node)) {
+            node.setOpen(true);
+            for (GTreeTableNode child : node.getChildren()) {
+                expandNode(child);
+            }
+        } else {
+            node.setOpen(false);
+        }
+    }
+
     private void setCurrentRecord(GTreeGridRecord record) {
         Log.debug("Setting current record to: " + record);
         this.selectedRecord = record;
@@ -364,17 +375,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public Object getSelectedValue(GPropertyDraw property) {
         GTreeGridRecord record = getSelectedRecord();
         return record == null ? null : tree.getValue(record.getGroup(), getColumnIndex(property) - 1, record.getKey());
-    }
-
-    private void expandNode(GTreeTableNode node) {
-        if (expandedNodes != null && expandedNodes.contains(node) && !tree.hasOnlyExpandningNodeAsChild(node)) {
-            node.setOpen(true);
-            for (GTreeTableNode child : node.getChildren()) {
-                expandNode(child);
-            }
-        } else {
-            node.setOpen(false);
-        }
     }
 
     public List<GPropertyDraw> getColumnProperties() {
