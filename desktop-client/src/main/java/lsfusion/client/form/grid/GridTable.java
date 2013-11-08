@@ -167,32 +167,6 @@ public class GridTable extends ClientPropertyTable {
             }
         });
 
-        addComponentListener(new ComponentAdapter() {
-            private int pageSize = 50;
-
-            public void componentResized(ComponentEvent ce) {
-                //баг с прорисовкой хэдера
-
-                // Listener срабатывает в самом начале, когда компонент еще не расположен
-                // В таком случае нет смысла вызывать изменение pageSize
-                if (groupObject.pageSize != 0) {
-                    if (getParent().getHeight() == 0) {
-                        return;
-                    }
-
-                    int newPageSize = getParent().getHeight() / getRowHeight() + 1;
-                    if (newPageSize != pageSize) {
-                        try {
-                            form.changePageSize(groupObject, newPageSize);
-                            pageSize = newPageSize;
-                        } catch (IOException e) {
-                            throw new RuntimeException(getString("errors.error.changing.page.size"), e);
-                        }
-                    }
-                }
-            }
-        });
-
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
                 if (KeyEvent.getKeyText(e.getKeyCode()).equals("Shift") && getSelectedObject() != null) {
@@ -1100,7 +1074,7 @@ public class GridTable extends ClientPropertyTable {
         }
     }
 
-    void configureWheelScrolling(final JScrollPane pane) {
+    void configureEnclosingScrollPane(final JScrollPane pane) {
         assert pane.getViewport() == getParent();
         if (groupObject.pageSize != 0) {
             pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
@@ -1126,6 +1100,27 @@ public class GridTable extends ClientPropertyTable {
                                 keyController.record(true, firstRow);
                                 selectRow(firstRow);
                             }
+                        }
+                    }
+                }
+            });
+
+            pane.addComponentListener(new ComponentAdapter() {
+                private int pageSize = 50;
+                public void componentResized(ComponentEvent ce) {
+                    // Listener срабатывает в самом начале, когда компонент еще не расположен
+                    // В таком случае нет смысла вызывать изменение pageSize
+                    if (getParent().getHeight() == 0) {
+                        return;
+                    }
+
+                    int newPageSize = getParent().getHeight() / getRowHeight() + 1;
+                    if (newPageSize != pageSize) {
+                        try {
+                            form.changePageSize(groupObject, newPageSize);
+                            pageSize = newPageSize;
+                        } catch (IOException e) {
+                            throw new RuntimeException(getString("errors.error.changing.page.size"), e);
                         }
                     }
                 }

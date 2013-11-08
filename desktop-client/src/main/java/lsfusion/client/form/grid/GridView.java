@@ -46,7 +46,7 @@ public class GridView extends JPanel {
 
         gridTable.setFillsViewportHeight(true);
 
-        gridTable.configureWheelScrolling(pane);
+        gridTable.configureEnclosingScrollPane(pane);
 
         grid.installMargins(this);
 
