@@ -331,7 +331,11 @@ public class DockableMainFrame extends MainFrame {
         final JMenuItem reload = new JMenuItem((getString("layout.menu.window.default.location")));
         reload.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mainControl.getContentArea().deploy(createGrid());
+                // deploy почему-то вываливается с ошибкой... похоже на баг в DockingFrames,
+                // но т.к. в данном случае мы контролируем, что ложить в лэйаут, то просто выраубаем валидацию..
+                // mainControl.getContentArea().deploy(createGrid()); <=> ...dropTree(.., true)
+                mainControl.getContentArea().getCenter().dropTree(createGrid().toTree(), false);
+
                 setDefaultVisible();
                 navigatorController.update();
             }

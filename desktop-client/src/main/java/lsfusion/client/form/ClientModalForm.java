@@ -116,8 +116,7 @@ public class ClientModalForm extends JDialog {
             form.selectProperty(initialFilterPropertyDrawID);
         }
 
-        if (initFilterKeyEvent != null && initialFilterPropertyDrawID > 0 &&
-            KeyStrokes.isSuitableStartFilteringEvent(initFilterKeyEvent)) {
+        if (initFilterKeyEvent != null && initialFilterPropertyDrawID > 0 && KeyStrokes.isSuitableDialogFilteringEvent(initFilterKeyEvent)) {
             form.quickEditFilter(initFilterKeyEvent, initialFilterPropertyDrawID);
         } else {
             addWindowListener(new WindowAdapter() {

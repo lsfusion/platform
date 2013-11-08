@@ -192,6 +192,10 @@ public class KeyStrokes {
         return false;
     }
 
+    public static boolean isSuitableDialogFilteringEvent(EventObject event) {
+        return isSuitableStartFilteringEvent(event) && !isSpaceEvent(event);
+    }
+
     public static boolean isSuitableEditKeyEvent(EventObject event) {
         if (event instanceof KeyEvent) {
             KeyEvent keyEvent = (KeyEvent) event;

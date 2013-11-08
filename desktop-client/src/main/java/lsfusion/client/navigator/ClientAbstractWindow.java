@@ -46,4 +46,9 @@ public class ClientAbstractWindow<C extends JComponent> extends IdentityObject i
     public int hashCode() {
         return sID.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "Window[sID:" + sID + ", caption: " + caption + "]";
+    }
 }

@@ -1,7 +1,7 @@
 package lsfusion.client.dock;
 
 import bibliothek.gui.dock.common.CControl;
-import bibliothek.gui.dock.common.CGridArea;
+import bibliothek.gui.dock.common.CWorkingArea;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.event.CDockableLocationEvent;
@@ -25,7 +25,7 @@ public class DockableManager {
 
     private ClientDockableFactory dockableFactory;
 
-    private CGridArea formArea;
+    private CWorkingArea formArea;
 
     private DockableRepository forms;
     
@@ -45,7 +45,7 @@ public class DockableManager {
         return forms;
     }
 
-    public CGridArea getFormArea() {
+    public CWorkingArea getFormArea() {
         return formArea;
     }
 
@@ -67,10 +67,9 @@ public class DockableManager {
                 }
             }
         });
-        
-        page.setLocation(formArea.getStationLocation());
-        control.addDockable(page);
-        
+
+        formArea.add(page);
+
         internalModeChangeOnSetVisible = true;
         page.setVisible(true);
         internalModeChangeOnSetVisible = false;
