@@ -4,6 +4,7 @@ public class RmiRequestWrapper<T> extends RmiRequest<T> {
     private final RmiRequest<T> target;
 
     public RmiRequestWrapper(RmiRequest<T> target) {
+        super("wrapped_" + target.getName());
         this.target = target;
     }
 
