@@ -116,7 +116,7 @@
         </layout>
     </appender>
 
-    <appender name="invocationlog" class="org.apache.log4j.rolling.RollingFileAppender">
+    <appender name="invocationlog" class="lsfusion.logging.FlushableRollingFileAppender">
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
             <param name="maxIndex" value="12"/>
@@ -153,6 +153,7 @@
     <category name="PausableInvocationsLogger" additivity="false">
         <priority value="ALL"/>
         <appender-ref ref="invocationlog"/>
+        <!--<appender-ref ref="stdout"/>-->
     </category>
 
     <category name="ScriptLogger" additivity="false">

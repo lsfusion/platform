@@ -32,12 +32,12 @@ public class RmiQueue {
 
     private long nextRmiRequestIndex = 0;
 
-    public RmiQueue(String name, TableManager tableManager, Provider<String> serverMessageProvider, AsyncListener asyncListener) {
+    public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider, AsyncListener asyncListener) {
         this.serverMessageProvider = serverMessageProvider;
         this.tableManager = tableManager;
         this.asyncListener = asyncListener;
 
-        rmiExecutor = Executors.newCachedThreadPool(new DaemonThreadFactory("-rmi-queue-" + name));
+        rmiExecutor = Executors.newCachedThreadPool(new DaemonThreadFactory("rmi-queue"));
     }
 
     public <T> void asyncRequest(RmiRequest<T> request) {
@@ -133,7 +133,7 @@ public class RmiQueue {
         request.setRequestIndex(nextRmiRequestIndex++);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Sync request: " + request);
+            logger.debug("Executing request's thread: " + request);
         }
 
         RmiFuture<T> rmiFuture = new RmiFuture<T>(request, callback);

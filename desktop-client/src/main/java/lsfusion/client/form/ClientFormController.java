@@ -116,7 +116,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public ClientFormController(String iformSID, RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
-        formSID = iformSID;
+        formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
         isDialog = iisDialog;
         isModal = iisModal;
 
@@ -138,7 +138,7 @@ public class ClientFormController implements AsyncListener {
         try {
             form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
-            rmiQueue = new RmiQueue(formSID, tableManager, serverMessageProvider, this);
+            rmiQueue = new RmiQueue(tableManager, serverMessageProvider, this);
 
             formLayout = new ClientFormLayout(this, form.mainContainer);
 

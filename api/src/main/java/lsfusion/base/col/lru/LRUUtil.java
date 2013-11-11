@@ -68,7 +68,7 @@ public class LRUUtil {
         final boolean concurrent = !tenuredGenPool.isCollectionUsageThresholdSupported();
         final long longCriticalMem = (long) Math.floor(criticalMem);
 
-        scheduler = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("-lru-tuner-"));
+        scheduler = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("lru-tuner"));
 
         if(concurrent)
             tenuredGenPool.setUsageThreshold(longCriticalMem);

@@ -14,7 +14,7 @@ public class DaemonThreadFactory implements ThreadFactory {
         group = s != null
                 ? s.getThreadGroup()
                 : Thread.currentThread().getThreadGroup();
-        this.namePrefix = "pool-" + poolNumber.getAndIncrement() + threadNamePrefix;
+        this.namePrefix = "pool-" + poolNumber.getAndIncrement() + "-" + threadNamePrefix + "-";
     }
 
     public Thread newThread(Runnable r) {

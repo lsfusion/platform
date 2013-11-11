@@ -41,7 +41,7 @@
         </filter>
     </appender>
 
-    <appender name="remotelog" class="org.apache.log4j.rolling.RollingFileAppender">
+    <appender name="remotelog" class="lsfusion.logging.FlushableRollingFileAppender">
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
             <param name="maxIndex" value="5"/>
