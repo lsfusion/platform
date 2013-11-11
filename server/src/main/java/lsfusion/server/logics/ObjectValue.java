@@ -11,9 +11,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.form.instance.ChangedData;
-import lsfusion.server.form.instance.GroupObjectInstance;
-import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.CompareValue;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.Modifier;
@@ -41,6 +39,10 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     }
 
     public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {
+        return getExpr();
+    }
+
+    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged) {
         return getExpr();
     }
 
@@ -72,7 +74,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     
     public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {return false;}
     public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) {return false;}
-    public boolean dataUpdated(ChangedData changedProps, Modifier modifier) {return false;}
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) {return false;}
     public void fillProperties(MSet<CalcProperty> properties) {}
     public boolean isInInterface(GroupObjectInstance classGroup) {return true;}
 

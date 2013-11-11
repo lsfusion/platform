@@ -1,7 +1,6 @@
 package lsfusion.server.form.instance.filter;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -63,8 +62,8 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public boolean dataUpdated(ChangedData changedProps, Modifier modifier) {
-        return super.dataUpdated(changedProps, modifier) || value.dataUpdated(changedProps, modifier);
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) {
+        return super.dataUpdated(changedProps, reallyChanged, modifier) || value.dataUpdated(changedProps, reallyChanged, modifier);
     }
 
     @Override
@@ -77,8 +76,8 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         return super.objectUpdated(gridGroups) || value.objectUpdated(gridGroups);
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
-        Where where = property.getExpr(mapKeys, modifier).compare(value.getExpr(mapKeys, modifier), compare);
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) {
+        Where where = property.getExpr(mapKeys, modifier, reallyChanged).compare(value.getExpr(mapKeys, modifier, reallyChanged), compare);
         return negate ? where.not() : where;
     }
 

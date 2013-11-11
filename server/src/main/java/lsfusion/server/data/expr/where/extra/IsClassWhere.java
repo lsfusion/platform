@@ -8,9 +8,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamLazy;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.classes.BaseClass;
-import lsfusion.server.classes.ObjectValueClassSet;
-import lsfusion.server.classes.ValueClassSet;
+import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.Stat;
@@ -70,7 +68,18 @@ public class IsClassWhere extends DataWhere {
         if(compile instanceof ToString)
             return expr.getSource(compile) + " isClass(" + classes + ")";
 
-        return ((ObjectValueClassSet)classes).getWhereString(classExpr.getSource(compile));
+        if(classes instanceof ObjectValueClassSet) // основной case
+            return ((ObjectValueClassSet)classes).getWhereString(classExpr.getSource(compile));
+        // редкая ситуация, связанная с приведением типов в меньшую сторону
+        assert classExpr == null;
+        String exprSource = expr.getSource(compile);
+        if(classes instanceof StringClass)  
+            return "char_length(" + exprSource + ") <= " + ((StringClass)classes).length;
+        if(classes instanceof IntegralClass) {
+            IntegralClass integralClass = (IntegralClass) classes;
+            return exprSource + " BETWEEN " + integralClass.getString(integralClass.getInfiniteValue(true), compile.syntax) + " AND " + integralClass.getString(integralClass.getInfiniteValue(false), compile.syntax);
+        } 
+        throw new UnsupportedOperationException();
     }
 
     // а вот тут надо извратится и сделать Or проверив сначала null'ы

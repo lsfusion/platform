@@ -53,10 +53,24 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
     }
 
     public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier) {
-        return getExpr(classSource, modifier, null);        
+        return getExpr(classSource, modifier, (WhereBuilder)null);
     }
-    
-    public boolean isReallyChanged(Modifier modifier) {
+
+    public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, ReallyChanged reallyChanged) {
+        WhereBuilder changedWhere = null;
+        if(reallyChanged!=null)
+            changedWhere = new WhereBuilder();
+        Expr expr = getExpr(classSource, modifier, changedWhere);
+        if(reallyChanged!=null)
+            if(!changedWhere.toWhere().isFalse())
+                reallyChanged.addChange(this);            
+        return expr;
+    }
+
+    public boolean isReallyChanged(Modifier modifier, ReallyChanged reallyChanged) {
+        if(reallyChanged.containsChange(this))
+            return true;
+            
         ImRevMap<ObjectInstance,KeyExpr> keys = KeyExpr.getMapKeys(getObjectInstances().toSet());
         WhereBuilder changedWhere = new WhereBuilder();
         getExpr(keys, modifier, changedWhere);
@@ -83,13 +97,13 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         properties.add(property);
     }
 
-    public boolean dataUpdated(ChangedData changedProps, Modifier modifier) {
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) {
         if(!changedProps.props.contains(property))
             return false;
         
         if(changedProps.wasRestart)
             return true;
         
-        return isReallyChanged(modifier); // cache пока не используем так как за многим надо следить
+        return isReallyChanged(modifier, reallyChanged); // cache пока не используем так как за многим надо следить
     }
 }

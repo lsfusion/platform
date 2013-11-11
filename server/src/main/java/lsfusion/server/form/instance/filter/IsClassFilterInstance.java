@@ -7,6 +7,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.form.instance.CalcPropertyObjectInstance;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.form.instance.ReallyChanged;
 import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.Modifier;
@@ -28,7 +29,7 @@ public class IsClassFilterInstance<P extends PropertyInterface> extends Property
         isClass = form.getCustomClass(inStream.readInt());
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) {
         return IsClassProperty.getWhere(isClass, property.getExpr(mapKeys, modifier), modifier);
     }
 }

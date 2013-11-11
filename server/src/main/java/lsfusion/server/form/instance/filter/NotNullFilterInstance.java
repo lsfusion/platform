@@ -42,7 +42,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
         checkChange = false;
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) {
         return property.getExpr(mapKeys, modifier).getWhere();
     }
 

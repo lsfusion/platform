@@ -34,8 +34,8 @@ public class NotFilterInstance extends FilterInstance {
         return filter.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(ChangedData changedProps, Modifier modifier) {
-        return filter.dataUpdated(changedProps, modifier);
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) {
+        return filter.dataUpdated(changedProps, reallyChanged, modifier);
     }
 
     public void fillProperties(MSet<CalcProperty> properties) {
@@ -46,8 +46,8 @@ public class NotFilterInstance extends FilterInstance {
         return filter.getApplyObject();
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
-        return filter.getWhere(mapKeys, modifier).not();
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) {
+        return filter.getWhere(mapKeys, modifier, reallyChanged).not();
     }
 
     public boolean isInInterface(GroupObjectInstance classGroup) {

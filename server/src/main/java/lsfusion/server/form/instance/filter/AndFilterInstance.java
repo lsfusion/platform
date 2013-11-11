@@ -6,6 +6,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.form.instance.ReallyChanged;
 import lsfusion.server.session.Modifier;
 
 import java.io.DataInputStream;
@@ -22,8 +23,8 @@ public class AndFilterInstance extends OpFilterInstance {
         super(inStream, form);
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
-        return op1.getWhere(mapKeys, modifier).and(op2.getWhere(mapKeys, modifier));
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) {
+        return op1.getWhere(mapKeys, modifier, reallyChanged).and(op2.getWhere(mapKeys, modifier, reallyChanged));
     }
 
     public boolean isInInterface(GroupObjectInstance classGroup) {

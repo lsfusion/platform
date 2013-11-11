@@ -110,6 +110,22 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         return operator1.getSource(compile) + getCompareSource(compile) + operator2.getSource(compile);
     }
 
+    protected String getNotSource(CompileSource compile) {
+        String op1Source = operator1.getSource(compile);
+        String op2Source = operator2.getSource(compile);
+
+        String result = "";
+        if(!compile.means(operator1.getNotNullWhere()))
+            result = op1Source + " IS NULL";
+        if(!compile.means(operator2.getNotNullWhere()))
+            result = (result.length()==0?"":result+" OR ") + op2Source + " IS NULL";
+        String compare = "NOT " + getSource(compile);
+        if(result.length()==0)
+            return compare;
+        else
+            return "(" + result + " OR " + compare + ")";
+    }
+
     protected static Where create(BaseExpr operator1, BaseExpr operator2, BinaryWhere where) {
         return create(where).and(operator1.getOrWhere().and(operator2.getOrWhere()));
     }

@@ -78,7 +78,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironment implements CacheReallyChanged {
+public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironment implements ReallyChanged {
 
     public final LogicsInstance logicsInstance;
 
@@ -1086,12 +1086,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     protected Map<PropertyDrawInstance, Boolean> isShown = new HashMap<PropertyDrawInstance, Boolean>();
 
     // кэш на изменение
-    protected Map<CalcPropertyObjectInstance, Boolean> isReallyChanged = new HashMap<CalcPropertyObjectInstance, Boolean>();
-    public Boolean getReallyChanged(CalcPropertyObjectInstance instance) {
-        return isReallyChanged.get(instance);
+    protected Set<CalcPropertyObjectInstance> isReallyChanged = new HashSet<CalcPropertyObjectInstance>();
+    public boolean containsChange(CalcPropertyObjectInstance instance) {
+        return isReallyChanged.contains(instance);
     }
-    public Boolean putReallyChanged(CalcPropertyObjectInstance instance, boolean value) {
-        return isReallyChanged.put(instance, value);
+    public void addChange(CalcPropertyObjectInstance instance) {
+        isReallyChanged.add(instance);
     }
 
     // проверки видимости (для оптимизации pageframe'ов)
@@ -1167,7 +1167,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private boolean dataUpdated(Updated updated, ChangedData changedProps) {
-        return updated.dataUpdated(changedProps, getModifier());
+        return updated.dataUpdated(changedProps, this, getModifier());
     }
 
     void applyFilters() {
@@ -1198,7 +1198,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         for (T propertyReader : propertySet) {
-            selectProps.addProperty(propertyReader, propertyReader.getPropertyObjectInstance().getExpr(selectProps.getMapExprs(), getModifier()));
+            selectProps.addProperty(propertyReader, propertyReader.getPropertyObjectInstance().getExpr(selectProps.getMapExprs(), getModifier(), this));
         }
 
         ImMap<ImMap<ObjectInstance, DataObject>, ImMap<T, ObjectValue>> queryResult = selectProps.executeClasses(this, BL.LM.baseClass).getMap();
@@ -1244,7 +1244,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : getOrderGroups()) {
-            ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh, result, mChangedProps);
+            ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh, result, mChangedProps, this);
             if (selectObjects != null) // то есть нужно изменять объект
                 updateGroupObject = new GroupObjectValue(group, selectObjects);
 

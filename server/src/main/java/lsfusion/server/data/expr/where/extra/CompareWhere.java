@@ -71,22 +71,6 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
         return where;
     }
 
-    protected String getNotSource(CompileSource compile) {
-        String op1Source = operator1.getSource(compile);
-        String op2Source = operator2.getSource(compile);
-
-        String result = "";
-        if(!compile.means(operator1.getNotNullWhere()))
-            result = op1Source + " IS NULL";
-        if(!compile.means(operator2.getNotNullWhere()))
-            result = (result.length()==0?"":result+" OR ") + op2Source + " IS NULL";
-        String compare = "NOT " + op1Source + getCompareSource(compile) + op2Source;
-        if(result.length()==0)
-            return compare;
-        else
-            return "(" + result + " OR " + compare + ")";
-    }
-
     @Override
     public MeanClassWhere getMeanClassWhere() {
         ImSet<ImSet<VariableClassExpr>> comps = SetFact.EMPTY();

@@ -75,7 +75,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     }
 
     public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) { return !objectInGrid(gridGroups) && (updated & UPDATED_OBJECT)!=0; }
-    public boolean dataUpdated(ChangedData changedProps, Modifier modifier) { return false; }
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) { return false; }
     public void fillProperties(MSet<CalcProperty> properties) { }
 
     protected Expr getExpr() {
@@ -88,6 +88,11 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
             return result;
         else
             return getExpr();
+    }
+
+    @Override
+    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged) {
+        return getExpr(classSource, modifier);
     }
 
     public GroupObjectInstance getApplyObject() {
