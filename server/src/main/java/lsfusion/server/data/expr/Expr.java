@@ -117,7 +117,8 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
 //    public abstract Expr sum(Expr expr);
     public Expr scale(int coeff) {
-        if(coeff==1) return this;
+        // нельзя делать эту оптимизацию так как идет проверка на 0 в логике
+//        if(coeff==1) return this;
 
         MLinearOperandMap map = new MLinearOperandMap();
         map.add(this,coeff);
