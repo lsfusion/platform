@@ -1,6 +1,6 @@
 MODULE Backup;
 
-REQUIRE System;
+REQUIRE System, Reflection;
 
 makeBackup 'Сделать резервное копирование'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' TOOLBAR;
 saveBackup 'Скачать резервную копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' TOOLBAR;
@@ -20,22 +20,42 @@ logBackup 'Лог' = DATA TEXT (Backup);
 backupFileName 'Имя файла резервной копии' = DATA SESSION VARSTRING[100] ();
 backupFilePath 'Файл резервной копии' = DATA SESSION VARSTRING[200]();
 
+excludeTable 'Исключить' = DATA SESSION BOOLEAN (Table);
+excludeBackupTable 'Исключена' = DATA BOOLEAN (Backup, Table);
+
 FORM backup 'Резервное копирование'
     OBJECTS b = Backup
     PROPERTIES() makeBackup TODRAW b FORCE PANEL
     PROPERTIES(b) saveBackup TODRAW b FORCE PANEL
     PROPERTIES(b) READONLY dateBackup, timeBackup, fileBackup, fileDeletedBackup, logBackup FORCE PANEL
     PROPERTIES(b) deleteBackup
+    
+    OBJECTS t1 = Table
+    PROPERTIES(t1) sidTable, excludeTable
+    
+    OBJECTS t2 = Table
+        PROPERTIES(t2) sidTable
+        PROPERTIES(b,t2) excludeBackupTable
 ;
 
 DESIGN backup FROM DEFAULT {
     NEW pane {
         fill = 1;
         type = CONTAINERH;
-        ADD b.box;
-        ADD PROPERTY(logBackup(b)) {
+        NEW leftPane {
             fill = 1;
-            panelLabelAbove = TRUE;
+            ADD b.box;
+            ADD t1.box;
+        }
+        NEW rightPane {
+            fill = 1;
+            ADD PROPERTY(logBackup(b)) {
+                fill = 1;
+                panelLabelAbove = TRUE;
+            }
+            ADD t2.box {
+                caption = 'Скопированные таблицы';
+            }
         }
     }
     ADD functions.box;
