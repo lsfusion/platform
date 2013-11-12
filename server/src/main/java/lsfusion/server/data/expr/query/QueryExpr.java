@@ -170,7 +170,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             if(isSelect()) { // assert что expr учавствует в where
                 return new StatPullWheres().proceed(getFullWhere(), getMainExpr());
             } else
-                return Stat.ALOT;
+                return Stat.AGGR;
         }
         protected abstract Expr getMainExpr();
         protected abstract Where getFullWhere();

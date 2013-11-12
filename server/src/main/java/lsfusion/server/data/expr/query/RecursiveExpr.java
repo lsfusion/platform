@@ -114,11 +114,6 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
             return getType().getTypeStat();
         }
 
-        @Override
-        protected Stat getStatValue() {
-            return Stat.ALOT;
-        }
-
         protected Expr getMainExpr() {
             throw new RuntimeException("should not be");
         }
@@ -128,7 +123,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         }
 
         protected boolean isSelect() {
-            throw new RuntimeException("should not be");
+            return false;
         }
         protected boolean isSelectNotInWhere() {
             throw new RuntimeException("should not be");

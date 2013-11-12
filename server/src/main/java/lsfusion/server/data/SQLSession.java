@@ -722,6 +722,8 @@ public class SQLSession extends MutableObject {
         return "SELECT " + SQLSession.stringExpr(fixConcColumns(keyReaders, env), fixConcColumns(propertyReaders, env)) + " FROM (" + select + ") s";
     }
 
+    public boolean outStatement = false;
+    
     @Message("message.sql.execute")
     public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(@ParamMessage String select, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException {
         lockRead();
@@ -745,6 +747,10 @@ public class SQLSession extends MutableObject {
 
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
         PreparedStatement statement = getStatement(select, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
+        
+        if(outStatement)
+            System.out.println(statement.toString());                    
+                    
         MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = MapFact.mOrderExclMap();
         long runTime = 0;
         try {

@@ -152,6 +152,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         assert isStored() && field!=null;
         return (this instanceof DataProperty? ServerResourceBundle.getString("logics.property.primary"):ServerResourceBundle.getString("logics.property.calculated")) + " "+ServerResourceBundle.getString("logics.property")+" : " + caption+", "+mapTable.table.outputField(field, outputTable);
     }
+    
+    public void outClasses(DataSession session, Modifier modifier) throws SQLException {
+        ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
+        new Query<T, String>(mapKeys, getExpr(mapKeys, modifier), "value").outClassesSelect(session.sql, session.baseClass);
+    }
 
     // по выражениям проверяет
     public <P extends PropertyInterface> boolean intersectFull(CalcProperty<P> property, ImMap<P, T> map) {

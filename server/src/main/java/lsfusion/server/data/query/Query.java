@@ -521,7 +521,9 @@ public class Query<K,V> extends IQuery<K,V> {
 
     public void outClassesSelect(SQLSession session, BaseClass baseClass) throws SQLException {
         // выведем на экран
+        session.outStatement = true;
         ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> result = executeClasses(session, baseClass);
+        session.outStatement = false;
 
         for(int i=0,size=result.size();i<size;i++) {
             ImMap<K, DataObject> rowKey = result.getKey(i);
