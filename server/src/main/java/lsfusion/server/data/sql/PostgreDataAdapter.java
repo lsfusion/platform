@@ -1,14 +1,14 @@
 package lsfusion.server.data.sql;
 
-import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.logics.property.ExecutionContext;
-import org.apache.commons.exec.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
+import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.property.ExecutionContext;
+import org.apache.commons.exec.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,6 +18,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
@@ -202,7 +203,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String backupDB(ExecutionContext context, String dumpFileName) throws IOException, InterruptedException {
+    public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
         if (isRedundantString(dumpDir) || isRedundantString(binPath)) {
             context.delayUserInterfaction(new MessageClientAction(getString("logics.backup.path.not.specified"), getString("logics.backup.error")));
             return null;
@@ -229,6 +230,12 @@ public class PostgreDataAdapter extends DataAdapter {
         commandLine.addArgument(port);
         commandLine.addArgument("-U");
         commandLine.addArgument(userID);
+
+        for(String excludeTable : excludeTables) {
+            commandLine.addArgument("-T");
+            commandLine.addArgument(excludeTable.toLowerCase());
+        }
+        
         commandLine.addArgument("-F");
         commandLine.addArgument("custom");
         commandLine.addArgument("-b");

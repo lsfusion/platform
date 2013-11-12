@@ -1,24 +1,25 @@
 package lsfusion.server.data.sql;
 
-import lsfusion.base.col.lru.LRUSVSMap;
-import lsfusion.base.col.lru.LRUUtil;
-import lsfusion.server.logics.property.ExecutionContext;
-import org.apache.log4j.Logger;
-import org.springframework.util.PropertyPlaceholderHelper;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.base.col.lru.LRUSVSMap;
+import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.server.data.AbstractConnectionPool;
 import lsfusion.server.data.TypePool;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.property.ExecutionContext;
+import org.apache.log4j.Logger;
+import org.springframework.util.PropertyPlaceholderHelper;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.List;
 import java.util.Properties;
 
 public abstract class DataAdapter extends AbstractConnectionPool implements SQLSyntax, TypePool {
@@ -262,7 +263,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         throw new RuntimeException("unknown");
     }
 
-    public String backupDB(ExecutionContext context, String dumpFileName) throws IOException, InterruptedException {
+    public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
         return null;
     }
 
