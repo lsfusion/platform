@@ -56,7 +56,7 @@ disconnectConnection 'Отключить' = ACTION CUSTOM 'lsfusion.server.logic
 
 //заменили user на customUser
 userSession 'Пользователь сессии' = DATA CustomUser (Session);
-nameUserSession (session) = nameContact(userSession(session));
+nameUserSession 'Пользователь сессии' (session) = nameContact(userSession(session));
 userSession (session) <- currentUser() WHEN SET(session IS Session);
 
 connectionFormCount 'Количество открытых форм' = DATA INTEGER (Connection, NavigatorElement);
