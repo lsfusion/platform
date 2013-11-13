@@ -264,28 +264,30 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void scheduleRefresh() {
-        autoRefreshScheduler.schedule(new Runnable() {
-            @Override
-            public void run() {
-                SwingUtils.invokeLater(new ERunnable() {
-                    @Override
-                    public void run() throws Exception {
-                        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("autoRefresh.getRemoteChanges") {
-                            @Override
-                            protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
-                                return remoteForm.getRemoteChanges(requestIndex, true);
-                            }
+        if (remoteForm != null) {
+            autoRefreshScheduler.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    SwingUtils.invokeLater(new ERunnable() {
+                        @Override
+                        public void run() throws Exception {
+                            rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("autoRefresh.getRemoteChanges") {
+                                @Override
+                                protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
+                                    return remoteForm.getRemoteChanges(requestIndex, true);
+                                }
 
-                            @Override
-                            protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
-                                super.onResponse(requestIndex, result);
-                                scheduleRefresh();
-                            }
-                        });
-                    }
-                });
-            }
-        }, form.autoRefresh, TimeUnit.SECONDS);
+                                @Override
+                                protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                                    super.onResponse(requestIndex, result);
+                                    scheduleRefresh();
+                                }
+                            });
+                        }
+                    });
+                }
+            }, form.autoRefresh, TimeUnit.SECONDS);
+        }
     }
 
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
