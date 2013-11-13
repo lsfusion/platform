@@ -147,7 +147,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
 
     public DataSession createSession() throws SQLException {
-        return getDbManager().createSession();
+        return getSession().createSession();
+//        return getDbManager().createSession();
     }
 
     public GroupObjectInstance getChangingPropertyToDraw() {
