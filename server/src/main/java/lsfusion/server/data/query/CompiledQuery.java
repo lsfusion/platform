@@ -712,7 +712,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     PartitionCalc calc = query.type.createAggr(mTokens,
                             query.exprs.mapList(fromPropertySelect.result),
                             subQuery.getCompileOrders(query.orders).map(fromPropertySelect.result),
-                            query.partitions.map(fromPropertySelect.result).toSet());
+                            query.partitions.map(fromPropertySelect.result).toSet(), syntax);
                     mResultNames.mapValue(i, calc);
                 }
                 final ImRevMap<PartitionCalc, String> resultNames = mResultNames.immutableValueRev().reverse();
@@ -750,7 +750,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     final ImMap<PartitionToken, String> ftokens = tokens;
                     ImMap<String, String> propertySelect = nextTokens.reverse().mapValues(new GetValue<String, PartitionToken>() {
                         public String getMapValue(PartitionToken value) {
-                            return value.getSource(ftokens, syntax);
+                            Type resultType = null; String resultName;
+                            if(value instanceof PartitionCalc && (resultName = resultNames.get((PartitionCalc) value))!=null)
+                                resultType = queries.get(resultName).getType();
+                            return value.getSource(ftokens, syntax, resultType, env);
                         }});
 
                     fromSelect = "(" + syntax.getSelect(fromSelect + (i>1?" q":""), SQLSession.stringExpr(keySelect.result,propertySelect),

@@ -5,7 +5,9 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.type.Type;
 
 public abstract class PartitionToken {
 
@@ -30,7 +32,7 @@ public abstract class PartitionToken {
         return (ImSet<PartitionCalc>)next;
     }
 
-    public abstract String getSource(ImMap<PartitionToken, String> sources, SQLSyntax syntax);
+    public abstract String getSource(ImMap<PartitionToken, String> sources, SQLSyntax syntax, Type resultType, TypeEnvironment typeEnv);
 
     public abstract int getLevel();
 }

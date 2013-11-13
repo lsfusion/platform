@@ -14,6 +14,7 @@ import lsfusion.server.data.expr.order.PartitionCalc;
 import lsfusion.server.data.expr.order.PartitionParam;
 import lsfusion.server.data.expr.order.PartitionToken;
 import lsfusion.server.data.query.CompileOrder;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
 
 public enum PartitionType implements AggrType {
@@ -23,8 +24,10 @@ public enum PartitionType implements AggrType {
         return SetFact.add(exprs.toOrderSet().getSet(), orders.keys(), partitions);
     }
 
+    public static final String rType = "DFF3434FDFDFD";  
+    
     // вообще первый параметр PartitionParam, но не хочется с generics'ами играться
-    public PartitionCalc createAggr(MExclMap<PartitionToken, String> mTokens, ImList<String> sourceExprs, ImOrderMap<String, CompileOrder> sourceOrders, ImSet<String> sourcePartitions) {
+    public PartitionCalc createAggr(MExclMap<PartitionToken, String> mTokens, ImList<String> sourceExprs, ImOrderMap<String, CompileOrder> sourceOrders, ImSet<String> sourcePartitions, SQLSyntax syntax) {
         ImSet<String> paramNames = getSet(sourceExprs, sourceOrders, sourcePartitions);
         ImRevMap<String, PartitionParam> params = paramNames.mapRevValues(new GetStaticValue<PartitionParam>() {
             public PartitionParam getMapValue() {
@@ -36,6 +39,17 @@ public enum PartitionType implements AggrType {
         ImList<PartitionToken> exprs = sourceExprs.mapList(castParams);
         ImOrderMap<PartitionToken, CompileOrder> orders = sourceOrders.map(castParams);
         ImSet<PartitionToken> partitions = sourcePartitions.mapRev(castParams);
+
+        String distrMin = null;
+        if(this == DISTR_RESTRICT || this == DISTR_RESTRICT_OVER) {
+            String prm1 = "prm1";
+            String prm2 = "prm1+prm2-prm3";
+            if(syntax.noMaxImplicitCast()) {
+                prm1 = "CAST(" + prm1 + " AS " + rType + ")";
+                prm2 = "CAST(" + prm2 + " AS " + rType + ")";  
+            }
+            distrMin = "MIN(" + prm1 + "," + prm2 + ")";
+        }
 
         switch (this) {
             case SUM:
@@ -52,13 +66,13 @@ public enum PartitionType implements AggrType {
             case DISTR_RESTRICT: // exprs : 1-й - ограничение, 2-й что
                 // 1-й пробег высчитываем накопленные ограничения
                 PartitionCalc.Aggr sumRestr = new PartitionCalc.Aggr("SUM", ListFact.singleton(exprs.get(0)), orders, partitions);
-                return new PartitionCalc("(CASE WHEN prm2>(prm3-prm1) THEN MIN(prm1,prm1+prm2-prm3) ELSE NULL END)", sumRestr, exprs.get(0), exprs.get(1));
+                return new PartitionCalc("(CASE WHEN prm2>(prm3-prm1) THEN " + distrMin + " ELSE NULL END)", true, sumRestr, exprs.get(0), exprs.get(1));
             case DISTR_RESTRICT_OVER: // exprs : 1-й - ограничение, 2-й что
                 // 1-й пробег высчитываем накопленные ограничения
                 PartitionCalc.Aggr sumTot = new PartitionCalc.Aggr("SUM", ListFact.singleton(exprs.get(0)), partitions);
                 PartitionCalc.Aggr sumRestrOver = new PartitionCalc.Aggr("SUM", ListFact.singleton(exprs.get(0)), orders, partitions);
                 PartitionCalc.Aggr restrNumber = new PartitionCalc.Aggr("ROW_NUMBER", orders, partitions);
-                return new PartitionCalc("(CASE WHEN prm2>(prm3-prm1) THEN (MIN(prm1,prm1+prm2-prm3)+(CASE WHEN prm5=1 AND prm2>prm4 THEN prm2-prm4 ELSE 0 END)) ELSE NULL END)", new PartitionToken[]{exprs.get(0), exprs.get(1)}, sumRestrOver, sumTot, restrNumber);
+                return new PartitionCalc("(CASE WHEN prm2>(prm3-prm1) THEN (" + distrMin + "+(CASE WHEN prm5=1 AND prm2>prm4 THEN prm2-prm4 ELSE 0 END)) ELSE NULL END)", true, new PartitionToken[]{exprs.get(0), exprs.get(1)}, sumRestrOver, sumTot, restrNumber);
         }
         throw new RuntimeException("not supported");
     }

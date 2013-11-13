@@ -8,9 +8,12 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.query.CompileOrder;
 import lsfusion.server.data.query.Query;
+import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.type.Type;
 
 public class PartitionCalc extends PartitionToken {
 
@@ -48,25 +51,35 @@ public class PartitionCalc extends PartitionToken {
     }
 
     public final String formula;
+    public final boolean hasMin;
     public final ImMap<String, PartitionToken> params;
     public final ImMap<String, Aggr> aggrParams;
 
     @Override
-    public String getSource(ImMap<PartitionToken, String> sources, SQLSyntax syntax) {
+    public String getSource(ImMap<PartitionToken, String> sources, SQLSyntax syntax, Type resultType, TypeEnvironment typeEnv) {
         String sourceString = formula;
         for(int i=0,size=params.size();i<size;i++)
             sourceString = sourceString.replace(params.getKey(i), sources.get(params.getValue(i)));
         for(int i=0,size=aggrParams.size();i<size;i++)
             sourceString = sourceString.replace(aggrParams.getKey(i), aggrParams.getValue(i).getSource(sources, syntax));
-         return "("+sourceString+")";
+        if(hasMin) {
+            assert resultType != null;
+            sourceString = sourceString.replace(PartitionType.rType, resultType.getDB(syntax, typeEnv));
+        }
+        return "("+sourceString+")";
     }
 
     public PartitionCalc(String formula, Aggr aggr, PartitionToken... listParams) {
-        this(formula, listParams, aggr);
+        this(formula, false, aggr, listParams);
     }
 
-    public PartitionCalc(String formula, PartitionToken[] listParams, Aggr... listAggrParams) {
+    public PartitionCalc(String formula, boolean hasMin, Aggr aggr, PartitionToken... listParams) {
+        this(formula, hasMin, listParams, aggr);
+    }
+
+    public PartitionCalc(String formula, boolean hasMin, PartitionToken[] listParams, Aggr... listAggrParams) {
         this.formula = formula;
+        this.hasMin = hasMin;
 
         MExclMap<String, PartitionToken> mParams = MapFact.mExclMap(listParams.length); // массивы
         for(int i=0;i<listParams.length;i++)
@@ -91,7 +104,7 @@ public class PartitionCalc extends PartitionToken {
     }
 
     public PartitionCalc(Aggr aggr) {
-        this("prm1", new PartitionToken[]{}, aggr);
+        this("prm1", false, new PartitionToken[]{}, aggr);
     }
 
     public int getLevel() {
