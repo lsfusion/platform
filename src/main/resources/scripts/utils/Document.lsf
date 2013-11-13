@@ -376,7 +376,7 @@ END
 
 META defineDocumentDetailClosed (object)
     @defineDocumentDetailClosed(object, ###object##Detail);
-END
+END               
 
 META defineDocumentClosed (object)
     @defineDocumentHeaderClosed(###object);
@@ -392,19 +392,23 @@ META defineDocumentInterfaceClosed (object)
 END
 
 
-// Index
-META defineDocumentDetailIndex (object, detailClass, group)
-    index##detailClass 'Номер строки' (d) =
+// In dex
+META defineDocumentDetailIndex (object, detailClass)
+    dataIndex##detailClass 'Номер строки (польз.)' = DATA INTEGER (detailClass); 
+    defaultIndex##detailClass 'Номер строки (авт.)' (d) =
         PARTITION SUM 1 BY object##detailClass(d)
-        ORDER d IN group MINCHARWIDTH 4 PREFCHARWIDTH 4;
+        ORDER d MINCHARWIDTH 4 PREFCHARWIDTH 4;
+    index##detailClass 'Номер строки' (d) = OVERRIDE defaultIndex##detailClass(d), dataIndex##detailClass(d) IN recognize;  
 END
 
-META defineDocumentDetailIndex (object, detailClass)
-    @defineDocumentDetailIndex(object, detailClass, base);
+META defineDocumentAbstractDetailIndex(object, detailClass)
+    index##detailClass 'Номер строки' (d) = ABSTRACT INTEGER (detailClass) IN base;
 END
+
 META defineDocumentInterfaceDetailIndex (object, detailClass)
-    @defineDocumentDetailIndex(object, detailClass);
-    @defineDocumentDetailIndex(user###object, User##detailClass, recognize);
+    @defineDocumentAbstractDetailIndex(object, detailClass);
+    @defineDocumentDetailIndex(user###object, User##detailClass);
+    index##detailClass(d) += indexUser##detailClass(d);
 END
 
 META defineDocumentDetailIndex (object)
