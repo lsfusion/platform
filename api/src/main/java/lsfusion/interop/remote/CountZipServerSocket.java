@@ -6,7 +6,7 @@ import java.net.Socket;
 
 public class CountZipServerSocket extends ServerSocket {
     public CountZipServerSocket(int port) throws IOException {
-        super(port);
+        super(port, 500);
     }
 
     public Socket accept() throws IOException {

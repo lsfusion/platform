@@ -22,4 +22,23 @@ public class ZipSocketFactory extends RMISocketFactory implements RMIServerSocke
     public CountZipServerSocket createServerSocket(int port) throws IOException {
         return new CountZipServerSocket(port);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ZipSocketFactory that = (ZipSocketFactory) o;
+
+        return !(overrideHostName == null ? that.overrideHostName != null : !overrideHostName.equals(that.overrideHostName));
+    }
+
+    @Override
+    public int hashCode() {
+        return overrideHostName != null ? overrideHostName.hashCode() : 0;
+    }
 }

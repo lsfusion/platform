@@ -11,10 +11,10 @@ public class RMITimeoutSocketFactory extends ZipSocketFactory implements ISocket
 
     private final int timeout;
 
-    private final WeakLinkedHashSet<CountZipSocket> sockets = new WeakLinkedHashSet<CountZipSocket>();
+    private transient final WeakLinkedHashSet<CountZipSocket> sockets = new WeakLinkedHashSet<CountZipSocket>();
 
-    public long inSum;
-    public long outSum;
+    public transient long inSum;
+    public transient long outSum;
 
     public RMITimeoutSocketFactory(int timeout) {
         this.timeout = timeout;
@@ -53,5 +53,29 @@ public class RMITimeoutSocketFactory extends ZipSocketFactory implements ISocket
                 socket.closeIfHung();
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+
+        RMITimeoutSocketFactory that = (RMITimeoutSocketFactory) o;
+
+        return timeout == that.timeout;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + timeout;
+        return result;
     }
 }

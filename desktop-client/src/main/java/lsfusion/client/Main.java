@@ -2,6 +2,7 @@ package lsfusion.client;
 
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
+import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.dock.DockableMainFrame;
@@ -268,6 +269,7 @@ public class Main {
 
         RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
             public boolean failure(Exception ex) {
+                logger.error(ApiResourceBundle.getString("exceptions.rmi.error") + " ", ex);
                 return true;
             }
         });
