@@ -187,6 +187,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, errText);
     }
 
+    public void emitParamClassRedefinitionError(ScriptParser parser, String paramName) throws SemanticErrorException {
+        emitSimpleError(parser, format("class of parameter '%s' was already defined", paramName));
+    }
+
+    public void emitParamClassNonDeclarationError(ScriptParser parser, String paramName) throws SemanticErrorException {
+        emitSimpleError(parser, format("class of parameter '%s' should be defined at first usage", paramName));
+    }
+
     public void emitBuiltInClassAsParentError(ScriptParser parser, String className) throws SemanticErrorException {
         emitSimpleError(parser, format("built-in class '%s' cannot be inherited", className));
     }

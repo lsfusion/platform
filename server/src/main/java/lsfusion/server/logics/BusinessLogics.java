@@ -19,6 +19,7 @@ import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLSession;
@@ -59,6 +60,7 @@ import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.systemLogger;
+import static lsfusion.server.logics.LogicsModule.*;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
@@ -1152,44 +1154,44 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // Набор методов для поиска модуля, в котором находится элемент системы
-    private LogicsModule getModuleContainingObject(String namespaceName, String name, LogicsModule.ModuleFinder finder) {
+    private LogicsModule getModuleContainingObject(String namespaceName, String name, Object param, ModuleFinder finder) {
         List<LogicsModule> modules = namespaceToModules.get(namespaceName);
         if(modules==null)
             return null;
         for (LogicsModule module : modules) {
-            if (finder.resolveInModule(module, name) != null) {
+            if (!finder.resolveInModule(module, name, param).isEmpty()) {
                 return module;
             }
         }
         return null;
     }
 
-    public LogicsModule getModuleContainingLP(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, new LogicsModule.LPNameModuleFinder());
+    public LogicsModule getModuleContainingLP(String namespaceName, String name, List<AndClassSet> classes) {
+        return getModuleContainingObject(namespaceName, name, classes, new LogicsModule.LPEqualNameModuleFinder());
     }
 
     public LogicsModule getModuleContainingGroup(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, new LogicsModule.GroupNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, null, new GroupNameModuleFinder());
     }
 
     public LogicsModule getModuleContainingClass(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, new LogicsModule.ClassNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, null, new ClassNameModuleFinder());
     }
 
     public LogicsModule getModuleContainingTable(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, new LogicsModule.TableNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, null, new TableNameModuleFinder());
     }
 
     public LogicsModule getModuleContainingWindow(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, new LogicsModule.WindowNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, null, new WindowNameModuleFinder());
     }
 
     public LogicsModule getModuleContainingNavigatorElement(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, new LogicsModule.NavigatorElementNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, null, new NavigatorElementNameModuleFinder());
     }
 
     public LogicsModule getModuleContainingMetaCode(String namespaceName, String name, int paramCnt) {
-        return getModuleContainingObject(namespaceName, name, new LogicsModule.MetaCodeNameModuleFinder(paramCnt));
+        return getModuleContainingObject(namespaceName, name, paramCnt, new MetaCodeNameModuleFinder());
     }
 
     protected DBManager getDbManager() {

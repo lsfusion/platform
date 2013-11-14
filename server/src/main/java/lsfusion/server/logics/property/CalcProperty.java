@@ -19,6 +19,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.*;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -608,6 +609,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public ValueClass getValueClass() {
         return getClassValueWhere(ClassType.ASIS).getCommonParent(SetFact.singleton("value")).get("value");
+    }
+    
+    public AndClassSet getValueClassSet() {
+        return getClassValueWhere(ClassType.ASIS).getCommonClass("value");
     }
 
     @IdentityLazy

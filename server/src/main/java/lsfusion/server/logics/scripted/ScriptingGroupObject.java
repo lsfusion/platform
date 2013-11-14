@@ -14,7 +14,7 @@ public class ScriptingGroupObject {
     ClassViewType viewType;
     boolean isInitType;
     Integer pageSize;
-    String reportPathPropName;
+    ScriptingLogicsModule.PropertyUsage reportPathPropUsage;
     List<String> reportPathMapping;
 
     public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<String> captions, List<ActionPropertyObjectEntity> events) {
@@ -43,8 +43,8 @@ public class ScriptingGroupObject {
         this.pageSize = pageSize;
     }
 
-    public void setReportPathProp(String propName, List<String> mapping) {
-        this.reportPathPropName = propName;
+    public void setReportPathProp(ScriptingLogicsModule.PropertyUsage propUsage, List<String> mapping) {
+        this.reportPathPropUsage = propUsage;
         this.reportPathMapping = mapping;
     }
 }

@@ -249,11 +249,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return null;
     }
 
-    public List<String> getObjectsNames() {
+    public List<String> getObjectsNamesAndClasses(List<ValueClass> classes) {
         List<String> names = new ArrayList<String>();
+        classes.clear();
+        
         for (GroupObjectEntity group : groups) {
             for (ObjectEntity object : group.getObjects()) {
                 names.add(object.getSID());
+                classes.add(object.baseClass);
             }
         }
         return names;

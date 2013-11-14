@@ -15,6 +15,7 @@ import lsfusion.interop.*;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.Time;
 import lsfusion.server.data.Union;
@@ -113,13 +114,15 @@ public abstract class LogicsModule {
 
     public BaseLogicsModule<?> baseLM;
 
-    private final Map<String, LP<?,?>> moduleProperties = new HashMap<String, LP<?, ?>>();
+    private final Map<String, List<LP<?,?>>> moduleProperties = new HashMap<String, List<LP<?, ?>>>();
     private final Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
     private final Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
     private final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
     public final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
     private final Map<String, ImplementTable> moduleTables = new HashMap<String, ImplementTable>();
 
+    public final Map<LP<?, ?>, List<AndClassSet>> propClasses = new HashMap<LP<?, ?>, List<AndClassSet>>();
+    
     private final Map<String, List<String>> propNamedParams = new HashMap<String, List<String>>();
     private final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<Pair<String, Integer>, MetaCodeFragment>();
 
@@ -152,13 +155,21 @@ public abstract class LogicsModule {
     }
 
     public LP<?, ?> getLPBySID(String sID) {
-        return moduleProperties.get(sID);
+        if (moduleProperties.get(sID) == null) {
+            return null;
+        }
+        return moduleProperties.get(sID).get(0); // temporary
     }
 
     public LP<?, ?> getLPByName(String name) {
         return getLPBySID(transformNameToSID(name));
     }
 
+    public List<LP<?, ?>> getAllLPByName(String name) {
+        List<LP<?, ?>> allLP = moduleProperties.get(transformNameToSID(name)); 
+        return allLP != null ? allLP : new ArrayList<LP<?, ?>>(); 
+    }
+    
     public LCP<?> getLCPByName(String name) {
         return (LCP<?>) getLPByName(name);
     }
@@ -168,12 +179,22 @@ public abstract class LogicsModule {
     }
 
     protected void addModuleLP(LP<?, ?> lp) {
-        assert !moduleProperties.containsKey(lp.property.getSID());
-        moduleProperties.put(lp.property.getSID(), lp);
+        String sid = lp.property.getSID();
+//        assert !moduleProperties.containsKey(lp.property.getSID());
+        if (!moduleProperties.containsKey(sid)) {
+            moduleProperties.put(sid, new ArrayList<LP<?, ?>>());
+        } 
+        moduleProperties.get(sid).add(lp);
     }
 
     protected void removeModuleLP(LP<?, ?> lp) {
-        moduleProperties.remove(lp.property.getSID());
+        String sid = lp.property.getSID();
+        if (moduleProperties.containsKey(sid)) {
+            moduleProperties.get(sid).remove(lp);
+            if (moduleProperties.get(sid).isEmpty()) {
+                moduleProperties.remove(sid);
+            }
+        }
     }
 
     public AbstractGroup getGroupBySID(String sid) {
@@ -504,8 +525,8 @@ public abstract class LogicsModule {
 
     protected LAP addDMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession) {
         return addFAProp(group, sID, caption, form, objectsToSet, startAction,
-                         newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
-                         ModalityType.DOCKED_MODAL, false);
+                newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
+                ModalityType.DOCKED_MODAL, false);
     }
 
     // ------------------- File action ----------------- //
@@ -1404,7 +1425,7 @@ public abstract class LogicsModule {
     }
 
     public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj) {
-        return getAddObjectAction((CustomClass)obj.baseClass, formEntity, obj);
+        return getAddObjectAction((CustomClass) obj.baseClass, formEntity, obj);
     }
 
     public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
@@ -1828,7 +1849,7 @@ public abstract class LogicsModule {
     public void addFormActions(FormEntity form, ObjectEntity object, boolean session) {
         addAddFormAction(form, object, session);
         addEditFormAction(form, object, session);
-        form.addPropertyDraw(getDeleteAction((CustomClass)object.baseClass, false), object);
+        form.addPropertyDraw(getDeleteAction((CustomClass) object.baseClass, false), object);
     }
 
     public PropertyDrawEntity addAddFormAction(FormEntity form, ObjectEntity object, boolean session) {
@@ -1863,62 +1884,137 @@ public abstract class LogicsModule {
         this.requiredModules = requiredModules;
     }
 
-    public interface ModuleFinder<T> {
-        public T resolveInModule(LogicsModule module, String simpleName);
+    public LPEqualNameModuleFinder getEqualLPModuleFinder() {
+        return new LPEqualNameModuleFinder();        
+    }
+    
+    public interface ModuleFinder<T, P> {
+        public List<T> resolveInModule(LogicsModule module, String simpleName, P param);
     }
 
-    public static class LPNameModuleFinder implements ModuleFinder<LP<?, ?>> {
+    public List<AndClassSet> getParamClasses(LP<?, ?> lp) {
+        List<AndClassSet> paramClasses = propClasses.get(lp);
+        return paramClasses == null ? Collections.<AndClassSet>nCopies(lp.listInterfaces.size(), null) : paramClasses;                   
+    }
+
+    public static class SoftLPNameModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
         @Override
-        public LP<?, ?> resolveInModule(LogicsModule module, String simpleName) {
-            return module.getLPByName(simpleName);
+        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<AndClassSet> classes)  {
+            List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
+            for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
+                if (softMatch(module.getParamClasses(lp), classes)) {
+                    result.add(lp);
+                }
+            }
+            return result;
+        }
+    }                           
+    
+    public static class LPNameModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
+        @Override
+        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<AndClassSet> classes)  {
+            List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
+            for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
+                if (match(module.getParamClasses(lp), classes, false)) {
+                    result.add(lp);
+                }
+            }
+            return result;
         }
     }
 
-    public static class GroupNameModuleFinder implements ModuleFinder<AbstractGroup> {
+    public static class LPEqualNameModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
         @Override
-        public AbstractGroup resolveInModule(LogicsModule module, String simpleName) {
-            return module.getGroupByName(simpleName);
+        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<AndClassSet> classes)  {
+            List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
+            for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
+                if (match(module.getParamClasses(lp), classes, false) && match(classes, module.getParamClasses(lp), false)) {
+                    result.add(lp);
+                }
+            }
+            return result;
+        }
+    }
+    
+    public static boolean match(List<AndClassSet> interfaceClasses, List<AndClassSet> paramClasses, boolean strict) {
+        assert interfaceClasses != null;
+        if (paramClasses == null) {
+            return true;
+        }
+        if (interfaceClasses.size() != paramClasses.size()) {
+            return false;
+        }
+        
+        for (int i = 0; i < interfaceClasses.size(); i++) {
+            if (interfaceClasses.get(i) != null && paramClasses.get(i) != null && !interfaceClasses.get(i).containsAll(paramClasses.get(i), !strict)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean softMatch(List<AndClassSet> interfaceClasses, List<AndClassSet> paramClasses) {
+        assert interfaceClasses != null;
+        if (paramClasses == null) {
+            return true;
+        }
+        if (interfaceClasses.size() != paramClasses.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < interfaceClasses.size(); i++) {
+            if (interfaceClasses.get(i) != null && paramClasses.get(i) != null && (interfaceClasses.get(i).and(paramClasses.get(i))).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public static class GroupNameModuleFinder implements ModuleFinder<AbstractGroup, Object> {
+        @Override
+        public List<AbstractGroup> resolveInModule(LogicsModule module, String simpleName, Object param) {
+            AbstractGroup group = module.getGroupByName(simpleName); 
+            return group == null ? new ArrayList<AbstractGroup>() : Collections.singletonList(group);
         }
     }
 
-    public static class NavigatorElementNameModuleFinder implements ModuleFinder<NavigatorElement> {
+    public static class NavigatorElementNameModuleFinder implements ModuleFinder<NavigatorElement, Object> {
         @Override
-        public NavigatorElement resolveInModule(LogicsModule module, String simpleName) {
-            return module.getNavigatorElementByName(simpleName);
+        public List<NavigatorElement> resolveInModule(LogicsModule module, String simpleName, Object param) {
+            NavigatorElement ne = module.getNavigatorElementByName(simpleName); 
+            return ne == null ? new ArrayList<NavigatorElement>() : Collections.singletonList(ne);
+        }
+    }                                           
+
+    public static class WindowNameModuleFinder implements ModuleFinder<AbstractWindow, Object> {
+        @Override
+        public List<AbstractWindow> resolveInModule(LogicsModule module, String simpleName, Object param) {
+            AbstractWindow wnd = module.getWindowByName(simpleName); 
+            return wnd == null ? new ArrayList<AbstractWindow>() : Collections.singletonList(wnd);
         }
     }
 
-    public static class WindowNameModuleFinder implements ModuleFinder<AbstractWindow> {
+    public static class MetaCodeNameModuleFinder implements ModuleFinder<MetaCodeFragment, Integer> {
         @Override
-        public AbstractWindow resolveInModule(LogicsModule module, String simpleName) {
-            return module.getWindowByName(simpleName);
+        public List<MetaCodeFragment> resolveInModule(LogicsModule module, String simpleName, Integer paramCnt) {
+            MetaCodeFragment code = module.getMetaCodeFragmentByName(simpleName, paramCnt); 
+            return code == null ? new ArrayList<MetaCodeFragment>() : Collections.singletonList(code);
         }
     }
 
-    public static class MetaCodeNameModuleFinder implements ModuleFinder<MetaCodeFragment> {
-        private int paramCnt;
-
-        public MetaCodeNameModuleFinder(int paramCnt) {
-            this.paramCnt = paramCnt;
-        }
-
+    public static class TableNameModuleFinder implements ModuleFinder<ImplementTable, Object> {
         @Override
-        public MetaCodeFragment resolveInModule(LogicsModule module, String simpleName) {
-            return module.getMetaCodeFragmentByName(simpleName, paramCnt);
+        public List<ImplementTable> resolveInModule(LogicsModule module, String simpleName, Object param) {
+            ImplementTable table = module.getTableByName(simpleName); 
+            return table == null ? new ArrayList<ImplementTable>() : Collections.singletonList(table);
         }
     }
 
-    public static class TableNameModuleFinder implements ModuleFinder<ImplementTable> {
+    public static class ClassNameModuleFinder implements ModuleFinder<ValueClass, Object> {
         @Override
-        public ImplementTable resolveInModule(LogicsModule module, String simpleName) {
-            return module.getTableByName(simpleName);
-        }
-    }
-
-    public static class ClassNameModuleFinder implements ModuleFinder<ValueClass> {
-        @Override
-        public ValueClass resolveInModule(LogicsModule module, String simpleName) {
-            return module.getClassByName(simpleName);
+        public List<ValueClass> resolveInModule(LogicsModule module, String simpleName, Object param) {
+            ValueClass cls = module.getClassByName(simpleName);             
+            return cls == null ? new ArrayList<ValueClass>() : Collections.singletonList(cls);
         }
     }
 }

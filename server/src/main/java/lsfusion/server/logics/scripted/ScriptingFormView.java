@@ -140,8 +140,8 @@ public class ScriptingFormView {
         return view.get(drawEntity);
     }
 
-    public PropertyDrawView getPropertyView(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, name, mapping);
+    public PropertyDrawView getPropertyView(ScriptingLogicsModule.PropertyUsage pUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, pUsage, mapping);
         return view.get(drawEntity);
     }
 
