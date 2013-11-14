@@ -514,7 +514,7 @@ END
 // ----- Description ----- //
 META defineDocumentHeaderDescription(objectClass, caption)
     description##objectClass 'Название документа' (o) =
-        [FORMULA VARSTRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
+        [= FORMULA VARSTRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
         caption, seriesNumber##objectClass(o), date##objectClass(o)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
 META defineDocumentAbstractHeaderDescription(objectClass)
@@ -529,7 +529,7 @@ END
 META defineDocumentDetailDescription(object, detailClass)
     description##detailClass 'Название документа' (d) = description###object(object##detailClass(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
     descriptionIndex##detailClass 'Название документа' (d) =
-        [FORMULA VARSTRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
+        [= FORMULA VARSTRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
             description##detailClass(d),
             index##detailClass(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
