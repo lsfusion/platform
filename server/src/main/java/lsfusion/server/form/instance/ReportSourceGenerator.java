@@ -264,10 +264,10 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     }
                     data.put(values, value.get(property));
                     if (property.propertyCaption != null) {
-                        captionData.put(values, value.get(property.propertyCaption));
+                        captionData.put(values, value.get(property.captionReader));
                     }
                     if (property.propertyFooter != null) {
-                        footerData.put(values, value.get(property.propertyFooter));
+                        footerData.put(values, value.get(property.footerReader));
                     }
 
                     List<Object> columnValues = new ArrayList<Object>();
@@ -317,10 +317,10 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
         query.addProperty(property, property.getDrawInstance().getExpr(query.getMapExprs(), modifier));
         if (property.propertyCaption != null) {
-            query.addProperty(property.propertyCaption, property.propertyCaption.getExpr(query.getMapExprs(), modifier));
+            query.addProperty(property.captionReader, property.propertyCaption.getExpr(query.getMapExprs(), modifier));
         }
         if (property.propertyFooter != null) {
-            query.addProperty(property.propertyFooter, property.propertyFooter.getExpr(query.getMapExprs(), modifier));
+            query.addProperty(property.footerReader, property.propertyFooter.getExpr(query.getMapExprs(), modifier));
         }
 
         return query.execute(form, mQueryOrders.immutableOrder(), 0);
