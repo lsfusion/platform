@@ -32,6 +32,7 @@ public interface ImRevMap<K,V> extends ImMap<K, V> {
     <EK extends K> ImRevMap<EK, V> filterInclRev(ImSet<? extends EK> keys);
     <EV extends V> ImRevMap<K,EV> filterValuesRev(ImSet<EV> values);
     <EV extends V> ImRevMap<K,EV> filterInclValuesRev(ImSet<EV> values);
+    ImRevMap<K,V> removeRev(K key);
     ImRevMap<K,V> removeRev(ImSet<? extends K> keys);
     ImRevMap<K,V> filterNotValuesRev(ImSet<? extends V> values);
 

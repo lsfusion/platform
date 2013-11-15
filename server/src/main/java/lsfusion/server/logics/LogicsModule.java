@@ -1421,7 +1421,7 @@ public abstract class LogicsModule {
         CalcPropertyMapImplement<T, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<T, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces + (resultExists ? 1 : 0)) : DerivedProperty.createTrue());
 
-        return addAProp(null, new AddObjectActionProperty(genSID(), cls, forceDialog, innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart));
+        return addAProp(null, new AddObjectActionProperty(genSID(), cls, forceDialog, innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false));
     }
 
     public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj) {

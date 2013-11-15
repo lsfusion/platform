@@ -1,10 +1,7 @@
 package lsfusion.base.col.implementations.abs;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
-import lsfusion.base.Result;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.NotFunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -113,6 +110,14 @@ public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V>
 
     public <EV extends V> ImRevMap<K, EV> filterInclValuesRev(ImSet<EV> values) {
         return reverse().filterInclRev(values).reverse();
+    }
+
+    public ImRevMap<K, V> removeRev(final K remove) {
+        return filterFnRev(new SFunctionSet<K>() {
+            public boolean contains(K element) {
+                return !BaseUtils.hashEquals(element, remove);
+            }
+        });
     }
 
     public ImRevMap<K, V> removeRev(ImSet<? extends K> keys) {

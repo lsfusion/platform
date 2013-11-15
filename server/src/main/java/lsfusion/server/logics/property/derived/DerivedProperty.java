@@ -839,11 +839,11 @@ public class DerivedProperty {
         return actionProperty.getMapImplement();
     }
 
-    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createAddAction(CustomClass cls, boolean forceDialog, ImSet<L> innerInterfaces, ImSet<L> context, CalcPropertyMapImplement<W, L> whereProp, CalcPropertyMapImplement<P, L> resultProp) {
-        return createAddAction(cls, forceDialog, innerInterfaces, context.toOrderSet(), whereProp, resultProp);
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createAddAction(CustomClass cls, boolean forceDialog, ImSet<L> innerInterfaces, ImSet<L> context, CalcPropertyMapImplement<W, L> whereProp, CalcPropertyMapImplement<P, L> resultProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull) {
+        return createAddAction(cls, forceDialog, innerInterfaces, context.toOrderSet(), whereProp, resultProp, orders, ordersNotNull);
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createAddAction(CustomClass cls, boolean forceDialog, ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, CalcPropertyMapImplement<W, L> whereProp, CalcPropertyMapImplement<P, L> resultProp) {
-        AddObjectActionProperty<W, L> actionProperty = new AddObjectActionProperty<W, L>(genID(), cls, forceDialog, innerInterfaces, mapInterfaces, whereProp, resultProp);
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createAddAction(CustomClass cls, boolean forceDialog, ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, CalcPropertyMapImplement<W, L> whereProp, CalcPropertyMapImplement<P, L> resultProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull) {
+        AddObjectActionProperty<W, L> actionProperty = new AddObjectActionProperty<W, L>(genID(), cls, forceDialog, innerInterfaces, mapInterfaces, whereProp, resultProp, orders, ordersNotNull);
         return actionProperty.getMapImplement();
     }
 

@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
+import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
@@ -91,8 +92,12 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         FlowResult result = FlowResult.FINISH;
 
         boolean execElse = elseAction != null;
-
-        assert recursive || addObject==null;
+        
+        assert addObject == null || addClass instanceof ConcreteCustomClass;        
+        if(addObject != null) {
+            innerKeys = innerKeys.removeRev(addObject);
+            innerExprs = innerExprs.remove(addObject);
+        }
 
         ImOrderSet<ImMap<I, DataObject>> rows;
         RECURSIVE:
@@ -102,7 +107,11 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                 execElse = false;
             }
             for (ImMap<I, DataObject> row : rows) {
-                FlowResult actionResult = execute(context, action, MapFact.addExcl(innerValues, row), mapInterfaces);
+                ImMap<I, ObjectValue> newValues = MapFact.addExcl(innerValues, row);
+                if(addObject!=null)
+                    newValues = MapFact.addExcl(newValues, addObject, context.addObject((ConcreteCustomClass) addClass));
+                
+                FlowResult actionResult = execute(context, action, newValues, mapInterfaces);
                 if (actionResult != FlowResult.FINISH) {
                     if (actionResult != FlowResult.BREAK) {
                         result = actionResult;
@@ -120,7 +129,9 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     private ImOrderSet<ImMap<I, DataObject>> readRows(final ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends Expr> innerExprs) throws SQLException {
-        assert ifProp!=null; // так как предполагается компайлится
+        if(ifProp == null)
+            return SetFact.singletonOrder(MapFact.<I, DataObject>EMPTY());
+            
         Where where = ifProp.mapExpr(innerExprs, context.getModifier()).getWhere();
 
         final ImMap<I, ? extends Expr> fInnerExprs = PropertyChange.simplifyExprs(innerExprs, where);
@@ -189,6 +200,9 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             return DerivedProperty.createListAction(context, mResult.immutableList());
         }
 
+        if(allNoInline)
+            return null;
+
         if (addObject != null) { // "компиляция" ADDOBJ
             // сначала проверим если первый в списке CHANGE CLASS, тогда заберем его в FOR
             ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
@@ -206,13 +220,10 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
             CalcPropertyMapImplement<?, I> result = DerivedProperty.createDataProp(true, getExtendClasses(), addClass);
             return DerivedProperty.createListAction(context, ListFact.<ActionPropertyMapImplement<?, I>>toList(
-                    DerivedProperty.createAddAction(addClass, forceDialog, innerInterfaces.removeIncl(addObject), context, ifProp, result),
+                    DerivedProperty.createAddAction(addClass, forceDialog, innerInterfaces.removeIncl(addObject), context, ifProp, result, orders, ordersNotNull),
                     DerivedProperty.createForAction(innerInterfaces, context, DerivedProperty.<I>createCompare(
-                            addObject, result, Compare.EQUALS), orders, ordersNotNull, action, elseAction, null, null, false, noInline, forceInline)));
+                            addObject, result, Compare.EQUALS), MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>singletonOrder(addObject, false), false, action, elseAction, null, null, false, allNoInline ? noInline.addExcl(addObject) : noInline, forceInline)));
         }
-
-        if(allNoInline)
-            return null;
 
         // проталкиваем for'ы
         if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.VOLATILE))

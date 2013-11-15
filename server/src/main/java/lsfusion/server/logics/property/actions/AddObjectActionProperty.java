@@ -2,11 +2,9 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.server.classes.AbstractCustomClass;
@@ -27,6 +25,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ExtendContextActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertySet;
 import lsfusion.server.session.SinglePropertyTableUsage;
@@ -41,11 +40,14 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     protected CalcPropertyMapImplement<T, I> where;
     private CalcPropertyMapImplement<?, I> result; // только extend интерфейсы
 
+    private final ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders; // calculate
+    private final boolean ordersNotNull;
+
     public <T extends PropertyInterface> AddObjectActionProperty(String sID, CustomClass valueClass, boolean forceDialog, CalcProperty<T> result) {
-        this(sID, valueClass, forceDialog, SetFact.<I>EMPTY(), SetFact.<I>EMPTYORDER(), null, result!=null ? new CalcPropertyMapImplement<T, I>(result) : null);
+        this(sID, valueClass, forceDialog, SetFact.<I>EMPTY(), SetFact.<I>EMPTYORDER(), null, result!=null ? new CalcPropertyMapImplement<T, I>(result) : null, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false);
     }
 
-    public AddObjectActionProperty(String sID, CustomClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<T, I> where, CalcPropertyMapImplement<?, I> result) {
+    public AddObjectActionProperty(String sID, CustomClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<T, I> where, CalcPropertyMapImplement<?, I> result, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
         super(sID, ServerResourceBundle.getString("logics.add"), innerInterfaces, mapInterfaces);
         
         this.valueClass = valueClass;
@@ -53,6 +55,9 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         
         this.where = where;
         this.result = result;
+        
+        this.orders = orders;
+        this.ordersNotNull = ordersNotNull;
         
         assert where==null || !needDialog();
 
@@ -115,11 +120,18 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
             if(result!=null)
                 context.getSession().dropChanges((DataProperty) result.property);
 
-            Where exprWhere = where.mapExpr(innerExprs, context.getModifier()).getWhere();
+            final Modifier modifier = context.getModifier();
+            Where exprWhere = where.mapExpr(innerExprs, modifier).getWhere();
             if(exprWhere.isFalse()) // оптимизация, важна так как во многих event'ах может учавствовать
                 return;
 
-            addedTable = context.addObjects(readClass, new PropertySet<I>(innerKeys, exprWhere, MapFact.<Expr, Boolean>EMPTYORDER(), false));
+            final ImMap<I, ? extends Expr> fInnerExprs = PropertyChange.simplifyExprs(innerExprs, exprWhere);
+            ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeys(new GetValue<Expr, CalcPropertyInterfaceImplement<I>>() {
+                public Expr getMapValue(CalcPropertyInterfaceImplement<I> value) {
+                    return value.mapExpr(fInnerExprs, modifier);
+                }});
+
+            addedTable = context.addObjects(readClass, new PropertySet<I>(innerKeys, exprWhere, orderExprs, ordersNotNull));
             resultChange = SinglePropertyTableUsage.getChange(addedTable);
         }
 
