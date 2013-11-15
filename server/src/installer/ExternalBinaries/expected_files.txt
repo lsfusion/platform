@@ -1,0 +1,6 @@
+apache-tomcat-7.0.47-windows-x64.zip
+apache-tomcat-7.0.47-windows-x86.zip
+jdk-7u45-windows-i586.exe
+jdk-7u45-windows-x64.exe
+postgresql-9.2.5-1-windows-x64.exe
+postgresql-9.2.5-1-windows.exe
