@@ -145,7 +145,7 @@ META defineHistorizableFooter(property, caption, typeIdentity, typeName, object1
 
     over###typeName###property##Date caption (object1, object2, date) = typeIdentity(over###property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
-    property caption (object1, object2) = property##Date(object1, object2, date###property##Date(object1, object2, currentDate()));
+    property caption (object1, object2) = property##Date(object1, object2, currentDate());
     typeName###property caption (object1, object2) = typeIdentity(property(object1, object2)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
     FORM add###property caption
@@ -179,7 +179,11 @@ END
 
 META defineHistorizableCustom(property, caption, type, typeIdentity, typeName, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
     @defineHistorizableHeader(property, caption, type, typeIdentity, typeName, object1, object2, fixedCharWidth, group);
-    property##Date caption (object1, object2, date) = data###property##Date(object1, object2, date###property##Date(object1, object2, date));
+    property##Date caption (object1, object2, date) =
+         GROUP LAST data###property##Date(object1, object2, dateIn)
+               BY object1, object2, date
+               ORDER dateIn
+               WHERE data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) COMPLEX;
     @defineHistorizableFooter(property, caption, typeIdentity, typeName, object1, object1Identity, object2, object2Identity, fixedCharWidth, group);
 END
 

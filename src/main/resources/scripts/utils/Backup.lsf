@@ -21,6 +21,8 @@ backupFileName 'Имя файла резервной копии' = DATA SESSION 
 backupFilePath 'Файл резервной копии' = DATA SESSION VARSTRING[200]();
 
 excludeTable 'Исключить' = DATA SESSION BOOLEAN (Table);
+
+TABLE backupTable(Backup, Table);
 excludeBackupTable 'Исключена' = DATA BOOLEAN (Backup, Table);
 
 FORM backup 'Резервное копирование'
