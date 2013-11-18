@@ -135,10 +135,13 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     protected static Where toWhere(OrObjectWhere[] wheres) {
+        return toWhere(wheres, false);
+    }
+    protected static Where toWhere(OrObjectWhere[] wheres, boolean check) {
         if(wheres.length==1)
             return wheres[0];
         else
-            return new AndWhere(wheres, false);
+            return new AndWhere(wheres, check);
     }
     protected static Where toWhere(OrObjectWhere[] wheres, CheckWhere siblingsWhere) {
         if(wheres.length==1)
