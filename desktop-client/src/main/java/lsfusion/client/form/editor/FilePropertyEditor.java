@@ -3,13 +3,13 @@ package lsfusion.client.form.editor;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.Log;
 import lsfusion.client.SwingUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 
 public class FilePropertyEditor extends DialogBasedPropertyEditor {
 
@@ -19,7 +19,8 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
     protected final String[] extensions;
 
     protected final JFileChooser fileChooser = new JFileChooser();
-    protected int returnValue;
+    protected boolean canceled;
+    private byte[] content;
 
     public FilePropertyEditor(boolean multiple, boolean storeName, String description, String... extensions) {
         super();
@@ -66,27 +67,33 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
 
     @Override
     public void showDialog(Point desiredLocation) {
-        returnValue = fileChooser.showOpenDialog(SwingUtils.getActiveWindow());
-        if (returnValue == JFileChooser.APPROVE_OPTION) {
+        canceled = fileChooser.showOpenDialog(SwingUtils.getActiveWindow()) != JFileChooser.APPROVE_OPTION;
+        if (!canceled) {
+            File[] files = multiple ? fileChooser.getSelectedFiles() : new File[]{fileChooser.getSelectedFile()};
+
+            try {
+                content = BaseUtils.filesToBytes(multiple, storeName, custom, files);
+            } catch (Exception e) {
+                canceled = true;
+                Log.error(ClientResourceBundle.getString("form.editor.cant.read.file"), e);
+                return;
+            }
+
             SystemUtils.saveCurrentDirectory(fileChooser.getSelectedFile());
         }
     }
 
     @Override
     public boolean valueChanged() {
-        return returnValue == JFileChooser.APPROVE_OPTION;
+        return !canceled;
     }
 
     @Override
     public Object getCellEditorValue() {
-        assert returnValue == JFileChooser.APPROVE_OPTION;
+        assert !canceled;
 
-        File[] files = multiple ? fileChooser.getSelectedFiles() : new File[]{fileChooser.getSelectedFile()};
-
-        try {
-            return BaseUtils.filesToBytes(multiple, storeName, custom, files);
-        } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("form.editor.cant.read.file") + " " + fileChooser.getSelectedFile());
-        }
+        Object res = content;
+        content = null;
+        return res;
     }
 }

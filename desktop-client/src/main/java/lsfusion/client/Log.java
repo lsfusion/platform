@@ -1,5 +1,7 @@
 package lsfusion.client;
 
+import lsfusion.base.ExceptionUtils;
+
 import javax.swing.*;
 import java.util.List;
 import java.awt.*;
@@ -89,20 +91,16 @@ public final class Log {
         error(message, null, null);
     }
 
-    public static void error(String message, List<String> titles, List<List<String>> data) {
-        printFailedMessage(message, titles, data, "");
+    public static void error(String message, Throwable t) {
+        error(message, ExceptionUtils.getStackTraceString(t));
     }
 
-    static JTextArea errorText;
-    static JDialog dialog;
-    static JScrollPane sPane;
-    static JOptionPane optionPane;
-    static JPanel line;
-    static JPanel south;
-    static JTable table;
-
-    public static void printFailedMessage(String message, String trace) {
+    public static void error(String message, String trace) {
         printFailedMessage(message, null, null, trace);
+    }
+
+    public static void error(String message, List<String> titles, List<List<String>> data) {
+        printFailedMessage(message, titles, data, "");
     }
 
     public static void printFailedMessage(String message, List<String> titles, List<List<String>> data, String trace) {
@@ -110,72 +108,30 @@ public final class Log {
 
         provideErrorFeedback();
 
-        JPanel panel = new JPanel();
-        BorderLayout layout = new BorderLayout(10, 10);
-        panel.setLayout(layout);
-
-        JPanel messagePanel = new JPanel();
-        messagePanel.setLayout(new BorderLayout(10, 10));
-
-        StringBuilder htmlMessage = new StringBuilder("<html><font size=+1>");
-        for (int i = 0; i < message.length(); i++) {
-            char ch = message.charAt(i);
-            if (ch == '\n') {
-                htmlMessage.append("<br>");
-            } else {
-                htmlMessage.append(ch);
-            }
-        }
-        htmlMessage.append("</font></html>");
-
-        JLabel text = new JLabel(htmlMessage.toString());
-        messagePanel.add(text, BorderLayout.NORTH);
-
+        JPanel messagePanel = new JPanel(new BorderLayout(10, 10));
+        messagePanel.add(new JLabel(toHtml(message)), BorderLayout.NORTH);
         if (data != null) {
-            int size = data.size();
-            Object columnNames[] = titles.toArray();
-            Object dataArray[][] = new Object[size][];
-            int i = 0;
-            for (List<String> dataRow : data) {
-                dataArray[i] = dataRow.toArray();
-                i++;
-            }
-            table = new JTable(dataArray, columnNames) {
-                @Override
-                public boolean isCellEditable(int row, int column) {
-                    return false;
-                }
-            };
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-            table.setPreferredScrollableViewportSize(
-                    new Dimension(
-                            table.getPreferredScrollableViewportSize().width,
-                            dataArray.length * table.getRowHeight()
-                    ));
-            table.setFocusable(false);
-            JScrollPane scrollPane = new JScrollPane(table);
-            messagePanel.add(scrollPane, BorderLayout.CENTER);
+            messagePanel.add(new JScrollPane(createDataTable(titles, data)), BorderLayout.CENTER);
         }
 
-        panel.add(messagePanel, BorderLayout.CENTER);
-
-        south = new JPanel();
-        south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
-        south.setVisible(false);
-
-        line = new JPanel();
-        south.add(line);
-        south.add(new JLabel(" "));
+        JPanel line = new JPanel();
         line.setPreferredSize(new Dimension(10, 2));
         line.setBackground(Color.GRAY);
 
-        errorText = new JTextArea(trace, 7, 60);
-        errorText.setFont(new Font("Tahoma", Font.PLAIN, 12));
-        errorText.setForeground(Color.RED);
+        JTextArea taErrorText = new JTextArea(trace, 7, 60);
+        taErrorText.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        taErrorText.setForeground(Color.RED);
 
-        sPane = new JScrollPane(errorText);
-        south.add(sPane);
-        panel.add(south, BorderLayout.SOUTH);
+        final JPanel south = new JPanel();
+        south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
+        south.setVisible(false);
+        south.add(line);
+        south.add(new JLabel(" "));
+        south.add(new JScrollPane(taErrorText));
+
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.add(messagePanel, BorderLayout.CENTER);
+        mainPanel.add(south, BorderLayout.SOUTH);
 
         String opt[];
         if (trace.length() > 0) {
@@ -183,11 +139,16 @@ public final class Log {
         } else {
             opt = new String[]{"OK"};
         }
-        optionPane = new JOptionPane(panel, JOptionPane.ERROR_MESSAGE,
+
+        final JOptionPane optionPane = new JOptionPane(mainPanel, JOptionPane.ERROR_MESSAGE,
                                      JOptionPane.YES_NO_OPTION,
                                      null,
                                      opt,
                                      "OK");
+
+        final JDialog dialog = new JDialog(Main.frame, Main.getMainTitle(), Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setContentPane(optionPane);
+        dialog.pack();
 
         optionPane.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
@@ -202,13 +163,49 @@ public final class Log {
             }
         });
 
-        dialog = new JDialog(Main.frame, Main.getMainTitle(), Dialog.ModalityType.APPLICATION_MODAL);
-        dialog.setContentPane(optionPane);
-        dialog.pack();
 
         //центрируем на экране
         dialog.setLocationRelativeTo(null);
 
         dialog.setVisible(true);
+    }
+
+    private static Component createDataTable(List<String> titles, List<List<String>> data) {
+        int size = data.size();
+        Object columnNames[] = titles.toArray();
+        Object dataArray[][] = new Object[size][];
+        int i = 0;
+        for (List<String> dataRow : data) {
+            dataArray[i] = dataRow.toArray();
+            i++;
+        }
+        JTable table = new JTable(dataArray, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        table.setPreferredScrollableViewportSize(
+                new Dimension(
+                        table.getPreferredScrollableViewportSize().width,
+                        dataArray.length * table.getRowHeight()
+                ));
+        table.setFocusable(false);
+        return table;
+    }
+
+    private static String toHtml(String message) {
+        StringBuilder htmlMessage = new StringBuilder("<html><font size=+1>");
+        for (int i = 0; i < message.length(); i++) {
+            char ch = message.charAt(i);
+            if (ch == '\n') {
+                htmlMessage.append("<br>");
+            } else {
+                htmlMessage.append(ch);
+            }
+        }
+        htmlMessage.append("</font></html>");
+        return htmlMessage.toString();
     }
 }

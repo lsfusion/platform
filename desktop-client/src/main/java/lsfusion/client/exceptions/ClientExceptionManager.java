@@ -1,15 +1,13 @@
 package lsfusion.client.exceptions;
 
-import org.apache.log4j.Logger;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Log;
 import lsfusion.client.Main;
 import lsfusion.client.rmi.ConnectionLostManager;
+import org.apache.log4j.Logger;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.RemoteException;
@@ -52,9 +50,7 @@ public class ClientExceptionManager {
             message += " : " + lineSeparator + e.getLocalizedMessage();
         }
 
-        OutputStream stackStream = new ByteArrayOutputStream();
-        e.printStackTrace(new PrintStream(stackStream));
-        String stackTrace = stackStream.toString();
+        String stackTrace = ExceptionUtils.getStackTraceString(e);
 
         if (!(e instanceof ConcurrentModificationException && stackTrace.contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
             try {
@@ -62,7 +58,7 @@ public class ClientExceptionManager {
                 Main.clientExceptionLog(info, SystemUtils.getLocalHostName(), message, e.getClass().getName(), stackTrace);
             } catch (RemoteException ignored) {
             }
-            Log.printFailedMessage("Внутренняя ошибка сервера", stackTrace);
+            Log.error("Внутренняя ошибка сервера", stackTrace);
         }
     }
 

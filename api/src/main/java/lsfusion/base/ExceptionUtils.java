@@ -3,6 +3,8 @@ package lsfusion.base;
 import com.google.common.base.Throwables;
 import lsfusion.interop.exceptions.RemoteServerException;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
 
@@ -39,5 +41,11 @@ public class ExceptionUtils {
 
     public static void dumpStack() {
         new Exception("Stack trace").printStackTrace(System.out);
+    }
+
+    public static String getStackTraceString(Throwable t) {
+        ByteArrayOutputStream stackStream = new ByteArrayOutputStream();
+        t.printStackTrace(new PrintStream(stackStream));
+        return stackStream.toString();
     }
 }
