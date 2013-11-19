@@ -54,6 +54,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.*;
 
 import javax.swing.*;
@@ -413,11 +414,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     ColumnUserPreferences columnPreferences = entry.getValue();
                     Integer idShow = columnPreferences.userHide == null ? null : BL.reflectionLM.propertyDrawShowStatus.getObjectID(columnPreferences.userHide ? "Hide" : "Show");
                     if (forAllUsers) {
-                        BL.reflectionLM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject, userObject);
+                        BL.reflectionLM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnWidthPropertyDraw.change(columnPreferences.userWidth, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnOrderPropertyDraw.change(columnPreferences.userOrder, dataSession, propertyDrawObject);
-                        BL.reflectionLM.columnSortPropertyDraw.change(columnPreferences.userSort, dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnAscendingSortPropertyDraw.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, userObject);
+                        BL.reflectionLM.columnSortPropertyDraw.change(columnPreferences.userSort, dataSession, propertyDrawObject);
+                        BL.reflectionLM.columnAscendingSortPropertyDraw.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject);
                     } else {
                         BL.reflectionLM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
                         BL.reflectionLM.columnWidthPropertyDrawCustomUser.change(columnPreferences.userWidth, dataSession, propertyDrawObject, userObject);
@@ -930,7 +931,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             for (int k = 0, sizeK = toSum.size(); k < sizeK; k++) {
                 Object propertyDraw = toSum.getKey(k);
                 if (propertyDraw instanceof PropertyDrawInstance) {
-                    for (int i = 1, sizeI = toSum.getValue(i).size(); i <= sizeI; i++) {
+                    for (int i = 1, sizeI = toSum.getValue(k).size(); i <= sizeI; i++) {
                         sumList.add(oneValue.get(((PropertyDrawInstance) propertyDraw).getsID() + index));
                         index++;
                     }
@@ -947,6 +948,84 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             resultMap.put(groupList, sumList);
         }
         return resultMap;
+    }
+    
+    public List<FormGrouping> readGroupings(String groupObjectSID) throws SQLException {
+        DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(session, new DataObject(groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
+
+        KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
+        
+        KeyExpr formGroupingExpr = new KeyExpr("formGrouping");
+
+//        ImRevMap<String, KeyExpr> newKeys = MapFact.singletonRev("propertyDraw", propertyDrawExpr);
+        ImRevMap<String, KeyExpr> newKeys = MapFact.toRevMap("formGrouping", formGroupingExpr, "propertyDraw", propertyDrawExpr);
+
+        QueryBuilder<String, String> query = new QueryBuilder<String, String>(newKeys);
+
+        query.addProperty("groupingSID", BL.reflectionLM.nameFormGrouping.getExpr(formGroupingExpr));
+        query.addProperty("itemQuantity", BL.reflectionLM.itemQuantityFormGrouping.getExpr(formGroupingExpr));
+        query.addProperty("propertySID", BL.reflectionLM.sidPropertyDraw.getExpr(propertyDrawExpr));
+        query.addProperty("groupOrder", BL.reflectionLM.groupOrderFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
+        query.addProperty("sum", BL.reflectionLM.sumFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
+        query.addProperty("max", BL.reflectionLM.maxFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
+
+        Expr goExpr = groupObjectObject.getExpr();
+        query.and(BL.reflectionLM.groupObjectFormGrouping.getExpr(formGroupingExpr).compare(goExpr, Compare.EQUALS));
+        query.and(BL.reflectionLM.groupObjectPropertyDraw.getExpr(propertyDrawExpr).compare(goExpr, Compare.EQUALS));
+
+        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> queryResult = query.execute(this);
+
+        Map<String, FormGrouping> groupings = new LinkedHashMap<String, FormGrouping>();
+        
+        for (ImMap<String, Object> values : queryResult.valueIt()) {
+            String groupingSID = (String) values.get("groupingSID");
+            FormGrouping grouping = groupings.get(groupingSID);
+            if (grouping == null) {
+                grouping = new FormGrouping((String) values.get("groupingSID"), groupObjectSID, (Boolean) values.get("itemQuantity"), new ArrayList<FormGrouping.PropertyGrouping>());
+                groupings.put(groupingSID, grouping);
+            }
+            grouping.propertyGroupings.add(grouping.new PropertyGrouping((String) values.get("propertySID"), (Integer) values.get("groupOrder"), (Boolean) values.get("sum"), (Boolean) values.get("max")));
+        }
+        
+        return new ArrayList<FormGrouping>(groupings.values());
+    }
+    
+    public void saveGrouping(FormGrouping grouping) throws SQLException, ScriptingErrorLog.SemanticErrorException {
+        DataSession dataSession = session.createSession();
+        DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
+        ObjectValue groupingObjectValue = BL.reflectionLM.formGroupingNameFormGroupingGroupObject.readClasses(dataSession, new DataObject(grouping.name, StringClass.get(100)), groupObjectObject);
+        DataObject groupingObject;
+        if (groupingObjectValue instanceof DataObject) {
+            groupingObject = (DataObject) groupingObjectValue;
+            
+            if (grouping.propertyGroupings == null) { // признак удаления группировки
+                dataSession.changeClass(groupingObject, null);
+                dataSession.apply(BL);
+                return;
+            }
+        } else {
+            assert grouping.propertyGroupings != null;
+            groupingObject = dataSession.addObject((ConcreteCustomClass) BL.reflectionLM.findClassByCompoundName("FormGrouping"));
+            BL.reflectionLM.groupObjectFormGrouping.change(groupObjectObject.getValue(), dataSession, groupingObject);
+            BL.reflectionLM.nameFormGrouping.change(grouping.name, dataSession, groupingObject);
+        }
+        assert grouping.propertyGroupings != null;
+        BL.reflectionLM.itemQuantityFormGrouping.change(grouping.showItemQuantity, dataSession, groupingObject);
+        
+        for (FormGrouping.PropertyGrouping propGrouping : grouping.propertyGroupings) {
+            ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementSIDPropertyDraw.readClasses(dataSession,
+                    new DataObject(entity.getSID(), StringClass.get(false, false, 50)),
+                    new DataObject(propGrouping.propertySID, StringClass.get(false, false, 100)));
+            if (propertyDrawObjectValue instanceof DataObject) {
+                DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
+                    BL.reflectionLM.groupOrderFormGroupingPropertyDraw.change(propGrouping.groupingOrder, dataSession, groupingObject, propertyDrawObject);
+                    BL.reflectionLM.sumFormGroupingPropertyDraw.change(propGrouping.sum, dataSession, groupingObject, propertyDrawObject);
+                    BL.reflectionLM.maxFormGroupingPropertyDraw.change(propGrouping.max, dataSession, groupingObject, propertyDrawObject);
+            } else {
+                throw new RuntimeException("Объект " + propGrouping.propertySID + " (" + entity.getSID() + ") не найден");
+            }
+        }
+        dataSession.apply(BL);
     }
 
     // Обновление данных
