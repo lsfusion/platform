@@ -4,14 +4,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketImpl;
 
 public class CountZipSocket extends Socket {
     private CompressedBlockInputStream in;
     private CompressedBlockOutputStream out;
     private ISocketTrafficSum observer;
 
-    public CountZipSocket() {
-        super();
+    public CountZipSocket(SocketImpl impl) throws SocketException {
+        super(impl);
     }
 
     public CountZipSocket(String host, int port)
@@ -24,7 +26,7 @@ public class CountZipSocket extends Socket {
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
+    public synchronized InputStream getInputStream() throws IOException {
         if (in == null) {
             in = new CompressedBlockInputStream(super.getInputStream());
             if (observer != null) {
@@ -35,7 +37,7 @@ public class CountZipSocket extends Socket {
     }
 
     @Override
-    public OutputStream getOutputStream() throws IOException {
+    public synchronized OutputStream getOutputStream() throws IOException {
         if (out == null) {
             out = new CompressedBlockOutputStream(super.getOutputStream(), 1 << 20);
             if (observer != null) {
@@ -45,7 +47,7 @@ public class CountZipSocket extends Socket {
         return out;
     }
 
-    public void closeIfHung() {
+    public synchronized void closeIfHung() {
         if (in != null && in.hangs) {
             try {
                 close();
