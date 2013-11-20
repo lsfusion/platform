@@ -9,6 +9,10 @@ public class ClientLoggingManager {
 
     private static ClientLoggingManager instance = new ClientLoggingManager();
 
+    public static void turnOnTcpLogging() {
+        on("D:\\client-sun.rmi.transport.tcp.log", "sun.rmi.transport.tcp", Level.ALL);
+    }
+
     public static void turnOnRmiLogging(String baseDir) {
         on(baseDir + "client-sun.rmi.server.call.log", "sun.rmi.server.call", Level.ALL);
         on(baseDir + "client-sun.rmi.server.ref.log", "sun.rmi.server.ref", Level.ALL);
@@ -27,9 +31,10 @@ public class ClientLoggingManager {
 
     public static void on(String filePath, String loggerName, Level level) {
         try {
-            Handler fh = new FileHandler(filePath, false);
+//            Handler fh = new FileHandler(filePath, false);
+            Handler fh = new ConsoleHandler();
+            fh.setLevel(level);
             fh.setFormatter(new SimpleFormatter());
-//            Handler fh = new ConsoleHandler();
             Logger.getLogger(loggerName).addHandler(fh);
             Logger.getLogger(loggerName).setLevel(level);
             instance.handlers.add(fh);

@@ -107,7 +107,7 @@ public class Main {
         });
 
         try {
-            initRmiLogging();
+            initJulLogging();
 
             loadLibraries();
 
@@ -219,7 +219,8 @@ public class Main {
         dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
     }
 
-    private static void initRmiLogging() {
+    private static void initJulLogging() {
+//        ClientLoggingManager.turnOnTcpLogging();
         boolean turnOnRmiLogging = Boolean.getBoolean(LSFUSION_CLIENT_LOG_RMI);
         if (turnOnRmiLogging) {
             String logBaseDir = System.getProperty(LSFUSION_CLIENT_LOG_BASEDIR);
