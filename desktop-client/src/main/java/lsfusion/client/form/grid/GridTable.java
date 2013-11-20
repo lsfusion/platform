@@ -95,6 +95,8 @@ public class GridTable extends ClientPropertyTable {
     private int pressedCellColumn = -1;
     private int previousSelectedRow = 0;
 
+    private int pageSize = 50;
+
     private GridSelectionController selectionController = new GridSelectionController(this);
     private KeyController keyController = new KeyController(this);
 
@@ -1106,28 +1108,26 @@ public class GridTable extends ClientPropertyTable {
             });
 
             pane.addComponentListener(new ComponentAdapter() {
-                private int pageSize = 50;
                 public void componentResized(ComponentEvent ce) {
-                    // Listener срабатывает в самом начале, когда компонент еще не расположен
-                    // В таком случае нет смысла вызывать изменение pageSize
-                    if (getParent().getHeight() == 0) {
-                        return;
-                    }
-
-                    int newPageSize = getParent().getHeight() / getRowHeight() + 1;
-                    if (newPageSize != pageSize) {
-                        try {
-                            form.changePageSize(groupObject, newPageSize);
-                            pageSize = newPageSize;
-                        } catch (IOException e) {
-                            throw new RuntimeException(getString("errors.error.changing.page.size"), e);
-                        }
-                    }
+                    updatePageSizeIfNeeded(true);
                 }
             });
         }
     }
-    
+
+    public void updatePageSizeIfNeeded(boolean checkVisible) {
+        int newPageSize = getParent().getHeight() / getRowHeight() + 1;
+        if (newPageSize != 0 && newPageSize != pageSize && (!checkVisible || SwingUtils.isRecursivelyVisible(this))) {
+            try {
+                System.out.println("changePageSize: " + newPageSize + ": " + groupObject.toString());
+                form.changePageSize(groupObject, newPageSize);
+                pageSize = newPageSize;
+            } catch (IOException e) {
+                throw new RuntimeException(getString("errors.error.changing.page.size"), e);
+            }
+        }
+    }
+
     public boolean userPreferencesSaved() {
         return userGridPreferences.hasUserPreferences();
     }

@@ -3,6 +3,7 @@ package lsfusion.client.form.layout;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
 import lsfusion.interop.form.layout.CachableLayout;
@@ -180,11 +181,31 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         public void addTab(int index, String caption, Component childView) {
             // добавляем не сам компонент, а proxyPanel, чтобы TabbedPane не управляла его видимостью и не мешала логике autohide'ов
-            JPanel proxyPanel = new JPanel(new BorderLayout());
+            JPanel proxyPanel = new JPanel(new BorderLayout()) {
+                @Override
+                public void validate() {
+                    super.validate();
+                    updatePageSizes(this);
+                }
+            };
 
             proxyPanel.add(childView);
 
             insertTab(caption, null, proxyPanel, null, index);
+        }
+
+        private void updatePageSizes(Container container) {
+            if (container.isVisible()) {
+                int childCnt = container.getComponentCount();
+                for (int i = 0; i < childCnt; ++i) {
+                    Component child = container.getComponent(i);
+                    if (child instanceof GridTable) {
+                        ((GridTable) child).updatePageSizeIfNeeded(false);
+                    } else if (child instanceof Container) {
+                        updatePageSizes((Container) child);
+                    }
+                }
+            }
         }
 
         public void removeTab(int index) {

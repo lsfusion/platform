@@ -414,6 +414,10 @@ public class SwingUtils {
         return BorderFactory.createLineBorder(new Color(r, g, b), 2);
     }
 
+    public static boolean isRecursivelyVisible(Component component) {
+        return component.isVisible() && (component.getParent() == null || isRecursivelyVisible(component.getParent()));
+    }
+
     private static final class SingleActionTimer extends Timer {
         private boolean stopped = false;
 
