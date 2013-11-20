@@ -1,6 +1,9 @@
 package lsfusion.client.form;
 
 import lsfusion.client.SwingUtils;
+import lsfusion.client.form.renderer.ImagePropertyRenderer;
+import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.logics.classes.ClientImageClass;
 import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
@@ -78,6 +81,12 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
                 setDispatchComponent(e);
                 repostEvent(e);
                 table.prepareTextEditor();
+            } else {
+                ClientPropertyDraw property = table.getProperty(pressedRow, pressedCol);
+                if (property.baseType instanceof ClientImageClass) {
+                    ImagePropertyRenderer.expandImage((byte[]) table.getValueAt(pressedRow, pressedCol));
+                    e.consume();
+                }
             }
         }
     }
