@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 
 import java.awt.*;
 import java.io.*;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
@@ -2252,5 +2251,22 @@ public class BaseUtils {
             }
             after++;
         }
+    }
+
+    public static String bigDecimalToString(BigDecimal bd) {
+        String res = bd.toPlainString();
+        int dotInd = res.indexOf(".");
+        if (dotInd != -1) {
+            int i = res.length() - 1;
+            for (; i > dotInd; --i) {
+                if (res.charAt(i) != '0') {
+                    ++i;
+                    break;
+                }
+            }
+            res = res.substring(0, i);
+        }
+
+        return res;
     }
 }
