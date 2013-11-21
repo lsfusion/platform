@@ -42,7 +42,9 @@ public class UnionJoin extends CalculateJoin<Integer> {
 
     @IdentityLazy
     public ImMap<Integer, BaseExpr> getJoins() {
-        return ListFact.fromJavaCol(getCommonExprs()).toSet().toOrderSet().toIndexedMap();
+        ImSet<BaseExpr> commonExprs = ListFact.fromJavaCol(getCommonExprs()).toSet();
+        ImSet<ParamExpr> lostKeys = AbstractOuterContext.getOuterSetKeys(exprs).removeIncl(AbstractOuterContext.getOuterColKeys(commonExprs));
+        return commonExprs.addExcl(lostKeys).toOrderSet().toIndexedMap();
     }
 
     private static void fillOrderedExprs(BaseExpr baseExpr, BaseExpr fromExpr, MOrderExclMap<BaseExpr, MSet<BaseExpr>> orderedExprs) {
