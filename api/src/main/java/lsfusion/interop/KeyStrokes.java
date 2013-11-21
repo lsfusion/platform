@@ -156,6 +156,10 @@ public class KeyStrokes {
     public static boolean isKeyEvent(EventObject event, int keyCode) {
         return (event instanceof KeyEvent && ((KeyEvent) event).getKeyCode() == keyCode);
     }
+    
+    public static boolean isEnterEvent(EventObject event) {
+        return isKeyEvent(event, KeyEvent.VK_ENTER);
+    }
 
     public static boolean isSpaceEvent(EventObject event) {
         return isKeyEvent(event, KeyEvent.VK_SPACE);

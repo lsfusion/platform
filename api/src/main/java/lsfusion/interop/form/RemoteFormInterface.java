@@ -1,6 +1,7 @@
 package lsfusion.interop.form;
 
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.FormGrouping;
 import lsfusion.interop.remote.PendingRemoteInterface;
 
 import java.rmi.RemoteException;
@@ -91,10 +92,14 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     Map<List<Object>, List<Object>> groupData(long requestIndex, Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
                                               Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws RemoteException;
+    
+    List<FormGrouping> readGroupings(String groupObjectSID) throws RemoteException;
+    
+    void saveGrouping(long requestIndex, FormGrouping grouping) throws RemoteException;
 
     // пользовательские настройки
 
-    void saveUserPreferences(long requestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException;
+    ServerResponse saveUserPreferences(long requestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException;
 
     FormUserPreferences getUserPreferences() throws RemoteException;
 }

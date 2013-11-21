@@ -3,6 +3,7 @@ package lsfusion.client.form.grid;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.ClientPropertyTable;
@@ -1006,6 +1007,10 @@ public class GridTable extends ClientPropertyTable {
     public boolean isPressed(int row, int column) {
         return pressedCellRow == row && pressedCellColumn == column;
     }
+    
+    public ClientGroupObject getGroupObject() {
+        return groupObject;
+    }
 
     public int getColumnCount() {
         return model.getColumnCount();
@@ -1162,33 +1167,50 @@ public class GridTable extends ClientPropertyTable {
         }
     }
     
-    public void resetPreferences(boolean forAllUsers) throws RemoteException {
+    public void resetPreferences(final boolean forAllUsers, final Runnable onSuccess) throws RemoteException {
         currentGridPreferences.resetPreferences();
-        (forAllUsers ? generalGridPreferences : userGridPreferences).resetPreferences();
         
         if (!properties.isEmpty()) {
-            form.saveUserPreferences(currentGridPreferences, forAllUsers);
+            
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, new Runnable() {
+                @Override
+                public void run() {
+                    (forAllUsers ? generalGridPreferences : userGridPreferences).resetPreferences();
+                    
+                    JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.reset.settings.successfully.complete"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
+                    
+                    resetCurrentPreferences(false);
+                    
+                    onSuccess.run();
+                }
+            });
         }
-
-        resetCurrentPreferences(false);
     }
-    
-    public void saveCurrentPreferences(boolean forAllUsers) throws RemoteException {
+                                                                                 
+    public void saveCurrentPreferences(final boolean forAllUsers, final Runnable onSuccess) throws RemoteException {
         currentGridPreferences.setHasUserPreferences(true);
         
         if (getProperties().size() != 0) {
-            if (forAllUsers) {
-                generalGridPreferences = new GridUserPreferences(currentGridPreferences);
-            } else {
-                userGridPreferences = new GridUserPreferences(currentGridPreferences);
-            }
             
             if (!properties.isEmpty()) {
-                form.saveUserPreferences(currentGridPreferences, forAllUsers);
-            }
-            
-            if (forAllUsers) {
-                resetCurrentPreferences(false);
+                form.saveUserPreferences(currentGridPreferences, forAllUsers, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (forAllUsers) {
+                            generalGridPreferences = new GridUserPreferences(currentGridPreferences);
+                        } else {
+                            userGridPreferences = new GridUserPreferences(currentGridPreferences);
+                        }
+
+                        JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.save.settings.successfully.complete"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
+
+                        if (forAllUsers) {
+                            resetCurrentPreferences(false);
+                        }
+
+                        onSuccess.run();
+                    }
+                });
             }
         }
     }

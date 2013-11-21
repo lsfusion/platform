@@ -1,10 +1,10 @@
 package lsfusion.gwt.form.server.form.handlers;
 
-import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.server.FormDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.server.convert.GwtToClientConverter;
 import lsfusion.gwt.form.shared.actions.form.SaveUserPreferencesAction;
+import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.GColumnUserPreferences;
 import lsfusion.gwt.form.shared.view.GGroupObjectUserPreferences;
 import lsfusion.interop.form.ColumnUserPreferences;
@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SaveUserPreferencesActionHandler extends FormActionHandler<SaveUserPreferencesAction, VoidResult> {
+public class SaveUserPreferencesActionHandler extends ServerResponseActionHandler<SaveUserPreferencesAction> {
     private final static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
     public SaveUserPreferencesActionHandler(FormDispatchServlet servlet) {
@@ -24,7 +24,7 @@ public class SaveUserPreferencesActionHandler extends FormActionHandler<SaveUser
     }
 
     @Override
-    public VoidResult executeEx(SaveUserPreferencesAction action, ExecutionContext context) throws DispatchException, IOException {
+    public ServerResponseResult executeEx(SaveUserPreferencesAction action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         GGroupObjectUserPreferences gGroupObjectUP = action.groupObjectUserPreferences;
         
@@ -35,7 +35,6 @@ public class SaveUserPreferencesActionHandler extends FormActionHandler<SaveUser
         }
         GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gwtConverter.convertFont(gGroupObjectUP.getFont()), gGroupObjectUP.hasUserPreferences());
 
-        form.remoteForm.saveUserPreferences(action.requestIndex, groupObjectUP, action.forAllUsers);
-        return new VoidResult();
+        return getServerResponseResult(form, form.remoteForm.saveUserPreferences(action.requestIndex, groupObjectUP, action.forAllUsers));
     }
 }

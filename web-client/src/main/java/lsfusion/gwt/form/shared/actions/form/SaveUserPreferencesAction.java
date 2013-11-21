@@ -1,9 +1,8 @@
 package lsfusion.gwt.form.shared.actions.form;
 
-import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.shared.view.GGroupObjectUserPreferences;
 
-public class SaveUserPreferencesAction extends FormRequestIndexCountingAction<VoidResult> {
+public class SaveUserPreferencesAction extends FormRequestIndexCountingAction<ServerResponseResult> {
     public GGroupObjectUserPreferences groupObjectUserPreferences;
     public boolean forAllUsers;
 

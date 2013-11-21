@@ -92,7 +92,11 @@ columnAscendingSortPropertyDrawCustomUser 'Восходящая сортиров
 columnAscendingSortPropertyDraw 'Восходящая сортировка' = DATA BOOLEAN (PropertyDraw);
 
 hasUserPreferencesGroupObjectCustomUser 'Настройки сохранены для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
+countShowPropertyDrawGroupObjectCustomUser(g, u) = GROUP SUM 1 IF showPropertyDrawCustomUser(property, user) == PropertyDrawShowStatus.Show BY groupObjectPropertyDraw(property), user;
+CONSTRAINT hasUserPreferencesGroupObjectCustomUser(g, u) AND NOT countShowPropertyDrawGroupObjectCustomUser(g, u) MESSAGE 'Настройки не сохранены: спрятаны все колонки';
 hasUserPreferencesGroupObject 'Настройки сохранены' = DATA BOOLEAN (GroupObject);
+countShowPropertyDrawGroupObject(g) = GROUP SUM 1 IF showPropertyDraw(property) == PropertyDrawShowStatus.Show BY groupObjectPropertyDraw(property);
+CONSTRAINT hasUserPreferencesGroupObject(g) AND NOT countShowPropertyDrawGroupObject(g) MESSAGE 'Настройки не сохранены: спрятаны все колонки';
 hasUserPreferencesOverrideGroupObjectCustomUser 'Настройки сохранены' (groupObject, customUser) = OVERRIDE hasUserPreferencesGroupObject(groupObject) IF customUser IS CustomUser, hasUserPreferencesGroupObjectCustomUser(groupObject, customUser);
 
 fontSizeGroupObjectCustomUser 'Размер шрифта для пользователя'= DATA INTEGER (GroupObject, CustomUser);
@@ -162,6 +166,17 @@ navigatorElementGroupObject 'Элемент навигатора' = DATA Navigat
 sidNavigatorElementGroupObject (groupObject) = sidNavigatorElement (navigatorElementGroupObject(groupObject));
 groupObjectSIDGroupObjectSIDNavigatorElementGroupObject  'Группа объектов' (sidNavigatorElement, sidGroupObject) = GROUP AGGR groupObject BY sidGroupObject (groupObject), sidNavigatorElementGroupObject (groupObject) WHERE groupObject IS GroupObject;
 
+CLASS FormGrouping 'Группировка';
+TABLE formGrouping (FormGrouping); 
+
+nameFormGrouping 'Имя группировки' = DATA VARSTRING[100] (FormGrouping);
+groupObjectFormGrouping = DATA GroupObject (FormGrouping);
+itemQuantityFormGrouping 'Количество записей' = DATA BOOLEAN (FormGrouping);
+formGroupingNameFormGroupingGroupObject 'Группировка' (nameFormGrouping, groupObject) = GROUP AGGR formGrouping BY nameFormGrouping(formGrouping), groupObjectFormGrouping(formGrouping) WHERE formGrouping IS FormGrouping;
+
+groupOrderFormGroupingPropertyDraw 'Порядок группировки' = DATA INTEGER (FormGrouping, PropertyDraw);
+sumFormGroupingPropertyDraw 'Суммировать' = DATA BOOLEAN (FormGrouping, PropertyDraw);
+maxFormGroupingPropertyDraw 'Максимум' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 
 FORM physicalModel 'Таблицы'
     OBJECTS t=Table
@@ -226,6 +241,9 @@ FORM forms 'Формы'
     OBJECTS g=GroupObject
     PROPERTIES(g) sidGroupObject READONLY, fontSizeGroupObject, isFontBoldGroupObject, isFontItalicGroupObject, hasUserPreferencesGroupObject
     PROPERTIES(g,u) fontSizeGroupObjectCustomUser, isFontBoldGroupObjectCustomUser, isFontItalicGroupObjectCustomUser, hasUserPreferencesGroupObjectCustomUser
+    
+    OBJECTS fg=FormGrouping
+    PROPERTIES(fg) nameFormGrouping, itemQuantityFormGrouping
 
     OBJECTS p=PropertyDraw
     PROPERTIES(p) READONLY sidPropertyDraw, captionPropertyDraw
@@ -240,14 +258,31 @@ FORM forms 'Формы'
     PROPERTIES(p) columnAscendingSortPropertyDraw
     PROPERTIES(p,u) columnSortPropertyDrawCustomUser
     PROPERTIES(p,u) columnAscendingSortPropertyDrawCustomUser
+    PROPERTIES(fg,p) groupOrderFormGroupingPropertyDraw, sumFormGroupingPropertyDraw, maxFormGroupingPropertyDraw 
 
     FILTERS
         navigatorElementGroupObject(g)==tf,
-        formPropertyDraw(p)==tf
+        formPropertyDraw(p)==tf,
+        groupObjectFormGrouping(fg)==g 
 
     FILTERGROUP filtersForm
         FILTER 'Свойства только текущей группы объектов' 'F8' groupObjectPropertyDraw(p)==g
 ;
+
+EXTEND DESIGN forms {
+    main {
+        NEW groupingContainer BEFORE p.box {
+            type = CONTAINERH;
+            fill = 1;
+            ADD g.box {
+                fill = 2;
+            }
+            ADD fg.box {
+                fill = 1;
+            }
+        }
+    }
+}
 
 dumbPropertyGroup (pg) = ' ' IF pg IS PropertyGroup;
 

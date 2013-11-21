@@ -12,7 +12,7 @@ public class PropertyLabel extends Label {
         
         Style itemStyle = getElement().getStyle();
         if (propertyItem.inGrid == null || !propertyItem.inGrid) {
-            itemStyle.setColor("lightgrey");
+            itemStyle.setColor("#a7a7a7");
         } else {
             itemStyle.setColor("black");
         }

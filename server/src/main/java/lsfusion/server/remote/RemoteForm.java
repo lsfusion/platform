@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.FormGrouping;
 import lsfusion.interop.Order;
 import lsfusion.interop.Scroll;
 import lsfusion.interop.action.ClientAction;
@@ -395,10 +396,30 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                         } else
                             mOutMap.exclAdd(0, ListFact.<ImMap<ObjectInstance, DataObject>>EMPTY());
                     }
-                    outMaps.add(mOutMap.immutable());
+                    outMaps.add(mOutMap.immutableCopy());
                 }
                 return form.groupData(BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(0)),
                                       outMaps.get(1), BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(2)), onlyNotNull);
+            }
+        });
+    }
+
+    @Override
+    public List<FormGrouping> readGroupings(String groupObjectSID) throws RemoteException {
+        try {
+            return form.readGroupings(groupObjectSID);
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @Override
+    public void saveGrouping(long requestIndex, final FormGrouping grouping) throws RemoteException {
+        processRMIRequest(requestIndex, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                form.saveGrouping(grouping);
+                return null;
             }
         });
     }
@@ -466,12 +487,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    public void saveUserPreferences(long requestIndex, final GroupObjectUserPreferences preferences, final boolean forAllUsers) throws RemoteException {
-        processRMIRequest(requestIndex, new Callable<Void>() {
+    public ServerResponse saveUserPreferences(long requestIndex, final GroupObjectUserPreferences preferences, final boolean forAllUsers) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
-            public Void call() throws Exception {
+            public void run() throws Exception {
                 form.saveUserPreferences(preferences, forAllUsers);
-                return null;
             }
         });
     }

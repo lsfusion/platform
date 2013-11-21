@@ -1,7 +1,6 @@
 package lsfusion.client.form.grid;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.Main;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.GroupObjectController;
 import lsfusion.client.form.InternalEditEvent;
@@ -14,6 +13,7 @@ import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientIntegralClass;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FontInfo;
+import lsfusion.interop.FormGrouping;
 import lsfusion.interop.Order;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.form.screen.ExternalScreenComponent;
@@ -21,10 +21,7 @@ import lsfusion.interop.form.screen.ExternalScreenComponent;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,40 +106,22 @@ public class GridController {
         };
     }
 
-    public GroupButton createGroupButton() {
-        return new GroupButton() {
-            public void addListener() {
-                addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            dialog = new GroupDialog(Main.frame, table);
-                        } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                        dialog.addPropertyChangeListener(new PropertyChangeListener() {
-                            public void propertyChange(PropertyChangeEvent evt) {
-                                try {
-                                    Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
-                                    Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
-                                    List<Map<Integer, List<byte[]>>> groupLevels = dialog.getSelectedGroupLevels();
-                                    boolean onlyNotNull = dialog.onlyNotNull();
+    public GroupingButton createGroupingButton() {
+        return new GroupingButton(table) {
+            @Override
+            public List<FormGrouping> readGroupings() {
+                return form.readGroupings(groupController.getGroupObject().getSID());
+            }
 
-                                    List<Map<List<Object>, List<Object>>> result = new ArrayList<Map<List<Object>, List<Object>>>();
+            @Override
+            public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, 
+                    List<byte[]>> sumMap, Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws IOException {
+               return form.groupData(groupMap, sumMap, maxMap, onlyNotNull); 
+            }
 
-                                    for (Map<Integer, List<byte[]>> level : groupLevels) {
-                                        if (!level.isEmpty()) {
-                                            result.add(form.groupData(level, sumMap, maxMap, onlyNotNull));
-                                        }
-                                    }
-                                    dialog.update(result);
-                                } catch (IOException ex) {
-                                    throw new RuntimeException(ex);
-                                }
-                            }
-                        });
-                        dialog.setVisible(true);
-                    }
-                });
+            @Override
+            public void savePressed(FormGrouping grouping) {
+                form.saveGrouping(grouping);
             }
         };
     }
@@ -156,7 +135,7 @@ public class GridController {
                             ClientPropertyDraw property = getCurrentProperty();
                             String caption = property.getCaption();
                             if (property.baseType instanceof ClientIntegralClass) {
-                                ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(table.getSelectedColumn());
+                                ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(Math.max(table.getSelectedColumn(), 0));
                                 Object sum = form.calculateSum(property.getID(), columnKey.serialize());
                                 showPopupMenu(caption, sum);
                             } else {

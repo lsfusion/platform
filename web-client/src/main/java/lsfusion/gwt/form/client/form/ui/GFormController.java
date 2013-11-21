@@ -874,8 +874,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         Window.open(reportUrl, "Report", "");
     }
 
-    public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, ErrorHandlingCallback<VoidResult> callback) {
-        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers), callback);
+    public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, final ErrorHandlingCallback<ServerResponseResult> callback) {
+        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers), new ServerResponseCallback() {
+            @Override
+            public void success(ServerResponseResult response) {
+                super.success(response);
+                callback.success(response);
+            }
+        });
     }
 
     public List<GPropertyDraw> getPropertyDraws() {

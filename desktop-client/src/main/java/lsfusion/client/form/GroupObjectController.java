@@ -120,7 +120,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
 
         if (groupObject.toolbar.showGroupReport) {
-            addToToolbar(grid.createGroupButton());
+            addToToolbar(grid.createGroupingButton());
         }
 
         addToToolbar(Box.createHorizontalStrut(5));

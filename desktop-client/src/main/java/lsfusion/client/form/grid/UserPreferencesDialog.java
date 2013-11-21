@@ -11,10 +11,7 @@ import lsfusion.interop.FontInfo;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,6 +47,13 @@ public abstract class UserPreferencesDialog extends JDialog {
         final JPanel allFieldsPanel = new JPanel();
         allFieldsPanel.setLayout(new BoxLayout(allFieldsPanel, BoxLayout.Y_AXIS));
 
+        ActionListener escListener = new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                setVisible(false);
+            }
+        };
+        KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         ArrayListTransferHandler arrayListHandler = new ArrayListTransferHandler();
 
@@ -312,17 +316,19 @@ public abstract class UserPreferencesDialog extends JDialog {
         tableFont = tableFont.deriveFont(getFontStyle(), getFontSize(tableFont.getSize()));
         initialTable.setUserFont(tableFont);
         
-        initialTable.saveCurrentPreferences(forAllUsers);
+        initialTable.saveCurrentPreferences(forAllUsers, new Runnable() {
+            @Override
+            public void run() {
+                // после обновления текущих настроек шрифт мог измениться
+                FontInfo font = mergeFont();
+                refreshValues(font);
+                initialTable.setFont(font.deriveFrom(initialTable));
 
-        // после обновления текущих настроек шрифт мог измениться
-        FontInfo font = mergeFont();
-        refreshValues(font);
-        initialTable.setFont(font.deriveFrom(initialTable));
-        
-        initialTable.updateTable();
-        
-        JOptionPane.showMessageDialog(this, getString("form.grid.preferences.save.settings.successfully.complete"), getString("form.grid.preferences.save.complete"), JOptionPane.INFORMATION_MESSAGE);
-        preferencesChanged();
+                initialTable.updateTable();
+
+                preferencesChanged();
+            }
+        });
     }
 
     private void applyPropertyUserPreferences(PropertyListItem propertyItem, boolean hide, int propertyOrder,
@@ -336,17 +342,18 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
 
     private void resetButtonPressed(boolean forAllUsers) throws IOException {
-        initialTable.resetPreferences(forAllUsers);
+        initialTable.resetPreferences(forAllUsers, new Runnable() {
+            @Override
+            public void run() {
+                FontInfo font = mergeFont();
+                refreshValues(font);
+                initialTable.setFont(font.deriveFrom(initialTable));
 
-        FontInfo font = mergeFont();
-        refreshValues(font);
-        initialTable.setFont(font.deriveFrom(initialTable));
-        
-        initialTable.updateTable();
-        
-        JOptionPane.showMessageDialog(this, getString("form.grid.preferences.reset.settings.successfully.complete"), getString("form.grid.preferences.reset.complete"), JOptionPane.INFORMATION_MESSAGE);
+                initialTable.updateTable();
 
-        preferencesChanged();
+                preferencesChanged();
+            }
+        });
     }
     
     private Boolean getPropertyState(ClientPropertyDraw property) {

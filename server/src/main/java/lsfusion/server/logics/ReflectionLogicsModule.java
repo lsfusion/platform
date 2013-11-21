@@ -89,6 +89,14 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP isFontBoldGroupObjectCustomUser;
     public LCP isFontItalicGroupObject;
     public LCP isFontItalicGroupObjectCustomUser;
+    
+    public LCP nameFormGrouping;
+    public LCP itemQuantityFormGrouping;
+    public LCP groupObjectFormGrouping;
+    public LCP formGroupingNameFormGroupingGroupObject;
+    public LCP groupOrderFormGroupingPropertyDraw;
+    public LCP sumFormGroupingPropertyDraw;
+    public LCP maxFormGroupingPropertyDraw; 
 
     public LCP sidTable;
     public LCP tableSID;
@@ -234,6 +242,15 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         isFontItalicGroupObjectCustomUser = getLCPByName("isFontItalicGroupObjectCustomUser");
         isFontItalicGroupObject = getLCPByName("isFontItalicGroupObject");
+
+        // группировки
+        nameFormGrouping = getLCPByName("nameFormGrouping");
+        itemQuantityFormGrouping = getLCPByName("itemQuantityFormGrouping");
+        groupObjectFormGrouping = getLCPByName("groupObjectFormGrouping");
+        formGroupingNameFormGroupingGroupObject = getLCPByName("formGroupingNameFormGroupingGroupObject");
+        groupOrderFormGroupingPropertyDraw = getLCPByName("groupOrderFormGroupingPropertyDraw");
+        sumFormGroupingPropertyDraw = getLCPByName("sumFormGroupingPropertyDraw");
+        maxFormGroupingPropertyDraw = getLCPByName("maxFormGroupingPropertyDraw");
 
         // ------------------------------------------------- Физическая модель ------------------------------------ //
 

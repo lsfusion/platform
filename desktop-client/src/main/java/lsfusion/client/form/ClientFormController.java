@@ -4,7 +4,10 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.EProvider;
+import lsfusion.base.ERunnable;
+import lsfusion.base.OrderedMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.client.EditReportInvoker;
@@ -23,8 +26,11 @@ import lsfusion.client.logics.filter.ClientPropertyFilter;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.FormGrouping;
 import lsfusion.interop.Order;
 import lsfusion.interop.Scroll;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.form.*;
 
 import javax.swing.*;
@@ -400,12 +406,28 @@ public class ClientFormController implements AsyncListener {
                 : null;
     }
 
-    public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers) throws RemoteException {
+    public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers, final Runnable callback) throws RemoteException {
         commitOrCancelCurrentEditing();
-        rmiQueue.syncRequest(new RmiVoidRequest("saveUserPreferences") {
+
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("saveUserPreferences") {
             @Override
-            protected void doExecute(long requestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                remoteForm.saveUserPreferences(requestIndex, gridPreferences.convertPreferences(), forAllUsers);
+            protected ServerResponse doRequest(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
+                return remoteForm.saveUserPreferences(requestIndex, gridPreferences.convertPreferences(), forAllUsers);
+            }
+
+            @Override
+            protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                boolean constraintRun = false;
+                for (ClientAction action : result.actions) {
+                    if (action instanceof LogMessageClientAction) {
+                        constraintRun = true;
+                        break;
+                    }
+                }
+                super.onResponse(requestIndex, result);
+                if (!constraintRun) {
+                    callback.run();
+                }
             }
         });
     }
@@ -1063,6 +1085,15 @@ public class ClientFormController implements AsyncListener {
             }
         });
     }
+    
+    public List<FormGrouping> readGroupings(String groupObjectSID) {
+        try {
+            return remoteForm.readGroupings(groupObjectSID);
+        } catch (RemoteException e) {
+            Throwables.propagate(e);
+        }
+        return null;
+    }
 
     public Map<List<Object>, List<Object>> groupData(final Map<Integer, List<byte[]>> groupMap, final Map<Integer, List<byte[]>> sumMap, final Map<Integer,
             List<byte[]>> maxMap, final boolean onlyNotNull) throws IOException {
@@ -1077,6 +1108,15 @@ public class ClientFormController implements AsyncListener {
                 return remoteForm.groupData(requestIndex, groupMap, sumMap, maxMap, onlyNotNull);
             }
         });
+    }
+    
+    public void saveGrouping(final FormGrouping grouping) {
+        rmiQueue.asyncRequest(new RmiVoidRequest("saveGrouping") {
+            @Override
+            protected void doExecute(long requestIndex, RemoteFormInterface remoteForm) throws Exception {
+                remoteForm.saveGrouping(requestIndex, grouping);
+            }
+        });    
     }
 
     public void changePageSize(final ClientGroupObject groupObject, final Integer pageSize) throws IOException {

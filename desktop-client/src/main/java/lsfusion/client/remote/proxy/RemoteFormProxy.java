@@ -2,6 +2,7 @@ package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.FormGrouping;
 import lsfusion.interop.form.*;
 
 import java.rmi.RemoteException;
@@ -214,8 +215,31 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         return result;
     }
 
-    public void saveUserPreferences(long requestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException {
-        target.saveUserPreferences(requestIndex, preferences, forAllUsers);
+    @Override
+    public List<FormGrouping> readGroupings(String groupObjectSID) throws RemoteException {
+        logRemoteMethodStartCall("readGroupings");
+        List<FormGrouping> result;
+        try {
+            result = target.readGroupings(groupObjectSID);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+        logRemoteMethodEndVoidCall("readGroupings");
+        return result;
+    }
+
+    @Override
+    public void saveGrouping(long requestIndex, FormGrouping grouping) throws RemoteException {
+        logRemoteMethodStartCall("saveGrouping");
+        target.saveGrouping(requestIndex, grouping);
+        logRemoteMethodEndVoidCall("saveGrouping");   
+    }
+
+    public ServerResponse saveUserPreferences(long requestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException {
+        logRemoteMethodStartCall("saveUserPreferences");
+        ServerResponse result = target.saveUserPreferences(requestIndex, preferences, forAllUsers);
+        logRemoteMethodEndCall("saveUserPreferences", result);
+        return result;
     }
 
     public ServerResponse okPressed(long requestIndex) throws RemoteException {

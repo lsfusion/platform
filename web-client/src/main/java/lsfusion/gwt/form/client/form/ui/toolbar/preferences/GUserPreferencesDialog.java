@@ -8,14 +8,16 @@ import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
 import lsfusion.gwt.form.client.form.ui.GGridTable;
 import lsfusion.gwt.form.client.form.ui.GGroupObjectController;
 import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalWindow;
+import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.form.shared.view.actions.GAction;
+import lsfusion.gwt.form.shared.view.actions.GLogMessageAction;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 
 import java.util.HashMap;
@@ -318,13 +320,22 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         return font;
     } 
 
-    private ErrorHandlingCallback<VoidResult> createSaveCallback(final String messageText) {
-        return new ErrorHandlingCallback<VoidResult>() {
+    private ErrorHandlingCallback<ServerResponseResult> createSaveCallback(final String messageText) {
+        return new ErrorHandlingCallback<ServerResponseResult>() {
             @Override
-            public void success(VoidResult result) {
-                grid.columnsPreferencesChanged();
-                DialogBoxHelper.showMessageBox(false, "Изменение настроек", messageText, null);
-                preferencesChanged();
+            public void success(ServerResponseResult result) {
+                boolean constraintRun = false;
+                for (GAction action : result.actions) {
+                    if (action instanceof GLogMessageAction) {
+                        constraintRun = true;
+                    }
+                }
+                if (!constraintRun) {
+                    grid.columnsPreferencesChanged();
+                    DialogBoxHelper.showMessageBox(false, "Изменение настроек", messageText, null);
+                    preferencesChanged();
+                }
+                
             }
         };
     }

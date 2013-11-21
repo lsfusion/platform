@@ -11,13 +11,13 @@ import lsfusion.gwt.base.client.jsni.Function;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.KeyboardRowChangedEvent;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
 import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
+import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
@@ -804,7 +804,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
     }
 
-    public void resetPreferences(boolean forAllUsers, ErrorHandlingCallback<VoidResult> callback) {
+    public void resetPreferences(boolean forAllUsers, ErrorHandlingCallback<ServerResponseResult> callback) {
         currentGridPreferences.resetPreferences();
         (forAllUsers ? generalGridPreferences : userGridPreferences).resetPreferences();
 
@@ -815,7 +815,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         resetCurrentPreferences(false);
     }
 
-    public void saveCurrentPreferences(boolean forAllUsers, ErrorHandlingCallback<VoidResult> callback) {
+    public void saveCurrentPreferences(boolean forAllUsers, ErrorHandlingCallback<ServerResponseResult> callback) {
         currentGridPreferences.setHasUserPreferences(true);
 
         if (getProperties().size() != 0) {
