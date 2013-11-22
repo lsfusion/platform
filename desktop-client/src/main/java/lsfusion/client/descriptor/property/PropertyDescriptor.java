@@ -14,7 +14,6 @@ import java.util.Map;
 public abstract class PropertyDescriptor extends AbstractNodeDescriptor implements ClientIdentitySerializable {
     public String caption;
     private String sID;
-    public String toolTip;
     public boolean isField;
 
     public Collection<PropertyInterfaceDescriptor> interfaces;
@@ -26,8 +25,6 @@ public abstract class PropertyDescriptor extends AbstractNodeDescriptor implemen
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         sID = inStream.readUTF();
         caption = inStream.readUTF();
-        if (inStream.readBoolean())
-            toolTip = inStream.readUTF();
         isField = inStream.readBoolean();
 
         interfaces = pool.deserializeList(inStream);

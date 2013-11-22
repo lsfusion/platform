@@ -60,7 +60,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public String caption;
-    public String toolTip;
 
     public int minimumCharWidth;
     public int maximumCharWidth;
@@ -403,9 +402,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeUTF(getSID());
         outStream.writeUTF(caption);
-        outStream.writeBoolean(toolTip != null);
-        if (toolTip != null)
-            outStream.writeUTF(toolTip);
         outStream.writeBoolean(isField());
 
         pool.serializeCollection(outStream, getOrderInterfaces().toJavaList());

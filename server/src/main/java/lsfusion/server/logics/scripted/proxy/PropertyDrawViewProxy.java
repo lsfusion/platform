@@ -81,4 +81,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setAskConfirmMessage(String askConfirmMessage) {
         target.entity.askConfirmMessage = askConfirmMessage;
     }
+    
+    public void setToolTip(String toolTip) {
+        target.toolTip = toolTip;
+    }
 }

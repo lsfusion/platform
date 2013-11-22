@@ -64,6 +64,7 @@ public class PropertyDrawView extends ComponentView {
 
     public String caption;
     public boolean clearText;
+    public String toolTip;
 
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
@@ -223,7 +224,7 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(entity.hasEditAction());
 
         pool.writeString(outStream, entity.getSID());
-        pool.writeString(outStream, entity.propertyObject.property.toolTip);
+        pool.writeString(outStream, toolTip);
         pool.serializeObject(outStream, pool.context.view.getGroupObject(
                 SerializationType.VISUAL_SETUP.equals(serializationType) ? entity.toDraw : entity.getToDraw(pool.context.view.entity)));
 
