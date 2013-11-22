@@ -27,6 +27,7 @@ import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.sf.jasperreports.engine.JRException;
+import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -46,6 +47,8 @@ import static lsfusion.base.BaseUtils.mergeLinked;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class DockableMainFrame extends MainFrame {
+    private static final Logger logger = Logger.getLogger(DockableMainFrame.class);
+
     private final ClientNavigatorActionDispatcher actionDispatcher;
 
     private final LinkedHashMap<SingleCDockable, ClientAbstractWindow> windowDockables = new LinkedHashMap<SingleCDockable, ClientAbstractWindow>();
@@ -150,7 +153,7 @@ public class DockableMainFrame extends MainFrame {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error loading default layout", e);
         } finally {
             if (pageToFocus != null) {
                 pageToFocus.intern().getController().getFocusController().setFocusedDockable(pageToFocus.intern(), null, true, true, true);

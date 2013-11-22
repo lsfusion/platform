@@ -151,6 +151,8 @@ public class Main {
 
                             setupTimeZone();
 
+                            ClientExceptionManager.flushUnreportedThrowables();
+
                             configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
 
                             startSplashScreen();
