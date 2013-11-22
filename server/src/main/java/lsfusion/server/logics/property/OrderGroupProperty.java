@@ -37,18 +37,18 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         finalizeInit();
     }
 
-    protected Expr calculateExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         // если нужна инкрементность
         ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
 
         WhereBuilder changedGroupWhere = cascadeWhere(changedWhere);
 
-        ImList<Expr> exprs = getExprImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
-        ImMap<Interface<I>, Expr> groups = getGroupImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
-        ImOrderMap<Expr, Boolean> orders = getOrderImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
+        ImList<Expr> exprs = getExprImplements(mapKeys, calcType, propChanges, changedGroupWhere);
+        ImMap<Interface<I>, Expr> groups = getGroupImplements(mapKeys, calcType, propChanges, changedGroupWhere);
+        ImOrderMap<Expr, Boolean> orders = getOrderImplements(mapKeys, calcType, propChanges, changedGroupWhere);
 
         if(changedWhere!=null) {
-            assert !propClasses;
+            assert calcType.isExpr();
             changedWhere.add(getPartitionWhere(changedGroupWhere.toWhere(), groups, exprs, orders, joinImplement));
             changedWhere.add(getPartitionWhere(changedGroupWhere.toWhere(), getGroupImplements(mapKeys, PropertyChanges.EMPTY),
                     getExprImplements(mapKeys, PropertyChanges.EMPTY), getOrderImplements(mapKeys, PropertyChanges.EMPTY), joinImplement));

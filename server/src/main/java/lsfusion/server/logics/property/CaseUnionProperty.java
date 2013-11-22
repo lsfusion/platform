@@ -143,8 +143,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return result;
     }
 
-    protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        if(isAbstract() && propClasses)
+    protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
+        if(isAbstract() && calcType.isClass())
             return getClassTableExpr(joinImplement);
 
         ImList<Case> cases = getCases();
@@ -153,8 +153,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         ImList<Pair<Expr, Expr>> caseExprs = cases.mapListValues(new GetValue<Pair<Expr, Expr>, Case>() {
             public Pair<Expr, Expr> getMapValue(Case value) {
                 return new Pair<Expr, Expr>(
-                        value.where.mapExpr(joinImplement, propClasses, propChanges, changedWhere),
-                        value.property.mapExpr(joinImplement, propClasses, propChanges, changedWhere));
+                        value.where.mapExpr(joinImplement, calcType, propChanges, changedWhere),
+                        value.property.mapExpr(joinImplement, calcType, propChanges, changedWhere));
             }});
 
         CaseExprInterface exprCases = Expr.newCases(isExclusive);

@@ -293,18 +293,19 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public PropertyChange<T> getIncrementChange(PropertyChanges propChanges) {
-        IQuery<T, String> incrementQuery = getQuery(false, propChanges, PropertyQueryType.FULLCHANGED, MapFact.<T, Expr>EMPTY());
+        IQuery<T, String> incrementQuery = getQuery(CalcType.EXPR, propChanges, PropertyQueryType.FULLCHANGED, MapFact.<T, Expr>EMPTY());
         return new PropertyChange<T>(incrementQuery.getMapKeys(), incrementQuery.getExpr("value"), incrementQuery.getExpr("changed").getWhere());
     }
 
     public Expr getIncrementExpr(ImMap<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder resultChanged) {
-        return getIncrementExpr(joinImplement, resultChanged, false, propChanges, IncrementType.SUSPICION, PrevScope.DB); // тут не важно какой scope
+        return getIncrementExpr(joinImplement, resultChanged, CalcType.EXPR, propChanges, IncrementType.SUSPICION, PrevScope.DB); // тут не важно какой scope
     }
 
-    public Expr getIncrementExpr(ImMap<T, ? extends Expr> joinImplement, WhereBuilder resultChanged, boolean propClasses, PropertyChanges propChanges, IncrementType incrementType, PrevScope scope) {
-        WhereBuilder incrementWhere = propClasses ? null : new WhereBuilder();
-        Expr newExpr = getExpr(joinImplement, propClasses, propChanges, incrementWhere);
-        Expr prevExpr = getOld(scope).getExpr(joinImplement, propClasses, propChanges, incrementWhere);
+    public Expr getIncrementExpr(ImMap<T, ? extends Expr> joinImplement, WhereBuilder resultChanged, CalcType calcType, PropertyChanges propChanges, IncrementType incrementType, PrevScope scope) {
+        boolean isNotExpr = !calcType.isExpr();
+        WhereBuilder incrementWhere = isNotExpr ? null : new WhereBuilder();
+        Expr newExpr = getExpr(joinImplement, calcType, propChanges, incrementWhere);
+        Expr prevExpr = getOld(scope).getExpr(joinImplement, calcType, propChanges, incrementWhere);
 
         Where forceWhere;
         switch(incrementType) {
@@ -332,7 +333,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             default:
                 throw new RuntimeException("should not be");
         }
-        if(!propClasses)
+        if(!isNotExpr)
             forceWhere = forceWhere.and(incrementWhere.toWhere());
         resultChanged.add(forceWhere);
         return newExpr;
@@ -515,7 +516,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return calculateUsedChanges(propChanges);
     }
 
-    protected abstract Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere);
+    protected abstract Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere);
 
     public static <T extends PropertyInterface> ImMap<T, Expr> getJoinValues(ImMap<T, ? extends Expr> joinImplement) {
         return ((ImMap<T, Expr>)joinImplement).filterFnValues(new SFunctionSet<Expr>() {
@@ -532,7 +533,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         });
     }
 
-    public Expr aspectGetExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public Expr aspectGetExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         assert joinImplement.size() == interfaces.size();
 
         ModifyChange<T> modify = propChanges.getModify(this);
@@ -550,7 +551,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             WhereBuilder changedExprWhere = new WhereBuilder();
             Expr changedExpr = modify.change.getExpr(joinImplement, changedExprWhere);
             if (changedWhere != null) changedWhere.add(changedExprWhere.toWhere());
-            return changedExpr.ifElse(changedExprWhere.toWhere(), getExpr(joinImplement, propClasses, modify.isFinal ? PropertyChanges.EMPTY : propChanges.remove(this), modify.isFinal ? null : changedWhere));
+            return changedExpr.ifElse(changedExprWhere.toWhere(), getExpr(joinImplement, calcType, modify.isFinal ? PropertyChanges.EMPTY : propChanges.remove(this), modify.isFinal ? null : changedWhere));
         }
 
         // modify == null;
@@ -559,13 +560,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                 return getStoredExpr(joinImplement);
             if(useSimpleIncrement()) {
                 WhereBuilder changedExprWhere = new WhereBuilder();
-                Expr changedExpr = calculateExpr(joinImplement, propClasses, propChanges, changedExprWhere);
+                Expr changedExpr = calculateExpr(joinImplement, calcType, propChanges, changedExprWhere);
                 if (changedWhere != null) changedWhere.add(changedExprWhere.toWhere());
                 return changedExpr.ifElse(changedExprWhere.toWhere(), getExpr(joinImplement));
             }
         }
 
-        return calculateExpr(joinImplement, propClasses, propChanges, changedWhere);
+        return calculateExpr(joinImplement, calcType, propChanges, changedWhere);
     }
 
     protected Expr getStoredExpr(ImMap<T, ? extends Expr> joinImplement) {
@@ -825,8 +826,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createNull());
     }
 
-    protected boolean assertPropClasses(boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
-        return !propClasses || (changes.isEmpty() && changedWhere==null);
+    protected boolean assertPropClasses(CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere) {
+        return calcType.isExpr() || (changes.isEmpty() && changedWhere==null);
     }
 
     public CalcPropertyMapImplement<T, T> getImplement() {
@@ -921,9 +922,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     @PackComplex
     @Message("message.core.property.get.expr")
     @ThisMessage
-    public IQuery<T, String> getQuery(boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<T, ? extends Expr> interfaceValues) {
+    public IQuery<T, String> getQuery(CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<T, ? extends Expr> interfaceValues) {
         if(queryType==PropertyQueryType.FULLCHANGED) {
-            IQuery<T, String> query = getQuery(propClasses, propChanges, PropertyQueryType.RECURSIVE, interfaceValues);
+            IQuery<T, String> query = getQuery(calcType, propChanges, PropertyQueryType.RECURSIVE, interfaceValues);
             QueryBuilder<T, String> fullQuery = new QueryBuilder<T, String>(query.getMapKeys());
             Expr newExpr = query.getExpr("value");
             fullQuery.addProperty("value", newExpr);
@@ -934,13 +935,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         QueryBuilder<T, String> query = new QueryBuilder<T,String>(getMapKeys().removeRev(interfaceValues.keys()));
         ImMap<T, Expr> allKeys = query.getMapExprs().addExcl(interfaceValues);
         WhereBuilder queryWheres = queryType.needChange() ? new WhereBuilder():null;
-        query.addProperty("value", aspectGetExpr(allKeys, propClasses, propChanges, queryWheres));
+        query.addProperty("value", aspectGetExpr(allKeys, calcType, propChanges, queryWheres));
         if(queryType.needChange())
             query.addProperty("changed", ValueExpr.get(queryWheres.toWhere()));
         return query.getQuery();
     }
 
-    public Expr getQueryExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWheres) {
+    public Expr getQueryExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWheres) {
 
         MExclMap<T, Expr> mInterfaceValues = MapFact.mExclMap(joinImplement.size()); MExclMap<T, Expr> mInterfaceExprs = MapFact.mExclMap(joinImplement.size());
         for(int i=0,size=joinImplement.size();i<size;i++) {
@@ -953,7 +954,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                 mInterfaceExprs.exclAdd(joinImplement.getKey(i), expr);
         }
 
-        IQuery<T, String> query = getQuery(propClasses, propChanges, changedWheres!=null?PropertyQueryType.CHANGED:PropertyQueryType.NOCHANGE, mInterfaceValues.immutable());
+        IQuery<T, String> query = getQuery(calcType, propChanges, changedWheres!=null?PropertyQueryType.CHANGED:PropertyQueryType.NOCHANGE, mInterfaceValues.immutable());
 
         Join<String> queryJoin = query.join(mInterfaceExprs.immutable());
         if(changedWheres!=null)
@@ -964,8 +965,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     @Message("message.core.property.get.expr")
     @PackComplex
     @ThisMessage
-    public Expr getJoinExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return aspectGetExpr(joinImplement, propClasses, propChanges, changedWhere);
+    public Expr getJoinExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return aspectGetExpr(joinImplement, calcType, propChanges, changedWhere);
     }
 
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement) {
@@ -983,15 +984,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return getExpr(joinImplement, false, propChanges, changedWhere);
+        return getExpr(joinImplement, CalcType.EXPR, propChanges, changedWhere);
     }
 
     // в будущем propClasses можно заменить на PropertyTables propTables
-    public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if (isFull() && (Settings.get().isUseQueryExpr() || Query.getMapKeys(joinImplement)!=null))
-            return getQueryExpr(joinImplement, propClasses, propChanges, changedWhere);
+            return getQueryExpr(joinImplement, calcType, propChanges, changedWhere);
         else
-            return getJoinExpr(joinImplement, propClasses, propChanges, changedWhere);
+            return getJoinExpr(joinImplement, calcType, propChanges, changedWhere);
     }
 
     public void prereadCaches() {
@@ -999,7 +1000,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         getClassWhere(ClassType.ASIS);
         getClassWhere(ClassType.FULL);
         if(isFull())
-            getQuery(false, PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, MapFact.<T, Expr>EMPTY()).pack();
+            getQuery(CalcType.EXPR, PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, MapFact.<T, Expr>EMPTY()).pack();
     }
 
     public CalcPropertyMapImplement<?, T> getClassProperty() {

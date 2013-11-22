@@ -16,7 +16,7 @@ public class NotFormulaProperty extends FormulaProperty<PropertyInterface> {
 
     public final static NotFormulaProperty instance = new NotFormulaProperty();
 
-    protected Expr calculateExpr(ImMap<PropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<PropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return ValueExpr.get(joinImplement.singleValue().getWhere().not());
     }
     

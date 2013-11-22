@@ -19,10 +19,7 @@ import lsfusion.server.data.expr.query.PartitionExpr;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.SimpleIncrementProperty;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.session.PropertyChanges;
 
 public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrementProperty<PartitionProperty.Interface<T>> {
@@ -103,44 +100,44 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         return mvResult.immutableValue();
     }
 
-    protected ImMap<CalcPropertyInterfaceImplement<T>,Expr> getPartitionImplements(final ImMap<T, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
+    protected ImMap<CalcPropertyInterfaceImplement<T>,Expr> getPartitionImplements(final ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         return partitions.mapItValues(new GetValue<Expr, CalcPropertyInterfaceImplement<T>>() {
             public Expr getMapValue(CalcPropertyInterfaceImplement<T> value) {
-                return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
+                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
             }
         });
     }
 
-    protected ImOrderMap<Expr, Boolean> getOrderImplements(final ImMap<T, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
+    protected ImOrderMap<Expr, Boolean> getOrderImplements(final ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         return orders.mapMergeItOrderKeys(new GetValue<Expr, CalcPropertyInterfaceImplement<T>>() {
             public Expr getMapValue(CalcPropertyInterfaceImplement<T> value) {
-                return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
+                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
             }
         });
     }
 
-    protected ImList<Expr> getExprImplements(final ImMap<T, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
+    protected ImList<Expr> getExprImplements(final ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         return props.mapItListValues(new GetValue<Expr, CalcPropertyInterfaceImplement<T>>() {
             public Expr getMapValue(CalcPropertyInterfaceImplement<T> value) {
-                return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
+                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
             }
         });
     }
 
-    protected Expr calculateExpr(ImMap<Interface<T>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<Interface<T>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
         Result<ImMap<KeyExpr, Expr>> mapExprs = new Result<ImMap<KeyExpr, Expr>>();
         ImMap<T, ? extends Expr> mapKeys = getGroupKeys(joinImplement, mapExprs);
 
         WhereBuilder orderWhere = cascadeWhere(changedWhere);
-        ImMap<CalcPropertyInterfaceImplement<T>,Expr> partitionImplements = getPartitionImplements(mapKeys, propClasses, propChanges, orderWhere);
-        ImOrderMap<Expr, Boolean> orderExprs = getOrderImplements(mapKeys, propClasses, propChanges, orderWhere);
-        ImList<Expr> exprs = getExprImplements(mapKeys, propClasses, propChanges, orderWhere);
+        ImMap<CalcPropertyInterfaceImplement<T>,Expr> partitionImplements = getPartitionImplements(mapKeys, calcType, propChanges, orderWhere);
+        ImOrderMap<Expr, Boolean> orderExprs = getOrderImplements(mapKeys, calcType, propChanges, orderWhere);
+        ImList<Expr> exprs = getExprImplements(mapKeys, calcType, propChanges, orderWhere);
 
         if(changedWhere!=null) { // изменившиеся ряды (orderWhere) -> ряды с изменившимися partition'ами -> изменившиеся записи
             changedWhere.add(getPartitionWhere(orderWhere.toWhere(), partitionImplements, exprs, orderExprs, mapExprs.result));
-            changedWhere.add(getPartitionWhere(orderWhere.toWhere(), getPartitionImplements(mapKeys, propClasses, PropertyChanges.EMPTY, null),
-                    getExprImplements(mapKeys, propClasses, PropertyChanges.EMPTY, null), getOrderImplements(mapKeys, propClasses, PropertyChanges.EMPTY, null), mapExprs.result));
+            changedWhere.add(getPartitionWhere(orderWhere.toWhere(), getPartitionImplements(mapKeys, calcType, PropertyChanges.EMPTY, null),
+                    getExprImplements(mapKeys, calcType, PropertyChanges.EMPTY, null), getOrderImplements(mapKeys, calcType, PropertyChanges.EMPTY, null), mapExprs.result));
         }
 
         return PartitionExpr.create(partitionType, exprs, orderExprs, ordersNotNull, partitionImplements.values().toSet(), mapExprs.result, null);

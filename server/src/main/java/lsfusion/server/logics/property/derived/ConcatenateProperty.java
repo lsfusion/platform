@@ -11,6 +11,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.ConcatenateExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.FormulaProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.PropertyChanges;
@@ -45,7 +46,7 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
         return it.next();
     }
 
-    protected Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         ImList<Expr> exprs = getOrderInterfaces().mapListValues(new GetValue<Expr, Interface>() {
             public Expr getMapValue(Interface value) {
                 return joinImplement.get(value);

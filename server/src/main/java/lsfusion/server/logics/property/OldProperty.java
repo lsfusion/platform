@@ -32,8 +32,8 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
         return this;
     }
 
-    protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(propClasses)
+    protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        if(calcType.isClass())
             return getClassTableExpr(joinImplement);
 
         return property.getExpr(joinImplement); // возвращаем старое значение

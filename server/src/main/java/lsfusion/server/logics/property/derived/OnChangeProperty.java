@@ -15,6 +15,7 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.session.PropertyChanges;
@@ -110,9 +111,9 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         finalizeInit();
     }
 
-    protected Expr calculateExpr(ImMap<Interface<T, P>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(propClasses) // пока так
-            propClasses = false;
+    protected Expr calculateExpr(ImMap<Interface<T, P>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        if(!calcType.isExpr()) // пока так
+            calcType = CalcType.EXPR;
 
         ImFilterValueMap<Interface<T, P>, Expr> mvMapExprs = interfaces.mapFilterValues();
         MExclMap<T, Expr> mOnChangeExprs = MapFact.mExclMapMax(interfaces.size());
@@ -127,7 +128,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
 
         WhereBuilder onChangeWhere = new WhereBuilder();
         Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(mOnChangeExprs.immutable(),
-                propClasses, toChange.getChangeModifier(propChanges, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, joinImplement.filterIncl(mapExprs.keys()));
+                calcType, toChange.getChangeModifier(propChanges, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, joinImplement.filterIncl(mapExprs.keys()));
         if(changedWhere!=null) changedWhere.add(resultExpr.getWhere());
         return resultExpr;
     }

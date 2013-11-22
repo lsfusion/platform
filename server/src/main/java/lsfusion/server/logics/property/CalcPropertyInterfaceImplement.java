@@ -21,7 +21,7 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
 
     <T extends PropertyInterface> CalcPropertyInterfaceImplement<T> map(ImRevMap<P, T> map);
 
-    Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere);
+    Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere);
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere);
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, PropertyChanges propChanges);
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, Modifier modifier);

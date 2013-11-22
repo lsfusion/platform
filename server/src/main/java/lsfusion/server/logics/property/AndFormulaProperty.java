@@ -53,7 +53,7 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
         finalizeInit();
     }
 
-    public Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Where where = Where.TRUE;
         for(Interface propertyInterface : interfaces)
             if(propertyInterface!= objectInterface)

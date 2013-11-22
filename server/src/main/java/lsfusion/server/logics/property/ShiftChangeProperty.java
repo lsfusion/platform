@@ -78,8 +78,8 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         return propChanges.getUsedChanges(getDepends());
     }
 
-    protected Expr calculateExpr(ImMap<Interface<P>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return ValueExpr.TRUE.and(getIsClassProperty().mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere());
+    protected Expr calculateExpr(ImMap<Interface<P>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return ValueExpr.TRUE.and(getIsClassProperty().mapExpr(joinImplement, calcType, propChanges, changedWhere).getWhere());
 //        return ((IntegralClass) property.getType()).getActionExpr().and(classWhere);
 
 /*          слишком сложное выполнение

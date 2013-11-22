@@ -44,11 +44,11 @@ public class CalcPropertyImplement<P extends PropertyInterface, T> extends TwinI
         return property.hashCode() * 31 + mapping.hashCode();
     }
 
-    public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
-        return property.getExpr(join(joinImplement), propClasses, changes, changedWhere);
+    public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere) {
+        return property.getExpr(join(joinImplement), calcType, changes, changedWhere);
     }
 
     public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere) {
-        return mapExpr(joinImplement, false, changes, changedWhere);
+        return mapExpr(joinImplement, CalcType.EXPR, changes, changedWhere);
     }
 }

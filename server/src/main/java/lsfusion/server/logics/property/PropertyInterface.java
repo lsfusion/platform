@@ -56,7 +56,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return mapExpr(joinImplement);
     }
 
-    public Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
+    public Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere) {
         return mapExpr(joinImplement);
     }
 

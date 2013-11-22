@@ -31,7 +31,7 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
         finalizeInit();
     }
 
-    protected Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return joinImplement.singleValue().classExpr(baseClass);
     }
     

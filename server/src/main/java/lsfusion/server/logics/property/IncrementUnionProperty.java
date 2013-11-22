@@ -12,16 +12,16 @@ public abstract class IncrementUnionProperty extends UnionProperty {
         super(sID, caption, interfaces);
     }
 
-    protected abstract Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere);
+    protected abstract Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere);
     protected abstract Expr calculateIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere);
 
     @Override
-    protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        assert assertPropClasses(propClasses, propChanges, changedWhere);
+    protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        assert assertPropClasses(calcType, propChanges, changedWhere);
         if(!(isStored() && hasChanges(propChanges)))
-            return calculateNewExpr(joinImplement, propClasses, propChanges, changedWhere);
+            return calculateNewExpr(joinImplement, calcType, propChanges, changedWhere);
 
-        assert !propClasses;
+        assert calcType.isExpr();
         return calculateIncrementExpr(joinImplement, propChanges, getExpr(joinImplement), changedWhere);
     }
 }

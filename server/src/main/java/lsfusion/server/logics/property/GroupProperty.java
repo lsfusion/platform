@@ -71,52 +71,52 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
 
     protected ImMap<Interface<I>, Expr> getGroupImplements(ImMap<I, ? extends Expr> mapKeys, PropertyChanges changes) {
-        return getGroupImplements(mapKeys, false, changes);
+        return getGroupImplements(mapKeys, CalcType.EXPR, changes);
     }
 
-    protected ImMap<Interface<I>, Expr> getGroupImplements(ImMap<I, ? extends Expr> mapKeys, boolean propClasses, PropertyChanges changes) {
-        return getGroupImplements(mapKeys, propClasses, changes, null);
+    protected ImMap<Interface<I>, Expr> getGroupImplements(ImMap<I, ? extends Expr> mapKeys, CalcType calcType, PropertyChanges changes) {
+        return getGroupImplements(mapKeys, calcType, changes, null);
     }
 
     protected ImMap<Interface<I>, Expr> getGroupImplements(ImMap<I, ? extends Expr> mapKeys, PropertyChanges changes, WhereBuilder changedWhere) {
-        return getGroupImplements(mapKeys, false, changes, changedWhere);
+        return getGroupImplements(mapKeys, CalcType.EXPR, changes, changedWhere);
     }
 
-    protected ImMap<Interface<I>, Expr> getGroupImplements(final ImMap<I, ? extends Expr> mapKeys, final boolean propClasses, final PropertyChanges changes, final WhereBuilder changedWhere) {
+    protected ImMap<Interface<I>, Expr> getGroupImplements(final ImMap<I, ? extends Expr> mapKeys, final CalcType calcType, final PropertyChanges changes, final WhereBuilder changedWhere) {
         return interfaces.mapItValues(new GetValue<Expr, Interface<I>>() {
             public Expr getMapValue(Interface<I> value) {
-                return value.implement.mapExpr(mapKeys, propClasses, changes, changedWhere);
+                return value.implement.mapExpr(mapKeys, calcType, changes, changedWhere);
             }});
     }
 
     protected ImOrderMap<Expr, Boolean> getOrderImplements(ImMap<I, ? extends Expr> joinImplement, PropertyChanges changes) {
-        return getOrderImplements(joinImplement, false, changes);
+        return getOrderImplements(joinImplement, CalcType.EXPR, changes);
     }
 
-    protected ImOrderMap<Expr, Boolean> getOrderImplements(ImMap<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes) {
-        return getOrderImplements(joinImplement, propClasses, changes, null);
+    protected ImOrderMap<Expr, Boolean> getOrderImplements(ImMap<I, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges changes) {
+        return getOrderImplements(joinImplement, calcType, changes, null);
     }
 
-    protected ImOrderMap<Expr, Boolean> getOrderImplements(final ImMap<I, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges changes, final WhereBuilder changedWhere) {
+    protected ImOrderMap<Expr, Boolean> getOrderImplements(final ImMap<I, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges changes, final WhereBuilder changedWhere) {
         return getOrders().mapMergeItOrderKeys(new GetValue<Expr, CalcPropertyInterfaceImplement<I>>() {
             public Expr getMapValue(CalcPropertyInterfaceImplement<I> value) {
-                return value.mapExpr(joinImplement, propClasses, changes, changedWhere);
+                return value.mapExpr(joinImplement, calcType, changes, changedWhere);
             }
         });
     }
 
     protected ImList<Expr> getExprImplements(ImMap<I, ? extends Expr> joinImplement, PropertyChanges changes) {
-        return getExprImplements(joinImplement, false, changes, null);
+        return getExprImplements(joinImplement, CalcType.EXPR, changes, null);
     }
 
-    protected ImList<Expr> getExprImplements(ImMap<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes) {
-        return getExprImplements(joinImplement, propClasses, changes, null);
+    protected ImList<Expr> getExprImplements(ImMap<I, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges changes) {
+        return getExprImplements(joinImplement, calcType, changes, null);
     }
 
-    protected ImList<Expr> getExprImplements(final ImMap<I, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges changes, final WhereBuilder changedWhere) {
+    protected ImList<Expr> getExprImplements(final ImMap<I, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges changes, final WhereBuilder changedWhere) {
         return getProps().mapItListValues(new GetValue<Expr, CalcPropertyInterfaceImplement<I>>() {
             public Expr getMapValue(CalcPropertyInterfaceImplement<I> value) {
-                return value.mapExpr(joinImplement, propClasses, changes, changedWhere);
+                return value.mapExpr(joinImplement, calcType, changes, changedWhere);
             }});
     }
 

@@ -24,7 +24,7 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         return true;
     }
 
-    protected Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         throw new RuntimeException("not supported"); // используется simple increment
     }
 
@@ -34,11 +34,11 @@ public class MaxUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
+    public Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
 
         ImCol<Expr> operandExprs = operands.mapColValues(new GetValue<Expr, CalcPropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
             public Expr getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
-                return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
+                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
             }});
 
         Expr result = null;

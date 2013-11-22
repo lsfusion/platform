@@ -17,7 +17,7 @@ public class NullValueProperty extends FormulaProperty<PropertyInterface>{
 
     public static final NullValueProperty instance = new NullValueProperty();
 
-    protected Expr calculateExpr(ImMap<PropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<PropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return CaseExpr.NULL;
     }
 }

@@ -44,7 +44,7 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
             }});
     }
 
-    protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return ValueExpr.get(joinImplement.get(operator1).compare(joinImplement.get(operator2), compare));
     }
 }

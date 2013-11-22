@@ -18,7 +18,7 @@ public class InfiniteProperty extends NoIncrementProperty<PropertyInterface> {
         finalizeInit();
     }
 
-    protected Expr calculateExpr(ImMap<PropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<PropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return new InfiniteExpr(dataClass);
     }
 }

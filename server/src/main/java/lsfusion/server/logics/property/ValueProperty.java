@@ -20,7 +20,7 @@ public class ValueProperty extends NoIncrementProperty<PropertyInterface> {
         finalizeInit();
     }
 
-    protected Expr calculateExpr(ImMap<PropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<PropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return staticClass.getStaticExpr(value);
     }
 }

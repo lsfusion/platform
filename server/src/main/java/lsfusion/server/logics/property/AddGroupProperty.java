@@ -47,17 +47,17 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
         return !isStored();
     }
 
-    protected Expr calculateNewExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges) {
+    protected Expr calculateNewExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges) {
         ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement);
-        return GroupExpr.create(getGroupImplements(mapKeys, propClasses, propChanges), groupProperty.mapExpr(mapKeys, propClasses, propChanges, null), getGroupType(), joinImplement);
+        return GroupExpr.create(getGroupImplements(mapKeys, calcType, propChanges), groupProperty.mapExpr(mapKeys, calcType, propChanges, null), getGroupType(), joinImplement);
     }
 
-    protected Expr calculateExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        assert assertPropClasses(propClasses, propChanges, changedWhere);
+    protected Expr calculateExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        assert assertPropClasses(calcType, propChanges, changedWhere);
         if(!hasChanges(propChanges) || (changedWhere==null && noIncrement()))
-            return calculateNewExpr(joinImplement, propClasses, propChanges);
+            return calculateNewExpr(joinImplement, calcType, propChanges);
 
-        assert !propClasses;
+        assert calcType.isExpr();
         return calculateIncrementExpr(joinImplement, propChanges, getExpr(joinImplement), changedWhere);
     }
 

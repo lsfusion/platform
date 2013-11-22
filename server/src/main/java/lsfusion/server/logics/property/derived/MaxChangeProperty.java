@@ -12,6 +12,7 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.session.PropertyChanges;
@@ -82,9 +83,9 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         finalizeInit();
     }
 
-    protected Expr calculateExpr(ImMap<Interface<P>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(propClasses) // пока так
-            propClasses = false;
+    protected Expr calculateExpr(ImMap<Interface<P>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        if(!calcType.isExpr()) // пока так
+            calcType = CalcType.EXPR;
 
         ImMap<Interface<P>, Expr> mapExprs = interfaces.mapValues(new GetValue<Expr, Interface<P>>() {
             public Expr getMapValue(Interface<P> value) {
@@ -93,7 +94,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
 
         WhereBuilder onChangeWhere = new WhereBuilder();
         Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(onChange.getMapKeys(),
-                propClasses, toChange.getChangeModifier(propChanges, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, joinImplement);
+                calcType, toChange.getChangeModifier(propChanges, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, joinImplement);
         if(changedWhere!=null) changedWhere.add(resultExpr.getWhere());
         return resultExpr;
     }

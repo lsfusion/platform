@@ -7,6 +7,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.DeconcatenateExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.FormulaProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.PropertyChanges;
@@ -31,7 +32,7 @@ public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty
         finalizeInit();
     }
 
-    protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return DeconcatenateExpr.create(joinImplement.singleValue(),part,baseClass);
     }
 

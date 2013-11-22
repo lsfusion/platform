@@ -53,9 +53,9 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
         depends.add(property.getOld(scope));
     }
 
-    protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         WhereBuilder changedIncrementWhere = new WhereBuilder();
-        property.getIncrementExpr(joinImplement, changedIncrementWhere, propClasses, propChanges, type, scope);
+        property.getIncrementExpr(joinImplement, changedIncrementWhere, calcType, propChanges, type, scope);
         if(changedWhere!=null) changedWhere.add(changedIncrementWhere.toWhere());
         return ValueExpr.get(changedIncrementWhere.toWhere());
     }

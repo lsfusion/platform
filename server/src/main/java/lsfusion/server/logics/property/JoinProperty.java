@@ -76,18 +76,18 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     private ImMap<T, Expr> getJoinImplements(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return getJoinImplements(joinImplement, false, propChanges, changedWhere);
+        return getJoinImplements(joinImplement, CalcType.EXPR, propChanges, changedWhere);
     }
 
-    private ImMap<T, Expr> getJoinImplements(final ImMap<Interface, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
+    private ImMap<T, Expr> getJoinImplements(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         return implement.mapping.mapItValues(new GetValue<Expr, CalcPropertyInterfaceImplement<Interface>>() {
             public Expr getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
-                return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
+                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
             }});
     }
 
-    public Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return implement.property.getExpr(getJoinImplements(joinImplement, propClasses, propChanges, changedWhere), propClasses, propChanges, changedWhere);
+    public Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return implement.property.getExpr(getJoinImplements(joinImplement, calcType, propChanges, changedWhere), calcType, propChanges, changedWhere);
     }
 
     @Override

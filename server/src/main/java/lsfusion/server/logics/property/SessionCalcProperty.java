@@ -2,6 +2,8 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.Settings;
+import lsfusion.server.caches.IdentityLazy;
 
 public abstract class SessionCalcProperty<T extends PropertyInterface> extends SimpleIncrementProperty<T> {
 
@@ -21,6 +23,8 @@ public abstract class SessionCalcProperty<T extends PropertyInterface> extends S
 
     @Override
     public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
+        if(Settings.get().isUseEventValuePrevHeuristic() && property instanceof AggregateProperty && ((AggregateProperty)property).hasAlotKeys())
+            return SetFact.EMPTY();
         return SetFact.<SessionCalcProperty>singleton(this);
     }
 }

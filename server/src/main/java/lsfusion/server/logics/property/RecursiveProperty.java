@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.Result;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -128,7 +127,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     protected Expr calculateIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
         if(isLogical() || cycle == Cycle.YES) { // если допускаются циклы, то придется все пересчитывать
             if(changedWhere!=null) changedWhere.add(getLogicalIncrementWhere(joinImplement, propChanges));
-            return calculateNewExpr(joinImplement, false, propChanges);
+            return calculateNewExpr(joinImplement, CalcType.EXPR, propChanges);
         } else {
             Expr changedExpr = getSumIncrementExpr(joinImplement, propChanges);
             if(changedWhere!=null) changedWhere.add(changedExpr.getWhere());
@@ -136,12 +135,12 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         }
     }
 
-    protected Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges) {
+    protected Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges) {
         Result<ImRevMap<KeyExpr, KeyExpr>> mapIterate = new Result<ImRevMap<KeyExpr, KeyExpr>>();
         Result<ImMap<KeyExpr, Expr>> group = new Result<ImMap<KeyExpr, Expr>>();
         ImMap<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
-        return RecursiveExpr.create(mapIterate.result, initial.mapExpr(recursiveKeys, propClasses, propChanges, null),
-                step.mapExpr(recursiveKeys, propClasses, propChanges, null), isCyclePossible(), group.result);
+        return RecursiveExpr.create(mapIterate.result, initial.mapExpr(recursiveKeys, calcType, propChanges, null),
+                step.mapExpr(recursiveKeys, calcType, propChanges, null), isCyclePossible(), group.result);
     }
 
     // проталкивание значений на уровне property
@@ -173,12 +172,12 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         step.mapFillDepends(depends);
     }
 
-    protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        assert assertPropClasses(propClasses, propChanges, changedWhere);
+    protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        assert assertPropClasses(calcType, propChanges, changedWhere);
         if(!hasChanges(propChanges) || (changedWhere==null && !isStored()))
-            return calculateNewExpr(joinImplement, propClasses, propChanges);
+            return calculateNewExpr(joinImplement, calcType, propChanges);
 
-        assert !propClasses;
+        assert calcType.isExpr();
         return calculateIncrementExpr(joinImplement, propChanges, getExpr(joinImplement), changedWhere);
     }
 

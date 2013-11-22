@@ -37,10 +37,10 @@ public class XorUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         ImList<Expr> operandExprs = operands.mapListValues(new GetValue<Expr, CalcPropertyInterfaceImplement<Interface>>() {
             public Expr getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
-                return value.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
+                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
             }});
 
         Where xorWhere = Where.FALSE;

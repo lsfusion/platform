@@ -4,15 +4,8 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.Join;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.session.ExecutionEnvironment;
-import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
-import lsfusion.server.session.SinglePropertyTableUsage;
-
-import java.sql.SQLException;
 
 public class CalcPropertyRevImplement<P extends PropertyInterface, T> {
 
@@ -37,12 +30,12 @@ public class CalcPropertyRevImplement<P extends PropertyInterface, T> {
         return new CalcPropertyImplement<P, L>(property, mapping.join(mapImplement));
     }
 
-    public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
-        return property.getExpr(mapping.join(joinImplement), propClasses, changes, changedWhere);
+    public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere) {
+        return property.getExpr(mapping.join(joinImplement), calcType, changes, changedWhere);
     }
 
     public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere) {
-        return mapExpr(joinImplement, false, changes, changedWhere);
+        return mapExpr(joinImplement, CalcType.EXPR, changes, changedWhere);
     }
 
     public String toString() {

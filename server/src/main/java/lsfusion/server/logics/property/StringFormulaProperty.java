@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.classes.ConcreteValueClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
@@ -48,7 +47,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         finalizeInit();
     }
 
-    public Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
         ImMap<String, Expr> params = interfaces.mapKeyValues(new GetValue<String, Interface>() {
             public String getMapValue(Interface value) {

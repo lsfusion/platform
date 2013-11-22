@@ -15,9 +15,12 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.ModifyQuery;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NotNullKeyExpr;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.translator.MapValuesTranslator;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -58,11 +61,16 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     }
 
     public Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement) {
-        return calculateExpr(joinImplement, false, PropertyChanges.EMPTY, null);
+        return calculateExpr(joinImplement, CalcType.EXPR, PropertyChanges.EMPTY, null);
     }
 
     public Expr calculateClassExpr(ImMap<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
-        return calculateExpr(joinImplement, true, PropertyChanges.EMPTY, null);
+        return calculateExpr(joinImplement, CalcType.CLASS, PropertyChanges.EMPTY, null);
+    }
+
+    // пока не используется
+    public Expr calculateStatExpr(ImMap<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
+        return calculateExpr(joinImplement, CalcType.STAT, PropertyChanges.EMPTY, null);
     }
 
     private Query<T, String> getRecalculateQuery(boolean outDB) {
@@ -102,10 +110,25 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
             return result;
         }
 
-        ImRevMap<T,NotNullKeyExpr> mapExprs = interfaces.mapRevValues(new GetIndexValue<NotNullKeyExpr, T>() {
+        ImRevMap<T,NotNullKeyExpr> mapExprs = getMapNotNullKeys();
+        return Query.getClassWhere(Where.TRUE, mapExprs, MapFact.singleton((Object)"value", calculateClassExpr(mapExprs)));
+    }
+
+    private ImRevMap<T, NotNullKeyExpr> getMapNotNullKeys() {
+        return interfaces.mapRevValues(new GetIndexValue<NotNullKeyExpr, T>() {
             public NotNullKeyExpr getMapValue(int i, T value) {
                 return new NotNullKeyExpr(i);
             }});
-        return Query.getClassWhere(Where.TRUE, mapExprs, MapFact.singleton((Object)"value", calculateClassExpr(mapExprs)));
+    }
+
+    @IdentityLazy
+    public StatKeys<T> getInterfaceClassStats() {
+        ImRevMap<T,KeyExpr> mapKeys = getMapKeys();
+        // calculateStatExpr(mapKeys)
+        return getExpr(getMapKeys()).getWhere().getStatKeys(mapKeys.valuesSet()).mapBack(mapKeys);
+    }
+
+    public boolean hasAlotKeys() {
+        return Stat.ALOT.lessEquals(getInterfaceClassStats().rows);
     }
 }

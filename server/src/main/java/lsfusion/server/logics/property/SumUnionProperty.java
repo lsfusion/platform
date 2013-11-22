@@ -32,10 +32,10 @@ public class SumUnionProperty extends IncrementUnionProperty {
         return operands.keys();
     }
 
-    protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
+    protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         ImCol<Pair<Expr, Integer>> operandExprs = operands.mapColValues(new GetKeyValue<Pair<Expr, Integer>, CalcPropertyInterfaceImplement<Interface>, Integer>() { // до непосредственно вычисления, для хинтов
             public Pair<Expr, Integer> getMapValue(CalcPropertyInterfaceImplement<Interface> key, Integer value) {
-                return new Pair<Expr, Integer>(key.mapExpr(joinImplement, propClasses, propChanges, changedWhere), value);
+                return new Pair<Expr, Integer>(key.mapExpr(joinImplement, calcType, propChanges, changedWhere), value);
             }});
 
         Expr result = Expr.NULL;

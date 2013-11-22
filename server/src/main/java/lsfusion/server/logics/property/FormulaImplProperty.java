@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
-import lsfusion.server.data.expr.formula.FormulaImpl;
 import lsfusion.server.data.expr.formula.FormulaJoinImpl;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.session.PropertyChanges;
@@ -37,7 +36,7 @@ public class FormulaImplProperty extends FormulaProperty<FormulaImplProperty.Int
         finalizeInit();
     }
 
-    protected Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return FormulaExpr.create(formula, getOrderInterfaces().mapList(joinImplement));
     }
 }

@@ -3,10 +3,8 @@ package lsfusion.server.logics.property;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.data.GlobalTable;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
@@ -34,7 +32,7 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
     }
 
     @Override
-    protected Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         throw new RuntimeException("should not be");
     }
 

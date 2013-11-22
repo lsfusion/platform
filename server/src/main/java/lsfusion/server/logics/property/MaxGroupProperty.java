@@ -49,11 +49,11 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
                 return changedExpr.ifElse(outWhere, prevExpr);
             } else {
                 if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere()));
-                return calculateNewExpr(joinImplement, false, propChanges);
+                return calculateNewExpr(joinImplement, CalcType.EXPR, propChanges);
             }
         } else {
             if(changedWhere!=null) changedWhere.add(outWhere.or(inWhere)); // если хоть один не null
-            return changedExpr.ifElse(outWhere, calculateNewExpr(joinImplement, false, propChanges).ifElse(inWhere, prevExpr));
+            return changedExpr.ifElse(outWhere, calculateNewExpr(joinImplement, CalcType.EXPR, propChanges).ifElse(inWhere, prevExpr));
         }
     }
 }

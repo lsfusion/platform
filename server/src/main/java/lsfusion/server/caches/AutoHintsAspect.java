@@ -1,5 +1,6 @@
 package lsfusion.server.caches;
 
+import lsfusion.server.logics.property.CalcType;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -206,9 +207,9 @@ public class AutoHintsAspect {
         return callAutoHint(thisJoinPoint, property, null, modifier);
     }
 
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getQuery(boolean,lsfusion.server.session.PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,*)) && target(property) && args(propClasses, propChanges, queryType, interfaceValues)")
-    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
-        return getQuery(thisJoinPoint, property, propClasses, propChanges, queryType, interfaceValues);
+    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getQuery(lsfusion.server.logics.property.CalcType,lsfusion.server.session.PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,*)) && target(property) && args(calcType, propChanges, queryType, interfaceValues)")
+    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
+        return getQuery(thisJoinPoint, property, calcType, propChanges, queryType, interfaceValues);
     }
 
     private static boolean hintHasChanges(Where changed, CalcProperty property, PropertyChanges propChanges) {
@@ -216,18 +217,18 @@ public class AutoHintsAspect {
             return !changed.isFalse();
         return property.hasChanges(propChanges);
     }
-    private static Object getQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
+    private static Object getQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
         assert property.isFull();
 
         SessionModifier catchHint = catchAutoHint.get();
-        if(!propClasses && catchHint!=null && catchHint.allowPrereadValues(property,interfaceValues)) // если есть не "прочитанные" параметры - значения, вычисляем
+        if(calcType.isExpr() && catchHint!=null && catchHint.allowPrereadValues(property,interfaceValues)) // если есть не "прочитанные" параметры - значения, вычисляем
             throw new HintException(new PrereadHint(property, interfaceValues));
 
         IQuery<?, String> result = (IQuery) thisJoinPoint.proceed();
         if(queryType == PropertyQueryType.RECURSIVE)
             return result;
 
-        if(!propClasses && catchHint != null && catchHint.allowHintIncrement(property)) { // неправильно так как может быть не changed
+        if(calcType.isExpr() && catchHint != null && catchHint.allowHintIncrement(property)) { // неправильно так как может быть не changed
             Where changed = null;
             if(queryType.needChange())
                 changed = result.getExpr("changed").getWhere();
@@ -259,7 +260,7 @@ public class AutoHintsAspect {
                             }
                         }
                     } else // запускаем getQuery уже без interfaceValues, соответственно уже оно если надо (в смысле что статистика будет нормальной) кинет exception
-                        property.getQuery(propClasses, propChanges, PropertyQueryType.FULLCHANGED, MapFact.EMPTY());
+                        property.getQuery(calcType, propChanges, PropertyQueryType.FULLCHANGED, MapFact.EMPTY());
             }
         }
         return result;
@@ -267,12 +268,12 @@ public class AutoHintsAspect {
 
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,boolean,lsfusion.server.session.PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
-            "&& target(property) && args(joinExprs,propClasses,propChanges,changedWhere)")
-    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses,  ImMap joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.CalcType,lsfusion.server.session.PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
+            "&& target(property) && args(joinExprs,calcType,propChanges,changedWhere)")
+    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, CalcType calcType,  ImMap joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
 
-        if(!property.isFull() || propClasses)
+        if(!property.isFull() || !calcType.isExpr())
             return thisJoinPoint.proceed();
 
         SessionModifier catchHint = catchAutoHint.get();
@@ -286,11 +287,11 @@ public class AutoHintsAspect {
             return thisJoinPoint.proceed();
 
         WhereBuilder cascadeWhere = CalcProperty.cascadeWhere(changedWhere);
-        Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, propClasses, joinExprs, propChanges, cascadeWhere});
+        Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, calcType, joinExprs, propChanges, cascadeWhere});
 
         long complexity = max(result.getComplexity(false), (changedWhere != null ? cascadeWhere.toWhere().getComplexity(false) : 0));
         if(complexity > Settings.get().getLimitHintIncrementComplexity() && property.hasChanges(propChanges))
-            property.getQuery(propClasses, propChanges, PropertyQueryType.FULLCHANGED, MapFact.EMPTY()); // по аналогии с верхним
+            property.getQuery(calcType, propChanges, PropertyQueryType.FULLCHANGED, MapFact.EMPTY()); // по аналогии с верхним
         
         if(changedWhere!=null) changedWhere.add(cascadeWhere.toWhere());
         return result;
