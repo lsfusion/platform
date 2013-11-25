@@ -23,8 +23,6 @@ public abstract class SessionCalcProperty<T extends PropertyInterface> extends S
 
     @Override
     public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
-        if(Settings.get().isUseEventValuePrevHeuristic() && property instanceof AggregateProperty && ((AggregateProperty)property).hasAlotKeys())
-            return SetFact.EMPTY();
         return SetFact.<SessionCalcProperty>singleton(this);
     }
 }

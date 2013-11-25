@@ -68,7 +68,6 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return calculateExpr(joinImplement, CalcType.CLASS, PropertyChanges.EMPTY, null);
     }
 
-    // пока не используется
     public Expr calculateStatExpr(ImMap<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
         return calculateExpr(joinImplement, CalcType.STAT, PropertyChanges.EMPTY, null);
     }
@@ -124,8 +123,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     @IdentityLazy
     public StatKeys<T> getInterfaceClassStats() {
         ImRevMap<T,KeyExpr> mapKeys = getMapKeys();
-        // calculateStatExpr(mapKeys)
-        return getExpr(getMapKeys()).getWhere().getStatKeys(mapKeys.valuesSet()).mapBack(mapKeys);
+        return calculateStatExpr(mapKeys).getWhere().getStatKeys(mapKeys.valuesSet()).mapBack(mapKeys);
     }
 
     public boolean hasAlotKeys() {

@@ -1,6 +1,9 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
@@ -64,5 +67,12 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
                 "drillDown" + capitalize(getSID()) + "Form",
                 getString("logics.property.drilldown.form.old"), this, BL
         );
+    }
+
+    @Override
+    public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
+        if(Settings.get().isUseEventValuePrevHeuristic() && property instanceof AggregateProperty && ((AggregateProperty)property).hasAlotKeys())
+            return SetFact.EMPTY();
+        return super.getSessionCalcDepends(events);
     }
 }
