@@ -411,9 +411,9 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         boolean userPreferencesEmpty = true;
         boolean hasUserPreferences = getGrid() != null && getGrid().getTable().hasUserPreferences();
         if (hasUserPreferences) {
-            List<GPropertyDraw> propertyDrawList = getPropertyDraws();
+            List<GPropertyDraw> propertyDrawList = getGroupObjectProperties();
             Collections.sort(propertyDrawList, getGrid().getTable().getUserSortComparator());
-            for (GPropertyDraw property : getPropertyDraws()) {
+            for (GPropertyDraw property : propertyDrawList) {
                 if (getGrid().getTable().getUserSort(property) != null && getGrid().getTable().getUserAscendingSort(property) != null) {
                     userOrders.put(property, getGrid().getTable().getUserAscendingSort(property));
                     userPreferencesEmpty = false;

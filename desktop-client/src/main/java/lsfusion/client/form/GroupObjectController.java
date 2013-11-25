@@ -356,9 +356,9 @@ public class GroupObjectController extends AbstractGroupObjectController {
         boolean userPreferencesEmpty = true;
         boolean hasUserPreferences = grid != null && grid.table.hasUserPreferences();
         if (hasUserPreferences) {
-            List<ClientPropertyDraw> clientPropertyDrawList = getPropertyDraws();
+            List<ClientPropertyDraw> clientPropertyDrawList = getGroupObjectProperties();
             Collections.sort(clientPropertyDrawList, grid.table.getUserSortComparator());
-            for (ClientPropertyDraw property : getPropertyDraws()) {
+            for (ClientPropertyDraw property : clientPropertyDrawList) {
                 if (grid.table.getUserSort(property) != null && grid.table.getUserAscendingSort(property) != null) {
                     userOrders.put(property, grid.table.getUserAscendingSort(property));
                     userPreferencesEmpty = false;
