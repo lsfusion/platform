@@ -951,42 +951,46 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public List<FormGrouping> readGroupings(String groupObjectSID) throws SQLException {
-        DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(session, new DataObject(groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
+        ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(session, new DataObject(groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
+        
+        if (groupObjectObjectValue instanceof DataObject) {
+            KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
+    
+            KeyExpr formGroupingExpr = new KeyExpr("formGrouping");
+    
+            ImRevMap<String, KeyExpr> newKeys = MapFact.toRevMap("formGrouping", formGroupingExpr, "propertyDraw", propertyDrawExpr);
+    
+            QueryBuilder<String, String> query = new QueryBuilder<String, String>(newKeys);
+    
+            query.addProperty("groupingSID", BL.reflectionLM.nameFormGrouping.getExpr(formGroupingExpr));
+            query.addProperty("itemQuantity", BL.reflectionLM.itemQuantityFormGrouping.getExpr(formGroupingExpr));
+            query.addProperty("propertySID", BL.reflectionLM.sidPropertyDraw.getExpr(propertyDrawExpr));
+            query.addProperty("groupOrder", BL.reflectionLM.groupOrderFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
+            query.addProperty("sum", BL.reflectionLM.sumFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
+            query.addProperty("max", BL.reflectionLM.maxFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
+    
+            Expr goExpr = ((DataObject) groupObjectObjectValue).getExpr();
+            query.and(BL.reflectionLM.groupObjectFormGrouping.getExpr(formGroupingExpr).compare(goExpr, Compare.EQUALS));
+            query.and(BL.reflectionLM.groupObjectPropertyDraw.getExpr(propertyDrawExpr).compare(goExpr, Compare.EQUALS));
+    
+            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> queryResult = query.execute(this);
 
-        KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
-
-        KeyExpr formGroupingExpr = new KeyExpr("formGrouping");
-
-        ImRevMap<String, KeyExpr> newKeys = MapFact.toRevMap("formGrouping", formGroupingExpr, "propertyDraw", propertyDrawExpr);
-
-        QueryBuilder<String, String> query = new QueryBuilder<String, String>(newKeys);
-
-        query.addProperty("groupingSID", BL.reflectionLM.nameFormGrouping.getExpr(formGroupingExpr));
-        query.addProperty("itemQuantity", BL.reflectionLM.itemQuantityFormGrouping.getExpr(formGroupingExpr));
-        query.addProperty("propertySID", BL.reflectionLM.sidPropertyDraw.getExpr(propertyDrawExpr));
-        query.addProperty("groupOrder", BL.reflectionLM.groupOrderFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
-        query.addProperty("sum", BL.reflectionLM.sumFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
-        query.addProperty("max", BL.reflectionLM.maxFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
-
-        Expr goExpr = groupObjectObject.getExpr();
-        query.and(BL.reflectionLM.groupObjectFormGrouping.getExpr(formGroupingExpr).compare(goExpr, Compare.EQUALS));
-        query.and(BL.reflectionLM.groupObjectPropertyDraw.getExpr(propertyDrawExpr).compare(goExpr, Compare.EQUALS));
-
-        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> queryResult = query.execute(this);
-
-        Map<String, FormGrouping> groupings = new LinkedHashMap<String, FormGrouping>();
-
-        for (ImMap<String, Object> values : queryResult.valueIt()) {
-            String groupingSID = (String) values.get("groupingSID");
-            FormGrouping grouping = groupings.get(groupingSID);
-            if (grouping == null) {
-                grouping = new FormGrouping((String) values.get("groupingSID"), groupObjectSID, (Boolean) values.get("itemQuantity"), new ArrayList<FormGrouping.PropertyGrouping>());
-                groupings.put(groupingSID, grouping);
+            Map<String, FormGrouping> groupings = new LinkedHashMap<String, FormGrouping>();
+            
+            for (ImMap<String, Object> values : queryResult.valueIt()) {
+                String groupingSID = (String) values.get("groupingSID");
+                FormGrouping grouping = groupings.get(groupingSID);
+                if (grouping == null) {
+                    grouping = new FormGrouping((String) values.get("groupingSID"), groupObjectSID, (Boolean) values.get("itemQuantity"), new ArrayList<FormGrouping.PropertyGrouping>());
+                    groupings.put(groupingSID, grouping);
+                }
+                grouping.propertyGroupings.add(grouping.new PropertyGrouping((String) values.get("propertySID"), (Integer) values.get("groupOrder"), (Boolean) values.get("sum"), (Boolean) values.get("max")));
             }
-            grouping.propertyGroupings.add(grouping.new PropertyGrouping((String) values.get("propertySID"), (Integer) values.get("groupOrder"), (Boolean) values.get("sum"), (Boolean) values.get("max")));
-        }
 
-        return new ArrayList<FormGrouping>(groupings.values());
+            return new ArrayList<FormGrouping>(groupings.values());
+        } else {
+            throw new RuntimeException("Объект " + groupObjectSID + " (" + entity.getSID() + ") не найден");    
+        }
     }
 
     public void saveGrouping(FormGrouping grouping) throws SQLException, ScriptingErrorLog.SemanticErrorException {
