@@ -1,6 +1,7 @@
 package lsfusion.client.remote.proxy;
 
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
@@ -107,6 +108,14 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         logRemoteMethodStartCall("getUserInfo");
         UserInfo result = target.getUserInfo(username);
         logRemoteMethodEndCall("getUserInfo", result);
+        return result;
+    }
+
+    @Override
+    public VMOptions getClientVMOptions() throws RemoteException {
+        logRemoteMethodStartCall("getClientVMOptions");
+        VMOptions result = target.getClientVMOptions();
+        logRemoteMethodEndCall("getClientVMOptions", result);
         return result;
     }
 

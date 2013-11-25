@@ -14,12 +14,12 @@
     </welcome-file-list>
 
     <context-param>
-        <description>Сервер, на котором работает реестр приложений.</description>
+        <description>Application registry server</description>
         <param-name>registryHost</param-name>
         <param-value>localhost</param-value>
     </context-param>
     <context-param>
-        <description>Порт, на котором работает реестр приложений.</description>
+        <description>Application registry port</description>
         <param-name>registryPort</param-name>
         <param-value>7652</param-value>
     </context-param>

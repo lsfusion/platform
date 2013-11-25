@@ -48,6 +48,8 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     private BusinessLogics businessLogics;
     private DBManager dbManager;
 
+    private String initialAdminPassword;
+
     private BaseLogicsModule LM;
     private AuthenticationLogicsModule authenticationLM;
     private SecurityLogicsModule securityLM;
@@ -65,10 +67,17 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         this.dbManager = dbManager;
     }
 
+    public void setInitialAdminPassword(String initialAdminPassword) {
+        this.initialAdminPassword = initialAdminPassword;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(businessLogics, "businessLogics must be specified");
         Assert.notNull(dbManager, "dbManager must be specified");
+        if (BaseUtils.isRedundantString(initialAdminPassword)) {
+            initialAdminPassword = "fusion";
+        }
     }
 
     @Override
@@ -130,7 +139,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
     public void setupDefaultAdminUser() throws SQLException {
         DataSession session = createSession();
-        setUserPolicies(addUser("admin", "fusion", session).ID, permitAllPolicy, allowConfiguratorPolicy);
+        setUserPolicies(addUser("admin", initialAdminPassword, session).ID, permitAllPolicy, allowConfiguratorPolicy);
         session.apply(businessLogics);
     }
 

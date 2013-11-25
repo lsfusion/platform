@@ -37,6 +37,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     UserInfo getUserInfo(String username) throws RemoteException;
 
+    VMOptions getClientVMOptions() throws RemoteException;
+
     void remindPassword(String email, String localeLanguage) throws RemoteException;
 
     byte[] readFile(String sid, String... params) throws RemoteException;

@@ -129,6 +129,7 @@
     <bean id="securityManager" class="lsfusion.server.logics.SecurityManager">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="dbManager" ref="dbManager"/>
+        <property name="initialAdminPassword" value="${logics.initialAdminPassword:}"/>
     </bean>
 
     <bean id="logicsInstance" class="lsfusion.server.logics.LogicsInstance">
@@ -175,6 +176,12 @@
         <property name="restartManager" ref="restartManager"/>
         <property name="securityManager" ref="securityManager"/>
         <property name="dbManager" ref="dbManager"/>
+        <property name="clientVMOptions" ref="clientVMOptions"/>
+    </bean>
+
+    <bean id="clientVMOptions" class="lsfusion.interop.VMOptions">
+        <constructor-arg name="initHeapSize" value="${client.initHeapSize:}"/>
+        <constructor-arg name="maxHeapSize" value="${client.maxHeapSize:}"/>
     </bean>
 
     <bean id="remoteLogicsLoader" class="lsfusion.server.remote.RemoteLogicsLoader">

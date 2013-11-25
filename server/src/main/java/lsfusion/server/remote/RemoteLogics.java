@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.form.screen.ExternalScreen;
@@ -60,6 +61,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     protected DBManager dbManager;
 
+    private VMOptions clientVMOptions;
+
     private String displayName;
     private String name;
 
@@ -87,6 +90,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         this.dbManager = dbManager;
     }
 
+    public void setClientVMOptions(VMOptions clientVMOptions) {
+        this.clientVMOptions = clientVMOptions;
+    }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
@@ -102,6 +109,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         Assert.notNull(restartManager, "restartManager must be specified");
         Assert.notNull(securityManager, "securityManager must be specified");
         Assert.notNull(dbManager, "dbManager must be specified");
+        Assert.notNull(clientVMOptions, "clientVMOptions must be specified");
         //assert logicsInstance by checking the context
         Assert.notNull(getContext(), "logicsInstance must be specified");
 
@@ -291,6 +299,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public UserInfo getUserInfo(String username) throws RemoteException {
         return securityManager.getUserInfo(username, getExtraUserRoleNames(username));
+    }
+
+    @Override
+    public VMOptions getClientVMOptions() throws RemoteException {
+        return clientVMOptions;
     }
 
     @Override
