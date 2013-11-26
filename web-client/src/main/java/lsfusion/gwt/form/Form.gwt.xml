@@ -3,5 +3,4 @@
 <module rename-to="form">
     <inherits name="lsfusion.gwt.form.FormCore" />
     <entry-point class='lsfusion.gwt.form.client.MainFrame'/>
-    <script src="font.js"></script>
 </module>
