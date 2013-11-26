@@ -14,10 +14,11 @@ import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.form.grid.GridTableModel;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.logics.classes.ClientImageClass;
 import lsfusion.client.logics.classes.ClientIntegralClass;
+import lsfusion.client.logics.classes.ClientType;
 import lsfusion.interop.FormGrouping;
 import lsfusion.interop.KeyStrokes;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
@@ -106,11 +107,15 @@ public abstract class GroupingDialog extends JDialog {
 
         JScrollPane groupScrollPane = new JScrollPane();
         groupScrollPane.setViewportView(groupByPanel);
-
-        JPanel quantityAndGroupPanel = new JPanel();
-        quantityAndGroupPanel.setLayout(new BoxLayout(quantityAndGroupPanel, BoxLayout.Y_AXIS));
+        
+        JPanel otherChecksPanel = new JPanel();
+        otherChecksPanel.setLayout(new BoxLayout(otherChecksPanel, BoxLayout.Y_AXIS));
         quantityCheck = new JCheckBox(getString("form.queries.number.of.entries"));
-        quantityAndGroupPanel.add(quantityCheck);
+        otherChecksPanel.add(quantityCheck);
+
+        JPanel valuesChecksPanel = new JPanel();
+        valuesChecksPanel.setLayout(new BoxLayout(valuesChecksPanel, BoxLayout.Y_AXIS));
+        valuesChecksPanel.add(otherChecksPanel);
 
         TitledPanel sumPanel = new TitledPanel(getString("form.queries.grouping.sum"));
         sumPanel.setLayout(new BoxLayout(sumPanel, BoxLayout.Y_AXIS));
@@ -171,13 +176,18 @@ public abstract class GroupingDialog extends JDialog {
             allFieldsPanel.add(fieldPanel);
 
             
-            if (initialTableModel.getColumnProperty(i).baseType instanceof ClientIntegralClass) {
+            ClientType propertyType = initialTableModel.getColumnProperty(i).baseType; 
+            if (propertyType instanceof ClientIntegralClass) {
                 JCheckBox checkBoxSum = new JCheckBox(columnName);
                 sumChecks.put(columnKey, checkBoxSum);
                 JCheckBox checkBoxMax = new JCheckBox(columnName);
                 maxChecks.put(columnKey, checkBoxMax);
                 sumPanel.add(checkBoxSum);
                 maxPanel.add(checkBoxMax);
+            } else if (propertyType instanceof ClientImageClass) {
+                JCheckBox imageCheckBox = new JCheckBox(columnName);
+                maxChecks.put(columnKey, imageCheckBox);
+                otherChecksPanel.add(imageCheckBox);
             }
         }
 
@@ -187,7 +197,7 @@ public abstract class GroupingDialog extends JDialog {
         JSplitPane groupPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sumScrollPane, maxScrollPane);
         groupPanel.setContinuousLayout(true);
         groupPanel.setOneTouchExpandable(true);
-        quantityAndGroupPanel.add(groupPanel);
+        valuesChecksPanel.add(groupPanel);
         
         JButton resetAllButton = new JButton(getString("form.queries.grouping.reset"));
         resetAllButton.addActionListener(new ActionListener() {
@@ -297,7 +307,7 @@ public abstract class GroupingDialog extends JDialog {
         bottomPanel.add(checkNButtonPanel, BorderLayout.EAST);
         bottomPanel.add(managementPanel, BorderLayout.WEST);
 
-        JSplitPane westPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, groupScrollPane, quantityAndGroupPanel);
+        JSplitPane westPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, groupScrollPane, valuesChecksPanel);
         westPanel.setContinuousLayout(true);
         westPanel.setOneTouchExpandable(true);
 
@@ -551,7 +561,7 @@ public abstract class GroupingDialog extends JDialog {
             if (entry.getValue().isSelected()) {
                 ClientPropertyDraw property = entry.getKey().first;
                 columnProperties.add(property);
-                names.add(groupChecks.get(entry.getKey()).getText() + " [M]");
+                names.add(groupChecks.get(entry.getKey()).getText() + (property.baseType instanceof ClientImageClass ? "" : " [M]"));
             }
         }
 
@@ -641,7 +651,7 @@ public abstract class GroupingDialog extends JDialog {
             sheet.addCell(new jxl.write.Label(i, 0, columnName, createCellFormat(null, true)));
         }
         
-        addExcelSubrows(sheet, 1, (DefaultMutableTreeTableNode) treeTable.getRoot());
+        addExcelSubrows(sheet, 1, (GroupingTreeTable.SortableTreeTableNode) treeTable.getRoot());
         
         workbook.write();
         workbook.close();
@@ -661,23 +671,33 @@ public abstract class GroupingDialog extends JDialog {
         return format;
     }
     
-    private int addExcelSubrows(WritableSheet sheet, int currentRow, DefaultMutableTreeTableNode parent) throws WriteException {
+    private int addExcelSubrows(WritableSheet sheet, int currentRow, GroupingTreeTable.SortableTreeTableNode parent) throws WriteException {
         if (parent.getParent() != null) {
             List<Object> row = treeTable.getRow(parent);
-            for (int i = 0; i <= row.size(); i++) {
-                Object value = treeTable.getValueAt(parent, i);
+            for (int column = 0; column <= row.size(); column++) {
+                Object value = treeTable.getValueAt(parent, column);
                 if (value instanceof BigDecimal || value instanceof Double) {
-                    sheet.addCell(new jxl.write.Number(i, currentRow, Double.valueOf(value.toString()), createCellFormat(NumberFormats.THOUSANDS_FLOAT, false)));    
+                    sheet.addCell(new jxl.write.Number(column, currentRow, Double.valueOf(value.toString()), createCellFormat(NumberFormats.THOUSANDS_FLOAT, false)));    
                 } else if (value instanceof Number) {
-                    sheet.addCell(new jxl.write.Number(i, currentRow, Double.valueOf(value.toString()), createCellFormat(NumberFormats.THOUSANDS_INTEGER, false)));
+                    sheet.addCell(new jxl.write.Number(column, currentRow, Double.valueOf(value.toString()), createCellFormat(NumberFormats.THOUSANDS_INTEGER, false)));
                 } else if (value instanceof Time) {
-                    sheet.addCell(new jxl.write.DateTime(i, currentRow, (Date) value, createCellFormat(DateFormats.FORMAT8, false)));
+                    sheet.addCell(new jxl.write.DateTime(column, currentRow, (Date) value, createCellFormat(DateFormats.FORMAT8, false)));
                 } else if (value instanceof Date) {
-                    sheet.addCell(new jxl.write.DateTime(i, currentRow, (Date) value, createCellFormat(DateFormats.DEFAULT, false)));
+                    sheet.addCell(new jxl.write.DateTime(column, currentRow, (Date) value, createCellFormat(DateFormats.DEFAULT, false)));
                 } else if (value instanceof Boolean) {
-                    sheet.addCell(new jxl.write.Boolean(i, currentRow, (Boolean) value, createCellFormat(null, false)));
+                    sheet.addCell(new jxl.write.Boolean(column, currentRow, (Boolean) value, createCellFormat(null, false)));
+                } else if (value instanceof byte[]) { // здесь ожидается изображение
+                    WritableCellFormat format = new WritableCellFormat();
+                    format.setBorder(jxl.format.Border.ALL, BorderLineStyle.THIN);
+                    sheet.getWritableCell(column, currentRow).setCellFormat(format);
+                    sheet.addCell(new Blank(column, currentRow, format));
+                    sheet.setRowView(currentRow, 500);
+
+                    WritableImage image = new WritableImage(column, currentRow, 1, 1, (byte[]) value);
+                    image.setImageAnchor(WritableImage.MOVE_AND_SIZE_WITH_CELLS);
+                    sheet.addImage(image);
                 } else {
-                    sheet.addCell(new jxl.write.Label(i, currentRow, value == null ? "" : value.toString(), createCellFormat(null, false)));
+                    sheet.addCell(new jxl.write.Label(column, currentRow, value == null ? "" : value.toString(), createCellFormat(null, false)));
                 }
             }
             currentRow++;
@@ -686,7 +706,7 @@ public abstract class GroupingDialog extends JDialog {
         int parentRow = currentRow;
         Enumeration<? extends MutableTreeTableNode> children = parent.children();
         while (children.hasMoreElements()) {
-            DefaultMutableTreeTableNode child = (DefaultMutableTreeTableNode) children.nextElement();
+            GroupingTreeTable.SortableTreeTableNode child = (GroupingTreeTable.SortableTreeTableNode) children.nextElement();
             
             currentRow = addExcelSubrows(sheet, currentRow, child);
         }

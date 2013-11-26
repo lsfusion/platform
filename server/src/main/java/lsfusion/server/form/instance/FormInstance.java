@@ -901,6 +901,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
                 property = toMax.getKey(i - separator);
                 currentList = toMax.getValue(i - separator);
+
+                if (property.getValueClass() instanceof FileClass) {
+                    groupType = GroupType.ANY;
+                }
             }
             for (ImMap<ObjectInstance, DataObject> columnKeys : currentList) {
                 idIndex++;
@@ -995,7 +999,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void saveGrouping(FormGrouping grouping) throws SQLException, ScriptingErrorLog.SemanticErrorException {
         DataSession dataSession = session.createSession();
-        DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
+        ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
+        if (!(groupObjectObjectValue instanceof DataObject)) {
+            throw new RuntimeException("Объект " + grouping.groupObjectSID + " (" + entity.getSID() + ") не найден");    
+        }
+        DataObject groupObjectObject = (DataObject) groupObjectObjectValue;
         ObjectValue groupingObjectValue = BL.reflectionLM.formGroupingNameFormGroupingGroupObject.readClasses(dataSession, new DataObject(grouping.name, StringClass.get(100)), groupObjectObject);
         DataObject groupingObject;
         if (groupingObjectValue instanceof DataObject) {
@@ -1025,7 +1033,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 BL.reflectionLM.sumFormGroupingPropertyDraw.change(propGrouping.sum, dataSession, groupingObject, propertyDrawObject);
                 BL.reflectionLM.maxFormGroupingPropertyDraw.change(propGrouping.max, dataSession, groupingObject, propertyDrawObject);
             } else {
-                throw new RuntimeException("Объект " + propGrouping.propertySID + " (" + entity.getSID() + ") не найден");
+                throw new RuntimeException("Свойство " + propGrouping.propertySID + " (" + entity.getSID() + ") не найдено");
             }
         }
         dataSession.apply(BL);

@@ -1090,9 +1090,8 @@ public class ClientFormController implements AsyncListener {
         try {
             return remoteForm.readGroupings(groupObjectSID);
         } catch (RemoteException e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
         }
-        return null;
     }
 
     public Map<List<Object>, List<Object>> groupData(final Map<Integer, List<byte[]>> groupMap, final Map<Integer, List<byte[]>> sumMap, final Map<Integer,
@@ -1247,7 +1246,7 @@ public class ClientFormController implements AsyncListener {
                 }
             });
         } catch (Exception e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
         }
     }
 

@@ -1,13 +1,12 @@
 package lsfusion.client.form.queries;
 
 import lsfusion.base.OrderedMap;
+import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.logics.classes.ClientImageClass;
 import lsfusion.client.logics.classes.ClientLogicalClass;
 import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
-import org.jdesktop.swingx.treetable.TreeTableModel;
-import org.jdesktop.swingx.treetable.TreeTableNode;
+import org.jdesktop.swingx.treetable.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -24,6 +23,8 @@ import java.util.List;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class GroupingTreeTable extends JXTreeTable {
+    private final int DEFAULT_ROW_HEIGHT = 16;
+    
     private GroupingTreeTableModel treeTableModel;
     
     public GroupingTreeTable() {
@@ -45,9 +46,25 @@ public class GroupingTreeTable extends JXTreeTable {
             }
         });
         
+        setDefaultRenderer(Image.class, new ImageCellRenderer());
+        
         JTableHeader header = getTableHeader();
         header.setReorderingAllowed(false);
         header.setFont(header.getFont().deriveFont(header.getFont().getStyle(), 10));
+        header.addMouseListener(new ColumnListener());  //для сортировки
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 ) {
+                    int columnClicked = columnAtPoint(e.getPoint());
+                    ClientPropertyDraw columnProperty = treeTableModel.getColumnProperty(columnClicked);
+                    if (columnProperty != null && columnProperty.baseType instanceof ClientImageClass) {
+                        ImagePropertyRenderer.expandImage((byte[]) getValueAt(rowAtPoint(e.getPoint()), columnClicked));
+                    }
+                }
+            }
+        });
     }
     
     public void updateModel(int keyColumnsQuantity, java.util.List<ClientPropertyDraw> columnProperties, java.util.List<String> columnNames, 
@@ -58,16 +75,23 @@ public class GroupingTreeTable extends JXTreeTable {
         int additionalWidth = 19 * (values.size() - 1);
         getColumnModel().getColumn(0).setMinWidth(55 + additionalWidth);  //ширина колонки с деревом
 
-        JTableHeader header = getTableHeader();
-        header.addMouseListener(treeTableModel.new ColumnListener());  //для сортировки
-
+        boolean needToExpandRows = false;
         for (int i = 1; i < treeTableModel.getColumnCount(); i++) {
-            TableColumn column = getColumnModel().getColumn(i);
+            TableColumn column = getColumnModel().getColumn(i - 1);
             ClientPropertyDraw property = columnProperties.get(i - 1);
             column.setPreferredWidth(property != null ? property.getPreferredWidth(this) : 56);
             column.setMaxWidth(property != null ? property.getMaximumWidth(this) : 533900);
             column.setMinWidth(property != null ? property.getMinimumWidth(this) : 56);
+            
+            if (property != null && property.baseType instanceof ClientImageClass) {
+                needToExpandRows = true;
+            }
         }    
+        if (needToExpandRows) { // специально для картинок увеличиваем высоту рядов
+            setRowHeight(48);
+        } else {
+            setRowHeight(DEFAULT_ROW_HEIGHT);
+        }
     }
     
     public TreeTableNode getRoot() {
@@ -82,15 +106,11 @@ public class GroupingTreeTable extends JXTreeTable {
         return treeTableModel.getLevelCount();
     }
     
-    public int getColumnCount() {
-        return treeTableModel.getColumnCount();
-    }
-    
     public String getColumnName(int column) {
         return treeTableModel.getColumnName(column);
     }
 
-    public Object getValueAt(DefaultMutableTreeTableNode node, int column) {
+    public Object getValueAt(SortableTreeTableNode node, int column) {
         return treeTableModel.getValueAt(node, column);
     }
 
@@ -98,7 +118,7 @@ public class GroupingTreeTable extends JXTreeTable {
         return treeTableModel.values.get(node);
     }
 
-    public Set<DefaultMutableTreeTableNode> getNodes() {
+    public Set<SortableTreeTableNode> getNodes() {
         return treeTableModel.values.keySet();
     }
 
@@ -127,8 +147,11 @@ public class GroupingTreeTable extends JXTreeTable {
         List<ClientPropertyDraw> columnProperties;
         java.util.List<String> columnNames;
         java.util.List<Map<java.util.List<Object>, java.util.List<Object>>> sources;
-        Map<DefaultMutableTreeTableNode, java.util.List<Object>> values = new OrderedMap<DefaultMutableTreeTableNode, java.util.List<Object>>();
+        Map<SortableTreeTableNode, java.util.List<Object>> values = new OrderedMap<SortableTreeTableNode, java.util.List<Object>>();
         int keyColumnsQuantity = 0;
+
+        public boolean isSortAscending = true;
+        public int sortedCol = 0;
 
         public GroupingTreeTableModel(int keyColumnsQuantity, List<ClientPropertyDraw> columnProperties, List<String> columnNames, List<Map<List<Object>, List<Object>>> values) {
             super();
@@ -137,11 +160,19 @@ public class GroupingTreeTable extends JXTreeTable {
             this.columnNames = columnNames;
             sources = values;
 
-            DefaultMutableTreeTableNode rootNode = new DefaultMutableTreeTableNode("Root", true);
+            removeAll();
+
+            root = new SortableTreeTableNode("Root", true);
             if (!values.isEmpty()) {
-                addNodes(rootNode, 0, null);
+                addNodes((SortableTreeTableNode) root, 0, null);
             }
-            root = rootNode;
+        }
+        
+        public ClientPropertyDraw getColumnProperty(int column) {
+            if (column > 0) {
+                return columnProperties.get(column - 1);
+            }
+            return null;
         }
 
         public int getLevelCount() {
@@ -175,7 +206,7 @@ public class GroupingTreeTable extends JXTreeTable {
             return true;
         }
 
-        private void addNodes(DefaultMutableTreeTableNode parentNode, int index, java.util.List<Object> parentKeys) {
+        private void addNodes(SortableTreeTableNode parentNode, int index, java.util.List<Object> parentKeys) {
             Map<java.util.List<Object>, java.util.List<Object>> map = sources.get(index);
             for (java.util.List<Object> keys : map.keySet()) {
                 if (parentKeys == null || containsAll(parentKeys, keys)) {
@@ -185,7 +216,7 @@ public class GroupingTreeTable extends JXTreeTable {
                         row.add(null);
                     }
                     row.addAll(map.get(keys));
-                    DefaultMutableTreeTableNode node = new DefaultMutableTreeTableNode(index + 1, true);
+                    SortableTreeTableNode node = new SortableTreeTableNode(index + 1, true);
                     parentNode.add(node);
                     values.put(node, row);
                     if (index < sources.size() - 1) {
@@ -198,7 +229,16 @@ public class GroupingTreeTable extends JXTreeTable {
         @Override
         public Class getColumnClass(int column) {
             if (column != 0) {
-                for (DefaultMutableTreeTableNode node : values.keySet()) {
+                ClientPropertyDraw columnProperty = getColumnProperty(column);
+                if (columnProperty != null) {
+                    if (columnProperty.baseType instanceof ClientLogicalClass) {
+                        return Boolean.class;
+                    } else if (columnProperty.baseType instanceof ClientImageClass) {
+                        return Image.class;
+                    }
+                }
+                
+                for (SortableTreeTableNode node : values.keySet()) {
                     java.util.List<Object> valueList = values.get(node);
                     Object value = valueList.get(column - 1);
                     if (value != null) {
@@ -249,66 +289,107 @@ public class GroupingTreeTable extends JXTreeTable {
                 return value;
             }
         }
-
-        protected boolean isSortAscending = true;
-        protected int sortedCol = 0;
-
-        class ColumnListener extends MouseAdapter {
-            public void mouseClicked(MouseEvent e) {
-                TableColumnModel colModel = getColumnModel();
-                int columnToSort = colModel.getColumnIndexAtX(e.getX());
-
-                if (sortedCol == columnToSort)
-                    isSortAscending = !isSortAscending;
-                else {
-                    isSortAscending = true;
-                    sortedCol = columnToSort;
-                }
-                if (columnToSort < 1)
-                    return;
-
-                for (int i = 0; i < getColumnCount(); i++) {
-                    TableColumn column = colModel.getColumn(i);
-                    column.setHeaderValue(getColumnName(column.getModelIndex()));
-                }
-                getTableHeader().repaint();
-
-                DefaultMutableTreeTableNode root = (DefaultMutableTreeTableNode) GroupingTreeTableModel.this.root;
-                changeChildrenOrder(root);
-                updateUI();
+        
+        public void changeOrder(int columnIndex) {
+            if (sortedCol == columnIndex)
+                isSortAscending = !isSortAscending;
+            else {
+                isSortAscending = true;
+                sortedCol = columnIndex;
             }
+            if (columnIndex < 1)
+                return;
 
-            private void changeChildrenOrder(DefaultMutableTreeTableNode node) {
-                ArrayList<DefaultMutableTreeTableNode> list = Collections.list((Enumeration<DefaultMutableTreeTableNode>) node.children());
-                Collections.sort(list, new NodeComparator(isSortAscending, sortedCol));
-                for (DefaultMutableTreeTableNode child : list) {
-                    changeChildrenOrder(child);
-                    node.remove(child);
-                    node.add(child);
-                }
+            TableColumnModel colModel = getColumnModel();
+            for (int i = 0; i < getColumnCount(); i++) {
+                TableColumn column = colModel.getColumn(i);
+                column.setHeaderValue(getColumnName(column.getModelIndex()));
+            }
+            getTableHeader().repaint();
+            
+            changeChildrenOrder((SortableTreeTableNode) root);
+            updateUI();
+        }
+
+        private void changeChildrenOrder(SortableTreeTableNode node) {
+            node.sortChildren(new NodeComparator());
+            
+            Enumeration<? extends MutableTreeTableNode> children = node.children();
+            while (children.hasMoreElements()) {
+                SortableTreeTableNode child = (SortableTreeTableNode) children.nextElement();
+                changeChildrenOrder(child);
             }
         }
 
-        class NodeComparator implements Comparator {
-            protected boolean isSortAsc;
-            protected int columnIndex;
-
-            public NodeComparator(boolean sortAsc, int columnIndex) {
-                isSortAsc = sortAsc;
-                this.columnIndex = columnIndex;
-            }
-
-            public int compare(Object o1, Object o2) {
-                Comparable object1 = (Comparable) GroupingTreeTableModel.this.getValueAt(o1, columnIndex);
-                Comparable object2 = (Comparable) GroupingTreeTableModel.this.getValueAt(o2, columnIndex);
-                if (object1 == null || object2 == null) {
-                    return 0;
+        class NodeComparator implements Comparator<TreeTableNode> {
+            public int compare(TreeTableNode o1, TreeTableNode o2) {
+                int result;
+                Object value1 = GroupingTreeTableModel.this.getValueAt(o1, sortedCol);
+                Object value2 = GroupingTreeTableModel.this.getValueAt(o2, sortedCol);
+                
+                if (value1 == null) {
+                    result = value2 == null ? 0 : -1;
+                } else {
+                    if (value2 == null) {
+                        result = 1;
+                    } else {
+                        if (value1 instanceof Comparable) {
+                            result = value2 instanceof Comparable ? ((Comparable) value1).compareTo(value2) : 1;    
+                        } else {
+                            result = value2 instanceof Comparable ? -1 : 0;
+                        }
+                    }
                 }
-                int result = object1.compareTo(object2);
-                if (!isSortAsc)
-                    result = -result;
-                return result;
+
+                return isSortAscending ? result : -result;
             }
+        }
+    }
+    
+    public class SortableTreeTableNode extends DefaultMutableTreeTableNode {
+        public SortableTreeTableNode(String root, boolean b) {
+            super(root, b);
+        }
+
+        public SortableTreeTableNode(int i, boolean b) {
+            super(i, b);
+        }
+
+        protected void sortChildren(Comparator<TreeTableNode> comparator) {
+            Collections.sort(children, comparator);    
+        } 
+    }
+
+    private class ColumnListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            treeTableModel.changeOrder(getColumnModel().getColumnIndexAtX(e.getX()));
+        }
+    }
+    
+    private class ImageCellRenderer extends DefaultTableCellRenderer {
+        private int column;
+        
+        public ImageCellRenderer() {
+            super();
+            setHorizontalAlignment(JLabel.CENTER);
+        }
+        
+        @Override
+        protected void setValue(Object value) {
+            if (value != null) {
+                ImageIcon icon = new ImageIcon((byte[]) value);
+                Dimension scaled = ImagePropertyRenderer.scaleIcon(icon, getColumn(column).getWidth(), getRowHeight());
+                icon.setImage(icon.getImage().getScaledInstance(scaled.width, scaled.height, Image.SCALE_SMOOTH));
+                setIcon(icon);
+            } else {
+                setIcon(null);
+            }
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            this.column = column;
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
 }
