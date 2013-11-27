@@ -19,6 +19,13 @@ isSubstring = FORMULA INTEGER 'CASE WHEN (($1) LIKE (\'%\'||($2)||\'%\')) THEN 1
 replace = FORMULA 'replace($1,$2,$3)';
 
 charLength = FORMULA INTEGER 'char_length($1)';
+
+substr = FORMULA TEXT 'substr($1, $2, $3)';
+substrFrom = FORMULA TEXT 'substr($1, $2)'; 
+
+left = FORMULA TEXT 'left($1,$2)';
+right = FORMULA TEXT 'right($1,$2)';
+
 // --------------------------------------------- Работа с числами --------------------------------- //
 
 floor = FORMULA 'floor($1)';
