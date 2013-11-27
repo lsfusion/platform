@@ -28,7 +28,7 @@ SubSection "!${PLATFORM_SECTION_NAME}" SecPlatform
         SetOutPath $INSTDIR
         File /r "conf"
         File /r "resources"
-        
+        File install-bin\${IDEA_PLUGIN}
     SectionEnd
 
     Section "${SERVER_SECTION_NAME}" SecServer
@@ -108,7 +108,7 @@ Section "${PG_SECTION_NAME}" SecPG
         DetailPrint "PostgreSQL installation returned $0"
         
         WriteRegStr HKLM "${REGKEY}\Components" "${PG_SECTION_NAME}" 1
-        WriteRegStr HKLM "${REGKEY}" "postgreInstallDir" "$pgDIr"
+        WriteRegStr HKLM "${REGKEY}" "postgreInstallDir" "$pgDir"
 
         Delete "${INSTBINDIR}\${PG_INSTALLER}"
     ${else}
@@ -141,6 +141,25 @@ Section "${TOMCAT_SECTION_NAME}" SecTomcat
     ${endif}
 SectionEnd
 
+Section "${IDEA_SECTION_NAME}" SecIdea
+    !ifdef DEV
+        SetOutPath ${INSTBINDIR}
+        SetOverwrite on
+    
+        ; Install PostgreSQL if no recent version is installed
+        ${SFile} install-bin\${IDEA_INSTALLER}
+
+        ExecWait '"${INSTBINDIR}\${IDEA_INSTALLER}" /S /D=$ideaDir' $0
+        DetailPrint 'ExecWait "${INSTBINDIR}\${IDEA_INSTALLER}" /S /D=$ideaDir'
+        DetailPrint "IntelliJ Idea installation returned $0"
+        
+        WriteRegStr HKLM "${REGKEY}\Components" "${IDEA_SECTION_NAME}" 1
+        WriteRegStr HKLM "${REGKEY}" "ideaInstallDir" "$ideaDir"
+
+        Delete "${INSTBINDIR}\${IDEA_INSTALLER}"
+    !endif
+SectionEnd
+
 # Section Descriptions
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 !insertmacro MUI_DESCRIPTION_TEXT ${SecPlatform} $(strPlatformSectionDescription)
@@ -150,6 +169,7 @@ SectionEnd
 !insertmacro MUI_DESCRIPTION_TEXT ${SecShortcuts} $(strShortcutsSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${SecServices} $(strServicesSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${SecPG} $(strPgSectionDescription)
+!insertmacro MUI_DESCRIPTION_TEXT ${SecIdea} $(strIdeaSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${SecJava} $(strJavaSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${SecTomcat} $(strTomcatSectionDescription)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
@@ -157,3 +177,4 @@ SectionEnd
 !insertmacro DefinePreFeatureFunction ${SecTomcat} tomcat
 ;!insertmacro DefinePreFeatureFunction ${SecJava} java
 !insertmacro DefinePreFeatureFunction ${SecPG} pg
+!insertmacro DefinePreFeatureFunction ${SecIdea} idea

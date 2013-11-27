@@ -82,6 +82,10 @@
   SectionSetText  ${SEC} ""
 !macroend
 
+!macro ExpandSection SEC
+  !insertmacro SetSectionFlag ${SEC} ${SF_EXPAND}
+!macroend
+
 !macro DefinePreFeatureFunction SEC NAME_PREFIX  
     Function ${NAME_PREFIX}PagePre
       ${IfNot} ${SectionIsSelected} ${SEC}
@@ -90,7 +94,7 @@
     FunctionEnd
 !macroend
 
-!macro CustomDirectoryPage ID HEADER TEXT_TOP TEXT_DESTINATION DIR_VAR PRE_FUNCTION
+!macro CustomDirectoryPage HEADER TEXT_TOP TEXT_DESTINATION DIR_VAR PRE_FUNCTION
     !define MUI_PAGE_HEADER_SUBTEXT ${HEADER}
     !define MUI_DIRECTORYPAGE_VARIABLE ${DIR_VAR}
     !define MUI_DIRECTORYPAGE_TEXT_TOP ${TEXT_TOP}

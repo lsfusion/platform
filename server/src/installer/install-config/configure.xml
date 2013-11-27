@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<project name="lsFusion post-install configurator" basedir="..">
+<project name="lsFusion post-install configurator">
     <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
 
-    <property file="install-config/configure.properties" />
+    <property file="configure.properties" />
 
     <target name="configureWebClient">
         <unzip src="${web.archive}" dest=".">
@@ -34,10 +34,14 @@
     </target>
 
     <target name="configureTomcat">
-        <echo message="${tomcat.dir}" />
-        <echo message="${tomcat.dir}/conf/server.xml" />
         <replace file="${tomcat.dir}/conf/server.xml" token="8005" value="${tomcat.shutdownPort}" />
         <replace file="${tomcat.dir}/conf/server.xml" token="8009" value="${tomcat.ajpPort}" />
         <replace file="${tomcat.dir}/conf/server.xml" token="8080" value="${tomcat.httpPort}" />
+    </target>
+
+    <target name="configureIdea">
+        <copy file="../${idea.plugin}" tofile="${idea.dir}/plugins/${idea.plugin}" />
+        <replace file="jdk.table.xml" token="java.home" value="${jdk.home}" />
+        <copy file="jdk.table.xml" tofile="${user.home}/.IdeaIC12/config/options/jdk.table.xml" />
     </target>
 </project>

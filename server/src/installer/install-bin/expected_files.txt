@@ -1,11 +1,13 @@
 apache-ant-1.9.2.zip
 apache-tomcat-7.0.47-windows-x64.zip
 apache-tomcat-7.0.47-windows-x86.zip
-expected_files.txt
+ideaIC-12.1.6.exe
 jdk-7u45-windows-i586.exe
 jdk-7u45-windows-x64.exe
 lsfusion-client-1.2.0.jar
 lsfusion-client-1.2.0.war
+lsfusion-idea-plugin.jar
 lsfusion-server-1.2.0.jar
+plugin-idea.jar
 postgresql-9.2.5-1-windows-x64.exe
 postgresql-9.2.5-1-windows.exe

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+    <component name="ProjectJdkTable">
+        <jdk version="2">
+            <name value="1.7" />
+            <type value="JavaSDK" />
+            <version value="java version &quot;1.7.0_45&quot;" />
+            <homePath value="java.home" />
+            <roots>
+                <annotationsPath>
+                    <root type="composite">
+                        <root type="simple" url="jar://$APPLICATION_HOME_DIR$/lib/jdkAnnotations.jar!/" />
+                    </root>
+                </annotationsPath>
+                <classPath>
+                    <root type="composite">
+                        <root type="simple" url="jar://java.home/jre/lib/charsets.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/deploy.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/javaws.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/jce.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/jfr.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/jfxrt.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/jsse.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/management-agent.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/plugin.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/resources.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/rt.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/ext/access-bridge.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/ext/dnsns.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/ext/jaccess.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/ext/localedata.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/ext/sunec.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/ext/sunjce_provider.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/ext/sunmscapi.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/ext/sunpkcs11.jar!/" />
+                        <root type="simple" url="jar://java.home/jre/lib/ext/zipfs.jar!/" />
+                    </root>
+                </classPath>
+                <javadocPath>
+                    <root type="composite" />
+                </javadocPath>
+                <sourcePath>
+                    <root type="composite">
+                        <root type="simple" url="jar://java.home/src.zip!/" />
+                    </root>
+                </sourcePath>
+            </roots>
+            <additional />
+        </jdk>
+    </component>
+</application>
+

@@ -29,7 +29,6 @@ Function tomcatConfigPageLeave
     ${NSD_GetText} $tfTomcatShutdownPort $tomcatShutdownPort
     ${NSD_GetText} $tfTomcatHttpPort $tomcatHttpPort
     ${NSD_GetText} $tfTomcatAjpPort $tomcatAjpPort
-    ${NSD_GetText} $tfTomcatServiceName $tomcatServiceName
 
     ${if} $tomcatShutdownPort < 1
     ${orIf} $tomcatShutdownPort > 65535
@@ -50,6 +49,8 @@ Function tomcatConfigPageLeave
     ${endif}
 
     ${if} $createServices == "1"
+        ${NSD_GetText} $tfTomcatServiceName $tomcatServiceName
+    
         Push $tomcatServiceName
         Call validateNameString
         ${if} $0 == "0"

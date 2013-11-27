@@ -17,6 +17,7 @@ SetCompressor lzma
 !define PG_SECTION_NAME "PostgreSQL 9.2"
 !define JAVA_SECTION_NAME "JDK 1.7.0_45"
 !define TOMCAT_SECTION_NAME "Apache Tomcat 7.0.47"
+!define IDEA_SECTION_NAME "IntelliJ IDEA Community Edition 12.1.6 with lsFusion plugin"
 
 !define CLIENT_JAR "lsfusion-client-${VERSION}.jar"
 !define SERVER_JAR "lsfusion-server-${VERSION}.jar"
@@ -50,6 +51,8 @@ Var pgPassword
 Var pgVersion
 Var pgDir
 Var pgServiceName
+
+Var ideaDir
 
 Var createShortcuts
 Var createServices
@@ -90,15 +93,18 @@ ${StrRep}
 
 # PG pages
 Page custom pgConfigPagePre pgConfigPageLeave
-!insertmacro CustomDirectoryPage pgDirPage $(strPostgreDirHeader) $(strPostgreDirTextTop) $(strDestinationFolder) $pgDir pgPagePre
+!insertmacro CustomDirectoryPage $(strPostgreDirHeader) $(strPostgreDirTextTop) $(strDestinationFolder) $pgDir pgPagePre
 
 # Tomcat pages
 Page custom tomcatConfigPagePre tomcatConfigPageLeave
-!insertmacro CustomDirectoryPage tomcatDirPage $(strTomcatDirHeader) $(strTomcatDirTextTop) $(strDestinationFolder) $tomcatDir tomcatPagePre
+!insertmacro CustomDirectoryPage $(strTomcatDirHeader) $(strTomcatDirTextTop) $(strDestinationFolder) $tomcatDir tomcatPagePre
 
 # Java pages
-; !insertmacro CustomDirectoryPage javaDirPage $(strJavaDirHeader) $(strJavaDirTextTop) $(strDestinationFolder) $javaDir javaPagePre
+; !insertmacro CustomDirectoryPage $(strJavaDirHeader) $(strJavaDirTextTop) $(strDestinationFolder) $javaDir javaPagePre
 Page custom javaExistingDirPagePre javaExistingDirPageLeave
+
+# IntelliJ Idea pages
+!insertmacro CustomDirectoryPage $(strIdeaDirHeader) $(strIdeaDirTextTop) $(strDestinationFolder) $ideaDir ideaPagePre
 
 # Platform pages
 Page custom platformConfigPagePre platformConfigPageLeave
@@ -191,6 +197,8 @@ Function .onInit
     
     StrCpy $javaDir "$ProgramFiles${ARCH}\Java\jdk1.7.0_45"
 
+    StrCpy $ideaDir "$ProgramFiles32\JetBrains\IDEA Community Edition 12.1.6"
+
     StrCpy $pgDir "$ProgramFiles${ARCH}\PostgreSQL\9.2"
     StrCpy $pgHost "localhost"
     StrCpy $pgPort "5432"
@@ -239,6 +247,14 @@ Function .onInit
             !insertmacro DisableSection ${SecPG}
         ${endIf}
     ${endIf}
+    
+    !insertmacro ExpandSection ${SecPlatform}
+
+    !ifndef DEV
+        !insertmacro HideSection ${SecIdea}
+    !else
+        !insertmacro UnselectSection ${SecServices}
+    !endif
 FunctionEnd
 
 Section -post SecPost
@@ -310,51 +326,55 @@ Function execAntConfiguration
     
     ${ConfigWriteS} "${INSTCONFDIR}\configure.bat" "set JAVA_HOME=" "$javaHome" $R0
 
-    ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "java.home=" "$javaHome" $R0
-    ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "java.exe=" "$javaExe" $R0
-    ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "jvm.dll=" "$jvmDll" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "pg.host=" "$pgHost" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "pg.port=" "$pgPort" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "pg.password=" "$pgPassword" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "pg.dbname=" "$pgDbName" $R0
-    ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "tomcat.dir=" "$tomcatDir" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "tomcat.httpPort=" "$tomcatHttpPort" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "tomcat.shutdownPort=" "$tomcatShutdownPort" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "tomcat.ajpPort=" "$tomcatAjpPort" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "server.host=" "$platformServerHost" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "server.port=" "$platformServerPort" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "server.password=" "$platformServerPassword" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "web.context=" "$webClientContext" $R0
-    ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.dir=" "$webClientDirectory" $R0
-    ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.archive=" "${WEBCLIENT_WAR}" $R0
+    ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "jdk.home=" "$javaHome" $R0
 
     ${if} ${SectionIsSelected} ${SecTomcat}
         DetailPrint "Configuring Tomcat"
+
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "tomcat.dir=" "$tomcatDir" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "tomcat.httpPort=" "$tomcatHttpPort" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "tomcat.shutdownPort=" "$tomcatShutdownPort" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "tomcat.ajpPort=" "$tomcatAjpPort" $R0
         ExecWait "${INSTCONFDIR}\configure.bat configureTomcat" $0
+
         DetailPrint "Ant returned $0"
     ${endIf}
 
     ${if} ${SectionIsSelected} ${SecWebClient}
         DetailPrint "Configuring WebClient"
+
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "server.host=" "$platformServerHost" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "server.port=" "$platformServerPort" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.dir=" "$webClientDirectory" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.archive=" "$INSTDIR\${WEBCLIENT_WAR}" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.context=" "$webClientContext" $R0
         ExecWait "${INSTCONFDIR}\configure.bat configureWebClient" $0
+
         DetailPrint "Ant returned $0"
     ${endIf}
 
     ${if} ${SectionIsSelected} ${SecServer}
         DetailPrint "Configuring server"
         DetailPrint "$INSTDIR\conf\settings.properties"
-        ${ConfigWriteS} "$INSTDIR\conf\settings.properties" "db.server=" "$pgHost:$pgPort" $R0
-        ${ConfigWriteS} "$INSTDIR\conf\settings.properties" "db.name=" "$pgDbName" $R0
-        ${ConfigWriteS} "$INSTDIR\conf\settings.properties" "db.user=" "$pgUser" $R0
-        ${ConfigWriteS} "$INSTDIR\conf\settings.properties" "db.password=" "$pgPassword" $R0
-        ${ConfigWriteS} "$INSTDIR\conf\settings.properties" "rmi.registryPort=" "$platformServerPort" $R0
-        ${ConfigWriteS} "$INSTDIR\conf\settings.properties" "rmi.registryPort=" "$platformServerPort" $R0
-        ${ConfigWriteS} "$INSTDIR\conf\settings.properties" "logics.initialAdminPassword=" "$platformServerPassword" $R0
+        ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "db.server=" "$pgHost:$pgPort" $R0
+        ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "db.name=" "$pgDbName" $R0
+        ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "db.user=" "$pgUser" $R0
+        ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "db.password=" "$pgPassword" $R0
+        ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "rmi.registryPort=" "$platformServerPort" $R0
+        ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "rmi.registryPort=" "$platformServerPort" $R0
+        ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "logics.initialAdminPassword=" "$platformServerPassword" $R0
     ${endIf}
 
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "pg.password=" "<removed>" $R0
-    ${ConfigWriteS} "${INSTCONFDIR}\configure.properties" "server.password=" "<removed>" $R0
-    
+    ${if} ${SectionIsSelected} ${SecIdea}
+        DetailPrint "Configuring Intellij IDEA"
+
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.dir=" "$ideaDir" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.plugin=" "${IDEA_PLUGIN}" $R0
+        ExecWait "${INSTCONFDIR}\configure.bat configureIdea" $0
+
+        DetailPrint "Ant returned $0"
+    ${endIf}
+
     SetOutPath $INSTDIR
 FunctionEnd
 
@@ -427,7 +447,11 @@ Function createShortcuts
     ${endIf}
 
     ${if} ${SectionIsSelected} ${SecClient}
-        CreateShortCut "$SMPROGRAMS\lsFusion Platform ${VERSION}\Start lsFusion Client.lnk" \
+        CreateShortCut "$SMPROGRAMS\lsFusion Platform ${VERSION}\lsFusion Client.lnk" \
+                        "$javaHome\bin\javaw.exe" \
+                        "-Xms512m -Xmx1024m -cp ${CLIENT_JAR} -Dlsfusion.client.hostname=$platformServerHost -Dlsfusion.client.hostport=$platformServerPort -Dlsfusion.client.exportname=default lsfusion.client.Main" \
+                        "$INSTDIR\resources\lsfusion.ico"
+        CreateShortCut "$DESKTOP\lsFusion Client.lnk" \
                         "$javaHome\bin\javaw.exe" \
                         "-Xms512m -Xmx1024m -cp ${CLIENT_JAR} -Dlsfusion.client.hostname=$platformServerHost -Dlsfusion.client.hostport=$platformServerPort -Dlsfusion.client.exportname=default lsfusion.client.Main" \
                         "$INSTDIR\resources\lsfusion.ico"
@@ -435,7 +459,15 @@ Function createShortcuts
 
     ${if} ${SectionIsSelected} ${SecWebClient}
         CreateShortCut "$SMPROGRAMS\lsFusion Platform ${VERSION}\lsFusion Web Client.lnk" "http://127.0.0.1:$tomcatHttpPort/$webClientContext/" "" "$INSTDIR\resources\lsfusion.ico"
+        CreateShortCut "$DESKTOP\lsFusion Web Client.lnk" "http://127.0.0.1:$tomcatHttpPort/$webClientContext/" "" "$INSTDIR\resources\lsfusion.ico"
     ${endIf}
 
     CreateShortCut "$SMPROGRAMS\lsFusion Platform ${VERSION}\Uninstall lsFusion Platform.lnk" "$INSTDIR\uninstall.exe"
+    
+    ${if} ${SectionIsSelected} ${SecIdea}
+        SetOutPath "$ideaDir"
+        CreateShortCut "$SMPROGRAMS\JetBrains\IntelliJ IDEA Community Edition 12.1.6.lnk" "$ideaDir\bin\${IDEA_EXE}" "" "$ideaDir\bin\${IDEA_EXE}"
+        CreateShortCut "$DESKTOP\IntelliJ IDEA Community Edition 12.1.6.lnk" "$ideaDir\bin\${IDEA_EXE}" "" "$ideaDir\bin\${IDEA_EXE}"
+    ${endIf}
+
 FunctionEnd

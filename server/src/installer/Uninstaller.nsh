@@ -19,6 +19,9 @@ SectionEnd
 Section /o "un.${PG_SECTION_NAME}" UnSecPG
 SectionEnd
 
+Section /o "un.${IDEA_SECTION_NAME}" UnSecIdea
+SectionEnd
+
 Section "un.${TOMCAT_SECTION_NAME}" UnSecTomcat
     SectionIn RO
 SectionEnd
@@ -67,15 +70,28 @@ Section -un.Uninstall
         ${endIf}
     ${endIf}
         
+    ${if} ${SectionIsSelected} ${UnSecIdea}
+        ReadRegStr $0 HKLM "${REGKEY}" "ideaInstallDir"
+        ${ifNot} ${Errors}
+        ${andIfNot} $0 == ""
+        ${andIf} ${FileExists} "$0\bin\Uninstall.exe"
+            DetailPrint "Removing Intellij IDEA"
+            nsExec::ExecToLog "$0\bin\Uninstall.exe /S"
+            
+            Delete "$DESKTOP\IntelliJ IDEA Community Edition 12.1.6.lnk"
+            Delete "$SMPROGRAMS\JetBrains\IntelliJ IDEA Community Edition 12.1.6.lnk"
+        ${endIf}
+    ${endIf}
+        
     DetailPrint "Cleaning registry"
     DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)"
     DeleteRegKey HKLM "${REGKEY}"
 
     DetailPrint "Removing shortcuts"
-    SetShellVarContext all
+    Delete "$DESKTOP\lsFusion Web Client.lnk"
+    Delete "$DESKTOP\lsFusion Client.lnk"
     RMDir /r "$SMPROGRAMS\lsFusion Platform ${VERSION}"
-    SetShellVarContext current
-    RMDir /r "$SMPROGRAMS\lsFusion Platform ${VERSION}"
+
 
     DetailPrint "Removing program directory"
     RmDir /r $INSTDIR
@@ -88,6 +104,7 @@ Function un.onInit
     !insertmacro MUI_UNGETLANGUAGE
     
     !insertmacro HideUnsection "${PG_SECTION_NAME}" ${UnSecPG}
+    !insertmacro HideUnsection "${IDEA_SECTION_NAME}" ${UnSecPG}
     !insertmacro HideUnsection "${JAVA_SECTION_NAME}" ${UnSecJava}
     !insertmacro HideUnsection "${TOMCAT_SECTION_NAME}" ${UnSecTomcat}
 FunctionEnd
@@ -96,6 +113,7 @@ FunctionEnd
 !insertmacro MUI_UNFUNCTION_DESCRIPTION_BEGIN
 !insertmacro MUI_DESCRIPTION_TEXT ${UnSecPlatform} $(strPlatformUnSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${UnSecPG} $(strPgUnSectionDescription)
+!insertmacro MUI_DESCRIPTION_TEXT ${UnSecIdea} $(strIdeaUnSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${UnSecJava} $(strJavaUnSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${UnSecTomcat} $(strTomcatUnSectionDescription)
 !insertmacro MUI_UNFUNCTION_DESCRIPTION_END
