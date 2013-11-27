@@ -150,7 +150,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
             Map<String, Message.RecipientType> recipients = getRecipientEmails(context);
 
-            ObjectValue defaultAccount = emailLM.defaultAccount.readClasses(context.getSession());
+            ObjectValue defaultAccount = emailLM.defaultInboxAccount.readClasses(context.getSession());
 
             if (!(defaultAccount instanceof NullValue)) {
                 String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionTypeAccount.read(context, defaultAccount);

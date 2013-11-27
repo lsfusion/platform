@@ -117,7 +117,7 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
         List<EmailSender.AttachmentProperties> attachmentForms = new ArrayList<EmailSender.AttachmentProperties>();
         Map<ByteArray, String> attachmentFiles = new HashMap<ByteArray, String>();
 
-        ObjectValue defaultAccount = emailLM.defaultAccount.readClasses(context.getSession());
+        ObjectValue defaultAccount = emailLM.defaultInboxAccount.readClasses(context.getSession());
 
         if (!(defaultAccount instanceof NullValue)) {
             String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionTypeAccount.read(context);

@@ -33,7 +33,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public ConcreteCustomClass notification;
     
-    public LCP defaultAccount;
+    public LCP defaultInboxAccount;
     public LCP nameEncryptedConnectionTypeAccount;
     public LCP smtpHostAccount;
     public LCP smtpPortAccount;
@@ -74,7 +74,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         // ------- Управление почтой ------ //
 
         // Настройки почтового сервера
-        defaultAccount = getLCPByName("defaultAccount");
+        defaultInboxAccount = getLCPByName("defaultInboxAccount");
         
         nameEncryptedConnectionTypeAccount = getLCPByName("nameEncryptedConnectionTypeAccount");
 

@@ -39,10 +39,5 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         analyzeDBAction = getLAPByName("analyzeDBAction");
         packAction = getLAPByName("packAction");
         serviceDBAction = getLAPByName("serviceDBAction");
-
-        // Управление сервером приложений
-        restartServerAction = getLAPByName("RestartAction");
-        runGarbageCollector = getLAPByName("GarbageCollectorAction");
-        cancelRestartServerAction = getLAPByName("CancelRestartAction");
     }
 }
