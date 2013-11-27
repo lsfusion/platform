@@ -59,23 +59,14 @@ public class ClientModalForm extends JDialog {
                 form.closePressed();
             }
         });
-
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentHidden(ComponentEvent e) {
-                // если скрываем, то всегда делаем dipose()
-                dispose();
-
-                if (form != null) {
-                    form.closed();
-                    form = null;
-                }
-            }
-        });
     }
 
     public final void hideDialog() {
-        setVisible(false);
+        dispose();
+        if (form != null) {
+            form.closed();
+            form = null;
+        }
     }
 
     public void showDialog(boolean showFullScreen) {
