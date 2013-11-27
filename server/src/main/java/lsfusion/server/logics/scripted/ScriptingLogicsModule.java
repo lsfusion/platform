@@ -3055,7 +3055,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         // реализация по умолчанию, предполагающая, что не может быть более одного подходящего объекта
         protected FoundItem finalizeResult(List<FoundItem> result, String name, P param) throws ScriptingErrorLog.SemanticErrorException {
-            if (result.isEmpty()) return null;
+            if (result.isEmpty()) return new FoundItem(null, null);
             if (result.size() > 1) {
                 List<LogicsModule> resModules = new ArrayList<LogicsModule>();
                 for (FoundItem item : result) {
