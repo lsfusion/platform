@@ -92,10 +92,10 @@ public class FormulaExpr extends StaticClassExpr {
         return create(formula, translator.translate(exprs));
     }
 
-    public Stat getTypeStat(KeyStat keyStat) {
+    public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
         Stat result = Stat.ONE;
         for (BaseExpr expr : exprs) {
-            result = result.mult(expr.getTypeStat(keyStat));
+            result = result.mult(expr.getTypeStat(keyStat, forJoin));
         }
         return result;
     }
@@ -106,7 +106,7 @@ public class FormulaExpr extends StaticClassExpr {
 
     // для мн-вого наследования
     public static PropStat getStatValue(BaseExpr expr, KeyStat keyStat) {
-        return new PropStat(expr.getTypeStat(keyStat));
+        return new PropStat(expr.getTypeStat(keyStat, false).min(Stat.AGGR));
     }
 
     public PropStat getStatValue(KeyStat keyStat) {

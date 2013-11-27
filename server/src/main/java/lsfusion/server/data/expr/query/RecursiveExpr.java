@@ -110,8 +110,8 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         }
 
         @Override
-        protected Stat getTypeStat() {
-            return getType().getTypeStat();
+        protected Stat getTypeStat(boolean forJoin) {
+            return getType().getTypeStat(forJoin);
         }
 
         protected Expr getMainExpr() {

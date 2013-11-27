@@ -43,7 +43,7 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
             if(compare.equals(Compare.EQUALS))
                 return new StatKeys<Integer>(SetFact.singleton(0), Stat.ONE);
             else
-                return new StatKeys<Integer>(SetFact.singleton(0), baseExpr.getTypeStat(keyStat));
+                return new StatKeys<Integer>(SetFact.singleton(0), baseExpr.getTypeStat(keyStat, true));
     }
 
     protected int hash(HashContext hashContext) {

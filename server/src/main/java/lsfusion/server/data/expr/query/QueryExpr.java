@@ -34,8 +34,8 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
     public Type getType(KeyType keyType) {
         return getType();
     }
-    public Stat getTypeStat(KeyStat keyStat) {
-        return getInner().getTypeStat();
+    public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
+        return getInner().getTypeStat(forJoin);
     }
     public PropStat getStatValue(KeyStat keyStat) {
         return new PropStat(getInner().getStatValue());
@@ -162,8 +162,8 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         }
 
         public abstract Type getType();
-        protected Stat getTypeStat() {
-            return getMainExpr().getTypeStat(getFullWhere());
+        protected Stat getTypeStat(boolean forJoin) {
+            return getMainExpr().getTypeStat(getFullWhere(), forJoin);
         }
         @IdentityLazy
         protected Stat getStatValue() {

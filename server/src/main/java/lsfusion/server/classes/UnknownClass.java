@@ -52,7 +52,7 @@ public class UnknownClass extends ImmutableObject implements FormulaClass, Concr
         return ObjectType.instance;
     }
 
-    public Stat getTypeStat() {
+    public Stat getTypeStat(boolean forJoin) {
         return Stat.MAX;
     }
 

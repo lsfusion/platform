@@ -22,8 +22,8 @@ public abstract class ParamExpr extends VariableSingleClassExpr implements Inner
     public Type getType(KeyType keyType) {
         return keyType.getKeyType(this);
     }
-    public Stat getTypeStat(KeyStat keyStat) {
-        return keyStat.getKeyStat(this);
+    public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
+        return keyStat.getKeyStat(this, forJoin);
     }
 
     public Expr translateQuery(QueryTranslator translator) {

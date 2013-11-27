@@ -4,7 +4,6 @@ import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.AddValue;
-import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.ParamExpr;
@@ -100,12 +99,12 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
     
     public KeyStat getKeyStat(final KeyStat keyStat) {
         return new lsfusion.server.data.query.stat.KeyStat() {
-            public Stat getKeyStat(ParamExpr key) {
+            public Stat getKeyStat(ParamExpr key, boolean forJoin) {
                 BaseExpr keyExpr = keyExprs.get(key);
                 if(keyExpr!=null)
-                    return keyExpr.getTypeStat(keyStat);
+                    return keyExpr.getTypeStat(keyStat, forJoin);
                 else
-                    return keyStat.getKeyStat(key);
+                    return keyStat.getKeyStat(key, forJoin);
             }
         };
     }

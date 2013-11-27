@@ -104,8 +104,8 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         super(classes, map);
     }
 
-    public Stat getTypeStat(K key) {
-        return wheres[0].get(key).getTypeStat();
+    public Stat getTypeStat(K key, boolean forJoin) {
+        return wheres[0].get(key).getTypeStat(forJoin);
     }
 
     // аналогичный метод в ClassExprWhere

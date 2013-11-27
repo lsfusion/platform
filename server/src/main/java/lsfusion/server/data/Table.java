@@ -66,7 +66,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
     private static Stat getFieldStat(Field field, Stat defStat) {
         if(field.type instanceof DataClass)
-            return defStat.min(((DataClass)field.type).getTypeStat());
+            return defStat.min(((DataClass)field.type).getTypeStat(false));
         else
             return defStat;
     }
@@ -662,8 +662,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             public Type getType(KeyType keyType) {
                 return property.type;
             }
-            public Stat getTypeStat(KeyStat keyStat) {
-                return propertyClasses.get(property).getTypeStat(property);
+            public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
+                return propertyClasses.get(property).getTypeStat(property, forJoin);
             }
 
             public NotNull calculateNotNullWhere() {

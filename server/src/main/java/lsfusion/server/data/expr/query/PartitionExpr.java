@@ -58,8 +58,8 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
             return super.hash(hashContext) * 31 + hashOuter(partitions, hashContext);
         }
 
-        public Stat getTypeStat() {
-            return getMainExpr().getTypeStat(getWhere());
+        public Stat getTypeStat(boolean forJoin) {
+            return getMainExpr().getTypeStat(getWhere(), forJoin);
         }
 
         @IdentityLazy

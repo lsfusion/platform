@@ -26,8 +26,8 @@ public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExp
     public Type getType(KeyType keyType) {
         return objectClass.getType();
     }
-    public Stat getTypeStat(KeyStat keyStat) {
-        return objectClass.getTypeStat();
+    public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
+        return objectClass.getTypeStat(forJoin);
     }
 
     public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {

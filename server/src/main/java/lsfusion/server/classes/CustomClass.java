@@ -39,7 +39,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public Type getType() {
         return ObjectType.instance;
     }
-    public Stat getTypeStat() {
+    public Stat getTypeStat(boolean forJoin) {
         return Stat.ALOT;
     }
 

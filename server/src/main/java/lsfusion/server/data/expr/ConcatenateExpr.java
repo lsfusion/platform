@@ -122,9 +122,9 @@ public class ConcatenateExpr extends VariableClassExpr {
         return ConcatenateType.get(types);
     }
 
-    public Stat getTypeStat(KeyStat keyStat) {
+    public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
         Stat result = Stat.ONE;
-        for (BaseExpr expr : exprs) result = result.mult(expr.getTypeStat(keyStat));
+        for (BaseExpr expr : exprs) result = result.mult(expr.getTypeStat(keyStat, forJoin));
         return result;
     }
 

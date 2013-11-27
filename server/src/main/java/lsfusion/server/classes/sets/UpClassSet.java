@@ -149,8 +149,8 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return ObjectType.instance;
     }
 
-    public Stat getTypeStat() {
-        return wheres[0].getTypeStat();
+    public Stat getTypeStat(boolean forJoin) {
+        return wheres[0].getTypeStat(forJoin);
     }
 
     // чисто для getCommonParent

@@ -20,7 +20,6 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.NotNullWhere;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
-import lsfusion.server.data.expr.where.extra.IsClassWhere;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.query.AbstractSourceJoin;
 import lsfusion.server.data.query.Query;
@@ -345,8 +344,8 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     public Type getKeyType(ParamExpr expr) {
         return getClassWhere().getKeyType(expr);
     }
-    public Stat getKeyStat(ParamExpr key) {
-        return getClassWhere().getKeyStat(key);
+    public Stat getKeyStat(ParamExpr key, boolean forJoin) {
+        return getClassWhere().getKeyStat(key, forJoin);
     }
     public Where getKeepWhere(KeyExpr expr) {
         return getClassWhere().getKeepWhere(expr);

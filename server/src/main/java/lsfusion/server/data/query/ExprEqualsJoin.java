@@ -57,8 +57,8 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
         return MapFact.toMap(0, expr1, 1, expr2);
     }
 
-    public StatKeys<Integer> getStatKeys(KeyStat keyStat) {
-        return new StatKeys<Integer>(SetFact.toExclSet(0, 1), expr1.getTypeStat(keyStat).min(expr2.getTypeStat(keyStat)));
+    public StatKeys<Integer> getStatKeys(KeyStat keyStat) { // тут по идее forJoin и true и false подойдут
+        return new StatKeys<Integer>(SetFact.toExclSet(0, 1), expr1.getTypeStat(keyStat, false).min(expr2.getTypeStat(keyStat, false)));
     }
 
     public boolean twins(TwinImmutableObject o) {

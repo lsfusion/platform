@@ -239,7 +239,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public abstract Where getBaseWhere();
 
-    public abstract Stat getTypeStat(Where fullWhere);
+    public abstract Stat getTypeStat(Where fullWhere, boolean forJoin);
 
     public abstract Set<BaseExpr> getBaseExprs();
     

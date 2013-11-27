@@ -195,10 +195,13 @@ public abstract class BaseExpr extends Expr {
         return BaseUtils.immutableCast(getUsed().toSet());
     }
 
-    public abstract Stat getTypeStat(KeyStat keyStat);
+    // используется в FormulaExpr и CalculateJoin (в том числе ExprEquals\OrderTopJoin)
+    // forJoin - обозначает что будет использоваться для Join'а, и результат для висячих ключей должен быть достаточно большим чтобы предотвратить их hint'ы и т.п.
+    // единственное использование в DataClass.getTypeStat
+    public abstract Stat getTypeStat(KeyStat keyStat, boolean forJoin);
 
-    public Stat getTypeStat(Where fullWhere) {
-        return getTypeStat((KeyStat) fullWhere);
+    public Stat getTypeStat(Where fullWhere, boolean forJoin) {
+        return getTypeStat((KeyStat) fullWhere, forJoin);
     }
 
     public Set<BaseExpr> getBaseExprs() {

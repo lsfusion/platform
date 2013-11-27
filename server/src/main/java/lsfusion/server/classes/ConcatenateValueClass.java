@@ -60,7 +60,7 @@ public class ConcatenateValueClass implements ValueClass {
         throw new RuntimeException("not supported");
     }
 
-    public Stat getTypeStat() {
+    public Stat getTypeStat(boolean forJoin) {
         throw new RuntimeException("not supported");
     }
 

@@ -17,7 +17,7 @@ public abstract class CalculateJoin<K> extends TwinImmutableObject implements In
         ImMap<K, BaseExpr> joins = getJoins();
         ImMap<K, Stat> distinct = joins.mapValues(new GetValue<Stat, BaseExpr>() {
             public Stat getMapValue(BaseExpr value) {
-                return value.getTypeStat(keyStat);
+                return value.getTypeStat(keyStat, true);
             }});
         for(Stat stat : distinct.valueIt())
             totalStat = totalStat.mult(stat);

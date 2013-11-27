@@ -272,7 +272,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     public Type getType() {
         return ObjectType.instance;
     }
-    public Stat getTypeStat() {
+    public Stat getTypeStat(boolean forJoin) {
         if(up.isEmpty() && set.isEmpty()) {
             if(unknown)
                 return Stat.MAX;
@@ -280,9 +280,9 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
                 throw new RuntimeException("should not be");
         } else {
             if(up.isEmpty())
-                return set.get(0).getTypeStat();
+                return set.get(0).getTypeStat(forJoin);
             else
-                return up.getTypeStat();
+                return up.getTypeStat(forJoin);
         }
     }
 

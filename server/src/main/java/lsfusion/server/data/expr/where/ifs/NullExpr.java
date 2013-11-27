@@ -41,7 +41,7 @@ public class NullExpr extends Expr {
     public Type getType(KeyType keyType) {
         return null;
     }
-    public Stat getTypeStat(Where fullWhere) {
+    public Stat getTypeStat(Where fullWhere, boolean forJoin) {
         return null;
     }
 

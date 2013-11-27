@@ -26,7 +26,7 @@ public interface ValueClass extends RemoteClass {
 
     Object getDefaultValue();
 
-    Stat getTypeStat();
+    Stat getTypeStat(boolean forJoin);
 
     IsClassProperty getProperty();
 }

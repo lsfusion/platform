@@ -78,9 +78,9 @@ public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // Ð
             types[i] = classes[i].getType();
         return ConcatenateType.get(types);
     }
-    public Stat getTypeStat() {
+    public Stat getTypeStat(boolean forJoin) {
         Stat result = Stat.ONE;
-        for (AndClassSet aClass : classes) result = result.mult(aClass.getTypeStat());
+        for (AndClassSet aClass : classes) result = result.mult(aClass.getTypeStat(forJoin));
         return result;
     }
 

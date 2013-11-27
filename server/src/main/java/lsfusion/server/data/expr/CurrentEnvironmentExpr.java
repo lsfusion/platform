@@ -40,8 +40,8 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
     public Type getType(KeyType keyType) {
         return paramClass.getType();
     }
-    public Stat getTypeStat(KeyStat keyStat) {
-        return paramClass.getTypeStat();
+    public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
+        return paramClass.getTypeStat(forJoin);
     }
 
     public Expr translateQuery(QueryTranslator translator) {

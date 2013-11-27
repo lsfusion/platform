@@ -305,7 +305,7 @@ public class ImplementTable extends GlobalTable {
 
             if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()) {
                 if (distinctStat==null) {
-                    Stat typeStat = ((DataClass) prop.type).getTypeStat().min(rowStat);
+                    Stat typeStat = ((DataClass) prop.type).getTypeStat(false).min(rowStat);
                     mvUpdateStatProps.mapValue(i, new PropStat(typeStat));
                 } else
                     mvUpdateStatProps.mapValue(i, new PropStat(notNullStat, notNullStat));

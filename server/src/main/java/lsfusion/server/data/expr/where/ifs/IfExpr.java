@@ -153,8 +153,8 @@ public class IfExpr extends Expr {
         else
             return trueType.getCompatible(falseType);
     }
-    public Stat getTypeStat(Where fullWhere) {
-        return trueExpr.getTypeStat(fullWhere.and(ifWhere));
+    public Stat getTypeStat(Where fullWhere, boolean forJoin) {
+        return trueExpr.getTypeStat(fullWhere.and(ifWhere), forJoin);
     }
 
     public boolean twins(TwinImmutableObject o) { // порядок высот / общий

@@ -234,6 +234,12 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return new AndClassSet[]{this};
     }
 
+    public Stat getTypeStat(boolean forJoin) {
+        if(forJoin) // см. описание BaseExpr.getTypeStat, единственное использование у остальных в основном и так ALOT
+            return Stat.ALOT;
+        return getTypeStat();
+    }
+
     public Stat getTypeStat() {
         return Stat.ALOT;
     }

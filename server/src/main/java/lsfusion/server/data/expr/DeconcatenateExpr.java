@@ -70,8 +70,8 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return ((ConcatenateType)expr.getType(keyType)).get(part);
     }
 
-    public Stat getTypeStat(KeyStat keyStat) {
-        return expr.getTypeStat(keyStat);
+    public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
+        return expr.getTypeStat(keyStat, forJoin);
     }
 
     public AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and) {

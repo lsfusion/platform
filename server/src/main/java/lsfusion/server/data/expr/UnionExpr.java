@@ -30,8 +30,8 @@ public abstract class UnionExpr extends NotNullExpr implements StaticClassExprIn
     public Type getType(KeyType keyType) {
         return getStaticClass();
     }
-    public Stat getTypeStat(KeyStat keyStat) {
-        return getStaticClass().getTypeStat();
+    public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
+        return getStaticClass().getTypeStat(forJoin);
     }
 
     public Where calculateOrWhere() {

@@ -5,5 +5,5 @@ import lsfusion.server.data.expr.query.Stat;
 
 public interface KeyStat {
 
-    Stat getKeyStat(ParamExpr key);
+    Stat getKeyStat(ParamExpr key, boolean forJoin);
 }

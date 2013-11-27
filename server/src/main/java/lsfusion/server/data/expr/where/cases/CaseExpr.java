@@ -111,10 +111,10 @@ public class CaseExpr extends Expr {
         }
         return type;
     }
-    public Stat getTypeStat(Where fullWhere) {
+    public Stat getTypeStat(Where fullWhere, boolean forJoin) {
         Stat stat = null;
         for(ExprCase exprCase : cases) {
-            Stat caseStat = exprCase.data.getTypeStat(fullWhere.and(exprCase.where));
+            Stat caseStat = exprCase.data.getTypeStat(fullWhere.and(exprCase.where), forJoin);
             if(caseStat!=null)
                 return caseStat;
         }

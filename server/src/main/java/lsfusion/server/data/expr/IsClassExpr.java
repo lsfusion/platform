@@ -144,8 +144,8 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     public Type getType(KeyType keyType) {
         return getStaticClass().getType();
     }
-    public Stat getTypeStat(KeyStat keyStat) {
-        return getStaticClass().getTypeStat();
+    public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
+        return getStaticClass().getTypeStat(forJoin);
     }
 
     public ConcreteClass getStaticClass() {

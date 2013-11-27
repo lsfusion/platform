@@ -10,7 +10,7 @@ public class Stat {
     private final int deg;
 
     public final static Stat ALOT = new Stat(10000, true);
-    public final static Stat AGGR = new Stat(100, true); // должно быть меньше ALOT, чтобы в [Group BY I] = value, где I бесконечное количество ключей (ALOT), не уменьшало общую статистика до 0 и не считала что запрос построить можно (то есть там нет висячих ключей)
+    public final static Stat AGGR = new Stat(100, true); // должно быть меньше ALOT, чтобы в [Group BY K](I) (где K бесконечное количество ключей (ALOT)) или I+5  = value, не уменьшало общую статистика до 0 и не считала что запрос построить можно (то есть там нет висячих ключей)
     public final static Stat DEFAULT = new Stat(5, true);
 
     public String toString() {
