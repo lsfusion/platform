@@ -3050,7 +3050,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         protected List<FoundItem> finalizeNamespaceResult(List<FoundItem> result, String name, P param) throws ScriptingErrorLog.SemanticErrorException {
             FoundItem finalRes = finalizeResult(result, name, param);
-            return finalRes == null ? new ArrayList<FoundItem>() : Collections.singletonList(finalRes); 
+            return finalRes.value == null ? new ArrayList<FoundItem>() : Collections.singletonList(finalRes); 
         } 
         
         // реализация по умолчанию, предполагающая, что не может быть более одного подходящего объекта
