@@ -16,10 +16,16 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
 
     SerialPort serialPort;
     boolean singleRead = false;
+    Integer bytesCount; 
 
     public ScannerDaemonTask(int com, boolean singleRead) {
+        this(com, singleRead, null);
+    }
+
+    public ScannerDaemonTask(int com, boolean singleRead, Integer bytesCount) {
         serialPort = new SerialPort("COM" + com);
         this.singleRead = singleRead;
+        this.bytesCount = bytesCount;
     }
 
     @Override
@@ -59,13 +65,14 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
         if (event.isRXCHAR()) {
             if (singleRead) {
                 try {
-                    byte[] portBytes = serialPort.readBytes(event.getEventValue());
+                    int bytesCount = this.bytesCount == null ? event.getEventValue() : this.bytesCount;
+                    byte[] portBytes = serialPort.readBytes(bytesCount);
                     barcode = "";
                     for (byte portByte : portBytes) {
                         barcode += (char) portByte;
                     }
                     if (!barcode.isEmpty())
-                        eventBus.fireValueChanged(SCANNER_SID, barcode);
+                        eventBus.fireValueChanged(SCANNER_SID, barcode.trim());
                 } catch (SerialPortException ex) {
                     throw new RuntimeException(ex);
                 }

@@ -32,6 +32,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP hostnameComputer;
     public LCP scannerComPortComputer;
     public LCP scannerSingleReadComputer;
+    public LCP scannerBytesCountComputer;
     
     public LCP currentComputer;
     public LCP hostnameCurrentComputer;
@@ -72,6 +73,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         hostnameComputer = getLCPByName("hostnameComputer");
         scannerComPortComputer = getLCPByName("scannerComPortComputer");
         scannerSingleReadComputer = getLCPByName("scannerSingleReadComputer");
+        scannerBytesCountComputer = getLCPByName("scannerBytesCountComputer");
 
         hostnameCurrentComputer = getLCPByName("hostnameCurrentComputer");
 

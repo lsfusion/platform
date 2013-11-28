@@ -150,20 +150,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
-        ArrayList<IDaemonTask> daemons = new ArrayList<IDaemonTask>(); // super.getDaemonTasks(compId);
+        ArrayList<IDaemonTask> daemons = new ArrayList<IDaemonTask>();
 
         Integer scannerComPort;
         Boolean scannerSingleRead;
+        Integer scannerBytesCount;
         try {
             DataSession session = getDbManager().createSession();
             scannerComPort = (Integer) authenticationLM.scannerComPortComputer.read(session, new DataObject(compId, authenticationLM.computer));
             scannerSingleRead = (Boolean) authenticationLM.scannerSingleReadComputer.read(session, new DataObject(compId, authenticationLM.computer));
+            scannerBytesCount = (Integer) authenticationLM.scannerBytesCountComputer.read(session, new DataObject(compId, authenticationLM.computer));
             session.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         if (scannerComPort != null) {
-            IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead));
+            IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead), scannerBytesCount);
             daemons.add(task);
         }
         return daemons;
