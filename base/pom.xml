@@ -29,6 +29,7 @@
         <postgresql.version>9.0-801.jdbc4</postgresql.version>
         <jasper.version>5.5.0</jasper.version>
         <apache.poi.version>3.9</apache.poi.version>
+        <dom4j.version>1.6.1</dom4j.version>
         <apache.xmlbeans>2.3.0</apache.xmlbeans>
         <docking.frames.version>1.1.2p9d</docking.frames.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
@@ -628,6 +629,11 @@
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml-schemas</artifactId>
                 <version>${apache.poi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dom4j</groupId>
+                <artifactId>dom4j</artifactId>
+                <version>${dom4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.xmlbeans</groupId>
