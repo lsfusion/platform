@@ -40,7 +40,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
                 writer.write("\"");
             }
 
-            writer.write(emptyCellStringProvider.getStringForCollapsedTD(imagesURI, cell.getWidth(), rowHeight));
+            writer.write(emptyCellStringProvider.getStringForCollapsedTD(cell.getWidth(), rowHeight));
             writer.write("&nbsp;");
             writer.write("</td>\n");
         }
@@ -162,37 +162,6 @@ public class ReportHTMLExporter extends JRHtmlExporter {
         writer.write(">");
 		writer.write("<p style=\"overflow: hidden; ");
 
-		switch (text.getParagraph().getLineSpacing())
-		{
-			case SINGLE:
-			default:
-			{
-				writer.write("line-height: 1.0; ");
-				break;
-			}
-			case ONE_AND_HALF:
-			{
-				writer.write("line-height: 1.5; ");
-				break;
-			}
-			case DOUBLE:
-			{
-				writer.write("line-height: 2.0; ");
-				break;
-			}
-			case PROPORTIONAL:
-			{
-				writer.write("line-height: " + (int)(100 * text.getParagraph().getLineSpacingSize().floatValue()) + "%; ");
-				break;
-			}
-			case AT_LEAST:
-			case FIXED:
-			{
-				writer.write("line-height: " + text.getParagraph().getLineSpacingSize().floatValue() + "px; ");
-				break;
-			}
-		}
-
 		writer.write("text-indent: " + text.getParagraph().getFirstLineIndent().intValue() + "px; ");
 //		writer.write("margin-left: " + text.getParagraph().getLeftIndent().intValue() + "px; ");
 //		writer.write("margin-right: " + text.getParagraph().getRightIndent().intValue() + "px; ");
@@ -212,12 +181,12 @@ public class ReportHTMLExporter extends JRHtmlExporter {
         if (textLength > 0)
         {
             //only use text tooltip when no hyperlink present
-            String textTooltip = hyperlinkStarted ? null : text.getHyperlinkTooltip();
-            exportStyledText(styledText, textTooltip, getTextLocale(text));
+//            String textTooltip = hyperlinkStarted ? null : text.getHyperlinkTooltip();
+            exportStyledText(text, styledText, text.getHyperlinkTooltip());
         }
         else
         {
-            writer.write(emptyCellStringProvider.getStringForEmptyTD(imagesURI));
+            writer.write(emptyCellStringProvider.getStringForEmptyTD());
         }
 
         endHyperlink();

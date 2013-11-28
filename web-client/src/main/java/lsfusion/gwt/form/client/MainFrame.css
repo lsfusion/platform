@@ -241,7 +241,7 @@ textarea {
 .tableCaptionPanelContainer {
     border: 2px groove threedface;
     position: relative;
-    padding: 0.3em 0.1em 0.1em 0;
+    padding: 0.35em 0.1em 0.1em 0;
     border-radius: 5px;
 }
 
