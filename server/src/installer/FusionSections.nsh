@@ -27,7 +27,12 @@ SubSection "!${PLATFORM_SECTION_NAME}" SecPlatform
         
         SetOutPath $INSTDIR
         File /r "conf"
-        File /r "resources"
+        File "resources\lsfusion.ico"
+        
+        ; TODO
+;        File "resources\license-english.txt"
+;        File "resources\license-russian.txt"
+
         File install-bin\${IDEA_PLUGIN}
     SectionEnd
 

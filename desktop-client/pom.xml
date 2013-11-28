@@ -62,6 +62,14 @@
             <artifactId>jxl</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+        </dependency>
+        <dependency>
             <groupId>jssc</groupId>
             <artifactId>jssc</artifactId>
         </dependency>

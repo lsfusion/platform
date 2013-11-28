@@ -1,6 +1,5 @@
 package lsfusion.server.data.query.innerjoins;
 
-import lsfusion.base.AddSet;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
@@ -10,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.Settings;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.InnerJoin;
@@ -19,9 +17,6 @@ import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.where.Where;
-import org.apache.poi.ss.formula.functions.T;
-
-import java.util.Map;
 
 public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
 

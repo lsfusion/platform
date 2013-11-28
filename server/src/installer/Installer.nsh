@@ -86,7 +86,8 @@ ${StrRep}
 # Installer pages
 !insertmacro MUI_PAGE_WELCOME
 
-!insertmacro MUI_PAGE_LICENSE $(lsLicense)
+# TODO License page
+;!insertmacro MUI_PAGE_LICENSE $(lsLicense)
 
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE pageComponentsLeave
 !insertmacro MUI_PAGE_COMPONENTS
