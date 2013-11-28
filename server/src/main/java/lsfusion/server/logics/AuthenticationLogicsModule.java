@@ -30,6 +30,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP currentUserName;
 
     public LCP hostnameComputer;
+    public LCP scannerComPortComputer;
+    public LCP scannerSingleReadComputer;
+    
     public LCP currentComputer;
     public LCP hostnameCurrentComputer;
 
@@ -67,6 +70,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         // Компьютер
         hostnameComputer = getLCPByName("hostnameComputer");
+        scannerComPortComputer = getLCPByName("scannerComPortComputer");
+        scannerSingleReadComputer = getLCPByName("scannerSingleReadComputer");
+
         hostnameCurrentComputer = getLCPByName("hostnameCurrentComputer");
 
         isLockedCustomUser = getLCPByName("isLockedCustomUser");

@@ -22,6 +22,7 @@ import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.daemons.ScannerDaemonTask;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
@@ -149,7 +150,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
-        return new ArrayList<IDaemonTask>();
+        ArrayList<IDaemonTask> daemons = new ArrayList<IDaemonTask>(); // super.getDaemonTasks(compId);
+
+        Integer scannerComPort;
+        Boolean scannerSingleRead;
+        try {
+            DataSession session = getDbManager().createSession();
+            scannerComPort = (Integer) authenticationLM.scannerComPortComputer.read(session, new DataObject(compId, authenticationLM.computer));
+            scannerSingleRead = (Boolean) authenticationLM.scannerSingleReadComputer.read(session, new DataObject(compId, authenticationLM.computer));
+            session.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        if (scannerComPort != null) {
+            IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead));
+            daemons.add(task);
+        }
+        return daemons;
     }
 
     protected void initExternalScreens() {
