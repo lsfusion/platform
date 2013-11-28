@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
@@ -2254,19 +2255,10 @@ public class BaseUtils {
     }
 
     public static String bigDecimalToString(BigDecimal bd) {
-        String res = bd.toPlainString();
-        int dotInd = res.indexOf(".");
-        if (dotInd != -1) {
-            int i = res.length() - 1;
-            for (; i > dotInd; --i) {
-                if (res.charAt(i) != '0') {
-                    ++i;
-                    break;
-                }
-            }
-            res = res.substring(0, i);
-        }
+        return bigDecimalToString("#,##0.###", bd);
+    }
 
-        return res;
+    public static String bigDecimalToString(String format, BigDecimal bd) {
+        return new DecimalFormat(format).format(bd);
     }
 }
