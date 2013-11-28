@@ -40,7 +40,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
                 writer.write("\"");
             }
 
-            writer.write(emptyCellStringProvider.getStringForCollapsedTD(cell.getWidth(), rowHeight));
+            writer.write(emptyCellStringProvider.getStringForCollapsedTD(imagesURI, cell.getWidth(), rowHeight));
             writer.write("&nbsp;");
             writer.write("</td>\n");
         }
@@ -186,7 +186,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
         }
         else
         {
-            writer.write(emptyCellStringProvider.getStringForEmptyTD());
+            writer.write(emptyCellStringProvider.getStringForEmptyTD(imagesURI));
         }
 
         endHyperlink();
