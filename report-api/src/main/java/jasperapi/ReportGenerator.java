@@ -43,6 +43,7 @@ public class ReportGenerator {
 
     public static final String SIDES_PROPERTY_NAME = "print-sides";
     public static final String TRAY_PROPERTY_NAME = "print-tray";
+    public static final String SHEET_COLLATE_PROPERTY_NAME = "sheet-collate";
 
     public static final Map<String, Sides> SIDES_VALUES = new HashMap<String, Sides>();
     public static final Map<String, MediaTray> TRAY_VALUES = new HashMap<String, MediaTray>();
@@ -106,6 +107,7 @@ public class ReportGenerator {
         JasperPrint print = JasperFillManager.fillReport(report, compileParams.first, compileParams.second);
         print.setProperty(SIDES_PROPERTY_NAME, designs.get(rootID).getProperty(SIDES_PROPERTY_NAME));
         print.setProperty(TRAY_PROPERTY_NAME, designs.get(rootID).getProperty(TRAY_PROPERTY_NAME));
+        print.setProperty(SHEET_COLLATE_PROPERTY_NAME, designs.get(rootID).getProperty(SHEET_COLLATE_PROPERTY_NAME));
         return print;
     }
 

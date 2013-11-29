@@ -17,6 +17,7 @@ import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.PrintServiceAttributeSet;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
+import javax.print.attribute.standard.SheetCollate;
 import javax.print.attribute.standard.Sides;
 
 public class ClientReportUtils {
@@ -42,6 +43,9 @@ public class ClientReportUtils {
             if (tray != null) {
                 printRequestAttributeSet.add(tray);
             }
+            
+            String sheetCollate = print.getProperty(ReportGenerator.SHEET_COLLATE_PROPERTY_NAME);
+            printRequestAttributeSet.add("true".equals(sheetCollate) ? SheetCollate.COLLATED : SheetCollate.UNCOLLATED);
 
             PrintServiceAttributeSet printServiceAttributeSet = new HashPrintServiceAttributeSet();
 
