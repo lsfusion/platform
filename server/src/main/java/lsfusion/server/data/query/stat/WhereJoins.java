@@ -348,15 +348,18 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             }};
 
         List<WhereJoin> current;
+        WhereJoin[] cloned = wheres.clone();
+        Arrays.sort(cloned, orderComplexity);
+        current = BaseUtils.toList(cloned);
+
+        boolean foundLess = false;
+        
         Result<Stat> rows = new Result<Stat>();
         Stat resultStat = getStatKeys(groups, rows, stat).rows;
         if(resultStat.less(currentJoinStat) && rows.result.lessEquals(currentStat)) {
             currentJoinStat = resultStat; currentStat = rows.result;
-            WhereJoin[] cloned = wheres.clone();
-            Arrays.sort(cloned, orderComplexity);
-            current = BaseUtils.toList(cloned);
-        } else // если ключей больше чем в исходном или статистика увеличилась
-            return null;
+            foundLess = true;
+        }
 
         MAddExclMap<WhereJoin, Where> reducedUpWheres = MapFact.mAddExclMap(upWheres);
         int it = 0;
@@ -386,9 +389,13 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 //            assert !reducedJoins.getStatKeys(groups, stat).rows.less(resultStat.rows); // вообще это не правильный assertion, потому как если уходит ключ статистика может уменьшиться
             if(reducedStat.lessEquals(currentJoinStat) && rows.result.lessEquals(currentStat)) { // сколько сгруппировать надо
                 currentJoinStat = reducedStat; currentStat = rows.result; current = reduced;
+                foundLess = true;
             } else
                 it++;
         }
+        
+        if(!foundLess)
+            return null;
         
         if(Stat.ALOT.lessEquals(currentStat))
             return null;

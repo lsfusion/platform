@@ -1,12 +1,16 @@
 package lsfusion.server.form.instance;
 
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.property.ClassType;
+import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
@@ -30,6 +34,7 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
     }
 
     public CalcPropertyObjectInstance<?> getDrawProperty() {
-        return property.getWhereProperty().mapObjects(mapping);
+        return DerivedProperty.createTrue().mapObjects(MapFact.<PropertyInterface, PropertyObjectInterfaceInstance>EMPTY());
+//        return property.getWhereProperty().mapObjects(mapping);
     }
 }
