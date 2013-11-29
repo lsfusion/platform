@@ -962,7 +962,7 @@ META defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty)
 END
 
 META defineDocumentAggregationDetail (primObject, aggrObject, aggrProperty)
-    @defineAggregation(primObject##Detail, aggrObject##Detail, aggrProperty##Detail);
+    @defineAggregation(primObject##Detail, aggrObject##Detail, aggrProperty);
     aggrObject###aggrObject##Detail (detail) = aggrObject###primObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
 
     @defineDocumentAggregationDetailTime(primObject, aggrObject);
