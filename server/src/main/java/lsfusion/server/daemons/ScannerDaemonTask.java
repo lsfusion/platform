@@ -14,7 +14,7 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
 
     private transient EventBus eventBus;
 
-    SerialPort serialPort;
+    int com;
     boolean singleRead = false;
     Integer bytesCount; 
 
@@ -23,19 +23,22 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
     }
 
     public ScannerDaemonTask(int com, boolean singleRead, Integer bytesCount) {
-        serialPort = new SerialPort("COM" + com);
+        this.com = com;
         this.singleRead = singleRead;
         this.bytesCount = bytesCount;
     }
+
+    transient SerialPort serialPort;
 
     @Override
     public void run() {
 
         try {
+            serialPort = new SerialPort("COM" + com);
             serialPort.openPort();
             serialPort.setParams(9600, 8, 1, 0);
-            serialPort.setEventsMask(SerialPort.MASK_RXCHAR);//Set mask
-            serialPort.addEventListener(this);//Add SerialPortEventListener
+            serialPort.setEventsMask(SerialPort.MASK_RXCHAR | SerialPort.MASK_CTS | SerialPort.MASK_DSR);//Set mask
+            serialPort.addEventListener(this, SerialPort.MASK_RXCHAR | SerialPort.MASK_CTS | SerialPort.MASK_DSR);//Add SerialPortEventListener
             barcode = "";
         } catch (SerialPortException ex) {
             throw new RuntimeException(ex);
@@ -65,17 +68,29 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
         if (event.isRXCHAR()) {
             if (singleRead) {
                 try {
-                    int bytesCount = this.bytesCount == null ? event.getEventValue() : this.bytesCount;
-                    byte[] portBytes = serialPort.readBytes(bytesCount);
-                    barcode = "";
-                    for (byte portByte : portBytes) {
-                        barcode += (char) portByte;
+                    byte[] portBytes;
+                    if (bytesCount != null) {
+                        Thread.sleep(20);
+                        if (bytesCount == -1) {
+                            portBytes = serialPort.readBytes();
+                        } else {
+                            portBytes = serialPort.readBytes(this.bytesCount);
+                        }
+                    } else {
+                        portBytes = serialPort.readBytes(event.getEventValue());
                     }
-                    if (!barcode.isEmpty())
-                        eventBus.fireValueChanged(SCANNER_SID, barcode.trim());
-                    if (this.bytesCount != null)
-                        serialPort.purgePort(SerialPort.PURGE_RXABORT + SerialPort.PURGE_RXCLEAR + SerialPort.PURGE_TXABORT + SerialPort.PURGE_TXCLEAR);
+                    
+                    if (portBytes != null) {
+                        barcode = "";
+                        for (byte portByte : portBytes) {
+                            barcode += (char) portByte;
+                        }
+                        if (!barcode.isEmpty())
+                            eventBus.fireValueChanged(SCANNER_SID, barcode.trim());
+                    }
                 } catch (SerialPortException ex) {
+                    throw new RuntimeException(ex);
+                } catch (InterruptedException e) {
                     throw new RuntimeException(ex);
                 }
             } else

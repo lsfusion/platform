@@ -40,7 +40,7 @@
         <formsrt.version>7.0.3</formsrt.version>
         <jgoodies.looks.version>2.4.1</jgoodies.looks.version>
         <jgoodies.common.version>1.2.0</jgoodies.common.version>
-        <jssc.version>0.7.1b</jssc.version>
+        <jssc.version>0.8</jssc.version>
         <jtds.version>1.2.4</jtds.version>
         <javax.mail.version>1.4</javax.mail.version>
         <blocking.map.version>1.0-patched</blocking.map.version>
