@@ -263,11 +263,13 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <taskdef name="p200ant" classname="de.matthiasmann.p200ant.P200AntTask" classpath="maven.plugin.classpath" />
-
-                                        <p200ant repack="true" singlesegment="true">
-                                            <fileset file="${assemble.jar}" />
-                                        </p200ant>
+                                        <echo message="Repacking jar ${assemble.jar}"/>
+                                        <exec executable="pack200">
+                                            <arg value="--repack"/>
+                                            <arg value="--effort=1"/>
+                                            <arg value="--segment-limit=-1"/>
+                                            <arg value="${assemble.jar}"/>
+                                        </exec>
 
                                         <signjar jar="${assemble.jar}" keystore="${keystore.file}" alias="${keystore.alias}" storepass="${keystore.pass}" />
                                     </target>
@@ -294,11 +296,13 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <taskdef name="p200ant" classname="de.matthiasmann.p200ant.P200AntTask" classpath="maven.plugin.classpath" />
-
-                                        <p200ant singlesegment="true">
-                                            <fileset file="${assemble.jar}" />
-                                        </p200ant>
+                                        <echo message="Pack200-ing jar ${assemble.jar}"/>
+                                        <exec executable="pack200">
+                                            <arg value="--effort=1"/>
+                                            <arg value="--segment-limit=-1"/>
+                                            <arg value="${assemble.packed}"/>
+                                            <arg value="${assemble.jar}"/>
+                                        </exec>
                                     </target>
                                 </configuration>
                             </execution>
