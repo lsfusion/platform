@@ -73,6 +73,8 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
                     }
                     if (!barcode.isEmpty())
                         eventBus.fireValueChanged(SCANNER_SID, barcode.trim());
+                    if (this.bytesCount != null)
+                        serialPort.purgePort(SerialPort.PURGE_RXCLEAR + SerialPort.PURGE_TXCLEAR);
                 } catch (SerialPortException ex) {
                     throw new RuntimeException(ex);
                 }
