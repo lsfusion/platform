@@ -30,6 +30,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.regexpMessage = regexpMessage;
     }
 
+    public void setMaxValue(long maxValue) {
+        target.maxValue = maxValue;
+    }
+
     public void setEchoSymbols(boolean echoSymbols) {
         target.echoSymbols = echoSymbols;
     }

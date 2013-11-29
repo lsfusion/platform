@@ -1,6 +1,7 @@
 package lsfusion.client.logics.classes;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.editor.IntegerPropertyEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
@@ -46,8 +47,13 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
         }
     }
 
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    @Override
+    public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
         return new IntegerPropertyEditor(value, (NumberFormat) property.getFormat(), property.design, Long.class);
+    }
+
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new IntegerPropertyEditor(value, property.maxValue, (NumberFormat) property.getFormat(), property.design, Long.class);
     }
 
     @Override

@@ -246,6 +246,19 @@ public abstract class SerializationPool<C> {
                 : null;
     }
 
+    public void writeLong(DataOutputStream outStream, Long n) throws IOException {
+        outStream.writeBoolean(n != null);
+        if (n != null) {
+            outStream.writeLong(n);
+        }
+    }
+
+    public Long readLong(DataInputStream inStream) throws IOException {
+        return inStream.readBoolean()
+                ? inStream.readLong()
+                : null;
+    }
+
     private boolean setInstanceContext(Object instance) {
         if (instance instanceof ApplicationContextHolder && appContext != null) {
             ((ApplicationContextHolder) instance).setContext(appContext);

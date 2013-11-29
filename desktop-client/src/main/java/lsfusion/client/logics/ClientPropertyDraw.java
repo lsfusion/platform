@@ -63,6 +63,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String caption;
     public String regexp;
     public String regexpMessage;
+    public Long maxValue;
     public boolean echoSymbols;
     public String contentType;
 
@@ -290,6 +291,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeString(outStream, caption);
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
+        pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         pool.writeString(outStream, contentType);
         outStream.writeInt(minimumCharWidth);
@@ -324,6 +326,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         caption = pool.readString(inStream);
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);
+        maxValue = pool.readLong(inStream);
         echoSymbols = inStream.readBoolean();
         contentType = pool.readString(inStream);
         minimumCharWidth = inStream.readInt();

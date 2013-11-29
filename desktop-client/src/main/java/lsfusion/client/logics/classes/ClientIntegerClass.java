@@ -1,6 +1,7 @@
 package lsfusion.client.logics.classes;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.editor.IntegerPropertyEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
@@ -45,8 +46,19 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
         }
     }
 
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    @Override
+    public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
         return new IntegerPropertyEditor(value, (NumberFormat) property.getFormat(), property.design, Integer.class);
+    }
+
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new IntegerPropertyEditor(value, maxValue(property.maxValue), (NumberFormat) property.getFormat(), property.design, Integer.class);
+    }
+
+    private Integer maxValue(Long maxValue) {
+        return maxValue == null
+               ? null
+               : maxValue > Integer.MAX_VALUE ? Integer.MAX_VALUE : maxValue.intValue();
     }
 
     @Override
