@@ -217,15 +217,15 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             if (startDate != null) {
                 long start = startDate.getTime();
                 if (period != null) {
-                    period = period * 1000;
+                    long longPeriod = period.longValue() * 1000;
                     if (start < System.currentTimeMillis()) {
-                        int periods = (int) (System.currentTimeMillis() - start) / (period) + 1;
-                        start += periods * period;
+                        int periods = (int) ((System.currentTimeMillis() - start) / longPeriod) + 1;
+                        start += periods * longPeriod;
                     }
                     if (afterFinish.equals(schedulerStartType))
-                        daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), period, TimeUnit.MILLISECONDS);
+                        daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), longPeriod, TimeUnit.MILLISECONDS);
                     else
-                        daemonTasksExecutor.scheduleAtFixedRate(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), period, TimeUnit.MILLISECONDS);
+                        daemonTasksExecutor.scheduleAtFixedRate(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), longPeriod, TimeUnit.MILLISECONDS);
                 } else if (start > System.currentTimeMillis()) {
                     daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
                 }
