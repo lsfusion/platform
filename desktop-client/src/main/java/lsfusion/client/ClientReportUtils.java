@@ -45,7 +45,11 @@ public class ClientReportUtils {
             }
             
             String sheetCollate = print.getProperty(ReportGenerator.SHEET_COLLATE_PROPERTY_NAME);
-            printRequestAttributeSet.add("true".equals(sheetCollate) ? SheetCollate.COLLATED : SheetCollate.UNCOLLATED);
+            if ("true".equals(sheetCollate)) {
+                printRequestAttributeSet.add(SheetCollate.COLLATED);
+            } else if ("false".equals(sheetCollate)) {
+                printRequestAttributeSet.add(SheetCollate.UNCOLLATED);
+            }
 
             PrintServiceAttributeSet printServiceAttributeSet = new HashPrintServiceAttributeSet();
 
