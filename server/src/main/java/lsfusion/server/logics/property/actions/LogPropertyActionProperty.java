@@ -5,6 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.LogMessageClientAction;
+import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyFormEntity;
@@ -57,7 +58,8 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
                 String titleResult = "";
                 for (ObjectInstance objSet : groupRows.getKey(i)) {
                     String id = "id=" + String.valueOf(formRow.keys.get(objSet));
-                    String caption = ((CustomObjectInstance) objSet).currentClass.getCaption();
+                    ConcreteCustomClass currentClass = ((CustomObjectInstance) objSet).currentClass;
+                    String caption = (currentClass == null ? "" : currentClass.getCaption());
                     idResult = (idResult.length() == 0 ? "" : idResult + ", ") + caption + ": " + id;
                     titleResult += (titleResult.length() == 0 ? "" : ", ") + caption;
                 }
