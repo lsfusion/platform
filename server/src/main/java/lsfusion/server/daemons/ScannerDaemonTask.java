@@ -90,7 +90,7 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
                     }
                 } catch (SerialPortException ex) {
                     throw new RuntimeException(ex);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
             } else
