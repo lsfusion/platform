@@ -1863,6 +1863,10 @@ public class BaseUtils {
         return formatRussian(date, false, false);
     }
 
+    public static String formatRussian(Date date, TimeZone timeZone) {
+        return formatRussian(date, false, false, timeZone);
+    }
+
     public static String formatRussian(Date date, boolean quotes, boolean leadZero) {
         return formatRussian(date, quotes, leadZero, null);
     }
