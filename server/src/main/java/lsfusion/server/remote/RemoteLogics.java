@@ -133,7 +133,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     private void initOpenFormCountUpdate() {
-        ScheduledExecutorService openFormUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "open-form-count-daemon-"));
+        ScheduledExecutorService openFormUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "open-form-count-daemon"));
         openFormUpdateExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {

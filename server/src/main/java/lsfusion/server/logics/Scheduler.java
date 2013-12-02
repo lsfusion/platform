@@ -172,7 +172,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         if (daemonTasksExecutor != null)
             daemonTasksExecutor.shutdown();
 
-        daemonTasksExecutor = Executors.newScheduledThreadPool(3, new ContextAwareDaemonThreadFactory(new SchedulerContext(), "-scheduler-daemon-"));
+        daemonTasksExecutor = Executors.newScheduledThreadPool(3, new ContextAwareDaemonThreadFactory(new SchedulerContext(), "scheduler-daemon"));
 
         Object afterFinish = ((ConcreteCustomClass) businessLogics.schedulerLM.findClassByCompoundName("SchedulerStartType")).getDataObject("afterFinish").object;
 

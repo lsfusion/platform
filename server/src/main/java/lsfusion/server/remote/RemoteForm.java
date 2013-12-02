@@ -76,7 +76,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         this.reportManager = new FormReportManager(form);
         this.requestLock = new SequentialRequestLock();
 
-        pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(getContext(), getSID() + "-pausable-daemon-"));
+        pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(getContext(), getSID() + "-pausable-daemon"));
 
         this.weakRemoteFormListener = new WeakReference<RemoteFormListener>(remoteFormListener);
         if (remoteFormListener != null) {

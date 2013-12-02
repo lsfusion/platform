@@ -100,7 +100,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
     @Override
     protected void onInit(LifecycleEvent event) {
         baseLM = businessLogics.LM;
-        executor = Executors.newScheduledThreadPool(50, new ContextAwareDaemonThreadFactory(logicsInstance.getContext(), "-navigator-manager-daemon-"));
+        executor = Executors.newScheduledThreadPool(50, new ContextAwareDaemonThreadFactory(logicsInstance.getContext(), "navigator-manager-daemon"));
     }
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) {
