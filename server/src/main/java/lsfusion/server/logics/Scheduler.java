@@ -253,15 +253,17 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
             businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
             businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
-            businessLogics.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? "Выполнено успешно" : applyResult, afterFinishLogSession, currentScheduledTaskLogFinishObject);
+            businessLogics.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? "Выполнено успешно" : applyResult.substring(0, 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
             businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, currentScheduledTaskLogFinishObject);
 
-            afterFinishLogSession.apply(businessLogics);
+            String finishResult = afterFinishLogSession.applyMessage(businessLogics);
+            if (finishResult != null)
+                logger.error("Error while saving scheduler task result : " + finishResult);
             return applyResult == null;
         } catch (Exception e) {
             businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
             businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
-            businessLogics.schedulerLM.resultScheduledTaskLog.change(String.valueOf(e), afterFinishLogSession, currentScheduledTaskLogFinishObject);
+            businessLogics.schedulerLM.resultScheduledTaskLog.change(String.valueOf(e).substring(0, 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
             businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, currentScheduledTaskLogFinishObject);
             afterFinishLogSession.apply(businessLogics);
             logger.error("Error while running scheduler task :", e);
