@@ -1432,7 +1432,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             news = new SingleKeyPropertyUsage(ObjectType.instance, ObjectType.instance);
 
         SingleKeyPropertyUsage changeTable = null;
-        boolean needMaterialize = change.needMaterialize(news);
+        if(change.needMaterialize(news)) { // safe modify, 2 раза повторяется, обобщать сложнее
+            changeTable = change.materialize(sql, baseClass, env);
+            change = changeTable.getChange();
+        }
         ModifyResult tableChanged = change.modifyRows(news, sql, baseClass, Modify.MODIFY, env);
         if(!tableChanged.dataChanged()) {
             if(news.isEmpty())
@@ -1448,8 +1451,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         ImSet<ConcreteObjectClass> changedUsedNew = addUsed(usedNewClasses, newClasses, sourceNotChanged);
 
         // оптимизация
-        Pair<ImSet<CustomClass>, ImSet<CustomClass>> changedAdd = changeSingle(addClasses, change, singleAdd, add, singleRemove, remove, sourceNotChanged);
-        Pair<ImSet<CustomClass>, ImSet<CustomClass>> changedRemove = changeSingle(removeClasses, change, singleRemove, remove, singleAdd, add, sourceNotChanged);
+        Pair<ImSet<CustomClass>, ImSet<CustomClass>> changedAdd = changeSingle(addClasses, change, singleAdd, add, singleRemove, remove, sourceNotChanged, sql, baseClass, env);
+        Pair<ImSet<CustomClass>, ImSet<CustomClass>> changedRemove = changeSingle(removeClasses, change, singleRemove, remove, singleAdd, add, sourceNotChanged, sql, baseClass, env);
 
         ImSet<CustomClass> changedAddFull = sourceNotChanged ? changedAdd.first.addExcl(changedRemove.second).merge(addUsed(addClasses, changedUsedNew)) : null;
         ImSet<CustomClass> changeRemoveFull = sourceNotChanged ? changedRemove.first.addExcl(changedAdd.second).merge(addUsed(removeClasses, changedUsedNew)) : null;
@@ -1458,11 +1461,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             DataProperty property = dataChange.getKey();
             if(property.depends(removeClasses)) { // оптимизация
                 SinglePropertyTableUsage<ClassPropertyInterface> table = dataChange.getValue();
-
-                if(needMaterialize) {
-                    changeTable = change.materialize(sql, baseClass, env);
-                    change = changeTable.getChange();
-                }
 
                 // кейс с удалением, похож на getEventChange и в saveClassChanges - "мини паковка"
                 Where removeWhere = Where.FALSE;
@@ -1481,7 +1479,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                 }
 
                 if(!removeWhere.isFalse()) { // оптимизация
-                    needMaterialize = change.needMaterialize(table);
+                    if(changeTable == null && change.needMaterialize(table)) { // safe modify, 2 раза повторяется, обобщать сложнее
+                        changeTable = change.materialize(sql, baseClass, env);
+                        change = changeTable.getChange();
+                    }
                     ModifyResult tableRemoveChanged = table.modifyRows(sql, new Query<ClassPropertyInterface, String>(mapKeys, removeWhere), baseClass, Modify.DELETE, getQueryEnv());
                     if(tableRemoveChanged.dataChanged())
                         dataModifier.eventChange(property, true, tableRemoveChanged.sourceChanged());
@@ -1495,7 +1496,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return sourceNotChanged ? CustomClass.getProperties(changedAddFull, changeRemoveFull, changedUsedOld, changedUsedNew) : FullFunctionSet.<CalcProperty<ClassPropertyInterface>>instance();
     }
 
-    private static Pair<ImSet<CustomClass>, ImSet<CustomClass>> changeSingle(ImSet<CustomClass> thisChanged, ClassChange thisChange, Map<CustomClass, DataObject> single, Set<CustomClass> changed, Map<CustomClass, DataObject> singleBack, Set<CustomClass> changedBack, boolean checkChanged) {
+    private static Pair<ImSet<CustomClass>, ImSet<CustomClass>> changeSingle(ImSet<CustomClass> thisChanged, ClassChange thisChange, Map<CustomClass, DataObject> single, Set<CustomClass> changed, Map<CustomClass, DataObject> singleBack, Set<CustomClass> changedBack, boolean checkChanged, SQLSession sql, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException {
         MFilterSet<CustomClass> mNotChanged = checkChanged ? SetFact.mFilter(thisChanged) : null;
         MFilterSet<CustomClass> mChangedBack = checkChanged ? SetFact.mFilter(thisChanged) : null;
 
@@ -1510,7 +1511,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             }
 
             DataObject removeObject = singleBack.get(changeClass);
-            if(removeObject!=null && thisChange.keyValue !=null && removeObject.equals(thisChange.keyValue)) {
+            if(removeObject!=null && thisChange.containsObject(sql, removeObject, baseClass, queryEnv)) {
                 singleBack.remove(changeClass);
                 changedBack.remove(changeClass);
                 if(checkChanged)

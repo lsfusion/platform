@@ -10,8 +10,11 @@ import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
+import lsfusion.server.data.query.innerjoins.KeyEqual;
+import lsfusion.server.data.translator.MapTranslator;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
@@ -55,6 +58,14 @@ public class ClassChange extends ImmutableObject {
             return table.modifyRecord(session, keyValue, propValue, type);
         else
             return table.modifyRows(session, getQuery(), baseClass, type, queryEnv);
+    }
+    
+    public boolean containsObject(SQLSession sql, DataObject object, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException {
+        if(keyValue != null)
+            return keyValue.equals(object);
+        
+        return Expr.readValues(sql, baseClass, MapFact.singleton("value", ValueExpr.get(where.translateQuery(
+                new KeyEqual(key, object.getExpr()).getTranslator()))), queryEnv).singleValue()!=null;
     }
 
     @IdentityLazy
