@@ -12,27 +12,27 @@ public class CountZipSocket extends Socket {
     private CompressedStreamObserver observer;
 
 // todo: расскоментить для перехода на старый механизм архивации данных, в перспективе - удалить окончательно...
-//    private CompressedBlockInputStream_Obsolete in;
-//    private CompressedBlockOutputStream_Obsolete out;
-//
-//    private CompressedBlockOutputStream_Obsolete createOut() throws IOException {
-//        return new CompressedBlockOutputStream_Obsolete(super.getOutputStream(), 1 << 20, observer);
-//    }
-//
-//    private CompressedBlockInputStream_Obsolete createIn() throws IOException {
-//        return new CompressedBlockInputStream_Obsolete(super.getInputStream(), observer);
-//    }
+    private CompressedBlockInputStream_Obsolete in;
+    private CompressedBlockOutputStream_Obsolete out;
 
-    private CompressedInputStream in;
-    private CompressedOutputStream out;
-
-    private CompressedOutputStream createOut() throws IOException {
-        return new CompressedOutputStream(super.getOutputStream(), 2048, observer);
+    private CompressedBlockOutputStream_Obsolete createOut() throws IOException {
+        return new CompressedBlockOutputStream_Obsolete(super.getOutputStream(), 1 << 20, observer);
     }
 
-    private CompressedInputStream createIn() throws IOException {
-        return new CompressedInputStream(super.getInputStream(), 2048, observer);
+    private CompressedBlockInputStream_Obsolete createIn() throws IOException {
+        return new CompressedBlockInputStream_Obsolete(super.getInputStream(), observer);
     }
+
+//    private CompressedInputStream in;
+//    private CompressedOutputStream out;
+//
+//    private CompressedOutputStream createOut() throws IOException {
+//        return new CompressedOutputStream(super.getOutputStream(), 2048, observer);
+//    }
+//
+//    private CompressedInputStream createIn() throws IOException {
+//        return new CompressedInputStream(super.getInputStream(), 2048, observer);
+//    }
 
     public CountZipSocket(SocketImpl impl) throws SocketException {
         super(impl);
