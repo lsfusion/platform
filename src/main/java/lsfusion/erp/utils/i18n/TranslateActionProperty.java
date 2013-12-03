@@ -43,8 +43,8 @@ public class TranslateActionProperty extends ScriptingActionProperty {
 
             if (languageFromObject != null && languageToObject != null && translationEntry != null) {
 
-                String languageFrom = (String) LM.findLCPByCompoundName("localeLanguage").read(session, languageFromObject);
-                String languageTo = (String) LM.findLCPByCompoundName("localeLanguage").read(session, languageToObject);
+                String languageFrom = (String) LM.findLCPByCompoundOldName("localeLanguage").read(session, languageFromObject);
+                String languageTo = (String) LM.findLCPByCompoundOldName("localeLanguage").read(session, languageToObject);
 
                 String url = "http://translate.google.com/translate_a/t?client=x&text=" + URLEncoder.encode(((String) translationEntry.object).trim(), "UTF-8") + "&sl=" + languageFrom.trim() + "&tl=" + languageTo.trim();
                 URLConnection conn = new URL(url).openConnection();

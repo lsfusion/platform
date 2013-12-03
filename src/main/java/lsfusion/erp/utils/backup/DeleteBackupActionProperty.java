@@ -28,19 +28,19 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
             DataSession session = context.createSession();
             DataObject backupObject = context.getDataKeyValue(backupInterface);
 
-            String backupFilePath = (String) LM.findLCPByCompoundName("fileBackup").read(session, backupObject);
-            String backupLogFilePath = (String) LM.findLCPByCompoundName("fileLogBackup").read(session, backupObject);
+            String backupFilePath = (String) LM.findLCPByCompoundOldName("fileBackup").read(session, backupObject);
+            String backupLogFilePath = (String) LM.findLCPByCompoundOldName("fileLogBackup").read(session, backupObject);
             File f = new File(backupFilePath);
             File fLog = new File(backupLogFilePath);
             if (fLog.exists()) {
                 fLog.delete();
             }
             if (f.exists() && f.delete()) {
-                LM.findLCPByCompoundName("fileDeletedBackup").change(true, session, backupObject);
+                LM.findLCPByCompoundOldName("fileDeletedBackup").change(true, session, backupObject);
             }
             session.apply(context.getBL());
 
-            LM.findLAPByCompoundName("formRefresh").execute(context);
+            LM.findLAPByCompoundOldName("formRefresh").execute(context);
             
         } catch (Exception e) {
             Throwables.propagate(e);

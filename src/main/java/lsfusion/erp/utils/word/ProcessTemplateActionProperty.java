@@ -48,7 +48,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
             if (templateObject != null) {
 
-                Object fileObject = LM.findLCPByCompoundName("fileTemplate").read(context, templateObject);
+                Object fileObject = LM.findLCPByCompoundOldName("fileTemplate").read(context, templateObject);
                 if (fileObject != null) {
 
                     DataObject wordObject = new DataObject(fileObject, WordClass.get(false, false));
@@ -107,7 +107,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                         document.write(outputStream);
                     }
 
-                    LM.findLCPByCompoundName("resultTemplate").change(outputStream.toByteArray(), context);
+                    LM.findLCPByCompoundOldName("resultTemplate").change(outputStream.toByteArray(), context);
                 }
             }
         } catch (FileNotFoundException e) {

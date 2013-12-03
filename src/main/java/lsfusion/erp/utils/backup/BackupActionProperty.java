@@ -45,9 +45,9 @@ public class BackupActionProperty extends ScriptingActionProperty {
             ImRevMap<Object, KeyExpr> tableKeys = MapFact.<Object, KeyExpr>singletonRev("Table", tableExpr);
 
             QueryBuilder<Object, Object> tableQuery = new QueryBuilder<Object, Object>(tableKeys);
-            tableQuery.addProperty("sidTable", LM.findLCPByCompoundName("sidTable").getExpr(context.getModifier(), tableExpr));
+            tableQuery.addProperty("sidTable", LM.findLCPByCompoundOldName("sidTable").getExpr(context.getModifier(), tableExpr));
 
-            tableQuery.and(LM.findLCPByCompoundName("excludeTable").getExpr(context.getModifier(), tableExpr).getWhere());
+            tableQuery.and(LM.findLCPByCompoundOldName("excludeTable").getExpr(context.getModifier(), tableExpr).getWhere());
 
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> tableResult = tableQuery.execute(context.getSession());
 
@@ -65,26 +65,26 @@ public class BackupActionProperty extends ScriptingActionProperty {
                 String backupFileExtension = backupFilePath.substring(backupFilePath.lastIndexOf("."), backupFilePath.length());
 
                 DataObject backupObject = session.addObject((ConcreteCustomClass) LM.findClassByCompoundName("Backup"));
-                LM.findLCPByCompoundName("dateBackup").change(new java.sql.Date(currentTime), session, backupObject);
-                LM.findLCPByCompoundName("timeBackup").change(new java.sql.Time(currentTime), session, backupObject);
-                LM.findLCPByCompoundName("fileBackup").change(backupFilePath, session, backupObject);
-                LM.findLCPByCompoundName("nameBackup").change(backupFileName + backupFileExtension, session, backupObject);
-                LM.findLCPByCompoundName("fileLogBackup").change(backupFileLogPath, session, backupObject);
+                LM.findLCPByCompoundOldName("dateBackup").change(new java.sql.Date(currentTime), session, backupObject);
+                LM.findLCPByCompoundOldName("timeBackup").change(new java.sql.Time(currentTime), session, backupObject);
+                LM.findLCPByCompoundOldName("fileBackup").change(backupFilePath, session, backupObject);
+                LM.findLCPByCompoundOldName("nameBackup").change(backupFileName + backupFileExtension, session, backupObject);
+                LM.findLCPByCompoundOldName("fileLogBackup").change(backupFileLogPath, session, backupObject);
 
-                LM.findLCPByCompoundName("logBackup").change(readFileToString(backupFileLogPath), session, backupObject);
+                LM.findLCPByCompoundOldName("logBackup").change(readFileToString(backupFileLogPath), session, backupObject);
 
                 for (String excludeTable : excludeTables) {
-                    ObjectValue tableObject = LM.findLCPByCompoundName("tableSID").readClasses(session, new DataObject(excludeTable));
+                    ObjectValue tableObject = LM.findLCPByCompoundOldName("tableSID").readClasses(session, new DataObject(excludeTable));
                     if (tableObject instanceof DataObject)
-                        LM.findLCPByCompoundName("excludeBackupTable").change(true, session, backupObject, (DataObject) tableObject);
+                        LM.findLCPByCompoundOldName("excludeBackupTable").change(true, session, backupObject, (DataObject) tableObject);
                 }
 
                 session.apply(context.getBL());
 
-                LM.findLCPByCompoundName("backupFilePath").change(backupFilePath, context.getSession());
-                LM.findLCPByCompoundName("backupFileName").change(backupFileName + backupFileExtension, context.getSession());
+                LM.findLCPByCompoundOldName("backupFilePath").change(backupFilePath, context.getSession());
+                LM.findLCPByCompoundOldName("backupFileName").change(backupFileName + backupFileExtension, context.getSession());
 
-                LM.findLAPByCompoundName("formRefresh").execute(context);
+                LM.findLAPByCompoundOldName("formRefresh").execute(context);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -94,7 +94,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
     @Override
     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         try {
-            return getChangeProps((CalcProperty) LM.findLCPByCompoundName("dateBackup").property, (CalcProperty) LM.findLCPByCompoundName("timeBackup").property);
+            return getChangeProps((CalcProperty) LM.findLCPByCompoundOldName("dateBackup").property, (CalcProperty) LM.findLCPByCompoundOldName("timeBackup").property);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             return null;
         }

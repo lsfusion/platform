@@ -34,7 +34,7 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
 
             if (dictionaryObject != null && termObject != null) {
 
-                Boolean insensitive = LM.findLCPByCompoundName("insensitiveDictionary").read(context.getSession(), dictionaryObject) != null;
+                Boolean insensitive = LM.findLCPByCompoundOldName("insensitiveDictionary").read(context.getSession(), dictionaryObject) != null;
 
                 String source = (String) termObject.object;
                 if (insensitive)
@@ -43,14 +43,14 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
                     String delim = ", .:;%#$@/\\|<>=+-_)(*&?^!~{}[]\"1234567890'";
                     StringTokenizer st = new StringTokenizer(source, delim, true);
                     String result = "";
-                    String fullLineTranslation = (String) (LM.findLCPByCompoundName(insensitive ? "insensitiveTranslationDictionaryEntryDictionaryTerm" : "translationDictionaryEntryDictionaryTerm").read(context, dictionaryObject, new DataObject(source, StringClass.get(50))));
+                    String fullLineTranslation = (String) (LM.findLCPByCompoundOldName(insensitive ? "insensitiveTranslationDictionaryEntryDictionaryTerm" : "translationDictionaryEntryDictionaryTerm").read(context, dictionaryObject, new DataObject(source, StringClass.get(50))));
                     if (fullLineTranslation != null) {
                         result = fullLineTranslation.trim();
                     } else {
                         while (st.hasMoreTokens()) {
                             String token = st.nextToken();
                             if (!delim.contains(token.subSequence(0, token.length()))) {
-                                String translation = (String) (LM.findLCPByCompoundName(insensitive ? "insensitiveTranslationDictionaryEntryDictionaryTerm" : "translationDictionaryEntryDictionaryTerm").read(context, dictionaryObject, new DataObject(token, StringClass.get(50))));
+                                String translation = (String) (LM.findLCPByCompoundOldName(insensitive ? "insensitiveTranslationDictionaryEntryDictionaryTerm" : "translationDictionaryEntryDictionaryTerm").read(context, dictionaryObject, new DataObject(token, StringClass.get(50))));
                                 if (translation != null) {
                                     token = translation.trim();
                                 }
@@ -58,7 +58,7 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
                             result += token;
                         }
                     }
-                    LM.findLCPByCompoundName("translationResultString").change(result, context);
+                    LM.findLCPByCompoundOldName("translationResultString").change(result, context);
                 }
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {

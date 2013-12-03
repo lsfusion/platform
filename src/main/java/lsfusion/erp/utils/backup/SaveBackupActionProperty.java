@@ -30,9 +30,9 @@ public class SaveBackupActionProperty extends ScriptingActionProperty {
 
             DataObject backupObject = context.getDataKeyValue(backupInterface);
 
-            String fileBackup = ((String) LM.findLCPByCompoundName("fileBackup").read(context.getSession(), backupObject));
-            String fileBackupName = ((String) LM.findLCPByCompoundName("nameBackup").read(context.getSession(), backupObject));
-            boolean fileDeletedBackup = LM.findLCPByCompoundName("fileDeletedBackup").read(context.getSession(), backupObject) != null;
+            String fileBackup = ((String) LM.findLCPByCompoundOldName("fileBackup").read(context.getSession(), backupObject));
+            String fileBackupName = ((String) LM.findLCPByCompoundOldName("nameBackup").read(context.getSession(), backupObject));
+            boolean fileDeletedBackup = LM.findLCPByCompoundOldName("fileDeletedBackup").read(context.getSession(), backupObject) != null;
             if (fileBackup != null && !fileDeletedBackup) {
                 assert fileBackupName != null;
                 File file = new File(fileBackup.trim());

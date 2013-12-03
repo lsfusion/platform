@@ -45,7 +45,7 @@ public class FillDaysOffActionProperty extends ScriptingActionProperty {
         int currentYear = current.get(Calendar.YEAR);
         //если проставлен выходной 1 января через 2 года, пропускаем генерацию
         //DataObject countryObject = new DataObject(countryId, (ConcreteClass) BL.getModule("Country").getClassByName("country"));
-        //if (BL.getModule("Country").getLCPByName("isDayOffCountryDate").read(session, countryObject, new DataObject(new java.sql.Date(new GregorianCalendar(currentYear + 2, 0, 1).getTimeInMillis()), DateClass.instance)) != null) {
+        //if (BL.getModule("Country").getLCPByOldName("isDayOffCountryDate").read(session, countryObject, new DataObject(new java.sql.Date(new GregorianCalendar(currentYear + 2, 0, 1).getTimeInMillis()), DateClass.instance)) != null) {
         //    return;
         //}
 
@@ -72,6 +72,6 @@ public class FillDaysOffActionProperty extends ScriptingActionProperty {
     }
 
     private void addDayOff(ExecutionContext<ClassPropertyInterface> context, DataSession session, DataObject countryObject, long timeInMillis) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        context.getBL().getModule("Country").getLCPByName("isDayOffCountryDate").change(true, session, countryObject, new DataObject(new java.sql.Date(timeInMillis), DateClass.instance));
+        context.getBL().getModule("Country").getLCPByOldName("isDayOffCountryDate").change(true, session, countryObject, new DataObject(new java.sql.Date(timeInMillis), DateClass.instance));
     }
 }
