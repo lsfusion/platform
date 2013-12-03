@@ -11,7 +11,9 @@ public class CompressedOutputStream extends DeflaterOutputStream {
 
     public CompressedOutputStream(OutputStream os, int size, CompressedStreamObserver observer)
             throws IOException {
-        super(os, new Deflater(Deflater.DEFAULT_COMPRESSION, false), size, true);
+        //TODO: NOT TESTED, JUST FIX COMPILE ERROR
+//        super(os, new Deflater(Deflater.DEFAULT_COMPRESSION, false), size, true);
+        super(os, new Deflater(Deflater.DEFAULT_COMPRESSION, false), size);
         this.observer = observer;
     }
 
@@ -27,7 +29,9 @@ public class CompressedOutputStream extends DeflaterOutputStream {
     public void flush() throws IOException {
         if (!def.finished()) {
             int len;
-            while ((len = def.deflate(buf, 0, buf.length, Deflater.SYNC_FLUSH)) > 0) {
+            //TODO: NOT TESTED, JUST FIX COMPILE ERROR
+            while ((len = def.deflate(buf, 0, buf.length)) > 0) {
+//            while ((len = def.deflate(buf, 0, buf.length, Deflater.SYNC_FLUSH)) > 0) {
                 writeInnerBuf(len);
                 if (len < buf.length) {
                     break;
