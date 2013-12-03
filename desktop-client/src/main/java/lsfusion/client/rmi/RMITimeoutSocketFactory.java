@@ -1,13 +1,13 @@
 package lsfusion.client.rmi;
 
 import lsfusion.base.WeakLinkedHashSet;
+import lsfusion.interop.remote.CompressedStreamObserver;
 import lsfusion.interop.remote.CountZipSocket;
-import lsfusion.interop.remote.ISocketTrafficSum;
 import lsfusion.interop.remote.ZipSocketFactory;
 
 import java.io.IOException;
 
-public class RMITimeoutSocketFactory extends ZipSocketFactory implements ISocketTrafficSum {
+public class RMITimeoutSocketFactory extends ZipSocketFactory implements CompressedStreamObserver {
 
     private final int timeout;
 
@@ -39,11 +39,11 @@ public class RMITimeoutSocketFactory extends ZipSocketFactory implements ISocket
         return socket;
     }
 
-    public void incrementIn(long in) {
+    public void bytesReaden(long in) {
         inSum += in;
     }
 
-    public void incrementOut(long out) {
+    public void bytesWritten(long out) {
         outSum += out;
     }
 

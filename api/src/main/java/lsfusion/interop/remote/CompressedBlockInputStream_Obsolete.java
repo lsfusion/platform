@@ -34,13 +34,9 @@ import java.io.InputStream;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
-public class CompressedBlockInputStream extends FilterInputStream {
+public class CompressedBlockInputStream_Obsolete extends FilterInputStream {
 
-    private ISocketTrafficSum observer;
-
-    public void setObserver(ISocketTrafficSum observer) {
-        this.observer = observer;
-    }
+    private final CompressedStreamObserver observer;
 
     private byte[] lenBuf = null;
 
@@ -70,9 +66,9 @@ public class CompressedBlockInputStream extends FilterInputStream {
      */
     private Inflater inflater = null;
 
-    public CompressedBlockInputStream(InputStream is)
-            throws IOException {
+    public CompressedBlockInputStream_Obsolete(InputStream is, CompressedStreamObserver observer) throws IOException {
         super(is);
+        this.observer = observer;
         inflater = new Inflater();
     }
 
@@ -91,14 +87,14 @@ public class CompressedBlockInputStream extends FilterInputStream {
         hangs = false;
 
         inLength = (lenBuf[0] << 24) + ((lenBuf[1] & 0xFF) << 16) +
-                ((lenBuf[2] & 0xFF) << 8) + (lenBuf[3] & 0xFF);
+                   ((lenBuf[2] & 0xFF) << 8) + (lenBuf[3] & 0xFF);
 
         if (observer != null) {
-            observer.incrementIn(inLength);
+            observer.bytesReaden(inLength);
         }
 
         outLength = (lenBuf[4] << 24) + ((lenBuf[5] & 0xFF) << 16) +
-                ((lenBuf[6] & 0xFF) << 8) + (lenBuf[7] & 0xFF);
+                    ((lenBuf[6] & 0xFF) << 8) + (lenBuf[7] & 0xFF);
 
         // Make sure we've got enough space to read the block
         if ((inBuf == null) || (inLength > inBuf.length)) {
@@ -130,7 +126,7 @@ public class CompressedBlockInputStream extends FilterInputStream {
         catch (DataFormatException dfe) {
             throw new IOException(
                     "Data format exception - " +
-                            dfe.getMessage());
+                    dfe.getMessage());
         }
 
         // Reset the inflator so we can re-use it for the

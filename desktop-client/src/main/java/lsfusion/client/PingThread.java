@@ -1,7 +1,7 @@
 package lsfusion.client;
 
-import org.apache.log4j.Logger;
 import lsfusion.interop.remote.ClientCallBackInterface;
+import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
 import java.util.LinkedList;
@@ -50,8 +50,8 @@ public class PingThread extends Thread {
             }
 
             if (counter % 5 == 0) {
-                long newIn = Main.getBytesSent();
-                long newOut = Main.getBytesReceived();
+                long newIn = Main.getBytesReceived();
+                long newOut = Main.getBytesSent();
 
                 Main.setStatusText(getString("pingthread.statusMessage", sum / queue.size(), newOut - oldOut, newIn - oldIn, newOut, newIn));
 

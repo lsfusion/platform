@@ -34,13 +34,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.Deflater;
 
-public class CompressedBlockOutputStream extends FilterOutputStream {
+public class CompressedBlockOutputStream_Obsolete extends FilterOutputStream {
 
-    private ISocketTrafficSum observer;
-
-    public void setObserver(ISocketTrafficSum observer) {
-        this.observer = observer;
-    }
+    private final CompressedStreamObserver observer;
 
     /**
      * Buffer for input data
@@ -63,31 +59,17 @@ public class CompressedBlockOutputStream extends FilterOutputStream {
     private Deflater deflater = null;
 
     /**
-     * Constructs a CompressedBlockOutputStream that writes to
+     * Constructs a CompressedBlockOutputStream_Obsolete that writes to
      * the given underlying output stream 'os' and sends a compressed
      * block once 'size' byte have been written. The default
      * compression strategy and level are used.
      */
-    public CompressedBlockOutputStream(OutputStream os, int size)
-            throws IOException {
-        this(os, size,
-                Deflater.DEFAULT_COMPRESSION, Deflater.DEFAULT_STRATEGY);
-    }
-
-    /**
-     * Constructs a CompressedBlockOutputStream that writes to the
-     * given underlying output stream 'os' and sends a compressed
-     * block once 'size' byte have been written. The compression
-     * level and strategy should be specified using the constants
-     * defined in java.util.zip.Deflator.
-     */
-    public CompressedBlockOutputStream(OutputStream os, int size,
-                                       int level, int strategy) throws IOException {
+    public CompressedBlockOutputStream_Obsolete(OutputStream os, int size, CompressedStreamObserver observer) throws IOException {
         super(os);
+        this.observer = observer;
         this.inBuf = new byte[size];
         this.outBuf = new byte[size + 65536];
-        this.deflater = new Deflater(level);
-        this.deflater.setStrategy(strategy);
+        this.deflater = new Deflater(Deflater.DEFAULT_COMPRESSION);
     }
 
     protected void compressAndSend() throws IOException {
@@ -97,7 +79,7 @@ public class CompressedBlockOutputStream extends FilterOutputStream {
             int size = deflater.deflate(outBuf, 8, outBuf.length - 8);
 
             if (observer != null) {
-                observer.incrementOut(size);
+                observer.bytesWritten(size);
             }
             // Write the size of the compressed data, followed
             // by the size of the uncompressed data
