@@ -67,31 +67,31 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         super.initProperties();
 
-        currentUserName = getLCPByName("currentUserName");
+        currentUserName = getLCPByOldName("currentUserName");
 
         // Компьютер
-        hostnameComputer = getLCPByName("hostnameComputer");
-        scannerComPortComputer = getLCPByName("scannerComPortComputer");
-        scannerSingleReadComputer = getLCPByName("scannerSingleReadComputer");
-        scannerBytesCountComputer = getLCPByName("scannerBytesCountComputer");
+        hostnameComputer = getLCPByOldName("hostnameComputer");
+        scannerComPortComputer = getLCPByOldName("scannerComPortComputer");
+        scannerSingleReadComputer = getLCPByOldName("scannerSingleReadComputer");
+        scannerBytesCountComputer = getLCPByOldName("scannerBytesCountComputer");
 
-        hostnameCurrentComputer = getLCPByName("hostnameCurrentComputer");
+        hostnameCurrentComputer = getLCPByOldName("hostnameCurrentComputer");
 
-        isLockedCustomUser = getLCPByName("isLockedCustomUser");
+        isLockedCustomUser = getLCPByOldName("isLockedCustomUser");
 
-        loginCustomUser = getLCPByName("loginCustomUser");
-        customUserLogin = getLCPByName("customUserLogin");
+        loginCustomUser = getLCPByOldName("loginCustomUser");
+        customUserLogin = getLCPByOldName("customUserLogin");
 
-        sha256PasswordCustomUser = getLCPByName("sha256PasswordCustomUser");
+        sha256PasswordCustomUser = getLCPByOldName("sha256PasswordCustomUser");
         sha256PasswordCustomUser.setEchoSymbols(true);
 
-        calculatedHash = getLCPByName("calculatedHash");
+        calculatedHash = getLCPByOldName("calculatedHash");
 
-        useLDAP = getLCPByName("useLDAP");
-        serverLDAP = getLCPByName("serverLDAP");
-        portLDAP =  getLCPByName("portLDAP");
+        useLDAP = getLCPByOldName("useLDAP");
+        serverLDAP = getLCPByOldName("serverLDAP");
+        portLDAP =  getLCPByOldName("portLDAP");
 
-        generateLoginPassword = getLAPByName("generateLoginPassword");
+        generateLoginPassword = getLAPByOldName("generateLoginPassword");
 
 
     }

@@ -29,12 +29,12 @@ public class GenerateLoginPasswordActionProperty extends ScriptingActionProperty
         super(lm, new ValueClass[]{lm.getClassByName("CustomUser")});
 
         try {
-            this.email = lm.findLCPByCompoundName("Contact.emailContact");
+            this.email = lm.findLCPByCompoundOldName("Contact.emailContact");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
         }
-        this.loginCustomUser = lm.getLCPByName("loginCustomUser");
-        this.sha256PasswordCustomUser = lm.getLCPByName("sha256PasswordCustomUser");
+        this.loginCustomUser = lm.getLCPByOldName("loginCustomUser");
+        this.sha256PasswordCustomUser = lm.getLCPByOldName("sha256PasswordCustomUser");
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         customUserInterface = i.next();

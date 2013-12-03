@@ -56,17 +56,17 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
         month = (ConcreteCustomClass) getClassByName("Month");
         DOW = (ConcreteCustomClass) getClassByName("DOW");
 
-        weekInDate = getLCPByName("weekInDate");
-        yearInDate = getLCPByName("yearInDate");
-        numberMonthInDate = getLCPByName("numberMonthInDate");
-        currentDate = getLCPByName("currentDate");
-        currentMonth = getLCPByName("currentMonth");
+        weekInDate = getLCPByOldName("weekInDate");
+        yearInDate = getLCPByOldName("yearInDate");
+        numberMonthInDate = getLCPByOldName("numberMonthInDate");
+        currentDate = getLCPByOldName("currentDate");
+        currentMonth = getLCPByOldName("currentMonth");
 
-        toDate = getLCPByName("toDate");
-        toTime = getLCPByName("toTime");
-        sumDate = getLCPByName("sumDate");
-        subtractDate = getLCPByName("subtractDate");
+        toDate = getLCPByOldName("toDate");
+        toTime = getLCPByOldName("toTime");
+        sumDate = getLCPByOldName("sumDate");
+        subtractDate = getLCPByOldName("subtractDate");
 
-        currentTime = getLCPByName("currentTime");
+        currentTime = getLCPByOldName("currentTime");
     }
 }

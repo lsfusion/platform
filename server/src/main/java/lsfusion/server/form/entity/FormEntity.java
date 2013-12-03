@@ -30,10 +30,7 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -93,6 +90,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public boolean isSynchronizedApply = false;
 
+    private SIDPolicy policy;
+    
     @SuppressWarnings("UnusedDeclaration")
     public FormEntity() {
     }
@@ -122,6 +121,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
+        policy = baseLM.getSIDPolicy();
+        
         printActionPropertyDraw = addPropertyDraw(baseLM.getFormPrint());
         editActionPropertyDraw = addPropertyDraw(baseLM.getFormEdit());
         xlsActionPropertyDraw = addPropertyDraw(baseLM.getFormXls());
@@ -537,7 +538,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this);
 
         if (propertyImplement.property.getSID() != null) {
-            String propertySID = BaseUtils.nvl(propertyImplement.property.getName(), propertyImplement.property.getSID());
+            String propertySID = policy.createPropertyDrawSID(propertyImplement.property);  
 
             setPropertyDrawGeneratedSID(newPropertyDraw, propertySID);
         }

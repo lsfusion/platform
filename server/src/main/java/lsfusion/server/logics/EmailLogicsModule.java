@@ -74,34 +74,34 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         // ------- Управление почтой ------ //
 
         // Настройки почтового сервера
-        defaultInboxAccount = getLCPByName("defaultInboxAccount");
+        defaultInboxAccount = getLCPByOldName("defaultInboxAccount");
         
-        nameEncryptedConnectionTypeAccount = getLCPByName("nameEncryptedConnectionTypeAccount");
+        nameEncryptedConnectionTypeAccount = getLCPByOldName("nameEncryptedConnectionTypeAccount");
 
-        smtpHostAccount = getLCPByName("smtpHostAccount");
-        smtpPortAccount = getLCPByName("smtpPortAccount");
-        pop3HostAccount = getLCPByName("pop3HostAccount");
+        smtpHostAccount = getLCPByOldName("smtpHostAccount");
+        smtpPortAccount = getLCPByOldName("smtpPortAccount");
+        pop3HostAccount = getLCPByOldName("pop3HostAccount");
 
-        nameAccount = getLCPByName("nameAccount");
-        passwordAccount = getLCPByName("passwordAccount");
-        deleteMessagesAccount = getLCPByName("deleteMessagesAccount");
-        blindCarbonCopyAccount = getLCPByName("blindCarbonCopyAccount");
+        nameAccount = getLCPByOldName("nameAccount");
+        passwordAccount = getLCPByOldName("passwordAccount");
+        deleteMessagesAccount = getLCPByOldName("deleteMessagesAccount");
+        blindCarbonCopyAccount = getLCPByOldName("blindCarbonCopyAccount");
 
-        disableAccount = getLCPByName("disableAccount");
+        disableAccount = getLCPByOldName("disableAccount");
 
-        emailUserPassUser = getLAPByName("emailUserPassUser");      
+        emailUserPassUser = getLAPByOldName("emailUserPassUser");      
         
         // Уведомления
-        isEventNotification = getLCPByName("isEventNotification");
-        emailFromNotification = getLCPByName("emailFromNotification");
-        emailToNotification = getLCPByName("emailToNotification");
-        emailToCCNotification = getLCPByName("emailToCCNotification");
-        emailToBCNotification = getLCPByName("emailToBCNotification");
-        textNotification = getLCPByName("textNotification");
-        subjectNotification = getLCPByName("subjectNotification");
-        inNotificationProperty = getLCPByName("inNotificationProperty");
+        isEventNotification = getLCPByOldName("isEventNotification");
+        emailFromNotification = getLCPByOldName("emailFromNotification");
+        emailToNotification = getLCPByOldName("emailToNotification");
+        emailToCCNotification = getLCPByOldName("emailToCCNotification");
+        emailToBCNotification = getLCPByOldName("emailToBCNotification");
+        textNotification = getLCPByOldName("textNotification");
+        subjectNotification = getLCPByOldName("subjectNotification");
+        inNotificationProperty = getLCPByOldName("inNotificationProperty");
 
-        fromAddressAccount = getLCPByName("fromAddressAccount");
+        fromAddressAccount = getLCPByOldName("fromAddressAccount");
     }
 
     public LAP addEAProp(ValueClass... params) {
@@ -113,7 +113,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     }
 
     public LAP addEAProp(String subject, ValueClass... params) {
-        return addEAProp(subject, getLCPByName("fromAddressAccount"), blindCarbonCopyAccount, params);
+        return addEAProp(subject, getLCPByOldName("fromAddressAccount"), blindCarbonCopyAccount, params);
     }
 
     public LAP addEAProp(LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {

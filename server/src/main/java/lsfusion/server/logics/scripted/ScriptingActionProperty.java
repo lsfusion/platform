@@ -2,6 +2,7 @@ package lsfusion.server.logics.scripted;
 
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -33,11 +34,15 @@ public abstract class ScriptingActionProperty extends UserActionProperty {
     }
 
     protected LP<?, ?> getLP(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return LM.findLPByCompoundName(name);
+        return LM.findLPByCompoundOldName(name);
     }
 
     protected LCP<?> getLCP(String name) throws ScriptingErrorLog.SemanticErrorException {
         return (LCP<?>) getLP(name);
+    }
+    
+    protected LAP<?> getLAP(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return (LAP <?>) getLP(name);
     }
 
     protected ValueClass getClass(String name) throws ScriptingErrorLog.SemanticErrorException {

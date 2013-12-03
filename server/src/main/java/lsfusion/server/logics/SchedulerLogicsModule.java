@@ -49,22 +49,22 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public void initProperties() throws RecognitionException {
         super.initProperties();
 
-        runAtStartScheduledTask = getLCPByName("runAtStartScheduledTask");
-        startDateScheduledTask = getLCPByName("startDateScheduledTask");
-        periodScheduledTask = getLCPByName("periodScheduledTask");
-        schedulerStartTypeScheduledTask = getLCPByName("schedulerStartTypeScheduledTask");
-        activeScheduledTask = getLCPByName("activeScheduledTask");
-        activeScheduledTaskDetail = getLCPByName("activeScheduledTaskDetail");
-        orderScheduledTaskDetail = getLCPByName("orderScheduledTaskDetail");
-        scheduledTaskScheduledTaskDetail = getLCPByName("scheduledTaskScheduledTaskDetail");
+        runAtStartScheduledTask = getLCPByOldName("runAtStartScheduledTask");
+        startDateScheduledTask = getLCPByOldName("startDateScheduledTask");
+        periodScheduledTask = getLCPByOldName("periodScheduledTask");
+        schedulerStartTypeScheduledTask = getLCPByOldName("schedulerStartTypeScheduledTask");
+        activeScheduledTask = getLCPByOldName("activeScheduledTask");
+        activeScheduledTaskDetail = getLCPByOldName("activeScheduledTaskDetail");
+        orderScheduledTaskDetail = getLCPByOldName("orderScheduledTaskDetail");
+        scheduledTaskScheduledTaskDetail = getLCPByOldName("scheduledTaskScheduledTaskDetail");
 
-        SIDPropertyScheduledTaskDetail = getLCPByName("SIDPropertyScheduledTaskDetail");
+        SIDPropertyScheduledTaskDetail = getLCPByOldName("SIDPropertyScheduledTaskDetail");
         
-        resultScheduledTaskLog = getLCPByName("resultScheduledTaskLog");
-        propertyScheduledTaskLog = getLCPByName("propertyScheduledTaskLog");
-        dateScheduledTaskLog = getLCPByName("dateScheduledTaskLog");
-        scheduledTaskScheduledTaskLog = getLCPByName("scheduledTaskScheduledTaskLog");
-        scheduledTaskLogScheduledClientTaskLog = getLCPByName("scheduledTaskLogScheduledClientTaskLog");
-        messageScheduledClientTaskLog = getLCPByName("messageScheduledClientTaskLog");
+        resultScheduledTaskLog = getLCPByOldName("resultScheduledTaskLog");
+        propertyScheduledTaskLog = getLCPByOldName("propertyScheduledTaskLog");
+        dateScheduledTaskLog = getLCPByOldName("dateScheduledTaskLog");
+        scheduledTaskScheduledTaskLog = getLCPByOldName("scheduledTaskScheduledTaskLog");
+        scheduledTaskLogScheduledClientTaskLog = getLCPByOldName("scheduledTaskLogScheduledClientTaskLog");
+        messageScheduledClientTaskLog = getLCPByOldName("messageScheduledClientTaskLog");
     }
 }

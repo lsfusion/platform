@@ -161,137 +161,137 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         // ------- Доменная логика --------- //
 
         // Группы свойства
-        captionPropertyGroup = getLCPByName("captionPropertyGroup");
-        captionNavigatorElement = getLCPByName("captionNavigatorElement");
-        parentPropertyGroup = getLCPByName("parentPropertyGroup");
-        numberPropertyGroup = getLCPByName("numberPropertyGroup");
-        SIDPropertyGroup = getLCPByName("SIDPropertyGroup");
-        propertyGroupSID = getLCPByName("propertyGroupSID");
+        captionPropertyGroup = getLCPByOldName("captionPropertyGroup");
+        captionNavigatorElement = getLCPByOldName("captionNavigatorElement");
+        parentPropertyGroup = getLCPByOldName("parentPropertyGroup");
+        numberPropertyGroup = getLCPByOldName("numberPropertyGroup");
+        SIDPropertyGroup = getLCPByOldName("SIDPropertyGroup");
+        propertyGroupSID = getLCPByOldName("propertyGroupSID");
 
         // Свойства
-        parentProperty = getLCPByName("parentProperty");
-        numberProperty = getLCPByName("numberProperty");
-        SIDProperty = getLCPByName("SIDProperty");
-        loggableProperty = getLCPByName("loggableProperty");
-        userLoggableProperty = getLCPByName("userLoggableProperty");
-        storedProperty = getLCPByName("storedProperty");
-        isSetNotNullProperty = getLCPByName("isSetNotNullProperty");
-        signatureProperty = getLCPByName("signatureProperty");
-        returnProperty = getLCPByName("returnProperty");
-        classProperty = getLCPByName("classProperty");
-        complexityProperty = getLCPByName("complexityProperty");
-        captionProperty = getLCPByName("captionProperty");
-        propertySID = getLCPByName("propertySID");
+        parentProperty = getLCPByOldName("parentProperty");
+        numberProperty = getLCPByOldName("numberProperty");
+        SIDProperty = getLCPByOldName("SIDProperty");
+        loggableProperty = getLCPByOldName("loggableProperty");
+        userLoggableProperty = getLCPByOldName("userLoggableProperty");
+        storedProperty = getLCPByOldName("storedProperty");
+        isSetNotNullProperty = getLCPByOldName("isSetNotNullProperty");
+        signatureProperty = getLCPByOldName("signatureProperty");
+        returnProperty = getLCPByOldName("returnProperty");
+        classProperty = getLCPByOldName("classProperty");
+        complexityProperty = getLCPByOldName("complexityProperty");
+        captionProperty = getLCPByOldName("captionProperty");
+        propertySID = getLCPByOldName("propertySID");
 
         // ------- Логика представлений --------- //
 
         // Навигатор
-        sidNavigatorElement = getLCPByName("sidNavigatorElement");
-        numberNavigatorElement = getLCPByName("numberNavigatorElement");
-        navigatorElementSID = getLCPByName("navigatorElementSID");
-        parentNavigatorElement = getLCPByName("parentNavigatorElement");
-        isNavigatorElement = getLCPByName("isNavigatorElement");
-        isForm = getLCPByName("isForm");
-        isNavigatorAction = getLCPByName("isNavigatorAction");
+        sidNavigatorElement = getLCPByOldName("sidNavigatorElement");
+        numberNavigatorElement = getLCPByOldName("numberNavigatorElement");
+        navigatorElementSID = getLCPByOldName("navigatorElementSID");
+        parentNavigatorElement = getLCPByOldName("parentNavigatorElement");
+        isNavigatorElement = getLCPByOldName("isNavigatorElement");
+        isForm = getLCPByOldName("isForm");
+        isNavigatorAction = getLCPByOldName("isNavigatorAction");
 
         // ----- Формы ---- //
 
         // Группа объектов
-        sidGroupObject = getLCPByName("sidGroupObject");
-        navigatorElementGroupObject = getLCPByName("navigatorElementGroupObject");
-        sidNavigatorElementGroupObject = getLCPByName("sidNavigatorElementGroupObject");
-        groupObjectSIDGroupObjectSIDNavigatorElementGroupObject = getLCPByName("groupObjectSIDGroupObjectSIDNavigatorElementGroupObject");
+        sidGroupObject = getLCPByOldName("sidGroupObject");
+        navigatorElementGroupObject = getLCPByOldName("navigatorElementGroupObject");
+        sidNavigatorElementGroupObject = getLCPByOldName("sidNavigatorElementGroupObject");
+        groupObjectSIDGroupObjectSIDNavigatorElementGroupObject = getLCPByOldName("groupObjectSIDGroupObjectSIDNavigatorElementGroupObject");
 
 
         // PropertyDraw
-        sidPropertyDraw = getLCPByName("sidPropertyDraw");
-        captionPropertyDraw = getLCPByName("captionPropertyDraw");
-        formPropertyDraw = getLCPByName("formPropertyDraw");
-        groupObjectPropertyDraw = getLCPByName("groupObjectPropertyDraw");
+        sidPropertyDraw = getLCPByOldName("sidPropertyDraw");
+        captionPropertyDraw = getLCPByOldName("captionPropertyDraw");
+        formPropertyDraw = getLCPByOldName("formPropertyDraw");
+        groupObjectPropertyDraw = getLCPByOldName("groupObjectPropertyDraw");
         // todo : это свойство должно быть для форм, а не навигаторов
-        propertyDrawSIDNavigatorElementSIDPropertyDraw = getLCPByName("propertyDrawSIDNavigatorElementSIDPropertyDraw");
+        propertyDrawSIDNavigatorElementSIDPropertyDraw = getLCPByOldName("propertyDrawSIDNavigatorElementSIDPropertyDraw");
 
         // UserPreferences
-        showPropertyDraw = getLCPByName("showPropertyDraw");
-        showPropertyDrawCustomUser = getLCPByName("showPropertyDrawCustomUser");
+        showPropertyDraw = getLCPByOldName("showPropertyDraw");
+        showPropertyDrawCustomUser = getLCPByOldName("showPropertyDrawCustomUser");
 
-        nameShowPropertyDraw = getLCPByName("nameShowPropertyDraw");
-        nameShowPropertyDrawCustomUser = getLCPByName("nameShowPropertyDrawCustomUser");
+        nameShowPropertyDraw = getLCPByOldName("nameShowPropertyDraw");
+        nameShowPropertyDrawCustomUser = getLCPByOldName("nameShowPropertyDrawCustomUser");
 
-        columnWidthPropertyDrawCustomUser = getLCPByName("columnWidthPropertyDrawCustomUser");
-        columnWidthPropertyDraw = getLCPByName("columnWidthPropertyDraw");
+        columnWidthPropertyDrawCustomUser = getLCPByOldName("columnWidthPropertyDrawCustomUser");
+        columnWidthPropertyDraw = getLCPByOldName("columnWidthPropertyDraw");
 
-        columnOrderPropertyDrawCustomUser = getLCPByName("columnOrderPropertyDrawCustomUser");
-        columnOrderPropertyDraw = getLCPByName("columnOrderPropertyDraw");
+        columnOrderPropertyDrawCustomUser = getLCPByOldName("columnOrderPropertyDrawCustomUser");
+        columnOrderPropertyDraw = getLCPByOldName("columnOrderPropertyDraw");
 
-        columnSortPropertyDrawCustomUser = getLCPByName("columnSortPropertyDrawCustomUser");
-        columnSortPropertyDraw = getLCPByName("columnSortPropertyDraw");
+        columnSortPropertyDrawCustomUser = getLCPByOldName("columnSortPropertyDrawCustomUser");
+        columnSortPropertyDraw = getLCPByOldName("columnSortPropertyDraw");
 
-        columnAscendingSortPropertyDrawCustomUser = getLCPByName("columnAscendingSortPropertyDrawCustomUser");
-        columnAscendingSortPropertyDraw = getLCPByName("columnAscendingSortPropertyDraw");
+        columnAscendingSortPropertyDrawCustomUser = getLCPByOldName("columnAscendingSortPropertyDrawCustomUser");
+        columnAscendingSortPropertyDraw = getLCPByOldName("columnAscendingSortPropertyDraw");
 
-        hasUserPreferencesGroupObjectCustomUser = getLCPByName("hasUserPreferencesGroupObjectCustomUser");
-        hasUserPreferencesGroupObject = getLCPByName("hasUserPreferencesGroupObject");
-        hasUserPreferencesOverrideGroupObjectCustomUser = getLCPByName("hasUserPreferencesOverrideGroupObjectCustomUser");
+        hasUserPreferencesGroupObjectCustomUser = getLCPByOldName("hasUserPreferencesGroupObjectCustomUser");
+        hasUserPreferencesGroupObject = getLCPByOldName("hasUserPreferencesGroupObject");
+        hasUserPreferencesOverrideGroupObjectCustomUser = getLCPByOldName("hasUserPreferencesOverrideGroupObjectCustomUser");
 
-        fontSizeGroupObjectCustomUser = getLCPByName("fontSizeGroupObjectCustomUser");
-        fontSizeGroupObject = getLCPByName("fontSizeGroupObject");
+        fontSizeGroupObjectCustomUser = getLCPByOldName("fontSizeGroupObjectCustomUser");
+        fontSizeGroupObject = getLCPByOldName("fontSizeGroupObject");
 
-        isFontBoldGroupObjectCustomUser = getLCPByName("isFontBoldGroupObjectCustomUser");
-        isFontBoldGroupObject = getLCPByName("isFontBoldGroupObject");
+        isFontBoldGroupObjectCustomUser = getLCPByOldName("isFontBoldGroupObjectCustomUser");
+        isFontBoldGroupObject = getLCPByOldName("isFontBoldGroupObject");
 
-        isFontItalicGroupObjectCustomUser = getLCPByName("isFontItalicGroupObjectCustomUser");
-        isFontItalicGroupObject = getLCPByName("isFontItalicGroupObject");
+        isFontItalicGroupObjectCustomUser = getLCPByOldName("isFontItalicGroupObjectCustomUser");
+        isFontItalicGroupObject = getLCPByOldName("isFontItalicGroupObject");
 
         // группировки
-        nameFormGrouping = getLCPByName("nameFormGrouping");
-        itemQuantityFormGrouping = getLCPByName("itemQuantityFormGrouping");
-        groupObjectFormGrouping = getLCPByName("groupObjectFormGrouping");
-        formGroupingNameFormGroupingGroupObject = getLCPByName("formGroupingNameFormGroupingGroupObject");
-        groupOrderFormGroupingPropertyDraw = getLCPByName("groupOrderFormGroupingPropertyDraw");
-        sumFormGroupingPropertyDraw = getLCPByName("sumFormGroupingPropertyDraw");
-        maxFormGroupingPropertyDraw = getLCPByName("maxFormGroupingPropertyDraw");
+        nameFormGrouping = getLCPByOldName("nameFormGrouping");
+        itemQuantityFormGrouping = getLCPByOldName("itemQuantityFormGrouping");
+        groupObjectFormGrouping = getLCPByOldName("groupObjectFormGrouping");
+        formGroupingNameFormGroupingGroupObject = getLCPByOldName("formGroupingNameFormGroupingGroupObject");
+        groupOrderFormGroupingPropertyDraw = getLCPByOldName("groupOrderFormGroupingPropertyDraw");
+        sumFormGroupingPropertyDraw = getLCPByOldName("sumFormGroupingPropertyDraw");
+        maxFormGroupingPropertyDraw = getLCPByOldName("maxFormGroupingPropertyDraw");
 
         // ------------------------------------------------- Физическая модель ------------------------------------ //
 
         // Таблицы
-        sidTable = getLCPByName("sidTable");
-        tableSID = getLCPByName("tableSID");
+        sidTable = getLCPByOldName("sidTable");
+        tableSID = getLCPByOldName("tableSID");
 
-        rowsTable = getLCPByName("rowsTable");
+        rowsTable = getLCPByOldName("rowsTable");
 
         // Ключи таблиц
-        tableTableKey = getLCPByName("tableTableKey");
+        tableTableKey = getLCPByOldName("tableTableKey");
 
-        sidTableKey = getLCPByName("sidTableKey");
-        tableKeySID = getLCPByName("tableKeySID");
+        sidTableKey = getLCPByOldName("sidTableKey");
+        tableKeySID = getLCPByOldName("tableKeySID");
 
-        classTableKey = getLCPByName("classTableKey");
-        nameTableKey = getLCPByName("nameTableKey");
+        classTableKey = getLCPByOldName("classTableKey");
+        nameTableKey = getLCPByOldName("nameTableKey");
 
-        quantityTableKey = getLCPByName("quantityTableKey");
+        quantityTableKey = getLCPByOldName("quantityTableKey");
 
         // Колонки таблиц
-        tableTableColumn = getLCPByName("tableTableColumn");
+        tableTableColumn = getLCPByOldName("tableTableColumn");
 
-        sidTableColumn = getLCPByName("sidTableColumn");
-        tableColumnSID = getLCPByName("tableColumnSID");
+        sidTableColumn = getLCPByOldName("sidTableColumn");
+        tableColumnSID = getLCPByOldName("tableColumnSID");
 
-        quantityTableColumn = getLCPByName("quantityTableColumn");
-        notNullQuantityTableColumn = getLCPByName("notNullQuantityTableColumn");
+        quantityTableColumn = getLCPByOldName("quantityTableColumn");
+        notNullQuantityTableColumn = getLCPByOldName("notNullQuantityTableColumn");
 
-        recalculateAggregationTableColumn = getLAPByName("recalculateAggregationTableColumn");
+        recalculateAggregationTableColumn = getLAPByOldName("recalculateAggregationTableColumn");
 
         // Удаленные колонки
-        sidTableDropColumn = getLCPByName("sidTableDropColumn");
+        sidTableDropColumn = getLCPByOldName("sidTableDropColumn");
 
-        sidDropColumn = getLCPByName("sidDropColumn");
-        dropColumnSID = getLCPByName("dropColumnSID");
+        sidDropColumn = getLCPByOldName("sidDropColumn");
+        dropColumnSID = getLCPByOldName("dropColumnSID");
 
-        timeDropColumn = getLCPByName("timeDropColumn");
-        revisionDropColumn = getLCPByName("revisionDropColumn");
+        timeDropColumn = getLCPByOldName("timeDropColumn");
+        revisionDropColumn = getLCPByOldName("revisionDropColumn");
 
-        dropDropColumn = getLAPByName("dropDropColumn");
+        dropDropColumn = getLAPByOldName("dropDropColumn");
         //dropDropColumn.setEventAction(this, IncrementType.DROP, false, is(dropColumn), 1); // event, который при удалении колонки из системы удаляет ее из базы
     }
 }

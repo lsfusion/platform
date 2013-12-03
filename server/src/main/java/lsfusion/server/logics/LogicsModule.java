@@ -100,6 +100,7 @@ public abstract class LogicsModule {
         return sid.substring(modulePrefix.length() + 1);
     }
 
+    // Используется для всех элементов системы кроме свойств и действий
     public String transformNameToSID(String name) {
         return transformNameToSID(getNamePrefix(), name);
     }
@@ -114,7 +115,7 @@ public abstract class LogicsModule {
 
     public BaseLogicsModule<?> baseLM;
 
-    private final Map<String, List<LP<?,?>>> moduleProperties = new HashMap<String, List<LP<?, ?>>>();
+    private final Map<String, List<LP<?,?>>> namedModuleProperties = new HashMap<String, List<LP<?, ?>>>();
     private final Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
     private final Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
     private final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
@@ -154,45 +155,55 @@ public abstract class LogicsModule {
         this.name = name;
     }
 
-    public LP<?, ?> getLPBySID(String sID) {
-        if (moduleProperties.get(sID) == null) {
-            return null;
+    public LP<?, ?> getLPByOldName(String name) {
+        List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
+        for (List<LP<?, ?>> namedLPs : namedModuleProperties.values()) {
+            for (LP<?, ?> property : namedLPs) {
+                String actualName = property.property.getOldName() == null ? property.property.getName() : property.property.getOldName(); 
+                if (name.equals(actualName)) {
+                    result.add(property);                        
+                }
+            }
         }
-        return moduleProperties.get(sID).get(0); // temporary
+        assert result.size() == 1;
+        return result.get(0);
     }
 
-    public LP<?, ?> getLPByName(String name) {
-        return getLPBySID(transformNameToSID(name));
-    }
-
-    public List<LP<?, ?>> getAllLPByName(String name) {
-        List<LP<?, ?>> allLP = moduleProperties.get(transformNameToSID(name)); 
+    private List<LP<?, ?>> getAllLPByName(String name) {
+        List<LP<?, ?>> allLP = namedModuleProperties.get(name); 
         return allLP != null ? allLP : new ArrayList<LP<?, ?>>(); 
     }
     
-    public LCP<?> getLCPByName(String name) {
-        return (LCP<?>) getLPByName(name);
+    public LCP<?> getLCPByOldName(String name) {
+        return (LCP<?>) getLPByOldName(name);
     }
 
-    public LAP<?> getLAPByName(String name) {
-        return (LAP<?>) getLPByName(name);
+    public LAP<?> getLAPByOldName(String name) {
+        return (LAP<?>) getLPByOldName(name);
     }
 
+    public Map<String, List<LP<?,?>>> getNamedModuleProperties() {
+        return namedModuleProperties;        
+    }
+    
     protected void addModuleLP(LP<?, ?> lp) {
-        String sid = lp.property.getSID();
-//        assert !moduleProperties.containsKey(lp.property.getSID());
-        if (!moduleProperties.containsKey(sid)) {
-            moduleProperties.put(sid, new ArrayList<LP<?, ?>>());
-        } 
-        moduleProperties.get(sid).add(lp);
+        String name = lp.property.getName();
+        if (name != null) {
+            if (!namedModuleProperties.containsKey(name)) {
+                namedModuleProperties.put(name, new ArrayList<LP<?, ?>>());
+            } 
+            namedModuleProperties.get(name).add(lp);
+        }
     }
 
     protected void removeModuleLP(LP<?, ?> lp) {
-        String sid = lp.property.getSID();
-        if (moduleProperties.containsKey(sid)) {
-            moduleProperties.get(sid).remove(lp);
-            if (moduleProperties.get(sid).isEmpty()) {
-                moduleProperties.remove(sid);
+        String name = lp.property.getName();
+        if (name != null) {
+            if (namedModuleProperties.containsKey(name)) {
+                namedModuleProperties.get(name).remove(lp);
+                if (namedModuleProperties.get(name).isEmpty()) {
+                    namedModuleProperties.remove(name);
+                }
             }
         }
     }
@@ -1391,23 +1402,23 @@ public abstract class LogicsModule {
 
     public AnyValuePropertyHolder addAnyValuePropertyHolder(String sidPrefix, String captionPrefix, ValueClass... classes) {
         return new AnyValuePropertyHolder(
-                getLCPByName(sidPrefix + "Object"),
-                getLCPByName(sidPrefix + "String"),
-                getLCPByName(sidPrefix + "Integer"),
-                getLCPByName(sidPrefix + "Long"),
-                getLCPByName(sidPrefix + "Double"),
-                getLCPByName(sidPrefix + "Numeric"),
-                getLCPByName(sidPrefix + "Year"),
-                getLCPByName(sidPrefix + "DateTime"),
-                getLCPByName(sidPrefix + "Logical"),
-                getLCPByName(sidPrefix + "Date"),
-                getLCPByName(sidPrefix + "Time"),
-                getLCPByName(sidPrefix + "Color"),
-                getLCPByName(sidPrefix + "WordFile"),
-                getLCPByName(sidPrefix + "ImageFile"),
-                getLCPByName(sidPrefix + "PdfFile"),
-                getLCPByName(sidPrefix + "CustomFile"),
-                getLCPByName(sidPrefix + "ExcelFile")
+                getLCPByOldName(sidPrefix + "Object"),
+                getLCPByOldName(sidPrefix + "String"),
+                getLCPByOldName(sidPrefix + "Integer"),
+                getLCPByOldName(sidPrefix + "Long"),
+                getLCPByOldName(sidPrefix + "Double"),
+                getLCPByOldName(sidPrefix + "Numeric"),
+                getLCPByOldName(sidPrefix + "Year"),
+                getLCPByOldName(sidPrefix + "DateTime"),
+                getLCPByOldName(sidPrefix + "Logical"),
+                getLCPByOldName(sidPrefix + "Date"),           
+                getLCPByOldName(sidPrefix + "Time"),
+                getLCPByOldName(sidPrefix + "Color"),
+                getLCPByOldName(sidPrefix + "WordFile"),
+                getLCPByOldName(sidPrefix + "ImageFile"),
+                getLCPByOldName(sidPrefix + "PdfFile"),
+                getLCPByOldName(sidPrefix + "CustomFile"),
+                getLCPByOldName(sidPrefix + "ExcelFile")
         );
     }
 
@@ -1528,7 +1539,7 @@ public abstract class LogicsModule {
     }
 
     protected <T extends LP<?, ?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
-        setPropertySID(lp, lp.property.getSID(), true);
+        setPropertySID(lp, lp.property.getSID(), lp.property.getOldName(), true);
         if (group != null && group != baseLM.privateGroup || persistent) {
             lp.property.freezeSID();
         }
@@ -1542,10 +1553,10 @@ public abstract class LogicsModule {
         return lp;
     }
 
-    protected <T extends LP<?, ?>> void setPropertySID(T lp, String name, boolean generated) {
+    protected <T extends LP<?, ?>> void setPropertySID(T lp, String name, String oldName, boolean generated) {
         String oldSID = lp.property.getSID();
         lp.property.setName(name);
-        String newSID = transformNameToSID(name);
+        String newSID = baseLM.getSIDPolicy().createSID(getNamePrefix(), name, null, oldName);
         if (baseLM.idSet.contains(oldSID)) {
             baseLM.idSet.remove(oldSID);
             if (generated)
@@ -1895,6 +1906,22 @@ public abstract class LogicsModule {
     public List<AndClassSet> getParamClasses(LP<?, ?> lp) {
         List<AndClassSet> paramClasses = propClasses.get(lp);
         return paramClasses == null ? Collections.<AndClassSet>nCopies(lp.listInterfaces.size(), null) : paramClasses;                   
+    }
+
+    public static class OldLPNameModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
+        @Override
+        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<AndClassSet> classes)  {
+            List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
+            for (List<LP<?, ?>> lps : module.getNamedModuleProperties().values()) {
+                for (LP<?, ?> lp : lps) {
+                    String actualName = BaseUtils.nvl(lp.property.getOldName(), lp.property.getName());
+                    if (simpleName.equals(actualName)) {
+                        result.add(lp);
+                    }
+                }
+            }
+            return result;
+        }
     }
 
     public static class SoftLPNameModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {

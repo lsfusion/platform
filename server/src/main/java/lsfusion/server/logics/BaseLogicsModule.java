@@ -141,61 +141,68 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     // счетчик идентификаторов
     static private IDGenerator idGenerator = new DefaultIDGenerator();
 
+    private SIDPolicy sidPolicy;
+    
     // не надо делать логику паблик, чтобы не было возможности тянуть её прямо из BaseLogicsModule,
     // т.к. она должна быть доступна в точке, в которой вызывается baseLM.BL
     private final T BL;
 
-    public BaseLogicsModule(T BL) throws IOException {
+    public BaseLogicsModule(T BL, SIDPolicy sidPolicy) throws IOException {
         super(BaseLogicsModule.class.getResourceAsStream("/scripts/system/System.lsf"), null, BL);
         setBaseLogicsModule(this);
         this.BL = BL;
+        this.sidPolicy = sidPolicy; 
     }
 
     @IdentityLazy
     public LAP getFormPrint() {
-        return formPrint = getLAPByName("formPrint");
+        return formPrint = getLAPByOldName("formPrint");
     }
 
     @IdentityLazy
     public LAP getFormEdit() {
-        return formEdit = getLAPByName("formEdit");
+        return formEdit = getLAPByOldName("formEdit");
     }
 
     @IdentityLazy
     public LAP getFormXls() {
-        return formXls = getLAPByName("formXls");
+        return formXls = getLAPByOldName("formXls");
     }
 
     @IdentityLazy
     public LAP getFormDrop() {
-        return formDrop = getLAPByName("formDrop");
+        return formDrop = getLAPByOldName("formDrop");
     }
 
     @IdentityLazy
     public LAP getFormRefresh() {
-        return formRefresh = getLAPByName("formRefresh");
+        return formRefresh = getLAPByOldName("formRefresh");
     }
 
     @IdentityLazy
     public LAP getFormApply() {
-        return formApply = getLAPByName("formApply");
+        return formApply = getLAPByOldName("formApply");
     }
 
     @IdentityLazy
     public LAP getFormCancel() {
-        return formCancel = getLAPByName("formCancel");
+        return formCancel = getLAPByOldName("formCancel");
     }
 
     @IdentityLazy
     public LAP getFormOk() {
-        return formOk = getLAPByName("formOk");
+        return formOk = getLAPByOldName("formOk");
     }
 
     @IdentityLazy
     public LAP getFormClose() {
-        return formClose = getLAPByName("formClose");
+        return formClose = getLAPByOldName("formClose");
     }
 
+    public SIDPolicy getSIDPolicy() {
+        return sidPolicy;
+    }
+    
     public LP getLP(String sID) {
         objectValue.getProperty(sID);
         selection.getProperty(sID);
@@ -257,10 +264,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         super.initProperties();
 
-        canceled = getLCPByName("canceled");
+        canceled = getLCPByOldName("canceled");
 
-        apply = getLAPByName("apply");
-        cancel = getLAPByName("cancel");
+        apply = getLAPByOldName("apply");
+        cancel = getLAPByOldName("cancel");
 
         // только через операторы 
         flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
@@ -301,33 +308,33 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         // через JOIN (не операторы)
         
         // Обработка строк
-        upper = getLCPByName("upper");
+        upper = getLCPByOldName("upper");
 
         // Операции с целыми числами
-        subtractInteger = getLCPByName("subtractInteger");
+        subtractInteger = getLCPByOldName("subtractInteger");
 
-        seek = getLAPByName("seek");
+        seek = getLAPByOldName("seek");
         
-        addedObject = getLCPByName("addedObject");
-        confirmed = getLCPByName("confirmed");
-        requestCanceled = getLCPByName("requestCanceled");
-        formResultProp = getLCPByName("formResult");
+        addedObject = getLCPByOldName("addedObject");
+        confirmed = getLCPByOldName("confirmed");
+        requestCanceled = getLCPByOldName("requestCanceled");
+        formResultProp = getLCPByOldName("formResult");
 
-        sleep = getLAPByName("sleep");
-        applyOnlyWithoutRecalc = getLAPByName("applyOnlyWithoutRecalc");
-        applyAll = getLAPByName("applyAll");
+        sleep = getLAPByOldName("sleep");
+        applyOnlyWithoutRecalc = getLAPByOldName("applyOnlyWithoutRecalc");
+        applyAll = getLAPByOldName("applyAll");
 
-        staticName = getLCPByName("staticName");
-        staticCaption = getLCPByName("staticCaption");
+        staticName = getLCPByOldName("staticName");
+        staticCaption = getLCPByOldName("staticCaption");
         ((CalcProperty)staticCaption.property).aggProp = true;
 
-        objectClassName = getLCPByName("objectClassName");
+        objectClassName = getLCPByOldName("objectClassName");
 
         // Настройка форм
-        defaultBackgroundColor = getLCPByName("defaultBackgroundColor");
-        defaultOverrideBackgroundColor = getLCPByName("defaultOverrideBackgroundColor");
-        defaultForegroundColor = getLCPByName("defaultForegroundColor");
-        defaultOverrideForegroundColor = getLCPByName("defaultOverrideForegroundColor");
+        defaultBackgroundColor = getLCPByOldName("defaultBackgroundColor");
+        defaultOverrideBackgroundColor = getLCPByOldName("defaultOverrideBackgroundColor");
+        defaultForegroundColor = getLCPByOldName("defaultForegroundColor");
+        defaultOverrideForegroundColor = getLCPByOldName("defaultOverrideForegroundColor");
 
         initNavigators();
     }

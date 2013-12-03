@@ -7,7 +7,6 @@ import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.actions.DisconnectActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 
@@ -82,40 +81,40 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         super.initProperties();
 
         // Подключения к серверу
-        computerConnection = getLCPByName("computerConnection");
-        remoteAddressConnection = getLCPByName("remoteAddressConnection");
-        userConnection = getLCPByName("userConnection");
-        userLoginConnection = getLCPByName("userLoginConnection");
-        connectionStatusConnection = (LCP<PropertyInterface>) getLCPByName("connectionStatusConnection");
+        computerConnection = getLCPByOldName("computerConnection");
+        remoteAddressConnection = getLCPByOldName("remoteAddressConnection");
+        userConnection = getLCPByOldName("userConnection");
+        userLoginConnection = getLCPByOldName("userLoginConnection");
+        connectionStatusConnection = (LCP<PropertyInterface>) getLCPByOldName("connectionStatusConnection");
 
-        connectTimeConnection = getLCPByName("connectTimeConnection");
-        disconnectConnection = getLAPByName("disconnectConnection");
-        addIfAProp(baseGroup, "Отключить", true, getLCPByName("disconnectTimeConnection"), 1, disconnectConnection, 1);
+        connectTimeConnection = getLCPByOldName("connectTimeConnection");
+        disconnectConnection = getLAPByOldName("disconnectConnection");
+        addIfAProp(baseGroup, "Отключить", true, getLCPByOldName("disconnectTimeConnection"), 1, disconnectConnection, 1);
 
         // Логирование старта сервера
-        computerLaunch = getLCPByName("computerLaunch");
-        timeLaunch = getLCPByName("timeLaunch");
-        revisionLaunch = getLCPByName("revisionLaunch");
+        computerLaunch = getLCPByOldName("computerLaunch");
+        timeLaunch = getLCPByOldName("timeLaunch");
+        revisionLaunch = getLCPByOldName("revisionLaunch");
 
         // Ошибки выполнения
-        messageException = getLCPByName("messageException");
-        dateException = getLCPByName("dateException");
-        erTraceException = getLCPByName("erTraceException");
-        typeException =  getLCPByName("typeException");
-        clientClientException = getLCPByName("clientClientException");
-        loginClientException = getLCPByName("loginClientException");
+        messageException = getLCPByOldName("messageException");
+        dateException = getLCPByOldName("dateException");
+        erTraceException = getLCPByOldName("erTraceException");
+        typeException =  getLCPByOldName("typeException");
+        clientClientException = getLCPByOldName("clientClientException");
+        loginClientException = getLCPByOldName("loginClientException");
 
         // Открытые формы во время подключения
-        connectionFormCount = getLCPByName("connectionFormCount");
+        connectionFormCount = getLCPByOldName("connectionFormCount");
 
         // Сессия
-        currentSession = getLCPByName("currentSession");
-        connectionSession = getLCPByName("connectionSession");
-        navigatorElementSession = getLCPByName("navigatorElementSession");
-        quantityAddedClassesSession = getLCPByName("quantityAddedClassesSession");
-        quantityRemovedClassesSession = getLCPByName("quantityRemovedClassesSession");
-        quantityChangedClassesSession = getLCPByName("quantityChangedClassesSession");
-        changesSession = getLCPByName("changesSession");
+        currentSession = getLCPByOldName("currentSession");
+        connectionSession = getLCPByOldName("connectionSession");
+        navigatorElementSession = getLCPByOldName("navigatorElementSession");
+        quantityAddedClassesSession = getLCPByOldName("quantityAddedClassesSession");
+        quantityRemovedClassesSession = getLCPByOldName("quantityRemovedClassesSession");
+        quantityChangedClassesSession = getLCPByOldName("quantityChangedClassesSession");
+        changesSession = getLCPByOldName("changesSession");
 //        baseLM.objectClassName.makeLoggable(this, true);
     }
 

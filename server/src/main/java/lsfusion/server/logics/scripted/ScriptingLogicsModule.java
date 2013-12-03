@@ -94,6 +94,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final static Logger scriptLogger = ServerLoggers.scriptLogger;
 
     private final CompoundNameResolver<LP<?, ?>, List<AndClassSet>> lpResolver = new LPResolver(new SoftLPNameModuleFinder());
+    private final CompoundNameResolver<LP<?, ?>, ?> lpOldResolver = new LPResolver(new OldLPNameModuleFinder());
     private final CompoundNameResolver<AbstractGroup, ?> groupResolver = new CompoundNameResolver<AbstractGroup, Object>(new GroupNameModuleFinder());
     private final CompoundNameResolver<NavigatorElement, ?> navigatorResolver = new CompoundNameResolver<NavigatorElement, Object>(new NavigatorElementNameModuleFinder());
     private final CompoundNameResolver<AbstractWindow, ?> windowResolver = new CompoundNameResolver<AbstractWindow, Object>(new WindowNameModuleFinder());
@@ -350,16 +351,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return group;
     }
 
-    public LAP<?> findLAPByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return (LAP<?>) findLPByCompoundName(name);
+    public LAP<?> findLAPByCompoundOldName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return (LAP<?>) findLPByCompoundOldName(name);
     }
 
-    public LCP<?> findLCPByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return (LCP<?>) findLPByCompoundName(name);
+    public LCP<?> findLCPByCompoundOldName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return (LCP<?>) findLPByCompoundOldName(name);
     }
 
-    public LP<?, ?> findLPByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?, ?> property = lpResolver.resolve(name);
+    public LP<?, ?> findLPByCompoundOldName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?, ?> property = lpOldResolver.resolve(name);
         checkProperty(property, name);
         return property;
     }
@@ -831,9 +832,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.property.eventID = id;
     }
 
+    public void setPropertyOldName(LP property, String oldName) {
+        property.property.setOldName(oldName); 
+    }
+    
     private <T extends LP> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
-        setPropertySID(lp, name, false);
+        setPropertySID(lp, name, lp.property.getOldName(), false);
         lp.property.freezeSID();
         addModuleLP(lp);
     }
@@ -1118,7 +1123,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             eaProp.setFromAddressAccount(allImplements.get(i++));
         } else {
             // по умолчанию используем стандартный fromAddressAccount
-            eaProp.setFromAddressAccount(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.getLCPByName("fromAddressDefaultNotificationAccount").property));
+            eaProp.setFromAddressAccount(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.getLCPByOldName("fromAddressDefaultNotificationAccount").property));
         }
         eaProp.setSubject(allImplements.get(i++));
 

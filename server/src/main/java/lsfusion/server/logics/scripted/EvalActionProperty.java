@@ -82,7 +82,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
 
             errString = module.getErrorsDescription();
 
-            LAP<?> runAction = module.getLAPByName("run");
+            LAP<?> runAction = module.getLAPByOldName("run");
             if (runAction != null && errString.isEmpty()) {
                 runAction.execute(context);
             }

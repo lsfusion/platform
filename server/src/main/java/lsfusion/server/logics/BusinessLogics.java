@@ -201,7 +201,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     protected void createModules() throws IOException {
-        LM = addModule(new BaseLogicsModule(this));
+        LM = addModule(new BaseLogicsModule(this, new OldSIDPolicy()));
         serviceLM = addModule(new ServiceLogicsModule(this, LM));
         reflectionLM = addModule(new ReflectionLogicsModule(this, LM));
         contactLM = addModule(new ContactLogicsModule(this, LM));
@@ -219,7 +219,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         if (excludedPaths != null) {
             for (String filePath : excludedPaths) {
-                if (filePath.contains("*")) {
+                if (filePath.contains("*")) {             
                     filePath += filePath.endsWith(".lsf") ? "" : ".lsf";
                     Pattern pattern = Pattern.compile(filePath.replace("*", ".*"));
                     Collection<String> list = ResourceList.getResources(pattern);
@@ -656,9 +656,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (Property property : getOrderProperties()) {
             String propertySID = property.getSID();
             String setupPolicyActionSID = "propertyPolicySetup_" + propertySID;
-            if (!LM.isGeneratedSID(propertySID) &&
-                    //todo: убрать проверку, когда пофиксится баг с поиском дубликатов только в зависимостях, а не во всей логике
-                    LM.getLPBySID(setupPolicyActionSID) == null) {
+            if (!LM.isGeneratedSID(propertySID)) {
                 LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, setupPolicyActionSID, getString("logics.property.propertypolicy.action"),
                         setupPolicyForPropBySID, LM.addCProp(StringClass.get(propertySID.length()), propertySID));
 
@@ -1106,10 +1104,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (Property property : getPropertyList())
             if (property instanceof StoredDataProperty)
                 ((StoredDataProperty)property).recalculateClasses(session, LM.baseClass);;
-    }
-
-    protected LP getLP(String sID) {
-        return LM.getLP(sID);
     }
 
     public LCP getLCP(String sID) {

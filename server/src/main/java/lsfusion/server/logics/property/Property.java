@@ -57,6 +57,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public int ID = 0;
     private String sID;
     private String name;
+    private String oldName;
 
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public String caption;
@@ -221,6 +222,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         this.name = name;
     }
 
+    public void setOldName(String name) {
+        oldName = name;
+    }
+    
+    public String getOldName() {
+        return oldName;
+    }
+    
     public boolean cached = false;
 
     public void setMouseAction(String actionSID) {
