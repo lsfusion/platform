@@ -83,7 +83,8 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
                     if (portBytes != null) {
                         barcode = "";
                         for (byte portByte : portBytes) {
-                            barcode += (char) portByte;
+                            if (((char)portByte) != '\n' && ((char)portByte) != '\r')
+                                barcode += (char) portByte;
                         }
                         if (!barcode.isEmpty())
                             eventBus.fireValueChanged(SCANNER_SID, barcode.trim());
