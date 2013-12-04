@@ -40,9 +40,7 @@ import org.apache.log4j.Logger;
 
 import java.lang.ref.WeakReference;
 import java.sql.*;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -574,8 +572,10 @@ public class SQLSession extends MutableObject {
         Integer rows = null;
         try {
             int i=0;
+            String row = null;
+            List<String> out = new ArrayList<String>();
             while(result.next()) {
-                String row = (String) result.getObject("QUERY PLAN");
+                row = (String) result.getObject("QUERY PLAN");
 
                 Pattern pt = Pattern.compile(" rows=((\\d)+) ");
                 Matcher matcher = pt.matcher(row);
@@ -614,7 +614,21 @@ public class SQLSession extends MutableObject {
                 }
                 else if(rtime > 100.0)
                     mark += "t";
-                systemLogger.info(BaseUtils.padr(mark, 2) + row);
+                out.add(BaseUtils.padr(mark, 2) + row);
+            }
+            
+            if(row != null) {
+                Pattern pt = Pattern.compile("Total runtime: (((\\d)+)[.]((\\d)+))");
+                Matcher matcher = pt.matcher(row);
+                double rtime = 0.0;
+                if(matcher.find()) {
+                    rtime = Double.valueOf(matcher.group(1));
+                }
+                if(rtime > 100.0) {
+                    systemLogger.info(statement.toString());
+                    for(String outRow : out)
+                        systemLogger.info(outRow);
+                }
             }
         } finally {
             result.close();
@@ -646,7 +660,7 @@ public class SQLSession extends MutableObject {
                     explainStatement = getStatement("EXPLAIN (VERBOSE, COSTS)" + command, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
                     explainStarted = System.currentTimeMillis();
                 }
-                systemLogger.info(explainStatement.toString());
+//                systemLogger.info(explainStatement.toString());
                 env.before(this, connection, command);
                 result = executeExplain(explainStatement, explainNoAnalyze, true);
                 env.after(this, connection, command);
@@ -731,7 +745,7 @@ public class SQLSession extends MutableObject {
         Connection connection = getConnection();
 
         if(explainAnalyzeMode) {
-            systemLogger.info(select);
+//            systemLogger.info(select);
             Result<ReturnStatement> returnExplain = new Result<ReturnStatement>();
             PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze ? "VERBOSE, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
             long started = System.currentTimeMillis();

@@ -282,7 +282,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     // жестковатая эвристика, но не страшно
-    @SynchronizedLazy
+    @IdentityLazy
     @Pack
     public PullValues<K, V> pullValues() {
         ImMap<K, Expr> pullKeys = pullValues(mapKeys, where);
@@ -305,14 +305,14 @@ public class Query<K,V> extends IQuery<K,V> {
     public CompiledQuery<K,V> compile(SQLSyntax syntax, SubQueryContext subcontext, boolean recursive) {
         return compile(syntax, MapFact.<V, Boolean>EMPTYORDER(), 0, subcontext, recursive);
     }
-    @SynchronizedLazy
+    @IdentityLazy
     @Pack
     @Message("message.core.query.compile")
     public CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer selectTop, SubQueryContext subcontext, boolean noExclusive) {
         return new CompiledQuery<K,V>(this, syntax, orders, selectTop, subcontext, noExclusive);
     }
 
-    @SynchronizedLazy
+    @IdentityLazy
     @Pack
     public ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders) {
         return getPackedCompileOrders(orders);
