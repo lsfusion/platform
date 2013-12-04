@@ -22,8 +22,14 @@
         <anonymous enabled="false" />
 
         <custom-filter ref="expiredSessionFilter" before="SESSION_MANAGEMENT_FILTER" />
+        <custom-filter ref="characterEncodingFilter" before="FORM_LOGIN_FILTER"/>
         <!--<custom-filter ref="propertyReadAccessFilter" before="FILTER_SECURITY_INTERCEPTOR"/>-->
     </http>
+    
+    <b:bean id="characterEncodingFilter" class="org.springframework.web.filter.CharacterEncodingFilter">
+        <b:property name="encoding" value="UTF-8"/>
+        <b:property name="forceEncoding" value="true"/>
+    </b:bean>
 
     <!-- Custom security filters -->
     <b:bean id="expiredSessionFilter" class="lsfusion.gwt.base.server.spring.ExpiredSessionFilter">
