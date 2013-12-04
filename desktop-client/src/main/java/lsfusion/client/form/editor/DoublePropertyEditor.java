@@ -6,13 +6,14 @@ import lsfusion.interop.ComponentDesign;
 import javax.swing.*;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
 public class DoublePropertyEditor extends TextFieldPropertyEditor {
 
-    public DoublePropertyEditor(Object value, NumberFormat format, ComponentDesign design, Class formatterValueClass) {
+    public DoublePropertyEditor(Object value, Long maxValue, NumberFormat format, ComponentDesign design, Class formatterValueClass) {
         super(design);
         final DecimalFormat df = (DecimalFormat) format;
         final boolean isGroupSeparatorDot = df.getDecimalFormatSymbols().getGroupingSeparator() == '.';
@@ -56,6 +57,8 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
 
         formatter.setValueClass(formatterValueClass);
         formatter.setAllowsInvalid(false);
+        if (maxValue != null)
+            formatter.setMaximum(new BigDecimal(maxValue));
 
         this.setHorizontalAlignment(JTextField.RIGHT);
         setFormatterFactory(new DefaultFormatterFactory(formatter));
