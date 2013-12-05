@@ -1,11 +1,13 @@
 package lsfusion.gwt.form.shared.view;
 
+import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class GForm implements Serializable {
     public String sessionID;
@@ -100,6 +102,16 @@ public class GForm implements Serializable {
             }
         }
         return null;
+    }
+
+    public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders(GGroupObject group) {
+        LinkedHashMap<GPropertyDraw, Boolean> result = new LinkedHashMap<GPropertyDraw, Boolean>();
+        for (Map.Entry<GPropertyDraw, Boolean> entry : defaultOrders.entrySet()) {
+            if (GwtSharedUtils.nullEquals(entry.getKey().groupObject, group)) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return result;
     }
 
     public void addFont(GFont font) {

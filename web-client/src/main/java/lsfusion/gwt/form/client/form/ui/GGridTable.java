@@ -797,37 +797,57 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         if (!initial) {
             gridController.clearGridOrders(groupObject);
             if (!currentGridPreferences.hasUserPreferences()) {
-                form.initializeDefaultOrders();
+                groupObjectController.applyDefaultOrders();
             } else {
                 groupObjectController.applyUserOrders();
             }
         }
     }
 
-    public void resetPreferences(boolean forAllUsers, ErrorHandlingCallback<ServerResponseResult> callback) {
+    public void resetPreferences(final boolean forAllUsers, final ErrorHandlingCallback<ServerResponseResult> callback) {
         currentGridPreferences.resetPreferences();
-        (forAllUsers ? generalGridPreferences : userGridPreferences).resetPreferences();
 
         if (!properties.isEmpty()) {
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, callback);
-        }
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, new ErrorHandlingCallback<ServerResponseResult>() {
+                @Override
+                public void failure(Throwable caught) {
+                    resetCurrentPreferences(false);
+                    callback.failure(caught);
+                }
 
-        resetCurrentPreferences(false);
+                @Override
+                public void success(ServerResponseResult result) {
+                    (forAllUsers ? generalGridPreferences : userGridPreferences).resetPreferences();
+                    resetCurrentPreferences(false);
+                    callback.success(result);
+                }
+            });
+        }
     }
 
-    public void saveCurrentPreferences(boolean forAllUsers, ErrorHandlingCallback<ServerResponseResult> callback) {
+    public void saveCurrentPreferences(final boolean forAllUsers, final ErrorHandlingCallback<ServerResponseResult> callback) {
         currentGridPreferences.setHasUserPreferences(true);
 
-        if (getProperties().size() != 0) {
-            if (forAllUsers) {
-                generalGridPreferences = new GGridUserPreferences(currentGridPreferences);
-            } else {
-                userGridPreferences = new GGridUserPreferences(currentGridPreferences);
-            }
+        if (!getProperties().isEmpty()) {
 
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, callback);
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, new ErrorHandlingCallback<ServerResponseResult>() {
+                @Override
+                public void success(ServerResponseResult result) {
+                    if (forAllUsers) {
+                        generalGridPreferences = new GGridUserPreferences(currentGridPreferences);
+                        resetCurrentPreferences(false);
+                    } else {
+                        userGridPreferences = new GGridUserPreferences(currentGridPreferences);
+                    }
+                    callback.success(result);
+                }
 
-            resetCurrentPreferences(false);
+                @Override
+                public void failure(Throwable caught) {
+                    resetCurrentPreferences(false);
+                    callback.failure(caught);
+                }
+            });
         }
     }
 

@@ -1,5 +1,6 @@
 package lsfusion.client.logics;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.base.context.ApplicationContextHolder;
@@ -168,6 +169,16 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
             return fullCaption.toString();
         }
         return caption;
+    }
+    
+    public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders(ClientGroupObject group) {
+        OrderedMap<ClientPropertyDraw, Boolean> result = new OrderedMap<ClientPropertyDraw, Boolean>();
+        for (Map.Entry<ClientPropertyDraw, Boolean> entry : defaultOrders.entrySet()) {
+            if (BaseUtils.nullEquals(entry.getKey().groupObject, group)) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return result;
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

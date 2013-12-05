@@ -406,7 +406,7 @@ public class ClientFormController implements AsyncListener {
                 : null;
     }
 
-    public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers, final Runnable callback) throws RemoteException {
+    public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers, final Runnable successCallback, final Runnable failureCallback) throws RemoteException {
         commitOrCancelCurrentEditing();
 
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("saveUserPreferences") {
@@ -417,17 +417,14 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
-                boolean constraintRun = false;
                 for (ClientAction action : result.actions) {
                     if (action instanceof LogMessageClientAction) {
-                        constraintRun = true;
-                        break;
+                        actionDispatcher.execute((LogMessageClientAction) action);
+                        failureCallback.run();
+                        return;
                     }
                 }
-                super.onResponse(requestIndex, result);
-                if (!constraintRun) {
-                    callback.run();
-                }
+                successCallback.run();
             }
         });
     }
@@ -481,6 +478,10 @@ public class ClientFormController implements AsyncListener {
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.cant.initialize.default.orders"));
         }
+    }
+
+    public void applyDefaultOrders(ClientGroupObject groupObject) throws IOException {
+        applyOrders(form.getDefaultOrders(groupObject));    
     }
 
     public void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders) throws IOException {

@@ -21,9 +21,6 @@ import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.containsAny;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
-    public static final String PREFERENCES_SAVED_ICON = "userPreferencesSaved.png";
-    public static final String PREFERENCES_UNSAVED_ICON = "userPreferences.png";
-    
     public GGroupObject groupObject;
 
     private GGridController grid;
@@ -428,6 +425,10 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     
     public void applyUserOrders() {
         formController.applyOrders(getUserOrders());    
+    }
+
+    public void applyDefaultOrders() {
+        formController.applyDefaultOrders(groupObject);
     }
 
     public GGroupObjectUserPreferences getUserGridPreferences() {

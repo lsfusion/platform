@@ -158,7 +158,6 @@ public abstract class UserPreferencesDialog extends JDialog {
                     e1.printStackTrace();
                 }
                 firePropertyChange("buttonPressed", null, null);
-                initialTable.updateTable();
             }
         });
 
@@ -171,7 +170,6 @@ public abstract class UserPreferencesDialog extends JDialog {
                     ex.printStackTrace();
                 }
                 firePropertyChange("buttonPressed", null, null);
-                initialTable.updateTable();
             }
         });
 
@@ -202,7 +200,6 @@ public abstract class UserPreferencesDialog extends JDialog {
                         ex.printStackTrace();
                     }
                     firePropertyChange("buttonPressed", null, null);
-                    initialTable.updateTable();
                 }
             });
 
@@ -215,7 +212,6 @@ public abstract class UserPreferencesDialog extends JDialog {
                         ex.printStackTrace();
                     }
                     firePropertyChange("buttonPressed", null, null);
-                    initialTable.updateTable();
                 }
             });
 
@@ -237,7 +233,6 @@ public abstract class UserPreferencesDialog extends JDialog {
                     e1.printStackTrace();
                 }
                 firePropertyChange("buttonPressed", null, null);
-                initialTable.updateTable();
             }
         });
 
@@ -316,19 +311,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         tableFont = tableFont.deriveFont(getFontStyle(), getFontSize(tableFont.getSize()));
         initialTable.setUserFont(tableFont);
         
-        initialTable.saveCurrentPreferences(forAllUsers, new Runnable() {
-            @Override
-            public void run() {
-                // после обновления текущих настроек шрифт мог измениться
-                FontInfo font = mergeFont();
-                refreshValues(font);
-                initialTable.setFont(font.deriveFrom(initialTable));
-
-                initialTable.updateTable();
-
-                preferencesChanged();
-            }
-        });
+        initialTable.saveCurrentPreferences(forAllUsers, saveSuccessCallback, saveFailureCallback);
     }
 
     private void applyPropertyUserPreferences(PropertyListItem propertyItem, boolean hide, int propertyOrder,
@@ -342,19 +325,31 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
 
     private void resetButtonPressed(boolean forAllUsers) throws IOException {
-        initialTable.resetPreferences(forAllUsers, new Runnable() {
-            @Override
-            public void run() {
-                FontInfo font = mergeFont();
-                refreshValues(font);
-                initialTable.setFont(font.deriveFrom(initialTable));
-
-                initialTable.updateTable();
-
-                preferencesChanged();
-            }
-        });
+        initialTable.resetPreferences(forAllUsers, saveSuccessCallback, saveFailureCallback);
     }
+    
+    private Runnable saveSuccessCallback = new Runnable() {
+        @Override
+        public void run() {
+            // после обновления текущих настроек шрифт мог измениться
+            FontInfo font = mergeFont();
+            refreshValues(font);
+            initialTable.setFont(font.deriveFrom(initialTable));
+
+            initialTable.updateTable();
+
+            preferencesChanged();
+        }
+    };
+    
+    private Runnable saveFailureCallback = new Runnable() {
+        @Override
+        public void run() {
+            FontInfo font = mergeFont();
+            refreshValues(font);
+            initialTable.setFont(font.deriveFrom(initialTable));
+        }
+    };
     
     private Boolean getPropertyState(ClientPropertyDraw property) {
         if (goController.isPropertyInGrid(property)) {

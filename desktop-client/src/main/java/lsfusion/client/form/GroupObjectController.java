@@ -374,6 +374,10 @@ public class GroupObjectController extends AbstractGroupObjectController {
         form.applyOrders(getUserOrders());
     }
     
+    public void applyDefaultOrders() throws IOException {
+        form.applyDefaultOrders(groupObject);
+    }
+    
     public GroupObjectUserPreferences getUserGridPreferences() {
         return grid.table.getCurrentUserGridPreferences();
     }

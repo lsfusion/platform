@@ -16,8 +16,6 @@ import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalWindow;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.actions.GAction;
-import lsfusion.gwt.form.shared.view.actions.GLogMessageAction;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 
 import java.util.HashMap;
@@ -236,10 +234,6 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
     private void resetPressed(boolean forAllUsers) {
         grid.resetPreferences(forAllUsers, createSaveCallback("Сброс настроек успешно завершен"));
-        
-        GFont font = mergeFont();
-        refreshValues(font);
-        grid.font = font;
     }
 
     private void savePressed(boolean forAllUsers) {
@@ -267,10 +261,6 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         grid.setUserFont(userFont);
         
         grid.saveCurrentPreferences(forAllUsers, createSaveCallback("Сохранение настроек успешно завершено"));
-        
-        GFont font = mergeFont();
-        refreshValues(font);
-        grid.font = font;
     }
 
     private void refreshPropertyUserPreferences(GPropertyDraw property, boolean hide, int propertyOrder, Map<Boolean, Integer> userSortDirections) {
@@ -320,22 +310,24 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         return font;
     } 
 
-    private ErrorHandlingCallback<ServerResponseResult> createSaveCallback(final String messageText) {
+    private ErrorHandlingCallback<ServerResponseResult> createSaveCallback(final String successMessageText) {
         return new ErrorHandlingCallback<ServerResponseResult>() {
             @Override
             public void success(ServerResponseResult result) {
-                boolean constraintRun = false;
-                for (GAction action : result.actions) {
-                    if (action instanceof GLogMessageAction) {
-                        constraintRun = true;
-                    }
-                }
-                if (!constraintRun) {
-                    grid.columnsPreferencesChanged();
-                    DialogBoxHelper.showMessageBox(false, "Изменение настроек", messageText, null);
-                    preferencesChanged();
-                }
-                
+                GFont font = mergeFont();
+                refreshValues(font);
+                grid.font = font;
+                grid.columnsPreferencesChanged();
+                preferencesChanged();
+                DialogBoxHelper.showMessageBox(false, "Изменение настроек", successMessageText, null);
+            }
+
+            @Override
+            public void failure(Throwable caught) {
+                GFont font = mergeFont();
+                refreshValues(font);
+                grid.font = font;
+                grid.columnsPreferencesChanged();
             }
         };
     }

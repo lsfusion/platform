@@ -1157,7 +1157,7 @@ public class GridTable extends ClientPropertyTable {
             try {
                 gridController.clearGridOrders(groupObject);
                 if (!currentGridPreferences.hasUserPreferences()) {
-                    form.initializeDefaultOrders();   
+                    gridController.getGroupController().applyDefaultOrders();
                 } else {
                     gridController.getGroupController().applyUserOrders();
                 }
@@ -1167,51 +1167,64 @@ public class GridTable extends ClientPropertyTable {
         }
     }
     
-    public void resetPreferences(final boolean forAllUsers, final Runnable onSuccess) throws RemoteException {
+    public void resetPreferences(final boolean forAllUsers, final Runnable onSuccess, final Runnable onFailure) throws RemoteException {
         currentGridPreferences.resetPreferences();
         
         if (!properties.isEmpty()) {
-            
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, new Runnable() {
+            Runnable successCallback = new Runnable() {
                 @Override
                 public void run() {
                     (forAllUsers ? generalGridPreferences : userGridPreferences).resetPreferences();
+
+                    resetCurrentPreferences(false);
+
+                    onSuccess.run();
                     
                     JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.reset.settings.successfully.complete"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
-                    
-                    resetCurrentPreferences(false);
-                    
-                    onSuccess.run();
                 }
-            });
+            };
+            
+            Runnable failureCallback = new Runnable() {
+                @Override
+                public void run() {
+                    resetCurrentPreferences(false);
+                    onFailure.run();
+                }
+            };
+            
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, successCallback, failureCallback);
         }
     }
                                                                                  
-    public void saveCurrentPreferences(final boolean forAllUsers, final Runnable onSuccess) throws RemoteException {
+    public void saveCurrentPreferences(final boolean forAllUsers, final Runnable onSuccess, final Runnable onFailure) throws RemoteException {
         currentGridPreferences.setHasUserPreferences(true);
         
-        if (getProperties().size() != 0) {
-            
-            if (!properties.isEmpty()) {
-                form.saveUserPreferences(currentGridPreferences, forAllUsers, new Runnable() {
-                    @Override
-                    public void run() {
-                        if (forAllUsers) {
-                            generalGridPreferences = new GridUserPreferences(currentGridPreferences);
-                        } else {
-                            userGridPreferences = new GridUserPreferences(currentGridPreferences);
-                        }
-
-                        JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.save.settings.successfully.complete"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
-
-                        if (forAllUsers) {
-                            resetCurrentPreferences(false);
-                        }
-
-                        onSuccess.run();
+        if (!properties.isEmpty()) {
+            Runnable successCallback = new Runnable() {
+                @Override
+                public void run() {
+                    if (forAllUsers) {
+                        generalGridPreferences = new GridUserPreferences(currentGridPreferences);
+                        resetCurrentPreferences(false);
+                    } else {
+                        userGridPreferences = new GridUserPreferences(currentGridPreferences);
                     }
-                });
-            }
+
+                    onSuccess.run();
+                    
+                    JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.save.settings.successfully.complete"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
+                }
+            };
+            
+            Runnable failureCallback = new Runnable() {
+                @Override
+                public void run() {
+                    resetCurrentPreferences(false);
+                    onFailure.run();
+                }
+            };
+            
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, successCallback, failureCallback);
         }
     }
     

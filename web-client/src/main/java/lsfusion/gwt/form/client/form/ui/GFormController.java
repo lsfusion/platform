@@ -41,6 +41,8 @@ import lsfusion.gwt.form.shared.actions.form.*;
 import lsfusion.gwt.form.shared.actions.navigator.GenerateID;
 import lsfusion.gwt.form.shared.actions.navigator.GenerateIDResult;
 import lsfusion.gwt.form.shared.view.*;
+import lsfusion.gwt.form.shared.view.actions.GAction;
+import lsfusion.gwt.form.shared.view.actions.GLogMessageAction;
 import lsfusion.gwt.form.shared.view.changes.GFormChanges;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
@@ -336,6 +338,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             userOrders.putAll(controller.getUserOrders());
         }
         applyOrders(userOrders);
+    }
+
+    public void applyDefaultOrders(GGroupObject groupObject) {
+        applyOrders(form.getDefaultOrders(groupObject));
     }
 
     private void initializeAutoRefresh() {
@@ -878,8 +884,19 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers), new ServerResponseCallback() {
             @Override
             public void success(ServerResponseResult response) {
-                super.success(response);
+                for (GAction action : response.actions) {
+                    if (action instanceof GLogMessageAction) {
+                        actionDispatcher.execute((GLogMessageAction) action);
+                        callback.failure(new Throwable());
+                        return;
+                    }
+                }
                 callback.success(response);
+            }
+
+            @Override
+            public void failure(Throwable caught) {
+                callback.failure(caught);
             }
         });
     }
