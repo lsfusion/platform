@@ -11,18 +11,18 @@ public class CountZipSocket extends Socket {
 
     private CompressedStreamObserver observer;
 
-// todo: расскоментить для перехода на старый механизм архивации данных, в перспективе - удалить окончательно...
-    private CompressedBlockInputStream_Obsolete in;
-    private CompressedBlockOutputStream_Obsolete out;
+    private CompressedInputStream_jre6 in;
+    private CompressedOutputStream_jre6 out;
 
-    private CompressedBlockOutputStream_Obsolete createOut() throws IOException {
-        return new CompressedBlockOutputStream_Obsolete(super.getOutputStream(), 1 << 20, observer);
+    private CompressedOutputStream_jre6 createOut() throws IOException {
+        return new CompressedOutputStream_jre6(super.getOutputStream(), 8192, observer);
     }
 
-    private CompressedBlockInputStream_Obsolete createIn() throws IOException {
-        return new CompressedBlockInputStream_Obsolete(super.getInputStream(), observer);
+    private CompressedInputStream_jre6 createIn() throws IOException {
+        return new CompressedInputStream_jre6(super.getInputStream(), observer);
     }
 
+// TODO: использовать простой вариант стримов, если полностью перейдём на JDK 7+
 //    private CompressedInputStream in;
 //    private CompressedOutputStream out;
 //
@@ -38,8 +38,7 @@ public class CountZipSocket extends Socket {
         super(impl);
     }
 
-    public CountZipSocket(String host, int port)
-            throws IOException {
+    public CountZipSocket(String host, int port) throws IOException {
         super(host, port);
     }
 
