@@ -95,8 +95,8 @@
         <assemble.jar>${project.build.directory}/${assemble.finalName}.jar</assemble.jar>
         <assemble.packed>${assemble.jar}.pack.gz</assemble.packed>
         <keystore.file>${project.basedir}/src/assemble/keystore</keystore.file>
-        <keystore.alias>lsf</keystore.alias>
-        <keystore.pass>qwerty</keystore.pass>
+        <keystore.alias>luxsoft</keystore.alias>
+        <keystore.pass>f7y45cnb</keystore.pass>
 
         <!-- Repositories properties -->
         <lsfusion.releases.repo>http://lsfusion.ru/nexus/content/repositories/releases</lsfusion.releases.repo>
