@@ -110,6 +110,9 @@ public class QueryBuilder<K, V> {
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, QueryEnvironment env) throws SQLException {
         return getQuery().execute(session, env);
     }
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session, ImOrderMap<V, Boolean> orders) throws SQLException {
+        return getQuery().execute(session, orders, 0);
+    }
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException {
         return getQuery().execute(session, orders, selectTop);
     }
