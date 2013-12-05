@@ -28,6 +28,7 @@ public class ImportProperty <P extends PropertyInterface> {
     private CalcPropertyImplement<P, ImportKeyInterface> implement;
     private ImportFieldInterface importField;
     private GroupType groupType;
+    private boolean replaceOnlyNull;
 
     private CalcPropertyImplement<P, ImportKeyInterface> converter;
 
@@ -36,8 +37,19 @@ public class ImportProperty <P extends PropertyInterface> {
         this.implement = implement;
     }
 
+    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, boolean replaceOnlyNull) {
+        this.importField = importField;
+        this.implement = implement;
+        this.replaceOnlyNull = replaceOnlyNull;
+    }
+
     public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, GroupType groupType) {
         this(importField, implement);
+        this.groupType = groupType;
+    }
+
+    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, GroupType groupType, boolean replaceOnlyNull) {
+        this(importField, implement, replaceOnlyNull);
         this.groupType = groupType;
     }
 
@@ -46,8 +58,18 @@ public class ImportProperty <P extends PropertyInterface> {
         this.converter = converter;
     }
 
+    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, CalcPropertyImplement<P, ImportKeyInterface> converter, boolean replaceOnlyNull) {
+        this(importField, implement, replaceOnlyNull);
+        this.converter = converter;
+    }
+
     public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, CalcPropertyImplement<P, ImportKeyInterface> converter, GroupType groupType) {
         this(importField, implement, converter);
+        this.groupType = groupType;
+    }
+
+    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, CalcPropertyImplement<P, ImportKeyInterface> converter, GroupType groupType, boolean replaceOnlyNull) {
+        this(importField, implement, converter, replaceOnlyNull);
         this.groupType = groupType;
     }
 
@@ -91,6 +113,10 @@ public class ImportProperty <P extends PropertyInterface> {
 
         if (!replaceEqual) {
             changeWhere = changeWhere.and(implement.property.getExpr(mapKeys).compare(changeExpr, Compare.EQUALS).not());
+        }
+        
+        if(replaceOnlyNull) {
+            changeWhere = changeWhere.and(implement.property.getExpr(mapKeys).getWhere().not());
         }
 
         return ((CalcProperty<P>)implement.property).getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), session.getModifier());
