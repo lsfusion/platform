@@ -70,7 +70,7 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
                 try {
                     byte[] portBytes;
                     if (bytesCount != null) {
-                        Thread.sleep(20);
+                        Thread.sleep(50);
                         if (bytesCount == -1) {
                             portBytes = serialPort.readBytes();
                         } else {
