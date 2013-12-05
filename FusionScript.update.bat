@@ -1,6 +1,4 @@
-mkdir "%USERPROFILE%\.IntelliJIdea10\config\filetypes"
-mkdir "%USERPROFILE%\.IntelliJIdea11\config\filetypes"
 mkdir "%USERPROFILE%\.IntelliJIdea12\config\filetypes"
-copy /Y FusionScript.xml "%USERPROFILE%\.IntelliJIdea10\config\filetypes\FusionScript.xml"
-copy /Y FusionScript.xml "%USERPROFILE%\.IntelliJIdea11\config\filetypes\FusionScript.xml"
+mkdir "%USERPROFILE%\.IntelliJIdea13\config\filetypes"
 copy /Y FusionScript.xml "%USERPROFILE%\.IntelliJIdea12\config\filetypes\FusionScript.xml"
+copy /Y FusionScript.xml "%USERPROFILE%\.IntelliJIdea13\config\filetypes\FusionScript.xml"

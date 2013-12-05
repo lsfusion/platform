@@ -33,6 +33,16 @@ public class ReflectionUtils {
         throw new IllegalArgumentException("Not generic type: " + clazz.getSimpleName());
     }
 
+    public static Object getPrivateStaticFieldValue(Class clazz, String fieldName) {
+        try {
+            Field field = clazz.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return field.get(clazz);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static Object getPrivateFieldValue(Object target, String fieldName) {
         return getPrivateFieldValue(target.getClass(), target, fieldName);
     }

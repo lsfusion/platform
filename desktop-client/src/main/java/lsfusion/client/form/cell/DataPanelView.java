@@ -1,5 +1,7 @@
 package lsfusion.client.form.cell;
 
+import lsfusion.base.SystemUtils;
+import lsfusion.client.CaptureKeyEventsDispatcher;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
@@ -161,9 +163,15 @@ public class DataPanelView extends JPanel implements PanelView, HasLabels {
         if (table.isShowing()) {
             if (!table.isEditing()) {
                 table.editCellAt(0, 0, null);
-                Component editorComponent = table.getEditorComponent();
-                if (editorComponent instanceof JComponent) {
-                    ((JComponent) editorComponent).setNextFocusableComponent(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
+                Component editor = table.getEditorComponent();
+                if (editor instanceof JComponent) {
+                    ((JComponent) editor).setNextFocusableComponent(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
+                    if (editor instanceof JTextField) {
+                        editor.requestFocusInWindow();
+                        CaptureKeyEventsDispatcher.get().setCapture(editor);
+                        //даём java немного времени для дочитывания клавиш из буфера клавиатуры, иначе не работает сканер
+                        SystemUtils.sleep(100);
+                    }
                 }
             }
             return true;

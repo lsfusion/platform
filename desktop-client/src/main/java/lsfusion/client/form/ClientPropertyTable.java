@@ -189,7 +189,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     }
 
     @SuppressWarnings("deprecation")
-    private void internalRemoveEditor() {
+    protected void internalRemoveEditor() {
         Component nextComp = null;
         if (editorComp instanceof JComponent) {
             nextComp = ((JComponent) editorComp).getNextFocusableComponent();

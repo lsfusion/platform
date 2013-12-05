@@ -26,6 +26,10 @@ public class CaptureKeyEventsDispatcher implements KeyEventDispatcher, FocusList
     }
 
     public void setCapture(final Component newCapture) {
+        setCapture(newCapture, true);
+    }
+
+    public void setCapture(final Component newCapture, boolean releaseOnFocusGained) {
         assert EventQueue.isDispatchThread();
 
         if (capture != null) {
@@ -36,7 +40,9 @@ public class CaptureKeyEventsDispatcher implements KeyEventDispatcher, FocusList
         }
 
         if (newCapture != null) {
-            newCapture.addFocusListener(this);
+            if (releaseOnFocusGained) {
+                newCapture.addFocusListener(this);
+            }
             if (capture == null) {
                 install();
             }
