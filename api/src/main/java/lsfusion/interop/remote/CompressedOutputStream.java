@@ -5,13 +5,14 @@ import java.io.OutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
+// TODO: не работает на JRE 6
 public class CompressedOutputStream extends DeflaterOutputStream {
 
     private final CompressedStreamObserver observer;
 
     public CompressedOutputStream(OutputStream os, int size, CompressedStreamObserver observer)
             throws IOException {
-        //TODO: NOT TESTED, JUST FIX COMPILE ERROR
+        //TODO: при переходе на JRE 7, раскоммнетить следующую строку
 //        super(os, new Deflater(Deflater.DEFAULT_COMPRESSION, false), size, true);
         super(os, new Deflater(Deflater.DEFAULT_COMPRESSION, false), size);
         this.observer = observer;
@@ -29,9 +30,9 @@ public class CompressedOutputStream extends DeflaterOutputStream {
     public void flush() throws IOException {
         if (!def.finished()) {
             int len;
-            //TODO: NOT TESTED, JUST FIX COMPILE ERROR
-            while ((len = def.deflate(buf, 0, buf.length)) > 0) {
+            //TODO: при переходе на JRE 7, раскоммнетить следующую строку
 //            while ((len = def.deflate(buf, 0, buf.length, Deflater.SYNC_FLUSH)) > 0) {
+            while ((len = def.deflate(buf, 0, buf.length)) > 0) {
                 writeInnerBuf(len);
                 if (len < buf.length) {
                     break;
