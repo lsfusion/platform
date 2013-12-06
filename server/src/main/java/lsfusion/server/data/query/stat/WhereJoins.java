@@ -423,6 +423,8 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             InnerJoins joinFollows = null; Result<ImMap<InnerJoin, Where>> joinUpWheres = null;
             if (!remove && whereJoin instanceof ExprStatJoin && ((ExprStatJoin) whereJoin).depends(removeJoin)) // без этой проверки может бесконечно проталкивать
                 remove = true;
+            if (!remove && whereJoin instanceof ExprOrderTopJoin && ((ExprOrderTopJoin)whereJoin).givesNoKeys()) // даст висячий ключ при проталкивании, вообще рекурсивно пойти не может, но смысла нет разбирать
+                remove = true;
             if(!remove) {
                 Result<ImSet<UnionJoin>> unionJoins = new Result<ImSet<UnionJoin>>();
                 joinUpWheres = new Result<ImMap<InnerJoin, Where>>();
