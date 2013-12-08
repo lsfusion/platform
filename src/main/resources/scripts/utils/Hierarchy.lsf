@@ -27,6 +27,11 @@ META defineHierarchyCustom (object, class)
     object###object##Level (child, level) = GROUP MAX parent IF level == level###object###object(child, parent)
                                                    BY child, level;
 
+    levelRoot###object###object 'Уровень' (child, parent) = PARTITION SUM 1 IF level###object###object(child, parent)
+                                                                      BY child
+                                                                      ORDER DESC level###object###object(child, parent) PERSISTENT;
+    object###object##LevelRoot (child, level) = GROUP NAGGR parent BY child, levelRoot###object###object(child, parent);  
+
     isParent###object###object 'Является потомком' (child, parent) = TRUE IF level###object###object(child, parent);
 
     childNumber###object 'Кол-во непосредственных потомков' (object) = GROUP SUM 1 BY parent###object(child) PERSISTENT;
@@ -40,4 +45,12 @@ META defineHierarchyCustom (object, class)
     canonicalName###object 'Полное имя' (object) = VARSTRING[255](
                            [= GROUP CONCAT name###object(parent), ' / ' BY child ORDER DESC level###object###object(child, parent)](object))
                            MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+END
+
+META defineHierarchyPlain(object)
+    object##1###object (child) = object###object##LevelRoot(child, 1) PERSISTENT;    
+    object##2###object (child) = object###object##LevelRoot(child, 2) PERSISTENT;    
+    object##3###object (child) = object###object##LevelRoot(child, 3) PERSISTENT;    
+    object##4###object (child) = object###object##LevelRoot(child, 4) PERSISTENT;    
+    object##5###object (child) = object###object##LevelRoot(child, 5) PERSISTENT;    
 END
