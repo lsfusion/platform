@@ -1,11 +1,11 @@
 MODULE Time;
 
-REQUIRE System;
+REQUIRE System, Utils;
 
-dayInDate = FORMULA INTEGER '(extract(day from ($1)))';
-weekInDate = FORMULA INTEGER '(extract(week from ($1)))';
-numberMonthInDate = FORMULA INTEGER '(extract(month from ($1)))';
-yearInDate = FORMULA INTEGER '(extract(year from ($1)))';
+extractHour = FORMULA INTEGER '(extract(hour from ($1)))'; 
+extractDay = FORMULA INTEGER '(extract(day from ($1)))';
+extractWeek = FORMULA INTEGER '(extract(week from ($1)))';
+extractYear = FORMULA INTEGER '(extract(year from ($1)))';
 
 currentDateTime = NATIVE DATETIME ();
 currentMinute = NATIVE INTEGER ();
@@ -13,8 +13,9 @@ currentHour = NATIVE INTEGER ();
 currentEpoch = NATIVE LONG ();
 
 currentDate 'Тек. дата' = DATA DATE ();
-currentMonth 'Тек. месяц' = numberMonthInDate (currentDate());
-currentYear 'Тек. год' = yearInDate (currentDate());
+dateDiffersCurrent(date) = date IS DATE AND date != currentDate();
+
+currentYear 'Тек. год' = extractYear (currentDate());
 
 toDate(dateTime) = [= FORMULA DATE '(CAST(($1) as date))'](dateTime AS DATETIME);
 toTime(dateTime) = [= FORMULA TIME '(CAST(($1) as time))'](dateTime AS DATETIME);
@@ -23,6 +24,8 @@ toDateTime(date) = [= FORMULA DATETIME '(CAST(($1) as timestamp))'](date AS DATE
 currentTime 'Тек. время' = toTime(currentDateTime());
 
 sumDate(date, days) = [= FORMULA DATE '(($1)+($2))'](date AS DATE, days AS LONG);
+sumDateYear = FORMULA DATE '(CAST(($1) AS date) + interval \'1 year\')';
+
 subtractDate(date, days) = [= FORMULA DATE '(($1)-($2))'](date AS DATE, days AS LONG);
 
 sumTimeSeconds(time, seconds) = [= FORMULA TIME '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))'](time AS TIME, seconds AS LONG);
@@ -35,6 +38,15 @@ sumDateTimeSeconds(dateTime, seconds) = [= FORMULA DATETIME '(($1)+($2)*CAST(\'1
 subtractDateTimeSeconds(dateTime, seconds) = [= FORMULA DATETIME '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))'](dateTime AS DATETIME, seconds AS LONG);
 
 dateTimeToDateTime = FORMULA DATETIME 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')';
+
+daysInclBetweenDates (date1, date2) = subtractIntegerIncl (date2, date1) IF date1 IS DATE AND date2 IS DATE;
+weeksInclBetweenDates(date1, date2) = divideInteger(daysInclBetweenDates(date1, date2), 7);
+weeksNullInclBetweenDates (date1, date2) = weeksInclBetweenDates (date1, date2) != 0;
+
+sumDateWeekFromFormula = FORMULA DATE '(($1)+($2)*7)';
+sumDateWeekFrom (date, int) = sumDateWeekFromFormula(date, int) IF date IS DATE AND int IS INTEGER;
+sumDateWeekToFormula = FORMULA DATE '(($1)+($2)*7+6)';
+sumDateWeekTo (date, int) = sumDateWeekToFormula(date, int) IF date IS DATE AND int IS INTEGER;
 
 // --------------------------------- Месяца ------------------------ //
 
@@ -64,7 +76,11 @@ TABLE month (Month);
 numberMonth 'Номер месяца' = PARTITION SUM 1 IF m IS Month ORDER m PERSISTENT;
 monthNumber 'Месяц (ИД)' (month) = GROUP AGGR month BY numberMonth(month);
 
-monthInDate 'Месяц (ИД)' (date) = monthNumber(numberMonthInDate(date));
+extractMonthNumber = FORMULA INTEGER '(extract(month from ($1)))';
+extractMonth 'Месяц (ИД)' (date) = monthNumber(extractMonthNumber(date));
+extractMonthName 'Месяц' (date) = staticCaption(extractMonth(date));
+
+currentMonth 'Тек. месяц' = extractMonthNumber (currentDate());
 
 // --------------------------------- Дни недели ------------------------ //
 
@@ -88,5 +104,6 @@ TABLE dow (DOW);
 numberDOW 'Номер дня недели' = (PARTITION SUM 1 IF d IS DOW ORDER d) - 1 PERSISTENT;
 DOWNumber 'День недели (ИД)' (dow) = GROUP AGGR dow BY numberDOW(dow);
 
-numberDOWInDate = FORMULA INTEGER '(extract(dow from ($1)))';
-DOWInDate 'День недели (ИД)' (date) = DOWNumber(numberDOWInDate(date));
+extractDOWNumber = FORMULA INTEGER '(extract(dow from ($1)))';
+extractDOW 'День недели (ИД)' (date) = DOWNumber(extractDOWNumber(date));
+extractDOWName 'День недели' (date) = staticCaption(extractDOW(date));

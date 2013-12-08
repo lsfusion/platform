@@ -23,9 +23,7 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
     public LCP currentHour;
     public LCP currentEpoch;
 
-    public LCP weekInDate;
-    public LCP yearInDate;
-    public LCP numberMonthInDate;
+    public LCP extractYear;
     public LCP currentDate;
     public LCP currentMonth;
 
@@ -56,9 +54,7 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
         month = (ConcreteCustomClass) getClassByName("Month");
         DOW = (ConcreteCustomClass) getClassByName("DOW");
 
-        weekInDate = getLCPByOldName("weekInDate");
-        yearInDate = getLCPByOldName("yearInDate");
-        numberMonthInDate = getLCPByOldName("numberMonthInDate");
+        extractYear = getLCPByOldName("extractYear");
         currentDate = getLCPByOldName("currentDate");
         currentMonth = getLCPByOldName("currentMonth");
 
