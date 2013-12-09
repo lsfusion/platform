@@ -4,6 +4,7 @@ import com.toedter.calendar.JSpinnerDateEditor;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.cell.PropertyTableCellEditor;
 import lsfusion.interop.ComponentDesign;
+import lsfusion.interop.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.text.DateFormatter;
@@ -21,6 +22,8 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
 
     private final SimpleDateFormat format;
 
+    private boolean turnToNull = false;
+
     public TimePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
         this.format = format;
         if (design != null) {
@@ -31,22 +34,31 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
 
         setBorder(null);
 
+        setModel(new SpinnerDateModel());
+
         if (value != null)
             setValue(value);
     }
 
     @Override
-    public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+    public boolean processKeyBinding(final KeyStroke ks, final KeyEvent ke, final int condition, final boolean pressed) {
         // передаем вниз нажатую клавишу, чтобы по нажатию кнопки она уже начинала вводить в объект
         if (condition == WHEN_FOCUSED) {
             if (ke.getKeyCode() == KeyEvent.VK_DELETE) {
-                getEditorComponent().getTextField().setText("");
+                turnToNull = true;
                 commitEditing();
                 return true;
             }
-            return getEditorComponent().processKeyBinding(ks, ke, condition, pressed);
-        }
-        else
+
+            // передаём её прямо в JFormattedTextField
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ((TimePropertyEditorComponent.TimeTextField) getEditorComponent().getTextField()).processKeyBinding(ks, ke, condition, pressed);
+                }
+            });
+            return KeyStrokes.isSuitableNumberEditEvent(ke);
+        } else
             return super.processKeyBinding(ks, ke, condition, pressed);
     }
 
@@ -67,6 +79,11 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
 
     @Override
     public Object getCellEditorValue() {
+        if (turnToNull) {
+            turnToNull = false;
+            return null;
+        }
+
         String text = getEditorComponent().getTextField().getText();
         if (text.isEmpty()) {
             return null;
@@ -93,46 +110,71 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
         public TimePropertyEditorComponent(JSpinner spinner, String pattern) {
             super(spinner, pattern);
 
-            getTextField().setFormatterFactory(new DefaultFormatterFactory(new DateEditorFormatter((SpinnerDateModel) spinner.getModel(), format)));
+            JFormattedTextField oldField = getTextField();
+            remove(oldField);
+
+
+            // для доступа к TextField'у подменяем своим добавленный в конструкторе, инициализируя аналогичным образом
+            JFormattedTextField ftf = new TimeTextField();
+            ftf.setName("Spinner.formattedTextField");
+            ftf.setValue(spinner.getValue());
+            ftf.addPropertyChangeListener(this);
+            ftf.setEditable(true);
+            ftf.setInheritsPopupMenu(true);
+
+            String toolTipText = spinner.getToolTipText();
+            if (toolTipText != null) {
+                ftf.setToolTipText(toolTipText);
+            }
+            ftf.setFormatterFactory(new DefaultFormatterFactory(new DateEditorFormatter(format)));
+
+            add(ftf);
+            ActionMap ftfMap = ftf.getActionMap();
+
+            if (ftfMap != null) {
+                ftfMap.put("increment", oldField.getActionMap().get("increment"));
+                ftfMap.put("decrement", oldField.getActionMap().get("decrement"));
+            }
+        }
+
+        class TimeTextField extends JFormattedTextField {
+            @Override
+            public boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+                if (e.getKeyCode() == KeyEvent.VK_DELETE && getTextField().getText().equals(getTextField().getSelectedText())) {
+                    turnToNull = true;
+                    commitEditing();
+                    return true;
+                }
+
+                // не ловим ввод, чтобы его словил сам JTable и обработал
+                return e.getKeyCode() != KeyEvent.VK_ENTER && super.processKeyBinding(ks, e, condition, pressed);
+            }
         }
 
         class DateEditorFormatter extends DateFormatter {
-            private final SpinnerDateModel model;
 
-            DateEditorFormatter(SpinnerDateModel model, DateFormat format) {
+            DateEditorFormatter(DateFormat format) {
                 super(format);
-                this.model = model;
                 setAllowsInvalid(false);
                 setOverwriteMode(true);
                 setCommitsOnValidEdit(true);
             }
 
             public void setMinimum(Comparable min) {
-                model.setStart(min);
+                getModel().setStart(min);
             }
 
             public Comparable getMinimum() {
-                return model.getStart();
+                return getModel().getStart();
             }
 
             public void setMaximum(Comparable max) {
-                model.setEnd(max);
+                getModel().setEnd(max);
             }
 
             public Comparable getMaximum() {
-                return model.getEnd();
+                return getModel().getEnd();
             }
-        }
-
-        @Override
-        protected boolean processKeyBinding(final KeyStroke ks, final KeyEvent e, final int condition, final boolean pressed) {
-            if (e.getKeyCode() == KeyEvent.VK_DELETE && getTextField().getText().isEmpty()) {
-                commitEditing();
-                return true;
-            }
-
-            // не ловим ввод, чтобы его словил сам JTable и обработал
-            return e.getKeyCode() != KeyEvent.VK_ENTER && super.processKeyBinding(ks, e, condition, pressed);
         }
 
         @Override
