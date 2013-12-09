@@ -1,21 +1,20 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
-import lsfusion.base.SystemUtils;
+import lsfusion.interop.remote.RMIUtils;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -92,7 +91,7 @@ public class RMIManager extends LifecycleAdapter implements InitializingBean {
 //        }
 
         try {
-            SystemUtils.initRMICompressedSocketFactory();
+            RMIUtils.installRmiErrorHandler();
         } catch (IOException e) {
             logger.error("Error starting RMIManager: ", e);
             Throwables.propagate(e);
@@ -101,13 +100,13 @@ public class RMIManager extends LifecycleAdapter implements InitializingBean {
 
     private void initRegistry() throws RemoteException {
         //сначала ищем внешний registry на этом порту
-        registry = LocateRegistry.getRegistry(registryPort);
+        registry = RMIUtils.getRmiRegistry(registryPort);
         try {
             //данный вызов позволяет убедиться, что registry найден
             registry.list();
         } catch (RemoteException e) {
             //если не найден - создаём локальнй registry
-            registry = LocateRegistry.createRegistry(registryPort);
+            registry = RMIUtils.createRmiRegistry(registryPort);
             exportPort = registryPort;
         }
     }
@@ -117,7 +116,7 @@ public class RMIManager extends LifecycleAdapter implements InitializingBean {
     }
 
     public void export(Remote remote) throws RemoteException {
-        UnicastRemoteObject.exportObject(remote, exportPort);
+        RMIUtils.rmiExport(remote, exportPort);
     }
 
     public void unexport(Remote remote) throws RemoteException {

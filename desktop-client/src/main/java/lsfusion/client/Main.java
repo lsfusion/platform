@@ -2,7 +2,6 @@ package lsfusion.client;
 
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
-import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.dock.DockableMainFrame;
@@ -20,6 +19,7 @@ import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.RMIUtils;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -36,8 +36,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
-import java.rmi.server.RMIFailureHandler;
-import java.rmi.server.RMISocketFactory;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.TimeZone;
@@ -78,7 +76,7 @@ public class Main {
     private static Thread mainThread;
     private static PingThread pingThread;
 
-    private static RMITimeoutSocketFactory socketFactory;
+    private static RMITimeoutSocketFactory socketFactory = RMITimeoutSocketFactory.getInstance();
 
     private static ClientObjectClass baseClass = null;
     public static EventBus eventBus = new EventBus();
@@ -113,7 +111,7 @@ public class Main {
 
             initRmiClassLoader();
 
-            initRMISocketFactory();
+            RMIUtils.installRmiErrorHandler();
 
             initSwing();
         } catch (Exception e) {
@@ -259,33 +257,6 @@ public class Main {
         // поскольку он не дает ничего делать классу ClientRMIClassLoaderSpi,
         // так как он load'ится из временного директория
         System.setSecurityManager(null);
-    }
-
-    private static void initRMISocketFactory() throws IOException {
-        String timeout = System.getProperty(LSFUSION_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000");
-
-        if (RMISocketFactory.getSocketFactory() != null) {
-            System.out.println(RMISocketFactory.getSocketFactory());
-        }
-
-        socketFactory = new RMITimeoutSocketFactory(Integer.valueOf(timeout));
-
-        RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
-            public boolean failure(Exception ex) {
-                logger.error(ApiResourceBundle.getString("exceptions.rmi.error") + " ", ex);
-                return true;
-            }
-        });
-
-        try {
-            Field field = RMISocketFactory.class.getDeclaredField("factory");
-            field.setAccessible(true);
-            field.set(null, socketFactory);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {

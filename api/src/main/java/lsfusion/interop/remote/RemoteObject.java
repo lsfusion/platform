@@ -25,7 +25,7 @@ public class RemoteObject implements Remote {
         exportPort = port;
 
         if (autoExport) {
-            UnicastRemoteObject.exportObject(this, port);
+            RMIUtils.rmiExport(this, port);
         }
     }
 

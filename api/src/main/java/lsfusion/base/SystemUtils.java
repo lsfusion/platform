@@ -1,26 +1,18 @@
 package lsfusion.base;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.remote.ZipSocketFactory;
-import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.rmi.server.RMIFailureHandler;
-import java.rmi.server.RMISocketFactory;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.prefs.Preferences;
 
-import static lsfusion.base.ApiResourceBundle.getString;
-
 public class SystemUtils {
-    private static final Logger logger = Logger.getLogger(SystemUtils.class);
-
     public static String getResourcePath(String resource, String path, Class<?> cls, boolean overwrite, boolean appendPath) throws IOException {
 
         File file = getUserFile(appendPath ? resolveName(cls, path + resource) : resource);
@@ -165,34 +157,6 @@ public class SystemUtils {
             name = name.substring(1);
         }
         return name;
-    }
-
-    public static void initRMICompressedSocketFactory() throws IOException {
-        if (RMISocketFactory.getSocketFactory() == null) {
-            RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
-                public boolean failure(Exception ex) {
-                    logger.error(getString("exceptions.rmi.error") + " ", ex);
-                    return true;
-                }
-            });
-
-            RMISocketFactory.setSocketFactory(new ZipSocketFactory());
-        }
-    }
-
-    public static void overrideRMIHostName(String hostName) {
-        RMISocketFactory socketFactory = RMISocketFactory.getSocketFactory();
-        if (socketFactory instanceof ZipSocketFactory) {
-            ((ZipSocketFactory) socketFactory).setOverrideHostName(hostName);
-        }
-    }
-
-    public static void killRmiThread() {
-        for (Thread t : Thread.getAllStackTraces().keySet()) {
-            if ("RMI Reaper".equals(t.getName())) {
-                t.interrupt();
-            }
-        }
     }
 
     public static void sleep(long millis) {
