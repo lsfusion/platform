@@ -37,6 +37,9 @@ public class Words {
         decimalPostfix.put(("USD"), new String[]{"доллар ", "доллара ", "долларов"});
         decimalPostfix.put(("RUB"), new String[]{"рубль ", "рубля ", "рублей "});
         decimalPostfix.put(("BLR"), new String[]{"белорусский рубль ", "белорусских рубля ", "белорусских рублей "});
+        decimalPostfix.put(("ton"), new String[]{"тонна ", "тонны ", "тонн "});
+        decimalPostfix.put(("kg"), new String[]{"килограмм ", "килограмма ", "килограмм "});
+        decimalPostfix.put(("gr"), new String[]{"грамм ", "грамма ", "грамм "});
         decimalPostfix.put(("number0"), new String[]{"", "", ""});
         decimalPostfix.put(("number"), new String[]{"целая ", "целых ", "целых "});
     }
@@ -48,6 +51,9 @@ public class Words {
         fractalPostfix.put("USD2", new String[]{"цент ", "цента ", "центов"});
         fractalPostfix.put("RUB2", new String[]{"копейка ", "копейки ", "копеек"});
         fractalPostfix.put("BLR2", new String[]{"копейка ", "копейки ", "копеек"});
+        fractalPostfix.put("ton3", new String[]{"килограмм ", "килограмма ", "килограмм "});
+        fractalPostfix.put("kg3", new String[]{"грамм ", "грамма ", "грамм "});
+        fractalPostfix.put("gr3", new String[]{"тысячная ", "тысячных ", "тысячных "});
         fractalPostfix.put("number1", new String[]{"десятая ", "десятых ", "десятых "});
         fractalPostfix.put("number2", new String[]{"cотая ", "сотых ", "сотых "});
         fractalPostfix.put("number3", new String[]{"тысячная ", "тысячных ", "тысячных "});
@@ -61,11 +67,17 @@ public class Words {
         sexMap.put(("USD"), false);
         sexMap.put(("RUB"), false);
         sexMap.put(("BLR"), false);
+        sexMap.put(("ton"), true);
+        sexMap.put(("kg"), false);
+        sexMap.put(("gr"), false);
         sexMap.put(("number"), true);
         sexMap.put(("EUR2"), false);
         sexMap.put(("USD2"), false);
         sexMap.put(("RUB2"), true);
         sexMap.put(("BLR2"), true);
+        sexMap.put(("ton3"), false);
+        sexMap.put(("kg3"), false);
+        sexMap.put(("gr3"), true);
         sexMap.put(("number0"), false);
         sexMap.put(("number1"), true);
         sexMap.put(("number2"), true);
@@ -80,6 +92,9 @@ public class Words {
         numOfDigitsMap.put(("USD"), 2);
         numOfDigitsMap.put(("RUB"), 2);
         numOfDigitsMap.put(("BLR"), 2);
+        numOfDigitsMap.put(("ton"), 3);
+        numOfDigitsMap.put(("kg"), 3);
+        numOfDigitsMap.put(("gr"), 3);
     }
 
     private static String toString(Long value, String type, Integer numOfDigits, Boolean female) {
@@ -87,7 +102,7 @@ public class Words {
         long sum = value == null ? 0 : value;
 
         int i, mny;
-        StringBuffer result = new StringBuffer("");
+        StringBuilder result = new StringBuilder("");
         long divisor; //делитель
         long psum = sum;
 
