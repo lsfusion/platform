@@ -2,8 +2,11 @@ package lsfusion.server.data.expr.where.extra;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.interop.Compare;
@@ -60,12 +63,12 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
 
     @Override
     public Where packFollowFalse(Where falseWhere) {
-        Expr packOperator1 = operator1.packFollowFalse(falseWhere);
-        Expr packOperator2 = operator2.packFollowFalse(falseWhere);
-        if(BaseUtils.hashEquals(packOperator1, operator1) && BaseUtils.hashEquals(packOperator2, operator2))
+        ImRevMap<Integer,BaseExpr> opMap = MapFact.toRevMap(0, operator1, 1, operator2);
+        ImMap<Integer,Expr> packOpMap = BaseExpr.packPushFollowFalse(opMap, falseWhere);
+        if(BaseUtils.hashEquals(opMap, packOpMap))
             return this;
         else
-            return packOperator1.compare(packOperator2, getCompare());
+            return packOpMap.get(0).compare(packOpMap.get(1), getCompare());
     }
 
     public WhereJoin groupJoinsWheres(ImOrderSet<Expr> orderTop, boolean not) {
