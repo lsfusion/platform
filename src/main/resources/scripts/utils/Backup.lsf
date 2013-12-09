@@ -5,6 +5,7 @@ REQUIRE System, Reflection;
 makeBackup 'Сделать резервное копирование'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' TOOLBAR;
 saveBackup 'Скачать резервную копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' TOOLBAR;
 deleteBackup 'Удалить резервную копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' CONFIRM;
+decimateBackups 'Проредить резервные копии'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DecimateBackupsActionProperty' CONFIRM;
 
 CLASS Backup 'Резервная копия';
 TABLE backup(Backup);
@@ -27,7 +28,7 @@ excludeBackupTable 'Исключена' = DATA BOOLEAN (Backup, Table);
 
 FORM backup 'Резервное копирование'
     OBJECTS b = Backup
-    PROPERTIES() makeBackup TODRAW b FORCE PANEL
+    PROPERTIES() decimateBackups TODRAW b FORCE PANEL, makeBackup TODRAW b FORCE PANEL
     PROPERTIES(b) saveBackup TODRAW b FORCE PANEL
     PROPERTIES(b) READONLY dateBackup, timeBackup, fileBackup, fileDeletedBackup, logBackup FORCE PANEL
     PROPERTIES(b) deleteBackup

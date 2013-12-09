@@ -35,7 +35,7 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
             if (fLog.exists()) {
                 fLog.delete();
             }
-            if (f.exists() && f.delete()) {
+            if ((f.exists() && f.delete()) || !f.exists()) {
                 LM.findLCPByCompoundOldName("fileDeletedBackup").change(true, session, backupObject);
             }
             session.apply(context.getBL());
