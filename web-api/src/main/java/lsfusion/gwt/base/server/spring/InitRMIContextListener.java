@@ -1,7 +1,7 @@
 package lsfusion.gwt.base.server.spring;
 
-import lsfusion.interop.remote.RMIUtils;
 import org.apache.log4j.Logger;
+import lsfusion.base.SystemUtils;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -14,8 +14,8 @@ public class InitRMIContextListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         String registryHost = servletContextEvent.getServletContext().getInitParameter("registryHost");
         try {
-            RMIUtils.installRmiErrorHandler();
-            RMIUtils.overrideRMIHostName(registryHost);
+            SystemUtils.initRMICompressedSocketFactory();
+            SystemUtils.overrideRMIHostName(registryHost);
         } catch (IOException e) {
             logger.error("Ошибка при инициализации RMISocketFactory: ", e);
             throw new RuntimeException("Произошла ошибка при инициализации RMI.", e);

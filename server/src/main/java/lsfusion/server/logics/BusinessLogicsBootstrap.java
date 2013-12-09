@@ -1,6 +1,6 @@
 package lsfusion.server.logics;
 
-import lsfusion.interop.remote.RMIUtils;
+import lsfusion.base.SystemUtils;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import org.apache.log4j.Logger;
@@ -82,7 +82,7 @@ public class BusinessLogicsBootstrap {
 
             // иногда не удаётся нормально убрать все RMI ссылки,
             // поэтому убиваем RMI поток сами, а то зависает
-            RMIUtils.killRmiThread();
+            SystemUtils.killRmiThread();
 
             logger.info("Server has stopped...");
 

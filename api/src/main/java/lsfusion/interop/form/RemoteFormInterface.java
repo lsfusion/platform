@@ -30,7 +30,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     void gainedFocus(long requestIndex) throws RemoteException;
 
-    ServerResponse setTabVisible(long requestIndex, int tabPaneID, int childId) throws RemoteException;
+    ServerResponse setTabVisible(long requestIndex, int tabPaneID, int tabIndex) throws RemoteException;
 
     ServerResponse closedPressed(long requestIndex) throws RemoteException;
 

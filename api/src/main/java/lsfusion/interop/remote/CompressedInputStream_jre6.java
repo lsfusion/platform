@@ -80,7 +80,9 @@ public class CompressedInputStream_jre6 extends FilterInputStream {
             lenBuf = new byte[8];
         }
 
+        hangs = true;
         blockRead(lenBuf, 0, 8);
+        hangs = false;
 
         decLength = getIntFromBytes(lenBuf, 0);
         int cLength = getIntFromBytes(lenBuf, 4);
@@ -93,33 +95,26 @@ public class CompressedInputStream_jre6 extends FilterInputStream {
 
         int inflated = 0;
         while (cLength != 0) {
-            if ((compressedBuf == null) || (cLength + 8 > compressedBuf.length)) {
-                // чуть больше длина просто для частого случая, когда output писался в несколько одинаковых кусков,
-                // но 1й кусок был меньше, т.к. при записи он содержал decompressedBuf.length
-                compressedBuf = new byte[cLength + 8];
+            if ((compressedBuf == null) || (cLength > compressedBuf.length)) {
+                compressedBuf = new byte[cLength];
             }
             blockRead(compressedBuf, 0, cLength);
             readenSum += cLength;
 
             inflater.setInput(compressedBuf, 0, cLength);
             try {
-                while (inflated < decLength) {
-                    int inCount = inflater.inflate(decompressedBuf, inflated, decLength - inflated);
-                    if (inCount == 0) {
-                        break;
-                    }
-                    inflated += inCount;
+                while (!inflater.needsInput() && inflated < decLength) {
+                    inflated += inflater.inflate(decompressedBuf, inflated, decLength - inflated);
                 }
             } catch (DataFormatException dfe) {
                 throw new IOException("Data format exception: ", dfe);
             }
 
+            inflater.reset();
             blockRead(lenBuf, 0, 4);
             cLength = getIntFromBytes(lenBuf, 0);
             readenSum += 4;
         }
-
-        inflater.reset();
 
         outOffs = 0;
 
@@ -129,21 +124,17 @@ public class CompressedInputStream_jre6 extends FilterInputStream {
     }
 
     private void blockRead(byte[] buf, int off, int len) throws IOException {
+        hangs = true;
         int readen = 0;
         while (readen < len) {
-            hangs = true;
-            int inCount;
-            try {
-                 inCount = in.read(buf, off + readen, len - readen);
-            } finally {
-                hangs = false;
-            }
+            int inCount = in.read(buf, off + readen, len - readen);
             if (inCount == -1) {
                 hangs = false;
                 throw new EOFException();
             }
             readen += inCount;
         }
+        hangs = false;
     }
 
     private int getIntFromBytes(byte[] buf, int off) {

@@ -111,7 +111,8 @@ public class CompressedBlockInputStream_Obsolete extends FilterInputStream {
         // we're done.
         int inOffs = 0;
         while (inOffs < inLength) {
-            int inCount = in.read(inBuf, inOffs, inLength - inOffs);
+            int inCount =
+                    in.read(inBuf, inOffs, inLength - inOffs);
             if (inCount == -1) {
                 throw new EOFException();
             }

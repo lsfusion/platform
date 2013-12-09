@@ -43,6 +43,4 @@ public class StartupProperties {
     public final static boolean autoReconnect = System.getProperty(StartupProperties.LSFUSION_CLIENT_BLOCKER_AUTORECONNECT) != null;
 
     public final static boolean preventBlockerActivation = autoReconnect || System.getProperty(StartupProperties.LSFUSION_CLIENT_BLOCKER_ACTIVATION_OFF) != null;
-
-    public final static int rmiTimeout = Integer.valueOf(System.getProperty(LSFUSION_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000"));
 }

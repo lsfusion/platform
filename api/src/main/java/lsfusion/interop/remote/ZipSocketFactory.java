@@ -6,12 +6,6 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.RMISocketFactory;
 
 public class ZipSocketFactory extends RMISocketFactory implements RMIServerSocketFactory, Serializable {
-    private static final ZipSocketFactory instance = new ZipSocketFactory();
-
-    public static ZipSocketFactory getInstance() {
-        return instance;
-    }
-
     private String overrideHostName;
 
     public void setOverrideHostName(String overrideHostName) {

@@ -1,7 +1,6 @@
 package lsfusion.client.rmi;
 
 import lsfusion.base.WeakLinkedHashSet;
-import lsfusion.client.StartupProperties;
 import lsfusion.interop.remote.CompressedStreamObserver;
 import lsfusion.interop.remote.CountZipSocket;
 import lsfusion.interop.remote.ZipSocketFactory;
@@ -9,11 +8,6 @@ import lsfusion.interop.remote.ZipSocketFactory;
 import java.io.IOException;
 
 public class RMITimeoutSocketFactory extends ZipSocketFactory implements CompressedStreamObserver {
-    private static final RMITimeoutSocketFactory instance = new RMITimeoutSocketFactory(StartupProperties.rmiTimeout);
-
-    public static RMITimeoutSocketFactory getInstance() {
-        return instance;
-    }
 
     private final int timeout;
 

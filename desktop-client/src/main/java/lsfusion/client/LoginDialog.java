@@ -3,12 +3,11 @@ package lsfusion.client;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import org.apache.commons.codec.binary.Base64;
 import lsfusion.base.SystemUtils;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.RemoteServerAgentInterface;
 import lsfusion.interop.ServerInfo;
-import lsfusion.interop.remote.RMIUtils;
-import org.apache.commons.codec.binary.Base64;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -21,6 +20,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.rmi.Naming;
 import java.util.Scanner;
 
 import static lsfusion.client.StartupProperties.LSFUSION_CLIENT_HOSTPORT;
@@ -183,7 +183,7 @@ public class LoginDialog extends JDialog {
 
     private void propagateServerAgents() {
         try {
-            RemoteServerAgentInterface remoteLoader = RMIUtils.rmiLookup("localhost", 6666, "ServerAgent");
+            RemoteServerAgentInterface remoteLoader = (RemoteServerAgentInterface) Naming.lookup("rmi://localhost:6666/ServerAgent");
             for (String exportName : remoteLoader.getExportNames()) {
                 ((MutableComboBoxModel) serverDB.getModel()).addElement(exportName);
             }

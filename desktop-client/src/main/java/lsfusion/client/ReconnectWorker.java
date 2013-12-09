@@ -1,8 +1,6 @@
 package lsfusion.client;
 
-import lsfusion.client.rmi.RMITimeoutSocketFactory;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
-import lsfusion.interop.remote.RMIUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,29 +9,26 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.rmi.ConnectException;
+import java.rmi.Naming;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterface, Integer> {
-    private final ProgressDialog dlg;
+    private ProgressDialog dlg;
 
-    private final String serverHost;
-    private final String serverDB;
-    private final int serverPort;
+    private String serverUrl;
 
     private RemoteLogicsLoaderInterface remoteLoader;
 
     public ReconnectWorker(String serverHost, String serverPort, String serverDB) {
-        this.serverHost = serverHost;
-        this.serverPort = Integer.parseInt(serverPort);
-        this.serverDB = serverDB;
-
         Main.overrideRMIHostName(serverHost);
 
+        this.serverUrl = MessageFormat.format("rmi://{0}:{1}/{2}/RemoteLogicsLoader", serverHost, serverPort, serverDB);
         dlg = new ProgressDialog();
     }
 
@@ -44,7 +39,7 @@ public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterfa
         while (true) {
             publish(attempts++);
             try {
-                return (RemoteLogicsLoaderInterface)RMIUtils.rmiLookup(serverHost, serverPort, serverDB, "RemoteLogicsLoader", RMITimeoutSocketFactory.getInstance());
+                remoteLoader = (RemoteLogicsLoaderInterface) Naming.lookup(serverUrl);
             } catch (ConnectException ignore) {
             } catch (NoSuchObjectException ignore) {
             } catch (NotBoundException ignore) {

@@ -1,18 +1,19 @@
 package lsfusion.agent;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.remote.RMIUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
+import lsfusion.base.SystemUtils;
 
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import static lsfusion.interop.remote.RMIUtils.installRmiErrorHandler;
+import static lsfusion.base.SystemUtils.initRMICompressedSocketFactory;
 
 public class ServerAgentBootstrap {
 
@@ -36,7 +37,7 @@ public class ServerAgentBootstrap {
     public static void start() throws IOException {
         logger.info("Server Agent is starting...");
 
-        installRmiErrorHandler();
+        initRMICompressedSocketFactory();
 
         initSprintContext();
 
@@ -66,7 +67,7 @@ public class ServerAgentBootstrap {
     }
 
     private static void initRMIRegistry() throws RemoteException {
-        registry = RMIUtils.createRmiRegistry(serverAgent.getExportPort());
+        registry = LocateRegistry.createRegistry(serverAgent.getExportPort());
         try {
             registry.bind("ServerAgent", serverAgent);
         } catch (AlreadyBoundException e) {
@@ -110,7 +111,7 @@ public class ServerAgentBootstrap {
         serverAgent = null;
 
         //убиваем поток RMI, а то зависает
-        RMIUtils.killRmiThread();
+        SystemUtils.killRmiThread();
 
         notifyStopSingal();
     }
