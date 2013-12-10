@@ -1362,7 +1362,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private ImMap<ShowIfReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> readShowIfs(Map<PropertyDrawInstance, Boolean> newIsShown, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids, ChangedData changedProps) throws SQLException {
         final MOrderExclMap<ShowIfReaderInstance, ImSet<GroupObjectInstance>> mShowIfs = MapFact.mOrderExclMap();
-        for (PropertyDrawInstance<?> drawProperty : properties) {
+        for (PropertyDrawInstance drawProperty : properties) {
             ClassViewType curClassView = drawProperty.getCurClassView();
             if (curClassView == HIDE) continue;
 
@@ -1435,7 +1435,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mReadProperties = MapFact.mOrderExclMap();
 
-        for (PropertyDrawInstance<?> drawProperty : properties) {
+        for (PropertyDrawInstance drawProperty : properties) {
             Boolean newPropIsShown = newIsShown.get(drawProperty);
             Boolean oldPropIsShown = isShown.put(drawProperty, newPropIsShown);
 

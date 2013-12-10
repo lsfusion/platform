@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -222,12 +223,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             applyTransaction = new Transaction();
     }
     public void rollbackTransaction() throws SQLException {
-        if(applyTransaction!=null) {
-            applyTransaction.rollback();
-            applyTransaction = null;
+        try {
+            if(applyTransaction!=null) {
+                applyTransaction.rollback();
+                applyTransaction = null;
+            }
+        } finally {
+            isInTransaction = false;
+            sql.rollbackTransaction();
         }
-        sql.rollbackTransaction();
-        isInTransaction = false;
 //        checkSessionTableMap();
     }
 /*    private void checkSessionTableMap() {
@@ -1226,11 +1230,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         try {
             return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, update);
-        } catch (SQLException e) { // assert'им что последняя SQL комманда, работа с транзакцией
-            apply.clear(sql);
-            dataModifier.clearHints(sql); // drop'ем hint'ы (можно и без sql но пока не важно)
-            rollbackTransaction();
-            throw e;
+        } catch (Throwable t) { // assert'им что последняя SQL комманда, работа с транзакцией
+            try {
+                apply.clear(sql);
+                dataModifier.clearHints(sql); // drop'ем hint'ы (можно и без sql но пока не важно)
+            } finally {
+                rollbackTransaction();
+            }
+
+            Throwables.propagateIfPossible(t, SQLException.class);
+            throw Throwables.propagate(t);
         }
     }
 
@@ -1309,7 +1318,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         sql.inconsistent = false;
 
         if(recursiveActions.size() > 0) {
-            recursiveUsed.clear(); recursiveActions.clear();
+            recursiveUsed.clear();
+            recursiveActions.clear();
             return recursiveApply(updatedRecursiveActions, BL, update);
         }
 
