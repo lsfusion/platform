@@ -1,6 +1,6 @@
 MODULE Time;
 
-REQUIRE System, Utils;
+REQUIRE System;
 
 extractHour = FORMULA INTEGER '(extract(hour from ($1)))'; 
 extractDay = FORMULA INTEGER '(extract(day from ($1)))';
@@ -38,10 +38,6 @@ sumDateTimeSeconds(dateTime, seconds) = [= FORMULA DATETIME '(($1)+($2)*CAST(\'1
 subtractDateTimeSeconds(dateTime, seconds) = [= FORMULA DATETIME '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))'](dateTime AS DATETIME, seconds AS LONG);
 
 dateTimeToDateTime = FORMULA DATETIME 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')';
-
-daysInclBetweenDates (date1, date2) = subtractIntegerIncl (date2, date1) IF date1 IS DATE AND date2 IS DATE;
-weeksInclBetweenDates(date1, date2) = divideInteger(daysInclBetweenDates(date1, date2), 7);
-weeksNullInclBetweenDates (date1, date2) = weeksInclBetweenDates (date1, date2) != 0;
 
 sumDateWeekFromFormula = FORMULA DATE '(($1)+($2)*7)';
 sumDateWeekFrom (date, int) = sumDateWeekFromFormula(date, int) IF date IS DATE AND int IS INTEGER;
