@@ -40,7 +40,6 @@ Function pgConfigPagePre
     ${LS_CreateText} $(strDbName) $pgDbName $tfPgDbName
 
     ${if} ${SectionIsSelected} ${SecPG}
-    ${andIf} $createServices == "1"
         ${LS_CreateText} $(strServiceName) $pgServiceName $tfPgServiceName
     ${endIf}
 
@@ -56,9 +55,7 @@ Function pgConfigPageLeave
     
     ${if} ${SectionIsSelected} ${SecPG}
         ${NSD_GetText} $tfPgPassword2 $4
-        ${if} $createServices == "1"
-            ${NSD_GetText} $tfPgServiceName $5
-        ${endIf}
+        ${NSD_GetText} $tfPgServiceName $5
     ${else}
         ${NSD_GetText} $tfPgHost $6
         ${NSD_GetText} $tfPgUser $7
@@ -88,13 +85,11 @@ Function pgConfigPageLeave
             Abort
         ${endif}
 
-        ${if} $createServices == "1"
-            Push $5
-            Call validateNameString
-            ${if} $0 == "0"
-                MessageBox MB_ICONEXCLAMATION|MB_OK $(strInvalidServiceName)
-                Abort
-            ${endIf}
+        Push $5
+        Call validateServiceName
+        ${if} $0 == "0"
+            MessageBox MB_ICONEXCLAMATION|MB_OK $(strInvalidServiceName)
+            Abort
         ${endIf}
         StrCpy $pgServiceName $5
     ${else}

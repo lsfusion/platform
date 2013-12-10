@@ -46,7 +46,7 @@ LangString strInvalidShutdownPort ${LANG_RUSSIAN} "Порт закрытия д�
 LangString strInvalidHttpPort ${LANG_RUSSIAN} "Порт HTTP должен быть в интервале от 1 до 65535 включительно."
 LangString strInvalidAjpPort ${LANG_RUSSIAN} "Порт AJP должен быть в интервале от 1 до 65535 включительно."
 
-LangString strInvalidServiceName ${LANG_RUSSIAN} 'Имя сервиса не должно содержать пробелы или любые из следующих символов: <>:"/\:|?*'
+LangString strInvalidServiceName ${LANG_RUSSIAN} 'Неверное имя сервиса. Оно должно соответсвовать следующим требованиям:$\r$\n* Начинаться с буквы$\r$\n* Заканчиваться буквой или цифрой$\r$\n* Разрешённые специальные символы: _(подчёркивание), .(точка) and -(дефис)$\r$\n* Минимальная длина: 6 символов; максимальная длина: 50 символов'
 LangString strInvalidHostName ${LANG_RUSSIAN} 'Имя хоста не должно содержать пробелы или любые из следующих символов: <>:"/\:|?*'
 LangString strInvalidDbName ${LANG_RUSSIAN} 'Имя базы данных не должно содержать пробелы или любые из следующих символов: <>:"/\:|?*'
 LangString strInvalidUsername ${LANG_RUSSIAN} 'Имя пользователя не должно содержать пробелы или любые из следующих символов: <>:"/\:|?*'
@@ -54,18 +54,20 @@ LangString strInvalidUsername ${LANG_RUSSIAN} 'Имя пользователя �
 LangString strPlatformOptions ${LANG_RUSSIAN} "Настройки установки lsFusion Platform"
 LangString strPlatformServerHost ${LANG_RUSSIAN} "lsFusion Server хост"
 LangString strPlatformServerPort ${LANG_RUSSIAN} "lsFusion Server порт"
+LangString strPlatformServerPasswordMessage ${LANG_RUSSIAN} "Введите пароль администратора lsFusion Server:"
 LangString strShortcutsForAllUsers ${LANG_RUSSIAN} "Создавать ярлыки для всех пользователей"
-LangString strWebClientContext ${LANG_RUSSIAN} "Веб-контекст Web Client приложения"
+LangString strWebClientContextMessage ${LANG_RUSSIAN} "Введите контекст WebClient приложения (базовая часть URL при развёртывании):"
+LangString strWebClientContext ${LANG_RUSSIAN} "Веб-контекст"
 LangString strInvalidWebClientDirectory ${LANG_RUSSIAN} "Выбранная папка не существует"
-LangString strWebClientDirectory ${LANG_RUSSIAN} "Выберите папку, в которую будет скопирован настроенный war-архив WebClient (оставьте пустым, чтобы пропустить копирование)"
+LangString strWebClientDirectory ${LANG_RUSSIAN} "Выберите папку, в которую будет скопирован настроенный war-архив WebClient (например C:\Apache Tomcat\webapps) (оставьте пустым, чтобы пропустить копирование)"
 LangString strInvalidWebClientContext ${LANG_RUSSIAN} 'Веб-контекст Web Client приложения не должен содержать пробелы или любые из следующих символов: <>:"/\:|?*'
 
 LangString strOldPostgreMessage ${LANG_RUSSIAN} "Установленная версия PostgreSQL устарела (<9.2). Пожалуйста деинсталлируйте эту версию или попробуйте произвести установку PostgreSQL вручную."
 
 LangString strPostgreOptions ${LANG_RUSSIAN} "Настройки для установки PostgreSQL"
 LangString strPasswordMessage ${LANG_RUSSIAN} "Введите пароль, который будет использоваться для суперпользователя базы данных."
-LangString strPassword ${LANG_RUSSIAN} "Пароль:"
-LangString strPasswordRetype ${LANG_RUSSIAN} "Повторите пароль:"
+LangString strPassword ${LANG_RUSSIAN} "Пароль"
+LangString strPasswordRetype ${LANG_RUSSIAN} "Повторите пароль"
 LangString strPortMessage ${LANG_RUSSIAN} "Введите порт для использования сервером."
 LangString strPort ${LANG_RUSSIAN} "Порт"
 LangString strHost ${LANG_RUSSIAN} "Имя хоста"

@@ -52,7 +52,7 @@ Function tomcatConfigPageLeave
         ${NSD_GetText} $tfTomcatServiceName $tomcatServiceName
     
         Push $tomcatServiceName
-        Call validateNameString
+        Call validateServiceName
         ${if} $0 == "0"
             MessageBox MB_ICONEXCLAMATION|MB_OK $(strInvalidServiceName)
             Abort

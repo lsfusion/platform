@@ -336,7 +336,8 @@ Function execAntConfiguration
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "tomcat.httpPort=" "$tomcatHttpPort" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "tomcat.shutdownPort=" "$tomcatShutdownPort" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "tomcat.ajpPort=" "$tomcatAjpPort" $R0
-        ExecWait "${INSTCONFDIR}\configure.bat configureTomcat" $0
+        nsExec::ExecToLog '"${INSTCONFDIR}\configure.bat" configureTomcat'
+        Pop $0
 
         DetailPrint "Ant returned $0"
     ${endIf}
@@ -349,7 +350,8 @@ Function execAntConfiguration
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.dir=" "$webClientDirectory" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.archive=" "$INSTDIR\${WEBCLIENT_WAR}" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.context=" "$webClientContext" $R0
-        ExecWait "${INSTCONFDIR}\configure.bat configureWebClient" $0
+        nsExec::ExecToLog '"${INSTCONFDIR}\configure.bat" configureWebClient'
+        Pop $0
 
         DetailPrint "Ant returned $0"
     ${endIf}
@@ -371,7 +373,8 @@ Function execAntConfiguration
 
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.dir=" "$ideaDir" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.plugin=" "${IDEA_PLUGIN}" $R0
-        ExecWait "${INSTCONFDIR}\configure.bat configureIdea" $0
+        nsExec::ExecToLog '"${INSTCONFDIR}\configure.bat" configureIdea'
+        Pop $0
 
         DetailPrint "Ant returned $0"
     ${endIf}

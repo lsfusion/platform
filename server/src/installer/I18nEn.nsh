@@ -46,7 +46,7 @@ LangString strInvalidShutdownPort ${LANG_ENGLISH} "The shutdown port should be b
 LangString strInvalidHttpPort ${LANG_ENGLISH} "The http port should be between 1 and 65535 inclusive."
 LangString strInvalidAjpPort ${LANG_ENGLISH} "The ajp port should be between 1 and 65535 inclusive."
 
-LangString strInvalidServiceName ${LANG_ENGLISH} 'The Service Name may not contain a space or any of the following characters: <>:"/\:|?*'
+LangString strInvalidServiceName ${LANG_ENGLISH} 'Invalid service name. It must match the following criteria:$\r$\n* Starts with an alphabet$\r$\n* Ends with alphanumeric$\r$\n* Allowed special characters are _(underscore), .(dot) and -(hyphen)$\r$\n* Minimum lengh: 6 characters & Maximum length: 50 characters'
 LangString strInvalidHostName ${LANG_ENGLISH} 'The HostName may not contain a space or any of the following characters: <>:"/\:|?*'
 LangString strInvalidDbName ${LANG_ENGLISH} 'Database name may not contain a space or any of the following characters: <>:"/\:|?*'
 LangString strInvalidUsername ${LANG_ENGLISH} 'Username may not contain a space or any of the following characters: <>:"/\:|?*'
@@ -54,10 +54,12 @@ LangString strInvalidUsername ${LANG_ENGLISH} 'Username may not contain a space 
 LangString strPlatformOptions ${LANG_ENGLISH} "Options for lsFusion Platform installation."
 LangString strPlatformServerHost ${LANG_ENGLISH} "lsFusion Server host"
 LangString strPlatformServerPort ${LANG_ENGLISH} "lsFusion Server port"
+LangString strPlatformServerPasswordMessage ${LANG_ENGLISH} "Enter lsFusion Server administrator password:"
 LangString strShortcutsForAllUsers ${LANG_ENGLISH} "Create shortcuts for all users"
+LangString strWebClientContextMessage ${LANG_ENGLISH} "Enter Web Client WebApp context (base URL path after deployment):"
 LangString strWebClientContext ${LANG_ENGLISH} "Web Client WebApp context"
 LangString strInvalidWebClientDirectory ${LANG_ENGLISH} "Selected directory doesn't exist"
-LangString strWebClientDirectory ${LANG_ENGLISH} "Select directory to copy WebClient war-archive to (leave blank if not needed)"
+LangString strWebClientDirectory ${LANG_ENGLISH} "Select directory to copy WebClient war-archive to (i.e. C:\Apache Tomcat\webapps) (leave blank if not needed)"
 LangString strInvalidWebClientContext ${LANG_ENGLISH} 'The WebClient WebApp context may not contain a space or any of the following characters: <>:"/\:|?*'
 
 LangString strOldPostgreMessage ${LANG_ENGLISH} "The installed version of PostgreSQL is too old (<9.2). Please uninstall this version or try a manual installation of PostgreSQL."

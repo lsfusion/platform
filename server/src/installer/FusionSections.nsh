@@ -25,14 +25,15 @@ SubSection "!${PLATFORM_SECTION_NAME}" SecPlatform
         SetOutPath ${INSTCONFDIR}
         File "install-config\*.*"
         
-        SetOutPath $INSTDIR
-        File /r "conf"
+        SetOutPath $INSTDIR\resources
         File "resources\lsfusion.ico"
         
         ; TODO
 ;        File "resources\license-english.txt"
 ;        File "resources\license-russian.txt"
 
+        SetOutPath $INSTDIR
+        File /r "conf"
         File install-bin\${IDEA_PLUGIN}
     SectionEnd
 
@@ -85,7 +86,8 @@ Section "${JAVA_SECTION_NAME}" SecJava
     ${if} $javaVersion == ""
         ${SFile} install-bin\${JAVA_INSTALLER}
 
-        ExecWait "${INSTBINDIR}\${JAVA_INSTALLER}" $0
+        nsExec::ExecToLog "${INSTBINDIR}\${JAVA_INSTALLER}"
+        Pop $0
 
         Call initJavaFromRegistry
         ${if} $javaHome == ""
@@ -109,7 +111,8 @@ Section "${PG_SECTION_NAME}" SecPG
     ${if} $pgVersion == ""
         ${SFile} install-bin\${PG_INSTALLER}
 
-        ExecWait '"${INSTBINDIR}\${PG_INSTALLER}" --mode unattended --unattendedmodeui none --prefix "$pgDir" --datadir "$pgDir\data" --superpassword "$pgPassword" --serverport $pgPort --servicename "$pgServiceName"' $0
+        nsExec::ExecToLog '"${INSTBINDIR}\${PG_INSTALLER}" --mode unattended --unattendedmodeui none --prefix "$pgDir" --datadir "$pgDir\data" --superpassword "$pgPassword" --serverport $pgPort --servicename "$pgServiceName"'
+        Pop $0
         DetailPrint "PostgreSQL installation returned $0"
         
         WriteRegStr HKLM "${REGKEY}\Components" "${PG_SECTION_NAME}" 1
@@ -154,8 +157,9 @@ Section "${IDEA_SECTION_NAME}" SecIdea
         ; Install PostgreSQL if no recent version is installed
         ${SFile} install-bin\${IDEA_INSTALLER}
 
-        ExecWait '"${INSTBINDIR}\${IDEA_INSTALLER}" /S /D=$ideaDir' $0
         DetailPrint 'ExecWait "${INSTBINDIR}\${IDEA_INSTALLER}" /S /D=$ideaDir'
+        nsExec::ExecToLog '"${INSTBINDIR}\${IDEA_INSTALLER}" /S /D=$ideaDir'
+        Pop $0
         DetailPrint "IntelliJ Idea installation returned $0"
         
         WriteRegStr HKLM "${REGKEY}\Components" "${IDEA_SECTION_NAME}" 1

@@ -1,13 +1,21 @@
 !macro _LS_CreateLabel TEXT
-    ${NSD_CreateLabel} 0 $0u 100% 14u "${TEXT}"
-    IntOp $0 $0 + 17  
+    IntOp $5 $0 + 2  
+    ${NSD_CreateLabel} 0 $5u 100% 12u "${TEXT}"
+    IntOp $0 $0 + 15
 !macroend
 !define LS_CreateLabel "!insertmacro _LS_CreateLabel"
 
+!macro _LS_CreateLabel2 TEXT
+    IntOp $5 $0 + 2  
+    ${NSD_CreateLabel} 0 $0u 100% 24u "${TEXT}"
+    IntOp $0 $0 + 24
+!macroend
+!define LS_CreateLabel2 "!insertmacro _LS_CreateLabel2"
+
 !macro _LS_CreateControl TYPE LABEL VALUE_VAR CONTROL_VAR
     IntOp $5 $0 + 2  
-    ${NSD_CreateLabel} 0 $5u 100u 14u "${LABEL}"
-    ${NSD_Create${TYPE}} 120u $0u 100% 12u "${VALUE_VAR}"
+    ${NSD_CreateLabel} 0 $5u 110u 14u "${LABEL}"
+    ${NSD_Create${TYPE}} 120u $0u 180u 12u "${VALUE_VAR}"
     Pop ${CONTROL_VAR}
     IntOp $0 $0 + 17  
 !macroend
@@ -33,19 +41,20 @@
 !macroend
 !define LS_CreateCheckBox "!insertmacro _LS_CreateCheckBox"
 
-!macro _LS_CreateDirRequest LABEL VALUE_VAR CONTROL_VAR ONBROWSE
-    ${LS_CreateLabel} ${LABEL}
+!macro _LS_CreateDirRequest LABEL_HEIGHT_IND LABEL VALUE_VAR CONTROL_VAR ONBROWSE
+    ${LS_CreateLabel${LABEL_HEIGHT_IND}} ${LABEL}
     
-    ${NSD_CreateDirRequest} 0 $0u 280u 14u ${VALUE_VAR}
+    ${NSD_CreateDirRequest} 0 $0u 282u 12u ${VALUE_VAR}
     Pop ${CONTROL_VAR}
 
-    ${NSD_CreateBrowseButton} 282u $0u 15u 13u "..."
+    ${NSD_CreateBrowseButton} 284u $0u 15u 12u "..."
     Pop $R0
     ${NSD_OnClick} $R0 ${ONBROWSE}
     
     IntOp $0 $0 + 17
 !macroend
-!define LS_CreateDirRequest "!insertmacro _LS_CreateDirRequest"
+!define LS_CreateDirRequest '!insertmacro _LS_CreateDirRequest ""'
+!define LS_CreateDirRequest2 '!insertmacro _LS_CreateDirRequest 2'
 
 !macro DefineOnBrowseFunction DIR_CONTROL ONBROWSE
     Function ${ONBROWSE}
@@ -128,40 +137,22 @@
 !define DirExists `"" DirExists`
 
 
-; Validates that a string name does not use any of the invalid
-; characters: <>:"/\:|?*
-; Note that space is also not permitted although it will be once
-;
-; Put the proposed service name on the stack
-; If the name is valid, a 1 will be left on the stack
-; If the name is invalid, a 0 will be left on the stack
+; Validates that a string name does not use any of the invalid characters: <>:"/\:|?*
 Function validateMaybeEmptyNameString
-  Pop $R0
-  StrLen $R1 $R0
-  StrCpy $R3 '<>:"/\:|?* '
-  StrLen $R4 $R3
+    Pop $R1
+    
+    ${StrFilter} $R1 "" "" '<>:"/\:|?* ' $R3
+    ${if} $R1 != $R3
+        Goto error
+    ${endIf}
+    
+    StrCpy $0 "1"
+    Goto end
+    
+    error:
+    StrCpy $0 "0"
 
-  loopInput:
-    IntOp $R1 $R1 - 1
-    IntCmp $R1 -1 valid
-    loopTestChars:
-      IntOp $R4 $R4 - 1
-      IntCmp $R4 -1 loopTestCharsDone
-      StrCpy $R2 $R0 1 $R1
-      StrCpy $R5 $R3 1 $R4
-      StrCmp $R2 $R5 invalid loopTestChars
-    loopTestCharsDone:
-    StrLen $R4 $R3
-    Goto loopInput
-
-  invalid:
-  StrCpy $0 "0"
-  Goto exit
-
-  valid:
-  StrCpy $0 "1"
-  
-  exit:
+    end:
 FunctionEnd
 
 Function validateNameString
@@ -172,4 +163,49 @@ Function validateNameString
         Push $R0
         Call validateMaybeEmptyNameString
     ${endIf}
+FunctionEnd
+
+
+;It must match the following criteria:
+;  Starts with an alphabet
+;  Ends with alphanumeric
+;  Allowed special characters are _(underscore), .(dot) and -(hyphen)
+;  Minimum lengh: 6 characters & Maximum length: 50 characters
+Function validateServiceName
+    Pop $R1
+    
+    StrLen $R2 $R1
+    ${if} $R2 < 6
+    ${orIf} $R2 > 50
+        Goto error
+    ${endIf}
+    
+    ; first letter
+    StrCpy $R3 $R1 1
+    ${StrFilter} $R3 "2" "" "" $R4
+    ${if} $R3 != $R4
+        Goto error
+    ${endIf}
+    
+    ; last letter
+    StrCpy $R3 $R1 "" -1
+    ${StrFilter} $R3 "12" "" "" $R4
+    ${if} $R3 != $R4
+        Goto error
+    ${endIf}
+    
+    ; all symbols
+    ${StrFilter} $R1 "12" "_.-" "" $R3
+    ${if} $R1 != $R3
+        Goto error
+    ${endIf}
+    
+    StrCpy $0 "1"
+    Goto end
+    
+    error:
+    StrCpy $0 "0"
+
+    end:
+    
 FunctionEnd

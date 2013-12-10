@@ -25,6 +25,7 @@ Function platformConfigPagePre
     ${endIf}
 
     ${LS_CreateNumber} "$(strPlatformServerPort)" $platformServerPort $tfPlatformServerPort
+    ${LS_CreateLabel} "$(strPlatformServerPasswordMessage)"
     ${LS_CreatePassword} "$(strPassword)" $platformServerPassword $tfPlatformServerPassword1
     ${if} ${SectionIsSelected} ${SecServer}
         ${LS_CreatePassword} "$(strPasswordRetype)" $platformServerPassword $tfPlatformServerPassword2
@@ -35,10 +36,11 @@ Function platformConfigPagePre
     ${endIf}
 
     ${if} ${SectionIsSelected} ${SecWebClient}
+        ${LS_CreateLabel} "$(strWebClientContextMessage)"
         ${LS_CreateText} "$(strWebClientContext)" $webClientContext $tfWebClientContext
         
         ${ifNot} ${SectionIsSelected} ${SecTomcat}
-            ${LS_CreateDirRequest} $(strWebClientDirectory) $webClientDirectory $tfWebClientDirectory existingTomcatDir_onDirBrowse
+            ${LS_CreateDirRequest2} $(strWebClientDirectory) $webClientDirectory $tfWebClientDirectory existingTomcatDir_onDirBrowse
         ${endIf}
     ${endIf}
 
@@ -82,7 +84,7 @@ Function platformConfigPageLeave
     
         ${if} $createServices == "1"
             Push $platformServiceName
-            Call validateNameString
+            Call validateServiceName
             ${if} $0 == "0"
                 MessageBox MB_ICONEXCLAMATION|MB_OK $(strInvalidServiceName)
                 Abort
