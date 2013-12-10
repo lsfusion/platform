@@ -380,14 +380,12 @@ public abstract class LogicsModule {
 
     protected ConcreteCustomClass addConcreteClass(String name, String caption, List<String> sids, List<String> names, CustomClass... parents) {
         assert parents.length > 0;
-        assert name.charAt(0) >= 'A' && name.charAt(0) <= 'Z';
         ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, sids, names, parents);
         storeCustomClass(customClass);
         return customClass;
     }
 
     protected AbstractCustomClass addAbstractClass(String name, String caption, CustomClass... parents) {
-        assert name.charAt(0) >= 'A' && name.charAt(0) <= 'Z';
         AbstractCustomClass customClass = new AbstractCustomClass(transformNameToSID(name), caption, parents);
         storeCustomClass(customClass);
         return customClass;
