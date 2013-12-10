@@ -193,9 +193,20 @@ public class Words {
                 else
                     return 0;
             case 2:
+                if (String.valueOf(value).endsWith("12"))
+                    return 2;
+                else
+                    return 1;
             case 3:
+                if (String.valueOf(value).endsWith("13"))
+                    return 2;
+                else
+                    return 1;
             case 4:
-                return 1;
+                if (String.valueOf(value).endsWith("14"))
+                    return 2;
+                else
+                    return 1;
             default:
                 return 2;
         }
