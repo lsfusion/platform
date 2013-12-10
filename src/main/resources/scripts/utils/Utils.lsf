@@ -40,7 +40,6 @@ delta = FORMULA 'abs(($1)-($2))';
 divideInteger = FORMULA INTEGER 'CAST(CAST(trunc($1) AS integer)/CAST(trunc($2) as integer) as integer)';
 divideIntegerNeg = FORMULA INTEGER 'CASE WHEN CAST(($1) AS integer)<0 THEN -CAST(((-CAST(($1) as integer)-1)/CAST(($2) as integer)) as integer) ELSE CAST(CAST(($1) as integer)/CAST(($2) as integer) as integer) END';
 divideIntegerRnd = FORMULA INTEGER 'CAST(round(($1)/($2),0) as integer)';
-subtractIntegerIncl = FORMULA INTEGER '(($1)-($2)+1)';
 
 iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER STEP i==$i+1 AND i<=to CYCLES IMPOSSIBLE;
 count(i, count) = iterate(i, 1, count);
