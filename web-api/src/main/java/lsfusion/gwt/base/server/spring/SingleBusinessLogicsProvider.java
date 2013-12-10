@@ -113,7 +113,7 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
 
     private void createRemoteLogics() {
         try {
-            RemoteLogicsLoaderInterface loader = RMIUtils.rmiLookup(registryHost, registryPort, "RemoteLogicsLoader");
+            RemoteLogicsLoaderInterface loader = RMIUtils.rmiLookup(registryHost, registryPort, exportName, "RemoteLogicsLoader");
 
             logics = (T) loader.getLogics();
             timeZone = logics.getTimeZone();
