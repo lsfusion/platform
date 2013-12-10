@@ -2238,13 +2238,15 @@ public class BaseUtils {
     }
 
     public static void runLater(final int delay, final Runnable runnable) {
-        new Thread("runLater-thread") {
+        Thread thread = new Thread("runLater-thread") {
             @Override
             public void run() {
                 SystemUtils.sleep(delay);
                 runnable.run();
             }
-        }.start();
+        };
+        thread.setDaemon(true);
+        thread.start();
     }
 
     public static <T> void addToOrderedList(List<T> orderedList, T element, int after, Comparator<T> compare) {

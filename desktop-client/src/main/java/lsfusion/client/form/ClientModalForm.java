@@ -56,7 +56,9 @@ public class ClientModalForm extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                form.closePressed();
+                if (form != null) {
+                    form.closePressed();
+                }
             }
         });
     }
