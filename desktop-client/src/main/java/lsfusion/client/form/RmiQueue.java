@@ -221,7 +221,6 @@ public class RmiQueue {
                 busyDisplayer.start();
 
                 try {
-
                     result = get();
                 } finally {
                     busyDisplayer.stop();

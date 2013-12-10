@@ -72,13 +72,12 @@ public class CompressedOutputStream_jre6 extends FilterOutputStream {
         this.observer = observer;
         this.inBuf = new byte[size];
         this.outBuf = new byte[size];
-        this.deflater = new Deflater(Deflater.DEFAULT_COMPRESSION);
+        this.deflater = new Deflater();
     }
 
     protected void compressAndSend() throws IOException {
         compressAndSend(inBuf, 0, inBufLen);
         inBufLen = 0;
-
     }
 
     protected void compressAndSend(byte[] inBuf, int off, int len) throws IOException {
@@ -89,7 +88,7 @@ public class CompressedOutputStream_jre6 extends FilterOutputStream {
             int written;
             int compressedSize = 0;
             int extra = setIntAsBytes(outBuf, 0, len);
-            while (!deflater.needsInput()) {
+            do {
                 written = deflater.deflate(outBuf, extra + 4, outBuf.length - extra - 4);
                 if (written > 0) {
                     setIntAsBytes(outBuf, extra, written);
@@ -99,7 +98,7 @@ public class CompressedOutputStream_jre6 extends FilterOutputStream {
                     compressedSize += written + extra + 4;
                     extra = 0;
                 }
-            }
+            } while (written > 0);
             setIntAsBytes(outBuf, 0, 0);
             out.write(outBuf, 0, 4);
 

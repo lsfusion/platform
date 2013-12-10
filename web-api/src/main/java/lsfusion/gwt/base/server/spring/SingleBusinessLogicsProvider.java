@@ -1,12 +1,11 @@
 package lsfusion.gwt.base.server.spring;
 
-import org.apache.log4j.Logger;
 import lsfusion.base.Provider;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
+import lsfusion.interop.remote.RMIUtils;
+import org.apache.log4j.Logger;
 
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -114,8 +113,7 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
 
     private void createRemoteLogics() {
         try {
-            Registry registry = LocateRegistry.getRegistry(registryHost, registryPort);
-            RemoteLogicsLoaderInterface loader = (RemoteLogicsLoaderInterface) registry.lookup(exportName + "/RemoteLogicsLoader");
+            RemoteLogicsLoaderInterface loader = RMIUtils.rmiLookup(registryHost, registryPort, "RemoteLogicsLoader");
 
             logics = (T) loader.getLogics();
             timeZone = logics.getTimeZone();

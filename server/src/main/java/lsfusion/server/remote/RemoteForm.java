@@ -477,11 +477,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public ServerResponse setTabVisible(long requestIndex, final int tabPaneID, final int tabIndex) throws RemoteException {
+    public ServerResponse setTabVisible(long requestIndex, final int tabPaneID, final int childId) throws RemoteException {
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
-                form.setTabVisible((ContainerView) richDesign.findById(tabPaneID), richDesign.findById(tabIndex));
+                form.setTabVisible((ContainerView) richDesign.findById(tabPaneID), richDesign.findById(childId));
             }
         });
     }
