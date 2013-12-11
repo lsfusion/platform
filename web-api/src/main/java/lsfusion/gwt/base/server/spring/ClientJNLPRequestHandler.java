@@ -32,8 +32,13 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
         try {
             StringBuffer requestURL = request.getRequestURL();
             String codebaseUrl = requestURL.substring(0, requestURL.lastIndexOf("/"));
-
-            VMOptions clientVMOptions = blProvider.getLogics().getClientVMOptions();
+            VMOptions clientVMOptions;
+            try {
+                clientVMOptions = blProvider.getLogics().getClientVMOptions();
+            } catch (Exception e) {
+                //use default
+                clientVMOptions = new VMOptions(null, null);
+            }
 
             handleJNLPRequest(request, response, codebaseUrl, "client.jnlp", "lsFusion Client", request.getServerName(),
                               blProvider.getRegistryPort(), blProvider.getExportName(),

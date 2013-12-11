@@ -183,7 +183,7 @@ public class LoginDialog extends JDialog {
 
     private void propagateServerAgents() {
         try {
-            RemoteServerAgentInterface remoteLoader = RMIUtils.rmiLookup("localhost", 6666, "ServerAgent");
+            RemoteServerAgentInterface remoteLoader = RMIUtils.rmiLookup("localhost", 6666, "ServerAgent", Main.rmiSocketFactory);
             for (String exportName : remoteLoader.getExportNames()) {
                 ((MutableComboBoxModel) serverDB.getModel()).addElement(exportName);
             }

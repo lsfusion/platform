@@ -1,6 +1,5 @@
 package lsfusion.client;
 
-import lsfusion.client.rmi.RMITimeoutSocketFactory;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.remote.RMIUtils;
 
@@ -44,7 +43,7 @@ public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterfa
         while (true) {
             publish(attempts++);
             try {
-                return (RemoteLogicsLoaderInterface)RMIUtils.rmiLookup(serverHost, serverPort, serverDB, "RemoteLogicsLoader", RMITimeoutSocketFactory.getInstance());
+                return (RemoteLogicsLoaderInterface)RMIUtils.rmiLookup(serverHost, serverPort, serverDB, "RemoteLogicsLoader", Main.rmiSocketFactory);
             } catch (ConnectException ignore) {
             } catch (NoSuchObjectException ignore) {
             } catch (NotBoundException ignore) {

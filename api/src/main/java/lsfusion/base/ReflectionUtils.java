@@ -34,13 +34,11 @@ public class ReflectionUtils {
     }
 
     public static Object getPrivateStaticFieldValue(Class clazz, String fieldName) {
-        try {
-            Field field = clazz.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            return field.get(clazz);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return getPrivateFieldValue(clazz, null, fieldName);
+    }
+
+    public static void setPrivateStaticFieldValue(Class clazz, String fieldName, Object value) {
+        setPrivateFieldValue(clazz, null, fieldName, value);
     }
 
     public static Object getPrivateFieldValue(Object target, String fieldName) {
@@ -53,7 +51,7 @@ public class ReflectionUtils {
             field.setAccessible(true);
             return field.get(target);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -67,7 +65,7 @@ public class ReflectionUtils {
             field.setAccessible(true);
             field.set(target, value);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -117,7 +115,7 @@ public class ReflectionUtils {
         try {
             getSingleMethod(object, "set" + BaseUtils.capitalize(field), 1).invoke(object, set);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -126,7 +124,7 @@ public class ReflectionUtils {
             Method method = object.getClass().getMethod("get" + BaseUtils.capitalize(field));
             return method.invoke(object);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -134,7 +132,7 @@ public class ReflectionUtils {
         try {
             getSingleMethod(object, "addTo" + BaseUtils.capitalize(field), 1).invoke(object, add);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -142,7 +140,7 @@ public class ReflectionUtils {
         try {
             getSingleMethod(object, "removeFrom" + BaseUtils.capitalize(field), 1).invoke(object, add);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

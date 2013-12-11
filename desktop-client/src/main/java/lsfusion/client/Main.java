@@ -53,6 +53,8 @@ public class Main {
     public static final String LSFUSION_TITLE = "lsFusion";
     private static final String DEFAULT_SPLASH_PATH = "/images/lsfusion.jpg";
 
+    public static final RMITimeoutSocketFactory rmiSocketFactory = RMITimeoutSocketFactory.getInstance();
+
     public static boolean configurationAccessAllowed;
 
     public static ModuleFactory module;
@@ -75,8 +77,6 @@ public class Main {
     private static ExceptionThreadGroup mainThreadGroup;
     private static Thread mainThread;
     private static PingThread pingThread;
-
-    private static RMITimeoutSocketFactory socketFactory = RMITimeoutSocketFactory.getInstance();
 
     private static ClientObjectClass baseClass = null;
     public static EventBus eventBus = new EventBus();
@@ -111,7 +111,7 @@ public class Main {
 
             initRmiClassLoader();
 
-            RMIUtils.installRmiErrorHandler();
+            RMIUtils.initRMI(rmiSocketFactory);
 
             initSwing();
         } catch (Exception e) {
@@ -291,19 +291,19 @@ public class Main {
     }
 
     public static long getBytesSent() {
-        return socketFactory.outSum;
+        return rmiSocketFactory.outSum;
     }
 
     public static long getBytesReceived() {
-        return socketFactory.inSum;
+        return rmiSocketFactory.inSum;
     }
 
     public static void overrideRMIHostName(String hostName) {
-        socketFactory.setOverrideHostName(hostName);
+        rmiSocketFactory.setOverrideHostName(hostName);
     }
 
     public static void closeHangingSockets() {
-        socketFactory.closeHangingSockets();
+        rmiSocketFactory.closeHangingSockets();
     }
 
     private static void startSplashScreen() {

@@ -14,7 +14,7 @@ public class InitRMIContextListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         String registryHost = servletContextEvent.getServletContext().getInitParameter("registryHost");
         try {
-            RMIUtils.installRmiErrorHandler();
+            RMIUtils.initRMI();
             RMIUtils.overrideRMIHostName(registryHost);
         } catch (IOException e) {
             logger.error("Ошибка при инициализации RMISocketFactory: ", e);

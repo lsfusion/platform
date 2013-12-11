@@ -12,7 +12,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 
-import static lsfusion.interop.remote.RMIUtils.installRmiErrorHandler;
+import static lsfusion.interop.remote.RMIUtils.initRMI;
 
 public class ServerAgentBootstrap {
 
@@ -36,7 +36,7 @@ public class ServerAgentBootstrap {
     public static void start() throws IOException {
         logger.info("Server Agent is starting...");
 
-        installRmiErrorHandler();
+        initRMI();
 
         initSprintContext();
 

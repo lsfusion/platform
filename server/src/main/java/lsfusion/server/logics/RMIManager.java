@@ -91,7 +91,7 @@ public class RMIManager extends LifecycleAdapter implements InitializingBean {
 //        }
 
         try {
-            RMIUtils.installRmiErrorHandler();
+            RMIUtils.initRMI();
         } catch (IOException e) {
             logger.error("Error starting RMIManager: ", e);
             Throwables.propagate(e);
