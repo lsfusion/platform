@@ -1,13 +1,10 @@
 package lsfusion.interop.event;
 
-public interface IDaemonTask extends Runnable {
+public interface IDaemonTask {
 
-    @Override
-    public void run();
+    public void start() throws Exception;
 
-    public int getDelay();
-
-    public int getPeriod();
+    public void stop();
 
     public void setEventBus(EventBus eventBus);
 }

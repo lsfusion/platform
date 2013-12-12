@@ -2,31 +2,28 @@ package lsfusion.server.daemons;
 
 import jssc.SerialPort;
 import jssc.SerialPortException;
-import lsfusion.interop.event.EventBus;
-import lsfusion.interop.event.IDaemonTask;
+import lsfusion.interop.event.RepeatableDaemonTask;
 
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-public class WeightDaemonTask implements IDaemonTask, Serializable {
+public class WeightDaemonTask extends RepeatableDaemonTask implements Serializable {
+
     public static final String SCALES_SID = "SCALES";
-    private transient EventBus eventBus;
+
     SerialPort serialPort;
     int prev;
     int speed;
-    int period;
-    int delay;
 
     public WeightDaemonTask(int com, int speed, int period, int delay) {
+        super(delay, period, "weight-daemon-task");
         serialPort = new SerialPort("COM" + com);
         this.speed = speed;
-        this.period = period;
-        this.delay = delay;
     }
 
     @Override
-    public void run() {
+    protected void tick() {
         try {
             serialPort.openPort();
             serialPort.setParams(speed, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_EVEN);
@@ -48,20 +45,6 @@ public class WeightDaemonTask implements IDaemonTask, Serializable {
         } catch (SerialPortException ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    public void setEventBus(EventBus eventBus){
-        this.eventBus = eventBus;
-    }
-
-    @Override
-    public int getDelay() {
-        return delay;
-    }
-
-    @Override
-    public int getPeriod() {
-        return period;
     }
 
     static public int getWeight(byte[] msg) {

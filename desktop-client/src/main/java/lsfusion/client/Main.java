@@ -1,6 +1,5 @@
 package lsfusion.client;
 
-import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
@@ -39,11 +38,6 @@ import java.rmi.server.RMIClassLoader;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.TimeZone;
-import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
@@ -81,7 +75,7 @@ public class Main {
 
     private static ClientObjectClass baseClass = null;
     public static EventBus eventBus = new EventBus();
-    private static ScheduledExecutorService daemonTasksExecutor;
+    private static ArrayList<IDaemonTask> daemonTasks;
 
     public static void start(final String[] args, ModuleFactory startModule) {
         bootstrapThreadGroup = Thread.currentThread().getThreadGroup();
@@ -189,19 +183,10 @@ public class Main {
 
                             ((DockableMainFrame) frame).focusPageIfNeeded();
 
-                            ArrayList<IDaemonTask> tasks = remoteLogics.getDaemonTasks(Main.computerId);
-                            daemonTasksExecutor = Executors.newSingleThreadScheduledExecutor();
-                            for (IDaemonTask task : tasks) {
+                            daemonTasks = remoteLogics.getDaemonTasks(Main.computerId);
+                            for (IDaemonTask task : daemonTasks) {
                                 task.setEventBus(eventBus);
-                                
-                                try {
-                                    final ScheduledFuture<?> future = daemonTasksExecutor.schedule(new DaemonTask(task), task.getDelay(), TimeUnit.MILLISECONDS);
-                                    future.get();
-                                } catch (Exception e) {
-                                    closeSplashScreen();
-                                    logger.error(getString("client.error.application.initialization"), e);
-                                    throw new RuntimeException(getString("client.error.application.initialization"), e);  
-                                }
+                                task.start();
                             }
                         } catch (Exception e) {
                             closeSplashScreen();
@@ -472,11 +457,10 @@ public class Main {
         ClientExternalScreen.dropCaches();
 
         eventBus.invalidate();
-        daemonTasksExecutor.shutdown();
-        try {
-            daemonTasksExecutor.awaitTermination(15, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Throwables.propagate(e);
+        if (daemonTasks != null) {
+            for (IDaemonTask task : daemonTasks) {
+                task.stop();
+            }
         }
 
         computerId = -1;
@@ -488,19 +472,6 @@ public class Main {
         remoteNavigator = null;
 
         System.gc();
-    }
-
-    static class DaemonTask extends TimerTask {
-        IDaemonTask task;
-
-        public DaemonTask(IDaemonTask task) {
-            this.task = task;
-        }
-
-        @Override
-        public void run() {
-            task.run();
-        }
     }
 
     public interface ModuleFactory {

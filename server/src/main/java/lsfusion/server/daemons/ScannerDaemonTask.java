@@ -1,22 +1,22 @@
 package lsfusion.server.daemons;
 
+import com.google.common.base.Throwables;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
-import lsfusion.interop.event.EventBus;
-import lsfusion.interop.event.IDaemonTask;
+import lsfusion.interop.event.AbstractDaemonTask;
 
 import java.io.Serializable;
 
-public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortEventListener {
+public class ScannerDaemonTask extends AbstractDaemonTask implements Serializable, SerialPortEventListener {
     public static final String SCANNER_SID = "SCANNER";
 
-    private transient EventBus eventBus;
-
-    int com;
-    boolean singleRead = false;
-    Integer bytesCount; 
+    private final int com;
+    private final boolean singleRead;
+    private final Integer bytesCount;
+    private transient SerialPort serialPort;
+    private transient String barcode = "";
 
     public ScannerDaemonTask(int com, boolean singleRead) {
         this(com, singleRead, null);
@@ -28,11 +28,8 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
         this.bytesCount = bytesCount;
     }
 
-    transient SerialPort serialPort;
-
     @Override
-    public void run() {
-
+    public void start() {
         try {
             serialPort = new SerialPort("COM" + com);
             boolean opened = serialPort.openPort();
@@ -46,25 +43,19 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
         } catch (SerialPortException ex) {
             throw new RuntimeException(ex);
         }
-
     }
 
     @Override
-    public int getDelay() {
-        return 0;
+    public void stop() {
+        try {
+            serialPort.removeEventListener();
+            serialPort.closePort();
+            serialPort = null;
+        } catch (SerialPortException e) {
+            logger.error("Error releasing scanner: ", e);
+            throw Throwables.propagate(e);
+        }
     }
-
-    @Override
-    public int getPeriod() {
-        return 2000000000;
-    }
-
-    @Override
-    public void setEventBus(EventBus eventBus) {
-        this.eventBus = eventBus;
-    }
-
-    private transient String barcode = "";
 
     @Override
     public void serialEvent(SerialPortEvent event) {
