@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<project name="lsFusion ant utils">
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
+    <property name="LF" value="${line.separator}"/>
+
+    <property file="utils.properties"/>
+
+    <property name="build.trunk" value="${build.dir}/trunk"/>
+    <property name="build.tag" value="${build.dir}/tag"/>
+
+    <property name="svn.tag.label" value="platform-${version.release}"/>
+    <property name="svn.trunk" value="${svn.base}/trunk"/>
+    <property name="svn.tag" value="${svn.base}/tags/${svn.tag.label}"/>
+
+    <target name="prepareNextRelease">
+        <delete dir="${build.dir}"/>
+        <mkdir dir="${build.trunk}"/>
+        <mkdir dir="${build.tag}"/>
+
+        <exec dir="${build.trunk}" executable="svn.exe" failonerror="true">
+            <arg value="co"/>
+            <arg value="${svn.trunk}"/>
+            <arg value="."/>
+        </exec>
+
+        <replace file="${build.trunk}/web-api/src/main/resources/client.jnlp" token="${version.old}" value="${version.release}" encoding="UTF-8"/>
+
+        <exec dir="${build.trunk}" executable="svn.exe" failonerror="true">
+            <arg value="commit"/>
+            <arg value="web-api/src/main/resources/client.jnlp"/>
+            <arg value="-m"/>
+            <arg value="prepare release"/>
+        </exec>
+
+        <exec dir="${build.trunk}" executable="cmd" failonerror="true">
+            <arg value="/c"/>
+            <arg value="mvn -Dusername=${svn.user} -Dpassword=${svn.pass} -Dtag=${svn.tag.label} -DreleaseVersion=${version.release} -DdevelopmentVersion=${version.new} release:prepare"/>
+        </exec>
+
+        <replace file="${build.trunk}/web-api/src/main/resources/client.jnlp" token="${version.release}" value="${version.new}" encoding="UTF-8"/>
+
+        <exec dir="${build.trunk}" executable="svn.exe" failonerror="true">
+            <arg value="commit"/>
+            <arg value="web-api/src/main/resources/client.jnlp"/>
+            <arg value="-m"/>
+            <arg value="prepare dev version"/>
+        </exec>
+
+        <!-- Deploy tag -->
+        <exec dir="${build.tag}" executable="svn.exe" failonerror="true">
+            <arg value="co"/>
+            <arg value="${svn.tag}"/>
+            <arg value="."/>
+        </exec>
+
+        <exec dir="${build.tag}" executable="cmd" failonerror="true">
+            <arg value="/c"/>
+            <arg value="mvn clean ${deploy.goal}"/>
+        </exec>
+        <exec dir="${build.tag}/server" executable="cmd" failonerror="true">
+            <arg value="/c"/>
+            <arg value="mvn ${deploy.goal} -P assemble,pack"/>
+        </exec>
+        <exec dir="${build.tag}/desktop-client" executable="cmd" failonerror="true">
+            <arg value="/c"/>
+            <arg value="mvn ${deploy.goal} -P assemble,sign,pack"/>
+        </exec>
+        <exec dir="${build.tag}/web-client" executable="cmd" failonerror="true">
+            <arg value="/c"/>
+            <arg value="mvn ${deploy.goal} -P gwt,desktop,war"/>
+        </exec>
+    </target>
+
+    <target name="prepareBranchFromTag">
+        <echo message="todo"/>
+    </target>
+</project>
