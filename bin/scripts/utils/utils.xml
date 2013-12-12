@@ -35,7 +35,7 @@
 
         <exec dir="${build.trunk}" executable="cmd" failonerror="true">
             <arg value="/c"/>
-            <arg value="mvn -Dusername=${svn.user} -Dpassword=${svn.pass} -Dtag=${svn.tag.label} -DreleaseVersion=${version.release} -DdevelopmentVersion=${version.new} release:prepare"/>
+            <arg value="mvn -B -Dusername=${svn.user} -Dpassword=${svn.pass} -Dtag=${svn.tag.label} -DreleaseVersion=${version.release} -DdevelopmentVersion=${version.new} release:prepare"/>
         </exec>
 
         <replace file="${build.trunk}/web-api/src/main/resources/client.jnlp" token="${version.release}" value="${version.new}" encoding="UTF-8"/>
