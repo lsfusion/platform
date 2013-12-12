@@ -3,11 +3,11 @@
     <groupId>lsfusion.platform</groupId>
     <artifactId>base</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.1.1</version>
     <name>Base</name>
 
     <properties>
-        <lsfusion.version>1.2.0-SNAPSHOT</lsfusion.version>
+        <lsfusion.version>1.1.1</lsfusion.version>
         <lsfusion.fsl.version>${lsfusion.version}</lsfusion.fsl.version>
 
         <findbugs.version>1.0.0</findbugs.version>
@@ -263,12 +263,12 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <echo message="Repacking jar ${assemble.jar}"/>
+                                        <echo message="Repacking jar ${assemble.jar}" />
                                         <exec executable="pack200">
-                                            <arg value="--repack"/>
-                                            <arg value="--effort=1"/>
-                                            <arg value="--segment-limit=-1"/>
-                                            <arg value="${assemble.jar}"/>
+                                            <arg value="--repack" />
+                                            <arg value="--effort=1" />
+                                            <arg value="--segment-limit=-1" />
+                                            <arg value="${assemble.jar}" />
                                         </exec>
 
                                         <signjar jar="${assemble.jar}" keystore="${keystore.file}" alias="${keystore.alias}" storepass="${keystore.pass}" />
@@ -296,12 +296,12 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <echo message="Pack200-ing jar ${assemble.jar}"/>
+                                        <echo message="Pack200-ing jar ${assemble.jar}" />
                                         <exec executable="pack200">
-                                            <arg value="--effort=1"/>
-                                            <arg value="--segment-limit=-1"/>
-                                            <arg value="${assemble.packed}"/>
-                                            <arg value="${assemble.jar}"/>
+                                            <arg value="--effort=1" />
+                                            <arg value="--segment-limit=-1" />
+                                            <arg value="${assemble.packed}" />
+                                            <arg value="${assemble.jar}" />
                                         </exec>
                                     </target>
                                 </configuration>
