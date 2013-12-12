@@ -42,6 +42,7 @@ import java.util.TimeZone;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -189,10 +190,18 @@ public class Main {
                             ((DockableMainFrame) frame).focusPageIfNeeded();
 
                             ArrayList<IDaemonTask> tasks = remoteLogics.getDaemonTasks(Main.computerId);
-                            daemonTasksExecutor = Executors.newScheduledThreadPool(1);
+                            daemonTasksExecutor = Executors.newSingleThreadScheduledExecutor();
                             for (IDaemonTask task : tasks) {
                                 task.setEventBus(eventBus);
-                                daemonTasksExecutor.scheduleWithFixedDelay(new DaemonTask(task), task.getDelay(), task.getPeriod(), TimeUnit.MILLISECONDS);
+                                
+                                try {
+                                    final ScheduledFuture<?> future = daemonTasksExecutor.schedule(new DaemonTask(task), task.getDelay(), TimeUnit.MILLISECONDS);
+                                    future.get();
+                                } catch (Exception e) {
+                                    closeSplashScreen();
+                                    logger.error(getString("client.error.application.initialization"), e);
+                                    throw new RuntimeException(getString("client.error.application.initialization"), e);  
+                                }
                             }
                         } catch (Exception e) {
                             closeSplashScreen();

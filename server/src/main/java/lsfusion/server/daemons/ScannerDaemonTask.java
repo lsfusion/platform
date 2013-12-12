@@ -35,7 +35,10 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
 
         try {
             serialPort = new SerialPort("COM" + com);
-            serialPort.openPort();
+            boolean opened = serialPort.openPort();
+            if(!opened) {
+                throw new RuntimeException("Не удалось открыть порт COM" + com + ". Попробуйте закрыть все другие приложения, использующие этот порт и перезапустить клиент.");
+            }
             serialPort.setParams(9600, 8, 1, 0);
             serialPort.setEventsMask(SerialPort.MASK_RXCHAR | SerialPort.MASK_CTS | SerialPort.MASK_DSR);//Set mask
             serialPort.addEventListener(this, SerialPort.MASK_RXCHAR | SerialPort.MASK_CTS | SerialPort.MASK_DSR);//Add SerialPortEventListener
