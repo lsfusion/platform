@@ -200,19 +200,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
         this.classView = classView;
     }
 
-    public void requestFocusInWindow() {
-        //todo: remove later...
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (classView == ClassViewType.GRID) {
-                    grid.requestFocusInWindow();
-                } else if (classView == ClassViewType.PANEL) {
-                    panel.requestFocusInWindow();
-                }
-            }
-        });
-    }
-
     public void addPanelProperty(ClientPropertyDraw property) {
         if (grid != null) {
             grid.removeProperty(property);

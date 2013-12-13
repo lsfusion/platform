@@ -62,20 +62,25 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         tabbedPane.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                int selectedIndex = tabbedPane.getSelectedIndex();
-                if (selectedIndex != -1) {
-                    ClientComponent selectedChild = visibleChildren.get(selectedIndex);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int selectedIndex = tabbedPane.getSelectedIndex();
+                        if (selectedIndex != -1) {
+                            ClientComponent selectedChild = visibleChildren.get(selectedIndex);
 
-                    // вообще changeListener может вызваться при инициализации, но это проверка в том числе позволяет suppres'ить этот случай
-                    if (currentChild != selectedChild) {
-                        try {
-                            currentChild = selectedChild;
-                            form.setTabVisible(container, currentChild);
-                        } catch (IOException ex) {
-                            throw Throwables.propagate(ex);
+                            // вообще changeListener может вызваться при инициализации, но это проверка в том числе позволяет suppres'ить этот случай
+                            if (currentChild != selectedChild) {
+                                try {
+                                    currentChild = selectedChild;
+                                    form.setTabVisible(container, currentChild);
+                                } catch (IOException ex) {
+                                    throw Throwables.propagate(ex);
+                                }
+                            }
                         }
                     }
-                }
+                });
             }
         });
 
