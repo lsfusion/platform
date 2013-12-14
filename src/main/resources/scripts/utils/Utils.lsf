@@ -44,6 +44,8 @@ divideIntegerRnd = FORMULA INTEGER 'CAST(round(($1)/($2),0) as integer)';
 iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER STEP i==$i+1 AND i<=to CYCLES IMPOSSIBLE;
 count(i, count) = iterate(i, 1, count);
 
+toInteger (i) = FORMULA INTEGER 'convert_to_integer($1)';
+
 // --------------------------------------------- Округления --------------------------------- //
 roundM1 (number) = round(number, -1);
 round0 (number) = round(number, 0);
