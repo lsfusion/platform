@@ -28,14 +28,14 @@ sumDateYear = FORMULA DATE '(CAST(($1) AS date) + interval \'1 year\')';
 
 subtractDate(date, days) = [= FORMULA DATE '(($1)-($2))'](date AS DATE, days AS LONG);
 
-sumTimeSeconds(time, seconds) = [= FORMULA TIME '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))'](time AS TIME, seconds AS LONG);
-sumTimeMinutes(time, minutes) = [= FORMULA TIME '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))'](time AS TIME, minutes AS LONG);
+sumTimeSeconds(time, secs) = [= FORMULA TIME '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))'](time AS TIME, secs AS LONG);
+sumTimeMinutes(time, mins) = [= FORMULA TIME '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))'](time AS TIME, mins AS LONG);
 
 sumDateTimeDay(dateTime, days) = [= FORMULA DATETIME '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))'](dateTime AS DATETIME, days AS LONG);
-sumDateTimeMinutes(dateTime, minutes) = [= FORMULA DATETIME '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))'](dateTime AS DATETIME, minutes AS LONG);
-sumDateTimeSeconds(dateTime, seconds) = [= FORMULA DATETIME '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))'](dateTime AS DATETIME, seconds AS LONG);
+sumDateTimeMinutes(dateTime, mins) = [= FORMULA DATETIME '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))'](dateTime AS DATETIME, mins AS LONG);
+sumDateTimeSeconds(dateTime, secs) = [= FORMULA DATETIME '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))'](dateTime AS DATETIME, secs AS LONG);
 
-subtractDateTimeSeconds(dateTime, seconds) = [= FORMULA DATETIME '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))'](dateTime AS DATETIME, seconds AS LONG);
+subtractDateTimeSeconds(dateTime, secs) = [= FORMULA DATETIME '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))'](dateTime AS DATETIME, secs AS LONG);
 
 dateTimeToDateTime = FORMULA DATETIME 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')';
 
