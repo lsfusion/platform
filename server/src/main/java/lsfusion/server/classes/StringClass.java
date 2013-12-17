@@ -7,6 +7,7 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ServerResourceBundle;
 
 import java.io.DataOutputStream;
@@ -42,6 +43,13 @@ public class StringClass extends DataClass {
 
     public String getString(Object value, SQLSyntax syntax) {
         return "'" + value + "'";
+    }
+
+    @Override
+    public Object castValue(Object object, Type typeFrom) {
+        if(!blankPadded && typeFrom instanceof StringClass && ((StringClass)typeFrom).blankPadded)
+            return BaseUtils.rtrim((String)object);
+        return super.castValue(object, typeFrom);
     }
 
     @Override

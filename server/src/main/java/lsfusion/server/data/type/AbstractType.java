@@ -17,6 +17,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return "CAST(" + value + " AS " + getDB(syntax, typeEnv) + ")";
     }
 
+    @Override
+    public Object castValue(Object object, Type typeFrom) {
+        return object;
+    }
+
     protected abstract void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException;
     public void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
         writeParam(statement, num.get(), value, syntax, typeEnv);

@@ -1,5 +1,6 @@
 package lsfusion.server.data.type;
 
+import lsfusion.server.data.Field;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -20,8 +21,8 @@ public class TypeObject extends AbstractParseInterface {
         assert this.object !=null;
     }
 
-    public TypeObject(DataObject dataObject) {
-        this(dataObject.object,dataObject.getType());
+    public TypeObject(DataObject dataObject, Field fieldTo) {
+        this(fieldTo.type.castValue(dataObject.object, dataObject.getType()),fieldTo.type);
     }
 
     public boolean isSafeString() {

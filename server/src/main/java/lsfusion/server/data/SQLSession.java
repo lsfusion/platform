@@ -832,13 +832,13 @@ public class SQLSession extends MutableObject {
             for(int i=0,size=rows.size();i<size;i++) {
                 ParamNum paramNum = new ParamNum();
                 for(KeyField key : keys)
-                    new TypeObject(rows.getKey(i).get(key)).writeParam(statement, paramNum, syntax, env);
+                    new TypeObject(rows.getKey(i).get(key), key).writeParam(statement, paramNum, syntax, env);
                 for(PropertyField property : properties) {
                     ObjectValue propValue = rows.getValue(i).get(property);
                     if(propValue instanceof NullValue)
                         property.type.writeNullParam(statement, paramNum, syntax, env);
                     else
-                        new TypeObject((DataObject) propValue).writeParam(statement, paramNum, syntax, env);
+                        new TypeObject((DataObject) propValue, property).writeParam(statement, paramNum, syntax, env);
                 }
                 statement.addBatch();
             }
@@ -871,26 +871,28 @@ public class SQLSession extends MutableObject {
 
         // пробежим по KeyFields'ам
         for (int i=0,size=keyFields.size();i<size;i++) {
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + keyFields.getKey(i);
+            KeyField key = keyFields.getKey(i);
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.name;
             DataObject keyValue = keyFields.getValue(i);
             if (keyValue.isString(syntax))
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyValue.getString(syntax);
             else {
                 String prm = "qxprm" + (paramNum++) + "nx";
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + prm;
-                params.exclAdd(prm, new TypeObject(keyValue));
+                params.exclAdd(prm, new TypeObject(keyValue, key));
             }
         }
 
         for (int i=0,size=propFields.size();i<size;i++) {
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + propFields.getKey(i).name;
+            PropertyField property = propFields.getKey(i);
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + property.name;
             ObjectValue fieldValue = propFields.getValue(i);
             if (fieldValue.isString(syntax))
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + fieldValue.getString(syntax);
             else {
                 String prm = "qxprm" + (paramNum++) + "nx";
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + prm;
-                params.exclAdd(prm, new TypeObject((DataObject) fieldValue));
+                params.exclAdd(prm, new TypeObject((DataObject) fieldValue, property));
             }
         }
 
