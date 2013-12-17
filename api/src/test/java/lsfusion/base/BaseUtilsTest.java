@@ -3,8 +3,9 @@ package lsfusion.base;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
 
 public class BaseUtilsTest {
     private final static char UNBREAKABLE_SPACE = '\u00a0';
@@ -22,6 +23,17 @@ public class BaseUtilsTest {
         assertEquals(spaced("123 123"), BaseUtils.bigDecimalToString(new BigDecimal("123123.")));
 
         assertEquals(spaced("123 123,1233"), BaseUtils.bigDecimalToString("#,##0.####", new BigDecimal("123123.1233")));
+    }
+
+    @Test
+    public void testDateToString() throws Exception {
+        assertEquals("01/01/1901", BaseUtils.dateToString(new Date(1, 0, 1)));
+        assertEquals("03/12/2001", BaseUtils.dateToString(new Date(101, 11, 3)));
+        assertEquals("14/10/2012", BaseUtils.dateToString(new Date(112, 9, 14)));
+
+        assertEquals("01.01.1901", BaseUtils.dateToString("dd.MM.yyyy", new Date(1, 0, 1)));
+        assertEquals("03.12.2001", BaseUtils.dateToString("dd.MM.yyyy", new Date(101, 11, 3)));
+        assertEquals("14.10.2012", BaseUtils.dateToString("dd.MM.yyyy", new Date(112, 9, 14)));
     }
 
     private String spaced(String s) {

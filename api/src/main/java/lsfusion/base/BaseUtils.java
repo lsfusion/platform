@@ -27,6 +27,7 @@ import java.security.SecureRandom;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
@@ -2266,5 +2267,13 @@ public class BaseUtils {
 
     public static String bigDecimalToString(String format, BigDecimal bd) {
         return new DecimalFormat(format).format(bd);
+    }
+
+    public static String dateToString(Date d) {
+        return dateToString("dd/MM/yyyy", d);
+    }
+
+    public static String dateToString(String format, Date d) {
+        return new SimpleDateFormat(format).format(d);
     }
 }
