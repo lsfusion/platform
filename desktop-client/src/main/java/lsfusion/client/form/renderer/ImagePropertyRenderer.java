@@ -90,9 +90,11 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
 
         Image image = Toolkit.getDefaultToolkit().createImage(value);
         ImageIcon imageIcon = new ImageIcon(image);
-        Dimension scaled = scaleIcon(imageIcon, bounds.width, bounds.height);
-        if (scaled != null) {
-            imageIcon.setImage(image.getScaledInstance(scaled.width, scaled.height, Image.SCALE_SMOOTH));
+        if (imageIcon.getIconWidth() > bounds.width || imageIcon.getIconHeight() > bounds.height) {
+            Dimension scaled = scaleIcon(imageIcon, bounds.width, bounds.height);
+            if (scaled != null) {
+                imageIcon.setImage(image.getScaledInstance(scaled.width, scaled.height, Image.SCALE_SMOOTH));
+            }
         }
 
         dialog.add(new JLabel(imageIcon));
