@@ -452,11 +452,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return form.entity.getID();
     }
 
-    /**
-     * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается, что он отработаывает как ImmutableMethod через createAndExecute
-     */
     public String getSID() {
         return form.entity.getSID();
+    }
+
+    /**
+     * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается, что он отработаывает как ImmutableMethod через createAndExecute
+     * также специально выделен remote метод, чтобы не вызывать его из внутренних методов RemoteForm
+     */
+    public String getFormSID() {
+        return getSID();
     }
 
     public ServerResponse closedPressed(long requestIndex) throws RemoteException {
@@ -501,20 +506,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
      */
     public FormUserPreferences getUserPreferences() throws RemoteException {
         return form.loadUserPreferences();
-    }
-
-    /**
-     * готовит форму для восстановленного подключения
-     */
-    public void invalidate() throws SQLException {
-        form.refreshData();
-        if (currentInvocation != null && currentInvocation.isPaused()) {
-            try {
-                currentInvocation.cancel();
-            } catch (Exception e) {
-                logger.warn("Exception was thrown, while invalidating form", e);
-            }
-        }
     }
 
     public ServerResponse changeProperty(long requestIndex, final int propertyID, final byte[] fullKey, final byte[] pushChange, final Integer pushAdd) throws RemoteException {
@@ -682,6 +673,17 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     Object[] requestUserInteraction(ClientAction... actions) {
         return currentInvocation.pauseForUserInteraction(actions);
+    }
+
+    public void disconnect() throws SQLException {
+        form.refreshData();
+        if (currentInvocation != null && currentInvocation.isPaused()) {
+            try {
+                currentInvocation.cancel();
+            } catch (Exception e) {
+                logger.warn("Exception was thrown, while invalidating form", e);
+            }
+        }
     }
 
     @Override

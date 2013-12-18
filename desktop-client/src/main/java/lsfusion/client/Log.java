@@ -96,14 +96,14 @@ public final class Log {
     }
 
     public static void error(String message, String trace) {
-        printFailedMessage(message, null, null, trace);
+        error(message, null, null, trace);
     }
 
     public static void error(String message, List<String> titles, List<List<String>> data) {
-        printFailedMessage(message, titles, data, "");
+        error(message, titles, data, "");
     }
 
-    public static void printFailedMessage(String message, List<String> titles, List<List<String>> data, String trace) {
+    private static void error(String message, List<String> titles, List<List<String>> data, String trace) {
         printmsg(message);
 
         provideErrorFeedback();

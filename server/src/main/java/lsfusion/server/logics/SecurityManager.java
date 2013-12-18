@@ -8,9 +8,11 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
+import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
 import lsfusion.server.classes.StringClass;
@@ -26,10 +28,12 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import javax.naming.CommunicationException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
+import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class SecurityManager extends LifecycleAdapter implements InitializingBean {
@@ -272,6 +276,58 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public User authenticateUser(DataSession session, String login, String password) throws SQLException {
+        boolean needAuthentication = true;
+
+        User user = readUser(login, session);
+
+        boolean useLDAP = businessLogics.authenticationLM.useLDAP.read(session) != null;
+        if (useLDAP) {
+            String server = (String) businessLogics.authenticationLM.serverLDAP.read(session);
+            Integer port = (Integer) businessLogics.authenticationLM.portLDAP.read(session);
+
+            try {
+                LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port).authenticate(login, password);
+                if (ldapParameters.isConnected()) {
+                    needAuthentication = false;
+                    if (user == null) {
+                        user = addUser(login, password, session);
+                    }
+                    setMainRoleCustomUser(user, ldapParameters.getGroupName(), session);
+                } else {
+                    throw new LoginException();
+                }
+            } catch (CommunicationException e) {
+                logger.error("LDAP authentication failed", e);
+            }
+        }
+
+        if (needAuthentication) {
+            if (user == null) {
+                throw new LoginException();
+            }
+
+            DataObject userObject = new DataObject(user.ID, businessLogics.authenticationLM.customUser);
+
+            if (businessLogics.authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
+                throw new LockedException();
+            }
+
+            if (!isUniversalPassword(password)) {
+                String hashPassword = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, userObject);
+                if (hashPassword == null || !hashPassword.trim().equals(BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt))) {
+                    throw new LoginException();
+                }
+            }
+        }
+
+        return user;
+    }
+
+    public boolean isUniversalPassword(String password) {
+        return "unipass".equals(password.trim()) && Settings.get().getUseUniPass();
     }
 
     private ImRevMap<String, Property> getSIDProperties() {

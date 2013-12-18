@@ -115,7 +115,8 @@ public class NavigatorDescriptorView extends JPanel {
         add(commandPanel, BorderLayout.SOUTH);
 
         try {
-            String formSid = clientNavigator.remoteNavigator.getCurrentFormSID();
+//            String formSid = clientNavigator.remoteNavigator.getCurrentFormSID();
+            String formSid = null;//todo: get current form SID from docking frames
             if (formSid != null) {
                 openForm(formSid);
                 formView.openActiveGroupObject();

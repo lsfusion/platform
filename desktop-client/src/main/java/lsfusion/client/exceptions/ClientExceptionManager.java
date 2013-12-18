@@ -1,8 +1,6 @@
 package lsfusion.client.exceptions;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.SystemUtils;
-import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Log;
 import lsfusion.client.Main;
 import lsfusion.client.rmi.ConnectionLostManager;
@@ -13,8 +11,6 @@ import java.rmi.ConnectIOException;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.util.*;
-
-import static lsfusion.base.BaseUtils.lineSeparator;
 
 public class ClientExceptionManager {
     private final static Logger logger = Logger.getLogger(ClientExceptionManager.class);
@@ -31,7 +27,7 @@ public class ClientExceptionManager {
     }
 
     private static void handleRemoteException(Throwable initial, RemoteException remote) {
-        logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server"), initial);
+        logger.error("Remote error: ", initial);
         unreportedThrowables.add(initial);
         if (remote instanceof ConnectIOException || remote instanceof ConnectException) {
             //при этих RemoteException'ах возможно продолжение работы
@@ -46,20 +42,13 @@ public class ClientExceptionManager {
         //здесь обрабатываются и все RemoteServerException
         logger.error("Client error: ", e);
 
-        String message = e.getLocalizedMessage();
-        while (e instanceof RuntimeException && e.getCause() != null) {
-            e = e.getCause();
-            message += " : " + lineSeparator + e.getLocalizedMessage();
-        }
-
         String stackTrace = ExceptionUtils.getStackTraceString(e);
 
         if (!(e instanceof ConcurrentModificationException && stackTrace.contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
             try {
-                String info = ClientResourceBundle.getString("exceptions.client.error", SystemUtils.getLocalHostName(), message) + lineSeparator + stackTrace;
-                Main.clientExceptionLog(info, SystemUtils.getLocalHostName(), message, e.getClass().getName(), stackTrace);
-            } catch (RemoteException ignored) {
-                logger.error("Internal sending exception on server: ", e);
+                Main.clientExceptionLog("Client error", e);
+            } catch (Throwable ex) {
+                logger.error("Error reporting client exception: " + e, ex);
             }
             Log.error("Внутренняя ошибка сервера", stackTrace);
         }
@@ -70,10 +59,10 @@ public class ClientExceptionManager {
             for (Iterator<Throwable> iterator = unreportedThrowables.iterator(); iterator.hasNext(); ) {
                 Throwable t = iterator.next();
                 try {
-                    Main.clientExceptionLog("Connection lost remote exception", SystemUtils.getLocalHostName(), t.getMessage(), t.getClass().getName(), ExceptionUtils.getStackTraceString(t));
+                    Main.clientExceptionLog("Unreported client error", t);
                     iterator.remove();
                 } catch (Throwable e) {
-                    logger.error("Error reporting unreported exception: " + t, e);
+                    logger.error("Error reporting unreported client exception: " + t, e);
                 }
             }
         }

@@ -23,14 +23,14 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
     }
 
     @ImmutableMethod
-    public String getSID() throws RemoteException {
+    public String getFormSID() throws RemoteException {
         try {
-            return callImmutableMethod("getSID", new Callable<String>() {
+            return callImmutableMethod("getFormSID", new Callable<String>() {
                 @Override
                 public String call() throws Exception {
-                    logRemoteMethodStartCall("getSID");
-                    String result = target.getSID();
-                    logRemoteMethodEndCall("getSID", result);
+                    logRemoteMethodStartCall("getFormSID");
+                    String result = target.getFormSID();
+                    logRemoteMethodEndCall("getFormSID", result);
                     return result;
                 }
             });

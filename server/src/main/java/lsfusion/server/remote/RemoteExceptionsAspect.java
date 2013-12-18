@@ -1,6 +1,5 @@
 package lsfusion.server.remote;
 
-import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -12,9 +11,6 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.logics.BusinessLogics;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
@@ -29,6 +25,9 @@ public class RemoteExceptionsAspect {
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         try {
             return thisJoinPoint.proceed();
+        } catch (ThreadDeath td) {
+            logger.error("Thread '" + Thread.currentThread() + "' was forcefully stopped.");
+            throw new RemoteInternalException(1, "Thread was stopped");
         } catch (Throwable throwable) {
             if (!(throwable instanceof RemoteException) && !(throwable instanceof RemoteServerException)) {
                 throw createInternalServerException(throwable);
@@ -43,17 +42,13 @@ public class RemoteExceptionsAspect {
 
         assert !(e.getCause() instanceof LoginException);
 
-        OutputStream stackStream = new ByteArrayOutputStream();
-        e.printStackTrace(new PrintStream(stackStream));
-        String stackTrace = stackStream.toString();
-
         BusinessLogics BL = ThreadLocalContext.getBusinessLogics();
         try {
-            BL.systemEventsLM.logException(BL, Throwables.getRootCause(e).getMessage(), e.getClass().getName(), stackTrace, null, null, false);
-        } catch (SQLException sqle) {
-            logger.error("Error when logging exception: ", sqle);
+            BL.systemEventsLM.logException(BL, e, null, null, false);
+        } catch (Exception ex) {
+            logger.error("Error when logging exception: ", ex);
         }
 
-        return new RemoteInternalException(0, e.getLocalizedMessage(), stackStream.toString());
+        return new RemoteInternalException(0, e.getLocalizedMessage());
     }
 }

@@ -17,7 +17,7 @@ public class ClientFormDockable extends ClientDockable {
     }
 
     public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, DockableManager dockableManager, MainFrame.FormCloseListener closeListener) throws IOException, JRException {
-        this(navigator, remoteForm.getSID(), remoteForm, dockableManager, closeListener);
+        this(navigator, remoteForm.getFormSID(), remoteForm, dockableManager, closeListener);
     }
 
     private ClientFormDockable(ClientNavigator navigator, String formSID, RemoteFormInterface remoteForm, DockableManager dockableManager, final MainFrame.FormCloseListener closeListener) throws IOException {

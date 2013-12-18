@@ -36,7 +36,6 @@ public class PingThread extends Thread {
                 try {
                     clientProcessor.processMessages(remoteClient.pullMessages());
                 } catch (RemoteException e) {
-                    e.printStackTrace();
                     logger.error("Error while pulling messages from server: ", e);
                     throw new RuntimeException(e);
                 }

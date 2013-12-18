@@ -1179,7 +1179,7 @@ public class ClientFormController implements AsyncListener {
 
                 @Override
                 public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
-                    Main.frame.runReport(remoteForm.getSID(), false, generationData, isDebug ? editReportInvoker : null);
+                    Main.frame.runReport(remoteForm.getFormSID(), false, generationData, isDebug ? editReportInvoker : null);
                 }
             });
         } catch (Exception e) {
@@ -1243,7 +1243,7 @@ public class ClientFormController implements AsyncListener {
 
                 @Override
                 public void onResponse(long requstIndex, ReportGenerationData generationData) throws Exception {
-                    Main.frame.runReport("SingleGroupReport_" + remoteForm.getSID(), false, generationData, null);
+                    Main.frame.runReport("SingleGroupReport_" + remoteForm.getFormSID(), false, generationData, null);
                 }
             });
         } catch (Exception e) {

@@ -138,8 +138,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             @Override
             public void run() {
                 try {
-                    DataSession session = createSession();
-                    RemoteNavigator.updateOpenFormCount(businessLogics, session);
+                    RemoteNavigator.updateOpenFormCount(businessLogics);
                 } catch (Throwable e) {
                     e.printStackTrace();
                     throw new RuntimeException(e);
@@ -148,12 +147,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }, Settings.get().getUpdateFormCountPeriod(), Settings.get().getUpdateFormCountPeriod(), TimeUnit.MILLISECONDS);
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean reuseSession) {
         if (restartManager.isPendingRestart()) {
             return null;
         }
 
-        return navigatorsManager.createNavigator(isFullClient, login, password, computer, remoteAddress, forceCreateNew);
+        return navigatorsManager.createNavigator(isFullClient, login, password, computer, remoteAddress, reuseSession);
     }
 
     protected DataSession createSession() throws SQLException {

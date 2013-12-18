@@ -14,7 +14,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     byte[] getRichDesignByteArray() throws RemoteException;
 
-    String getSID() throws RemoteException;
+    String getFormSID() throws RemoteException;
 
     Integer getInitFilterPropertyDraw() throws RemoteException;
 

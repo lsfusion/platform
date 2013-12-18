@@ -20,10 +20,6 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
         addMessage(CallbackMessage.DISCONNECTED);
     }
 
-    public synchronized void cutOff() {
-        addMessage(CallbackMessage.CUT_OFF);
-    }
-
     public synchronized void notifyServerRestart() {
         deniedRestart = false;
         addMessage(CallbackMessage.SERVER_RESTARTING);

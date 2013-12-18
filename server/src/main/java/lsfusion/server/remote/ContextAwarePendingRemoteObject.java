@@ -47,10 +47,6 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         threads.remove(thread);
     }
 
-    public boolean hasLinkedThreads() {
-        return threads.isEmpty();
-    }
-
     @Override
     public void unexportNow() {
         synchronized (threads) {

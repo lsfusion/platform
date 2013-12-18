@@ -1,13 +1,8 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.interop.exceptions.LockedException;
-import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.UserInfo;
-import lsfusion.server.Settings;
 import lsfusion.server.auth.User;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.form.navigator.RemoteNavigator;
@@ -19,7 +14,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import javax.naming.CommunicationException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -31,7 +25,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class NavigatorsManager extends LifecycleAdapter implements InitializingBean {
@@ -103,9 +96,9 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         executor = Executors.newScheduledThreadPool(50, new ContextAwareDaemonThreadFactory(logicsInstance.getContext(), "navigator-manager-daemon"));
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean reuseSession) {
         //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
-        forceCreateNew = true;
+        reuseSession = false;
 
         scheduleRemoveExpired();
 
@@ -117,68 +110,21 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
 
         try {
-
-            boolean needAuthentication = true;
-            boolean isUniversalPasswordUsed = "unipass".equals(password.trim()) && Settings.get().getUseUniPass();
-            User user = securityManager.readUser(login, session);
-
-            boolean ldapAuthentication = businessLogics.authenticationLM.useLDAP.read(session) != null;
-            if (ldapAuthentication) {
-                String server = (String) businessLogics.authenticationLM.serverLDAP.read(session);
-                Integer port = (Integer) businessLogics.authenticationLM.portLDAP.read(session);
-
-                try {
-                    LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port).authenticate(login, password);
-                    if (ldapParameters.isConnected()) {
-                        needAuthentication = false;
-                        if (user == null)
-                            user = securityManager.addUser(login, password, session);
-                        securityManager.setMainRoleCustomUser(user, ldapParameters.getGroupName(), session);
-                    } else {
-                        throw new LoginException();
-                    }
-                } catch (CommunicationException e) {
-                    logger.error("LDAP authentication failed", e);
-                }
-            }
-            if (needAuthentication) {
-
-                if (user == null)
-                    throw new LoginException();
-
-                DataObject userObject = new DataObject(user.ID, businessLogics.authenticationLM.customUser);
-
-                if (businessLogics.authenticationLM.isLockedCustomUser.read(session, userObject) != null)
-                    throw new LockedException();
-
-                if (!isUniversalPasswordUsed) {
-                    String hashPassword = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, userObject);
-                    if (hashPassword == null || !hashPassword.trim().equals(BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt))) {
-                        throw new LoginException();
-                    }
-                }
-            }
+            User user = securityManager.authenticateUser(session, login, password);
 
             Pair<String, Integer> loginKey = new Pair<String, Integer>(login, computer);
-            RemoteNavigator navigator = forceCreateNew ? null : navigators.get(loginKey);
 
-            if (navigator != null) {
-                if (navigator.isFullClient() != isFullClient) {
-                    //создаём новый навигатор, если поменялся тип клиента
-                    navigator = null;
-                } else {
-                    navigator.invalidate();
-                    if (navigator.hasLinkedThreads()) {
-                        navigator = null;
-                        removeNavigator(loginKey);
-                    }
+            if (reuseSession) {
+                RemoteNavigator navigator = navigators.get(loginKey);
+                if (navigator != null) {
+                    navigator.disconnect();
+                    navigator.unexportNow();
+                    removeNavigator(loginKey);
                 }
             }
 
-            if (navigator == null) {
-                navigator = new RemoteNavigator(logicsInstance, isFullClient, remoteAddress, user, computer, rmiManager.getExportPort());
-                addNavigator(loginKey, navigator, isUniversalPasswordUsed);
-            }
+            RemoteNavigator navigator = new RemoteNavigator(logicsInstance, isFullClient, remoteAddress, user, computer, rmiManager.getExportPort());
+            addNavigator(loginKey, navigator, securityManager.isUniversalPassword(password));
 
             return navigator;
         } catch (Exception e) {
@@ -235,11 +181,11 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
     }
 
-    public void removeNavigator(RemoteNavigator navigator) {
+    public void navigatorClosed(RemoteNavigator navigator) {
         removeNavigators(NavigatorFilter.single(navigator));
     }
 
-    public void removeNavigators(NavigatorFilter filter) {
+    private void removeNavigators(NavigatorFilter filter) {
         try {
             DataSession session = dbManager.createSession();
             synchronized (navigators) {
@@ -281,16 +227,13 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
     }
 
-    public void cutOffConnection(Pair<String, Integer> key) {
-        try {
-            final RemoteNavigator navigator = navigators.get(key);
-            if (navigator != null) {
-                navigator.getClientCallBack().cutOff();
-                removeNavigator(key);
-                navigator.unexportLater();
-            }
-        } catch (RemoteException e) {
-            Throwables.propagate(e);
+    public void forceDisconnect(Pair<String, Integer> key) {
+        final RemoteNavigator navigator = navigators.get(key);
+        if (navigator != null) {
+            navigator.disconnect();
+
+            removeNavigator(key);
+            navigator.unexportLater();
         }
     }
 

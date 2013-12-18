@@ -1,38 +1,33 @@
 package lsfusion.server.remote;
 
-import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import lsfusion.server.context.ContextAwareThread;
 import lsfusion.server.context.ThreadLocalContext;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 
 @Aspect
 public class RemoteContextAspect {
-    private static final String executions =
-            "(execution(* lsfusion.interop.RemoteLogicsInterface.*(..))" +
-                    " || execution(* lsfusion.interop.form.RemoteFormInterface.*(..))" +
-                    " || execution(* lsfusion.interop.navigator.RemoteNavigatorInterface.*(..))" +
-                    " || execution(* lsfusion.interop.remote.PendingRemoteInterface.getRemoteActionMessage(..)))";
-
-    private static final String remotePointCut =
-            executions +
-            " && !execution(* *.ping(..))" +
-            " && !cflowbelow" + executions + "" +
-            " && target(remoteObject)";
-
-    @Before(remotePointCut)
-    public void beforeCall(ContextAwarePendingRemoteObject remoteObject) {
+    @Around("(execution(public * lsfusion.interop.RemoteLogicsInterface.*(..)) ||" +
+            "execution(public * lsfusion.interop.form.RemoteFormInterface.*(..)) ||" +
+            "execution(public * lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)) ||" +
+            "execution(public * lsfusion.interop.remote.PendingRemoteInterface.getRemoteActionMessage(..)))" +
+            " && !execution(public * lsfusion.interop.RemoteLogicsInterface.ping(..))" +
+            " && target(ro)")
+    public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object ro) throws Throwable {
+        ContextAwarePendingRemoteObject remoteObject = (ContextAwarePendingRemoteObject) ro;
         if (!(Thread.currentThread() instanceof ContextAwareThread)) {
             ThreadLocalContext.set(remoteObject.getContext());
         }
         remoteObject.addLinkedThread(Thread.currentThread());
-    }
 
-    @AfterReturning(remotePointCut)
-    public void afterReturn(ContextAwarePendingRemoteObject remoteObject) {
-        if (!(Thread.currentThread() instanceof ContextAwareThread)) {
-            ThreadLocalContext.set(null);
+        try {
+            return thisJoinPoint.proceed();
+        } finally {
+            if (!(Thread.currentThread() instanceof ContextAwareThread)) {
+                ThreadLocalContext.set(null);
+            }
+            remoteObject.removeLinkedThread(Thread.currentThread());
         }
-        remoteObject.removeLinkedThread(Thread.currentThread());
     }
 }

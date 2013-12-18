@@ -14,11 +14,13 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -66,7 +68,7 @@ import static lsfusion.base.BaseUtils.nvl;
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
 public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePendingRemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, RemoteFormListener, Unreferenced {
-    protected final static Logger logger = Logger.getLogger(RemoteNavigator.class);
+    protected final static Logger logger = ServerLoggers.systemLogger;
 
     SQLSession sql;
 
@@ -78,9 +80,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     // просто закэшируем, чтобы быстрее было
     SecurityPolicy securityPolicy;
-
-    //используется для RelevantClassNavigator
-    private CustomClass currentClass;
 
     private DataObject user;
 
@@ -179,14 +178,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return currentInvocation.pauseForUserInteraction(actions);
     }
 
-    public void logClientException(String info, String client, String message, String type, String erTrace) {
-        String errorMessage = info + " в " + new SimpleDateFormat().format(Calendar.getInstance().getTime());
-        System.err.println(errorMessage);
-        logger.error(errorMessage);
+    public void logClientException(String title, String hostname, Throwable t) {
+        String time = new SimpleDateFormat().format(Calendar.getInstance().getTime());
+        logger.error(title + " at '" + time + "' from '" + hostname + "': ", t);
         try {
-            businessLogics.systemEventsLM.logException(businessLogics, message, type, erTrace, this.user, client, true);
+            businessLogics.systemEventsLM.logException(businessLogics, t, this.user, hostname, true);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw Throwables.propagate(e);
         }
     }
 
@@ -295,69 +293,52 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return outStream.toByteArray();
     }
 
-    //используется для RelevantFormNavigator
-    private WeakReference<FormInstance<T>> weakCurrentForm = null;
-
-    public FormInstance<T> getCurrentForm() {
-        if (weakCurrentForm != null)
-            return weakCurrentForm.get();
-        else
-            return null;
-    }
-
-    public String getCurrentFormSID() {
-        if (weakCurrentForm != null)
-            return weakCurrentForm.get().entity.getSID();
-        else {
-            return null;
-        }
-    }
-
     @Override
     public boolean isConfigurationAccessAllowed() throws RemoteException {
         return securityPolicy.configurator != null && securityPolicy.configurator;
     }
 
     public void gainedFocus(FormInstance<T> form) {
-        weakCurrentForm = new WeakReference<FormInstance<T>>(form);
+        //todo: не нужно, так что позже можно удалить
     }
 
-    public static void updateOpenFormCount(BusinessLogics businessLogics, DataSession session) throws SQLException {
-        List<Pair<DataObject, String>> openForms = new ArrayList<Pair<DataObject, String>>(recentlyOpenForms);
-        recentlyOpenForms.clear();
+    public static void updateOpenFormCount(BusinessLogics businessLogics) {
+        try {
+            DataSession session = ThreadLocalContext.getDbManager().createSession();
 
-        for (Pair<DataObject, String> entry : openForms) {
-            DataObject connection = entry.first;
-            String sid = entry.second;
+            try {
+                List<Pair<DataObject, String>> openForms = new ArrayList<Pair<DataObject, String>>(recentlyOpenForms);
+                recentlyOpenForms.clear();
 
-            Integer formId = (Integer) businessLogics.reflectionLM.navigatorElementSID.read(session, new DataObject(sid, businessLogics.reflectionLM.navigatorElementSIDClass));
-            if (formId == null) {
-                //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
-                int ind = sid.indexOf('_');
-                if (ind != -1) {
-                    sid = sid.substring(0, ind);
-                    formId = (Integer) businessLogics.reflectionLM.navigatorElementSID.read(session, new DataObject(sid, businessLogics.reflectionLM.navigatorElementSIDClass));
+                for (Pair<DataObject, String> entry : openForms) {
+                    DataObject connection = entry.first;
+                    String sid = entry.second;
+
+                    Integer formId = (Integer) businessLogics.reflectionLM.navigatorElementSID.read(session, new DataObject(sid, businessLogics.reflectionLM.navigatorElementSIDClass));
+                    if (formId == null) {
+                        //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
+                        int ind = sid.indexOf('_');
+                        if (ind != -1) {
+                            sid = sid.substring(0, ind);
+                            formId = (Integer) businessLogics.reflectionLM.navigatorElementSID.read(session, new DataObject(sid, businessLogics.reflectionLM.navigatorElementSIDClass));
+                        }
+
+                        if (formId == null) {
+                            return;
+                        }
+                    }
+
+                    DataObject formObject = new DataObject(formId, businessLogics.reflectionLM.navigatorElement);
+
+                    int count = 1 + nvl((Integer) businessLogics.systemEventsLM.connectionFormCount.read(session, connection, formObject), 0);
+                    businessLogics.systemEventsLM.connectionFormCount.change(count, session, connection, formObject);
                 }
-
-                if (formId == null) {
-                    return;
-                }
+                session.apply(businessLogics);
+            } finally {
+                session.close();
             }
-
-            DataObject formObject = new DataObject(formId, businessLogics.reflectionLM.navigatorElement);
-
-            int count = 1 + nvl((Integer) businessLogics.systemEventsLM.connectionFormCount.read(session, connection, formObject), 0);
-            businessLogics.systemEventsLM.connectionFormCount.change(count, session, connection, formObject);
-
-            session.apply(businessLogics);
-            session.close();
-        }
-    }
-
-    private void formOpened(String sid) {
-        DataObject connection = getConnection();
-        if (connection != null) {
-            recentlyOpenForms.add(new Pair<DataObject, String>(connection, sid));
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
         }
     }
 
@@ -505,30 +486,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return remoteAddress;
     }
 
-    //todo: вернуть, когда/если починиться механизм восстановления сессии
-//    private Map<FormEntity, RemoteForm> openForms = MapFact.mAddRemoveMap();
-//    private Map<FormEntity, RemoteForm> invalidatedForms = MapFact.mAddRemoveMap();
-    public synchronized void invalidate() throws SQLException {
-//        if (client != null) {
-//            client.disconnect();
-//        }
-//
-//        try {
-//            client = new ClientCallBackController(getExportPort());
-//        } catch (RemoteException ignore) {
-//            client = null;
-//        }
-//
-////        invalidatedForms.clear();
-//
-//        invalidatedForms.putAll(openForms);
-//        openForms.clear();
-//
-//        for (RemoteForm form : invalidatedForms.values()) {
-//            form.invalidate();
-//        }
-    }
-
     public synchronized ClientCallBackController getClientCallBack() throws RemoteException {
         return client;
     }
@@ -646,37 +603,29 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     public void close() throws RemoteException {
-        try {
-            navigatorManager.removeNavigator(this);
-            sql.close();
-        } catch (SQLException e) {
-            Throwables.propagate(e);
-        }
-
-        unexportLater();
+        shutdown();
     }
 
-    public boolean currentClassChanged(ConcreteCustomClass customClass) {
-        if (currentClass != null && currentClass.equals(customClass)) return false;
-
-        currentClass = customClass;
-        return true;
+    @Override
+    public void unreferenced() {
+        unexportNow();
+        //TODO:
+//        ThreadLocalContext.set(context);
+//        shutdown();
     }
 
     @Override
     public void formCreated(RemoteForm form) {
-        formOpened(form.getSID());
+        DataObject connection = getConnection();
+        if (connection != null) {
+            recentlyOpenForms.add(new Pair<DataObject, String>(connection, form.getSID()));
+        }
         createdForms.put(form, Boolean.TRUE);
     }
 
     @Override
     public void formDestroyed(RemoteForm form) {
         createdForms.remove(form);
-    }
-
-    @Override
-    public void unreferenced() {
-        unexportNow();
     }
 
     @Override
@@ -692,18 +641,27 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         super.unexportNow();
     }
 
-    @Override
-    public boolean hasLinkedThreads() {
-        if (super.hasLinkedThreads()) {
-            return true;
+    private void shutdown() {
+        navigatorManager.navigatorClosed(this);
+        try {
+            sql.close();
+        } catch (SQLException e) {
+            Throwables.propagate(e);
+        } finally {
+            unexportLater();
+        }
+    }
+
+    //todo: вернуть, когда/если починиться механизм восстановления сессии
+//    private Map<FormEntity, RemoteForm> openForms = MapFact.mAddRemoveMap();
+//    private Map<FormEntity, RemoteForm> invalidatedForms = MapFact.mAddRemoveMap();
+    public synchronized void disconnect() {
+        if (client != null) {
+            client.disconnect();
         }
 
-        for (RemoteForm form : createdForms.keySet()) {
-            if (form!= null && form.hasLinkedThreads()) {
-                return true;
-            }
-        }
-
-        return false;
+//        for (RemoteForm form : invalidatedForms.values()) {
+//            form.disconnect();
+//        }
     }
 }

@@ -25,7 +25,7 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) throws RemoteException;
 
-    void logClientException(String info, String client, String message, String type, String erTrace) throws RemoteException;
+    void logClientException(String title, String hostname, Throwable t) throws RemoteException;
 
     void close() throws RemoteException;
 
@@ -53,7 +53,5 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     byte[] getFormEntityByteArray(String formSID) throws RemoteException;
 
-    String getCurrentFormSID() throws RemoteException;
-    
     boolean isConfigurationAccessAllowed() throws RemoteException;
 }

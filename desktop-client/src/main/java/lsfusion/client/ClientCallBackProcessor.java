@@ -28,14 +28,11 @@ public class ClientCallBackProcessor {
     private void processMessage(CallbackMessage message) {
         switch (message) {
             case DISCONNECTED:
-                disconnect(getString("rmi.connectionlost.relogin"));
+                Main.closeHangingSockets();
+                disconnect(getString("rmi.connectionlost.disconnect"));
                 break;
             case SERVER_RESTARTING:
                 notifyServerRestarting();
-                break;
-            case CUT_OFF:
-                Main.closeHangingSockets();
-                disconnect(getString("rmi.connectionlost.cutoff"));
                 break;
         }
     }

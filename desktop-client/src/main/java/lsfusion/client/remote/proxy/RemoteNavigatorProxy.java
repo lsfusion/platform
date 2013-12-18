@@ -88,8 +88,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         return result;
     }
 
-    public void logClientException(String info, String client, String message, String type, String erTrace) throws RemoteException {
-        target.logClientException(info, client, message, type, erTrace);
+    public void logClientException(String title, String hostname, Throwable t) throws RemoteException {
+        target.logClientException(title, hostname, t);
     }
 
     public void close() throws RemoteException {
@@ -158,11 +158,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-    }
-
-    @Override
-    public String getCurrentFormSID() throws RemoteException {
-        return target.getCurrentFormSID();
     }
 
     @Override
