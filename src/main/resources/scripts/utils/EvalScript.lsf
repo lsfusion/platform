@@ -11,12 +11,28 @@ scriptExecution 'Выполнить скрипт' () = ACTION EVAL scriptStorage
 actionBodyExecution 'Выполнить действие' () = ACTION EVAL CONCAT ' ', 'run() = ACTION {', scriptStorage(), ';\n};';
 formExecution 'Показать форму' () = ACTION EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;';
 
+CLASS Script 'Скрипт';
+
+nameScript 'Наименование' = DATA VARSTRING[100] (Script);
+textScript 'Текст' = DATA TEXT (Script);
+countTextScript() = GROUP MAX script IF textScript(script) == scriptStorage(); 
+dateTimeScript 'Дата запуска' = DATA DATETIME (Script);
+
+updateScriptStorage(script) = ACTION {
+    scriptStorage() <- textScript(script);
+}
+
 FORM script 'Скрипт'
+    OBJECTS s=Script FIXED PANEL
+    PROPERTIES(s) nameScript SELECTOR EVENTS ON CHANGE s updateScriptStorage(s) 
     PROPERTIES() scriptStorage,
                  scriptExecution, actionBodyExecution, formExecution
 ;
 
 DESIGN script FROM DEFAULT {
+    NEW script {
+        ADD s.box;
+    }
     ADD PROPERTY(scriptStorage) {
         panelLabelAbove = TRUE;    
         fill = 1;
@@ -30,6 +46,25 @@ DESIGN script FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+FORM scriptLog 'Скрипт'
+    OBJECTS s = Script FIXED PANEL
+    PROPERTIES(s) nameScript, textScript, dateTimeScript
+
+    EDIT Script OBJECT s
+;
+
+FORM scriptsLog 'Скрипты'
+    
+    OBJECTS s=Script
+    PROPERTIES(s) nameScript, textScript READONLY, dateTimeScript READONLY 
+    PROPERTIES(s) DELETE FORCE PANEL TOOLBAR
+    ORDER BY dateTimeScript DESC
+
+    FILTERGROUP user FILTER 'Только пользовательские' 'F9' nameScript(s)
+
+    DIALOG Script OBJECT s
+;
 
 NAVIGATOR {
     configuration {
