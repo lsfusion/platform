@@ -1,10 +1,11 @@
 package lsfusion.server.logics.scripted;
 
 import com.google.common.base.Throwables;
-import org.antlr.runtime.RecognitionException;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
@@ -13,8 +14,12 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.session.DataSession;
+import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -84,6 +89,14 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
 
             LAP<?> runAction = module.getLAPByOldName("run");
             if (runAction != null && errString.isEmpty()) {
+                String textScript = (String) module.findLCPByCompoundOldName("scriptStorage").read(context);
+                if (module.findLCPByCompoundOldName("countTextScript").read(context) == null) {
+                    DataSession session = context.createSession();
+                    DataObject scriptObject = session.addObject((ConcreteCustomClass) module.findClassByCompoundName("Script"));
+                    module.findLCPByCompoundOldName("textScript").change(textScript, session, scriptObject);
+                    module.findLCPByCompoundOldName("dateTimeScript").change(new Timestamp(Calendar.getInstance().getTime().getTime()), session, scriptObject);
+                    session.apply(BL);
+                }
                 runAction.execute(context);
             }
         } catch (RecognitionException e) {
