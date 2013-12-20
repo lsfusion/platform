@@ -1,6 +1,6 @@
 MODULE EvalScript;
 
-REQUIRE System, Utils;
+REQUIRE System, Time, Utils;
 
 NAMESPACE System;
 
@@ -22,11 +22,45 @@ updateScriptStorage(script) = ACTION {
     scriptStorage() <- textScript(script);
 }
 
+FORM chooseScriptName 'Сохранить как'
+    OBJECTS name = STRING[100] FIXED PANEL
+    PROPERTIES valueName = OBJVALUE(name)
+;
+
+EXTEND DESIGN chooseScriptName {
+    main{
+        caption = 'Сохранить как';
+        PROPERTY(valueName){
+            caption = 'Наименование';
+            font = 'Tahoma 24';
+        }
+    REMOVE leftControls;
+    REMOVE PROPERTY(formRefresh);
+    }
+}
+
+saveAsScriptAction 'Сохранить скрипт как' = ACTION () {
+    FORM chooseScriptName MODAL;
+    IF formResult() == FormResult.ok THEN {
+        FOR ADDOBJ s = Script DO {
+        nameScript(s) <- chosenString('name');
+        textScript(s) <- scriptStorage();
+        dateTimeScript(s) <- currentDateTime();
+        }
+    }
+}
+
+saveScriptAction 'Сохранить скрипт' = ACTION (script) {
+    textScript(script) <- scriptStorage();
+    dateTimeScript(script) <- currentDateTime();
+}
+
 FORM script 'Скрипт'
     OBJECTS s=Script FIXED PANEL
     PROPERTIES(s) nameScript SELECTOR EVENTS ON CHANGE s updateScriptStorage(s) 
     PROPERTIES() scriptStorage,
-                 scriptExecution, actionBodyExecution, formExecution
+                 scriptExecution, actionBodyExecution, formExecution, saveAsScriptAction
+    PROPERTIES(s) saveScriptAction             
 ;
 
 DESIGN script FROM DEFAULT {
@@ -43,6 +77,8 @@ DESIGN script FROM DEFAULT {
         ADD PROPERTY(scriptExecution) { font = 'bold 24'; }
         ADD PROPERTY(actionBodyExecution) { font = 'bold 24'; }
         ADD PROPERTY(formExecution) { font = 'bold 24'; }
+        ADD PROPERTY(saveScriptAction) { font = 'bold 24'; }
+        ADD PROPERTY(saveAsScriptAction) { font = 'bold 24'; }
     }
     ADD functions.box;
 }
