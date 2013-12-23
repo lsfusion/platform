@@ -39,7 +39,7 @@ EXTEND DESIGN chooseScriptName {
     }
 }
 
-saveAsScriptAction 'Сохранить скрипт как' = ACTION () {
+saveAsScriptAction 'Сохранить как' = ACTION () {
     FORM chooseScriptName MODAL;
     IF formResult() == FormResult.ok THEN {
         FOR ADDOBJ s = Script DO {
@@ -50,7 +50,7 @@ saveAsScriptAction 'Сохранить скрипт как' = ACTION () {
     }
 }
 
-saveScriptAction 'Сохранить скрипт' = ACTION (script) {
+saveScriptAction 'Сохранить' = ACTION (script) {
     textScript(script) <- scriptStorage();
     dateTimeScript(script) <- currentDateTime();
 }
@@ -65,7 +65,11 @@ FORM script 'Скрипт'
 
 DESIGN script FROM DEFAULT {
     NEW script {
-        ADD s.box;
+        caption = 'Скрипт';
+        type = CONTAINERH;
+        ADD PROPERTY(nameScript) { font = 'bold 24'; } 
+        ADD PROPERTY(saveScriptAction) { font = 'bold 24'; }
+        ADD PROPERTY(saveAsScriptAction) { font = 'bold 24'; }
     }
     ADD PROPERTY(scriptStorage) {
         panelLabelAbove = TRUE;    
@@ -77,8 +81,6 @@ DESIGN script FROM DEFAULT {
         ADD PROPERTY(scriptExecution) { font = 'bold 24'; }
         ADD PROPERTY(actionBodyExecution) { font = 'bold 24'; }
         ADD PROPERTY(formExecution) { font = 'bold 24'; }
-        ADD PROPERTY(saveScriptAction) { font = 'bold 24'; }
-        ADD PROPERTY(saveAsScriptAction) { font = 'bold 24'; }
     }
     ADD functions.box;
 }
