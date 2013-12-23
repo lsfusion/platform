@@ -65,11 +65,11 @@ FORM script 'Скрипт'
 
 DESIGN script FROM DEFAULT {
     NEW script {
-        caption = 'Скрипт';
+        caption = 'Сохранённые скрипты';
         type = CONTAINERH;
-        ADD PROPERTY(nameScript) { font = 'bold 24'; } 
-        ADD PROPERTY(saveScriptAction) { font = 'bold 24'; }
-        ADD PROPERTY(saveAsScriptAction) { font = 'bold 24'; }
+        ADD PROPERTY(nameScript) { font = 'bold 24'; alignment = STRETCH; } 
+        ADD PROPERTY(saveScriptAction) { font = 'bold 24'; alignment = STRETCH; }
+        ADD PROPERTY(saveAsScriptAction) { font = 'bold 24'; alignment = STRETCH; }
     }
     ADD PROPERTY(scriptStorage) {
         panelLabelAbove = TRUE;    
