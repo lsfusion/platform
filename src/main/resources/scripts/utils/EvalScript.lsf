@@ -12,6 +12,7 @@ actionBodyExecution 'Выполнить действие' () = ACTION EVAL CONCA
 formExecution 'Показать форму' () = ACTION EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;';
 
 CLASS Script 'Скрипт';
+TABLE script(Script);
 
 nameScript 'Наименование' = DATA VARSTRING[100] (Script);
 textScript 'Текст' = DATA TEXT (Script);
