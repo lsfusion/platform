@@ -70,16 +70,11 @@ public class NumericClass extends IntegralClass<BigDecimal> {
 
     public BigDecimal read(Object value) {
         if(value==null) return null;
-        BigDecimal bigDec;
         if (value instanceof BigDecimal) {
-            bigDec = (BigDecimal) value;
+            return (BigDecimal) value;
         } else {
-            bigDec = BigDecimal.valueOf(((Number) value).doubleValue());
+            return BigDecimal.valueOf(((Number) value).doubleValue());
         }
-        
-        if(bigDec.scale()!=precision) // важно, так как у BigDecimal'а очень странный equals
-            bigDec = bigDec.setScale(precision);
-        return bigDec;
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
