@@ -57,8 +57,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
     
     public DataObject(Object object, ConcreteClass objectClass) {
-        if(objectClass instanceof StringClass)
-            object = ((StringClass)objectClass).read(object);
+        if(objectClass instanceof StringClass || objectClass instanceof NumericClass)
+            object = ((DataClass)objectClass).read(object);
 
         this.object = object;
 

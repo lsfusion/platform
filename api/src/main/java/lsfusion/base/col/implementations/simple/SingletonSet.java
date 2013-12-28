@@ -411,7 +411,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public <G> ImMap<G, ImSet<K>> group(BaseUtils.Group<G, K> getter) {
-        return MapFact.<G, ImSet<K>>singleton(getter.group(key), this);
+        G group = getter.group(key);
+        if(group==null)
+            return MapFact.EMPTY();
+        
+        return MapFact.<G, ImSet<K>>singleton(group, this);
     }
 
     public <V> ImCol<V> map(ImMap<K, ? extends V> map) {
