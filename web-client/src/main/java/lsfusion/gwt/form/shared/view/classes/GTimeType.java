@@ -3,14 +3,18 @@ package lsfusion.gwt.form.shared.view.classes;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.form.shared.view.changes.dto.GTimeDTO;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.TimeGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.DateGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 
-import java.sql.Time;
 import java.text.ParseException;
+
+import static lsfusion.gwt.base.shared.GwtSharedUtils.getDefaultTimeFormat;
+import static lsfusion.gwt.base.shared.GwtSharedUtils.getDefaultTimeShortFormat;
+import static lsfusion.gwt.form.shared.view.classes.GDateType.parseDate;
 
 public class GTimeType extends GDataType {
     public static GTimeType instance = new GTimeType();
@@ -26,15 +30,8 @@ public class GTimeType extends GDataType {
     }
 
     @Override
-    public Time parseString(String s) throws ParseException {
-        try {
-            if (s.split(":").length == 2) {
-                s += ":00";
-            }
-            return s.isEmpty() ? null : new Time(GwtSharedUtils.getDefaultTimeFormat().parse(s).getTime());
-        } catch(IllegalArgumentException e) {
-            throw new ParseException("string " + s + "can not be converted to time", 0);
-        }
+    public GTimeDTO parseString(String value) throws ParseException {
+        return value.isEmpty() ? null : GTimeDTO.fromDate(parseDate(value, getDefaultTimeFormat(), getDefaultTimeShortFormat()));
     }
 
     @Override

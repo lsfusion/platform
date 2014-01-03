@@ -52,7 +52,7 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
     }
 
     @Override
-    protected Object tryParseInputText(String inputText) throws ParseException {
+    protected String tryParseInputText(String inputText) {
         return inputText.isEmpty() ? null : inputText;
     }
 

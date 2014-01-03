@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.shared.view.classes;
 
-import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
@@ -11,13 +10,16 @@ import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.util.Date;
+
+import static lsfusion.gwt.base.shared.GwtSharedUtils.*;
 
 public class GDateTimeType extends GDataType {
     public static GDateTimeType instance = new GDateTimeType();
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateGridCellRenderer(property, GwtSharedUtils.getDefaultDateTimeFormat());
+        return new DateGridCellRenderer(property, getDefaultDateTimeFormat());
     }
 
     @Override
@@ -26,12 +28,9 @@ public class GDateTimeType extends GDataType {
     }
 
     @Override
-    public Timestamp parseString(String s) throws ParseException {
-        try {
-            return new Timestamp(GwtSharedUtils.getDefaultDateTimeFormat().parse(s).getTime());
-        } catch (IllegalArgumentException e) {
-            throw new ParseException("string " + s + "can not be converted to datetime", 0);
-        }
+    public Timestamp parseString(String value) throws ParseException {
+        Date date = GDateType.parseDate(value, getDefaultDateTimeFormat(), getDefaultDateTimeShortFormat(), getDefaultDateFormat());
+        return value.isEmpty() ? null : new Timestamp(date.getTime());
     }
 
     @Override

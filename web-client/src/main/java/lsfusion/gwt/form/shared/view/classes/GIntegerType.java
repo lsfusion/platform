@@ -16,12 +16,8 @@ public class GIntegerType extends GIntegralType {
     }
 
     @Override
-    public Object parseString(String s) throws ParseException {
-        try {
-            return s.isEmpty() ? null : Integer.parseInt(s.replaceAll(" ", ""));
-        } catch (NumberFormatException e) {
-            throw new ParseException("string " + s + "can not be converted to integer", 0);
-        }
+    public Integer parseString(String s) throws ParseException {
+        return s.isEmpty() ? null : parseToDouble(s).intValue();
     }
 
     @Override

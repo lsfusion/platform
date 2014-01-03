@@ -12,6 +12,7 @@ import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.ui.HasPreferredSize;
+import lsfusion.gwt.base.shared.GwtSharedUtils;
 
 import java.util.*;
 
@@ -190,8 +191,8 @@ public class GwtClientUtils {
         SimplePanel strut = new SimplePanel();
         strut.setWidth(size + "px");
         return strut;
-    }    
-    
+    }
+
     public static Widget createVerticalStrut(int size) {
         SimplePanel strut = new SimplePanel();
         strut.setHeight(size + "px");
@@ -290,9 +291,95 @@ public class GwtClientUtils {
             Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
                 @Override
                 public void execute() {
-                    ((RequiresResize)widget).onResize();
+                    ((RequiresResize) widget).onResize();
                 }
             });
         }
+    }
+
+    /**
+     * should allways be consistent with lsfusion.client.form.TableTransferHandler#getClipboardTable(java.lang.String)
+     */
+    public static List<List<String>> getClipboardTable(String line) {
+        List<List<String>> table = new ArrayList<List<String>>();
+        List<String> row = new ArrayList<String>();
+
+        char[] charline = line.toCharArray();
+
+        int quotesCount = 0;
+        boolean quotesOpened = false;
+        boolean hasSeparator = false;
+        boolean isFirst = true;
+
+        int start = 0;
+
+        for (int i = 0; i <= charline.length; i++) {
+            boolean isCellEnd, isRowEnd, isQuote = false, isSeparator;
+
+            boolean isLast = i >= charline.length;
+            if (!isLast) {
+                isCellEnd = charline[i] == '\t';
+                isRowEnd = charline[i] == '\n';
+                isQuote = charline[i] == '"';
+                isSeparator = isCellEnd || isRowEnd;
+            } else {
+                if (isFirst) {
+                    break;
+                }
+                isRowEnd = true;
+                isSeparator = true;
+            }
+
+            if (quotesOpened) {
+                if (isQuote) {
+                    quotesCount++;
+                } else {
+                    if (isSeparator) {
+                        if (quotesCount % 2 == 1 || isLast) {
+                            quotesOpened = false;
+                            String cell = line.substring(hasSeparator ? start : (start - 1), hasSeparator ? (i - 1) : i).replace("\"\"", "\"");
+                            row.add(GwtSharedUtils.nullEmpty(cell));
+                            start = i;
+                            if (isRowEnd) {
+                                table.add(row);
+                                row = new ArrayList<String>();
+                            }
+                            isFirst = true;
+                            hasSeparator = false;
+                        } else {
+                            hasSeparator = true;
+                        }
+                    } else {
+                        quotesCount = 0;
+                    }
+                }
+
+            } else {
+                if (isSeparator) {
+                    row.add(GwtSharedUtils.nullEmpty(line.substring(start, i)));
+                    start = i;
+                    if (isRowEnd) {
+                        table.add(row);
+                        row = new ArrayList<String>();
+                    }
+                    isFirst = true;
+                } else if (isFirst) {
+                    if (isQuote) {
+                        start = i + 1;
+                        quotesOpened = true;
+                    } else {
+                        start = i;
+                    }
+                    isFirst = false;
+                }
+            }
+        }
+
+        if (table.isEmpty()) {
+            row.add(null);
+            table.add(row);
+        }
+
+        return table;
     }
 }

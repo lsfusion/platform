@@ -1,9 +1,9 @@
 package lsfusion.gwt.form.shared.view.classes;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.DateGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -13,7 +13,10 @@ import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import java.text.ParseException;
 import java.util.Date;
 
+import static lsfusion.gwt.base.shared.GwtSharedUtils.getDefaultDateFormat;
+
 public class GDateType extends GDataType {
+
     public static GDateType instance = new GDateType();
 
     @Override
@@ -22,23 +25,8 @@ public class GDateType extends GDataType {
     }
 
     @Override
-    public java.sql.Date parseString(String s) throws ParseException {
-        DateTimeFormat format = GwtSharedUtils.getDefaultDateFormat();
-        if (s.isEmpty()) {
-            return null;
-        } else {
-            Date resultDate;
-            try {
-                if (s.split("\\.").length == 2) {
-                    resultDate = format.parse(s + "." + (new Date().getYear() - 100));
-                } else {
-                    resultDate = format.parse(s);
-                }
-            } catch (IllegalArgumentException e) {
-                throw new ParseException("string " + s + "can not be converted to date", 0);
-            }
-            return GwtSharedUtils.safeDateToSql(resultDate);
-        }
+    public GDateDTO parseString(String value) throws ParseException {
+        return value.isEmpty() ? null : GDateDTO.fromDate(parseDate(value, getDefaultDateFormat()));
     }
 
     @Override
@@ -59,5 +47,15 @@ public class GDateType extends GDataType {
     @Override
     public GEditBindingMap.EditEventFilter getEditEventFilter() {
         return GEditBindingMap.numberEventFilter;
+    }
+
+    public static Date parseDate(String value, DateTimeFormat... formats) throws ParseException {
+        for (DateTimeFormat format : formats) {
+            try {
+                return format.parse(value);
+            } catch (IllegalArgumentException ignore) {
+            }
+        }
+        throw new ParseException("string " + value + "can not be converted to date", 0);
     }
 }

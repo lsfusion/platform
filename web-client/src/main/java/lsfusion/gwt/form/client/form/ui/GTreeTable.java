@@ -18,7 +18,6 @@ import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.GridEditableCell;
 
-import java.text.ParseException;
 import java.util.*;
 
 import static java.util.Collections.singleton;
@@ -418,16 +417,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public void pasteData(String value, boolean multi) {
-        GPropertyDraw property = getSelectedProperty();
-        GGroupObjectValue columnKey = getCurrentKey();
-        if (property != null) {
-            try {
-                Object parsedValue = property.parseString(value);
-                if (parsedValue != null) {
-                    form.getSimpleDispatcher().changeProperty(parsedValue, property, columnKey, true);
-                }
-            } catch (ParseException ignored) {
+    public void pasteData(List<List<String>> table) {
+        if (!table.isEmpty() && !table.get(0).isEmpty()) {
+            GPropertyDraw property = getSelectedProperty();
+            GGroupObjectValue columnKey = getCurrentKey();
+            if (property != null) {
+                form.pasteSingleValue(property, columnKey, table.get(0).get(0));
             }
         }
     }

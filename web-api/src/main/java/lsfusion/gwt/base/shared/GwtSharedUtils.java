@@ -56,14 +56,24 @@ public class GwtSharedUtils {
         return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
     }
 
+    public static DateTimeFormat getDefaultTimeFormat() {
+        return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_MEDIUM);
+    }
+
+    public static DateTimeFormat getDefaultTimeShortFormat() {
+        return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_SHORT);
+    }
+
     public static DateTimeFormat getDefaultDateTimeFormat() {
         DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
         return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), info.dateFormatShort()).replace(",", ""));
     }
 
-    public static DateTimeFormat getDefaultTimeFormat() {
-        return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_MEDIUM);
+    public static DateTimeFormat getDefaultDateTimeShortFormat() {
+        DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
+        return DateTimeFormat.getFormat(info.dateTime(info.timeFormatShort(), info.dateFormatShort()).replace(",", ""));
     }
+
 
     public static String formatDate(Date date) {
         return getDefaultDateFormat().format(date);
@@ -73,6 +83,14 @@ public class GwtSharedUtils {
         HashMap<B, V> result = new HashMap<B, V>(map1);
         result.putAll(map2);
         return result;
+    }
+
+    public static String nullEmpty(String string) {
+        if (string != null && string.trim().isEmpty()) {
+            return null;
+        } else {
+            return string;
+        }
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {

@@ -16,12 +16,8 @@ public class GLongType extends GIntegralType {
     }
 
     @Override
-    public Object parseString(String s) throws ParseException {
-        try {
-            return s.isEmpty() ? null : Long.parseLong(s.replaceAll(" ", ""));
-        } catch (NumberFormatException e) {
-            throw new ParseException("string " + s + "can not be converted to long", 0);
-        }
+    public Long parseString(String s) throws ParseException {
+        return s.isEmpty() ? null : parseToDouble(s).longValue();
     }
 
     @Override

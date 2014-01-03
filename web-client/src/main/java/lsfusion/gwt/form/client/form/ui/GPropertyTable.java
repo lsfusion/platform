@@ -2,6 +2,7 @@ package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
@@ -15,6 +16,8 @@ import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.classes.GType;
 import lsfusion.gwt.form.shared.view.grid.*;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
+
+import java.util.List;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.removeAllChildren;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
@@ -69,7 +72,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
     public abstract Object getValueAt(Context context);
 
-    public abstract void pasteData(String dataLine, boolean multi);
+    public abstract void pasteData(List<List<String>> table);
 
     @Override
     protected <C> void fireEventToCellImpl(Event event, String eventType, Element cellParent, T rowValue, final Context context, HasCell<T, C> column) {
@@ -269,8 +272,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         if (!line.isEmpty()) {
             stopPropagation(event);
             line = line.replaceAll("\r\n", "\n");    // браузеры заменяют разделители строк на "\r\n"
-            boolean isMultiLine = line.contains("\n") && (line.indexOf("\n") != line.lastIndexOf("\n") || !line.endsWith("\n"));
-            pasteData(line, line.contains("\t") || isMultiLine);
+            pasteData(GwtClientUtils.getClipboardTable(line));
         }
     }
 }

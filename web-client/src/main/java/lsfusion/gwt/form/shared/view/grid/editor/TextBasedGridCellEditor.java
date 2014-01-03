@@ -17,15 +17,14 @@ import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
 
+import java.text.ParseException;
+
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     protected String inputElementTagName = "input";
     protected GPropertyDraw property;
-
-    protected final class ParseException extends Exception {
-    }
 
     public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, null);
@@ -123,7 +122,12 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     }
     
     protected boolean isStringValid(String string) {
-        return true;
+        try {
+            tryParseInputText(string);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
     }
 
     protected String renderToString(Object value) {

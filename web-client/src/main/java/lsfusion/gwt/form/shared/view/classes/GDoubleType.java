@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.shared.view.classes;
 
-import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.DoubleGridCellEditor;
@@ -18,11 +17,7 @@ public class GDoubleType extends GIntegralType {
 
     @Override
     public Object parseString(String s) throws ParseException {
-        try {
-            return s.isEmpty() ? null : NumberFormat.getDecimalFormat().parse(s.replaceAll(" ", ""));
-        } catch (NumberFormatException e) {
-            throw new ParseException("string " + s + "can not be converted to double", 0);
-        }
+        return s.isEmpty() ? null : parseToDouble(s);
     }
 
     @Override

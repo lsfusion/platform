@@ -23,8 +23,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public int ID;
     public String sID;
     public String caption;
-    public GType baseType;
-    public GClass returnClass;
 
     public String toolTip;
     public String tableName;
@@ -36,7 +34,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public GGroupObject groupObject;
     public ArrayList<GGroupObject> columnGroupObjects;
 
+    public GType baseType;
+    public GClass returnClass;
+
+    public GType changeWYSType;
     public GType changeType;
+
     public AddRemove addRemove;
     public boolean askConfirm;
     public String askConfirmMessage;
@@ -93,10 +96,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         controller.updatePropertyDrawValues(this, values, updateKeys);
     }
 
-    public boolean canUseChangeValueForRendering() {
-        return changeType != null && baseType.getClass() == changeType.getClass();
-    }
-
     public PanelRenderer createPanelRenderer(GFormController form, GGroupObjectValue columnKey) {
         return baseType.createPanelRenderer(form, this, columnKey);
     }
@@ -116,8 +115,27 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return baseType.createValueCellEditor(editManager, this);
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Object parseChangeValueOrNull(String s) {
+        if (changeWYSType == null) {
+            return null;
+        }
+        try {
+            return changeWYSType.parseString(s);
+        } catch (ParseException pe) {
+            return null;
+        }
+    }
+
+    public Object parseBaseValue(String s) throws ParseException {
         return baseType.parseString(s);
+    }
+
+    public boolean canUsePasteValueForRendering() {
+        return changeWYSType != null && baseType.getClass() == changeWYSType.getClass();
+    }
+
+    public boolean canUseChangeValueForRendering() {
+        return changeType != null && baseType.getClass() == changeType.getClass();
     }
 
     @Override

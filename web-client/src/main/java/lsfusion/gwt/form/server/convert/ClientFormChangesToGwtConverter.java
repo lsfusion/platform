@@ -8,20 +8,14 @@ import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.GClassViewType;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
-import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
-import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
-import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
-import lsfusion.gwt.form.shared.view.changes.dto.GPropertyReaderDTO;
+import lsfusion.gwt.form.shared.view.changes.dto.*;
 import lsfusion.interop.ClassViewType;
-import sun.util.calendar.BaseCalendar;
-import sun.util.calendar.CalendarSystem;
 
 import java.awt.*;
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.sql.Time;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientFormChangesToGwtConverter extends ObjectConverter {
@@ -163,9 +157,15 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
     @Converter(from = Date.class)
     public GDateDTO convertDate(Date gDate, BusinessLogicsProvider blProvider) {
-        BaseCalendar calendar = CalendarSystem.getGregorianCalendar();
-        BaseCalendar.Date date = (BaseCalendar.Date) calendar.getCalendarDate(gDate.getTime(), blProvider.getTimeZone());
-        calendar.getCalendarDate(gDate.getTime());
-        return new GDateDTO(date.getDayOfMonth(), date.getMonth() - 1, date.getYear() - 1900);
+        GregorianCalendar gc = new GregorianCalendar(blProvider.getTimeZone());
+        gc.setTime(gDate);
+        return new GDateDTO(gc.get(Calendar.DAY_OF_MONTH), gc.get(Calendar.MONTH), gc.get(Calendar.YEAR) - 1900);
+    }
+
+    @Converter(from = Time.class)
+    public GTimeDTO convertTime(Time time, BusinessLogicsProvider blProvider) {
+        GregorianCalendar gc = new GregorianCalendar(blProvider.getTimeZone());
+        gc.setTime(time);
+        return new GTimeDTO(gc.get(Calendar.HOUR_OF_DAY), gc.get(Calendar.MINUTE), gc.get(Calendar.SECOND));
     }
 }

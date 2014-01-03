@@ -9,23 +9,20 @@ import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
 import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
 import lsfusion.gwt.form.shared.view.changes.dto.GFilesDTO;
+import lsfusion.gwt.form.shared.view.changes.dto.GTimeDTO;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.UserInputResult;
-import sun.util.calendar.BaseCalendar;
-import sun.util.calendar.CalendarSystem;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Time;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 
@@ -50,15 +47,25 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = Date.class)
     public java.sql.Date convertDate(Date date) {
+        //TODO: this converter shouldn't be used
+        assert false;
         return DateConverter.safeDateToSql(date);
     }
 
     @Converter(from = GDateDTO.class)
-    public java.sql.Date convertDate(GDateDTO gDate, BusinessLogicsProvider blProvider) {
-        BaseCalendar calendar = CalendarSystem.getGregorianCalendar();
-        BaseCalendar.Date date = (BaseCalendar.Date) calendar.newCalendarDate(blProvider.getTimeZone());
-        date = date.setNormalizedDate(gDate.year + 1900, gDate.month + 1, gDate.day);
-        return new java.sql.Date(calendar.getTime(date));
+    public java.sql.Date convertDate(GDateDTO dto, BusinessLogicsProvider blProvider) {
+        GregorianCalendar gc = new GregorianCalendar(blProvider.getTimeZone());
+        gc.set(dto.year + 1900, dto.month, dto.day);
+        return new java.sql.Date(gc.getTimeInMillis());
+    }
+
+    @Converter(from = GTimeDTO.class)
+    public java.sql.Time convertTime(GTimeDTO dto, BusinessLogicsProvider blProvider) {
+        GregorianCalendar gc = new GregorianCalendar(blProvider.getTimeZone());
+        gc.set(Calendar.HOUR_OF_DAY, dto.hour);
+        gc.set(Calendar.MINUTE, dto.minute);
+        gc.set(Calendar.SECOND, dto.second);
+        return new Time(gc.getTimeInMillis());
     }
 
     @Converter(from = GFont.class)

@@ -6,32 +6,36 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.form.shared.view.changes.dto.GTimeDTO;
+import lsfusion.gwt.form.shared.view.classes.GTimeType;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 
-import java.sql.Time;
+import java.text.ParseException;
 
 public class TimeGridCellEditor extends TextBasedGridCellEditor {
-    private DateTimeFormat format = GwtSharedUtils.getDefaultTimeFormat();
+    private static final GTimeDTO midday = new GTimeDTO(12, 0, 0);
+
+    private static DateTimeFormat format = GwtSharedUtils.getDefaultTimeFormat();
 
     public TimeGridCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property, Style.TextAlign.RIGHT);
     }
 
     @Override
-    protected Object tryParseInputText(String inputText) throws ParseException {
-        try {
-            if (inputText.split(":").length == 2) {
-                inputText += ":00";
-            }
-            return inputText.isEmpty() ? null : new Time(format.parse(inputText).getTime());
-        } catch(IllegalArgumentException e) {
-            throw new ParseException();
-        }
+    protected boolean isStringValid(String string) {
+        //чтобы можно было вводить промежуточные некорректные значения
+        return true;
+    }
+
+    @Override
+    protected GTimeDTO tryParseInputText(String inputText) throws ParseException {
+        return GTimeType.instance.parseString(inputText);
     }
 
     @Override
     public void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
-        super.startEditing(editEvent, context, parent, oldValue == null ? "12:00:00" : format.format((Time) oldValue));
+        GTimeDTO time = oldValue == null ? midday : (GTimeDTO)oldValue;
+        super.startEditing(editEvent, context, parent, format.format(time.toTime()));
     }
 }

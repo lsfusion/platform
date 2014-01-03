@@ -18,10 +18,12 @@ import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.shared.view.GKeyStroke;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
+import lsfusion.gwt.form.shared.view.classes.GDateType;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
 
+import java.text.ParseException;
 import java.util.Date;
 
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
@@ -29,22 +31,18 @@ import static com.google.gwt.dom.client.BrowserEvents.KEYPRESS;
 
 public class DateGridCellEditor extends PopupBasedGridCellEditor {
 
-    private final DateTimeFormat format;
-    private DatePicker datePicker;
-    private TextBox editBox;
+    private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateFormat();
+
+    protected DatePicker datePicker;
+    protected TextBox editBox;
 
     public DateGridCellEditor(EditManager editManager, GPropertyDraw property) {
-        this(GwtSharedUtils.getDefaultDateFormat(), editManager, property);
-    }
-
-    public DateGridCellEditor(final DateTimeFormat format, EditManager editManager, GPropertyDraw property) {
         super(editManager, property, Style.TextAlign.RIGHT);
-        this.format = format;
 
         datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {
             @Override
             public void onValueChange(ValueChangeEvent<Date> event) {
-                commitEditing(event.getValue());
+                onDateChanged(event);
             }
         });
 
@@ -52,10 +50,7 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
             @Override
             public void onKeyPress(KeyPressEvent event) {
                 if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-                    try {
-                        commitEditing(parseString(editBox.getValue()));
-                    } catch (IllegalArgumentException ignored) {
-                    }
+                    onEnterPressed();
                 }
             }
         });
@@ -90,21 +85,20 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
                 selectAll = false;
             }
         }
-        if (oldValue != null) {
-            GDateDTO oldDate = (GDateDTO) oldValue;
-            oldValue = new Date(oldDate.year, oldDate.month, oldDate.day);
-        }
 
-        if (oldValue != null) {
-            datePicker.setValue((Date) oldValue);
-            datePicker.setCurrentMonth((Date) oldValue);
+        Date oldDate = valueAsDate(oldValue);
+
+        if (oldDate != null) {
+            datePicker.setValue(oldDate);
+            datePicker.setCurrentMonth(oldDate);
         } else {
             datePicker.setValue(new Date());
         }
-        String stringDate = input != null ? input  : (oldValue != null ? renderToString(oldValue) : format.format(new Date()));
-        editBox.setValue(stringDate);
+        editBox.setValue(
+                input != null ? input : formatToString(oldDate != null ? oldDate : new Date())
+        );
 
-        super.startEditing(editEvent, context, parent, oldValue);
+        super.startEditing(editEvent, context, parent, oldDate);
 
         editBox.getElement().focus();
         if (selectAll) {
@@ -114,22 +108,29 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
         }
     }
 
-    @Override
-    protected String renderToString(Object value) {
-        return value == null ? "" : format.format((Date) value);
+    protected String formatToString(Date date) {
+        return format.format(date);
     }
 
-    private GDateDTO parseString(String value) {
-        if (value.isEmpty()) {
+    protected Date valueAsDate(Object value) {
+        if (value == null) {
             return null;
-        } else {
-            Date resultDate;
-            if (value.split("\\.").length == 2) {
-                resultDate = format.parse(value + "." + (new Date().getYear() - 100));
-            } else {
-                resultDate = format.parse(value);
-            }
-            return new GDateDTO(resultDate.getDate(), resultDate.getMonth(), resultDate.getYear());
         }
+        return ((GDateDTO) value).toDate();
+    }
+
+    protected void onDateChanged(ValueChangeEvent<Date> event) {
+        commitEditing(GDateDTO.fromDate(event.getValue()));
+    }
+
+    protected void onEnterPressed() {
+        try {
+            commitEditing(parseString(editBox.getValue()));
+        } catch (ParseException ignored) {
+        }
+    }
+
+    protected Object parseString(String value) throws ParseException {
+        return GDateType.instance.parseString(value);
     }
 }

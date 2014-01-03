@@ -7,6 +7,7 @@ import lsfusion.gwt.base.client.EscapeUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
+import lsfusion.gwt.form.shared.view.changes.dto.GTimeDTO;
 
 import java.util.Date;
 
@@ -25,8 +26,9 @@ public class DateGridCellRenderer extends TextBasedGridCellRenderer<Object> {
     @Override
     protected String renderToString(Object value) {
         if (value instanceof GDateDTO) {
-            GDateDTO dateDTO = (GDateDTO) value;
-            return format.format(new Date(dateDTO.year, dateDTO.month, dateDTO.day));
+            return format.format(((GDateDTO) value).toDate());
+        } else if (value instanceof GTimeDTO) {
+            return format.format(((GTimeDTO) value).toTime());
         } else {
             return format.format((Date) value);
         }

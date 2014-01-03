@@ -691,32 +691,38 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     }
 
     @Override
-    public void pasteData(final String dataLine, boolean multi) {
-        int selectedColumn = getKeyboardSelectedColumn();
+    public void pasteData(final List<List<String>> table) {
+        final int selectedColumn = getKeyboardSelectedColumn();
 
-        if (selectedColumn == -1 || dataLine == null) {
+        if (selectedColumn == -1 || table.isEmpty()) {
             return;
         }
 
-        final ArrayList<GPropertyDraw> propertiesAfterSelected = new ArrayList<GPropertyDraw>();
-        final List<GGroupObjectValue> columnKeys = new ArrayList<GGroupObjectValue>();
-        for (int i = selectedColumn; i < getColumnCount(); i++) {
-            GPropertyDraw propertyDraw = getProperty(i);
-            propertiesAfterSelected.add(propertyDraw);
-            columnKeys.add(getColumnKey(i));
-        }
+        final int tableColumns = table.get(0).size();
 
-        if (multi) {
+        boolean singleC = table.size() == 1 && tableColumns == 1;
+
+        if (!singleC) {
             DialogBoxHelper.showConfirmBox("lsFusion", "Вы уверены, что хотите изменить значения нескольких ячеек?", new DialogBoxHelper.CloseCallback() {
                 @Override
                 public void closed(DialogBoxHelper.OptionType chosenOption) {
                     if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                        form.pasteExternalTable(propertiesAfterSelected, columnKeys, dataLine);
+                        int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
+
+                        final ArrayList<GPropertyDraw> propertyList = new ArrayList<GPropertyDraw>();
+                        final ArrayList<GGroupObjectValue> columnKeys = new ArrayList<GGroupObjectValue>();
+                        for (int i = 0; i < columnsToInsert; i++) {
+                            GPropertyDraw propertyDraw = getProperty(selectedColumn + i);
+                            propertyList.add(propertyDraw);
+                            columnKeys.add(getColumnKey(selectedColumn + i));
+                        }
+
+                        form.pasteExternalTable(propertyList, columnKeys, table, columnsToInsert);
                     }
                 }
             });
-        } else {
-            form.pasteExternalTable(propertiesAfterSelected, columnKeys, dataLine);
+        } else if (!table.get(0).isEmpty()) {
+            form.pasteSingleValue(getProperty(selectedColumn), getColumnKey(selectedColumn), table.get(0).get(0));
         }
     }
 

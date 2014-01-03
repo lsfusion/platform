@@ -571,8 +571,45 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
 
-    public void pasteExternalTable(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, String dataLine) {
-        syncDispatch(new PasteExternalTable(properties, columnKeys, dataLine), new ServerResponseCallback());
+    public void pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table, int maxColumns) {
+        ArrayList<ArrayList<Object>> values = new ArrayList<ArrayList<Object>>();
+
+        for (List<String> sRow : table) {
+            ArrayList<Object> valueRow = new ArrayList<Object>();
+
+            int rowLength = Math.min(sRow.size(), maxColumns);
+            for (int i = 0; i < rowLength; i++) {
+                GPropertyDraw property = propertyList.get(i);
+                String sCell = sRow.get(i);
+                valueRow.add(
+                        sCell == null ? null : property.parseChangeValueOrNull(sCell)
+                );
+            }
+            values.add(valueRow);
+        }
+
+        final ArrayList<Integer> propertyIdList = new ArrayList<Integer>();
+        for (GPropertyDraw propertyDraw : propertyList) {
+            propertyIdList.add(propertyDraw.ID);
+        }
+
+        syncDispatch(new PasteExternalTable(propertyIdList, columnKeys, values), new ServerResponseCallback());
+
+    }
+
+    public void pasteSingleValue(GPropertyDraw property, GGroupObjectValue columnKey, String sValue) {
+        ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
+        ArrayList<GGroupObjectValue> columnKeys = new ArrayList<GGroupObjectValue>();
+        List<List<String>> table = new ArrayList<List<String>>();
+
+        List<String> singleStringList = new ArrayList<String>();
+        singleStringList.add(sValue);
+
+        properties.add(property);
+        columnKeys.add(columnKey);
+        table.add(singleStringList);
+
+        pasteExternalTable(properties, columnKeys, table, 1);
     }
 
     public void changePageSizeAfterUnlock(final GGroupObject groupObject, final int pageSize) {

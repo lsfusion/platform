@@ -15,7 +15,7 @@ public class StringGridCellEditor extends TextBasedGridCellEditor {
     }
 
     @Override
-    protected Object tryParseInputText(String inputText) {
+    protected String tryParseInputText(String inputText) {
         return inputText.isEmpty() ? null : inputText;
     }
 
