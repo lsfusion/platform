@@ -32,7 +32,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP messageScheduledClientTaskLog;
 
     public SchedulerLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(SchedulerLogicsModule.class.getResourceAsStream("/scripts/system/Scheduler.lsf"), baseLM, BL);
+        super(SchedulerLogicsModule.class.getResourceAsStream("/lsfusion/system/Scheduler.lsf"), baseLM, BL);
         setBaseLogicsModule(baseLM);
     }
 

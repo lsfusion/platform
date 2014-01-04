@@ -68,6 +68,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     protected final static Logger logger = ServerLoggers.systemLogger;
     protected final static Logger debuglogger = Logger.getLogger(BusinessLogics.class);
 
+    public static final List<String> defaultExcludedScriptPaths = Arrays.asList("lsfusion/system");
+    public static final List<String> defaultIncludedScriptPaths = Arrays.asList("");
+
     private List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
     private Map<String, List<LogicsModule>> namespaceToModules = new HashMap<String, List<LogicsModule>>();
 
@@ -212,26 +215,30 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) throws IOException {
+        if (excludedPaths == null || excludedPaths.isEmpty()) {
+            excludedPaths = defaultExcludedScriptPaths;
+        } else {
+            excludedPaths = new ArrayList<String>(excludedPaths);
+            excludedPaths.addAll(defaultExcludedScriptPaths);
+        }
 
         List<String> excludedLSF = new ArrayList<String>();
 
-        if (excludedPaths != null) {
-            for (String filePath : excludedPaths) {
-                if (filePath.contains("*")) {             
-                    filePath += filePath.endsWith(".lsf") ? "" : ".lsf";
-                    Pattern pattern = Pattern.compile(filePath.replace("*", ".*"));
-                    Collection<String> list = ResourceList.getResources(pattern);
-                    for (String name : list) {
-                        excludedLSF.add(name);
-                    }
-                } else if (filePath.endsWith(".lsf")) {
-                    excludedLSF.add(filePath);
-                } else {
-                    Pattern pattern = Pattern.compile(filePath + ".*\\.lsf");
-                    Collection<String> list = ResourceList.getResources(pattern);
-                    for (String name : list) {
-                        excludedLSF.add(name);
-                    }
+        for (String filePath : excludedPaths) {
+            if (filePath.contains("*")) {
+                filePath += filePath.endsWith(".lsf") ? "" : ".lsf";
+                Pattern pattern = Pattern.compile(filePath.replace("*", ".*"));
+                Collection<String> list = ResourceList.getResources(pattern);
+                for (String name : list) {
+                    excludedLSF.add(name);
+                }
+            } else if (filePath.endsWith(".lsf")) {
+                excludedLSF.add(filePath);
+            } else {
+                Pattern pattern = Pattern.compile(filePath + ".*\\.lsf");
+                Collection<String> list = ResourceList.getResources(pattern);
+                for (String name : list) {
+                    excludedLSF.add(name);
                 }
             }
         }

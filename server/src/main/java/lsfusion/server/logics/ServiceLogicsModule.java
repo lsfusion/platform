@@ -24,7 +24,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LAP cancelRestartServerAction;
     
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(ServiceLogicsModule.class.getResourceAsStream("/scripts/system/Service.lsf"), baseLM, BL);
+        super(ServiceLogicsModule.class.getResourceAsStream("/lsfusion/system/Service.lsf"), baseLM, BL);
         setBaseLogicsModule(baseLM);
     }
 

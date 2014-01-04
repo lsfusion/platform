@@ -16,6 +16,8 @@ public class ScriptingBusinessLogics extends BusinessLogics<ScriptingBusinessLog
     public void setScriptFilePaths(String scriptFilePaths) {
         if (!isRedundantString(scriptFilePaths)) {
             this.scriptFilePaths = asList(scriptFilePaths.split(";"));
+        } else {
+            this.scriptFilePaths = defaultIncludedScriptPaths;
         }
     }
 
@@ -43,8 +45,4 @@ public class ScriptingBusinessLogics extends BusinessLogics<ScriptingBusinessLog
         super.createModules();
         addModulesFromResource(scriptFilePaths, excludedScriptFilePaths);
     }
-
-    //private String modifySlashes(String regexp) {
-    //    return regexp.replace("/", "\\\\");
-    //}
 }

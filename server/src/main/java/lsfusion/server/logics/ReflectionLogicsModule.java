@@ -133,7 +133,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public final LogicalClass propertyIsSetNotNullValueClass = LogicalClass.instance;
 
     public ReflectionLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(ReflectionLogicsModule.class.getResourceAsStream("/scripts/system/Reflection.lsf"), baseLM, BL);
+        super(ReflectionLogicsModule.class.getResourceAsStream("/lsfusion/system/Reflection.lsf"), baseLM, BL);
         setBaseLogicsModule(baseLM);
     }
 

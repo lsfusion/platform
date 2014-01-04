@@ -43,7 +43,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LAP generateLoginPassword;
 
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(AuthenticationLogicsModule.class.getResourceAsStream("/scripts/system/Authentication.lsf"), baseLM, BL);
+        super(AuthenticationLogicsModule.class.getResourceAsStream("/lsfusion/system/Authentication.lsf"), baseLM, BL);
         this.BL = BL;
         setBaseLogicsModule(baseLM);
     }

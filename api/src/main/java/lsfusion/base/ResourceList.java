@@ -14,8 +14,7 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class ResourceList {
 
-    public static Collection<String> getResources(
-            final Pattern pattern) {
+    public static Collection<String> getResources(final Pattern pattern) {
         final ArrayList<String> retval = new ArrayList<String>();
         final String classPath = System.getProperty("java.class.path", ".");
         final String[] classPathElements = classPath.split(System.getProperty("path.separator"));
@@ -27,9 +26,7 @@ public class ResourceList {
         return retval;
     }
 
-    private static Collection<String> getResources(
-            final String element,
-            final Pattern pattern) {
+    private static Collection<String> getResources(final String element, final Pattern pattern) {
         final ArrayList<String> retval = new ArrayList<String>();
 
         if (element.endsWith("*")) {
@@ -56,9 +53,7 @@ public class ResourceList {
         return retval;
     }
 
-    private static Collection<String> getResourcesFromJarFile(
-            final File file,
-            final Pattern pattern) {
+    private static Collection<String> getResourcesFromJarFile(final File file, final Pattern pattern) {
         final ArrayList<String> retval = new ArrayList<String>();
         ZipFile zf;
         try {
@@ -85,10 +80,7 @@ public class ResourceList {
         return retval;
     }
 
-    private static Collection<String> getResourcesFromDirectory(
-            final File directory,
-            final String relativePath,
-            final Pattern pattern) {
+    private static Collection<String> getResourcesFromDirectory(final File directory, final String relativePath, final Pattern pattern) {
         final ArrayList<String> result = new ArrayList<String>();
 
         final File[] fileList = directory.listFiles();
