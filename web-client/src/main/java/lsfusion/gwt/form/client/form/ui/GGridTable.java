@@ -722,7 +722,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 }
             });
         } else if (!table.get(0).isEmpty()) {
-            form.pasteSingleValue(getProperty(selectedColumn), getColumnKey(selectedColumn), table.get(0).get(0));
+            GGroupObjectValue fullKey = new GGroupObjectValueBuilder(getCurrentKey(), getColumnKey(selectedColumn)).toGroupObjectValue();
+            form.pasteSingleValue(getProperty(selectedColumn), fullKey, table.get(0).get(0));
         }
     }
 

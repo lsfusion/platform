@@ -116,7 +116,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public Object parseChangeValueOrNull(String s) {
-        if (changeWYSType == null) {
+        if (s == null || changeWYSType == null) {
             return null;
         }
         try {

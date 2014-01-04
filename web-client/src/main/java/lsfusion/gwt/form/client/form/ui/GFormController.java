@@ -582,7 +582,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 GPropertyDraw property = propertyList.get(i);
                 String sCell = sRow.get(i);
                 valueRow.add(
-                        sCell == null ? null : property.parseChangeValueOrNull(sCell)
+                        property.parseChangeValueOrNull(sCell)
                 );
             }
             values.add(valueRow);
@@ -598,18 +598,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void pasteSingleValue(GPropertyDraw property, GGroupObjectValue columnKey, String sValue) {
-        ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
-        ArrayList<GGroupObjectValue> columnKeys = new ArrayList<GGroupObjectValue>();
-        List<List<String>> table = new ArrayList<List<String>>();
-
-        List<String> singleStringList = new ArrayList<String>();
-        singleStringList.add(sValue);
-
-        properties.add(property);
-        columnKeys.add(columnKey);
-        table.add(singleStringList);
-
-        pasteExternalTable(properties, columnKeys, table, 1);
+        Serializable value = (Serializable) property.parseChangeValueOrNull(sValue);
+        syncDispatch(new PasteSingleCellValue(property.ID, columnKey, value), new ServerResponseCallback());
     }
 
     public void changePageSizeAfterUnlock(final GGroupObject groupObject, final int pageSize) {
