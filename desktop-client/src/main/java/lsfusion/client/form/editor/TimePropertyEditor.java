@@ -1,7 +1,6 @@
 package lsfusion.client.form.editor;
 
 import com.toedter.calendar.JSpinnerDateEditor;
-import lsfusion.base.ExceptionUtils;
 import lsfusion.client.form.ClientPropertyTableEditorComponent;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.cell.PropertyTableCellEditor;
