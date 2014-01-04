@@ -181,9 +181,13 @@ public class KeyStrokes {
         return isKeyEvent(event, KeyEvent.VK_ESCAPE);
     }
 
-    public static boolean isDigitKeyEvent(KeyEvent keyEvent) {
-        int keyCode = keyEvent.getKeyCode();
-        return keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9 || keyCode >= KeyEvent.VK_NUMPAD0 && keyCode <= KeyEvent.VK_NUMPAD9;
+    public static boolean isDigitKeyEvent(EventObject event) {
+        if (event instanceof KeyEvent) {
+            KeyEvent keyEvent = (KeyEvent)event;
+            int keyCode = keyEvent.getKeyCode();
+            return keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9 || keyCode >= KeyEvent.VK_NUMPAD0 && keyCode <= KeyEvent.VK_NUMPAD9;
+        }
+        return false;
     }
 
     public static boolean isSuitableStartFilteringEvent(EventObject event) {
@@ -201,21 +205,21 @@ public class KeyStrokes {
     }
 
     public static boolean isSuitableEditKeyEvent(EventObject event) {
-        if (event instanceof KeyEvent) {
+        if ((event instanceof KeyEvent)) {
             KeyEvent keyEvent = (KeyEvent) event;
             //будем считать, что если нажата кнопка ALT или CTRL, то явно пользователь не хочет вводить текст
             return !keyEvent.isActionKey() &&
-                    !keyEvent.isAltDown() &&
-                    !keyEvent.isControlDown() &&
-                    !KeyStrokes.isCharUndefinedEvent(keyEvent) &&
-                    !KeyStrokes.isEscapeEvent(keyEvent);
+                   !keyEvent.isAltDown() &&
+                   !keyEvent.isControlDown() &&
+                   !KeyStrokes.isCharUndefinedEvent(keyEvent) &&
+                   !KeyStrokes.isEscapeEvent(keyEvent);
         }
-        return true;
+        return false;
     }
 
     public static boolean isSuitableNumberEditEvent(EventObject event) {
         return isSuitableEditKeyEvent(event) && (
-                isDigitKeyEvent((KeyEvent) event) ||
+                isDigitKeyEvent(event) ||
                 isDeleteEvent(event) ||
                 isBackSpaceEvent(event)
         );

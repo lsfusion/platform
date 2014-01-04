@@ -63,7 +63,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
             return false;
         }
 
-        if (!KeyStrokes.isSuitableEditKeyEvent(e)) {
+        if (e instanceof KeyEvent && !KeyStrokes.isSuitableEditKeyEvent(e)) {
             return false;
         }
 

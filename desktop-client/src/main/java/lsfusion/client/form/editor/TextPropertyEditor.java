@@ -2,6 +2,7 @@ package lsfusion.client.form.editor;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.SwingUtils;
+import lsfusion.client.form.ClientPropertyTableEditorComponent;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.cell.PropertyTableCellEditor;
 import lsfusion.interop.ComponentDesign;
@@ -19,7 +20,7 @@ import java.util.EventObject;
 
 
 @SuppressWarnings({"FieldCanBeLocal"})
-public class TextPropertyEditor extends JScrollPane implements PropertyEditor, PropertyChangeListener {
+public class TextPropertyEditor extends JScrollPane implements PropertyEditor, PropertyChangeListener, ClientPropertyTableEditorComponent {
     private final int WIDTH = 250;
     private final int HEIGHT = 200;
     private String typedText;

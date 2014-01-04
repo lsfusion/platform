@@ -8,15 +8,14 @@ import lsfusion.client.form.renderer.TimePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
 
-import java.awt.*;
 import java.sql.Time;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static lsfusion.base.DateConverter.safeDateToSql;
 import static lsfusion.client.Main.timeFormat;
+import static lsfusion.client.Main.wideFormattableDateTime;
 import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 
 public class ClientTimeClass extends ClientDataClass implements ClientTypeClass {
@@ -27,7 +26,7 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
 
     public String getPreferredMask() {
         try {
-            return formatString(safeDateToSql(new java.util.Date()));
+            return formatString(wideFormattableDateTime) + "BT";
         } catch (ParseException pe) {
             throw new IllegalStateException("shouldn't happen", pe);
         }
@@ -70,11 +69,6 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
 
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.time");
-    }
-
-    @Override
-    public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
-        return 65;
     }
 
     @Override

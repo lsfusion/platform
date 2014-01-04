@@ -4,6 +4,7 @@ import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import lsfusion.base.DateConverter;
 import lsfusion.client.SwingUtils;
+import lsfusion.client.form.ClientPropertyTableEditorComponent;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.cell.PropertyTableCellEditor;
 import lsfusion.interop.ComponentDesign;
@@ -21,8 +22,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.EventObject;
 
-public class DatePropertyEditor extends JDateChooser implements PropertyEditor {
-    SimpleDateFormat format;
+public class DatePropertyEditor extends JDateChooser implements PropertyEditor, ClientPropertyTableEditorComponent {
+    private final SimpleDateFormat format;
 
     public DatePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
         super(null, null, format.toPattern(), new DatePropertyEditorComponent(format));
@@ -112,6 +113,15 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor {
     }
 
     @Override
+    public void prepareTextEditor(boolean clearText) {
+        if (clearText) {
+            ((JFormattedTextField) dateEditor).setText("");
+        } else {
+            ((JFormattedTextField) dateEditor).selectAll();
+        }
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
         int x = calendarButton.getWidth()
                 - (int) popup.getPreferredSize().getWidth();
@@ -129,6 +139,8 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor {
         public DatePropertyEditorComponent(SimpleDateFormat format) {
             super(format.toPattern(), null, ' ');
             this.dateFormatter = format;
+            setHorizontalAlignment(JTextField.RIGHT);
+
             setBorder(new EmptyBorder(0, 1, 0, 0));
         }
 

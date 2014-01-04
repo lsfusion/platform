@@ -1,6 +1,8 @@
 package lsfusion.client.form.editor;
 
 import com.toedter.calendar.JSpinnerDateEditor;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.client.form.ClientPropertyTableEditorComponent;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.cell.PropertyTableCellEditor;
 import lsfusion.interop.ComponentDesign;
@@ -10,6 +12,7 @@ import javax.swing.*;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 import java.awt.*;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.sql.Time;
 import java.text.DateFormat;
@@ -17,7 +20,7 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.EventObject;
 
-public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEditor {
+public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEditor, ClientPropertyTableEditorComponent {
     private PropertyTableCellEditor tableEditor;
 
     private final SimpleDateFormat format;
@@ -106,6 +109,17 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
         }
     }
 
+    @Override
+    public void prepareTextEditor(boolean clearText) {
+        if (clearText) {
+            getEditorComponent().getTextField().setText("");
+        } else {
+            System.out.println("select all");
+            ExceptionUtils.dumpStack();
+            getEditorComponent().getTextField().selectAll();
+        }
+    }
+
     class TimePropertyEditorComponent extends JSpinner.DateEditor {
         public TimePropertyEditorComponent(JSpinner spinner, String pattern) {
             super(spinner, pattern);
@@ -113,9 +127,23 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
             JFormattedTextField oldField = getTextField();
             remove(oldField);
 
-
             // для доступа к TextField'у подменяем своим добавленный в конструкторе, инициализируя аналогичным образом
-            JFormattedTextField ftf = new TimeTextField();
+            JFormattedTextField ftf = new TimeTextField() {
+                @Override
+                protected void processFocusEvent(FocusEvent e) {
+                    // JFormattedTextField.processFocusEvent вызывает setValue(), который убивает эффект selectAll(),
+                    // поэтому приходится ещё раз вызывать здесь
+                    int selectionStart = getSelectionStart();
+                    int selectionEnd = getSelectionEnd();
+                    int docLength = getDocument().getLength();
+
+                    super.processFocusEvent(e);
+
+                    if (docLength == selectionEnd - selectionStart) {
+                        selectAll();
+                    }
+                }
+            };
             ftf.setName("Spinner.formattedTextField");
             ftf.setValue(spinner.getValue());
             ftf.addPropertyChangeListener(this);
@@ -135,6 +163,11 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
                 ftfMap.put("increment", oldField.getActionMap().get("increment"));
                 ftfMap.put("decrement", oldField.getActionMap().get("decrement"));
             }
+        }
+
+        @Override
+        public boolean requestFocusInWindow() {
+            return getTextField().requestFocusInWindow();
         }
 
         class TimeTextField extends JFormattedTextField {
@@ -175,11 +208,6 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
             public Comparable getMaximum() {
                 return getModel().getEnd();
             }
-        }
-
-        @Override
-        public boolean requestFocusInWindow() {
-            return getTextField().requestFocusInWindow();
         }
     }
 }

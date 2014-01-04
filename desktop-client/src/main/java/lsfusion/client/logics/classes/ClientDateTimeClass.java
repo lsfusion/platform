@@ -8,15 +8,16 @@ import lsfusion.client.form.renderer.DateTimePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
 
-import java.awt.*;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.util.Date;
 
-import static lsfusion.base.DateConverter.*;
+import static lsfusion.base.DateConverter.createDateTimeEditFormat;
+import static lsfusion.base.DateConverter.dateToStamp;
+import static lsfusion.client.Main.dateTimeEditFormat;
 import static lsfusion.client.Main.dateTimeFormat;
+import static lsfusion.client.Main.wideFormattableDateTime;
 import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 
 public class ClientDateTimeClass extends ClientDataClass implements ClientTypeClass {
@@ -35,11 +36,7 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
 
     @Override
     public String getPreferredMask() {
-        try {
-            return formatString(dateToStamp(new java.util.Date()));
-        } catch (ParseException pe) {
-            throw new IllegalStateException("shouldn't happen", pe);
-        }
+        return dateTimeEditFormat.format(wideFormattableDateTime) + "BTN";
     }
 
     public Format getDefaultFormat() {
@@ -63,9 +60,9 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
     }
 
     @Override
-    public String formatString(Object obj) throws ParseException {
+    public String formatString(Object obj) {
         if (obj != null) {
-            return dateTimeFormat.format(stampToDate((Timestamp) obj));
+            return dateTimeFormat.format(obj);
         }
         else return "";
     }
@@ -73,11 +70,6 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.date.with.time");
-    }
-
-    @Override
-    public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
-        return 115;
     }
 
     @Override

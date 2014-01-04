@@ -36,9 +36,10 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.TimeZone;
+import java.util.*;
 
+import static lsfusion.base.DateConverter.createDateEditFormat;
+import static lsfusion.base.DateConverter.createDateTimeEditFormat;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
 
@@ -61,8 +62,12 @@ public class Main {
     public static int computerId;
     public static TimeZone timeZone;
     public static DateFormat dateFormat;
+    public static DateFormat dateEditFormat;
     public static DateFormat timeFormat;
     public static DateFormat dateTimeFormat;
+    public static DateFormat dateTimeEditFormat;
+    public static Date wideFormattableDate;
+    public static Date wideFormattableDateTime;
 
     public static MainFrame frame;
 
@@ -211,6 +216,19 @@ public class Main {
 
 //        dateTimeFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
         dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+
+        dateEditFormat = createDateEditFormat(dateFormat);
+        dateTimeEditFormat = createDateTimeEditFormat(dateTimeFormat);
+
+        wideFormattableDate = craeteWideFormattableDate(timeZone);
+        wideFormattableDateTime = craeteWideFormattableDate(TimeZone.getDefault());
+    }
+
+    private static Date craeteWideFormattableDate(TimeZone timeZone) {
+        GregorianCalendar gc2 = new GregorianCalendar(timeZone);
+        //просто любая дата, для которой нужны обе цифры при форматтинге
+        gc2.set(1991, Calendar.NOVEMBER, 21, 10, 55, 55);
+        return gc2.getTime();
     }
 
     private static void initJulLogging() {

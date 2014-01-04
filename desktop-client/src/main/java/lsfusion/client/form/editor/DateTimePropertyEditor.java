@@ -4,6 +4,7 @@ import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import lsfusion.base.DateConverter;
 import lsfusion.client.SwingUtils;
+import lsfusion.client.form.ClientPropertyTableEditorComponent;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.cell.PropertyTableCellEditor;
 import lsfusion.interop.ComponentDesign;
@@ -23,7 +24,7 @@ import java.util.Date;
 import java.util.EventObject;
 import java.util.GregorianCalendar;
 
-public class DateTimePropertyEditor extends JDateChooser implements PropertyEditor {
+public class DateTimePropertyEditor extends JDateChooser implements PropertyEditor, ClientPropertyTableEditorComponent {
 
     public DateTimePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
         super(null, null, format.toPattern(), new DateTimePropertyEditorComponent(format));
@@ -123,9 +124,19 @@ public class DateTimePropertyEditor extends JDateChooser implements PropertyEdit
         return true;
     }
 
+    @Override
+    public void prepareTextEditor(boolean clearText) {
+        if (clearText) {
+            ((JFormattedTextField) dateEditor).setText("");
+        } else {
+            ((JFormattedTextField) dateEditor).selectAll();
+        }
+    }
+
     private static class DateTimePropertyEditorComponent extends JTextFieldDateEditor {
         public DateTimePropertyEditorComponent(SimpleDateFormat format) {
             super(format.toPattern(), null, ' ');
+            setHorizontalAlignment(JTextField.RIGHT);
             setBorder(new EmptyBorder(0, 1, 0, 0));
         }
 

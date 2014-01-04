@@ -8,14 +8,15 @@ import lsfusion.client.form.renderer.DatePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
 
-import java.sql.Date;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 
 import static lsfusion.base.DateConverter.createDateEditFormat;
 import static lsfusion.base.DateConverter.safeDateToSql;
+import static lsfusion.client.Main.dateEditFormat;
 import static lsfusion.client.Main.dateFormat;
+import static lsfusion.client.Main.wideFormattableDate;
 import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 
 public class ClientDateClass extends ClientDataClass implements ClientTypeClass {
@@ -35,11 +36,7 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
 
     @Override
     public String getPreferredMask() {
-        try {
-            return formatString(safeDateToSql(new java.util.Date()));
-        } catch (ParseException pe) {
-            throw new IllegalStateException("shouldn't happen", pe);
-        }
+        return dateEditFormat.format(wideFormattableDate) + "BTN";
     }
 
     public Format getDefaultFormat() {
@@ -65,7 +62,7 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
     @Override
     public String formatString(Object obj) throws ParseException {
         if (obj != null) {
-            return dateFormat.format((Date) obj);
+            return dateFormat.format(obj);
         }
         else return "";
     }
