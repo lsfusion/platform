@@ -14,18 +14,13 @@ public class ScannerDaemonTask extends AbstractDaemonTask implements Serializabl
 
     private final int com;
     private final boolean singleRead;
-    private final Integer bytesCount;
     private transient SerialPort serialPort;
     private transient String barcode = "";
 
-    public ScannerDaemonTask(int com, boolean singleRead) {
-        this(com, singleRead, null);
-    }
 
-    public ScannerDaemonTask(int com, boolean singleRead, Integer bytesCount) {
+    public ScannerDaemonTask(int com, boolean singleRead) {
         this.com = com;
         this.singleRead = singleRead;
-        this.bytesCount = bytesCount;
     }
 
     @Override
@@ -33,7 +28,7 @@ public class ScannerDaemonTask extends AbstractDaemonTask implements Serializabl
         try {
             serialPort = new SerialPort("COM" + com);
             boolean opened = serialPort.openPort();
-            if(!opened) {
+            if (!opened) {
                 throw new RuntimeException("Не удалось открыть порт COM" + com + ". Попробуйте закрыть все другие приложения, использующие этот порт и перезапустить клиент.");
             }
             serialPort.setParams(9600, 8, 1, 0);
@@ -63,21 +58,14 @@ public class ScannerDaemonTask extends AbstractDaemonTask implements Serializabl
             if (singleRead) {
                 try {
                     byte[] portBytes;
-                    if (bytesCount != null) {
-                        Thread.sleep(50);
-                        if (bytesCount == -1) {
-                            portBytes = serialPort.readBytes();
-                        } else {
-                            portBytes = serialPort.readBytes(this.bytesCount);
-                        }
-                    } else {
-                        portBytes = serialPort.readBytes(event.getEventValue());
-                    }
-                    
+
+                    Thread.sleep(50);
+                    portBytes = serialPort.readBytes();
+
                     if (portBytes != null) {
                         barcode = "";
                         for (byte portByte : portBytes) {
-                            if (((char)portByte) != '\n' && ((char)portByte) != '\r')
+                            if (((char) portByte) != '\n' && ((char) portByte) != '\r')
                                 barcode += (char) portByte;
                         }
                         if (!barcode.isEmpty())
@@ -88,21 +76,19 @@ public class ScannerDaemonTask extends AbstractDaemonTask implements Serializabl
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
-            } else
-                if (event.isRXCHAR() && event.getEventValue() > 0) {
-                    try {
-                        char ch = (char)serialPort.readBytes(1)[0];
-                        if (ch >= '0' && ch <= '9')
-                            barcode += ch;
-                        if (event.getEventValue() == 1) {
-                            eventBus.fireValueChanged(SCANNER_SID, barcode);
-                            barcode = "";
-                        }
+            } else if (event.isRXCHAR() && event.getEventValue() > 0) {
+                try {
+                    char ch = (char) serialPort.readBytes(1)[0];
+                    if (ch >= '0' && ch <= '9')
+                        barcode += ch;
+                    if (event.getEventValue() == 1) {
+                        eventBus.fireValueChanged(SCANNER_SID, barcode);
+                        barcode = "";
                     }
-                    catch (SerialPortException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                } catch (SerialPortException ex) {
+                    throw new RuntimeException(ex);
                 }
+            }
         }
     }
 }

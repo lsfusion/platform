@@ -154,18 +154,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         Integer scannerComPort;
         Boolean scannerSingleRead;
-        Integer scannerBytesCount;
         try {
             DataSession session = getDbManager().createSession();
             scannerComPort = (Integer) authenticationLM.scannerComPortComputer.read(session, new DataObject(compId, authenticationLM.computer));
             scannerSingleRead = (Boolean) authenticationLM.scannerSingleReadComputer.read(session, new DataObject(compId, authenticationLM.computer));
-            scannerBytesCount = (Integer) authenticationLM.scannerBytesCountComputer.read(session, new DataObject(compId, authenticationLM.computer));
             session.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         if (scannerComPort != null) {
-            IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead), scannerBytesCount);
+            IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead));
             daemons.add(task);
         }
         return daemons;

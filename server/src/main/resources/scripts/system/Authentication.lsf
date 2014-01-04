@@ -12,18 +12,17 @@ hostnameComputer 'Имя хоста' = DATA VARISTRING[100] (Computer) IN recogn
 // Сканер
 scannerComPortComputer 'Com-port' = DATA INTEGER (Computer);
 scannerSingleReadComputer 'Одно событие на весь штрих-код' = DATA BOOLEAN (Computer);
-scannerBytesCountComputer 'Кол-во считываемых байт' = DATA INTEGER (Computer);
 
 FORM computer 'Рабочее место'
     OBJECTS c = Computer FIXED PANEL
-    PROPERTIES(c) hostnameComputer, scannerComPortComputer, scannerSingleReadComputer, scannerBytesCountComputer
+    PROPERTIES(c) hostnameComputer, scannerComPortComputer, scannerSingleReadComputer
     
     EDIT Computer OBJECT c
 ;
 
 FORM computers 'Рабочие места'
     OBJECTS c = Computer
-    PROPERTIES(c) READONLY hostnameComputer, scannerComPortComputer, scannerSingleReadComputer, scannerBytesCountComputer
+    PROPERTIES(c) READONLY hostnameComputer, scannerComPortComputer, scannerSingleReadComputer
     PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 ;
 
