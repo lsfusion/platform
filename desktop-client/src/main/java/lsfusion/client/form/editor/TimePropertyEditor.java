@@ -114,8 +114,6 @@ public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEd
         if (clearText) {
             getEditorComponent().getTextField().setText("");
         } else {
-            System.out.println("select all");
-            ExceptionUtils.dumpStack();
             getEditorComponent().getTextField().selectAll();
         }
     }
