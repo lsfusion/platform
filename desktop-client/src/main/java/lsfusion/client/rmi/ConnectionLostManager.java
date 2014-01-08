@@ -112,7 +112,9 @@ public class ConnectionLostManager {
             blockDialog.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowOpened(WindowEvent e) {
-                    timerWhenBlocked.start();
+                    if (timerWhenBlocked != null) {
+                        timerWhenBlocked.start();
+                    }
                 }
             });
             blockDialog.setVisible(true);
