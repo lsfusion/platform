@@ -105,7 +105,6 @@ public class ConnectionLostManager {
         SwingUtils.assertDispatchThread();
 
         if (shouldBeBlocked() && blockDialog == null) {
-            ExceptionUtils.dumpStack();
             currentFrame.setLocked(true);
 
             blockDialog = new BlockDialog(null, currentFrame, isConnectionLost(), true);

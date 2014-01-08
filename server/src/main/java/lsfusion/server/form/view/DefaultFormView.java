@@ -256,7 +256,7 @@ public class DefaultFormView extends FormView {
                 propertyContainer = getToolbarPropsContainer(mgroupObjects.get(groupObject));
             }
 
-            propertyDraw.alignment = FlexAlignment.STRETCH;
+            propertyDraw.alignment = FlexAlignment.CENTER;
 
             propertyContainer.add(propertyDraw);
         } else {
