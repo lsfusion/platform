@@ -35,7 +35,30 @@ public class ExceptionUtils {
     }
 
     public static RemoteException propogateRemoteException(Throwable t) throws RemoteException {
-        Throwables.propagateIfPossible(t, RemoteException.class);
+        throw propagate(t, RemoteException.class);
+    }
+
+    public static <E1 extends Throwable> RuntimeException propagate(Throwable t,
+                                                                    Class<E1> declaredType) throws E1 {
+        Throwables.propagateIfInstanceOf(t, declaredType);
+        throw Throwables.propagate(t);
+    }
+
+    public static <E1 extends Throwable, E2 extends Throwable> RuntimeException propagate(Throwable t,
+                                                                                          Class<E1> declaredType1,
+                                                                                          Class<E2> declaredType2) throws E1, E2 {
+        Throwables.propagateIfInstanceOf(t, declaredType1);
+        Throwables.propagateIfInstanceOf(t, declaredType2);
+        throw Throwables.propagate(t);
+    }
+
+    public static <E1 extends Throwable, E2 extends Throwable, E3 extends Throwable> RuntimeException propagate(Throwable t,
+                                                                                                                Class<E1> declaredType1,
+                                                                                                                Class<E1> declaredType2,
+                                                                                                                Class<E2> declaredType3) throws E1, E2, E3 {
+        Throwables.propagateIfInstanceOf(t, declaredType1);
+        Throwables.propagateIfInstanceOf(t, declaredType2);
+        Throwables.propagateIfInstanceOf(t, declaredType3);
         throw Throwables.propagate(t);
     }
 
