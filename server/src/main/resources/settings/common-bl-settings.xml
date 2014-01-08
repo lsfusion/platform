@@ -110,6 +110,8 @@
         <property name="adapter" ref="dataAdapter"/>
         <property name="businessLogics" ref="businessLogics"/>
         <property name="restartManager" ref="restartManager"/>
+        <property name="denyDropModules" value="${db.denyDropModules:false}"/>
+        <property name="denyDropTables" value="${db.denyDropTables:false}"/>
     </bean>
 
     <bean id="restartManager" class="lsfusion.server.logics.RestartManager">

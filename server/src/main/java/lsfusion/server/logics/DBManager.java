@@ -94,6 +94,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private boolean ignoreMigration;
 
+    private boolean denyDropModules;
+
+    private boolean denyDropTables;
+    
     private BaseLogicsModule<?> LM;
 
     private ReflectionLogicsModule reflectionLM;
@@ -142,6 +146,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         this.ignoreMigration = ignoreMigration;
     }
 
+    public void setDenyDropModules(boolean denyDropModules) {
+        this.denyDropModules = denyDropModules;
+    }
+
+    public void setDenyDropTables(boolean denyDropTables) {
+        this.denyDropTables = denyDropTables;
+    }
+    
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(adapter, "adapter must be specified");
@@ -900,6 +912,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         DBStructure oldDBStructure = new DBStructure(inputDB, sql);
 
+        checkModules(oldDBStructure);
+        
         runAlterationScript();
 
         Map<String, String> columnsToDrop = new HashMap<String, String>();
@@ -916,6 +930,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
             newDBStructure.write(outDB);
 
+            String droppedTables = "";           
             for (Map.Entry<Table, Map<List<String>, Boolean>> oldTableIndices : oldDBStructure.tables.entrySet()) {
                 Table oldTable = oldTableIndices.getKey();
                 Table newTable = newDBStructure.getTable(oldTableIndices.getKey().name);
@@ -934,10 +949,16 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         }
                     }
                     if (drop) {
-                        sql.dropIndex(oldTable.name, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
+                        systemLogger.info("Table " + oldTable.name + " has been dropped");
+                        droppedTables += oldTable.name + ", ";
+                        if(!denyDropTables)                            
+                            sql.dropIndex(oldTable.name, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
                     }
                 }
             }
+
+            if(denyDropTables && !droppedTables.isEmpty())
+                throw new RuntimeException("Dropped tables: " + droppedTables.substring(0, droppedTables.length() - 2));
 
             systemLogger.info("Applying migration script");
             alterateDBStructure(oldDBStructure, sql);
@@ -1199,6 +1220,17 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 aggregateProperty.recalculateAggregation(session);
             }
     }
+
+    private void checkModules(DBStructure dbStucture) {
+        String droppedModules = "";
+        for (String moduleName : dbStucture.modulesList)
+            if (businessLogics.getModule(moduleName) == null) {
+                systemLogger.info("Module " + moduleName + " has been dropped");
+                droppedModules += moduleName + ", ";
+            }
+        if (denyDropModules && !droppedModules.isEmpty())
+            throw new RuntimeException("Dropped modules: " + droppedModules.substring(0, droppedModules.length() - 2));
+    }  
 
     private void runAlterationScript() {
         if (ignoreMigration) {
@@ -1530,12 +1562,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private class DBStructure {
         public int version;
         public DBVersion dbVersion;
+        public List<String> modulesList = new ArrayList<String>();
         public Map<Table, Map<List<String>, Boolean>> tables = new HashMap<Table, Map<List<String>, Boolean>>();
         public List<DBStoredProperty> storedProperties = new ArrayList<DBStoredProperty>();
         public Set<DBConcreteClass> concreteClasses = new HashSet<DBConcreteClass>();
 
         public DBStructure(DBVersion dbVersion) {
-            version = 9;
+            version = 10;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {
@@ -1589,6 +1622,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     dbVersion = new DBVersion(inputDB.readUTF());
                 } else {
                     dbVersion = new DBVersion("0.0");
+                }
+
+                if (version > 9) {
+                    int modulesCount = inputDB.readInt();
+                    if (modulesCount > 0) {
+                        for (int i = 0; i < modulesCount; i++)
+                            modulesList.add(inputDB.readUTF());
+                    }
                 }
 
                 for (int i = inputDB.readInt(); i > 0; i--) {
@@ -1662,6 +1703,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             if (version > 2) {
                 outDB.writeUTF(dbVersion.toString());
             }
+
+            //записываем список подключенных модулей
+            outDB.writeInt(businessLogics.getLogicModules().size());
+            for (LogicsModule logicsModule : businessLogics.getLogicModules())
+                outDB.writeUTF(logicsModule.getName());
 
             outDB.writeInt(tables.size());
             for (Map.Entry<Table, Map<List<String>, Boolean>> tableIndices : tables.entrySet()) {
