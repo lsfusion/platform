@@ -42,9 +42,6 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     // аутентификация
     byte[] getCurrentUserInfoByteArray() throws RemoteException;
 
-    // релевантные элементы
-    byte[] getElementsByteArray(String groupSID) throws RemoteException;
-
     // для конфигуратора методы
 
     RemoteFormInterface createPreviewForm(byte[] formState) throws RemoteException;

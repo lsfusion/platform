@@ -24,13 +24,13 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     @Override
-    protected void throwInServerInvocation(Throwable t) throws IOException {
-        getFormController().throwInServerInvocation(t);
+    protected ServerResponse throwInServerInvocation(long requestIndex, int continueIndex, Throwable t) throws IOException {
+        return getFormController().throwInServerInvocation(requestIndex, continueIndex, t);
     }
 
     @Override
-    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
-        return getFormController().continueServerInvocation(actionResults);
+    public ServerResponse continueServerInvocation(long requestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
+        return getFormController().continueServerInvocation(requestIndex, continueIndex, actionResults);
     }
 
     @Override
@@ -90,7 +90,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
 
     public void execute(ProcessFormChangesClientAction action) {
         try {
-            getFormController().applyFormChanges(action.formChanges);
+            getFormController().applyFormChanges(action.requestIndex, action.formChanges);
         } catch (IOException e) {
             Throwables.propagate(e);
         }

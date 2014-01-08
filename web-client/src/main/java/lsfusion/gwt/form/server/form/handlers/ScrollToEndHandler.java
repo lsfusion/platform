@@ -20,6 +20,6 @@ public class ScrollToEndHandler extends ServerResponseActionHandler<ScrollToEnd>
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         Scroll scrollType = action.toEnd ? Scroll.END : Scroll.HOME;
         return getServerResponseResult(form,
-                                       form.remoteForm.changeGroupObject(action.requestIndex, action.groupId, scrollType.serialize()));
+                                       form.remoteForm.changeGroupObject(action.requestIndex, -1, action.groupId, scrollType.serialize()));
     }
 }

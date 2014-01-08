@@ -28,27 +28,33 @@ import java.awt.event.KeyEvent;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.text.DecimalFormat;
+import java.util.EventObject;
 
 public abstract class SwingClientActionDispatcher implements ClientActionDispatcher {
+    private EventObject editEvent;
+
     private boolean dispatchingPaused;
 
     private ServerResponse currentServerResponse = null;
     Object[] currentActionResults = null;
     private int currentActionIndex = -1;
+    private int currentContinueIndex = -1;
 
     public void dispatchResponse(ServerResponse serverResponse) throws IOException {
         assert serverResponse != null;
 
+        int continueIndex = -1;
         try {
-            preDispatchResponse(serverResponse);
             do {
                 Object[] actionResults = null;
+                Throwable actionThrowable = null;
                 ClientAction[] actions = serverResponse.actions;
                 if (actions != null) {
                     int beginIndex;
                     if (dispatchingPaused) {
                         beginIndex = currentActionIndex + 1;
                         actionResults = currentActionResults;
+                        continueIndex = currentContinueIndex;
 
                         currentActionIndex = -1;
                         currentActionResults = null;
@@ -65,13 +71,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                         try {
                             dispatchResult = action.dispatch(this);
                         } catch (Throwable t) {
-                            t.printStackTrace();
-                            if (serverResponse.resumeInvocation) {
-                                throwInServerInvocation(t);
-                            } else {
-                                Throwables.propagateIfPossible(t, IOException.class);
-                                throw Throwables.propagate(t);
-                            }
+                            actionThrowable = t;
                             break;
                         }
 
@@ -79,6 +79,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                             currentServerResponse = serverResponse;
                             currentActionResults = actionResults;
                             currentActionIndex = i;
+                            currentContinueIndex = continueIndex;
                             return;
                         }
 
@@ -86,32 +87,30 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                     }
                 }
 
-                if (!serverResponse.resumeInvocation) {
+                if (serverResponse.resumeInvocation) {
+                    continueIndex++;
+
+                    if (actionThrowable != null) {
+                        serverResponse = throwInServerInvocation(serverResponse.requestIndex, continueIndex, actionThrowable);
+                    } else {
+                        serverResponse = continueServerInvocation(serverResponse.requestIndex, continueIndex, actionResults);
+                    }
+                } else {
+                    if (actionThrowable != null) {
+                        Throwables.propagateIfPossible(actionThrowable, IOException.class);
+                        throw Throwables.propagate(actionThrowable);
+                    }
                     break;
                 }
-
-                serverResponse = continueServerInvocation(actionResults);
             } while (true);
-
-            postDispatchResponse(serverResponse);
         } catch (Exception e) {
-            handleDispatchException(e);
+            Throwables.propagateIfPossible(e, IOException.class);
         }
     }
 
-    protected void preDispatchResponse(ServerResponse serverResponse) throws IOException {
-    }
+    protected abstract ServerResponse throwInServerInvocation(long requestIndex, int continueIndex, Throwable t) throws IOException;
 
-    protected void postDispatchResponse(ServerResponse serverResponse) throws IOException {
-        assert !serverResponse.resumeInvocation;
-    }
-
-    protected void handleDispatchException(Exception e) throws IOException {
-        Throwables.propagateIfPossible(e, IOException.class);
-    }
-
-    protected abstract void throwInServerInvocation(Throwable t) throws IOException;
-    protected abstract ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException;
+    protected abstract ServerResponse continueServerInvocation(long requestIndex, int continueIndex, Object[] actionResults) throws RemoteException;
 
     public void pauseDispatching() {
         dispatchingPaused = true;
@@ -128,6 +127,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         } catch (IOException e) {
             Throwables.propagate(e);
         }
+    }
+
+    public void setEditEvent(EventObject editEvent) {
+        this.editEvent = editEvent;
     }
 
     protected Container getDialogParentContainer() {
@@ -149,8 +152,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             });
         } else if (modality.isModal()) {
             Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-            AWTEvent currentEvent = EventQueue.getCurrentEvent();
-            new ClientModalForm(action.formSID, owner, remoteForm, modality.isDialog(), currentEvent).showDialog(modality.isFullScreen());
+            new ClientModalForm(action.formSID, owner, remoteForm, modality.isDialog(), editEvent).showDialog(modality.isFullScreen());
         } else {
             Main.frame.runForm(remoteForm, null);
         }

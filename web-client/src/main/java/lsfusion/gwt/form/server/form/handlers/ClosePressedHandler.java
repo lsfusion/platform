@@ -17,6 +17,6 @@ public class ClosePressedHandler extends ServerResponseActionHandler<ClosePresse
     @Override
     public ServerResponseResult executeEx(ClosePressed action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.closedPressed(action.requestIndex));
+        return getServerResponseResult(form, form.remoteForm.closedPressed(action.requestIndex, -1));
     }
 }

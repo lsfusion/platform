@@ -148,8 +148,6 @@ public class FormChanges {
         for (PropertyDrawInstance propertyView : dropProperties) {
             outStream.writeInt(propertyView.getID());
         }
-
-        outStream.writeUTF(""); // обратная совместимость
     }
 
     private void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {

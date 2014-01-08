@@ -10,8 +10,6 @@ import java.util.*;
 
 public class ClientFormChanges {
 
-    public String message;
-
     public final Map<ClientGroupObject, ClassViewType> classViews;
     public final Map<ClientGroupObject, ClientGroupObjectValue> objects;
 
@@ -93,8 +91,6 @@ public class ClientFormChanges {
         for (int i = 0; i < count; i++) {
             dropProperties.add(clientForm.getProperty(inStream.readInt()));
         }
-
-        message = inStream.readUTF();
     }
 
     private ClientPropertyReader deserializePropertyReader(ClientForm clientForm, DataInputStream inStream) throws IOException {

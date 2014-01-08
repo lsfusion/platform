@@ -19,15 +19,18 @@ import java.util.concurrent.ExecutorService;
 public abstract class RemotePausableInvocation extends PausableInvocation<ServerResponse, RemoteException> {
     private final ContextAwarePendingRemoteObject remoteObject;
 
+    private final long requestIndex;
+
     /**
      * @param invocationsExecutor
      */
     public RemotePausableInvocation(ExecutorService invocationsExecutor, ContextAwarePendingRemoteObject remoteObject) {
-        this(null, invocationsExecutor, remoteObject);
+        this(-1, null, invocationsExecutor, remoteObject);
     }
 
-    public RemotePausableInvocation(String sid, ExecutorService invocationsExecutor, ContextAwarePendingRemoteObject remoteObject) {
+    public RemotePausableInvocation(long requestIndex, String sid, ExecutorService invocationsExecutor, ContextAwarePendingRemoteObject remoteObject) {
         super(sid, invocationsExecutor);
+        this.requestIndex = requestIndex;
         this.remoteObject = remoteObject;
     }
 
@@ -161,7 +164,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
 
     @Override
     protected ServerResponse handleThrows(Throwable t) throws RemoteException {
-        throw ExceptionUtils.propogateRemoteException(t);
+        throw ExceptionUtils.propagateRemoteException(t);
     }
 
     /**
@@ -170,12 +173,16 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     @Override
     protected final ServerResponse handlePaused() throws RemoteException {
         try {
-            ServerResponse result = new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]));
+            ServerResponse result = new ServerResponse(requestIndex, delayedActions.toArray(new ClientAction[delayedActions.size()]));
             delayedActions.clear();
 
             return result;
         } catch (Exception e) {
-            throw ExceptionUtils.propogateRemoteException(e);
+            throw ExceptionUtils.propagateRemoteException(e);
         }
+    }
+
+    public long getRequestIndex() {
+        return requestIndex;
     }
 }

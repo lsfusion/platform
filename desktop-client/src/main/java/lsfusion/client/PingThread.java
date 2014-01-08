@@ -1,43 +1,67 @@
 package lsfusion.client;
 
+import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.interop.remote.ClientCallBackInterface;
-import org.apache.log4j.Logger;
 
+import javax.swing.*;
 import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.client.StartupProperties.LSFUSION_CLIENT_PING_TIME;
 
 public class PingThread extends Thread {
-    private final static Logger logger = Logger.getLogger(PingThread.class);
+    private final ClientCallBackInterface remoteClient;
 
-    int updateTime;
-    long sum;
-    int counter;
-    Queue<Long> queue = new LinkedList<Long>();
-    long oldIn, oldOut;
-    private ClientCallBackProcessor clientProcessor;
-    private ClientCallBackInterface remoteClient;
+    private final ClientCallBackProcessor clientProcessor;
+
+    private final Queue<Long> queue = new LinkedList<Long>();
+
+    private final int period;
+
+    private long oldIn, oldOut;
+    private long sum;
+    private int counter;
+
+    private AtomicBoolean abandoned = new AtomicBoolean();
 
     public PingThread(ClientCallBackInterface remoteClient) {
-        this.updateTime = Integer.parseInt(System.getProperty(LSFUSION_CLIENT_PING_TIME, "1000"));
+        this.period = StartupProperties.pullMessagesPeriod;
         this.remoteClient = remoteClient;
         clientProcessor = new ClientCallBackProcessor(remoteClient);
         setDaemon(true);
     }
 
+    public void abandon() {
+        abandoned.set(true);
+    }
+
     public void run() {
         while (true) {
+            if (abandoned.get() || ConnectionLostManager.isConnectionLost()) {
+                return;
+            }
+
             counter++;
             long curTime = System.currentTimeMillis();
             if (remoteClient != null) {
-                try {
-                    clientProcessor.processMessages(remoteClient.pullMessages());
-                } catch (RemoteException e) {
-                    logger.error("Error while pulling messages from server: ", e);
-                    throw new RuntimeException(e);
+                if (!ConnectionLostManager.shouldBeBlocked()) {
+                    //не спами лишний раз, если отключены
+                    try {
+                        clientProcessor.processMessages(remoteClient.pullMessages());
+                    } catch (final RemoteException e) {
+                        //выкидываем ошибку в EDT, чтобы обработать общим механизмом и чтобы не убивать PingThread
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (abandoned.get()) {
+                                    return;
+                                }
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }
                 }
             }
 
@@ -60,7 +84,7 @@ public class PingThread extends Thread {
             }
 
             try {
-                Thread.sleep(updateTime);
+                Thread.sleep(period);
             } catch (InterruptedException e) {
                 break;
             }

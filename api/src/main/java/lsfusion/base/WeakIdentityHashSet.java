@@ -37,4 +37,8 @@ public class WeakIdentityHashSet<E> implements Iterable<E> {
     public boolean isEmpty() {
         return map.isEmpty();
     }
+
+    public void clear() {
+        map.clear();
+    }
 }

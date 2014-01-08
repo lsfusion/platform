@@ -5,8 +5,7 @@ import lsfusion.interop.exceptions.RemoteServerException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.rmi.RemoteException;
-import java.rmi.ServerException;
+import java.rmi.*;
 
 public class ExceptionUtils {
     public static Throwable getInitialCause(Throwable throwable) {
@@ -34,7 +33,7 @@ public class ExceptionUtils {
         return result;
     }
 
-    public static RemoteException propogateRemoteException(Throwable t) throws RemoteException {
+    public static RemoteException propagateRemoteException(Throwable t) throws RemoteException {
         throw propagate(t, RemoteException.class);
     }
 
@@ -70,5 +69,11 @@ public class ExceptionUtils {
         ByteArrayOutputStream stackStream = new ByteArrayOutputStream();
         t.printStackTrace(new PrintStream(stackStream));
         return stackStream.toString();
+    }
+
+    public static boolean isFatalRemoteException(Throwable t) {
+        return t instanceof NoSuchObjectException ||
+                 t instanceof UnmarshalException ||
+                 t instanceof MarshalException;
     }
 }

@@ -62,7 +62,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (form.commitCurrentEditing()) {
-                    editDispatcher.executePropertyEditAction(property, columnKey, ServerResponse.CHANGE, null);
+                    editDispatcher.executePropertyEditAction(property, columnKey, ServerResponse.CHANGE, null, null);
                 }
             }
         });
@@ -97,7 +97,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
             menu.show(property, this, point, new ClientPropertyContextMenuPopup.ItemSelectionListener() {
                 @Override
                 public void onMenuItemSelected(String actionSID) {
-                    editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null);
+                    editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null, null);
                 }
             });
         }

@@ -3,10 +3,7 @@ package lsfusion.server.form.navigator;
 // навигатор работает с абстрактной BL
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.DefaultFormsType;
-import lsfusion.base.Pair;
-import lsfusion.base.WeakIdentityHashSet;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -262,35 +259,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this));
         sessions.add(session);
         return session;
-    }
-
-    public byte[] getElementsByteArray(String groupSID) {
-
-        NavigatorElement singleElement = businessLogics.LM.root.getNavigatorElement(groupSID);
-        List<NavigatorElement> navigatorElements = singleElement == null
-                ? Collections.singletonList(singleElement)
-                : new ArrayList<NavigatorElement>(singleElement.getChildren(false));
-
-        List<NavigatorElement> resultElements = new ArrayList();
-        for (NavigatorElement element1 : navigatorElements) {
-            if (securityPolicy.navigator.checkPermission(element1)) {
-                resultElements.add(element1);
-            }
-        }
-
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        DataOutputStream dataStream = new DataOutputStream(outStream);
-
-        try {
-            dataStream.writeInt(resultElements.size());
-            for (NavigatorElement element : resultElements) {
-                element.serialize(dataStream);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        return outStream.toByteArray();
     }
 
     @Override

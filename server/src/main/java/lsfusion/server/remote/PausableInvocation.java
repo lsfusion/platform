@@ -1,13 +1,14 @@
 package lsfusion.server.remote;
 
-import org.apache.log4j.Logger;
 import lsfusion.server.ServerLoggers;
+import org.apache.log4j.Logger;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 
-public abstract class PausableInvocation<T, E extends Exception> {
+public abstract class PausableInvocation<T, E extends Exception> implements Callable<T> {
     protected final static Logger logger = ServerLoggers.pausablesInvocationLogger;
 
     protected final String sid;
@@ -66,6 +67,10 @@ public abstract class PausableInvocation<T, E extends Exception> {
         });
 
         return resume();
+    }
+
+    public final T call() throws E {
+        return execute();
     }
 
     public final void cancel() {

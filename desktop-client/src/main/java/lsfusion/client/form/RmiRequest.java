@@ -1,15 +1,15 @@
 package lsfusion.client.form;
 
-import lsfusion.base.Callback;
 import lsfusion.client.ClientLoggers;
 import org.apache.log4j.Logger;
 
-import java.util.concurrent.Callable;
+import java.rmi.RemoteException;
 
-public abstract class RmiRequest<T> implements Callable<T>, Callback<T> {
+public abstract class RmiRequest<T> {
     private static final Logger logger = ClientLoggers.invocationLogger;
 
     private long requestIndex = -1;
+    private long lastReceivedRequestIndex = -1;
     private String name;
 
     protected RmiRequest(String name) {
@@ -32,20 +32,15 @@ public abstract class RmiRequest<T> implements Callable<T>, Callback<T> {
         return requestIndex;
     }
 
-    @Override
-    public final T call() throws Exception {
+    void setLastReceivedRequestIndex(long lastReceivedRequestIndex) {
+        this.lastReceivedRequestIndex = lastReceivedRequestIndex;
+    }
+
+    final T doRequest() throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("DoRequest: " + this);
         }
-        return doRequest(requestIndex);
-    }
-
-    @Override
-    public final void done(T result) throws Exception {
-        if (logger.isDebugEnabled()) {
-            logger.debug("OnResponse: " + this);
-        }
-        onResponse(requestIndex, result);
+        return doRequest(requestIndex, lastReceivedRequestIndex);
     }
 
     final void onAsyncRequest() {
@@ -55,10 +50,17 @@ public abstract class RmiRequest<T> implements Callable<T>, Callback<T> {
         onAsyncRequest(requestIndex);
     }
 
+    final void onResponse(T result) throws Exception {
+        if (logger.isDebugEnabled()) {
+            logger.debug("OnResponse: " + this);
+        }
+        onResponse(requestIndex, result);
+    }
+
     protected void onAsyncRequest(long requestIndex) {
     }
 
-    protected abstract T doRequest(long requestIndex) throws Exception;
+    protected abstract T doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 
     protected void onResponse(long requestIndex, T result) throws Exception {
     }

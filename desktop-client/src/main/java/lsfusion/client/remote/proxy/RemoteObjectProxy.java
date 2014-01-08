@@ -57,6 +57,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
             logRemoteMethodEndCall("createAndExecute", result);
             return result;
         } catch (Exception e) {
+            Throwables.propagateIfPossible(e, RemoteException.class);
             throw Throwables.propagate(e);
         } finally {
             busyDisplayer.stop();

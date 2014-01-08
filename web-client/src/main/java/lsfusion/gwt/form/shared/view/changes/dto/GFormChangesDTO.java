@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GFormChangesDTO implements Serializable {
+    public int requestIndex;
+
     public int[] classViewsGroupIds;
     public GClassViewType[] classViews;
 

@@ -100,7 +100,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         //здесь немного запутанная схема...
         //executePropertyEditAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
         //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
-        editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID, getValueAt(row, column));
+        editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID, getValueAt(row, column), editEvent);
         return editorComp != null;
     }
 

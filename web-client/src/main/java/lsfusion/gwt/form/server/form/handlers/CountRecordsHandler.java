@@ -17,6 +17,6 @@ public class CountRecordsHandler extends FormActionHandler<CountRecords, NumberR
     @Override
     public NumberResult executeEx(CountRecords action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return new NumberResult(form.remoteForm.countRecords(action.requestIndex, action.groupObjectID));
+        return new NumberResult(form.remoteForm.countRecords(action.requestIndex, -1, action.groupObjectID));
     }
 }

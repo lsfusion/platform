@@ -14,12 +14,12 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
     }
 
     @Override
-    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
+    public ServerResponse continueServerInvocation(long requestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
         return clientNavigator.remoteNavigator.continueNavigatorAction(actionResults);
     }
 
     @Override
-    protected void throwInServerInvocation(Throwable t) throws IOException {
-        clientNavigator.remoteNavigator.throwInNavigatorAction(t);
+    protected ServerResponse throwInServerInvocation(long requestIndex, int continueIndex, Throwable t) throws IOException {
+        return clientNavigator.remoteNavigator.throwInNavigatorAction(t);
     }
 }

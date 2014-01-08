@@ -30,8 +30,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     ExternalScreen getExternalScreen(int screenID) throws RemoteException;
 
     ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException;
-    
-    void endSession(String clientInfo) throws RemoteException;
 
     TimeZone getTimeZone() throws RemoteException;
 
@@ -52,7 +50,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     boolean checkPropertyChangePermission(String userName, String propertySID) throws RemoteException;
 
     boolean checkFormExportPermission(String formSid) throws RemoteException;
-    
+
     int generateID() throws RemoteException;
 
     String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException;

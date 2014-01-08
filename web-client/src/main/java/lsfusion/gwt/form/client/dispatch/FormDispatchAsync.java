@@ -23,7 +23,6 @@ public class FormDispatchAsync {
     private int nextRequestIndex = 0;
 
     private final LinkedList<QueuedAction> q = new LinkedList<QueuedAction>();
-    private QueuedAction currentDispatchingAction;
 
     //отдельный флаг закрытой формы нужен, чтобы не посылать случайных запросов в закрытую форму (в частности changePageSize)
     private boolean formClosed = false;
@@ -83,13 +82,7 @@ public class FormDispatchAsync {
     }
 
     private void execNextAction() {
-        currentDispatchingAction = q.remove();
-        currentDispatchingAction.procceed();
-        currentDispatchingAction = null;
-    }
-
-    public int getCurrentDispatchingRequestIndex() {
-        return currentDispatchingAction != null ? currentDispatchingAction.getRequestIndex() : -1;
+        q.remove().procceed();
     }
 
     public <A extends FormBoundAction<R>, R extends Result> void executePriorityAction(final A action, final AsyncCallback<R> callback) {

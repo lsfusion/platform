@@ -17,6 +17,6 @@ public class SetRegularFilterHandler extends ServerResponseActionHandler<SetRegu
     @Override
     public ServerResponseResult executeEx(SetRegularFilter action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.setRegularFilter(action.requestIndex, action.groupId, action.filterId));
+        return getServerResponseResult(form, form.remoteForm.setRegularFilter(action.requestIndex, -1, action.groupId, action.filterId));
     }
 }

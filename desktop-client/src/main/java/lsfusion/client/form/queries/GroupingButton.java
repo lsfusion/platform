@@ -36,22 +36,21 @@ public abstract class GroupingButton extends ToolbarGridButton {
 
                         @Override
                         public void updatePressed() {
-                            try {
-                                Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
-                                Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
-                                boolean onlyNotNull = dialog.onlyNotNull();
+                            Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
+                            Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
+                            boolean onlyNotNull = dialog.onlyNotNull();
 
-                                List<Map<List<Object>, List<Object>>> result = new ArrayList<Map<List<Object>, List<Object>>>();
+                            List<Map<List<Object>, List<Object>>> result = new ArrayList<Map<List<Object>, List<Object>>>();
 
-                                for (Map<Integer, List<byte[]>> level : dialog.getSelectedGroupLevels()) {
-                                    if (!level.isEmpty()) {
-                                        result.add(groupData(level, sumMap, maxMap, onlyNotNull));
+                            for (Map<Integer, List<byte[]>> level : dialog.getSelectedGroupLevels()) {
+                                if (!level.isEmpty()) {
+                                    Map<List<Object>, List<Object>> groupData = groupData(level, sumMap, maxMap, onlyNotNull);
+                                    if (groupData != null) {
+                                        result.add(groupData);
                                     }
                                 }
-                                dialog.update(result);
-                            } catch (IOException ex) {
-                                throw new RuntimeException(ex);
                             }
+                            dialog.update(result);
                         }
                     };
                 } catch (IOException ex) {
@@ -65,7 +64,7 @@ public abstract class GroupingButton extends ToolbarGridButton {
     }
 
     public abstract List<FormGrouping> readGroupings();
-    public abstract Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap, Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws IOException;
+    public abstract Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap, Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull);
     public abstract void savePressed(FormGrouping grouping);
 }
 

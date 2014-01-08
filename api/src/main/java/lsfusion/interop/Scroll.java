@@ -1,11 +1,9 @@
 package lsfusion.interop;
 
-import java.io.IOException;
-
 public enum Scroll {
     HOME,END;
 
-    public static Scroll deserialize(byte data) throws IOException {
+    public static Scroll deserialize(byte data) {
         switch(data) {
             case 0:
                 return HOME;
@@ -15,7 +13,7 @@ public enum Scroll {
         throw new RuntimeException("Deserialize Scroll");
     }
 
-    public byte serialize() throws IOException {
+    public byte serialize() {
         switch(this) {
             case HOME:
                 return 0;

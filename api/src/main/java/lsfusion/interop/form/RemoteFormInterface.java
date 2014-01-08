@@ -20,86 +20,86 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     // синхронное общение с сервером
 
-    public ServerResponse getRemoteChanges(long requestIndex, boolean refresh) throws RemoteException;
+    public ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh) throws RemoteException;
 
-    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException;
+    public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object[] actionResults) throws RemoteException;
 
-    public ServerResponse throwInServerInvocation(Throwable clientThrowable) throws RemoteException;
+    public ServerResponse throwInServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable clientThrowable) throws RemoteException;
 
     // события формы
 
-    void gainedFocus(long requestIndex) throws RemoteException;
+    void gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 
-    ServerResponse setTabVisible(long requestIndex, int tabPaneID, int childId) throws RemoteException;
+    ServerResponse setTabVisible(long requestIndex, long lastReceivedRequestIndex, int tabPaneID, int childId) throws RemoteException;
 
-    ServerResponse closedPressed(long requestIndex) throws RemoteException;
+    ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 
-    ServerResponse okPressed(long requestIndex) throws RemoteException;
+    ServerResponse okPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 
     // события групп объектов
 
-    ServerResponse changeGroupObject(long requestIndex, int groupID, byte[] value) throws RemoteException;
+    ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException;
 
-    ServerResponse changePageSize(long requestIndex, int groupID, Integer pageSize) throws RemoteException; // размер страницы
+    ServerResponse changePageSize(long requestIndex, long lastReceivedRequestIndex, int groupID, Integer pageSize) throws RemoteException; // размер страницы
 
-    ServerResponse changeGroupObject(long requestIndex, int groupID, byte changeType) throws RemoteException; // скроллинг
+    ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType) throws RemoteException; // скроллинг
 
-    ServerResponse pasteExternalTable(long requestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values) throws RemoteException; // paste подряд
+    ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values) throws RemoteException; // paste подряд
 
-    ServerResponse pasteMulticellValue(long requestIndex, Map<Integer, List<byte[]>> keys, Map<Integer, byte[]> values) throws RemoteException; // paste выборочно
+    ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> keys, Map<Integer, byte[]> values) throws RemoteException; // paste выборочно
 
-    ServerResponse changeClassView(long requestIndex, int groupID, ClassViewType classView) throws RemoteException;
+    ServerResponse changeClassView(long requestIndex, long lastReceivedRequestIndex, int groupID, ClassViewType classView) throws RemoteException;
 
     // деревья
 
-    ServerResponse expandGroupObject(long requestIndex, int groupId, byte[] bytes) throws RemoteException;
+    ServerResponse expandGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupId, byte[] bytes) throws RemoteException;
 
-    ServerResponse collapseGroupObject(long requestIndex, int groupId, byte[] bytes) throws RemoteException;
+    ServerResponse collapseGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupId, byte[] bytes) throws RemoteException;
 
-    ServerResponse moveGroupObject(long requestIndex, int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
+    ServerResponse moveGroupObject(long requestIndex, long lastReceivedRequestIndex, int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
     // свойства
 
-    ServerResponse executeEditAction(long requestIndex, int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
+    ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
 
     // асинхронные вызовы
 
-    ServerResponse changeProperty(long requestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Integer pushAdd) throws RemoteException;
+    ServerResponse changeProperty(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Integer pushAdd) throws RemoteException;
 
     // фильтры / порядки
 
-    ServerResponse changeGridClass(long requestIndex, int objectID, int idClass) throws RemoteException;
+    ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, int objectID, int idClass) throws RemoteException;
 
-    ServerResponse changePropertyOrder(long requestIndex, int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
+    ServerResponse changePropertyOrder(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
 
-    ServerResponse clearPropertyOrders(long requestIndex, int groupObjectID) throws RemoteException;
+    ServerResponse clearPropertyOrders(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException;
     
-    ServerResponse setUserFilters(long requestIndex, byte[][] filters) throws RemoteException;
+    ServerResponse setUserFilters(long requestIndex, long lastReceivedRequestIndex, byte[][] filters) throws RemoteException;
 
-    ServerResponse setRegularFilter(long requestIndex, int groupID, int filterID) throws RemoteException;
+    ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, int groupID, int filterID) throws RemoteException;
 
     // отчеты
 
-    ReportGenerationData getReportData(long requestIndex, Integer groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
+    ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
 
-    Map<String, String> getReportPath(long requestIndex, boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws RemoteException;
+    Map<String, String> getReportPath(long requestIndex, long lastReceivedRequestIndex, boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws RemoteException;
 
     // быстрая информация
 
-    int countRecords(long requestIndex, int groupObjectID) throws RemoteException;
+    int countRecords(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException;
 
-    Object calculateSum(long requestIndex, int propertyID, byte[] columnKeys) throws RemoteException;
+    Object calculateSum(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKeys) throws RemoteException;
 
-    Map<List<Object>, List<Object>> groupData(long requestIndex, Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
+    Map<List<Object>, List<Object>> groupData(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
                                               Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws RemoteException;
     
-    List<FormGrouping> readGroupings(String groupObjectSID) throws RemoteException;
+    List<FormGrouping> readGroupings(long requestIndex, long lastReceivedRequestIndex, String groupObjectSID) throws RemoteException;
     
-    void saveGrouping(long requestIndex, FormGrouping grouping) throws RemoteException;
+    void saveGrouping(long requestIndex, long lastReceivedRequestIndex, FormGrouping grouping) throws RemoteException;
 
     // пользовательские настройки
 
-    ServerResponse saveUserPreferences(long requestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException;
+    ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException;
 
     FormUserPreferences getUserPreferences() throws RemoteException;
 }

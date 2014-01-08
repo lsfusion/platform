@@ -22,7 +22,7 @@ public class ChangeClassViewHandler extends ServerResponseActionHandler<ChangeCl
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         return getServerResponseResult(
                 form,
-                form.remoteForm.changeClassView(action.requestIndex, action.groupObjectId, convertClassView(action.newClassView))
+                form.remoteForm.changeClassView(action.requestIndex, -1, action.groupObjectId, convertClassView(action.newClassView))
         );
     }
 

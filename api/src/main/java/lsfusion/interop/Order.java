@@ -1,11 +1,9 @@
 package lsfusion.interop;
 
-import java.io.IOException;
-
 public enum Order {
     REPLACE, ADD, REMOVE, DIR;
 
-    public static Order deserialize(byte data) throws IOException {
+    public static Order deserialize(byte data) {
         switch(data) {
             case 0:
                 return REPLACE;
@@ -19,7 +17,7 @@ public enum Order {
         throw new RuntimeException("Deserialize Scroll");
     }
 
-    public byte serialize() throws IOException {
+    public byte serialize() {
         switch(this) {
             case REPLACE:
                 return 0;

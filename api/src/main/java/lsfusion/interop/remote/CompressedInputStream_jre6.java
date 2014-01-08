@@ -139,7 +139,6 @@ public class CompressedInputStream_jre6 extends FilterInputStream {
                 hangs = false;
             }
             if (inCount == -1) {
-                hangs = false;
                 throw new EOFException();
             }
             readen += inCount;

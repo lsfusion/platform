@@ -182,8 +182,8 @@ public class MainFrame implements EntryPoint {
 
     private class GNavigatorActionDispatcher extends GwtActionDispatcher {
         @Override
-        protected void throwInServerInvocation(Exception ex) {
-            dispatcher.execute(new ThrowInNavigatorAction(ex), new ErrorHandlingCallback<ServerResponseResult>());
+        protected void throwInServerInvocation(Throwable t, AsyncCallback<ServerResponseResult> callback) {
+            dispatcher.execute(new ThrowInNavigatorAction(t), callback);
         }
 
         @Override

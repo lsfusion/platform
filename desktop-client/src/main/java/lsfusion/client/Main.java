@@ -5,7 +5,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
-import lsfusion.client.exceptions.ExceptionThreadGroup;
 import lsfusion.client.form.ClientExternalScreen;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
@@ -18,18 +17,19 @@ import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.RMIUtils;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -42,6 +42,7 @@ import static lsfusion.base.DateConverter.createDateEditFormat;
 import static lsfusion.base.DateConverter.createDateTimeEditFormat;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
+import static lsfusion.interop.remote.RMIUtils.initRMI;
 
 public class Main {
     private final static Logger logger = Logger.getLogger(Main.class);
@@ -59,6 +60,11 @@ public class Main {
     public static RemoteLogicsInterface remoteLogics;
     public static RemoteNavigatorInterface remoteNavigator;
 
+    public static String logicsName;
+    public static String logicsDisplayName;
+    public static byte[] logicsMainIcon;
+    public static byte[] logicsLogo;
+
     public static int computerId;
     public static TimeZone timeZone;
     public static DateFormat dateFormat;
@@ -73,9 +79,6 @@ public class Main {
 
     public static int asyncTimeOut;
 
-    private static ThreadGroup bootstrapThreadGroup;
-    private static ExceptionThreadGroup mainThreadGroup;
-    private static Thread mainThread;
     private static PingThread pingThread;
 
     private static ClientObjectClass baseClass = null;
@@ -83,8 +86,6 @@ public class Main {
     private static ArrayList<IDaemonTask> daemonTasks;
 
     public static void start(final String[] args, ModuleFactory startModule) {
-        bootstrapThreadGroup = Thread.currentThread().getThreadGroup();
-
         module = startModule;
 
         System.setProperty("sun.awt.exception.handler", ClientExceptionManager.class.getName());
@@ -111,7 +112,7 @@ public class Main {
 
             initRmiClassLoader();
 
-            RMIUtils.initRMI(rmiSocketFactory);
+            initRMI(rmiSocketFactory);
 
             initSwing();
         } catch (Exception e) {
@@ -124,85 +125,81 @@ public class Main {
     }
 
     private static void startWorkingThreads() {
-        startWorkingThreads(false);
-    }
-
-    private static void startWorkingThreads(boolean reconnect) {
-        mainThreadGroup = new ExceptionThreadGroup();
-        mainThread = new Thread(mainThreadGroup, "Init thread") {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
-                            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                try {
+                    //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-                            LoginAction loginAction = LoginAction.getInstance();
-                            if (!loginAction.login()) {
-                                return;
-                            }
-
-                            remoteLogics = loginAction.getRemoteLogics();
-                            remoteNavigator = loginAction.getRemoteNavigator();
-                            computerId = loginAction.getComputerId();
-
-                            setupTimeZone();
-
-                            ClientExceptionManager.flushUnreportedThrowables();
-
-                            configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
-
-                            startSplashScreen();
-
-                            logger.info("Before init frame");
-                            frame = module.initFrame(remoteNavigator);
-                            logger.info("After init frame");
-
-                            pingThread = new PingThread(remoteNavigator.getClientCallBack());
-                            pingThread.start();
-                            remoteNavigator.setUpdateTime(pingThread.updateTime);
-
-                            frame.addWindowListener(
-                                    new WindowAdapter() {
-                                        public void windowOpened(WindowEvent e) {
-                                            closeSplashScreen();
-                                        }
-
-                                        public void windowClosing(WindowEvent e) {
-                                            try {
-                                                remoteLogics.endSession(SystemUtils.getLocalHostName() + " " + computerId);
-                                            } catch (Exception ex) {
-                                                throw new RuntimeException(ex);
-                                            }
-                                        }
-                                    }
-                            );
-
-                            frame.setExtendedState(Frame.MAXIMIZED_BOTH);
-                            logger.info("After setExtendedState");
-
-                            ConnectionLostManager.install(frame);
-
-                            frame.setVisible(true);
-
-                            ((DockableMainFrame) frame).focusPageIfNeeded();
-
-                            daemonTasks = remoteLogics.getDaemonTasks(Main.computerId);
-                            for (IDaemonTask task : daemonTasks) {
-                                task.setEventBus(eventBus);
-                                task.start();
-                            }
-                        } catch (Exception e) {
-                            closeSplashScreen();
-                            logger.error(getString("client.error.application.initialization"), e);
-                            throw new RuntimeException(getString("client.error.application.initialization"), e);
-                        }
+                    LoginAction loginAction = LoginAction.getInstance();
+                    if (!loginAction.login()) {
+                        return;
                     }
-                });
+
+                    remoteLogics = loginAction.getRemoteLogics();
+
+                    logicsName = remoteLogics.getName();
+                    logicsDisplayName = remoteLogics.getDisplayName();
+                    logicsMainIcon = remoteLogics.getMainIcon();
+                    logicsLogo = remoteLogics.getLogo();
+
+                    setupTimeZone();
+
+                    remoteNavigator = loginAction.getRemoteNavigator();
+                    computerId = loginAction.getComputerId();
+
+                    ClientExceptionManager.flushUnreportedThrowables();
+
+                    configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
+
+                    startSplashScreen();
+
+                    logger.info("Before init frame");
+                    frame = module.initFrame(remoteNavigator);
+                    logger.info("After init frame");
+
+                    pingThread = new PingThread(remoteNavigator.getClientCallBack());
+                    pingThread.setDaemon(true);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            pingThread.start();
+                        }
+                    });
+
+                    remoteNavigator.setUpdateTime(pullMessagesPeriod);
+
+                    frame.addWindowListener(
+                            new WindowAdapter() {
+                                public void windowOpened(WindowEvent e) {
+                                    closeSplashScreen();
+                                }
+                            }
+                    );
+
+                    frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+                    logger.info("After setExtendedState");
+
+                    ConnectionLostManager.start(frame);
+
+                    frame.setVisible(true);
+
+                    ((DockableMainFrame) frame).focusPageIfNeeded();
+
+                    daemonTasks = remoteLogics.getDaemonTasks(Main.computerId);
+                    for (IDaemonTask task : daemonTasks) {
+                        task.setEventBus(eventBus);
+                        task.start();
+                    }
+                } catch (Exception e) {
+                    closeSplashScreen();
+                    logger.error(getString("client.error.application.initialization"), e);
+                    Log.error(getString("client.error.application.initialization"), e, true);
+                    Main.restart();
+                }
             }
-        };
-        mainThread.start();
+        });
     }
 
     private static void setupTimeZone() throws RemoteException {
@@ -314,10 +311,6 @@ public class Main {
         rmiSocketFactory.setOverrideHostName(hostName);
     }
 
-    public static void closeHangingSockets() {
-        rmiSocketFactory.closeHangingSockets();
-    }
-
     private static void startSplashScreen() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -343,29 +336,11 @@ public class Main {
     }
 
     public static ImageIcon getMainIcon() {
-        byte[] iconData = null;
-        if (remoteLogics != null) {
-            try {
-                iconData = remoteLogics.getMainIcon();
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return loadResource(iconData, LSFUSION_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
+        return loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
     }
 
     public static ImageIcon getLogo() {
-        byte[] logoData = null;
-        if (remoteLogics != null) {
-            try {
-                logoData = remoteLogics.getLogo();
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return loadResource(logoData, LSFUSION_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
+        return loadResource(logicsLogo, LSFUSION_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
     }
 
     private static ImageIcon loadResource(byte[] resourceData, String defaultUrlSystemPropName, String defaultResourcePath) {
@@ -391,38 +366,34 @@ public class Main {
     }
 
     public static String getMainTitle() {
-        return BaseUtils.nvl(getDisplayName(), LSFUSION_TITLE);
-    }
-
-    public static String getDisplayName() {
-        String title = null;
-        if (remoteLogics != null) {
-            try {
-                title = remoteLogics.getDisplayName();
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return title;
+        return BaseUtils.nvl(logicsDisplayName, LSFUSION_TITLE);
     }
 
     public static void shutdown() {
-        final Thread closer = new Thread(bootstrapThreadGroup, new Runnable() {
+        SwingUtils.assertDispatchThread();
+
+        ConnectionLostManager.invalidate();
+
+        //даём немного времени на обработку текущих событий
+        Timer timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clean();
+            }
+        });
+        timer.setRepeats(false);
+        timer.start();
+
+        // закрываемся в отдельном потоке, чтобы обработались текущие события (в частности WINDOW_CLOSING)
+        final Thread closer = new Thread("Closing thread...") {
             @Override
             public void run() {
-                clean();
-
-                // закрываемся в EDT, чтобы обработались текущие события (в частности WINDOW_CLOSING)
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        System.exit(0);
-                    }
-                });
+                //убиваемся, если через 5 секунд ещё не вышли
+                SystemUtils.sleep(5000);
+                System.exit(0);
             }
-        }, "Restarting thread...");
-        closer.setDaemon(false);
+        };
+        closer.setDaemon(true);
         closer.start();
     }
 
@@ -434,51 +405,51 @@ public class Main {
         restart(true);
     }
 
-    public static void restart(final boolean reconnect) {
-        LoginAction.getInstance().setAutoLogin(reconnect);
-        final Thread restarter = new Thread(bootstrapThreadGroup, new Runnable() {
-            @Override
-            public void run() {
-                clean();
+    private static void restart(final boolean reconnect) {
+        SwingUtils.assertDispatchThread();
 
-                startWorkingThreads(reconnect);
+        ConnectionLostManager.invalidate();
+
+        LoginAction.getInstance().setAutoLogin(reconnect);
+
+        //даём немного времени на обработку текущих событий
+        Timer timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clean();
+                startWorkingThreads();
             }
-        }, "Restarting thread...");
-        restarter.setDaemon(false);
-        restarter.start();
+        });
+        timer.setRepeats(false);
+        timer.start();
     }
 
     private static void clean() {
+
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    ConnectionLostManager.invalidate();
-
-                    SplashScreen.close();
-
-                    if (frame != null) {
-                        frame.setVisible(false);
-                        frame.dispose();
-                    }
-                }
-            });
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            remoteNavigator.close();
+        } catch (Throwable ignore) {
         }
 
-        mainThreadGroup.interrupt();
+        if (frame != null) {
+            frame.setVisible(false);
+            frame.dispose();
+        }
 
         RemoteFormProxy.dropCaches();
         ClientExternalScreen.dropCaches();
 
-        eventBus.invalidate();
         if (daemonTasks != null) {
             for (IDaemonTask task : daemonTasks) {
                 task.stop();
             }
+        }
+        eventBus.invalidate();
+
+        if (pingThread != null) {
+            pingThread.abandon();
+            pingThread.interrupt();
+            pingThread = null;
         }
 
         computerId = -1;
@@ -490,6 +461,14 @@ public class Main {
         remoteNavigator = null;
 
         System.gc();
+    }
+
+    public static int generateID() throws RemoteException {
+        return remoteLogics.generateID();
+    }
+
+    public static void closeHangingSockets() {
+        rmiSocketFactory.closeHangingSockets();
     }
 
     public interface ModuleFactory {

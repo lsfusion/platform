@@ -26,6 +26,6 @@ public class ContinueInvocationHandler extends ServerResponseActionHandler<Conti
             actionResults[i] = gwtConverter.convertOrCast(action.actionResults[i], servlet.getBLProvider());
         }
 
-        return getServerResponseResult(form, form.remoteForm.continueServerInvocation(actionResults));
+        return getServerResponseResult(form, form.remoteForm.continueServerInvocation(-1, -1, -1, actionResults));
     }
 }

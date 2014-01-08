@@ -23,6 +23,6 @@ public class CollapseGroupObjectHandler extends ServerResponseActionHandler<Coll
 
         byte[] keyValues = gwtConverter.convertOrCast(action.value);
 
-        return getServerResponseResult(form, form.remoteForm.collapseGroupObject(action.requestIndex, action.groupObjectId, keyValues));
+        return getServerResponseResult(form, form.remoteForm.collapseGroupObject(action.requestIndex, -1, action.groupObjectId, keyValues));
     }
 }

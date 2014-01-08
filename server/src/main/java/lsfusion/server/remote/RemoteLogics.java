@@ -172,10 +172,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return dbManager.getComputer(strHostName);
     }
 
-    public void endSession(String clientInfo) {
-        logger.debug("End user session " + clientInfo);
-    }
-
     @Override
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException {
         return businessLogics.getDaemonTasks(compId);

@@ -80,10 +80,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
-    public void endSession(String clientInfo) throws RemoteException {
-        target.endSession(clientInfo);
-    }
-
     public TimeZone getTimeZone() throws RemoteException {
         return target.getTimeZone();
     }

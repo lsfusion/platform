@@ -1,15 +1,18 @@
 package lsfusion.client;
 
+import com.jhlabs.image.BlurFilter;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import org.jdesktop.jxlayer.JXLayer;
+import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;
+import org.jdesktop.jxlayer.plaf.ext.LockableUI;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
-import java.rmi.RemoteException;
 import java.util.Scanner;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -24,6 +27,8 @@ public abstract class MainFrame extends JFrame {
     public RemoteNavigatorInterface remoteNavigator;
     public JLabel statusComponent;
     public JComponent status;
+
+    private LockableUI lockableUI;
 
     public MainFrame(final RemoteNavigatorInterface remoteNavigator) throws IOException {
         super();
@@ -42,6 +47,28 @@ public abstract class MainFrame extends JFrame {
         loadLayout();
 
         initUIHandlers(remoteNavigator);
+
+        installLockableLayer();
+    }
+
+    private void installLockableLayer() {
+    }
+
+    public void setLocked(boolean locked) {
+        lockableUI.setLocked(locked);
+    }
+
+    protected void setContent(JComponent content) {
+        assert lockableUI == null;
+
+        add(content);
+
+        lockableUI = new LockableUI(new BufferedImageOpEffect(new BlurFilter()));
+
+        JXLayer layer = new JXLayer(getContentPane(), lockableUI);
+        layer.setFocusable(false);
+
+        setContentPane(layer);
     }
 
     private void initUIHandlers(final RemoteNavigatorInterface remoteNavigator) {
@@ -52,14 +79,6 @@ public abstract class MainFrame extends JFrame {
                                                               getString("quit.confirmation"),
                                                               JOptionPane.YES_NO_OPTION);
                 if (confirmed == JOptionPane.YES_OPTION) {
-                    try {
-                        remoteNavigator.close();
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-
-                    dispose();
-
                     Main.shutdown();
                 }
             }
@@ -74,9 +93,9 @@ public abstract class MainFrame extends JFrame {
     }
 
     private void loadLayout() {
-        try {
-            baseDir = new File(System.getProperty("user.home"), ".fusion\\" + Main.remoteLogics.getName());
-        } catch (RemoteException e) {
+        if (Main.logicsName != null) {
+            baseDir = new File(System.getProperty("user.home"), ".fusion\\" + Main.logicsName);
+        } else {
             //по умолчанию
             baseDir = new File(System.getProperty("user.home"), ".fusion");
         }

@@ -4,11 +4,11 @@ import net.customware.gwt.dispatch.shared.Action;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 
 public class ThrowInNavigatorAction implements Action<ServerResponseResult> {
-    public Exception exception;
+    public Throwable throwable;
 
     public ThrowInNavigatorAction() {}
 
-    public ThrowInNavigatorAction(Exception exception) {
-        this.exception = exception;
+    public ThrowInNavigatorAction(Throwable throwable) {
+        this.throwable = throwable;
     }
 }

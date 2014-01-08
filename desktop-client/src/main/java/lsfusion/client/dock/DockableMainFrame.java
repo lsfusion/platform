@@ -177,7 +177,8 @@ public class DockableMainFrame extends MainFrame {
         CGrid mainGrid = createGrid();
         CContentArea mainContentArea = mainControl.getContentArea();
         mainContentArea.deploy(mainGrid);
-        add(mainContentArea, BorderLayout.CENTER);
+
+        setContent(mainContentArea);
 
         setDefaultVisible();
 
@@ -279,7 +280,7 @@ public class DockableMainFrame extends MainFrame {
 
             formsWindow = new ClientAbstractWindow(inStream);
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при считывании информации об окнах", e);
+            throw new RuntimeException("Error getting common windows:", e);
         }
 
         navigatorController.initWindowViews();
@@ -443,7 +444,7 @@ public class DockableMainFrame extends MainFrame {
                 contentPane.add(new JLabel(Main.getLogo()));
                 contentPane.add(new JSeparator(JSeparator.HORIZONTAL));
 
-                String text = Main.getDisplayName();
+                String text = Main.logicsDisplayName;
                 if (text == null) {
                     text = Main.LSFUSION_TITLE;
                 } else {

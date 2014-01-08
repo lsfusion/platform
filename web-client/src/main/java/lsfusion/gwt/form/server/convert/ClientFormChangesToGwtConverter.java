@@ -31,8 +31,10 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ClientFormChanges.class)
-    public GFormChangesDTO convertFormChanges(ClientFormChanges changes, BusinessLogicsProvider blProvider) {
+    public GFormChangesDTO convertFormChanges(ClientFormChanges changes, Integer requestIndex, BusinessLogicsProvider blProvider) {
         GFormChangesDTO dto = new GFormChangesDTO();
+
+        dto.requestIndex = requestIndex;
 
         dto.classViewsGroupIds = new int[changes.classViews.size()];
         dto.classViews = new GClassViewType[changes.classViews.size()];

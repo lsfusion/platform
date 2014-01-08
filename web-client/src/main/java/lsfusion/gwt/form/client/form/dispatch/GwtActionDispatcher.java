@@ -18,11 +18,20 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     Object[] currentActionResults = null;
     private int currentActionIndex = -1;
 
+    private final ErrorHandlingCallback<ServerResponseResult> continueRequestCallback =
+            new ErrorHandlingCallback<ServerResponseResult>() {
+                @Override
+                public void success(ServerResponseResult response) {
+                    dispatchResponse(response);
+                }
+            };
+
     public void dispatchResponse(ServerResponseResult response) {
         assert response != null;
 
         try {
             Object[] actionResults = null;
+            Throwable actionThrowable = null;
             GAction[] actions = response.actions;
             if (actions != null) {
                 int beginIndex;
@@ -45,13 +54,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                     try {
                         //для неподдерживаемых action'ов присылается null-ссылка, чтобы сохранить порядок результатов выполнения action'ов
                         dispatchResult = action == null ? null : action.dispatch(this);
-                    } catch (Exception ex) {
-                        Log.error("Error dispatching gwt client action: ", ex);
-                        if (response.resumeInvocation) {
-                            throwInServerInvocation(ex);
-                        } else {
-                            throw ex;
-                        }
+                    } catch (Throwable ex) {
+                        actionThrowable = ex;
                         break;
                     }
 
@@ -67,13 +71,16 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
 
             if (response.resumeInvocation) {
-                continueServerInvocation(actionResults, new ErrorHandlingCallback<ServerResponseResult>() {
-                    @Override
-                    public void success(ServerResponseResult response) {
-                        dispatchResponse(response);
-                    }
-                });
+                if (actionThrowable == null) {
+                    continueServerInvocation(actionResults, continueRequestCallback);
+                } else {
+                    throwInServerInvocation(actionThrowable, continueRequestCallback);
+                }
             } else {
+                if (actionThrowable != null) {
+                    Log.error("Error dispatching gwt client action: ", actionThrowable);
+                    throw new RuntimeException(actionThrowable);
+                }
                 postDispatchResponse(response);
             }
         } catch (Exception e) {
@@ -85,15 +92,15 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         assert !response.resumeInvocation;
     }
 
-    protected void handleDispatchException(Exception e) {
-        GWT.log("Error dispatching ServerResponseResult: ", e);
-        Log.error("Error dispatching ServerResponseResult: ", e);
-        DialogBoxHelper.showMessageBox(true, "Error", e.getMessage(), null);
+    protected void handleDispatchException(Throwable t) {
+        GWT.log("Error dispatching ServerResponseResult: ", t);
+        Log.error("Error dispatching ServerResponseResult: ", t);
+        DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
     }
 
-    protected abstract void throwInServerInvocation(Exception ex);
+    protected abstract void throwInServerInvocation(Throwable t, AsyncCallback<ServerResponseResult> callback);
 
-    protected abstract void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) ;
+    protected abstract void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback);
 
     protected final void pauseDispatching() {
         dispatchingPaused = true;

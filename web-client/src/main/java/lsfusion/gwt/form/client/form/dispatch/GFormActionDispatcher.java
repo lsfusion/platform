@@ -31,8 +31,8 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    protected void throwInServerInvocation(Exception ex) {
-        form.throwInServerInvocation(ex);
+    protected void throwInServerInvocation(Throwable t, AsyncCallback<ServerResponseResult> callback) {
+        form.throwInServerInvocation(t, callback);
     }
 
     @Override

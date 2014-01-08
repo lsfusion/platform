@@ -115,7 +115,7 @@ public class GridController {
 
             @Override
             public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, 
-                    List<byte[]>> sumMap, Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws IOException {
+                    List<byte[]>> sumMap, Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) {
                return form.groupData(groupMap, sumMap, maxMap, onlyNotNull); 
             }
 

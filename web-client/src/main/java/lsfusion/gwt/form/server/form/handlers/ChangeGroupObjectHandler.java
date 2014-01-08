@@ -23,6 +23,6 @@ public class ChangeGroupObjectHandler extends ServerResponseActionHandler<Change
 
         byte[] keyValues = gwtConverter.convertOrCast(action.keyValues);
 
-        return getServerResponseResult(form, form.remoteForm.changeGroupObject(action.requestIndex, action.groupId, keyValues));
+        return getServerResponseResult(form, form.remoteForm.changeGroupObject(action.requestIndex, -1, action.groupId, keyValues));
     }
 }

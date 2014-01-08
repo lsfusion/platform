@@ -381,7 +381,7 @@ public abstract class GroupingDialog extends JDialog {
         return maxValue;
     }
 
-    public List<Map<Integer, List<byte[]>>> getSelectedGroupLevels() throws IOException {
+    public List<Map<Integer, List<byte[]>>> getSelectedGroupLevels() {
         List<Map<Integer, List<byte[]>>> selectedGroupProperties = new ArrayList<Map<Integer, List<byte[]>>>();
         List<Integer> level = new ArrayList<Integer>();
         for (int k = 1; k <= getMaxSpinnerValue(); k++) {
@@ -410,7 +410,7 @@ public abstract class GroupingDialog extends JDialog {
         return selectedGroupProperties;
     }
 
-    public Map<Integer, List<byte[]>> getSelectedSumMap() throws IOException {
+    public Map<Integer, List<byte[]>> getSelectedSumMap() {
         Map<Integer, List<byte[]>> selectedSumMap = new OrderedMap<Integer, List<byte[]>>();
         if (quantityCheck.isSelected()) {
             selectedSumMap.put(RECORD_QUANTITY_ID, null);
@@ -430,7 +430,7 @@ public abstract class GroupingDialog extends JDialog {
         return selectedSumMap;
     }
 
-    public Map<Integer, List<byte[]>> getSelectedMaxMap() throws IOException {
+    public Map<Integer, List<byte[]>> getSelectedMaxMap() {
         Map<Integer, List<byte[]>> selectedMaxMap = new OrderedMap<Integer, List<byte[]>>();
         for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> entry : maxChecks.entrySet()) {
             if (entry.getValue().isSelected()) {

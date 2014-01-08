@@ -17,6 +17,6 @@ public class OkPressedHandler extends ServerResponseActionHandler<OkPressed> {
     @Override
     public ServerResponseResult executeEx(OkPressed action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.okPressed(action.requestIndex));
+        return getServerResponseResult(form, form.remoteForm.okPressed(action.requestIndex, -1));
     }
 }

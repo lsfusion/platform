@@ -62,7 +62,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             }
 
             RemoteFormInterface form = navigator.createForm(formSID, initialObjects, false, false);
-            reportData = form.getReportData(-1, null, false, null);
+            reportData = form.getReportData(-1, -1, null, false, null);
 
         } catch (RemoteException e) {
             blProvider.invalidate();

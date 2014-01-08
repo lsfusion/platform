@@ -1,133 +1,212 @@
 package lsfusion.client.rmi;
 
-import org.jdesktop.jxlayer.JXLayer;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.base.SystemUtils;
+import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.client.Main;
+import lsfusion.client.MainFrame;
 import lsfusion.client.StartupProperties;
-import lsfusion.client.exceptions.ClientExceptionManager;
+import lsfusion.client.SwingUtils;
+import lsfusion.client.form.RmiQueue;
+import lsfusion.interop.DaemonThreadFactory;
+import lsfusion.interop.RemoteLogicsInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.lang.ref.WeakReference;
-import java.rmi.RemoteException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class ConnectionLostManager {
-    private static boolean connectionLost = false;
-    private static ConnectionLostPainterUI connectionLostUI;
-    private static JXLayer layer;
-    private static WeakReference<JFrame> frameRef;
+    private static final AtomicLong failedRequests = new AtomicLong();
+    private static final AtomicBoolean connectionLost = new AtomicBoolean(false);
+
+    private static Timer timerWhenUnblocked;
+    private static Timer timerWhenBlocked;
+
+    private static MainFrame currentFrame;
 
     private static BlockDialog blockDialog;
 
-    private static void setConnectionLost(boolean lost) {
-        connectionLost = lost;
-        connectionLostUI.lockAndPing(lost);
+    private static Pinger pinger;
+    private static ExecutorService pingerExecutor = Executors.newCachedThreadPool(new DaemonThreadFactory("pinger"));
+
+    public static void start(MainFrame frame) {
+        SwingUtils.assertDispatchThread();
+
+        assert frame != null;
+        if (currentFrame != frame) {
+            currentFrame = frame;
+        }
+
+        connectionLost.set(false);
+
+        timerWhenUnblocked = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                blockIfHasFailed();
+            }
+        });
+        timerWhenUnblocked.start();
+
+        timerWhenBlocked = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (blockDialog != null) {
+                    blockDialog.setFatal(isConnectionLost());
+                    if (!shouldBeBlocked()) {
+                        timerWhenBlocked.stop();
+
+                        currentFrame.setLocked(false);
+
+                        blockDialog.dispose();
+
+                        blockDialog = null;
+                    }
+                }
+            }
+        });
+    }
+
+    public static void connectionLost() {
+        connectionLost.set(true);
+        RmiQueue.notifyEdtSyncBlocker();
+    }
+
+    public static void connectionBroke() {
+        SwingUtils.assertDispatchThread();
+        if (pinger == null) {
+            pinger = new Pinger();
+            pinger.execute();
+        }
+    }
+
+    public static boolean isConnectionLost() {
+        return connectionLost.get();
     }
 
     public static void forceDisconnect(String message) {
-        connectionLost(message, true, true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Main.restart();
+            }
+        });
     }
 
-    public static void connectionLost(boolean fatal) {
-        connectionLost(null, fatal, true);
-    }
+    public static void blockIfHasFailed() {
+        SwingUtils.assertDispatchThread();
 
-    public static void connectionLost(String message, boolean fatal, boolean showReconnect) {
-        JFrame currentFrame = getCurrentFrame();
-        if (!connectionLost && currentFrame != null) {
-            setConnectionLost(true);
+        if (shouldBeBlocked() && blockDialog == null) {
+            ExceptionUtils.dumpStack();
+            currentFrame.setLocked(true);
 
-            blockDialog = new BlockDialog(message, currentFrame, fatal, showReconnect);
+            blockDialog = new BlockDialog(null, currentFrame, isConnectionLost(), true);
+            blockDialog.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowOpened(WindowEvent e) {
+                    timerWhenBlocked.start();
+                }
+            });
             blockDialog.setVisible(true);
         }
     }
 
-    public static void connectionRelived() {
-        if (connectionLost && (blockDialog == null || !blockDialog.isFatal())) {
-            setConnectionLost(false);
-            clean();
-
-            //возможно, что восстановление соединения не починило rmi-ссылки, тогда поможет только reconnect...
-            //пингуем сервер чтобы проверить это
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Main.remoteLogics.ping();
-                    } catch (RemoteException e) {
-                        ClientExceptionManager.handle(e);
-                    }
-                }
-            });
-        }
+    public static void registerFailedRmiRequest() {
+        //каждый зарегистрировавщийся поток, должне также проверять ConnectionLost, чтобы заркрыться при необходимости...
+        failedRequests.incrementAndGet();
+        RmiQueue.notifyEdtSyncBlocker();
     }
 
-    private static void clean() {
-        if (blockDialog != null) {
-            blockDialog.setVisible(false);
-            blockDialog.dispose();
-            blockDialog = null;
-        }
+    public static void unregisterFailedRmiRequest() {
+        failedRequests.decrementAndGet();
     }
 
-    public static void install(JFrame frame) {
-        JFrame currentFrame = getCurrentFrame();
-
-        if (currentFrame == null) {
-            connectionLostUI = new ConnectionLostPainterUI();
-            layer = new JXLayer(frame.getContentPane());
-            layer.setUI(connectionLostUI);
-            frame.setContentPane(layer);
-
-            frameRef = new WeakReference<JFrame>(frame);
-        }
+    private static boolean hasFailedRequest() {
+        return failedRequests.get() > 0;
     }
 
-    private static JFrame getCurrentFrame() {
-        return frameRef != null ? frameRef.get() : null;
+    private static WeakIdentityHashSet<RmiQueue> rmiQueues = new WeakIdentityHashSet<RmiQueue>();
+    public static void registerRmiQueue(RmiQueue rmiQueue) {
+        SwingUtils.assertDispatchThread();
+        rmiQueues.add(rmiQueue);
+    }
+
+    public static boolean shouldBeBlocked() {
+        return hasFailedRequest() || isConnectionLost();
     }
 
     public static void invalidate() {
-        if (connectionLostUI != null) {
-            connectionLostUI.shutdown();
+        SwingUtils.assertDispatchThread();
+
+        connectionLost();
+
+        for (RmiQueue rmiQueue : rmiQueues) {
+            rmiQueue.abandon();
         }
 
-        frameRef = null;
-        layer = null;
-        connectionLost = false;
-        connectionLostUI = null;
-        clean();
+        if (pinger != null) {
+            pinger.abandon();
+            pinger = null;
+        }
+
+        rmiQueues.clear();
+
+        failedRequests.set(0);
+
+        if (timerWhenBlocked != null) {
+            timerWhenBlocked.stop();
+            timerWhenBlocked = null;
+        }
+
+        if (timerWhenUnblocked != null) {
+            timerWhenUnblocked.stop();
+            timerWhenUnblocked = null;
+        }
+
+        currentFrame = null;
+
+        if (blockDialog != null) {
+            blockDialog.dispose();
+            blockDialog = null;
+        }
     }
 
     public static class BlockDialog extends JDialog {
         private JButton btnExit;
         private JButton btnCancel;
         private JButton btnReconnect;
-        private final boolean fatal;
+
+        private boolean fatal;
+
+        private final String message;
+        private final JLabel lbMessage;
+        private final JPanel progressPanel;
+        private final Container mainPane;
 
         public BlockDialog(String message, JFrame owner, boolean fatal, boolean showReconnect) {
             super(owner, getString("rmi.connectionlost"), true);
 
-            this.fatal = fatal;
+            this.message = message;
 
             setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
             setLocationRelativeTo(owner);
 
-            String messageText =
-                    message != null
-                    ? message
-                    : fatal
-                      ? getString("rmi.connectionlost.fatal")
-                      : getString("rmi.connectionlost.nonfatal");
-
             btnExit = new JButton(getString("rmi.connectionlost.exit"));
-            btnCancel = new JButton(getString("rmi.connectionlost.cancel"));
+            btnCancel = new JButton(getString("rmi.connectionlost.relogin"));
             btnReconnect = new JButton(getString("rmi.connectionlost.reconnect"));
 
-            Container contentPane = getContentPane();
-            contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+            lbMessage = new JLabel();
+
+            JPanel messagePanel = new JPanel();
+            messagePanel.add(lbMessage);
 
             JPanel buttonPanel = new JPanel();
             buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
@@ -137,21 +216,21 @@ public class ConnectionLostManager {
                 buttonPanel.add(btnReconnect);
             }
 
-            JPanel messagePanel = new JPanel();
-            messagePanel.add(new JLabel(messageText));
+            buttonPanel.add(btnCancel);
 
-            contentPane.add(messagePanel);
-            if (!fatal) {
-                buttonPanel.add(btnCancel);
+            JProgressBar progressBar = new JProgressBar();
+            progressBar.setIndeterminate(true);
 
-                JProgressBar progressBar = new JProgressBar();
-                progressBar.setIndeterminate(true);
-                JPanel progressPanel = new JPanel();
-                progressPanel.add(progressBar);
-                contentPane.add(progressPanel);
-            }
+            progressPanel = new JPanel();
+            progressPanel.add(progressBar);
 
-            contentPane.add(buttonPanel);
+            mainPane = getContentPane();
+            mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.Y_AXIS));
+            mainPane.add(messagePanel);
+            mainPane.add(buttonPanel);
+
+            this.fatal = !fatal;
+            setFatal(fatal);
 
             pack();
             setResizable(false);
@@ -200,8 +279,64 @@ public class ConnectionLostManager {
             });
         }
 
-        public boolean isFatal() {
-            return fatal;
+        public void setFatal(boolean fatal) {
+            if (this.fatal != fatal) {
+                String messageText =
+                        message != null
+                        ? message
+                        : fatal
+                          ? getString("rmi.connectionlost.fatal")
+                          : getString("rmi.connectionlost.nonfatal");
+
+                lbMessage.setText(messageText);
+
+                this.fatal = fatal;
+
+                if (fatal) {
+                    mainPane.remove(progressPanel);
+                } else {
+                    mainPane.add(progressPanel, 1);
+                }
+                pack();
+            }
+        }
+
+    }
+
+    static class Pinger implements Runnable {
+        private RemoteLogicsInterface remogeLogics = Main.remoteLogics;
+        private AtomicBoolean abandoned = new AtomicBoolean();
+
+        public void execute() {
+            registerFailedRmiRequest();
+            pingerExecutor.execute(this);
+        }
+
+        @Override
+        public void run() {
+            do {
+                try {
+                    remogeLogics.ping();
+                    //пинг прошёл...
+                    unregisterFailedRmiRequest();
+                    break;
+                } catch (Throwable t) {
+                    if (abandoned.get()) {
+                        //этот пингер больше неактуален
+                        return;
+                    }
+                    if (ExceptionUtils.isFatalRemoteException(t)) {
+                        ConnectionLostManager.connectionLost();
+                        return;
+                    }
+                }
+
+                SystemUtils.sleep(1000);
+            } while (true);
+        }
+
+        public void abandon() {
+            abandoned.set(true);
         }
     }
 }

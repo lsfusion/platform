@@ -416,11 +416,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             changedGroups.addAll(fc.gridObjects.keySet());
         }
 
-        modifyFormChangesWithModifyObjectAsyncs(fc);
+        modifyFormChangesWithModifyObjectAsyncs(changesDTO.requestIndex, fc);
 
-        modifyFormChangesWithChangeCurrentObjectAsyncs(fc);
+        modifyFormChangesWithChangeCurrentObjectAsyncs(changesDTO.requestIndex, fc);
 
-        modifyFormChangesWithChangePropertyAsyncs(fc);
+        modifyFormChangesWithChangePropertyAsyncs(changesDTO.requestIndex, fc);
 
         // затем одним скопом обновляем данные во всех таблицах
         for (GGroupObjectController controller : controllers.values()) {
@@ -448,9 +448,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private void modifyFormChangesWithModifyObjectAsyncs(GFormChanges fc) {
-        int currentDispatchingRequestIndex = dispatcher.getCurrentDispatchingRequestIndex();
-
+    private void modifyFormChangesWithModifyObjectAsyncs(final int currentDispatchingRequestIndex, GFormChanges fc) {
         for (Iterator<Map.Entry<Integer, ModifyObject>> iterator = pendingModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<Integer, ModifyObject> cell = iterator.next();
             if (cell.getKey() <= currentDispatchingRequestIndex) {
@@ -470,9 +468,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private void modifyFormChangesWithChangeCurrentObjectAsyncs(final GFormChanges fc) {
-        final int currentDispatchingRequestIndex = dispatcher.getCurrentDispatchingRequestIndex();
-
+    private void modifyFormChangesWithChangeCurrentObjectAsyncs(final int currentDispatchingRequestIndex, final GFormChanges fc) {
         pendingChangeCurrentObjectsRequests.foreachEntry(new Function2<GGroupObject, Integer>() {
             @Override
             public void apply(GGroupObject group, Integer requestIndex) {
@@ -485,9 +481,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
 
-    private void modifyFormChangesWithChangePropertyAsyncs(final GFormChanges fc) {
-        final int currentDispatchingRequestIndex = dispatcher.getCurrentDispatchingRequestIndex();
-
+    private void modifyFormChangesWithChangePropertyAsyncs(final int currentDispatchingRequestIndex, final GFormChanges fc) {
         pendingChangePropertyRequests.foreachEntry(new Function2<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>() {
             @Override
             public void apply(final GPropertyDraw property, NativeHashMap<GGroupObjectValue, Change> values) {
@@ -642,8 +636,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new ContinueInvocation(actionResults), callback);
     }
 
-    public void throwInServerInvocation(Exception exception) {
-        syncDispatch(new ThrowInInvocation(exception), new ErrorHandlingCallback<ServerResponseResult>());
+    public void throwInServerInvocation(Throwable throwable, AsyncCallback<ServerResponseResult> callback) {
+        syncDispatch(new ThrowInInvocation(throwable), callback);
     }
 
     public <T extends Result> void syncDispatch(FormBoundAction<T> action, AsyncCallback<T> callback) {

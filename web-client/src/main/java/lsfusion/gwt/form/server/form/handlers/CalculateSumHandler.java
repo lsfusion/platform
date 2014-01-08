@@ -20,6 +20,6 @@ public class CalculateSumHandler extends FormActionHandler<CalculateSum, NumberR
     @Override
     public NumberResult executeEx(CalculateSum action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return new NumberResult((Number) form.remoteForm.calculateSum(action.requestIndex, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey)));
+        return new NumberResult((Number) form.remoteForm.calculateSum(action.requestIndex, -1, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey)));
     }
 }

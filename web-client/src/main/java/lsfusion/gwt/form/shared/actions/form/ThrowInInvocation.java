@@ -1,12 +1,12 @@
 package lsfusion.gwt.form.shared.actions.form;
 
 public class ThrowInInvocation extends FormBoundAction<ServerResponseResult> {
-    public Exception exception;
+    public Throwable throwable;
 
     public ThrowInInvocation() {
     }
 
-    public ThrowInInvocation(Exception exception) {
-        this.exception = exception;
+    public ThrowInInvocation(Throwable throwable) {
+        this.throwable = throwable;
     }
 }

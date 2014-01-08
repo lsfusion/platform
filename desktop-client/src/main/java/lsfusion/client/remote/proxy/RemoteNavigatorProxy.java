@@ -81,13 +81,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         return result;
     }
 
-    public byte[] getElementsByteArray(String groupSID) throws RemoteException {
-        logRemoteMethodStartCall("getElementsByteArray");
-        byte[] result = target.getElementsByteArray(groupSID);
-        logRemoteMethodEndCall("getElementsByteArray", result);
-        return result;
-    }
-
     public void logClientException(String title, String hostname, Throwable t) throws RemoteException {
         target.logClientException(title, hostname, t);
     }

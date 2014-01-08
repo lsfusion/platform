@@ -87,220 +87,215 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         }
     }
 
-    public ReportGenerationData getReportData(long requestIndex, Integer groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException {
-        return target.getReportData(requestIndex, groupId, toExcel, userPreferences);
+    public ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException {
+        return target.getReportData(requestIndex, lastReceivedRequestIndex, groupId, toExcel, userPreferences);
     }
 
-    public Map<String, String> getReportPath(long requestIndex, boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws RemoteException {
-        return target.getReportPath(requestIndex, toExcel, groupId, userPreferences);
+    public Map<String, String> getReportPath(long requestIndex, long lastReceivedRequestIndex, boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws RemoteException {
+        return target.getReportPath(requestIndex, lastReceivedRequestIndex, toExcel, groupId, userPreferences);
     }
 
-    public ServerResponse getRemoteChanges(long requestIndex, boolean refresh) throws RemoteException {
+    public ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh) throws RemoteException {
         logRemoteMethodStartCall("getRemoteChanges");
-        ServerResponse result = target.getRemoteChanges(requestIndex, refresh);
+        ServerResponse result = target.getRemoteChanges(requestIndex, lastReceivedRequestIndex, refresh);
         logRemoteMethodEndCall("getRemoteChanges", result);
         return result;
     }
 
-    public ServerResponse changePageSize(long requestIndex, int groupID, Integer pageSize) throws RemoteException {
+    public ServerResponse changePageSize(long requestIndex, long lastReceivedRequestIndex, int groupID, Integer pageSize) throws RemoteException {
         logRemoteMethodStartVoidCall("changePageSize");
-        ServerResponse result = target.changePageSize(requestIndex, groupID, pageSize);
+        ServerResponse result = target.changePageSize(requestIndex, lastReceivedRequestIndex, groupID, pageSize);
         logRemoteMethodEndVoidCall("changePageSize");
         return result;
     }
 
-    public void gainedFocus(long requestIndex) throws RemoteException {
+    public void gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
         logRemoteMethodStartVoidCall("gainedFocus");
-        target.gainedFocus(requestIndex);
+        target.gainedFocus(requestIndex, lastReceivedRequestIndex);
         logRemoteMethodEndVoidCall("gainedFocus");
     }
 
-    public ServerResponse setTabVisible(long requestIndex, int tabPaneID, int childId) throws RemoteException {
+    public ServerResponse setTabVisible(long requestIndex, long lastReceivedRequestIndex, int tabPaneID, int childId) throws RemoteException {
         logRemoteMethodStartVoidCall("setTabVisible");
-        ServerResponse result = target.setTabVisible(requestIndex, tabPaneID, childId);
+        ServerResponse result = target.setTabVisible(requestIndex, lastReceivedRequestIndex, tabPaneID, childId);
         logRemoteMethodEndVoidCall("setTabVisible");
         return result;
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, int groupID, byte[] value) throws RemoteException {
+    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException {
         logRemoteMethodStartCall("changeGroupObject");
-        ServerResponse result = target.changeGroupObject(requestIndex, groupID, value);
+        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, value);
         logRemoteMethodEndVoidCall("changeGroupObject");
         return result;
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, int groupID, byte changeType) throws RemoteException {
+    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType) throws RemoteException {
         logRemoteMethodStartVoidCall("changeGroupObject");
-        ServerResponse result = target.changeGroupObject(requestIndex, groupID, changeType);
+        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, changeType);
         logRemoteMethodEndVoidCall("changeGroupObject");
         return result;
     }
 
-    public ServerResponse pasteExternalTable(long requestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values) throws RemoteException {
         logRemoteMethodStartCall("pasteExternalTable");
-        ServerResponse result = target.pasteExternalTable(requestIndex, propertyIDs, columnKeys, values);
+        ServerResponse result = target.pasteExternalTable(requestIndex, lastReceivedRequestIndex, propertyIDs, columnKeys, values);
         logRemoteMethodEndCall("pasteExternalTable", result);
         return result;
     }
 
-    public ServerResponse pasteMulticellValue(long requestIndex, Map<Integer, List<byte[]>> keys, Map<Integer, byte[]> values) throws RemoteException {
+    public ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> keys, Map<Integer, byte[]> values) throws RemoteException {
         logRemoteMethodStartCall("pasteMulticellValue");
-        ServerResponse result = target.pasteMulticellValue(requestIndex, keys, values);
+        ServerResponse result = target.pasteMulticellValue(requestIndex, lastReceivedRequestIndex, keys, values);
         logRemoteMethodEndCall("pasteMulticellValue", result);
         return result;
     }
 
-    public ServerResponse changeGridClass(long requestIndex, int objectID, int idClass) throws RemoteException {
+    public ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, int objectID, int idClass) throws RemoteException {
         logRemoteMethodStartVoidCall("changeGridClass");
-        ServerResponse result = target.changeGridClass(requestIndex, objectID, idClass);
+        ServerResponse result = target.changeGridClass(requestIndex, lastReceivedRequestIndex, objectID, idClass);
         logRemoteMethodEndVoidCall("changeGridClass");
         return result;
     }
 
-    public ServerResponse changeClassView(long requestIndex, int groupID, ClassViewType classView) throws RemoteException {
+    public ServerResponse changeClassView(long requestIndex, long lastReceivedRequestIndex, int groupID, ClassViewType classView) throws RemoteException {
         logRemoteMethodStartVoidCall("changeClassView");
-        ServerResponse result = target.changeClassView(requestIndex, groupID, classView);
+        ServerResponse result = target.changeClassView(requestIndex, lastReceivedRequestIndex, groupID, classView);
         logRemoteMethodEndVoidCall("changeClassView");
         return result;
     }
 
-    public ServerResponse changePropertyOrder(long requestIndex, int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
+    public ServerResponse changePropertyOrder(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
         logRemoteMethodStartVoidCall("changePropertyOrder");
-        ServerResponse result = target.changePropertyOrder(requestIndex, propertyID, modiType, columnKeys);
+        ServerResponse result = target.changePropertyOrder(requestIndex, lastReceivedRequestIndex, propertyID, modiType, columnKeys);
         logRemoteMethodEndCall("changePropertyOrder", result);
         return result;
     }
 
     @Override
-    public ServerResponse clearPropertyOrders(long requestIndex, int groupObjectID) throws RemoteException {
+    public ServerResponse clearPropertyOrders(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException {
         logRemoteMethodStartVoidCall("clearPropertyOrders");
-        ServerResponse result = target.clearPropertyOrders(requestIndex, groupObjectID);
+        ServerResponse result = target.clearPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObjectID);
         logRemoteMethodEndCall("clearPropertyOrders", result);
         return result;
     }
 
-    public ServerResponse setUserFilters(long requestIndex, byte[][] filters) throws RemoteException {
+    public ServerResponse setUserFilters(long requestIndex, long lastReceivedRequestIndex, byte[][] filters) throws RemoteException {
         logRemoteMethodStartVoidCall("setUserFilters");
-        ServerResponse result = target.setUserFilters(requestIndex, filters);
+        ServerResponse result = target.setUserFilters(requestIndex, lastReceivedRequestIndex, filters);
         logRemoteMethodEndCall("setUserFilters", result);
         return result;
     }
 
-    public ServerResponse setRegularFilter(long requestIndex, int groupID, int filterID) throws RemoteException {
+    public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, int groupID, int filterID) throws RemoteException {
         logRemoteMethodStartVoidCall("setRegularFilter");
-        ServerResponse result = target.setRegularFilter(requestIndex, groupID, filterID);
+        ServerResponse result = target.setRegularFilter(requestIndex, lastReceivedRequestIndex, groupID, filterID);
         logRemoteMethodEndCall("setRegularFilter", result);
         return result;
     }
 
-    public int countRecords(long requestIndex, int groupObjectID) throws RemoteException {
+    public int countRecords(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException {
         logRemoteMethodStartCall("countRecords");
-        int result = target.countRecords(requestIndex, groupObjectID);
+        int result = target.countRecords(requestIndex, lastReceivedRequestIndex, groupObjectID);
         logRemoteMethodEndCall("countRecords", result);
         return result;
     }
 
-    public Object calculateSum(long requestIndex, int propertyID, byte[] columnKeys) throws RemoteException {
+    public Object calculateSum(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKeys) throws RemoteException {
         logRemoteMethodStartCall("calculateSum");
-        Object result = target.calculateSum(requestIndex, propertyID, columnKeys);
+        Object result = target.calculateSum(requestIndex, lastReceivedRequestIndex, propertyID, columnKeys);
         logRemoteMethodEndCall("calculateSum", result);
         return result;
     }
 
-    public Map<List<Object>, List<Object>> groupData(long requestIndex, Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
+    public Map<List<Object>, List<Object>> groupData(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
                                                      Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws RemoteException {
         logRemoteMethodStartCall("groupData");
-        Map<List<Object>, List<Object>> result = target.groupData(requestIndex, groupMap, sumMap, maxMap, onlyNotNull);
+        Map<List<Object>, List<Object>> result = target.groupData(requestIndex, lastReceivedRequestIndex, groupMap, sumMap, maxMap, onlyNotNull);
         logRemoteMethodEndCall("groupData", result);
         return result;
     }
 
     @Override
-    public List<FormGrouping> readGroupings(String groupObjectSID) throws RemoteException {
+    public List<FormGrouping> readGroupings(long requestIndex, long lastReceivedRequestIndex, String groupObjectSID) throws RemoteException {
         logRemoteMethodStartCall("readGroupings");
-        List<FormGrouping> result;
-        try {
-            result = target.readGroupings(groupObjectSID);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        List<FormGrouping> result = target.readGroupings(requestIndex, lastReceivedRequestIndex, groupObjectSID);
         logRemoteMethodEndVoidCall("readGroupings");
         return result;
     }
 
     @Override
-    public void saveGrouping(long requestIndex, FormGrouping grouping) throws RemoteException {
+    public void saveGrouping(long requestIndex, long lastReceivedRequestIndex, FormGrouping grouping) throws RemoteException {
         logRemoteMethodStartCall("saveGrouping");
-        target.saveGrouping(requestIndex, grouping);
+        target.saveGrouping(requestIndex, lastReceivedRequestIndex, grouping);
         logRemoteMethodEndVoidCall("saveGrouping");   
     }
 
-    public ServerResponse saveUserPreferences(long requestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException {
+    public ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException {
         logRemoteMethodStartCall("saveUserPreferences");
-        ServerResponse result = target.saveUserPreferences(requestIndex, preferences, forAllUsers);
+        ServerResponse result = target.saveUserPreferences(requestIndex, lastReceivedRequestIndex, preferences, forAllUsers);
         logRemoteMethodEndCall("saveUserPreferences", result);
         return result;
     }
 
-    public ServerResponse okPressed(long requestIndex) throws RemoteException {
+    public ServerResponse okPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
         logRemoteMethodStartCall("okPressed");
-        ServerResponse result = target.okPressed(requestIndex);
+        ServerResponse result = target.okPressed(requestIndex, lastReceivedRequestIndex);
         logRemoteMethodEndCall("okPressed", result);
         return result;
     }
 
-    public ServerResponse closedPressed(long requestIndex) throws RemoteException {
+    public ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
         logRemoteMethodStartCall("closedPressed");
-        ServerResponse result = target.closedPressed(requestIndex);
+        ServerResponse result = target.closedPressed(requestIndex, lastReceivedRequestIndex);
         logRemoteMethodEndCall("closedPressed", result);
         return result;
     }
 
-    public ServerResponse expandGroupObject(long requestIndex, int groupId, byte[] treePath) throws RemoteException {
+    public ServerResponse expandGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupId, byte[] treePath) throws RemoteException {
         logRemoteMethodStartVoidCall("expandTreeNode");
-        ServerResponse result = target.expandGroupObject(requestIndex, groupId, treePath);
+        ServerResponse result = target.expandGroupObject(requestIndex, lastReceivedRequestIndex, groupId, treePath);
         logRemoteMethodEndVoidCall("expandTreeNode");
         return result;
     }
 
-    public ServerResponse collapseGroupObject(long requestIndex, int groupId, byte[] bytes) throws RemoteException {
+    public ServerResponse collapseGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupId, byte[] bytes) throws RemoteException {
         logRemoteMethodStartVoidCall("collapseTreeNode");
-        ServerResponse result = target.collapseGroupObject(requestIndex, groupId, bytes);
+        ServerResponse result = target.collapseGroupObject(requestIndex, lastReceivedRequestIndex, groupId, bytes);
         logRemoteMethodEndVoidCall("collapseTreeNode");
         return result;
     }
 
-    public ServerResponse moveGroupObject(long requestIndex, int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException {
+    public ServerResponse moveGroupObject(long requestIndex, long lastReceivedRequestIndex, int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException {
         logRemoteMethodStartVoidCall("moveGroupObject");
-        ServerResponse result = target.moveGroupObject(requestIndex, parentGroupId, parentKey, childGroupId, childKey, index);
+        ServerResponse result = target.moveGroupObject(requestIndex, lastReceivedRequestIndex, parentGroupId, parentKey, childGroupId, childKey, index);
         logRemoteMethodEndVoidCall("moveGroupObject");
         return result;
     }
 
-    public ServerResponse executeEditAction(long requestIndex, int propertyID, byte[] columnKey, String actionSID) throws RemoteException {
+    public ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, String actionSID) throws RemoteException {
         logRemoteMethodStartCall("executeEditAction");
-        ServerResponse result = target.executeEditAction(requestIndex, propertyID, columnKey, actionSID);
+        ServerResponse result = target.executeEditAction(requestIndex, lastReceivedRequestIndex, propertyID, columnKey, actionSID);
         logRemoteMethodEndCall("getPropertyChangeType", result);
         return result;
     }
 
-    public ServerResponse changeProperty(long requestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Integer pushAdd) throws RemoteException {
+    public ServerResponse changeProperty(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Integer pushAdd) throws RemoteException {
         logRemoteMethodStartCall("executeEditAction");
-        ServerResponse result = target.changeProperty(requestIndex, propertyID, fullKey, pushChange, pushAdd);
+        ServerResponse result = target.changeProperty(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, pushChange, pushAdd);
         logRemoteMethodEndCall("executeEditAction", result);
         return result;
     }
 
-    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
+    public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
         logRemoteMethodStartCall("continueServerInvocation");
-        ServerResponse result = target.continueServerInvocation(actionResults);
+        ServerResponse result = target.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
         logRemoteMethodEndCall("continueServerInvocation", result);
         return result;
     }
 
-    public ServerResponse throwInServerInvocation(Throwable clientThrowable) throws RemoteException {
+    public ServerResponse throwInServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable clientThrowable) throws RemoteException {
         logRemoteMethodStartCall("throwInServerInvocation");
-        ServerResponse result = target.throwInServerInvocation(clientThrowable);
+        ServerResponse result = target.throwInServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
         logRemoteMethodEndCall("throwInServerInvocation", result);
         return result;
     }

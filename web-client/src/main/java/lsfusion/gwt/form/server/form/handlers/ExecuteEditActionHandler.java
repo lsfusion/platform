@@ -23,6 +23,6 @@ public class ExecuteEditActionHandler extends ServerResponseActionHandler<Execut
 
         byte[] columnKey = gwtConverter.convertOrCast(action.columnKey);
 
-        return getServerResponseResult(form, form.remoteForm.executeEditAction(action.requestIndex, action.propertyId, columnKey, action.actionSID));
+        return getServerResponseResult(form, form.remoteForm.executeEditAction(action.requestIndex, -1, action.propertyId, columnKey, action.actionSID));
     }
 }

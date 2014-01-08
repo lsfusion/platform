@@ -16,6 +16,7 @@ import lsfusion.interop.form.UserInputResult;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.util.EventObject;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.client.logics.classes.ClientTypeSerializer.deserializeClientType;
@@ -44,12 +45,14 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     /**
      * @return true, если на сервере вызван action для редактирования
      */
-    public boolean executePropertyEditAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, Object currentValue) {
-        try {
-            readType = null;
-            simpleChangeProperty = null;
-            editColumnKey = null;
+    public boolean executePropertyEditAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, Object currentValue, EventObject editEvent) {
+        readType = null;
+        simpleChangeProperty = null;
+        editColumnKey = null;
 
+        setEditEvent(editEvent);
+
+        try {
             ClientFormController form = getFormController();
 
             if (actionSID.equals(ServerResponse.CHANGE)) { // асинхронные обработки
@@ -82,6 +85,8 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             return internalDispatchResponse(response);
         } catch (IOException ex) {
             throw Throwables.propagate(ex);
+        } finally {
+            setEditEvent(null);
         }
     }
 

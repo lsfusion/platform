@@ -40,8 +40,6 @@ public class RMITimeoutSocketFactory extends ZipSocketFactory implements Compres
 
         sockets.add(socket);
 
-        ConnectionLostManager.connectionRelived();
-
         return socket;
     }
 

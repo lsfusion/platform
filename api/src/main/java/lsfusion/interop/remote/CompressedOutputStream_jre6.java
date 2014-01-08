@@ -85,20 +85,20 @@ public class CompressedOutputStream_jre6 extends FilterOutputStream {
             deflater.setInput(inBuf, off, len);
             deflater.finish();
 
-            int written;
+            int compressed;
             int compressedSize = 0;
             int extra = setIntAsBytes(outBuf, 0, len);
             do {
-                written = deflater.deflate(outBuf, extra + 4, outBuf.length - extra - 4);
-                if (written > 0) {
-                    setIntAsBytes(outBuf, extra, written);
+                compressed = deflater.deflate(outBuf, extra + 4, outBuf.length - extra - 4);
+                if (compressed > 0) {
+                    setIntAsBytes(outBuf, extra, compressed);
 
-                    out.write(outBuf, 0, written + extra + 4);
+                    out.write(outBuf, 0, compressed + extra + 4);
 
-                    compressedSize += written + extra + 4;
+                    compressedSize += compressed + extra + 4;
                     extra = 0;
                 }
-            } while (written > 0);
+            } while (compressed > 0);
             setIntAsBytes(outBuf, 0, 0);
             out.write(outBuf, 0, 4);
 

@@ -1,6 +1,7 @@
 package lsfusion.client;
 
 import lsfusion.base.ExceptionUtils;
+import lsfusion.client.rmi.ConnectionLostManager;
 
 import javax.swing.*;
 import java.util.List;
@@ -69,8 +70,6 @@ public final class Log {
         LogPanel logPanel = getLogPanel();
         if (logPanel != null) {
             logPanel.setTemporaryBackground(Color.green);
-        } else if (!Main.module.isFull()) {
-            JOptionPane.showMessageDialog(SwingUtils.getActiveWindow(), message, Main.getMainTitle(), JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -92,7 +91,7 @@ public final class Log {
     }
 
     public static void error(String message, Throwable t) {
-        error(message, ExceptionUtils.getStackTraceString(t));
+        error(message, t, false);
     }
 
     public static void error(String message, String trace) {
@@ -103,7 +102,21 @@ public final class Log {
         error(message, titles, data, "");
     }
 
+    public static void error(String message, Throwable t, boolean forcedShowError) {
+        error(message, null, null, ExceptionUtils.getStackTraceString(t), forcedShowError);
+    }
+
     private static void error(String message, List<String> titles, List<List<String>> data, String trace) {
+        error(message, titles, data, trace, false);
+    }
+
+    private static void error(String message, List<String> titles, List<List<String>> data, String trace, boolean forcedShowError) {
+        if (!forcedShowError && ConnectionLostManager.isConnectionLost()) {
+            return;
+        }
+
+        SwingUtils.assertDispatchThread();
+
         printmsg(message);
 
         provideErrorFeedback();

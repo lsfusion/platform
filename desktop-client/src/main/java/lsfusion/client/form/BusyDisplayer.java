@@ -101,7 +101,10 @@ public class BusyDisplayer extends TimerTask {
 
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastUpdateTime >= UPDATE_PERIOD) {
-                currentMessage = serverMessageProvider.get();
+                try {
+                    currentMessage = serverMessageProvider.get();
+                } catch (Throwable ignore) {
+                }
                 lastUpdateTime = currentTime;
             }
 

@@ -1,5 +1,7 @@
 package lsfusion.client.logics;
 
+import com.google.common.base.Throwables;
+
 import java.io.*;
 import java.util.*;
 
@@ -52,10 +54,14 @@ public class ClientGroupObjectValue extends HashMap<ClientObject, Object> implem
         }
     }
 
-    public byte[] serialize() throws IOException {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        serialize(new DataOutputStream(outStream));
-        return outStream.toByteArray();
+    public byte[] serialize() {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            serialize(new DataOutputStream(outStream));
+            return outStream.toByteArray();
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public boolean contains(ClientGroupObjectValue other) {

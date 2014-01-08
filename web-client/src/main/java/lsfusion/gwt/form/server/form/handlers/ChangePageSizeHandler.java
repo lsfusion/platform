@@ -17,6 +17,6 @@ public class ChangePageSizeHandler extends ServerResponseActionHandler<ChangePag
     @Override
     public ServerResponseResult executeEx(ChangePageSize action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.changePageSize(action.requestIndex, action.groupObjectID, action.pageSize));
+        return getServerResponseResult(form, form.remoteForm.changePageSize(action.requestIndex, -1, action.groupObjectID, action.pageSize));
     }
 }

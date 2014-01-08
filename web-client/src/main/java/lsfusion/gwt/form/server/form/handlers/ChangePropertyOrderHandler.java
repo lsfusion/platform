@@ -23,7 +23,7 @@ public class ChangePropertyOrderHandler extends ServerResponseActionHandler<Chan
         byte[] keyBytes = gwtConverter.convertOrCast(action.columnKey);
         return getServerResponseResult(
                 form,
-                form.remoteForm.changePropertyOrder(action.requestIndex, action.propertyID, action.modiType.serialize(), keyBytes)
+                form.remoteForm.changePropertyOrder(action.requestIndex, -1, action.propertyID, action.modiType.serialize(), keyBytes)
         );
     }
 }

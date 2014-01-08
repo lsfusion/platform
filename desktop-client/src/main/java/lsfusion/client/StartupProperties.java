@@ -38,6 +38,10 @@ public class StartupProperties {
 
     public static final String LSFUSION_CLIENT_ASYNC_TIMEOUT = "lsfusion.client.async.timeout";
 
+    public static final int pullMessagesPeriod = Integer.parseInt(System.getProperty(LSFUSION_CLIENT_PING_TIME, "1000"));
+
+    public static final int pingDelay = Integer.parseInt(System.getProperty(LSFUSION_CLIENT_CONNECTION_LOST_PING_DELAY, "3000"));
+
     public static final boolean dotSeparator = ".".equals(System.getProperty(StartupProperties.LSFUSION_CLIENT_DECIMAL_SEPARATOR));
     
     public final static boolean autoReconnect = System.getProperty(StartupProperties.LSFUSION_CLIENT_BLOCKER_AUTORECONNECT) != null;
