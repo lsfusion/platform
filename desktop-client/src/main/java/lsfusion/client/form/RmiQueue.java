@@ -28,7 +28,7 @@ public class RmiQueue {
     private final Provider<String> serverMessageProvider;
     private final AsyncListener asyncListener;
     private boolean asyncStarted = false;
-    private boolean syncStarted = false;
+    private int syncsStarted = 0;
 
     private long nextRmiRequestIndex = 0;
     private long lastReceivedRequestIndex = -1;
@@ -83,7 +83,7 @@ public class RmiQueue {
     private <T> T blockingRequest(final RmiRequest<T> request, boolean direct) {
         SwingUtils.assertDispatchThread();
 
-        if (syncStarted) {
+        if (!direct && syncsStarted != 0) {
             IllegalStateException ex = new IllegalStateException("Nested sync request shouldn't occure.");
             logger.error("Nested sync request: ", ex);
             throw ex;
@@ -92,7 +92,7 @@ public class RmiQueue {
         BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
         busyDisplayer.start();
 
-        syncStarted = true;
+        syncsStarted++;
         try {
             RmiFuture<T> rmiFuture;
             if (direct) {
@@ -118,7 +118,7 @@ public class RmiQueue {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
-            syncStarted = false;
+            syncsStarted--;
             busyDisplayer.stop();
         }
     }
@@ -187,7 +187,7 @@ public class RmiQueue {
     }
 
     boolean isSyncStarted() {
-        return syncStarted;
+        return syncsStarted == 0;
     }
 
     private void execNextFutureCallback() throws Exception {
