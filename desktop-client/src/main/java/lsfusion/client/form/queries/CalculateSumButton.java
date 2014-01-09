@@ -26,7 +26,7 @@ public abstract class CalculateSumButton extends ToolbarGridButton {
 
         if (sum != null) {
             label = new JLabel(ClientResourceBundle.getString("form.queries.sum.result") + " [" + caption + "]: ");
-            JTextField field = new JTextField(10);
+            JTextField field = new JTextField(15);
             field.setHorizontalAlignment(JTextField.RIGHT);
             field.setText(format(sum));
             panel.add(label);
