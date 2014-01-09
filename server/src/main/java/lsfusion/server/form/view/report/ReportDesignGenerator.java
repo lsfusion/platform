@@ -6,6 +6,8 @@ import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.ReportConstants;
+import lsfusion.server.ServerLoggers;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.form.entity.PropertyObjectEntity;
@@ -13,6 +15,8 @@ import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.GroupObjectView;
 import lsfusion.server.form.view.ObjectView;
 import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.session.DataSession;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperReport;
@@ -23,6 +27,7 @@ import net.sf.jasperreports.engine.type.PositionTypeEnum;
 import net.sf.jasperreports.engine.type.StretchTypeEnum;
 
 import java.awt.*;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
@@ -50,6 +55,9 @@ public class ReportDesignGenerator {
     private int pageUsableWidth;
     private static final int neighboursGap = 5;
 
+    private int rowHeight = 18;
+    private int charWidth = 8;
+    
     private Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
 
     public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId, FormUserPreferences userPreferences, boolean toExcel) {
@@ -82,6 +90,16 @@ public class ReportDesignGenerator {
     }
 
     public Map<String, JasperDesign> generate() throws JRException {
+        try {
+            BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
+            DataSession session = ThreadLocalContext.getDbManager().createSession();
+            charWidth = (Integer) baseLM.reportCharWidth.read(session);
+            rowHeight = (Integer) baseLM.reportRowHeight.read(session);
+            session.close();
+        } catch (SQLException e) {
+            ServerLoggers.systemLogger.warn("Error when reading report parameters", e);
+        }
+    
         JasperDesign rootDesign = createJasperDesignObject(GroupObjectHierarchy.rootNodeName, true, false);
 
         iterateChildReports(rootDesign, null, 0);
@@ -153,7 +171,7 @@ public class ReportDesignGenerator {
             boolean hidden = prop.second != null && prop.second.userHide != null && prop.second.userHide;
             
             if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup) && !hidden) {
-                ReportDrawField reportField = prop.first.getReportDrawField();
+                ReportDrawField reportField = prop.first.getReportDrawField(charWidth);
                 if (reportField != null && (backgroundProp == null || backgroundProp.property != prop.first.entity.propertyObject.property)) {
                     Integer widthUser = prop.second == null ? null : prop.second.userWidth;
                     if (widthUser != null) {
@@ -198,7 +216,7 @@ public class ReportDesignGenerator {
 
             String backgroundPropertySID = null;
             if (backgroundProp != null) {
-                ReportDrawField reportField = new ReportDrawField(backgroundProp.property.getSID(), "");
+                ReportDrawField reportField = new ReportDrawField(backgroundProp.property.getSID(), "", charWidth);
                 backgroundProp.property.getType().fillReportDrawField(reportField);
                 addDesignField(design, reportField);
                 backgroundPropertySID = reportField.sID;
@@ -213,9 +231,9 @@ public class ReportDesignGenerator {
             if (!hiddenGroup) {
                 boolean detail = hierarchy.isLeaf(node) && (group == groups.get(groups.size()-1));
                 ReportLayout reportLayout;
-
+                
                 if (detail) {
-                    reportLayout = new ReportDetailLayout(design);
+                    reportLayout = new ReportDetailLayout(design, rowHeight);
                 } else {
 
                     int captionWidth = 0, preferredWidth = 0;
@@ -226,11 +244,11 @@ public class ReportDesignGenerator {
 
                     if (captionWidth + preferredWidth <= pageUsableWidth && !hasColumnGroupProperty) {
                         JRDesignGroup designGroup = addDesignGroup(design, groupView, "designGroup" + group.getID());
-                        reportLayout = new ReportGroupRowLayout(designGroup);
+                        reportLayout = new ReportGroupRowLayout(designGroup, rowHeight);
                     } else {
                         JRDesignGroup captionGroup = addDesignGroup(design, groupView, "captionGroup" + group.getID());
                         JRDesignGroup textGroup = addDesignGroup(design, groupView, "textGroup" + group.getID());
-                        reportLayout = new ReportGroupColumnLayout(captionGroup, textGroup);
+                        reportLayout = new ReportGroupColumnLayout(captionGroup, textGroup, rowHeight);
                     }
                 }
 
@@ -276,7 +294,7 @@ public class ReportDesignGenerator {
             }
 
             for (ObjectView view : groupView) {
-                ReportDrawField objField = new ReportDrawField(view.entity.getSID(), "");
+                ReportDrawField objField = new ReportDrawField(view.entity.getSID(), "", charWidth);
                 view.entity.baseClass.getType().fillReportDrawField(objField);
                 addDesignField(design, objField);
             }

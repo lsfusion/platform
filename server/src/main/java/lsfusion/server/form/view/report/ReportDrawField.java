@@ -20,11 +20,12 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public boolean hasCaptionProperty;
     public boolean hasFooterProperty;
 
-    static final int charWidth = 8;
+    private int charWidth;
 
-    public ReportDrawField(String sID, String caption) {
+    public ReportDrawField(String sID, String caption, int charWidth) {
         this.sID = sID;
         this.caption = caption;
+        this.charWidth = charWidth;
     }
 
     public int getCaptionWidth() {

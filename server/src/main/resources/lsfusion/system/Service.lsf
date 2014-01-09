@@ -26,7 +26,7 @@ isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
 
 FORM admin 'Администрирование'
-    PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, restartServerAction SHOWIF isNotServerRestarting(),
+    PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, reportCharWidth, reportRowHeight, restartServerAction SHOWIF isNotServerRestarting(),
                  cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, 
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, 
                  vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, toggleExplainAnalyzeMode, 
@@ -46,6 +46,11 @@ DESIGN admin FROM DEFAULT {
             caption = 'Цвета';
             ADD PROPERTY(defaultBackgroundColor);
             ADD PROPERTY(defaultForegroundColor);
+        }
+        NEW report {
+            caption = 'Отчеты';
+            ADD PROPERTY(reportCharWidth);
+            ADD PROPERTY(reportRowHeight);
         }
         NEW administration {
             caption = 'Запуск';

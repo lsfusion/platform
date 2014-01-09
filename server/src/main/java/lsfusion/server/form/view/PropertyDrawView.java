@@ -108,9 +108,9 @@ public class PropertyDrawView extends ComponentView {
                 : getDefaultCaption();
     }
 
-    public ReportDrawField getReportDrawField() {
+    public ReportDrawField getReportDrawField(int charWidth) {
 
-        ReportDrawField reportField = new ReportDrawField(getSID(), getCaption());
+        ReportDrawField reportField = new ReportDrawField(getSID(), getCaption(), charWidth);
 
         Type type = getType();
 
@@ -135,7 +135,7 @@ public class PropertyDrawView extends ComponentView {
 
         // определяем класс заголовка
         if (reportField.hasCaptionProperty) {
-            ReportDrawField captionField = new ReportDrawField(getSID() + ReportConstants.captionSuffix, "");
+            ReportDrawField captionField = new ReportDrawField(getSID() + ReportConstants.captionSuffix, "", charWidth);
             entity.propertyCaption.property.getType().fillReportDrawField(captionField);
             reportField.captionClass = captionField.valueClass;
         } else {
@@ -144,7 +144,7 @@ public class PropertyDrawView extends ComponentView {
 
         // определяем класс футера
         if (reportField.hasFooterProperty) {
-            ReportDrawField footerField = new ReportDrawField(getSID() + ReportConstants.footerSuffix, "");
+            ReportDrawField footerField = new ReportDrawField(getSID() + ReportConstants.footerSuffix, "", charWidth);
             entity.propertyFooter.property.getType().fillReportDrawField(footerField);
             reportField.footerClass = footerField.valueClass;
         } else {

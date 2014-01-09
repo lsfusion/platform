@@ -57,6 +57,15 @@ defaultOverrideBackgroundColor 'Цвет фона по умолчанию при
 defaultForegroundColor 'Цвет шрифта по умолчанию при выделении' = DATA COLOR ();
 defaultOverrideForegroundColor 'Цвет шрифта по умолчанию при выделении' = OVERRIDE RGB(255, 0, 0), defaultForegroundColor() PERSISTENT;
   
+customReportCharWidth 'Ширина символа в пикселах в отчетах' = DATA INTEGER ();
+customReportRowHeight 'Высота поля в пикселах в отчетах' = DATA INTEGER ();
+   
+defaultReportCharWidth = 8;
+defaultReportRowHeight = 18;    
+   
+reportCharWidth 'Ширина символа в пикселах в отчетах' = OVERRIDE defaultReportCharWidth(), customReportCharWidth();      
+reportRowHeight 'Высота поля в пикселах в отчетах' = OVERRIDE defaultReportRowHeight(), customReportRowHeight();      
+  
 addedObject() = DATA SESSION Object ();
 confirmed() = DATA SESSION BOOLEAN ();
 requestCanceled() = DATA SESSION BOOLEAN ();

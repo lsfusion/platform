@@ -131,6 +131,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP defaultForegroundColor;
     public LCP defaultOverrideForegroundColor;
 
+    public LCP reportRowHeight, reportCharWidth;
+    
     public SelectionPropertySet selection;
     public ObjectValuePropertySet objectValue;
 
@@ -329,7 +331,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         ((CalcProperty)staticCaption.property).aggProp = true;
 
         objectClassName = getLCPByOldName("objectClassName");
-
+        
+        // Настройка отчетов
+        reportRowHeight = getLCPByOldName("reportRowHeight");
+        reportCharWidth = getLCPByOldName("reportCharWidth");
+        
         // Настройка форм
         defaultBackgroundColor = getLCPByOldName("defaultBackgroundColor");
         defaultOverrideBackgroundColor = getLCPByOldName("defaultOverrideBackgroundColor");
